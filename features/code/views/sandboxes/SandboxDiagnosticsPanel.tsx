@@ -33,7 +33,23 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { CheckCircle2, XCircle, Loader2, RefreshCw, AlertCircle, Activity } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import {
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  RefreshCw,
+  AlertCircle,
+  Activity,
+  RotateCcw,
+  ChevronRight,
+  ChevronDown,
+  File as FileIcon,
+  Folder as FolderIcon,
+  FolderOpen,
+} from "lucide-react";
 
 type DiagCheck = {
   ok?: boolean;
@@ -98,6 +114,50 @@ interface Props {
   /** Notify parent when overall_ok flips True. The create-sandbox flow uses
    *  this to flip "creating" → "ready" without polling Supabase. */
   onReady?: (diag: SandboxDiagnostics) => void;
+  /** Show the Reset button in the header. Defaults true. The create-sandbox
+   *  flow can hide it (you can't reset a sandbox that hasn't booted yet). */
+  showResetButton?: boolean;
+  /** Callback fired after a successful reset finishes. The detail page uses
+   *  this to refresh its row state and re-fire the readiness gate. */
+  onReset?: () => void;
+}
+
+// ── Agent filesystem types (matches matrx_agent /fs/list response) ──────────
+// Each entry is a stat dict: { name, path, kind: "file"|"dir"|"symlink", size, mtime, mode, target }
+interface FsEntry {
+  path: string;
+  name: string;
+  kind?: "file" | "dir" | "symlink";
+  is_dir?: boolean; // back-compat in case the daemon ever shifts back
+  size?: number;
+  mtime?: number;
+}
+
+interface FsNode {
+  path: string;
+  name: string;
+  isDir: boolean;
+  size?: number;
+  expanded: boolean;
+  loaded: boolean;
+  loading: boolean;
+  error?: string;
+  children: FsNode[];
+}
+
+interface AgentEnvKv {
+  key: string;
+  value: string;
+}
+
+interface AgentEnvResponse {
+  sandbox_id: string;
+  container_config_env?: AgentEnvKv[];
+  runtime_env?: AgentEnvKv[];
+  runtime_env_error?: string;
+  aidream_proc_env?: AgentEnvKv[];
+  aidream_proc_env_error?: string;
+  aidream_pid?: number;
 }
 
 export function SandboxDiagnosticsPanel({
@@ -106,6 +166,8 @@ export function SandboxDiagnosticsPanel({
   unhealthyPollSeconds = 2,
   healthyPollSeconds = 30,
   onReady,
+  showResetButton = true,
+  onReset,
 }: Props) {
   const [diag, setDiag] = useState<SandboxDiagnostics | null>(null);
   const [loading, setLoading] = useState(false);
@@ -115,6 +177,29 @@ export function SandboxDiagnosticsPanel({
   const [logTail, setLogTail] = useState<number>(200);
   const [logsLoading, setLogsLoading] = useState(false);
   const onReadyFiredRef = useRef(false);
+
+  // ── Reset state ──────────────────────────────────────────────────────────
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetWipe, setResetWipe] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
+  // ── Filesystem tree state (lazy-loaded) ──────────────────────────────────
+  const [fsRootPath, setFsRootPath] = useState<string>("/home/agent");
+  const [fsRoot, setFsRoot] = useState<FsNode | null>(null);
+  const [fsRootLoading, setFsRootLoading] = useState(false);
+  const [fsRootError, setFsRootError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<{ path: string; name: string } | null>(null);
+  const [fileContent, setFileContent] = useState<string>("");
+  const [fileLoading, setFileLoading] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [fileBinary, setFileBinary] = useState(false);
+
+  // ── Agent env state ──────────────────────────────────────────────────────
+  const [agentEnv, setAgentEnv] = useState<AgentEnvResponse | null>(null);
+  const [agentEnvLoading, setAgentEnvLoading] = useState(false);
+  const [agentEnvError, setAgentEnvError] = useState<string | null>(null);
+  const [envFilter, setEnvFilter] = useState("");
+  const [envView, setEnvView] = useState<"container_config_env" | "runtime_env" | "aidream_proc_env">("aidream_proc_env");
 
   const fetchDiagnostics = useCallback(async () => {
     setLoading(true);
@@ -153,6 +238,219 @@ export function SandboxDiagnosticsPanel({
       setLogsLoading(false);
     }
   }, [sandboxId, logSource, logTail]);
+
+  // ── Reset handler ────────────────────────────────────────────────────────
+  const handleReset = useCallback(async () => {
+    setResetting(true);
+    try {
+      const r = await fetch(`/api/sandbox/${sandboxId}/reset`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wipe_volume: resetWipe }),
+      });
+      if (!r.ok) {
+        const body = await r.text();
+        throw new Error(`HTTP ${r.status}: ${body.slice(0, 300)}`);
+      }
+      const json = await r.json();
+      toast.success(
+        resetWipe
+          ? "Sandbox reset (volume wiped) — new container booting"
+          : "Sandbox reset — new container booting (volume preserved)",
+      );
+      // Reset readiness gate so onReady fires again on the new sandbox.
+      onReadyFiredRef.current = false;
+      setDiag(null);
+      setFsRoot(null);
+      setSelectedFile(null);
+      setFileContent("");
+      setAgentEnv(null);
+      onReset?.();
+      setResetOpen(false);
+      // Kick a fresh diagnostic poll right away
+      void fetchDiagnostics();
+      return json;
+    } catch (e) {
+      toast.error(`Reset failed: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setResetting(false);
+    }
+  }, [sandboxId, resetWipe, onReset, fetchDiagnostics]);
+
+  // ── Filesystem tree loaders ──────────────────────────────────────────────
+  const loadDir = useCallback(
+    async (path: string): Promise<FsNode[]> => {
+      const r = await fetch(
+        `/api/sandbox/${sandboxId}/fs/list?path=${encodeURIComponent(path)}&depth=1`,
+        { cache: "no-store" },
+      );
+      if (!r.ok) {
+        const body = await r.text();
+        throw new Error(`HTTP ${r.status}: ${body.slice(0, 200)}`);
+      }
+      const json = (await r.json()) as { entries: FsEntry[] };
+      const entries = (json.entries || [])
+        .map((e) => ({
+          path: e.path,
+          name: e.name || e.path.split("/").pop() || e.path,
+          isDir: e.kind === "dir" || e.is_dir === true,
+          size: e.size,
+          expanded: false,
+          loaded: false,
+          loading: false,
+          children: [] as FsNode[],
+        }))
+        .sort((a, b) => {
+          if (a.isDir !== b.isDir) return a.isDir ? -1 : 1;
+          return a.name.localeCompare(b.name);
+        });
+      return entries;
+    },
+    [sandboxId],
+  );
+
+  const fetchFsRoot = useCallback(async () => {
+    setFsRootLoading(true);
+    setFsRootError(null);
+    try {
+      const children = await loadDir(fsRootPath);
+      setFsRoot({
+        path: fsRootPath,
+        name: fsRootPath,
+        isDir: true,
+        expanded: true,
+        loaded: true,
+        loading: false,
+        children,
+      });
+    } catch (e) {
+      setFsRootError(e instanceof Error ? e.message : String(e));
+      setFsRoot(null);
+    } finally {
+      setFsRootLoading(false);
+    }
+  }, [fsRootPath, loadDir]);
+
+  const toggleNode = useCallback(
+    async (target: FsNode) => {
+      if (!fsRoot) return;
+      // Mutate immutably by walking the tree and rebuilding the path.
+      const updateNode = (node: FsNode): FsNode => {
+        if (node.path === target.path) {
+          if (node.expanded) {
+            return { ...node, expanded: false };
+          }
+          if (node.loaded) {
+            return { ...node, expanded: true };
+          }
+          // Need to lazy-load
+          return { ...node, expanded: true, loading: true };
+        }
+        if (node.children.length) {
+          return { ...node, children: node.children.map(updateNode) };
+        }
+        return node;
+      };
+      setFsRoot((prev) => (prev ? updateNode(prev) : prev));
+
+      if (!target.loaded && !target.expanded) {
+        try {
+          const children = await loadDir(target.path);
+          setFsRoot((prev) => {
+            if (!prev) return prev;
+            const apply = (node: FsNode): FsNode => {
+              if (node.path === target.path) {
+                return { ...node, children, loaded: true, loading: false };
+              }
+              if (node.children.length) {
+                return { ...node, children: node.children.map(apply) };
+              }
+              return node;
+            };
+            return apply(prev);
+          });
+        } catch (e) {
+          setFsRoot((prev) => {
+            if (!prev) return prev;
+            const apply = (node: FsNode): FsNode => {
+              if (node.path === target.path) {
+                return {
+                  ...node,
+                  loading: false,
+                  error: e instanceof Error ? e.message : String(e),
+                };
+              }
+              if (node.children.length) {
+                return { ...node, children: node.children.map(apply) };
+              }
+              return node;
+            };
+            return apply(prev);
+          });
+        }
+      }
+    },
+    [fsRoot, loadDir],
+  );
+
+  const fetchFileContent = useCallback(
+    async (path: string) => {
+      setFileLoading(true);
+      setFileError(null);
+      setFileContent("");
+      setFileBinary(false);
+      try {
+        const r = await fetch(
+          `/api/sandbox/${sandboxId}/fs/read?path=${encodeURIComponent(path)}`,
+          { cache: "no-store" },
+        );
+        if (r.status === 400) {
+          // Likely binary — try base64 next
+          setFileBinary(true);
+          const r2 = await fetch(
+            `/api/sandbox/${sandboxId}/fs/read?path=${encodeURIComponent(path)}&encoding=base64`,
+            { cache: "no-store" },
+          );
+          if (!r2.ok) {
+            const t = await r2.text();
+            throw new Error(`HTTP ${r2.status}: ${t.slice(0, 200)}`);
+          }
+          const b64 = await r2.text();
+          setFileContent(`(binary, base64 — ${b64.length} chars)\n${b64.slice(0, 4000)}${b64.length > 4000 ? "…" : ""}`);
+          return;
+        }
+        if (!r.ok) {
+          const body = await r.text();
+          throw new Error(`HTTP ${r.status}: ${body.slice(0, 200)}`);
+        }
+        setFileContent(await r.text());
+      } catch (e) {
+        setFileError(e instanceof Error ? e.message : String(e));
+      } finally {
+        setFileLoading(false);
+      }
+    },
+    [sandboxId],
+  );
+
+  // ── Agent env loader ─────────────────────────────────────────────────────
+  const fetchAgentEnv = useCallback(async () => {
+    setAgentEnvLoading(true);
+    setAgentEnvError(null);
+    try {
+      const r = await fetch(`/api/sandbox/${sandboxId}/agent-env`, { cache: "no-store" });
+      if (!r.ok) {
+        const body = await r.text();
+        throw new Error(`HTTP ${r.status}: ${body.slice(0, 300)}`);
+      }
+      const json = (await r.json()) as AgentEnvResponse;
+      setAgentEnv(json);
+    } catch (e) {
+      setAgentEnvError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setAgentEnvLoading(false);
+    }
+  }, [sandboxId]);
 
   // Poll diagnostics
   useEffect(() => {
@@ -223,10 +521,24 @@ export function SandboxDiagnosticsPanel({
           )}
           <span className="text-xs text-muted-foreground">{diag.sandbox_id}</span>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchDiagnostics} disabled={loading}>
-          <RefreshCw className={`h-3 w-3 mr-1 ${loading ? "animate-spin" : ""}`} />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          {showResetButton && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setResetOpen(true)}
+              disabled={resetting}
+              title="Destroy + recreate this sandbox with the latest image. Per-user volume preserved by default."
+            >
+              <RotateCcw className={`h-3 w-3 mr-1 ${resetting ? "animate-spin" : ""}`} />
+              Reset
+            </Button>
+          )}
+          <Button variant="outline" size="sm" onClick={fetchDiagnostics} disabled={loading}>
+            <RefreshCw className={`h-3 w-3 mr-1 ${loading ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Layer-by-layer checks */}
@@ -246,12 +558,192 @@ export function SandboxDiagnosticsPanel({
         />
       </div>
 
-      <Tabs defaultValue="raw" className="w-full">
+      <Tabs
+        defaultValue="filesystem"
+        className="w-full"
+        onValueChange={(v) => {
+          // Lazy-load each tab on first activation
+          if (v === "filesystem" && !fsRoot && !fsRootLoading) void fetchFsRoot();
+          if (v === "agent-env" && !agentEnv && !agentEnvLoading) void fetchAgentEnv();
+        }}
+      >
         <TabsList>
-          <TabsTrigger value="raw">Raw response</TabsTrigger>
-          <TabsTrigger value="env">Env vars</TabsTrigger>
+          <TabsTrigger value="filesystem">Agent filesystem</TabsTrigger>
+          <TabsTrigger value="agent-env">Agent env</TabsTrigger>
+          <TabsTrigger value="env">Passthrough</TabsTrigger>
           {showLogs && <TabsTrigger value="logs">Live logs</TabsTrigger>}
+          <TabsTrigger value="raw">Raw response</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="filesystem" className="mt-2">
+          <div className="flex items-center gap-2 mb-2">
+            <Input
+              value={fsRootPath}
+              onChange={(e) => setFsRootPath(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") void fetchFsRoot();
+              }}
+              className="text-xs h-8 font-mono max-w-md"
+              placeholder="/home/agent"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchFsRoot}
+              disabled={fsRootLoading}
+            >
+              <RefreshCw className={`h-3 w-3 mr-1 ${fsRootLoading ? "animate-spin" : ""}`} />
+              Load
+            </Button>
+            <span className="text-[11px] text-muted-foreground">
+              Lists what the agent sees via the same <code>/fs/list</code> endpoint <code>fs_list</code> uses.
+            </span>
+          </div>
+          {fsRootError && (
+            <div className="text-destructive text-xs font-mono mb-2 break-all">
+              {fsRootError}
+            </div>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <ScrollArea className="h-96 border border-border rounded-md">
+              <div className="p-2 text-xs font-mono">
+                {fsRootLoading && !fsRoot ? (
+                  <div className="text-muted-foreground flex items-center gap-2">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Loading…
+                  </div>
+                ) : fsRoot ? (
+                  <FsTree
+                    node={fsRoot}
+                    onToggle={toggleNode}
+                    onSelectFile={(p, n) => {
+                      setSelectedFile({ path: p, name: n });
+                      void fetchFileContent(p);
+                    }}
+                    selectedPath={selectedFile?.path}
+                  />
+                ) : (
+                  <div className="text-muted-foreground">(no tree loaded)</div>
+                )}
+              </div>
+            </ScrollArea>
+            <ScrollArea className="h-96 border border-border rounded-md">
+              <div className="p-2 text-xs">
+                {selectedFile ? (
+                  <>
+                    <div className="font-mono text-muted-foreground border-b border-border pb-1 mb-2 flex items-center justify-between gap-2 break-all">
+                      <span>{selectedFile.path}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => void fetchFileContent(selectedFile.path)}
+                        disabled={fileLoading}
+                      >
+                        <RefreshCw className={`h-3 w-3 ${fileLoading ? "animate-spin" : ""}`} />
+                      </Button>
+                    </div>
+                    {fileLoading ? (
+                      <div className="text-muted-foreground flex items-center gap-2">
+                        <Loader2 className="h-3 w-3 animate-spin" /> Reading…
+                      </div>
+                    ) : fileError ? (
+                      <pre className="text-destructive whitespace-pre-wrap font-mono">{fileError}</pre>
+                    ) : (
+                      <pre className="font-mono whitespace-pre-wrap leading-tight">
+                        {fileContent || "(empty file)"}
+                      </pre>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-muted-foreground">Click a file in the tree to read it.</div>
+                )}
+              </div>
+            </ScrollArea>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="agent-env" className="mt-2">
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <select
+              value={envView}
+              onChange={(e) => setEnvView(e.target.value as typeof envView)}
+              className="text-xs border border-border rounded-md px-2 py-1 bg-background"
+            >
+              <option value="aidream_proc_env">aidream process env (truth)</option>
+              <option value="runtime_env">shell env (runtime)</option>
+              <option value="container_config_env">docker Config.Env (creation)</option>
+            </select>
+            <Input
+              value={envFilter}
+              onChange={(e) => setEnvFilter(e.target.value)}
+              className="text-xs h-8 font-mono max-w-xs"
+              placeholder="filter by key…"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchAgentEnv}
+              disabled={agentEnvLoading}
+            >
+              <RefreshCw className={`h-3 w-3 mr-1 ${agentEnvLoading ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+            {agentEnv?.aidream_pid && (
+              <span className="text-[11px] text-muted-foreground font-mono">
+                aidream pid={agentEnv.aidream_pid}
+              </span>
+            )}
+          </div>
+          {agentEnvError && (
+            <div className="text-destructive text-xs font-mono mb-2 break-all">
+              {agentEnvError}
+            </div>
+          )}
+          {agentEnv?.[`${envView}_error` as keyof AgentEnvResponse] && (
+            <div className="text-destructive text-xs font-mono mb-2 break-all">
+              {String(agentEnv[`${envView}_error` as keyof AgentEnvResponse])}
+            </div>
+          )}
+          <ScrollArea className="h-96 border border-border rounded-md">
+            <table className="w-full text-[11px] font-mono">
+              <thead className="text-left text-muted-foreground sticky top-0 bg-background">
+                <tr>
+                  <th className="p-2 w-1/3">key</th>
+                  <th className="p-2">value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(() => {
+                  const list: AgentEnvKv[] = (agentEnv?.[envView] as AgentEnvKv[]) || [];
+                  const filtered = envFilter
+                    ? list.filter(
+                        (kv) =>
+                          kv.key.toLowerCase().includes(envFilter.toLowerCase()) ||
+                          kv.value.toLowerCase().includes(envFilter.toLowerCase()),
+                      )
+                    : list;
+                  if (!filtered.length) {
+                    return (
+                      <tr>
+                        <td colSpan={2} className="p-2 text-muted-foreground">
+                          {agentEnvLoading ? "Loading…" : "(no entries)"}
+                        </td>
+                      </tr>
+                    );
+                  }
+                  return filtered.map((kv) => (
+                    <tr key={kv.key} className="border-t border-border align-top">
+                      <td className="p-2 break-all">{kv.key}</td>
+                      <td className="p-2 break-all">{kv.value}</td>
+                    </tr>
+                  ));
+                })()}
+              </tbody>
+            </table>
+          </ScrollArea>
+          <p className="text-[11px] text-muted-foreground mt-2">
+            <strong>aidream process env</strong> is the ground truth — it&apos;s what the FastAPI process actually sees. If a var is here, the agent has it. If not, no amount of <code>env_file</code> tweaking matters until you find why it didn&apos;t propagate.
+          </p>
+        </TabsContent>
 
         <TabsContent value="raw" className="mt-2">
           <ScrollArea className="h-72 border border-border rounded-md">
@@ -316,8 +808,119 @@ export function SandboxDiagnosticsPanel({
           </TabsContent>
         )}
       </Tabs>
+
+      <ConfirmDialog
+        open={resetOpen}
+        onOpenChange={(open) => {
+          if (!resetting) setResetOpen(open);
+        }}
+        title="Reset sandbox"
+        description={
+          <div className="space-y-2 text-sm">
+            <p>
+              Destroys the running container and re-creates it with the same template /
+              tier / resources, picking up any latest image or config changes.
+            </p>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={resetWipe}
+                onChange={(e) => setResetWipe(e.target.checked)}
+                className="h-3 w-3"
+              />
+              <span>
+                Also wipe persistent volume (<code>/home/agent</code>) — destructive,
+                user data is lost.
+              </span>
+            </label>
+            <p className="text-xs text-muted-foreground">
+              Without the wipe, your home dir, git checkouts, and any installed packages
+              survive. With the wipe, you start clean.
+            </p>
+          </div>
+        }
+        confirmLabel={resetWipe ? "Reset and wipe volume" : "Reset (preserve volume)"}
+        variant={resetWipe ? "destructive" : "default"}
+        busy={resetting}
+        onConfirm={handleReset}
+      />
     </div>
   );
+}
+
+function FsTree({
+  node,
+  onToggle,
+  onSelectFile,
+  selectedPath,
+  depth = 0,
+}: {
+  node: FsNode;
+  onToggle: (n: FsNode) => void;
+  onSelectFile: (path: string, name: string) => void;
+  selectedPath?: string;
+  depth?: number;
+}) {
+  const indent = { paddingLeft: `${depth * 12}px` };
+  const isSelected = selectedPath === node.path;
+  return (
+    <div>
+      <div
+        className={`flex items-center gap-1 cursor-pointer hover:bg-muted/50 rounded px-1 ${isSelected ? "bg-muted" : ""}`}
+        style={indent}
+        onClick={() => {
+          if (node.isDir) onToggle(node);
+          else onSelectFile(node.path, node.name);
+        }}
+      >
+        {node.isDir ? (
+          node.expanded ? (
+            <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" />
+          ) : (
+            <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground" />
+          )
+        ) : (
+          <span className="w-3" />
+        )}
+        {node.isDir ? (
+          node.expanded ? (
+            <FolderOpen className="h-3 w-3 shrink-0 text-blue-500" />
+          ) : (
+            <FolderIcon className="h-3 w-3 shrink-0 text-blue-500" />
+          )
+        ) : (
+          <FileIcon className="h-3 w-3 shrink-0 text-muted-foreground" />
+        )}
+        <span className="break-all">{node.name}</span>
+        {node.loading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+        {node.error && (
+          <span className="text-destructive text-[10px]" title={node.error}>
+            (error)
+          </span>
+        )}
+        {!node.isDir && typeof node.size === "number" && (
+          <span className="text-[10px] text-muted-foreground ml-auto pr-1">{formatBytes(node.size)}</span>
+        )}
+      </div>
+      {node.isDir && node.expanded && node.children.map((c) => (
+        <FsTree
+          key={c.path}
+          node={c}
+          onToggle={onToggle}
+          onSelectFile={onSelectFile}
+          selectedPath={selectedPath}
+          depth={depth + 1}
+        />
+      ))}
+    </div>
+  );
+}
+
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  if (n < 1024 * 1024 * 1024) return `${(n / 1024 / 1024).toFixed(1)} MB`;
+  return `${(n / 1024 / 1024 / 1024).toFixed(1)} GB`;
 }
 
 function formatCheck(c: DiagCheck): { ok: boolean; detail: string } {

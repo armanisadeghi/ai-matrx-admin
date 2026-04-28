@@ -433,6 +433,24 @@ export default function SandboxDetailPage() {
             </Card>
           )}
 
+          {/* Diagnostics dock — promoted to the top so the operator never
+              has to scroll to see what's happening. Includes Reset button,
+              agent filesystem, agent env (process truth), passthrough,
+              live logs, and raw JSON. */}
+          {isActive && (
+            <Card className="border-primary/40">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Activity className="w-4 h-4" />
+                  Sandbox Inspector
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SandboxDiagnosticsPanel sandboxId={id} onReset={fetchInstance} />
+              </CardContent>
+            </Card>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardHeader className="pb-2">
@@ -608,24 +626,6 @@ export default function SandboxDetailPage() {
           </Card>
 
           {isActive && <SshAccessPanel sandboxId={id} disabled={!isActive} />}
-
-          {/* Diagnostics — always visible. Shows readiness of every layer
-              (container, matrx_agent, aidream FastAPI, aidream DB pools)
-              and live logs from inside the sandbox. The user explicitly
-              asked for this so sandbox state is never a black box. */}
-          {isActive && (
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Activity className="w-4 h-4" />
-                  Diagnostics & Live Logs
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <SandboxDiagnosticsPanel sandboxId={id} />
-              </CardContent>
-            </Card>
-          )}
 
           {instance.config && Object.keys(instance.config).length > 0 && (
             <Card>

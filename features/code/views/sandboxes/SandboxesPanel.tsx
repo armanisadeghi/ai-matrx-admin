@@ -21,6 +21,7 @@ import {
   Plug,
   Plus,
   RefreshCw,
+  RotateCcw,
   Server,
   Square,
   Timer,
@@ -389,6 +390,34 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
     [activeId, disconnect, refresh],
   );
 
+  const resetSandbox = useCallback(
+    async (instance: SandboxInstance, wipeVolume: boolean) => {
+      setBusyId(instance.id);
+      setError(null);
+      try {
+        const resp = await fetch(`/api/sandbox/${instance.id}/reset`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ wipe_volume: wipeVolume }),
+        });
+        if (!resp.ok) {
+          const data = await resp.json().catch(() => null);
+          throw new Error(data?.error ?? `Reset failed (${resp.status})`);
+        }
+        // The row UUID is stable; sandbox_id under the hood is new — refresh
+        // so the panel picks up the new orchestrator state and re-runs the
+        // readiness gate against the fresh container.
+        if (activeId === instance.id) disconnect();
+        await refresh();
+      } catch (err) {
+        setError(extractErrorMessage(err));
+      } finally {
+        setBusyId(null);
+      }
+    },
+    [activeId, disconnect, refresh],
+  );
+
   const extendSandbox = useCallback(
     async (instance: SandboxInstance) => {
       setBusyId(instance.id);
@@ -501,6 +530,7 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
             }
             onStop={() => void stopSandbox(instance)}
             onExtend={() => void extendSandbox(instance)}
+            onReset={(wipe) => void resetSandbox(instance, wipe)}
             onDelete={() => setDeleteTarget(instance)}
           />
         ))}
@@ -565,6 +595,7 @@ interface SandboxRowProps {
   onToggleDetails: () => void;
   onStop: () => void;
   onExtend: () => void;
+  onReset: (wipeVolume: boolean) => void;
   onDelete: () => void;
 }
 
@@ -580,6 +611,7 @@ const SandboxRow: React.FC<SandboxRowProps> = ({
   onToggleDetails,
   onStop,
   onExtend,
+  onReset,
   onDelete,
 }) => {
   // Always render the *effective* status so this panel can't disagree with
@@ -588,8 +620,11 @@ const SandboxRow: React.FC<SandboxRowProps> = ({
   const canConnect = ACTIVE_SANDBOX_STATUSES.includes(effective);
   const canStop = ["ready", "running", "starting"].includes(effective);
   const canExtend = ACTIVE_EFFECTIVE_STATUSES.includes(effective);
+  const canReset = canStop || effective === "stopped";
   const remaining = useTimeRemaining(instance.expires_at, "minute");
   const idShort = instance.sandbox_id?.slice(0, 14) ?? instance.id.slice(0, 8);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetWipe, setResetWipe] = useState(false);
 
   // Row click behavior: if it's already the active one, the click toggles the
   // details disclosure (so the user can stop/extend/delete without leaving the
@@ -742,6 +777,15 @@ const SandboxRow: React.FC<SandboxRowProps> = ({
               disabled={!canStop || busy}
             />
             <ActionButton
+              icon={RotateCcw}
+              label="Reset"
+              onClick={() => {
+                setResetWipe(false);
+                setResetOpen(true);
+              }}
+              disabled={!canReset || busy}
+            />
+            <ActionButton
               icon={Trash2}
               label="Delete"
               onClick={onDelete}
@@ -761,6 +805,40 @@ const SandboxRow: React.FC<SandboxRowProps> = ({
           {isAdmin && <RawInstanceInspector instance={instance} />}
         </div>
       )}
+      <ConfirmDialog
+        open={resetOpen}
+        onOpenChange={(open) => {
+          if (!busy) setResetOpen(open);
+        }}
+        title="Reset sandbox"
+        description={
+          <div className="space-y-2 text-sm">
+            <p>
+              Destroys the running container and re-creates it with the same template /
+              tier / resources, picking up any latest image or config changes.
+            </p>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={resetWipe}
+                onChange={(e) => setResetWipe(e.target.checked)}
+                className="h-3 w-3"
+              />
+              <span>
+                Also wipe persistent volume (<code>/home/agent</code>) — destructive,
+                user data is lost.
+              </span>
+            </label>
+          </div>
+        }
+        confirmLabel={resetWipe ? "Reset and wipe volume" : "Reset (preserve volume)"}
+        variant={resetWipe ? "destructive" : "default"}
+        busy={busy}
+        onConfirm={() => {
+          onReset(resetWipe);
+          setResetOpen(false);
+        }}
+      />
     </div>
   );
 };
