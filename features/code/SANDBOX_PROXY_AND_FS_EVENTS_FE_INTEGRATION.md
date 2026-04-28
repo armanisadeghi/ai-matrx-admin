@@ -230,6 +230,51 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 }
 ```
 
+### 3.4½ Header layout — exact contract for `${proxy_url}/...` calls
+
+**For sandbox-mode AI passthrough (your current pattern — just swap the base URL):**
+
+```
+Authorization: Bearer <user-supabase-jwt>     # forwarded UNCHANGED to the in-container aidream
+Content-Type: application/json                # standard
+```
+
+That's it. No `X-Sandbox-Access-Token`, no `X-API-Key`. The orchestrator's `/proxy/{path:path}` route now treats `Authorization: Bearer <anything>` that doesn't validate as our HMAC token as **upstream identity** and forwards it verbatim. The in-container aidream gets the same Authorization header it would on `localhost` / central, validates the JWT, finds the conversation. **This is fixed in `matrx-sandbox c94d25a` (deployed on the hosted orchestrator).**
+
+If you previously set both `Authorization: Bearer <jwt>` and got `Conversation not found: 404`, that was the bug — orchestrator was stripping Authorization. No FE changes needed; just retry against the live hosted orchestrator.
+
+**For non-AI direct calls (PTY, exec/stream, fs/watch, large-body uploads) where there's no upstream JWT to forward:**
+
+Use the dedicated proxy-auth header so it doesn't collide with anything:
+
+```
+X-Sandbox-Access-Token: <token from POST /access-tokens>     # consumed + stripped by orchestrator
+Content-Type: application/json
+```
+
+The orchestrator validates this token (signature, sandbox-id binding, scope, expiry) and strips the header before forwarding. Authorization is left alone (so if you ever want to ALSO forward an Authorization, it works — though for these non-AI paths the daemon usually doesn't need one).
+
+**For server-to-server admin tooling:**
+
+```
+X-API-Key: <master orchestrator key>
+```
+
+Also stripped before forwarding. Used by Next.js's own per-sandbox proxy routes and ops scripts.
+
+**Summary table:**
+
+| Scenario | Send | Stripped before forwarding? |
+|---|---|---|
+| FE → AI passthrough | `Authorization: Bearer <jwt>` | No — daemon needs it |
+| FE → PTY / exec.stream / fs.watch | `X-Sandbox-Access-Token: <token>` | Yes |
+| Next.js / ops → anything | `X-API-Key: <master>` | Yes |
+| Legacy: FE → anything with our HMAC token in Authorization | `Authorization: Bearer <our-token>` | Yes (orchestrator-owned) |
+
+You can mix `X-Sandbox-Access-Token` (proxy auth) AND `Authorization` (forwarded upstream) on the same call. They never collide.
+
+---
+
 ### 3.5 Browser-side — caching + refresh
 
 ```ts
