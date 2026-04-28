@@ -104,27 +104,33 @@ const GLOBAL_AGENT_ITEMS: MenuItem[] = [
   { label: "Import Agent", icon: Upload },
 ];
 
-// Items that can be opened in a new tab (have navigatable URLs)
+// Items that can be opened in a new tab (have navigatable URLs).
+// `basePath` lets admin surfaces (`/administration/system-agents/agents`)
+// reuse this menu without escaping back to the user surface.
 const NEW_TAB_ITEMS: {
   label: string;
   icon: typeof ExternalLink;
-  getHref: (agentId: string) => string;
+  getHref: (agentId: string, basePath: string) => string;
 }[] = [
-  { label: "View Agent", icon: ExternalLink, getHref: (id) => `/agents/${id}` },
+  {
+    label: "View Agent",
+    icon: ExternalLink,
+    getHref: (id, base) => `${base}/${id}`,
+  },
   {
     label: "Build Agent",
     icon: ExternalLink,
-    getHref: (id) => `/agents/${id}/build`,
+    getHref: (id, base) => `${base}/${id}/build`,
   },
   {
     label: "Run Agent",
     icon: ExternalLink,
-    getHref: (id) => `/agents/${id}/run`,
+    getHref: (id, base) => `${base}/${id}/run`,
   },
   {
     label: "View Versions",
     icon: ExternalLink,
-    getHref: (id) => `/agents/${id}/latest`,
+    getHref: (id, base) => `${base}/${id}/latest`,
   },
 ];
 
@@ -164,9 +170,14 @@ async function convertToTemplate(agentId: string): Promise<void> {
 export function AgentOptionsMenu({
   agentId,
   asTapTarget,
+  basePath = "/agents",
 }: {
   agentId: string;
   asTapTarget?: boolean;
+  /** Base path for routing. Defaults to `/agents`. Admin surfaces pass
+   *  `/administration/system-agents/agents` so internal links stay in the
+   *  admin context. */
+  basePath?: string;
 }) {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
@@ -193,9 +204,7 @@ export function AgentOptionsMenu({
     : AGENT_MANAGEMENT_ITEMS;
 
   const adminItems = isBuiltin
-    ? ADMIN_ITEMS.filter(
-        (item) => item.label !== "Convert/Update System Agent",
-      )
+    ? ADMIN_ITEMS.filter((item) => item.label !== "Convert/Update System Agent")
     : ADMIN_ITEMS;
 
   const handleDesktopItemClick = async (label: string) => {
@@ -289,7 +298,11 @@ export function AgentOptionsMenu({
         )}
         <DrawerContent className="max-h-[85dvh]">
           <DrawerTitle className="sr-only">Agent Options</DrawerTitle>
-          <MobileMenuContent onClose={() => setOpen(false)} agentId={agentId} />
+          <MobileMenuContent
+            onClose={() => setOpen(false)}
+            agentId={agentId}
+            basePath={basePath}
+          />
         </DrawerContent>
       </Drawer>
     );
@@ -305,7 +318,7 @@ export function AgentOptionsMenu({
             return (
               <DropdownMenuItem key={label} asChild>
                 <Link
-                  href={`/agents/${agentId}/latest?tab=history`}
+                  href={`${basePath}/${agentId}/latest?tab=history`}
                   className="flex items-center gap-2 cursor-pointer"
                   onClick={() => setOpen(false)}
                 >
@@ -351,7 +364,7 @@ export function AgentOptionsMenu({
             {NEW_TAB_ITEMS.map(({ label, icon: Icon, getHref }) => (
               <DropdownMenuItem key={label} asChild>
                 <Link
-                  href={getHref(agentId)}
+                  href={getHref(agentId, basePath)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2"
@@ -436,9 +449,11 @@ export function AgentOptionsMenu({
 function MobileMenuContent({
   onClose,
   agentId,
+  basePath,
 }: {
   onClose: () => void;
   agentId: string;
+  basePath: string;
 }) {
   const [variationsOpen, setVariationsOpen] = useState(false);
   const [isBusy, setIsBusy] = useState(false);
@@ -454,9 +469,7 @@ function MobileMenuContent({
       )
     : AGENT_MANAGEMENT_ITEMS;
   const adminItems = isBuiltin
-    ? ADMIN_ITEMS.filter(
-        (item) => item.label !== "Convert/Update System Agent",
-      )
+    ? ADMIN_ITEMS.filter((item) => item.label !== "Convert/Update System Agent")
     : ADMIN_ITEMS;
 
   const handleItem = async (label: string) => {
@@ -539,7 +552,7 @@ function MobileMenuContent({
             return (
               <Link
                 key={label}
-                href={`/agents/${agentId}/latest?tab=history`}
+                href={`${basePath}/${agentId}/latest?tab=history`}
                 onClick={onClose}
                 className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-foreground hover:bg-muted/50 active:bg-muted/70 transition-colors"
               >
@@ -603,7 +616,7 @@ function MobileMenuContent({
         {NEW_TAB_ITEMS.map(({ label, icon: Icon, getHref }) => (
           <Link
             key={label}
-            href={getHref(agentId)}
+            href={getHref(agentId, basePath)}
             target="_blank"
             rel="noopener noreferrer"
             onClick={onClose}

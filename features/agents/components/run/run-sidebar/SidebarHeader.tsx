@@ -17,6 +17,11 @@ interface SidebarHeaderProps {
   surfaceKey: string;
   conversationIdFromUrl?: string;
   onToggleSidebar: () => void;
+  /** Base path for back-link and agent-switch routing. Defaults to `/agents`.
+   *  Admin surfaces pass `/administration/system-agents/agents`. */
+  basePath?: string;
+  /** Optional explicit back-link href. Falls back to `basePath`. */
+  backHref?: string;
 }
 
 /**
@@ -32,10 +37,12 @@ export function SidebarHeader({
   surfaceKey,
   conversationIdFromUrl,
   onToggleSidebar,
+  basePath = "/agents",
+  backHref,
 }: SidebarHeaderProps) {
   return (
     <div className="flex items-center shrink-0 w-full h-10 px-1 gap-1">
-      <Link href="/agents" aria-label="Back to Agents">
+      <Link href={backHref ?? basePath} aria-label="Back to Agents">
         <ChevronLeftTapButton />
       </Link>
 
@@ -50,6 +57,7 @@ export function SidebarHeader({
           agentId={agentId}
           initialName={"Run Agent"}
           triggerSlot={<PowerTapButton variant="group" />}
+          basePath={basePath}
         />
         <SearchGroupTrigger id="agent-run-header-search-group" />
         <PanelLeftTapButton variant="group" onClick={() => onToggleSidebar()} />

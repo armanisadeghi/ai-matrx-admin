@@ -19,7 +19,7 @@ import { deriveIdentity } from "@/lib/sync/identity";
 import { syncPolicies } from "@/lib/sync/registry";
 import type { IdentityKey } from "@/lib/sync/types";
 import { mapUserData, type UserData } from "@/utils/userDataMapper";
-import type { BaseReduxState, LiteInitialReduxState } from "@/types/reduxTypes";
+import type { BaseReduxState } from "@/types/reduxTypes";
 import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
 import {
   initializeUserPreferencesState,
@@ -79,7 +79,7 @@ export interface StoreSyncContext {
 }
 
 function resolveUserPreferencesForBootstrap(
-  input: Partial<BaseReduxState> & LiteInitialReduxState,
+  input: Partial<BaseReduxState>,
   base: { userPreferences: UserPreferencesState },
 ): UserPreferencesState {
   if (input.userPreferences === undefined) {
@@ -98,9 +98,13 @@ function resolveUserPreferencesForBootstrap(
 /**
  * Builds slim preloaded state from optional partial bootstrap data.
  * Does NOT include `globalCache` — the slim store has no entity reducers.
+ *
+ * `modelRegistry` and the SMS unread total are NOT preloaded here.
+ * `modelRegistry` hydrates via `SsrShellHydrator` (action-based) and
+ * SMS counts via `PostPaintHydrator` dispatch.
  */
 export function resolveStoreBootstrapState(
-  input?: Partial<BaseReduxState> & LiteInitialReduxState,
+  input?: Partial<BaseReduxState>,
 ): Record<string, unknown> {
   const baseUser = mapUserData(null, undefined, false);
   const baseSplit = splitUserData(baseUser);
@@ -139,19 +143,11 @@ export function resolveStoreBootstrapState(
   if (input.agentContextMenuCache !== undefined) {
     out.agentContextMenuCache = input.agentContextMenuCache;
   }
-  if (input.modelRegistry !== undefined) {
-    out.modelRegistry = input.modelRegistry;
-  }
-  if (input.sms !== undefined) {
-    out.sms = input.sms;
-  }
 
   return out;
 }
 
-export const makeStore = (
-  initialState?: Partial<BaseReduxState> & LiteInitialReduxState,
-) => {
+export const makeStore = (initialState?: Partial<BaseReduxState>) => {
   const resolved = resolveStoreBootstrapState(initialState);
   const rootReducer = createSlimRootReducer();
 

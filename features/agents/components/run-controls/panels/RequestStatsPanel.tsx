@@ -69,12 +69,23 @@ export function RequestStatsPanel({
           label="Iterations"
           value={result?.iterations != null ? String(result.iterations) : "—"}
         />
-        {request.errorMessage && (
-          <StatRow
-            label="Error"
-            value={request.errorMessage}
-            valueClassName="text-destructive text-[10px]"
-          />
+        {request.error && (
+          <>
+            <StatRow
+              label="Error"
+              value={`[${request.error.error_type}${
+                request.error.code ? `:${request.error.code}` : ""
+              }] ${request.error.message}`}
+              valueClassName="text-destructive text-[10px]"
+            />
+            {request.error.user_message && (
+              <StatRow
+                label="User message"
+                value={request.error.user_message}
+                valueClassName="text-destructive text-[10px]"
+              />
+            )}
+          </>
         )}
       </StatSection>
 

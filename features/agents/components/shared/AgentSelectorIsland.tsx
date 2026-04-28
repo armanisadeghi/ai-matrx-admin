@@ -8,19 +8,10 @@ import {
   selectAgentVersion,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { AgentListDropdown } from "@/features/agents/components/agent-listings/AgentListDropdown";
-
-function deriveModeSuffix(pathname: string, agentId: string): string {
-  const base = `/agents/${agentId}`;
-  if (pathname.startsWith(`${base}/run`)) return "/run";
-  if (pathname.startsWith(`${base}/build`)) return "/build";
-  if (pathname.startsWith(`${base}/widgets`)) return "/widgets";
-  if (
-    pathname.startsWith(`${base}/latest`) ||
-    /^\/agents\/[^/]+\/\d+$/.test(pathname)
-  )
-    return "/latest";
-  return "";
-}
+import {
+  deriveAgentMode,
+  getAgentModeHref,
+} from "./AgentModeController";
 
 interface AgentSelectorIslandProps {
   agentId: string;
@@ -28,12 +19,17 @@ interface AgentSelectorIslandProps {
   initialName: string;
   /** Custom trigger element — replaces the default text button inside AgentListDropdown */
   triggerSlot?: React.ReactNode;
+  /** Base path for routing. Defaults to `/agents`. Admin surfaces pass
+   *  `/administration/system-agents/agents`. Used to keep the user inside
+   *  their current surface when switching agents. */
+  basePath?: string;
 }
 
 export function AgentSelectorIsland({
   agentId,
   initialName,
   triggerSlot,
+  basePath = "/agents",
 }: AgentSelectorIslandProps) {
   const [, startTransition] = useTransition();
   const router = useRouter();
@@ -50,8 +46,10 @@ export function AgentSelectorIsland({
   const displayName = liveAgentName ?? initialName;
 
   const handleAgentSelect = (selectedId: string) => {
-    const suffix = deriveModeSuffix(pathname, agentId);
-    startTransition(() => router.push(`/agents/${selectedId}${suffix}`));
+    if (selectedId === agentId) return;
+    const currentMode = deriveAgentMode(pathname, agentId, basePath);
+    const nextHref = getAgentModeHref(currentMode, selectedId, basePath);
+    startTransition(() => router.push(nextHref));
   };
 
   return (

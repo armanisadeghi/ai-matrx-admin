@@ -18,7 +18,7 @@
  *   info               → infoEvents
  *   record_reserved    → reservations
  *   record_update      → reservations (status update)
- *   error              → errorMessage + errorIsFatal + status change
+ *   error              → error (verbatim ErrorPayload) + status change
  *   heartbeat          → dropped (no storage)
  *   end                → status change only
  *   broker             → dataPayloads (frozen — no new usage)
@@ -48,6 +48,7 @@ import type {
   TypedDataPayload,
   UntypedDataPayload,
   ToolEventPayload,
+  ErrorPayload,
 } from "@/types/python-generated/stream-events";
 import { generateRequestId } from "../utils/ids";
 import { destroyInstance } from "../conversations/conversations.slice";
@@ -109,8 +110,7 @@ const activeRequestsSlice = createSlice({
         toolLifecycle: {},
         pendingToolCalls: [],
         completion: null,
-        errorMessage: null,
-        errorIsFatal: false,
+        error: null,
         warnings: [],
         infoEvents: [],
         reservations: {},
@@ -140,16 +140,20 @@ const activeRequestsSlice = createSlice({
       action: PayloadAction<{
         requestId: string;
         status: RequestStatus;
-        errorMessage?: string;
-        isFatal?: boolean;
+        /**
+         * Backend `ErrorPayload` captured verbatim. Provide ONLY when
+         * transitioning to "error" so the technical (`message`) and
+         * user-friendly (`user_message`) strings survive intact for the
+         * UI to choose between.
+         */
+        error?: ErrorPayload;
       }>,
     ) {
-      const { requestId, status, errorMessage, isFatal } = action.payload;
+      const { requestId, status, error } = action.payload;
       const request = state.byRequestId[requestId];
       if (request) {
         request.status = status;
-        if (errorMessage !== undefined) request.errorMessage = errorMessage;
-        if (isFatal !== undefined) request.errorIsFatal = isFatal;
+        if (error !== undefined) request.error = error;
         if (
           status === "complete" ||
           status === "error" ||

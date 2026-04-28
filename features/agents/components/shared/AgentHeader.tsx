@@ -54,7 +54,11 @@ export function AgentHeader({
           >
             <ChevronLeft className="h-4 w-4" />
           </Link>
-          <AgentSelectorIsland agentId={agentId} initialName={agentName} />
+          <AgentSelectorIsland
+            agentId={agentId}
+            initialName={agentName}
+            basePath={basePath}
+          />
         </div>
         <AgentModeController
           agentId={agentId}
@@ -64,7 +68,7 @@ export function AgentHeader({
         <div className="flex items-center gap-1.5 shrink-0">
           <AgentSaveStatus agentId={agentId} />
           <div className="w-px h-4 bg-border/50" />
-          <AgentOptionsMenu agentId={agentId} />
+          <AgentOptionsMenu agentId={agentId} basePath={basePath} />
         </div>
       </div>
     </>

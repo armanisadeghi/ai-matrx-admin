@@ -40,24 +40,6 @@ import {
 // one tap away in the sheet.
 const PROMINENT: ModeOption[] = ["edit", "run"];
 
-function deriveModeSuffix(
-  pathname: string,
-  agentId: string,
-  basePath: string,
-): string {
-  const base = `${basePath}/${agentId}`;
-  if (pathname.startsWith(`${base}/run`)) return "/run";
-  if (pathname.startsWith(`${base}/build`)) return "/build";
-  if (pathname.startsWith(`${base}/shortcuts`)) return "/shortcuts";
-  if (pathname.startsWith(`${base}/apps`)) return "/apps";
-  const versionPattern = new RegExp(
-    `^${basePath.replace(/\//g, "\\/")}\\/[^/]+\\/\\d+$`,
-  );
-  if (pathname.startsWith(`${base}/latest`) || versionPattern.test(pathname))
-    return "/latest";
-  return "";
-}
-
 interface AgentHeaderMobileProps {
   agentId: string;
   /** Agent name — currently unused in mobile layout (icons-only to save space).
@@ -100,8 +82,9 @@ export function AgentHeaderMobile({
   };
 
   const handleAgentSelect = (selectedId: string) => {
-    const suffix = deriveModeSuffix(pathname, agentId, basePath);
-    startTransition(() => router.push(`${basePath}/${selectedId}${suffix}`));
+    if (selectedId === agentId) return;
+    const nextHref = getAgentModeHref(mode, selectedId, basePath);
+    startTransition(() => router.push(nextHref));
   };
 
   const prominentModes = MODES.filter((m) => PROMINENT.includes(m.id));
@@ -155,7 +138,7 @@ export function AgentHeaderMobile({
         </div>
 
         {/* Right: Options menu */}
-        <AgentOptionsMenu agentId={agentId} asTapTarget />
+        <AgentOptionsMenu agentId={agentId} asTapTarget basePath={basePath} />
       </div>
 
       <BottomSheet

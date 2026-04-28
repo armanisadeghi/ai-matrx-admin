@@ -427,7 +427,7 @@ export async function processStream({
             kind: "phase",
             seq: 0,
             timestamp: now,
-            phase: event.data.phase,
+            data: event.data,
           },
         }),
       );
@@ -450,9 +450,7 @@ export async function processStream({
             kind: "init",
             seq: 0,
             timestamp: now,
-            operation: d.operation,
-            operationId: d.operation_id,
-            parentOperationId: d.parent_operation_id ?? null,
+            data: d,
           },
         }),
       );
@@ -495,9 +493,7 @@ export async function processStream({
             kind: "completion",
             seq: 0,
             timestamp: now,
-            operation: d.operation,
-            operationId: d.operation_id,
-            status: d.status,
+            data: d,
           },
         }),
       );
@@ -625,8 +621,7 @@ export async function processStream({
             kind: "data",
             seq: 0,
             timestamp: now,
-            dataType,
-            data: d as Record<string, unknown>,
+            data: d,
           },
         }),
       );
@@ -716,10 +711,7 @@ export async function processStream({
             kind: "tool_event",
             seq: 0,
             timestamp: now,
-            subEvent: toolData.event,
-            callId: toolData.call_id,
-            toolName: toolData.tool_name,
-            data: (toolData.data as Record<string, unknown>) ?? null,
+            data: toolData,
           },
         }),
       );
@@ -738,9 +730,7 @@ export async function processStream({
             kind: "render_block",
             seq: 0,
             timestamp: now,
-            blockId: event.data.blockId,
-            blockType: event.data.type,
-            blockStatus: event.data.status,
+            data: event.data,
           },
         }),
       );
@@ -754,12 +744,7 @@ export async function processStream({
             kind: "warning",
             seq: 0,
             timestamp: now,
-            code: event.data.code,
-            level: event.data.level ?? "medium",
-            recoverable: event.data.recoverable ?? true,
-            userMessage: event.data.user_message ?? null,
-            systemMessage: event.data.system_message,
-            metadata: event.data.metadata ?? {},
+            data: event.data,
           },
         }),
       );
@@ -773,10 +758,7 @@ export async function processStream({
             kind: "info",
             seq: 0,
             timestamp: now,
-            code: event.data.code,
-            userMessage: event.data.user_message ?? null,
-            systemMessage: event.data.system_message,
-            metadata: event.data.metadata ?? {},
+            data: event.data,
           },
         }),
       );
@@ -998,11 +980,7 @@ export async function processStream({
             kind: "record_reserved",
             seq: 0,
             timestamp: now,
-            table: d.table,
-            recordId: d.record_id,
-            dbProject: d.db_project,
-            parentRefs: d.parent_refs ?? {},
-            metadata: d.metadata ?? {},
+            data: d,
           },
         }),
       );
@@ -1067,10 +1045,7 @@ export async function processStream({
             kind: "record_update",
             seq: 0,
             timestamp: now,
-            table: d.table,
-            recordId: d.record_id,
-            status: d.status,
-            metadata: d.metadata ?? {},
+            data: d,
           },
         }),
       );
@@ -1104,25 +1079,24 @@ export async function processStream({
             kind: "resource_changed",
             seq: 0,
             timestamp: now,
-            resourceKind: d.kind,
-            action: d.action,
-            resourceId: d.resource_id,
-            sandboxId: d.sandbox_id ?? null,
-            userId: d.user_id ?? null,
-            metadata: (d.metadata ?? {}) as Record<string, unknown>,
+            data: d,
           },
         }),
       );
     } else if (isErrorEvent(event)) {
       otherEvents++;
-      const isFatal = true;
-      const errorMessage = event.data.user_message ?? event.data.message;
+      // Pass the backend ErrorPayload through verbatim — both
+      // `message` (system / technical) and `user_message` (optional
+      // human-friendly) survive intact. Consumers decide which one to
+      // surface; we never collapse them into a single field here. There
+      // is no `is_fatal` field on the wire — error events ARE fatal by
+      // definition (the stream is killed); the client tracks that solely
+      // through `request.status === "error"`.
       dispatch(
         setRequestStatus({
           requestId,
           status: "error",
-          errorMessage,
-          isFatal,
+          error: event.data,
         }),
       );
       dispatch(setInstanceStatus({ conversationId, status: "error" }));
@@ -1133,11 +1107,7 @@ export async function processStream({
             kind: "error",
             seq: 0,
             timestamp: now,
-            errorType: event.data.error_type,
-            message: errorMessage,
-            isFatal,
-            code: event.data.code ?? null,
-            details: event.data.details ?? null,
+            data: event.data,
           },
         }),
       );
@@ -1152,7 +1122,7 @@ export async function processStream({
         const handle = callbackManager.get<WidgetHandle>(errWidgetHandleId);
         handle?.onError?.({
           reason: event.data.error_type ?? "stream_error",
-          message: errorMessage ?? undefined,
+          message: event.data.user_message ?? event.data.message,
         });
       }
     } else if (isEndEvent(event)) {
@@ -1193,7 +1163,7 @@ export async function processStream({
             kind: "end",
             seq: 0,
             timestamp: now,
-            reason: event.data.reason,
+            data: event.data,
           },
         }),
       );
@@ -1212,7 +1182,7 @@ export async function processStream({
             kind: "broker",
             seq: 0,
             timestamp: now,
-            brokerId: event.data.broker_id,
+            data: event.data,
           },
         }),
       );
@@ -1225,6 +1195,7 @@ export async function processStream({
             kind: "heartbeat",
             seq: 0,
             timestamp: now,
+            data: event.data,
           },
         }),
       );
@@ -1303,9 +1274,12 @@ export async function processStream({
 
   const finalState = getState();
   const finalRequest = finalState.activeRequests.byRequestId[requestId];
+  // For DB persistence we want the human-friendly summary (`user_message` if
+  // the backend sent one, otherwise the technical `message`). The full
+  // `ErrorPayload` lives on `finalRequest.error` for in-memory consumers.
   const finalErrorMessage =
-    finalRequest?.status === "error"
-      ? (finalRequest.errorMessage ?? null)
+    finalRequest?.status === "error" && finalRequest.error
+      ? (finalRequest.error.user_message ?? finalRequest.error.message ?? null)
       : null;
 
   // Assemble the DB-compatible CxContentBlock[] from the completed request.
@@ -1413,9 +1387,9 @@ export async function processStream({
           conversationId,
           messageId: turn.messageId,
           patch: {
-            content: blocksByIter.get(iter) as unknown as import(
-              "@/types/database.types"
-            ).Json,
+            content: blocksByIter.get(
+              iter,
+            ) as unknown as import("@/types/database.types").Json,
             status: "active",
             _clientStatus: finalErrorMessage ? "error" : "complete",
             position: turn.position,

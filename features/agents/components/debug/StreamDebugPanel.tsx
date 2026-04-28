@@ -92,6 +92,43 @@ function CopyBtn({
   );
 }
 
+/** Timeline toolbar: same pill pattern as kind filters (colored) / auto-scroll ON. */
+function TimelineCopyChip({
+  id,
+  text,
+  label,
+  toneClass,
+}: {
+  id: string;
+  text: string;
+  /** One word — shown next to copy icon. */
+  label: string;
+  toneClass: string;
+}) {
+  const { copied, copy } = useCopy();
+  const done = copied === id;
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        copy(text, id);
+      }}
+      className={cn(
+        "inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0 h-5 rounded border transition-colors shrink-0 cursor-pointer",
+        done ? "bg-green-500/20 text-green-400 border-green-500/30" : toneClass,
+      )}
+    >
+      {done ? (
+        <Check className="h-2.5 w-2.5 shrink-0" />
+      ) : (
+        <Copy className="h-2.5 w-2.5 shrink-0 opacity-90" />
+      )}
+      {label}
+    </button>
+  );
+}
+
 function JsonView({
   data,
   label,
@@ -269,12 +306,26 @@ function StatusBar({
           </Badge>
         </>
       )}
-      {request.errorMessage && (
+      {request.error && (
         <>
           <span className="text-[10px] text-muted-foreground">|</span>
-          <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-5">
-            {request.errorIsFatal ? "FATAL" : "ERR"}:{" "}
-            {request.errorMessage.slice(0, 60)}
+          <Badge
+            variant="destructive"
+            className="text-[10px] px-1.5 py-0 h-5 max-w-[60ch] truncate"
+            title={[
+              `error_type: ${request.error.error_type}`,
+              request.error.code ? `code: ${request.error.code}` : null,
+              `message: ${request.error.message}`,
+              request.error.user_message
+                ? `user_message: ${request.error.user_message}`
+                : null,
+            ]
+              .filter(Boolean)
+              .join("\n")}
+          >
+            {`ERR [${request.error.error_type}${
+              request.error.code ? `:${request.error.code}` : ""
+            }]: ${request.error.message}`.slice(0, 80)}
           </Badge>
         </>
       )}
@@ -400,6 +451,11 @@ function timelineSummary(
   renderBlockOrder: string[],
   reasoningChunks?: string[],
 ): string {
+  // Backend-mirrored variants: read fields off `entry.data` (snake_case as
+  // emitted by the Python backend, see types/python-generated/stream-events.ts).
+  // Client-derived variants (text_start/end, reasoning_start/end, unknown)
+  // keep their custom shape — they are coalesced from chunk events on the
+  // client and have no backend equivalent.
   switch (entry.kind) {
     case "text_start":
       return `text streaming started (block idx ${entry.blockStartIndex})`;
@@ -423,66 +479,87 @@ function timelineSummary(
       return `${entry.chunkCount} reasoning chunks: "${rPreview}"`;
     }
     case "phase":
-      return `Phase → ${entry.phase}`;
+      return `Phase → ${entry.data.phase}`;
     case "init":
-      return `Init: ${entry.operation} (${entry.operationId.slice(0, 8)}…)`;
-    case "warning":
-      return `[${entry.code}] ${entry.level}${!entry.recoverable ? " UNRECOVERABLE" : ""}: ${entry.userMessage ?? entry.systemMessage}`;
+      return `Init: ${entry.data.operation} (${entry.data.operation_id.slice(0, 8)}…)`;
+    case "warning": {
+      const w = entry.data;
+      const recoverableTag = w.recoverable === false ? " UNRECOVERABLE" : "";
+      const level = w.level ?? "medium";
+      const messages: string[] = [];
+      messages.push(w.system_message);
+      if (w.user_message) messages.push(`(user: ${w.user_message})`);
+      return `[${w.code}] ${level}${recoverableTag}: ${messages.join(" ")}`;
+    }
     case "info": {
-      const base = `[${entry.code}] ${entry.userMessage ?? entry.systemMessage}`;
-      if (entry.metadata && Object.keys(entry.metadata).length > 0) {
-        return `${base} · ${JSON.stringify(entry.metadata).slice(0, 60)}`;
+      const i = entry.data;
+      const messages: string[] = [];
+      messages.push(i.system_message);
+      if (i.user_message) messages.push(`(user: ${i.user_message})`);
+      const base = `[${i.code}] ${messages.join(" ")}`;
+      if (i.metadata && Object.keys(i.metadata).length > 0) {
+        return `${base} · ${JSON.stringify(i.metadata).slice(0, 60)}`;
       }
       return base;
     }
     case "tool_event":
-      return `${entry.subEvent} — ${entry.toolName} (${entry.callId.slice(0, 8)})`;
+      return `${entry.data.event} — ${entry.data.tool_name} (${entry.data.call_id.slice(0, 8)})`;
     case "render_block":
-      return `${entry.blockType} [${entry.blockStatus}] ${entry.blockId.slice(0, 8)}`;
+      return `${entry.data.type} [${entry.data.status}] ${entry.data.blockId.slice(0, 8)}`;
     case "data":
       return JSON.stringify(entry.data).slice(0, 80);
     case "completion":
-      return `Completion: ${entry.operation} → ${entry.status} (${entry.operationId.slice(0, 8)}…)`;
+      return `Completion: ${entry.data.operation} → ${entry.data.status} (${entry.data.operation_id.slice(0, 8)}…)`;
     case "error": {
-      const tag = entry.isFatal ? "FATAL" : "ERR";
-      const codePart = entry.code ? ` [${entry.code}]` : "";
-      return `${tag}${codePart}: ${entry.message.slice(0, 80)}`;
+      // The backend has no `is_fatal` field — error events ARE fatal by
+      // definition (the stream is killed). We surface BOTH `message`
+      // (technical) and `user_message` (human-friendly) so debug never
+      // hides what the backend actually said.
+      const e = entry.data;
+      const codePart = e.code ? ` [${e.code}]` : "";
+      const sys = e.message;
+      const usr = e.user_message ? ` · user: ${e.user_message}` : "";
+      return `ERR [${e.error_type}]${codePart}: ${sys.slice(0, 80)}${usr.slice(0, 80)}`;
     }
     case "end":
-      return entry.reason ?? "stream ended";
+      return entry.data.reason ?? "stream ended";
     case "broker":
-      return `broker: ${entry.brokerId}`;
+      return `broker: ${entry.data.broker_id}`;
     case "heartbeat":
-      return "heartbeat";
+      return entry.data.timestamp != null
+        ? `heartbeat @ ${entry.data.timestamp}`
+        : "heartbeat";
     case "record_reserved": {
-      const short = `${entry.recordId.slice(0, 8)}…`;
-      if (entry.table === "cx_message") {
-        const role = entry.metadata?.role ?? "?";
-        const pos = entry.metadata?.position ?? "?";
+      const r = entry.data;
+      const short = `${r.record_id.slice(0, 8)}…`;
+      if (r.table === "cx_message") {
+        const role = r.metadata?.role ?? "?";
+        const pos = r.metadata?.position ?? "?";
         return `cx_message reserved [${role} #${pos}]: ${short}`;
       }
-      if (entry.table === "cx_request") {
-        const iter = entry.metadata?.iteration ?? "?";
+      if (r.table === "cx_request") {
+        const iter = r.metadata?.iteration ?? "?";
         return `cx_request reserved [iter ${iter}]: ${short}`;
       }
-      if (entry.table === "cx_tool_call") {
-        const tool = entry.metadata?.tool_name ?? "?";
-        const iter = entry.metadata?.iteration ?? "?";
+      if (r.table === "cx_tool_call") {
+        const tool = r.metadata?.tool_name ?? "?";
+        const iter = r.metadata?.iteration ?? "?";
         return `cx_tool_call reserved [${tool}, iter ${iter}]: ${short}`;
       }
-      return `${entry.table} reserved: ${short} [${entry.dbProject}]`;
+      return `${r.table} reserved: ${short} [${r.db_project}]`;
     }
     case "record_update":
-      return `${entry.table} → ${entry.status}: ${entry.recordId.slice(0, 8)}…`;
+      return `${entry.data.table} → ${entry.data.status}: ${entry.data.record_id.slice(0, 8)}…`;
     case "resource_changed": {
+      const r = entry.data;
       const short =
-        entry.resourceId.length > 48
-          ? `…${entry.resourceId.slice(-44)}`
-          : entry.resourceId;
-      const tag = entry.sandboxId
-        ? `sandbox ${entry.sandboxId.slice(0, 6)}…`
+        r.resource_id.length > 48
+          ? `…${r.resource_id.slice(-44)}`
+          : r.resource_id;
+      const tag = r.sandbox_id
+        ? `sandbox ${r.sandbox_id.slice(0, 6)}…`
         : "global";
-      return `${entry.resourceKind} ${entry.action} [${tag}]: ${short}`;
+      return `${r.kind} ${r.action} [${tag}]: ${short}`;
     }
     case "unknown":
       return `UNRECOGNIZED (${entry.originalEvent}): ${JSON.stringify(entry.rawData).slice(0, 100)}`;
@@ -570,7 +647,7 @@ function TimelineRow({
               colorClass,
             )}
           >
-            {entry.subEvent}
+            {entry.data.event}
           </Badge>
         )}
         <span className="flex-1 text-[10px] text-muted-foreground/60 truncate font-mono">
@@ -915,22 +992,40 @@ function TimelineTab({ request }: { request: ActiveRequest }) {
         >
           auto-scroll {autoScroll ? "ON" : "OFF"}
         </button>
-        <CopyBtn
-          text={JSON.stringify(
-            request.timeline.map((entry) => {
-              const raw = rawByTimestamp.get(entry.timestamp);
-              return raw ? { timeline: entry, raw } : entry;
-            }),
-            null,
-            2,
-          )}
-          id="all-timeline"
-        />
-        <CopyBtn
-          text={JSON.stringify(request.rawEvents, null, 2)}
-          id="all-raw-events"
-          className="ml-0.5"
-        />
+        <div className="flex items-center gap-1 shrink-0 flex-wrap">
+          <TimelineCopyChip
+            id="all-timeline"
+            label="full"
+            toneClass="bg-sky-500/20 text-sky-400 border-sky-500/30"
+            text={JSON.stringify(
+              request.timeline.map((entry) => {
+                const raw = rawByTimestamp.get(entry.timestamp);
+                return raw ? { timeline: entry, raw } : entry;
+              }),
+              null,
+              2,
+            )}
+          />
+          <TimelineCopyChip
+            id="filtered-timeline"
+            label="filtered"
+            toneClass="bg-violet-500/20 text-violet-400 border-violet-500/30"
+            text={JSON.stringify(
+              filtered.map((entry) => {
+                const raw = rawByTimestamp.get(entry.timestamp);
+                return raw ? { timeline: entry, raw } : entry;
+              }),
+              null,
+              2,
+            )}
+          />
+          <TimelineCopyChip
+            id="all-raw-events"
+            label="raw"
+            toneClass="bg-cyan-500/20 text-cyan-400 border-cyan-500/30"
+            text={JSON.stringify(request.rawEvents, null, 2)}
+          />
+        </div>
       </div>
       <div
         ref={scrollRef}
@@ -1268,13 +1363,21 @@ function StateSnapshotTab({
             </Badge>
           </div>
         )}
-        <div className="flex items-center gap-1 text-[9px]">
+        <div className="flex items-start gap-1 text-[9px]">
           <span className="text-muted-foreground font-medium w-24 shrink-0">
-            errorIsFatal:
+            error:
           </span>
-          <code className="font-mono text-foreground/80">
-            {String(request.errorIsFatal)}
-          </code>
+          {request.error ? (
+            <div className="flex-1 min-w-0">
+              <JsonView
+                data={request.error}
+                id="request-error-payload"
+                defaultExpanded
+              />
+            </div>
+          ) : (
+            <code className="font-mono text-foreground/80">null</code>
+          )}
         </div>
         <div className="flex items-center gap-1 text-[9px]">
           <span className="text-muted-foreground font-medium w-24 shrink-0">

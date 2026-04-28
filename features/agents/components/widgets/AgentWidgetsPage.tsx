@@ -332,12 +332,13 @@ export function AgentWidgetsPage({
       {/* Header — mirrors AgentRunHeader, minus the new-run button (no conversation here) */}
       <div className="hidden lg:flex items-center justify-between w-full gap-2 shrink-0 pr-12">
         <div className="flex items-center">
-          <Link href="/agents" aria-label="Back to Agents">
+          <Link href={basePath} aria-label="Back to Agents">
             <ChevronLeftTapButton />
           </Link>
           <AgentSelectorIsland
             agentId={agentId}
             initialName={initialAgentName}
+            basePath={basePath}
           />
         </div>
         <div>
@@ -349,7 +350,7 @@ export function AgentWidgetsPage({
         </div>
         <div className="flex items-center gap-1.5 pt-0.5 shrink-0">
           <AgentSaveStatus agentId={agentId} />
-          <AgentOptionsMenu agentId={agentId} />
+          <AgentOptionsMenu agentId={agentId} basePath={basePath} />
         </div>
       </div>
 

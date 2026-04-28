@@ -58,6 +58,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   selectAgentTools,
@@ -561,6 +569,27 @@ function ServerToolsTab({
     );
   }, [agentId, selectedTools, availableIdSet, dispatch]);
 
+  const [copiedFormat, setCopiedFormat] = useState<EnabledCopyFormat | null>(
+    null,
+  );
+
+  const handleCopyEnabled = useCallback(
+    async (format: EnabledCopyFormat) => {
+      const tools = ((metadata?.enabled_tools || []) as DatabaseTool[]).filter(
+        (t) => activeSet.has(t.id),
+      );
+      const text = formatEnabledTools(tools, format);
+      try {
+        await navigator.clipboard.writeText(text);
+        setCopiedFormat(format);
+        setTimeout(() => setCopiedFormat(null), 1500);
+      } catch (err) {
+        console.error("Failed to copy enabled tools", err);
+      }
+    },
+    [metadata, activeSet],
+  );
+
   const enabledPerCategory = useMemo(() => {
     const map = new Map<string, number>();
     for (const tool of metadata?.enabled_tools || []) {
@@ -590,6 +619,7 @@ function ServerToolsTab({
           { get: (t) => t.name, weight: "title" },
           { get: (t) => t.description, weight: "body" },
           { get: (t) => t.category, weight: "tag" },
+          { get: (t) => t.id, weight: "id" },
         ]);
       }
       setToolsList({
@@ -642,6 +672,7 @@ function ServerToolsTab({
           { get: (t: any) => t.name, weight: "title" },
           { get: (t: any) => t.description, weight: "body" },
           { get: (t: any) => t.category, weight: "tag" },
+          { get: (t: any) => t.id, weight: "id" },
         ]);
       }
       return items;
@@ -679,14 +710,104 @@ function ServerToolsTab({
             </span>
           </div>
           {enabledCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-destructive"
-              onClick={clearAll}
-            >
-              Clear all
-            </Button>
+            <div className="flex items-center gap-0.5">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-5 w-5 text-muted-foreground hover:text-foreground"
+                    title="Copy enabled tools"
+                  >
+                    {copiedFormat ? (
+                      <Check className="h-3 w-3 text-success" />
+                    ) : (
+                      <Copy className="h-3 w-3" />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64">
+                  <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Copy {enabledCount} enabled tool
+                    {enabledCount === 1 ? "" : "s"} as
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="flex-col items-start gap-0.5 py-2"
+                    onClick={() => handleCopyEnabled("full")}
+                  >
+                    <div className="flex items-center gap-1.5 text-xs font-medium">
+                      {copiedFormat === "full" ? (
+                        <Check className="h-3 w-3 text-success" />
+                      ) : (
+                        <FileCode2 className="h-3 w-3" />
+                      )}
+                      Full JSON
+                    </div>
+                    <span className="text-[10px] text-muted-foreground pl-[18px]">
+                      All metadata, parameters, output schema
+                    </span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="flex-col items-start gap-0.5 py-2"
+                    onClick={() => handleCopyEnabled("compact")}
+                  >
+                    <div className="flex items-center gap-1.5 text-xs font-medium">
+                      {copiedFormat === "compact" ? (
+                        <Check className="h-3 w-3 text-success" />
+                      ) : (
+                        <FileCode2 className="h-3 w-3" />
+                      )}
+                      Compact JSON
+                    </div>
+                    <span className="text-[10px] text-muted-foreground pl-[18px]">
+                      id · name · description
+                    </span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="flex-col items-start gap-0.5 py-2"
+                    onClick={() => handleCopyEnabled("minimal")}
+                  >
+                    <div className="flex items-center gap-1.5 text-xs font-medium">
+                      {copiedFormat === "minimal" ? (
+                        <Check className="h-3 w-3 text-success" />
+                      ) : (
+                        <FileCode2 className="h-3 w-3" />
+                      )}
+                      Minimal JSON
+                    </div>
+                    <span className="text-[10px] text-muted-foreground pl-[18px]">
+                      name + description (≤120 chars)
+                    </span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="flex-col items-start gap-0.5 py-2"
+                    onClick={() => handleCopyEnabled("xml")}
+                  >
+                    <div className="flex items-center gap-1.5 text-xs font-medium">
+                      {copiedFormat === "xml" ? (
+                        <Check className="h-3 w-3 text-success" />
+                      ) : (
+                        <Tag className="h-3 w-3" />
+                      )}
+                      XML for prompts
+                    </div>
+                    <span className="text-[10px] text-muted-foreground pl-[18px]">
+                      &lt;tool name=…&gt;…&lt;/tool&gt; for model context
+                    </span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-destructive"
+                onClick={clearAll}
+              >
+                Clear all
+              </Button>
+            </div>
           )}
         </div>
       </div>
@@ -832,6 +953,97 @@ function ServerToolsTab({
             <span className="text-[11px] text-muted-foreground tabular-nums">
               {isEnabledTab ? visibleTools.length : toolsList?.total || 0} tools
             </span>
+            {isEnabledTab && enabledCount > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-1.5 text-[10px] text-muted-foreground hover:text-foreground gap-1"
+                    title="Copy enabled tools"
+                  >
+                    {copiedFormat ? (
+                      <Check className="h-3 w-3 text-success" />
+                    ) : (
+                      <Copy className="h-3 w-3" />
+                    )}
+                    <span>{copiedFormat ? "Copied" : "Copy"}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64">
+                  <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Copy {enabledCount} enabled tool
+                    {enabledCount === 1 ? "" : "s"} as
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="flex-col items-start gap-0.5 py-2"
+                    onClick={() => handleCopyEnabled("full")}
+                  >
+                    <div className="flex items-center gap-1.5 text-xs font-medium">
+                      {copiedFormat === "full" ? (
+                        <Check className="h-3 w-3 text-success" />
+                      ) : (
+                        <FileCode2 className="h-3 w-3" />
+                      )}
+                      Full JSON
+                    </div>
+                    <span className="text-[10px] text-muted-foreground pl-[18px]">
+                      All metadata, parameters, output schema
+                    </span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="flex-col items-start gap-0.5 py-2"
+                    onClick={() => handleCopyEnabled("compact")}
+                  >
+                    <div className="flex items-center gap-1.5 text-xs font-medium">
+                      {copiedFormat === "compact" ? (
+                        <Check className="h-3 w-3 text-success" />
+                      ) : (
+                        <FileCode2 className="h-3 w-3" />
+                      )}
+                      Compact JSON
+                    </div>
+                    <span className="text-[10px] text-muted-foreground pl-[18px]">
+                      id · name · description
+                    </span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="flex-col items-start gap-0.5 py-2"
+                    onClick={() => handleCopyEnabled("minimal")}
+                  >
+                    <div className="flex items-center gap-1.5 text-xs font-medium">
+                      {copiedFormat === "minimal" ? (
+                        <Check className="h-3 w-3 text-success" />
+                      ) : (
+                        <FileCode2 className="h-3 w-3" />
+                      )}
+                      Minimal JSON
+                    </div>
+                    <span className="text-[10px] text-muted-foreground pl-[18px]">
+                      name + description (≤120 chars)
+                    </span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="flex-col items-start gap-0.5 py-2"
+                    onClick={() => handleCopyEnabled("xml")}
+                  >
+                    <div className="flex items-center gap-1.5 text-xs font-medium">
+                      {copiedFormat === "xml" ? (
+                        <Check className="h-3 w-3 text-success" />
+                      ) : (
+                        <Tag className="h-3 w-3" />
+                      )}
+                      XML for prompts
+                    </div>
+                    <span className="text-[10px] text-muted-foreground pl-[18px]">
+                      &lt;tool name=…&gt;…&lt;/tool&gt; for model context
+                    </span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
 
@@ -901,6 +1113,77 @@ function ServerToolsTab({
       </div>
     </div>
   );
+}
+
+// =============================================================================
+// Enabled Tools — Copy/Export Helpers
+// =============================================================================
+
+type EnabledCopyFormat = "full" | "compact" | "minimal" | "xml";
+
+function truncateForPrompt(s: string, max: number): string {
+  if (!s) return "";
+  if (s.length <= max) return s;
+  return s.slice(0, max - 1).trimEnd() + "…";
+}
+
+function escapeXml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function formatEnabledTools(
+  tools: DatabaseTool[],
+  format: EnabledCopyFormat,
+): string {
+  switch (format) {
+    case "full":
+      return JSON.stringify(
+        tools.map((t) => ({
+          id: t.id,
+          name: t.name,
+          description: t.description,
+          category: t.category,
+          tags: t.tags,
+          parameters: t.parameters,
+          output_schema: t.output_schema,
+          annotations: t.annotations,
+        })),
+        null,
+        2,
+      );
+    case "compact":
+      return JSON.stringify(
+        tools.map((t) => ({
+          id: t.id,
+          name: t.name,
+          description: t.description,
+        })),
+        null,
+        2,
+      );
+    case "minimal":
+      return JSON.stringify(
+        tools.map((t) => ({
+          name: t.name,
+          description: truncateForPrompt(t.description, 120),
+        })),
+        null,
+        2,
+      );
+    case "xml": {
+      const lines = tools.map(
+        (t) =>
+          `  <tool name="${escapeXml(t.name)}">${escapeXml(
+            truncateForPrompt(t.description, 200),
+          )}</tool>`,
+      );
+      return `<tools>\n${lines.join("\n")}\n</tools>`;
+    }
+  }
 }
 
 // =============================================================================

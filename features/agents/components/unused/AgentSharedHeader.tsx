@@ -11,8 +11,8 @@ import {
   selectAgentVersion,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { AgentListDropdown } from "@/features/agents/components/agent-listings/AgentListDropdown";
-import { AgentSaveStatus } from "./AgentSaveStatus";
-import { AgentOptionsMenu } from "./AgentOptionsMenu";
+import { AgentSaveStatus } from "../shared/AgentSaveStatus";
+import { AgentOptionsMenu } from "../shared/AgentOptionsMenu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,9 +53,7 @@ export function AgentSharedHeader({ agentId }: { agentId: string }) {
   const [, startTransition] = useTransition();
   const agentName =
     useAppSelector((state) => selectAgentById(state, agentId)?.name) ?? "";
-  const version = useAppSelector((state) =>
-    selectAgentVersion(state, agentId),
-  );
+  const version = useAppSelector((state) => selectAgentVersion(state, agentId));
   const isDirty = useAppSelector((state) => selectAgentIsDirty(state, agentId));
   const [showDirtyDialog, setShowDirtyDialog] = useState(false);
   const [pendingNew, setPendingNew] = useState(false);
@@ -74,7 +72,7 @@ export function AgentSharedHeader({ agentId }: { agentId: string }) {
         setPendingNew(true);
         setShowDirtyDialog(true);
       } else {
-        navigateTo("/agents");
+        navigateTo("/agents/new");
       }
       return;
     }
@@ -103,7 +101,7 @@ export function AgentSharedHeader({ agentId }: { agentId: string }) {
     setShowDirtyDialog(false);
     if (pendingNew) {
       setPendingNew(false);
-      navigateTo("/agents");
+      navigateTo("/agents/new");
     }
   };
 

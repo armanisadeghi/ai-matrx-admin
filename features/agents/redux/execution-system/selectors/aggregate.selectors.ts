@@ -33,6 +33,7 @@ import type {
   Phase,
   RenderBlockPayload,
   CompletionPayload,
+  ErrorPayload,
 } from "@/types/python-generated/stream-events";
 import type { ShortcutContext } from "@/features/agents/redux/agent-shortcuts/types";
 import { selectHasMessages } from "../messages/messages.selectors";
@@ -233,17 +234,18 @@ export const selectLatestRequestStartedAt =
   };
 
 /**
- * The error message for the most recent request, if it failed.
- * Returns undefined when no error exists.
+ * The full backend `ErrorPayload` for the most recent request, if it failed.
+ * Returns undefined when no error exists. Consumers MUST decide which of
+ * `error.message` (technical) or `error.user_message` (optional human-friendly)
+ * to display — we deliberately do not collapse them in the selector.
  */
 export const selectLatestError =
   (conversationId: string) =>
-  (state: RootState): string | undefined => {
+  (state: RootState): ErrorPayload | undefined => {
     const ids = state.activeRequests?.byConversationId[conversationId];
     if (!ids || ids.length === 0) return undefined;
     return (
-      state.activeRequests?.byRequestId[ids[ids.length - 1]]?.errorMessage ??
-      undefined
+      state.activeRequests?.byRequestId[ids[ids.length - 1]]?.error ?? undefined
     );
   };
 
@@ -789,7 +791,10 @@ export const selectLatestCompletion =
 // =============================================================================
 
 /**
- * Whether the latest error on this instance was fatal (stream killed).
+ * Whether the latest request on this instance ended in a fatal error
+ * (stream killed). The backend has no `is_fatal` field on the wire — error
+ * events ARE fatal by definition, so we derive this purely from
+ * `request.status === "error"`.
  */
 export const selectLatestErrorIsFatal =
   (conversationId: string) =>
@@ -797,8 +802,7 @@ export const selectLatestErrorIsFatal =
     const ids = state.activeRequests?.byConversationId[conversationId];
     if (!ids || ids.length === 0) return false;
     return (
-      state.activeRequests?.byRequestId[ids[ids.length - 1]]?.errorIsFatal ??
-      false
+      state.activeRequests?.byRequestId[ids[ids.length - 1]]?.status === "error"
     );
   };
 

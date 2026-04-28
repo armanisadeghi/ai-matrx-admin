@@ -262,15 +262,15 @@ export function assembleMessageParts(request: ActiveRequest): CxContentBlock[] {
 
     // ── Tool event → flush text, emit tool blocks ──────────────────────
     if (isToolEvent(entry)) {
-      const lifecycle = request.toolLifecycle[entry.callId];
+      const lifecycle = request.toolLifecycle[entry.data.call_id];
       if (!lifecycle) continue;
 
       if (
-        entry.subEvent === "tool_started" &&
-        !emittedToolCallIds.has(entry.callId)
+        entry.data.event === "tool_started" &&
+        !emittedToolCallIds.has(entry.data.call_id)
       ) {
         flushPendingText();
-        emittedToolCallIds.add(entry.callId);
+        emittedToolCallIds.add(entry.data.call_id);
         blocks.push({
           type: "tool_call",
           id: lifecycle.callId,
@@ -280,7 +280,7 @@ export function assembleMessageParts(request: ActiveRequest): CxContentBlock[] {
       }
 
       if (
-        entry.subEvent === "tool_completed" &&
+        entry.data.event === "tool_completed" &&
         lifecycle.status === "completed" &&
         lifecycle.result !== undefined &&
         lifecycle.result !== null
@@ -295,7 +295,7 @@ export function assembleMessageParts(request: ActiveRequest): CxContentBlock[] {
         } as CxToolResultContent);
       }
 
-      if (entry.subEvent === "tool_error") {
+      if (entry.data.event === "tool_error") {
         flushPendingText();
         blocks.push({
           type: "tool_result",

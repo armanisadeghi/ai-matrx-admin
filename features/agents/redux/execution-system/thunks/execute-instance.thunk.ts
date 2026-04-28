@@ -528,12 +528,16 @@ export const executeInstance = createAsyncThunk<
         return rejectWithValue("Cancelled");
       }
 
+      // Client-side error (network failure, abort, etc.) — synthesise the
+      // backend's ErrorPayload shape so all error consumers see one canonical
+      // structure regardless of source. error_type=client_error makes the
+      // origin clear.
+      const message = error instanceof Error ? error.message : "Unknown error";
       dispatch(
         setRequestStatus({
           requestId,
           status: "error",
-          errorMessage:
-            error instanceof Error ? error.message : "Unknown error",
+          error: { error_type: "client_error", message },
         }),
       );
       dispatch(setInstanceStatus({ conversationId, status: "error" }));

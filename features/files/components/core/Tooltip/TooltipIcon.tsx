@@ -3,7 +3,8 @@
  *
  * Thin wrapper around Radix Tooltip — wraps a single icon button child and
  * shows a styled tooltip on hover. The app's TooltipProvider is mounted at
- * the root (LiteProviders / EntityProviders) so this works anywhere.
+ * the root (Providers / PublicProviders / EntityProviders) so this works
+ * anywhere.
  */
 
 "use client";
@@ -20,7 +21,11 @@ export interface TooltipIconProps {
   children: React.ReactElement;
 }
 
-export function TooltipIcon({ label, side = "bottom", children }: TooltipIconProps) {
+export function TooltipIcon({
+  label,
+  side = "bottom",
+  children,
+}: TooltipIconProps) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>{children}</TooltipTrigger>

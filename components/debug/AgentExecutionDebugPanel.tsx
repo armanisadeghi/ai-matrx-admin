@@ -479,10 +479,17 @@ export const AgentExecutionDebugPanel: React.FC<
               </div>
             </div>
             {latestError && (
-              <div className="mt-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-700 rounded p-2">
+              <div className="mt-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-700 rounded p-2 space-y-1">
                 <p className="text-xs text-red-800 dark:text-red-200 font-medium">
-                  Error: {latestError}
+                  Error [{latestError.error_type}
+                  {latestError.code ? `:${latestError.code}` : ""}]:{" "}
+                  {latestError.message}
                 </p>
+                {latestError.user_message && (
+                  <p className="text-[11px] text-red-700 dark:text-red-300">
+                    {latestError.user_message}
+                  </p>
+                )}
               </div>
             )}
             {!instanceReadyCheck.ready &&
@@ -673,10 +680,19 @@ export const AgentExecutionDebugPanel: React.FC<
               </div>
 
               {latestError && (
-                <div className="bg-red-50 dark:bg-red-950/30 border border-red-300 dark:border-red-700 rounded p-2">
+                <div className="bg-red-50 dark:bg-red-950/30 border border-red-300 dark:border-red-700 rounded p-2 space-y-1">
                   <p className="text-xs text-red-800 dark:text-red-200">
-                    <strong>Error:</strong> {latestError}
+                    <strong>
+                      Error [{latestError.error_type}
+                      {latestError.code ? `:${latestError.code}` : ""}]:
+                    </strong>{" "}
+                    {latestError.message}
                   </p>
+                  {latestError.user_message && (
+                    <p className="text-[11px] text-red-700 dark:text-red-300">
+                      {latestError.user_message}
+                    </p>
+                  )}
                 </div>
               )}
 

@@ -28,6 +28,13 @@ import type {
   UntypedDataPayload,
   MessagePart,
   ToolEventPayload,
+  ErrorPayload,
+  EndPayload,
+  BrokerPayload,
+  HeartbeatPayload,
+  RecordReservedPayload,
+  RecordUpdatePayload,
+  ResourceChangedPayload,
 } from "@/types/python-generated/stream-events";
 
 // =============================================================================
@@ -201,9 +208,14 @@ export interface ActiveRequest {
   completion: CompletionPayload | null;
 
   // ── Errors & Warnings ────────────────────────────────────────
-  errorMessage: string | null;
-  /** Whether the error was fatal (stream killed) or non-fatal (stream continues) */
-  errorIsFatal: boolean;
+  /**
+   * The raw error payload from the backend, captured verbatim. Mirrors
+   * `stream_events.ErrorPayload` exactly. Consumers MUST read both
+   * `error.message` (technical / system message — always present) and
+   * `error.user_message` (optional human-friendly explanation) and decide
+   * which to display. The client never collapses these into a single field.
+   */
+  error: ErrorPayload | null;
   /** Structured warnings with severity and machine-readable codes */
   warnings: WarningPayload[];
   /** Lightweight info notifications */
@@ -334,6 +346,19 @@ export interface CompletedOperationEntry extends OperationEntry {
 
 // =============================================================================
 // Event Timeline — first-class sequential record
+//
+// CONTRACT — single source of truth: timeline entries that mirror a backend
+// stream event MUST embed that event's payload verbatim under `data`. We do
+// NOT cherry-pick fields, rename them to camelCase, or fabricate fields
+// that aren't on the wire. The backend's generated payload types
+// (`@/types/python-generated/stream-events`) are imported and used directly,
+// so any backend rename / addition / removal surfaces as a TypeScript error
+// the next time `pnpm sync-types` runs.
+//
+// Client-derived variants (`text_start`, `text_end`, `reasoning_start`,
+// `reasoning_end`, `unknown`) are not 1:1 to backend events — they're
+// coalesced from chunk events on the client side and therefore have no
+// `data` field. Their shapes are documented inline.
 // =============================================================================
 
 /**
@@ -368,6 +393,8 @@ interface TimelineBase {
   timestamp: number;
 }
 
+// ─── Client-derived variants (no backend payload) ───────────────────────────
+
 export interface TimelineTextStart extends TimelineBase {
   kind: "text_start";
   blockStartIndex: number;
@@ -401,39 +428,89 @@ export interface TimelineReasoningEnd extends TimelineBase {
   chunkCount: number;
 }
 
+export interface TimelineUnknown extends TimelineBase {
+  kind: "unknown";
+  /** Server's `event` discriminator string for whatever wasn't recognised. */
+  originalEvent: string;
+  /** Raw payload from the wire, untouched. */
+  rawData: unknown;
+}
+
+// ─── Backend-mirrored variants (each embeds its source payload verbatim) ────
+//
+// The `data` field on each variant below IS the wire payload. No projection.
+// Selectors and UIs MUST read fields off `entry.data.x` (snake_case as on
+// the wire) so that any backend rename produces a TypeScript error here
+// instead of silently losing data.
+
+export interface TimelinePhase extends TimelineBase {
+  kind: "phase";
+  data: PhasePayload;
+}
+
+export interface TimelineInit extends TimelineBase {
+  kind: "init";
+  data: InitPayload;
+}
+
+export interface TimelineCompletion extends TimelineBase {
+  kind: "completion";
+  data: CompletionPayload;
+}
+
 export interface TimelineWarning extends TimelineBase {
   kind: "warning";
-  code: string;
-  level: "low" | "medium" | "high";
-  recoverable: boolean;
-  userMessage: string | null;
-  systemMessage: string;
-  metadata?: Record<string, unknown>;
+  data: WarningPayload;
 }
 
 export interface TimelineInfo extends TimelineBase {
   kind: "info";
-  code: string;
-  userMessage: string | null;
-  systemMessage: string;
-  metadata?: Record<string, unknown>;
+  data: InfoPayload;
+}
+
+export interface TimelineToolEvent extends TimelineBase {
+  kind: "tool_event";
+  data: ToolEventPayload;
+}
+
+export interface TimelineRenderBlock extends TimelineBase {
+  kind: "render_block";
+  data: RenderBlockPayload;
+}
+
+export interface TimelineDataEvent extends TimelineBase {
+  kind: "data";
+  data: TypedDataPayload | UntypedDataPayload;
+}
+
+export interface TimelineError extends TimelineBase {
+  kind: "error";
+  data: ErrorPayload;
+}
+
+export interface TimelineEnd extends TimelineBase {
+  kind: "end";
+  data: EndPayload;
+}
+
+export interface TimelineBroker extends TimelineBase {
+  kind: "broker";
+  data: BrokerPayload;
+}
+
+export interface TimelineHeartbeat extends TimelineBase {
+  kind: "heartbeat";
+  data: HeartbeatPayload;
 }
 
 export interface TimelineRecordReserved extends TimelineBase {
   kind: "record_reserved";
-  table: string;
-  recordId: string;
-  dbProject: string;
-  parentRefs: Record<string, string>;
-  metadata: Record<string, unknown>;
+  data: RecordReservedPayload;
 }
 
 export interface TimelineRecordUpdate extends TimelineBase {
   kind: "record_update";
-  table: string;
-  recordId: string;
-  status: "active" | "completed" | "failed";
-  metadata?: Record<string, unknown>;
+  data: RecordUpdatePayload;
 }
 
 /**
@@ -444,87 +521,84 @@ export interface TimelineRecordUpdate extends TimelineBase {
  */
 export interface TimelineResourceChanged extends TimelineBase {
   kind: "resource_changed";
-  /** Canonical resource family (`fs.file`, `fs.directory`, `cld_files`, …). */
-  resourceKind: string;
-  /** Action that fired the event (`modified`, `created`, `invalidated`, …). */
-  action: string;
-  /** Absolute path inside the sandbox (for `fs.*`) or the canonical id. */
-  resourceId: string;
-  /** Populated when the change originated inside a sandbox container. */
-  sandboxId: string | null;
-  /** Populated when the change is user-scoped. */
-  userId: string | null;
-  metadata: Record<string, unknown>;
+  data: ResourceChangedPayload;
 }
 
-export interface TimelinePhase extends TimelineBase {
-  kind: "phase";
-  phase: Phase;
-}
+// =============================================================================
+// Compile-time drift guards
+//
+// These assertions exist solely to make the type-checker shout the moment
+// `pnpm sync-types` regenerates `stream-events.ts` with a renamed / removed
+// field that we still embed in a Timeline variant. If the backend changes
+// (say) `ErrorPayload.message` → `ErrorPayload.text`, the next `tsc` run
+// will fail HERE, before the rest of the codebase silently keeps reading a
+// non-existent field.
+//
+// Adding a new `Timeline*` variant: add a corresponding line below.
+// Removing one: delete the matching line.
+// =============================================================================
 
-export interface TimelineInit extends TimelineBase {
-  kind: "init";
-  operation: Operation;
-  operationId: string;
-  parentOperationId: string | null;
-}
+type _AssertEqual<A, B> =
+  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
+    ? true
+    : never;
 
-export interface TimelineToolEvent extends TimelineBase {
-  kind: "tool_event";
-  subEvent: string;
-  callId: string;
-  toolName: string;
-  data: Record<string, unknown> | null;
-}
+type _TimelinePayloadGuards = {
+  phase: _AssertEqual<TimelinePhase["data"], PhasePayload>;
+  init: _AssertEqual<TimelineInit["data"], InitPayload>;
+  completion: _AssertEqual<TimelineCompletion["data"], CompletionPayload>;
+  warning: _AssertEqual<TimelineWarning["data"], WarningPayload>;
+  info: _AssertEqual<TimelineInfo["data"], InfoPayload>;
+  tool_event: _AssertEqual<TimelineToolEvent["data"], ToolEventPayload>;
+  render_block: _AssertEqual<TimelineRenderBlock["data"], RenderBlockPayload>;
+  data: _AssertEqual<
+    TimelineDataEvent["data"],
+    TypedDataPayload | UntypedDataPayload
+  >;
+  error: _AssertEqual<TimelineError["data"], ErrorPayload>;
+  end: _AssertEqual<TimelineEnd["data"], EndPayload>;
+  broker: _AssertEqual<TimelineBroker["data"], BrokerPayload>;
+  heartbeat: _AssertEqual<TimelineHeartbeat["data"], HeartbeatPayload>;
+  record_reserved: _AssertEqual<
+    TimelineRecordReserved["data"],
+    RecordReservedPayload
+  >;
+  record_update: _AssertEqual<
+    TimelineRecordUpdate["data"],
+    RecordUpdatePayload
+  >;
+  resource_changed: _AssertEqual<
+    TimelineResourceChanged["data"],
+    ResourceChangedPayload
+  >;
+};
 
-export interface TimelineRenderBlock extends TimelineBase {
-  kind: "render_block";
-  blockId: string;
-  blockType: string;
-  blockStatus: string;
-}
-
-export interface TimelineDataEvent extends TimelineBase {
-  kind: "data";
-  dataType: string;
-  data: Record<string, unknown>;
-}
-
-export interface TimelineCompletion extends TimelineBase {
-  kind: "completion";
-  operation: Operation;
-  operationId: string;
-  status: InitCompletionStatus;
-}
-
-export interface TimelineError extends TimelineBase {
-  kind: "error";
-  errorType: string;
-  message: string;
-  isFatal: boolean;
-  code?: string | null;
-  details?: Record<string, unknown> | null;
-}
-
-export interface TimelineEnd extends TimelineBase {
-  kind: "end";
-  reason?: string;
-}
-
-export interface TimelineBroker extends TimelineBase {
-  kind: "broker";
-  brokerId: string;
-}
-
-export interface TimelineHeartbeat extends TimelineBase {
-  kind: "heartbeat";
-}
-
-export interface TimelineUnknown extends TimelineBase {
-  kind: "unknown";
-  originalEvent: string;
-  rawData: unknown;
-}
+// Reference the guards so the compiler actually checks them. If any
+// _AssertEqual<...> resolves to `never`, this assignment fails to typecheck
+// because `never` is not a `true`.
+type _TimelinePayloadDriftGuard = {
+  [K in keyof _TimelinePayloadGuards]: _TimelinePayloadGuards[K] extends true
+    ? true
+    : never;
+};
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _ENFORCE_TIMELINE_PAYLOAD_GUARDS: _TimelinePayloadDriftGuard = {
+  phase: true,
+  init: true,
+  completion: true,
+  warning: true,
+  info: true,
+  tool_event: true,
+  render_block: true,
+  data: true,
+  error: true,
+  end: true,
+  broker: true,
+  heartbeat: true,
+  record_reserved: true,
+  record_update: true,
+  resource_changed: true,
+};
 
 // =============================================================================
 // Record Reservation

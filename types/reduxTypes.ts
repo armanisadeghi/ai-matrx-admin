@@ -2,7 +2,6 @@
 import { Database } from "@/types/database.types";
 import { UserData } from "@/utils/userDataMapper";
 import { GlobalCacheState } from "@/lib/redux/schema/globalCacheSlice";
-import type { AIModel } from "@/features/ai-models/redux/modelRegistrySlice";
 import type { ContextMenuRow } from "@/utils/supabase/ssrShellData";
 
 /**
@@ -51,21 +50,6 @@ export interface EntityReduxState extends BaseReduxState {
  * migration (see `~/.claude/plans/the-entity-system-which-bubbly-wind.md`).
  */
 export interface InitialReduxState extends EntityReduxState {}
-
-/**
- * @deprecated Migration alias. Use `Partial<BaseReduxState>` or explicit slice
- * preload keys. Removed in Phase 5.
- */
-export interface LiteInitialReduxState {
-  user?: Partial<UserData>;
-  userPreferences?: Record<string, unknown>;
-  // Pre-populated from SSR shell data RPC — no client fetch needed
-  modelRegistry?: { availableModels: AIModel[]; lastFetched: number };
-  contextMenuCache?: { rows: ContextMenuRow[]; hydrated: boolean };
-  agentContextMenuCache?: { rows: ContextMenuRow[]; hydrated: boolean };
-  // sms.unreadTotal seeded via PostPaintHydrator dispatch — not preloadedState
-  sms?: { unreadTotal: number };
-}
 
 export type Id = string;
 export type Page = number;

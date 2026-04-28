@@ -47,7 +47,7 @@ All 10 slices use the same key structure: `byInstanceId: Record<string, T>`.
 | `instanceClientTools` | `instance-client-tools/` | Yes (`client_tools`) | Client-side tool IDs registered for this instance |
 | `instanceUIState` | `instance-ui-state/` | **No** | Display mode, panels, modals, expansion, variable focus, creator flags — purely visual |
 | `instanceConversationHistory` | `instance-conversation-history/` | No (server owns history for agent/conversation modes) | Ordered turn history, conversation mode, server conversation ID |
-| `activeRequests` | `active-requests/` | No | Per-request stream state with dedicated storage per event type: `accumulatedText` (chunks), `currentStatus`/`statusHistory` (status updates), `contentBlocks`/`contentBlockOrder` (keyed by blockId), `toolLifecycle` (per-callId state machine) + `pendingToolCalls` (delegations), `completion`, `errorMessage`/`errorIsFatal`, `dataPayloads` (catch-all for unstructured data events only) |
+| `activeRequests` | `active-requests/` | No | Per-request stream state with dedicated storage per event type: `accumulatedText` (chunks), `currentStatus`/`statusHistory` (status updates), `contentBlocks`/`contentBlockOrder` (keyed by blockId), `toolLifecycle` (per-callId state machine) + `pendingToolCalls` (delegations), `completion`, `error` (verbatim backend `ErrorPayload` — `error_type`/`message`/`user_message`/`code`/`details`; fatality is derived from `request.status === "error"`), `dataPayloads` (catch-all for unstructured data events only) |
 
 ### Layer 4 — Thunks + Cross-Cutting Selectors
 

@@ -98,7 +98,7 @@ State lives under `activeRequests` keyed by request ID. Each request's slice tra
 - `toolLifecycle` — per-callId state machine for each tool call
 - `pendingToolCalls` — durable + widget delegations awaiting client action
 - `completion` — terminal result
-- `errorMessage` / `errorIsFatal` — error state
+- `error` — verbatim backend `ErrorPayload` (`error_type`, `message`, `user_message?`, `code?`, `details?`); `null` until an error event fires. The client never collapses `message` into `user_message` — both are preserved. There is no `is_fatal` flag on the wire; error events ARE fatal by definition (stream killed) — derive from `request.status === "error"`.
 - `dataPayloads` — catch-all for unstructured `data` events only (typed events go to their dedicated buckets)
 
 See [`AGENTS_OVERVIEW.MD`](./AGENTS_OVERVIEW.MD) §Layer 3 for the full slice inventory.

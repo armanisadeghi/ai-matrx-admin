@@ -31,7 +31,11 @@ export function AgentRunHeader({
         </Link>
 
         {/* Agent selector — shows current agent, lets you switch */}
-        <AgentSelectorIsland agentId={agentId} initialName={agentName} />
+        <AgentSelectorIsland
+          agentId={agentId}
+          initialName={agentName}
+          basePath={basePath}
+        />
         <AgentNewRunButton surfaceKey={surfaceKey} />
       </div>
       <div>
@@ -43,7 +47,7 @@ export function AgentRunHeader({
       </div>
       <div className="flex items-center gap-1.5 pt-0.5 shrink-0">
         <AgentSaveStatus agentId={agentId} />
-        <AgentOptionsMenu agentId={agentId} />
+        <AgentOptionsMenu agentId={agentId} basePath={basePath} />
       </div>
     </div>
   );

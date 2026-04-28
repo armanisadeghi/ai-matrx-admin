@@ -166,7 +166,7 @@ Post-stream finalization:
 | `content_block` | `contentBlocks[blockId]`, `contentBlockOrder[]` |
 | `record_reserved` | `reservations[recordId]` |
 | `record_update` | `reservations[recordId]` (status update) |
-| `error` | `errorMessage`, `errorIsFatal`, `status` |
+| `error` | `error` (verbatim `ErrorPayload`), `status` (set to `"error"` — fatal by definition; the wire has no `is_fatal` field) |
 | `end` | `status` change |
 | `heartbeat` | timeline only |
 | `broker` | `dataPayloads[]` (frozen) |

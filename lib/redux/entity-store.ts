@@ -29,10 +29,7 @@ import { syncPolicies } from "@/lib/sync/registry";
 import type { IdentityKey } from "@/lib/sync/types";
 import { mapUserData, type UserData } from "@/utils/userDataMapper";
 import { getEmptyGlobalCache } from "@/utils/schema/schema-processing/emptyGlobalCache";
-import type {
-  InitialReduxState,
-  LiteInitialReduxState,
-} from "@/types/reduxTypes";
+import type { InitialReduxState } from "@/types/reduxTypes";
 import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
 import {
   initializeUserPreferencesState,
@@ -79,7 +76,7 @@ function splitUserData(user: UserData): {
 const entitySagaRunner = createSagaMiddleware();
 
 function resolveEntityStoreBootstrapState(
-  input?: Partial<InitialReduxState> & LiteInitialReduxState,
+  input?: Partial<InitialReduxState>,
 ): Record<string, unknown> {
   const baseUser = mapUserData(null, undefined, false);
   const baseSplit = splitUserData(baseUser);
@@ -133,19 +130,11 @@ function resolveEntityStoreBootstrapState(
   if (input.agentContextMenuCache !== undefined) {
     out.agentContextMenuCache = input.agentContextMenuCache;
   }
-  if (input.modelRegistry !== undefined) {
-    out.modelRegistry = input.modelRegistry;
-  }
-  if (input.sms !== undefined) {
-    out.sms = input.sms;
-  }
 
   return out;
 }
 
-export const makeEntityStore = (
-  initialState?: Partial<InitialReduxState> & LiteInitialReduxState,
-) => {
+export const makeEntityStore = (initialState?: Partial<InitialReduxState>) => {
   const resolved = resolveEntityStoreBootstrapState(initialState);
   const globalCache = resolved.globalCache as InitialReduxState["globalCache"];
 

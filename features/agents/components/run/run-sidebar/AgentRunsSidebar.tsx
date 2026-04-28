@@ -24,6 +24,11 @@ interface AgentRunsSidebarProps {
   conversationIdFromUrl?: string;
   currentRunId?: string;
   onToggleSidebar: () => void;
+  /** Base path for the embedded header's back-link + agent switcher.
+   *  Defaults to `/agents`. Admin surfaces should pass
+   *  `/administration/system-agents/agents`. */
+  basePath?: string;
+  backHref?: string;
 }
 
 export function AgentRunsSidebar({
@@ -32,6 +37,8 @@ export function AgentRunsSidebar({
   surfaceKey,
   conversationIdFromUrl,
   onToggleSidebar,
+  basePath,
+  backHref,
 }: AgentRunsSidebarProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -94,6 +101,8 @@ export function AgentRunsSidebar({
         surfaceKey={surfaceKey}
         conversationIdFromUrl={conversationIdFromUrl}
         onToggleSidebar={onToggleSidebar}
+        basePath={basePath}
+        backHref={backHref}
       />
       <div className="flex-1 overflow-y-auto min-h-0 flex flex-col">
         {/* Conversations (agent / AI threads) */}

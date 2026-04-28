@@ -398,11 +398,11 @@ export const selectToolCallIdsInOrder = (requestId: string) =>
       for (const entry of timeline) {
         if (
           entry.kind === "tool_event" &&
-          entry.subEvent === "tool_started" &&
-          !seen.has(entry.callId)
+          entry.data.event === "tool_started" &&
+          !seen.has(entry.data.call_id)
         ) {
-          seen.add(entry.callId);
-          ordered.push(entry.callId);
+          seen.add(entry.data.call_id);
+          ordered.push(entry.data.call_id);
         }
       }
       return ordered;
@@ -545,15 +545,19 @@ export const selectUnifiedSlots = (requestId: string) =>
           lastEmittedBlockIndex = end;
         } else if (
           entry.kind === "tool_event" &&
-          entry.subEvent === "tool_started" &&
-          !seenTools.has(entry.callId)
+          entry.data.event === "tool_started" &&
+          !seenTools.has(entry.data.call_id)
         ) {
           pendingStatus = null;
-          seenTools.add(entry.callId);
-          slots.push({ kind: "tool", callId: entry.callId, seq: nextSeq++ });
+          seenTools.add(entry.data.call_id);
+          slots.push({
+            kind: "tool",
+            callId: entry.data.call_id,
+            seq: nextSeq++,
+          });
         } else if (entry.kind === "phase") {
-          const label = PHASE_LABELS[entry.phase];
-          if (label && entry.phase !== "complete") {
+          const label = PHASE_LABELS[entry.data.phase];
+          if (label && entry.data.phase !== "complete") {
             pendingStatus = {
               kind: "status",
               label,
@@ -563,10 +567,10 @@ export const selectUnifiedSlots = (requestId: string) =>
           } else {
             pendingStatus = null;
           }
-        } else if (entry.kind === "info" && entry.userMessage) {
+        } else if (entry.kind === "info" && entry.data.user_message) {
           pendingStatus = {
             kind: "status",
-            label: entry.userMessage,
+            label: entry.data.user_message,
             statusKind: "info",
             seq: nextSeq,
           };
@@ -943,11 +947,15 @@ export const selectReservedConversationId =
 // Error Selectors
 // =============================================================================
 
-/** Whether the error on this request was fatal. */
+/**
+ * Whether this request ended in a fatal error. The backend has no `is_fatal`
+ * field on the wire — error events ARE fatal by definition (stream killed),
+ * so we derive this purely from `request.status === "error"`.
+ */
 export const selectErrorIsFatal =
   (requestId: string) =>
   (state: RootState): boolean =>
-    state.activeRequests.byRequestId[requestId]?.errorIsFatal ?? false;
+    state.activeRequests.byRequestId[requestId]?.status === "error";
 
 // =============================================================================
 // Conversation Tree
@@ -1171,16 +1179,16 @@ export const selectTimelineDerivedTiming = (requestId: string) =>
             break;
 
           case "tool_event":
-            if (entry.subEvent === "tool_started") {
-              toolStarts.set(entry.callId, entry.timestamp);
+            if (entry.data.event === "tool_started") {
+              toolStarts.set(entry.data.call_id, entry.timestamp);
             } else if (
-              entry.subEvent === "tool_completed" ||
-              entry.subEvent === "tool_error"
+              entry.data.event === "tool_completed" ||
+              entry.data.event === "tool_error"
             ) {
-              const start = toolStarts.get(entry.callId);
+              const start = toolStarts.get(entry.data.call_id);
               if (start !== undefined) {
                 toolExecutionDurationMs += entry.timestamp - start;
-                toolStarts.delete(entry.callId);
+                toolStarts.delete(entry.data.call_id);
                 toolCallCount++;
               }
             }

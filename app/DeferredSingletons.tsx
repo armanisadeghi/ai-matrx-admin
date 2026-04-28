@@ -1,60 +1,36 @@
 "use client";
 
-// ─── BEGIN PROBE: legacy OverlayController bundle exclusion ────────────────
-// TEMPORARY — revert after Vercel build comparison.
+// `DeferredSingletons` mounts inside `app/Providers.tsx` and only renders
+// after `useIdleReady()` resolves true (post page-idle). It is a thin
+// client-component wrapper — every leaf widget below is responsible for
+// dynamic-loading its own heavy body internally. Wrapping leaf widgets
+// in `next/dynamic` from THIS file is the wrong layer (every consumer of
+// the widget would have to repeat the dance) and, when the parent is a
+// Server Component, is invalid. The right pattern lives in each leaf
+// widget's own file: a tiny `"use client"` shell that `dynamic()`s an
+// `*Impl.tsx` sibling with the heavy body.
 //
-// Goal: produce a Vercel build that 100% excludes the legacy
-// `components/overlays/OverlayController.tsx` (2,569 LOC + 99 nested
-// dynamic imports) so we can measure its real bundle/build cost.
-//
-// Why we comment out the `dynamic(() => import(...))` expression and not
-// just the JSX: Turbopack/Webpack emit a chunk for any `import("…")`
-// expression they see at build time, regardless of whether the component
-// is ever rendered. Removing the JSX alone would still produce the chunk
-// and fetch it on the client. The import expression itself must be gone.
-//
-// Trade-off accepted for this probe: any UI that dispatches to
-// `promptRunnerSlice` (legacy /ai/prompts, PromptBuilder, etc.) will be
-// non-functional during this build — actions dispatch, no controller
-// renders the modal. Confirmed acceptable by Arman for this measurement.
-//
-// To revert: uncomment the four blocks below marked "PROBE-RESTORE",
-// re-add the ternary in the JSX (search "PROBE-RESTORE" in this file),
-// and apply the same revert to `app/(public)/PublicProviders.tsx`.
-// ───────────────────────────────────────────────────────────────────────────
-
-// PROBE-RESTORE (1/4) — `dynamic` import (only used by legacy controller)
-// import dynamic from "next/dynamic";
+// Build-time rule: this file is in the static dep graph of every
+// authenticated route, so every static import here is parsed for every
+// page entry. Keep it minimal:
+//   - Type-only imports use `import type` (erased at compile).
+//   - Never import from a barrel `index.ts` — go to the source file.
+//   - Anything used only inside an idle callback must be `await import()`
+//     inside that callback so its module is not in this file's static
+//     graph at all (`brokerActions`, `fetchFullContext` below).
 
 import { useIdleReady, useIdleTask } from "@/utils/idle-scheduler";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { PersistentDOMConnector } from "@/providers/persistance/PersistentDOMConnector";
-
-// PROBE-RESTORE (2/4) — legacy controller dynamic import
-// const OverlayController = dynamic(
-//   () => import("@/components/overlays/OverlayController"),
-//   { ssr: false },
-// );
 import UnifiedOverlayController from "@/features/window-panels/UnifiedOverlayController";
 import LegacyPromptOverlaysController from "@/features/prompts/components/results-display/LegacyPromptOverlaysController";
-
-// PROBE-RESTORE (3/4) — env-flag toggle
-// const USE_OVERLAYS_V2 =
-//   process.env.NEXT_PUBLIC_OVERLAYS_V2 === "1" ||
-//   process.env.NEXT_PUBLIC_OVERLAYS_V2 === "true";
-// ─── END PROBE ─────────────────────────────────────────────────────────────
 import { AudioRecoveryToast } from "@/features/audio/components/AudioRecoveryToast";
 import AuthSessionWatcher from "@/components/layout/AuthSessionWatcher";
 import AnnouncementProvider from "@/components/layout/AnnouncementProvider";
 import AdminFeatureProvider from "@/features/admin/AdminFeatureProvider";
-import { useAppSelector } from "@/lib/redux/hooks";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { selectUser } from "@/lib/redux/selectors/userSelectors";
-import { brokerActions } from "@/lib/redux/brokerSlice";
-import { fetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
-// `loadPreferences` + `preferencesMiddleware` removed in PR 1.B. The middleware
-// was never wired into the store chain (confirmed dead); client-side
-// preference hydration is handled server-side via `getUserSessionData`
-// today, and will be fully owned by the sync engine in Phase 2.
+
+// ─── Static system broker descriptors (data only) ─────────────────────────
 
 const SYSTEM_BROKERS = [
   {
@@ -87,12 +63,22 @@ export default function DeferredSingletons() {
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
 
-  useIdleTask("broker-registration", 5, () => {
+  // Broker registration + initial values. The broker slice (and its
+  // reducer barrel) is part of the root reducer's compile unit anyway,
+  // so lazy-importing here keeps it out of *this* entry's static graph
+  // without adding meaningful runtime cost.
+  // Note the direct `/slice` path — `@/lib/redux/brokerSlice` is a
+  // barrel-of-barrels (re-exports selectors/hooks/thunks/utils) and must
+  // not be used in this file's compile graph.
+  useIdleTask("broker-registration", 5, async () => {
+    const { brokerActions } = await import("@/lib/redux/brokerSlice/slice");
     dispatch(brokerActions.addOrUpdateRegisterEntries(SYSTEM_BROKERS));
   });
 
-  useIdleTask("broker-values", 5, () => {
+  useIdleTask("broker-values", 5, async () => {
     if (!user?.id) return;
+    const { brokerActions } = await import("@/lib/redux/brokerSlice/slice");
+
     dispatch(
       brokerActions.setValue({ brokerId: "GLOBAL_USER_OBJECT", value: user }),
     );
@@ -125,15 +111,17 @@ export default function DeferredSingletons() {
     );
   });
 
-  // Pre-warm the full hierarchy (orgs, projects, tasks, scopes) once per session.
-  // fetchFullContext() is idempotent — it skips the network call if data is already
-  // loading or loaded. Any component that calls useNavTree() is safe to mount anywhere
-  // in the app without worrying about triggering a duplicate fetch.
-  useIdleTask("fetch-full-context", 1, () => {
-    if (user?.id) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      dispatch(fetchFullContext() as any);
-    }
+  // Pre-warm the full hierarchy (orgs, projects, tasks, scopes) once per
+  // session. `fetchFullContext()` is idempotent — it short-circuits if
+  // data is already loading or loaded. Lazy-imported so the thunk's dep
+  // graph (supabase client, 5 hierarchy/scope slice action creators,
+  // error utils) stays out of this file's per-entry compile graph.
+  useIdleTask("fetch-full-context", 1, async () => {
+    if (!user?.id) return;
+    const { fetchFullContext } =
+      await import("@/features/agent-context/redux/hierarchyThunks");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    dispatch(fetchFullContext() as any);
   });
 
   const ready = useIdleReady();
@@ -143,8 +131,6 @@ export default function DeferredSingletons() {
   return (
     <>
       <PersistentDOMConnector />
-      {/* PROBE-RESTORE (4/4) — original ternary:
-          {USE_OVERLAYS_V2 ? <UnifiedOverlayController /> : <OverlayController />} */}
       <UnifiedOverlayController />
       <LegacyPromptOverlaysController />
       <AudioRecoveryToast />

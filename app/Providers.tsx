@@ -1,9 +1,22 @@
 // app/Providers.tsx
+//
+// Server Component (no `"use client"`). Stays a thin static shell — every
+// provider and leaf widget below is a Client Component that owns its own
+// lazy-loading internally. Adding `next/dynamic` here would be invalid
+// (`ssr: false` is not allowed in a Server Component) and would defeat
+// the architectural point: the *contents* of a heavy widget should be
+// dynamic, not the wrapper.
+//
+// Build-time rule: this file is in the static dep graph of every
+// authenticated route, so every import here is parsed for every page.
+// Keep imports minimal, prefer `import type` for type-only imports, and
+// never import from a barrel `index.ts`. If a widget below is heavy,
+// open the widget's own file and lazy-load its heavy children there.
 
 import React from "react";
 import StoreProvider from "@/providers/StoreProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { InitialReduxState } from "@/types/reduxTypes";
+import type { InitialReduxState } from "@/types/reduxTypes";
 import { RefProvider } from "@/lib/refs";
 import { ToastProvider } from "@/providers/toast-context";
 import { ModuleHeaderProvider } from "@/providers/ModuleHeaderProvider";

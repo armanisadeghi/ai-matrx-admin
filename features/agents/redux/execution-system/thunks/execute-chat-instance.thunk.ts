@@ -639,12 +639,20 @@ export const executeChatInstance = createAsyncThunk<
         }),
       );
 
+      // Client-side error — synthesise the backend's ErrorPayload shape so
+      // all error consumers see one canonical structure. The retry-classified
+      // netErr.code goes into ErrorPayload.code; the wire-message goes into
+      // ErrorPayload.message.
+      const message = error instanceof Error ? error.message : "Unknown error";
       dispatch(
         setRequestStatus({
           requestId,
           status: "error",
-          errorMessage:
-            error instanceof Error ? error.message : "Unknown error",
+          error: {
+            error_type: "client_error",
+            message,
+            code: netErr?.code ?? null,
+          },
         }),
       );
       dispatch(setInstanceStatus({ conversationId, status: "error" }));

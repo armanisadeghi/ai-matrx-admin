@@ -48,11 +48,11 @@ export const selectOrderedToolLifecycles = (requestId: string) =>
       for (const entry of timeline) {
         if (
           entry.kind === "tool_event" &&
-          entry.subEvent === "tool_started" &&
-          !seen.has(entry.callId)
+          entry.data.event === "tool_started" &&
+          !seen.has(entry.data.call_id)
         ) {
-          seen.add(entry.callId);
-          const lc = lifecycle[entry.callId];
+          seen.add(entry.data.call_id);
+          const lc = lifecycle[entry.data.call_id];
           if (lc) out.push(lc);
         }
       }

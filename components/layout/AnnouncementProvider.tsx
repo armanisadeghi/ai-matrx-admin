@@ -1,44 +1,28 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { getActiveAnnouncements } from '@/actions/feedback.actions';
-import { SystemAnnouncement } from '@/types/feedback.types';
-import SystemAnnouncementModal from './SystemAnnouncementModal';
-import { useAppSelector } from '@/lib/redux/hooks';
-import { selectShellDataLoaded } from '@/lib/redux/slices/userSlice';
+/**
+ * Announcement Provider — thin client shell.
+ *
+ * Gates on `shellDataLoaded` (already part of the page's static graph
+ * via the user slice). The body — server-action call to
+ * `getActiveAnnouncements`, `SystemAnnouncement` types, and the
+ * `SystemAnnouncementModal` markup — lives in
+ * `AnnouncementProviderImpl.tsx` and is `next/dynamic`-loaded only after
+ * shell data finishes hydrating, so its dep graph never enters the
+ * static graph of any route.
+ */
+
+import dynamic from "next/dynamic";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectShellDataLoaded } from "@/lib/redux/slices/userSlice";
+
+const AnnouncementProviderImpl = dynamic(
+  () => import("./AnnouncementProviderImpl"),
+  { ssr: false, loading: () => null },
+);
 
 export default function AnnouncementProvider() {
-    const [announcements, setAnnouncements] = useState<SystemAnnouncement[]>([]);
-    const [currentAnnouncementIndex, setCurrentAnnouncementIndex] = useState(0);
-    const viewedAnnouncements = useAppSelector(state => state.userPreferences.system.viewedAnnouncements);
-    // Wait until DeferredShellData has finished loading user preferences before
-    // fetching announcements. Without this gate, the first render sees an empty
-    // viewedAnnouncements array (default state) and shows already-dismissed
-    // announcements for a flash until preferences load and the effect re-fires.
-    const shellDataLoaded = useAppSelector(selectShellDataLoaded);
-
-    useEffect(() => {
-        if (!shellDataLoaded) return;
-
-        const fetchAnnouncements = async () => {
-            const result = await getActiveAnnouncements();
-            if (result.success && result.data) {
-                // Filter out already viewed announcements
-                const unviewedAnnouncements = result.data.filter(
-                    announcement => !viewedAnnouncements.includes(announcement.id)
-                );
-                setAnnouncements(unviewedAnnouncements);
-            }
-        };
-
-        fetchAnnouncements();
-    }, [shellDataLoaded, viewedAnnouncements]);
-
-    // Show announcements one at a time
-    const currentAnnouncement = announcements[currentAnnouncementIndex];
-
-    if (!currentAnnouncement) return null;
-
-    return <SystemAnnouncementModal announcement={currentAnnouncement} />;
+  const shellDataLoaded = useAppSelector(selectShellDataLoaded);
+  if (!shellDataLoaded) return null;
+  return <AnnouncementProviderImpl />;
 }
-

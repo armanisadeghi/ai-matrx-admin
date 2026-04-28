@@ -168,6 +168,15 @@ export interface RecordUpdatePayload {
   metadata?: Record<string, unknown>;
 }
 
+export interface ResourceChangedPayload {
+  kind: string;
+  action: "created" | "modified" | "deleted" | "moved" | "renamed" | "invalidated";
+  resource_id: string;
+  sandbox_id?: string | null;
+  user_id?: string | null;
+  metadata?: Record<string, unknown>;
+}
+
 // --- Typed Record Reservation Variants (discriminated on `table`) ---
 
 // Narrows RecordReservedPayload.metadata / parent_refs by table.
