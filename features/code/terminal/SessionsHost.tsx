@@ -27,7 +27,7 @@ import {
   setLastAutoSpawnedSandboxId,
 } from "../redux/terminalSessionsSlice";
 import { selectActiveSandboxId } from "../redux/codeWorkspaceSlice";
-import { TerminalTab } from "./TerminalTab";
+import { SimpleTerminal } from "./SimpleTerminal";
 import { SandboxLogsView } from "./SandboxLogsView";
 import { SessionList } from "./SessionList";
 
@@ -105,7 +105,10 @@ export const SessionsHost: React.FC<SessionsHostProps> = ({
                 className={cn("absolute inset-0", !isActive && "hidden")}
               >
                 {s.kind === "shell" ? (
-                  <TerminalTab visible={visible && isActive} />
+                  <SimpleTerminal
+                    sandboxId={s.sandboxId}
+                    visible={visible && isActive}
+                  />
                 ) : s.sandboxId ? (
                   <SandboxLogsView
                     sandboxId={s.sandboxId}
@@ -125,3 +128,4 @@ export const SessionsHost: React.FC<SessionsHostProps> = ({
 };
 
 export default SessionsHost;
+

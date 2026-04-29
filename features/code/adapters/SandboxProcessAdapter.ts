@@ -304,18 +304,31 @@ export class SandboxProcessAdapter implements ProcessAdapter {
         });
       }, CONNECT_TIMEOUT_MS);
 
+      // Track whether the WebSocket ever reached the OPEN state. Vercel /
+      // standard Next route handlers can't complete a 101 upgrade — they
+      // return 426 and the socket goes straight from CONNECTING to CLOSED.
+      // In that case `onExit` semantically should NOT fire (the PTY never
+      // existed) and we must NOT show a misleading "[pty closed]" message
+      // in the terminal — the buffered/SSE fallback is still working fine.
+      let everOpened = false;
+
       socket.onopen = () => {
         clearTimeout(timer);
         isOpen = true;
+        everOpened = true;
         // Some daemons don't emit an explicit ready frame — synthesise one
         // so the consumer's `onReady` always fires once.
         opts.onReady?.();
         settle(() => resolve(handle));
       };
       socket.onerror = () => {
-        opts.onError?.(new Error("PTY transport error"));
-        // If we hadn't opened yet, surface the failure to the caller so
-        // they don't dispose their fallback listener.
+        // Only surface a transport error if we'd already opened (a real
+        // mid-session failure). A pre-open onerror is the same code path
+        // as a clean connect-refused and should be silent so the buffered
+        // fallback can take over without the user seeing any noise.
+        if (everOpened) {
+          opts.onError?.(new Error("PTY transport error"));
+        }
         clearTimeout(timer);
         settle(() => reject(new Error("PTY transport error")));
       };
@@ -323,7 +336,12 @@ export class SandboxProcessAdapter implements ProcessAdapter {
         isOpen = false;
         if (!closed) {
           closed = true;
-          opts.onExit?.(null, null);
+          // Only fire onExit if the PTY was actually open. If the socket
+          // never reached OPEN (e.g. 426 on Vercel, blocked port,
+          // unreachable host), the consumer's onExit handler would write a
+          // confusing "[pty closed]" line to the terminal even though the
+          // buffered/SSE path is the real one in use.
+          if (everOpened) opts.onExit?.(null, null);
         }
         clearTimeout(timer);
         settle(() => reject(new Error("PTY connection closed before open")));

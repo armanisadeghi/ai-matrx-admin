@@ -203,5 +203,7 @@ export type BottomTabId =
   | "debug"
   | "terminal"
   | "ports"
-  | "sandbox-inspector"
+  | "sandbox-status"
+  | "sandbox-files"
+  | "sandbox-env"
   | "sandbox-ssh";

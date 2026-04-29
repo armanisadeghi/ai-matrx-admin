@@ -503,7 +503,12 @@ const userPreferencesSlice = createSlice({
     ) => {
       const { module, preference, value } = action.payload;
       (state[module] as any)[preference] = value;
-      state._meta.hasUnsavedChanges = true;
+      // Persistence is engine-managed (definePolicy → debounced 250ms remote
+      // upsert + pagehide flush). The flag was leftover from a pre-engine
+      // manual-save workflow; setting it produced a "Unsaved changes" banner
+      // with no user-actionable Save button. Leaving the flag at its current
+      // value (which is `false` once REHYDRATE has fired) means the UI never
+      // surfaces a phantom dirty state.
       state._meta.error = null;
     },
     setModulePreferences: <T extends keyof UserPreferences>(
@@ -518,7 +523,7 @@ const userPreferencesSlice = createSlice({
         ...state[module],
         ...preferences,
       } as UserPreferences[T];
-      state._meta.hasUnsavedChanges = true;
+      // See note in `setPreference` — auto-save handles persistence.
       state._meta.error = null;
     },
     resetModulePreferences: <T extends keyof UserPreferences>(
@@ -529,7 +534,7 @@ const userPreferencesSlice = createSlice({
       state[module] = initializeUserPreferencesState()[
         module
       ] as UserPreferences[T];
-      state._meta.hasUnsavedChanges = true;
+      // See note in `setPreference` — auto-save handles persistence.
       state._meta.error = null;
     },
     resetAllPreferences: () => initializeUserPreferencesState(),

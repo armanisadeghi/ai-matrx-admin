@@ -16,7 +16,9 @@ import { ProblemsTab } from "./ProblemsTab";
 import { OutputTab } from "./OutputTab";
 import { DebugConsoleTab } from "./DebugConsoleTab";
 import { PortsTab } from "./PortsTab";
-import { SandboxInspectorTab } from "./SandboxInspectorTab";
+import { SandboxStatusTab } from "./SandboxStatusTab";
+import { SandboxFilesTab } from "./SandboxFilesTab";
+import { SandboxEnvTab } from "./SandboxEnvTab";
 import { SandboxSshTab } from "./SandboxSshTab";
 import { selectActiveSandboxId } from "../redux/codeWorkspaceSlice";
 
@@ -41,7 +43,13 @@ const TABS: BottomTabDescriptorEx[] = [
   { id: "debug", label: "Debug Console" },
   { id: "terminal", label: "Terminal" },
   { id: "ports", label: "Ports" },
-  { id: "sandbox-inspector", label: "Inspector", requiresSandbox: true },
+  // Sandbox-specific surfaces — only show when a sandbox is connected. Each
+  // surface is a separate top-level tab now (decomposed from the previous
+  // "Inspector" mega-tab) so the user can find env / files / status without
+  // hunting through nested sub-tabs.
+  { id: "sandbox-status", label: "Status", requiresSandbox: true },
+  { id: "sandbox-files", label: "Sandbox FS", requiresSandbox: true },
+  { id: "sandbox-env", label: "Env", requiresSandbox: true },
   { id: "sandbox-ssh", label: "SSH", requiresSandbox: true },
 ];
 
@@ -131,8 +139,14 @@ export const BottomPanel: React.FC<BottomPanelProps> = ({
           {activeTab === "output" && <OutputTab />}
           {activeTab === "debug" && <DebugConsoleTab />}
           {activeTab === "ports" && <PortsTab />}
-          {activeTab === "sandbox-inspector" && activeSandboxId && (
-            <SandboxInspectorTab sandboxId={activeSandboxId} />
+          {activeTab === "sandbox-status" && activeSandboxId && (
+            <SandboxStatusTab sandboxId={activeSandboxId} />
+          )}
+          {activeTab === "sandbox-files" && activeSandboxId && (
+            <SandboxFilesTab sandboxId={activeSandboxId} />
+          )}
+          {activeTab === "sandbox-env" && activeSandboxId && (
+            <SandboxEnvTab sandboxId={activeSandboxId} />
           )}
           {activeTab === "sandbox-ssh" && activeSandboxId && (
             <SandboxSshTab sandboxId={activeSandboxId} />
@@ -148,4 +162,5 @@ export const BottomPanel: React.FC<BottomPanelProps> = ({
     </div>
   );
 };
+
 

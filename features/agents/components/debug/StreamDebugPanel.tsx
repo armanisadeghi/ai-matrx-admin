@@ -32,6 +32,7 @@ import {
   BookmarkPlus,
   RefreshCw,
   FilePlus2,
+  type LucideIcon,
 } from "lucide-react";
 import type {
   ActiveRequest,
@@ -92,21 +93,28 @@ function CopyBtn({
   );
 }
 
-/** Timeline toolbar: same pill pattern as kind filters (colored) / auto-scroll ON. */
+/** Timeline toolbar: same pill pattern as kind filters (colored) / auto-scroll ON.
+ * LeadingIcon distinguishes projection-only vs timeline+raw pairs (merged export). */
 function TimelineCopyChip({
   id,
   text,
   label,
+  tooltip,
   toneClass,
+  LeadingIcon,
 }: {
   id: string;
   text: string;
-  /** One word — shown next to copy icon. */
+  /** Short label shown on pill */
   label: string;
+  tooltip: string;
   toneClass: string;
+  /** Default Copy; use FileText = projection, Layers / Radio = fuller payload */
+  LeadingIcon?: LucideIcon;
 }) {
   const { copied, copy } = useCopy();
   const done = copied === id;
+  const Leading = LeadingIcon ?? Copy;
   return (
     <button
       type="button"
@@ -114,6 +122,7 @@ function TimelineCopyChip({
         e.stopPropagation();
         copy(text, id);
       }}
+      title={tooltip}
       className={cn(
         "inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0 h-5 rounded border transition-colors shrink-0 cursor-pointer",
         done ? "bg-green-500/20 text-green-400 border-green-500/30" : toneClass,
@@ -122,9 +131,9 @@ function TimelineCopyChip({
       {done ? (
         <Check className="h-2.5 w-2.5 shrink-0" />
       ) : (
-        <Copy className="h-2.5 w-2.5 shrink-0 opacity-90" />
+        <Leading className="h-2.5 w-2.5 shrink-0 opacity-90" />
       )}
-      {label}
+      <span>{label}</span>
     </button>
   );
 }
@@ -929,6 +938,12 @@ function TimelineTab({ request }: { request: ActiveRequest }) {
   const baseTime =
     request.timeline.length > 0 ? request.timeline[0].timestamp : 0;
 
+  const timelineWithRawPairs = (entries: TimelineEntry[]) =>
+    entries.map((entry) => {
+      const raw = rawByTimestamp.get(entry.timestamp);
+      return raw ? { timeline: entry, raw } : entry;
+    });
+
   const toggleFilter = (kind: string) => {
     setFilters((prev) => {
       const next = new Set(prev);
@@ -992,36 +1007,56 @@ function TimelineTab({ request }: { request: ActiveRequest }) {
         >
           auto-scroll {autoScroll ? "ON" : "OFF"}
         </button>
-        <div className="flex items-center gap-1 shrink-0 flex-wrap">
+        <div className="flex items-center gap-1 shrink-0 flex-wrap border-l border-border/40 pl-1.5 ml-1">
           <TimelineCopyChip
-            id="all-timeline"
-            label="full"
+            id="full-timeline-proj"
+            label="all · tl"
+            tooltip="Copy full timeline (projection only — TimelineEntry[])"
+            LeadingIcon={FileText}
+            toneClass="bg-sky-500/20 text-sky-400 border-sky-500/30"
+            text={JSON.stringify(request.timeline, null, 2)}
+          />
+          <TimelineCopyChip
+            id="full-timeline-paired"
+            label="all · +raw"
+            tooltip="Copy full timeline with paired raw stream rows per timestamp (where available)"
+            LeadingIcon={Layers}
             toneClass="bg-sky-500/20 text-sky-400 border-sky-500/30"
             text={JSON.stringify(
-              request.timeline.map((entry) => {
-                const raw = rawByTimestamp.get(entry.timestamp);
-                return raw ? { timeline: entry, raw } : entry;
-              }),
+              timelineWithRawPairs(request.timeline),
               null,
               2,
             )}
           />
+          <span
+            aria-hidden
+            className="w-px h-4 shrink-0 bg-border/45 self-center"
+          />
           <TimelineCopyChip
-            id="filtered-timeline"
-            label="filtered"
+            id="filtered-timeline-proj"
+            label="view · tl"
+            tooltip="Copy filtered/visible timeline projection only (TimelineEntry[])"
+            LeadingIcon={FileText}
             toneClass="bg-violet-500/20 text-violet-400 border-violet-500/30"
-            text={JSON.stringify(
-              filtered.map((entry) => {
-                const raw = rawByTimestamp.get(entry.timestamp);
-                return raw ? { timeline: entry, raw } : entry;
-              }),
-              null,
-              2,
-            )}
+            text={JSON.stringify(filtered, null, 2)}
+          />
+          <TimelineCopyChip
+            id="filtered-timeline-paired"
+            label="view · +raw"
+            tooltip="Copy filtered timeline rows paired with matching raw stream events"
+            LeadingIcon={Layers}
+            toneClass="bg-violet-500/20 text-violet-400 border-violet-500/30"
+            text={JSON.stringify(timelineWithRawPairs(filtered), null, 2)}
+          />
+          <span
+            aria-hidden
+            className="w-px h-4 shrink-0 bg-border/45 self-center"
           />
           <TimelineCopyChip
             id="all-raw-events"
-            label="raw"
+            label="raw · dump"
+            tooltip="Copy full rawEvents array (unedited stream capture)"
+            LeadingIcon={Radio}
             toneClass="bg-cyan-500/20 text-cyan-400 border-cyan-500/30"
             text={JSON.stringify(request.rawEvents, null, 2)}
           />

@@ -52,11 +52,13 @@ export function SettingsShell({
     [isAdmin],
   );
 
-  // Surface saved / saving status from the userPreferences slice meta
+  // Surface saved / saving status from the userPreferences slice meta.
+  // Settings auto-save through the unified sync engine (debounced ~250ms +
+  // pagehide flush) — there is no manual save action. The footer message
+  // below reflects that: we never need a "Save" button because we never
+  // hold unsaved state.
   const prefsMeta = useSelector((s: RootState) => s.userPreferences._meta);
   const isSaving = prefsMeta?.isLoading ?? false;
-  const lastSaved = prefsMeta?.lastSaved ?? null;
-  const hasUnsaved = prefsMeta?.hasUnsavedChanges ?? false;
 
   if (!isOpen) return null;
 
@@ -69,15 +71,11 @@ export function SettingsShell({
           <Loader2 className="h-3 w-3 animate-spin" />
           Saving…
         </>
-      ) : hasUnsaved ? (
-        <span className="text-amber-500">Unsaved changes</span>
-      ) : lastSaved ? (
+      ) : (
         <>
           <Check className="h-3 w-3 text-emerald-500" />
-          Saved
+          Auto-saved · synced across your devices
         </>
-      ) : (
-        <span>All settings stored locally and synced.</span>
       )}
     </span>
   );

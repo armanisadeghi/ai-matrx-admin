@@ -102,6 +102,19 @@ export type SandboxDiagnostics = {
 const LOG_SOURCES = ["all", "aidream", "matrx_agent", "entrypoint", "autostart", "docker"] as const;
 type LogSource = (typeof LOG_SOURCES)[number];
 
+/**
+ * Which sections of the diagnostics panel render.
+ *
+ * - `"all"` (default) — original behaviour: status header + every internal
+ *   tab (filesystem / agent-env / passthrough / logs / raw).
+ * - `"status"` — status header only (readiness checks, container, env count).
+ *   Used when the bottom panel decomposes diagnostics into separate tabs and
+ *   the user has dedicated tabs for files / env.
+ * - `"filesystem"` — only the agent filesystem browser, no status header.
+ * - `"env"` — only the agent-env + passthrough tabs, no status header.
+ */
+export type SandboxDiagnosticsView = "all" | "status" | "filesystem" | "env";
+
 interface Props {
   /** Sandbox row UUID (NOT the sbx-XXX short id). */
   sandboxId: string;
@@ -120,6 +133,12 @@ interface Props {
   /** Callback fired after a successful reset finishes. The detail page uses
    *  this to refresh its row state and re-fire the readiness gate. */
   onReset?: () => void;
+  /**
+   * Render only a subset of sections — used by the /code bottom panel to
+   * give each diagnostic surface its own tab instead of nesting tabs inside
+   * an "Inspector" mega-tab.
+   */
+  view?: SandboxDiagnosticsView;
 }
 
 // ── Agent filesystem types (matches matrx_agent /fs/list response) ──────────
@@ -168,7 +187,21 @@ export function SandboxDiagnosticsPanel({
   onReady,
   showResetButton = true,
   onReset,
+  view = "all",
 }: Props) {
+  // Section gates — derived from `view`. Keep these as plain booleans so the
+  // JSX below stays readable.
+  const showStatus = view === "all" || view === "status";
+  const showFilesystem = view === "all" || view === "filesystem";
+  const showEnv = view === "all" || view === "env";
+  const showRaw = view === "all";
+  const showInternalTabs = showFilesystem || showEnv || showRaw || showLogs;
+  const initialTabValue: "filesystem" | "agent-env" | "env" | "raw" =
+    showFilesystem
+      ? "filesystem"
+      : showEnv
+        ? "agent-env"
+        : "raw";
   const [diag, setDiag] = useState<SandboxDiagnostics | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -507,59 +540,64 @@ export function SandboxDiagnosticsPanel({
 
   return (
     <div className="space-y-3 text-sm">
-      {/* Top status bar */}
-      <div className="flex items-center justify-between border-b border-border pb-2">
-        <div className="flex items-center gap-2">
-          {diag.overall_ok ? (
-            <Badge variant="default" className="bg-success text-success-foreground gap-1">
-              <CheckCircle2 className="h-3 w-3" /> Ready
-            </Badge>
-          ) : (
-            <Badge variant="secondary" className="gap-1">
-              <Activity className="h-3 w-3 animate-pulse" /> Booting
-            </Badge>
-          )}
-          <span className="text-xs text-muted-foreground">{diag.sandbox_id}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {showResetButton && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setResetOpen(true)}
-              disabled={resetting}
-              title="Destroy + recreate this sandbox with the latest image. Per-user volume preserved by default."
-            >
-              <RotateCcw className={`h-3 w-3 mr-1 ${resetting ? "animate-spin" : ""}`} />
-              Reset
-            </Button>
-          )}
-          <Button variant="outline" size="sm" onClick={fetchDiagnostics} disabled={loading}>
-            <RefreshCw className={`h-3 w-3 mr-1 ${loading ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
-        </div>
-      </div>
+      {showStatus && (
+        <>
+          {/* Top status bar */}
+          <div className="flex items-center justify-between border-b border-border pb-2">
+            <div className="flex items-center gap-2">
+              {diag.overall_ok ? (
+                <Badge variant="default" className="bg-success text-success-foreground gap-1">
+                  <CheckCircle2 className="h-3 w-3" /> Ready
+                </Badge>
+              ) : (
+                <Badge variant="secondary" className="gap-1">
+                  <Activity className="h-3 w-3 animate-pulse" /> Booting
+                </Badge>
+              )}
+              <span className="text-xs text-muted-foreground">{diag.sandbox_id}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {showResetButton && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setResetOpen(true)}
+                  disabled={resetting}
+                  title="Destroy + recreate this sandbox with the latest image. Per-user volume preserved by default."
+                >
+                  <RotateCcw className={`h-3 w-3 mr-1 ${resetting ? "animate-spin" : ""}`} />
+                  Reset
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={fetchDiagnostics} disabled={loading}>
+                <RefreshCw className={`h-3 w-3 mr-1 ${loading ? "animate-spin" : ""}`} />
+                Refresh
+              </Button>
+            </div>
+          </div>
 
-      {/* Layer-by-layer checks */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-        <CheckCard label="Container" ok={!!diag.container.running} detail={`${diag.container.status ?? "?"} · ${diag.container.health ?? "?"} · ip ${diag.container.container_ip ?? "?"}`} />
-        <CheckCard label="matrx_agent :8000" {...formatCheck(diag.checks.matrx_agent_8000)} />
-        <CheckCard label="aidream :8001 (health)" {...formatCheck(diag.checks.aidream_health_8001)} />
-        <CheckCard label="aidream :8001 (ready)" {...formatCheck(diag.checks.aidream_ready_8001)} colSpan="md:col-span-2" />
-        <CheckCard
-          label="Env passthrough"
-          ok={(diag.container.passthrough_landed?.length ?? 0) > 50}
-          detail={
-            diag.container.passthrough_landed
-              ? `${diag.container.passthrough_landed.length} landed · ${diag.container.passthrough_missing_count ?? 0} missing`
-              : "no data"
-          }
-        />
-      </div>
+          {/* Layer-by-layer checks */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+            <CheckCard label="Container" ok={!!diag.container.running} detail={`${diag.container.status ?? "?"} · ${diag.container.health ?? "?"} · ip ${diag.container.container_ip ?? "?"}`} />
+            <CheckCard label="matrx_agent :8000" {...formatCheck(diag.checks.matrx_agent_8000)} />
+            <CheckCard label="aidream :8001 (health)" {...formatCheck(diag.checks.aidream_health_8001)} />
+            <CheckCard label="aidream :8001 (ready)" {...formatCheck(diag.checks.aidream_ready_8001)} colSpan="md:col-span-2" />
+            <CheckCard
+              label="Env passthrough"
+              ok={(diag.container.passthrough_landed?.length ?? 0) > 50}
+              detail={
+                diag.container.passthrough_landed
+                  ? `${diag.container.passthrough_landed.length} landed · ${diag.container.passthrough_missing_count ?? 0} missing`
+                  : "no data"
+              }
+            />
+          </div>
+        </>
+      )}
 
+      {showInternalTabs && (
       <Tabs
-        defaultValue="filesystem"
+        defaultValue={initialTabValue}
         className="w-full"
         onValueChange={(v) => {
           // Lazy-load each tab on first activation
@@ -568,13 +606,16 @@ export function SandboxDiagnosticsPanel({
         }}
       >
         <TabsList>
-          <TabsTrigger value="filesystem">Agent filesystem</TabsTrigger>
-          <TabsTrigger value="agent-env">Agent env</TabsTrigger>
-          <TabsTrigger value="env">Passthrough</TabsTrigger>
+          {showFilesystem && (
+            <TabsTrigger value="filesystem">Agent filesystem</TabsTrigger>
+          )}
+          {showEnv && <TabsTrigger value="agent-env">Agent env</TabsTrigger>}
+          {showEnv && <TabsTrigger value="env">Passthrough</TabsTrigger>}
           {showLogs && <TabsTrigger value="logs">Live logs</TabsTrigger>}
-          <TabsTrigger value="raw">Raw response</TabsTrigger>
+          {showRaw && <TabsTrigger value="raw">Raw response</TabsTrigger>}
         </TabsList>
 
+        {showFilesystem && (
         <TabsContent value="filesystem" className="mt-2">
           <div className="flex items-center gap-2 mb-2">
             <Input
@@ -660,7 +701,9 @@ export function SandboxDiagnosticsPanel({
             </ScrollArea>
           </div>
         </TabsContent>
+        )}
 
+        {showEnv && (
         <TabsContent value="agent-env" className="mt-2">
           <div className="flex items-center gap-2 mb-2 flex-wrap">
             <select
@@ -744,13 +787,17 @@ export function SandboxDiagnosticsPanel({
             <strong>aidream process env</strong> is the ground truth — it&apos;s what the FastAPI process actually sees. If a var is here, the agent has it. If not, no amount of <code>env_file</code> tweaking matters until you find why it didn&apos;t propagate.
           </p>
         </TabsContent>
+        )}
 
+        {showRaw && (
         <TabsContent value="raw" className="mt-2">
           <ScrollArea className="h-72 border border-border rounded-md">
             <pre className="text-xs font-mono p-3 whitespace-pre-wrap">{JSON.stringify(diag, null, 2)}</pre>
           </ScrollArea>
         </TabsContent>
+        )}
 
+        {showEnv && (
         <TabsContent value="env" className="mt-2">
           <div className="text-xs space-y-2">
             <div>
@@ -774,6 +821,7 @@ export function SandboxDiagnosticsPanel({
             )}
           </div>
         </TabsContent>
+        )}
 
         {showLogs && (
           <TabsContent value="logs" className="mt-2">
@@ -808,6 +856,7 @@ export function SandboxDiagnosticsPanel({
           </TabsContent>
         )}
       </Tabs>
+      )}
 
       <ConfirmDialog
         open={resetOpen}
