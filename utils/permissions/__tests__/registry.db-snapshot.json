@@ -1,0 +1,156 @@
+[
+  {
+    "resource_type": "agent",
+    "table_name": "agx_agent",
+    "id_column": "id",
+    "owner_column": "user_id",
+    "is_public_column": "is_public",
+    "display_label": "Agent",
+    "url_path_template": "/agents/{id}/edit",
+    "rls_uses_has_permission": false,
+    "is_active": true
+  },
+  {
+    "resource_type": "canvas_items",
+    "table_name": "canvas_items",
+    "id_column": "id",
+    "owner_column": "user_id",
+    "is_public_column": "is_public",
+    "display_label": "Canvas",
+    "url_path_template": "/canvas/{id}",
+    "rls_uses_has_permission": true,
+    "is_active": true
+  },
+  {
+    "resource_type": "cx_conversation",
+    "table_name": "cx_conversation",
+    "id_column": "id",
+    "owner_column": "user_id",
+    "is_public_column": "is_public",
+    "display_label": "Conversation",
+    "url_path_template": "/chat/{id}",
+    "rls_uses_has_permission": true,
+    "is_active": true
+  },
+  {
+    "resource_type": "flashcard_data",
+    "table_name": "flashcard_data",
+    "id_column": "id",
+    "owner_column": "user_id",
+    "is_public_column": "public",
+    "display_label": "Flashcard",
+    "url_path_template": "/flashcards/{id}",
+    "rls_uses_has_permission": true,
+    "is_active": true
+  },
+  {
+    "resource_type": "note",
+    "table_name": "notes",
+    "id_column": "id",
+    "owner_column": "user_id",
+    "is_public_column": "is_public",
+    "display_label": "Note",
+    "url_path_template": "/notes/{id}",
+    "rls_uses_has_permission": false,
+    "is_active": true
+  },
+  {
+    "resource_type": "prompt",
+    "table_name": "prompts",
+    "id_column": "id",
+    "owner_column": "user_id",
+    "is_public_column": "is_public",
+    "display_label": "Prompt",
+    "url_path_template": "/ai/prompts/edit/{id}",
+    "rls_uses_has_permission": false,
+    "is_active": true
+  },
+  {
+    "resource_type": "prompt_actions",
+    "table_name": "prompt_actions",
+    "id_column": "id",
+    "owner_column": "user_id",
+    "is_public_column": "is_public",
+    "display_label": "Action",
+    "url_path_template": "/ai/prompts/actions/{id}",
+    "rls_uses_has_permission": true,
+    "is_active": true
+  },
+  {
+    "resource_type": "quiz_sessions",
+    "table_name": "quiz_sessions",
+    "id_column": "id",
+    "owner_column": "user_id",
+    "is_public_column": null,
+    "display_label": "Quiz",
+    "url_path_template": "/quizzes/{id}",
+    "rls_uses_has_permission": true,
+    "is_active": true
+  },
+  {
+    "resource_type": "sandbox_instances",
+    "table_name": "sandbox_instances",
+    "id_column": "id",
+    "owner_column": "user_id",
+    "is_public_column": null,
+    "display_label": "Sandbox",
+    "url_path_template": "/sandbox/{id}",
+    "rls_uses_has_permission": true,
+    "is_active": true
+  },
+  {
+    "resource_type": "task",
+    "table_name": "ctx_tasks",
+    "id_column": "id",
+    "owner_column": "user_id",
+    "is_public_column": "is_public",
+    "display_label": "Task",
+    "url_path_template": "/tasks/{id}",
+    "rls_uses_has_permission": false,
+    "is_active": true
+  },
+  {
+    "resource_type": "transcripts",
+    "table_name": "transcripts",
+    "id_column": "id",
+    "owner_column": "user_id",
+    "is_public_column": "is_public",
+    "display_label": "Transcript",
+    "url_path_template": "/transcripts/{id}",
+    "rls_uses_has_permission": true,
+    "is_active": true
+  },
+  {
+    "resource_type": "user_files",
+    "table_name": "user_files",
+    "id_column": "id",
+    "owner_column": "user_id",
+    "is_public_column": null,
+    "display_label": "File",
+    "url_path_template": "/files/{id}",
+    "rls_uses_has_permission": true,
+    "is_active": true
+  },
+  {
+    "resource_type": "user_lists",
+    "table_name": "user_lists",
+    "id_column": "id",
+    "owner_column": "user_id",
+    "is_public_column": "is_public",
+    "display_label": "List",
+    "url_path_template": "/lists/{id}",
+    "rls_uses_has_permission": true,
+    "is_active": true
+  },
+  {
+    "resource_type": "user_tables",
+    "table_name": "user_tables",
+    "id_column": "id",
+    "owner_column": "user_id",
+    "is_public_column": "is_public",
+    "display_label": "Table",
+    "url_path_template": "/tables/{id}",
+    "rls_uses_has_permission": true,
+    "is_active": true
+  }
+]

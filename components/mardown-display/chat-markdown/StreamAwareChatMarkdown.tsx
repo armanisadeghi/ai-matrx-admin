@@ -403,6 +403,7 @@ export const StreamAwareChatMarkdown: React.FC<
                   <LiveToolCallCard
                     requestId={requestId}
                     callId={toolBlock.callId}
+                    conversationId={conversationId}
                     hasContentAfter={hasContentAfter}
                   />
                 ) : null}

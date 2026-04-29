@@ -19,12 +19,14 @@ import {
   Play,
   GitBranch,
   Clock,
+  Braces,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAgentById,
+  selectAgentDefinition,
   selectAgentIsDirty,
   selectAgentName,
 } from "@/features/agents/redux/agent-definition/selectors";
@@ -51,6 +53,7 @@ import { AgentRunWrapper } from "@/features/agents/components/smart/AgentRunWrap
 import { AgentVersionDiffPage } from "@/features/agents/components/diff/AgentVersionDiffPage";
 import { AgentContentHistoryPanel } from "./AgentContentHistoryPanel";
 import { AgentContentTab } from "./agent-content.types";
+import { FullJsonViewer } from "@/components/ui/JsonComponents/JsonViewerComponent";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -79,6 +82,7 @@ export const ALL_TABS: TabDefinition[] = [
   { id: "run", label: "Run", icon: Play, inlineSave: true },
   { id: "history", label: "History", icon: Clock, inlineSave: true },
   { id: "versions", label: "Versions", icon: GitBranch, inlineSave: true },
+  { id: "json", label: "JSON", icon: Braces, inlineSave: true },
 ];
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -333,6 +337,33 @@ function AgentPickerFallback({ onSelect }: AgentPickerFallbackProps) {
   );
 }
 
+// ── JSON Tab ──────────────────────────────────────────────────────────────────
+
+/**
+ * Read-only view of the current agent's full domain definition (no runtime
+ * flags) rendered as JSON. Uses `selectAgentDefinition`, which strips the
+ * `_dirty`/`_loading`/`_undoPast`/etc. metadata so the user sees only the
+ * persisted shape — useful for copy-paste, debugging, and importing
+ * elsewhere.
+ */
+function AgentJsonTab({ agentId }: { agentId: string }) {
+  const definition = useAppSelector((state) =>
+    selectAgentDefinition(state, agentId),
+  );
+
+  return (
+    <ScrollArea className="h-full">
+      <div className="p-3">
+        <FullJsonViewer
+          data={definition ?? {}}
+          title="Agent Definition"
+          initialExpanded
+        />
+      </div>
+    </ScrollArea>
+  );
+}
+
 // ── Tab Content Router ────────────────────────────────────────────────────────
 
 interface TabContentProps {
@@ -400,6 +431,8 @@ export function TabContent({
       )}
 
       {activeTab === "versions" && <AgentVersionDiffPage agentId={agentId} />}
+
+      {activeTab === "json" && <AgentJsonTab agentId={agentId} />}
 
       {activeTab === "run" && (
         <div className="h-full w-full flex justify-center min-w-0 overflow-hidden">

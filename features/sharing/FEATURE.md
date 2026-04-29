@@ -79,17 +79,27 @@ Reads:
 
 Every shareable resource table has a SELECT policy of the form `user_id = auth.uid() OR is_public = true OR has_permission(<resource_type>, id, 'viewer')`. UPDATE / DELETE policies bump the required level to `'editor'` / `'admin'`. Child tables (e.g. `cx_message`) check the parent resource, not themselves.
 
-### Key types (`utils/permissions/types.ts`)
+### Key types (`utils/permissions/types.ts` → re-exported from `utils/permissions/registry.ts`)
 
-- `ResourceType` — union of 20+ resource identifiers (see README table; includes `prompt`, `note`, `canvas_items`, `user_tables`, `user_lists`, `transcripts`, `quiz_sessions`, `sandbox_instances`, `user_files`, `prompt_actions`, `flashcard_data`, `flashcard_sets`, `cx_conversation`, `tasks`, `agent`, and legacy `workflow` / `recipe` / `conversation` / `applet` / `broker_value` / `message` / `organization` / `scrape_domain`)
+- `ResourceType` — union derived from the registry primary keys. Always exactly mirrors the live `shareable_resource_registry` rows (verified by parity test).
 - `PermissionLevel` — `'viewer' | 'editor' | 'admin'`, ordered via `satisfiesPermissionLevel()`
 - `Permission` / `PermissionWithDetails` — raw row vs. RPC-enriched row with user/org info
 - `ShareActionResult` — `{ success, message?, error?, permission? }` — uniform return shape for every write
 - `PermissionError` + `PermissionErrorCode` enum — typed error boundary
+- `ShareableResourceEntry` — registry row shape (alias, canonical table, id/owner/public columns, label, URL template, `rlsUsesHasPermission`)
+
+### Single source of truth: `shareable_resource_registry`
+
+The DB table `public.shareable_resource_registry` is the **only** place where shareable resources are declared. Every component, RPC, and TypeScript type derives from this table:
+
+- **DB-side resolver** — `public.resolve_shareable_resource(text)` maps an alias or canonical name to a registry row. All sharing RPCs (`share_resource_with_user`, `is_resource_owner`, `make_resource_public`, etc.) call this resolver — no more `CASE WHEN` ladders inside RPCs.
+- **DB-side validation** — a `BEFORE INSERT/UPDATE` trigger on `permissions.resource_type` rejects any value that isn't a canonical `table_name` in the registry. Loud failure, not silent drift.
+- **TS-side mirror** — `utils/permissions/registry.ts` exports `SHAREABLE_RESOURCE_REGISTRY` plus `ResourceType`, `getShareableResource`, `resolveTableName`, `getResourceTypeLabel`, `getResourceSharePath`. All consumed by `ShareModal`, `ShareButton`, `service.ts`, hooks.
+- **Forcing-function test** — `utils/permissions/__tests__/registry.parity.test.ts` compares the TS mirror against a checked-in DB snapshot (`registry.db-snapshot.json`). If anyone updates one without the other, the test fails in CI before merge.
 
 ### Resource-type aliases
 
-Legacy aliases are mapped to table names inside `getTableName()` in `service.ts` (e.g., `prompt -> prompts`, `note -> notes`, `agent -> agx_agent`). New resource types should use the exact table name — no alias needed.
+Aliases live in the registry's `resource_type` column. Canonical table names live in `table_name`. The two diverge only when a table name would be unfriendly in TS / RPC arguments (e.g. `agent` ↔ `agx_agent`, `prompt` ↔ `prompts`, `task` ↔ `ctx_tasks`). For new tables prefer the exact table name as the alias.
 
 ---
 
@@ -131,13 +141,25 @@ Two supported patterns (see README for full snippets):
 
 ### 6. Adding a new shareable resource type (the pattern)
 
-1. Database: add `user_id` + `is_public` columns; add RLS policies using `has_permission(<new_type>, id, <level>)`.
-2. `utils/permissions/types.ts`: append the new identifier to `ResourceType` and `getResourceTypeLabel()`.
-3. `utils/permissions/service.ts`: if the identifier is not the exact table name, add it to `legacyMap` in `getTableName()`.
-4. `ShareModal.getShareUrl()`: add the URL pattern (edit/view route) for the new type.
-5. Drop `ShareButton` into the owner UI. That's the whole integration.
-6. For the list page, create a `get_<resources>_shared_with_me()` RPC (preferred) or use `useSharedWithMe(resourceType)`. Render a "Shared with Me" section using the Collapsible pattern from `features/prompts/components/layouts/PromptsGrid.tsx`.
-7. For detail/edit pages, create a `get_<resource>_access_level(id)` RPC returning `(is_owner, permission_level, owner_email, can_edit, can_delete)`, then gate the UI on it. Reference: `features/prompts/components/builder/SharedPromptWarningModal.tsx`.
+The whole integration is now **two rows + one component**. RPCs, validation, label rendering, share URLs, and ownership checks are all driven by the registry — you do not touch any of them.
+
+1. **Database schema** — make sure the table has `id` (uuid), `user_id` (uuid → `auth.users`), and `is_public` (bool, optional). Add RLS policies that include `has_permission(<canonical_table>, id, <level>)` so direct grants are actually enforced. (See "RLS rollout" follow-up below for tables that ship without `has_permission` initially.)
+2. **DB registry** — one INSERT into `public.shareable_resource_registry`:
+   ```sql
+   INSERT INTO public.shareable_resource_registry
+     (resource_type, table_name, id_column, owner_column, is_public_column,
+      display_label, url_path_template, rls_uses_has_permission, is_active, notes)
+   VALUES
+     ('<alias>', '<table>', 'id', 'user_id', 'is_public',
+      '<Label>', '/<path>/{id}', true, true, NULL);
+   ```
+3. **TS registry** — mirror the same row in `utils/permissions/registry.ts` under `SHAREABLE_RESOURCE_REGISTRY`.
+4. **Refresh the snapshot** — `pnpm tsx scripts/regen-shareable-registry-snapshot.ts`. This rewrites `utils/permissions/__tests__/registry.db-snapshot.json` so the parity test passes.
+5. **Drop in the UI** — `<ShareButton resourceType="<alias>" resourceId={id} resourceName={...} isOwner={...} />`. ShareModal auto-builds the share URL from the registry's `url_path_template`. Done.
+6. **List pages (optional)** — create a `get_<resources>_shared_with_me()` RPC for efficient list rendering, or fall back to `useSharedWithMe(resourceType)`. Same pattern as `features/prompts/components/layouts/PromptsGrid.tsx`.
+7. **Detail-page gating (optional)** — create a `get_<resource>_access_level(id)` RPC if you need rich UX (banner showing owner email, "save as my copy" warning). Reference: `features/prompts/components/builder/SharedPromptWarningModal.tsx`.
+
+If you find yourself editing `service.ts`, the share RPCs, `ShareModal.getShareUrl()`, or any "resource-type → table-name" map: stop. That work has already been generalized into the registry and you are recreating it.
 
 ---
 
@@ -153,7 +175,8 @@ Two supported patterns (see README for full snippets):
 - **Child resources inherit via parent checks.** E.g., `cx_message` RLS calls `has_permission('cx_conversation', conversation_id, 'viewer')`, not `has_permission('cx_message', ...)`. Don't register child tables as separate resource types.
 - **Owner can always delegate.** Non-owners with `admin` cannot currently re-share — only the resource `user_id` passes the RPC's ownership check. If delegation becomes a requirement, change the RPCs, not the client.
 - **Shared users editing an original surface a "Save as My Copy" warning** before writes land. Feature-level concern — see `features/prompts/components/builder/SharedPromptWarningModal.tsx` for the canonical pattern.
-- **Legacy resource-type names break silently.** Calling `ShareButton` with `resourceType="canvas"` (legacy) vs. `"canvas_items"` (current) resolves to different URLs and different RLS policies. When in doubt, use the exact table name.
+- **Unknown resource types fail loudly at three layers.** TypeScript rejects them at compile time (the `ResourceType` union is derived from the registry). The TS resolver `resolveTableName()` throws. The DB-side `resolve_shareable_resource()` raises an exception. The trigger on `permissions.resource_type` rejects the row. There is no path by which an unregistered string reaches a shipped feature.
+- **`rls_uses_has_permission = false` is a known broken state, not a temporary glitch.** Several legacy tables (`agx_agent`, `prompts`, `notes`, `ctx_tasks`) have RLS policies that ignore `has_permission()`. Sharing rows insert successfully on these tables but RLS will not actually grant the grantee access. The registry surfaces this explicitly so we don't pretend it works. See "RLS rollout" follow-up below.
 
 ---
 
@@ -172,14 +195,14 @@ Two supported patterns (see README for full snippets):
 ## Current work / migration state
 
 Stable. Active areas:
-- Migrating legacy resource-type aliases (`prompt`, `note`, `conversation`, …) to exact table names as each feature is touched. Both are supported indefinitely via `getTableName()` — no forced cutover.
-- The `agent` resource type points at `agx_agent` and is newly added; cross-check with the agents migration (`features/agents/migration/`) before extending.
+- **RLS rollout** (highest priority follow-up). The `rls_uses_has_permission` column flags four tables (`agx_agent`, `prompts`, `notes`, `ctx_tasks`) whose RLS policies don't yet call `has_permission()`. Direct grants on these tables succeed at the RPC layer but are ignored by RLS. Each policy needs to be amended with `OR has_permission('<canonical>', id, '<level>')` and tested. Track per-table progress by flipping the registry column to `true` once the policy is updated.
 - `features/sharing/emailService.ts` is on a slow deprecation path — prefer the `/api/sharing/notify` server route for all new notification paths.
 
 ---
 
 ## Change log
 
+- `2026-04-29` — codex: registry-driven sharing. Created `shareable_resource_registry` (DB) + TS mirror + parity test. Refactored all 9 sharing RPCs to consume `resolve_shareable_resource()`. Added validation trigger on `permissions.resource_type`. Removed legacy `getTableName()` and inline `resourcePaths` map. Documented `rls_uses_has_permission` gaps for follow-up.
 - `2026-04-22` — claude: initial FEATURE.md extracted from README.md.
 
 ---

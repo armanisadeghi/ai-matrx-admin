@@ -424,6 +424,12 @@ export const selectHideToolResults =
     state.instanceUIState.byConversationId[conversationId]?.hideToolResults ??
     false;
 
+export const selectResponseDensity =
+  (conversationId: string) =>
+  (state: RootState): "comfortable" | "compact" =>
+    state.instanceUIState.byConversationId[conversationId]?.responseDensity ??
+    "comfortable";
+
 export const selectPreExecutionMessage =
   (conversationId: string) =>
   (state: RootState): string | null =>

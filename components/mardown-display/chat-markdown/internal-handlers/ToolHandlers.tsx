@@ -58,6 +58,7 @@ export const InlineToolCard: React.FC<InlineToolCardProps> = ({
     <ToolCallVisualization
       entries={[lifecycle]}
       requestId={requestId}
+      conversationId={conversationId}
       hasContent
       className="my-2"
     />
@@ -126,6 +127,7 @@ export const DbToolCard: React.FC<DbToolCardProps> = ({
   return (
     <ToolCallVisualization
       entries={[entry]}
+      conversationId={conversationId}
       hasContent
       isPersisted
       className="my-2"

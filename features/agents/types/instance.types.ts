@@ -525,6 +525,20 @@ export interface InstanceUIState {
   hideToolResults: boolean;
 
   /**
+   * Density of the assistant transcript chrome (tool call cards, thinking
+   * blocks, action bar).
+   *   - "comfortable" (default): full chrome, persistent action bar.
+   *   - "compact": one-line tool/thinking strips, hover-revealed controls,
+   *     action bar appears only on hover unless this message is the latest.
+   *
+   * Designed for highly agentic / coding-style runs where dozens of tool
+   * calls + reasoning blocks would otherwise drown the actual model output.
+   * Per-conversation so a single surface (e.g. the code-editor agent runner)
+   * can opt in without affecting other chat surfaces.
+   */
+  responseDensity: "comfortable" | "compact";
+
+  /**
    * Optional message shown in the pre-execution input gate.
    * Used to give the user context about what the agent expects.
    */
@@ -731,6 +745,8 @@ export interface ManagedAgentOptions {
   hideReasoning?: boolean;
   /** @deprecated Use `config.hideToolResults`. */
   hideToolResults?: boolean;
+  /** @deprecated Use `config.responseDensity`. */
+  responseDensity?: "comfortable" | "compact";
   /** @deprecated Use `config.defaultUserInput` for designer-provided instructions, or `runtime.userInput` for live user input. */
   userInput?: string;
   /** @deprecated Use `config.defaultVariables` for defaults, or set via runtime.applicationScope for scope-mapped values. */

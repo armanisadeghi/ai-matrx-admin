@@ -15,4 +15,5 @@ export type AgentContentTab =
   | "share"
   | "run"
   | "history"
-  | "versions";
+  | "versions"
+  | "json";

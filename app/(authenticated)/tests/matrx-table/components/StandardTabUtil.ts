@@ -2,7 +2,7 @@
 
 import { TableData } from "@/types/entityTableTypes";
 import { FormField, FormFieldType, FormState, TabData } from "@/types/AnimatedFormTypes";
-import { ensureId} from "@/utils/schema/schemaUtils";
+import { ensureId } from "@/utils/schema/lite";
 
 
 export const truncateText = (text: unknown, maxLength: number = 100): string => {

@@ -34,8 +34,11 @@ import { toast } from "sonner";
 import {
   selectMessageById,
   selectMessagePosition,
+  selectIsLatestAssistantMessage,
   extractFlatText,
 } from "@/features/agents/redux/execution-system/messages/messages.selectors";
+import { selectResponseDensity } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
+import { cn } from "@/lib/utils";
 import { DeleteMessageDialog } from "../message-options/DeleteMessageDialog";
 import { extractErrorMessage } from "@/utils/errors";
 
@@ -117,6 +120,10 @@ export function AssistantActionBar({
   const messagePosition = useAppSelector(
     selectMessagePosition(conversationId, messageId),
   );
+  const density = useAppSelector(selectResponseDensity(conversationId));
+  const isLatestAssistant = useAppSelector(
+    selectIsLatestAssistantMessage(conversationId, messageId),
+  );
 
   const content = useMemo(() => extractFlatText(record), [record]);
   const metadata = useMemo<Record<string, unknown> | null>(
@@ -126,6 +133,12 @@ export function AssistantActionBar({
         : null,
     [record?.metadata],
   );
+
+  // In compact (agentic) density, hide the action bar by default for any
+  // assistant turn that has another assistant turn after it. The latest
+  // assistant always stays visible — that's the active answer the user
+  // reads. Hover the message group to reveal the bar for older turns.
+  const isHoverOnly = density === "compact" && !isLatestAssistant;
 
   const handleConfirmDelete = useCallback(async () => {
     try {
@@ -229,6 +242,13 @@ export function AssistantActionBar({
 
   return (
     <>
+      <div
+        className={cn(
+          "transition-opacity",
+          isHoverOnly &&
+            "opacity-0 group-hover/assistant-msg:opacity-100 focus-within:opacity-100",
+        )}
+      >
       <TapTargetButtonGroup>
         <ThumbsUpTapButton
           variant="group"
@@ -292,6 +312,7 @@ export function AssistantActionBar({
           />
         </div>
       </TapTargetButtonGroup>
+      </div>
 
       {showOptionsMenu && (
         <Suspense fallback={null}>

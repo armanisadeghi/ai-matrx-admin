@@ -142,6 +142,7 @@ export const launchAgentExecution = createAsyncThunk<
     variablesPanelStyle: flatVariablesPanelStyle,
     hideReasoning: flatHideReasoning,
     hideToolResults: flatHideToolResults,
+    responseDensity: flatResponseDensity,
     preExecutionMessage: flatPreExecutionMessage,
     bypassGateSeconds: flatBypassGateSeconds,
     jsonExtraction,
@@ -187,6 +188,7 @@ export const launchAgentExecution = createAsyncThunk<
   const bypassGateSeconds = config?.bypassGateSeconds ?? flatBypassGateSeconds;
   const hideReasoning = config?.hideReasoning ?? flatHideReasoning;
   const hideToolResults = config?.hideToolResults ?? flatHideToolResults;
+  const responseDensity = config?.responseDensity ?? flatResponseDensity;
   const variablesPanelStyle =
     config?.variablesPanelStyle ?? flatVariablesPanelStyle;
 
@@ -308,6 +310,7 @@ export const launchAgentExecution = createAsyncThunk<
         variablesPanelStyle,
         hideReasoning,
         hideToolResults,
+        responseDensity,
         preExecutionMessage,
         bypassGateSeconds,
         jsonExtraction,
@@ -349,6 +352,7 @@ export const launchAgentExecution = createAsyncThunk<
         variablesPanelStyle,
         hideReasoning,
         hideToolResults,
+        responseDensity,
         preExecutionMessage,
         jsonExtraction,
         originalText,

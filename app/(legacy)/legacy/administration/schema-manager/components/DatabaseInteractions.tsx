@@ -1,4 +1,4 @@
-// app/(authenticated)/(admin-auth)/administration/schema-manager/components/DatabaseInteractions.tsx
+// app/(legacy)/legacy/administration/schema-manager/components/DatabaseInteractions.tsx
 
 'use client';
 

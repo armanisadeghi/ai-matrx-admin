@@ -118,6 +118,10 @@ const nextConfig = {
             { source: '/demo/component-demo', destination: '/legacy/demo/component-demo', permanent: false },
             { source: '/demo/many-to-many-ui/:path*', destination: '/legacy/demo/many-to-many-ui/:path*', permanent: false },
             { source: '/demo/many-to-many-ui', destination: '/legacy/demo/many-to-many-ui', permanent: false },
+            // /administration/schema-manager depends on entity hooks (SchemaSelect, opsRedux);
+            // moved under /legacy/administration so it boots through the entity store/providers.
+            { source: '/administration/schema-manager/:path*', destination: '/legacy/administration/schema-manager/:path*', permanent: false },
+            { source: '/administration/schema-manager', destination: '/legacy/administration/schema-manager', permanent: false },
         ];
     },
     async rewrites() {

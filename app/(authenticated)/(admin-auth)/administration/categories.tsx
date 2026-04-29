@@ -520,7 +520,7 @@ export const adminCategories = [
         description:
           "Manage and interact with the database schema, run queries, and inspect type solutions.",
         icon: <IconDatabase />,
-        link: "/administration/schema-manager",
+        link: "/legacy/administration/schema-manager",
       },
       {
         title: "AI Tasks",

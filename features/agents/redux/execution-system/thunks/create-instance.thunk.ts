@@ -112,6 +112,7 @@ interface CreateManualInstanceArgs {
   widgetHandleId?: string | null;
   hideReasoning?: boolean;
   hideToolResults?: boolean;
+  responseDensity?: "comfortable" | "compact";
   preExecutionMessage?: string | null;
   variablesPanelStyle?: VariablesPanelStyle;
   jsonExtraction?: JsonExtractionConfig | null;
@@ -146,6 +147,7 @@ export const createManualInstance = createAsyncThunk<
     widgetHandleId,
     hideReasoning,
     hideToolResults,
+    responseDensity,
     preExecutionMessage,
     variablesPanelStyle,
     jsonExtraction,
@@ -204,6 +206,7 @@ export const createManualInstance = createAsyncThunk<
       widgetHandleId,
       hideReasoning,
       hideToolResults,
+      responseDensity,
       preExecutionMessage,
       variablesPanelStyle,
       jsonExtraction,
@@ -236,6 +239,7 @@ interface CreateShortcutInstanceArgs {
   widgetHandleId?: string | null;
   hideReasoning?: boolean;
   hideToolResults?: boolean;
+  responseDensity?: "comfortable" | "compact";
   preExecutionMessage?: string | null;
   bypassGateSeconds?: number;
   variablesPanelStyle?: VariablesPanelStyle;
@@ -264,6 +268,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
     widgetHandleId,
     hideReasoning,
     hideToolResults,
+    responseDensity,
     preExecutionMessage,
     bypassGateSeconds,
     variablesPanelStyle,
@@ -418,6 +423,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
       isCreator: false,
       hideReasoning: hideReasoning ?? shortcut.hideReasoning,
       hideToolResults: hideToolResults ?? shortcut.hideToolResults,
+      responseDensity: responseDensity ?? shortcut.responseDensity,
       preExecutionMessage: preExecutionMessage ?? shortcut.preExecutionMessage,
       bypassGateSeconds: bypassGateSeconds ?? shortcut.bypassGateSeconds ?? 0,
       variablesPanelStyle: variablesPanelStyle ?? shortcut.variablesPanelStyle,
@@ -785,6 +791,7 @@ export const startNewConversation = createAsyncThunk<
         builderAdvancedSettings: currentUIState?.builderAdvancedSettings,
         hideReasoning: currentUIState?.hideReasoning,
         hideToolResults: currentUIState?.hideToolResults,
+        responseDensity: currentUIState?.responseDensity,
         preExecutionMessage: currentUIState?.preExecutionMessage,
         variablesPanelStyle: currentUIState?.variablesPanelStyle,
         jsonExtraction: currentUIState?.jsonExtraction,
@@ -927,6 +934,7 @@ export const startNewConversationAndExecute = createAsyncThunk<
         builderAdvancedSettings: currentUIState?.builderAdvancedSettings,
         hideReasoning: currentUIState?.hideReasoning,
         hideToolResults: currentUIState?.hideToolResults,
+        responseDensity: currentUIState?.responseDensity,
         preExecutionMessage: currentUIState?.preExecutionMessage,
         variablesPanelStyle: currentUIState?.variablesPanelStyle,
         jsonExtraction: currentUIState?.jsonExtraction,
@@ -1121,6 +1129,7 @@ export const splitInputIntoNewConversation = createAsyncThunk<
         builderAdvancedSettings: currentUIState?.builderAdvancedSettings,
         hideReasoning: currentUIState?.hideReasoning,
         hideToolResults: currentUIState?.hideToolResults,
+        responseDensity: currentUIState?.responseDensity,
         preExecutionMessage: currentUIState?.preExecutionMessage,
         variablesPanelStyle: currentUIState?.variablesPanelStyle,
         jsonExtraction: currentUIState?.jsonExtraction,

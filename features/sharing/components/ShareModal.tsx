@@ -1,24 +1,34 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Users, Building2, Globe, Mail, Loader2, CheckCircle } from 'lucide-react';
-import { useSharing, useIsOwner, useSharingStatus } from '@/utils/permissions';
-import type { ResourceType } from '@/utils/permissions';
-import { PermissionsList } from './PermissionsList';
-import { ShareWithUserTab } from './tabs/ShareWithUserTab';
-import { ShareWithOrgTab } from './tabs/ShareWithOrgTab';
-import { PublicAccessTab } from './tabs/PublicAccessTab';
-import { getResourceTypeLabel } from '@/utils/permissions';
-import { useToast } from '@/components/ui/use-toast';
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import {
+  Users,
+  Building2,
+  Globe,
+  Mail,
+  Loader2,
+  CheckCircle,
+} from "lucide-react";
+import { useSharing, useIsOwner, useSharingStatus } from "@/utils/permissions";
+import type { ResourceType } from "@/utils/permissions";
+import { PermissionsList } from "./PermissionsList";
+import { ShareWithUserTab } from "./tabs/ShareWithUserTab";
+import { ShareWithOrgTab } from "./tabs/ShareWithOrgTab";
+import { PublicAccessTab } from "./tabs/PublicAccessTab";
+import {
+  getResourceTypeLabel,
+  getResourceSharePath,
+} from "@/utils/permissions";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -31,10 +41,10 @@ interface ShareModalProps {
 
 /**
  * ShareModal - Main sharing interface
- * 
+ *
  * Generic modal that works with ANY resource type.
  * Provides tabs for sharing with users, organizations, or making public.
- * 
+ *
  * @example
  * <ShareModal
  *   isOpen={isOpen}
@@ -53,47 +63,25 @@ export function ShareModal({
   resourceName,
   isOwner,
 }: ShareModalProps) {
-  const [activeTab, setActiveTab] = useState<'users' | 'organizations' | 'public'>('users');
+  const [activeTab, setActiveTab] = useState<
+    "users" | "organizations" | "public"
+  >("users");
   const [emailingLink, setEmailingLink] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const { toast } = useToast();
 
-  // Generate the share URL
   const getShareUrl = () => {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
-    const resourcePaths: Record<string, string> = {
-      // Legacy types
-      canvas: `/canvas/${resourceId}`,
-      prompt: `/ai/prompts/edit/${resourceId}`,
-      collection: `/collections/${resourceId}`,
-      workflow: `/workflows/${resourceId}`,
-      note: `/notes/${resourceId}`,
-      task: `/tasks/${resourceId}`,
-      tasks: `/tasks/${resourceId}`,
-      // New types
-      cx_conversation: `/chat/${resourceId}`,
-      canvas_items: `/canvas/${resourceId}`,
-      user_tables: `/tables/${resourceId}`,
-      user_lists: `/lists/${resourceId}`,
-      transcripts: `/transcripts/${resourceId}`,
-      quiz_sessions: `/quizzes/${resourceId}`,
-      sandbox_instances: `/sandbox/${resourceId}`,
-      user_files: `/files/${resourceId}`,
-      prompt_actions: `/ai/prompts/actions/${resourceId}`,
-      flashcard_data: `/flashcards/${resourceId}`,
-      flashcard_sets: `/flashcards/sets/${resourceId}`,
-    };
-    const path = resourcePaths[resourceType] || `/${resourceType}/${resourceId}`;
-    return `${baseUrl}${path}`;
+    return `${baseUrl}${getResourceSharePath(resourceType, resourceId)}`;
   };
 
   // Email link to self
   const handleEmailLink = async () => {
     setEmailingLink(true);
     try {
-      const response = await fetch('/api/sharing/email-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/sharing/email-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           resourceType: getResourceTypeLabel(resourceType),
           resourceName,
@@ -102,26 +90,26 @@ export function ShareModal({
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         setEmailSent(true);
         toast({
-          title: 'Email sent',
-          description: 'Link has been emailed to you',
+          title: "Email sent",
+          description: "Link has been emailed to you",
         });
         setTimeout(() => setEmailSent(false), 3000);
       } else {
         toast({
-          title: 'Failed to send email',
-          description: data.msg || 'Please try again',
-          variant: 'destructive',
+          title: "Failed to send email",
+          description: data.msg || "Please try again",
+          variant: "destructive",
         });
       }
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to send email',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to send email",
+        variant: "destructive",
       });
     } finally {
       setEmailingLink(false);
@@ -140,7 +128,10 @@ export function ShareModal({
     refresh,
   } = useSharing(resourceType, resourceId, isOpen);
 
-  const { isPublic: resourceIsPublic } = useSharingStatus(resourceType, resourceId);
+  const { isPublic: resourceIsPublic } = useSharingStatus(
+    resourceType,
+    resourceId,
+  );
 
   // Filter permissions by type for each tab
   const userPermissions = permissions.filter((p) => p.grantedToUserId);
@@ -175,7 +166,7 @@ export function ShareModal({
                 <Mail className="h-4 w-4" />
               )}
               <span className="ml-1.5 hidden sm:inline">
-                {emailSent ? 'Sent!' : 'Email link'}
+                {emailSent ? "Sent!" : "Email link"}
               </span>
             </Button>
           </div>
@@ -290,4 +281,3 @@ export function ShareModal({
     </Dialog>
   );
 }
-

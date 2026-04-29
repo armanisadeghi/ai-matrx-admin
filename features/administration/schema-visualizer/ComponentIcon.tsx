@@ -1,86 +1,103 @@
+// features/administration/schema-visualizer/ComponentIcon.tsx
+// Maps a Postgres `data_type` string to a Lucide icon. Standalone — no
+// dependency on the legacy `ENTITY_FIELD_COMPONENTS` registry.
+
 import {
-  TextIcon,
-  AlignLeft,
-  ToggleLeft,
-  ListFilter,
-  Sliders,
-  Key,
-  KeySquare,
-  Command,
-  CheckSquare,
-  Tag,
-  Palette,
-  Calendar,
-  PanelRightOpen,
-  Menu,
-  Upload,
-  Image as ImageIcon,
-  Braces,
-  Hash,
-  Phone,
-  Radio,
-  Link2,
-  ExternalLink,
-  Search,
-  Sheet,
-  Star,
-  Clock,
-  ChevronDown,
-  Check,
-  Component,
+    AlignLeft,
+    Braces,
+    Calendar,
+    Clock,
+    Component,
+    Hash,
+    Image as ImageIcon,
+    Key,
+    Link2,
+    ListFilter,
+    TextIcon,
+    ToggleLeft,
+    Type,
+    type LucideIcon,
 } from "lucide-react";
 
-import { ENTITY_FIELD_COMPONENTS } from "@/components/matrx/ArmaniForm/field-components/field-component-registries";
+// Best-effort mapping. Anything not matched falls back to a generic Component icon.
+const dataTypeIconMap: Record<string, LucideIcon> = {
+    // Strings
+    text: AlignLeft,
+    "character varying": TextIcon,
+    varchar: TextIcon,
+    char: TextIcon,
+    "character": TextIcon,
+    citext: TextIcon,
+    name: TextIcon,
 
-const componentIconMap = {
-  INPUT: TextIcon,
-  TEXTAREA: AlignLeft,
-  SWITCH: ToggleLeft,
-  SELECT: ListFilter,
-  SLIDER: Sliders,
-  UUID_FIELD: Key,
-  UUID_ARRAY: KeySquare,
-  BUTTON: Command,
-  CHECKBOX: CheckSquare,
-  CHIP: Tag,
-  COLOR_PICKER: Palette,
-  DATE_PICKER: Calendar,
-  DRAWER: PanelRightOpen,
-  MENU: Menu,
-  FILE_UPLOAD: Upload,
-  IMAGE_DISPLAY: ImageIcon,
-  JSON_EDITOR: Braces,
-  NUMBER_INPUT: Hash,
-  PHONE_INPUT: Phone,
-  RADIO_GROUP: Radio,
-  RELATIONAL_INPUT: Link2,
-  RELATIONAL_BUTTON: ExternalLink,
-  SEARCH_INPUT: Search,
-  SHEET: Sheet,
-  STAR_RATING: Star,
-  TIME_PICKER: Clock,
-  ACCORDION_VIEW: ChevronDown,
-  ACCORDION_SELECTED: Check,
-} as const;
+    // Numbers
+    integer: Hash,
+    int: Hash,
+    int2: Hash,
+    int4: Hash,
+    int8: Hash,
+    smallint: Hash,
+    bigint: Hash,
+    numeric: Hash,
+    decimal: Hash,
+    real: Hash,
+    "double precision": Hash,
+    float: Hash,
+    float4: Hash,
+    float8: Hash,
+    money: Hash,
+
+    // Booleans
+    boolean: ToggleLeft,
+    bool: ToggleLeft,
+
+    // Date / time
+    date: Calendar,
+    timestamp: Clock,
+    "timestamp without time zone": Clock,
+    "timestamp with time zone": Clock,
+    timestamptz: Clock,
+    time: Clock,
+    "time without time zone": Clock,
+    "time with time zone": Clock,
+    interval: Clock,
+
+    // JSON
+    json: Braces,
+    jsonb: Braces,
+
+    // UUID / identity
+    uuid: Key,
+
+    // Arrays / enum-ish
+    "ARRAY": ListFilter,
+    "USER-DEFINED": Type,
+
+    // Binary / images
+    bytea: ImageIcon,
+
+    // Network / link-like
+    inet: Link2,
+    cidr: Link2,
+    macaddr: Link2,
+};
 
 export function ComponentIcon({
-  component,
-  className,
-  size = 16,
-  strokeWidth = 2,
+    dataType,
+    className,
+    size = 16,
+    strokeWidth = 2,
 }: {
-  component: keyof typeof ENTITY_FIELD_COMPONENTS;
-  className?: string;
-  size?: number;
-  strokeWidth?: number;
+    dataType: string;
+    className?: string;
+    size?: number;
+    strokeWidth?: number;
 }) {
-  const IconComponent = componentIconMap[component] || Component;
+    const normalized = dataType?.toLowerCase?.() ?? "";
+    const IconComponent =
+        dataTypeIconMap[dataType] ?? dataTypeIconMap[normalized] ?? Component;
 
-  return (
-    <IconComponent
-      className={className}
-      size={size}
-      strokeWidth={strokeWidth}
-    />
-  );
+    return (
+        <IconComponent className={className} size={size} strokeWidth={strokeWidth} />
+    );
 }

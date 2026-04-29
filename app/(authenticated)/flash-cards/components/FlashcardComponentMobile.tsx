@@ -16,7 +16,7 @@ import {
     LargeComponentLoading,
     CardLoading
 } from '@/components/matrx/LoadingComponents';
-import { ensureId } from "@/utils/schema/schemaUtils";
+import { ensureId } from "@/utils/schema/lite";
 import { getFlashcardSet } from '@/app/(authenticated)/flashcard/app-data';
 import AiAssistModal from '@/app/(authenticated)/flash-cards/ai/AiAssistModal';
 

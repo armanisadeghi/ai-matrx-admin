@@ -25,8 +25,8 @@
  *     (owner, assignee, direct grant, project, workspace, org hierarchy) in one query.
  */
 
-import { supabase } from '@/utils/supabase/client';
-import type { Database, Json } from '@/types/database.types';
+import { supabase } from "@/utils/supabase/client";
+import type { Database, Json } from "@/types/database.types";
 import {
   Permission,
   PermissionWithDetails,
@@ -41,23 +41,24 @@ import {
   PermissionCheckResult,
   ShareActionResult,
   satisfiesPermissionLevel,
-} from './types';
+} from "./types";
+import { getShareableResource } from "./registry";
 
-type TableName = keyof Database['public']['Tables'];
-type RpcPermissionRow = Database['public']['Functions']['get_resource_permissions']['Returns'][number];
-type PermissionsTableRow = Database['public']['Tables']['permissions']['Row'];
+type RpcPermissionRow =
+  Database["public"]["Functions"]["get_resource_permissions"]["Returns"][number];
+type PermissionsTableRow = Database["public"]["Tables"]["permissions"]["Row"];
 
 function errMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
   if (
-    typeof error === 'object' &&
+    typeof error === "object" &&
     error !== null &&
-    'message' in error &&
-    typeof (error as { message: unknown }).message === 'string'
+    "message" in error &&
+    typeof (error as { message: unknown }).message === "string"
   ) {
     return (error as { message: string }).message;
   }
-  return 'Unknown error';
+  return "Unknown error";
 }
 
 /** Share / visibility RPCs return `Json` — narrow without assuming shape beyond optional success/error/message. */
@@ -66,13 +67,18 @@ function parseShareRpcResult(data: Json | null | undefined): {
   error?: string;
   message?: string;
 } {
-  if (data === null || data === undefined || typeof data !== 'object' || Array.isArray(data)) {
-    return { success: false, error: 'Invalid response' };
+  if (
+    data === null ||
+    data === undefined ||
+    typeof data !== "object" ||
+    Array.isArray(data)
+  ) {
+    return { success: false, error: "Invalid response" };
   }
   const o = data as Record<string, unknown>;
   const success = o.success === true;
-  const err = typeof o.error === 'string' ? o.error : undefined;
-  const message = typeof o.message === 'string' ? o.message : undefined;
+  const err = typeof o.error === "string" ? o.error : undefined;
+  const message = typeof o.message === "string" ? o.message : undefined;
   return { success, error: err, message };
 }
 
@@ -87,32 +93,41 @@ export interface ResourceVisibility {
 /**
  * Fetch is_public directly from the resource row.
  * Single cheap query — safe to call from list-item components like ShareButton.
+ *
+ * Uses the shareable_resource_registry to find the canonical table name AND
+ * the actual is_public column name (some tables use `public` instead of
+ * `is_public`). Returns `{ isPublic: false }` when the resource type either
+ * isn't registered or has no public-visibility column.
  */
 export async function getResourceVisibility(
   resourceType: ResourceType,
-  resourceId: string
+  resourceId: string,
 ): Promise<ResourceVisibility> {
   try {
-    const tableName = getTableName(resourceType);
-    // Cast supabase client to loosen dynamic table type inference (huge union causes TS2589).
+    const entry = getShareableResource(resourceType);
+    if (!entry || !entry.isPublicColumn) {
+      return { isPublic: false };
+    }
     const client = supabase as unknown as {
       from: (t: string) => {
         select: (col: string) => {
-          eq: (k: string, v: string) => {
+          eq: (
+            k: string,
+            v: string,
+          ) => {
             maybeSingle: <T>() => Promise<{ data: T | null; error: unknown }>;
           };
         };
       };
     };
     const { data, error } = await client
-      .from(tableName)
-      .select('is_public')
-      .eq('id', resourceId)
-      .maybeSingle<{ is_public: boolean | null }>();
+      .from(entry.tableName)
+      .select(entry.isPublicColumn)
+      .eq(entry.idColumn, resourceId)
+      .maybeSingle<Record<string, boolean | null>>();
 
     if (error || !data) return { isPublic: false };
-
-    return { isPublic: data.is_public ?? false };
+    return { isPublic: data[entry.isPublicColumn] ?? false };
   } catch {
     return { isPublic: false };
   }
@@ -126,11 +141,13 @@ export async function getResourceVisibility(
  * Grant a user access to a resource.
  * RPC validates: authenticated, valid level, resource exists, caller is owner, no duplicate.
  */
-export async function shareWithUser(options: ShareWithUserOptions): Promise<ShareActionResult> {
+export async function shareWithUser(
+  options: ShareWithUserOptions,
+): Promise<ShareActionResult> {
   try {
     const { resourceType, resourceId, userId, permissionLevel } = options;
 
-    const { data, error } = await supabase.rpc('share_resource_with_user', {
+    const { data, error } = await supabase.rpc("share_resource_with_user", {
       p_resource_type: resourceType,
       p_resource_id: resourceId,
       p_target_user_id: userId,
@@ -139,25 +156,43 @@ export async function shareWithUser(options: ShareWithUserOptions): Promise<Shar
 
     if (error) throw error;
     const parsed = parseShareRpcResult(data);
-    if (!parsed.success) return { success: false, error: parsed.error || 'Failed to share with user' };
+    if (!parsed.success)
+      return {
+        success: false,
+        error: parsed.error || "Failed to share with user",
+      };
 
     // Fire-and-forget notification — failure doesn't affect the grant
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         const sharerName =
-          user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'Someone';
-        fetch('/api/sharing/notify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ recipientUserId: userId, resourceType, resourceId, sharerName }),
-        }).catch((err) => console.error('Sharing notification failed:', err));
+          user.user_metadata?.full_name ||
+          user.user_metadata?.name ||
+          user.email ||
+          "Someone";
+        fetch("/api/sharing/notify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            recipientUserId: userId,
+            resourceType,
+            resourceId,
+            sharerName,
+          }),
+        }).catch((err) => console.error("Sharing notification failed:", err));
       }
     });
 
-    return { success: true, message: parsed.message || 'Successfully shared with user' };
+    return {
+      success: true,
+      message: parsed.message || "Successfully shared with user",
+    };
   } catch (error: unknown) {
-    console.error('shareWithUser error:', error);
-    return { success: false, error: errMessage(error) || 'Failed to share with user' };
+    console.error("shareWithUser error:", error);
+    return {
+      success: false,
+      error: errMessage(error) || "Failed to share with user",
+    };
   }
 }
 
@@ -166,11 +201,14 @@ export async function shareWithUser(options: ShareWithUserOptions): Promise<Shar
  * RPC validates: authenticated, valid level, resource exists, caller is owner,
  * caller is a member of the target org, no duplicate.
  */
-export async function shareWithOrg(options: ShareWithOrgOptions): Promise<ShareActionResult> {
+export async function shareWithOrg(
+  options: ShareWithOrgOptions,
+): Promise<ShareActionResult> {
   try {
-    const { resourceType, resourceId, organizationId, permissionLevel } = options;
+    const { resourceType, resourceId, organizationId, permissionLevel } =
+      options;
 
-    const { data, error } = await supabase.rpc('share_resource_with_org', {
+    const { data, error } = await supabase.rpc("share_resource_with_org", {
       p_resource_type: resourceType,
       p_resource_id: resourceId,
       p_target_org_id: organizationId,
@@ -179,12 +217,22 @@ export async function shareWithOrg(options: ShareWithOrgOptions): Promise<ShareA
 
     if (error) throw error;
     const parsed = parseShareRpcResult(data);
-    if (!parsed.success) return { success: false, error: parsed.error || 'Failed to share with organization' };
+    if (!parsed.success)
+      return {
+        success: false,
+        error: parsed.error || "Failed to share with organization",
+      };
 
-    return { success: true, message: parsed.message || 'Successfully shared with organization' };
+    return {
+      success: true,
+      message: parsed.message || "Successfully shared with organization",
+    };
   } catch (error: unknown) {
-    console.error('shareWithOrg error:', error);
-    return { success: false, error: errMessage(error) || 'Failed to share with organization' };
+    console.error("shareWithOrg error:", error);
+    return {
+      success: false,
+      error: errMessage(error) || "Failed to share with organization",
+    };
   }
 }
 
@@ -193,23 +241,29 @@ export async function shareWithOrg(options: ShareWithOrgOptions): Promise<ShareA
  * Sets is_public = true on the resource row. RPC validates ownership.
  * The permissions table is NOT written to — is_public on the resource row is the source of truth.
  */
-export async function makePublic(options: MakePublicOptions): Promise<ShareActionResult> {
+export async function makePublic(
+  options: MakePublicOptions,
+): Promise<ShareActionResult> {
   try {
     const { resourceType, resourceId } = options;
 
-    const { data, error } = await supabase.rpc('make_resource_public', {
+    const { data, error } = await supabase.rpc("make_resource_public", {
       p_resource_type: resourceType,
       p_resource_id: resourceId,
     });
 
     if (error) throw error;
     const parsed = parseShareRpcResult(data);
-    if (!parsed.success) return { success: false, error: parsed.error || 'Failed to make public' };
+    if (!parsed.success)
+      return { success: false, error: parsed.error || "Failed to make public" };
 
-    return { success: true, message: 'Resource is now public' };
+    return { success: true, message: "Resource is now public" };
   } catch (error: unknown) {
-    console.error('makePublic error:', error);
-    return { success: false, error: errMessage(error) || 'Failed to make public' };
+    console.error("makePublic error:", error);
+    return {
+      success: false,
+      error: errMessage(error) || "Failed to make public",
+    };
   }
 }
 
@@ -219,22 +273,29 @@ export async function makePublic(options: MakePublicOptions): Promise<ShareActio
  */
 export async function makePrivate(
   resourceType: ResourceType,
-  resourceId: string
+  resourceId: string,
 ): Promise<ShareActionResult> {
   try {
-    const { data, error } = await supabase.rpc('make_resource_private', {
+    const { data, error } = await supabase.rpc("make_resource_private", {
       p_resource_type: resourceType,
       p_resource_id: resourceId,
     });
 
     if (error) throw error;
     const parsed = parseShareRpcResult(data);
-    if (!parsed.success) return { success: false, error: parsed.error || 'Failed to make private' };
+    if (!parsed.success)
+      return {
+        success: false,
+        error: parsed.error || "Failed to make private",
+      };
 
-    return { success: true, message: 'Resource is now private' };
+    return { success: true, message: "Resource is now private" };
   } catch (error: unknown) {
-    console.error('makePrivate error:', error);
-    return { success: false, error: errMessage(error) || 'Failed to make private' };
+    console.error("makePrivate error:", error);
+    return {
+      success: false,
+      error: errMessage(error) || "Failed to make private",
+    };
   }
 }
 
@@ -249,10 +310,10 @@ export async function makePrivate(
 export async function revokeUserAccess(
   resourceType: ResourceType,
   resourceId: string,
-  userId: string
+  userId: string,
 ): Promise<ShareActionResult> {
   try {
-    const { data, error } = await supabase.rpc('revoke_resource_access', {
+    const { data, error } = await supabase.rpc("revoke_resource_access", {
       p_resource_type: resourceType,
       p_resource_id: resourceId,
       p_target_user_id: userId,
@@ -260,12 +321,19 @@ export async function revokeUserAccess(
 
     if (error) throw error;
     const parsed = parseShareRpcResult(data);
-    if (!parsed.success) return { success: false, error: parsed.error || 'Failed to revoke access' };
+    if (!parsed.success)
+      return {
+        success: false,
+        error: parsed.error || "Failed to revoke access",
+      };
 
-    return { success: true, message: 'Access revoked' };
+    return { success: true, message: "Access revoked" };
   } catch (error: unknown) {
-    console.error('revokeUserAccess error:', error);
-    return { success: false, error: errMessage(error) || 'Failed to revoke user access' };
+    console.error("revokeUserAccess error:", error);
+    return {
+      success: false,
+      error: errMessage(error) || "Failed to revoke user access",
+    };
   }
 }
 
@@ -276,10 +344,10 @@ export async function revokeUserAccess(
 export async function revokeOrgAccess(
   resourceType: ResourceType,
   resourceId: string,
-  organizationId: string
+  organizationId: string,
 ): Promise<ShareActionResult> {
   try {
-    const { data, error } = await supabase.rpc('revoke_resource_org_access', {
+    const { data, error } = await supabase.rpc("revoke_resource_org_access", {
       p_resource_type: resourceType,
       p_resource_id: resourceId,
       p_target_org_id: organizationId,
@@ -287,12 +355,19 @@ export async function revokeOrgAccess(
 
     if (error) throw error;
     const parsed = parseShareRpcResult(data);
-    if (!parsed.success) return { success: false, error: parsed.error || 'Failed to revoke org access' };
+    if (!parsed.success)
+      return {
+        success: false,
+        error: parsed.error || "Failed to revoke org access",
+      };
 
-    return { success: true, message: 'Organization access revoked' };
+    return { success: true, message: "Organization access revoked" };
   } catch (error: unknown) {
-    console.error('revokeOrgAccess error:', error);
-    return { success: false, error: errMessage(error) || 'Failed to revoke org access' };
+    console.error("revokeOrgAccess error:", error);
+    return {
+      success: false,
+      error: errMessage(error) || "Failed to revoke org access",
+    };
   }
 }
 
@@ -301,7 +376,7 @@ export async function revokeOrgAccess(
  */
 export async function revokePublicAccess(
   resourceType: ResourceType,
-  resourceId: string
+  resourceId: string,
 ): Promise<ShareActionResult> {
   return makePrivate(resourceType, resourceId);
 }
@@ -309,14 +384,21 @@ export async function revokePublicAccess(
 /**
  * Generic dispatcher — routes to the correct revoke function.
  */
-export async function revokeAccess(options: RevokeAccessOptions): Promise<ShareActionResult> {
-  const { resourceType, resourceId, userId, organizationId, isPublic } = options;
+export async function revokeAccess(
+  options: RevokeAccessOptions,
+): Promise<ShareActionResult> {
+  const { resourceType, resourceId, userId, organizationId, isPublic } =
+    options;
 
   if (userId) return revokeUserAccess(resourceType, resourceId, userId);
-  if (organizationId) return revokeOrgAccess(resourceType, resourceId, organizationId);
+  if (organizationId)
+    return revokeOrgAccess(resourceType, resourceId, organizationId);
   if (isPublic) return revokePublicAccess(resourceType, resourceId);
 
-  return { success: false, error: 'Must specify userId, organizationId, or isPublic' };
+  return {
+    success: false,
+    error: "Must specify userId, organizationId, or isPublic",
+  };
 }
 
 // ============================================================================
@@ -328,16 +410,17 @@ export async function revokeAccess(options: RevokeAccessOptions): Promise<ShareA
  * RPC validates ownership before updating.
  */
 export async function updatePermissionLevel(
-  options: UpdatePermissionOptions
+  options: UpdatePermissionOptions,
 ): Promise<ShareActionResult> {
   try {
-    const { resourceType, resourceId, userId, organizationId, newLevel } = options;
+    const { resourceType, resourceId, userId, organizationId, newLevel } =
+      options;
 
     if (!userId && !organizationId) {
-      return { success: false, error: 'Must specify userId or organizationId' };
+      return { success: false, error: "Must specify userId or organizationId" };
     }
 
-    const { data, error } = await supabase.rpc('update_permission_level', {
+    const { data, error } = await supabase.rpc("update_permission_level", {
       p_resource_type: resourceType,
       p_resource_id: resourceId,
       p_target_user_id: userId ?? null,
@@ -347,12 +430,22 @@ export async function updatePermissionLevel(
 
     if (error) throw error;
     const parsed = parseShareRpcResult(data);
-    if (!parsed.success) return { success: false, error: parsed.error || 'Failed to update permission level' };
+    if (!parsed.success)
+      return {
+        success: false,
+        error: parsed.error || "Failed to update permission level",
+      };
 
-    return { success: true, message: parsed.message || 'Permission level updated' };
+    return {
+      success: true,
+      message: parsed.message || "Permission level updated",
+    };
   } catch (error: unknown) {
-    console.error('updatePermissionLevel error:', error);
-    return { success: false, error: errMessage(error) || 'Failed to update permission level' };
+    console.error("updatePermissionLevel error:", error);
+    return {
+      success: false,
+      error: errMessage(error) || "Failed to update permission level",
+    };
   }
 }
 
@@ -369,10 +462,10 @@ export async function updatePermissionLevel(
  */
 export async function listPermissions(
   resourceType: ResourceType,
-  resourceId: string
+  resourceId: string,
 ): Promise<PermissionWithDetails[]> {
   try {
-    const { data, error } = await supabase.rpc('get_resource_permissions', {
+    const { data, error } = await supabase.rpc("get_resource_permissions", {
       p_resource_type: resourceType,
       p_resource_id: resourceId,
     });
@@ -381,7 +474,7 @@ export async function listPermissions(
 
     return (data || []).map(transformPermissionFromRpcRow);
   } catch (error: unknown) {
-    console.error('listPermissions error:', error);
+    console.error("listPermissions error:", error);
     return [];
   }
 }
@@ -391,33 +484,48 @@ export const getResourcePermissions = listPermissions;
 
 /**
  * Check if the current user is the owner of a resource.
- * Reads user_id directly from the resource row — single index scan, no RPC needed.
+ * Reads owner_column directly from the resource row — single index scan, no
+ * RPC round-trip required.
+ *
+ * Uses the registry to find the canonical table name, id column, and owner
+ * column so tables like flashcard_sets (set_id, not id) work correctly the
+ * day they're added to the registry — without a code change here.
  */
 export async function isResourceOwner(
   resourceType: ResourceType,
-  resourceId: string
+  resourceId: string,
 ): Promise<boolean> {
   try {
-    const tableName = getTableName(resourceType);
+    const entry = getShareableResource(resourceType);
+    if (!entry) return false;
+
     const client = supabase as unknown as {
       from: (t: string) => {
         select: (col: string) => {
-          eq: (k: string, v: string) => {
+          eq: (
+            k: string,
+            v: string,
+          ) => {
             maybeSingle: <T>() => Promise<{ data: T | null; error: unknown }>;
           };
         };
       };
     };
-    const [{ data: row }, { data: { user } }] = await Promise.all([
+    const [
+      { data: row },
+      {
+        data: { user },
+      },
+    ] = await Promise.all([
       client
-        .from(tableName)
-        .select('user_id')
-        .eq('id', resourceId)
-        .maybeSingle<{ user_id: string | null }>(),
+        .from(entry.tableName)
+        .select(entry.ownerColumn)
+        .eq(entry.idColumn, resourceId)
+        .maybeSingle<Record<string, string | null>>(),
       supabase.auth.getUser(),
     ]);
 
-    return !!user && !!row && row.user_id === user.id;
+    return !!user && !!row && row[entry.ownerColumn] === user.id;
   } catch {
     return false;
   }
@@ -428,24 +536,31 @@ export async function isResourceOwner(
  * Reads from the permissions table — reflects direct grants only,
  * not hierarchy-inherited access (project/workspace/org membership).
  */
-export async function getSharedWithMe(resourceType?: ResourceType): Promise<Permission[]> {
+export async function getSharedWithMe(
+  resourceType?: ResourceType,
+): Promise<Permission[]> {
   try {
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
     if (userError || !user) return [];
 
     let query = supabase
-      .from('permissions')
-      .select('*')
-      .eq('granted_to_user_id', user.id);
+      .from("permissions")
+      .select("*")
+      .eq("granted_to_user_id", user.id);
 
-    if (resourceType) query = query.eq('resource_type', resourceType);
+    if (resourceType) query = query.eq("resource_type", resourceType);
 
-    const { data, error } = await query.order('created_at', { ascending: false });
+    const { data, error } = await query.order("created_at", {
+      ascending: false,
+    });
     if (error) throw error;
 
     return (data || []).map(transformPermissionFromTableRow);
   } catch (error) {
-    console.error('getSharedWithMe error:', error);
+    console.error("getSharedWithMe error:", error);
     return [];
   }
 }
@@ -454,30 +569,51 @@ export async function getSharedWithMe(resourceType?: ResourceType): Promise<Perm
  * Check if current user has a specific permission level on a resource.
  * Used for client-side gating — not a substitute for RLS.
  */
-export async function checkPermission(options: CheckPermissionOptions): Promise<PermissionCheckResult> {
+export async function checkPermission(
+  options: CheckPermissionOptions,
+): Promise<PermissionCheckResult> {
   try {
-    const { resourceType, resourceId, requiredLevel = 'viewer' } = options;
+    const { resourceType, resourceId, requiredLevel = "viewer" } = options;
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) return { hasAccess: false, isOwner: false, reason: 'Not authenticated' };
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError || !user)
+      return { hasAccess: false, isOwner: false, reason: "Not authenticated" };
 
     const permissions = await listPermissions(resourceType, resourceId);
 
-    const userPermission = permissions.find((p) => p.grantedToUserId === user.id);
+    const userPermission = permissions.find(
+      (p) => p.grantedToUserId === user.id,
+    );
     if (userPermission) {
-      const hasAccess = satisfiesPermissionLevel(userPermission.permissionLevel, requiredLevel);
+      const hasAccess = satisfiesPermissionLevel(
+        userPermission.permissionLevel,
+        requiredLevel,
+      );
       return {
         hasAccess,
         level: userPermission.permissionLevel,
         isOwner: false,
-        reason: hasAccess ? 'Direct user permission' : 'Insufficient permission level',
+        reason: hasAccess
+          ? "Direct user permission"
+          : "Insufficient permission level",
       };
     }
 
-    return { hasAccess: false, isOwner: false, reason: 'No direct permission found' };
+    return {
+      hasAccess: false,
+      isOwner: false,
+      reason: "No direct permission found",
+    };
   } catch (error) {
-    console.error('checkPermission error:', error);
-    return { hasAccess: false, isOwner: false, reason: 'Error checking permission' };
+    console.error("checkPermission error:", error);
+    return {
+      hasAccess: false,
+      isOwner: false,
+      reason: "Error checking permission",
+    };
   }
 }
 
@@ -488,10 +624,12 @@ export async function batchShareWithUsers(
   resourceType: ResourceType,
   resourceId: string,
   userIds: string[],
-  permissionLevel: PermissionLevel
+  permissionLevel: PermissionLevel,
 ): Promise<ShareActionResult[]> {
   return Promise.all(
-    userIds.map((userId) => shareWithUser({ resourceType, resourceId, userId, permissionLevel }))
+    userIds.map((userId) =>
+      shareWithUser({ resourceType, resourceId, userId, permissionLevel }),
+    ),
   );
 }
 
@@ -499,31 +637,49 @@ export async function batchShareWithUsers(
 // Internal Helpers
 // ============================================================================
 
-function parseNestedUser(j: Json): PermissionWithDetails['grantedToUser'] | undefined {
-  if (j === null || j === undefined || typeof j !== 'object' || Array.isArray(j)) return undefined;
+function parseNestedUser(
+  j: Json,
+): PermissionWithDetails["grantedToUser"] | undefined {
+  if (
+    j === null ||
+    j === undefined ||
+    typeof j !== "object" ||
+    Array.isArray(j)
+  )
+    return undefined;
   const o = j as Record<string, unknown>;
-  if (typeof o.id !== 'string' || typeof o.email !== 'string') return undefined;
+  if (typeof o.id !== "string" || typeof o.email !== "string") return undefined;
   return {
     id: o.id,
     email: o.email,
-    displayName: typeof o.displayName === 'string' ? o.displayName : undefined,
-    avatarUrl: typeof o.avatarUrl === 'string' ? o.avatarUrl : undefined,
+    displayName: typeof o.displayName === "string" ? o.displayName : undefined,
+    avatarUrl: typeof o.avatarUrl === "string" ? o.avatarUrl : undefined,
   };
 }
 
-function parseNestedOrg(j: Json): PermissionWithDetails['grantedToOrganization'] | undefined {
-  if (j === null || j === undefined || typeof j !== 'object' || Array.isArray(j)) return undefined;
+function parseNestedOrg(
+  j: Json,
+): PermissionWithDetails["grantedToOrganization"] | undefined {
+  if (
+    j === null ||
+    j === undefined ||
+    typeof j !== "object" ||
+    Array.isArray(j)
+  )
+    return undefined;
   const o = j as Record<string, unknown>;
-  if (typeof o.id !== 'string' || typeof o.name !== 'string') return undefined;
+  if (typeof o.id !== "string" || typeof o.name !== "string") return undefined;
   return {
     id: o.id,
     name: o.name,
-    slug: typeof o.slug === 'string' ? o.slug : undefined,
-    logoUrl: typeof o.logoUrl === 'string' ? o.logoUrl : undefined,
+    slug: typeof o.slug === "string" ? o.slug : undefined,
+    logoUrl: typeof o.logoUrl === "string" ? o.logoUrl : undefined,
   };
 }
 
-function transformPermissionFromRpcRow(row: RpcPermissionRow): PermissionWithDetails {
+function transformPermissionFromRpcRow(
+  row: RpcPermissionRow,
+): PermissionWithDetails {
   return {
     id: row.id,
     resourceType: row.resource_type as ResourceType,
@@ -553,25 +709,6 @@ function transformPermissionFromTableRow(row: PermissionsTableRow): Permission {
   };
 }
 
-/**
- * Maps resource-type aliases to their actual Postgres table names. Each
- * target must be a live table in the DB schema — if a table is renamed or
- * removed the mapping breaks at compile time rather than at runtime.
- * New resource types should use the table name directly.
- */
-function getTableName(resourceType: ResourceType): TableName {
-  const legacyMap: Partial<Record<ResourceType, TableName>> = {
-    prompt: 'prompts',
-    workflow: 'workflow',
-    note: 'notes',
-    recipe: 'recipe',
-    conversation: 'conversations',
-    applet: 'applet',
-    broker_value: 'broker_values',
-    message: 'messages',
-    organization: 'organizations',
-    scrape_domain: 'scrape_domain',
-    agent: 'agx_agent',
-  };
-  return (legacyMap[resourceType] ?? (resourceType as TableName)) as TableName;
-}
+// Legacy getTableName() removed — the registry (utils/permissions/registry.ts)
+// is the single source of truth. Use getShareableResource() / resolveTableName()
+// from './registry' if you need the canonical table name on the client.

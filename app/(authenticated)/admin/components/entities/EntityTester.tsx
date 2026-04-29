@@ -20,7 +20,7 @@ import {ScrollArea} from '@/components/ui/scroll-area';
 import {useToast} from '@/components/ui/use-toast';
 import {motion, AnimatePresence} from 'motion/react';
 import {Loader2} from 'lucide-react';
-import {EntityKeys, EntityData} from '@/types/entityTypes';
+import type { EntityKeys, EntityData } from '@/types/entityTypes';
 import {useEntity} from '@/lib/redux/entity/hooks/useEntity';
 import {MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
 import {createRecordKey} from "@/lib/redux/entity/utils/stateHelpUtils";

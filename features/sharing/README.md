@@ -253,10 +253,16 @@ When adding sharing to a feature, every item below matters. Missing any one crea
 
 ## Available ResourceTypes
 
+The list below is **derived from the registry** — do not edit it by hand. Run
+`pnpm tsx scripts/regen-shareable-registry-snapshot.ts` and copy the snapshot
+into the table when the set changes.
+
 | ResourceType | Table | Label | Use Case |
 |---|---|---|---|
+| `agent` | agx_agent | Agent | AI agents |
 | `prompt` | prompts | Prompt | AI prompt templates |
 | `note` | notes | Note | User notes |
+| `task` | ctx_tasks | Task | Project tasks |
 | `cx_conversation` | cx_conversation | Conversation | AI chat conversations |
 | `canvas_items` | canvas_items | Canvas | Creative canvases |
 | `user_tables` | user_tables | Table | Custom data tables |
@@ -267,9 +273,25 @@ When adding sharing to a feature, every item below matters. Missing any one crea
 | `user_files` | user_files | File | Uploaded files |
 | `prompt_actions` | prompt_actions | Action | Prompt actions |
 | `flashcard_data` | flashcard_data | Flashcard | Individual flashcards |
-| `flashcard_sets` | flashcard_sets | Flashcard Set | Flashcard collections |
 
-To add a new resource type: update `ResourceType` in `utils/permissions/types.ts`, add its label in `getResourceTypeLabel()`, and add its URL pattern in `ShareModal.tsx`.
+### To add a new resource type
+
+It's two rows + one component:
+
+1. **Apply a DB migration** with a single INSERT into `public.shareable_resource_registry`:
+   ```sql
+   INSERT INTO public.shareable_resource_registry
+     (resource_type, table_name, id_column, owner_column, is_public_column,
+      display_label, url_path_template, rls_uses_has_permission, is_active)
+   VALUES
+     ('<alias>', '<table>', 'id', 'user_id', 'is_public',
+      '<Label>', '/<path>/{id}', true, true);
+   ```
+2. **Mirror the row in `utils/permissions/registry.ts`** (`SHAREABLE_RESOURCE_REGISTRY`).
+3. **Refresh the parity snapshot** — `pnpm tsx scripts/regen-shareable-registry-snapshot.ts`.
+4. **Drop in `<ShareButton resourceType="<alias>" ... />`** wherever you want sharing.
+
+That's it. No RPC edits, no `getTableName()`, no `ShareModal.getShareUrl()`, no label maps. The validator trigger on `permissions.resource_type` will reject any unregistered type. The TypeScript `ResourceType` union is derived from the registry, so unregistered aliases fail at compile time. The parity test in `utils/permissions/__tests__/registry.parity.test.ts` blocks merge if the DB and TS are out of sync.
 
 ---
 

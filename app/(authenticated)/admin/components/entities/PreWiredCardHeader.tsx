@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { useAppSelector } from '@/lib/redux/hooks';
 import { selectFormattedEntityOptions } from '@/lib/redux/schema/globalCacheSelectors';
-import { EntityKeys } from '@/types/entityTypes';
+import type { EntityKeys } from '@/types/entityTypes';
 
 interface PreWiredCardHeaderProps {
     onEntityChange?: (value: EntityKeys | null) => void;

@@ -149,6 +149,12 @@ export interface InitInstanceUIStatePayload {
   jsonExtraction?: JsonExtractionConfig | null;
   /** Original text selected in an editor/notes surface before launch. Used by text-manipulation callbacks. */
   originalText?: string | null;
+  /**
+   * Render density for the transcript chrome — see `InstanceUIState`. Default
+   * "comfortable". Surfaces that drive heavy agentic flows (e.g. coding
+   * agents, multi-tool research) can pass "compact" at instance creation.
+   */
+  responseDensity?: "comfortable" | "compact";
 }
 
 // =============================================================================
@@ -187,6 +193,7 @@ const instanceUIStateSlice = createSlice({
         variablesPanelStyle = "inline",
         jsonExtraction = null,
         originalText = null,
+        responseDensity = "comfortable",
       } = action.payload;
 
       state.byConversationId[conversationId] = {
@@ -221,7 +228,21 @@ const instanceUIStateSlice = createSlice({
         modeState: {},
         jsonExtraction,
         originalText,
+        responseDensity,
       };
+    },
+
+    setResponseDensity(
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        density: "comfortable" | "compact";
+      }>,
+    ) {
+      const entry = state.byConversationId[action.payload.conversationId];
+      if (entry) {
+        entry.responseDensity = action.payload.density;
+      }
     },
 
     setDisplayMode(
@@ -719,6 +740,7 @@ export const {
   resetStructuredInstruction,
   setHideReasoning,
   setHideToolResults,
+  setResponseDensity,
   setPreExecutionMessage,
   setVariablesPanelStyle,
   setOriginalText,

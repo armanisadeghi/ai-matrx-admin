@@ -25,6 +25,12 @@ interface LiveToolCallCardProps {
   requestId: string;
   /** Wire-format call ID — used to key into toolLifecycle map. */
   callId: string;
+  /**
+   * Owning conversation id. Threaded through so the visualization shell
+   * can subscribe to `selectResponseDensity(conversationId)` and render
+   * the compact, hover-only chrome on agentic surfaces.
+   */
+  conversationId?: string;
   /** Whether there is substantive text content after this tool block. */
   hasContentAfter?: boolean;
 }
@@ -32,6 +38,7 @@ interface LiveToolCallCardProps {
 export function LiveToolCallCard({
   requestId,
   callId,
+  conversationId,
   hasContentAfter = false,
 }: LiveToolCallCardProps) {
   const entry = useAppSelector(
@@ -44,6 +51,8 @@ export function LiveToolCallCard({
   return (
     <ToolCallVisualization
       entries={[entry]}
+      requestId={requestId}
+      conversationId={conversationId}
       hasContent={hasContentAfter}
       className="mb-2"
     />

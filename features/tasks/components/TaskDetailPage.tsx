@@ -362,7 +362,7 @@ export default function TaskDetailPage({ task }: TaskDetailPageProps) {
           )}
 
           <ShareButton
-            resourceType="tasks"
+            resourceType="task"
             resourceId={task.id}
             resourceName={task.title}
             isOwner={task.userId === currentUserId}
@@ -856,7 +856,7 @@ export default function TaskDetailPage({ task }: TaskDetailPageProps) {
       <ShareModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
-        resourceType="tasks"
+        resourceType="task"
         resourceId={task.id}
         resourceName={task.title}
         isOwner={task.userId === currentUserId}

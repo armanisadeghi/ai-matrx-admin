@@ -128,6 +128,28 @@ export const selectMessageStreamRequestId =
     state.messages.byConversationId[conversationId]?.byId?.[messageId]
       ?._streamRequestId;
 
+/**
+ * True when `messageId` is the latest assistant message in the conversation
+ * (no assistant message is positioned after it). Used by the action bar to
+ * decide whether to stay visible (true) or only appear on hover (false) in
+ * compact density mode.
+ */
+export const selectIsLatestAssistantMessage =
+  (conversationId: string, messageId: string) =>
+  (state: RootState): boolean => {
+    const entry = state.messages.byConversationId[conversationId];
+    if (!entry) return false;
+    const ordered = entry.orderedIds;
+    const byId = entry.byId;
+    if (!ordered || !byId) return false;
+    for (let i = ordered.length - 1; i >= 0; i--) {
+      const id = ordered[i];
+      const rec = byId[id];
+      if (rec?.role === "assistant") return id === messageId;
+    }
+    return false;
+  };
+
 // ---------------------------------------------------------------------------
 // Conversation-level fields
 // ---------------------------------------------------------------------------

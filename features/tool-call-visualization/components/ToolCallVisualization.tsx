@@ -27,8 +27,9 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { selectResponseDensity } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
 
 import {
@@ -49,6 +50,12 @@ export interface ToolCallVisualizationProps {
    * window. Never used to fetch "all tools for this request".
    */
   requestId?: string;
+  /**
+   * Optional. When provided, the shell subscribes to
+   * `selectResponseDensity(conversationId)` and switches to the compact,
+   * hover-only chrome when the surface is in agentic / coding-style mode.
+   */
+  conversationId?: string;
   /** True when content has started streaming — triggers auto-collapse. */
   hasContent?: boolean;
   /** Persisted (post-stream) snapshot — some renderers render compactly. */
@@ -67,16 +74,22 @@ const ToolCallVisualizationInner: React.FC<{
    * leave this undefined and pass an `entries` snapshot to the window.
    */
   requestId?: string;
+  conversationId?: string;
   hasContent?: boolean;
   isPersisted?: boolean;
   className?: string;
 }> = ({
   entries,
   requestId,
+  conversationId,
   hasContent = false,
   isPersisted = false,
   className,
 }) => {
+  const density = useAppSelector(
+    conversationId ? selectResponseDensity(conversationId) : () => "comfortable",
+  );
+  const isCompact = density === "compact";
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
   const [isOverlayOpen, setIsOverlayOpen] = useState<boolean>(false);
   const [initialOverlayTab, setInitialOverlayTab] = useState<
@@ -178,25 +191,49 @@ const ToolCallVisualizationInner: React.FC<{
   return (
     <div
       className={cn(
-        "relative w-full mb-2 rounded-md overflow-hidden",
-        "bg-muted/30 dark:bg-muted/20",
-        "border border-border/60",
+        "group/toolcard relative w-full overflow-hidden",
+        isCompact
+          ? cn(
+              "mb-0.5 rounded-sm",
+              // No persistent border in compact — only on hover, so the row
+              // reads as plain text height. The collapsed state is one line.
+              "border border-transparent hover:border-border/60",
+              "hover:bg-muted/30 dark:hover:bg-muted/20",
+            )
+          : cn(
+              "mb-2 rounded-md",
+              "bg-muted/30 dark:bg-muted/20",
+              "border border-border/60",
+            ),
         className,
       )}
     >
       <button
         onClick={() => setIsExpanded((v) => !v)}
         className={cn(
-          "w-full flex items-center justify-between px-2.5 py-1 text-left",
-          "hover:bg-muted/60 dark:hover:bg-muted/40 transition-colors",
-          isExpanded && "border-b border-border/60",
+          "w-full flex items-center justify-between text-left transition-colors",
+          isCompact
+            ? "px-1.5 py-0.5 hover:bg-muted/40 dark:hover:bg-muted/30"
+            : "px-2.5 py-1 hover:bg-muted/60 dark:hover:bg-muted/40",
+          isExpanded && !isCompact && "border-b border-border/60",
+          isExpanded && isCompact && "border-b border-border/40",
         )}
       >
         <div className="flex items-center gap-2 min-w-0">
           {phase === "complete" ? (
-            <CheckCircle className="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <CheckCircle
+              className={cn(
+                "shrink-0 text-emerald-600 dark:text-emerald-400",
+                isCompact ? "w-3 h-3" : "w-3.5 h-3.5",
+              )}
+            />
           ) : (
-            <Loader2 className="w-3.5 h-3.5 shrink-0 text-blue-500 dark:text-blue-400 animate-spin" />
+            <Loader2
+              className={cn(
+                "shrink-0 text-blue-500 dark:text-blue-400 animate-spin",
+                isCompact ? "w-3 h-3" : "w-3.5 h-3.5",
+              )}
+            />
           )}
           <span className="font-medium text-xs text-foreground truncate">
             {toolDisplayName}
@@ -208,8 +245,16 @@ const ToolCallVisualizationInner: React.FC<{
           )}
         </div>
 
-        <div className="flex items-center gap-0.5 shrink-0">
-          {phase !== "complete" && (
+        <div
+          className={cn(
+            "flex items-center gap-0.5 shrink-0 transition-opacity",
+            // In compact mode, controls only appear when the user actually
+            // hovers this card — keeps the rest of the transcript clean.
+            isCompact &&
+              "opacity-0 group-hover/toolcard:opacity-100 focus-within:opacity-100",
+          )}
+        >
+          {phase !== "complete" && !isCompact && (
             <Sparkles className="w-3 h-3 mr-0.5 text-blue-500 dark:text-blue-400 animate-pulse" />
           )}
           <span
@@ -261,7 +306,11 @@ const ToolCallVisualizationInner: React.FC<{
       </button>
 
       {isExpanded && (
-        <div className="px-2 py-1.5 space-y-2">
+        <div
+          className={cn(
+            isCompact ? "px-1.5 py-1 space-y-1.5" : "px-2 py-1.5 space-y-2",
+          )}
+        >
           {entries.map((entry) => {
             const InlineRenderer = getInlineRenderer(entry.toolName);
             const groupDisplayName = getToolDisplayName(entry.toolName);
@@ -304,6 +353,7 @@ const ToolCallVisualizationInner: React.FC<{
 export const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({
   entries,
   requestId,
+  conversationId,
   hasContent,
   isPersisted,
   className,
@@ -311,6 +361,7 @@ export const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({
   <ToolCallVisualizationInner
     entries={entries}
     requestId={requestId}
+    conversationId={conversationId}
     hasContent={hasContent}
     isPersisted={isPersisted}
     className={className}

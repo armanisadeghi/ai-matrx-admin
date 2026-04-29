@@ -201,7 +201,7 @@ export const adminNavItems: ShellNavItem[] = [
   },
   {
     label: "Schema Manager",
-    href: "/administration/schema-manager",
+    href: "/legacy/administration/schema-manager",
     iconName: "Database",
     section: "admin",
     color: "cyan",

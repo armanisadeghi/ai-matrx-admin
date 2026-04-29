@@ -4,7 +4,7 @@ import React, {useState, useCallback} from 'react';
 import {Card, CardHeader, CardContent, CardFooter} from '@/components/ui/card';
 import {Input} from '@/components/ui/input';
 import SchemaSelect from "@/components/matrx/schema/opsRedux/SchemaSelect";
-import {EntityKeys, EntityFieldKeys, AutomationEntity,} from "@/types/entityTypes";
+import type { EntityKeys, EntityFieldKeys, AutomationEntity } from "@/types/entityTypes";
 
 export default function SchemaAdmin() {
     const [selectedSchema, setSelectedSchema] = useState<EntityKeys | null>(null);

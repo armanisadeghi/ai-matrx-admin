@@ -64,7 +64,7 @@ export const faviconRouteData: FaviconRouteEntry[] = [
     { href: "/demo/workflows" },
     { href: "/tests/tailwind-test" },
     { href: "/admin/registered-functions" },
-    { href: "/administration/schema-manager" },
+    { href: "/legacy/administration/schema-manager" },
     { href: "/administration/utils/text-cleaner" },
     { href: "/tests/forms" },
     { href: "/tests/selector-test" },

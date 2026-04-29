@@ -1,4 +1,4 @@
-// /administration/schema-manager/components/SchemaAdmin.tsx
+// app/(legacy)/legacy/administration/schema-manager/components/SchemaAdmin.tsx
 
 'use client';
 
@@ -6,10 +6,9 @@ import React, { useState, useCallback } from 'react';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import SchemaSelect from "@/components/matrx/schema/opsRedux/SchemaSelect";
-import { EntityKeys, AutomationEntity } from "@/types/entityTypes";
-
-
-import {useSchema} from "@/lib/redux/schema/useSchema" // New import
+import type { EntityKeys, AutomationEntity } from "@/types/entityTypes";
+// Removed unused `useSchema` import — was an entity-system leak that
+// pulled in globalCacheSelectors via the slim route.
 
 
 export default function SchemaAdmin() {

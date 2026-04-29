@@ -156,7 +156,10 @@ export function AgentAssistantMessage({
     <div
       ref={captureRef}
       data-message-id={messageId ?? undefined}
-      className="rounded transition-shadow"
+      // `group/assistant-msg` is the hover anchor for AssistantActionBar's
+      // compact-density "show on hover" behaviour. Hovering anywhere on the
+      // assistant turn reveals the bar; non-compact mode keeps it visible.
+      className="group/assistant-msg rounded transition-shadow"
     >
       <MarkdownStream
         requestId={effectiveRequestId}

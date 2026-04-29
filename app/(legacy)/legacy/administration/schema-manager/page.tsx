@@ -1,4 +1,4 @@
-// app/(authenticated)/(admin-auth)/administration/schema-manager/page.tsx
+// app/(legacy)/legacy/administration/schema-manager/page.tsx
 
 "use client";
 
@@ -20,9 +20,9 @@ import {
   IconCode,
   IconRefresh,
 } from "@tabler/icons-react";
-import DatabaseInteractions from "@/app/(authenticated)/(admin-auth)/administration/schema-manager/components/DatabaseInteractions";
-import SchemaAdmin from "@/app/(authenticated)/(admin-auth)/administration/schema-manager/components/SchemaAdmin";
-import SchemaInteractions from "@/app/(authenticated)/(admin-auth)/administration/schema-manager/components/SchemaInteractions";
+import DatabaseInteractions from "@/app/(legacy)/legacy/administration/schema-manager/components/DatabaseInteractions";
+import SchemaAdmin from "@/app/(legacy)/legacy/administration/schema-manager/components/SchemaAdmin";
+import SchemaInteractions from "@/app/(legacy)/legacy/administration/schema-manager/components/SchemaInteractions";
 import FeatureSectionAnimatedGradientComponents from "@/components/animated/my-custom-demos/feature-section-animated-gradient-component";
 import { Layers3 } from "lucide-react";
 import FetchOperations from "@/components/matrx/schema/ops/FetchOperations";

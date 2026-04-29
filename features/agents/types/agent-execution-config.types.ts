@@ -57,6 +57,23 @@ export interface AgentPresentationConfig {
   hideReasoning: boolean;
   /** Hide tool-call result blocks from output. */
   hideToolResults: boolean;
+  /**
+   * Density of the assistant transcript chrome (tool call cards, thinking
+   * blocks, action bar).
+   *   - "comfortable" (default): full chrome, persistent action bar.
+   *   - "compact": one-line tool/thinking strips, hover-revealed controls,
+   *     action bar appears only on hover unless this message is the latest.
+   *
+   * Designed for highly agentic / coding-style runs where many tool calls
+   * + reasoning blocks would otherwise drown the actual model output. Per
+   * conversation so a single surface (e.g. the code-editor agent runner)
+   * can opt in without affecting other chat surfaces.
+   *
+   * NOT to be confused with the input-layer `compact: boolean` prop or
+   * the `"modal-compact"` ResultDisplayMode — those operate at unrelated
+   * scopes (input rendering and modal sizing respectively).
+   */
+  responseDensity: "comfortable" | "compact";
 
   /** Show a pre-execution input gate before autoRun fires. */
   showPreExecutionGate: boolean;
@@ -141,6 +158,7 @@ export const DEFAULT_AGENT_EXECUTION_CONFIG: AgentExecutionConfig = {
   showDefinitionMessageContent: false,
   hideReasoning: false,
   hideToolResults: false,
+  responseDensity: "comfortable",
   showPreExecutionGate: false,
   preExecutionMessage: null,
   bypassGateSeconds: 3,

@@ -1,14 +1,8 @@
-import { create } from 'zustand';
-import { EntityKeys } from '@/types/entityTypes';
+// features/administration/schema-visualizer/store.ts
+// Standalone zustand store — uses raw table names (no `EntityKeys`).
 
-export type SelectedElementType = 'table' | 'field' | 'relationship' | null;
-
-export interface SelectedElement {
-    type: SelectedElementType;
-    entityName: EntityKeys;
-    fieldName?: string;
-    relationshipIndex?: number;
-}
+import { create } from "zustand";
+import type { SelectedElement } from "./types-standalone";
 
 interface SchemaVisualizerState {
     selectedElement: SelectedElement | null;
@@ -19,13 +13,15 @@ interface SchemaVisualizerState {
 
 export const useSchemaVisualizerStore = create<SchemaVisualizerState>((set, get) => ({
     selectedElement: null,
-    setSelectedElement: (element) => set({
-        selectedElement: element,
-        isDetailsOpen: element !== null // Automatically open details when something is selected
-    }),
+    setSelectedElement: (element) =>
+        set({
+            selectedElement: element,
+            isDetailsOpen: element !== null,
+        }),
     isDetailsOpen: false,
-    setDetailsOpen: (open) => set({
-        isDetailsOpen: open,
-        selectedElement: open ? get().selectedElement : null // Clear selection when closing
-    })
+    setDetailsOpen: (open) =>
+        set({
+            isDetailsOpen: open,
+            selectedElement: open ? get().selectedElement : null,
+        }),
 }));

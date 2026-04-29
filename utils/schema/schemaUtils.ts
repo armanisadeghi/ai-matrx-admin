@@ -415,23 +415,11 @@ export function getAllFields(tableName: AutomationTableName): FieldInfo[] {
     }));
 }
 
-export type DataWithOptionalId = { id?: string; [key: string]: any };
-export type DataWithId = { id: string; [key: string]: any };
-
-export function ensureId<T extends DataWithOptionalId | DataWithOptionalId[]>(input: T):
-    T extends DataWithOptionalId[] ? DataWithId[] : DataWithId {
-    if (Array.isArray(input)) {
-        return input.map((item) => ({
-            ...item,
-            id: item.id ?? uuidv4(),
-        })) as unknown as T extends DataWithOptionalId[] ? DataWithId[] : DataWithId;
-    } else {
-        if ('id' in input && typeof input.id === 'string') {
-            return input as unknown as T extends DataWithOptionalId[] ? DataWithId[] : DataWithId;
-        }
-        return {...input, id: uuidv4()} as unknown as T extends DataWithOptionalId[] ? DataWithId[] : DataWithId;
-    }
-}
+// `ensureId` and its types live in `./lite.ts` — a slim-safe leaf module
+// that doesn't pull in `processSchema`/`initialSchemas`. Re-exported here
+// so existing callers don't need to change their import paths.
+export { ensureId } from "./lite";
+export type { DataWithOptionalId, DataWithId } from "./lite";
 
 
 // Legacy table name resolution (for backward compatibility)

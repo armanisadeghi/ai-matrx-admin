@@ -16,7 +16,7 @@ import {
     LargeComponentLoading,
     CardLoading
 } from '@/components/matrx/LoadingComponents';
-import { ensureId } from "@/utils/schema/schemaUtils";
+import { ensureId } from "@/utils/schema/lite";
 import { getFlashcardSet } from '@/app/(authenticated)/flashcard/app-data';
 import {addMessage, clearChat, resetAllChats} from "@/lib/redux/slices/flashcardChatSlice";
 
