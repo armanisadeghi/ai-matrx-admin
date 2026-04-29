@@ -29,6 +29,8 @@ interface MenuItemProps {
   description?: string;
   onClick: () => void;
   disabled?: boolean;
+  /** When true, prefixes the label with "*" and renders it in destructive red. */
+  deprecated?: boolean;
 }
 
 export function MenuItem({
@@ -37,6 +39,7 @@ export function MenuItem({
   description,
   onClick,
   disabled,
+  deprecated,
 }: MenuItemProps) {
   return (
     <button
@@ -53,7 +56,14 @@ export function MenuItem({
     >
       <span className="mt-0.5 shrink-0 text-muted-foreground">{icon}</span>
       <span className="flex flex-col min-w-0">
-        <span className="text-xs font-medium leading-tight">{label}</span>
+        <span
+          className={cn(
+            "text-xs font-medium leading-tight",
+            deprecated && "text-destructive",
+          )}
+        >
+          {deprecated ? `* ${label}` : label}
+        </span>
         {description && (
           <span className="text-[10px] text-muted-foreground/60 leading-tight mt-0.5">
             {description}
@@ -69,6 +79,7 @@ export function MenuGridItem({
   label,
   onClick,
   disabled,
+  deprecated,
 }: Omit<MenuItemProps, "description">) {
   return (
     <button
@@ -82,11 +93,16 @@ export function MenuGridItem({
       )}
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
-      title={label}
+      title={deprecated ? `${label} (deprecated)` : label}
     >
       <span className="shrink-0 text-muted-foreground">{icon}</span>
-      <span className="text-[11px] font-medium leading-none truncate max-w-full">
-        {label}
+      <span
+        className={cn(
+          "text-[11px] font-medium leading-none truncate max-w-full",
+          deprecated && "text-destructive",
+        )}
+      >
+        {deprecated ? `* ${label}` : label}
       </span>
     </button>
   );

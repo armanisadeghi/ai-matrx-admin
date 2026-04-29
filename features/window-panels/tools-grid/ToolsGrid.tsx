@@ -142,12 +142,16 @@ export default function ToolsGrid({
             >
               {tiles.map((tile) => {
                 const Icon = tile.icon;
+                const entry = tile.overlayId
+                  ? getStaticEntryByOverlayId(tile.overlayId)
+                  : undefined;
                 return (
                   <MenuGridItem
                     key={tile.id}
                     icon={<Icon className="w-3.5 h-3.5" />}
                     label={tile.label}
                     onClick={() => activate(tile)}
+                    deprecated={!!entry?.deprecated}
                   />
                 );
               })}

@@ -62,6 +62,7 @@ import { Save } from "lucide-react";
 import { DebugStrip } from "./WindowPanel/DebugStrip";
 import { MobileWindowHeader } from "./WindowPanel/MobileHeader";
 import { SnapButton } from "./WindowPanel/SnapButton";
+import { DeprecationBanner } from "./WindowPanel/DeprecationBanner";
 import {
   detectPopoutCapability,
   type PopoutCapability,
@@ -332,6 +333,16 @@ export function WindowPanel({
   const effectiveUrlSyncId =
     urlSyncId ?? (effectiveUrlSyncKey ? overlayId : undefined);
   useUrlSync(effectiveUrlSyncKey, effectiveUrlSyncId, urlSyncArgs);
+
+  // Deprecation marker — when set on the registry entry, the shell renders a
+  // red ring + dismissible banner so users can see at a glance that this
+  // window is on its way out. Used during consolidation while the old window
+  // is kept around for side-by-side parity verification with its replacement.
+  const deprecation = urlSyncRegEntry?.deprecated;
+  const isDeprecated = !!deprecation;
+  const deprecatedRingClass = isDeprecated
+    ? "ring-2 ring-destructive ring-offset-2 ring-offset-background"
+    : "";
 
   // ── Sidebar state ─────────────────────────────────────────────────────────
   const hasSidebar = !!sidebar;
@@ -762,7 +773,7 @@ export function WindowPanel({
   // ────────────────────────────────────────────────────────────────────────
   // MAXIMIZED — portalled to body so it covers the full viewport
   // ────────────────────────────────────────────────────────────────────────
-  const bodyContent = hasSidebar ? (
+  const innerBody = hasSidebar ? (
     <ResizablePanelGroup orientation="horizontal" className="h-full min-h-0">
       <ResizablePanel
         panelRef={sidebarPanelRef}
@@ -788,6 +799,18 @@ export function WindowPanel({
     </ResizablePanelGroup>
   ) : (
     children
+  );
+
+  const bodyContent = isDeprecated ? (
+    <div className="h-full flex flex-col min-h-0">
+      <DeprecationBanner
+        replacedBy={deprecation?.replacedBy}
+        note={deprecation?.note}
+      />
+      <div className="flex-1 min-h-0">{innerBody}</div>
+    </div>
+  ) : (
+    innerBody
   );
 
   const hasZonedFooter = footerLeft || footerCenter || footerRight;
@@ -883,6 +906,7 @@ export function WindowPanel({
           "fixed inset-0 flex flex-col",
           "bg-card/98 backdrop-blur-md",
           "overflow-hidden",
+          deprecatedRingClass,
           className,
         )}
         style={{
@@ -956,6 +980,7 @@ export function WindowPanel({
           "fixed inset-0 flex flex-col",
           "bg-card/98 backdrop-blur-md border border-border shadow-2xl",
           "overflow-hidden",
+          deprecatedRingClass,
           className,
         )}
         style={{ zIndex, visibility: windowsHidden ? "hidden" : undefined }}
@@ -987,6 +1012,9 @@ export function WindowPanel({
         // Uses primary color from the design tokens so it adapts to theme.
         isPopoutCandidate &&
           "ring-2 ring-primary ring-offset-2 ring-offset-background transition-shadow",
+        // Deprecation marker: red ring around the shell. Stays even when the
+        // banner inside is dismissed, so the visual cue is persistent.
+        deprecatedRingClass,
         className,
       )}
       style={{

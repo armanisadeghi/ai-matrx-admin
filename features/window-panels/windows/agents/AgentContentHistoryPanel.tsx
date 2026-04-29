@@ -25,6 +25,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { AgentListDropdown } from "@/features/agents/components/agent-listings/AgentListDropdown";
 
 const SURFACE_KEY = "agent-advanced-editor-history-tab";
 
@@ -151,10 +152,25 @@ function VersionGroupRow({
 
 interface AgentContentHistoryPanelProps {
   agentId: string;
+  /**
+   * When true, renders an agent picker above the conversation list so the
+   * user can switch which agent's history they're browsing without leaving
+   * the panel. When false (default), the panel stays locked to `agentId` —
+   * which is what the embedded "History" tab inside the Advanced Editor uses.
+   */
+  allowAgentSwitching?: boolean;
+  /**
+   * Required when `allowAgentSwitching` is true. Called when the user picks a
+   * different agent from the dropdown. Owners typically lift this to drive
+   * their own state (e.g. the standalone Run History window's `agentId`).
+   */
+  onAgentChange?: (agentId: string) => void;
 }
 
 export function AgentContentHistoryPanel({
   agentId,
+  allowAgentSwitching = false,
+  onAgentChange,
 }: AgentContentHistoryPanelProps) {
   const dispatch = useAppDispatch();
   const store = useAppStore();
@@ -165,6 +181,11 @@ export function AgentContentHistoryPanel({
   const canonicalAgentId = useAppSelector((state: RootState) => {
     const agent = selectAgentById(state, agentId);
     return agent?.parentAgentId ?? agent?.id ?? agentId;
+  });
+
+  const agentName = useAppSelector((state: RootState) => {
+    const agent = selectAgentById(state, agentId);
+    return agent?.name ?? null;
   });
 
   const selectConversations = useMemo(
@@ -227,6 +248,15 @@ export function AgentContentHistoryPanel({
     >
       <ResizablePanel defaultSize={28} minSize={18} maxSize={45}>
         <div className="h-full min-h-0 flex flex-col border-r border-border bg-card/30">
+          {allowAgentSwitching && (
+            <div className="px-2 py-1.5 border-b border-border shrink-0">
+              <AgentListDropdown
+                onSelect={onAgentChange}
+                label={agentName ?? "Select agent…"}
+                className="w-full"
+              />
+            </div>
+          )}
           <div className="px-2 py-1 border-b border-border/50 shrink-0 flex items-center justify-between">
             <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
               Conversations

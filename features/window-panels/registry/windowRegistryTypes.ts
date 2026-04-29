@@ -118,6 +118,22 @@ export interface WindowStaticMetadata {
    * time; can read Redux state via selectors passed by the grid host.
    */
   seedData?: (ctx: unknown) => Record<string, unknown> | undefined;
+  /**
+   * Marks this window as deprecated. While set:
+   *  - WindowPanel renders a red ring around the shell and a dismissible
+   *    "deprecated" banner above the body.
+   *  - Tools-grid tiles and the per-window list prefix the label with "*"
+   *    and render it in destructive red.
+   * Set during consolidation so users can open the old window side-by-side
+   * with the replacement, confirm parity, and only then approve deletion in
+   * a follow-up PR. The slug stays around so URL deep-links keep resolving.
+   */
+  deprecated?: {
+    /** Overlay ID of the replacement, e.g. "agentAdvancedEditorWindow". */
+    replacedBy?: string;
+    /** Free-text shown in the banner. Falls back to a generic message. */
+    note?: string;
+  };
 }
 
 /**

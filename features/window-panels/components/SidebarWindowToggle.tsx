@@ -39,6 +39,7 @@ import {
   MenuSection,
 } from "@/features/window-panels/tools-grid/menuPrimitives";
 import ToolsGrid from "@/features/window-panels/tools-grid/ToolsGrid";
+import { getStaticEntryBySlug } from "@/features/window-panels/registry/windowRegistryMetadata";
 
 // ─── State dot colours ────────────────────────────────────────────────────────
 
@@ -251,37 +252,46 @@ export default function SidebarWindowToggle() {
                     <MenuDivider />
                     <MenuSection label="Windows" />
                     <div className="max-h-60 overflow-y-auto">
-                      {windows.map((win) => (
-                        <button
-                          key={win.id}
-                          type="button"
-                          role="menuitem"
-                          className="flex items-center gap-2.5 w-full px-3 py-1.5 hover:bg-accent transition-colors text-left text-foreground/80"
-                          onClick={() =>
-                            act(() => {
-                              if (win.state === "minimized")
-                                dispatch(restoreWindow(win.id));
-                              dispatch(focusWindow(win.id));
-                              if (hidden) dispatch(toggleWindowsHidden());
-                            })
-                          }
-                        >
-                          <span
-                            className={cn(
-                              "w-2 h-2 rounded-full shrink-0",
-                              STATE_DOT[win.state],
-                            )}
-                            title={STATE_LABEL[win.state]}
-                          />
-                          <span className="flex-1 truncate text-xs font-medium">
-                            {win.title}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground/50 shrink-0">
-                            {STATE_LABEL[win.state]}
-                          </span>
-                          <ChevronRight className="w-3 h-3 text-muted-foreground/30 shrink-0" />
-                        </button>
-                      ))}
+                      {windows.map((win) => {
+                        const isDeprecated =
+                          !!getStaticEntryBySlug(win.id)?.deprecated;
+                        return (
+                          <button
+                            key={win.id}
+                            type="button"
+                            role="menuitem"
+                            className="flex items-center gap-2.5 w-full px-3 py-1.5 hover:bg-accent transition-colors text-left text-foreground/80"
+                            onClick={() =>
+                              act(() => {
+                                if (win.state === "minimized")
+                                  dispatch(restoreWindow(win.id));
+                                dispatch(focusWindow(win.id));
+                                if (hidden) dispatch(toggleWindowsHidden());
+                              })
+                            }
+                          >
+                            <span
+                              className={cn(
+                                "w-2 h-2 rounded-full shrink-0",
+                                STATE_DOT[win.state],
+                              )}
+                              title={STATE_LABEL[win.state]}
+                            />
+                            <span
+                              className={cn(
+                                "flex-1 truncate text-xs font-medium",
+                                isDeprecated && "text-destructive",
+                              )}
+                            >
+                              {isDeprecated ? `* ${win.title}` : win.title}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground/50 shrink-0">
+                              {STATE_LABEL[win.state]}
+                            </span>
+                            <ChevronRight className="w-3 h-3 text-muted-foreground/30 shrink-0" />
+                          </button>
+                        );
+                      })}
                     </div>
                   </>
                 ) : (

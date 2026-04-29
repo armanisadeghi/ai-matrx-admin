@@ -337,6 +337,11 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     label: "Run History",
     defaultData: { agentId: null, selectedConversationId: null },
     mobilePresentation: "fullscreen",
+    deprecated: {
+      replacedBy: "agentAdvancedEditorWindow",
+      note:
+        "Use the History tab inside the Advanced Editor — it shows the same version-grouped conversations and read-only view.",
+    },
   },
 
   // ── Agent Run ─────────────────────────────────────────────────────────────
@@ -774,6 +779,9 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     defaultData: { agentId: null },
     ephemeral: true,
     mobilePresentation: "fullscreen",
+    deprecated: {
+      note: "Stub — not yet implemented. Will be removed if no implementation lands.",
+    },
   },
   {
     slug: "agent-interface-variations-window",
@@ -783,6 +791,9 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     defaultData: { agentId: null },
     ephemeral: true,
     mobilePresentation: "fullscreen",
+    deprecated: {
+      note: "Stub — not yet implemented. Will be removed if no implementation lands.",
+    },
   },
   {
     slug: "agent-create-app-window",
@@ -801,6 +812,9 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     defaultData: { agentId: null },
     ephemeral: true,
     mobilePresentation: "fullscreen",
+    deprecated: {
+      note: "Stub — not yet implemented. Will be removed if no implementation lands.",
+    },
   },
   {
     slug: "agent-find-usages-window",
@@ -810,6 +824,9 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     defaultData: { agentId: null },
     ephemeral: true,
     mobilePresentation: "fullscreen",
+    deprecated: {
+      note: "Stub — not yet implemented. Will be removed if no implementation lands.",
+    },
   },
   {
     slug: "agent-convert-system-window",
@@ -837,6 +854,9 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     defaultData: { agentId: null },
     ephemeral: true,
     mobilePresentation: "fullscreen",
+    deprecated: {
+      note: "Stub — not yet implemented. Will be removed if no implementation lands.",
+    },
   },
 
   // ── Tool Call Window ──────────────────────────────────────────────────────
