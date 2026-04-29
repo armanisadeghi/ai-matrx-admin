@@ -2008,7 +2008,10 @@ export const OverlayController: React.FC = () => {
         />
       )}
 
-      {/* Non-default instances — mount/unmount per open/close, restored via onSave */}
+      {/* Non-default instances — mount/unmount per open/close. Save is
+          dispatched here based on `mode` so callers do not stash closures
+          in Redux state. Legacy `onSave` callback path stays for callers
+          that have not migrated to a typed mode yet. */}
       {fullScreenEditorInstances
         .filter(({ instanceId }) => instanceId !== "default")
         .map(({ instanceId, data }) => (
@@ -2016,7 +2019,7 @@ export const OverlayController: React.FC = () => {
             key={instanceId}
             isOpen={true}
             initialContent={data?.content ?? ""}
-            onSave={(newContent: string) => {
+            onSave={async (newContent: string) => {
               dispatch(
                 updateOverlayData({
                   overlayId: "fullScreenEditor",
@@ -2024,10 +2027,58 @@ export const OverlayController: React.FC = () => {
                   updates: { content: newContent },
                 }),
               );
+
+              const mode = data?.mode as
+                | "assistant-message"
+                | "user-message"
+                | "free"
+                | undefined;
+              const cid = data?.conversationId as string | undefined;
+              const mid = data?.messageId as string | undefined;
+
+              try {
+                if (mode === "assistant-message" && cid && mid) {
+                  const { editMessage } = await import(
+                    "@/features/agents/redux/execution-system/message-crud/edit-message.thunk"
+                  );
+                  const nextContent = [
+                    { type: "text", text: newContent },
+                  ] as unknown as import("@/types/database.types").Json;
+                  await dispatch(
+                    editMessage({
+                      conversationId: cid,
+                      messageId: mid,
+                      newContent: nextContent,
+                    }),
+                  ).unwrap();
+                  const { toast } = await import("sonner");
+                  toast.success("Message saved");
+                } else if (typeof data?.onSave === "function") {
+                  // Legacy path for callers that still pass an onSave closure.
+                  data.onSave(newContent);
+                }
+              } catch (err) {
+                const { toast } = await import("sonner");
+                const msg =
+                  err instanceof Error
+                    ? err.message
+                    : typeof err === "object" &&
+                        err &&
+                        "message" in err &&
+                        typeof (err as { message?: unknown }).message ===
+                          "string"
+                      ? (err as { message: string }).message
+                      : "Save failed";
+                console.error(
+                  "[OverlayController] fullScreenEditor save failed",
+                  err,
+                );
+                toast.error(msg);
+              }
+
               dispatch(
                 closeOverlay({ overlayId: "fullScreenEditor", instanceId }),
               );
-              data?.onSave?.(newContent);
             }}
             onCancel={() => close("fullScreenEditor", instanceId)}
             tabs={data?.tabs}
@@ -2042,7 +2093,16 @@ export const OverlayController: React.FC = () => {
 
       {/* Save to Notes — renders as a floating Window (default target). */}
       {saveToNotesInstances.map(({ instanceId, data }) => {
-        const d = data as { content: string; defaultFolder?: string } | null;
+        const d = data as {
+          content: string;
+          defaultFolder?: string;
+          initialEditorMode?:
+            | "plain"
+            | "split"
+            | "preview"
+            | "wysiwyg"
+            | "markdown-split";
+        } | null;
         if (!d) return null;
         return (
           <QuickNoteSaveWindow
@@ -2052,6 +2112,7 @@ export const OverlayController: React.FC = () => {
             onClose={() => close("saveToNotes", instanceId)}
             initialContent={d.content}
             defaultFolder={d.defaultFolder ?? "Scratch"}
+            initialEditorMode={d.initialEditorMode}
           />
         );
       })}

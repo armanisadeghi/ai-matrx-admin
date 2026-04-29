@@ -63,7 +63,6 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
         />
         {!isStreamActive && !isOverlay && (
           <AssistantActionBar
-            content={content}
             messageId={message.id}
             conversationId={conversationId ?? ""}
             onFullPrint={handleFullPrint}

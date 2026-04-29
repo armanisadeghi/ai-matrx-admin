@@ -6,6 +6,7 @@ import {
   QuickNoteSaveCore,
   type PostSaveAction,
 } from "@/features/notes/actions/quick-save/QuickNoteSaveCore";
+import type { EditorMode } from "@/features/notes/components/NoteEditorCore";
 import type { Note } from "@/features/notes/types";
 
 export interface QuickNoteSaveWindowProps {
@@ -15,6 +16,12 @@ export interface QuickNoteSaveWindowProps {
   defaultFolder?: string;
   /** Optional instance id so multiple captures can open concurrently. */
   instanceId?: string;
+  /**
+   * Override the editor mode when opening. Callers feeding very large
+   * payloads should pass `"plain"` so the markdown preview pane doesn't
+   * try to render hundreds of KB on mount.
+   */
+  initialEditorMode?: EditorMode;
 }
 
 const OVERLAY_ID = "quickNoteSaveWindow";
@@ -26,6 +33,7 @@ export default function QuickNoteSaveWindow({
   initialContent = "",
   defaultFolder = "Scratch",
   instanceId,
+  initialEditorMode,
 }: QuickNoteSaveWindowProps) {
   if (!isOpen) return null;
   return (
@@ -34,6 +42,7 @@ export default function QuickNoteSaveWindow({
       initialContent={initialContent}
       defaultFolder={defaultFolder}
       instanceId={instanceId}
+      initialEditorMode={initialEditorMode}
     />
   );
 }
@@ -43,11 +52,13 @@ function QuickNoteSaveWindowInner({
   initialContent,
   defaultFolder,
   instanceId,
+  initialEditorMode,
 }: {
   onClose: () => void;
   initialContent: string;
   defaultFolder: string;
   instanceId?: string;
+  initialEditorMode?: EditorMode;
 }) {
   const windowId = instanceId
     ? `${BASE_WINDOW_ID}-${instanceId}`
@@ -73,6 +84,7 @@ function QuickNoteSaveWindowInner({
         <QuickNoteSaveCore
           initialContent={initialContent}
           defaultFolder={defaultFolder}
+          initialEditorMode={initialEditorMode}
           onSaved={handleSaved}
           onCancel={onClose}
         />

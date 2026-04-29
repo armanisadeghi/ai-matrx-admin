@@ -164,7 +164,6 @@ export function PromptAssistantMessage({
           )}
           {!isStreamActive && (
             <AssistantActionBar
-              content={content}
               messageId={`prompt-${taskId ?? messageIndex}`}
               conversationId=""
               onFullPrint={handleFullPrint}

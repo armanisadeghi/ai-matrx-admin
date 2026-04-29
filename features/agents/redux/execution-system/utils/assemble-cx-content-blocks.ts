@@ -271,9 +271,11 @@ export function assembleMessageParts(request: ActiveRequest): CxContentBlock[] {
       ) {
         flushPendingText();
         emittedToolCallIds.add(entry.data.call_id);
+        // Write the new `call_id` field; the legacy `id` is kept on the
+        // type as optional only for pre-migration persisted rows.
         blocks.push({
           type: "tool_call",
-          id: lifecycle.callId,
+          call_id: lifecycle.callId,
           name: lifecycle.toolName,
           arguments: lifecycle.arguments,
         } as CxToolCallContent);

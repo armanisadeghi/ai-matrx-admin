@@ -176,14 +176,8 @@ export function AgentAssistantMessage({
       )}
       {!isStreamActive && messageId && (
         <AssistantActionBar
-          content={flatText}
           messageId={messageId}
           conversationId={conversationId}
-          metadata={
-            record?.metadata
-              ? (record.metadata as Record<string, unknown>)
-              : null
-          }
           onFullPrint={handleFullPrint}
           isCapturing={isCapturing}
           surfaceKey={surfaceKey}

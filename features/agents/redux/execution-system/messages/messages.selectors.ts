@@ -282,17 +282,41 @@ export const selectMessageInterleavedContent = (
             break;
           }
           case "tool_call": {
-            const tc = part as ToolCallPart & { call_id?: string };
-            // The persisted CxContentBlock shape uses `call_id`; the older
-            // ToolCallPart wire shape used `id`. Accept either.
+            // ToolCallPart now uses `call_id` (server migration). Pre-migration
+            // persisted rows used `id`. Cast through `unknown` to access both
+            // fields without fighting the new wire type.
+            const tc = part as unknown as {
+              call_id?: string;
+              id?: string;
+              name?: string;
+              arguments?: Record<string, unknown>;
+            };
             const callId = tc.call_id ?? tc.id ?? "unknown";
             const toolCallRecord =
               callId !== "unknown" ? toolCallByCallId.get(callId) : undefined;
 
-            const resolvedArguments =
-              (toolCallRecord?.arguments as Record<string, unknown> | null) ??
-              tc.arguments ??
-              {};
+            // Pick the first source that has *actual* data. `??` alone
+            // is wrong here because an empty `{}` (e.g. a stream-time
+            // record_reserved seed before tool_started lands) is truthy
+            // and would shadow real args coming from the stub. Both the
+            // cx_tool_call row AND the cx_message stub are authoritative —
+            // either may carry the full arguments.
+            const isPopulatedObject = (v: unknown): v is Record<string, unknown> =>
+              !!v &&
+              typeof v === "object" &&
+              !Array.isArray(v) &&
+              Object.keys(v as Record<string, unknown>).length > 0;
+
+            const obsArgs = toolCallRecord?.arguments;
+            const stubArgs = tc.arguments;
+            const resolvedArguments: Record<string, unknown> = isPopulatedObject(
+              obsArgs,
+            )
+              ? obsArgs
+              : isPopulatedObject(stubArgs)
+                ? stubArgs
+                : {};
+
             const resolvedResult =
               toolCallRecord?.outputPreview ?? toolCallRecord?.output ?? null;
             const resolvedIsError =

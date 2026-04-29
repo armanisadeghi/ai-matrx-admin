@@ -2,18 +2,21 @@
 
 /**
  * AssistantActionBar — inline action buttons attached under an assistant
- * message. Contains the most common actions (like/dislike, copy, speaker,
- * edit, more) so the user doesn't have to open the overflow menu for them.
+ * message.
  *
- * "Edit" opens the full-screen editor; on save it round-trips through the
- * `editMessage` thunk which calls `cx_message_edit` and flips the
- * cache-bypass flag for the next AI turn. There is no resubmit button on
- * assistant messages — to re-run, the user types in the input bar. The
- * overflow menu (⋯) uses `role="assistant"` which does NOT include
- * Edit & Resubmit.
+ * **id-only contract.** This component receives only `messageId` +
+ * `conversationId` (plus optional surface metadata for routing). Everything
+ * else — content, metadata, position — is selected from Redux internally.
+ * No prop-drilled content/metadata, no callbacks dispatched as Redux
+ * payloads. Edit save goes through the typed `mode: "assistant-message"`
+ * path on `openFullScreenEditor`; the OverlayController dispatches
+ * `editMessage` on submit. There is no `onSave` closure stored in state.
+ *
+ * The overflow menu (⋯) is loaded lazily and uses `role="assistant"` so
+ * Edit & Resubmit (a user-message-only flow) is hidden.
  */
 
-import React, { useState, useRef, useCallback, lazy, Suspense } from "react";
+import React, { useState, useRef, useCallback, lazy, Suspense, useMemo } from "react";
 import { TapTargetButtonGroup } from "@/components/icons/TapTargetButton";
 import {
   ThumbsUpTapButton,
@@ -26,13 +29,13 @@ import {
 import { StreamingSpeakerButton } from "@/features/tts/components/StreamingSpeakerButton";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import {
-  openFullScreenEditor,
-  closeOverlay,
-} from "@/lib/redux/slices/overlaySlice";
-import type { Json } from "@/types/database.types";
+import { openFullScreenEditor } from "@/lib/redux/slices/overlaySlice";
 import { toast } from "sonner";
-import { selectMessagePosition } from "@/features/agents/redux/execution-system/messages/messages.selectors";
+import {
+  selectMessageById,
+  selectMessagePosition,
+  extractFlatText,
+} from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import { DeleteMessageDialog } from "../message-options/DeleteMessageDialog";
 import { extractErrorMessage } from "@/utils/errors";
 
@@ -79,14 +82,10 @@ const MessageOptionsMenu = lazy(() =>
 );
 
 export interface AssistantActionBarProps {
-  /** Flat-text rendering of the message. */
-  content: string;
-  /** Server `cx_message.id`. Required for the Edit action. */
+  /** Server `cx_message.id`. */
   messageId: string;
-  /** Server `cx_conversation.id`. Required for the Edit action. */
+  /** Server `cx_conversation.id`. */
   conversationId: string;
-  /** Optional JSON metadata (passed to the overflow menu's export / save items). */
-  metadata?: Record<string, unknown> | null;
   /** Full-page print handler (DOM capture to PDF). */
   onFullPrint?: () => void;
   isCapturing?: boolean;
@@ -99,10 +98,8 @@ export interface AssistantActionBarProps {
 }
 
 export function AssistantActionBar({
-  content,
   messageId,
   conversationId,
-  metadata = null,
   onFullPrint,
   isCapturing,
   surfaceKey,
@@ -115,8 +112,19 @@ export function AssistantActionBar({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const moreOptionsButtonRef = useRef<HTMLDivElement>(null);
 
+  // Single subscription to the message record. Everything below derives.
+  const record = useAppSelector(selectMessageById(conversationId, messageId));
   const messagePosition = useAppSelector(
     selectMessagePosition(conversationId, messageId),
+  );
+
+  const content = useMemo(() => extractFlatText(record), [record]);
+  const metadata = useMemo<Record<string, unknown> | null>(
+    () =>
+      record?.metadata
+        ? (record.metadata as Record<string, unknown>)
+        : null,
+    [record?.metadata],
   );
 
   const handleConfirmDelete = useCallback(async () => {
@@ -204,44 +212,17 @@ export function AssistantActionBar({
     });
   };
 
+  // Edit goes through the mode-based path. The OverlayController dispatches
+  // editMessage on save — no closure stored in Redux, no freeze.
   const handleEdit = () => {
     dispatch(
       openFullScreenEditor({
         content,
+        mode: "assistant-message",
+        conversationId,
         messageId,
         analysisData: metadata ?? undefined,
         instanceId: `assistant-edit-${messageId}`,
-        onSave: async (newContent: string) => {
-          try {
-            const { editMessage } =
-              await import("@/features/agents/redux/execution-system/message-crud/edit-message.thunk");
-            const nextContent = [
-              { type: "text", text: newContent },
-            ] as unknown as Json;
-            await dispatch(
-              editMessage({
-                conversationId,
-                messageId,
-                newContent: nextContent,
-              }),
-            ).unwrap();
-            toast.success("Message saved");
-          } catch (err) {
-            const { logPayload, message } = serializeSaveError(err);
-            // eslint-disable-next-line no-console
-            console.error(
-              "[AssistantActionBar] edit save failed",
-              JSON.stringify(logPayload, null, 2),
-            );
-            toast.error(message);
-          }
-          dispatch(
-            closeOverlay({
-              overlayId: "fullScreenEditor",
-              instanceId: `assistant-edit-${messageId}`,
-            }),
-          );
-        },
       }),
     );
   };

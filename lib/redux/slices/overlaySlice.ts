@@ -276,13 +276,43 @@ export default overlaySlice.reducer;
 
 type EditorTabId = "write" | "matrx_split" | "markdown" | "wysiwyg" | "preview";
 
+/**
+ * `mode` tells the OverlayController-mounted editor which save thunk to
+ * dispatch on submit, so callers do NOT need to stash a closure-bearing
+ * `onSave` callback in Redux state (non-serializable, blocks devtools, and
+ * created the freeze the user reported).
+ *
+ * - `"assistant-message"` → `editMessage` thunk against `cx_message`
+ * - `"user-message"`      → `editUserMessage` thunk (message + truncate)
+ * - `"free"`              → no automatic dispatch; legacy `onSave` callback
+ *                            field is consulted (for callers not yet migrated)
+ */
+export type FullScreenEditorMode =
+  | "assistant-message"
+  | "user-message"
+  | "free";
+
 interface FullScreenEditorPayload {
   content: string;
+  /**
+   * Save behaviour. Defaults to `"free"` (no automatic save, falls back to
+   * the legacy `onSave` callback if provided). Migrate every caller off
+   * `onSave` and onto a typed mode.
+   */
+  mode?: FullScreenEditorMode;
+  /** Required for `mode === "assistant-message" | "user-message"`. */
+  conversationId?: string;
+  /** Required for `mode === "assistant-message" | "user-message"`. */
+  messageId?: string;
+  /**
+   * @deprecated Use `mode` + ids instead. Storing functions in Redux state
+   * is non-serializable and was the source of the assistant-edit freeze.
+   * Kept for callers not yet migrated.
+   */
   onSave?: (newContent: string) => void;
   tabs?: EditorTabId[];
   initialTab?: EditorTabId;
   analysisData?: Record<string, unknown>;
-  messageId?: string;
   title?: string;
   showSaveButton?: boolean;
   showCopyButton?: boolean;
@@ -295,6 +325,9 @@ export const openFullScreenEditor = (options: FullScreenEditorPayload) =>
     instanceId: options.instanceId,
     data: {
       content: options.content,
+      mode: options.mode ?? "free",
+      conversationId: options.conversationId,
+      messageId: options.messageId,
       onSave: options.onSave,
       tabs: options.tabs ?? [
         "write",
@@ -305,7 +338,6 @@ export const openFullScreenEditor = (options: FullScreenEditorPayload) =>
       ],
       initialTab: options.initialTab ?? "matrx_split",
       analysisData: options.analysisData,
-      messageId: options.messageId,
       title: options.title,
       showSaveButton: options.showSaveButton ?? true,
       showCopyButton: options.showCopyButton ?? true,
@@ -361,6 +393,12 @@ interface SaveToNotesPayload {
   content: string;
   defaultFolder?: string;
   instanceId?: string;
+  /**
+   * Initial editor mode for the save dialog. Pass `"plain"` for very large
+   * payloads (e.g. extracted PDFs) where the markdown preview can lag or
+   * crash. Default is `"split"`, set inside QuickNoteSaveCore.
+   */
+  initialEditorMode?: "plain" | "split" | "preview" | "wysiwyg" | "markdown-split";
 }
 
 export const openSaveToNotes = (options: SaveToNotesPayload) =>
@@ -370,6 +408,7 @@ export const openSaveToNotes = (options: SaveToNotesPayload) =>
     data: {
       content: options.content,
       defaultFolder: options.defaultFolder,
+      initialEditorMode: options.initialEditorMode,
     },
   });
 

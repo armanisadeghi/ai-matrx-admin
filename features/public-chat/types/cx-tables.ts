@@ -96,7 +96,15 @@ export interface CxMediaContent {
  */
 export interface CxToolCallContent {
   type: "tool_call";
-  id: string;
+  /**
+   * Wire-format tool call id. The server now persists this as `call_id` on
+   * every tool_call content block (matches `cx_tool_call.call_id`). The
+   * legacy pre-migration shape used `id` instead. Renderers normalise both
+   * via `call_id ?? id`.
+   */
+  call_id: string;
+  /** Legacy field — pre-migration persisted rows that haven't been touched. */
+  id?: string;
   name: string;
   arguments: Record<string, unknown>;
 }

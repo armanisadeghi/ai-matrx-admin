@@ -21,6 +21,7 @@ import {
   ExternalLink,
   Sparkles,
   RefreshCw,
+  Wand2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,8 @@ import { openSaveToNotes } from "@/lib/redux/slices/overlaySlice";
 // Legacy openFilePreview removed in Phase 11 — we just open the source URL
 // in a new tab now (signed / share URLs are browser-loadable directly).
 import { useAppDispatch } from "@/lib/redux/hooks";
+import { useShortcutTrigger } from "@/features/agents/hooks/useShortcutTrigger";
+import { useToastManager } from "@/hooks/useToastManager";
 import {
   usePdfExtractor,
   type PdfDocument,
@@ -38,7 +41,31 @@ import {
 
 // ─── Sub-tab type for per-extraction view ────────────────────────────────────
 
-type ContentSubTab = "text" | "preview" | "metadata" | "clean";
+type ContentSubTab = "text" | "preview" | "metadata" | "clean" | "ai";
+
+// ─── Shortcut registry ───────────────────────────────────────────────────────
+// Shortcuts available from the PDF Workspace. Each one is triggered with the
+// document text bound to `selection` (most shortcut authors map this to their
+// agent's primary input variable). Add more entries here to expose them.
+
+interface PdfShortcutEntry {
+  id: string;
+  label: string;
+  description: string;
+}
+
+const PDF_SHORTCUTS: PdfShortcutEntry[] = [
+  {
+    id: "dba439a3-a495-4e57-893a-2176cf14ab8d",
+    label: "Analyze Document",
+    description:
+      "Run analysis in a floating window — uses cleaned content when available, otherwise the raw extraction.",
+  },
+];
+
+// Above this character count we open Save to Notes in `plain` editor mode so
+// the markdown preview pane doesn't try to render the full extraction at once.
+const PLAIN_SAVE_THRESHOLD = 30_000;
 
 // ─── PdfExtractorFloatingWorkspace ───────────────────────────────────────────
 
@@ -49,15 +76,35 @@ export function PdfExtractorFloatingWorkspace({
 }) {
   const extractor = usePdfExtractor();
   const dispatch = useAppDispatch();
+  const triggerShortcut = useShortcutTrigger();
+  const toast = useToastManager("pdf-extractor");
 
   const activeTab = extractor.activeTab;
+
+  // Best text to feed an agent — prefer the AI-cleaned output if it exists.
+  const docText = useMemo(() => {
+    const doc = activeTab?.document;
+    if (!doc) return "";
+    return doc.cleanContent ?? doc.content ?? "";
+  }, [activeTab]);
 
   // ── Footer actions ──────────────────────────────────────────────────────
 
   const handleSaveToNotes = useCallback(() => {
-    const text = activeTab?.document?.content;
+    const doc = activeTab?.document;
+    const text = doc?.content;
     if (!text) return;
-    dispatch(openSaveToNotes({ content: text, defaultFolder: "Scratch" }));
+    dispatch(
+      openSaveToNotes({
+        content: text,
+        defaultFolder: "Scratch",
+        // Large extractions can stall the markdown preview pane on open.
+        // Force the plain editor for big payloads — users can still toggle
+        // back to split/preview from the toolbar once it's mounted.
+        initialEditorMode:
+          text.length > PLAIN_SAVE_THRESHOLD ? "plain" : undefined,
+      }),
+    );
   }, [dispatch, activeTab]);
 
   const handleViewOriginal = useCallback(() => {
@@ -69,6 +116,27 @@ export function PdfExtractorFloatingWorkspace({
       window.open(doc.source, "_blank", "noopener,noreferrer");
     }
   }, [activeTab]);
+
+  const handleRunShortcut = useCallback(
+    async (shortcutId: string) => {
+      if (!docText) {
+        toast.error("Nothing to send to the agent yet");
+        return;
+      }
+      try {
+        await triggerShortcut(shortcutId, {
+          scope: { selection: docText },
+          sourceFeature: "programmatic",
+        });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Could not run agent";
+        toast.error(msg);
+      }
+    },
+    [docText, triggerShortcut, toast],
+  );
+
+  const defaultShortcut = PDF_SHORTCUTS[0];
 
   const footer = useMemo(() => {
     if (extractor.activeTabId === "new") {
@@ -92,6 +160,13 @@ export function PdfExtractorFloatingWorkspace({
               onClick={handleViewOriginal}
             />
           )}
+          {defaultShortcut && activeTab.document.content && (
+            <FooterButton
+              icon={<Wand2 className="w-2.5 h-2.5" />}
+              label={defaultShortcut.label}
+              onClick={() => handleRunShortcut(defaultShortcut.id)}
+            />
+          )}
           <FooterButton
             icon={<StickyNote className="w-2.5 h-2.5" />}
             label="Save to Notes"
@@ -108,6 +183,8 @@ export function PdfExtractorFloatingWorkspace({
     activeTab,
     handleViewOriginal,
     handleSaveToNotes,
+    handleRunShortcut,
+    defaultShortcut,
     extractor,
   ]);
 
@@ -141,7 +218,10 @@ export function PdfExtractorFloatingWorkspace({
       urlSyncId="default"
       footer={footer}
     >
-      <PdfExtractorWindowContent extractor={extractor} />
+      <PdfExtractorWindowContent
+        extractor={extractor}
+        onRunShortcut={handleRunShortcut}
+      />
     </WindowPanel>
   );
 }
@@ -150,8 +230,10 @@ export function PdfExtractorFloatingWorkspace({
 
 function PdfExtractorWindowContent({
   extractor,
+  onRunShortcut,
 }: {
   extractor: ReturnType<typeof usePdfExtractor>;
+  onRunShortcut: (shortcutId: string) => void | Promise<void>;
 }) {
   return (
     <div className="flex flex-col h-full min-h-0">
@@ -171,6 +253,7 @@ function PdfExtractorWindowContent({
           <ExtractionTabContent
             tab={extractor.activeTab}
             onClean={extractor.cleanContent}
+            onRunShortcut={onRunShortcut}
           />
         ) : (
           <EmptyState message="Select a tab or start a new extraction" />
@@ -431,9 +514,11 @@ function NewExtractionContent({
 function ExtractionTabContent({
   tab,
   onClean,
+  onRunShortcut,
 }: {
   tab: ExtractionTab;
   onClean: (docId: string) => Promise<void>;
+  onRunShortcut: (shortcutId: string) => void | Promise<void>;
 }) {
   const [subTab, setSubTab] = useState<ContentSubTab>("text");
 
@@ -529,6 +614,12 @@ function ExtractionTabContent({
           label="AI Clean"
           badge={doc.cleanContent ? undefined : undefined}
         />
+        <SubTabBtn
+          active={subTab === "ai"}
+          onClick={() => setSubTab("ai")}
+          icon={<Wand2 className="w-3 h-3" />}
+          label="AI Actions"
+        />
       </div>
 
       {/* ── Sub-tab content ─────────────────────────────────────── */}
@@ -537,7 +628,78 @@ function ExtractionTabContent({
         {subTab === "preview" && <PreviewView content={doc.content} />}
         {subTab === "metadata" && <MetadataView doc={doc} />}
         {subTab === "clean" && <AiCleanView tab={tab} onClean={onClean} />}
+        {subTab === "ai" && (
+          <AiActionsView doc={doc} onRunShortcut={onRunShortcut} />
+        )}
       </div>
+    </div>
+  );
+}
+
+// ─── AI Actions View ─────────────────────────────────────────────────────────
+
+function AiActionsView({
+  doc,
+  onRunShortcut,
+}: {
+  doc: PdfDocument;
+  onRunShortcut: (shortcutId: string) => void | Promise<void>;
+}) {
+  const hasContent = !!(doc.cleanContent ?? doc.content);
+  const usingClean = !!doc.cleanContent;
+  const charCount = (doc.cleanContent ?? doc.content ?? "").length;
+
+  return (
+    <div className="p-3 space-y-2">
+      <div className="flex items-center gap-1.5 mb-1">
+        <Wand2 className="w-3.5 h-3.5 text-primary" />
+        <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
+          Run an Agent
+        </span>
+        <span className="ml-auto text-[10px] text-muted-foreground">
+          {usingClean ? "AI-cleaned" : "Raw"} · {charCount.toLocaleString()} chars
+        </span>
+      </div>
+
+      {!hasContent && (
+        <p className="text-xs text-muted-foreground py-4 text-center">
+          No extracted content available yet.
+        </p>
+      )}
+
+      {hasContent && (
+        <div className="space-y-1.5">
+          {PDF_SHORTCUTS.map((s) => (
+            <div
+              key={s.id}
+              className="flex items-start gap-2 px-2.5 py-2 bg-card border border-border rounded-md"
+            >
+              <div className="shrink-0 w-6 h-6 rounded bg-primary/10 flex items-center justify-center mt-0.5">
+                <Wand2 className="w-3 h-3 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium leading-tight">{s.label}</p>
+                <p className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                  {s.description}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                className="h-7 text-[10px] px-2 shrink-0"
+                onClick={() => onRunShortcut(s.id)}
+              >
+                Run
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <p className="text-[10px] text-muted-foreground/70 pt-1 leading-snug">
+        Each agent receives the document text as <code>selection</code>. Long
+        documents may degrade quality — consider running AI Clean first or
+        chunking large files.
+      </p>
     </div>
   );
 }

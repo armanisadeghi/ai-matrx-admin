@@ -350,6 +350,25 @@ export function usePdfExtractor() {
         ),
       );
     } finally {
+      // Stream ended (or threw). Sweep any placeholders still stuck in
+      // "extracting" — the server didn't send a per-file result for them.
+      // Without this sweep, those tabs spin forever and the user has to
+      // close them manually.
+      setTabs((prev) =>
+        prev.map((tab) =>
+          placeholderTabs.some((p) => p.id === tab.id) &&
+          tab.status === "extracting"
+            ? {
+                ...tab,
+                status: "error" as const,
+                error:
+                  "No result received from server before the stream ended. Try this file on its own.",
+                progressMessage: undefined,
+              }
+            : tab,
+        ),
+      );
+
       setBatchStatus("idle");
       clearFiles();
       // Refresh history
@@ -442,7 +461,10 @@ export function usePdfExtractor() {
         );
 
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+          const errText = await response.text().catch(() => "");
+          throw new Error(
+            `HTTP ${response.status}${errText ? `: ${errText.slice(0, 200)}` : ""}`,
+          );
         }
 
         let cleanedText: string | null = null;
@@ -462,8 +484,36 @@ export function usePdfExtractor() {
           }
 
           if (event.event === "data") {
-            cleanedText = (event.data.clean_content as string) ?? null;
+            // Tolerate either snake_case (per API.md) or camelCase, and
+            // a wrapped {result: {...}} shape just in case the server
+            // changes the envelope.
+            const data = event.data as Record<string, unknown>;
+            const inner =
+              (data.result as Record<string, unknown> | undefined) ?? data;
+            const candidate =
+              (inner.clean_content as string | undefined) ??
+              (inner.cleanContent as string | undefined) ??
+              null;
+            if (candidate) cleanedText = candidate;
           }
+        }
+
+        // Fallback — the server writes clean_content to the DB before
+        // streaming it back, so even if the stream's data event was
+        // missed (different shape, parse error, partial chunk), we can
+        // recover by refetching the document. This is the path that
+        // makes the AI Clean button reliably show its result.
+        if (!cleanedText) {
+          const refreshed = await fetchDocument(docId);
+          if (refreshed?.cleanContent) {
+            cleanedText = refreshed.cleanContent;
+          }
+        }
+
+        if (!cleanedText) {
+          throw new Error(
+            "AI cleanup completed but no cleaned content was returned",
+          );
         }
 
         // Update tab with cleaned content
@@ -499,7 +549,7 @@ export function usePdfExtractor() {
         );
       }
     },
-    [backendUrl, getAuthHeaders],
+    [backendUrl, getAuthHeaders, fetchDocument],
   );
 
   // ── Copy text ──────────────────────────────────────────────────────────────

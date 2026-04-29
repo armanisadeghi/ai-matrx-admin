@@ -734,12 +734,44 @@ export const loadConversation = createAsyncThunk<
     }
 
     // ── 6. Observability ─────────────────────────────────────────────────────
+    // Accept both `tool_calls` (snake_case, RPC contract) and `toolCalls`
+    // (camelCase, in case the server ever shifts to JS-style keys). One of
+    // them must be present and is the authoritative source for args + output
+    // on every persisted tool call.
+    const bundleAny = bundle as unknown as {
+      tool_calls?: CxToolCallRow[];
+      toolCalls?: CxToolCallRow[];
+      userRequests?: CxUserRequestRow[];
+      user_requests?: CxUserRequestRow[];
+      requests?: CxRequestRow[];
+    };
+    const rawToolCalls = bundleAny.tool_calls ?? bundleAny.toolCalls ?? [];
+    const rawUserRequests =
+      bundleAny.userRequests ?? bundleAny.user_requests ?? [];
+    const rawRequests = bundleAny.requests ?? [];
+
+    if (
+      rawToolCalls.length === 0 &&
+      bundle.messages.some((m) => m.role === "tool")
+    ) {
+      // The conversation has tool turns but the bundle returned zero
+      // cx_tool_call rows — args/results will appear empty. This is a
+      // server-side fetch problem (RPC missing the join, RLS hiding
+      // rows, or field-name drift). Surface it loudly so we don't
+      // silently render empty tool cards.
+      // eslint-disable-next-line no-console
+      console.warn(
+        "[loadConversation] cid=%s has tool messages but bundle.tool_calls is empty — check RPC return shape",
+        conversationId,
+      );
+    }
+
     dispatch(
       hydrateObservability({
         conversationId,
-        userRequests: (bundle.userRequests ?? []).map(userRequestRowToRecord),
-        requests: (bundle.requests ?? []).map(requestRowToRecord),
-        toolCalls: bundle.tool_calls.map(toolCallRowToRecord),
+        userRequests: rawUserRequests.map(userRequestRowToRecord),
+        requests: rawRequests.map(requestRowToRecord),
+        toolCalls: rawToolCalls.map(toolCallRowToRecord),
       }),
     );
 
