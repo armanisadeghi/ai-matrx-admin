@@ -65,6 +65,10 @@ import {
 } from "../../redux/codeWorkspaceSlice";
 import { selectIsAdmin } from "@/lib/redux/selectors/userSelectors";
 import { clearFsChangesBucket } from "../../redux/fsChangesSlice";
+import {
+  setActiveTab as setBottomActiveTab,
+  setOpen as setBottomOpen,
+} from "../../redux/terminalSlice";
 import { SidePanelAction, SidePanelHeader } from "../SidePanelChrome";
 import {
   ACTIVE_ROW,
@@ -207,23 +211,26 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
   );
 
   /**
-   * One-click connect: pre-flight probe → wire the workspace → switch to
-   * Explorer so the files appear immediately.
+   * One-click connect: wire the workspace + switch to Explorer **immediately**,
+   * fire the orchestrator probe in the background.
    *
-   * The probe is the killer feature here. Without it, clicking a ghost row
-   * (Supabase says `ready`, orchestrator destroyed the container) silently
-   * binds the chat to a `proxy_url` that 404s every AI call as
-   * "Conversation not found". With it, we either:
-   *   - confirm `alive` and connect normally,
-   *   - detect `gone` (orchestrator returned 404), reconcile the row in
-   *     place, refresh the list (the dead row falls out), and surface a
-   *     clear "this sandbox no longer exists" message,
-   *   - or fall back to optimistic-connect on `unreachable` (transient
-   *     orchestrator blip — leaving the user blocked here would be worse
-   *     than letting them try and fail with a real error).
+   * The probe is still important — it detects ghost rows (Supabase says
+   * `ready`, orchestrator destroyed the container) and keeps AI calls from
+   * silently 404'ing against a dead `proxy_url`. But blocking the connect
+   * on it makes the click feel laggy. So we connect optimistically and
+   * reconcile in place if the probe comes back `gone` — clearing the
+   * active sandbox state and surfacing a clear error.
+   *
+   * Outcomes:
+   *   - `alive`            → no further action; user keeps editing.
+   *   - `unreachable` / null → user keeps editing; AI calls may fail loud
+   *                          if the orchestrator stays unreachable, but
+   *                          better than blocking the click.
+   *   - `gone`             → unwire (clear active sandbox + adapters),
+   *                          refresh the list, surface the error.
    */
   const connect = useCallback(
-    async (instance: SandboxInstance) => {
+    (instance: SandboxInstance) => {
       const effective = getEffectiveStatus(instance);
       if (!ACTIVE_SANDBOX_STATUSES.includes(effective)) {
         setError(
@@ -235,46 +242,48 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
       setConnectingId(instance.id);
       setError(null);
 
-      let probeOutcome: SandboxProbeResponse["aliveness"] | null = null;
-      try {
-        const resp = await fetch(`/api/sandbox/${instance.id}/probe`, {
-          method: "POST",
-        });
-        if (resp.ok) {
+      // 1) Wire & switch synchronously — user sees the explorer + bottom
+      //    panel pop open in the same frame. No await here.
+      wireInstance(instance);
+      dispatch(setActiveView("explorer"));
+      // Pop the bottom panel open and focus the terminal so the
+      // auto-spawned shell + logs sessions are visible immediately.
+      dispatch(setBottomOpen(true));
+      dispatch(setBottomActiveTab("terminal"));
+
+      // 2) Background probe. We dispatch this without awaiting so the UI
+      //    feels instant, then reconcile if the orchestrator says the
+      //    sandbox is gone.
+      void (async () => {
+        try {
+          const resp = await fetch(`/api/sandbox/${instance.id}/probe`, {
+            method: "POST",
+          });
+          if (!resp.ok) return;
           const data: SandboxProbeResponse = await resp.json();
-          probeOutcome = data.aliveness;
           setProbeStatusById((cur) => ({
             ...cur,
             [instance.id]: data.aliveness,
           }));
+          if (data.aliveness === "gone") {
+            // The container is destroyed. Tear the just-wired connection
+            // back down so subsequent AI calls don't 404 silently.
+            dispatch(setActiveSandboxId(null));
+            dispatch(setActiveSandboxProxyUrl(null));
+            setError(
+              `Sandbox ${instance.sandbox_id?.slice(0, 14) ?? instance.id.slice(0, 8)} no longer exists on the orchestrator — it was destroyed out of band. The row has been cleaned up.`,
+            );
+            void refresh();
+          }
+        } catch (err) {
+          // Network error talking to OUR API. Leave the optimistic
+          // connection in place; the user's next action will surface the
+          // real failure if it persists.
+          console.warn("[SandboxesPanel] probe call failed:", err);
+        } finally {
+          setConnectingId((cur) => (cur === instance.id ? null : cur));
         }
-      } catch (err) {
-        // Network error talking to OUR API (not the orchestrator) — treat
-        // as unreachable and let the optimistic path run.
-        console.warn("[SandboxesPanel] probe call failed:", err);
-      }
-
-      if (probeOutcome === "gone") {
-        // Row was just reconciled to `destroyed` by the API. Refresh so it
-        // disappears from the list and the user sees what actually happened.
-        setError(
-          `Sandbox ${instance.sandbox_id?.slice(0, 14) ?? instance.id.slice(0, 8)} no longer exists on the orchestrator — it was destroyed out of band. The row has been cleaned up.`,
-        );
-        setConnectingId(null);
-        void refresh();
-        return;
-      }
-
-      // `alive` or `unreachable` (or null for our-API failure) — connect.
-      // On `unreachable` the user may still hit AI errors, but at least
-      // they're talking to the right URL and the orchestrator's actual
-      // error will surface clearly when traffic resumes.
-      wireInstance(instance);
-      // Auto-switch to Explorer so the user sees the sandbox files right
-      // away. This is the whole point of single-click connect — the user
-      // picked a sandbox, they want to work in it, not stay on the picker.
-      dispatch(setActiveView("explorer"));
-      setConnectingId(null);
+      })();
     },
     [dispatch, refresh, wireInstance],
   );

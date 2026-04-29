@@ -399,7 +399,7 @@ export const createFolder = createAsyncThunk<
   string,
   import("@/features/files/types").CreateFolderArg,
   ThunkApi
->("cloudFiles/createFolder", async (arg, { dispatch }) => {
+>("cloudFiles/createFolder", async (arg, { dispatch, getState }) => {
   const folderName = arg.folderName.trim();
   if (!folderName) {
     throw new Error("Folder name cannot be empty.");
@@ -416,24 +416,26 @@ export const createFolder = createAsyncThunk<
     resourceType: "folder",
   });
 
-  // Path-style creation when at root: backend creates the folder
-  // idempotently and avoids the `parent_id: null` ambiguity that's been
-  // tripping up direct {folder_name, parent_id: null} requests at root.
-  // For nested creation we keep the explicit name+parentId form so the
-  // caller's tree state matches exactly.
-  const body =
-    arg.parentId === null
-      ? {
-          folder_path: folderName,
-          visibility: arg.visibility ?? "private",
-          metadata: arg.metadata ?? null,
-        }
-      : {
-          folder_name: folderName,
-          parent_id: arg.parentId,
-          visibility: arg.visibility ?? "private",
-          metadata: arg.metadata ?? null,
-        };
+  // Always use path-style: the backend rejects `{folder_name, parent_id}`
+  // with `validation_error` (both at root with parent_id=null AND nested
+  // with a parent uuid). Path-style creation is idempotent and creates
+  // any missing intermediate segments. For nested creation we resolve the
+  // parent's path from local state and append the new segment.
+  let folderPath = folderName;
+  if (arg.parentId !== null) {
+    const parent = getState().cloudFiles.foldersById[arg.parentId];
+    if (!parent) {
+      throw new Error(
+        `Cannot create folder: parent folder ${arg.parentId} not found in local state.`,
+      );
+    }
+    folderPath = `${parent.folderPath}/${folderName}`;
+  }
+  const body = {
+    folder_path: folderPath,
+    visibility: arg.visibility ?? "private",
+    metadata: arg.metadata ?? null,
+  };
 
   try {
     const { data: row } = await Folders.createFolder(body, { requestId });

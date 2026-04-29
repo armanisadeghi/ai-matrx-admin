@@ -9,10 +9,12 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import {
+  createShareLink,
   deleteFile as deleteFileThunk,
   getSignedUrl,
+  loadShareLinks,
   moveFile as moveFileThunk,
   renameFile as renameFileThunk,
   restoreVersion as restoreVersionThunk,
@@ -23,7 +25,10 @@ import {
   moveAny,
   renameAny,
 } from "@/features/files/redux/virtual-thunks";
-import { selectFileById } from "@/features/files/redux/selectors";
+import {
+  selectActiveShareLinksForResource,
+  selectFileById,
+} from "@/features/files/redux/selectors";
 import { isSyntheticId } from "@/features/files/virtual-sources/path";
 import * as Files from "@/features/files/api/files";
 import type { Visibility } from "@/features/files/types";
@@ -44,14 +49,25 @@ export interface FileActionHandlers {
    */
   download: () => Promise<void>;
   /**
-   * Copies a shareable signed URL to clipboard. Falls back to console.log if
-   * the Clipboard API isn't available (non-secure contexts).
+   * Copies a public, embeddable URL to clipboard. The URL is backed by a
+   * persistent share token (read-only by default) and routes through the
+   * `/api/share/<token>/file` redirect, so it works as an `<img src>`,
+   * direct download, or anywhere else a recipient needs the bytes.
+   *
+   * If the file already has an active read-only share link, that one is
+   * reused. Otherwise a new one is created on demand. The link is
+   * revocable from the Share dialog.
+   *
+   * Pass `{ expiresIn }` to fall back to the legacy temporary signed-URL
+   * behavior — used by the duplicate flow (which fetches bytes and
+   * re-uploads, where a transient URL is the right tool).
    */
   copyShareUrl: (opts?: { expiresIn?: number }) => Promise<string | null>;
 }
 
 export function useFileActions(fileId: string): FileActionHandlers {
   const dispatch = useAppDispatch();
+  const store = useAppStore();
   const file = useAppSelector((s) => selectFileById(s, fileId));
   // Synthetic ids (`vfs:<adapter>:<vid>`) belong to virtual sources. Route
   // ops through the source-aware `*Any` thunks so each adapter's `write`,
@@ -153,20 +169,82 @@ export function useFileActions(fileId: string): FileActionHandlers {
   const copyShareUrl = useCallback(
     async (opts?: { expiresIn?: number }) => {
       if (isVirtual) return null;
-      const result = await dispatch(
-        getSignedUrl({ fileId, expiresIn: opts?.expiresIn ?? 3600 }),
-      ).unwrap();
-      if (typeof navigator !== "undefined" && navigator.clipboard) {
-        try {
-          await navigator.clipboard.writeText(result.url);
-          return result.url;
-        } catch {
-          /* fall through */
+
+      // Legacy temporary-URL path — only used by the duplicate flow that
+      // needs to `fetch()` bytes immediately. A short-lived signed URL is
+      // the right tool there: no side-effects on the file's share state.
+      if (opts?.expiresIn !== undefined) {
+        const result = await dispatch(
+          getSignedUrl({ fileId, expiresIn: opts.expiresIn }),
+        ).unwrap();
+        if (typeof navigator !== "undefined" && navigator.clipboard) {
+          try {
+            await navigator.clipboard.writeText(result.url);
+          } catch {
+            /* ignore clipboard failures (non-secure contexts) */
+          }
+        }
+        return result.url;
+      }
+
+      // Default path — return a persistent public URL backed by a share
+      // token. Reuses an existing active read-only link when present;
+      // otherwise creates one. The URL routes through the
+      // `/api/share/<token>/file` redirect so it works as an `<img src>`,
+      // raw download, or anywhere else.
+      let token: string | undefined;
+
+      // Look in the slice first to avoid a needless network round-trip.
+      const cachedLinks = selectActiveShareLinksForResource(
+        store.getState(),
+        fileId,
+      );
+      const cachedReadLink = cachedLinks.find(
+        (l) => l.permissionLevel === "read",
+      );
+      if (cachedReadLink) {
+        token = cachedReadLink.shareToken;
+      } else {
+        // Cache may be cold (no one has opened the Share dialog this
+        // session). Load before deciding to create — keeps us from
+        // accidentally creating duplicate links.
+        await dispatch(loadShareLinks({ resourceId: fileId })).unwrap().catch(() => undefined);
+        const refreshed = selectActiveShareLinksForResource(
+          store.getState(),
+          fileId,
+        );
+        const reusable = refreshed.find((l) => l.permissionLevel === "read");
+        if (reusable) {
+          token = reusable.shareToken;
+        } else {
+          // None exists — mint a fresh read-only, no-expiry link. The
+          // user can revoke it via the Share dialog whenever they want.
+          const link = await dispatch(
+            createShareLink({
+              resourceId: fileId,
+              resourceType: "file",
+              permissionLevel: "read",
+            }),
+          ).unwrap();
+          token = link.shareToken;
         }
       }
-      return result.url;
+
+      if (!token) return null;
+
+      const origin =
+        typeof window !== "undefined" ? window.location.origin : "";
+      const url = `${origin}/api/share/${token}/file`;
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        try {
+          await navigator.clipboard.writeText(url);
+        } catch {
+          /* ignore clipboard failures */
+        }
+      }
+      return url;
     },
-    [dispatch, fileId, isVirtual],
+    [dispatch, fileId, isVirtual, store],
   );
 
   return useMemo(

@@ -11,11 +11,14 @@ import {
 } from "../redux/terminalSlice";
 import type { BottomTabId } from "../types";
 import { BOTTOM_PANEL_BG, PANE_BORDER } from "../styles/tokens";
-import { TerminalTab } from "./TerminalTab";
+import { SessionsHost } from "./SessionsHost";
 import { ProblemsTab } from "./ProblemsTab";
 import { OutputTab } from "./OutputTab";
 import { DebugConsoleTab } from "./DebugConsoleTab";
 import { PortsTab } from "./PortsTab";
+import { SandboxInspectorTab } from "./SandboxInspectorTab";
+import { SandboxSshTab } from "./SandboxSshTab";
+import { selectActiveSandboxId } from "../redux/codeWorkspaceSlice";
 
 interface BottomPanelProps {
   onCollapse?: () => void;
@@ -27,12 +30,19 @@ interface BottomTabDescriptor {
   label: string;
 }
 
-const TABS: BottomTabDescriptor[] = [
+interface BottomTabDescriptorEx extends BottomTabDescriptor {
+  /** When true, the tab is only shown while a sandbox is connected. */
+  requiresSandbox?: boolean;
+}
+
+const TABS: BottomTabDescriptorEx[] = [
   { id: "problems", label: "Problems" },
   { id: "output", label: "Output" },
   { id: "debug", label: "Debug Console" },
   { id: "terminal", label: "Terminal" },
   { id: "ports", label: "Ports" },
+  { id: "sandbox-inspector", label: "Inspector", requiresSandbox: true },
+  { id: "sandbox-ssh", label: "SSH", requiresSandbox: true },
 ];
 
 export const BottomPanel: React.FC<BottomPanelProps> = ({
@@ -41,6 +51,10 @@ export const BottomPanel: React.FC<BottomPanelProps> = ({
 }) => {
   const dispatch = useAppDispatch();
   const activeTab = useAppSelector(selectTerminalActiveTab);
+  const activeSandboxId = useAppSelector(selectActiveSandboxId);
+  const visibleTabs = TABS.filter(
+    (t) => !t.requiresSandbox || !!activeSandboxId,
+  );
 
   return (
     <div
@@ -58,7 +72,7 @@ export const BottomPanel: React.FC<BottomPanelProps> = ({
         )}
       >
         <div role="tablist" className="flex items-stretch">
-          {TABS.map((tab) => (
+          {visibleTabs.map((tab) => (
             <button
               key={tab.id}
               type="button"
@@ -107,9 +121,9 @@ export const BottomPanel: React.FC<BottomPanelProps> = ({
           </button>
         </div>
       </div>
-      {/* Terminal is always mounted so xterm state (scrollback, input
-       *  buffer, cursor position) survives tab switches. Other tabs render
-       *  normally; when one of them is active, the terminal is hidden via
+      {/* Terminal sessions stay always-mounted so xterm scrollback + log
+       *  polling buffers survive tab switches. Other tabs render lazily;
+       *  when one of them is active, the terminal host is hidden via
        *  `display:none`. */}
       <div className="relative flex-1 min-h-0">
         <div className={cn("h-full", activeTab === "terminal" && "hidden")}>
@@ -117,14 +131,21 @@ export const BottomPanel: React.FC<BottomPanelProps> = ({
           {activeTab === "output" && <OutputTab />}
           {activeTab === "debug" && <DebugConsoleTab />}
           {activeTab === "ports" && <PortsTab />}
+          {activeTab === "sandbox-inspector" && activeSandboxId && (
+            <SandboxInspectorTab sandboxId={activeSandboxId} />
+          )}
+          {activeTab === "sandbox-ssh" && activeSandboxId && (
+            <SandboxSshTab sandboxId={activeSandboxId} />
+          )}
         </div>
         <div
           className={cn("h-full", activeTab !== "terminal" && "hidden")}
           aria-hidden={activeTab !== "terminal"}
         >
-          <TerminalTab visible={activeTab === "terminal"} />
+          <SessionsHost visible={activeTab === "terminal"} />
         </div>
       </div>
     </div>
   );
 };
+

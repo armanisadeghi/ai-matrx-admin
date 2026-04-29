@@ -13,7 +13,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Copy, Link, Loader2, Trash2 } from "lucide-react";
+import { Check, Copy, ExternalLink, Link, Loader2, Trash2 } from "lucide-react";
 import { extractErrorMessage } from "@/utils/errors";
 import {
   Dialog,
@@ -52,19 +52,21 @@ export function ShareLinkDialog({
 }: ShareLinkDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px]">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[85dvh] w-[95vw] flex-col gap-0 overflow-hidden p-0 sm:max-w-[640px]">
+        <DialogHeader className="border-b px-6 py-4">
           <DialogTitle>Share link</DialogTitle>
           <DialogDescription>
             Anyone with the link will be able to {resourceType === "folder" ? "view the folder" : "access this file"}.
           </DialogDescription>
         </DialogHeader>
-        <ShareLinkDialogBody
-          resourceId={resourceId}
-          resourceType={resourceType}
-          appOrigin={appOrigin}
-        />
-        <DialogFooter>
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+          <ShareLinkDialogBody
+            resourceId={resourceId}
+            resourceType={resourceType}
+            appOrigin={appOrigin}
+          />
+        </div>
+        <DialogFooter className="border-t px-6 py-3">
           <button
             type="button"
             onClick={() => onOpenChange(false)}
@@ -104,18 +106,39 @@ export function ShareLinkDialogBody({
   const [expiresAt, setExpiresAt] = useState<string>("");
   const [maxUses, setMaxUses] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
-  const [copiedToken, setCopiedToken] = useState<string | null>(null);
+  // Two flavors of "copied" state — one per URL kind, keyed by token so a
+  // user copying the page URL doesn't tick the file URL's checkmark too.
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   useEffect(() => {
     void dispatch(loadShareLinks({ resourceId }));
   }, [dispatch, resourceId]);
 
-  const buildUrl = useCallback(
+  const buildPageUrl = useCallback(
     (token: string) => {
       const base =
         appOrigin ??
         (typeof window !== "undefined" ? window.location.origin : "");
       return `${base}/share/${token}`;
+    },
+    [appOrigin],
+  );
+
+  /**
+   * Direct-file URL — when a browser hits this, our `/api/share/[token]/file`
+   * route 302-redirects to the live signed S3 URL. Plays nicely with `<img
+   * src="…">`, `<video>`, raw downloads, or being pasted into other systems
+   * that need the bytes (Notion, email, Slack unfurl, etc.). The page URL
+   * (`buildPageUrl`) is still useful when you want recipients to see the
+   * metadata + an explicit Download button first; the file URL is the
+   * embeddable / hot-linkable one most users actually want.
+   */
+  const buildFileUrl = useCallback(
+    (token: string) => {
+      const base =
+        appOrigin ??
+        (typeof window !== "undefined" ? window.location.origin : "");
+      return `${base}/api/share/${token}/file`;
     },
     [appOrigin],
   );
@@ -143,19 +166,21 @@ export function ShareLinkDialogBody({
   }, [dispatch, resourceId, resourceType, permissionLevel, expiresAt, maxUses]);
 
   const handleCopy = useCallback(
-    async (token: string) => {
-      const url = buildUrl(token);
+    async (key: string, url: string) => {
       if (typeof navigator !== "undefined" && navigator.clipboard) {
         try {
           await navigator.clipboard.writeText(url);
-          setCopiedToken(token);
-          setTimeout(() => setCopiedToken(null), 1500);
+          setCopiedKey(key);
+          setTimeout(
+            () => setCopiedKey((k) => (k === key ? null : k)),
+            1500,
+          );
         } catch {
           /* ignore */
         }
       }
     },
-    [buildUrl],
+    [],
   );
 
   const handleDeactivate = useCallback(
@@ -231,7 +256,7 @@ export function ShareLinkDialogBody({
       </div>
 
       {/* Existing links */}
-      <div>
+      <div className="min-w-0">
         <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
           Active links
         </h3>
@@ -240,58 +265,147 @@ export function ShareLinkDialogBody({
             No active links yet.
           </p>
         ) : (
-          <ul className="space-y-2">
+          <ul className="flex flex-col gap-3">
             {links.map((link) => {
-              const url = buildUrl(link.shareToken);
-              const copied = copiedToken === link.shareToken;
+              const pageUrl = buildPageUrl(link.shareToken);
+              const fileUrl = buildFileUrl(link.shareToken);
+              const fileKey = `file:${link.shareToken}`;
+              const pageKey = `page:${link.shareToken}`;
               return (
                 <li
                   key={link.id}
-                  className="flex items-start gap-2 rounded-md border p-2"
+                  className="flex flex-col gap-2 rounded-md border p-3 min-w-0"
                 >
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-mono truncate">{url}</div>
-                    <div className="mt-1 text-[10px] text-muted-foreground space-x-2">
-                      <span className="uppercase">
+                  {/* Header row — meta + delete. */}
+                  <div className="flex items-center justify-between gap-2 min-w-0">
+                    <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground min-w-0">
+                      <span className="rounded bg-muted px-1.5 py-0.5 font-medium uppercase text-foreground/80">
                         {link.permissionLevel}
                       </span>
                       {link.expiresAt ? (
                         <span>
                           · Expires {formatAbsoluteDate(link.expiresAt)}
                         </span>
-                      ) : null}
+                      ) : (
+                        <span>· No expiry</span>
+                      )}
                       {link.maxUses ? (
                         <span>
                           · {link.useCount}/{link.maxUses} uses
                         </span>
                       ) : null}
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => void handleDeactivate(link.shareToken)}
+                      aria-label="Deactivate link"
+                      title="Revoke link"
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => void handleCopy(link.shareToken)}
-                    aria-label="Copy link"
-                    className={cn(
-                      "flex h-7 w-7 items-center justify-center rounded hover:bg-accent",
-                      copied && "text-emerald-500",
-                    )}
-                  >
-                    <Copy className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void handleDeactivate(link.shareToken)}
-                    aria-label="Deactivate link"
-                    className="flex h-7 w-7 items-center justify-center rounded text-destructive hover:bg-destructive/10"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+
+                  {/* Direct file URL — embeds + hot-links. Promoted as the
+                      primary action because most callers want the bytes,
+                      not the metadata page. */}
+                  <UrlRow
+                    label="Direct file URL"
+                    sublabel="Opens / embeds the file directly"
+                    url={fileUrl}
+                    isCopied={copiedKey === fileKey}
+                    onCopy={() => void handleCopy(fileKey, fileUrl)}
+                    primary
+                  />
+                  {/* Page URL — pretty landing page with metadata + download. */}
+                  <UrlRow
+                    label="Share page"
+                    sublabel="Metadata + download button"
+                    url={pageUrl}
+                    isCopied={copiedKey === pageKey}
+                    onCopy={() => void handleCopy(pageKey, pageUrl)}
+                  />
                 </li>
               );
             })}
           </ul>
         )}
       </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// UrlRow — one labelled URL with copy + open-in-new-tab buttons. Built so
+// long URLs always truncate inside the dialog instead of overflowing.
+// ---------------------------------------------------------------------------
+
+interface UrlRowProps {
+  label: string;
+  sublabel: string;
+  url: string;
+  isCopied: boolean;
+  onCopy: () => void;
+  primary?: boolean;
+}
+
+function UrlRow({
+  label,
+  sublabel,
+  url,
+  isCopied,
+  onCopy,
+  primary,
+}: UrlRowProps) {
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-2 rounded-md border bg-background px-2 py-1.5 min-w-0",
+        primary && "border-primary/30 bg-primary/5",
+      )}
+    >
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+          <span className={cn("font-medium", primary && "text-primary")}>
+            {label}
+          </span>
+          <span>· {sublabel}</span>
+        </div>
+        {/* `truncate` + `min-w-0` on the parent flex item is what keeps
+            this from overflowing the dialog when the URL is long. */}
+        <div
+          className="truncate text-xs font-mono text-foreground/90"
+          title={url}
+        >
+          {url}
+        </div>
+      </div>
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Open in new tab"
+        title="Open in new tab"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+      >
+        <ExternalLink className="h-3.5 w-3.5" />
+      </a>
+      <button
+        type="button"
+        onClick={onCopy}
+        aria-label="Copy"
+        title="Copy"
+        className={cn(
+          "flex h-7 w-7 shrink-0 items-center justify-center rounded hover:bg-accent",
+          isCopied && "text-emerald-500",
+        )}
+      >
+        {isCopied ? (
+          <Check className="h-3.5 w-3.5" />
+        ) : (
+          <Copy className="h-3.5 w-3.5" />
+        )}
+      </button>
     </div>
   );
 }

@@ -151,25 +151,27 @@ function VersionGroupRow({
 }
 
 interface AgentContentHistoryPanelProps {
+  /** Initial agent whose history to show. May be changed by the in-panel picker. */
   agentId: string;
   /**
-   * When true, renders an agent picker above the conversation list so the
-   * user can switch which agent's history they're browsing without leaving
-   * the panel. When false (default), the panel stays locked to `agentId` —
-   * which is what the embedded "History" tab inside the Advanced Editor uses.
+   * Render an agent picker above the conversation list so the user can browse
+   * a different agent's history without leaving the panel. Default `true` —
+   * pass `false` to lock the panel to `agentId` (rare; useful when the host
+   * already owns the agent picker).
    */
   allowAgentSwitching?: boolean;
   /**
-   * Required when `allowAgentSwitching` is true. Called when the user picks a
-   * different agent from the dropdown. Owners typically lift this to drive
-   * their own state (e.g. the standalone Run History window's `agentId`).
+   * Optional. Called when the user picks a different agent from the dropdown.
+   * If omitted, the panel manages the selected agent in internal state — i.e.
+   * the embedded History tab can switch agents without coordinating with its
+   * parent.
    */
   onAgentChange?: (agentId: string) => void;
 }
 
 export function AgentContentHistoryPanel({
-  agentId,
-  allowAgentSwitching = false,
+  agentId: initialAgentId,
+  allowAgentSwitching = true,
   onAgentChange,
 }: AgentContentHistoryPanelProps) {
   const dispatch = useAppDispatch();
@@ -177,6 +179,28 @@ export function AgentContentHistoryPanel({
   const [selectedConversationId, setSelectedConversationId] = useState<
     string | null
   >(null);
+
+  // When the caller provides `onAgentChange`, treat it as controlled — the
+  // displayed agent always tracks `initialAgentId`. Otherwise manage it
+  // ourselves so the embedded History tab can switch agents independently
+  // from its host editor.
+  const [internalAgentId, setInternalAgentId] = useState(initialAgentId);
+  const agentId = onAgentChange ? initialAgentId : internalAgentId;
+
+  // Keep internal state in sync if the caller flips the initial id (e.g. user
+  // switches agents in the host editor before the History tab tracks its own).
+  useEffect(() => {
+    if (!onAgentChange) setInternalAgentId(initialAgentId);
+  }, [initialAgentId, onAgentChange]);
+
+  const handleAgentSelect = useCallback(
+    (next: string) => {
+      if (onAgentChange) onAgentChange(next);
+      else setInternalAgentId(next);
+      setSelectedConversationId(null);
+    },
+    [onAgentChange],
+  );
 
   const canonicalAgentId = useAppSelector((state: RootState) => {
     const agent = selectAgentById(state, agentId);
@@ -246,12 +270,17 @@ export function AgentContentHistoryPanel({
       orientation="horizontal"
       className="h-full min-h-0 w-full"
     >
-      <ResizablePanel defaultSize={28} minSize={18} maxSize={45}>
+      <ResizablePanel
+        id="agent-content-history-sidebar"
+        defaultSize="28%"
+        minSize="8%"
+        maxSize="45%"
+      >
         <div className="h-full min-h-0 flex flex-col border-r border-border bg-card/30">
           {allowAgentSwitching && (
             <div className="px-2 py-1.5 border-b border-border shrink-0">
               <AgentListDropdown
-                onSelect={onAgentChange}
+                onSelect={handleAgentSelect}
                 label={agentName ?? "Select agent…"}
                 className="w-full"
               />
@@ -297,7 +326,7 @@ export function AgentContentHistoryPanel({
 
       <ResizableHandle withHandle />
 
-      <ResizablePanel defaultSize={72}>
+      <ResizablePanel id="agent-content-history-main" defaultSize="72%" minSize="30%">
         <div className="h-full min-h-0 overflow-hidden">
           {selectedConversationId ? (
             <div className="h-full w-full overflow-y-auto">

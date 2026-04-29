@@ -1,0 +1,149 @@
+"use client";
+
+/**
+ * SessionList — VSCode-style sidebar listing the open terminal sessions.
+ *
+ * Renders on the right side of the bottom panel's "terminal" tab. Each row
+ * is a session (shell or logs) with a kind icon, label, and a close button.
+ * The "+" button at the top spawns a fresh shell tied to the active sandbox
+ * (or the mock adapter when no sandbox is connected).
+ */
+
+import React, { useCallback } from "react";
+import { Plus, X, TerminalSquare, ScrollText } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import {
+  addSession,
+  removeSession,
+  selectActiveSessionId,
+  selectAllSessions,
+  setActiveSession,
+  type TerminalSession,
+} from "../redux/terminalSessionsSlice";
+import { selectActiveSandboxId } from "../redux/codeWorkspaceSlice";
+
+interface SessionListProps {
+  className?: string;
+}
+
+const KIND_LABEL: Record<TerminalSession["kind"], string> = {
+  shell: "Shell",
+  logs: "Logs",
+};
+
+export const SessionList: React.FC<SessionListProps> = ({ className }) => {
+  const dispatch = useAppDispatch();
+  const sessions = useAppSelector(selectAllSessions);
+  const activeId = useAppSelector(selectActiveSessionId);
+  const activeSandboxId = useAppSelector(selectActiveSandboxId);
+
+  const handleAddShell = useCallback(() => {
+    const idx = sessions.filter((s) => s.kind === "shell").length + 1;
+    dispatch(
+      addSession({
+        kind: "shell",
+        label: `Shell ${idx}`,
+        sandboxId: activeSandboxId ?? null,
+      }),
+    );
+  }, [activeSandboxId, dispatch, sessions]);
+
+  const handleAddLogs = useCallback(() => {
+    if (!activeSandboxId) return;
+    dispatch(
+      addSession({
+        kind: "logs",
+        label: "Logs",
+        sandboxId: activeSandboxId,
+      }),
+    );
+  }, [activeSandboxId, dispatch]);
+
+  return (
+    <div
+      className={cn(
+        "flex h-full w-44 shrink-0 flex-col border-l border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900",
+        className,
+      )}
+    >
+      <div className="flex h-7 shrink-0 items-center justify-between border-b border-neutral-200 px-2 text-[10px] uppercase tracking-wider text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+        <span>Terminals</span>
+        <div className="flex items-center gap-0.5">
+          {activeSandboxId && (
+            <button
+              type="button"
+              onClick={handleAddLogs}
+              title="New logs viewer"
+              className="flex h-5 w-5 items-center justify-center rounded-sm text-neutral-500 hover:bg-neutral-200 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+            >
+              <ScrollText size={12} />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={handleAddShell}
+            title="New shell"
+            className="flex h-5 w-5 items-center justify-center rounded-sm text-neutral-500 hover:bg-neutral-200 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+          >
+            <Plus size={13} />
+          </button>
+        </div>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {sessions.length === 0 ? (
+          <div className="px-2 py-2 text-[11px] text-neutral-500 dark:text-neutral-400">
+            No terminals open. Click + to start a shell.
+          </div>
+        ) : (
+          <ul className="py-1">
+            {sessions.map((s) => {
+              const isActive = s.id === activeId;
+              const Icon = s.kind === "logs" ? ScrollText : TerminalSquare;
+              return (
+                <li key={s.id}>
+                  <button
+                    type="button"
+                    onClick={() => dispatch(setActiveSession(s.id))}
+                    title={`${KIND_LABEL[s.kind]} · ${s.label}`}
+                    className={cn(
+                      "group flex w-full items-center gap-1.5 px-2 py-1 text-left text-[12px]",
+                      isActive
+                        ? "bg-blue-100/60 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100"
+                        : "text-neutral-700 hover:bg-neutral-200/60 dark:text-neutral-300 dark:hover:bg-neutral-800/60",
+                    )}
+                  >
+                    <Icon size={12} className="shrink-0 opacity-70" />
+                    <span className="min-w-0 flex-1 truncate">{s.label}</span>
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Close ${s.label}`}
+                      title="Close terminal"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        dispatch(removeSession(s.id));
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          dispatch(removeSession(s.id));
+                        }
+                      }}
+                      className="ml-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm opacity-0 transition-opacity hover:bg-neutral-300/60 group-hover:opacity-100 dark:hover:bg-neutral-700/60"
+                    >
+                      <X size={11} />
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default SessionList;

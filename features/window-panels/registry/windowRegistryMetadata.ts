@@ -337,11 +337,6 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     label: "Run History",
     defaultData: { agentId: null, selectedConversationId: null },
     mobilePresentation: "fullscreen",
-    deprecated: {
-      replacedBy: "agentAdvancedEditorWindow",
-      note:
-        "Use the History tab inside the Advanced Editor — it shows the same version-grouped conversations and read-only view.",
-    },
   },
 
   // ── Agent Run ─────────────────────────────────────────────────────────────

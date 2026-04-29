@@ -31,10 +31,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useAppStore,
+} from "@/lib/redux/hooks";
 import {
   selectActiveFileId,
   selectActiveFolderId,
+  selectActiveShareLinksForResource,
   selectAllFilesMap,
   selectAllFoldersMap,
   selectChildrenOfFolder,
@@ -46,8 +51,10 @@ import {
   setSelection,
 } from "../../redux/slice";
 import {
+  createShareLink as createShareLinkThunk,
   deleteFile as deleteFileThunk,
   getSignedUrl as getSignedUrlThunk,
+  loadShareLinks,
   uploadFiles as uploadFilesThunk,
 } from "../../redux/thunks";
 import { deleteAny } from "../../redux/virtual-thunks";
@@ -69,6 +76,8 @@ export function useFileShortcuts(): {
   confirmDelete: () => Promise<void>;
 } {
   const dispatch = useAppDispatch();
+  const store = useAppStore();
+  const getState = () => store.getState();
   const activeFileId = useAppSelector(selectActiveFileId);
   const activeFolderId = useAppSelector(selectActiveFolderId);
   const selection = useAppSelector(selectSelection);
@@ -107,27 +116,43 @@ export function useFileShortcuts(): {
       const cmdKey = isMac ? e.metaKey : e.ctrlKey;
       const onlyCmd = cmdKey && !e.altKey && !e.shiftKey;
 
-      // ⌘L / Ctrl+L — copy share link for the active file.
+      // ⌘L / Ctrl+L — copy public share URL for the active file. Routes
+      // through the same persistent-share-token path the action menus use
+      // so keyboard and click produce identical URLs (and identical
+      // side-effects: a read-only share link gets created on first use).
       if (onlyCmd && e.key.toLowerCase() === "l") {
         if (!activeFileId) return;
-        // Virtual files don't have signed S3 URLs to copy. Skip silently
-        // rather than showing an error — the action menu hides the button
-        // for virtual files for the same reason.
+        // Virtual files have no S3 bytes / share-token semantics. Skip.
         if (filesById[activeFileId]?.source.kind === "virtual") return;
         e.preventDefault();
         void (async () => {
           try {
-            const result = await dispatch(
-              getSignedUrlThunk({ fileId: activeFileId, expiresIn: 3600 }),
+            // Reuse an existing active read-only share link if any.
+            await dispatch(
+              loadShareLinks({ resourceId: activeFileId }),
+            ).unwrap().catch(() => undefined);
+            const links = selectActiveShareLinksForResource(
+              getState(),
+              activeFileId,
             );
-            const url =
-              (result as { payload?: { url?: string } } | undefined)?.payload
-                ?.url;
-            if (url && navigator.clipboard) {
+            let token = links.find((l) => l.permissionLevel === "read")
+              ?.shareToken;
+            if (!token) {
+              const link = await dispatch(
+                createShareLinkThunk({
+                  resourceId: activeFileId,
+                  resourceType: "file",
+                  permissionLevel: "read",
+                }),
+              ).unwrap();
+              token = link.shareToken;
+            }
+            const url = `${window.location.origin}/api/share/${token}/file`;
+            if (navigator.clipboard) {
               await navigator.clipboard.writeText(url);
             }
           } catch {
-            /* swallow — user can fall back to the menu */
+            /* swallow — user can fall back to the action menu */
           }
         })();
         return;

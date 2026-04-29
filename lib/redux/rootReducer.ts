@@ -59,6 +59,7 @@ import { codeFilesReducer } from "@/features/code-files/redux/slice";
 import codeWorkspaceReducer from "@/features/code/redux/codeWorkspaceSlice";
 import codeTabsReducer from "@/features/code/redux/tabsSlice";
 import codeTerminalReducer from "@/features/code/redux/terminalSlice";
+import terminalSessionsReducer from "@/features/code/redux/terminalSessionsSlice";
 import codeDiagnosticsReducer from "@/features/code/redux/diagnosticsSlice";
 import codePatchesReducer from "@/features/code/redux/codePatchesSlice";
 import codeEditHistoryReducer from "@/features/code/redux/codeEditHistorySlice";
@@ -193,6 +194,7 @@ export const slimReducerMap = {
   codeWorkspace: codeWorkspaceReducer,
   codeTabs: codeTabsReducer,
   codeTerminal: codeTerminalReducer,
+  terminalSessions: terminalSessionsReducer,
   codeDiagnostics: codeDiagnosticsReducer,
   codePatches: codePatchesReducer,
   codeEditHistory: codeEditHistoryReducer,
