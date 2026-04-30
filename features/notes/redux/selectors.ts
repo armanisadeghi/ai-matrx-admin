@@ -265,6 +265,11 @@ export const selectInstanceSplitNoteId = (instanceId: string) =>
     createSelector(selectInstancesMap, (instances): string | null => instances[instanceId]?.splitNoteId ?? null),
   );
 
+export const selectInstanceTabInteractionAt = (instanceId: string) =>
+  cached(`instTabInteractionAt:${instanceId}`, () =>
+    createSelector(selectInstancesMap, (instances): number | null => instances[instanceId]?.tabInteractionAt ?? null),
+  );
+
 export const selectIsActiveTab = (instanceId: string, noteId: string): ((state: RootState) => boolean) =>
   (state) => state.notes?.instances?.[instanceId]?.activeTabId === noteId;
 

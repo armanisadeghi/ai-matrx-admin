@@ -104,7 +104,21 @@ export interface NotesInstance {
   findReplace: FindReplaceState | null;
   /** Note ID shown in the split pane (null = no split) */
   splitNoteId: string | null;
+  /**
+   * Timestamp (ms) of the last user-direct interaction with the tab strip
+   * — clicks, renames, drags, modal opens, etc. Used to gate auto-move:
+   * the active tab only slides to position 0 once the user has been idle
+   * for a quiet period. `null` means no user interaction yet (e.g. fresh
+   * mount / URL hydration), so auto-move stays disabled.
+   */
+  tabInteractionAt: number | null;
 }
+
+/**
+ * Quiet period (ms) before an idle active tab is moved to position 0.
+ * Any user-direct tab action resets this window.
+ */
+export const TAB_AUTO_MOVE_IDLE_MS = 1500;
 
 // ── Note Record (extends Note with all runtime tracking) ────────────────────
 

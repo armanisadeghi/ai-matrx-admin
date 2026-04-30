@@ -32,6 +32,7 @@ import {
   updateNoteLabel,
   updateNoteContent,
   updateNoteFolder,
+  markTabInteraction,
 } from "../redux/slice";
 import {
   selectNoteLabel,
@@ -92,6 +93,7 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number } | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
+  const [titleFocused, setTitleFocused] = useState(false);
   const labelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const folderBtnRef = useRef<HTMLButtonElement>(null);
   const contextBtnRef = useRef<HTMLButtonElement>(null);
@@ -117,29 +119,40 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
   }, [ctxMenu]);
 
   // ── Handlers ───────────────────────────────────────────────────────
+  // Tag the user as actively interacting with the tab strip. Callers wire
+  // this into every direct tab action — clicks, renames, drags, modal
+  // opens — so the idle-based auto-move stays parked while the user is
+  // doing things to tabs.
+  const bumpTabInteraction = useCallback(() => {
+    dispatch(markTabInteraction({ instanceId }));
+  }, [dispatch, instanceId]);
+
   const handleClick = useCallback(() => {
+    bumpTabInteraction();
     if (!isActive) dispatch(setInstanceActiveTab({ instanceId, noteId }));
-  }, [dispatch, instanceId, noteId, isActive]);
+  }, [bumpTabInteraction, dispatch, instanceId, noteId, isActive]);
 
   const handleClose = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
+      bumpTabInteraction();
       dispatch(removeInstanceTab({ instanceId, noteId }));
     },
-    [dispatch, instanceId, noteId],
+    [bumpTabInteraction, dispatch, instanceId, noteId],
   );
 
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setLocalLabel(value);
+      bumpTabInteraction();
       if (labelTimerRef.current) clearTimeout(labelTimerRef.current);
       labelTimerRef.current = setTimeout(() => {
         lastLabelRef.current = value;
         dispatch(updateNoteLabel({ id: noteId, label: value }));
       }, 500);
     },
-    [dispatch, noteId],
+    [bumpTabInteraction, dispatch, noteId],
   );
 
   const {
@@ -148,6 +161,27 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
     cancelDelete,
     confirmDelete,
   } = useNoteDelete({ instanceId, noteId, noteLabel: label });
+
+  // Keep the "tab-interaction" timestamp warm while any tab-direct
+  // popover or modal is open. This prevents the idle-based auto-move
+  // from kicking in while the user is mid-rename, mid-share, choosing
+  // a folder, etc. — even if they linger on the dialog without
+  // touching anything else.
+  const anyTabUiOpen =
+    !!ctxMenu ||
+    showFolderDrop ||
+    contextOpen ||
+    shareOpen ||
+    deleteConfirmOpen ||
+    titleFocused;
+  useEffect(() => {
+    if (!anyTabUiOpen) return;
+    dispatch(markTabInteraction({ instanceId }));
+    const id = setInterval(() => {
+      dispatch(markTabInteraction({ instanceId }));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [anyTabUiOpen, dispatch, instanceId]);
 
   const handleExport = useCallback(() => {
     const blob = new Blob([content], { type: "text/markdown" });
@@ -172,25 +206,28 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
 
   const handleCloseOtherTabs = useCallback(() => {
     if (!openTabs) return;
+    bumpTabInteraction();
     for (const tabId of openTabs) {
       if (tabId !== noteId) {
         dispatch(removeInstanceTab({ instanceId, noteId: tabId }));
       }
     }
-  }, [dispatch, instanceId, noteId, openTabs]);
+  }, [bumpTabInteraction, dispatch, instanceId, noteId, openTabs]);
 
   const handleCloseAllTabs = useCallback(() => {
     if (!openTabs) return;
+    bumpTabInteraction();
     for (const tabId of openTabs) {
       dispatch(removeInstanceTab({ instanceId, noteId: tabId }));
     }
-  }, [dispatch, instanceId, openTabs]);
+  }, [bumpTabInteraction, dispatch, instanceId, openTabs]);
 
   return (
     <>
       <div
         draggable
         onDragStart={(e) => {
+          bumpTabInteraction();
           e.dataTransfer.effectAllowed = "move";
           e.dataTransfer.setData("text/plain", noteId);
         }}
@@ -206,6 +243,7 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
         onClick={handleClick}
         onContextMenu={(e) => {
           e.preventDefault();
+          bumpTabInteraction();
           setCtxMenu({ x: e.clientX, y: e.clientY });
         }}
       >
@@ -218,7 +256,15 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
             className="bg-transparent outline-none border-none min-w-0 w-full text-[0.6875rem] font-medium text-foreground truncate cursor-text"
             value={localLabel}
             onChange={handleTitleChange}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              bumpTabInteraction();
+            }}
+            onFocus={() => {
+              setTitleFocused(true);
+              bumpTabInteraction();
+            }}
+            onBlur={() => setTitleFocused(false)}
             aria-label="Note title"
             spellCheck={false}
           />
@@ -230,7 +276,10 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
         {isActive && (
           <div
             className="flex items-center gap-px shrink-0 ml-1"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              bumpTabInteraction();
+            }}
           >
             <button
               className={cn(

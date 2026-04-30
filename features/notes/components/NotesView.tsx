@@ -51,6 +51,7 @@ import {
   setNoteEditorMode,
   openFindReplace,
   closeSplit,
+  markTabInteraction,
 } from "../redux/slice";
 import { fetchNotesList, fetchNoteContent, saveNote } from "../redux/thunks";
 import { selectOrganizationId } from "@/features/agent-context/redux/appContextSlice";
@@ -215,6 +216,7 @@ export function NotesView({ config, className }: NotesViewProps) {
       if (mod && e.key === "w") {
         e.preventDefault();
         if (activeTabId) {
+          dispatch(markTabInteraction({ instanceId }));
           dispatch(removeInstanceTab({ instanceId, noteId: activeTabId }));
         }
         return;
@@ -243,6 +245,7 @@ export function NotesView({ config, className }: NotesViewProps) {
         if (openTabs && openTabs.length > 1 && activeTabId) {
           const idx = openTabs.indexOf(activeTabId);
           const next = openTabs[(idx + 1) % openTabs.length];
+          dispatch(markTabInteraction({ instanceId }));
           dispatch(setInstanceActiveTab({ instanceId, noteId: next }));
           dispatch(fetchNoteContent(next));
         }

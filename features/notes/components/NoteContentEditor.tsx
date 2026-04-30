@@ -14,6 +14,7 @@ import {
   removeInstanceTab,
   markNoteSaved,
   upsertNoteFromServer,
+  markTabInteraction,
 } from "../redux/slice";
 import { getReduxSyncDelay } from "../redux/notes.types";
 import {
@@ -326,11 +327,13 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
   );
 
   const handleCloseTab = useCallback(() => {
+    dispatch(markTabInteraction({ instanceId }));
     dispatch(removeInstanceTab({ instanceId, noteId }));
   }, [dispatch, instanceId, noteId]);
 
   const handleCloseOtherTabs = useCallback(() => {
     if (!openTabs) return;
+    dispatch(markTabInteraction({ instanceId }));
     for (const tabId of openTabs) {
       if (tabId !== noteId) {
         dispatch(removeInstanceTab({ instanceId, noteId: tabId }));
@@ -340,12 +343,14 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
 
   const handleCloseAllTabs = useCallback(() => {
     if (!openTabs) return;
+    dispatch(markTabInteraction({ instanceId }));
     for (const tabId of openTabs) {
       dispatch(removeInstanceTab({ instanceId, noteId: tabId }));
     }
   }, [dispatch, instanceId, openTabs]);
 
   const handleDelete = useCallback(() => {
+    dispatch(markTabInteraction({ instanceId }));
     dispatch(removeInstanceTab({ instanceId, noteId }));
     dispatch(deleteNote(noteId));
   }, [dispatch, instanceId, noteId]);
@@ -394,7 +399,10 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
             This note may have been deleted or moved.
           </p>
           <button
-            onClick={() => dispatch(removeInstanceTab({ instanceId, noteId }))}
+            onClick={() => {
+              dispatch(markTabInteraction({ instanceId }));
+              dispatch(removeInstanceTab({ instanceId, noteId }));
+            }}
             className="mt-3 text-xs text-primary hover:text-primary/80 cursor-pointer"
           >
             Close this tab
