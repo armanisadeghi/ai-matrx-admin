@@ -2,7 +2,7 @@
 
 **Status:** `migrating` (active rebuild — see `features/agents/migration/`)
 **Tier:** `1` — core of the product
-**Last updated:** `2026-04-25`
+**Last updated:** `2026-04-29`
 
 > This file is the **entry point** for the agents system. The system is large enough that it has its own `docs/` subdirectory with sub-feature docs. Start here, then jump to the relevant sub-doc.
 
@@ -173,6 +173,7 @@ Active rebuild governed by `features/agents/migration/MASTER-PLAN.md`. Phase-ord
 
 ## Change log
 
+- `2026-04-29` — Convert-to-system flow (`ConvertAgentToSystemBody`): when existing system agents are listed, each row has an external-link control that opens `/agents/{id}` in a new tab so admins can review before update.
 - `2026-04-25` — Barrel import cleanup: external and core callers no longer import `conversation-list`, `message-crud`, `surfaces`, `mcp-client`, or execution-system index folders without a file — use `*.slice`, `*.thunks`, `*.selectors`, `mcp-client/client`, etc. (includes `lib/redux/rootReducer`, `cx-chat/ConversationInput` → `types/instance.types`, MCP API routes, window panels, `packages/matrx-agents` re-exports, and related).
 - `2026-04-25` — Variable UI: `VariableInputComponent` now lives in `components/inputs/input-components/VariableInputComponent.tsx` (client); `input-components/index.tsx` re-exports only the leaf inputs (`ToggleInput`, `NumberInput`, etc.) and `useContainerWidth` — importers of the dispatcher use the dedicated file, not the barrel.
 - `2026-04-25` — claude: Phase 2 — applied the message UX overhaul to every consumer that shares `AgentConversationColumn` or directly mounts `AgentUserMessage` / `AgentAssistantMessage`. `ChatRoomClient` (chat route) registers `kind: 'page'` with URL `/chat/{conversationId}`. `AgentBuilderRightPanel` registers `kind: 'window'` (test panel switches in place — builder route doesn't carry conversationId). `AgentRunWindow` registers `kind: 'window'`. `AgentChatAssistant` (floating chat-assistant widget) registers `kind: 'widget'` with `customNavigation: true` and on fork spawns a sibling widget for the target conversation while closing itself, preserving the one-widget-per-conversation mental model. `AgentRunnerPage` gained an optional `buildConversationUrl` prop; `CodeWorkspace`'s `ChatPanelSlot` passes one so fork navigation stays at `/code?agentId=X&conversationId=Y` instead of 404'ing on the runner's default `/code/{agentId}/run` pattern. The surfaces thunk now honors a `customNavigation` flag on `window`/`widget` registrations so consumers like the chat-assistant can react to navigation intents without a URL change. `flash-cards/AIChatInterface` is intentionally excluded — it talks to OpenAI directly and does not use the agent system.

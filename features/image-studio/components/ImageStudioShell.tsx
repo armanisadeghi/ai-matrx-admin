@@ -147,6 +147,14 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
         }
     }, [studio]);
 
+    const handleDescribeAll = useCallback(async () => {
+        if (studio.files.length === 0) return;
+        const startedAt = Date.now();
+        await studio.describeAll();
+        const elapsed = ((Date.now() - startedAt) / 1000).toFixed(1);
+        toast.success(`Described ${studio.files.length} file(s) in ${elapsed}s`);
+    }, [studio]);
+
     return (
         <div className="flex h-full min-h-0">
             {/* LEFT — Preset Catalog ─────────────────────────── */}
@@ -212,6 +220,14 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
                                         onPreviewRequested={() =>
                                             openPreview({ fileId: f.id })
                                         }
+                                        isDescribing={studio.describingFileIds.has(f.id)}
+                                        onDescribe={() => studio.describeFile(f.id)}
+                                        onMetadataPatch={(patch) =>
+                                            studio.updateImageMetadata(f.id, patch)
+                                        }
+                                        onMetadataClear={() =>
+                                            studio.clearImageMetadata(f.id)
+                                        }
                                     />
                                 ))}
                             </div>
@@ -256,10 +272,13 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
                     onDownloadSelected={handleDownloadSelected}
                     onSaveAll={handleSaveAll}
                     onOpenPreview={() => openPreview()}
-                    canOpenPreview={
-                        studio.files.length > 0 && studio.selectedPresetIds.length > 0
-                    }
+                    canOpenPreview={studio.files.length > 0}
                     isPreviewOpen={previewOpen}
+                    onDescribeAll={handleDescribeAll}
+                    isDescribing={studio.isDescribing}
+                    describedFileCount={
+                        studio.files.filter((f) => f.imageMetadata).length
+                    }
                 />
             </div>
 

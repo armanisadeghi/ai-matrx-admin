@@ -21,11 +21,11 @@ export type { OutputFormat, StudioPreset };
 export type ImageFit = "cover" | "contain" | "inside";
 
 /**
- * Focal point for cover mode. The 9 compass values are standard crops;
+ * Focal point anchor. The 9 compass values are standard crops;
  * `entropy` and `attention` use Sharp's smart-crop algorithms to pick the
  * most interesting region automatically.
  */
-export type ImagePosition =
+export type ImagePositionAnchor =
     | "center"
     | "top"
     | "bottom"
@@ -38,6 +38,24 @@ export type ImagePosition =
     | "entropy"
     | "attention";
 
+/**
+ * Continuous focal point. `x` and `y` are normalized to [0, 1] — the
+ * percentage across the source image where the centre of the crop should
+ * sit. The studio drag-to-adjust UI emits these and the server crops via
+ * `sharp.extract(...)` + `.resize(...)`.
+ */
+export interface ImagePositionPoint {
+    x: number;
+    y: number;
+}
+
+/**
+ * Either a named anchor (the 9 compass + 2 smart) or a precise focal point.
+ * The latter wins when both could apply; consumers should `typeof === "string"`
+ * to discriminate.
+ */
+export type ImagePosition = ImagePositionAnchor | ImagePositionPoint;
+
 // ── Client-side file state ────────────────────────────────────────────────
 
 export type StudioFileStatus =
@@ -45,6 +63,36 @@ export type StudioFileStatus =
     | "reading"
     | "processing"
     | "processed"
+    | "error";
+
+/**
+ * Structured output from the Describe-with-AI agent (shortcut
+ * `ed0a90f8-b406-4af8-8f47-c41c0c4ff086`). Mirrors the JSON the agent
+ * returns wrapped in a code block — every field is independently editable
+ * by the user before save.
+ */
+export interface ImageMetadata {
+    /** SEO-friendly slug; folded into `filenameBase` on accept. */
+    filename_base: string;
+    /** WCAG-compliant accessibility description. */
+    alt_text: string;
+    /** Short caption suitable for social posts. */
+    caption: string;
+    /** Page / OG title. */
+    title: string;
+    /** Meta description (≈155 chars). */
+    description: string;
+    /** Free-form SEO keyword list. */
+    keywords: string[];
+    /** Hex codes for theming or palette pickers. */
+    dominant_colors: string[];
+}
+
+export type StudioMetadataStatus =
+    | "idle"
+    | "uploading-source"
+    | "describing"
+    | "ready"
     | "error";
 
 export interface StudioSourceFile {
@@ -71,6 +119,17 @@ export interface StudioSourceFile {
     variants: Record<string, ProcessedVariant>;
     /** Raw File for re-processing. */
     file: File;
+    /** Agent-authored metadata (filename, alt-text, caption, etc.). */
+    imageMetadata?: ImageMetadata | null;
+    /** Lifecycle for the AI describe call. */
+    metadataStatus: StudioMetadataStatus;
+    /** Human-readable error from the describe call. */
+    metadataError?: string | null;
+    /**
+     * Cloud-files id of the temporary preview uploaded for the describe
+     * agent. Cached so re-describe doesn't re-upload.
+     */
+    describePreviewFileId?: string | null;
 }
 
 export interface ProcessedVariant {

@@ -54,6 +54,29 @@ import { AgentVersionDiffPage } from "@/features/agents/components/diff/AgentVer
 import { AgentContentHistoryPanel } from "./AgentContentHistoryPanel";
 import { AgentContentTab } from "./agent-content.types";
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
+import {
+  AgentSidebar,
+  AgentTabs,
+} from "@/features/agents/components/settings/AgentSettingsWorkspace";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -93,6 +116,14 @@ interface AgentContentWindowProps {
   tabs?: AgentContentTab[];
   isOpen?: boolean;
   onClose?: () => void;
+  /**
+   * Render the agent-picker sidebar + multi-agent browser tabs + dirty-change
+   * guard (the same composition the legacy "Agent Editor (Sidebar)" used).
+   * Default `true` — the editor without a sidebar leaves users stuck on a
+   * single agent. Pass `false` only when the host already owns agent
+   * selection and wants to lock the editor to one agent (admin tooling, etc).
+   */
+  multiAgentMode?: boolean;
 }
 
 // ── Compact Tab Strip ─────────────────────────────────────────────────────────
@@ -446,6 +477,70 @@ export function TabContent({
   );
 }
 
+// ── Dirty Guard (used in multi-agent mode when switching agents) ─────────────
+
+interface DirtyGuardProps {
+  open: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+function DirtyGuardDesktop({ open, onConfirm, onCancel }: DirtyGuardProps) {
+  return (
+    <AlertDialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) onCancel();
+      }}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+          <AlertDialogDescription>
+            You have unsaved changes in this agent. Switching agents will
+            discard them. Do you want to continue?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={onCancel}>Keep Editing</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>
+            Discard & Switch
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+function DirtyGuardMobile({ open, onConfirm, onCancel }: DirtyGuardProps) {
+  return (
+    <Drawer
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) onCancel();
+      }}
+    >
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>Unsaved Changes</DrawerTitle>
+          <DrawerDescription>
+            You have unsaved changes in this agent. Switching agents will
+            discard them. Do you want to continue?
+          </DrawerDescription>
+        </DrawerHeader>
+        <DrawerFooter>
+          <Button variant="destructive" onClick={onConfirm}>
+            Discard & Switch
+          </Button>
+          <Button variant="outline" onClick={onCancel}>
+            Keep Editing
+          </Button>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+  );
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function AgentContentWindow({
@@ -454,17 +549,30 @@ export default function AgentContentWindow({
   tabs,
   isOpen,
   onClose,
+  multiAgentMode = true,
 }: AgentContentWindowProps) {
   const dispatch = useAppDispatch();
+  const isMobile = useIsMobile();
 
+  // Active agent — stored in `localAgentId` so the picker fallback (and the
+  // sidebar in multi-agent mode) can swap it without remount.
   const [localAgentId, setLocalAgentId] = useState<string | null>(
     initialAgentId ?? null,
   );
   const agentId = localAgentId;
 
+  // Multi-agent browser-tab state. Only used when `multiAgentMode`.
+  const [openedTabIds, setOpenedTabIds] = useState<string[]>(
+    initialAgentId ? [initialAgentId] : [],
+  );
+
+  // Dirty-change guard state (multi-agent mode only).
+  const [pendingAgentId, setPendingAgentId] = useState<string | null>(null);
+  const [showDirtyWarning, setShowDirtyWarning] = useState(false);
+
   const [activeTab, setActiveTab] = useState<AgentContentTab>(initialTab);
 
-  // Resolve the active tab list — custom order/subset or all 8
+  // Resolve the active tab list — custom order/subset or all tabs
   const activeTabs = useMemo(() => {
     if (tabs && tabs.length > 0) {
       return ALL_TABS.filter((t) => tabs.includes(t.id)).sort(
@@ -504,60 +612,156 @@ export default function AgentContentWindow({
     }
   }, [activeTabs, agentId]);
 
+  // ── Multi-agent helpers ───────────────────────────────────────────────────
+
+  const switchToAgent = useCallback(
+    (newAgentId: string) => {
+      setLocalAgentId(newAgentId);
+      setOpenedTabIds((prev) =>
+        prev.includes(newAgentId) ? prev : [...prev, newAgentId],
+      );
+      dispatch(fetchFullAgent(newAgentId));
+    },
+    [dispatch],
+  );
+
+  const handleOpenAgent = useCallback(
+    (newAgentId: string) => {
+      if (newAgentId === agentId) return;
+      if (isDirty) {
+        setPendingAgentId(newAgentId);
+        setShowDirtyWarning(true);
+      } else {
+        switchToAgent(newAgentId);
+      }
+    },
+    [agentId, isDirty, switchToAgent],
+  );
+
+  const handleDirtyConfirm = useCallback(() => {
+    if (pendingAgentId) switchToAgent(pendingAgentId);
+    setPendingAgentId(null);
+    setShowDirtyWarning(false);
+  }, [pendingAgentId, switchToAgent]);
+
+  const handleDirtyCancel = useCallback(() => {
+    setPendingAgentId(null);
+    setShowDirtyWarning(false);
+  }, []);
+
+  const handleCloseTab = useCallback(
+    (e: React.MouseEvent, tabId: string) => {
+      e.stopPropagation();
+      const next = openedTabIds.filter((id) => id !== tabId);
+      setOpenedTabIds(next);
+      if (agentId === tabId) {
+        setLocalAgentId(next[next.length - 1] ?? null);
+      }
+    },
+    [agentId, openedTabIds],
+  );
+
   const collectData = useCallback(
     (): Record<string, unknown> => ({ initialAgentId: agentId, activeTab }),
     [agentId, activeTab],
   );
 
+  // Sidebar — only present in multi-agent mode.
+  const sidebarNode = multiAgentMode ? (
+    <AgentSidebar
+      openedTabIds={openedTabIds}
+      activeTabId={agentId}
+      onOpenAgent={handleOpenAgent}
+    />
+  ) : undefined;
+
   return (
-    <WindowPanel
-      id="agent-advanced-editor-window"
-      title="Agent Advanced Editor"
-      onClose={onClose}
-      width={1050}
-      height={760}
-      minWidth={640}
-      minHeight={520}
-      urlSyncKey="agent-advanced-editor"
-      urlSyncId="agent-advanced-editor-window"
-      urlSyncArgs={{ m: "ac" }}
-      overlayId="agentAdvancedEditorWindow"
-      onCollectData={collectData}
-      actionsRight={
-        agentId ? (
-          <HeaderActions agentId={agentId} isDirty={isDirty} />
-        ) : undefined
-      }
-      footerLeft={
-        agentId ? (
-          <FooterControls
-            agentId={agentId}
-            activeTab={activeTab}
-            activeTabs={activeTabs}
-          />
-        ) : undefined
-      }
-    >
-      <div className="flex flex-col h-full min-h-0 bg-background">
-        {!agentId ? (
-          <AgentPickerFallback onSelect={setLocalAgentId} />
-        ) : (
-          <>
-            <CompactTabStrip
-              tabs={activeTabs}
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              isDirty={isDirty}
-            />
-            <TabContent
+    <>
+      <WindowPanel
+        id="agent-advanced-editor-window"
+        title="Agent Advanced Editor"
+        onClose={onClose}
+        width={multiAgentMode ? 1200 : 1050}
+        height={760}
+        minWidth={multiAgentMode ? 760 : 640}
+        minHeight={520}
+        urlSyncKey="agent-advanced-editor"
+        urlSyncId="agent-advanced-editor-window"
+        urlSyncArgs={{ m: "ac" }}
+        overlayId="agentAdvancedEditorWindow"
+        onCollectData={collectData}
+        sidebar={sidebarNode}
+        sidebarDefaultSize={multiAgentMode ? 200 : undefined}
+        sidebarMinSize={multiAgentMode ? 140 : undefined}
+        sidebarExpandsWindow={false}
+        actionsRight={
+          agentId ? (
+            <HeaderActions agentId={agentId} isDirty={isDirty} />
+          ) : undefined
+        }
+        footerLeft={
+          agentId ? (
+            <FooterControls
               agentId={agentId}
               activeTab={activeTab}
-              isOwner={isOwner}
-              agentName={agentName ?? ""}
+              activeTabs={activeTabs}
             />
-          </>
-        )}
-      </div>
-    </WindowPanel>
+          ) : undefined
+        }
+      >
+        <div className="flex flex-col h-full min-h-0 bg-background">
+          {/* Multi-agent browser tabs (top of body) */}
+          {multiAgentMode && (
+            <AgentTabs
+              openedTabIds={openedTabIds}
+              activeTabId={agentId}
+              onSetActive={handleOpenAgent}
+              onCloseTab={handleCloseTab}
+            />
+          )}
+
+          {!agentId ? (
+            multiAgentMode ? (
+              <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground px-6 text-center">
+                Select an agent from the sidebar to begin editing.
+              </div>
+            ) : (
+              <AgentPickerFallback onSelect={setLocalAgentId} />
+            )
+          ) : (
+            <>
+              <CompactTabStrip
+                tabs={activeTabs}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                isDirty={isDirty}
+              />
+              <TabContent
+                agentId={agentId}
+                activeTab={activeTab}
+                isOwner={isOwner}
+                agentName={agentName ?? ""}
+              />
+            </>
+          )}
+        </div>
+      </WindowPanel>
+
+      {/* Dirty guard — desktop AlertDialog / mobile Drawer (multi-agent mode) */}
+      {multiAgentMode &&
+        (isMobile ? (
+          <DirtyGuardMobile
+            open={showDirtyWarning}
+            onConfirm={handleDirtyConfirm}
+            onCancel={handleDirtyCancel}
+          />
+        ) : (
+          <DirtyGuardDesktop
+            open={showDirtyWarning}
+            onConfirm={handleDirtyConfirm}
+            onCancel={handleDirtyCancel}
+          />
+        ))}
+    </>
   );
 }

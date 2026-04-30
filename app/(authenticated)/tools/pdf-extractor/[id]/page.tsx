@@ -1,38 +1,26 @@
-"use client";
+import { Suspense } from "react";
+import PdfStudioRouteClient from "../PdfStudioRouteClient";
 
 /**
- * Deep-link route for the PDF Extractor.
+ * /tools/pdf-extractor/<processed_documents.id>
  *
- *   /tools/pdf-extractor/<processed_documents.id>
- *
- * Renders the floating workspace as a full-page surface and opens the
- * requested document as soon as the workspace mounts. The window-panel
- * `onClose` navigates back rather than closing an overlay.
+ * Same studio surface, but with a specific document opened on mount.
+ * The id is passed via Next 16's async `params`.
  */
+export const dynamic = "force-dynamic";
 
-import React from "react";
-import { useParams, useRouter } from "next/navigation";
-import { PdfExtractorFloatingWorkspace } from "@/features/pdf-extractor/components/PdfExtractorWorkspace";
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
 
-export default function PdfExtractorDocumentPage() {
-  const router = useRouter();
-  const params = useParams();
-  const id = typeof params?.id === "string" ? params.id : null;
-
-  if (!id) {
-    return (
-      <div className="h-[calc(100vh-2.5rem)] flex items-center justify-center text-sm text-muted-foreground">
-        Missing document id.
-      </div>
-    );
-  }
+export default async function PdfExtractorStudioDocPage({ params }: PageProps) {
+  const { id } = await params;
 
   return (
-    <div className="h-[calc(100vh-2.5rem)] flex flex-col overflow-hidden">
-      <PdfExtractorFloatingWorkspace
-        initialDocumentId={id}
-        onClose={() => router.push("/tools/pdf-extractor")}
-      />
+    <div className="h-[calc(100dvh-2.5rem)] flex flex-col overflow-hidden bg-background">
+      <Suspense fallback={null}>
+        <PdfStudioRouteClient initialDocumentId={id} />
+      </Suspense>
     </div>
   );
 }

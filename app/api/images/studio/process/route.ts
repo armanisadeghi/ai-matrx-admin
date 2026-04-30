@@ -24,6 +24,8 @@ import { ALL_PRESETS, getPresetById } from "@/features/image-studio/presets";
 import type {
     ImageFit,
     ImagePosition,
+    ImagePositionAnchor,
+    ImagePositionPoint,
     OutputFormat,
     ProcessStudioRequestBody,
     ProcessStudioResponse,

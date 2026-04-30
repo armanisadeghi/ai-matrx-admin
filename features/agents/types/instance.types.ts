@@ -85,7 +85,9 @@ export type SourceFeature =
   /** Demo / test harness (routes under /demos, example pages). */
   | "demo"
   /** Triggered directly from application code (hook / helper / automation). */
-  | "programmatic";
+  | "programmatic"
+  /** AI Describe runs from the Image Studio (`/image-studio/convert`). */
+  | "image-studio";
 
 export const SOURCE_APP = "matrx-admin" as const;
 

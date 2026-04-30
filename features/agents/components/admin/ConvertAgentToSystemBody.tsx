@@ -271,33 +271,58 @@ export function ConvertAgentToSystemBody({
                 {existing.map((row) => {
                   const isSelected = selectedExistingId === row.id;
                   return (
-                    <button
+                    <div
                       key={row.id}
-                      type="button"
-                      onClick={() => setSelectedExistingId(row.id)}
                       className={cn(
-                        "w-full text-left rounded-md border px-3 py-2 transition-colors",
+                        "flex gap-1.5 rounded-md border transition-colors",
                         isSelected
                           ? "border-primary bg-primary/10"
-                          : "border-border bg-card hover:bg-muted/40",
+                          : "border-border bg-card",
                       )}
                     >
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium truncate flex-1">
-                          {row.name}
-                        </span>
-                        <Badge variant="outline" className="text-[10px]">
-                          v{row.version}
-                        </Badge>
-                      </div>
-                      <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
-                        <Clock className="w-3 h-3" />
-                        last snapshot{" "}
-                        {formatTimestamp(
-                          row.source_snapshot_at ?? row.updated_at,
+                      <button
+                        type="button"
+                        onClick={() => setSelectedExistingId(row.id)}
+                        className={cn(
+                          "min-w-0 flex-1 text-left px-3 py-2 rounded-l-md transition-colors",
+                          !isSelected && "hover:bg-muted/40",
                         )}
-                      </div>
-                    </button>
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium truncate flex-1">
+                            {row.name}
+                          </span>
+                          <Badge variant="outline" className="text-[10px]">
+                            v{row.version}
+                          </Badge>
+                        </div>
+                        <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
+                          <Clock className="w-3 h-3 shrink-0" />
+                          last snapshot{" "}
+                          {formatTimestamp(
+                            row.source_snapshot_at ?? row.updated_at,
+                          )}
+                        </div>
+                      </button>
+                      <Button
+                        asChild
+                        variant="ghost"
+                        size="icon"
+                        className="h-auto min-h-10 w-9 shrink-0 rounded-l-none rounded-r-md text-muted-foreground hover:text-foreground"
+                        title="Open system agent in new tab"
+                      >
+                        <Link
+                          href={`/agents/${row.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          <span className="sr-only">
+                            Open {row.name} in new tab
+                          </span>
+                        </Link>
+                      </Button>
+                    </div>
                   );
                 })}
               </div>

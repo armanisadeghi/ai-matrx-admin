@@ -20,17 +20,34 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   ImageFit,
+  ImageMetadata,
   ImagePosition,
   OutputFormat,
   ProcessStudioRequestBody,
   ProcessStudioResponse,
   ProcessedVariant,
+  StudioMetadataStatus,
   StudioSourceFile,
 } from "../types";
 import { slugifyFilename } from "../utils/slugify-filename";
+import { buildDescribePreview } from "../utils/build-describe-preview";
+import { DESCRIBE_TEMP_FOLDER_PATH } from "../constants/describe";
+import { getSystemShortcut } from "@/features/agents/constants/system-shortcuts";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { CloudFolders } from "@/features/files/utils/folder-conventions";
 import { uploadFiles, ensureFolderPath } from "@/features/files/redux/thunks";
+import { useShortcutTrigger } from "@/features/agents/hooks/useShortcutTrigger";
+import { ensureShortcutLoaded } from "@/features/agents/redux/agent-shortcuts/thunks";
+import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/conversations/conversations.thunks";
+import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
+import {
+  addResource,
+  setResourcePreview,
+} from "@/features/agents/redux/execution-system/instance-resources/instance-resources.slice";
+import {
+  selectFirstExtractedObject,
+  selectJsonExtractionComplete,
+} from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
 
 const DEFAULT_QUALITY = 88;
 const DEFAULT_FORMAT: OutputFormat = "webp";
@@ -79,6 +96,14 @@ export interface UseImageStudioResult {
   generate: () => Promise<void>;
   saveAll: (folder?: string) => Promise<void>;
 
+  // AI describe
+  describeFile: (fileId: string, contextHint?: string) => Promise<void>;
+  describeAll: (contextHint?: string) => Promise<void>;
+  isDescribing: boolean;
+  describingFileIds: ReadonlySet<string>;
+  updateImageMetadata: (fileId: string, patch: Partial<ImageMetadata>) => void;
+  clearImageMetadata: (fileId: string) => void;
+
   // Derived
   totalVariantCount: number;
   generatedVariantCount: number;
@@ -87,6 +112,40 @@ export interface UseImageStudioResult {
 
 let fileIdCounter = 0;
 const nextFileId = () => `studio-file-${Date.now()}-${++fileIdCounter}`;
+
+/**
+ * Coerce arbitrary unknown JSON into an ImageMetadata. Missing fields fall
+ * back to safe defaults so the UI can still render even if the agent skipped
+ * a key. Returns null only when the input isn't an object at all.
+ */
+function coerceImageMetadata(raw: unknown): ImageMetadata | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const r = raw as Record<string, unknown>;
+  const stringField = (key: string) => {
+    const v = r[key];
+    return typeof v === "string" ? v : "";
+  };
+  const stringArray = (key: string): string[] => {
+    const v = r[key];
+    if (Array.isArray(v))
+      return v.filter((x): x is string => typeof x === "string");
+    if (typeof v === "string")
+      return v
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+    return [];
+  };
+  return {
+    filename_base: stringField("filename_base"),
+    alt_text: stringField("alt_text"),
+    caption: stringField("caption"),
+    title: stringField("title"),
+    description: stringField("description"),
+    keywords: stringArray("keywords"),
+    dominant_colors: stringArray("dominant_colors"),
+  };
+}
 
 async function decodeDimensions(
   file: File,
@@ -166,6 +225,10 @@ export function useImageStudio(
           error: null,
           variants: {},
           file,
+          imageMetadata: null,
+          metadataStatus: "idle" as const,
+          metadataError: null,
+          describePreviewFileId: null,
         };
       }),
     );
@@ -363,21 +426,6 @@ export function useImageStudio(
       setError(null);
 
       try {
-        // Convert every data URL into a real File so we can feed the
-        // cloud-files upload pipeline. Filenames come from the server
-        // (already preset-aware + slugged).
-        const uploadables = await Promise.all(
-          pending.map(async (p) => {
-            const blob = await fetch(p.dataUrl).then((r) => r.blob());
-            return {
-              ...p,
-              file: new File([blob], p.filename, {
-                type: blob.type || "image/webp",
-              }),
-            };
-          }),
-        );
-
         // Anchor the save under the canonical Images/Generated tree so
         // everything the studio produces is grouped and filterable.
         const folderSegment = (
@@ -395,34 +443,73 @@ export function useImageStudio(
           ensureFolderPath({ folderPath, visibility: "private" }),
         ).unwrap();
 
-        // Snapshot existing file ids so we can detect which ones are
-        // the new arrivals (uploadFiles runs workers in parallel and
-        // doesn't preserve order in its `uploaded` array).
-        const knownIdsBefore = new Set<string>(
-          Object.keys(store.getState().cloudFiles.filesById),
-        );
+        // Group pending variants by their source file so each upload batch
+        // can carry that file's specific AI-described metadata (alt text,
+        // caption, keywords). Sharing a single metadata bag across files
+        // would lose the per-file alt-text — which defeats the whole point.
+        const pendingByFile = new Map<string, typeof pending>();
+        for (const p of pending) {
+          const arr = pendingByFile.get(p.studioFileId) ?? [];
+          arr.push(p);
+          pendingByFile.set(p.studioFileId, arr);
+        }
 
-        const result = await dispatch(
-          uploadFiles({
-            files: uploadables.map((u) => u.file),
-            parentFolderId,
-            visibility: "private",
-            metadata: {
-              source: "image-studio",
-              folder_segment: folderSegment,
-            },
-            concurrency: 3,
-          }),
-        ).unwrap();
-
-        // Match new file ids back to variants by filename so we can
-        // stamp each variant with its cloud `fileId`.
-        const fresh = Object.values(
-          store.getState().cloudFiles.filesById,
-        ).filter((f) => !knownIdsBefore.has(f.id));
         const fileIdByName = new Map<string, string>();
-        for (const file of fresh) {
-          fileIdByName.set(file.fileName, file.id);
+        const allUploaded: string[] = [];
+        const allFailed: Array<{ name: string; error: string }> = [];
+
+        for (const [studioFileId, group] of pendingByFile) {
+          const sourceFile = files.find((f) => f.id === studioFileId);
+          if (!sourceFile) continue;
+
+          const uploadables = await Promise.all(
+            group.map(async (p) => {
+              const blob = await fetch(p.dataUrl).then((r) => r.blob());
+              return new File([blob], p.filename, {
+                type: blob.type || "image/webp",
+              });
+            }),
+          );
+
+          const knownIdsBefore = new Set<string>(
+            Object.keys(store.getState().cloudFiles.filesById),
+          );
+
+          const meta = sourceFile.imageMetadata;
+          const result = await dispatch(
+            uploadFiles({
+              files: uploadables,
+              parentFolderId,
+              visibility: "private",
+              metadata: {
+                source: "image-studio",
+                folder_segment: folderSegment,
+                studio_file_id: studioFileId,
+                ...(meta
+                  ? {
+                      alt_text: meta.alt_text,
+                      caption: meta.caption,
+                      title: meta.title,
+                      description: meta.description,
+                      keywords: meta.keywords,
+                      dominant_colors: meta.dominant_colors,
+                    }
+                  : {}),
+              },
+              concurrency: 3,
+            }),
+          ).unwrap();
+
+          // Match new file ids back to variants by filename.
+          const fresh = Object.values(
+            store.getState().cloudFiles.filesById,
+          ).filter((f) => !knownIdsBefore.has(f.id));
+          for (const file of fresh) {
+            fileIdByName.set(file.fileName, file.id);
+          }
+
+          allUploaded.push(...result.uploaded);
+          allFailed.push(...result.failed);
         }
 
         // `failed` shape changed in 2026-04-24: each entry is now
@@ -430,9 +517,13 @@ export function useImageStudio(
         // instead of just the filename. The set we build for variant-
         // matching only needs the names.
         const failedFilenamesSet = new Set<string>(
-          result.failed.map((f) => f.name),
+          allFailed.map((f) => f.name),
         );
         const savedAt = new Date().toISOString();
+        const result = {
+          uploaded: allUploaded,
+          failed: allFailed,
+        };
 
         setFiles((prev) =>
           prev.map((sourceFile) => {
@@ -468,6 +559,326 @@ export function useImageStudio(
     },
     [dispatch, files, options.defaultFolder, store],
   );
+
+  // ── AI Describe ─────────────────────────────────────────────────────────
+
+  const trigger = useShortcutTrigger();
+  const [describingFileIds, setDescribingFileIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const isDescribing = describingFileIds.size > 0;
+
+  // Mutates the file at `fileId` in place via React state.
+  const setMetadataState = useCallback(
+    (
+      fileId: string,
+      patch: {
+        metadataStatus?: StudioMetadataStatus;
+        metadataError?: string | null;
+        imageMetadata?: ImageMetadata | null;
+        describePreviewFileId?: string | null;
+        filenameBase?: string;
+      },
+    ) => {
+      setFiles((prev) =>
+        prev.map((f) => (f.id === fileId ? { ...f, ...patch } : f)),
+      );
+    },
+    [],
+  );
+
+  /** Wait until the active-requests slice flips `jsonExtractionComplete` true. */
+  const waitForExtraction = useCallback(
+    async (
+      requestId: string,
+      timeoutMs = 120_000,
+      intervalMs = 200,
+    ): Promise<ImageMetadata | null> => {
+      const start = Date.now();
+      while (Date.now() - start < timeoutMs) {
+        const state = store.getState();
+        const complete = selectJsonExtractionComplete(requestId)(state);
+        if (complete) {
+          const snapshot = selectFirstExtractedObject(requestId)(state);
+          if (!snapshot || snapshot.type !== "object") return null;
+          // The agent's response is wrapped in { image_metadata: { ... } }
+          // — accept either shape so future prompt tweaks stay compatible.
+          const value = snapshot.value as Record<string, unknown>;
+          const candidate =
+            (value.image_metadata as Record<string, unknown> | undefined) ??
+            value;
+          return coerceImageMetadata(candidate);
+        }
+        await new Promise((r) => setTimeout(r, intervalMs));
+      }
+      return null;
+    },
+    [store],
+  );
+
+  const describeFile = useCallback(
+    async (fileId: string, contextHint?: string) => {
+      const file = store.getState() as never;
+      void file;
+      // Re-read the file from React state because closures may be stale.
+      let snapshot: StudioSourceFile | undefined;
+      setFiles((prev) => {
+        snapshot = prev.find((f) => f.id === fileId);
+        return prev;
+      });
+      if (!snapshot) return;
+
+      // Already in flight — bail out.
+      if (describingFileIds.has(fileId)) return;
+      setDescribingFileIds((prev) => {
+        const next = new Set(prev);
+        next.add(fileId);
+        return next;
+      });
+
+      const DESCRIBE = getSystemShortcut("image-studio-describe-01");
+
+      try {
+        await dispatch(ensureShortcutLoaded(DESCRIBE.id)).unwrap();
+      } catch (err) {
+        const msg =
+          err instanceof Error ? err.message : "Could not load describe agent";
+        setMetadataState(fileId, {
+          metadataStatus: "error",
+          metadataError: msg,
+        });
+        setDescribingFileIds((prev) => {
+          const next = new Set(prev);
+          next.delete(fileId);
+          return next;
+        });
+        return;
+      }
+
+      setMetadataState(fileId, {
+        metadataStatus: "uploading-source",
+        metadataError: null,
+      });
+
+      let conversationId: string | null = null;
+
+      try {
+        // 1. Build a small WebP preview (≤1024px) — fast to upload, plenty
+        //    for vision models.
+        const preview = await buildDescribePreview(
+          snapshot.file,
+          snapshot.filenameBase,
+        );
+
+        // 2. Upload to a hidden temp folder under the user's cloud library.
+        const parentFolderId = await dispatch(
+          ensureFolderPath({
+            folderPath: DESCRIBE_TEMP_FOLDER_PATH,
+            visibility: "private",
+          }),
+        ).unwrap();
+
+        const knownIds = new Set(
+          Object.keys(store.getState().cloudFiles.filesById),
+        );
+        await dispatch(
+          uploadFiles({
+            files: [preview],
+            parentFolderId,
+            visibility: "private",
+            metadata: {
+              source: "image-studio-describe",
+              studio_file_id: fileId,
+            },
+          }),
+        ).unwrap();
+
+        // Match the new file by name in the cloud-files slice.
+        const fresh = Object.values(store.getState().cloudFiles.filesById).find(
+          (f) => !knownIds.has(f.id) && f.fileName === preview.name,
+        );
+        if (!fresh) {
+          throw new Error("Preview uploaded but its file id was not found");
+        }
+        const previewFileId = fresh.id;
+        setMetadataState(fileId, {
+          metadataStatus: "describing",
+          describePreviewFileId: previewFileId,
+        });
+
+        // 3. Trigger the describe shortcut.
+        //
+        //    KNOWN ANTI-PATTERN — `autoRun: false` on a programmatic trigger.
+        //    Per the agent-execution-redux skill, callers should NEVER override
+        //    autoRun programmatically. autoRun: false exists to gate on a user
+        //    typing into the variable panel — there's no user here.
+        //
+        //    We're forced into it because the launch payload has no way to
+        //    carry an instance resource (the image), and resources can only
+        //    be attached after the conversationId exists. Until the launcher
+        //    accepts resources directly (or the shortcut row binds a scope
+        //    key to a resource), we manually do create → attach → execute.
+        //    TODO(arman): drop this once the launcher carries resources.
+        //
+        //    `jsonExtraction` is migration debt mirrored from the registry —
+        //    without it process-stream skips the StreamingJsonTracker and
+        //    waitForExtraction below times out at 120s. Pull from the
+        //    registry so there's exactly one place to update when the
+        //    shortcut row finally carries it.
+        const launchResult = await trigger(DESCRIBE.id, {
+          sourceFeature: "image-studio",
+          config: { autoRun: false, displayMode: "background" },
+          jsonExtraction: DESCRIBE.temporaryConfigs?.jsonExtraction,
+          ...(contextHint?.trim()
+            ? { runtime: { userInput: contextHint.trim() } }
+            : {}),
+        });
+        conversationId = launchResult.conversationId;
+
+        // 4. Attach the preview as an image resource.
+        const resourceId = `studio-describe-${Date.now()}-${Math.random()
+          .toString(36)
+          .slice(2, 8)}`;
+        dispatch(
+          addResource({
+            conversationId,
+            blockType: "image",
+            source: {
+              file_id: previewFileId,
+              mime_type: "image/webp",
+            },
+            resourceId,
+          }),
+        );
+        // Marks status:"ready" so the launch waits no longer than necessary.
+        dispatch(
+          setResourcePreview({
+            conversationId,
+            resourceId,
+            preview: snapshot.originalName,
+          }),
+        );
+
+        // 5. Now actually run the agent and capture the requestId.
+        const execResult = await dispatch(
+          executeInstance({ conversationId }),
+        ).unwrap();
+        const requestId = execResult.requestId;
+        if (!requestId) {
+          throw new Error("Describe agent did not return a request id");
+        }
+
+        // 6. Wait for the JSON extractor to finalize, then fold metadata in.
+        const metadata = await waitForExtraction(requestId);
+        if (!metadata) {
+          throw new Error("Describe agent did not return structured JSON");
+        }
+
+        const slugged = slugifyFilename(
+          metadata.filename_base || snapshot.filenameBase,
+        );
+        setMetadataState(fileId, {
+          metadataStatus: "ready",
+          metadataError: null,
+          imageMetadata: { ...metadata, filename_base: slugged },
+          // Adopt the agent-suggested filename automatically. The user can
+          // still edit it from the file card header.
+          filenameBase: slugged,
+        });
+      } catch (err) {
+        const msg =
+          err instanceof Error ? err.message : "Describe agent failed";
+        setMetadataState(fileId, {
+          metadataStatus: "error",
+          metadataError: msg,
+        });
+      } finally {
+        setDescribingFileIds((prev) => {
+          const next = new Set(prev);
+          next.delete(fileId);
+          return next;
+        });
+        // Tear down the conversation so the slice doesn't grow unbounded
+        // when users describe many files.
+        if (conversationId) {
+          dispatch(destroyInstanceIfAllowed(conversationId));
+        }
+      }
+    },
+    [
+      dispatch,
+      store,
+      describingFileIds,
+      setMetadataState,
+      trigger,
+      waitForExtraction,
+    ],
+  );
+
+  const describeAll = useCallback(
+    async (contextHint?: string) => {
+      // Run sequentially — each describe is a real LLM call and parallel
+      // requests would just rate-limit ourselves.
+      const ids = files
+        .filter(
+          (f) =>
+            f.metadataStatus !== "describing" &&
+            f.metadataStatus !== "uploading-source",
+        )
+        .map((f) => f.id);
+      for (const id of ids) {
+        await describeFile(id, contextHint);
+      }
+    },
+    [files, describeFile],
+  );
+
+  const updateImageMetadata = useCallback(
+    (fileId: string, patch: Partial<ImageMetadata>) => {
+      setFiles((prev) =>
+        prev.map((f) => {
+          if (f.id !== fileId) return f;
+          const base = f.imageMetadata ?? {
+            filename_base: f.filenameBase,
+            alt_text: "",
+            caption: "",
+            title: "",
+            description: "",
+            keywords: [],
+            dominant_colors: [],
+          };
+          const next: ImageMetadata = { ...base, ...patch };
+          // Sync filename if the user edited filename_base directly.
+          const filenameBase = patch.filename_base
+            ? slugifyFilename(patch.filename_base)
+            : f.filenameBase;
+          return {
+            ...f,
+            imageMetadata: { ...next, filename_base: filenameBase },
+            filenameBase,
+          };
+        }),
+      );
+    },
+    [],
+  );
+
+  const clearImageMetadata = useCallback((fileId: string) => {
+    setFiles((prev) =>
+      prev.map((f) =>
+        f.id === fileId
+          ? {
+              ...f,
+              imageMetadata: null,
+              metadataStatus: "idle" as const,
+              metadataError: null,
+            }
+          : f,
+      ),
+    );
+  }, []);
+
+  // ── Derived ─────────────────────────────────────────────────────────────
 
   const totalVariantCount = useMemo(
     () => files.length * selectedPresetIds.length,
@@ -520,6 +931,13 @@ export function useImageStudio(
 
     generate,
     saveAll,
+
+    describeFile,
+    describeAll,
+    isDescribing,
+    describingFileIds,
+    updateImageMetadata,
+    clearImageMetadata,
 
     totalVariantCount,
     generatedVariantCount,

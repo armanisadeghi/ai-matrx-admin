@@ -14,7 +14,7 @@ import {
     X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { StudioSourceFile } from "../types";
+import type { ImageMetadata, StudioSourceFile } from "../types";
 import { formatBytes, formatDimensions } from "../utils/format-bytes";
 import {
     StudioVariantTile,
@@ -22,6 +22,8 @@ import {
     StudioVariantTilePending,
     StudioVariantTileError,
 } from "./StudioVariantTile";
+import { MetadataPanel } from "./MetadataPanel";
+import { Sparkles } from "lucide-react";
 
 interface StudioFileCardProps {
     file: StudioSourceFile;
@@ -36,6 +38,14 @@ interface StudioFileCardProps {
     onRename: (base: string) => void;
     /** Open the live crop preview window, pointed at this file. */
     onPreviewRequested?: () => void;
+    /** True while this file is currently being described by the AI. */
+    isDescribing?: boolean;
+    /** Trigger the describe-with-AI flow for this file. */
+    onDescribe?: () => void;
+    /** Edit the file's image metadata in place. */
+    onMetadataPatch?: (patch: Partial<ImageMetadata>) => void;
+    /** Drop the AI-authored metadata for this file. */
+    onMetadataClear?: () => void;
 }
 
 export function StudioFileCard({
@@ -47,6 +57,10 @@ export function StudioFileCard({
     onRemove,
     onRename,
     onPreviewRequested,
+    isDescribing = false,
+    onDescribe,
+    onMetadataPatch,
+    onMetadataClear,
 }: StudioFileCardProps) {
     const [collapsed, setCollapsed] = useState(false);
     const [renaming, setRenaming] = useState(false);
@@ -188,6 +202,36 @@ export function StudioFileCard({
                             {isPreviewActive ? "Previewing" : "Preview"}
                         </button>
                     )}
+                    {onDescribe && (
+                        <button
+                            type="button"
+                            onClick={onDescribe}
+                            disabled={isDescribing}
+                            className={cn(
+                                "h-7 rounded-md border px-2 text-[11px] font-medium flex items-center gap-1 transition-colors",
+                                file.imageMetadata
+                                    ? "border-success/40 bg-success/10 text-success hover:bg-success/15"
+                                    : "border-border hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-foreground",
+                                isDescribing && "cursor-wait opacity-70",
+                            )}
+                            title={
+                                file.imageMetadata
+                                    ? "Re-describe with AI"
+                                    : "Generate filename + alt text + caption + SEO + colours"
+                            }
+                        >
+                            {isDescribing ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                                <Sparkles className="h-3 w-3" />
+                            )}
+                            {isDescribing
+                                ? "Describing"
+                                : file.imageMetadata
+                                  ? "Described"
+                                  : "Describe"}
+                        </button>
+                    )}
                     <button
                         type="button"
                         onClick={() => setCollapsed((v) => !v)}
@@ -246,6 +290,18 @@ export function StudioFileCard({
                                     <StudioVariantTilePending key={`p-${id}`} presetId={id} />
                                 ))}
                         </VariantTileGrid>
+                    )}
+
+                    {onDescribe && onMetadataPatch && onMetadataClear && (
+                        <div className="mt-3">
+                            <MetadataPanel
+                                file={file}
+                                isDescribing={isDescribing}
+                                onDescribe={onDescribe}
+                                onClear={onMetadataClear}
+                                onPatch={onMetadataPatch}
+                            />
+                        </div>
                     )}
                 </div>
             )}

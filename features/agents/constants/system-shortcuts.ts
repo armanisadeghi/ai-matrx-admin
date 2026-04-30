@@ -40,7 +40,8 @@ export type SystemShortcutFeature =
   | "agent-generator"
   | "code-editor"
   | "notes"
-  | "chat-route";
+  | "chat-route"
+  | "image-studio";
 
 export interface SystemShortcutEntry {
   /** Short human name — for logs and debug UI only. */
@@ -72,6 +73,20 @@ export const SYSTEM_SHORTCUTS = {
     feature: "agent-generator",
     description:
       "Turns a plain-English description (scope.selection) plus optional additional context (runtime.userInput) into a structured agent config JSON. Renders in direct display mode — the caller UI owns the panel.",
+    temporaryConfigs: {
+      jsonExtraction: {
+        enabled: true,
+        fuzzyOnFinalize: true,
+        maxResults: 5,
+      },
+    },
+  },
+  "image-studio-describe-01": {
+    label: "Image Studio — Describe v1",
+    id: "ed0a90f8-b406-4af8-8f47-c41c0c4ff086",
+    feature: "image-studio",
+    description:
+      "Vision agent that takes an attached image (instance resource, blockType: 'image') and an optional context hint (runtime.userInput) and returns a structured JSON wrapped as { image_metadata: { filename_base, alt_text, caption, title, description, keywords, dominant_colors } }.",
     temporaryConfigs: {
       jsonExtraction: {
         enabled: true,

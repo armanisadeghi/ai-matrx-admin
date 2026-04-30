@@ -1,26 +1,23 @@
-"use client";
+import { Suspense } from "react";
+import PdfStudioRouteClient from "./PdfStudioRouteClient";
 
 /**
- * Full-page route for the PDF Extractor.
+ * /tools/pdf-extractor
  *
- *   /tools/pdf-extractor
- *
- * Same workspace as the Tools-grid floating window — just hosted on a
- * dedicated route. Click any document in the sidebar and the URL
- * advances to `/tools/pdf-extractor/<id>` (handled by the [id] route).
+ * Server-component shell. The actual studio is a client component
+ * (`PdfStudioRouteClient`) that picks desktop vs mobile and dynamically
+ * imports the heavy reader. This shell exists only to give Next a
+ * stable route boundary and a server-rendered frame so there's no CLS
+ * while the dynamic import resolves.
  */
+export const dynamic = "force-dynamic";
 
-import React from "react";
-import { useRouter } from "next/navigation";
-import { PdfExtractorFloatingWorkspace } from "@/features/pdf-extractor/components/PdfExtractorWorkspace";
-
-export default function PdfExtractorPage() {
-  const router = useRouter();
+export default function PdfExtractorStudioPage() {
   return (
-    <div className="h-[calc(100vh-2.5rem)] flex flex-col overflow-hidden">
-      <PdfExtractorFloatingWorkspace
-        onClose={() => router.push("/")}
-      />
+    <div className="h-[calc(100dvh-2.5rem)] flex flex-col overflow-hidden bg-background">
+      <Suspense fallback={null}>
+        <PdfStudioRouteClient />
+      </Suspense>
     </div>
   );
 }

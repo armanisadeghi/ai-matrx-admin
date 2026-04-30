@@ -8,6 +8,7 @@ import {
     FileDown,
     FolderInput,
     Gauge,
+    Loader2,
     Paintbrush,
     Sparkles,
     Zap,
@@ -62,6 +63,9 @@ interface ExportPanelProps {
     onOpenPreview?: () => void;
     canOpenPreview?: boolean;
     isPreviewOpen?: boolean;
+    onDescribeAll?: () => void;
+    isDescribing?: boolean;
+    describedFileCount?: number;
 }
 
 export function ExportPanel({
@@ -96,6 +100,9 @@ export function ExportPanel({
     onOpenPreview,
     canOpenPreview = false,
     isPreviewOpen = false,
+    onDescribeAll,
+    isDescribing = false,
+    describedFileCount = 0,
 }: ExportPanelProps) {
     const [folder, setFolder] = useState("image-studio");
 
@@ -282,6 +289,38 @@ export function ExportPanel({
                     />
                     {isProcessing ? "Generating…" : "Generate all variants"}
                 </button>
+
+                {onDescribeAll && (
+                    <button
+                        type="button"
+                        onClick={onDescribeAll}
+                        disabled={filesCount === 0 || isDescribing}
+                        className={cn(
+                            "w-full h-9 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-colors",
+                            filesCount > 0 && !isDescribing
+                                ? "border border-primary/40 bg-primary/5 text-primary hover:bg-primary/10"
+                                : "bg-muted text-muted-foreground border border-border cursor-not-allowed",
+                        )}
+                        title={
+                            filesCount === 0
+                                ? "Drop an image first"
+                                : "Run the describe agent on every file — generates filename, alt text, caption, SEO copy, and dominant colours per file"
+                        }
+                    >
+                        {isDescribing ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                            <Sparkles className="h-3.5 w-3.5" />
+                        )}
+                        {isDescribing
+                            ? "Describing with AI…"
+                            : describedFileCount > 0 && describedFileCount === filesCount
+                              ? "Re-describe all with AI"
+                              : describedFileCount > 0
+                                ? `Describe remaining (${filesCount - describedFileCount})`
+                                : "Describe all with AI"}
+                    </button>
+                )}
 
                 <div className="grid grid-cols-2 gap-2">
                     <button
