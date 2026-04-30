@@ -37,6 +37,8 @@ import { PdfStudioSidebar } from "./PdfStudioSidebar";
 import { PdfStudioToolbar } from "./PdfStudioToolbar";
 import { PdfStudioReader, type PaneKey } from "./PdfStudioReader";
 import { PdfStudioInspector } from "./PdfStudioInspector";
+import { PdfStudioUpload } from "./PdfStudioUpload";
+import { PdfStudioUploadDrawer } from "./PdfStudioUploadDrawer";
 import { useShortcutTrigger } from "@/features/agents/hooks/useShortcutTrigger";
 import { useToastManager } from "@/hooks/useToastManager";
 import { useRouter } from "next/navigation";
@@ -65,6 +67,7 @@ export function PdfStudioShell({ initialDocumentId }: PdfStudioShellProps) {
     () => new Set<PaneKey>(["pdf", "raw", "clean"]),
   );
   const [pipelineRunning, setPipelineRunning] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(false);
 
   // Per-page rows for the active doc.
   const {
@@ -175,6 +178,36 @@ export function PdfStudioShell({ initialDocumentId }: PdfStudioShellProps) {
     }
   }, [activeDoc, extractor, docsState, toast]);
 
+  // ── Upload hand-off ───────────────────────────────────────────────────
+  //
+  // `PdfStudioUpload` notifies us as soon as the FIRST file in a session
+  // finishes streaming. We refresh the sidebar list and (if the studio is
+  // empty) auto-select the new doc so the user "instantly sees" their
+  // upload in the reader. When the whole session finishes we refresh
+  // again to pick up any stragglers.
+
+  const handleFirstUpload = useCallback(
+    (docId: string) => {
+      docsState.refresh();
+      if (!activeDoc) {
+        router.push(`/tools/pdf-extractor/${docId}`);
+        void selectDocById(docId);
+      }
+    },
+    [docsState, activeDoc, router, selectDocById],
+  );
+
+  const handleUploadComplete = useCallback(
+    (newDocIds: string[]) => {
+      docsState.refresh();
+      if (!activeDoc && newDocIds[0]) {
+        router.push(`/tools/pdf-extractor/${newDocIds[0]}`);
+        void selectDocById(newDocIds[0]);
+      }
+    },
+    [docsState, activeDoc, router, selectDocById],
+  );
+
   const handleRunShortcut = useCallback(
     async (shortcutId: string) => {
       if (!activeDoc) return;
@@ -245,8 +278,18 @@ export function PdfStudioShell({ initialDocumentId }: PdfStudioShellProps) {
           docsState={docsState}
           activeDocId={activeDoc?.id ?? null}
           onSelectDoc={handleSelectDoc}
+          onAddDocs={() => setUploadOpen(true)}
         />
       </div>
+
+      {/* Upload drawer — opened from sidebar `+ Add` */}
+      <PdfStudioUploadDrawer
+        open={uploadOpen}
+        onOpenChange={setUploadOpen}
+        extractor={extractor}
+        onFirstDocReady={handleFirstUpload}
+        onUploadComplete={handleUploadComplete}
+      />
 
       {/* CENTER */}
       <div className="flex-1 min-w-0 flex flex-col min-h-0">
@@ -323,9 +366,16 @@ export function PdfStudioShell({ initialDocumentId }: PdfStudioShellProps) {
             visiblePanes={visiblePanes}
             onTogglePane={togglePane}
             findQuery={findQuery}
+            onRunPipeline={handleRunPipeline}
+            pipelineRunning={pipelineRunning}
+            onOpenUpload={() => setUploadOpen(true)}
           />
         ) : (
-          <EmptyShell />
+          <EmptyShell
+            extractor={extractor}
+            onFirstDocReady={handleFirstUpload}
+            onUploadComplete={handleUploadComplete}
+          />
         )}
       </div>
 
@@ -346,29 +396,38 @@ export function PdfStudioShell({ initialDocumentId }: PdfStudioShellProps) {
   );
 }
 
-function EmptyShell() {
+function EmptyShell({
+  extractor,
+  onFirstDocReady,
+  onUploadComplete,
+}: {
+  extractor: ReturnType<typeof usePdfExtractor>;
+  onFirstDocReady: (docId: string) => void;
+  onUploadComplete: (ids: string[]) => void;
+}) {
   return (
-    <div className="flex-1 flex items-center justify-center p-12">
-      <div className="max-w-md text-center space-y-3">
-        <h2 className="text-base font-semibold text-foreground">
-          Pick a document to start reading
-        </h2>
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          Use the sidebar on the left to find one of your processed documents.
-          Once open, you'll get the source PDF, raw extraction, and AI-cleaned
-          markdown in three synced reading panes — plus the inspector for
-          lineage, AI actions, and data-store binding.
-        </p>
-        <p className="text-[10px] text-muted-foreground/70 pt-2">
-          <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[10px]">/</kbd>{" "}
-          search ·{" "}
-          <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[10px]">j / k</kbd>{" "}
-          pages ·{" "}
-          <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[10px]">[ ] \\</kbd>{" "}
-          toggle panes ·{" "}
-          <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[10px]">⌘ F</kbd>{" "}
-          find
-        </p>
+    <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto">
+      <div className="w-full max-w-2xl space-y-6">
+        <PdfStudioUpload
+          extractor={extractor}
+          variant="hero"
+          headline="Add documents to start reading"
+          subhead="Drop in PDFs or images. Each file streams through extraction and lands in your sidebar the moment it's ready — the first one auto-opens here so you can start triaging immediately."
+          onFirstDocReady={onFirstDocReady}
+          onUploadComplete={onUploadComplete}
+        />
+        <div className="text-center">
+          <p className="text-[10px] text-muted-foreground/70">
+            <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[10px]">/</kbd>{" "}
+            search ·{" "}
+            <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[10px]">j / k</kbd>{" "}
+            pages ·{" "}
+            <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[10px]">[ ] \\</kbd>{" "}
+            toggle panes ·{" "}
+            <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[10px]">⌘ F</kbd>{" "}
+            find
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -35,6 +35,7 @@ import {
   Layers,
   MoreVertical,
   X,
+  Plus,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -45,6 +46,8 @@ import { useProcessedDocumentPages } from "../hooks/useProcessedDocumentPages";
 import { usePdfStudioDocs } from "./hooks/usePdfStudioDocs";
 import { PdfStudioSidebar } from "./PdfStudioSidebar";
 import { PdfStudioInspector } from "./PdfStudioInspector";
+import { PdfStudioUpload } from "./PdfStudioUpload";
+import { PdfStudioUploadDrawer } from "./PdfStudioUploadDrawer";
 import { useShortcutTrigger } from "@/features/agents/hooks/useShortcutTrigger";
 import { useToastManager } from "@/hooks/useToastManager";
 
@@ -67,6 +70,7 @@ export function PdfStudioMobile({ initialDocumentId }: PdfStudioMobileProps) {
   const [drawer, setDrawer] = useState<"none" | "docs" | "inspector">(
     initialDocumentId ? "none" : "docs",
   );
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [pipelineRunning, setPipelineRunning] = useState(false);
 
   const { pages } = useProcessedDocumentPages({
@@ -110,6 +114,31 @@ export function PdfStudioMobile({ initialDocumentId }: PdfStudioMobileProps) {
       void selectDocById(s.id);
     },
     [router, selectDocById],
+  );
+
+  // Upload hand-off — same shape as desktop. Auto-opens the first new doc
+  // in the reader so the manager goes from "drop file" to "reading" with
+  // zero extra taps.
+  const handleFirstUpload = useCallback(
+    (docId: string) => {
+      docsState.refresh();
+      if (!activeDoc) {
+        router.push(`/tools/pdf-extractor/${docId}`);
+        void selectDocById(docId);
+      }
+    },
+    [docsState, activeDoc, router, selectDocById],
+  );
+
+  const handleUploadComplete = useCallback(
+    (newDocIds: string[]) => {
+      docsState.refresh();
+      if (!activeDoc && newDocIds[0]) {
+        router.push(`/tools/pdf-extractor/${newDocIds[0]}`);
+        void selectDocById(newDocIds[0]);
+      }
+    },
+    [docsState, activeDoc, router, selectDocById],
   );
 
   const handleRunPipeline = useCallback(async () => {
@@ -176,6 +205,14 @@ export function PdfStudioMobile({ initialDocumentId }: PdfStudioMobileProps) {
         </div>
         <button
           type="button"
+          onClick={() => setUploadOpen(true)}
+          className="h-8 w-8 rounded-md hover:bg-muted flex items-center justify-center text-muted-foreground"
+          title="Add documents"
+        >
+          <Plus className="w-4 h-4" />
+        </button>
+        <button
+          type="button"
           onClick={() => setDrawer("inspector")}
           disabled={!activeDoc}
           className="h-8 w-8 rounded-md hover:bg-muted flex items-center justify-center text-muted-foreground disabled:opacity-50"
@@ -212,8 +249,15 @@ export function PdfStudioMobile({ initialDocumentId }: PdfStudioMobileProps) {
       {/* Body */}
       <div className="flex-1 min-h-0 overflow-hidden">
         {!activeDoc ? (
-          <div className="h-full flex items-center justify-center px-6 text-center text-xs text-muted-foreground">
-            Tap the back arrow to pick a document.
+          <div className="h-full overflow-y-auto p-4">
+            <PdfStudioUpload
+              extractor={extractor}
+              variant="hero"
+              headline="Add documents"
+              subhead="Drop in PDFs or images. The first one auto-opens here as soon as it's ready."
+              onFirstDocReady={handleFirstUpload}
+              onUploadComplete={handleUploadComplete}
+            />
           </div>
         ) : tab === "pdf" ? (
           activeDoc.source ? (
@@ -290,11 +334,23 @@ export function PdfStudioMobile({ initialDocumentId }: PdfStudioMobileProps) {
                 docsState={docsState}
                 activeDocId={activeDoc?.id ?? null}
                 onSelectDoc={onSelectDoc}
+                onAddDocs={() => {
+                  setDrawer("none");
+                  setUploadOpen(true);
+                }}
               />
             </div>
           </div>
         </DrawerContent>
       </Drawer>
+
+      <PdfStudioUploadDrawer
+        open={uploadOpen}
+        onOpenChange={setUploadOpen}
+        extractor={extractor}
+        onFirstDocReady={handleFirstUpload}
+        onUploadComplete={handleUploadComplete}
+      />
 
       <Drawer
         open={drawer === "inspector"}

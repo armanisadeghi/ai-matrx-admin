@@ -33,7 +33,12 @@ import {
   Loader2,
   Eye,
   EyeOff,
+  AlertTriangle,
+  Wand2,
+  ExternalLink,
+  Upload,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { PdfDocument } from "../hooks/usePdfExtractor";
 import type { PdfPageRow } from "../hooks/useProcessedDocumentPages";
@@ -53,6 +58,11 @@ export interface PdfStudioReaderProps {
   onTogglePane: (pane: PaneKey) => void;
   /** Active find query — every match in the visible text panes is highlighted. */
   findQuery: string;
+  /** Called when the user wants to re-run the full pipeline on this doc. */
+  onRunPipeline: () => void | Promise<unknown>;
+  pipelineRunning: boolean;
+  /** Called when the user wants to open the upload drawer (e.g. to refresh a missing source). */
+  onOpenUpload: () => void;
 }
 
 export function PdfStudioReader({
@@ -67,8 +77,23 @@ export function PdfStudioReader({
   visiblePanes,
   onTogglePane,
   findQuery,
+  onRunPipeline,
+  pipelineRunning,
+  onOpenUpload,
 }: PdfStudioReaderProps) {
   const hasPages = pages.length > 0;
+  // True when per-page rows exist but every row's text is empty — typically
+  // because an older pipeline run created page stubs without persisting the
+  // extracted text. We fall back to the aggregate `content` / `clean_content`
+  // and surface a re-run CTA.
+  const allPagesEmpty = useMemo(
+    () =>
+      pages.length > 0 &&
+      pages.every(
+        (p) => !p.rawText.trim() && !p.cleanedText.trim(),
+      ),
+    [pages],
+  );
 
   // Each text pane registers its own scroll container. Whichever one the
   // user touched most recently is allowed to drive sync — the other
@@ -112,6 +137,7 @@ export function PdfStudioReader({
           activePage={activePage}
           frameRef={pdfFrameRef}
           onTogglePane={() => onTogglePane("pdf")}
+          onOpenUpload={onOpenUpload}
         />
       )}
       {visiblePanes.has("raw") && (
@@ -120,6 +146,7 @@ export function PdfStudioReader({
           title="Raw extraction"
           subtitle="System A · per-page"
           icon={<FileText className="w-3 h-3 text-muted-foreground" />}
+          doc={doc}
           pages={pages}
           field="raw"
           activePage={activePage}
@@ -129,6 +156,9 @@ export function PdfStudioReader({
           lastScrolledPaneRef={lastScrolledPaneRef}
           findQuery={findQuery}
           onTogglePane={() => onTogglePane("raw")}
+          allPagesEmpty={allPagesEmpty}
+          onRunPipeline={onRunPipeline}
+          pipelineRunning={pipelineRunning}
         />
       )}
       {visiblePanes.has("clean") && (
@@ -137,6 +167,7 @@ export function PdfStudioReader({
           title="AI-cleaned"
           subtitle="System B · per-page"
           icon={<Sparkles className="w-3 h-3 text-primary" />}
+          doc={doc}
           pages={pages}
           field="cleaned"
           activePage={activePage}
@@ -147,6 +178,9 @@ export function PdfStudioReader({
           findQuery={findQuery}
           onTogglePane={() => onTogglePane("clean")}
           highlightSection
+          allPagesEmpty={allPagesEmpty}
+          onRunPipeline={onRunPipeline}
+          pipelineRunning={pipelineRunning}
         />
       )}
     </div>
@@ -160,11 +194,13 @@ function PdfPane({
   activePage,
   frameRef,
   onTogglePane,
+  onOpenUpload,
 }: {
   doc: PdfDocument;
   activePage: number | null;
   frameRef: React.RefObject<HTMLIFrameElement | null>;
   onTogglePane: () => void;
+  onOpenUpload: () => void;
 }) {
   return (
     <section className="flex-1 min-w-0 flex flex-col border-r border-border bg-muted/10">
@@ -183,12 +219,55 @@ function PdfPane({
             className="w-full h-full border border-border rounded bg-background"
           />
         ) : (
-          <div className="flex items-center justify-center h-full text-[11px] text-muted-foreground">
-            No source URL — can't render the source PDF.
-          </div>
+          <PdfPaneEmptyState doc={doc} onOpenUpload={onOpenUpload} />
         )}
       </div>
     </section>
+  );
+}
+
+function PdfPaneEmptyState({
+  doc,
+  onOpenUpload,
+}: {
+  doc: PdfDocument;
+  onOpenUpload: () => void;
+}) {
+  // No `storage_uri` on this row — most likely a legacy doc that was
+  // backfilled into `processed_documents` without its source URL. The user
+  // needs a real action, not just an error message.
+  return (
+    <div className="flex items-center justify-center h-full p-6">
+      <div className="max-w-sm text-center space-y-3">
+        <div className="w-12 h-12 mx-auto rounded-full bg-amber-500/15 flex items-center justify-center">
+          <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-foreground">
+            No source PDF linked to this record
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+            This document predates the new ingestion pipeline, so the original
+            file isn't reachable from a stored URL. The extracted text on the
+            right is still yours — re-upload the same PDF to relink it for
+            side-by-side viewing.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2 items-center">
+          <Button
+            size="sm"
+            className="h-8 text-xs gap-1.5"
+            onClick={onOpenUpload}
+          >
+            <Upload className="w-3.5 h-3.5" />
+            Re-upload to relink
+          </Button>
+          <p className="text-[10px] text-muted-foreground/70 font-mono">
+            sourceKind: {doc.sourceKind ?? "(null)"}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -199,6 +278,7 @@ function TextPane({
   title,
   subtitle,
   icon,
+  doc,
   pages,
   field,
   activePage,
@@ -209,11 +289,15 @@ function TextPane({
   findQuery,
   onTogglePane,
   highlightSection,
+  allPagesEmpty,
+  onRunPipeline,
+  pipelineRunning,
 }: {
   paneKey: PaneKey;
   title: string;
   subtitle: string;
   icon: React.ReactNode;
+  doc: PdfDocument;
   pages: PdfPageRow[];
   field: "raw" | "cleaned";
   activePage: number | null;
@@ -224,6 +308,9 @@ function TextPane({
   findQuery: string;
   onTogglePane: () => void;
   highlightSection?: boolean;
+  allPagesEmpty: boolean;
+  onRunPipeline: () => void | Promise<unknown>;
+  pipelineRunning: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const anchorMap = useRef<Map<number, HTMLElement>>(new Map());
@@ -271,6 +358,13 @@ function TextPane({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingScrollPage]);
 
+  // When ALL per-page rows are empty, fall back to the aggregate text that
+  // lives on `processed_documents` itself — that's what the pipeline writes
+  // into `content` / `clean_content`. This is the path that makes the
+  // "blank page 1, page 2 …" state actionable instead of frustrating.
+  const aggregateText =
+    field === "cleaned" ? doc.cleanContent ?? "" : doc.content ?? "";
+
   return (
     <section className="flex-1 min-w-0 flex flex-col border-r last:border-r-0 border-border">
       <PaneHeader
@@ -279,6 +373,16 @@ function TextPane({
         icon={icon}
         onTogglePane={onTogglePane}
       />
+
+      {allPagesEmpty && (
+        <BlankPagesBanner
+          docHasAggregate={!!aggregateText}
+          field={field}
+          onRunPipeline={onRunPipeline}
+          pipelineRunning={pipelineRunning}
+        />
+      )}
+
       <div
         ref={containerRef}
         className="flex-1 min-h-0 overflow-y-auto px-2 py-2 space-y-2"
@@ -286,7 +390,29 @@ function TextPane({
         onWheel={onScrollStart}
         onTouchMove={onScrollStart}
       >
+        {allPagesEmpty && aggregateText && (
+          // Surface the aggregate document text so the user can actually
+          // read what's there. We render it as a single block, NOT as N
+          // empty page rows, since per-page persistence didn't work.
+          <div className="border border-border bg-card rounded-md p-2.5">
+            <div className="flex items-center gap-1.5 mb-1.5 text-[10px] text-muted-foreground">
+              <span className="font-mono font-semibold text-foreground/80">
+                Document text (aggregate)
+              </span>
+              <span className="ml-auto font-mono">
+                {aggregateText.length.toLocaleString()} chars
+              </span>
+            </div>
+            <pre className="whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-foreground/85">
+              <Highlighted text={aggregateText} query={findQuery} />
+            </pre>
+          </div>
+        )}
+
         {pages.map((p) => {
+          // Skip per-page rows when the whole set is empty — they'd just
+          // print "no text on this page" N times.
+          if (allPagesEmpty) return null;
           const text = field === "cleaned" ? p.cleanedText : p.rawText;
           const isActive = activePage === p.pageNumber;
           return (
@@ -308,6 +434,56 @@ function TextPane({
         })}
       </div>
     </section>
+  );
+}
+
+function BlankPagesBanner({
+  docHasAggregate,
+  field,
+  onRunPipeline,
+  pipelineRunning,
+}: {
+  docHasAggregate: boolean;
+  field: "raw" | "cleaned";
+  onRunPipeline: () => void | Promise<unknown>;
+  pipelineRunning: boolean;
+}) {
+  return (
+    <div className="shrink-0 mx-2 mt-2 border border-amber-500/30 bg-amber-500/5 rounded-md p-2.5 text-[11px] text-amber-700 dark:text-amber-400">
+      <div className="flex items-start gap-2">
+        <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+        <div className="flex-1">
+          <p className="font-medium">
+            Per-page rows exist for this doc, but every page is empty.
+          </p>
+          <p className="mt-0.5 text-amber-700/90 dark:text-amber-300/80 leading-snug">
+            {docHasAggregate
+              ? "Showing the aggregate document text below as a fallback. Re-run the pipeline to populate per-page rows so synced scrolling and word-level highlighting work."
+              : `No ${field === "cleaned" ? "cleaned" : "raw"} text was persisted. Re-run the pipeline to repopulate.`}
+          </p>
+          <div className="mt-1.5">
+            <Button
+              size="sm"
+              className="h-7 text-[11px] gap-1"
+              onClick={() => void onRunPipeline()}
+              disabled={pipelineRunning}
+            >
+              {pipelineRunning ? (
+                <>
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  Re-running…
+                </>
+              ) : (
+                <>
+                  <Wand2 className="w-3 h-3" />
+                  Re-run pipeline
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

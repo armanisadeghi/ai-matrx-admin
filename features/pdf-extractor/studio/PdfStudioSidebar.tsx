@@ -29,6 +29,7 @@ import {
   Layers,
   GitBranch,
   CheckCircle2,
+  Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -43,12 +44,15 @@ interface PdfStudioSidebarProps {
   docsState: StudioDocsState;
   activeDocId: string | null;
   onSelectDoc: (doc: StudioDocSummary) => void;
+  /** Opens the upload drawer. When omitted the `+ Add` button is hidden. */
+  onAddDocs?: () => void;
 }
 
 export function PdfStudioSidebar({
   docsState,
   activeDocId,
   onSelectDoc,
+  onAddDocs,
 }: PdfStudioSidebarProps) {
   const {
     visible,
@@ -78,8 +82,18 @@ export function PdfStudioSidebar({
 
   return (
     <aside className="flex flex-col h-full min-h-0 border-r border-border bg-card/30">
-      {/* Search */}
+      {/* Search + Add */}
       <div className="shrink-0 px-3 pt-3 pb-2 space-y-2">
+        {onAddDocs && (
+          <button
+            type="button"
+            onClick={onAddDocs}
+            className="w-full h-8 flex items-center justify-center gap-1.5 rounded-md border border-primary/40 bg-primary/10 hover:bg-primary/15 text-primary text-xs font-medium transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add documents
+          </button>
+        )}
         <div className="relative">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
           <Input
