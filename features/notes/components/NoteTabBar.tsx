@@ -217,7 +217,10 @@ export function NoteTabBar({ instanceId }: NoteTabBarProps) {
       }}
       onDrop={handleDrop}
     >
-      <div ref={scrollRef} className="flex items-stretch flex-1 min-w-0 overflow-x-auto h-full">
+      <div
+        ref={scrollRef}
+        className="flex items-stretch flex-1 min-w-0 overflow-x-auto h-full"
+      >
         {openTabs.map((tabId) => (
           <div
             key={tabId}

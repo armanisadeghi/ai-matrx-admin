@@ -145,7 +145,7 @@ No changes from before. Returns NDJSON streaming response.
   "messages": "array (required)",
   "conversation_id": "string | null (auto-generated if new)",
   "is_new_conversation": "boolean (default: true)",
-  "max_iterations": "int (default: 20)",
+  "max_iterations": "int (default: 100)",
   "max_retries_per_iteration": "int (default: 2)",
   "stream": "boolean (default: true)",
   "debug": "boolean (default: false)",

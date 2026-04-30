@@ -278,7 +278,7 @@ Unlike the agent and conversation endpoints, you send the full `messages` array 
   conversation_id?: string | null;       // Optional. Server generates UUID if omitted.
 
   // Execution control
-  max_iterations?: number;               // default: 20
+  max_iterations?: number;               // default: 100
   max_retries_per_iteration?: number;    // default: 2
   stream?: boolean;                      // default: true
   debug?: boolean;                       // default: false

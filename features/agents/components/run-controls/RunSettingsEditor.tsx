@@ -171,7 +171,7 @@ export function RunSettingsEditor({ conversationId }: RunSettingsEditorProps) {
               )
             }
             min={1}
-            max={100}
+            max={1000}
             className="h-6"
           />
         </div>

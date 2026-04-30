@@ -178,10 +178,10 @@ export interface NotesSliceState {
 }
 
 export interface NoteScopeAssignment {
-  entity_id: string;   // note ID
+  entity_id: string; // note ID
   scope_id: string;
-  scope_name: string;  // e.g., "SEO", "Acme Corp"
-  scope_type: string;  // e.g., "Department", "Client"
+  scope_name: string; // e.g., "SEO", "Acme Corp"
+  scope_type: string; // e.g., "Department", "Client"
 }
 
 // ── Auto-save debounce config ───────────────────────────────────────────────

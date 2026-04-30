@@ -300,7 +300,7 @@ export function assembleChatRequest(
     // Ephemeral forces store:false regardless of builder override.
     store: isEphemeral ? false : (advancedSettings?.store ?? true),
     debug: advancedSettings?.debug ?? false,
-    max_iterations: advancedSettings?.maxIterations ?? 20,
+    max_iterations: advancedSettings?.maxIterations ?? 100,
     max_retries_per_iteration: advancedSettings?.maxRetriesPerIteration ?? 2,
     ...fullSettings,
   };

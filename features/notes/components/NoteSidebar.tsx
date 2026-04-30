@@ -171,7 +171,8 @@ export function NoteSidebar({
     () => Object.values(scopeSelections).filter(Boolean) as string[],
     [scopeSelections],
   );
-  const [scopeFilteredNoteIds, setScopeFilteredNoteIds] = useState<Set<string> | null>(null);
+  const [scopeFilteredNoteIds, setScopeFilteredNoteIds] =
+    useState<Set<string> | null>(null);
   const lastScopeKey = useRef("");
 
   useEffect(() => {
@@ -199,12 +200,21 @@ export function NoteSidebar({
   // ── Filter notes by active context (org + scopes + project + task) ─
   const contextFiltered = useMemo(() => {
     let result = allNotes;
-    if (activeOrgId) result = result.filter((n) => n.organization_id === activeOrgId);
-    if (scopeFilteredNoteIds) result = result.filter((n) => scopeFilteredNoteIds.has(n.id));
-    if (activeProjectId) result = result.filter((n) => n.project_id === activeProjectId);
+    if (activeOrgId)
+      result = result.filter((n) => n.organization_id === activeOrgId);
+    if (scopeFilteredNoteIds)
+      result = result.filter((n) => scopeFilteredNoteIds.has(n.id));
+    if (activeProjectId)
+      result = result.filter((n) => n.project_id === activeProjectId);
     if (activeTaskId) result = result.filter((n) => n.task_id === activeTaskId);
     return result;
-  }, [allNotes, activeOrgId, scopeFilteredNoteIds, activeProjectId, activeTaskId]);
+  }, [
+    allNotes,
+    activeOrgId,
+    scopeFilteredNoteIds,
+    activeProjectId,
+    activeTaskId,
+  ]);
 
   // ── Local UI state ─────────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState("");
@@ -656,7 +666,9 @@ export function NoteSidebar({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => { searchFocusedRef.current = true; }}
+            onFocus={() => {
+              searchFocusedRef.current = true;
+            }}
             onBlur={() => {
               // Defer the blur check — if focus was stolen by a re-render,
               // restore it on the next frame
@@ -664,7 +676,10 @@ export function NoteSidebar({
               searchFocusedRef.current = false;
               if (wasFocused && searchQuery) {
                 requestAnimationFrame(() => {
-                  if (document.activeElement?.tagName === "TEXTAREA" || document.activeElement?.tagName === "BODY") {
+                  if (
+                    document.activeElement?.tagName === "TEXTAREA" ||
+                    document.activeElement?.tagName === "BODY"
+                  ) {
                     searchInputRef.current?.focus();
                   }
                 });
@@ -1151,14 +1166,23 @@ export function NoteSidebar({
           <Trash2 className="w-3 h-3" />
           <span>Trash</span>
           {deletedNotes.length > 0 && (
-            <span className="text-[0.5rem] bg-muted px-1 rounded">{deletedNotes.length}</span>
+            <span className="text-[0.5rem] bg-muted px-1 rounded">
+              {deletedNotes.length}
+            </span>
           )}
-          <ChevronDown className={cn("w-2.5 h-2.5 ml-auto transition-transform", trashOpen && "rotate-180")} />
+          <ChevronDown
+            className={cn(
+              "w-2.5 h-2.5 ml-auto transition-transform",
+              trashOpen && "rotate-180",
+            )}
+          />
         </button>
         {trashOpen && (
           <div className="max-h-40 overflow-y-auto px-1 pb-1">
             {deletedNotes.length === 0 ? (
-              <p className="text-[0.5625rem] text-muted-foreground/50 px-3 py-2">Trash is empty</p>
+              <p className="text-[0.5625rem] text-muted-foreground/50 px-3 py-2">
+                Trash is empty
+              </p>
             ) : (
               deletedNotes.map((note) => (
                 <div

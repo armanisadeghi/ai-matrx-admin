@@ -6,7 +6,13 @@
 // Includes context menu. Renders via NoteEditorCore internally.
 // ZERO PROP DRILLING — reads everything from Redux selectors + NotesInstanceContext.
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import dynamic from "next/dynamic";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {

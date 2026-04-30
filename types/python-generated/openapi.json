@@ -2082,6 +2082,32 @@
               "default": 10,
               "title": "Target Size Mb"
             }
+          },
+          {
+            "name": "persist_output",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Persist Output"
+            }
+          },
+          {
+            "name": "parent_file_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Parent File Id"
+            }
           }
         ],
         "requestBody": {
@@ -2098,6 +2124,9 @@
           "200": {
             "description": "PDF file",
             "content": {
+              "application/json": {
+                "schema": {}
+              },
               "application/pdf": {
                 "schema": {
                   "type": "string",
@@ -2185,6 +2214,9 @@
           "200": {
             "description": "PDF file",
             "content": {
+              "application/json": {
+                "schema": {}
+              },
               "application/pdf": {
                 "schema": {
                   "type": "string",
@@ -2227,6 +2259,9 @@
           "200": {
             "description": "PDF file",
             "content": {
+              "application/json": {
+                "schema": {}
+              },
               "application/pdf": {
                 "schema": {
                   "type": "string",
@@ -2269,6 +2304,9 @@
           "200": {
             "description": "PDF file",
             "content": {
+              "application/json": {
+                "schema": {}
+              },
               "application/pdf": {
                 "schema": {
                   "type": "string",
@@ -2311,6 +2349,9 @@
           "200": {
             "description": "PDF file",
             "content": {
+              "application/json": {
+                "schema": {}
+              },
               "application/pdf": {
                 "schema": {
                   "type": "string",
@@ -2353,6 +2394,9 @@
           "200": {
             "description": "PDF file",
             "content": {
+              "application/json": {
+                "schema": {}
+              },
               "application/pdf": {
                 "schema": {
                   "type": "string",
@@ -2395,6 +2439,9 @@
           "200": {
             "description": "ZIP archive",
             "content": {
+              "application/json": {
+                "schema": {}
+              },
               "application/zip": {
                 "schema": {
                   "type": "string",
@@ -2775,6 +2822,402 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DocumentRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/document/{doc_id}": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Get Document Overview",
+        "operationId": "get_document_overview_api_document__doc_id__get",
+        "parameters": [
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Doc Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/document/{doc_id}/lineage": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Get Document Lineage",
+        "operationId": "get_document_lineage_api_document__doc_id__lineage_get",
+        "parameters": [
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Doc Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LineageTree"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/document/{doc_id}/pages": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Get Document Pages",
+        "operationId": "get_document_pages_api_document__doc_id__pages_get",
+        "parameters": [
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Doc Id"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "From"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PageSummary"
+                  },
+                  "title": "Response Get Document Pages Api Document  Doc Id  Pages Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/document/{doc_id}/page/{page_index}": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Get Document Page",
+        "operationId": "get_document_page_api_document__doc_id__page__page_index__get",
+        "parameters": [
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Doc Id"
+            }
+          },
+          {
+            "name": "page_index",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Page Index"
+            }
+          },
+          {
+            "name": "include_blocks",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Include Blocks"
+            }
+          },
+          {
+            "name": "include_words",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Include Words"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/document/{doc_id}/page/{page_index}/image": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Get Document Page Image",
+        "operationId": "get_document_page_image_api_document__doc_id__page__page_index__image_get",
+        "parameters": [
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Doc Id"
+            }
+          },
+          {
+            "name": "page_index",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Page Index"
+            }
+          },
+          {
+            "name": "dpi",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 300,
+              "minimum": 36,
+              "default": 150,
+              "title": "Dpi"
+            }
+          },
+          {
+            "name": "redirect",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "When true, redirect to the cld URL; when false, return JSON metadata.",
+              "default": true,
+              "title": "Redirect"
+            },
+            "description": "When true, redirect to the cld URL; when false, return JSON metadata."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/document/{doc_id}/chunks": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Get Document Chunks",
+        "operationId": "get_document_chunks_api_document__doc_id__chunks_get",
+        "parameters": [
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Doc Id"
+            }
+          },
+          {
+            "name": "parent_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Parent Only"
+            }
+          },
+          {
+            "name": "children_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Children Only"
+            }
+          },
+          {
+            "name": "section_kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Section Kind"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 5000,
+              "minimum": 1,
+              "default": 500,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChunkRow"
+                  },
+                  "title": "Response Get Document Chunks Api Document  Doc Id  Chunks Get"
                 }
               }
             }
@@ -6155,6 +6598,350 @@
         }
       }
     },
+    "/rag/data-stores": {
+      "get": {
+        "tags": [
+          "RAG"
+        ],
+        "summary": "List User Data Stores",
+        "operationId": "list_user_data_stores_rag_data_stores_get",
+        "parameters": [
+          {
+            "name": "include_inactive",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Include Inactive"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserDataStoreOut"
+                  },
+                  "title": "Response List User Data Stores Rag Data Stores Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "RAG"
+        ],
+        "summary": "Create User Data Store",
+        "operationId": "create_user_data_store_rag_data_stores_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserDataStoreCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDataStoreDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/data-stores/{store_id}": {
+      "get": {
+        "tags": [
+          "RAG"
+        ],
+        "summary": "Get User Data Store",
+        "operationId": "get_user_data_store_rag_data_stores__store_id__get",
+        "parameters": [
+          {
+            "name": "store_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Store Id"
+            }
+          },
+          {
+            "name": "member_limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 500,
+              "title": "Member Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDataStoreDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "RAG"
+        ],
+        "summary": "Patch User Data Store",
+        "operationId": "patch_user_data_store_rag_data_stores__store_id__patch",
+        "parameters": [
+          {
+            "name": "store_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Store Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserDataStorePatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDataStoreDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "RAG"
+        ],
+        "summary": "Delete User Data Store",
+        "operationId": "delete_user_data_store_rag_data_stores__store_id__delete",
+        "parameters": [
+          {
+            "name": "store_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Store Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "title": "Response Delete User Data Store Rag Data Stores  Store Id  Delete"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/data-stores/{store_id}/members": {
+      "post": {
+        "tags": [
+          "RAG"
+        ],
+        "summary": "Add User Data Store Member",
+        "operationId": "add_user_data_store_member_rag_data_stores__store_id__members_post",
+        "parameters": [
+          {
+            "name": "store_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Store Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserDataStoreMemberCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDataStoreDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/data-stores/{store_id}/members/{source_kind}/{source_id}": {
+      "delete": {
+        "tags": [
+          "RAG"
+        ],
+        "summary": "Remove User Data Store Member",
+        "operationId": "remove_user_data_store_member_rag_data_stores__store_id__members__source_kind___source_id__delete",
+        "parameters": [
+          {
+            "name": "store_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Store Id"
+            }
+          },
+          {
+            "name": "source_kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Kind"
+            }
+          },
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDataStoreDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/rag/admin/overview": {
       "get": {
         "tags": [
@@ -6605,6 +7392,404 @@
         "summary": "Delete Source Chunks",
         "operationId": "delete_source_chunks_rag_admin_source__source_kind___source_id__delete",
         "parameters": [
+          {
+            "name": "source_kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Kind"
+            }
+          },
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/admin/data-stores": {
+      "get": {
+        "tags": [
+          "RAG Admin"
+        ],
+        "summary": "Admin List Data Stores",
+        "operationId": "admin_list_data_stores_rag_admin_data_stores_get",
+        "parameters": [
+          {
+            "name": "include_inactive",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Include Inactive"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 200,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataStoreAdminRow"
+                  },
+                  "title": "Response Admin List Data Stores Rag Admin Data Stores Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "RAG Admin"
+        ],
+        "summary": "Admin Create Data Store",
+        "operationId": "admin_create_data_store_rag_admin_data_stores_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataStoreCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataStoreAdminRow"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/admin/data-stores/{store_id}": {
+      "get": {
+        "tags": [
+          "RAG Admin"
+        ],
+        "summary": "Admin Get Data Store",
+        "operationId": "admin_get_data_store_rag_admin_data_stores__store_id__get",
+        "parameters": [
+          {
+            "name": "store_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Store Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataStoreAdminRow"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "RAG Admin"
+        ],
+        "summary": "Admin Patch Data Store",
+        "operationId": "admin_patch_data_store_rag_admin_data_stores__store_id__patch",
+        "parameters": [
+          {
+            "name": "store_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Store Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataStorePatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataStoreAdminRow"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "RAG Admin"
+        ],
+        "summary": "Admin Delete Data Store",
+        "operationId": "admin_delete_data_store_rag_admin_data_stores__store_id__delete",
+        "parameters": [
+          {
+            "name": "store_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Store Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/admin/data-stores/{store_id}/members": {
+      "get": {
+        "tags": [
+          "RAG Admin"
+        ],
+        "summary": "Admin List Data Store Members",
+        "operationId": "admin_list_data_store_members_rag_admin_data_stores__store_id__members_get",
+        "parameters": [
+          {
+            "name": "store_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Store Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 1,
+              "default": 500,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataStoreMemberAdminRow"
+                  },
+                  "title": "Response Admin List Data Store Members Rag Admin Data Stores  Store Id  Members Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "RAG Admin"
+        ],
+        "summary": "Admin Add Data Store Member",
+        "operationId": "admin_add_data_store_member_rag_admin_data_stores__store_id__members_post",
+        "parameters": [
+          {
+            "name": "store_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Store Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataStoreMemberCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataStoreMemberAdminRow"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/admin/data-stores/{store_id}/members/{source_kind}/{source_id}": {
+      "delete": {
+        "tags": [
+          "RAG Admin"
+        ],
+        "summary": "Admin Remove Data Store Member",
+        "operationId": "admin_remove_data_store_member_rag_admin_data_stores__store_id__members__source_kind___source_id__delete",
+        "parameters": [
+          {
+            "name": "store_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Store Id"
+            }
+          },
           {
             "name": "source_kind",
             "in": "path",
@@ -13580,7 +14765,7 @@
           "max_iterations": {
             "type": "integer",
             "title": "Max Iterations",
-            "default": 20
+            "default": 100
           },
           "max_retries_per_iteration": {
             "type": "integer",
@@ -14907,7 +16092,7 @@
           "max_iterations": {
             "type": "integer",
             "title": "Max Iterations",
-            "default": 20
+            "default": 100
           },
           "max_retries_per_iteration": {
             "type": "integer",
@@ -15253,6 +16438,107 @@
           "full_length"
         ],
         "title": "ChunkDetail"
+      },
+      "ChunkRow": {
+        "properties": {
+          "chunk_id": {
+            "type": "string",
+            "title": "Chunk Id"
+          },
+          "chunk_index": {
+            "type": "integer",
+            "title": "Chunk Index"
+          },
+          "chunk_kind": {
+            "type": "string",
+            "title": "Chunk Kind"
+          },
+          "parent_chunk_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Chunk Id"
+          },
+          "primary_page_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Page Id"
+          },
+          "page_numbers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Numbers"
+          },
+          "page_spans": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Spans"
+          },
+          "content_text": {
+            "type": "string",
+            "title": "Content Text"
+          },
+          "token_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token Count"
+          },
+          "section_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Section Kind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chunk_id",
+          "chunk_index",
+          "chunk_kind",
+          "content_text"
+        ],
+        "title": "ChunkRow"
       },
       "ClaimVerdictOut": {
         "properties": {
@@ -15916,6 +17202,11 @@
             ],
             "title": "Page Ranges"
           },
+          "persist_output": {
+            "type": "boolean",
+            "title": "Persist Output",
+            "default": false
+          },
           "crop_box": {
             "$ref": "#/components/schemas/PdfCropBox"
           }
@@ -16017,6 +17308,327 @@
           "case_query"
         ],
         "title": "CrossDocRequest"
+      },
+      "DataStoreAdminRow": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "organization_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "short_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Code"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "settings": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Settings"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "created_by": {
+            "type": "string",
+            "title": "Created By"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "member_count": {
+            "type": "integer",
+            "title": "Member Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "organization_id",
+          "name",
+          "short_code",
+          "description",
+          "kind",
+          "settings",
+          "is_active",
+          "created_by",
+          "created_at",
+          "updated_at",
+          "member_count"
+        ],
+        "title": "DataStoreAdminRow"
+      },
+      "DataStoreCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "default": "general"
+          },
+          "short_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Code"
+          },
+          "organization_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Id"
+          },
+          "settings": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Settings"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "DataStoreCreate"
+      },
+      "DataStoreMemberAdminRow": {
+        "properties": {
+          "data_store_id": {
+            "type": "string",
+            "title": "Data Store Id"
+          },
+          "source_kind": {
+            "type": "string",
+            "title": "Source Kind"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "added_by": {
+            "type": "string",
+            "title": "Added By"
+          },
+          "added_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Added At"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data_store_id",
+          "source_kind",
+          "source_id",
+          "notes",
+          "added_by",
+          "added_at"
+        ],
+        "title": "DataStoreMemberAdminRow"
+      },
+      "DataStoreMemberCreate": {
+        "properties": {
+          "source_kind": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Source Kind"
+          },
+          "source_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Source Id"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source_kind",
+          "source_id"
+        ],
+        "title": "DataStoreMemberCreate"
+      },
+      "DataStorePatch": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "short_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Code"
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active"
+          },
+          "settings": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Settings"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DataStorePatch"
       },
       "Definition": {
         "properties": {
@@ -16148,6 +17760,11 @@
               }
             ],
             "title": "Page Ranges"
+          },
+          "persist_output": {
+            "type": "boolean",
+            "title": "Persist Output",
+            "default": false
           }
         },
         "type": "object",
@@ -16200,6 +17817,212 @@
           "chat_config"
         ],
         "title": "DirectChatRequest"
+      },
+      "DocumentDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "owner_id": {
+            "type": "string",
+            "title": "Owner Id"
+          },
+          "organization_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "mime_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mime Type"
+          },
+          "total_pages": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Pages"
+          },
+          "source_kind": {
+            "type": "string",
+            "title": "Source Kind"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "derivation_kind": {
+            "type": "string",
+            "title": "Derivation Kind"
+          },
+          "storage_uri": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storage Uri"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          },
+          "has_structured_json": {
+            "type": "boolean",
+            "title": "Has Structured Json"
+          },
+          "has_clean_content": {
+            "type": "boolean",
+            "title": "Has Clean Content"
+          },
+          "raw_content_chars": {
+            "type": "integer",
+            "title": "Raw Content Chars",
+            "default": 0
+          },
+          "clean_content_chars": {
+            "type": "integer",
+            "title": "Clean Content Chars",
+            "default": 0
+          },
+          "chunk_count": {
+            "type": "integer",
+            "title": "Chunk Count",
+            "default": 0
+          },
+          "section_histogram": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Section Histogram",
+            "default": {}
+          },
+          "pages": {
+            "items": {
+              "$ref": "#/components/schemas/PageSummary"
+            },
+            "type": "array",
+            "title": "Pages",
+            "default": []
+          },
+          "lineage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DocumentLineage"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "owner_id",
+          "name",
+          "source_kind",
+          "source_id",
+          "derivation_kind",
+          "created_at",
+          "updated_at",
+          "has_structured_json",
+          "has_clean_content"
+        ],
+        "title": "DocumentDetail"
+      },
+      "DocumentLineage": {
+        "properties": {
+          "binary_parent_file_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Binary Parent File Id"
+          },
+          "binary_parent_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Binary Parent Kind"
+          },
+          "binary_parent_metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Binary Parent Metadata"
+          },
+          "processing_parent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Processing Parent Id"
+          },
+          "processing_parent_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Processing Parent Kind"
+          }
+        },
+        "type": "object",
+        "title": "DocumentLineage",
+        "description": "Compact lineage breadcrumb chain for the viewer header."
       },
       "DocumentRecord": {
         "properties": {
@@ -16465,6 +18288,11 @@
               }
             ],
             "title": "Page Ranges"
+          },
+          "persist_output": {
+            "type": "boolean",
+            "title": "Persist Output",
+            "default": false
           }
         },
         "type": "object",
@@ -16600,6 +18428,22 @@
             "type": "boolean",
             "title": "Include Word Metadata",
             "default": false
+          },
+          "persist": {
+            "type": "boolean",
+            "title": "Persist",
+            "default": false
+          },
+          "document_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Name"
           }
         },
         "type": "object",
@@ -18251,6 +20095,115 @@
         ],
         "title": "LibraryDocOut"
       },
+      "LineageNode": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "derivation_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Derivation Kind"
+          },
+          "derivation_metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Derivation Metadata"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind"
+        ],
+        "title": "LineageNode",
+        "description": "One node in the lineage tree (used by GET /lineage)."
+      },
+      "LineageTree": {
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "title": "Document Id"
+          },
+          "binary_ancestors": {
+            "items": {
+              "$ref": "#/components/schemas/LineageNode"
+            },
+            "type": "array",
+            "title": "Binary Ancestors",
+            "default": []
+          },
+          "binary_descendants": {
+            "items": {
+              "$ref": "#/components/schemas/LineageNode"
+            },
+            "type": "array",
+            "title": "Binary Descendants",
+            "default": []
+          },
+          "processing_ancestors": {
+            "items": {
+              "$ref": "#/components/schemas/LineageNode"
+            },
+            "type": "array",
+            "title": "Processing Ancestors",
+            "default": []
+          },
+          "processing_descendants": {
+            "items": {
+              "$ref": "#/components/schemas/LineageNode"
+            },
+            "type": "array",
+            "title": "Processing Descendants",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_id"
+        ],
+        "title": "LineageTree"
+      },
       "MediaRef": {
         "properties": {
           "file_id": {
@@ -18533,6 +20486,11 @@
             "type": "string",
             "title": "Filename",
             "default": "merged.pdf"
+          },
+          "persist_output": {
+            "type": "boolean",
+            "title": "Persist Output",
+            "default": false
           }
         },
         "type": "object",
@@ -18691,6 +20649,263 @@
         ],
         "title": "NodeDef",
         "description": "User-authored node in a ReactFlow-compatible definition.\n\nThe `data.config` payload is validated against the registered NodeSpec's\n`config_schema` at compile time — not at definition time — so the raw JSON\nround-trips cleanly regardless of whether the target NodeSpec is loaded."
+      },
+      "PageDetail": {
+        "properties": {
+          "page_index": {
+            "type": "integer",
+            "title": "Page Index"
+          },
+          "page_number": {
+            "type": "integer",
+            "title": "Page Number"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
+          },
+          "rotation": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rotation"
+          },
+          "raw_text": {
+            "type": "string",
+            "title": "Raw Text",
+            "default": ""
+          },
+          "cleaned_text": {
+            "type": "string",
+            "title": "Cleaned Text",
+            "default": ""
+          },
+          "section_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Section Kind"
+          },
+          "section_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Section Title"
+          },
+          "is_continuation": {
+            "type": "boolean",
+            "title": "Is Continuation",
+            "default": false
+          },
+          "used_ocr": {
+            "type": "boolean",
+            "title": "Used Ocr",
+            "default": false
+          },
+          "extraction_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extraction Method"
+          },
+          "blocks": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blocks"
+          },
+          "words": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Words"
+          },
+          "chunk_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Chunk Ids",
+            "default": []
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "page_index",
+          "page_number"
+        ],
+        "title": "PageDetail"
+      },
+      "PageSummary": {
+        "properties": {
+          "page_index": {
+            "type": "integer",
+            "title": "Page Index"
+          },
+          "page_number": {
+            "type": "integer",
+            "title": "Page Number"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
+          },
+          "rotation": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rotation"
+          },
+          "raw_char_count": {
+            "type": "integer",
+            "title": "Raw Char Count",
+            "default": 0
+          },
+          "cleaned_char_count": {
+            "type": "integer",
+            "title": "Cleaned Char Count",
+            "default": 0
+          },
+          "section_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Section Kind"
+          },
+          "section_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Section Title"
+          },
+          "extraction_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extraction Method"
+          },
+          "used_ocr": {
+            "type": "boolean",
+            "title": "Used Ocr",
+            "default": false
+          },
+          "has_image": {
+            "type": "boolean",
+            "title": "Has Image",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "page_index",
+          "page_number"
+        ],
+        "title": "PageSummary"
       },
       "PatchFolderRequest": {
         "properties": {
@@ -20381,6 +22596,11 @@
             ],
             "title": "Page Ranges"
           },
+          "persist_output": {
+            "type": "boolean",
+            "title": "Persist Output",
+            "default": false
+          },
           "rotation": {
             "type": "integer",
             "title": "Rotation"
@@ -21546,6 +23766,11 @@
               }
             ],
             "title": "Max Pages Per Part"
+          },
+          "persist_output": {
+            "type": "boolean",
+            "title": "Persist Output",
+            "default": false
           }
         },
         "type": "object",
@@ -22245,6 +24470,325 @@
           "is_active"
         ],
         "title": "UpdateTriggerActiveRequest"
+      },
+      "UserDataStoreCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "default": "general"
+          },
+          "short_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Code"
+          },
+          "organization_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "UserDataStoreCreate"
+      },
+      "UserDataStoreDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "short_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Code"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "organization_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Id"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "settings": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Settings"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/UserDataStoreDetailMember"
+            },
+            "type": "array",
+            "title": "Members"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "short_code",
+          "description",
+          "kind",
+          "organization_id",
+          "is_active",
+          "settings",
+          "members"
+        ],
+        "title": "UserDataStoreDetail"
+      },
+      "UserDataStoreDetailMember": {
+        "properties": {
+          "source_kind": {
+            "type": "string",
+            "title": "Source Kind"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "added_at": {
+            "type": "string",
+            "title": "Added At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_kind",
+          "source_id",
+          "label",
+          "notes",
+          "added_at"
+        ],
+        "title": "UserDataStoreDetailMember"
+      },
+      "UserDataStoreMemberCreate": {
+        "properties": {
+          "source_kind": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Source Kind"
+          },
+          "source_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Source Id"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source_kind",
+          "source_id"
+        ],
+        "title": "UserDataStoreMemberCreate"
+      },
+      "UserDataStoreOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "short_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Code"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "member_count": {
+            "type": "integer",
+            "title": "Member Count"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "short_code",
+          "description",
+          "kind",
+          "member_count",
+          "is_active"
+        ],
+        "title": "UserDataStoreOut"
+      },
+      "UserDataStorePatch": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "short_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Code"
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "UserDataStorePatch"
       },
       "ValidateRequest": {
         "properties": {

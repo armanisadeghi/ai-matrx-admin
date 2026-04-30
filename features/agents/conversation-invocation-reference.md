@@ -194,7 +194,7 @@ Advanced settings specific to Builder-mode invocations.
 
 | Field | Type | Default | What it does |
 |---|---|---|---|
-| `builder` | `BuilderAdvancedSettings \| null` | `null` | Populated only when `routing.apiEndpointMode === "manual"`. Shape: `{ debug, store, maxIterations, maxRetriesPerIteration, useStructuredSystemInstruction, structuredInstruction }`. Defaults: `{ debug: false, store: true, maxIterations: 20, maxRetriesPerIteration: 2, useStructuredSystemInstruction: false, structuredInstruction: {} }`. |
+| `builder` | `BuilderAdvancedSettings \| null` | `null` | Populated only when `routing.apiEndpointMode === "manual"`. Shape: `{ debug, store, maxIterations, maxRetriesPerIteration, useStructuredSystemInstruction, structuredInstruction }`. Defaults: `{ debug: false, store: true, maxIterations: 100, maxRetriesPerIteration: 2, useStructuredSystemInstruction: false, structuredInstruction: {} }`. |
 
 ---
 

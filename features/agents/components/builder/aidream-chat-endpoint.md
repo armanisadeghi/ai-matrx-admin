@@ -20,7 +20,7 @@ All fields are optional unless marked required.
 | `conversation_id` | `string` | auto-generated | Pass to continue an existing conversation |
 | `stream` | `boolean` | `true` | Stream the response |
 | `store` | `boolean` | `true` | Persist the conversation to the DB |
-| `max_iterations` | `integer` | `20` | Max agent loop iterations |
+| `max_iterations` | `integer` | `100` | Max agent loop iterations |
 | `system_instruction` | `string` | — | System prompt |
 | `variables` | `object` | — | `{{slot}}` substitutions applied to messages and system prompt |
 | `metadata` | `object` | — | Arbitrary metadata to attach to the request |

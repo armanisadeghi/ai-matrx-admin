@@ -407,7 +407,7 @@ export default function ChatDemoClient() {
     if (!isNaN(tp)) body.top_p = tp;
     const tk = parseInt(topK, 10);
     if (!isNaN(tk)) body.top_k = tk;
-    const mi = parseInt(maxIterations, 10);
+    const mi = parseInt(maxIterations, 100);
     if (!isNaN(mi)) body.max_iterations = mi;
     if (reasoningEffort) body.reasoning_effort = reasoningEffort;
     if (includeThoughts) body.include_thoughts = true;
@@ -675,7 +675,7 @@ export default function ChatDemoClient() {
                               "Max Iterations",
                               maxIterations,
                               setMaxIterations,
-                              "20",
+                              "100",
                             ],
                           ] as [
                             string,

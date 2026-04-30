@@ -1375,6 +1375,108 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/document/{doc_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Document Overview */
+        get: operations["get_document_overview_api_document__doc_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/document/{doc_id}/lineage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Document Lineage */
+        get: operations["get_document_lineage_api_document__doc_id__lineage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/document/{doc_id}/pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Document Pages */
+        get: operations["get_document_pages_api_document__doc_id__pages_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/document/{doc_id}/page/{page_index}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Document Page */
+        get: operations["get_document_page_api_document__doc_id__page__page_index__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/document/{doc_id}/page/{page_index}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Document Page Image */
+        get: operations["get_document_page_image_api_document__doc_id__page__page_index__image_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/document/{doc_id}/chunks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Document Chunks */
+        get: operations["get_document_chunks_api_document__doc_id__chunks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/utilities/block-processing/process": {
         parameters: {
             query?: never;
@@ -2534,6 +2636,77 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/rag/data-stores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List User Data Stores */
+        get: operations["list_user_data_stores_rag_data_stores_get"];
+        put?: never;
+        /** Create User Data Store */
+        post: operations["create_user_data_store_rag_data_stores_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rag/data-stores/{store_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get User Data Store */
+        get: operations["get_user_data_store_rag_data_stores__store_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete User Data Store */
+        delete: operations["delete_user_data_store_rag_data_stores__store_id__delete"];
+        options?: never;
+        head?: never;
+        /** Patch User Data Store */
+        patch: operations["patch_user_data_store_rag_data_stores__store_id__patch"];
+        trace?: never;
+    };
+    "/rag/data-stores/{store_id}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add User Data Store Member */
+        post: operations["add_user_data_store_member_rag_data_stores__store_id__members_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rag/data-stores/{store_id}/members/{source_kind}/{source_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove User Data Store Member */
+        delete: operations["remove_user_data_store_member_rag_data_stores__store_id__members__source_kind___source_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/rag/admin/overview": {
         parameters: {
             query?: never;
@@ -2648,6 +2821,78 @@ export interface paths {
         post?: never;
         /** Delete Source Chunks */
         delete: operations["delete_source_chunks_rag_admin_source__source_kind___source_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rag/admin/data-stores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Admin List Data Stores */
+        get: operations["admin_list_data_stores_rag_admin_data_stores_get"];
+        put?: never;
+        /** Admin Create Data Store */
+        post: operations["admin_create_data_store_rag_admin_data_stores_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rag/admin/data-stores/{store_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Admin Get Data Store */
+        get: operations["admin_get_data_store_rag_admin_data_stores__store_id__get"];
+        put?: never;
+        post?: never;
+        /** Admin Delete Data Store */
+        delete: operations["admin_delete_data_store_rag_admin_data_stores__store_id__delete"];
+        options?: never;
+        head?: never;
+        /** Admin Patch Data Store */
+        patch: operations["admin_patch_data_store_rag_admin_data_stores__store_id__patch"];
+        trace?: never;
+    };
+    "/rag/admin/data-stores/{store_id}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Admin List Data Store Members */
+        get: operations["admin_list_data_store_members_rag_admin_data_stores__store_id__members_get"];
+        put?: never;
+        /** Admin Add Data Store Member */
+        post: operations["admin_add_data_store_member_rag_admin_data_stores__store_id__members_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rag/admin/data-stores/{store_id}/members/{source_kind}/{source_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Admin Remove Data Store Member */
+        delete: operations["admin_remove_data_store_member_rag_admin_data_stores__store_id__members__source_kind___source_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -4823,7 +5068,7 @@ export interface components {
             cache_bypass?: components["schemas"]["CacheBypass"] | null;
             /**
              * Max Iterations
-             * @default 20
+             * @default 100
              */
             max_iterations: number;
             /**
@@ -5277,7 +5522,7 @@ export interface components {
             is_version: boolean;
             /**
              * Max Iterations
-             * @default 20
+             * @default 100
              */
             max_iterations: number;
             /**
@@ -5394,6 +5639,31 @@ export interface components {
             snippet: string;
             /** Full Length */
             full_length: number;
+        };
+        /** ChunkRow */
+        ChunkRow: {
+            /** Chunk Id */
+            chunk_id: string;
+            /** Chunk Index */
+            chunk_index: number;
+            /** Chunk Kind */
+            chunk_kind: string;
+            /** Parent Chunk Id */
+            parent_chunk_id?: string | null;
+            /** Primary Page Id */
+            primary_page_id?: string | null;
+            /** Page Numbers */
+            page_numbers?: number[] | null;
+            /** Page Spans */
+            page_spans?: {
+                [key: string]: unknown;
+            }[] | null;
+            /** Content Text */
+            content_text: string;
+            /** Token Count */
+            token_count?: number | null;
+            /** Section Kind */
+            section_kind?: string | null;
         };
         /** ClaimVerdictOut */
         ClaimVerdictOut: {
@@ -5665,6 +5935,11 @@ export interface components {
             pages?: number[] | null;
             /** Page Ranges */
             page_ranges?: components["schemas"]["PdfPageRange"][] | null;
+            /**
+             * Persist Output
+             * @default false
+             */
+            persist_output: boolean;
             crop_box: components["schemas"]["PdfCropBox"];
         };
         /** CrossDocRequest */
@@ -5719,6 +5994,96 @@ export interface components {
              * @default false
              */
             skip_verify: boolean;
+        };
+        /** DataStoreAdminRow */
+        DataStoreAdminRow: {
+            /** Id */
+            id: string;
+            /** Organization Id */
+            organization_id: string | null;
+            /** Name */
+            name: string;
+            /** Short Code */
+            short_code: string | null;
+            /** Description */
+            description: string | null;
+            /** Kind */
+            kind: string;
+            /** Settings */
+            settings: {
+                [key: string]: unknown;
+            };
+            /** Is Active */
+            is_active: boolean;
+            /** Created By */
+            created_by: string;
+            /** Created At */
+            created_at: string | null;
+            /** Updated At */
+            updated_at: string | null;
+            /** Member Count */
+            member_count: number;
+        };
+        /** DataStoreCreate */
+        DataStoreCreate: {
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Kind
+             * @default general
+             */
+            kind: string;
+            /** Short Code */
+            short_code?: string | null;
+            /** Organization Id */
+            organization_id?: string | null;
+            /** Settings */
+            settings?: {
+                [key: string]: unknown;
+            };
+        };
+        /** DataStoreMemberAdminRow */
+        DataStoreMemberAdminRow: {
+            /** Data Store Id */
+            data_store_id: string;
+            /** Source Kind */
+            source_kind: string;
+            /** Source Id */
+            source_id: string;
+            /** Notes */
+            notes: string | null;
+            /** Added By */
+            added_by: string;
+            /** Added At */
+            added_at: string | null;
+            /** Label */
+            label?: string | null;
+        };
+        /** DataStoreMemberCreate */
+        DataStoreMemberCreate: {
+            /** Source Kind */
+            source_kind: string;
+            /** Source Id */
+            source_id: string;
+            /** Notes */
+            notes?: string | null;
+        };
+        /** DataStorePatch */
+        DataStorePatch: {
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Short Code */
+            short_code?: string | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Settings */
+            settings?: {
+                [key: string]: unknown;
+            } | null;
         };
         /**
          * Definition
@@ -5778,6 +6143,11 @@ export interface components {
             pages?: number[] | null;
             /** Page Ranges */
             page_ranges?: components["schemas"]["PdfPageRange"][] | null;
+            /**
+             * Persist Output
+             * @default false
+             */
+            persist_output: boolean;
         };
         /** DeleteResponse */
         DeleteResponse: {
@@ -5802,6 +6172,83 @@ export interface components {
             };
         } & {
             [key: string]: unknown;
+        };
+        /** DocumentDetail */
+        DocumentDetail: {
+            /** Id */
+            id: string;
+            /** Owner Id */
+            owner_id: string;
+            /** Organization Id */
+            organization_id?: string | null;
+            /** Name */
+            name: string;
+            /** Mime Type */
+            mime_type?: string | null;
+            /** Total Pages */
+            total_pages?: number | null;
+            /** Source Kind */
+            source_kind: string;
+            /** Source Id */
+            source_id: string;
+            /** Derivation Kind */
+            derivation_kind: string;
+            /** Storage Uri */
+            storage_uri?: string | null;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+            /** Has Structured Json */
+            has_structured_json: boolean;
+            /** Has Clean Content */
+            has_clean_content: boolean;
+            /**
+             * Raw Content Chars
+             * @default 0
+             */
+            raw_content_chars: number;
+            /**
+             * Clean Content Chars
+             * @default 0
+             */
+            clean_content_chars: number;
+            /**
+             * Chunk Count
+             * @default 0
+             */
+            chunk_count: number;
+            /**
+             * Section Histogram
+             * @default {}
+             */
+            section_histogram: {
+                [key: string]: number;
+            };
+            /**
+             * Pages
+             * @default []
+             */
+            pages: components["schemas"]["PageSummary"][];
+            lineage?: components["schemas"]["DocumentLineage"] | null;
+        };
+        /**
+         * DocumentLineage
+         * @description Compact lineage breadcrumb chain for the viewer header.
+         */
+        DocumentLineage: {
+            /** Binary Parent File Id */
+            binary_parent_file_id?: string | null;
+            /** Binary Parent Kind */
+            binary_parent_kind?: string | null;
+            /** Binary Parent Metadata */
+            binary_parent_metadata?: {
+                [key: string]: unknown;
+            } | null;
+            /** Processing Parent Id */
+            processing_parent_id?: string | null;
+            /** Processing Parent Kind */
+            processing_parent_kind?: string | null;
         };
         /** DocumentRecord */
         DocumentRecord: {
@@ -5896,6 +6343,11 @@ export interface components {
             pages?: number[] | null;
             /** Page Ranges */
             page_ranges?: components["schemas"]["PdfPageRange"][] | null;
+            /**
+             * Persist Output
+             * @default false
+             */
+            persist_output: boolean;
         };
         /** ExtractTablesRequest */
         ExtractTablesRequest: {
@@ -5955,6 +6407,13 @@ export interface components {
              * @default false
              */
             include_word_metadata: boolean;
+            /**
+             * Persist
+             * @default false
+             */
+            persist: boolean;
+            /** Document Name */
+            document_name?: string | null;
         };
         /** FilePatchRequest */
         FilePatchRequest: {
@@ -6481,6 +6940,51 @@ export interface components {
             updated_at: string;
         };
         /**
+         * LineageNode
+         * @description One node in the lineage tree (used by GET /lineage).
+         */
+        LineageNode: {
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Label */
+            label?: string | null;
+            /** Derivation Kind */
+            derivation_kind?: string | null;
+            /** Derivation Metadata */
+            derivation_metadata?: {
+                [key: string]: unknown;
+            } | null;
+            /** Created At */
+            created_at?: string | null;
+        };
+        /** LineageTree */
+        LineageTree: {
+            /** Document Id */
+            document_id: string;
+            /**
+             * Binary Ancestors
+             * @default []
+             */
+            binary_ancestors: components["schemas"]["LineageNode"][];
+            /**
+             * Binary Descendants
+             * @default []
+             */
+            binary_descendants: components["schemas"]["LineageNode"][];
+            /**
+             * Processing Ancestors
+             * @default []
+             */
+            processing_ancestors: components["schemas"]["LineageNode"][];
+            /**
+             * Processing Descendants
+             * @default []
+             */
+            processing_descendants: components["schemas"]["LineageNode"][];
+        };
+        /**
          * MediaRef
          * @description Canonical media reference shared across every API that takes media.
          */
@@ -6595,6 +7099,11 @@ export interface components {
              * @default merged.pdf
              */
             filename: string;
+            /**
+             * Persist Output
+             * @default false
+             */
+            persist_output: boolean;
         };
         /**
          * MessageUpdate
@@ -6674,6 +7183,99 @@ export interface components {
             };
         } & {
             [key: string]: unknown;
+        };
+        /** PageDetail */
+        PageDetail: {
+            /** Page Index */
+            page_index: number;
+            /** Page Number */
+            page_number: number;
+            /** Width */
+            width?: number | null;
+            /** Height */
+            height?: number | null;
+            /** Rotation */
+            rotation?: number | null;
+            /**
+             * Raw Text
+             * @default
+             */
+            raw_text: string;
+            /**
+             * Cleaned Text
+             * @default
+             */
+            cleaned_text: string;
+            /** Section Kind */
+            section_kind?: string | null;
+            /** Section Title */
+            section_title?: string | null;
+            /**
+             * Is Continuation
+             * @default false
+             */
+            is_continuation: boolean;
+            /**
+             * Used Ocr
+             * @default false
+             */
+            used_ocr: boolean;
+            /** Extraction Method */
+            extraction_method?: string | null;
+            /** Blocks */
+            blocks?: {
+                [key: string]: unknown;
+            }[] | null;
+            /** Words */
+            words?: {
+                [key: string]: unknown;
+            }[] | null;
+            /**
+             * Chunk Ids
+             * @default []
+             */
+            chunk_ids: string[];
+            /** Image Url */
+            image_url?: string | null;
+        };
+        /** PageSummary */
+        PageSummary: {
+            /** Page Index */
+            page_index: number;
+            /** Page Number */
+            page_number: number;
+            /** Width */
+            width?: number | null;
+            /** Height */
+            height?: number | null;
+            /** Rotation */
+            rotation?: number | null;
+            /**
+             * Raw Char Count
+             * @default 0
+             */
+            raw_char_count: number;
+            /**
+             * Cleaned Char Count
+             * @default 0
+             */
+            cleaned_char_count: number;
+            /** Section Kind */
+            section_kind?: string | null;
+            /** Section Title */
+            section_title?: string | null;
+            /** Extraction Method */
+            extraction_method?: string | null;
+            /**
+             * Used Ocr
+             * @default false
+             */
+            used_ocr: boolean;
+            /**
+             * Has Image
+             * @default false
+             */
+            has_image: boolean;
         };
         /** PatchFolderRequest */
         PatchFolderRequest: {
@@ -7385,6 +7987,11 @@ export interface components {
             pages?: number[] | null;
             /** Page Ranges */
             page_ranges?: components["schemas"]["PdfPageRange"][] | null;
+            /**
+             * Persist Output
+             * @default false
+             */
+            persist_output: boolean;
             /** Rotation */
             rotation: number;
         };
@@ -7901,6 +8508,11 @@ export interface components {
             parts?: components["schemas"]["SplitPartRequest"][] | null;
             /** Max Pages Per Part */
             max_pages_per_part?: number | null;
+            /**
+             * Persist Output
+             * @default false
+             */
+            persist_output: boolean;
         };
         /** StorageUsageResponse */
         StorageUsageResponse: {
@@ -8146,6 +8758,95 @@ export interface components {
         UpdateTriggerActiveRequest: {
             /** Is Active */
             is_active: boolean;
+        };
+        /** UserDataStoreCreate */
+        UserDataStoreCreate: {
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Kind
+             * @default general
+             */
+            kind: string;
+            /** Short Code */
+            short_code?: string | null;
+            /** Organization Id */
+            organization_id?: string | null;
+        };
+        /** UserDataStoreDetail */
+        UserDataStoreDetail: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Short Code */
+            short_code: string | null;
+            /** Description */
+            description: string | null;
+            /** Kind */
+            kind: string;
+            /** Organization Id */
+            organization_id: string | null;
+            /** Is Active */
+            is_active: boolean;
+            /** Settings */
+            settings: {
+                [key: string]: unknown;
+            };
+            /** Members */
+            members: components["schemas"]["UserDataStoreDetailMember"][];
+        };
+        /** UserDataStoreDetailMember */
+        UserDataStoreDetailMember: {
+            /** Source Kind */
+            source_kind: string;
+            /** Source Id */
+            source_id: string;
+            /** Label */
+            label: string | null;
+            /** Notes */
+            notes: string | null;
+            /** Added At */
+            added_at: string;
+        };
+        /** UserDataStoreMemberCreate */
+        UserDataStoreMemberCreate: {
+            /** Source Kind */
+            source_kind: string;
+            /** Source Id */
+            source_id: string;
+            /** Notes */
+            notes?: string | null;
+        };
+        /** UserDataStoreOut */
+        UserDataStoreOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Short Code */
+            short_code: string | null;
+            /** Description */
+            description: string | null;
+            /** Kind */
+            kind: string;
+            /** Member Count */
+            member_count: number;
+            /** Is Active */
+            is_active: boolean;
+        };
+        /** UserDataStorePatch */
+        UserDataStorePatch: {
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Short Code */
+            short_code?: string | null;
+            /** Is Active */
+            is_active?: boolean | null;
         };
         /** ValidateRequest */
         ValidateRequest: {
@@ -9767,6 +10468,8 @@ export interface operations {
             query?: {
                 level?: number;
                 target_size_mb?: number;
+                persist_output?: boolean;
+                parent_file_id?: string | null;
             };
             header?: never;
             path?: never;
@@ -9784,6 +10487,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    "application/json": unknown;
                     "application/pdf": string;
                 };
             };
@@ -9852,6 +10556,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    "application/json": unknown;
                     "application/pdf": string;
                 };
             };
@@ -9885,6 +10590,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    "application/json": unknown;
                     "application/pdf": string;
                 };
             };
@@ -9918,6 +10624,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    "application/json": unknown;
                     "application/pdf": string;
                 };
             };
@@ -9951,6 +10658,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    "application/json": unknown;
                     "application/pdf": string;
                 };
             };
@@ -9984,6 +10692,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    "application/json": unknown;
                     "application/pdf": string;
                 };
             };
@@ -10017,6 +10726,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    "application/json": unknown;
                     "application/zip": string;
                 };
             };
@@ -10281,6 +10991,209 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DocumentRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_document_overview_api_document__doc_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                doc_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_document_lineage_api_document__doc_id__lineage_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                doc_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LineageTree"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_document_pages_api_document__doc_id__pages_get: {
+        parameters: {
+            query?: {
+                from?: number;
+                to?: number | null;
+            };
+            header?: never;
+            path: {
+                doc_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_document_page_api_document__doc_id__page__page_index__get: {
+        parameters: {
+            query?: {
+                include_blocks?: boolean;
+                include_words?: boolean;
+            };
+            header?: never;
+            path: {
+                doc_id: string;
+                page_index: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_document_page_image_api_document__doc_id__page__page_index__image_get: {
+        parameters: {
+            query?: {
+                dpi?: number;
+                /** @description When true, redirect to the cld URL; when false, return JSON metadata. */
+                redirect?: boolean;
+            };
+            header?: never;
+            path: {
+                doc_id: string;
+                page_index: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_document_chunks_api_document__doc_id__chunks_get: {
+        parameters: {
+            query?: {
+                parent_only?: boolean;
+                children_only?: boolean;
+                section_kind?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                doc_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChunkRow"][];
                 };
             };
             /** @description Validation Error */
@@ -12658,6 +13571,239 @@ export interface operations {
             };
         };
     };
+    list_user_data_stores_rag_data_stores_get: {
+        parameters: {
+            query?: {
+                include_inactive?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserDataStoreOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_user_data_store_rag_data_stores_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserDataStoreCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserDataStoreDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_user_data_store_rag_data_stores__store_id__get: {
+        parameters: {
+            query?: {
+                member_limit?: number;
+            };
+            header?: never;
+            path: {
+                store_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserDataStoreDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_user_data_store_rag_data_stores__store_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                store_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_user_data_store_rag_data_stores__store_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                store_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserDataStorePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserDataStoreDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_user_data_store_member_rag_data_stores__store_id__members_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                store_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserDataStoreMemberCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserDataStoreDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_user_data_store_member_rag_data_stores__store_id__members__source_kind___source_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                store_id: string;
+                source_kind: string;
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserDataStoreDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     overview_rag_admin_overview_get: {
         parameters: {
             query?: never;
@@ -12855,6 +14001,269 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                source_kind: string;
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_list_data_stores_rag_admin_data_stores_get: {
+        parameters: {
+            query?: {
+                include_inactive?: boolean;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataStoreAdminRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_create_data_store_rag_admin_data_stores_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DataStoreCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataStoreAdminRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_get_data_store_rag_admin_data_stores__store_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                store_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataStoreAdminRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_delete_data_store_rag_admin_data_stores__store_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                store_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_patch_data_store_rag_admin_data_stores__store_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                store_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DataStorePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataStoreAdminRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_list_data_store_members_rag_admin_data_stores__store_id__members_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                store_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataStoreMemberAdminRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_add_data_store_member_rag_admin_data_stores__store_id__members_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                store_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DataStoreMemberCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataStoreMemberAdminRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_remove_data_store_member_rag_admin_data_stores__store_id__members__source_kind___source_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                store_id: string;
                 source_kind: string;
                 source_id: string;
             };
