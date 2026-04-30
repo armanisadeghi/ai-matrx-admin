@@ -337,8 +337,7 @@ const DashboardPage = () => {
             <h2>Contact Us</h2>
             <p>If you have any questions about this Privacy Policy, You can contact us:</p>
             <ul>
-                <li>By email: <a href="/cdn-cgi/l/email-protection" className="__cf_email__"
-                                 data-cfemail="4e2d3b3d3a21232b3c3d2b3c38272d2b0e2f27232f3a3c36602d2123">[email&#160;protected]</a>
+                <li>By email: <a href="mailto:support@aimatrx.com">support@aimatrx.com</a>
                 </li>
             </ul>
         </div>
