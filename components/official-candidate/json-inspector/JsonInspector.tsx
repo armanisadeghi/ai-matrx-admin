@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   Compass,
   Copy,
+  FilePen,
   ListTree,
   Network,
   Scissors,
@@ -47,12 +48,19 @@ const JsonTruncator = dynamic(
   { ssr: false, loading: () => <PaneFallback /> },
 );
 
+const JsonEditorPane = dynamic(
+  () =>
+    import("./JsonEditorPane").then((m) => ({ default: m.JsonEditorPane })),
+  { ssr: false, loading: () => <PaneFallback /> },
+);
+
 export type JsonInspectorView =
   | "json"
   | "explorer"
   | "tree"
   | "json-tree"
-  | "truncator";
+  | "truncator"
+  | "edit";
 
 export interface JsonInspectorProps {
   /** Any JSON-serializable value to inspect. */
@@ -65,6 +73,16 @@ export interface JsonInspectorProps {
   backLabel?: string;
   /** Initial view. Defaults to "json". */
   defaultView?: JsonInspectorView;
+  /**
+   * When provided, an additional "Edit" tab appears with a real JSON text
+   * editor (CodeMirror 6 — JSON syntax, inline lint squigglies). The handler
+   * is called with the parsed value on **blur** when the buffer holds valid
+   * JSON. Local edits never propagate up keystroke-by-keystroke and never
+   * cause re-renders that move the caret.
+   */
+  onUpdate?: (next: unknown) => void;
+  /** When true (default), the edit tab is read-only. Ignored without onUpdate. */
+  editorReadOnly?: boolean;
   /** Forwarded to the outer wrapper. */
   className?: string;
 }
@@ -95,14 +113,20 @@ const PANE_CLS =
 const TRUNCATOR_PANE_CLS =
   "flex-1 min-h-0 overflow-hidden mt-0 border-none outline-none ring-0 data-[state=active]:flex data-[state=active]:flex-col";
 
+const EDITOR_PANE_CLS =
+  "flex-1 min-h-0 overflow-hidden mt-0 border-none outline-none ring-0 data-[state=active]:flex data-[state=active]:flex-col bg-white dark:bg-zinc-900";
+
 export function JsonInspector({
   data,
   label,
   onBack,
   backLabel = "Back",
   defaultView = "json",
+  onUpdate,
+  editorReadOnly = false,
   className,
 }: JsonInspectorProps) {
+  const editable = typeof onUpdate === "function";
   const formattedJson = useMemo(() => formatJson(data, 2), [data]);
   const truncatorValue = useMemo(
     () => (typeof data === "string" ? data : JSON.stringify(data, null, 2)),
@@ -209,6 +233,16 @@ export function JsonInspector({
             >
               <Scissors className={ICON_CLS} />
             </TabsTrigger>
+            {editable && (
+              <TabsTrigger
+                className={TRIGGER_CLS}
+                value="edit"
+                title="Edit JSON"
+                aria-label="Edit JSON"
+              >
+                <FilePen className={ICON_CLS} />
+              </TabsTrigger>
+            )}
           </TabsList>
           <div className="flex-1" />
           <button
@@ -260,6 +294,20 @@ export function JsonInspector({
             <PaneFallback />
           )}
         </TabsContent>
+
+        {editable && (
+          <TabsContent value="edit" className={EDITOR_PANE_CLS}>
+            {seen.has("edit") ? (
+              <JsonEditorPane
+                value={data}
+                onUpdate={onUpdate}
+                readOnly={editorReadOnly}
+              />
+            ) : (
+              <PaneFallback />
+            )}
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

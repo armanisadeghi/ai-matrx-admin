@@ -138,10 +138,34 @@ export function NoteTabBar({ instanceId }: NoteTabBarProps) {
   );
 
   // ── Auto-scroll active tab into view ──────────────────────────────
+  // Title-anchored scroll: the title (left edge of the tab) is always the
+  // priority. If the active tab is wider than the scroll area, we never
+  // scroll past its left edge — so the title stays visible even when the
+  // action buttons on the right overflow.
   useEffect(() => {
     if (!scrollRef.current || !activeTabId) return;
-    const el = scrollRef.current.querySelector(`[data-active="true"]`);
-    el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    const container = scrollRef.current;
+    const el = container.querySelector<HTMLElement>(`[data-active="true"]`);
+    if (!el) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    const leftDelta = elRect.left - containerRect.left;
+    const rightDelta = elRect.right - containerRect.right;
+
+    let scrollBy = 0;
+    if (leftDelta < 0) {
+      // Title is hidden off the left — scroll left to bring it back into view.
+      scrollBy = leftDelta;
+    } else if (rightDelta > 0) {
+      // Right edge is offscreen — scroll right, but never past the title.
+      // Cap by leftDelta so the title is never pushed offscreen to the left.
+      scrollBy = Math.min(rightDelta, leftDelta);
+    }
+
+    if (scrollBy !== 0) {
+      container.scrollBy({ left: scrollBy, behavior: "smooth" });
+    }
   }, [activeTabId]);
 
   if (!openTabs || openTabs.length === 0) return null;

@@ -28,6 +28,7 @@ import {
   selectAgentById,
   selectAgentDefinition,
   selectAgentIsDirty,
+  selectAgentIsEditable,
   selectAgentName,
 } from "@/features/agents/redux/agent-definition/selectors";
 import {
@@ -35,6 +36,9 @@ import {
   initializeChatAgents,
   saveAgentField,
 } from "@/features/agents/redux/agent-definition/thunks";
+import { setAgentField } from "@/features/agents/redux/agent-definition/slice";
+import type { AgentDefinition } from "@/features/agents/types/agent-definition.types";
+import { toast } from "sonner";
 import { makeSelectFilteredAgents } from "@/features/agents/redux/agent-consumers/selectors";
 import { useAgentConsumer } from "@/features/agents/hooks/useAgentConsumer";
 import { Messages } from "@/features/agents/components/builder/message-builders/Messages";
@@ -371,15 +375,107 @@ function AgentPickerFallback({ onSelect }: AgentPickerFallbackProps) {
 // ── JSON Tab ──────────────────────────────────────────────────────────────────
 
 /**
- * Read-only view of the current agent's full domain definition (no runtime
- * flags) rendered as JSON. Uses `selectAgentDefinition`, which strips the
- * `_dirty`/`_loading`/`_undoPast`/etc. metadata so the user sees only the
- * persisted shape — useful for copy-paste, debugging, and importing
- * elsewhere.
+ * Fields that the JSON editor cannot change — server-managed metadata, lineage,
+ * timestamps, and access flags. Edits to these are silently ignored when the
+ * user commits a JSON edit (everything else is diffed and dispatched).
+ */
+const READ_ONLY_AGENT_FIELDS: ReadonlySet<keyof AgentDefinition> = new Set<
+  keyof AgentDefinition
+>([
+  "id",
+  "isVersion",
+  "parentAgentId",
+  "version",
+  "changedAt",
+  "changeNote",
+  "userId",
+  "organizationId",
+  "sourceAgentId",
+  "sourceSnapshotAt",
+  "createdAt",
+  "updatedAt",
+  "isOwner",
+  "accessLevel",
+  "sharedByEmail",
+]);
+
+/**
+ * View of the current agent's full domain definition rendered as JSON.
+ *
+ * `selectAgentDefinition` strips runtime flags (`_dirty`, `_loading`, etc.) so
+ * the user sees only the persisted shape — useful for copy-paste, debugging,
+ * and importing elsewhere.
+ *
+ * When the user has edit access, the inspector also exposes an "Edit" tab
+ * (CodeMirror 6 with inline lint squigglies). On blur with valid JSON, we
+ * diff the parsed value against the current definition and dispatch
+ * `setAgentField` for every editable field that changed — same dirty-tracking
+ * path as inline edits, so the footer Save button persists everything.
  */
 function AgentJsonTab({ agentId }: { agentId: string }) {
+  const dispatch = useAppDispatch();
   const definition = useAppSelector((state) =>
     selectAgentDefinition(state, agentId),
+  );
+  const isEditable = useAppSelector((state) =>
+    selectAgentIsEditable(state, agentId),
+  );
+
+  const handleUpdate = useCallback(
+    (next: unknown) => {
+      if (!definition) return;
+      if (next === null || typeof next !== "object" || Array.isArray(next)) {
+        toast.error("Agent JSON must be an object.");
+        return;
+      }
+      const incoming = next as Partial<AgentDefinition>;
+      const editableKeys = (
+        Object.keys(definition) as (keyof AgentDefinition)[]
+      ).filter((k) => !READ_ONLY_AGENT_FIELDS.has(k));
+
+      let changedCount = 0;
+      let blockedCount = 0;
+      for (const key of editableKeys) {
+        if (!Object.prototype.hasOwnProperty.call(incoming, key)) continue;
+        const before = definition[key];
+        const after = incoming[key] as AgentDefinition[typeof key];
+        // Cheap deep-equality via JSON serialization. The agent definition is
+        // pure JSON-serializable data, so this is correct (no functions, no
+        // Dates, no Maps). Avoids pulling in lodash for one call.
+        if (JSON.stringify(before) === JSON.stringify(after)) continue;
+        changedCount += 1;
+        dispatch(
+          setAgentField({
+            id: agentId,
+            field: key,
+            value: after as AgentDefinition[keyof AgentDefinition],
+          }),
+        );
+      }
+      // Surface attempts to mutate read-only fields as an info toast — the
+      // change is silently dropped, which is otherwise confusing.
+      for (const roKey of READ_ONLY_AGENT_FIELDS) {
+        if (!Object.prototype.hasOwnProperty.call(incoming, roKey)) continue;
+        if (
+          JSON.stringify(definition[roKey]) !== JSON.stringify(incoming[roKey])
+        ) {
+          blockedCount += 1;
+        }
+      }
+
+      if (changedCount > 0) {
+        const fieldsWord = changedCount === 1 ? "field" : "fields";
+        toast.success(
+          `Staged ${changedCount} ${fieldsWord} — Save in the footer to persist.`,
+        );
+      }
+      if (blockedCount > 0) {
+        toast.info(
+          `Ignored ${blockedCount} read-only field${blockedCount === 1 ? "" : "s"} (id / version / timestamps / access).`,
+        );
+      }
+    },
+    [agentId, definition, dispatch],
   );
 
   return (
@@ -388,6 +484,7 @@ function AgentJsonTab({ agentId }: { agentId: string }) {
         data={definition ?? {}}
         label="Agent Definition"
         defaultView="json"
+        onUpdate={isEditable ? handleUpdate : undefined}
       />
     </div>
   );
