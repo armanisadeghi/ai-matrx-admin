@@ -14,10 +14,35 @@ import Link from "next/link";
 import {
   AlertTriangle,
   Download,
+  ExternalLink,
   FileIcon as FileIconLucide,
 } from "lucide-react";
 import { PublicDownloadButton } from "./_components/PublicDownloadButton";
 import type { ShareLinkResolveResponse } from "@/features/files/types";
+
+/**
+ * Files we know render richly in the authenticated app's PreviewPane —
+ * specifically the new RAG-powered Document tab with cleaned text +
+ * chunk navigation. We surface "Open in app" prominently for these
+ * mime types, since hitting Download for a 50-page contract is the
+ * worst possible default. For everything else (images, video, audio)
+ * the app preview is no better than a download, so we hide the CTA.
+ */
+function isDocumentishMime(mime: string | null | undefined): boolean {
+  if (!mime) return false;
+  return (
+    mime === "application/pdf" ||
+    mime.startsWith("text/") ||
+    mime === "application/json" ||
+    mime === "application/xml" ||
+    mime === "application/msword" ||
+    mime ===
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+    mime === "application/vnd.ms-excel" ||
+    mime ===
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+}
 
 interface PageProps {
   params: Promise<{ token: string }>;
@@ -113,8 +138,22 @@ export default async function PublicSharePage({ params }: PageProps) {
             url={url}
             filename={file.file_name}
           />
+          {isDocumentishMime(file.mime_type) ? (
+            <Link
+              href={`/files/share/${encodeURIComponent(token)}`}
+              prefetch={false}
+              className="inline-flex items-center justify-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent"
+              title="Open in the AI Matrx app — page-by-page viewer with cleaned text and AI-powered search."
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              Open in app
+            </Link>
+          ) : null}
           <p className="text-[11px] text-muted-foreground text-center">
             Shared via AI Matrx
+            {isDocumentishMime(file.mime_type)
+              ? " · viewable in-app for searchable document mode"
+              : ""}
           </p>
         </div>
       </div>

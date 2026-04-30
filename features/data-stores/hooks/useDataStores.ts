@@ -15,6 +15,20 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import type { DataStore, DataStoreWithMemberCount } from "../types";
 
+/**
+ * Loose-typed view of the supabase client for tables in the `rag` schema.
+ *
+ * The generated `types/database.types.ts` only carries the `public` schema,
+ * so calls like `supabase.schema('rag').from('data_stores')` fail to type-
+ * check against the strict `Database` generic. RLS still enforces access on
+ * the server, so this is a typing escape only — the runtime is unchanged.
+ *
+ * When the type-gen pipeline starts emitting non-public schemas, drop this
+ * cast and import the proper schema-typed client.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const sb = supabase as any;
+
 function rowToStore(row: Record<string, unknown>): DataStore {
   return {
     id: row.id as string,
@@ -58,7 +72,7 @@ export function useDataStores(): {
 
     (async () => {
       try {
-        const { data, error: err } = await supabase
+        const { data, error: err } = await sb
           .schema("rag")
           .from("data_stores")
           .select("*")
@@ -73,7 +87,7 @@ export function useDataStores(): {
         const ids = baseRows.map((s) => s.id);
         let counts = new Map<string, number>();
         if (ids.length > 0) {
-          const { data: memberRows } = await supabase
+          const { data: memberRows } = await sb
             .schema("rag")
             .from("data_store_members")
             .select("data_store_id")
@@ -113,7 +127,7 @@ export function useDataStores(): {
       organizationId?: string | null;
     }) => {
       if (!userId) return null;
-      const { data, error: err } = await supabase
+      const { data, error: err } = await sb
         .schema("rag")
         .from("data_stores")
         .insert({
@@ -154,7 +168,7 @@ export function useDocumentDataStores(processedDocumentId: string | null) {
     setLoading(true);
     (async () => {
       try {
-        const { data } = await supabase
+        const { data } = await sb
           .schema("rag")
           .from("data_store_members")
           .select("data_store_id")
@@ -180,7 +194,7 @@ export function useDocumentDataStores(processedDocumentId: string | null) {
   const bind = useCallback(
     async (dataStoreId: string) => {
       if (!processedDocumentId) return false;
-      const { error: err } = await supabase
+      const { error: err } = await sb
         .schema("rag")
         .from("data_store_members")
         .insert({
@@ -201,7 +215,7 @@ export function useDocumentDataStores(processedDocumentId: string | null) {
   const unbind = useCallback(
     async (dataStoreId: string) => {
       if (!processedDocumentId) return false;
-      const { error: err } = await supabase
+      const { error: err } = await sb
         .schema("rag")
         .from("data_store_members")
         .delete()

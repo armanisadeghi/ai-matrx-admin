@@ -21,11 +21,13 @@ import {
   Download,
   Edit2,
   Eye,
+  FileSearch,
   FolderInput,
   FolderOpen,
   FolderPlus,
   Scissors,
   Share2,
+  Sparkles,
   Trash2,
 } from "lucide-react";
 import {
@@ -99,6 +101,32 @@ export function FileRowContextMenu({ fileId, children }: FileRowContextMenuProps
     dispatch(setActiveFileId(fileId));
     openFilePreview(fileId);
   }, [dispatch, fileId]);
+
+  // Open the side preview panel and switch to the Document tab. Mirrors
+  // `FileContextMenu.handleShowDocument` so the right-click menu and
+  // dropdown menu give the same affordance.
+  const openDocumentTab = useCallback(() => {
+    dispatch(setActiveFileId(fileId));
+    openFilePreview(fileId);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("cloud-files:open-preview-tab", {
+          detail: { fileId, tab: "document" },
+        }),
+      );
+    }
+  }, [dispatch, fileId]);
+
+  const handleReprocess = useCallback(() => {
+    openDocumentTab();
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("cloud-files:reprocess-document", {
+          detail: { fileId, force: true },
+        }),
+      );
+    }
+  }, [fileId, openDocumentTab]);
 
   const isVirtual = file?.source.kind === "virtual";
 
@@ -228,6 +256,24 @@ export function FileRowContextMenu({ fileId, children }: FileRowContextMenuProps
               Duplicate
               <ContextMenuShortcut>{cmd}D</ContextMenuShortcut>
             </ContextMenuItem>
+          ) : null}
+          {/*
+           * RAG / processed-document actions. Real files only — virtual
+           * sources (notes, code-files) ingest via their own source_kind
+           * and surface "Process for RAG" inside their dedicated editors.
+           */}
+          {!isVirtual ? (
+            <>
+              <ContextMenuSeparator />
+              <ContextMenuItem onClick={openDocumentTab}>
+                <FileSearch className="mr-2 h-4 w-4" />
+                Open document view
+              </ContextMenuItem>
+              <ContextMenuItem onClick={handleReprocess}>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Reprocess for RAG
+              </ContextMenuItem>
+            </>
           ) : null}
           <ContextMenuSeparator />
           <ContextMenuItem

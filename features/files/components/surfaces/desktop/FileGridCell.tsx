@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatFileSize } from "@/features/files/utils/format";
 import { MediaThumbnail } from "@/features/files/components/core/MediaThumbnail/MediaThumbnail";
+import { FileRagBadge } from "@/features/files/components/core/FileBadges/FileRagBadge";
 import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
 import { FolderContextMenu } from "@/features/files/components/core/FolderContextMenu/FolderContextMenu";
 import { useFolderActions } from "@/features/files/components/core/FileActions/useFolderActions";
@@ -167,7 +168,10 @@ function GridFile({
         </div>
 
         <div className="px-3 py-2">
-          <p className="truncate text-sm font-medium">{file.fileName}</p>
+          <span className="flex items-center gap-1 min-w-0">
+            <p className="truncate text-sm font-medium">{file.fileName}</p>
+            <FileRagBadge fileId={file.id} className="shrink-0" />
+          </span>
           {parentPath ? (
             <p
               className="truncate text-xs text-muted-foreground"

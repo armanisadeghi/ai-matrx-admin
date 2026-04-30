@@ -526,3 +526,56 @@ See [migration/MASTER-PLAN.md](migration/MASTER-PLAN.md) for the phase-ordered p
   **Python team.** New [for_python/REQUESTS.md](for_python/REQUESTS.md) item 14 details the five backend deliverables we still need: (a) `GET /files/{id}/document` lookup, (b) `POST /files/{id}/ingest` convenience wrapper, (c) `GET /files/{id}/lineage-summary`, (d) public REST surface for data stores (mirroring the AI tools), (e) realtime events on `processed_documents` row mutations. The FE works without (a)–(e) — the Document tab degrades gracefully — but ships much better with them.
 
   **Verifiable.** Right-click a PDF / DOCX / TXT in `/files` → "Reprocess for RAG" jumps to the Document tab and shows live extract → clean → chunk → embed → upsert progress. After completion the tab transitions to the embedded viewer with cleaned-text and chunks panes. Citation deep-links from chat/search land directly on the right page. Virtual files (Notes, Agent Apps, code snippets) skip the probe and show "absent" — the RAG ingest for those is via `source_kind: "note"` / `"code_file"` (not `"cld_file"`), which is a separate flow surfaced by the editors themselves rather than by `/files`.
+
+- **2026-04-29** — RAG integration sweep: pushed the new pipeline through every cloud-files surface so it matches Dropbox / Drive parity for RAG-aware files. The earlier pass wired the desktop PreviewPane; this pass wires every other surface that touches a file.
+
+  **Bulk reprocess.** [components/surfaces/desktop/BulkActionsBar.tsx](components/surfaces/desktop/BulkActionsBar.tsx) gained a "Reprocess for RAG" button (Sparkles icon) between Visibility and Delete. Fans out non-streaming `ingestFile()` over the selection with `MAX_PARALLEL = 4`. Auto-skips virtual sources (notes/code/agent-app rows have a different ingest path) and obviously non-textual mimes (image/video/audio) — silent skips show up in the existing transient-note line as `Reprocessed N · K virtual skipped · M non-text skipped`. Each successful ingest fires `clearFileDocumentCache(fileId)` and the `cloud-files:document-processed` custom event so any open `<DocumentTab/>` for those files re-probes automatically.
+
+  **Inline RAG status badges.** New [components/core/FileBadges/FileRagBadge.tsx](components/core/FileBadges/FileRagBadge.tsx). A tiny pill that renders next to the filename in dense list views — `<Sparkles/> RAG` when the file has a `processed_documents` row, `<GitBranch/> derived` when `parentFileId` is set. Nothing rendered when neither applies (the steady state for un-processed files). The badge reads from the same memoised `lookupFileDocument` cache the Document tab uses, so rendering across N rows is one network probe per file ever, not N. Mounted into:
+  - [components/surfaces/desktop/FileTableRow.tsx](components/surfaces/desktop/FileTableRow.tsx) — desktop list view
+  - [components/surfaces/desktop/FileGridCell.tsx](components/surfaces/desktop/FileGridCell.tsx) — desktop grid view
+  - [components/core/FileTree/FileTreeRow.tsx](components/core/FileTree/FileTreeRow.tsx) — sidebar tree
+
+  **FileInfoTab RAG section.** [components/surfaces/FileInfoTab.tsx](components/surfaces/FileInfoTab.tsx) gained a "RAG / document" section (real files only) that renders one of three states from `useFileDocument(fileId)`:
+  - **found** — `Indexed · <derivation_kind>`, pages, chunks, last-ingested timestamp, plus a "Open in document viewer →" link to `/rag/viewer/<id>`
+  - **absent** — soft hint pointing to the Document tab / Reprocess action
+  - **unavailable** — soft amber message about the missing endpoint
+
+  When `parentFileId` is set, the section also surfaces the parent file id (copyable, mono) and `derivationKind` so the user understands the file's lineage at a glance from the Info tab.
+
+  **RowContextMenu (right-click on table/grid rows).** [components/core/RowContextMenu/RowContextMenu.tsx](components/core/RowContextMenu/RowContextMenu.tsx) — `FileRowContextMenu` gained "Open document view" + "Reprocess for RAG" mid-section (real files only). Both dispatch the same `cloud-files:open-preview-tab` / `cloud-files:reprocess-document` custom events the dropdown menu uses, so right-click and dropdown menu give identical behaviour.
+
+  **Public share page.** [app/(public)/share/[token]/page.tsx](../../app/(public)/share/[token]/page.tsx) gained a conditional **Open in app** CTA shown for document-ish mime types (PDF, text, JSON, XML, Word, Excel) — the kinds where the in-app PreviewPane (with the new Document tab) is dramatically more useful than a raw download. Hidden for images / video / audio where the app preview is no better than the download. Routes to `/files/share/<token>`, the authenticated handler for the same token.
+
+  **MobileStack action sheet.** [components/surfaces/MobileStack.tsx](components/surfaces/MobileStack.tsx) — the `MoreVertical` button on the file detail frame used to be a TODO; it now opens a bottom-sheet drawer (`MobileFileActionSheet`) with parity actions: Open document view, Reprocess for RAG, Download, Copy share link, Delete. Sheet uses translate-Y over a black/50 backdrop, respects `pb-safe`, dismisses on backdrop tap or X. Virtual files hide the doc/RAG/share/download actions (their inline preview owns those flows).
+
+  **`ProcessForRagButton` for non-cloud-file editors.** [components/core/RagActions/ProcessForRagButton.tsx](components/core/RagActions/ProcessForRagButton.tsx) — reusable streaming-ingest button parameterised on `source_kind` (`"cld_file" | "note" | "code_file"`) + `source_id`. Wired into [features/notes/components/NoteToolbar.tsx](../notes/components/NoteToolbar.tsx) so every note carries an inline "Process for RAG" affordance — the same pipeline cloud-files uses, but routed through `source_kind: "note"` so chunks land in `rag.kg_chunks` with the right `source_kind`. The button shows live `Processing… stage (cur/total)` and turns emerald-green `Indexed` on success. Compatible with the same `cloud-files:document-processed` event so a Notes editor with the cloud-files preview pane open will see the badge flip.
+
+  **RagSearchHits renderer.** [components/core/RagSearch/RagSearchHits.tsx](components/core/RagSearch/RagSearchHits.tsx) + [api/rag-search.ts](api/rag-search.ts) + [hooks/useRagSearch.ts](hooks/useRagSearch.ts). Typed client for `POST /rag/search`, debounced hook, presentational list component. Each hit renders snippet + source label + score detail and links to the right deep-link via `citationHrefFor(hit)`:
+  - `cld_file` → `/files/f/<id>?tab=document&chunk=<chunk_id>&page=<n>` (the PreviewPane Document tab activates with the chunk highlighted)
+  - `note` → `/notes/<id>`
+  - `code_file` → `/code/<id>`
+  - unknown → `/rag/viewer/<id>?chunk=&page=` (standalone viewer)
+
+  Designed to drop into the `/files` omnibox, chat citation panels, and `/admin/rag/*` audit pages without per-surface duplication. `origin` prop tags the click target for analytics.
+
+  **What's now end-to-end:**
+  - **Visibility:** RAG-indexed files show a badge in the file tree, table, grid, and lineage chip in the preview header. Click any file → Document tab tells you immediately whether it's indexed.
+  - **Reprocess from anywhere:** desktop dropdown menu, right-click context menu, bulk selection, mobile action sheet, and the Document tab itself.
+  - **Auto-refresh:** every reprocess dispatches `cloud-files:document-processed`. Every place that displays RAG state listens, so the badge / Document tab / Info section re-probe in lockstep.
+  - **Public sharing:** shared documents get an "Open in app" CTA so authenticated viewers land in the rich Document tab instead of a download stream.
+  - **Notes parity:** notes have their own "Process for RAG" toolbar button → same backend, different `source_kind`.
+  - **Citation deep-links:** any chat / search hit with a `cld_file` source routes through PreviewPane → Document tab with `?chunk=&page=` honoured.
+
+  **What's still gated on Python work** (REQUESTS.md item 14):
+  - `GET /files/{id}/document` — until shipped, the badges + Info section + Document tab show "lookup unavailable" for already-ingested files. No regression; just no positive signal.
+  - Realtime push on `processed_documents` writes — until shipped, ingest completion auto-refreshes via FE event dispatch (works fine within one tab) but doesn't propagate to other browser tabs / users.
+  - Public REST for data stores — the curation UI ("Add this file to data store X") is still gated on the Python team exposing the AI tools as REST.
+
+  **Verifiable.**
+  - Bulk: select 3 PDFs + 1 image, hit Reprocess → 3 succeed, 1 silent skip noted in transient bar.
+  - Badges: any file ingested via Document tab grows a `<Sparkles/> RAG` chip in the table/grid/tree without a page reload.
+  - Mobile: tap MoreVertical on any file → action sheet appears with the same options the desktop shows.
+  - Public share: open a shared PDF link in incognito → see "Open in app" CTA. Open a shared JPG → no CTA.
+  - Notes: open any note → see the new Sparkles button in the toolbar. Click it → live progress, then green "Indexed".
+  - RagSearchHits: pass response from `useRagSearch("contract terms")` → list of clickable hits, each link going to the right surface.

@@ -11,6 +11,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
+import { ProcessForRagButton } from "@/features/files/components/core/RagActions/ProcessForRagButton";
 import type { Note } from "../types";
 import { cn } from "@/lib/utils";
 
@@ -163,6 +164,20 @@ export function NoteToolbar({
             <TooltipContent>Voice input</TooltipContent>
           </Tooltip>
         </TooltipProvider>
+      )}
+
+      {activeNote && (
+        // Process this note's content through `/rag/ingest` so it
+        // becomes searchable + citable across data stores. Streams
+        // progress via the same pipeline used by cloud-files; the
+        // button reflects running / complete / error state inline.
+        <ProcessForRagButton
+          sourceKind="note"
+          sourceId={activeNote.id}
+          iconOnly
+          force
+          className="ml-1"
+        />
       )}
 
       <div className="ml-auto flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">

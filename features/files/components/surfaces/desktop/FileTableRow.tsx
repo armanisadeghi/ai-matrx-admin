@@ -22,6 +22,7 @@ import {
   formatRelativeTime,
 } from "@/features/files/utils/format";
 import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
+import { FileRagBadge } from "@/features/files/components/core/FileBadges/FileRagBadge";
 import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
 import { FolderContextMenu } from "@/features/files/components/core/FolderContextMenu/FolderContextMenu";
 import {
@@ -125,13 +126,16 @@ function FileRow({
           <div className="flex items-center gap-2 min-w-0">
             <FileIcon fileName={file.fileName} size={20} />
             <div className="flex min-w-0 flex-col">
-              <button
-                type="button"
-                onClick={onActivate}
-                className="truncate text-left font-medium text-foreground hover:underline"
-              >
-                {file.fileName}
-              </button>
+              <span className="flex min-w-0 items-center gap-1">
+                <button
+                  type="button"
+                  onClick={onActivate}
+                  className="truncate text-left font-medium text-foreground hover:underline"
+                >
+                  {file.fileName}
+                </button>
+                <FileRagBadge fileId={file.id} className="shrink-0" />
+              </span>
               {parentPath ? (
                 <span
                   className="truncate text-[11px] text-muted-foreground leading-tight"

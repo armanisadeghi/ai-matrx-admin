@@ -23,6 +23,7 @@ import {
   Globe,
   Loader2,
   Lock,
+  Sparkles,
   Trash2,
   Users,
   X,
@@ -60,9 +61,17 @@ import {
   updateFolder as updateFolderThunk,
 } from "@/features/files/redux/thunks";
 import { openFolderPicker } from "@/features/files/components/pickers/CloudFilesPickerHost";
+import { ingestFile } from "@/features/files/api/rag-ingest";
+import { clearFileDocumentCache } from "@/features/files/api/document-lookup";
 import type { Visibility } from "@/features/files/types";
 
 const MAX_PARALLEL = 4;
+/**
+ * Mime types we know are useless to RAG-ingest. Images / video / audio /
+ * archives have no text we can chunk, so silently skip them in bulk
+ * reprocess and report the count back via the transient note.
+ */
+const NON_INGESTABLE_MIME_PREFIXES = ["image/", "video/", "audio/"];
 
 export function BulkActionsBar({ className }: { className?: string }) {
   const dispatch = useAppDispatch();
@@ -71,7 +80,7 @@ export function BulkActionsBar({ className }: { className?: string }) {
   const foldersById = useAppSelector(selectAllFoldersMap);
 
   const [busyKind, setBusyKind] = useState<
-    "download" | "move" | "delete" | "visibility" | null
+    "download" | "move" | "delete" | "visibility" | "reprocess" | null
   >(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [transientNote, setTransientNote] = useState<string | null>(null);
@@ -230,6 +239,73 @@ export function BulkActionsBar({ className }: { className?: string }) {
     [busyKind, dispatch, hasAny, selectedFileIds, selectedFolderIds],
   );
 
+  // ─── RAG: bulk reprocess for selected files ─────────────────────────────
+  //
+  // Fan out `/rag/ingest` calls (non-streaming — bulk is fire-and-forget;
+  // per-file streaming progress would crowd the UI). Skip:
+  //   - virtual-source files (notes/code/agent-app rows are ingested
+  //     via their own `source_kind`, not the cld_file path)
+  //   - obviously non-ingestable mimes (images / video / audio)
+  // Report skipped counts in the same transient note we already use for
+  // folder skips, so the user understands what happened.
+  const handleReprocess = useCallback(async () => {
+    if (!hasFiles || busyKind) return;
+    setBusyKind("reprocess");
+
+    let ingestable: string[] = [];
+    let skippedVirtual = 0;
+    let skippedKind = 0;
+    for (const id of selectedFileIds) {
+      const f = filesById[id];
+      if (!f) continue;
+      if (f.source.kind === "virtual") {
+        skippedVirtual++;
+        continue;
+      }
+      const mime = f.mimeType ?? "";
+      if (NON_INGESTABLE_MIME_PREFIXES.some((p) => mime.startsWith(p))) {
+        skippedKind++;
+        continue;
+      }
+      ingestable.push(id);
+    }
+
+    let succeeded = 0;
+    let failed = 0;
+    try {
+      await runWithConcurrency(ingestable, MAX_PARALLEL, async (id) => {
+        try {
+          await ingestFile(id);
+          clearFileDocumentCache(id);
+          if (typeof window !== "undefined") {
+            // Notify any open <DocumentTab/> for this file to re-probe.
+            window.dispatchEvent(
+              new CustomEvent("cloud-files:document-processed", {
+                detail: { fileId: id },
+              }),
+            );
+          }
+          succeeded++;
+        } catch {
+          failed++;
+        }
+      });
+
+      const parts: string[] = [];
+      parts.push(
+        `Reprocessed ${succeeded} ${succeeded === 1 ? "file" : "files"} for RAG`,
+      );
+      if (failed > 0) parts.push(`${failed} failed`);
+      if (skippedVirtual > 0)
+        parts.push(`${skippedVirtual} virtual skipped`);
+      if (skippedKind > 0) parts.push(`${skippedKind} non-text skipped`);
+      setTransientNote(parts.join(" · "));
+      window.setTimeout(() => setTransientNote(null), 5000);
+    } finally {
+      setBusyKind(null);
+    }
+  }, [busyKind, filesById, hasFiles, selectedFileIds]);
+
   // Hidden when nothing is selected. Mounting is conditional in the parent;
   // this guard is belt-and-suspenders.
   if (totalCount === 0) return null;
@@ -293,6 +369,14 @@ export function BulkActionsBar({ className }: { className?: string }) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      <BulkActionButton
+        icon={<Sparkles className="h-3.5 w-3.5" />}
+        label="Reprocess for RAG"
+        onClick={handleReprocess}
+        running={busyKind === "reprocess"}
+        disabled={!hasFiles || busyKind !== null}
+        title="Re-run extract/clean/chunk/embed on each selected file. Skips images, audio, video, and virtual sources."
+      />
       <BulkActionButton
         icon={<Trash2 className="h-3.5 w-3.5" />}
         label="Delete"
@@ -358,6 +442,7 @@ interface BulkActionButtonProps {
   running?: boolean;
   disabled?: boolean;
   tone?: "default" | "destructive";
+  title?: string;
 }
 
 function BulkActionButton({
@@ -367,12 +452,14 @@ function BulkActionButton({
   running,
   disabled,
   tone = "default",
+  title,
 }: BulkActionButtonProps) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
+      title={title}
       className={cn(
         "flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors",
         "disabled:cursor-not-allowed disabled:opacity-50",

@@ -12,6 +12,7 @@ import { ChevronDown, ChevronRight, MoreHorizontal } from "lucide-react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { cn } from "@/lib/utils";
 import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
+import { FileRagBadge } from "@/features/files/components/core/FileBadges/FileRagBadge";
 import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
 import { FolderContextMenu } from "@/features/files/components/core/FolderContextMenu/FolderContextMenu";
 import {
@@ -145,7 +146,12 @@ function FileTreeRowImpl(
         className="mx-1"
       />
 
-      <span className="truncate pr-2 flex-1 min-w-0">{name}</span>
+      <span className="truncate pr-2 flex-1 min-w-0 inline-flex items-center gap-1">
+        <span className="truncate">{name}</span>
+        {!isFolder ? (
+          <FileRagBadge fileId={row.id} className="shrink-0" />
+        ) : null}
+      </span>
 
       <div
         className={cn(

@@ -17,9 +17,21 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowUpFromLine, ChevronLeft, Home, MoreVertical } from "lucide-react";
+import {
+  ArrowUpFromLine,
+  ChevronLeft,
+  Download,
+  FileSearch,
+  Home,
+  MoreVertical,
+  Share2,
+  Sparkles,
+  Trash2,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import {
   selectAllFilesMap,
   selectAllFoldersMap,
@@ -317,6 +329,7 @@ interface FileFrameBodyProps {
 function FileFrameBody({ fileId, onBack }: FileFrameBodyProps) {
   const file = useAppSelector((s) => s.cloudFiles.filesById[fileId]);
   const title = file?.fileName ?? "File";
+  const [actionsOpen, setActionsOpen] = useState(false);
 
   return (
     <>
@@ -327,15 +340,184 @@ function FileFrameBody({ fileId, onBack }: FileFrameBodyProps) {
         onLeftPress={onBack}
         rightIcon={<MoreVertical className="h-5 w-5" />}
         rightLabel="Actions"
-        onRightPress={() => {
-          /* TODO: open actions drawer — Phase 7 */
-        }}
+        onRightPress={() => setActionsOpen(true)}
       />
       <div className="flex-1 overflow-hidden">
         <FilePreview fileId={fileId} className="h-full w-full" />
       </div>
+      <MobileFileActionSheet
+        open={actionsOpen}
+        onClose={() => setActionsOpen(false)}
+        fileId={fileId}
+      />
     </>
   );
+}
+
+// ---------------------------------------------------------------------------
+// Bottom-sheet action drawer for the mobile file detail surface.
+//
+// Mirrors the desktop file context menu's most useful actions so a phone
+// user gets full parity. Renders only when `open` is true; tapping outside
+// or the close button dismisses. Uses a simple translate-Y animation
+// instead of a third-party library so it stays cheap on first paint.
+// ---------------------------------------------------------------------------
+
+interface MobileFileActionSheetProps {
+  open: boolean;
+  onClose: () => void;
+  fileId: string;
+}
+
+function MobileFileActionSheet({
+  open,
+  onClose,
+  fileId,
+}: MobileFileActionSheetProps) {
+  const file = useAppSelector((s) => s.cloudFiles.filesById[fileId]);
+  const actions = useFileActions(fileId);
+  const isVirtual = file?.source.kind === "virtual";
+
+  const fireReprocess = useCallback(() => {
+    if (typeof window === "undefined") return;
+    window.dispatchEvent(
+      new CustomEvent("cloud-files:reprocess-document", {
+        detail: { fileId, force: true },
+      }),
+    );
+    onClose();
+  }, [fileId, onClose]);
+
+  const openDocumentTab = useCallback(() => {
+    if (typeof window === "undefined") return;
+    window.dispatchEvent(
+      new CustomEvent("cloud-files:open-preview-tab", {
+        detail: { fileId, tab: "document" },
+      }),
+    );
+    onClose();
+  }, [fileId, onClose]);
+
+  if (!open) return null;
+
+  return (
+    <div className="absolute inset-0 z-30 flex flex-col justify-end pointer-events-auto">
+      {/* Backdrop */}
+      <button
+        type="button"
+        aria-label="Close actions"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/50"
+      />
+      {/* Sheet */}
+      <div
+        className="relative max-h-[70%] overflow-auto rounded-t-2xl border-t border-border bg-card px-2 pt-2 pb-[calc(env(safe-area-inset-bottom)+12px)] shadow-2xl"
+        role="dialog"
+        aria-label="File actions"
+      >
+        <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-muted" />
+        <div className="flex items-center justify-between px-2 pb-2">
+          <h3 className="truncate text-sm font-semibold">
+            {file?.fileName ?? "Actions"}
+          </h3>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <ul className="flex flex-col">
+          {!isVirtual ? (
+            <>
+              <ActionRow
+                icon={<FileSearch className="h-4 w-4" />}
+                label="Open document view"
+                description="Pages, cleaned text, chunks, lineage."
+                onPress={openDocumentTab}
+              />
+              <ActionRow
+                icon={<Sparkles className="h-4 w-4" />}
+                label="Reprocess for RAG"
+                description="Re-run extract / clean / chunk / embed."
+                onPress={fireReprocess}
+              />
+              <ActionDivider />
+              <ActionRow
+                icon={<Download className="h-4 w-4" />}
+                label="Download"
+                onPress={() => {
+                  void actions.download();
+                  onClose();
+                }}
+              />
+              <ActionRow
+                icon={<Share2 className="h-4 w-4" />}
+                label="Copy share link"
+                onPress={() => {
+                  void actions.copyShareUrl();
+                  onClose();
+                }}
+              />
+              <ActionDivider />
+            </>
+          ) : null}
+          <ActionRow
+            icon={<Trash2 className="h-4 w-4 text-destructive" />}
+            label="Delete"
+            destructive
+            onPress={() => {
+              void actions.delete();
+              onClose();
+            }}
+          />
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function ActionRow({
+  icon,
+  label,
+  description,
+  onPress,
+  destructive,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  description?: string;
+  onPress: () => void;
+  destructive?: boolean;
+}) {
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={onPress}
+        className={cn(
+          "flex w-full items-center gap-3 rounded-md px-3 py-3 text-left active:bg-accent/60",
+          destructive && "text-destructive",
+        )}
+      >
+        <div className="shrink-0">{icon}</div>
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm font-medium">{label}</div>
+          {description ? (
+            <div className="truncate text-[11px] text-muted-foreground">
+              {description}
+            </div>
+          ) : null}
+        </div>
+      </button>
+    </li>
+  );
+}
+
+function ActionDivider() {
+  return <li className="my-1 h-px bg-border" aria-hidden="true" />;
 }
 
 // ---------------------------------------------------------------------------

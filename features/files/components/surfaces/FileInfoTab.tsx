@@ -37,6 +37,8 @@ import {
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import { formatFileSize } from "@/features/files/utils/format";
 import { getFileTypeDetails } from "@/features/files/utils/file-types";
+import { useFileDocument } from "@/features/files/hooks/useFileDocument";
+import Link from "next/link";
 
 export interface FileInfoTabProps {
   fileId: string;
@@ -53,6 +55,7 @@ export function FileInfoTab({ fileId, className }: FileInfoTabProps) {
     selectActiveShareLinksForResource(s, fileId),
   );
   const actions = useFileActions(fileId);
+  const docState = useFileDocument(fileId);
 
   const details = useMemo(
     () => getFileTypeDetails(file?.fileName ?? ""),
@@ -192,6 +195,75 @@ export function FileInfoTab({ fileId, className }: FileInfoTabProps) {
             />
           ) : null}
         </Section>
+
+        {/*
+         * RAG status — visible only for real (non-virtual) files.
+         *
+         *   - found        → chunk count, derivation, last ingested + link
+         *   - absent       → "Not yet processed for RAG" hint
+         *   - unavailable  → soft warning, lookup not implemented
+         *
+         * Lineage data (parentFileId / derivationKind) is shown
+         * unconditionally when present; that field comes from the file
+         * row itself and doesn't require a backend probe.
+         */}
+        {file.source.kind === "real" ? (
+          <Section title="RAG / document">
+            {docState.state.status === "found" ? (
+              <>
+                <Row
+                  label="Status"
+                  value={`Indexed · ${docState.state.doc.derivation_kind}`}
+                />
+                <Row
+                  label="Pages"
+                  value={(docState.state.doc.total_pages ?? 0).toLocaleString()}
+                />
+                <Row
+                  label="Chunks"
+                  value={docState.state.doc.chunk_count.toLocaleString()}
+                />
+                <Row
+                  label="Last ingested"
+                  value={formatTs(docState.state.doc.updated_at)}
+                />
+                <div className="flex items-center justify-end pt-1">
+                  <Link
+                    href={`/rag/viewer/${docState.state.doc.processed_document_id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[11px] font-medium text-primary hover:underline"
+                  >
+                    Open in document viewer →
+                  </Link>
+                </div>
+              </>
+            ) : docState.state.status === "absent" ? (
+              <Row
+                label="Status"
+                value="Not yet processed for RAG. Use the Document tab or the Reprocess action to index this file."
+              />
+            ) : docState.state.status === "unavailable" ? (
+              <Row
+                label="Status"
+                value="Lookup unavailable (backend endpoint not yet implemented)."
+              />
+            ) : (
+              <Row label="Status" value="Checking…" />
+            )}
+            {file.parentFileId ? (
+              <CopyableRow
+                label="Derived from"
+                value={file.parentFileId}
+                copyValue={file.parentFileId}
+                mono
+              />
+            ) : null}
+            {file.derivationKind ? (
+              <Row label="Derivation kind" value={file.derivationKind} />
+            ) : null}
+          </Section>
+        ) : null}
 
         {metadataPretty ? (
           <Section title="Metadata">
