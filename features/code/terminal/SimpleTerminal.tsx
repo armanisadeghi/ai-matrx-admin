@@ -1,20 +1,20 @@
 "use client";
 
 /**
- * SimpleTerminal — direct port of the working `/sandbox/[id]` terminal.
+ * SimpleTerminal — mirrors the working `/sandbox/[id]` terminal exactly.
  *
  * No xterm, no adapter abstraction, no PTY upgrade. An `<input>` for
- * command entry + a scrollable `<pre>`-style log of past commands and
- * output. Hits `/api/sandbox/{sandboxId}/exec/stream` directly with
- * `sandboxId` baked in at construction time.
+ * command entry + a scrollable log of past commands and output. Hits
+ * `/api/sandbox/{sandboxId}/exec` (buffered JSON, same as the sandbox
+ * detail page) with `sandboxId` baked in at construction time.
  *
- * Why this exists alongside the xterm-based `TerminalTab`:
- *   1. The xterm version had several failure modes — PTY 426, adapter swap
- *      race, container-dimensions on `display:none`, focus-stealing — that
- *      together left users seeing a broken terminal in the `/code`
- *      workspace despite the API working fine.
- *   2. The `/sandbox/[id]` detail page has been quietly running this exact
- *      pattern for months without complaint. So we copy it.
+ * Why buffered instead of streaming:
+ *   The streaming `/exec/stream` endpoint was tried first but silently
+ *   produced no output when the SSE connection completed with zero events
+ *   (HTTP 200, empty body) — a realistic orchestrator behaviour that the
+ *   former SSE fallback didn't catch. The buffered endpoint is battle-tested
+ *   on the `/sandbox/[id]` detail page and always returns a full JSON
+ *   response with stdout/stderr/exit_code/cwd.
  *
  * Each instance is bound to one sandbox id and one command history. Multi-
  * terminal works by mounting multiple SimpleTerminals (each with a unique
@@ -81,9 +81,16 @@ export const SimpleTerminal: React.FC<SimpleTerminalProps> = ({
   }, [history, visible]);
 
   // Refocus input when becoming visible (matches `/sandbox/[id]`'s pattern).
+  // Use double RAF to ensure DOM is fully ready after panel expansion in complex layouts.
   useEffect(() => {
     if (!visible) return;
-    inputRef.current?.focus();
+    // Double RAF ensures the input is fully rendered and ready to receive focus,
+    // especially important when the terminal panel expands from collapsed state.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+      });
+    });
   }, [visible]);
 
   const appendLine = useCallback((line: Omit<TerminalLine, "id">) => {
@@ -134,105 +141,21 @@ export const SimpleTerminal: React.FC<SimpleTerminalProps> = ({
     const ac = new AbortController();
     abortRef.current = ac;
 
-    // Try streaming first — the orchestrator's `/exec/stream` route emits
-    // SSE events as stdout/stderr arrive. Long commands (`pnpm install`,
-    // `git clone`) show progress live instead of going dark for minutes.
-    // If streaming fails for any reason, we fall back to buffered exec.
+    // Use buffered exec — same approach as the working `/sandbox/[id]` page.
+    // Streaming was tried first previously but silently produced no output
+    // when the SSE stream connected (HTTP 200) but sent zero events before
+    // closing, which is a realistic orchestrator behaviour. Buffered exec is
+    // synchronous, always returns a JSON response, and is battle-tested.
     try {
-      const resp = await fetch(
-        `/api/sandbox/${encodeURIComponent(sandboxId)}/exec/stream`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "text/event-stream",
-          },
-          body: JSON.stringify({ command: cmd }),
-          signal: ac.signal,
-        },
-      );
-
-      if (!resp.ok || !resp.body) {
-        throw new Error(`stream HTTP ${resp.status}`);
-      }
-
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let exitCode = 0;
-      let nextCwd: string | undefined;
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        // SSE: events delimited by blank line; data lines start with "data:".
-        let idx: number;
-        while ((idx = buffer.indexOf("\n\n")) >= 0) {
-          const rawEvent = buffer.slice(0, idx);
-          buffer = buffer.slice(idx + 2);
-          if (!rawEvent.trim()) continue;
-
-          let eventName = "message";
-          const dataLines: string[] = [];
-          for (const line of rawEvent.split("\n")) {
-            if (line.startsWith("event:")) eventName = line.slice(6).trim();
-            else if (line.startsWith("data:"))
-              dataLines.push(line.slice(5).replace(/^ /, ""));
-          }
-          if (!dataLines.length) continue;
-
-          let payload: Record<string, unknown> = {};
-          try {
-            payload = JSON.parse(dataLines.join("\n"));
-          } catch {
-            payload = { data: dataLines.join("\n") };
-          }
-
-          if (eventName === "stdout") {
-            const text = String(payload.data ?? "");
-            if (text) appendLine({ kind: "stdout", text });
-          } else if (eventName === "stderr") {
-            const text = String(payload.data ?? "");
-            if (text) appendLine({ kind: "stderr", text });
-          } else if (eventName === "exit") {
-            exitCode = Number(payload.exit_code ?? 0);
-            if (typeof payload.cwd === "string") nextCwd = payload.cwd;
-          }
-        }
-      }
-
-      if (nextCwd) setCwd(nextCwd);
-      // Only show exit-code line for non-zero failures so successful runs
-      // don't accumulate noise.
-      if (exitCode !== 0) {
-        appendLine({
-          kind: "info",
-          text: `(exit code ${exitCode})`,
-          exitCode,
-        });
-      }
+      await execBuffered(sandboxId, cmd, appendLine, setCwd, ac.signal);
     } catch (err) {
-      // AbortError = user pressed Stop; don't surface it as an error.
       const aborted =
         (err instanceof DOMException && err.name === "AbortError") ||
         ac.signal.aborted;
       if (aborted) {
         appendLine({ kind: "info", text: "(cancelled)" });
-      } else if (
-        err instanceof Error &&
-        err.message.startsWith("stream HTTP")
-      ) {
-        // Streaming endpoint failed — try the buffered fallback so the
-        // user still gets output. This matches what `/sandbox/[id]` does
-        // by default.
-        await execBuffered(sandboxId, cmd, appendLine, setCwd);
       } else {
-        appendLine({
-          kind: "stderr",
-          text: extractErrorMessage(err),
-        });
+        appendLine({ kind: "stderr", text: extractErrorMessage(err) });
       }
     } finally {
       abortRef.current = null;
@@ -327,7 +250,11 @@ export const SimpleTerminal: React.FC<SimpleTerminalProps> = ({
             title="Copy all output"
             className="flex h-5 w-5 items-center justify-center rounded-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 disabled:opacity-30 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
           >
-            {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+            {copied ? (
+              <Check size={12} className="text-emerald-500" />
+            ) : (
+              <Copy size={12} />
+            )}
           </button>
           <button
             type="button"
@@ -348,8 +275,8 @@ export const SimpleTerminal: React.FC<SimpleTerminalProps> = ({
       >
         {history.length === 0 ? (
           <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            Type a shell command and press Enter. Use ↑/↓ for history,
-            Ctrl+C to cancel a running command.
+            Type a shell command and press Enter. Use ↑/↓ for history, Ctrl+C to
+            cancel a running command.
           </p>
         ) : (
           history.map((line) => (
@@ -416,43 +343,42 @@ async function execBuffered(
   command: string,
   appendLine: (line: Omit<TerminalLine, "id">) => void,
   setCwd: (cwd: string) => void,
+  signal?: AbortSignal,
 ): Promise<void> {
-  try {
-    const resp = await fetch(
-      `/api/sandbox/${encodeURIComponent(sandboxId)}/exec`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ command, timeout: 60 }),
-      },
-    );
-    if (!resp.ok) {
-      const errBody = await resp.text().catch(() => resp.statusText);
-      appendLine({
-        kind: "stderr",
-        text: `exec failed (${resp.status}): ${errBody}`,
-      });
-      return;
-    }
-    const result = (await resp.json()) as {
-      stdout: string;
-      stderr: string;
-      exit_code: number;
-      cwd?: string;
-    };
-    if (result.cwd) setCwd(result.cwd);
-    if (result.stdout) appendLine({ kind: "stdout", text: result.stdout });
-    if (result.stderr) appendLine({ kind: "stderr", text: result.stderr });
-    if (result.exit_code !== 0 && !result.stdout && !result.stderr) {
-      appendLine({
-        kind: "info",
-        text: `(exit code ${result.exit_code})`,
-        exitCode: result.exit_code,
-      });
-    }
-  } catch (err) {
-    appendLine({ kind: "stderr", text: extractErrorMessage(err) });
+  const resp = await fetch(
+    `/api/sandbox/${encodeURIComponent(sandboxId)}/exec`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ command, timeout: 60 }),
+      signal,
+    },
+  );
+  if (!resp.ok) {
+    const errBody = await resp.text().catch(() => resp.statusText);
+    appendLine({
+      kind: "stderr",
+      text: `exec failed (${resp.status}): ${errBody}`,
+    });
+    return;
   }
+  const result = (await resp.json()) as {
+    stdout: string;
+    stderr: string;
+    exit_code: number;
+    cwd?: string;
+  };
+  if (result.cwd) setCwd(result.cwd);
+  if (result.stdout) appendLine({ kind: "stdout", text: result.stdout });
+  if (result.stderr) appendLine({ kind: "stderr", text: result.stderr });
+  if (result.exit_code !== 0 && !result.stdout && !result.stderr) {
+    appendLine({
+      kind: "info",
+      text: `(exit code ${result.exit_code})`,
+      exitCode: result.exit_code,
+    });
+  }
+  // AbortError propagates to the caller's catch block — do not swallow it here.
 }
 
 export default SimpleTerminal;

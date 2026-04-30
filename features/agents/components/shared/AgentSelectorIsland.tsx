@@ -5,13 +5,11 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAgentById,
+  selectAgentType,
   selectAgentVersion,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { AgentListDropdown } from "@/features/agents/components/agent-listings/AgentListDropdown";
-import {
-  deriveAgentMode,
-  getAgentModeHref,
-} from "./AgentModeController";
+import { deriveAgentMode, getAgentModeHref } from "./AgentModeController";
 
 interface AgentSelectorIslandProps {
   agentId: string;
@@ -39,9 +37,9 @@ export function AgentSelectorIsland({
   const liveAgentName = useAppSelector(
     (state) => selectAgentById(state, agentId)?.name,
   );
-  const version = useAppSelector((state) =>
-    selectAgentVersion(state, agentId),
-  );
+  const version = useAppSelector((state) => selectAgentVersion(state, agentId));
+  const agentType = useAppSelector((state) => selectAgentType(state, agentId));
+  const isBuiltin = agentType === "builtin";
 
   const displayName = liveAgentName ?? initialName;
 
@@ -63,6 +61,14 @@ export function AgentSelectorIsland({
       {version != null && (
         <span className="text-[0.625rem] font-medium text-[var(--shell-nav-text)] tabular-nums shrink-0">
           v{version}
+        </span>
+      )}
+      {isBuiltin && (
+        <span
+          className="text-[0.625rem] font-semibold uppercase tracking-wider leading-none px-1.5 py-0.5 rounded-full border border-destructive/40 bg-destructive/10 text-destructive shrink-0"
+          title="System-owned agent — edits affect all users"
+        >
+          Builtin
         </span>
       )}
     </div>

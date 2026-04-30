@@ -1,22 +1,10 @@
 "use client";
 
 import React from "react";
-import {
-  Brain,
-  MessageSquare,
-  PanelBottom,
-  PanelRight,
-  PanelRightOpen,
-  Save,
-} from "lucide-react";
+import { Brain, MessageSquare, PanelBottom, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import {
-  selectFarRightOpen,
-  selectRightOpen,
-  setFarRightOpen,
-  setRightOpen,
-} from "../redux/codeWorkspaceSlice";
+import { selectRightOpen, setRightOpen } from "../redux/codeWorkspaceSlice";
 import {
   selectTerminalOpen,
   setOpen as setTerminalOpen,
@@ -24,7 +12,6 @@ import {
 
 interface EditorToolbarProps {
   rightSlotAvailable: boolean;
-  farRightSlotAvailable: boolean;
   /** Trigger a save of the currently active editor tab. */
   onSaveActiveTab?: () => void;
   /** The active tab has unsaved edits — used to spotlight the save button. */
@@ -50,7 +37,6 @@ interface EditorToolbarProps {
  */
 export const EditorToolbar: React.FC<EditorToolbarProps> = ({
   rightSlotAvailable,
-  farRightSlotAvailable,
   onSaveActiveTab,
   hasDirtyActiveTab = false,
   hasActiveTab = false,
@@ -62,7 +48,6 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
   const dispatch = useAppDispatch();
   const terminalOpen = useAppSelector(selectTerminalOpen);
   const rightOpen = useAppSelector(selectRightOpen);
-  const farRightOpen = useAppSelector(selectFarRightOpen);
 
   return (
     <div
@@ -116,14 +101,6 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
           onClick={() => dispatch(setRightOpen(!rightOpen))}
         />
       )}
-      {farRightSlotAvailable && (
-        <ToolbarButton
-          icon={farRightOpen ? PanelRightOpen : PanelRight}
-          active={farRightOpen}
-          label={farRightOpen ? "Hide History" : "Show History"}
-          onClick={() => dispatch(setFarRightOpen(!farRightOpen))}
-        />
-      )}
     </div>
   );
 };
@@ -148,8 +125,16 @@ function LastSavedIndicator({ iso, dirty }: { iso: string; dirty: boolean }) {
           ? "text-amber-600 dark:text-amber-400"
           : "text-neutral-500 dark:text-neutral-400",
       )}
-      title={dirty ? `Saved ${fullLabel} — unsaved edits since` : `Saved ${fullLabel}`}
-      aria-label={dirty ? `Last saved ${fullLabel}, with unsaved edits` : `Last saved ${fullLabel}`}
+      title={
+        dirty
+          ? `Saved ${fullLabel} — unsaved edits since`
+          : `Saved ${fullLabel}`
+      }
+      aria-label={
+        dirty
+          ? `Last saved ${fullLabel}, with unsaved edits`
+          : `Last saved ${fullLabel}`
+      }
     >
       {dirty ? "Edits since " : "Saved "}
       {relative}

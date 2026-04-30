@@ -1,0 +1,503 @@
+/**
+ * features/files/components/core/FilePreview/previewers/PdfDocumentRenderer.tsx
+ *
+ * Presentational core for every PDF surface in the app. Owns:
+ *
+ *   - The react-pdf `<Document>` / `<Page>` mount + worker config
+ *   - The toolbar (zoom in/out, fit page, fit width, actual size, rotate)
+ *   - Page navigation (prev / next + counter)
+ *   - The sizing model: ResizeObserver-driven container measurement,
+ *     post-rotation effective dimensions, and `scale = min(availW /
+ *     effW, availH / effH)` so fit-page expands until ONE axis fills
+ *     and then stops
+ *   - The error / loading branches (consistent visuals across surfaces)
+ *
+ * It does NOT know how to obtain the bytes. Callers fetch the PDF
+ * however they like (Python `/files/{id}/download` proxy, public S3
+ * URL, drag-dropped File, etc.) and hand a same-origin `blob:` URL
+ * here. That keeps the renderer 100% stable across surfaces — adding a
+ * new place to view PDFs (admin tools, share preview, etc.) is one
+ * thin wrapper, not another 300-line copy of the toolbar.
+ *
+ * The cld_files-backed `PdfPreview` and the pdf-extractor `PdfStudioUrlViewer`
+ * are now both ~30-line wrappers that fetch bytes their own way and
+ * delegate rendering to this component. Bugs fixed here propagate to
+ * both surfaces automatically.
+ */
+
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Document, Page, pdfjs } from "react-pdf";
+import {
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Maximize,
+  Maximize2,
+  Minus,
+  Plus,
+  RotateCw,
+  Scaling,
+} from "lucide-react";
+import "react-pdf/dist/Page/TextLayer.css";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import { cn } from "@/lib/utils";
+import { TooltipIcon } from "@/features/files/components/core/Tooltip/TooltipIcon";
+import { FileFetchProgress } from "../FileFetchProgress";
+
+// Worker source — pinned to the installed pdfjs version. Set once at
+// module load. Both wrappers (cld_files PdfPreview, URL-based viewer)
+// import this module before mounting any <Document>, so this runs
+// before pdfjs needs a worker.
+if (typeof window !== "undefined") {
+  pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+}
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+export interface PdfDocumentRendererProps {
+  /**
+   * Same-origin blob URL pointing at the PDF bytes. `null` while the
+   * caller is still fetching (or before fetch starts).
+   *
+   * IMPORTANT: must be a stable URL across renders. Wrappers should
+   * memoise the URL so react-pdf's `<Document>` doesn't re-load on
+   * every parent re-render.
+   */
+  blobUrl: string | null;
+  /** Filename — surfaced in the loading + error UIs. */
+  fileName?: string | null;
+
+  /**
+   * Caller-managed loading state. When `true`, the renderer shows the
+   * shared `<FileFetchProgress/>` UI instead of the document.
+   */
+  loading?: boolean;
+  bytesLoaded?: number;
+  bytesTotal?: number | null;
+
+  /**
+   * Caller-managed error string. When set, the renderer shows the
+   * error card instead of the document. The renderer also surfaces
+   * its own internal load errors (e.g. malformed PDF) on top of this.
+   */
+  error?: string | null;
+
+  /**
+   * Optional controlled page (1-based). When set, the parent owns the
+   * page state and the renderer emits changes via `onPageChange`. Used
+   * by the PDF Studio to drive scroll sync from the text panes.
+   */
+  pageNumber?: number;
+  onPageChange?: (page: number) => void;
+
+  className?: string;
+}
+
+type ZoomMode =
+  // Fit page — biggest scale that keeps BOTH width and height inside the
+  // available space. Default. The proper definition of "fit": expand
+  // until ONE axis fills, then stop.
+  | { kind: "fit" }
+  // Fit width — biggest scale where page width matches available width;
+  // height may overflow and scroll. Useful for tall pages where small
+  // fit-page text is worse than scrolling.
+  | { kind: "fit-width" }
+  // 100% physical size — page renders at its natural pixel size (×1.5
+  // because react-pdf's 1.0 = 72 DPI feels too small on hi-DPI).
+  | { kind: "actual" }
+  // Explicit zoom level (0.25 → 4.0).
+  | { kind: "scale"; scale: number };
+
+const MIN_SCALE = 0.25;
+const MAX_SCALE = 4;
+const STEP = 0.25;
+const ACTUAL_SIZE_SCALE = 1.5;
+// Reserve a few px of padding on each side so the page doesn't kiss the
+// scrollbar / border.
+const VIEWPORT_PADDING_PX = 24;
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
+export default function PdfDocumentRenderer({
+  blobUrl,
+  fileName,
+  loading,
+  bytesLoaded = 0,
+  bytesTotal = null,
+  error,
+  pageNumber: controlledPage,
+  onPageChange,
+  className,
+}: PdfDocumentRendererProps) {
+  const [numPages, setNumPages] = useState(0);
+  const [internalPage, setInternalPage] = useState(1);
+  // Controlled vs uncontrolled page — when the parent provides
+  // `pageNumber` we mirror it and emit changes upward instead of
+  // owning state.
+  const pageNumber = controlledPage ?? internalPage;
+  const setPageNumber = useCallback(
+    (next: number | ((prev: number) => number)) => {
+      const resolved = typeof next === "function" ? next(pageNumber) : next;
+      if (controlledPage == null) setInternalPage(resolved);
+      onPageChange?.(resolved);
+    },
+    [controlledPage, onPageChange, pageNumber],
+  );
+
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [zoom, setZoom] = useState<ZoomMode>({ kind: "fit" });
+  const [rotation, setRotation] = useState(0);
+
+  // Page natural dimensions (CSS pixels at scale 1.0, including any
+  // intrinsic rotation the PDF declared). Populated from
+  // `<Page onLoadSuccess>`. Used to compute true fit-page scale.
+  const [pageDims, setPageDims] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
+
+  // ── Container size via ResizeObserver — drives fit math on splitter
+  //    drags / window resizes without a remount.
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [containerSize, setContainerSize] = useState<{
+    width: number;
+    height: number;
+  }>({ width: 0, height: 0 });
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+    setContainerSize({ width: node.clientWidth, height: node.clientHeight });
+    const ro = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        setContainerSize({
+          width: entry.contentRect.width,
+          height: entry.contentRect.height,
+        });
+      }
+    });
+    ro.observe(node);
+    return () => ro.disconnect();
+  }, []);
+
+  // Stable file descriptor — react-pdf reloads the document whenever
+  // the `file` prop's identity changes, so memoise it.
+  const documentFile = useMemo(
+    () => (blobUrl ? { url: blobUrl } : null),
+    [blobUrl],
+  );
+
+  // Reset internal sizing/error/page state when a NEW document loads
+  // (i.e. `blobUrl` flips). Without this, switching the source URL
+  // (e.g. clicking a different doc in PDF Studio) would carry over
+  // stale `pageDims` from the previous document and re-render with
+  // the wrong natural dimensions.
+  //
+  // CRITICAL: this MUST NOT depend on `controlledPage` — the studio's
+  // text pane drives `pageNumber` for scroll-sync, and including it
+  // here would re-fit the page on every chunk click. Internal page
+  // state is only reset when the document itself changes (uncontrolled
+  // case), which is naturally bound to `blobUrl`.
+  useEffect(() => {
+    setLoadError(null);
+    setPageDims(null);
+    setNumPages(0);
+    setInternalPage(1);
+    // Intentionally only `blobUrl` — see comment above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blobUrl]);
+
+  const combinedError = loadError ?? error ?? null;
+
+  // Effective dimensions AFTER user rotation. react-pdf's `<Page>`
+  // rotates AFTER scaling, so we need to swap W/H ourselves to compare
+  // against the container.
+  const effectiveDims = useMemo(() => {
+    if (!pageDims) return null;
+    const flipped = rotation === 90 || rotation === 270;
+    return flipped
+      ? { width: pageDims.height, height: pageDims.width }
+      : pageDims;
+  }, [pageDims, rotation]);
+
+  /**
+   * Compute the `scale` we hand to `<Page>`. We use `scale` (not
+   * `width`) because it composes correctly with rotation. Fit-page
+   * expands until ONE axis fills and then stops.
+   */
+  const pageScale = useMemo(() => {
+    if (
+      !effectiveDims ||
+      effectiveDims.width <= 0 ||
+      effectiveDims.height <= 0
+    ) {
+      return null;
+    }
+    const availW = Math.max(120, containerSize.width - VIEWPORT_PADDING_PX * 2);
+    const availH = Math.max(120, containerSize.height - VIEWPORT_PADDING_PX * 2);
+    switch (zoom.kind) {
+      case "fit": {
+        const sX = availW / effectiveDims.width;
+        const sY = availH / effectiveDims.height;
+        return Math.min(sX, sY);
+      }
+      case "fit-width":
+        return availW / effectiveDims.width;
+      case "actual":
+        return ACTUAL_SIZE_SCALE;
+      case "scale":
+        return zoom.scale;
+    }
+  }, [containerSize, effectiveDims, zoom]);
+
+  const zoomLabel = useMemo(() => {
+    if (zoom.kind === "fit") {
+      return pageScale ? `Fit ${Math.round(pageScale * 100)}%` : "Fit";
+    }
+    if (zoom.kind === "fit-width") {
+      return pageScale ? `Fit W ${Math.round(pageScale * 100)}%` : "Fit W";
+    }
+    if (zoom.kind === "actual") return "100%";
+    return `${Math.round(zoom.scale * 100)}%`;
+  }, [zoom, pageScale]);
+
+  // Effective scale for the +/- step buttons — bumps from the actual
+  // rendered size, not from a stale fit value.
+  const currentScale =
+    zoom.kind === "scale"
+      ? zoom.scale
+      : zoom.kind === "actual"
+        ? ACTUAL_SIZE_SCALE
+        : (pageScale ?? 1);
+
+  const stepZoom = useCallback(
+    (delta: number) => {
+      setZoom({
+        kind: "scale",
+        scale: Math.min(MAX_SCALE, Math.max(MIN_SCALE, currentScale + delta)),
+      });
+    },
+    [currentScale],
+  );
+
+  const handlePageLoadSuccess = useCallback(
+    (page: {
+      width: number;
+      height: number;
+      originalWidth?: number;
+      originalHeight?: number;
+    }) => {
+      // CRITICAL: read `originalWidth`/`originalHeight`, not `width`/
+      // `height`. The latter pair reflects the page's CURRENT rendered
+      // size — i.e. post-scale. Feeding those into pageDims creates a
+      // feedback loop where every re-render shrinks the page (compute
+      // scale from already-scaled dims, then scale again). The
+      // `original*` props are the natural PDF-points dimensions and
+      // stay constant across renders.
+      const naturalW = page.originalWidth ?? page.width;
+      const naturalH = page.originalHeight ?? page.height;
+      setPageDims((prev) => {
+        if (prev && prev.width === naturalW && prev.height === naturalH) {
+          return prev;
+        }
+        return { width: naturalW, height: naturalH };
+      });
+    },
+    [],
+  );
+
+  // ── Render branches ────────────────────────────────────────────────
+
+  if (combinedError) {
+    return (
+      <div
+        className={cn(
+          "flex h-full w-full flex-col items-center justify-center gap-3 p-6 text-center",
+          className,
+        )}
+        role="alert"
+      >
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+          <AlertCircle className="h-6 w-6 text-destructive" />
+        </div>
+        <div className="space-y-1">
+          <h3 className="text-sm font-semibold">Couldn&apos;t load this PDF</h3>
+          <p className="max-w-md text-xs text-muted-foreground break-words">
+            {combinedError}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading || !documentFile) {
+    return (
+      <div
+        className={cn(
+          "flex h-full w-full items-center justify-center bg-muted/20",
+          className,
+        )}
+      >
+        {bytesTotal != null || bytesLoaded > 0 ? (
+          <FileFetchProgress
+            fileName={fileName ?? null}
+            bytesLoaded={bytesLoaded}
+            bytesTotal={bytesTotal ?? null}
+          />
+        ) : (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Loading PDF…</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn("flex h-full w-full flex-col bg-muted/20", className)}>
+      {/* Toolbar — zoom + rotate + page nav */}
+      <div className="flex items-center justify-between gap-2 border-b border-border/60 bg-background/80 px-3 py-1.5 text-xs shrink-0">
+        <div className="flex items-center gap-1">
+          <TooltipIcon label="Zoom out">
+            <button
+              type="button"
+              onClick={() => stepZoom(-STEP)}
+              disabled={currentScale <= MIN_SCALE}
+              className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40"
+            >
+              <Minus className="h-3.5 w-3.5" />
+            </button>
+          </TooltipIcon>
+          <span className="min-w-[3.5rem] text-center text-xs font-medium tabular-nums">
+            {zoomLabel}
+          </span>
+          <TooltipIcon label="Zoom in">
+            <button
+              type="button"
+              onClick={() => stepZoom(+STEP)}
+              disabled={currentScale >= MAX_SCALE}
+              className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40"
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </button>
+          </TooltipIcon>
+          <span className="mx-1 h-4 w-px bg-border" />
+          <TooltipIcon label="Fit page (default)">
+            <button
+              type="button"
+              onClick={() => setZoom({ kind: "fit" })}
+              className={cn(
+                "flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground",
+                zoom.kind === "fit" && "bg-accent text-accent-foreground",
+              )}
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+            </button>
+          </TooltipIcon>
+          <TooltipIcon label="Fit width">
+            <button
+              type="button"
+              onClick={() => setZoom({ kind: "fit-width" })}
+              className={cn(
+                "flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground",
+                zoom.kind === "fit-width" &&
+                  "bg-accent text-accent-foreground",
+              )}
+            >
+              <Maximize className="h-3.5 w-3.5" />
+            </button>
+          </TooltipIcon>
+          <TooltipIcon label="Actual size (100%)">
+            <button
+              type="button"
+              onClick={() => setZoom({ kind: "actual" })}
+              className={cn(
+                "flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground",
+                zoom.kind === "actual" && "bg-accent text-accent-foreground",
+              )}
+            >
+              <Scaling className="h-3.5 w-3.5" />
+            </button>
+          </TooltipIcon>
+          <span className="mx-1 h-4 w-px bg-border" />
+          <TooltipIcon label="Rotate 90°">
+            <button
+              type="button"
+              onClick={() => setRotation((r) => (r + 90) % 360)}
+              className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+            >
+              <RotateCw className="h-3.5 w-3.5" />
+            </button>
+          </TooltipIcon>
+        </div>
+
+        {numPages > 1 ? (
+          <div
+            className="flex items-center gap-1.5"
+            aria-label="PDF pagination"
+          >
+            <button
+              type="button"
+              onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
+              disabled={pageNumber <= 1}
+              aria-label="Previous page"
+              className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+            <span className="min-w-[3.5rem] text-center font-medium tabular-nums">
+              {pageNumber} / {numPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPageNumber((p) => Math.min(numPages, p + 1))}
+              disabled={pageNumber >= numPages}
+              aria-label="Next page"
+              className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40"
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ) : null}
+      </div>
+
+      {/* Scrollable viewport — measured with ResizeObserver. */}
+      <div ref={containerRef} className="min-h-0 flex-1 overflow-auto">
+        <Document
+          file={documentFile}
+          onLoadSuccess={({ numPages: n }) => {
+            setNumPages(n);
+            setPageNumber((p) => Math.min(p, n));
+          }}
+          onLoadError={(err) => setLoadError(err.message)}
+          loading={
+            <div className="mt-6 h-6 w-40 animate-pulse rounded bg-muted" />
+          }
+          className="flex w-full flex-col items-center"
+        >
+          <Page
+            pageNumber={pageNumber}
+            renderAnnotationLayer
+            renderTextLayer
+            // Use `scale` (not `width`) so rotation composes correctly:
+            // react-pdf rotates AFTER scaling, so we don't need to swap
+            // width/height ourselves. devicePixelRatio handling stays
+            // internal to pdfjs.
+            scale={pageScale && pageScale > 0 ? pageScale : undefined}
+            rotate={rotation}
+            onLoadSuccess={handlePageLoadSuccess}
+            className="my-4 shadow-sm"
+          />
+        </Document>
+      </div>
+    </div>
+  );
+}

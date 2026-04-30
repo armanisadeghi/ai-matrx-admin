@@ -39,7 +39,6 @@ import { undoLastEditThunk } from "../redux/codeEditUndoRevert";
 
 interface EditorAreaProps {
   rightSlotAvailable?: boolean;
-  farRightSlotAvailable?: boolean;
   /** When true, the editor is the rightmost column and its toolbar needs to
    *  reserve space for the app's floating avatar. */
   rightmost?: boolean;
@@ -48,7 +47,6 @@ interface EditorAreaProps {
 
 export const EditorArea: React.FC<EditorAreaProps> = ({
   rightSlotAvailable = false,
-  farRightSlotAvailable = false,
   rightmost = false,
   className,
 }) => {
@@ -322,7 +320,6 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
         </div>
         <EditorToolbar
           rightSlotAvailable={rightSlotAvailable}
-          farRightSlotAvailable={farRightSlotAvailable}
           onSaveActiveTab={handleSave}
           hasDirtyActiveTab={Boolean(activeTab?.dirty)}
           hasActiveTab={Boolean(activeTab)}

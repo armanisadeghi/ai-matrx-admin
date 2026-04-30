@@ -164,10 +164,7 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
         ? preserve(current[PANEL_IDS.FAR_RIGHT], DESIRED_FAR_RIGHT)
         : 0;
 
-    const centerSize = Math.max(
-      100 - sideSize - rightSize - farRightSize,
-      25,
-    );
+    const centerSize = Math.max(100 - sideSize - rightSize - farRightSize, 25);
     const total = sideSize + centerSize + rightSize + farRightSize;
     const scale = 100 / total;
 
@@ -254,7 +251,6 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
               >
                 <EditorArea
                   rightSlotAvailable={rightAvailable}
-                  farRightSlotAvailable={farRightAvailable}
                   rightmost={editorIsRightmost}
                 />
               </ResizablePanel>

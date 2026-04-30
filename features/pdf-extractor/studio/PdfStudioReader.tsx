@@ -27,6 +27,7 @@
  */
 
 import React, { useEffect, useRef, useCallback, useMemo } from "react";
+import dynamic from "next/dynamic";
 import {
   FileText,
   Sparkles,
@@ -39,6 +40,25 @@ import {
   Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+// react-pdf + pdfjs-dist is ~400KB; only pulled in when the PDF pane
+// actually mounts. We use a URL-based viewer (fetch → blob → react-pdf)
+// because `processed_documents` rows aren't always linked through
+// `cld_files` — the only thing we can rely on is `storage_uri`. The
+// dedicated viewer here strips the cld_files dependency and works for
+// every doc with a downloadable URL.
+const PdfStudioUrlViewer = dynamic(
+  () => import("./PdfStudioUrlViewer"),
+  { ssr: false, loading: () => <PdfPaneLoading /> },
+);
+
+function PdfPaneLoading() {
+  return (
+    <div className="flex h-full items-center justify-center">
+      <Loader2 className="w-5 h-5 text-muted-foreground/60 animate-spin" />
+    </div>
+  );
+}
 import { cn } from "@/lib/utils";
 import type { PdfDocument } from "../hooks/usePdfExtractor";
 import type { PdfPageRow } from "../hooks/useProcessedDocumentPages";
@@ -101,17 +121,8 @@ export function PdfStudioReader({
   // ref because we don't want to re-render to track focus.
   const lastScrolledPaneRef = useRef<PaneKey | null>(null);
 
-  // The PDF iframe is driven by `#page=N`. We own its src manually so the
-  // user can also change pages via the toolbar's PageJumper.
-  const pdfFrameRef = useRef<HTMLIFrameElement | null>(null);
-  useEffect(() => {
-    if (!doc.source || !pdfFrameRef.current || !activePage) return;
-    try {
-      pdfFrameRef.current.src = `${doc.source}#page=${activePage}`;
-    } catch {
-      // ignore cross-origin frame manipulation errors
-    }
-  }, [activePage, doc.source]);
+  // The PDF viewer (PdfPreview) is driven via its `pageNumber` prop —
+  // see `PdfPane` below. No iframe ref needed.
 
   if (loading && !hasPages) {
     return <ReaderSkeleton visiblePanes={visiblePanes} />;
@@ -135,7 +146,7 @@ export function PdfStudioReader({
         <PdfPane
           doc={doc}
           activePage={activePage}
-          frameRef={pdfFrameRef}
+          onActivePage={onActivePage}
           onTogglePane={() => onTogglePane("pdf")}
           onOpenUpload={onOpenUpload}
         />
@@ -192,16 +203,23 @@ export function PdfStudioReader({
 function PdfPane({
   doc,
   activePage,
-  frameRef,
+  onActivePage,
   onTogglePane,
   onOpenUpload,
 }: {
   doc: PdfDocument;
   activePage: number | null;
-  frameRef: React.RefObject<HTMLIFrameElement | null>;
+  onActivePage: (page: number | null) => void;
   onTogglePane: () => void;
   onOpenUpload: () => void;
 }) {
+  // Drive the viewer's controlled page from the studio. The viewer also
+  // emits onPageChange when the user uses its own toolbar prev/next.
+  const onViewerPageChange = useCallback(
+    (page: number) => onActivePage(page),
+    [onActivePage],
+  );
+
   return (
     <section className="flex-1 min-w-0 flex flex-col border-r border-border bg-muted/10">
       <PaneHeader
@@ -210,13 +228,14 @@ function PdfPane({
         icon={<FileText className="w-3 h-3 text-muted-foreground" />}
         onTogglePane={onTogglePane}
       />
-      <div className="flex-1 min-h-0 p-2">
+      <div className="flex-1 min-h-0 overflow-hidden">
         {doc.source ? (
-          <iframe
-            ref={frameRef}
-            src={doc.source}
-            title={doc.name}
-            className="w-full h-full border border-border rounded bg-background"
+          <PdfStudioUrlViewer
+            url={doc.source}
+            fileName={doc.name}
+            pageNumber={activePage ?? 1}
+            onPageChange={onViewerPageChange}
+            className="border-0"
           />
         ) : (
           <PdfPaneEmptyState doc={doc} onOpenUpload={onOpenUpload} />

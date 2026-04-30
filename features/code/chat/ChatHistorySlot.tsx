@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Filter, Settings2 } from "lucide-react";
+import { Filter, Plus, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
@@ -40,6 +40,7 @@ export const ChatHistorySlot: React.FC<ChatHistorySlotProps> = ({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const activeConversationId = searchParams.get("conversationId");
+  const agentId = searchParams.get("agentId");
 
   const {
     filter,
@@ -68,6 +69,13 @@ export const ChatHistorySlot: React.FC<ChatHistorySlotProps> = ({
       }),
     );
   }, [dispatch]);
+
+  const handleNewChat = useCallback(() => {
+    if (!agentId) return;
+    const next = new URLSearchParams(searchParams.toString());
+    next.delete("conversationId");
+    router.replace(`${pathname}?${next.toString()}`);
+  }, [agentId, pathname, router, searchParams]);
 
   const filterLabel = useMemo(() => describeFilter(filter), [filter]);
 
@@ -129,11 +137,20 @@ export const ChatHistorySlot: React.FC<ChatHistorySlotProps> = ({
         title="History"
         subtitle={headerSubtitle}
         actions={
-          <SidePanelAction
-            icon={Settings2}
-            label="History settings"
-            onClick={openSettings}
-          />
+          <>
+            {agentId && (
+              <SidePanelAction
+                icon={Plus}
+                label="New chat"
+                onClick={handleNewChat}
+              />
+            )}
+            <SidePanelAction
+              icon={Settings2}
+              label="History settings"
+              onClick={openSettings}
+            />
+          </>
         }
         className={rightmost ? AVATAR_RESERVE : undefined}
       />

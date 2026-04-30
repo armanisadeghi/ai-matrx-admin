@@ -42,6 +42,10 @@ import { PdfStudioUploadDrawer } from "./PdfStudioUploadDrawer";
 import { useShortcutTrigger } from "@/features/agents/hooks/useShortcutTrigger";
 import { useToastManager } from "@/hooks/useToastManager";
 import { useRouter } from "next/navigation";
+import { useApiAuth } from "@/hooks/useApiAuth";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
+import { ENDPOINTS } from "@/lib/api/endpoints";
 
 interface PdfStudioShellProps {
   initialDocumentId?: string;
@@ -55,6 +59,8 @@ export function PdfStudioShell({ initialDocumentId }: PdfStudioShellProps) {
   const extractor = usePdfExtractor();
   const triggerShortcut = useShortcutTrigger();
   const toast = useToastManager("pdf-extractor");
+  const { getHeaders, waitForAuth } = useApiAuth();
+  const backendUrl = useAppSelector(selectResolvedBaseUrl);
 
   const [activeDoc, setActiveDoc] = useState<PdfDocument | null>(null);
   const [activePage, setActivePage] = useState<number | null>(null);
@@ -67,6 +73,8 @@ export function PdfStudioShell({ initialDocumentId }: PdfStudioShellProps) {
     () => new Set<PaneKey>(["pdf", "raw", "clean"]),
   );
   const [pipelineRunning, setPipelineRunning] = useState(false);
+  const [aiCleanRunning, setAiCleanRunning] = useState(false);
+  const [liveStatus, setLiveStatus] = useState<string | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
 
   // Per-page rows for the active doc.
@@ -155,6 +163,7 @@ export function PdfStudioShell({ initialDocumentId }: PdfStudioShellProps) {
   const handleRunPipeline = useCallback(async () => {
     if (!activeDoc) return;
     setPipelineRunning(true);
+    setLiveStatus("Starting pipeline…");
     try {
       // The extractor's `runFullPipeline` updates the *tab* in its internal
       // state. The shell doesn't use those tabs — but we can trigger the
@@ -175,8 +184,97 @@ export function PdfStudioShell({ initialDocumentId }: PdfStudioShellProps) {
       toast.error(err instanceof Error ? err.message : "Pipeline failed");
     } finally {
       setPipelineRunning(false);
+      setLiveStatus(null);
     }
   }, [activeDoc, extractor, docsState, toast]);
+
+  // ── AI Clean ──────────────────────────────────────────────────────────
+  //
+  // Direct stream of `/utilities/pdf/clean-content/{doc_id}` so we can
+  // surface progress in the toolbar's live-status strip and refresh the
+  // active doc the moment it succeeds. The `extractor.cleanContent` hook
+  // exists, but it writes to its private `tabs` array — the studio
+  // doesn't observe that, so feedback would be invisible. Inlining keeps
+  // the user fully informed.
+
+  const handleRunAiClean = useCallback(async () => {
+    if (!activeDoc) return;
+    setAiCleanRunning(true);
+    setLiveStatus("Starting AI cleanup…");
+    try {
+      await waitForAuth();
+      const rawHeaders = getHeaders() as Record<string, string>;
+      // Strip Content-Type — this is a no-body POST and the server is
+      // strict about request shape.
+      const { "Content-Type": _ct, ...headers } = rawHeaders;
+
+      const response = await fetch(
+        `${backendUrl}${ENDPOINTS.pdf.cleanContent(activeDoc.id)}`,
+        { method: "POST", headers },
+      );
+      if (!response.ok) {
+        const errText = await response.text().catch(() => "");
+        throw new Error(
+          `HTTP ${response.status}${errText ? `: ${errText.slice(0, 200)}` : ""}`,
+        );
+      }
+
+      // Parse NDJSON
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let cleanedText: string | null = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop()!;
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const event = JSON.parse(line) as {
+              event?: string;
+              data?: Record<string, unknown>;
+            };
+            if (event.event === "info") {
+              const msg =
+                (event.data?.user_message as string | undefined) ??
+                (event.data?.message as string | undefined);
+              if (msg) setLiveStatus(msg);
+            } else if (event.event === "data") {
+              const candidate = event.data?.clean_content as
+                | string
+                | undefined;
+              if (candidate) cleanedText = candidate;
+            }
+          } catch {
+            // skip malformed lines
+          }
+        }
+      }
+
+      if (!cleanedText) {
+        throw new Error(
+          "AI cleanup completed but no clean_content was returned",
+        );
+      }
+
+      // Patch the active doc in place so the AI-cleaned pane re-renders
+      // immediately. Refresh the sidebar so the "cleaned" chip shows up.
+      setActiveDoc((d) =>
+        d ? { ...d, cleanContent: cleanedText } : d,
+      );
+      docsState.refresh();
+      toast.success("AI cleanup complete");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "AI cleanup failed");
+    } finally {
+      setAiCleanRunning(false);
+      setLiveStatus(null);
+    }
+  }, [activeDoc, backendUrl, getHeaders, waitForAuth, docsState, toast]);
 
   // ── Upload hand-off ───────────────────────────────────────────────────
   //
@@ -302,6 +400,9 @@ export function PdfStudioShell({ initialDocumentId }: PdfStudioShellProps) {
           onOpenFind={() => setFindOpen(true)}
           onRunPipeline={handleRunPipeline}
           pipelineRunning={pipelineRunning}
+          onRunAiClean={handleRunAiClean}
+          aiCleanRunning={aiCleanRunning}
+          liveStatus={liveStatus}
           onOpenSource={() => {
             if (activeDoc?.source && typeof window !== "undefined") {
               window.open(activeDoc.source, "_blank", "noopener,noreferrer");

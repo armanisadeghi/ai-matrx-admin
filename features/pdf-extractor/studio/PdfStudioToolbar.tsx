@@ -24,6 +24,7 @@ import {
   Loader2,
   Search,
   RefreshCw,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -41,6 +42,11 @@ export interface PdfStudioToolbarProps {
   onOpenFind: () => void;
   onRunPipeline: () => void;
   pipelineRunning: boolean;
+  onRunAiClean: () => void;
+  aiCleanRunning: boolean;
+  /** Latest streaming progress message — surfaced under the toolbar so the
+   *  user always knows what's happening. Cleared when idle. */
+  liveStatus?: string | null;
   onOpenSource: () => void;
 }
 
@@ -53,6 +59,9 @@ export function PdfStudioToolbar({
   onOpenFind,
   onRunPipeline,
   pipelineRunning,
+  onRunAiClean,
+  aiCleanRunning,
+  liveStatus,
   onOpenSource,
 }: PdfStudioToolbarProps) {
   if (!doc) {
@@ -144,9 +153,29 @@ export function PdfStudioToolbar({
           </Button>
           <Button
             size="sm"
+            variant="outline"
+            className="h-7 text-[11px] gap-1"
+            onClick={onRunAiClean}
+            disabled={aiCleanRunning || pipelineRunning}
+            title="Run AI cleanup on the extracted text — populates clean_content"
+          >
+            {aiCleanRunning ? (
+              <>
+                <Loader2 className="w-3 h-3 animate-spin" />
+                Cleaning…
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-3 h-3" />
+                AI Clean
+              </>
+            )}
+          </Button>
+          <Button
+            size="sm"
             className="h-7 text-[11px] gap-1"
             onClick={onRunPipeline}
-            disabled={pipelineRunning}
+            disabled={pipelineRunning || aiCleanRunning}
             title="Re-run extract → cleanup → chunk → AI"
           >
             {pipelineRunning ? (
@@ -188,6 +217,26 @@ export function PdfStudioToolbar({
           updated {formatRelativeTime(doc.updatedAt)}
         </div>
       </div>
+
+      {/* Live status strip — surfaces NDJSON progress messages from the
+          AI Clean / Pipeline endpoints so the user always knows what's
+          happening. Was a major UX gap before; clicks were silent. */}
+      {(aiCleanRunning || pipelineRunning || liveStatus) && (
+        <div className="px-4 py-1 border-t border-border bg-primary/5 flex items-center gap-2 text-[10px]">
+          <Loader2 className="w-2.5 h-2.5 animate-spin text-primary shrink-0" />
+          <span className="font-medium text-primary shrink-0">
+            {aiCleanRunning ? "AI cleanup" : "Pipeline"} running
+          </span>
+          {liveStatus && (
+            <>
+              <span className="text-muted-foreground">·</span>
+              <span className="text-muted-foreground truncate">
+                {liveStatus}
+              </span>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

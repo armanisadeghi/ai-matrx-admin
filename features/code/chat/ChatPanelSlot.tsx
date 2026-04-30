@@ -1,12 +1,16 @@
 "use client";
 
-import React, { useCallback, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
-import { Settings2 } from "lucide-react";
+import React, { useCallback, useEffect, useMemo } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { PanelRight, PanelRightOpen, Plus, Settings2 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { AgentRunnerPage } from "@/features/agents/components/run/AgentRunnerPage";
 import { selectFocusedConversation } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.selectors";
+import {
+  selectFarRightOpen,
+  setFarRightOpen,
+} from "../redux/codeWorkspaceSlice";
 import { SidePanelHeader, SidePanelAction } from "../views/SidePanelChrome";
 import { AVATAR_RESERVE } from "../styles/tokens";
 import { AgentPicker } from "./AgentPicker";
@@ -18,6 +22,7 @@ import {
   selectActiveSandboxId,
   selectActiveSandboxProxyUrl,
 } from "../redux/codeWorkspaceSlice";
+import { setResponseDensity } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 
 interface ChatPanelSlotProps {
   /** Base path used by header controls inside the runner. Defaults to the
@@ -47,9 +52,12 @@ export const ChatPanelSlot: React.FC<ChatPanelSlotProps> = ({
 }) => {
   const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
   const agentId = searchParams.get("agentId");
   const conversationIdFromUrl = searchParams.get("conversationId");
   const { filter } = useCodeWorkspaceHistory();
+  const farRightOpen = useAppSelector(selectFarRightOpen);
 
   // The runner registers itself with surfaceKey `agent-runner:${agentId}` —
   // mirror that string here so we can read the focused conversation directly
@@ -61,6 +69,12 @@ export const ChatPanelSlot: React.FC<ChatPanelSlotProps> = ({
     focusSurfaceKey ? selectFocusedConversation(focusSurfaceKey) : () => null,
   );
   const conversationId = focusedConversationId ?? conversationIdFromUrl;
+
+  useEffect(() => {
+    if (conversationId) {
+      dispatch(setResponseDensity({ conversationId, density: "compact" }));
+    }
+  }, [conversationId, dispatch]);
 
   // Auto-mount the editor → agent context bridge whenever both a workspace
   // tab set and a chat instance are live. The hook is a no-op when
@@ -88,6 +102,13 @@ export const ChatPanelSlot: React.FC<ChatPanelSlotProps> = ({
     );
   }, [dispatch]);
 
+  const handleNewChat = useCallback(() => {
+    if (!agentId) return;
+    const next = new URLSearchParams(searchParams.toString());
+    next.delete("conversationId");
+    router.replace(`${pathname}?${next.toString()}`);
+  }, [agentId, pathname, router, searchParams]);
+
   // Code workspace lives at `/code?agentId=X` — no nested `/run` segment.
   // Override the runner's default URL builder so fork / retry navigation
   // stays inside the workspace and doesn't 404.
@@ -111,10 +132,23 @@ export const ChatPanelSlot: React.FC<ChatPanelSlotProps> = ({
               filter={filter}
               settingsTabId={CODE_WORKSPACE_SETTINGS_TAB}
             />
+            {agentId && (
+              <SidePanelAction
+                icon={Plus}
+                label="New chat"
+                onClick={handleNewChat}
+              />
+            )}
             <SidePanelAction
               icon={Settings2}
               label="Chat settings"
               onClick={openSettings}
+            />
+            <SidePanelAction
+              icon={farRightOpen ? PanelRightOpen : PanelRight}
+              label={farRightOpen ? "Hide History" : "Show History"}
+              active={farRightOpen}
+              onClick={() => dispatch(setFarRightOpen(!farRightOpen))}
             />
           </div>
         }
