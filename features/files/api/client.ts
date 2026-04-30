@@ -156,7 +156,7 @@ export interface ResponseMeta {
   serverRequestId: string | null;
 }
 
-async function buildHeaders(
+export async function buildHeaders(
   opts: RequestOptions,
   includeContentType: boolean,
 ): Promise<{ headers: Record<string, string>; requestId: string }> {

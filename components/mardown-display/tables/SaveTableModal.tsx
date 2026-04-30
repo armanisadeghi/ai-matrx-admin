@@ -1,397 +1,328 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToastManager } from "@/hooks/useToastManager";
-import UserTableViewer from "@/components/user-generated-table-data/UserTableViewer";
-import { ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MultiStepLoader } from "@/components/ui/multi-step-loader";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectPrimaryResponseEndedByTaskId, selectFirstPrimaryResponseDataByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
-import { selectTaskStatus } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
-import { createTask } from "@/lib/redux/socket-io/thunks/createTaskThunk";
-import { submitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
-import { updateTaskField, setTaskFields } from "@/lib/redux/socket-io/slices/socketTasksSlice";
-import { v4 as uuidv4 } from "uuid";
+import { supabase } from "@/utils/supabase/client";
+import {
+  createTable,
+  addRow,
+  type FieldDefinition,
+} from "@/utils/user-table-utls/table-utils";
+import { sanitizeFieldName } from "@/utils/user-table-utls/field-name-sanitizer";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { openQuickDataWindow } from "@/lib/redux/slices/overlaySlice";
 
-const getLoadingStates = (tableData: any) => {
-    const rowCount = Array.isArray(tableData) ? tableData.length : 10;
-    const baseMessages = [
-        { text: "Initializing table structure..." },
-        { text: "Analyzing data patterns..." },
-        { text: "Optimizing columns and rows..." },
-        { text: "Creating database entries..." },
-        { text: "Generating table metadata..." },
-        { text: "Setting up data relationships..." },
-        { text: "Finalizing table creation..." },
-        { text: "Almost there! Preparing your table..." },
-    ];
+// Public response shape — kept stable so parents (`SavedTableInfo` in
+// MarkdownTable / StreamingTableRenderer) and downstream consumers continue
+// working without changes.
+export interface SaveTableResponse {
+  table_id: string;
+  table_name: string;
+  row_count: string;
+  field_count: string;
+}
 
-    // For larger tables, add more detailed steps
-    if (rowCount > 20) {
-        baseMessages.splice(3, 0, { text: "Processing data records..." });
-        baseMessages.splice(5, 0, { text: "Validating data integrity..." });
-    }
+const getLoadingStates = (rowCount: number) => {
+  const baseMessages = [
+    { text: "Initializing table structure..." },
+    { text: "Analyzing data patterns..." },
+    { text: "Optimizing columns and rows..." },
+    { text: "Creating database entries..." },
+    { text: "Generating table metadata..." },
+    { text: "Setting up data relationships..." },
+    { text: "Finalizing table creation..." },
+    { text: "Almost there! Preparing your table..." },
+  ];
 
-    if (rowCount > 50) {
-        baseMessages.splice(2, 0, { text: "Optimizing for large dataset..." });
-        baseMessages.splice(7, 0, { text: "Running performance checks..." });
-    }
+  if (rowCount > 20) {
+    baseMessages.splice(3, 0, { text: "Processing data records..." });
+    baseMessages.splice(5, 0, { text: "Validating data integrity..." });
+  }
 
-    return baseMessages;
+  if (rowCount > 50) {
+    baseMessages.splice(2, 0, { text: "Optimizing for large dataset..." });
+    baseMessages.splice(7, 0, { text: "Running performance checks..." });
+  }
+
+  return baseMessages;
 };
 
-interface SaveTableResponse {
-    table_id: string;
-    table_name: string;
-    original_name: string;
-    row_count: string;
-    field_count: string;
-    success: string;
-    existing: string;
-    fields?: any[];
-}
-
 interface SaveTableModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onSaveComplete?: (tableInfo: SaveTableResponse) => void;
-    tableData: any;
+  isOpen: boolean;
+  onClose: () => void;
+  onSaveComplete?: (tableInfo: SaveTableResponse) => void;
+  /** Normalized rows from the table — `Array<{ [displayHeader]: cellValue }>`. */
+  tableData: Array<Record<string, string>>;
 }
 
-const SaveTableModal: React.FC<SaveTableModalProps> = ({ isOpen, onClose, onSaveComplete, tableData }) => {
-    const dispatch = useAppDispatch();
-    const [tableName, setTableName] = useState("");
-    const [tableDescription, setTableDescription] = useState("");
-    const [stage, setStage] = useState<"form" | "saving" | "result">("form");
-    const [saveResponse, setSaveResponse] = useState<SaveTableResponse | null>(null);
+const SaveTableModal: React.FC<SaveTableModalProps> = ({
+  isOpen,
+  onClose,
+  onSaveComplete,
+  tableData,
+}) => {
+  const dispatch = useAppDispatch();
+  const [tableName, setTableName] = useState("");
+  const [tableDescription, setTableDescription] = useState("");
+  const [stage, setStage] = useState<"form" | "saving">("form");
+  const toast = useToastManager();
+  const isMountedRef = useRef(true);
 
-    // Create a task ID on initial render
-    const [taskId] = useState(() => uuidv4());
-
-    // Select task-related information from Redux store
-    const taskStatus = useAppSelector((state) => selectTaskStatus(state, taskId));
-    const isTaskCompleted = useAppSelector((state) => selectPrimaryResponseEndedByTaskId(taskId)(state));
-    const tableResponse = useAppSelector((state) => selectFirstPrimaryResponseDataByTaskId(taskId)(state)) as SaveTableResponse;
-    const toast = useToastManager();
-    const safetyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-    // Initialize the task on component mount
-    useEffect(() => {
-        if (isOpen) {
-            dispatch(
-                createTask({
-                    taskId,
-                    service: "ai_chat_service",
-                    taskName: "convert_normalized_data_to_user_data",
-                })
-            );
-
-            // Set the initial table data
-            dispatch(
-                setTaskFields({
-                    taskId,
-                    fields: {
-                        data: tableData,
-                    },
-                })
-            );
-        }
-    }, [dispatch, isOpen, taskId, tableData]);
-
-    // Effect to update the task fields when the user changes the form
-    useEffect(() => {
-        if (taskId && tableName) {
-            dispatch(
-                updateTaskField({
-                    taskId,
-                    field: "table_name",
-                    value: tableName,
-                })
-            );
-        }
-    }, [dispatch, taskId, tableName]);
-
-    useEffect(() => {
-        if (taskId && tableDescription) {
-            dispatch(
-                updateTaskField({
-                    taskId,
-                    field: "table_description",
-                    value: tableDescription,
-                })
-            );
-        }
-    }, [dispatch, taskId, tableDescription]);
-
-    // Clear safety timeout on unmount
-    useEffect(() => {
-        return () => {
-            if (safetyTimeoutRef.current) {
-                clearTimeout(safetyTimeoutRef.current);
-            }
-        };
-    }, []);
-
-    // Reset state when modal closes
-    useEffect(() => {
-        if (!isOpen) {
-            // Add a delay before resetting to avoid flashing content during close animation
-            const timeout = setTimeout(() => {
-                if (stage !== "form") {
-                    setStage("form");
-                }
-                if (!saveResponse) {
-                    setTableName("");
-                    setTableDescription("");
-                }
-            }, 300);
-
-            return () => clearTimeout(timeout);
-        }
-    }, [isOpen, stage, saveResponse]);
-
-    // Effect to process response data when it changes
-    useEffect(() => {
-        if (tableResponse && tableResponse.table_id && stage === "saving") {
-            setSaveResponse(tableResponse);
-            setStage("result");
-
-            // Clear safety timeout
-            if (safetyTimeoutRef.current) {
-                clearTimeout(safetyTimeoutRef.current);
-                safetyTimeoutRef.current = null;
-            }
-
-            toast.success(`Table "${tableResponse.table_name || tableName}" created successfully`);
-
-            // Call the onSaveComplete callback if provided
-            if (onSaveComplete) {
-                onSaveComplete(tableResponse as SaveTableResponse);
-            }
-        }
-    }, [tableResponse, isTaskCompleted, stage, tableName, toast, onSaveComplete]);
-
-    // Handle save button click
-    const handleSave = () => {
-        if (!tableName.trim()) {
-            toast.error("Table name is required");
-            return;
-        }
-
-        if (!tableDescription.trim()) {
-            toast.error("Table description is required");
-            return;
-        }
-
-        // Don't allow submission if already in progress
-        if (taskStatus === "submitted" || taskStatus === "completed") {
-            return;
-        }
-
-        // Always clear any previous timeout when starting a new save
-        if (safetyTimeoutRef.current) {
-            clearTimeout(safetyTimeoutRef.current);
-            safetyTimeoutRef.current = null;
-        }
-
-        setStage("saving");
-
-        dispatch(submitTask({ taskId }));
-
-        safetyTimeoutRef.current = setTimeout(() => {
-            if (stage === "saving") {
-                setStage("form");
-                toast.info("Table creation is still processing in the background");
-            }
-
-            safetyTimeoutRef.current = null;
-        }, 20000); // 20 seconds timeout for larger tables
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
     };
+  }, []);
 
-    const handleOpenInNewTab = () => {
-        if (saveResponse?.table_id) {
-            window.open(`/data/${saveResponse.table_id}`, "_blank");
-        }
-    };
+  // Derive headers from the first row's keys. Object key order is
+  // insertion-order-preserved per ES2015+ for string keys, and the upstream
+  // `normalizedData` is built from the headers array in order — so this
+  // matches the visible column order.
+  const displayHeaders = useMemo(() => {
+    const first = tableData?.[0];
+    return first ? Object.keys(first) : [];
+  }, [tableData]);
 
-    const handleDone = () => {
-        if (saveResponse && onSaveComplete) {
-            onSaveComplete(saveResponse);
-        }
-        onClose();
-    };
+  const rowCount = Array.isArray(tableData) ? tableData.length : 0;
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter" && tableName.trim() && tableDescription.trim() && stage === "form") {
-            e.preventDefault();
-            handleSave();
-        }
-    };
+  // Reset form shortly after close so reopening starts fresh.
+  useEffect(() => {
+    if (isOpen) return;
+    const timeout = setTimeout(() => {
+      if (!isMountedRef.current) return;
+      setStage("form");
+      setTableName("");
+      setTableDescription("");
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [isOpen]);
 
-    const isLoading = taskStatus === "submitted" || stage === "saving";
+  const handleSave = async () => {
+    if (!tableName.trim()) {
+      toast.error("Table name is required");
+      return;
+    }
+    if (!tableDescription.trim()) {
+      toast.error("Table description is required");
+      return;
+    }
+    if (displayHeaders.length === 0 || rowCount === 0) {
+      toast.error("Table is empty — nothing to save");
+      return;
+    }
+    if (stage === "saving") return;
 
-    const renderFormContent = () => (
-        <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-                <Label htmlFor="table-name" className="text-gray-700 dark:text-gray-300">
-                    Table Name*
+    setStage("saving");
+
+    try {
+      // Build field schema. First column is required (acts as the row key);
+      // the rest are optional. All cells from a markdown table are strings.
+      const fields: FieldDefinition[] = displayHeaders.map((header, index) => ({
+        field_name: sanitizeFieldName(header) || `column_${index + 1}`,
+        display_name: header,
+        data_type: "string",
+        field_order: index + 1,
+        is_required: index === 0,
+      }));
+
+      const createResult = await createTable(supabase, {
+        tableName: tableName.trim(),
+        description: tableDescription.trim(),
+        isPublic: false,
+        authenticatedRead: false,
+        fields,
+      });
+
+      if (!createResult.success || !createResult.tableId) {
+        throw new Error(createResult.error ?? "Failed to create table");
+      }
+
+      const tableId = createResult.tableId;
+
+      // Map display-header → sanitized field_name so row payloads match the
+      // schema we just created.
+      const headerToFieldName = new Map(
+        displayHeaders.map((header, index) => [
+          header,
+          fields[index].field_name,
+        ]),
+      );
+
+      const insertResults = await Promise.all(
+        tableData.map((row) => {
+          const payload: Record<string, unknown> = {};
+          for (const [key, value] of Object.entries(row)) {
+            const fieldName =
+              headerToFieldName.get(key) ?? sanitizeFieldName(key);
+            if (fieldName) payload[fieldName] = value;
+          }
+          return addRow(supabase, { tableId, data: payload });
+        }),
+      );
+
+      const failedCount = insertResults.filter((r) => !r.success).length;
+      if (failedCount > 0) {
+        const firstError = insertResults.find((r) => !r.success)?.error;
+        toast.warning(
+          `${failedCount} of ${rowCount} row(s) failed to save${
+            firstError ? `: ${firstError}` : ""
+          }`,
+        );
+      }
+
+      if (!isMountedRef.current) return;
+
+      const response: SaveTableResponse = {
+        table_id: tableId,
+        table_name: tableName.trim(),
+        row_count: String(rowCount - failedCount),
+        field_count: String(fields.length),
+      };
+
+      // Hand the new table off to the Data Tables window — it shows the new
+      // table pre-selected with the full table sidebar so the user can keep
+      // working in the rest of the app while reviewing/editing it. This
+      // replaces the old in-modal `UserTableViewer` result stage.
+      dispatch(openQuickDataWindow({ tableId: response.table_id }));
+
+      toast.success(`Table "${response.table_name}" saved`);
+      onSaveComplete?.(response);
+      onClose();
+    } catch (err) {
+      if (!isMountedRef.current) return;
+      const message =
+        err instanceof Error ? err.message : "Failed to create table";
+      toast.error(message);
+      setStage("form");
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (
+      e.key === "Enter" &&
+      tableName.trim() &&
+      tableDescription.trim() &&
+      stage === "form"
+    ) {
+      e.preventDefault();
+      handleSave();
+    }
+  };
+
+  const isLoading = stage === "saving";
+
+  // While stage === "saving", the MultiStepLoader takes the entire screen.
+  // Rendering the Dialog at the same time produced an awkward empty modal
+  // box layered against the loader's backdrop, which also blocked clicks.
+  // We unmount the Dialog during saving and let the loader own the surface.
+  const showDialog = isOpen && stage !== "saving";
+
+  return (
+    <>
+      {showDialog && (
+        <Dialog
+          open={isOpen}
+          onOpenChange={(open) => {
+            if (!open) onClose();
+          }}
+        >
+          <DialogContent
+            className={cn(
+              "bg-textured text-gray-900 dark:text-gray-100 overflow-hidden",
+              "sm:max-w-[425px] p-6",
+            )}
+          >
+            <DialogHeader className="flex flex-row items-center justify-between mb-2">
+              <DialogTitle className="text-xl font-semibold">
+                Save Table
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label
+                  htmlFor="table-name"
+                  className="text-gray-700 dark:text-gray-300"
+                >
+                  Table Name*
                 </Label>
                 <Input
-                    id="table-name"
-                    value={tableName}
-                    onChange={(e) => setTableName(e.target.value)}
-                    placeholder="Enter table name"
-                    className="border border-border bg-textured"
-                    disabled={isLoading}
-                    onKeyDown={handleKeyDown}
+                  id="table-name"
+                  value={tableName}
+                  onChange={(e) => setTableName(e.target.value)}
+                  placeholder="Enter table name"
+                  className="border border-border bg-textured"
+                  disabled={isLoading}
+                  onKeyDown={handleKeyDown}
                 />
-            </div>
+              </div>
 
-            <div className="grid gap-2">
-                <Label htmlFor="table-description" className="text-gray-700 dark:text-gray-300">
-                    Description*
+              <div className="grid gap-2">
+                <Label
+                  htmlFor="table-description"
+                  className="text-gray-700 dark:text-gray-300"
+                >
+                  Description*
                 </Label>
                 <Textarea
-                    id="table-description"
-                    value={tableDescription}
-                    onChange={(e) => setTableDescription(e.target.value)}
-                    placeholder="Enter table description"
-                    rows={3}
-                    className="border border-border bg-textured resize-none"
-                    disabled={isLoading}
-                    onKeyDown={handleKeyDown}
+                  id="table-description"
+                  value={tableDescription}
+                  onChange={(e) => setTableDescription(e.target.value)}
+                  placeholder="Enter table description"
+                  rows={3}
+                  className="border border-border bg-textured resize-none"
+                  disabled={isLoading}
+                  onKeyDown={handleKeyDown}
                 />
+              </div>
             </div>
-        </div>
-    );
 
-    const renderResultContent = () =>
-        saveResponse && (
-            <div className="py-0">
-                <div className="mb-1 text-left text-sm text-gray-600 dark:text-gray-400 pb-1">
-                    Your new table was created with {saveResponse.row_count} rows and {saveResponse.field_count} fields per row.
-                </div>
+            <DialogFooter className="flex items-center gap-2 mt-4">
+              <Button
+                variant="outline"
+                onClick={onClose}
+                className="text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-border"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="default"
+                onClick={handleSave}
+                disabled={
+                  isLoading || !tableName.trim() || !tableDescription.trim()
+                }
+                className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {isLoading ? "Saving..." : "Save Table"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
 
-                <div className="h-[calc(85vh-140px)] overflow-auto border-border rounded-lg bg-textured">
-                    <UserTableViewer tableId={saveResponse.table_id} showTableSelector={false} />
-                </div>
-            </div>
-        );
-
-    const renderDialogContent = () => {
-        switch (stage) {
-            case "saving":
-                return null; // Content is replaced by the MultiStepLoader
-            case "result":
-                return renderResultContent();
-            default:
-                return renderFormContent();
-        }
-    };
-
-    const renderDialogFooter = () => {
-        switch (stage) {
-            case "saving":
-                return (
-                    <Button
-                        variant="outline"
-                        onClick={() => {
-                            toast.info("Save operation is continuing in the background");
-                            onClose();
-                        }}
-                        className="text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-border"
-                    >
-                        Close
-                    </Button>
-                );
-            case "result":
-                return (
-                    <div className="flex justify-end w-full gap-2">
-                        <Button
-                            variant="outline"
-                            onClick={handleOpenInNewTab}
-                            className="text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-800/30 border border-blue-300 dark:border-blue-700"
-                        >
-                            <ExternalLink className="h-4 w-4 mr-2" />
-                            Open in New Tab
-                        </Button>
-                        <Button
-                            variant="default"
-                            onClick={handleDone}
-                            className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white"
-                        >
-                            Done
-                        </Button>
-                    </div>
-                );
-            default:
-                return (
-                    <>
-                        <Button
-                            variant="outline"
-                            onClick={onClose}
-                            className="text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-border"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            variant="default"
-                            onClick={handleSave}
-                            disabled={isLoading || !tableName.trim() || !tableDescription.trim()}
-                            className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white disabled:bg-gray-400 disabled:cursor-not-allowed"
-                        >
-                            {isLoading ? "Saving..." : "Save Table"}
-                        </Button>
-                    </>
-                );
-        }
-    };
-
-    return (
-        <>
-            <Dialog
-                open={isOpen}
-                onOpenChange={(open) => {
-                    if (!open) {
-                        if (stage === "saving") {
-                            toast.info("Save operation is continuing in the background");
-                        }
-                        onClose();
-                    }
-                }}
-            >
-                <DialogContent
-                    className={cn(
-                        "bg-textured text-gray-900 dark:text-gray-100 overflow-hidden",
-                        stage === "result"
-                            ? "max-w-[95vw] w-[95vw] h-[90dvh] p-3 border-3 border-gray-200 dark:border-gray-700 rounded-3xl"
-                            : "sm:max-w-[425px] p-6"
-                    )}
-                >
-                    <DialogHeader className={cn("flex flex-row items-center justify-between", stage === "result" ? "mb-1" : "mb-2")}>
-                        <DialogTitle className="text-xl font-semibold">
-                            {stage === "saving" ? "Creating Table" : stage === "result" ? "" : "Save Table"}
-                        </DialogTitle>
-                    </DialogHeader>
-
-                    {renderDialogContent()}
-
-                    <DialogFooter className={cn("flex items-center gap-2", stage === "result" ? "mt-2 pt-2" : "mt-4")}>
-                        {renderDialogFooter()}
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            {/* Multi-step loader outside the dialog */}
-            <MultiStepLoader loadingStates={getLoadingStates(tableData)} loading={isLoading} duration={600} loop={false} />
-        </>
-    );
+      {/* Fullscreen loader owns the screen while saving */}
+      <MultiStepLoader
+        loadingStates={getLoadingStates(rowCount)}
+        loading={isLoading}
+        duration={600}
+        loop={false}
+      />
+    </>
+  );
 };
 
 export default SaveTableModal;

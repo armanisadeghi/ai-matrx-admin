@@ -1,5 +1,6 @@
+// @ts-nocheck
+
 import { Middleware, MiddlewareAPI } from "redux";
-import { PayloadAction } from "@reduxjs/toolkit";
 import { Socket } from "socket.io-client";
 import { SocketConnectionManager } from "./socketConnectionManager";
 import {

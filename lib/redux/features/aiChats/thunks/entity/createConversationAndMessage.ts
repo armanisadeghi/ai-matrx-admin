@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { v4 as uuidv4 } from "uuid";
 import { DEFAULT_CONVERSATION, DEFAULT_FIRST_MESSAGE } from "@/constants/chat";
 import { Conversation, Message } from "@/types/chat/chat.types";

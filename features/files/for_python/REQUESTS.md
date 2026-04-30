@@ -332,6 +332,154 @@ that lands in shared folders. For internal-only uploads we can defer.
 
 ---
 
+### 14. 🟡 RAG / processed-document integration into `/files`
+
+**Priority:** Medium-high. Unblocks surfacing the RAG team's
+processed-document model (`processed_documents` + `processed_document_pages`
++ `rag.kg_chunks`) inside the cloud-files surfaces — preview pane, file
+context menu, document viewer deep-links.
+
+**Context:** The RAG team landed Phases 4A/4B from
+`/Users/armanisadeghi/.claude/plans/please-review-the-requirements-zany-sphinx.md`:
+
+- Migrations `0006_cld_files_lineage.sql`, `0007_processed_documents.sql`,
+  `0008_kg_chunks_processed_doc_fk.sql` are live.
+- `cld_files` has `parent_file_id`, `derivation_kind`, `derivation_metadata`.
+- `/api/document/*` endpoints exist:
+  - `GET /api/document/{doc_id}` → `DocumentDetail`
+  - `GET /api/document/{doc_id}/lineage` → `LineageTree`
+  - `GET /api/document/{doc_id}/pages` → `PageSummary[]`
+  - `GET /api/document/{doc_id}/page/{n}` → `PageDetail`
+  - `GET /api/document/{doc_id}/page/{n}/image` → 307 to signed URL
+  - `GET /api/document/{doc_id}/chunks` → `ChunkRow[]`
+- `/rag/ingest` and `/rag/ingest/stream` accept `{ source_kind, source_id, field_id?, force? }`.
+- `/rag/search`, `/rag/search/stream`, `/rag/cross-doc/stream` are wired.
+- `/rag/admin/*` overview/library/sources/audit endpoints are wired.
+- AI tools `rag_list_data_stores`, `rag_get_data_store`, `rag_search_data_store` exist
+  but there is **no public REST equivalent yet**.
+
+The FE side has read scaffolding in `features/documents/`:
+- `types.ts` — full Pydantic mirror.
+- `api/document.ts` — typed client for every document endpoint.
+- `hooks/useDocument.ts` — `useDocument`, `useDocumentLineage`, `useDocumentPage`, `useDocumentChunks`.
+- `components/DocumentViewer.tsx` — 4-pane synchronized viewer.
+- `components/LineageBreadcrumbs.tsx` — compact lineage chips.
+- `components/panes/{Pdf,RawText,CleanedMarkdown,Chunks}Pane.tsx` — per-pane renderers.
+- Route `/rag/viewer/[id]` mounts the viewer with `?page=&chunk=` deep-links.
+
+**What's missing on the backend to integrate this with `/files`:**
+
+#### a) `GET /files/{file_id}/document` — find a file's processed_document
+
+We need to know: "given a `cld_files.id`, is there a `processed_documents` row
+whose `(source_kind='cld_file', source_id=<file_id>)` covers it, and what's its
+processed_document_id?"
+
+Today there is no endpoint for this. The FE would have to call `/rag/admin/library`
+and filter — too heavy for a per-file lookup, and admin-scoped.
+
+**Ask:** add
+
+```
+GET /files/{file_id}/document
+  → 200 { processed_document_id: uuid, derivation_kind: str, total_pages: int, chunk_count: int, has_clean_content: bool, updated_at: timestamptz }
+  → 404 { code: "no_processed_document", message: "..." }   # not yet ingested
+```
+
+ACL: same as `GET /files/{file_id}` (owner OR org member OR shared with user).
+The Python implementation is one query against `processed_documents` filtered by
+`source_kind='cld_file' AND source_id=:file_id` ordered by `created_at DESC`
+LIMIT 1 — if multiple processings exist (re-extract / re-clean), return the
+latest. Older processings remain accessible by direct `processed_document_id`.
+
+#### b) `POST /files/{file_id}/ingest` — convenience wrapper
+
+`/rag/ingest` already accepts `{ source_kind: "cld_file", source_id, force }`
+but the FE has to know to dispatch on `source_kind`. A wrapper at
+`POST /files/{file_id}/ingest` accepting `{ force?: boolean }` simplifies
+the contract for the file-centric UI: "reprocess this file for RAG" is
+a file-action, not a RAG-system-action. Internally calls the same
+`ingest_source(...)` function. Returns the same `IngestResponse`. Streaming
+counterpart `POST /files/{file_id}/ingest/stream` likewise.
+
+#### c) `GET /files/{file_id}/lineage-summary` — light lineage chip
+
+The PreviewPane wants a small lineage indicator without paying for the full
+`/api/document/{id}/lineage` walk. Surface
+
+```
+GET /files/{file_id}/lineage-summary
+  → { parent_file_id?: uuid, derivation_kind?: str, has_descendants: bool, descendant_count: int }
+```
+
+This is a single query against `cld_files` (parent + count of `WHERE parent_file_id=:id`).
+The PreviewPane shows the chip; clicking opens the full lineage tree
+in a side panel.
+
+#### d) Public REST surface for data stores (defer if hard)
+
+The AI tools `rag_list_data_stores` / `rag_get_data_store` / `rag_search_data_store`
+let an agent discover data stores at runtime. The FE wants to ship a curation UI
+("Add this file to a data store", "Browse data stores in this org") which needs
+the same data exposed as REST.
+
+```
+GET  /rag/data-stores?scope=user|org              → DataStore[]
+GET  /rag/data-stores/{id}                        → DataStore
+GET  /rag/data-stores/{id}/sources                → DataStoreSource[]
+POST /rag/data-stores/{id}/sources                → add a source { source_kind, source_id }
+DELETE /rag/data-stores/{id}/sources/{source_id}  → remove
+POST /rag/data-stores                             → create
+PATCH /rag/data-stores/{id}                       → update awareness mode, name, etc.
+DELETE /rag/data-stores/{id}                      → delete
+```
+
+Awareness modes per the plan: `none | hint | inline_small`. Defer this if it's
+not already trivial; the FE can ship without curation in v1 and add it once
+the REST surface lands.
+
+#### e) Realtime: `processed_documents` row events
+
+When ingest completes, push a `processed_documents.inserted` /
+`processed_documents.updated` event over the same Realtime channel
+the FE already subscribes to for `cld_files`. Today the FE has to
+poll after kicking off ingest. With realtime, the moment ingestion
+finishes, the PreviewPane can flip the "Document" tab from
+"Not yet ingested → Reprocess" to the live viewer without polling.
+
+Filter: `source_kind = 'cld_file'` AND `source_id` matches one of the
+file ids the FE is currently watching.
+
+**Blocker?**
+
+- (a) and (b) — light blockers for the integration story. Without (a),
+  the FE would have to either (1) poll `/api/document/{file_id}` (won't work,
+  document IDs aren't file IDs) or (2) maintain the `cld_files.derivation_kind`
+  + a "first ingestion" indicator in metadata as a heuristic. Neither is great.
+- (c) — soft blocker; we can compute parent locally from `cld_files.parent_file_id`,
+  but the descendant count needs a query.
+- (d) — defer-OK; AI tools cover the agent surface, and a v1 curation UI can
+  ship behind a feature flag once REST lands.
+- (e) — defer-OK; polling-on-ingest works for v1, realtime is the polish step.
+
+**Current FE workaround:**
+
+- (a) — feature-detect by trying `GET /api/document/{file_id}` first; if the
+  document router returns 404 we assume "not ingested." This works for `cld_file`
+  source kind because `processed_documents.id ≠ cld_files.id` so we'll always 404,
+  rendering the workaround useless. **The cleanest path is the new endpoint.**
+  Until then, the FE will store a per-file "tried lookup" cache in module memory
+  and gracefully render "Document view not available — try Reprocess" with a
+  non-blocking message.
+- (b) — call `/rag/ingest` directly with `{ source_kind: "cld_file", source_id }`.
+  Works today; the wrapper is a nice-to-have.
+- (c) — read `parent_file_id` from the `cld_files` row already in Redux; render
+  the "this file is derived from …" chip from local data, skip descendant count.
+- (e) — manual "Refresh" button on the PreviewPane#document tab after
+  triggering ingest.
+
+---
+
 ## Resolved items
 
 (Most recent first.)

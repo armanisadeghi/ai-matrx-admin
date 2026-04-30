@@ -15,13 +15,17 @@
 
 import { useCallback, useState } from "react";
 import {
+  ClipboardPaste,
   Copy,
   CopyPlus,
   Download,
   Edit2,
   Eye,
   FolderInput,
+  FolderOpen,
   FolderPlus,
+  Scissors,
+  Share2,
   Trash2,
 } from "lucide-react";
 import {
@@ -47,17 +51,27 @@ import {
   selectAllFilesMap,
   selectFolderById,
 } from "@/features/files/redux/selectors";
-import { setActiveFileId } from "@/features/files/redux/slice";
 import {
-  deleteFolder as deleteFolderThunk,
+  setActiveFileId,
+  setActiveFolderId,
+} from "@/features/files/redux/slice";
+import {
   moveFile as moveFileThunk,
   updateFolder as updateFolderThunk,
   uploadFiles as uploadFilesThunk,
 } from "@/features/files/redux/thunks";
+import { moveAny } from "@/features/files/redux/virtual-thunks";
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
+import { useFolderActions } from "@/features/files/components/core/FileActions/useFolderActions";
+import { ShareLinkDialog } from "@/features/files/components/core/ShareLinkDialog/ShareLinkDialog";
 import { openFilePreview } from "@/features/files/components/preview/openFilePreview";
 import { openFolderPicker } from "@/features/files/components/pickers/CloudFilesPickerHost";
 import { requestRename } from "@/features/files/components/core/RenameDialog/RenameHost";
+import {
+  setClipboard,
+  useFileClipboard,
+} from "@/features/files/utils/clipboard";
+import { isSyntheticId } from "@/features/files/virtual-sources/path";
 import { extractErrorMessage } from "@/utils/errors";
 
 // ---------------------------------------------------------------------------
@@ -164,6 +178,41 @@ export function FileRowContextMenu({ fileId, children }: FileRowContextMenuProps
             </>
           ) : null}
           <ContextMenuSeparator />
+          <ContextMenuItem
+            onClick={() =>
+              setClipboard({
+                op: "cut",
+                items: [
+                  {
+                    id: fileId,
+                    kind: "file",
+                    source: isVirtual ? "virtual" : "real",
+                  },
+                ],
+                setAt: Date.now(),
+              })
+            }
+          >
+            <Scissors className="mr-2 h-4 w-4" />
+            Cut
+            <ContextMenuShortcut>{cmd}X</ContextMenuShortcut>
+          </ContextMenuItem>
+          {!isVirtual ? (
+            <ContextMenuItem
+              onClick={() =>
+                setClipboard({
+                  op: "copy",
+                  items: [{ id: fileId, kind: "file", source: "real" }],
+                  setAt: Date.now(),
+                })
+              }
+            >
+              <Copy className="mr-2 h-4 w-4" />
+              Copy
+              <ContextMenuShortcut>{cmd}C</ContextMenuShortcut>
+            </ContextMenuItem>
+          ) : null}
+          <ContextMenuSeparator />
           <ContextMenuItem onClick={() => requestRename("file", fileId)}>
             <Edit2 className="mr-2 h-4 w-4" />
             Rename
@@ -227,31 +276,113 @@ export interface FolderRowContextMenuProps {
   folderId: string;
   children: React.ReactNode;
   onNewFolderInside?: () => void;
+  /** Open / activate the folder. Defaults to setting it active in Redux. */
+  onOpen?: () => void;
 }
 
 export function FolderRowContextMenu({
   folderId,
   children,
   onNewFolderInside,
+  onOpen,
 }: FolderRowContextMenuProps) {
   const dispatch = useAppDispatch();
   const folder = useAppSelector((s) => selectFolderById(s, folderId));
+  const folderActions = useFolderActions(folderId);
+  const foldersByIdAll = useAppSelector((s) => s.cloudFiles.foldersById);
+  const { clipboard } = useFileClipboard();
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const isVirtual = folder?.source.kind === "virtual";
+  const hasClipboard = !!clipboard && clipboard.items.length > 0;
+
+  const handlePaste = useCallback(async () => {
+    if (!clipboard || clipboard.items.length === 0) return;
+    // Only the cut → move case is wired at the row level. For copy →
+    // duplicate (which needs to fetch bytes + re-upload), users should
+    // use the Cmd/Ctrl+V keyboard shortcut on the active folder, where
+    // the full duplicate pipeline lives. Surface a hint by leaving the
+    // menu item disabled for copy state in the JSX below.
+    if (clipboard.op !== "cut") return;
+    for (const item of clipboard.items) {
+      try {
+        if (item.kind === "file") {
+          if (item.source === "virtual" || isSyntheticId(item.id)) {
+            await dispatch(
+              moveAny({ id: item.id, newParentId: folderId }),
+            ).unwrap();
+          } else {
+            await dispatch(
+              moveFileThunk({
+                fileId: item.id,
+                newParentFolderId: folderId,
+              }),
+            ).unwrap();
+          }
+        } else {
+          // Folder cycle guard — refuse to drop a folder into itself or
+          // any of its descendants.
+          if (item.id === folderId) continue;
+          let cursor: string | null = folderId;
+          const seen = new Set<string>();
+          let cycle = false;
+          while (cursor && !seen.has(cursor)) {
+            if (cursor === item.id) {
+              cycle = true;
+              break;
+            }
+            seen.add(cursor);
+            cursor = foldersByIdAll[cursor]?.parentId ?? null;
+          }
+          if (cycle) continue;
+          if (item.source === "virtual" || isSyntheticId(item.id)) {
+            await dispatch(
+              moveAny({ id: item.id, newParentId: folderId }),
+            ).unwrap();
+          } else {
+            await dispatch(
+              updateFolderThunk({
+                folderId: item.id,
+                patch: { parentId: folderId },
+              }),
+            ).unwrap();
+          }
+        }
+      } catch {
+        /* per-item failure tolerable */
+      }
+    }
+    setClipboard(null);
+  }, [clipboard, dispatch, foldersByIdAll, folderId]);
+
+  const cmd =
+    typeof navigator !== "undefined" && /Mac|iPhone|iPad/i.test(navigator.platform)
+      ? "⌘"
+      : "Ctrl";
+
+  const handleOpen = useCallback(() => {
+    if (onOpen) {
+      onOpen();
+      return;
+    }
+    dispatch(setActiveFolderId(folderId));
+  }, [dispatch, folderId, onOpen]);
 
   const handleDelete = useCallback(async () => {
     setDeleting(true);
     setDeleteError(null);
     try {
-      await dispatch(deleteFolderThunk({ folderId })).unwrap();
+      await folderActions.delete();
       setConfirmDeleteOpen(false);
     } catch (err) {
       setDeleteError(extractErrorMessage(err));
     } finally {
       setDeleting(false);
     }
-  }, [dispatch, folderId]);
+  }, [folderActions]);
 
   const handleMove = useCallback(async () => {
     if (!folder) return;
@@ -260,17 +391,13 @@ export function FolderRowContextMenu({
     });
     if (newParent === undefined) return;
     if (newParent === folder.parentId) return;
+    if (newParent === folderId) return; // can't move into itself
     try {
-      await dispatch(
-        updateFolderThunk({
-          folderId,
-          patch: { parentId: newParent },
-        }),
-      ).unwrap();
+      await folderActions.move(newParent);
     } catch {
       /* slice surfaces error */
     }
-  }, [dispatch, folder, folderId]);
+  }, [folder, folderActions, folderId]);
 
   if (!folder) {
     return <>{children}</>;
@@ -281,6 +408,76 @@ export function FolderRowContextMenu({
       <ContextMenu>
         <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
         <ContextMenuContent className="w-56">
+          <ContextMenuItem onClick={handleOpen}>
+            <FolderOpen className="mr-2 h-4 w-4" />
+            Open
+          </ContextMenuItem>
+          {!isVirtual ? (
+            <>
+              <ContextMenuItem
+                onClick={() => void folderActions.copyShareUrl()}
+              >
+                <Copy className="mr-2 h-4 w-4" />
+                Copy link
+                <ContextMenuShortcut>{cmd}L</ContextMenuShortcut>
+              </ContextMenuItem>
+              <ContextMenuItem onClick={() => setShareOpen(true)}>
+                <Share2 className="mr-2 h-4 w-4" />
+                Share…
+              </ContextMenuItem>
+            </>
+          ) : null}
+          <ContextMenuSeparator />
+          <ContextMenuItem
+            onClick={() =>
+              setClipboard({
+                op: "cut",
+                items: [
+                  {
+                    id: folderId,
+                    kind: "folder",
+                    source: isVirtual ? "virtual" : "real",
+                  },
+                ],
+                setAt: Date.now(),
+              })
+            }
+          >
+            <Scissors className="mr-2 h-4 w-4" />
+            Cut
+            <ContextMenuShortcut>{cmd}X</ContextMenuShortcut>
+          </ContextMenuItem>
+          {!isVirtual ? (
+            <ContextMenuItem
+              onClick={() =>
+                setClipboard({
+                  op: "copy",
+                  items: [{ id: folderId, kind: "folder", source: "real" }],
+                  setAt: Date.now(),
+                })
+              }
+            >
+              <Copy className="mr-2 h-4 w-4" />
+              Copy
+              <ContextMenuShortcut>{cmd}C</ContextMenuShortcut>
+            </ContextMenuItem>
+          ) : null}
+          {hasClipboard ? (
+            <ContextMenuItem
+              onClick={() => void handlePaste()}
+              disabled={clipboard?.op === "copy"}
+              title={
+                clipboard?.op === "copy"
+                  ? "Use Cmd/Ctrl+V on the active folder to paste a copy"
+                  : undefined
+              }
+            >
+              <ClipboardPaste className="mr-2 h-4 w-4" />
+              Paste {clipboard?.op === "cut" ? "into folder" : "(copy)"}
+              <ContextMenuShortcut>{cmd}V</ContextMenuShortcut>
+            </ContextMenuItem>
+          ) : null}
+          <ContextMenuSeparator />
           <ContextMenuItem onClick={() => requestRename("folder", folderId)}>
             <Edit2 className="mr-2 h-4 w-4" />
             Rename
@@ -303,6 +500,7 @@ export function FolderRowContextMenu({
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete folder
+            <ContextMenuShortcut>⌫</ContextMenuShortcut>
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
@@ -340,6 +538,15 @@ export function FolderRowContextMenu({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {!isVirtual ? (
+        <ShareLinkDialog
+          open={shareOpen}
+          onOpenChange={setShareOpen}
+          resourceId={folderId}
+          resourceType="folder"
+        />
+      ) : null}
     </>
   );
 }

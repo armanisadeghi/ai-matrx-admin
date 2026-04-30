@@ -159,21 +159,58 @@ export const ENDPOINTS = {
     pdfExtractText: "/utilities/pdf/extract-text",
   },
 
-  /** PDF extraction & document management — Authenticated */
+  /**
+   * PDF extraction, manipulation, and document management — Authenticated.
+   * Most JSON endpoints accept a unified source via `MediaRef` (preferred for
+   * cloud files via `cld_id`), `file`, `url`, or `local_path`. See
+   * `features/pdf-extractor/types.ts` for the full type re-exports.
+   *
+   * NOTE: list/detail endpoints below are kept for backwards compatibility
+   * but the workspace now reads `extracted_documents` directly from Supabase
+   * for the sidebar list and the on-click detail. Loading hundreds of full
+   * `content` rows from Python was making the window take 2+ minutes to open.
+   */
   pdf: {
-    /** POST — Compress PDF (multipart file upload) */
+    // ── Lifecycle ─────────────────────────────────────────────────────────
+    /** POST — Compress PDF (multipart file upload), query `level=1..3`, `target_size_mb`. */
     compress: "/utilities/pdf/compress" as const,
-    /** POST — Single-file text extraction (stateless, legacy) */
+    /** POST — Single-file text extraction (stateless, legacy multipart). Returns `{ filename, text_content }`. */
     extractText: "/utilities/pdf/extract-text" as const,
-    /** POST — Batch extraction with NDJSON streaming (saves to DB + storage) */
+    /** POST — Batch extraction with NDJSON streaming (saves to DB + storage). */
     batchExtract: "/utilities/pdf/batch-extract" as const,
-    /** GET — List user documents (?limit=&offset=) */
-    documents: "/utilities/pdf/documents" as const,
-    /** GET — Single document by ID */
-    document: (docId: string) => `/utilities/pdf/documents/${docId}` as const,
-    /** POST — AI content cleaning (NDJSON streaming) */
+
+    // ── New `MediaRef`-based JSON endpoints (matrx-utils) ─────────────────
+    /** POST — Text extraction from a remote source (MediaRef / url / cld_id). Returns `PdfResult`. */
+    extractTextRemote: "/utilities/pdf/extract-text-remote" as const,
+    /** POST — Table extraction. Returns `PdfResult`. */
+    extractTables: "/utilities/pdf/extract-tables" as const,
+    /** POST — Extract pages into a new PDF. Returns PDF blob. */
+    extractPages: "/utilities/pdf/extract-pages" as const,
+    /** POST — Crop pages (with `crop_box`). Returns PDF blob. */
+    cropPages: "/utilities/pdf/crop-pages" as const,
+    /** POST — Rotate pages. Returns PDF blob. */
+    rotatePages: "/utilities/pdf/rotate-pages" as const,
+    /** POST — Delete pages. Returns PDF blob. */
+    deletePages: "/utilities/pdf/delete-pages" as const,
+    /** POST — Merge multiple PDFs. Returns PDF blob. */
+    merge: "/utilities/pdf/merge" as const,
+    /** POST — Split PDF into parts (`parts` or `max_pages_per_part`). Returns ZIP blob. */
+    split: "/utilities/pdf/split" as const,
+
+    // ── AI pipelines (streaming JSONL) ────────────────────────────────────
+    /** POST — Process a PDF with AI agents (single-pass / chunk / reassembly). Streams JSONL. */
+    processWithAi: "/utilities/pdf/process-with-ai" as const,
+    /** POST — Full pipeline: extract → chunk → AI → reassembly. Streams JSONL with `PdfPipelineOptions`. */
+    fullPipeline: "/utilities/pdf/full-pipeline" as const,
+    /** POST — AI content cleaning on an already-extracted document (NDJSON streaming). */
     cleanContent: (docId: string) =>
       `/utilities/pdf/clean-content/${docId}` as const,
+
+    // ── Document management (server-side; prefer direct Supabase reads) ──
+    /** @deprecated — Read `extracted_documents` directly from Supabase with metadata-only projection. */
+    documents: "/utilities/pdf/documents" as const,
+    /** @deprecated — Read `extracted_documents` directly from Supabase. */
+    document: (docId: string) => `/utilities/pdf/documents/${docId}` as const,
   },
 
   /** Test/admin endpoints — Admin only */

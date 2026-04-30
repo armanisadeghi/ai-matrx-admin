@@ -1,0 +1,268 @@
+"use client";
+
+import React, { useMemo, useState } from "react";
+import dynamic from "next/dynamic";
+import {
+  Braces,
+  CheckCircle2,
+  ChevronLeft,
+  Compass,
+  Copy,
+  ListTree,
+  Network,
+  Scissors,
+} from "lucide-react";
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { formatJson } from "@/utils/json/json-cleaner-utility";
+import { cn } from "@/lib/utils";
+
+const PaneFallback = () => (
+  <div className="p-2 text-xs text-muted-foreground">Loading…</div>
+);
+
+const RawJsonExplorer = dynamic(
+  () => import("@/components/official/json-explorer/RawJsonExplorer"),
+  { ssr: false, loading: () => <PaneFallback /> },
+);
+
+const JsonTreeViewer = dynamic(
+  () =>
+    import("@/components/official/json-explorer/JsonTreeViewer").then((m) => ({
+      default: m.JsonTreeViewer,
+    })),
+  { ssr: false, loading: () => <PaneFallback /> },
+);
+
+const JsonTree = dynamic(
+  () => import("@/components/admin/state-analyzer/components/JsonTree"),
+  { ssr: false, loading: () => <PaneFallback /> },
+);
+
+const JsonTruncator = dynamic(
+  () =>
+    import("@/components/official-candidate/json-truncator/JsonTruncator").then(
+      (m) => ({ default: m.JsonTruncator }),
+    ),
+  { ssr: false, loading: () => <PaneFallback /> },
+);
+
+export type JsonInspectorView =
+  | "json"
+  | "explorer"
+  | "tree"
+  | "json-tree"
+  | "truncator";
+
+export interface JsonInspectorProps {
+  /** Any JSON-serializable value to inspect. */
+  data: unknown;
+  /** Optional label rendered to the left of the tabs (e.g. a slice/key name). */
+  label?: React.ReactNode;
+  /** When provided, renders a back chevron that calls this on click. */
+  onBack?: () => void;
+  /** Tooltip for the back chevron. */
+  backLabel?: string;
+  /** Initial view. Defaults to "json". */
+  defaultView?: JsonInspectorView;
+  /** Forwarded to the outer wrapper. */
+  className?: string;
+}
+
+// Every interactive cell in the header is the same 20×20 square. Differences
+// are limited to background/border (active tab, list border, etc.) so the
+// buttons read as a single uniform row.
+const CELL_CLS =
+  "shrink-0 h-5 w-5 flex items-center justify-center rounded transition-colors";
+
+const ICON_BUTTON_CLS = cn(
+  CELL_CLS,
+  "text-muted-foreground hover:text-foreground hover:bg-muted",
+);
+
+const TRIGGER_CLS = cn(
+  CELL_CLS,
+  "rounded-none border-r border-border last:border-r-0",
+  "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground",
+  "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none",
+);
+
+const ICON_CLS = "h-3.5 w-3.5";
+
+const PANE_CLS =
+  "flex-1 min-h-0 overflow-auto mt-0 border-none outline-none ring-0 bg-gray-50 dark:bg-zinc-900";
+
+const TRUNCATOR_PANE_CLS =
+  "flex-1 min-h-0 overflow-hidden mt-0 border-none outline-none ring-0 data-[state=active]:flex data-[state=active]:flex-col";
+
+export function JsonInspector({
+  data,
+  label,
+  onBack,
+  backLabel = "Back",
+  defaultView = "json",
+  className,
+}: JsonInspectorProps) {
+  const formattedJson = useMemo(() => formatJson(data, 2), [data]);
+  const truncatorValue = useMemo(
+    () => (typeof data === "string" ? data : JSON.stringify(data, null, 2)),
+    [data],
+  );
+
+  // The local Tabs primitive force-mounts every TabsContent (preserves panel
+  // state across switches). Track which views have been activated so the
+  // dynamically-imported heavy panels only load on first visit, then stay
+  // mounted afterwards.
+  const [value, setValue] = useState<JsonInspectorView>(defaultView);
+  const [seen, setSeen] = useState<Set<JsonInspectorView>>(
+    () => new Set<JsonInspectorView>([defaultView]),
+  );
+  const [copied, setCopied] = useState(false);
+
+  const handleValueChange = (next: string) => {
+    const v = next as JsonInspectorView;
+    setValue(v);
+    setSeen((prev) => {
+      if (prev.has(v)) return prev;
+      const updated = new Set(prev);
+      updated.add(v);
+      return updated;
+    });
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(formattedJson);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      console.error("Failed to copy JSON:", err);
+    }
+  };
+
+  return (
+    <div
+      className={cn(
+        "h-full flex flex-col bg-white dark:bg-zinc-800 rounded-lg overflow-hidden min-h-0",
+        className,
+      )}
+    >
+      <Tabs
+        value={value}
+        onValueChange={handleValueChange}
+        className="flex-1 flex flex-col min-h-0 overflow-hidden"
+      >
+        <div className="flex items-center gap-1.5 px-1.5 py-1 border-b border-border flex-shrink-0">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className={ICON_BUTTON_CLS}
+              title={backLabel}
+              aria-label={backLabel}
+            >
+              <ChevronLeft className={ICON_CLS} />
+            </button>
+          )}
+          {label !== undefined && label !== null && label !== "" && (
+            <h2 className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate shrink-0">
+              {label}
+            </h2>
+          )}
+          <TabsList className="h-auto shrink-0 gap-0 rounded border border-border bg-transparent p-0 overflow-hidden">
+            <TabsTrigger
+              className={TRIGGER_CLS}
+              value="json"
+              title="Formatted JSON"
+              aria-label="Formatted JSON"
+            >
+              <Braces className={ICON_CLS} />
+            </TabsTrigger>
+            <TabsTrigger
+              className={TRIGGER_CLS}
+              value="explorer"
+              title="Path Explorer"
+              aria-label="Path Explorer"
+            >
+              <Compass className={ICON_CLS} />
+            </TabsTrigger>
+            <TabsTrigger
+              className={TRIGGER_CLS}
+              value="tree"
+              title="Tree Viewer"
+              aria-label="Tree Viewer"
+            >
+              <ListTree className={ICON_CLS} />
+            </TabsTrigger>
+            <TabsTrigger
+              className={TRIGGER_CLS}
+              value="json-tree"
+              title="JSON Tree"
+              aria-label="JSON Tree"
+            >
+              <Network className={ICON_CLS} />
+            </TabsTrigger>
+            <TabsTrigger
+              className={TRIGGER_CLS}
+              value="truncator"
+              title="Truncator"
+              aria-label="Truncator"
+            >
+              <Scissors className={ICON_CLS} />
+            </TabsTrigger>
+          </TabsList>
+          <div className="flex-1" />
+          <button
+            onClick={handleCopy}
+            className={ICON_BUTTON_CLS}
+            title={copied ? "Copied" : "Copy JSON"}
+            aria-label="Copy JSON"
+          >
+            {copied ? (
+              <CheckCircle2 className={cn(ICON_CLS, "text-green-500")} />
+            ) : (
+              <Copy className={ICON_CLS} />
+            )}
+          </button>
+        </div>
+
+        <TabsContent value="json" className={PANE_CLS}>
+          <pre className="p-2 text-xs text-gray-800 dark:text-gray-300 whitespace-pre-wrap">
+            {formattedJson}
+          </pre>
+        </TabsContent>
+
+        <TabsContent value="explorer" className={PANE_CLS}>
+          {seen.has("explorer") ? (
+            <RawJsonExplorer pageData={data} />
+          ) : (
+            <PaneFallback />
+          )}
+        </TabsContent>
+
+        <TabsContent value="tree" className={PANE_CLS}>
+          {seen.has("tree") ? <JsonTreeViewer data={data} /> : <PaneFallback />}
+        </TabsContent>
+
+        <TabsContent value="json-tree" className={PANE_CLS}>
+          {seen.has("json-tree") ? <JsonTree data={data} /> : <PaneFallback />}
+        </TabsContent>
+
+        <TabsContent value="truncator" className={TRUNCATOR_PANE_CLS}>
+          {seen.has("truncator") ? (
+            <JsonTruncator
+              initialValue={truncatorValue}
+              tabbed
+              defaultTab="fields"
+              className="flex-1 min-h-0"
+              allowLayoutToggle
+            />
+          ) : (
+            <PaneFallback />
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+export default JsonInspector;

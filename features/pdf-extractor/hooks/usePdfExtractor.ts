@@ -4,26 +4,79 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { useApiAuth } from "@/hooks/useApiAuth";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { ENDPOINTS } from "@/lib/api/endpoints";
+import { supabase } from "@/utils/supabase/client";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+/**
+ * Frontend view of a `public.processed_documents` row.
+ *
+ * Note: this used to be backed by `public.extracted_documents` which the RAG
+ * team has now superseded. `processed_documents` is the single source of
+ * truth and carries lineage + structured JSON. Field naming on the frontend
+ * stays in `camelCase` and aliases the canonical columns:
+ *
+ *   processed_documents.owner_id      → ownerId
+ *   processed_documents.storage_uri   → source           (kept for back-compat)
+ *   processed_documents.derivation_*  → derivationKind / derivationMetadata
+ *   processed_documents.parent_*      → parentProcessedId
+ *   processed_documents.source_*      → sourceKind / sourceId
+ *   processed_documents.structured_json → structuredJson (hydrated only)
+ */
 export interface PdfDocument {
   id: string;
   name: string;
+  /** null until the document detail has been fetched. List rows always carry null. */
   content: string | null;
   cleanContent: string | null;
+  /** Storage URI (S3 / share link) — populated by the Python ingestion path. */
   source: string | null;
   createdAt: string;
   updatedAt: string;
   charCount: number;
   wordCount: number;
+
+  // ── New columns added by the RAG team (Phase 4A — see plan
+  // `please-review-the-requirements-zany-sphinx`). All optional so legacy
+  // rows that haven't been re-processed still render. ─────────────────────
+  ownerId: string | null;
+  organizationId: string | null;
+  totalPages: number | null;
+  mimeType: string | null;
+  /** What was processed — `'cld_file'`, `'note'`, `'external_url'`, `'legacy'`. */
+  sourceKind: string | null;
+  /** Id within `sourceKind` — e.g. the `cld_files.id` when sourceKind = 'cld_file'. */
+  sourceId: string | null;
+  /** Processing-lineage parent. Null on the initial extract. */
+  parentProcessedId: string | null;
+  /** `'initial_extract' | 're_extract' | 're_clean' | 're_chunk' | 'merge_processings'` */
+  derivationKind: string;
+  /** Free-form JSON describing the params that produced this row. */
+  derivationMetadata: Record<string, unknown> | null;
+  /**
+   * Persisted PdfPageText[] from System A (raw + blocks + words).
+   * `null` for legacy rows that were extracted before per-page persistence
+   * landed. The Synced View renders nothing on null — UI prompts a re-extract.
+   */
+  structuredJson: Record<string, unknown> | null;
+
+  /** True only after a full detail fetch landed. List rows are `false`. */
+  isHydrated: boolean;
 }
 
 export interface ExtractionTab {
   id: string;
   filename: string;
-  status: "extracting" | "done" | "error" | "cleaning";
+  /**
+   * `loading` — opened from the list, full content is still being fetched.
+   * `extracting` — a brand-new file is being processed by the Python pipeline.
+   * `cleaning` — AI Clean is running on the doc.
+   * `done` — content is on the document.
+   * `error` — extraction or detail fetch failed.
+   */
+  status: "loading" | "extracting" | "done" | "error" | "cleaning";
   error: string | null;
   document: PdfDocument | null;
   progressMessage?: string;
@@ -75,33 +128,71 @@ async function* readNdjsonStream(
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+/**
+ * Build a PdfDocument from a `processed_documents` row (Supabase or API).
+ *
+ * If `content` is missing from the raw object the doc is treated as metadata-
+ * only and `isHydrated` stays false. The list query selects metadata only on
+ * purpose: extracting full text for hundreds of multi-hundred-page PDFs is
+ * what was making the workspace take 2+ minutes to open.
+ */
 function docFromApi(raw: Record<string, unknown>): PdfDocument {
-  const content = (raw.content as string) ?? "";
-  const cleanContent = (raw.clean_content as string) ?? null;
+  const hasContent = "content" in raw;
+  const content = hasContent ? ((raw.content as string | null) ?? null) : null;
+  const cleanContent = hasContent
+    ? ((raw.clean_content as string | null) ?? null)
+    : null;
+  const text = content ?? "";
   return {
     id: raw.id as string,
     name: (raw.name as string) ?? "Untitled",
-    content: content || null,
+    content,
     cleanContent,
-    source: (raw.source as string) ?? null,
+    // `processed_documents` uses `storage_uri`. Older `extracted_documents`
+    // used `source`. Tolerate both so the workspace keeps working during
+    // the deprecation window.
+    source:
+      (raw.storage_uri as string | null) ??
+      (raw.source as string | null) ??
+      null,
     createdAt: (raw.created_at as string) ?? new Date().toISOString(),
     updatedAt: (raw.updated_at as string) ?? new Date().toISOString(),
-    charCount: content.length,
-    wordCount: content.trim() ? content.trim().split(/\s+/).length : 0,
+    charCount: text.length,
+    wordCount: text.trim() ? text.trim().split(/\s+/).length : 0,
+    ownerId: (raw.owner_id as string | null) ?? null,
+    organizationId: (raw.organization_id as string | null) ?? null,
+    totalPages: (raw.total_pages as number | null) ?? null,
+    mimeType: (raw.mime_type as string | null) ?? null,
+    sourceKind: (raw.source_kind as string | null) ?? null,
+    sourceId: (raw.source_id as string | null) ?? null,
+    parentProcessedId: (raw.parent_processed_id as string | null) ?? null,
+    derivationKind: (raw.derivation_kind as string) ?? "initial_extract",
+    derivationMetadata:
+      (raw.derivation_metadata as Record<string, unknown> | null) ?? null,
+    structuredJson: hasContent
+      ? ((raw.structured_json as Record<string, unknown> | null) ?? null)
+      : null,
+    isHydrated: hasContent,
   };
 }
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
+// Default page size for the history list. Stays under typical Supabase
+// payload limits even when we eventually add per-row metadata like
+// page_count and char_count.
+const HISTORY_PAGE_SIZE = 50;
+
 export function usePdfExtractor() {
   const { getHeaders, waitForAuth } = useApiAuth();
   const backendUrl = useAppSelector(selectResolvedBaseUrl);
+  const userId = useAppSelector(selectUserId);
 
   // Tabs & navigation
   const [tabs, setTabs] = useState<ExtractionTab[]>([]);
   const [activeTabId, setActiveTabId] = useState<ActiveTabId>("new");
 
-  // History from backend
+  // History (metadata-only list)
   const [history, setHistory] = useState<PdfDocument[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
 
@@ -113,7 +204,7 @@ export function usePdfExtractor() {
   // Track first completed tab id during batch extraction
   const firstCompletedTabRef = useRef<string | null>(null);
 
-  // ── Auth headers helper ────────────────────────────────────────────────────
+  // ── Auth headers helper (still needed for Python POST endpoints) ───────────
 
   const getAuthHeaders = useCallback(async () => {
     await waitForAuth();
@@ -122,55 +213,66 @@ export function usePdfExtractor() {
     return rest;
   }, [getHeaders, waitForAuth]);
 
-  // ── Load history from backend ──────────────────────────────────────────────
+  // ── Load history (metadata only, direct from Supabase) ────────────────────
 
   const loadHistory = useCallback(async () => {
+    if (!userId) return;
     setHistoryLoading(true);
     try {
-      await waitForAuth();
-      const headers = getHeaders() as Record<string, string>;
-      const response = await fetch(
-        `${backendUrl}${ENDPOINTS.pdf.documents}?limit=50`,
-        { headers },
-      );
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = (await response.json()) as Record<string, unknown>[];
-      setHistory(data.map(docFromApi));
+      const { data, error } = await supabase
+        .from("processed_documents")
+        // Metadata-only projection. We deliberately do NOT pull `content`,
+        // `clean_content`, or `structured_json` here — those columns can be
+        // megabytes per row and were causing the workspace to take 2+ minutes
+        // to open. Lineage + size hints come along so the sidebar can
+        // surface them without a second round-trip.
+        .select(
+          "id, name, storage_uri, created_at, updated_at, total_pages, mime_type, source_kind, source_id, parent_processed_id, derivation_kind",
+        )
+        .eq("owner_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(HISTORY_PAGE_SIZE);
+
+      if (error) throw error;
+      const rows = (data ?? []) as Record<string, unknown>[];
+      setHistory(rows.map(docFromApi));
     } catch (err) {
       console.error("Failed to load PDF document history:", err);
     } finally {
       setHistoryLoading(false);
     }
-  }, [backendUrl, getHeaders, waitForAuth]);
+  }, [userId]);
 
-  // Load history on mount
+  // Load history on mount (and whenever the auth user changes)
   useEffect(() => {
+    if (!userId) return;
     loadHistory();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [userId, loadHistory]);
 
-  // ── Fetch a single document ────────────────────────────────────────────────
+  // ── Fetch a single document (full content, direct from Supabase) ───────────
 
   const fetchDocument = useCallback(
     async (docId: string): Promise<PdfDocument | null> => {
+      if (!userId) return null;
       try {
-        const headers = await getAuthHeaders();
-        const allHeaders = {
-          ...headers,
-          "Content-Type": "application/json",
-        };
-        const response = await fetch(
-          `${backendUrl}${ENDPOINTS.pdf.document(docId)}`,
-          { headers: allHeaders },
-        );
-        if (!response.ok) return null;
-        const data = (await response.json()) as Record<string, unknown>;
-        return docFromApi(data);
-      } catch {
+        const { data, error } = await supabase
+          .from("processed_documents")
+          .select("*")
+          .eq("id", docId)
+          // RLS already restricts to the owner, but include the predicate so
+          // the planner can use the (owner_id, source_kind, source_id, …)
+          // unique index when present.
+          .eq("owner_id", userId)
+          .single();
+
+        if (error || !data) return null;
+        return docFromApi(data as unknown as Record<string, unknown>);
+      } catch (err) {
+        console.error("Failed to fetch PDF document:", err);
         return null;
       }
     },
-    [backendUrl, getAuthHeaders],
+    [userId],
   );
 
   // ── File selection (for "New" tab) ─────────────────────────────────────────
@@ -389,28 +491,86 @@ export function usePdfExtractor() {
   ]);
 
   // ── Open a document from history (sidebar click) ───────────────────────────
+  //
+  // The history list carries metadata only (no `content`, no `clean_content`).
+  // When the user clicks an item we open the tab in `loading` state and
+  // hydrate it via a single Supabase detail fetch. A second click on the same
+  // item is a no-op because the tab already has the full doc.
 
   const openDocument = useCallback(
     (doc: PdfDocument) => {
-      // Check if tab already exists
+      // If a tab is already open for this doc, just focus it.
       const existing = tabs.find((t) => t.id === doc.id);
       if (existing) {
         setActiveTabId(doc.id);
         return;
       }
 
-      // Create a new tab
-      const newTab: ExtractionTab = {
+      // Already hydrated (came from a fresh extraction or a previous fetch) —
+      // open immediately with full content.
+      if (doc.isHydrated) {
+        const newTab: ExtractionTab = {
+          id: doc.id,
+          filename: doc.name,
+          status: "done",
+          error: null,
+          document: doc,
+        };
+        setTabs((prev) => [...prev, newTab]);
+        setActiveTabId(doc.id);
+        return;
+      }
+
+      // Metadata-only — open in loading state, then fetch detail.
+      const placeholderTab: ExtractionTab = {
         id: doc.id,
         filename: doc.name,
-        status: "done",
+        status: "loading",
         error: null,
         document: doc,
+        progressMessage: "Loading content…",
       };
-      setTabs((prev) => [...prev, newTab]);
+      setTabs((prev) => [...prev, placeholderTab]);
       setActiveTabId(doc.id);
+
+      void (async () => {
+        const full = await fetchDocument(doc.id);
+        if (!full) {
+          setTabs((prev) =>
+            prev.map((tab) =>
+              tab.id === doc.id
+                ? {
+                    ...tab,
+                    status: "error" as const,
+                    error: "Could not load document content from the database.",
+                    progressMessage: undefined,
+                  }
+                : tab,
+            ),
+          );
+          return;
+        }
+        // Patch the tab and the corresponding history entry so a second
+        // open is instant.
+        setTabs((prev) =>
+          prev.map((tab) =>
+            tab.id === doc.id
+              ? {
+                  ...tab,
+                  status: "done" as const,
+                  filename: full.name,
+                  document: full,
+                  progressMessage: undefined,
+                }
+              : tab,
+          ),
+        );
+        setHistory((prev) =>
+          prev.map((h) => (h.id === doc.id ? full : h)),
+        );
+      })();
     },
-    [tabs],
+    [tabs, fetchDocument],
   );
 
   // ── Close a tab ────────────────────────────────────────────────────────────
@@ -441,11 +601,16 @@ export function usePdfExtractor() {
 
   const cleanContent = useCallback(
     async (docId: string) => {
-      // Set tab to cleaning status
+      // Set tab to cleaning status; clear any prior error from a previous run
       setTabs((prev) =>
         prev.map((tab) =>
           tab.id === docId
-            ? { ...tab, status: "cleaning" as const, progressMessage: "Starting AI cleanup..." }
+            ? {
+                ...tab,
+                status: "cleaning" as const,
+                error: null,
+                progressMessage: "Starting AI cleanup...",
+              }
             : tab,
         ),
       );
@@ -484,35 +649,19 @@ export function usePdfExtractor() {
           }
 
           if (event.event === "data") {
-            // Tolerate either snake_case (per API.md) or camelCase, and
-            // a wrapped {result: {...}} shape just in case the server
-            // changes the envelope.
             const data = event.data as Record<string, unknown>;
-            const inner =
-              (data.result as Record<string, unknown> | undefined) ?? data;
-            const candidate =
-              (inner.clean_content as string | undefined) ??
-              (inner.cleanContent as string | undefined) ??
-              null;
+            const candidate = data.clean_content as string | undefined;
             if (candidate) cleanedText = candidate;
           }
         }
 
-        // Fallback — the server writes clean_content to the DB before
-        // streaming it back, so even if the stream's data event was
-        // missed (different shape, parse error, partial chunk), we can
-        // recover by refetching the document. This is the path that
-        // makes the AI Clean button reliably show its result.
         if (!cleanedText) {
-          const refreshed = await fetchDocument(docId);
-          if (refreshed?.cleanContent) {
-            cleanedText = refreshed.cleanContent;
-          }
-        }
-
-        if (!cleanedText) {
+          // No silent refetch fallback. If the stream produced nothing,
+          // surface that explicitly so the caller can decide whether to
+          // refetch or re-run cleanup. (Reverted per the rebuild plan —
+          // we want every transformation visible, not papered over.)
           throw new Error(
-            "AI cleanup completed but no cleaned content was returned",
+            "AI cleanup stream ended without a clean_content payload",
           );
         }
 
@@ -550,6 +699,170 @@ export function usePdfExtractor() {
       }
     },
     [backendUrl, getAuthHeaders, fetchDocument],
+  );
+
+  // ── Refresh a single document from Supabase (explicit user action) ────────
+  //
+  // Used by the AI Clean panel's "Refetch from server" button. Pulls the
+  // current row state (which may have `clean_content` populated by a
+  // previously successful stream that we missed) and updates both the open
+  // tab and the cached history entry. Surfaces an explicit error if it fails.
+
+  const refreshDocument = useCallback(
+    async (docId: string): Promise<boolean> => {
+      const fresh = await fetchDocument(docId);
+      if (!fresh) {
+        setTabs((prev) =>
+          prev.map((tab) =>
+            tab.id === docId
+              ? {
+                  ...tab,
+                  error: "Could not refetch this document from Supabase",
+                  progressMessage: undefined,
+                }
+              : tab,
+          ),
+        );
+        return false;
+      }
+      setTabs((prev) =>
+        prev.map((tab) =>
+          tab.id === docId
+            ? {
+                ...tab,
+                status: "done" as const,
+                error: null,
+                document: fresh,
+                progressMessage: undefined,
+              }
+            : tab,
+        ),
+      );
+      setHistory((prev) =>
+        prev.map((h) => (h.id === docId ? fresh : h)),
+      );
+      return true;
+    },
+    [fetchDocument],
+  );
+
+  // ── Run the full pipeline (re-extract + chunk + AI) on an existing doc ────
+  //
+  // Calls Python `/utilities/pdf/full-pipeline` which reads the source PDF
+  // (looked up via `MediaRef`), runs extract → cleanup → chunk → optional AI,
+  // and writes the result as a NEW `processed_documents` row with
+  // `parent_processed_id` pointing back here, plus N
+  // `processed_document_pages` rows. After the stream completes we refresh
+  // the active tab so the new per-page rows show up in Synced View.
+  //
+  // The endpoint streams JSONL — we surface progress messages on the tab.
+
+  const runFullPipeline = useCallback(
+    async (
+      docId: string,
+      options?: { force_ocr?: boolean; persist_output?: boolean },
+    ): Promise<boolean> => {
+      const tab = tabs.find((t) => t.id === docId);
+      const sourceUrl = tab?.document?.source ?? null;
+      const sourceKind = tab?.document?.sourceKind ?? null;
+      const sourceId = tab?.document?.sourceId ?? null;
+
+      // Mark the tab as cleaning (reuses the existing spinner) and clear
+      // any prior error.
+      setTabs((prev) =>
+        prev.map((t) =>
+          t.id === docId
+            ? {
+                ...t,
+                status: "cleaning" as const,
+                error: null,
+                progressMessage: "Starting full pipeline…",
+              }
+            : t,
+        ),
+      );
+
+      try {
+        const headers = await getAuthHeaders();
+        // Build a unified source. Prefer the cld_file id (the canonical
+        // pointer); fall back to a public URL if that's all we have.
+        const body: Record<string, unknown> = {
+          options: {
+            include_page_metadata: true,
+            include_block_metadata: true,
+            include_word_metadata: true,
+            include_chunk_metadata: true,
+          },
+          persist_output: options?.persist_output ?? true,
+          force_ocr: options?.force_ocr ?? false,
+        };
+        if (sourceKind === "cld_file" && sourceId) {
+          body.media = { cld_id: sourceId };
+        } else if (sourceUrl) {
+          body.url = sourceUrl;
+        } else {
+          throw new Error(
+            "This document has no resolvable source — re-upload the PDF before re-processing.",
+          );
+        }
+
+        const response = await fetch(
+          `${backendUrl}${ENDPOINTS.pdf.fullPipeline}`,
+          {
+            method: "POST",
+            headers: { ...headers, "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          },
+        );
+
+        if (!response.ok) {
+          const errText = await response.text().catch(() => "");
+          throw new Error(
+            `HTTP ${response.status}${errText ? `: ${errText.slice(0, 200)}` : ""}`,
+          );
+        }
+
+        for await (const event of readNdjsonStream(response)) {
+          if (event.event === "info") {
+            const msg =
+              (event.data.user_message as string | undefined) ??
+              (event.data.message as string | undefined);
+            if (msg) {
+              setTabs((prev) =>
+                prev.map((t) =>
+                  t.id === docId ? { ...t, progressMessage: msg } : t,
+                ),
+              );
+            }
+          }
+        }
+
+        // Refresh the doc record so any newly-persisted text / structured
+        // JSON fields show up. The per-page rows are scoped to the new
+        // child `processed_documents` row, so the user may want to navigate
+        // to it explicitly — for now, refreshing the current tab is the
+        // safe, transparent default.
+        await refreshDocument(docId);
+        return true;
+      } catch (err) {
+        const msg =
+          err instanceof Error ? err.message : "Pipeline run failed";
+        setTabs((prev) =>
+          prev.map((t) =>
+            t.id === docId
+              ? {
+                  ...t,
+                  status: "done" as const,
+                  error: msg,
+                  progressMessage: undefined,
+                }
+              : t,
+          ),
+        );
+        return false;
+      }
+    },
+    [tabs, backendUrl, getAuthHeaders, refreshDocument],
   );
 
   // ── Copy text ──────────────────────────────────────────────────────────────
@@ -604,5 +917,7 @@ export function usePdfExtractor() {
     cleanContent,
     copyText,
     fetchDocument,
+    refreshDocument,
+    runFullPipeline,
   };
 }

@@ -164,6 +164,22 @@ export interface CloudFile {
   deletedAt: string | null;
   /** Real S3-backed bytes vs. virtual Postgres-backed adapter row. */
   source: FileSource;
+  /**
+   * Binary lineage — points to the cld_files row this one was derived
+   * from (e.g. "extracted text from this PDF" or "page range 5–10 of
+   * the parent PDF"). Set by Phase 4A migration `0006_cld_files_lineage`.
+   * Null when the file was uploaded directly with no derivation.
+   * Optional on the FE because it is null for nearly every existing
+   * file and was added to the API after the initial schema landed.
+   */
+  parentFileId?: string | null;
+  /**
+   * Free-form classifier set by the deriving system: "pdf_text_extract",
+   * "page_range_5_10", "ocr_re_run", "merge", … Used by lineage chips
+   * to label *how* the parent relates to this file.
+   */
+  derivationKind?: string | null;
+  derivationMetadata?: Record<string, unknown> | null;
 }
 
 export interface CloudFolder {

@@ -17,6 +17,7 @@ import { formatFileSize } from "@/features/files/utils/format";
 import { MediaThumbnail } from "@/features/files/components/core/MediaThumbnail/MediaThumbnail";
 import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
 import { FolderContextMenu } from "@/features/files/components/core/FolderContextMenu/FolderContextMenu";
+import { useFolderActions } from "@/features/files/components/core/FileActions/useFolderActions";
 import {
   FileRowContextMenu,
   FolderRowContextMenu,
@@ -205,6 +206,7 @@ function GridFolder({
   parentPath,
 }: GridFolderProps) {
   const [hovered, setHovered] = useState(false);
+  const folderActions = useFolderActions(folder.id);
 
   // Folder cells are both drop targets AND draggable. Drop = move file/
   // folder into here. Drag = move this folder under another folder.
@@ -279,6 +281,15 @@ function GridFolder({
               }}
             >
               <Share2 className="h-3.5 w-3.5" />
+            </GridIconButton>
+            <GridIconButton
+              label="Copy link"
+              onClick={(e) => {
+                e.stopPropagation();
+                void folderActions.copyShareUrl();
+              }}
+            >
+              <Copy className="h-3.5 w-3.5" />
             </GridIconButton>
             <GridIconButton label="Star" title="Coming soon" disabled>
               <Star className="h-3.5 w-3.5" />

@@ -520,6 +520,7 @@ A re-entry into the viewport resets the dwell timer — a glance outside doesn't
 
 ## Change log
 
+- **2026-04-29** — `quickDataWindow` (Data Tables) now accepts a `selectedTable` data prop and forwards it to `QuickDataSheet` as `initialTableId`, pre-selecting that table on mount. `openQuickDataWindow({ tableId })` helper added in `overlaySlice`; `quick_data` URL hydrator extended to honour `?panels=quick_data:<tableId>`. `MarkdownTable` and `StreamingTableRenderer` now open this window after a successful save instead of showing a giant `ViewTableModal` over the page.
 - **2026-04-26** — **Pop-out windows (Document Picture-in-Picture) shipped.** See `## Pop-out windows` section above. Any `kind: "window"` entry can now be popped out into a frameless always-on-top floating window via menu click or drag-out gesture. 39 new unit tests; zero TypeScript errors; zero per-window opt-in required.
 - **2026-04-23** — Phases 0–5, 8, 9 shipped. This `FEATURE.md` created; the long-form content previously in `INVENTORY.md` is absorbed above. `usePanelPersistence.ts` / `FloatingPanel.tsx` / `withGlobalState.tsx` / `TODO-persistence-spec.md` deleted. `UnifiedOverlayController` + `OverlaySurface` introduced behind `NEXT_PUBLIC_OVERLAYS_V2` flag. 6 missing URL-sync hydrators filled; dev-time integrity check added. Mobile drawer + card surfaces introduced; `WindowPanel` routes by `registry.mobilePresentation`.
 - **2026-04-11** — `INVENTORY.md` last reviewed.

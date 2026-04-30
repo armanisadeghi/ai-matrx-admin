@@ -17,6 +17,7 @@ export default async function AgentRunRoute({
   const agentName = agent.name;
   const backHref = "/agents";
   const basePath = "/agents";
+  const currentPath = "/agents/[id]/run";
 
   return (
     <>
@@ -27,6 +28,7 @@ export default async function AgentRunRoute({
           surfaceKey={surfaceKey}
           backHref={backHref}
           basePath={basePath}
+          currentPath={currentPath}
         />
       </PageHeader>
       <AgentRunnerPage agentId={id} />

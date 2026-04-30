@@ -53,7 +53,7 @@ import { AgentRunWrapper } from "@/features/agents/components/smart/AgentRunWrap
 import { AgentVersionDiffPage } from "@/features/agents/components/diff/AgentVersionDiffPage";
 import { AgentContentHistoryPanel } from "./AgentContentHistoryPanel";
 import { AgentContentTab } from "./agent-content.types";
-import { FullJsonViewer } from "@/components/ui/JsonComponents/JsonViewerComponent";
+import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -352,15 +352,13 @@ function AgentJsonTab({ agentId }: { agentId: string }) {
   );
 
   return (
-    <ScrollArea className="h-full">
-      <div className="p-3">
-        <FullJsonViewer
-          data={definition ?? {}}
-          title="Agent Definition"
-          initialExpanded
-        />
-      </div>
-    </ScrollArea>
+    <div className="h-full p-2">
+      <JsonInspector
+        data={definition ?? {}}
+        label="Agent Definition"
+        defaultView="json"
+      />
+    </div>
   );
 }
 

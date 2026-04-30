@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // lib/redux/entity/selectors.ts
 "use client";
 

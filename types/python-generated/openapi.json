@@ -2096,10 +2096,13 @@
         },
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "PDF file",
             "content": {
-              "application/json": {
-                "schema": {}
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
               }
             }
           },
@@ -2144,6 +2147,258 @@
                   },
                   "type": "object",
                   "title": "Response Extract Text From Pdf Utilities Pdf Extract Text Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utilities/pdf/extract-pages": {
+      "post": {
+        "tags": [
+          "Utilities"
+        ],
+        "summary": "Extract Pages",
+        "operationId": "extract_pages_utilities_pdf_extract_pages_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExtractPagesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "PDF file",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utilities/pdf/crop-pages": {
+      "post": {
+        "tags": [
+          "Utilities"
+        ],
+        "summary": "Crop Pages",
+        "operationId": "crop_pages_utilities_pdf_crop_pages_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CropPagesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "PDF file",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utilities/pdf/rotate-pages": {
+      "post": {
+        "tags": [
+          "Utilities"
+        ],
+        "summary": "Rotate Pages",
+        "operationId": "rotate_pages_utilities_pdf_rotate_pages_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RotatePagesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "PDF file",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utilities/pdf/delete-pages": {
+      "post": {
+        "tags": [
+          "Utilities"
+        ],
+        "summary": "Delete Pages",
+        "operationId": "delete_pages_utilities_pdf_delete_pages_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeletePagesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "PDF file",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utilities/pdf/merge": {
+      "post": {
+        "tags": [
+          "Utilities"
+        ],
+        "summary": "Merge Pdfs",
+        "operationId": "merge_pdfs_utilities_pdf_merge_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MergePdfsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "PDF file",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utilities/pdf/split": {
+      "post": {
+        "tags": [
+          "Utilities"
+        ],
+        "summary": "Split Pdf",
+        "operationId": "split_pdf_utilities_pdf_split_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SplitPdfRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "ZIP archive",
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
                 }
               }
             }
@@ -5637,6 +5892,762 @@
         }
       }
     },
+    "/rag/search": {
+      "post": {
+        "tags": [
+          "RAG"
+        ],
+        "summary": "Rag Search Endpoint",
+        "operationId": "rag_search_endpoint_rag_search_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponseOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/cross-doc/stream": {
+      "post": {
+        "tags": [
+          "RAG"
+        ],
+        "summary": "Rag Cross Doc Stream",
+        "description": "End-to-end trial-prep flow: split retrieval → synthesis →\nfaithfulness check, all events streamed.\n\nEvent sequence (ordered):\n\n  rag.cross_doc.retrieval.started\n  rag.citation                 (one per library hit, tag=library_tag)\n  rag.citation                 (one per case   hit, tag=case_tag)\n  rag.cross_doc.retrieval.complete\n  rag.cross_doc.synth.chunk    (token-streamed answer chunks)\n  rag.cross_doc.synth.complete\n  rag.cross_doc.verify.complete\n  rag.cross_doc.result         (final consolidated payload)\n\nThe FE renders the citations as chips, the answer as streaming text,\nand the per-claim verdicts as colored highlights over the answer.",
+        "operationId": "rag_cross_doc_stream_rag_cross_doc_stream_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrossDocRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/search/stream": {
+      "post": {
+        "tags": [
+          "RAG"
+        ],
+        "summary": "Rag Search Stream",
+        "operationId": "rag_search_stream_rag_search_stream_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/ingest": {
+      "post": {
+        "tags": [
+          "RAG"
+        ],
+        "summary": "Rag Ingest Endpoint",
+        "operationId": "rag_ingest_endpoint_rag_ingest_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IngestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/ingest/stream": {
+      "post": {
+        "tags": [
+          "RAG"
+        ],
+        "summary": "Rag Ingest Stream",
+        "description": "Streaming ingest. Emits ``rag.ingest.progress`` events at each\nstage (fetch / extract / cleanup / chunk / embed / upsert /\ncomplete) so the FE can render a live progress bar against a 500-\npage PDF instead of a silent spinner.",
+        "operationId": "rag_ingest_stream_rag_ingest_stream_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IngestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/verify": {
+      "post": {
+        "tags": [
+          "RAG"
+        ],
+        "summary": "Rag Verify Endpoint",
+        "operationId": "rag_verify_endpoint_rag_verify_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/health": {
+      "get": {
+        "tags": [
+          "RAG"
+        ],
+        "summary": "Rag Health",
+        "operationId": "rag_health_rag_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/admin/overview": {
+      "get": {
+        "tags": [
+          "RAG Admin"
+        ],
+        "summary": "Overview",
+        "operationId": "overview_rag_admin_overview_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOverview"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/admin/library": {
+      "get": {
+        "tags": [
+          "RAG Admin"
+        ],
+        "summary": "List Library",
+        "operationId": "list_library_rag_admin_library_get",
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Organization Id"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "jurisdiction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Jurisdiction"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 200,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LibraryDocOut"
+                  },
+                  "title": "Response List Library Rag Admin Library Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/admin/sources": {
+      "get": {
+        "tags": [
+          "RAG Admin"
+        ],
+        "summary": "List Sources",
+        "operationId": "list_sources_rag_admin_sources_get",
+        "parameters": [
+          {
+            "name": "source_kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source Kind"
+            }
+          },
+          {
+            "name": "owner_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Owner Id"
+            }
+          },
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Organization Id"
+            }
+          },
+          {
+            "name": "library_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Library Only"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SourceSummary"
+                  },
+                  "title": "Response List Sources Rag Admin Sources Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/admin/source/{source_kind}/{source_id}/chunks": {
+      "get": {
+        "tags": [
+          "RAG Admin"
+        ],
+        "summary": "List Chunks For Source",
+        "operationId": "list_chunks_for_source_rag_admin_source__source_kind___source_id__chunks_get",
+        "parameters": [
+          {
+            "name": "source_kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Kind"
+            }
+          },
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Id"
+            }
+          },
+          {
+            "name": "only_children",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Only Children"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 2000,
+              "minimum": 1,
+              "default": 200,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChunkDetail"
+                  },
+                  "title": "Response List Chunks For Source Rag Admin Source  Source Kind   Source Id  Chunks Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/admin/audit": {
+      "get": {
+        "tags": [
+          "RAG Admin"
+        ],
+        "summary": "List Audit",
+        "operationId": "list_audit_rag_admin_audit_get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Organization Id"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO timestamp lower bound",
+              "title": "Since"
+            },
+            "description": "ISO timestamp lower bound"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditRow"
+                  },
+                  "title": "Response List Audit Rag Admin Audit Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/admin/search": {
+      "post": {
+        "tags": [
+          "RAG Admin"
+        ],
+        "summary": "Admin Search",
+        "operationId": "admin_search_rag_admin_search_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSearchResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/admin/source/{source_kind}/{source_id}": {
+      "delete": {
+        "tags": [
+          "RAG Admin"
+        ],
+        "summary": "Delete Source Chunks",
+        "operationId": "delete_source_chunks_rag_admin_source__source_kind___source_id__delete",
+        "parameters": [
+          {
+            "name": "source_kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Kind"
+            }
+          },
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/workflow/node-types": {
       "get": {
         "tags": [
@@ -6477,6 +7488,51 @@
         }
       }
     },
+    "/runs/{run_id}/force-fail": {
+      "post": {
+        "tags": [
+          "Workflow"
+        ],
+        "summary": "Force Fail Run",
+        "description": "Force a stranded run to ``failed`` regardless of its current state.\n\nUse this on runs stuck in ``running`` because of an old code path,\na process restart, or any other reason the detached task didn't get\na chance to write its terminal status. Unlike ``/cancel`` (which\npolitely asks the running scheduler to exit on its next poll), this\nis a one-shot DB update — no cooperation required.\n\nIdempotent: calling on an already-terminal run is a no-op.",
+        "operationId": "force_fail_run_runs__run_id__force_fail_post",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Force Fail Run Runs  Run Id  Force Fail Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/runs/{run_id}/checkpoints": {
       "get": {
         "tags": [
@@ -6565,6 +7621,30 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/_test/spawn-detached": {
+      "post": {
+        "tags": [
+          "Workflow"
+        ],
+        "summary": "Test Spawn Detached",
+        "description": "Diagnostic endpoint: prove that the background-task spawn pattern\nworks at all, in isolation from the workflow scheduler.\n\nWhat it does:\n1. Logs \"[diag] before spawn\"\n2. Spawns a 10-second task that logs \"tick i\" every second.\n3. Returns immediately.\n\nExpected server-log output:\n\n    [diag] BEFORE spawn  set_size=0\n    [diag] AFTER  spawn  set_size=1\n    [diag] task ENTERED\n    [diag] task tick 0\n    [diag] task tick 1\n    ...\n    [diag] task tick 9\n    [diag] task DONE\n\nIf the ticks don't appear, ``asyncio.create_task`` is being killed —\ndiagnostic for the workflow freeze.",
+        "operationId": "test_spawn_detached__test_spawn_detached_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Test Spawn Detached  Test Spawn Detached Post"
                 }
               }
             }
@@ -10319,6 +11399,97 @@
         }
       }
     },
+    "/cloud-files/changes": {
+      "get": {
+        "tags": [
+          "Sandbox Bridge"
+        ],
+        "summary": "List Changes",
+        "description": "Polling fallback for the in-sandbox watcher's down-direction.\n\nThe recommended live path is Supabase Realtime on ``cld_files`` (see\n``db/migrations/0002_cld_files_realtime.sql``). When Realtime isn't\navailable — sandbox missing the realtime client lib, missing Supabase\ncreds, or a transient WebSocket drop — the watcher polls this endpoint\nevery ~30s with the ISO timestamp of the most recent change it has\nalready processed.\n\nv1 returns only **modifications** (rows with ``updated_at > since``,\n``deleted_at IS NULL``). Soft-deletes are not surfaced through this\nendpoint — they only show up via Realtime, or are picked up by the\nnext session's bulk down-sync. This is a deliberate tradeoff: the\nSupabase client doesn't expose ``deleted_at IS NOT NULL`` cleanly via\n``list_files_async``, and adding a new public method on the foundation\nmatrx-utils package is intentionally out of scope for this change.\n\nResponse shape:\n    {\n        \"files\":       [{ id, file_path, file_size, mime_type,\n                          current_version, checksum, updated_at }, ...],\n        \"next_cursor\": \"<iso of most recent updated_at>\",\n        \"deletions_supported\": false\n    }",
+        "operationId": "list_changes_cloud_files_changes_get",
+        "parameters": [
+          {
+            "name": "since",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "ISO-8601 timestamp; return rows with updated_at >= since",
+              "title": "Since"
+            },
+            "description": "ISO-8601 timestamp; return rows with updated_at >= since"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 5000,
+              "minimum": 1,
+              "default": 1000,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Matrx-User-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Matrx-User-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response List Changes Cloud Files Changes Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/cloud-files/integrations.aidream": {
       "get": {
         "tags": [
@@ -11783,6 +12954,309 @@
         ],
         "title": "AddLinksToScope"
       },
+      "AdminOverview": {
+        "properties": {
+          "schema_ok": {
+            "type": "boolean",
+            "title": "Schema Ok"
+          },
+          "total_chunks": {
+            "type": "integer",
+            "title": "Total Chunks"
+          },
+          "chunks_by_source_kind": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Chunks By Source Kind"
+          },
+          "chunks_by_section_kind": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Chunks By Section Kind"
+          },
+          "distinct_sources": {
+            "type": "integer",
+            "title": "Distinct Sources"
+          },
+          "distinct_owners": {
+            "type": "integer",
+            "title": "Distinct Owners"
+          },
+          "library_doc_count": {
+            "type": "integer",
+            "title": "Library Doc Count"
+          },
+          "library_chunk_count": {
+            "type": "integer",
+            "title": "Library Chunk Count"
+          },
+          "embeddings_oai_count": {
+            "type": "integer",
+            "title": "Embeddings Oai Count"
+          },
+          "embeddings_voyage_count": {
+            "type": "integer",
+            "title": "Embeddings Voyage Count"
+          },
+          "audit_rows_24h": {
+            "type": "integer",
+            "title": "Audit Rows 24H"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "schema_ok",
+          "total_chunks",
+          "chunks_by_source_kind",
+          "chunks_by_section_kind",
+          "distinct_sources",
+          "distinct_owners",
+          "library_doc_count",
+          "library_chunk_count",
+          "embeddings_oai_count",
+          "embeddings_voyage_count",
+          "audit_rows_24h"
+        ],
+        "title": "AdminOverview"
+      },
+      "AdminSearchHit": {
+        "properties": {
+          "chunk_id": {
+            "type": "string",
+            "title": "Chunk Id"
+          },
+          "source_kind": {
+            "type": "string",
+            "title": "Source Kind"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "section_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Section Kind"
+          },
+          "first_page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Page"
+          },
+          "last_page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Page"
+          },
+          "short_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Code"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "snippet": {
+            "type": "string",
+            "title": "Snippet"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          },
+          "rerank_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rerank Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chunk_id",
+          "source_kind",
+          "source_id",
+          "section_kind",
+          "first_page",
+          "last_page",
+          "short_code",
+          "title",
+          "snippet",
+          "score",
+          "rerank_score"
+        ],
+        "title": "AdminSearchHit"
+      },
+      "AdminSearchRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Query"
+          },
+          "impersonate_user_id": {
+            "type": "string",
+            "title": "Impersonate User Id",
+            "description": "User to retrieve as — admin runs as this user's scope."
+          },
+          "impersonate_organization_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Impersonate Organization Id"
+          },
+          "source_kinds": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Kinds"
+          },
+          "library_filter": {
+            "type": "string",
+            "title": "Library Filter",
+            "default": "any"
+          },
+          "limit": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Limit",
+            "default": 10
+          },
+          "multi_query": {
+            "type": "integer",
+            "maximum": 5,
+            "minimum": 1,
+            "title": "Multi Query",
+            "default": 1
+          },
+          "use_hyde": {
+            "type": "boolean",
+            "title": "Use Hyde",
+            "default": false
+          },
+          "use_mmr": {
+            "type": "boolean",
+            "title": "Use Mmr",
+            "default": true
+          },
+          "rerank": {
+            "type": "boolean",
+            "title": "Rerank",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "query",
+          "impersonate_user_id"
+        ],
+        "title": "AdminSearchRequest"
+      },
+      "AdminSearchResponse": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "hits": {
+            "items": {
+              "$ref": "#/components/schemas/AdminSearchHit"
+            },
+            "type": "array",
+            "title": "Hits"
+          },
+          "total_candidates": {
+            "type": "integer",
+            "title": "Total Candidates"
+          },
+          "embedding_model": {
+            "type": "string",
+            "title": "Embedding Model"
+          },
+          "reranker_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reranker Model"
+          },
+          "latency_ms": {
+            "type": "integer",
+            "title": "Latency Ms"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "query",
+          "hits",
+          "total_candidates",
+          "embedding_model",
+          "reranker_model",
+          "latency_ms"
+        ],
+        "title": "AdminSearchResponse"
+      },
       "AgentBlocksStartRequest": {
         "properties": {
           "user_input": {
@@ -11994,6 +13468,16 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/IdeState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sandbox": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SandboxBindingRequest"
               },
               {
                 "type": "null"
@@ -12251,6 +13735,84 @@
           "پادکست خبری ایران"
         ],
         "title": "AudioStyle"
+      },
+      "AuditRow": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "organization_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Id"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "query_hash": {
+            "type": "string",
+            "title": "Query Hash"
+          },
+          "pipeline_config": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Pipeline Config"
+          },
+          "returned_chunk_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Returned Chunk Ids"
+          },
+          "latency_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latency Ms"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "organization_id",
+          "user_id",
+          "query",
+          "query_hash",
+          "pipeline_config",
+          "returned_chunk_ids",
+          "latency_ms",
+          "created_at"
+        ],
+        "title": "AuditRow"
       },
       "BatchScrapeRequest": {
         "properties": {
@@ -13431,6 +14993,16 @@
               }
             ]
           },
+          "sandbox": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SandboxBindingRequest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "context": {
             "additionalProperties": true,
             "type": "object",
@@ -13528,6 +15100,195 @@
           "messages"
         ],
         "title": "ChatRequest"
+      },
+      "ChunkDetail": {
+        "properties": {
+          "chunk_id": {
+            "type": "string",
+            "title": "Chunk Id"
+          },
+          "parent_chunk_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Chunk Id"
+          },
+          "chunk_index": {
+            "type": "integer",
+            "title": "Chunk Index"
+          },
+          "chunk_kind": {
+            "type": "string",
+            "title": "Chunk Kind"
+          },
+          "section_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Section Kind"
+          },
+          "first_page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Page"
+          },
+          "last_page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Page"
+          },
+          "symbol_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol Kind"
+          },
+          "symbol_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol Name"
+          },
+          "line_start": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line Start"
+          },
+          "line_end": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line End"
+          },
+          "token_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token Count"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "snippet": {
+            "type": "string",
+            "title": "Snippet"
+          },
+          "full_length": {
+            "type": "integer",
+            "title": "Full Length"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chunk_id",
+          "parent_chunk_id",
+          "chunk_index",
+          "chunk_kind",
+          "section_kind",
+          "first_page",
+          "last_page",
+          "symbol_kind",
+          "symbol_name",
+          "line_start",
+          "line_end",
+          "token_count",
+          "language",
+          "snippet",
+          "full_length"
+        ],
+        "title": "ChunkDetail"
+      },
+      "ClaimVerdictOut": {
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim"
+          },
+          "verdict": {
+            "type": "string",
+            "title": "Verdict"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "supporting_chunk_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Supporting Chunk Ids"
+          },
+          "reasoning": {
+            "type": "string",
+            "title": "Reasoning"
+          }
+        },
+        "type": "object",
+        "required": [
+          "claim",
+          "verdict",
+          "confidence",
+          "supporting_chunk_ids",
+          "reasoning"
+        ],
+        "title": "ClaimVerdictOut"
       },
       "ClientToolResult": {
         "properties": {
@@ -14081,6 +15842,182 @@
         ],
         "title": "CreateWorkflowRequest"
       },
+      "CropPagesRequest": {
+        "properties": {
+          "media": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MediaRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "file": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "local_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Local Path"
+          },
+          "pages": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pages"
+          },
+          "page_ranges": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PdfPageRange"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Ranges"
+          },
+          "crop_box": {
+            "$ref": "#/components/schemas/PdfCropBox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "crop_box"
+        ],
+        "title": "CropPagesRequest"
+      },
+      "CrossDocRequest": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Question"
+          },
+          "library_query": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Library Query"
+          },
+          "case_query": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Case Query"
+          },
+          "library_tag": {
+            "type": "string",
+            "title": "Library Tag",
+            "default": "MTUS"
+          },
+          "case_tag": {
+            "type": "string",
+            "title": "Case Tag",
+            "default": "CASE"
+          },
+          "limit_per_side": {
+            "type": "integer",
+            "maximum": 20,
+            "minimum": 1,
+            "title": "Limit Per Side",
+            "default": 4
+          },
+          "multi_query": {
+            "type": "integer",
+            "maximum": 4,
+            "minimum": 1,
+            "title": "Multi Query",
+            "default": 2
+          },
+          "rerank": {
+            "type": "boolean",
+            "title": "Rerank",
+            "default": true
+          },
+          "use_mmr": {
+            "type": "boolean",
+            "title": "Use Mmr",
+            "default": true
+          },
+          "system_addendum": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Addendum"
+          },
+          "synth_model": {
+            "type": "string",
+            "title": "Synth Model",
+            "default": "claude-haiku-4-5"
+          },
+          "judge_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Judge Model"
+          },
+          "skip_verify": {
+            "type": "boolean",
+            "title": "Skip Verify",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "library_query",
+          "case_query"
+        ],
+        "title": "CrossDocRequest"
+      },
       "Definition": {
         "properties": {
           "version": {
@@ -14138,6 +16075,84 @@
         "title": "Definition",
         "description": "The canonical workflow definition — ReactFlow-compatible, user-authored.\n\nThis shape matches what the XYFlow canvas posts directly. The backend\nvalidates it with Pydantic but NEVER rewrites the user's JSON. Compilation\nproduces a separate CompiledGraph; the Definition remains the source of\ntruth for the UI."
       },
+      "DeletePagesRequest": {
+        "properties": {
+          "media": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MediaRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "file": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "local_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Local Path"
+          },
+          "pages": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pages"
+          },
+          "page_ranges": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PdfPageRange"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Ranges"
+          }
+        },
+        "type": "object",
+        "title": "DeletePagesRequest"
+      },
       "DeleteResponse": {
         "properties": {
           "deleted": {
@@ -14150,6 +16165,25 @@
           "deleted"
         ],
         "title": "DeleteResponse"
+      },
+      "DeleteResult": {
+        "properties": {
+          "chunks_deleted": {
+            "type": "integer",
+            "title": "Chunks Deleted"
+          },
+          "embeddings_deleted": {
+            "type": "integer",
+            "title": "Embeddings Deleted"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "chunks_deleted",
+          "embeddings_deleted"
+        ],
+        "title": "DeleteResult"
       },
       "DirectChatRequest": {
         "properties": {
@@ -14358,6 +16392,84 @@
         ],
         "title": "ExtensionContentSubmit"
       },
+      "ExtractPagesRequest": {
+        "properties": {
+          "media": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MediaRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "file": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "local_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Local Path"
+          },
+          "pages": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pages"
+          },
+          "page_ranges": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PdfPageRange"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Ranges"
+          }
+        },
+        "type": "object",
+        "title": "ExtractPagesRequest"
+      },
       "ExtractTablesRequest": {
         "properties": {
           "media": {
@@ -14468,6 +16580,26 @@
             "type": "integer",
             "title": "Use Ocr Threshold",
             "default": 100
+          },
+          "include_page_markers": {
+            "type": "boolean",
+            "title": "Include Page Markers",
+            "default": false
+          },
+          "include_page_metadata": {
+            "type": "boolean",
+            "title": "Include Page Metadata",
+            "default": false
+          },
+          "include_block_metadata": {
+            "type": "boolean",
+            "title": "Include Block Metadata",
+            "default": false
+          },
+          "include_word_metadata": {
+            "type": "boolean",
+            "title": "Include Word Metadata",
+            "default": false
           }
         },
         "type": "object",
@@ -15029,6 +17161,35 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "HealthResponse": {
+        "properties": {
+          "schema_ok": {
+            "type": "boolean",
+            "title": "Schema Ok"
+          },
+          "chunks_in_scope": {
+            "type": "integer",
+            "title": "Chunks In Scope"
+          },
+          "embeddings_in_scope": {
+            "type": "integer",
+            "title": "Embeddings In Scope"
+          },
+          "distinct_sources": {
+            "type": "integer",
+            "title": "Distinct Sources"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "schema_ok",
+          "chunks_in_scope",
+          "embeddings_in_scope",
+          "distinct_sources"
+        ],
+        "title": "HealthResponse"
+      },
       "IdeDiagnostic": {
         "properties": {
           "message": {
@@ -15181,6 +17342,107 @@
           "folders"
         ],
         "title": "IdeWorkspaceState"
+      },
+      "IngestRequest": {
+        "properties": {
+          "source_kind": {
+            "type": "string",
+            "enum": [
+              "note",
+              "code_file",
+              "cld_file"
+            ],
+            "title": "Source Kind"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "field_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Id"
+          },
+          "force": {
+            "type": "boolean",
+            "title": "Force",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_kind",
+          "source_id"
+        ],
+        "title": "IngestRequest"
+      },
+      "IngestResponse": {
+        "properties": {
+          "source_kind": {
+            "type": "string",
+            "title": "Source Kind"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "field_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Id"
+          },
+          "chunks_written": {
+            "type": "integer",
+            "title": "Chunks Written"
+          },
+          "embeddings_written": {
+            "type": "integer",
+            "title": "Embeddings Written"
+          },
+          "skipped_unchanged": {
+            "type": "boolean",
+            "title": "Skipped Unchanged"
+          },
+          "embedding_model": {
+            "type": "string",
+            "title": "Embedding Model"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source_kind",
+          "source_id",
+          "field_id",
+          "chunks_written",
+          "embeddings_written",
+          "skipped_unchanged",
+          "embedding_model"
+        ],
+        "title": "IngestResponse"
       },
       "InputDataType": {
         "type": "string",
@@ -15855,6 +18117,140 @@
         "type": "object",
         "title": "LLMParams"
       },
+      "LibraryDocOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "organization_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "short_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Code"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "jurisdiction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jurisdiction"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          },
+          "effective_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective From"
+          },
+          "effective_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective To"
+          },
+          "chunks": {
+            "type": "integer",
+            "title": "Chunks"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "storage_uri": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storage Uri"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "organization_id",
+          "title",
+          "short_code",
+          "kind",
+          "jurisdiction",
+          "version",
+          "effective_from",
+          "effective_to",
+          "chunks",
+          "source_url",
+          "storage_uri",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "LibraryDocOut"
+      },
       "MediaRef": {
         "properties": {
           "file_id": {
@@ -16045,6 +18441,105 @@
           "by_event_type"
         ],
         "title": "MemoryCostSummary"
+      },
+      "MergePdfSource": {
+        "properties": {
+          "media": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MediaRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "file": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "local_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Local Path"
+          },
+          "pages": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pages"
+          },
+          "page_ranges": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PdfPageRange"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Ranges"
+          }
+        },
+        "type": "object",
+        "title": "MergePdfSource"
+      },
+      "MergePdfsRequest": {
+        "properties": {
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/MergePdfSource"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename",
+            "default": "merged.pdf"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sources"
+        ],
+        "title": "MergePdfsRequest"
       },
       "MessageUpdate": {
         "properties": {
@@ -16243,6 +18738,179 @@
         "type": "object",
         "title": "PatchFolderRequest"
       },
+      "PdfCropBox": {
+        "properties": {
+          "x0": {
+            "type": "number",
+            "title": "X0"
+          },
+          "y0": {
+            "type": "number",
+            "title": "Y0"
+          },
+          "x1": {
+            "type": "number",
+            "title": "X1"
+          },
+          "y1": {
+            "type": "number",
+            "title": "Y1"
+          }
+        },
+        "type": "object",
+        "required": [
+          "x0",
+          "y0",
+          "x1",
+          "y1"
+        ],
+        "title": "PdfCropBox"
+      },
+      "PdfPageRange": {
+        "properties": {
+          "start": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "Start"
+          },
+          "end": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "End"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start",
+          "end"
+        ],
+        "title": "PdfPageRange"
+      },
+      "PdfPageSpan": {
+        "properties": {
+          "page_number": {
+            "type": "integer",
+            "title": "Page Number"
+          },
+          "page_index": {
+            "type": "integer",
+            "title": "Page Index"
+          },
+          "page_char_start": {
+            "type": "integer",
+            "title": "Page Char Start"
+          },
+          "page_char_end": {
+            "type": "integer",
+            "title": "Page Char End"
+          },
+          "chunk_char_start": {
+            "type": "integer",
+            "title": "Chunk Char Start"
+          },
+          "chunk_char_end": {
+            "type": "integer",
+            "title": "Chunk Char End"
+          }
+        },
+        "type": "object",
+        "required": [
+          "page_number",
+          "page_index",
+          "page_char_start",
+          "page_char_end",
+          "chunk_char_start",
+          "chunk_char_end"
+        ],
+        "title": "PdfPageSpan"
+      },
+      "PdfPageText": {
+        "properties": {
+          "page_number": {
+            "type": "integer",
+            "title": "Page Number"
+          },
+          "page_index": {
+            "type": "integer",
+            "title": "Page Index"
+          },
+          "width": {
+            "type": "number",
+            "title": "Width"
+          },
+          "height": {
+            "type": "number",
+            "title": "Height"
+          },
+          "rotation": {
+            "type": "integer",
+            "title": "Rotation"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "extraction_method": {
+            "type": "string",
+            "title": "Extraction Method"
+          },
+          "char_count": {
+            "type": "integer",
+            "title": "Char Count"
+          },
+          "source_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Path"
+          },
+          "blocks": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PdfTextBlock"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blocks"
+          },
+          "words": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PdfTextWord"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Words"
+          }
+        },
+        "type": "object",
+        "required": [
+          "page_number",
+          "page_index",
+          "width",
+          "height",
+          "rotation",
+          "text",
+          "extraction_method",
+          "char_count"
+        ],
+        "title": "PdfPageText"
+      },
       "PdfPipelineOptions": {
         "properties": {
           "extract_text": {
@@ -16270,11 +18938,6 @@
             "title": "Chunk And Process With Ai",
             "default": false
           },
-          "template_name": {
-            "type": "string",
-            "title": "Template Name",
-            "default": "make_json_flashcards"
-          },
           "chunk_size": {
             "type": "integer",
             "title": "Chunk Size",
@@ -16285,6 +18948,47 @@
             "title": "Overlap Size",
             "default": 200
           },
+          "template_name": {
+            "type": "string",
+            "title": "Template Name",
+            "default": "default"
+          },
+          "include_page_markers": {
+            "type": "boolean",
+            "title": "Include Page Markers",
+            "default": false
+          },
+          "include_page_metadata": {
+            "type": "boolean",
+            "title": "Include Page Metadata",
+            "default": false
+          },
+          "include_block_metadata": {
+            "type": "boolean",
+            "title": "Include Block Metadata",
+            "default": false
+          },
+          "include_word_metadata": {
+            "type": "boolean",
+            "title": "Include Word Metadata",
+            "default": false
+          },
+          "include_chunk_metadata": {
+            "type": "boolean",
+            "title": "Include Chunk Metadata",
+            "default": false
+          },
+          "upload_result_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upload Result To"
+          },
           "upload_result_to_supabase": {
             "type": "boolean",
             "title": "Upload Result To Supabase",
@@ -16293,7 +18997,7 @@
           "supabase_bucket": {
             "type": "string",
             "title": "Supabase Bucket",
-            "default": "any-file"
+            "default": "extracted_documents"
           }
         },
         "type": "object",
@@ -16353,11 +19057,16 @@
               "use_ocr_threshold": 100,
               "extract_tables": false,
               "chunk_and_process_with_ai": false,
-              "template_name": "make_json_flashcards",
               "chunk_size": 2000,
               "overlap_size": 200,
+              "template_name": "default",
+              "include_page_markers": false,
+              "include_page_metadata": false,
+              "include_block_metadata": false,
+              "include_word_metadata": false,
+              "include_chunk_metadata": false,
               "upload_result_to_supabase": false,
-              "supabase_bucket": "any-file"
+              "supabase_bucket": "extracted_documents"
             }
           }
         },
@@ -16377,6 +19086,20 @@
             ],
             "title": "Raw Text"
           },
+          "pages": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PdfPageText"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pages"
+          },
           "chunks": {
             "anyOf": [
               {
@@ -16390,6 +19113,20 @@
               }
             ],
             "title": "Chunks"
+          },
+          "chunk_records": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PdfTextChunk"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chunk Records"
           },
           "ai_processed": {
             "anyOf": [
@@ -16416,6 +19153,17 @@
               }
             ],
             "title": "Tables Path"
+          },
+          "cloud_uri": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cloud Uri"
           },
           "supabase_url": {
             "anyOf": [
@@ -16453,6 +19201,199 @@
         },
         "type": "object",
         "title": "PdfResult"
+      },
+      "PdfTextBlock": {
+        "properties": {
+          "block_number": {
+            "type": "integer",
+            "title": "Block Number"
+          },
+          "block_type": {
+            "type": "integer",
+            "title": "Block Type"
+          },
+          "x0": {
+            "type": "number",
+            "title": "X0"
+          },
+          "y0": {
+            "type": "number",
+            "title": "Y0"
+          },
+          "x1": {
+            "type": "number",
+            "title": "X1"
+          },
+          "y1": {
+            "type": "number",
+            "title": "Y1"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "block_number",
+          "block_type",
+          "x0",
+          "y0",
+          "x1",
+          "y1",
+          "text"
+        ],
+        "title": "PdfTextBlock"
+      },
+      "PdfTextChunk": {
+        "properties": {
+          "chunk_id": {
+            "type": "string",
+            "title": "Chunk Id"
+          },
+          "chunk_index": {
+            "type": "integer",
+            "title": "Chunk Index"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "document_char_start": {
+            "type": "integer",
+            "title": "Document Char Start"
+          },
+          "document_char_end": {
+            "type": "integer",
+            "title": "Document Char End"
+          },
+          "char_count": {
+            "type": "integer",
+            "title": "Char Count"
+          },
+          "page_numbers": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Page Numbers"
+          },
+          "page_spans": {
+            "items": {
+              "$ref": "#/components/schemas/PdfPageSpan"
+            },
+            "type": "array",
+            "title": "Page Spans"
+          },
+          "overlap_previous_chars": {
+            "type": "integer",
+            "title": "Overlap Previous Chars",
+            "default": 0
+          },
+          "overlap_next_chars": {
+            "type": "integer",
+            "title": "Overlap Next Chars",
+            "default": 0
+          },
+          "previous_overlap_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Overlap Text"
+          },
+          "next_overlap_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Overlap Text"
+          },
+          "token_estimate": {
+            "type": "integer",
+            "title": "Token Estimate"
+          },
+          "source_document": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Document"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chunk_id",
+          "chunk_index",
+          "text",
+          "document_char_start",
+          "document_char_end",
+          "char_count",
+          "page_numbers",
+          "page_spans",
+          "token_estimate"
+        ],
+        "title": "PdfTextChunk"
+      },
+      "PdfTextWord": {
+        "properties": {
+          "word": {
+            "type": "string",
+            "title": "Word"
+          },
+          "x0": {
+            "type": "number",
+            "title": "X0"
+          },
+          "y0": {
+            "type": "number",
+            "title": "Y0"
+          },
+          "x1": {
+            "type": "number",
+            "title": "X1"
+          },
+          "y1": {
+            "type": "number",
+            "title": "Y1"
+          },
+          "block_number": {
+            "type": "integer",
+            "title": "Block Number"
+          },
+          "line_number": {
+            "type": "integer",
+            "title": "Line Number"
+          },
+          "word_number": {
+            "type": "integer",
+            "title": "Word Number"
+          }
+        },
+        "type": "object",
+        "required": [
+          "word",
+          "x0",
+          "y0",
+          "x1",
+          "y1",
+          "block_number",
+          "line_number",
+          "word_number"
+        ],
+        "title": "PdfTextWord"
       },
       "PendingCallSummary": {
         "properties": {
@@ -17366,6 +20307,91 @@
         ],
         "title": "RetrySubmitRequest"
       },
+      "RotatePagesRequest": {
+        "properties": {
+          "media": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MediaRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "file": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "local_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Local Path"
+          },
+          "pages": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pages"
+          },
+          "page_ranges": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PdfPageRange"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Ranges"
+          },
+          "rotation": {
+            "type": "integer",
+            "title": "Rotation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rotation"
+        ],
+        "title": "RotatePagesRequest"
+      },
       "RunPipelineRequest": {
         "properties": {},
         "type": "object",
@@ -17444,6 +20470,41 @@
         },
         "type": "object",
         "title": "RunWorkflowRequest"
+      },
+      "SandboxBindingRequest": {
+        "properties": {
+          "sandbox_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Sandbox Id",
+            "description": "Orchestrator sandbox id (sbx-XXX)"
+          },
+          "base_url": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Base Url",
+            "description": "Orchestrator URL up to and including /sandboxes/<id> (no trailing slash)."
+          },
+          "access_token": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Access Token",
+            "description": "X-Sandbox-Access-Token bearer"
+          },
+          "root_path": {
+            "type": "string",
+            "title": "Root Path",
+            "description": "Workspace root inside the sandbox",
+            "default": "/home/agent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sandbox_id",
+          "base_url",
+          "access_token"
+        ],
+        "title": "SandboxBindingRequest"
       },
       "SaveDraftRequest": {
         "properties": {
@@ -17775,6 +20836,110 @@
         ],
         "title": "SearchFilesResponse"
       },
+      "SearchHitOut": {
+        "properties": {
+          "chunk_id": {
+            "type": "string",
+            "title": "Chunk Id"
+          },
+          "source_kind": {
+            "type": "string",
+            "title": "Source Kind"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "field_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Id"
+          },
+          "parent_chunk_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Chunk Id"
+          },
+          "chunk_kind": {
+            "type": "string",
+            "title": "Chunk Kind"
+          },
+          "snippet": {
+            "type": "string",
+            "title": "Snippet"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          },
+          "vector_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vector Rank"
+          },
+          "lexical_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lexical Rank"
+          },
+          "rerank_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rerank Score"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chunk_id",
+          "source_kind",
+          "source_id",
+          "field_id",
+          "parent_chunk_id",
+          "chunk_kind",
+          "snippet",
+          "score",
+          "vector_rank",
+          "lexical_rank",
+          "rerank_score",
+          "metadata"
+        ],
+        "title": "SearchHitOut"
+      },
       "SearchKeywordsRequest": {
         "properties": {
           "keywords": {
@@ -17807,6 +20972,163 @@
           "keywords"
         ],
         "title": "SearchKeywordsRequest"
+      },
+      "SearchRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Query"
+          },
+          "filters": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SearchRequestFilters"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Limit",
+            "default": 20
+          },
+          "rerank": {
+            "type": "boolean",
+            "title": "Rerank",
+            "default": true
+          },
+          "only_children": {
+            "type": "boolean",
+            "title": "Only Children",
+            "default": true
+          },
+          "embedding_models": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Models",
+            "description": "Optional override — pass multiple to fan out across embedding tables (e.g. ['openai:text-embedding-3-small', 'voyage:voyage-code-3']) and let RRF unify the rankings."
+          },
+          "multi_query": {
+            "type": "integer",
+            "maximum": 5,
+            "minimum": 1,
+            "title": "Multi Query",
+            "description": "If >1, the query is rewritten into N paraphrases via gpt-4o-mini and each one contributes a separate vector ranking that gets fused via RRF. Boosts recall on awkward phrasings.",
+            "default": 1
+          },
+          "use_hyde": {
+            "type": "boolean",
+            "title": "Use Hyde",
+            "description": "Generate a hypothetical-answer passage and embed THAT alongside the query (HyDE). Helps when the natural query phrasing differs from the documents' phrasing.",
+            "default": false
+          },
+          "use_mmr": {
+            "type": "boolean",
+            "title": "Use Mmr",
+            "description": "Drop near-duplicate hits from the result set.",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "SearchRequest"
+      },
+      "SearchRequestFilters": {
+        "properties": {
+          "source_kinds": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Kinds"
+          },
+          "organization_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Id",
+            "description": "Override the active org for this query — only honored for admins. Non-admin callers always retrieve in their AppContext.organization_id scope."
+          }
+        },
+        "type": "object",
+        "title": "SearchRequestFilters"
+      },
+      "SearchResponseOut": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "hits": {
+            "items": {
+              "$ref": "#/components/schemas/SearchHitOut"
+            },
+            "type": "array",
+            "title": "Hits"
+          },
+          "total_candidates": {
+            "type": "integer",
+            "title": "Total Candidates"
+          },
+          "embedding_model": {
+            "type": "string",
+            "title": "Embedding Model"
+          },
+          "reranker_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reranker Model"
+          },
+          "latency_ms": {
+            "type": "integer",
+            "title": "Latency Ms"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "query",
+          "hits",
+          "total_candidates",
+          "embedding_model",
+          "reranker_model",
+          "latency_ms"
+        ],
+        "title": "SearchResponseOut"
       },
       "ShareLinkResolveResponse": {
         "properties": {
@@ -17938,6 +21260,108 @@
         ],
         "title": "SourceBulkAction"
       },
+      "SourceSummary": {
+        "properties": {
+          "source_kind": {
+            "type": "string",
+            "title": "Source Kind"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "owner_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Id"
+          },
+          "organization_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Id"
+          },
+          "chunk_count": {
+            "type": "integer",
+            "title": "Chunk Count"
+          },
+          "parent_chunk_count": {
+            "type": "integer",
+            "title": "Parent Chunk Count"
+          },
+          "total_tokens": {
+            "type": "integer",
+            "title": "Total Tokens"
+          },
+          "section_histogram": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Section Histogram"
+          },
+          "languages": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Languages"
+          },
+          "library_short_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Library Short Code"
+          },
+          "file_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Name"
+          },
+          "last_updated": {
+            "type": "string",
+            "title": "Last Updated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_kind",
+          "source_id",
+          "owner_id",
+          "organization_id",
+          "chunk_count",
+          "parent_chunk_count",
+          "total_tokens",
+          "section_histogram",
+          "languages",
+          "library_short_code",
+          "file_name",
+          "last_updated"
+        ],
+        "title": "SourceSummary"
+      },
       "SourceTagRequest": {
         "properties": {
           "tag_ids": {
@@ -18006,6 +21430,126 @@
         },
         "type": "object",
         "title": "SourceUpdate"
+      },
+      "SplitPartRequest": {
+        "properties": {
+          "pages": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pages"
+          },
+          "page_ranges": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PdfPageRange"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Ranges"
+          },
+          "filename": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filename"
+          }
+        },
+        "type": "object",
+        "title": "SplitPartRequest"
+      },
+      "SplitPdfRequest": {
+        "properties": {
+          "media": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MediaRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "file": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "local_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Local Path"
+          },
+          "parts": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/SplitPartRequest"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parts"
+          },
+          "max_pages_per_part": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Pages Per Part"
+          }
+        },
+        "type": "object",
+        "title": "SplitPdfRequest"
       },
       "StorageUsageResponse": {
         "properties": {
@@ -18820,6 +22364,88 @@
           "valid"
         ],
         "title": "ValidationResult"
+      },
+      "VerifyRequest": {
+        "properties": {
+          "answer": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Answer"
+          },
+          "retrieved": {
+            "items": {
+              "$ref": "#/components/schemas/VerifyRequestChunk"
+            },
+            "type": "array",
+            "title": "Retrieved"
+          },
+          "judge_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Judge Model"
+          }
+        },
+        "type": "object",
+        "required": [
+          "answer"
+        ],
+        "title": "VerifyRequest"
+      },
+      "VerifyRequestChunk": {
+        "properties": {
+          "chunk_id": {
+            "type": "string",
+            "title": "Chunk Id"
+          },
+          "content_text": {
+            "type": "string",
+            "title": "Content Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chunk_id",
+          "content_text"
+        ],
+        "title": "VerifyRequestChunk"
+      },
+      "VerifyResponse": {
+        "properties": {
+          "claims": {
+            "items": {
+              "$ref": "#/components/schemas/ClaimVerdictOut"
+            },
+            "type": "array",
+            "title": "Claims"
+          },
+          "overall_faithfulness": {
+            "type": "number",
+            "title": "Overall Faithfulness"
+          },
+          "judge_model": {
+            "type": "string",
+            "title": "Judge Model"
+          },
+          "latency_ms": {
+            "type": "integer",
+            "title": "Latency Ms"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "claims",
+          "overall_faithfulness",
+          "judge_model",
+          "latency_ms"
+        ],
+        "title": "VerifyResponse"
       },
       "Viewport": {
         "properties": {

@@ -61,9 +61,16 @@ export function initUrlHydration() {
     dispatch(openOverlay({ overlayId: "quickTasksWindow" }));
   });
 
-  // Quick Data Window
-  registerPanelHydrator("quick_data", (dispatch) => {
-    dispatch(openOverlay({ overlayId: "quickDataWindow" }));
+  // Quick Data Window — `?panels=quick_data` opens with the last-used selection
+  // restored from `window_sessions`, while `?panels=quick_data:<tableId>` deep
+  // links to a specific table (used after saving a new table from a chat).
+  registerPanelHydrator("quick_data", (dispatch, id) => {
+    dispatch(
+      openOverlay({
+        overlayId: "quickDataWindow",
+        data: id ? { selectedTable: id } : null,
+      }),
+    );
   });
 
   // Cloud Files Window (legacy URL key "files" still honored — points at the
@@ -143,7 +150,9 @@ export function initUrlHydration() {
       openOverlay({
         overlayId: "agentAdvancedEditorWindow",
         data:
-          id && id !== "agentAdvancedEditorWindow" ? { initialAgentId: id } : {},
+          id && id !== "agentAdvancedEditorWindow"
+            ? { initialAgentId: id }
+            : {},
       }),
     );
   });

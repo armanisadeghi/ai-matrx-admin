@@ -389,6 +389,23 @@ export const openHtmlPreview = (options: HtmlPreviewPayload) =>
 export const openAnnouncements = () =>
   openOverlay({ overlayId: "announcements" });
 
+interface QuickDataWindowPayload {
+  /**
+   * Optional table id to pre-select when the Data Tables window opens. Maps to
+   * `defaultData.selectedTable` in the registry, which `OverlaySurface` spreads
+   * onto `QuickDataWindow` and forwards to `QuickDataSheet` as `initialTableId`.
+   */
+  tableId?: string | null;
+  instanceId?: string;
+}
+
+export const openQuickDataWindow = (options?: QuickDataWindowPayload) =>
+  openOverlay({
+    overlayId: "quickDataWindow",
+    instanceId: options?.instanceId,
+    data: options?.tableId ? { selectedTable: options.tableId } : null,
+  });
+
 interface SaveToNotesPayload {
   content: string;
   defaultFolder?: string;
@@ -398,7 +415,12 @@ interface SaveToNotesPayload {
    * payloads (e.g. extracted PDFs) where the markdown preview can lag or
    * crash. Default is `"split"`, set inside QuickNoteSaveCore.
    */
-  initialEditorMode?: "plain" | "split" | "preview" | "wysiwyg" | "markdown-split";
+  initialEditorMode?:
+    | "plain"
+    | "split"
+    | "preview"
+    | "wysiwyg"
+    | "markdown-split";
 }
 
 export const openSaveToNotes = (options: SaveToNotesPayload) =>

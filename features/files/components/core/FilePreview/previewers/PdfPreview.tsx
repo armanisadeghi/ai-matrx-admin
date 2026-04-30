@@ -12,23 +12,32 @@
  * `useFileBlob` rather than the S3 signed URL — same-origin blob means
  * react-pdf's worker fetch is CORS-safe regardless of the bucket policy.
  *
- * Sizing model: we measure the container with a `ResizeObserver` and pass
- * an explicit `width` to `<Page>`. By default we fit the page to the
- * container width (so portrait + landscape both render at full readable
- * size without cutting off). The user can switch to "Actual size" or
- * dial a custom zoom percentage. Rotation is supported per-page so
- * sideways scans become readable in one click.
+ * Sizing model — proper fit:
+ *   1. Measure both container width AND height via ResizeObserver.
+ *   2. Read the page's natural dimensions on first load (post-intrinsic-
+ *      rotation) and apply the user's rotation choice on top.
+ *   3. Compute `scale = min(availableWidth / effectiveW, availableHeight
+ *      / effectiveH)` — the page expands until *one* axis matches its
+ *      available space, then stops. Neither dimension overflows; the
+ *      page uses every pixel one of the axes can give it.
+ *   4. Pass `scale` (not `width`) to `<Page>` so the rotation math is
+ *      handled internally.
+ *
+ * Other zoom modes — Fit Width (legacy: width only, page may exceed
+ * vertical space and scroll), Actual size (100% physical), and explicit
+ * percentages.
  */
 
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import {
   AlertCircle,
   ChevronLeft,
   ChevronRight,
   Maximize,
+  Maximize2,
   Minus,
   Plus,
   RotateCw,
@@ -54,8 +63,16 @@ export interface PdfPreviewProps {
 }
 
 type ZoomMode =
+  // Fit page — biggest scale that keeps BOTH width and height inside the
+  // available space. Default. This is the proper definition of "fit".
+  | { kind: "fit" }
+  // Fit width — biggest scale where page width matches available width;
+  // height may overflow and scroll. Useful for tall pages where you'd
+  // rather scroll than have small text.
   | { kind: "fit-width" }
+  // 100% physical size — page renders at its natural pixel size.
   | { kind: "actual" }
+  // Explicit zoom level (0.25 → 4.0).
   | { kind: "scale"; scale: number };
 
 const MIN_SCALE = 0.25;
@@ -65,6 +82,9 @@ const STEP = 0.25;
 // monitors. "Actual size" maps to 1.5x — matches what most desktop PDF
 // viewers feel like at 100%.
 const ACTUAL_SIZE_SCALE = 1.5;
+// Reserve a few px of padding on each side so the page doesn't kiss the
+// scrollbar / border.
+const VIEWPORT_PADDING_PX = 24;
 
 export default function PdfPreview({ fileId, className }: PdfPreviewProps) {
   // Same-origin blob URL via the Python download endpoint — sidesteps S3
@@ -81,21 +101,34 @@ export default function PdfPreview({ fileId, className }: PdfPreviewProps) {
   const [numPages, setNumPages] = useState(0);
   const [pageNumber, setPageNumber] = useState(1);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [zoom, setZoom] = useState<ZoomMode>({ kind: "fit-width" });
+  const [zoom, setZoom] = useState<ZoomMode>({ kind: "fit" });
   const [rotation, setRotation] = useState(0);
+  // Page natural dimensions — width / height in CSS pixels at scale 1.0,
+  // already including any intrinsic rotation the PDF declares. Populated
+  // from `<Page onLoadSuccess>`. We need the height to compute a true
+  // fit-page scale (existing fit-width math only used container width).
+  const [pageDims, setPageDims] = useState<{ width: number; height: number } | null>(null);
 
-  // Container width — drives fit-width sizing. Updated via ResizeObserver
-  // so the page rescales on splitter drags / window resizes without a
-  // re-mount.
+  // Container width AND height — both drive fit calculations. Updated via
+  // ResizeObserver so the page rescales on splitter drags / window
+  // resizes without a re-mount.
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [containerWidth, setContainerWidth] = useState<number>(0);
+  const [containerSize, setContainerSize] = useState<{
+    width: number;
+    height: number;
+  }>({ width: 0, height: 0 });
   useEffect(() => {
     const node = containerRef.current;
     if (!node) return;
-    setContainerWidth(node.clientWidth);
+    setContainerSize({ width: node.clientWidth, height: node.clientHeight });
     const ro = new ResizeObserver((entries) => {
       const entry = entries[0];
-      if (entry) setContainerWidth(entry.contentRect.width);
+      if (entry) {
+        setContainerSize({
+          width: entry.contentRect.width,
+          height: entry.contentRect.height,
+        });
+      }
     });
     ro.observe(node);
     return () => ro.disconnect();
@@ -106,31 +139,73 @@ export default function PdfPreview({ fileId, className }: PdfPreviewProps) {
 
   const combinedError = loadError ?? blobError;
 
-  // Compute the explicit page width to feed react-pdf. Using `width` is
-  // friendlier than `scale` because the page renders crisply at the target
-  // size on hi-DPI displays — pdfjs handles the device-pixel-ratio math.
-  const pageWidth = useMemo(() => {
-    // 32px of margin on each side keeps the page from kissing the scrollbar.
-    const available = Math.max(280, containerWidth - 32);
-    if (zoom.kind === "fit-width") return available;
-    if (zoom.kind === "actual") return available * ACTUAL_SIZE_SCALE;
-    return available * zoom.scale;
-  }, [containerWidth, zoom]);
+  /**
+   * The page's effective natural dimensions AFTER the user's rotation —
+   * for 90°/270° we swap width and height because rotation flips the
+   * displayed orientation. These are the dimensions we measure against
+   * the container when computing fit.
+   */
+  const effectiveDims = useMemo(() => {
+    if (!pageDims) return null;
+    const flipped = rotation === 90 || rotation === 270;
+    return flipped
+      ? { width: pageDims.height, height: pageDims.width }
+      : pageDims;
+  }, [pageDims, rotation]);
 
-  // What to show in the zoom-percentage label. For fit-width we'd need to
-  // know the page's natural width to compute, so we just say "Fit".
+  /**
+   * Compute the `scale` we hand to `<Page>`. We use `scale` (not `width`)
+   * because it composes correctly with rotation: react-pdf rotates AFTER
+   * scaling the page's natural dimensions. So:
+   *
+   *   renderedWidth  = effectiveDims.width  * scale
+   *   renderedHeight = effectiveDims.height * scale
+   *
+   * For "fit" — the proper definition — we want the page to expand until
+   * EITHER axis fills its available space, whichever happens first. That
+   * is `scale = min(availableW / effectiveW, availableH / effectiveH)`.
+   */
+  const pageScale = useMemo(() => {
+    if (!effectiveDims || effectiveDims.width <= 0 || effectiveDims.height <= 0) {
+      return null;
+    }
+    const availW = Math.max(120, containerSize.width - VIEWPORT_PADDING_PX * 2);
+    const availH = Math.max(120, containerSize.height - VIEWPORT_PADDING_PX * 2);
+    switch (zoom.kind) {
+      case "fit": {
+        const sX = availW / effectiveDims.width;
+        const sY = availH / effectiveDims.height;
+        return Math.min(sX, sY);
+      }
+      case "fit-width":
+        return availW / effectiveDims.width;
+      case "actual":
+        return ACTUAL_SIZE_SCALE;
+      case "scale":
+        return zoom.scale;
+    }
+  }, [containerSize, effectiveDims, zoom]);
+
+  // Label for the zoom indicator. "Fit" / "Fit W" / explicit percent.
   const zoomLabel = useMemo(() => {
-    if (zoom.kind === "fit-width") return "Fit";
+    if (zoom.kind === "fit") {
+      return pageScale ? `Fit ${Math.round(pageScale * 100)}%` : "Fit";
+    }
+    if (zoom.kind === "fit-width") {
+      return pageScale ? `Fit W ${Math.round(pageScale * 100)}%` : "Fit W";
+    }
     if (zoom.kind === "actual") return "100%";
     return `${Math.round(zoom.scale * 100)}%`;
-  }, [zoom]);
+  }, [zoom, pageScale]);
 
+  // The "current effective scale" used by the zoom-step buttons so +/-
+  // bumps from the actual rendered size, not from a stale fit value.
   const currentScale =
     zoom.kind === "scale"
       ? zoom.scale
       : zoom.kind === "actual"
         ? ACTUAL_SIZE_SCALE
-        : 1;
+        : (pageScale ?? 1);
 
   const stepZoom = (delta: number) => {
     setZoom({
@@ -141,6 +216,31 @@ export default function PdfPreview({ fileId, className }: PdfPreviewProps) {
       ),
     });
   };
+
+  const handlePageLoadSuccess = useCallback(
+    (page: {
+      width: number;
+      height: number;
+      originalWidth?: number;
+      originalHeight?: number;
+    }) => {
+      // CRITICAL: read `originalWidth`/`originalHeight`, not `width`/`height`.
+      // The latter pair reflects the page's CURRENT rendered size — i.e.
+      // post-scale. Feeding those back into `pageDims` creates a feedback
+      // loop where every re-render shrinks the page (we compute scale from
+      // already-scaled dims, then scale again). The `original*` props are
+      // the natural PDF-points dimensions and stay constant across renders.
+      const naturalW = page.originalWidth ?? page.width;
+      const naturalH = page.originalHeight ?? page.height;
+      setPageDims((prev) => {
+        if (prev && prev.width === naturalW && prev.height === naturalH) {
+          return prev;
+        }
+        return { width: naturalW, height: naturalH };
+      });
+    },
+    [],
+  );
 
   if (combinedError) {
     return (
@@ -210,6 +310,18 @@ export default function PdfPreview({ fileId, className }: PdfPreviewProps) {
             </button>
           </TooltipIcon>
           <span className="mx-1 h-4 w-px bg-border" />
+          <TooltipIcon label="Fit page (default)">
+            <button
+              type="button"
+              onClick={() => setZoom({ kind: "fit" })}
+              className={cn(
+                "flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground",
+                zoom.kind === "fit" && "bg-accent text-accent-foreground",
+              )}
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+            </button>
+          </TooltipIcon>
           <TooltipIcon label="Fit width">
             <button
               type="button"
@@ -299,11 +411,13 @@ export default function PdfPreview({ fileId, className }: PdfPreviewProps) {
             pageNumber={pageNumber}
             renderAnnotationLayer
             renderTextLayer
-            // Drive sizing by explicit width so fit-width and zoom % both
-            // produce a crisp render at the right device pixels. react-pdf
-            // handles devicePixelRatio internally.
-            width={pageWidth > 0 ? pageWidth : undefined}
+            // Use `scale` (not `width`) so rotation composes correctly:
+            // react-pdf rotates the page after scaling, so we don't need
+            // to swap width/height ourselves. devicePixelRatio handling
+            // stays internal to pdfjs.
+            scale={pageScale && pageScale > 0 ? pageScale : undefined}
             rotate={rotation}
+            onLoadSuccess={handlePageLoadSuccess}
             className="my-4 shadow-sm"
           />
         </Document>

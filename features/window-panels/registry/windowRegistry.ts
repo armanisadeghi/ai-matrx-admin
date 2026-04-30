@@ -376,12 +376,13 @@ const DYNAMIC: Record<string, DynamicAddition> = {
       ),
   },
 
-  // ── Quick AI Results ──────────────────────────────────────────────────────
+  // ── AI Results ────────────────────────────────────────────────────────────
+  // Cross-agent conversation history. Replaces the legacy
+  // QuickAIResultsSheet (prompts system) — slug + overlayId kept for
+  // backward compatibility with the user menu and Tools-grid tile.
   quickAIResults: {
     componentImport: () =>
-      import(
-        "@/features/prompts/components/results-display/QuickAIResultsSheet"
-      ).then((m) => ({ default: m.QuickAIResultsSheet })),
+      import("@/features/window-panels/windows/agents/AIResultsWindow"),
   },
 
   // ── Stream Debug ──────────────────────────────────────────────────────────

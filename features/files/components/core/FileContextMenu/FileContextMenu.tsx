@@ -18,6 +18,7 @@ import {
   Download,
   Edit2,
   Eye,
+  FileSearch,
   FileText,
   FolderInput,
   Globe,
@@ -25,6 +26,8 @@ import {
   Info,
   Layers,
   Lock,
+  RotateCw,
+  Scissors,
   Share2,
   Trash2,
   Users,
@@ -68,6 +71,7 @@ import { openFilePreview } from "@/features/files/components/preview/openFilePre
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import { FileInfoDialog } from "@/features/files/components/core/FileInfo/FileInfoDialog";
 import { RenameDialog } from "@/features/files/components/core/RenameDialog/RenameDialog";
+import { setClipboard } from "@/features/files/utils/clipboard";
 
 export interface FileContextMenuProps {
   fileId: string;
@@ -272,7 +276,7 @@ export function FileContextMenu({
   // Both dispatches are idempotent + cheap, so we always do both. The
   // CustomEvent is filtered by `fileId` inside PreviewPane.
   const openInPreview = useCallback(
-    (tab: "preview" | "info" | "versions") => {
+    (tab: "preview" | "info" | "versions" | "edit" | "document") => {
       dispatch(setActiveFileId(fileId));
       openFilePreview(fileId);
       if (typeof window !== "undefined") {
@@ -298,6 +302,25 @@ export function FileContextMenu({
     () => openInPreview("versions"),
     [openInPreview],
   );
+  const handleShowDocument = useCallback(
+    () => openInPreview("document"),
+    [openInPreview],
+  );
+
+  // "Reprocess for RAG" — kicks off `/rag/ingest` and pops the user
+  // into the Document tab so they see the streaming progress UI. This
+  // is also the single entry point that flips a never-ingested file
+  // from the absent state to the live viewer.
+  const handleReprocess = useCallback(() => {
+    openInPreview("document");
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("cloud-files:reprocess-document", {
+          detail: { fileId, force: true },
+        }),
+      );
+    }
+  }, [fileId, openInPreview]);
 
   return (
     <>
@@ -373,6 +396,43 @@ export function FileContextMenu({
 
               <DropdownMenuSeparator />
 
+              <DropdownMenuItem
+                onClick={() =>
+                  setClipboard({
+                    op: "cut",
+                    items: [
+                      {
+                        id: fileId,
+                        kind: "file",
+                        source: isVirtual ? "virtual" : "real",
+                      },
+                    ],
+                    setAt: Date.now(),
+                  })
+                }
+              >
+                <Scissors className="mr-2 h-4 w-4" />
+                Cut
+                <DropdownMenuShortcut>{cmd}X</DropdownMenuShortcut>
+              </DropdownMenuItem>
+              {!isVirtual ? (
+                <DropdownMenuItem
+                  onClick={() =>
+                    setClipboard({
+                      op: "copy",
+                      items: [{ id: fileId, kind: "file", source: "real" }],
+                      setAt: Date.now(),
+                    })
+                  }
+                >
+                  <Copy className="mr-2 h-4 w-4" />
+                  Copy
+                  <DropdownMenuShortcut>{cmd}C</DropdownMenuShortcut>
+                </DropdownMenuItem>
+              ) : null}
+
+              <DropdownMenuSeparator />
+
               <DropdownMenuItem onClick={handleRename}>
                 <Edit2 className="mr-2 h-4 w-4" />
                 Rename
@@ -406,6 +466,23 @@ export function FileContextMenu({
                   <DropdownMenuItem onClick={handleShowVersions}>
                     <History className="mr-2 h-4 w-4" />
                     Show versions
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  {/*
+                   * RAG / processed-document actions. Open the Document tab
+                   * (4-pane viewer of pages, cleaned text, chunks, lineage)
+                   * or kick off `/rag/ingest` to (re-)process. The Document
+                   * tab itself lazy-loads its viewer; clicking these from a
+                   * never-ingested file flips into the "Process for RAG"
+                   * CTA without an extra click.
+                   */}
+                  <DropdownMenuItem onClick={handleShowDocument}>
+                    <FileSearch className="mr-2 h-4 w-4" />
+                    Open document view
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleReprocess}>
+                    <RotateCw className="mr-2 h-4 w-4" />
+                    Reprocess for RAG
                   </DropdownMenuItem>
                 </>
               ) : null}

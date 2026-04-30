@@ -29,6 +29,7 @@ import {
   FolderRowContextMenu,
 } from "@/features/files/components/core/RowContextMenu/RowContextMenu";
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
+import { useFolderActions } from "@/features/files/components/core/FileActions/useFolderActions";
 import { FolderIconWithMembers } from "./FolderIconWithMembers";
 import { AccessBadge } from "./AccessBadge";
 import { SharedAvatarStack } from "./SharedAvatarStack";
@@ -338,6 +339,7 @@ function FolderRowActions({
   onShare,
   folderId,
 }: FolderRowActionsProps) {
+  const folderActions = useFolderActions(folderId);
   return (
     <div
       className={cn(
@@ -356,6 +358,15 @@ function FolderRowActions({
         <Share2 className="h-3 w-3" aria-hidden="true" />
         Share
       </button>
+      <IconButton
+        label="Copy link"
+        onClick={(e) => {
+          e.stopPropagation();
+          void folderActions.copyShareUrl();
+        }}
+      >
+        <Copy className="h-3.5 w-3.5" />
+      </IconButton>
       <IconButton label="Star" title="Coming soon" disabled>
         <Star className="h-3.5 w-3.5" />
       </IconButton>

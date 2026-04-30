@@ -32,16 +32,30 @@ import { openSaveToNotes } from "@/lib/redux/slices/overlaySlice";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { useShortcutTrigger } from "@/features/agents/hooks/useShortcutTrigger";
 import { useToastManager } from "@/hooks/useToastManager";
+import { GitBranch, Wrench, Columns2, Database } from "lucide-react";
 import {
   usePdfExtractor,
   type PdfDocument,
   type ExtractionTab,
   type ActiveTabId,
 } from "../hooks/usePdfExtractor";
+import { SyncedPdfTextView } from "./SyncedPdfTextView";
+import { LineageTreeView } from "./LineageTreeView";
+import { ManipulationPanel } from "./ManipulationPanel";
+import { DataStoreBindPanel } from "@/features/data-stores/components/DataStoreBindPanel";
 
 // ─── Sub-tab type for per-extraction view ────────────────────────────────────
 
-type ContentSubTab = "text" | "preview" | "metadata" | "clean" | "ai";
+type ContentSubTab =
+  | "text"
+  | "preview"
+  | "synced"
+  | "metadata"
+  | "clean"
+  | "ai"
+  | "manipulate"
+  | "stores"
+  | "lineage";
 
 // ─── Shortcut registry ───────────────────────────────────────────────────────
 // Shortcuts available from the PDF Workspace. Each one is triggered with the
@@ -71,13 +85,37 @@ const PLAIN_SAVE_THRESHOLD = 30_000;
 
 export function PdfExtractorFloatingWorkspace({
   onClose,
+  initialDocumentId,
 }: {
   onClose: () => void;
+  /**
+   * Open this doc as soon as the workspace mounts. Used by the deep-link
+   * route at `/tools/pdf-extractor/[id]`. The fetch goes through the
+   * normal lazy path (`fetchDocument` → `openDocument`).
+   */
+  initialDocumentId?: string;
 }) {
   const extractor = usePdfExtractor();
   const dispatch = useAppDispatch();
   const triggerShortcut = useShortcutTrigger();
   const toast = useToastManager("pdf-extractor");
+
+  // Open `initialDocumentId` once on mount. Goes through the lazy-fetch
+  // path so the per-tab loading spinner shows correctly.
+  React.useEffect(() => {
+    if (!initialDocumentId) return;
+    let cancelled = false;
+    (async () => {
+      const full = await extractor.fetchDocument(initialDocumentId);
+      if (cancelled || !full) return;
+      extractor.openDocument(full);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // Intentionally only on mount + when the requested id changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialDocumentId]);
 
   const activeTab = extractor.activeTab;
 
@@ -253,6 +291,8 @@ function PdfExtractorWindowContent({
           <ExtractionTabContent
             tab={extractor.activeTab}
             onClean={extractor.cleanContent}
+            onRefresh={extractor.refreshDocument}
+            onRunPipeline={extractor.runFullPipeline}
             onRunShortcut={onRunShortcut}
           />
         ) : (
@@ -309,7 +349,9 @@ function ExtractionTabBar({
             onClick={() => onSelectTab(tab.id)}
             className="flex items-center gap-1 min-w-0 flex-1"
           >
-            {tab.status === "extracting" || tab.status === "cleaning" ? (
+            {tab.status === "extracting" ||
+            tab.status === "cleaning" ||
+            tab.status === "loading" ? (
               <Loader2 className="w-3 h-3 animate-spin shrink-0" />
             ) : tab.status === "error" ? (
               <AlertCircle className="w-3 h-3 text-destructive shrink-0" />
@@ -514,13 +556,21 @@ function NewExtractionContent({
 function ExtractionTabContent({
   tab,
   onClean,
+  onRefresh,
+  onRunPipeline,
   onRunShortcut,
 }: {
   tab: ExtractionTab;
   onClean: (docId: string) => Promise<void>;
+  onRefresh: (docId: string) => Promise<boolean>;
+  onRunPipeline: (
+    docId: string,
+    options?: { force_ocr?: boolean; persist_output?: boolean },
+  ) => Promise<boolean>;
   onRunShortcut: (shortcutId: string) => void | Promise<void>;
 }) {
   const [subTab, setSubTab] = useState<ContentSubTab>("text");
+  const reprocessing = tab.status === "cleaning";
 
   if (tab.status === "extracting") {
     return (
@@ -538,12 +588,26 @@ function ExtractionTabContent({
     );
   }
 
+  if (tab.status === "loading") {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center gap-2 h-full">
+        <Loader2 className="w-6 h-6 text-primary/60 animate-spin" />
+        <p className="text-xs text-muted-foreground">
+          Loading {tab.filename}…
+        </p>
+        <p className="text-[10px] text-muted-foreground/60">
+          Fetching content from Supabase
+        </p>
+      </div>
+    );
+  }
+
   if (tab.status === "error") {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-2 h-full p-4">
         <AlertCircle className="w-8 h-8 text-destructive/40" />
         <p className="text-sm font-medium text-destructive">
-          Extraction Failed
+          Could not load this document
         </p>
         <p className="text-xs text-muted-foreground text-center max-w-[280px]">
           {tab.error}
@@ -588,7 +652,7 @@ function ExtractionTabContent({
       </div>
 
       {/* ── Sub-tab strip ───────────────────────────────────────── */}
-      <div className="shrink-0 flex items-center gap-0 px-3 border-b border-border">
+      <div className="shrink-0 flex items-center gap-0 px-3 border-b border-border overflow-x-auto scrollbar-none">
         <SubTabBtn
           active={subTab === "text"}
           onClick={() => setSubTab("text")}
@@ -600,6 +664,12 @@ function ExtractionTabContent({
           onClick={() => setSubTab("preview")}
           icon={<Eye className="w-3 h-3" />}
           label="Preview"
+        />
+        <SubTabBtn
+          active={subTab === "synced"}
+          onClick={() => setSubTab("synced")}
+          icon={<Columns2 className="w-3 h-3" />}
+          label="Synced View"
         />
         <SubTabBtn
           active={subTab === "metadata"}
@@ -620,17 +690,58 @@ function ExtractionTabContent({
           icon={<Wand2 className="w-3 h-3" />}
           label="AI Actions"
         />
+        <SubTabBtn
+          active={subTab === "manipulate"}
+          onClick={() => setSubTab("manipulate")}
+          icon={<Wrench className="w-3 h-3" />}
+          label="Manipulate"
+        />
+        <SubTabBtn
+          active={subTab === "stores"}
+          onClick={() => setSubTab("stores")}
+          icon={<Database className="w-3 h-3" />}
+          label="Data Stores"
+        />
+        <SubTabBtn
+          active={subTab === "lineage"}
+          onClick={() => setSubTab("lineage")}
+          icon={<GitBranch className="w-3 h-3" />}
+          label="Lineage"
+        />
       </div>
 
       {/* ── Sub-tab content ─────────────────────────────────────── */}
       <div className="flex-1 min-h-0 overflow-y-auto">
         {subTab === "text" && <RawTextView content={doc.content} />}
         {subTab === "preview" && <PreviewView content={doc.content} />}
+        {subTab === "synced" && (
+          <SyncedPdfTextView
+            doc={doc}
+            reprocessing={reprocessing}
+            onReprocess={() => onRunPipeline(tab.id)}
+          />
+        )}
         {subTab === "metadata" && <MetadataView doc={doc} />}
-        {subTab === "clean" && <AiCleanView tab={tab} onClean={onClean} />}
+        {subTab === "clean" && (
+          <AiCleanView tab={tab} onClean={onClean} onRefresh={onRefresh} />
+        )}
         {subTab === "ai" && (
           <AiActionsView doc={doc} onRunShortcut={onRunShortcut} />
         )}
+        {subTab === "manipulate" && (
+          <ManipulationPanel
+            doc={doc}
+            onRunPipeline={() => onRunPipeline(tab.id)}
+            running={reprocessing}
+          />
+        )}
+        {subTab === "stores" && (
+          <DataStoreBindPanel
+            processedDocumentId={doc.id}
+            documentName={doc.name}
+          />
+        )}
+        {subTab === "lineage" && <LineageTreeView doc={doc} />}
       </div>
     </div>
   );
@@ -779,9 +890,11 @@ function MetadataView({ doc }: { doc: PdfDocument }) {
 function AiCleanView({
   tab,
   onClean,
+  onRefresh,
 }: {
   tab: ExtractionTab;
   onClean: (docId: string) => Promise<void>;
+  onRefresh: (docId: string) => Promise<boolean>;
 }) {
   const doc = tab.document;
   if (!doc) return <EmptyState message="No document data" />;
@@ -800,11 +913,14 @@ function AiCleanView({
 
   if (doc.cleanContent) {
     return (
-      <div className="p-3">
-        <div className="flex items-center gap-1.5 mb-2">
+      <div className="p-3 space-y-2">
+        <div className="flex items-center gap-1.5">
           <Sparkles className="w-3.5 h-3.5 text-primary" />
           <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
             AI Cleaned
+          </span>
+          <span className="ml-auto text-[10px] text-muted-foreground">
+            Source: Python <code>/utilities/pdf/clean-content</code>
           </span>
         </div>
         <pre className="text-[11px] font-mono text-foreground/80 whitespace-pre-wrap leading-relaxed">
@@ -814,22 +930,63 @@ function AiCleanView({
     );
   }
 
+  // No clean content. Either the user hasn't run cleanup yet, or the most
+  // recent run errored. We never silently refetch — show both controls so the
+  // user picks what they want.
+  const hasError = !!tab.error;
+
   return (
     <div className="flex flex-col items-center justify-center p-6 text-center gap-3 h-full">
-      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-        <Bot className="w-5 h-5 text-primary" />
+      <div
+        className={cn(
+          "w-10 h-10 rounded-full flex items-center justify-center",
+          hasError ? "bg-destructive/10" : "bg-primary/10",
+        )}
+      >
+        {hasError ? (
+          <AlertCircle className="w-5 h-5 text-destructive" />
+        ) : (
+          <Bot className="w-5 h-5 text-primary" />
+        )}
       </div>
       <div>
-        <p className="text-sm font-medium">AI Text Cleanup</p>
-        <p className="text-xs text-muted-foreground mt-0.5 max-w-[220px]">
-          Run an AI agent to clean up extracted text, fix formatting artifacts,
-          and return structured output.
+        <p className="text-sm font-medium">
+          {hasError ? "AI Cleanup did not return content" : "AI Text Cleanup"}
+        </p>
+        <p className="text-xs text-muted-foreground mt-0.5 max-w-[280px]">
+          {hasError
+            ? tab.error
+            : "Run an AI agent to clean up extracted text, fix formatting artifacts, and return structured output."}
         </p>
       </div>
-      <Button size="sm" className="h-7 text-xs" onClick={() => onClean(tab.id)}>
-        <Sparkles className="w-3 h-3 mr-1.5" />
-        Run AI Cleanup
-      </Button>
+      <div className="flex items-center gap-2 flex-wrap justify-center">
+        <Button
+          size="sm"
+          className="h-7 text-xs"
+          onClick={() => onClean(tab.id)}
+        >
+          <Sparkles className="w-3 h-3 mr-1.5" />
+          {hasError ? "Re-run Cleanup" : "Run AI Cleanup"}
+        </Button>
+        {hasError && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs"
+            onClick={() => void onRefresh(tab.id)}
+          >
+            <RefreshCw className="w-3 h-3 mr-1.5" />
+            Refetch from server
+          </Button>
+        )}
+      </div>
+      {hasError && (
+        <p className="text-[10px] text-muted-foreground/70 max-w-[280px]">
+          Re-run to call <code>/clean-content</code> again. Refetch reloads the
+          document row from Supabase — useful if a previous stream wrote
+          <code>clean_content</code> but the response was lost.
+        </p>
+      )}
     </div>
   );
 }
@@ -929,7 +1086,9 @@ export function PdfExtractorSidebar({
                     {doc.name}
                   </p>
                   <p className="text-[9px] text-muted-foreground/50 leading-tight">
-                    {doc.charCount.toLocaleString()} chars ·{" "}
+                    {/* Char count omitted for list rows — they're metadata-only
+                        on purpose (loading full text for hundreds of docs took 2+ min).
+                        Once a doc is opened it's hydrated and the per-tab views show counts. */}
                     {formatRelativeTime(doc.createdAt)}
                   </p>
                 </div>

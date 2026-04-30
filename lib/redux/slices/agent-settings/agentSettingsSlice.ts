@@ -38,6 +38,7 @@ import {
   resolveConflicts,
   sanitizeSettings,
 } from "./internal-utils";
+import type { Json } from "@/types/database.types";
 
 // ── Initial State ──────────────────────────────────────────────────────────────
 
@@ -131,12 +132,19 @@ export const loadAgentSettings = createAsyncThunk(
       if (error) throw error;
       if (!data) throw new Error(`Agent ${agentId} not found in ${table}`);
 
+      const rawSettings = data.settings as AgentSettings;
+      // `variable_defaults` is a JSONB column (typed `Json | null` by Supabase).
+      // Narrow at the boundary so downstream code can rely on AgentVariable[].
+      const rawVariableDefaults = data.variable_defaults as unknown as
+        | AgentVariable[]
+        | null;
+
       return {
         agentId,
         source,
         context,
-        rawSettings: (data as RawAgentDbRow).settings,
-        rawVariableDefaults: (data as RawAgentDbRow).variable_defaults,
+        rawSettings,
+        rawVariableDefaults,
       };
     } catch (err: unknown) {
       return rejectWithValue(
@@ -298,8 +306,8 @@ export const saveAgentSettings = createAsyncThunk(
       const { error } = await supabase
         .from(table)
         .update({
-          settings: settingsToSave,
-          variable_defaults: entry.variable_defaults,
+          settings: settingsToSave as unknown as Json,
+          variable_defaults: entry.variable_defaults as unknown as Json[],
           updated_at: now,
         })
         .eq("id", agentId);

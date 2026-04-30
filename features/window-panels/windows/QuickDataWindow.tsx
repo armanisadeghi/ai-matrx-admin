@@ -7,17 +7,25 @@ import { QuickDataSheet } from "@/features/quick-actions/components/QuickDataShe
 interface QuickDataWindowProps {
   isOpen: boolean;
   onClose?: () => void;
+  /**
+   * Pre-selected table id. Wired up from the registry's `defaultData.selectedTable`
+   * slot — `OverlaySurface` spreads the overlay data onto window props, so any
+   * `dispatch(openOverlay({ overlayId: "quickDataWindow", data: { selectedTable } }))`
+   * call lands here.
+   */
+  selectedTable?: string | null;
 }
 
 export default function QuickDataWindow({
   isOpen,
   onClose,
+  selectedTable,
 }: QuickDataWindowProps) {
   if (!isOpen) return null;
 
   return (
     <WindowPanel
-      title="Quick Data"
+      title="Data Tables"
       width={800}
       height={600}
       urlSyncKey="quick_data"
@@ -25,7 +33,10 @@ export default function QuickDataWindow({
       overlayId="quickDataWindow"
     >
       <div className="flex h-full w-full relative overflow-hidden bg-background">
-        <QuickDataSheet className="absolute inset-0" />
+        <QuickDataSheet
+          className="absolute inset-0"
+          initialTableId={selectedTable ?? null}
+        />
       </div>
     </WindowPanel>
   );

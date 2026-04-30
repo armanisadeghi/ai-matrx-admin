@@ -3,11 +3,13 @@
 import dynamic from "next/dynamic";
 import { useIdleReady } from "@/utils/idle-scheduler";
 
-const VoicePadWrapper = dynamic(
-  () =>
-    import("@/components/official-candidate/voice-pad/components/VoicePadWrapper"),
-  { ssr: false, loading: () => null },
-);
+// NOTE: Voice-pad variants (`voicePad`, `voicePadAdvanced`, `voicePadAi`)
+// are mounted exclusively by the unified window registry now. The legacy
+// <VoicePadWrapper /> mount used to live here and double-rendered every
+// open voice-pad instance because the registry was already mounting it.
+// Do NOT add a wrapper here — register the overlay in
+// `windowRegistry.ts` + `windowRegistryMetadata.ts` and let
+// `UnifiedOverlayController` handle it. (Bug found 2026-04-29.)
 
 const CanvasSideSheetInner = dynamic(
   () =>
@@ -39,7 +41,6 @@ export default function DeferredIslands() {
 
   return (
     <>
-      <VoicePadWrapper />
       <CanvasSideSheetInner />
       <LazyMessagingInitializer />
       <LazyMessagingSideSheet />

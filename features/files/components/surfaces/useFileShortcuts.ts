@@ -55,10 +55,19 @@ import {
   deleteFile as deleteFileThunk,
   getSignedUrl as getSignedUrlThunk,
   loadShareLinks,
+  moveFile as moveFileThunk,
+  updateFolder as updateFolderThunk,
   uploadFiles as uploadFilesThunk,
 } from "../../redux/thunks";
-import { deleteAny } from "../../redux/virtual-thunks";
+import { deleteAny, moveAny } from "../../redux/virtual-thunks";
 import { requestRename } from "../core/RenameDialog/RenameHost";
+import {
+  getClipboard,
+  setClipboard,
+  clearClipboard,
+  type ClipboardItem,
+} from "@/features/files/utils/clipboard";
+import { isSyntheticId } from "@/features/files/virtual-sources/path";
 
 interface PendingDelete {
   kind: "single" | "batch";
@@ -116,38 +125,62 @@ export function useFileShortcuts(): {
       const cmdKey = isMac ? e.metaKey : e.ctrlKey;
       const onlyCmd = cmdKey && !e.altKey && !e.shiftKey;
 
-      // ⌘L / Ctrl+L — copy public share URL for the active file. Routes
-      // through the same persistent-share-token path the action menus use
-      // so keyboard and click produce identical URLs (and identical
-      // side-effects: a read-only share link gets created on first use).
+      // ⌘L / Ctrl+L — copy public share URL. Targets, in priority order:
+      //   1. The single selected resource (file or folder)
+      //   2. The active file (preview pane open)
+      //   3. The active folder
+      // Files use the direct-bytes route; folders use the listing-page
+      // route (you can't `<img src>` a folder). Both produce a persistent
+      // share token, reused on subsequent calls.
       if (onlyCmd && e.key.toLowerCase() === "l") {
-        if (!activeFileId) return;
-        // Virtual files have no S3 bytes / share-token semantics. Skip.
-        if (filesById[activeFileId]?.source.kind === "virtual") return;
+        const sel = selection.selectedIds;
+        let target: { id: string; kind: "file" | "folder" } | null = null;
+        if (sel.length === 1) {
+          const id = sel[0];
+          if (filesById[id]) target = { id, kind: "file" };
+          else if (foldersById[id]) target = { id, kind: "folder" };
+        }
+        if (!target && activeFileId && filesById[activeFileId]) {
+          target = { id: activeFileId, kind: "file" };
+        }
+        if (!target && activeFolderId && foldersById[activeFolderId]) {
+          target = { id: activeFolderId, kind: "folder" };
+        }
+        if (!target) return;
+        const record =
+          target.kind === "file"
+            ? filesById[target.id]
+            : foldersById[target.id];
+        // Virtual sources have no share-token semantics. Skip.
+        if (record?.source.kind === "virtual") return;
         e.preventDefault();
         void (async () => {
           try {
-            // Reuse an existing active read-only share link if any.
             await dispatch(
-              loadShareLinks({ resourceId: activeFileId }),
-            ).unwrap().catch(() => undefined);
+              loadShareLinks({ resourceId: target.id }),
+            )
+              .unwrap()
+              .catch(() => undefined);
             const links = selectActiveShareLinksForResource(
               getState(),
-              activeFileId,
+              target.id,
             );
             let token = links.find((l) => l.permissionLevel === "read")
               ?.shareToken;
             if (!token) {
               const link = await dispatch(
                 createShareLinkThunk({
-                  resourceId: activeFileId,
-                  resourceType: "file",
+                  resourceId: target.id,
+                  resourceType: target.kind,
                   permissionLevel: "read",
                 }),
               ).unwrap();
               token = link.shareToken;
             }
-            const url = `${window.location.origin}/api/share/${token}/file`;
+            const url =
+              target.kind === "file"
+                ? `${window.location.origin}/api/share/${token}/file`
+                : `${window.location.origin}/share/${token}`;
             if (navigator.clipboard) {
               await navigator.clipboard.writeText(url);
             }
@@ -199,6 +232,145 @@ export function useFileShortcuts(): {
           } catch {
             /* swallow — user can retry via the menu */
           }
+        })();
+        return;
+      }
+
+      // ⌘X / Ctrl+X — cut. Marks the current selection (or the active
+      // file/folder) as the clipboard payload with op = "cut". Paste
+      // executes a move into the target folder.
+      if (onlyCmd && e.key.toLowerCase() === "x") {
+        const items = collectClipboardTargets(
+          selection.selectedIds,
+          activeFileId,
+          activeFolderId,
+          filesById,
+          foldersById,
+        );
+        if (!items.length) return;
+        e.preventDefault();
+        setClipboard({ op: "cut", items, setAt: Date.now() });
+        return;
+      }
+
+      // ⌘C / Ctrl+C — copy. Marks selection with op = "copy". Paste
+      // executes duplicate (file: re-upload; folder: not yet supported).
+      if (onlyCmd && e.key.toLowerCase() === "c") {
+        // Don't intercept when the user actually has a text selection —
+        // they're trying to copy text, not files. The DOM Selection
+        // object is non-empty when there's selected text in the page.
+        const sel = window.getSelection?.();
+        if (sel && sel.toString().length > 0) return;
+        const items = collectClipboardTargets(
+          selection.selectedIds,
+          activeFileId,
+          activeFolderId,
+          filesById,
+          foldersById,
+        );
+        if (!items.length) return;
+        e.preventDefault();
+        setClipboard({ op: "copy", items, setAt: Date.now() });
+        return;
+      }
+
+      // ⌘V / Ctrl+V — paste. Move (cut) or duplicate (copy) into the
+      // active folder. No-op if the clipboard is empty.
+      if (onlyCmd && e.key.toLowerCase() === "v") {
+        const cb = getClipboard();
+        if (!cb || cb.items.length === 0) return;
+        const targetParent = activeFolderId; // null = root
+        e.preventDefault();
+        void (async () => {
+          if (cb.op === "cut") {
+            // MOVE — fan out per-item, source-aware. After the move
+            // lands, clear the clipboard so subsequent pastes don't
+            // re-move the same rows.
+            for (const item of cb.items) {
+              try {
+                if (item.kind === "file") {
+                  if (item.source === "virtual" || isSyntheticId(item.id)) {
+                    await dispatch(
+                      moveAny({ id: item.id, newParentId: targetParent }),
+                    ).unwrap();
+                  } else {
+                    await dispatch(
+                      moveFileThunk({
+                        fileId: item.id,
+                        newParentFolderId: targetParent,
+                      }),
+                    ).unwrap();
+                  }
+                } else {
+                  // Folder move. Cycle guard: don't move into self or
+                  // descendant.
+                  if (
+                    targetParent !== null &&
+                    descendsFrom(targetParent, item.id, foldersById)
+                  ) {
+                    continue;
+                  }
+                  if (item.source === "virtual" || isSyntheticId(item.id)) {
+                    await dispatch(
+                      moveAny({ id: item.id, newParentId: targetParent }),
+                    ).unwrap();
+                  } else {
+                    await dispatch(
+                      updateFolderThunk({
+                        folderId: item.id,
+                        patch: { parentId: targetParent },
+                      }),
+                    ).unwrap();
+                  }
+                }
+              } catch {
+                /* per-item failure tolerable; slice surfaces the error */
+              }
+            }
+            clearClipboard();
+            return;
+          }
+
+          // COPY — only files duplicate via existing flow. Folders
+          // would require a server-side recursive copy that doesn't
+          // exist yet; we skip them silently for now.
+          for (const item of cb.items) {
+            if (item.kind !== "file") continue;
+            if (item.source === "virtual" || isSyntheticId(item.id)) continue;
+            const file = filesById[item.id];
+            if (!file) continue;
+            try {
+              const result = await dispatch(
+                getSignedUrlThunk({ fileId: item.id, expiresIn: 600 }),
+              );
+              const url =
+                (result as { payload?: { url?: string } } | undefined)?.payload
+                  ?.url;
+              if (!url) continue;
+              const blob = await fetch(url).then((r) => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.blob();
+              });
+              const dot = file.fileName.lastIndexOf(".");
+              const newName =
+                dot > 0
+                  ? `${file.fileName.slice(0, dot)} (copy)${file.fileName.slice(dot)}`
+                  : `${file.fileName} (copy)`;
+              const dupFile = new File([blob], newName, {
+                type: file.mimeType ?? blob.type,
+              });
+              await dispatch(
+                uploadFilesThunk({
+                  files: [dupFile],
+                  parentFolderId: targetParent,
+                  visibility: file.visibility,
+                }),
+              ).unwrap();
+            } catch {
+              /* swallow */
+            }
+          }
+          // Don't clear after copy — user might paste again.
         })();
         return;
       }
@@ -320,4 +492,74 @@ export function useFileShortcuts(): {
   };
 
   return { pendingDelete, clearPendingDelete, confirmDelete };
+}
+
+// ---------------------------------------------------------------------------
+// Clipboard helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Build the clipboard payload for a cut/copy. Priority:
+ *   1. The current multi-selection (files + folders mixed).
+ *   2. The active file (preview is open).
+ *   3. The active folder.
+ *
+ * Each item is tagged with its kind + source so paste can dispatch
+ * through the right thunk without re-reading state.
+ */
+function collectClipboardTargets(
+  selectedIds: string[],
+  activeFileId: string | null,
+  activeFolderId: string | null,
+  filesById: Record<string, { source: { kind: string } }>,
+  foldersById: Record<string, { source: { kind: string } }>,
+): ClipboardItem[] {
+  const fromIds = (ids: string[]): ClipboardItem[] => {
+    const items: ClipboardItem[] = [];
+    for (const id of ids) {
+      if (filesById[id]) {
+        items.push({
+          id,
+          kind: "file",
+          source: filesById[id].source.kind === "virtual" ? "virtual" : "real",
+        });
+      } else if (foldersById[id]) {
+        items.push({
+          id,
+          kind: "folder",
+          source:
+            foldersById[id].source.kind === "virtual" ? "virtual" : "real",
+        });
+      }
+    }
+    return items;
+  };
+
+  if (selectedIds.length > 0) return fromIds(selectedIds);
+  if (activeFileId) return fromIds([activeFileId]);
+  if (activeFolderId) return fromIds([activeFolderId]);
+  return [];
+}
+
+/**
+ * Walk up the folder ancestry from `folderId` to find whether it
+ * descends from `ancestorId`. Used to refuse "paste folder into its
+ * own descendant" cycles. Cap depth as a safety net against corrupt
+ * tree state.
+ */
+function descendsFrom(
+  folderId: string,
+  ancestorId: string,
+  foldersById: Record<string, { parentId: string | null } | undefined>,
+): boolean {
+  let cursor: string | null = folderId;
+  const seen = new Set<string>();
+  let depth = 0;
+  while (cursor && !seen.has(cursor) && depth < 64) {
+    if (cursor === ancestorId) return true;
+    seen.add(cursor);
+    cursor = foldersById[cursor]?.parentId ?? null;
+    depth += 1;
+  }
+  return false;
 }

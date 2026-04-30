@@ -1,23 +1,29 @@
 /**
  * DM Messages API Routes
- * 
+ *
  * GET /api/messages/[conversationId]/messages - List messages in conversation
  * POST /api/messages/[conversationId]/messages - Send a message
- * 
+ *
  * Uses dm_ prefixed tables
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
-import { z } from 'zod';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/utils/supabase/server";
+import type { Json } from "@/types/database.types";
+import { z } from "zod";
 
 // ============================================
 // Validation Schemas
 // ============================================
 
 const sendMessageSchema = z.object({
-  content: z.string().min(1, 'Message cannot be empty').max(10000, 'Message too long'),
-  message_type: z.enum(['text', 'image', 'video', 'audio', 'file', 'system']).default('text'),
+  content: z
+    .string()
+    .min(1, "Message cannot be empty")
+    .max(10000, "Message too long"),
+  message_type: z
+    .enum(["text", "image", "video", "audio", "file", "system"])
+    .default("text"),
   media_url: z.string().url().optional(),
   media_thumbnail_url: z.string().url().optional(),
   media_metadata: z.record(z.string(), z.unknown()).optional(),
@@ -31,18 +37,21 @@ const sendMessageSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ conversationId: string }> }
+  { params }: { params: Promise<{ conversationId: string }> },
 ) {
   try {
     const { conversationId } = await params;
     const supabase = await createClient();
-    
+
     // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json(
-        { success: false, msg: 'Not authenticated' },
-        { status: 401 }
+        { success: false, msg: "Not authenticated" },
+        { status: 401 },
       );
     }
 
@@ -50,52 +59,52 @@ export async function GET(
 
     // Check if user is participant
     const { data: participation, error: participationError } = await supabase
-      .from('dm_conversation_participants')
-      .select('id')
-      .eq('conversation_id', conversationId)
-      .eq('user_id', userId)
+      .from("dm_conversation_participants")
+      .select("id")
+      .eq("conversation_id", conversationId)
+      .eq("user_id", userId)
       .single();
 
     if (participationError || !participation) {
       return NextResponse.json(
-        { success: false, msg: 'Not a participant in this conversation' },
-        { status: 403 }
+        { success: false, msg: "Not a participant in this conversation" },
+        { status: 403 },
       );
     }
 
     // Parse query params
     const searchParams = request.nextUrl.searchParams;
-    const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100);
-    const before = searchParams.get('before'); // ISO timestamp for pagination
-    const after = searchParams.get('after'); // ISO timestamp for fetching new messages
+    const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
+    const before = searchParams.get("before"); // ISO timestamp for pagination
+    const after = searchParams.get("after"); // ISO timestamp for fetching new messages
 
     // Build query
     let query = supabase
-      .from('dm_messages')
-      .select('*')
-      .eq('conversation_id', conversationId)
-      .is('deleted_at', null);
+      .from("dm_messages")
+      .select("*")
+      .eq("conversation_id", conversationId)
+      .is("deleted_at", null);
 
     // Apply pagination filters
     if (before) {
-      query = query.lt('created_at', before);
+      query = query.lt("created_at", before);
     }
     if (after) {
-      query = query.gt('created_at', after);
+      query = query.gt("created_at", after);
     }
 
     // Order and limit
     query = query
-      .order('created_at', { ascending: !before }) // Descending when paginating back
+      .order("created_at", { ascending: !before }) // Descending when paginating back
       .limit(limit);
 
     const { data: messages, error: fetchError } = await query;
 
     if (fetchError) {
-      console.error('[DM Messages API] Failed to fetch:', fetchError);
+      console.error("[DM Messages API] Failed to fetch:", fetchError);
       return NextResponse.json(
         { success: false, msg: fetchError.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -104,8 +113,9 @@ export async function GET(
     const senderInfoMap = new Map();
 
     for (const senderId of senderIds) {
-      const { data: userInfo } = await supabase
-        .rpc('get_dm_user_info', { p_user_id: senderId });
+      const { data: userInfo } = await supabase.rpc("get_dm_user_info", {
+        p_user_id: senderId,
+      });
       if (userInfo && userInfo[0]) {
         senderInfoMap.set(senderId, userInfo[0]);
       }
@@ -118,18 +128,20 @@ export async function GET(
     }));
 
     // If we queried in descending order (for pagination), reverse to get chronological
-    const sortedMessages = before ? messagesWithSender.reverse() : messagesWithSender;
+    const sortedMessages = before
+      ? messagesWithSender.reverse()
+      : messagesWithSender;
 
     return NextResponse.json({
       success: true,
       data: sortedMessages,
-      msg: 'Messages fetched successfully',
+      msg: "Messages fetched successfully",
     });
   } catch (error) {
-    console.error('[DM Messages API] GET Error:', error);
+    console.error("[DM Messages API] GET Error:", error);
     return NextResponse.json(
-      { success: false, msg: 'Internal server error' },
-      { status: 500 }
+      { success: false, msg: "Internal server error" },
+      { status: 500 },
     );
   }
 }
@@ -140,18 +152,21 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ conversationId: string }> }
+  { params }: { params: Promise<{ conversationId: string }> },
 ) {
   try {
     const { conversationId } = await params;
     const supabase = await createClient();
-    
+
     // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json(
-        { success: false, msg: 'Not authenticated' },
-        { status: 401 }
+        { success: false, msg: "Not authenticated" },
+        { status: 401 },
       );
     }
 
@@ -159,16 +174,16 @@ export async function POST(
 
     // Check if user is participant
     const { data: participation, error: participationError } = await supabase
-      .from('dm_conversation_participants')
-      .select('id')
-      .eq('conversation_id', conversationId)
-      .eq('user_id', userId)
+      .from("dm_conversation_participants")
+      .select("id")
+      .eq("conversation_id", conversationId)
+      .eq("user_id", userId)
       .single();
 
     if (participationError || !participation) {
       return NextResponse.json(
-        { success: false, msg: 'Not a participant in this conversation' },
-        { status: 403 }
+        { success: false, msg: "Not a participant in this conversation" },
+        { status: 403 },
       );
     }
 
@@ -179,7 +194,7 @@ export async function POST(
     if (!validation.success) {
       return NextResponse.json(
         { success: false, msg: validation.error.issues[0].message },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -196,9 +211,9 @@ export async function POST(
     // Check for duplicate message (idempotency)
     if (client_message_id) {
       const { data: existingMessage } = await supabase
-        .from('dm_messages')
-        .select('*')
-        .eq('client_message_id', client_message_id)
+        .from("dm_messages")
+        .select("*")
+        .eq("client_message_id", client_message_id)
         .single();
 
       if (existingMessage) {
@@ -206,7 +221,7 @@ export async function POST(
           success: true,
           data: existingMessage,
           duplicate: true,
-          msg: 'Message already exists',
+          msg: "Message already exists",
         });
       }
     }
@@ -214,23 +229,23 @@ export async function POST(
     // Verify reply_to message exists and is in this conversation
     if (reply_to_id) {
       const { data: replyToMessage } = await supabase
-        .from('dm_messages')
-        .select('id')
-        .eq('id', reply_to_id)
-        .eq('conversation_id', conversationId)
+        .from("dm_messages")
+        .select("id")
+        .eq("id", reply_to_id)
+        .eq("conversation_id", conversationId)
         .single();
 
       if (!replyToMessage) {
         return NextResponse.json(
-          { success: false, msg: 'Reply-to message not found' },
-          { status: 400 }
+          { success: false, msg: "Reply-to message not found" },
+          { status: 400 },
         );
       }
     }
 
     // Insert message
     const { data: newMessage, error: insertError } = await supabase
-      .from('dm_messages')
+      .from("dm_messages")
       .insert({
         conversation_id: conversationId,
         sender_id: userId,
@@ -238,39 +253,43 @@ export async function POST(
         message_type,
         media_url,
         media_thumbnail_url,
-        media_metadata,
+        media_metadata: (media_metadata ?? null) as Json | null,
         reply_to_id,
         client_message_id,
-        status: 'sent',
+        status: "sent",
       })
       .select()
       .single();
 
     if (insertError) {
-      console.error('[DM Messages API] Failed to send:', insertError);
+      console.error("[DM Messages API] Failed to send:", insertError);
       return NextResponse.json(
         { success: false, msg: insertError.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     // Fetch sender info
-    const { data: senderInfo } = await supabase
-      .rpc('get_dm_user_info', { p_user_id: userId });
+    const { data: senderInfo } = await supabase.rpc("get_dm_user_info", {
+      p_user_id: userId,
+    });
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        ...newMessage,
-        sender: senderInfo?.[0] || null,
-      },
-      msg: 'Message sent successfully',
-    }, { status: 201 });
-  } catch (error) {
-    console.error('[DM Messages API] POST Error:', error);
     return NextResponse.json(
-      { success: false, msg: 'Internal server error' },
-      { status: 500 }
+      {
+        success: true,
+        data: {
+          ...newMessage,
+          sender: senderInfo?.[0] || null,
+        },
+        msg: "Message sent successfully",
+      },
+      { status: 201 },
+    );
+  } catch (error) {
+    console.error("[DM Messages API] POST Error:", error);
+    return NextResponse.json(
+      { success: false, msg: "Internal server error" },
+      { status: 500 },
     );
   }
 }

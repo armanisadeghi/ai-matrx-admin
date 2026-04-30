@@ -8,8 +8,8 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
-import { AlertCircle } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { AlertCircle, Check, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useFileBlob } from "@/features/files/hooks/useFileBlob";
 
@@ -33,6 +33,18 @@ export function TextPreview({
   const [text, setText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [truncated, setTruncated] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const onCopy = useCallback(async () => {
+    if (text == null) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* ignore — non-secure contexts can't write to the clipboard */
+    }
+  }, [text]);
 
   useEffect(() => {
     if (!blob) return;
@@ -104,11 +116,30 @@ export function TextPreview({
     <div
       className={cn("flex h-full w-full flex-col overflow-hidden", className)}
     >
-      {truncated ? (
-        <div className="px-3 py-1 text-xs text-muted-foreground bg-muted/30 border-b">
-          Preview limited to first {(maxBytes / 1024 / 1024).toFixed(0)}MB.
-        </div>
-      ) : null}
+      <div className="flex items-center justify-between gap-2 border-b border-border/60 bg-muted/20 px-3 py-1 text-xs">
+        <span className="text-muted-foreground">
+          {truncated
+            ? `Preview limited to first ${(maxBytes / 1024 / 1024).toFixed(0)}MB.`
+            : `${text.length.toLocaleString()} characters`}
+        </span>
+        <button
+          type="button"
+          onClick={() => void onCopy()}
+          aria-label="Copy text to clipboard"
+          title="Copy text to clipboard"
+          className={cn(
+            "inline-flex items-center gap-1 rounded-md border bg-background px-2 py-0.5 text-[11px] font-medium hover:bg-accent",
+            copied && "text-emerald-600 dark:text-emerald-400",
+          )}
+        >
+          {copied ? (
+            <Check className="h-3 w-3" />
+          ) : (
+            <Copy className="h-3 w-3" />
+          )}
+          {copied ? "Copied" : "Copy"}
+        </button>
+      </div>
       <pre className="flex-1 overflow-auto p-3 text-xs leading-5 font-mono whitespace-pre-wrap break-words bg-background">
         {text}
       </pre>

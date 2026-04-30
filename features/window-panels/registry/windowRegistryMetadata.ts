@@ -28,7 +28,11 @@ export type {
   InstanceMode,
   MobileSidebarAs,
 } from "./windowRegistryTypes";
-export type { PanelState, WindowSessionRow, TrayPreviewContext } from "./windowRegistryTypes";
+export type {
+  PanelState,
+  WindowSessionRow,
+  TrayPreviewContext,
+} from "./windowRegistryTypes";
 
 // ─── Static registry ──────────────────────────────────────────────────────────
 
@@ -559,6 +563,10 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
   },
 
   // ── Voice Pad ─────────────────────────────────────────────────────────────
+  // Voice-pad components rely on `instanceId` (Redux selectors, mic id,
+  // window id, urlSyncId) so they MUST be rendered through the
+  // multi-instance surface — singleton mode does not pass `instanceId`
+  // and silently breaks state isolation.
   {
     slug: "voice-pad",
     overlayId: "voicePad",
@@ -566,6 +574,7 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     label: "Voice Pad",
     defaultData: { transcript: null },
     mobilePresentation: "fullscreen",
+    instanceMode: "multi",
     urlSync: { key: "voice" },
   },
   {
@@ -575,6 +584,7 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     label: "Advanced Voice Pad",
     defaultData: { transcript: null },
     mobilePresentation: "fullscreen",
+    instanceMode: "multi",
   },
   {
     slug: "voice-pad-ai",
@@ -583,16 +593,22 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     label: "Transcription Cleanup",
     defaultData: { transcript: null },
     mobilePresentation: "fullscreen",
+    instanceMode: "multi",
   },
 
-  // ── Quick AI Results ──────────────────────────────────────────────────────
+  // ── AI Results ────────────────────────────────────────────────────────────
+  // Cross-agent conversation history. Sidebar groups by date (default) or by
+  // agent, with search + agent multi-select filter. Replaces the legacy
+  // "quick-ai-results" sheet that pointed at the deprecated prompts system.
+  // The slug + overlayId are kept stable so the user menu, Tools-grid tile,
+  // and `useQuickActions` callers continue to work without changes.
   {
     slug: "quick-ai-results",
     overlayId: "quickAIResults",
-    kind: "sheet",
+    kind: "window",
     label: "AI Results",
-    defaultData: {},
-    ephemeral: true,
+    defaultData: { selectedConversationId: null, groupBy: "date" },
+    mobilePresentation: "fullscreen",
   },
 
   // ── Stream Debug ──────────────────────────────────────────────────────────

@@ -13,8 +13,8 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { AlertCircle, Check, Copy, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -42,6 +42,18 @@ export function MarkdownPreview({
   const [content, setContent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [truncated, setTruncated] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const onCopy = useCallback(async () => {
+    if (content == null) return;
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* ignore — non-secure contexts can't write to the clipboard */
+    }
+  }, [content]);
 
   useEffect(() => {
     if (!blob) return;
@@ -107,11 +119,30 @@ export function MarkdownPreview({
 
   return (
     <div className={cn("flex h-full w-full flex-col bg-card", className)}>
-      {truncated ? (
-        <div className="border-b border-border bg-muted/30 px-3 py-1 text-xs text-muted-foreground shrink-0">
-          Preview limited to first {(maxBytes / 1024 / 1024).toFixed(0)}MB.
-        </div>
-      ) : null}
+      <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/20 px-3 py-1 text-xs shrink-0">
+        <span className="text-muted-foreground">
+          {truncated
+            ? `Preview limited to first ${(maxBytes / 1024 / 1024).toFixed(0)}MB.`
+            : `Markdown · ${content.length.toLocaleString()} characters`}
+        </span>
+        <button
+          type="button"
+          onClick={() => void onCopy()}
+          aria-label="Copy markdown to clipboard"
+          title="Copy markdown source to clipboard"
+          className={cn(
+            "inline-flex items-center gap-1 rounded-md border bg-background px-2 py-0.5 text-[11px] font-medium hover:bg-accent",
+            copied && "text-emerald-600 dark:text-emerald-400",
+          )}
+        >
+          {copied ? (
+            <Check className="h-3 w-3" />
+          ) : (
+            <Copy className="h-3 w-3" />
+          )}
+          {copied ? "Copied" : "Copy markdown"}
+        </button>
+      </div>
       <div className="flex-1 overflow-auto px-6 py-5">
         <article className="prose prose-sm dark:prose-invert max-w-none">
           <ReactMarkdown

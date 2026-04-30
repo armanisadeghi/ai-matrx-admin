@@ -110,14 +110,6 @@ const UtilitiesOverlay = dynamic(
   { ssr: false },
 );
 
-const QuickAIResultsSheet = dynamic(
-  () =>
-    import("@/features/prompts/components/results-display/QuickAIResultsSheet").then(
-      (mod) => ({ default: mod.QuickAIResultsSheet }),
-    ),
-  { ssr: false },
-);
-
 const FloatingSheet = dynamic(
   () => import("@/components/official/FloatingSheet"),
   { ssr: false },
@@ -776,10 +768,7 @@ export const OverlayController: React.FC = () => {
   const isQuickUtilitiesOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "quickUtilities"),
   );
-  const isQuickAIResultsOpen = useAppSelector((s) =>
-    selectIsOverlayOpen(s, "quickAIResults"),
-  );
-  // Phase 8: both `userPreferences` (legacy modal) and `userPreferencesWindow`
+// Phase 8: both `userPreferences` (legacy modal) and `userPreferencesWindow`
   // overlay ids are observed directly by `SettingsShellOverlay`, so this
   // controller no longer needs selectors for them.
   const isAnnouncementsOpen = useAppSelector((s) =>
@@ -1358,23 +1347,7 @@ export const OverlayController: React.FC = () => {
         />
       )}
 
-      {isQuickAIResultsOpen && (
-        <FloatingSheet
-          isOpen={true}
-          onClose={() => close("quickAIResults")}
-          title=""
-          position="right"
-          width="2xl"
-          height="full"
-          closeOnBackdropClick={true}
-          closeOnEsc={true}
-          showCloseButton={false}
-          contentClassName="p-0"
-          lockScroll={false}
-        >
-          <QuickAIResultsSheet />
-        </FloatingSheet>
-      )}
+      {/* AI Results — rendered via the standard window registry as kind: "window". */}
 
       {/* The SettingsShellOverlay renders itself if either `userPreferences`
           or `userPreferencesWindow` overlay is open — no conditional needed

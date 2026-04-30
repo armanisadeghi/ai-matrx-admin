@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ALL_TABS, CompactTabStrip, TabContent } from "./AgentContentWindow";
-import type { AgentContentTab } from "./AgentContentWindow";
+import { AgentContentTab } from "./agent-content.types";
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 

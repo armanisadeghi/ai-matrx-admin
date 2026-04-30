@@ -1137,6 +1137,108 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/utilities/pdf/extract-pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Extract Pages */
+        post: operations["extract_pages_utilities_pdf_extract_pages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/utilities/pdf/crop-pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Crop Pages */
+        post: operations["crop_pages_utilities_pdf_crop_pages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/utilities/pdf/rotate-pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rotate Pages */
+        post: operations["rotate_pages_utilities_pdf_rotate_pages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/utilities/pdf/delete-pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Delete Pages */
+        post: operations["delete_pages_utilities_pdf_delete_pages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/utilities/pdf/merge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Merge Pdfs */
+        post: operations["merge_pdfs_utilities_pdf_merge_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/utilities/pdf/split": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Split Pdf */
+        post: operations["split_pdf_utilities_pdf_split_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/utilities/pdf/extract-text-remote": {
         parameters: {
             query?: never;
@@ -2289,6 +2391,268 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/rag/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rag Search Endpoint */
+        post: operations["rag_search_endpoint_rag_search_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rag/cross-doc/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rag Cross Doc Stream
+         * @description End-to-end trial-prep flow: split retrieval → synthesis →
+         *     faithfulness check, all events streamed.
+         *
+         *     Event sequence (ordered):
+         *
+         *       rag.cross_doc.retrieval.started
+         *       rag.citation                 (one per library hit, tag=library_tag)
+         *       rag.citation                 (one per case   hit, tag=case_tag)
+         *       rag.cross_doc.retrieval.complete
+         *       rag.cross_doc.synth.chunk    (token-streamed answer chunks)
+         *       rag.cross_doc.synth.complete
+         *       rag.cross_doc.verify.complete
+         *       rag.cross_doc.result         (final consolidated payload)
+         *
+         *     The FE renders the citations as chips, the answer as streaming text,
+         *     and the per-claim verdicts as colored highlights over the answer.
+         */
+        post: operations["rag_cross_doc_stream_rag_cross_doc_stream_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rag/search/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rag Search Stream */
+        post: operations["rag_search_stream_rag_search_stream_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rag/ingest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rag Ingest Endpoint */
+        post: operations["rag_ingest_endpoint_rag_ingest_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rag/ingest/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rag Ingest Stream
+         * @description Streaming ingest. Emits ``rag.ingest.progress`` events at each
+         *     stage (fetch / extract / cleanup / chunk / embed / upsert /
+         *     complete) so the FE can render a live progress bar against a 500-
+         *     page PDF instead of a silent spinner.
+         */
+        post: operations["rag_ingest_stream_rag_ingest_stream_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rag/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rag Verify Endpoint */
+        post: operations["rag_verify_endpoint_rag_verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rag/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Rag Health */
+        get: operations["rag_health_rag_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rag/admin/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Overview */
+        get: operations["overview_rag_admin_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rag/admin/library": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Library */
+        get: operations["list_library_rag_admin_library_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rag/admin/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Sources */
+        get: operations["list_sources_rag_admin_sources_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rag/admin/source/{source_kind}/{source_id}/chunks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Chunks For Source */
+        get: operations["list_chunks_for_source_rag_admin_source__source_kind___source_id__chunks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rag/admin/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Audit */
+        get: operations["list_audit_rag_admin_audit_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rag/admin/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Admin Search */
+        post: operations["admin_search_rag_admin_search_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rag/admin/source/{source_kind}/{source_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Source Chunks */
+        delete: operations["delete_source_chunks_rag_admin_source__source_kind___source_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/workflow/node-types": {
         parameters: {
             query?: never;
@@ -2551,6 +2915,34 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/runs/{run_id}/force-fail": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Force Fail Run
+         * @description Force a stranded run to ``failed`` regardless of its current state.
+         *
+         *     Use this on runs stuck in ``running`` because of an old code path,
+         *     a process restart, or any other reason the detached task didn't get
+         *     a chance to write its terminal status. Unlike ``/cancel`` (which
+         *     politely asks the running scheduler to exit on its next poll), this
+         *     is a one-shot DB update — no cooperation required.
+         *
+         *     Idempotent: calling on an already-terminal run is a no-op.
+         */
+        post: operations["force_fail_run_runs__run_id__force_fail_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/runs/{run_id}/checkpoints": {
         parameters: {
             query?: never;
@@ -2586,6 +2978,46 @@ export interface paths {
         get: operations["list_run_events_runs__run_id__events_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/_test/spawn-detached": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Test Spawn Detached
+         * @description Diagnostic endpoint: prove that the background-task spawn pattern
+         *     works at all, in isolation from the workflow scheduler.
+         *
+         *     What it does:
+         *     1. Logs "[diag] before spawn"
+         *     2. Spawns a 10-second task that logs "tick i" every second.
+         *     3. Returns immediately.
+         *
+         *     Expected server-log output:
+         *
+         *         [diag] BEFORE spawn  set_size=0
+         *         [diag] AFTER  spawn  set_size=1
+         *         [diag] task ENTERED
+         *         [diag] task tick 0
+         *         [diag] task tick 1
+         *         ...
+         *         [diag] task tick 9
+         *         [diag] task DONE
+         *
+         *     If the ticks don't appear, ``asyncio.create_task`` is being killed —
+         *     diagnostic for the workflow freeze.
+         */
+        post: operations["test_spawn_detached__test_spawn_detached_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3682,6 +4114,49 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/cloud-files/changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Changes
+         * @description Polling fallback for the in-sandbox watcher's down-direction.
+         *
+         *     The recommended live path is Supabase Realtime on ``cld_files`` (see
+         *     ``db/migrations/0002_cld_files_realtime.sql``). When Realtime isn't
+         *     available — sandbox missing the realtime client lib, missing Supabase
+         *     creds, or a transient WebSocket drop — the watcher polls this endpoint
+         *     every ~30s with the ISO timestamp of the most recent change it has
+         *     already processed.
+         *
+         *     v1 returns only **modifications** (rows with ``updated_at > since``,
+         *     ``deleted_at IS NULL``). Soft-deletes are not surfaced through this
+         *     endpoint — they only show up via Realtime, or are picked up by the
+         *     next session's bulk down-sync. This is a deliberate tradeoff: the
+         *     Supabase client doesn't expose ``deleted_at IS NOT NULL`` cleanly via
+         *     ``list_files_async``, and adding a new public method on the foundation
+         *     matrx-utils package is intentionally out of scope for this change.
+         *
+         *     Response shape:
+         *         {
+         *             "files":       [{ id, file_path, file_size, mime_type,
+         *                               current_version, checksum, updated_at }, ...],
+         *             "next_cursor": "<iso of most recent updated_at>",
+         *             "deletions_supported": false
+         *         }
+         */
+        get: operations["list_changes_cloud_files_changes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/cloud-files/integrations.aidream": {
         parameters: {
             query?: never;
@@ -4111,6 +4586,119 @@ export interface components {
             /** Urls */
             urls: string[];
         };
+        /** AdminOverview */
+        AdminOverview: {
+            /** Schema Ok */
+            schema_ok: boolean;
+            /** Total Chunks */
+            total_chunks: number;
+            /** Chunks By Source Kind */
+            chunks_by_source_kind: {
+                [key: string]: number;
+            };
+            /** Chunks By Section Kind */
+            chunks_by_section_kind: {
+                [key: string]: number;
+            };
+            /** Distinct Sources */
+            distinct_sources: number;
+            /** Distinct Owners */
+            distinct_owners: number;
+            /** Library Doc Count */
+            library_doc_count: number;
+            /** Library Chunk Count */
+            library_chunk_count: number;
+            /** Embeddings Oai Count */
+            embeddings_oai_count: number;
+            /** Embeddings Voyage Count */
+            embeddings_voyage_count: number;
+            /** Audit Rows 24H */
+            audit_rows_24h: number;
+        };
+        /** AdminSearchHit */
+        AdminSearchHit: {
+            /** Chunk Id */
+            chunk_id: string;
+            /** Source Kind */
+            source_kind: string;
+            /** Source Id */
+            source_id: string;
+            /** Section Kind */
+            section_kind: string | null;
+            /** First Page */
+            first_page: number | null;
+            /** Last Page */
+            last_page: number | null;
+            /** Short Code */
+            short_code: string | null;
+            /** Title */
+            title: string | null;
+            /** Snippet */
+            snippet: string;
+            /** Score */
+            score: number;
+            /** Rerank Score */
+            rerank_score: number | null;
+        };
+        /** AdminSearchRequest */
+        AdminSearchRequest: {
+            /** Query */
+            query: string;
+            /**
+             * Impersonate User Id
+             * @description User to retrieve as — admin runs as this user's scope.
+             */
+            impersonate_user_id: string;
+            /** Impersonate Organization Id */
+            impersonate_organization_id?: string | null;
+            /** Source Kinds */
+            source_kinds?: string[] | null;
+            /**
+             * Library Filter
+             * @default any
+             */
+            library_filter: string;
+            /**
+             * Limit
+             * @default 10
+             */
+            limit: number;
+            /**
+             * Multi Query
+             * @default 1
+             */
+            multi_query: number;
+            /**
+             * Use Hyde
+             * @default false
+             */
+            use_hyde: boolean;
+            /**
+             * Use Mmr
+             * @default true
+             */
+            use_mmr: boolean;
+            /**
+             * Rerank
+             * @default true
+             */
+            rerank: boolean;
+        };
+        /** AdminSearchResponse */
+        AdminSearchResponse: {
+            /** Query */
+            query: string;
+            /** Hits */
+            hits: components["schemas"]["AdminSearchHit"][];
+            /** Total Candidates */
+            total_candidates: number;
+            /** Embedding Model */
+            embedding_model: string;
+            /** Reranker Model */
+            reranker_model: string | null;
+            /** Latency Ms */
+            latency_ms: number;
+        };
         /** AgentBlocksStartRequest */
         AgentBlocksStartRequest: {
             /** User Input */
@@ -4186,6 +4774,7 @@ export interface components {
                 [key: string]: unknown;
             }[];
             ide_state?: components["schemas"]["IdeState"] | null;
+            sandbox?: components["schemas"]["SandboxBindingRequest"] | null;
             /**
              * Context
              * @default {}
@@ -4296,6 +4885,29 @@ export interface components {
          * @enum {string}
          */
         AudioStyle: "Podcast Interview" | "Educational Podcast" | "پادکست خبری ایران";
+        /** AuditRow */
+        AuditRow: {
+            /** Id */
+            id: string;
+            /** Organization Id */
+            organization_id: string | null;
+            /** User Id */
+            user_id: string | null;
+            /** Query */
+            query: string;
+            /** Query Hash */
+            query_hash: string;
+            /** Pipeline Config */
+            pipeline_config: {
+                [key: string]: unknown;
+            };
+            /** Returned Chunk Ids */
+            returned_chunk_ids: string[];
+            /** Latency Ms */
+            latency_ms: number | null;
+            /** Created At */
+            created_at: string;
+        };
         /** BatchScrapeRequest */
         BatchScrapeRequest: {
             /** Urls */
@@ -4700,6 +5312,7 @@ export interface components {
                 [key: string]: unknown;
             }[];
             ide_state?: components["schemas"]["IdeState"] | null;
+            sandbox?: components["schemas"]["SandboxBindingRequest"] | null;
             /**
              * Context
              * @default {}
@@ -4748,6 +5361,52 @@ export interface components {
             deprecated_keys_found: string[][];
         } & {
             [key: string]: unknown;
+        };
+        /** ChunkDetail */
+        ChunkDetail: {
+            /** Chunk Id */
+            chunk_id: string;
+            /** Parent Chunk Id */
+            parent_chunk_id: string | null;
+            /** Chunk Index */
+            chunk_index: number;
+            /** Chunk Kind */
+            chunk_kind: string;
+            /** Section Kind */
+            section_kind: string | null;
+            /** First Page */
+            first_page: number | null;
+            /** Last Page */
+            last_page: number | null;
+            /** Symbol Kind */
+            symbol_kind: string | null;
+            /** Symbol Name */
+            symbol_name: string | null;
+            /** Line Start */
+            line_start: number | null;
+            /** Line End */
+            line_end: number | null;
+            /** Token Count */
+            token_count: number | null;
+            /** Language */
+            language: string | null;
+            /** Snippet */
+            snippet: string;
+            /** Full Length */
+            full_length: number;
+        };
+        /** ClaimVerdictOut */
+        ClaimVerdictOut: {
+            /** Claim */
+            claim: string;
+            /** Verdict */
+            verdict: string;
+            /** Confidence */
+            confidence: number;
+            /** Supporting Chunk Ids */
+            supporting_chunk_ids: string[];
+            /** Reasoning */
+            reasoning: string;
         };
         /** ClientToolResult */
         ClientToolResult: {
@@ -4991,6 +5650,76 @@ export interface components {
              */
             is_public: boolean;
         };
+        /** CropPagesRequest */
+        CropPagesRequest: {
+            media?: components["schemas"]["MediaRef"] | null;
+            /** File */
+            file?: {
+                [key: string]: unknown;
+            } | null;
+            /** Url */
+            url?: string | null;
+            /** Local Path */
+            local_path?: string | null;
+            /** Pages */
+            pages?: number[] | null;
+            /** Page Ranges */
+            page_ranges?: components["schemas"]["PdfPageRange"][] | null;
+            crop_box: components["schemas"]["PdfCropBox"];
+        };
+        /** CrossDocRequest */
+        CrossDocRequest: {
+            /** Question */
+            question: string;
+            /** Library Query */
+            library_query: string;
+            /** Case Query */
+            case_query: string;
+            /**
+             * Library Tag
+             * @default MTUS
+             */
+            library_tag: string;
+            /**
+             * Case Tag
+             * @default CASE
+             */
+            case_tag: string;
+            /**
+             * Limit Per Side
+             * @default 4
+             */
+            limit_per_side: number;
+            /**
+             * Multi Query
+             * @default 2
+             */
+            multi_query: number;
+            /**
+             * Rerank
+             * @default true
+             */
+            rerank: boolean;
+            /**
+             * Use Mmr
+             * @default true
+             */
+            use_mmr: boolean;
+            /** System Addendum */
+            system_addendum?: string | null;
+            /**
+             * Synth Model
+             * @default claude-haiku-4-5
+             */
+            synth_model: string;
+            /** Judge Model */
+            judge_model?: string | null;
+            /**
+             * Skip Verify
+             * @default false
+             */
+            skip_verify: boolean;
+        };
         /**
          * Definition
          * @description The canonical workflow definition — ReactFlow-compatible, user-authored.
@@ -5034,10 +5763,33 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** DeletePagesRequest */
+        DeletePagesRequest: {
+            media?: components["schemas"]["MediaRef"] | null;
+            /** File */
+            file?: {
+                [key: string]: unknown;
+            } | null;
+            /** Url */
+            url?: string | null;
+            /** Local Path */
+            local_path?: string | null;
+            /** Pages */
+            pages?: number[] | null;
+            /** Page Ranges */
+            page_ranges?: components["schemas"]["PdfPageRange"][] | null;
+        };
         /** DeleteResponse */
         DeleteResponse: {
             /** Deleted */
             deleted: boolean;
+        };
+        /** DeleteResult */
+        DeleteResult: {
+            /** Chunks Deleted */
+            chunks_deleted: number;
+            /** Embeddings Deleted */
+            embeddings_deleted: number;
         };
         /** DirectChatRequest */
         DirectChatRequest: {
@@ -5129,6 +5881,22 @@ export interface components {
             /** Html Content */
             html_content: string;
         };
+        /** ExtractPagesRequest */
+        ExtractPagesRequest: {
+            media?: components["schemas"]["MediaRef"] | null;
+            /** File */
+            file?: {
+                [key: string]: unknown;
+            } | null;
+            /** Url */
+            url?: string | null;
+            /** Local Path */
+            local_path?: string | null;
+            /** Pages */
+            pages?: number[] | null;
+            /** Page Ranges */
+            page_ranges?: components["schemas"]["PdfPageRange"][] | null;
+        };
         /** ExtractTablesRequest */
         ExtractTablesRequest: {
             media?: components["schemas"]["MediaRef"] | null;
@@ -5167,6 +5935,26 @@ export interface components {
              * @default 100
              */
             use_ocr_threshold: number;
+            /**
+             * Include Page Markers
+             * @default false
+             */
+            include_page_markers: boolean;
+            /**
+             * Include Page Metadata
+             * @default false
+             */
+            include_page_metadata: boolean;
+            /**
+             * Include Block Metadata
+             * @default false
+             */
+            include_block_metadata: boolean;
+            /**
+             * Include Word Metadata
+             * @default false
+             */
+            include_word_metadata: boolean;
         };
         /** FilePatchRequest */
         FilePatchRequest: {
@@ -5415,6 +6203,17 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** HealthResponse */
+        HealthResponse: {
+            /** Schema Ok */
+            schema_ok: boolean;
+            /** Chunks In Scope */
+            chunks_in_scope: number;
+            /** Embeddings In Scope */
+            embeddings_in_scope: number;
+            /** Distinct Sources */
+            distinct_sources: number;
+        };
         /** IdeDiagnostic */
         IdeDiagnostic: {
             /** Message */
@@ -5472,6 +6271,42 @@ export interface components {
             name: string;
             /** Folders */
             folders: string[];
+        };
+        /** IngestRequest */
+        IngestRequest: {
+            /**
+             * Source Kind
+             * @enum {string}
+             */
+            source_kind: "note" | "code_file" | "cld_file";
+            /** Source Id */
+            source_id: string;
+            /** Field Id */
+            field_id?: string | null;
+            /**
+             * Force
+             * @default false
+             */
+            force: boolean;
+        };
+        /** IngestResponse */
+        IngestResponse: {
+            /** Source Kind */
+            source_kind: string;
+            /** Source Id */
+            source_id: string;
+            /** Field Id */
+            field_id: string | null;
+            /** Chunks Written */
+            chunks_written: number;
+            /** Embeddings Written */
+            embeddings_written: number;
+            /** Skipped Unchanged */
+            skipped_unchanged: boolean;
+            /** Embedding Model */
+            embedding_model: string;
+            /** Error */
+            error?: string | null;
         };
         /**
          * InputDataType
@@ -5614,6 +6449,37 @@ export interface components {
             /** Disable Safety Checker */
             disable_safety_checker?: boolean | null;
         };
+        /** LibraryDocOut */
+        LibraryDocOut: {
+            /** Id */
+            id: string;
+            /** Organization Id */
+            organization_id: string | null;
+            /** Title */
+            title: string;
+            /** Short Code */
+            short_code: string | null;
+            /** Kind */
+            kind: string;
+            /** Jurisdiction */
+            jurisdiction: string | null;
+            /** Version */
+            version: string | null;
+            /** Effective From */
+            effective_from: string | null;
+            /** Effective To */
+            effective_to: string | null;
+            /** Chunks */
+            chunks: number;
+            /** Source Url */
+            source_url: string | null;
+            /** Storage Uri */
+            storage_uri: string | null;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+        };
         /**
          * MediaRef
          * @description Canonical media reference shared across every API that takes media.
@@ -5703,6 +6569,32 @@ export interface components {
                     [key: string]: unknown;
                 };
             };
+        };
+        /** MergePdfSource */
+        MergePdfSource: {
+            media?: components["schemas"]["MediaRef"] | null;
+            /** File */
+            file?: {
+                [key: string]: unknown;
+            } | null;
+            /** Url */
+            url?: string | null;
+            /** Local Path */
+            local_path?: string | null;
+            /** Pages */
+            pages?: number[] | null;
+            /** Page Ranges */
+            page_ranges?: components["schemas"]["PdfPageRange"][] | null;
+        };
+        /** MergePdfsRequest */
+        MergePdfsRequest: {
+            /** Sources */
+            sources: components["schemas"]["MergePdfSource"][];
+            /**
+             * Filename
+             * @default merged.pdf
+             */
+            filename: string;
         };
         /**
          * MessageUpdate
@@ -5797,6 +6689,64 @@ export interface components {
                 [key: string]: unknown;
             } | null;
         };
+        /** PdfCropBox */
+        PdfCropBox: {
+            /** X0 */
+            x0: number;
+            /** Y0 */
+            y0: number;
+            /** X1 */
+            x1: number;
+            /** Y1 */
+            y1: number;
+        };
+        /** PdfPageRange */
+        PdfPageRange: {
+            /** Start */
+            start: number;
+            /** End */
+            end: number;
+        };
+        /** PdfPageSpan */
+        PdfPageSpan: {
+            /** Page Number */
+            page_number: number;
+            /** Page Index */
+            page_index: number;
+            /** Page Char Start */
+            page_char_start: number;
+            /** Page Char End */
+            page_char_end: number;
+            /** Chunk Char Start */
+            chunk_char_start: number;
+            /** Chunk Char End */
+            chunk_char_end: number;
+        };
+        /** PdfPageText */
+        PdfPageText: {
+            /** Page Number */
+            page_number: number;
+            /** Page Index */
+            page_index: number;
+            /** Width */
+            width: number;
+            /** Height */
+            height: number;
+            /** Rotation */
+            rotation: number;
+            /** Text */
+            text: string;
+            /** Extraction Method */
+            extraction_method: string;
+            /** Char Count */
+            char_count: number;
+            /** Source Path */
+            source_path?: string | null;
+            /** Blocks */
+            blocks?: components["schemas"]["PdfTextBlock"][] | null;
+            /** Words */
+            words?: components["schemas"]["PdfTextWord"][] | null;
+        };
         /** PdfPipelineOptions */
         PdfPipelineOptions: {
             /**
@@ -5825,11 +6775,6 @@ export interface components {
              */
             chunk_and_process_with_ai: boolean;
             /**
-             * Template Name
-             * @default make_json_flashcards
-             */
-            template_name: string;
-            /**
              * Chunk Size
              * @default 2000
              */
@@ -5840,13 +6785,45 @@ export interface components {
              */
             overlap_size: number;
             /**
+             * Template Name
+             * @default default
+             */
+            template_name: string;
+            /**
+             * Include Page Markers
+             * @default false
+             */
+            include_page_markers: boolean;
+            /**
+             * Include Page Metadata
+             * @default false
+             */
+            include_page_metadata: boolean;
+            /**
+             * Include Block Metadata
+             * @default false
+             */
+            include_block_metadata: boolean;
+            /**
+             * Include Word Metadata
+             * @default false
+             */
+            include_word_metadata: boolean;
+            /**
+             * Include Chunk Metadata
+             * @default false
+             */
+            include_chunk_metadata: boolean;
+            /** Upload Result To */
+            upload_result_to?: string | null;
+            /**
              * Upload Result To Supabase
              * @default false
              */
             upload_result_to_supabase: boolean;
             /**
              * Supabase Bucket
-             * @default any-file
+             * @default extracted_documents
              */
             supabase_bucket: string;
         };
@@ -5868,11 +6845,16 @@ export interface components {
              *       "use_ocr_threshold": 100,
              *       "extract_tables": false,
              *       "chunk_and_process_with_ai": false,
-             *       "template_name": "make_json_flashcards",
              *       "chunk_size": 2000,
              *       "overlap_size": 200,
+             *       "template_name": "default",
+             *       "include_page_markers": false,
+             *       "include_page_metadata": false,
+             *       "include_block_metadata": false,
+             *       "include_word_metadata": false,
+             *       "include_chunk_metadata": false,
              *       "upload_result_to_supabase": false,
-             *       "supabase_bucket": "any-file"
+             *       "supabase_bucket": "extracted_documents"
              *     }
              */
             options: components["schemas"]["PdfPipelineOptions"];
@@ -5881,20 +6863,99 @@ export interface components {
         PdfResult: {
             /** Raw Text */
             raw_text?: string | null;
+            /** Pages */
+            pages?: components["schemas"]["PdfPageText"][] | null;
             /** Chunks */
             chunks?: string[] | null;
+            /** Chunk Records */
+            chunk_records?: components["schemas"]["PdfTextChunk"][] | null;
             /** Ai Processed */
             ai_processed?: {
                 [key: string]: unknown;
             }[] | null;
             /** Tables Path */
             tables_path?: string | null;
+            /** Cloud Uri */
+            cloud_uri?: string | null;
             /** Supabase Url */
             supabase_url?: string | null;
             /** File Id */
             file_id?: string | null;
             /** Storage Uri */
             storage_uri?: string | null;
+        };
+        /** PdfTextBlock */
+        PdfTextBlock: {
+            /** Block Number */
+            block_number: number;
+            /** Block Type */
+            block_type: number;
+            /** X0 */
+            x0: number;
+            /** Y0 */
+            y0: number;
+            /** X1 */
+            x1: number;
+            /** Y1 */
+            y1: number;
+            /** Text */
+            text: string;
+        };
+        /** PdfTextChunk */
+        PdfTextChunk: {
+            /** Chunk Id */
+            chunk_id: string;
+            /** Chunk Index */
+            chunk_index: number;
+            /** Text */
+            text: string;
+            /** Document Char Start */
+            document_char_start: number;
+            /** Document Char End */
+            document_char_end: number;
+            /** Char Count */
+            char_count: number;
+            /** Page Numbers */
+            page_numbers: number[];
+            /** Page Spans */
+            page_spans: components["schemas"]["PdfPageSpan"][];
+            /**
+             * Overlap Previous Chars
+             * @default 0
+             */
+            overlap_previous_chars: number;
+            /**
+             * Overlap Next Chars
+             * @default 0
+             */
+            overlap_next_chars: number;
+            /** Previous Overlap Text */
+            previous_overlap_text?: string | null;
+            /** Next Overlap Text */
+            next_overlap_text?: string | null;
+            /** Token Estimate */
+            token_estimate: number;
+            /** Source Document */
+            source_document?: string | null;
+        };
+        /** PdfTextWord */
+        PdfTextWord: {
+            /** Word */
+            word: string;
+            /** X0 */
+            x0: number;
+            /** Y0 */
+            y0: number;
+            /** X1 */
+            x1: number;
+            /** Y1 */
+            y1: number;
+            /** Block Number */
+            block_number: number;
+            /** Line Number */
+            line_number: number;
+            /** Word Number */
+            word_number: number;
         };
         /** PendingCallSummary */
         PendingCallSummary: {
@@ -6309,6 +7370,24 @@ export interface components {
             /** Queue Item Id */
             queue_item_id: string;
         };
+        /** RotatePagesRequest */
+        RotatePagesRequest: {
+            media?: components["schemas"]["MediaRef"] | null;
+            /** File */
+            file?: {
+                [key: string]: unknown;
+            } | null;
+            /** Url */
+            url?: string | null;
+            /** Local Path */
+            local_path?: string | null;
+            /** Pages */
+            pages?: number[] | null;
+            /** Page Ranges */
+            page_ranges?: components["schemas"]["PdfPageRange"][] | null;
+            /** Rotation */
+            rotation: number;
+        };
         /** RunPipelineRequest */
         RunPipelineRequest: Record<string, never>;
         /** RunWorkflowRequest */
@@ -6352,6 +7431,30 @@ export interface components {
              * @enum {string}
              */
             mode: "inline" | "queued";
+        };
+        /** SandboxBindingRequest */
+        SandboxBindingRequest: {
+            /**
+             * Sandbox Id
+             * @description Orchestrator sandbox id (sbx-XXX)
+             */
+            sandbox_id: string;
+            /**
+             * Base Url
+             * @description Orchestrator URL up to and including /sandboxes/<id> (no trailing slash).
+             */
+            base_url: string;
+            /**
+             * Access Token
+             * @description X-Sandbox-Access-Token bearer
+             */
+            access_token: string;
+            /**
+             * Root Path
+             * @description Workspace root inside the sandbox
+             * @default /home/agent
+             */
+            root_path: string;
         };
         /** SaveDraftRequest */
         SaveDraftRequest: {
@@ -6560,6 +7663,35 @@ export interface components {
             /** Total Returned */
             total_returned: number;
         };
+        /** SearchHitOut */
+        SearchHitOut: {
+            /** Chunk Id */
+            chunk_id: string;
+            /** Source Kind */
+            source_kind: string;
+            /** Source Id */
+            source_id: string;
+            /** Field Id */
+            field_id: string | null;
+            /** Parent Chunk Id */
+            parent_chunk_id: string | null;
+            /** Chunk Kind */
+            chunk_kind: string;
+            /** Snippet */
+            snippet: string;
+            /** Score */
+            score: number;
+            /** Vector Rank */
+            vector_rank: number | null;
+            /** Lexical Rank */
+            lexical_rank: number | null;
+            /** Rerank Score */
+            rerank_score: number | null;
+            /** Metadata */
+            metadata: {
+                [key: string]: unknown;
+            };
+        };
         /** SearchKeywordsRequest */
         SearchKeywordsRequest: {
             /** Keywords */
@@ -6579,6 +7711,75 @@ export interface components {
              * @default all
              */
             search_type: string;
+        };
+        /** SearchRequest */
+        SearchRequest: {
+            /** Query */
+            query: string;
+            filters?: components["schemas"]["SearchRequestFilters"] | null;
+            /**
+             * Limit
+             * @default 20
+             */
+            limit: number;
+            /**
+             * Rerank
+             * @default true
+             */
+            rerank: boolean;
+            /**
+             * Only Children
+             * @default true
+             */
+            only_children: boolean;
+            /**
+             * Embedding Models
+             * @description Optional override — pass multiple to fan out across embedding tables (e.g. ['openai:text-embedding-3-small', 'voyage:voyage-code-3']) and let RRF unify the rankings.
+             */
+            embedding_models?: string[] | null;
+            /**
+             * Multi Query
+             * @description If >1, the query is rewritten into N paraphrases via gpt-4o-mini and each one contributes a separate vector ranking that gets fused via RRF. Boosts recall on awkward phrasings.
+             * @default 1
+             */
+            multi_query: number;
+            /**
+             * Use Hyde
+             * @description Generate a hypothetical-answer passage and embed THAT alongside the query (HyDE). Helps when the natural query phrasing differs from the documents' phrasing.
+             * @default false
+             */
+            use_hyde: boolean;
+            /**
+             * Use Mmr
+             * @description Drop near-duplicate hits from the result set.
+             * @default true
+             */
+            use_mmr: boolean;
+        };
+        /** SearchRequestFilters */
+        SearchRequestFilters: {
+            /** Source Kinds */
+            source_kinds?: string[] | null;
+            /**
+             * Organization Id
+             * @description Override the active org for this query — only honored for admins. Non-admin callers always retrieve in their AppContext.organization_id scope.
+             */
+            organization_id?: string | null;
+        };
+        /** SearchResponseOut */
+        SearchResponseOut: {
+            /** Query */
+            query: string;
+            /** Hits */
+            hits: components["schemas"]["SearchHitOut"][];
+            /** Total Candidates */
+            total_candidates: number;
+            /** Embedding Model */
+            embedding_model: string;
+            /** Reranker Model */
+            reranker_model: string | null;
+            /** Latency Ms */
+            latency_ms: number;
         };
         /** ShareLinkResolveResponse */
         ShareLinkResolveResponse: {
@@ -6626,6 +7827,37 @@ export interface components {
              */
             action: "include" | "exclude" | "mark_stale" | "mark_complete" | "scrape";
         };
+        /** SourceSummary */
+        SourceSummary: {
+            /** Source Kind */
+            source_kind: string;
+            /** Source Id */
+            source_id: string;
+            /** Owner Id */
+            owner_id: string | null;
+            /** Organization Id */
+            organization_id: string | null;
+            /** Chunk Count */
+            chunk_count: number;
+            /** Parent Chunk Count */
+            parent_chunk_count: number;
+            /** Total Tokens */
+            total_tokens: number;
+            /** Section Histogram */
+            section_histogram: {
+                [key: string]: number;
+            };
+            /** Languages */
+            languages: {
+                [key: string]: number;
+            };
+            /** Library Short Code */
+            library_short_code: string | null;
+            /** File Name */
+            file_name: string | null;
+            /** Last Updated */
+            last_updated: string;
+        };
         /** SourceTagRequest */
         SourceTagRequest: {
             /** Tag Ids */
@@ -6644,6 +7876,31 @@ export interface components {
             is_stale?: boolean | null;
             /** Scrape Status */
             scrape_status?: ("pending" | "success" | "thin" | "failed" | "manual" | "skipped" | "complete") | null;
+        };
+        /** SplitPartRequest */
+        SplitPartRequest: {
+            /** Pages */
+            pages?: number[] | null;
+            /** Page Ranges */
+            page_ranges?: components["schemas"]["PdfPageRange"][] | null;
+            /** Filename */
+            filename?: string | null;
+        };
+        /** SplitPdfRequest */
+        SplitPdfRequest: {
+            media?: components["schemas"]["MediaRef"] | null;
+            /** File */
+            file?: {
+                [key: string]: unknown;
+            } | null;
+            /** Url */
+            url?: string | null;
+            /** Local Path */
+            local_path?: string | null;
+            /** Parts */
+            parts?: components["schemas"]["SplitPartRequest"][] | null;
+            /** Max Pages Per Part */
+            max_pages_per_part?: number | null;
         };
         /** StorageUsageResponse */
         StorageUsageResponse: {
@@ -6935,6 +8192,33 @@ export interface components {
              * @default []
              */
             issues: components["schemas"]["ValidationIssue"][];
+        };
+        /** VerifyRequest */
+        VerifyRequest: {
+            /** Answer */
+            answer: string;
+            /** Retrieved */
+            retrieved?: components["schemas"]["VerifyRequestChunk"][];
+            /** Judge Model */
+            judge_model?: string | null;
+        };
+        /** VerifyRequestChunk */
+        VerifyRequestChunk: {
+            /** Chunk Id */
+            chunk_id: string;
+            /** Content Text */
+            content_text: string;
+        };
+        /** VerifyResponse */
+        VerifyResponse: {
+            /** Claims */
+            claims: components["schemas"]["ClaimVerdictOut"][];
+            /** Overall Faithfulness */
+            overall_faithfulness: number;
+            /** Judge Model */
+            judge_model: string;
+            /** Latency Ms */
+            latency_ms: number;
         };
         /** Viewport */
         Viewport: {
@@ -8494,13 +9778,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description PDF file */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/pdf": string;
                 };
             };
             /** @description Validation Error */
@@ -8536,6 +9820,204 @@ export interface operations {
                     "application/json": {
                         [key: string]: string;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    extract_pages_utilities_pdf_extract_pages_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExtractPagesRequest"];
+            };
+        };
+        responses: {
+            /** @description PDF file */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    crop_pages_utilities_pdf_crop_pages_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CropPagesRequest"];
+            };
+        };
+        responses: {
+            /** @description PDF file */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rotate_pages_utilities_pdf_rotate_pages_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RotatePagesRequest"];
+            };
+        };
+        responses: {
+            /** @description PDF file */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_pages_utilities_pdf_delete_pages_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeletePagesRequest"];
+            };
+        };
+        responses: {
+            /** @description PDF file */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    merge_pdfs_utilities_pdf_merge_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MergePdfsRequest"];
+            };
+        };
+        responses: {
+            /** @description PDF file */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    split_pdf_utilities_pdf_split_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SplitPdfRequest"];
+            };
+        };
+        responses: {
+            /** @description ZIP archive */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/zip": string;
                 };
             };
             /** @description Validation Error */
@@ -10958,6 +12440,448 @@ export interface operations {
             };
         };
     };
+    rag_search_endpoint_rag_search_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SearchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchResponseOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rag_cross_doc_stream_rag_cross_doc_stream_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrossDocRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rag_search_stream_rag_search_stream_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SearchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rag_ingest_endpoint_rag_ingest_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IngestRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IngestResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rag_ingest_stream_rag_ingest_stream_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IngestRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rag_verify_endpoint_rag_verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VerifyResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rag_health_rag_health_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HealthResponse"];
+                };
+            };
+        };
+    };
+    overview_rag_admin_overview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOverview"];
+                };
+            };
+        };
+    };
+    list_library_rag_admin_library_get: {
+        parameters: {
+            query?: {
+                organization_id?: string | null;
+                kind?: string | null;
+                jurisdiction?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LibraryDocOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_sources_rag_admin_sources_get: {
+        parameters: {
+            query?: {
+                source_kind?: string | null;
+                owner_id?: string | null;
+                organization_id?: string | null;
+                library_only?: boolean;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_chunks_for_source_rag_admin_source__source_kind___source_id__chunks_get: {
+        parameters: {
+            query?: {
+                only_children?: boolean;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                source_kind: string;
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChunkDetail"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_audit_rag_admin_audit_get: {
+        parameters: {
+            query?: {
+                user_id?: string | null;
+                organization_id?: string | null;
+                /** @description ISO timestamp lower bound */
+                since?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_search_rag_admin_search_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSearchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminSearchResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_source_chunks_rag_admin_source__source_kind___source_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_kind: string;
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_node_types_workflow_node_types_get: {
         parameters: {
             query?: never;
@@ -11490,6 +13414,39 @@ export interface operations {
             };
         };
     };
+    force_fail_run_runs__run_id__force_fail_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_run_checkpoints_runs__run_id__checkpoints_get: {
         parameters: {
             query?: never;
@@ -11552,6 +13509,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_spawn_detached__test_spawn_detached_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
         };
@@ -13887,6 +15866,44 @@ export interface operations {
     get_quota_cloud_files_quota_get: {
         parameters: {
             query?: never;
+            header?: {
+                authorization?: string | null;
+                "X-Matrx-User-Id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_changes_cloud_files_changes_get: {
+        parameters: {
+            query: {
+                /** @description ISO-8601 timestamp; return rows with updated_at >= since */
+                since: string;
+                limit?: number;
+            };
             header?: {
                 authorization?: string | null;
                 "X-Matrx-User-Id"?: string | null;
