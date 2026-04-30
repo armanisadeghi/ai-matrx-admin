@@ -61,6 +61,7 @@ function makeEmptyRecord(id: string): AgentShortcutRecord {
     defaultVariables: null,
     contextOverrides: null,
     llmOverrides: null,
+    jsonExtraction: null,
 
     isActive: true,
 

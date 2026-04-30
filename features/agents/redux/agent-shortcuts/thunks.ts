@@ -113,6 +113,7 @@ function menuItemToConfigFields(item: unknown): {
   llmOverrides: Partial<
     import("@/features/agents/types/agent-api-types").LLMParams
   > | null;
+  jsonExtraction: import("@/features/agents/types/instance.types").JsonExtractionConfig | null;
 } {
   const o = (item ?? {}) as Record<string, unknown>;
   return {
@@ -151,6 +152,9 @@ function menuItemToConfigFields(item: unknown): {
     llmOverrides: pickJsonObject<
       Partial<import("@/features/agents/types/agent-api-types").LLMParams>
     >(o, "llm_overrides"),
+    jsonExtraction: pickJsonObject<
+      import("@/features/agents/types/instance.types").JsonExtractionConfig
+    >(o, "json_extraction"),
   };
 }
 
@@ -926,6 +930,8 @@ function shortcutToApiBody(
     out.context_overrides = patch.contextOverrides as unknown;
   if (patch.llmOverrides !== undefined)
     out.llm_overrides = patch.llmOverrides as unknown;
+  if (patch.jsonExtraction !== undefined)
+    out.json_extraction = patch.jsonExtraction as unknown;
 
   if (patch.isActive !== undefined) out.is_active = patch.isActive;
   if (patch.userId !== undefined) out.user_id = patch.userId;

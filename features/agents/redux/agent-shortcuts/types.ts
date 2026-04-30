@@ -1,9 +1,13 @@
-import { ContextSlot, LLMParams } from "@/features/agents/types/agent-api-types";
+import {
+  ContextSlot,
+  LLMParams,
+} from "@/features/agents/types/agent-api-types";
 import { VariableDefinition } from "@/features/agents/types/agent-definition.types";
 import { ResultDisplayMode } from "@/features/agents/utils/run-ui-utils";
 import { ShortcutContext } from "@/features/agents/utils/shortcut-context-utils";
 import { VariablesPanelStyle } from "@/features/agents/components/inputs/variable-input-variations/variable-input-options";
-import type { DbRpcRow } from "@/types/supabase-rpc";
+import type { JsonExtractionConfig } from "@/features/agents/types/instance.types";
+import type { Database } from "@/types/database.types";
 import type { FieldFlags } from "@/features/agents/redux/shared/field-flags";
 
 export type { ResultDisplayMode, ShortcutContext };
@@ -80,6 +84,15 @@ export interface AgentShortcut {
   defaultVariables: Record<string, unknown> | null;
   contextOverrides: Record<string, unknown> | null;
   llmOverrides: Partial<LLMParams> | null;
+
+  // ── Output processing (consumed by the request stream) ───────────────
+  /**
+   * Streaming JSON extraction config. Set on direct-mode shortcuts whose
+   * agent emits structured JSON; the launch thunk forwards this to the
+   * request so process-stream activates a StreamingJsonTracker. NULL =
+   * no extraction.
+   */
+  jsonExtraction: JsonExtractionConfig | null;
 
   // ── Status ───────────────────────────────────────────────────────────
   isActive: boolean;
@@ -165,7 +178,7 @@ export interface AgentShortcutInitialRow {
   agent_context_slots: ContextSlot[] | null;
 }
 type _CheckAgentShortcutInitialRow =
-  AgentShortcutInitialRow extends DbRpcRow<"agx_get_shortcuts_initial">
+  AgentShortcutInitialRow extends Database["public"]["Functions"]["agx_get_shortcuts_initial"]["Returns"][number]
     ? true
     : false;
 declare const _agentShortcutInitialRow: _CheckAgentShortcutInitialRow;
@@ -180,7 +193,7 @@ export interface AgentShortcutContextRow extends AgentShortcutInitialRow {
   shortcut_task_id: string | null;
 }
 type _CheckAgentShortcutContextRow =
-  AgentShortcutContextRow extends DbRpcRow<"agx_get_shortcuts_for_context">
+  AgentShortcutContextRow extends Database["public"]["Functions"]["agx_get_shortcuts_for_context"]["Returns"][number]
     ? true
     : false;
 declare const _agentShortcutContextRow: _CheckAgentShortcutContextRow;
@@ -194,7 +207,7 @@ export interface AgentShortcutMenuResult {
   menu_data: AgentShortcutCategory[];
 }
 type _CheckAgentShortcutMenuResult =
-  AgentShortcutMenuResult extends DbRpcRow<"agx_build_shortcut_menu">
+  AgentShortcutMenuResult extends Database["public"]["Functions"]["agx_build_shortcut_menu"]["Returns"][number]
     ? true
     : false;
 declare const _agentShortcutMenuResult: _CheckAgentShortcutMenuResult;

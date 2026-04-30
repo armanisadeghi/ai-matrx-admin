@@ -1,10 +1,12 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+// Original generated type (replaced by patch-db-types.sh):
+// export type Json =
+//   | string
+//   | number
+//   | boolean
+//   | null
+//   | { [key: string]: Json | undefined }
+//   | Json[]
+export type Json = unknown
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
@@ -866,6 +868,7 @@ export type Database = {
           icon_name: string | null
           id: string
           is_active: boolean
+          json_extraction: Json | null
           keyboard_shortcut: string | null
           label: string
           llm_overrides: Json | null
@@ -905,6 +908,7 @@ export type Database = {
           icon_name?: string | null
           id?: string
           is_active?: boolean
+          json_extraction?: Json | null
           keyboard_shortcut?: string | null
           label: string
           llm_overrides?: Json | null
@@ -944,6 +948,7 @@ export type Database = {
           icon_name?: string | null
           id?: string
           is_active?: boolean
+          json_extraction?: Json | null
           keyboard_shortcut?: string | null
           label?: string
           llm_overrides?: Json | null
@@ -17653,6 +17658,13 @@ export type Database = {
       }
     }
     Views: {
+      agent_context_menu_view: {
+        Row: {
+          categories_flat: Json | null
+          placement_type: string | null
+        }
+        Relationships: []
+      }
       agx_context_menu_view: {
         Row: {
           categories_flat: Json | null

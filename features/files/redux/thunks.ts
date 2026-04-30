@@ -407,6 +407,36 @@ export const createFolder = createAsyncThunk<
   if (/[/\\]/.test(folderName)) {
     throw new Error("Folder names cannot contain '/' or '\\'.");
   }
+  // Reject NUL + ASCII control characters. These can be paste-injected
+  // and confuse downstream object stores or any layer that materialises
+  // the path on disk. Mirrors the rule in `validateRenameInput`.
+  // eslint-disable-next-line no-control-regex
+  if (/[\x00-\x1f\x7f]/.test(folderName)) {
+    throw new Error("Folder names cannot contain control characters.");
+  }
+  if (folderName.endsWith(".")) {
+    throw new Error("Folder names cannot end with '.'.");
+  }
+  // Sibling collision check — case-insensitive. Without this the thunk
+  // happily issues `POST /folders` with a duplicate name and the backend
+  // either returns a confusing UNIQUE-constraint error or (worse) silently
+  // creates a sibling that's indistinguishable from the existing one.
+  {
+    const state = getState().cloudFiles;
+    const lowered = folderName.toLowerCase();
+    const collision = Object.values(state.foldersById).some(
+      (f) =>
+        !!f &&
+        !f.deletedAt &&
+        (f.parentId ?? null) === (arg.parentId ?? null) &&
+        f.folderName.toLowerCase() === lowered,
+    );
+    if (collision) {
+      throw new Error(
+        `A folder named '${folderName}' already exists in this location.`,
+      );
+    }
+  }
 
   const requestId = newRequestId();
   registerRequest({
@@ -699,16 +729,85 @@ export const uploadFiles = createAsyncThunk<
     }
   }
 
+  // ─── Collision handling ───────────────────────────────────────────────
+  //
+  // Build a case-insensitive set of file names already present in the
+  // destination. Used by `uniqueName` below to auto-rename uploads that
+  // collide ("report.pdf" → "report (1).pdf"). Without this, the backend
+  // either silently overwrites or version-bumps the existing file —
+  // neither matches user expectations from Drive / Dropbox where a
+  // duplicate upload becomes "report (1).pdf" by default.
+  //
+  // We only consider files in the SAME parent folder. The lookup is by
+  // path-prefix because virtual folders may not have stable ids in
+  // local state at upload time (e.g. `folderPath` arg with no
+  // pre-loaded folder row).
+  const existingNames = (() => {
+    const out = new Set<string>();
+    const targetPrefix = prefix; // captured outside; matches "<path>/<name>"
+    for (const f of Object.values(state.cloudFiles.filesById)) {
+      if (!f) continue;
+      if (f.deletedAt) continue;
+      // Match by storage path under the prefix. `f.filePath` is the
+      // backend's canonical path including the file name.
+      if (!f.filePath) continue;
+      const normalized = f.filePath.replace(/^\/+/, "");
+      if (!normalized.startsWith(targetPrefix)) continue;
+      const tail = normalized.slice(targetPrefix.length);
+      // Skip files nested deeper than this folder.
+      if (tail.includes("/")) continue;
+      if (tail) out.add(tail.toLowerCase());
+    }
+    return out;
+  })();
+
+  /**
+   * Pick the next non-colliding name, mutating the queue:
+   *   "report.pdf" → "report.pdf"           (no collision)
+   *   "report.pdf" → "report (1).pdf"       (one collision)
+   *   "report.pdf" → "report (2).pdf"       (two collisions)
+   *   ".env"       → ".env (1)"             (hidden file: suffix only)
+   *
+   * Reserves the chosen name in `existingNames` so back-to-back uploads
+   * of the same source file (drop the same File twice) don't collide
+   * with each other.
+   */
+  function uniqueName(originalName: string): string {
+    const lowered = originalName.toLowerCase();
+    if (!existingNames.has(lowered)) {
+      existingNames.add(lowered);
+      return originalName;
+    }
+    const dot = originalName.lastIndexOf(".");
+    const isHidden = originalName.startsWith(".");
+    const stem = dot > 0 && !isHidden ? originalName.slice(0, dot) : originalName;
+    const ext = dot > 0 && !isHidden ? originalName.slice(dot) : "";
+    for (let i = 1; i < 1000; i++) {
+      const candidate = `${stem} (${i})${ext}`;
+      if (!existingNames.has(candidate.toLowerCase())) {
+        existingNames.add(candidate.toLowerCase());
+        return candidate;
+      }
+    }
+    // 1000 collisions — fall back to original name and let the backend
+    // version-bump. Practically never reached.
+    return originalName;
+  }
+
   const queue = [...arg.files];
   async function worker(): Promise<void> {
     while (queue.length) {
       const file = queue.shift();
       if (!file) return;
       const requestId = newRequestId();
+      // Resolve the actual upload name with collision avoidance. We
+      // track display name separately from the original file.name so
+      // progress + telemetry continue to use what the user dragged in.
+      const targetName = uniqueName(file.name);
       dispatch(
         trackUploadStart({
           requestId,
-          fileName: file.name,
+          fileName: targetName,
           fileSize: file.size,
           parentFolderId: arg.parentFolderId,
         }),
@@ -723,7 +822,7 @@ export const uploadFiles = createAsyncThunk<
         const { data } = await Files.uploadFileWithProgress(
           {
             file,
-            filePath: `${prefix}${file.name}`,
+            filePath: `${prefix}${targetName}`,
             visibility: arg.visibility ?? "private",
             shareWith: arg.shareWith,
             shareLevel: arg.shareLevel,
@@ -755,7 +854,7 @@ export const uploadFiles = createAsyncThunk<
               owner_id: "",
               file_path: data.file_path,
               storage_uri: data.storage_uri,
-              file_name: data.file_path.split("/").pop() ?? file.name,
+              file_name: data.file_path.split("/").pop() ?? targetName,
               mime_type: file.type || null,
               file_size: data.file_size,
               checksum: data.checksum,

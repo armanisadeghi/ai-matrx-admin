@@ -3,14 +3,14 @@
 import React from "react";
 import { Scan, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { ImagePosition } from "../types";
+import type { ImagePosition, ImagePositionAnchor } from "../types";
 
 interface MiniFocalPointPickerProps {
     position: ImagePosition;
     onChange: (p: ImagePosition) => void;
 }
 
-const GRID: ImagePosition[] = [
+const GRID: ImagePositionAnchor[] = [
     "top-left",
     "top",
     "top-right",
@@ -34,7 +34,7 @@ export function MiniFocalPointPicker({
         <div className="flex items-center gap-2">
             <div className="grid grid-cols-3 grid-rows-3 gap-[2px] rounded-md border border-border bg-muted/40 p-[3px]">
                 {GRID.map((pos) => {
-                    const active = position === pos;
+                    const active = typeof position === "string" && position === pos;
                     return (
                         <button
                             key={pos}
@@ -66,7 +66,7 @@ export function MiniFocalPointPicker({
                     title="Smart — Attention"
                     className={cn(
                         "flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-medium transition-colors",
-                        position === "attention"
+                        typeof position === "string" && position === "attention"
                             ? "border-primary bg-primary/10 text-primary"
                             : "border-border hover:bg-muted/40 text-muted-foreground",
                     )}
@@ -80,7 +80,7 @@ export function MiniFocalPointPicker({
                     title="Smart — Entropy"
                     className={cn(
                         "flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-medium transition-colors",
-                        position === "entropy"
+                        typeof position === "string" && position === "entropy"
                             ? "border-primary bg-primary/10 text-primary"
                             : "border-border hover:bg-muted/40 text-muted-foreground",
                     )}

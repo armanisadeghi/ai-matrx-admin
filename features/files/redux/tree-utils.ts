@@ -60,17 +60,24 @@ export interface SortableNode {
   id: string;
   name: string;
   kind: "file" | "folder";
-  size: number;
+  /**
+   * `null` means "no size known" (folders, files with missing metadata).
+   * Treated specially in `compareNodes` so missing-size rows always sort
+   * to the end regardless of direction, instead of being silently
+   * collapsed to 0 and mixed in with empty files.
+   */
+  size: number | null;
+  /** ISO-8601 timestamp. Parsed to a number once at sort time. */
   updatedAt: string;
   type: string;
 }
 
-function fileToSortable(record: CloudFileRecord): SortableNode {
+export function fileToSortable(record: CloudFileRecord): SortableNode {
   return {
     id: record.id,
     name: record.fileName,
     kind: "file",
-    size: record.fileSize ?? 0,
+    size: record.fileSize, // keep null distinct from 0
     updatedAt: record.updatedAt,
     type:
       record.mimeType ??
@@ -79,22 +86,50 @@ function fileToSortable(record: CloudFileRecord): SortableNode {
   };
 }
 
-function folderToSortable(record: CloudFolderRecord): SortableNode {
+export function folderToSortable(record: CloudFolderRecord): SortableNode {
   return {
     id: record.id,
     name: record.folderName,
     kind: "folder",
-    size: 0,
+    // Folders have no intrinsic size in the schema; the file vs folder
+    // pre-comparison in `compareNodes` keeps them grouped together so
+    // this null is never compared against a file's size.
+    size: null,
     updatedAt: record.updatedAt,
     type: "folder",
   };
 }
 
 function compareStrings(a: string, b: string): number {
+  // `numeric: true` makes "file2" sort before "file10" (natural sort).
   return a.localeCompare(b, undefined, { sensitivity: "base", numeric: true });
 }
 
-function compareNodes(
+/** Stable numeric date compare. Falsy / unparsable strings sort last. */
+function compareDates(a: string, b: string): number {
+  const ta = a ? Date.parse(a) : NaN;
+  const tb = b ? Date.parse(b) : NaN;
+  // Push NaNs to the end deterministically (regardless of direction
+  // sign applied by the caller — see `sortChildren`).
+  if (Number.isNaN(ta) && Number.isNaN(tb)) return 0;
+  if (Number.isNaN(ta)) return 1;
+  if (Number.isNaN(tb)) return -1;
+  return ta - tb;
+}
+
+/**
+ * Compare two file/folder rows by the active sort key.
+ *
+ * Always groups folders before files (Dropbox / Drive convention), then
+ * applies the per-field comparator with explicit null/NaN handling so
+ * rows with missing metadata land at the end instead of polluting the
+ * sorted run.
+ *
+ * The caller multiplies the result by ±1 for direction; null/NaN
+ * tie-breakers are *not* sign-multiplied because we always want
+ * "missing" rows at the bottom regardless of asc/desc.
+ */
+export function compareNodes(
   a: SortableNode,
   b: SortableNode,
   sortBy: SortBy,
@@ -103,11 +138,24 @@ function compareNodes(
   if (a.kind !== b.kind) return a.kind === "folder" ? -1 : 1;
   switch (sortBy) {
     case "name":
-      return compareStrings(a.name, b.name);
-    case "size":
-      return a.size - b.size;
+      return compareStrings(a.name, b.name) || compareStrings(a.id, b.id);
+    case "size": {
+      // Sort nulls last, regardless of direction. A 0-byte file is a
+      // legitimate empty file and must remain distinguishable from a
+      // file whose size hasn't been reported.
+      if (a.size == null && b.size == null) return 0;
+      if (a.size == null) return 1;
+      if (b.size == null) return -1;
+      return (
+        a.size - b.size ||
+        // Tie-break by name so size sort is stable when many files
+        // share the same byte count (e.g. zero-byte placeholders).
+        compareStrings(a.name, b.name)
+      );
+    }
     case "updated_at":
-      return compareStrings(a.updatedAt, b.updatedAt);
+      return compareDates(a.updatedAt, b.updatedAt) ||
+        compareStrings(a.name, b.name);
     case "type":
       return compareStrings(a.type, b.type) || compareStrings(a.name, b.name);
     default:

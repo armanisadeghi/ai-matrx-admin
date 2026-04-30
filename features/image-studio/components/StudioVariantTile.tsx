@@ -32,6 +32,9 @@ function fitIcon(fit: ImageFit): React.ReactNode {
 }
 
 function positionLabel(p: ImagePosition): string {
+  if (typeof p === "object") {
+    return `${(p.x * 100).toFixed(0)},${(p.y * 100).toFixed(0)}%`;
+  }
   switch (p) {
     case "top-left":
       return "↖";

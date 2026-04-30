@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { CropPreview } from "./CropPreview";
 import { MiniFocalPointPicker } from "./MiniFocalPointPicker";
-import { getPresetById } from "../presets";
+import { ALL_PRESETS, getPresetById } from "../presets";
 import type {
     ImageFit,
     ImagePosition,
@@ -74,11 +74,25 @@ export function CropPreviewWindow({
         [files, activeFileId],
     );
 
+    // When the user hasn't picked any presets yet we still want the preview
+    // to be useful. Fall back to the entire catalog so they can experiment
+    // with shapes before committing to a bundle.
+    const previewablePresetIds = useMemo(
+        () =>
+            selectedPresetIds.length > 0
+                ? selectedPresetIds
+                : ALL_PRESETS.map((p) => p.id),
+        [selectedPresetIds],
+    );
+    const previewingAll = selectedPresetIds.length === 0;
+
     const activePreset = useMemo(
         () =>
             (activePresetId ? getPresetById(activePresetId) : null) ??
-            (selectedPresetIds[0] ? getPresetById(selectedPresetIds[0]) : null),
-        [activePresetId, selectedPresetIds],
+            (previewablePresetIds[0]
+                ? getPresetById(previewablePresetIds[0])
+                : null),
+        [activePresetId, previewablePresetIds],
     );
 
     // Fall back to first-available values when state drifts.
@@ -87,25 +101,25 @@ export function CropPreviewWindow({
     }, [activeFile, files, onActiveFileChange]);
     useEffect(() => {
         if (
-            selectedPresetIds.length > 0 &&
-            (!activePresetId || !selectedPresetIds.includes(activePresetId))
+            previewablePresetIds.length > 0 &&
+            (!activePresetId || !previewablePresetIds.includes(activePresetId))
         ) {
-            onActivePresetChange(selectedPresetIds[0]);
+            onActivePresetChange(previewablePresetIds[0]);
         }
-    }, [selectedPresetIds, activePresetId, onActivePresetChange]);
+    }, [previewablePresetIds, activePresetId, onActivePresetChange]);
 
     const cyclePreset = useCallback(
         (dir: 1 | -1) => {
-            if (selectedPresetIds.length === 0) return;
+            if (previewablePresetIds.length === 0) return;
             const currentIdx = activePresetId
-                ? selectedPresetIds.indexOf(activePresetId)
+                ? previewablePresetIds.indexOf(activePresetId)
                 : 0;
             const nextIdx =
-                (currentIdx + dir + selectedPresetIds.length) %
-                selectedPresetIds.length;
-            onActivePresetChange(selectedPresetIds[nextIdx]);
+                (currentIdx + dir + previewablePresetIds.length) %
+                previewablePresetIds.length;
+            onActivePresetChange(previewablePresetIds[nextIdx]);
         },
-        [selectedPresetIds, activePresetId, onActivePresetChange],
+        [previewablePresetIds, activePresetId, onActivePresetChange],
     );
 
     const cycleFile = useCallback(
@@ -166,7 +180,7 @@ export function CropPreviewWindow({
                     <SelectorPill icon={<Layers className="h-3 w-3" />} label="Preset">
                         <IconArrowButton
                             onClick={() => cyclePreset(-1)}
-                            disabled={selectedPresetIds.length <= 1}
+                            disabled={previewablePresetIds.length <= 1}
                             title="Previous preset"
                         >
                             <ChevronLeft className="h-3 w-3" />
@@ -176,7 +190,7 @@ export function CropPreviewWindow({
                             onChange={(e) => onActivePresetChange(e.target.value)}
                             className="bg-transparent text-xs max-w-[180px] truncate focus:outline-none"
                         >
-                            {selectedPresetIds.map((id) => {
+                            {previewablePresetIds.map((id) => {
                                 const p = getPresetById(id);
                                 return (
                                     <option key={id} value={id}>
@@ -184,18 +198,23 @@ export function CropPreviewWindow({
                                     </option>
                                 );
                             })}
-                            {selectedPresetIds.length === 0 && (
-                                <option value="">No presets selected</option>
+                            {previewablePresetIds.length === 0 && (
+                                <option value="">No presets available</option>
                             )}
                         </select>
                         <IconArrowButton
                             onClick={() => cyclePreset(1)}
-                            disabled={selectedPresetIds.length <= 1}
+                            disabled={previewablePresetIds.length <= 1}
                             title="Next preset"
                         >
                             <ChevronRight className="h-3 w-3" />
                         </IconArrowButton>
                     </SelectorPill>
+                    {previewingAll && (
+                        <span className="rounded-full bg-muted text-muted-foreground px-2 py-0.5 text-[10px] font-medium">
+                            Browsing all presets — pick one in the catalog to lock it in
+                        </span>
+                    )}
                 </div>
 
                 {/* Preview body */}
@@ -213,6 +232,7 @@ export function CropPreviewWindow({
                             fit={fit}
                             position={position}
                             backgroundColor={backgroundColor}
+                            onPositionChange={onPositionChange}
                         />
                     ) : (
                         <div className="flex flex-col items-center justify-center h-full text-center text-sm text-muted-foreground p-6">

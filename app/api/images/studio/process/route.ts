@@ -61,26 +61,45 @@ function isFit(v: unknown): v is ImageFit {
     return v === "cover" || v === "contain" || v === "inside";
 }
 
-const POSITION_SET: ReadonlySet<ImagePosition> = new Set<ImagePosition>([
-    "center",
-    "top",
-    "bottom",
-    "left",
-    "right",
-    "top-left",
-    "top-right",
-    "bottom-left",
-    "bottom-right",
-    "entropy",
-    "attention",
-]);
+const POSITION_ANCHOR_SET: ReadonlySet<ImagePositionAnchor> =
+    new Set<ImagePositionAnchor>([
+        "center",
+        "top",
+        "bottom",
+        "left",
+        "right",
+        "top-left",
+        "top-right",
+        "bottom-left",
+        "bottom-right",
+        "entropy",
+        "attention",
+    ]);
 
-function isPosition(v: unknown): v is ImagePosition {
-    return typeof v === "string" && POSITION_SET.has(v as ImagePosition);
+function isAnchor(v: unknown): v is ImagePositionAnchor {
+    return (
+        typeof v === "string" &&
+        POSITION_ANCHOR_SET.has(v as ImagePositionAnchor)
+    );
 }
 
-/** Convert our UI position string to the value Sharp accepts. */
-function toSharpPosition(p: ImagePosition): string {
+function isPositionPoint(v: unknown): v is ImagePositionPoint {
+    if (!v || typeof v !== "object") return false;
+    const p = v as { x?: unknown; y?: unknown };
+    return (
+        typeof p.x === "number" &&
+        typeof p.y === "number" &&
+        Number.isFinite(p.x) &&
+        Number.isFinite(p.y)
+    );
+}
+
+function isPosition(v: unknown): v is ImagePosition {
+    return isAnchor(v) || isPositionPoint(v);
+}
+
+/** Convert an anchor string to the value Sharp's resize() accepts. */
+function toSharpPosition(p: ImagePositionAnchor): string {
     switch (p) {
         case "top-left":
             return "left top";
@@ -93,6 +112,52 @@ function toSharpPosition(p: ImagePosition): string {
         default:
             return p; // "center" | "top" | "bottom" | "left" | "right" | "entropy" | "attention"
     }
+}
+
+/**
+ * Compute the source crop rectangle for cover-fit at a custom focal point.
+ * Mirrors `computeSourceCropRect` in features/image-studio/utils/compute-crop.ts
+ * so client preview and server output stay in sync.
+ *
+ * Coordinates are clamped: the focal point is the desired centre of the
+ * crop, and we slide it inside the source image so the rect never escapes.
+ */
+function coverRectAtFocalPoint(
+    srcW: number,
+    srcH: number,
+    dstW: number,
+    dstH: number,
+    focal: ImagePositionPoint,
+): { left: number; top: number; width: number; height: number } {
+    const srcAspect = srcW / srcH;
+    const dstAspect = dstW / dstH;
+
+    let cropW: number;
+    let cropH: number;
+    if (Math.abs(srcAspect - dstAspect) < 1e-6) {
+        cropW = srcW;
+        cropH = srcH;
+    } else if (srcAspect > dstAspect) {
+        cropH = srcH;
+        cropW = srcH * dstAspect;
+    } else {
+        cropW = srcW;
+        cropH = srcW / dstAspect;
+    }
+
+    const fx = Math.max(0, Math.min(1, focal.x));
+    const fy = Math.max(0, Math.min(1, focal.y));
+    const idealLeft = fx * srcW - cropW / 2;
+    const idealTop = fy * srcH - cropH / 2;
+    const left = Math.max(0, Math.min(srcW - cropW, idealLeft));
+    const top = Math.max(0, Math.min(srcH - cropH, idealTop));
+
+    return {
+        left: Math.round(left),
+        top: Math.round(top),
+        width: Math.round(cropW),
+        height: Math.round(cropH),
+    };
 }
 
 function extForFormat(format: OutputFormat): string {
@@ -232,20 +297,61 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                     : defaultPosition;
 
                 try {
-                    const resizeOpts: sharp.ResizeOptions = {
-                        fit,
-                        background: backgroundColor,
-                        withoutEnlargement: false,
-                    };
-                    // Position only applies to `cover`. Sharp ignores it for
-                    // `contain` / `inside` but keeping it out keeps intent clear.
-                    if (fit === "cover") {
-                        resizeOpts.position = toSharpPosition(position);
-                    }
+                    let pipeline = sharp(sourceBuffer).rotate(); // respect EXIF
 
-                    const pipeline = sharp(sourceBuffer)
-                        .rotate() // respect EXIF
-                        .resize(preset.width, preset.height, resizeOpts);
+                    // Cover-fit + custom focal point: use extract + resize so
+                    // we can hit any sub-pixel position the user dragged to.
+                    // Sharp's resize-position field only takes 9 anchors +
+                    // 2 smart strategies, so we pre-crop ourselves.
+                    if (fit === "cover" && isPositionPoint(position)) {
+                        const meta = await sharp(sourceBuffer).rotate().metadata();
+                        const srcW = meta.width ?? 0;
+                        const srcH = meta.height ?? 0;
+                        if (srcW > 0 && srcH > 0) {
+                            const rect = coverRectAtFocalPoint(
+                                srcW,
+                                srcH,
+                                preset.width,
+                                preset.height,
+                                position,
+                            );
+                            pipeline = pipeline
+                                .extract(rect)
+                                .resize(preset.width, preset.height, {
+                                    fit: "fill",
+                                    background: backgroundColor,
+                                });
+                        } else {
+                            // Couldn't read metadata — fall back to anchor cover.
+                            pipeline = pipeline.resize(
+                                preset.width,
+                                preset.height,
+                                {
+                                    fit: "cover",
+                                    position: "center",
+                                    background: backgroundColor,
+                                    withoutEnlargement: false,
+                                },
+                            );
+                        }
+                    } else {
+                        const resizeOpts: sharp.ResizeOptions = {
+                            fit,
+                            background: backgroundColor,
+                            withoutEnlargement: false,
+                        };
+                        // Anchor positions only apply to `cover`. Sharp ignores
+                        // them for `contain` / `inside` but keeping it out keeps
+                        // intent clear.
+                        if (fit === "cover" && isAnchor(position)) {
+                            resizeOpts.position = toSharpPosition(position);
+                        }
+                        pipeline = pipeline.resize(
+                            preset.width,
+                            preset.height,
+                            resizeOpts,
+                        );
+                    }
 
                     // JPEG / AVIF don't support alpha — flatten onto the
                     // background colour so transparent pixels become opaque.

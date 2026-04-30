@@ -17,6 +17,7 @@ import {
   selectKindFilter,
   selectAllFoldersMap,
   selectSelection,
+  selectSort,
 } from "@/features/files/redux/selectors";
 import {
   setActiveFileId,
@@ -92,7 +93,10 @@ export function FileGrid({
   );
 
   const kindFilter = useAppSelector(selectKindFilter);
-  const rows = useMemo(
+  const { sortBy, sortDir } = useAppSelector(selectSort);
+  // FileGrid never paginates / caps; it just needs the rows. Discard
+  // `totalBeforeCap` / `capped` — only FileTable renders those banners.
+  const { rows } = useMemo(
     () =>
       buildRows({
         folders,
@@ -102,6 +106,8 @@ export function FileGrid({
         filter,
         kindFilter,
         permissionsByResourceId,
+        sortBy,
+        sortDir,
       }),
     [
       folders,
@@ -111,6 +117,8 @@ export function FileGrid({
       filter,
       kindFilter,
       permissionsByResourceId,
+      sortBy,
+      sortDir,
     ],
   );
 

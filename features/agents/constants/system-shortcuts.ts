@@ -86,14 +86,7 @@ export const SYSTEM_SHORTCUTS = {
     id: "ed0a90f8-b406-4af8-8f47-c41c0c4ff086",
     feature: "image-studio",
     description:
-      "Vision agent that takes an attached image (instance resource, blockType: 'image') and an optional context hint (runtime.userInput) and returns a structured JSON wrapped as { image_metadata: { filename_base, alt_text, caption, title, description, keywords, dominant_colors } }.",
-    temporaryConfigs: {
-      jsonExtraction: {
-        enabled: true,
-        fuzzyOnFinalize: true,
-        maxResults: 5,
-      },
-    },
+      "Vision agent that takes an attached image (instance resource, blockType: 'image') and an optional context hint (runtime.userInput) and returns a structured JSON wrapped as { image_metadata: { filename_base, alt_text, caption, title, description, keywords, dominant_colors } }. jsonExtraction now lives on the shortcut row (agx_shortcut.json_extraction); the launch thunk reads it automatically.",
   },
 } as const satisfies Record<string, SystemShortcutEntry>;
 

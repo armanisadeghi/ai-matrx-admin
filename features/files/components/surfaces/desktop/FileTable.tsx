@@ -104,7 +104,7 @@ export function FileTable({
   // identically-named files in different folders are unambiguous.
   const foldersById = useAppSelector(selectAllFoldersMap);
 
-  const rows = useMemo(
+  const { rows, totalBeforeCap, capped } = useMemo(
     () =>
       buildRows({
         folders,
@@ -115,6 +115,8 @@ export function FileTable({
         kindFilter,
         columnFilters,
         permissionsByResourceId,
+        sortBy,
+        sortDir,
       }),
     [
       folders,
@@ -125,6 +127,8 @@ export function FileTable({
       kindFilter,
       columnFilters,
       permissionsByResourceId,
+      sortBy,
+      sortDir,
     ],
   );
 
@@ -235,6 +239,23 @@ export function FileTable({
             from all folders for &ldquo;
             <span className="font-medium text-foreground">{searchQuery}</span>
             &rdquo;
+          </span>
+        </div>
+      ) : null}
+      {/*
+       * Cap banner — currently only the Recents filter caps (at 100), but
+       * any future cap will surface here automatically via `capped`.
+       * Without this, users with thousands of recently-touched files
+       * would silently see only the top 100 with no indication.
+       */}
+      {capped ? (
+        <div className="flex items-center gap-2 border-b border-warning/30 bg-warning/10 px-4 py-1.5 text-xs text-warning shrink-0">
+          <span>
+            Showing the {rows.length.toLocaleString()} most-recent of{" "}
+            <span className="font-medium">
+              {totalBeforeCap.toLocaleString()}
+            </span>{" "}
+            items. Open a folder or use search to see older history.
           </span>
         </div>
       ) : null}

@@ -22,6 +22,7 @@ import type { LLMParams } from "./agent-api-types";
 import type { ResultDisplayMode } from "@/features/agents/utils/run-ui-utils";
 import type { VariablesPanelStyle } from "../components/inputs/variable-input-variations/variable-input-options";
 import type { ApplicationScope } from "./scope.types";
+import type { JsonExtractionConfig } from "./instance.types";
 
 /**
  * ============================================================================
@@ -124,11 +125,27 @@ export interface AgentValueDefaults {
   llmOverrides: Partial<LLMParams> | null;
 }
 
+/**
+ * How the agent's stream is processed for structured output.
+ *
+ * Direct-mode UIs (and any caller that consumes parsed JSON via
+ * `selectFirstExtractedObject` / `selectJsonExtractionComplete`) need this
+ * set. When `enabled: true` the request's StreamingJsonTracker is wired up
+ * and parsed objects land in active_requests as the model emits them.
+ *
+ * NULL = no extraction (text-only flow). Default for shortcuts that emit
+ * normal AI text into the system overlays.
+ */
+export interface AgentOutputProcessing {
+  jsonExtraction: JsonExtractionConfig | null;
+}
+
 export interface AgentExecutionConfig
   extends
     AgentPresentationConfig,
     AgentEnvironmentBindings,
-    AgentValueDefaults {}
+    AgentValueDefaults,
+    AgentOutputProcessing {}
 
 /**
  * Runtime — per-invocation data that is never persisted on a shortcut/app.
@@ -168,6 +185,7 @@ export const DEFAULT_AGENT_EXECUTION_CONFIG: AgentExecutionConfig = {
   llmOverrides: null,
   scopeMappings: null,
   contextMappings: null,
+  jsonExtraction: null,
 };
 
 /**

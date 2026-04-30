@@ -1,4 +1,9 @@
-import type { ImageFit, ImagePosition } from "../types";
+import type {
+    ImageFit,
+    ImagePosition,
+    ImagePositionAnchor,
+    ImagePositionPoint,
+} from "../types";
 
 export interface SourceCropRect {
     /** Top-left corner of the rectangle on the source image. */
@@ -12,6 +17,78 @@ export interface SourceCropRect {
      *  computed by Sharp and can't be mirrored locally, so we return
      *  `false` and a center-anchored fallback rectangle. */
     exact: boolean;
+}
+
+export function isPositionPoint(
+    p: ImagePosition,
+): p is ImagePositionPoint {
+    return typeof p === "object" && p !== null;
+}
+
+export function isPositionAnchor(
+    p: ImagePosition,
+): p is ImagePositionAnchor {
+    return typeof p === "string";
+}
+
+/**
+ * Map an anchor name to its normalized [0..1] focal point. Smart anchors
+ * fall back to centre.
+ */
+export function anchorToFocalPoint(
+    anchor: ImagePositionAnchor,
+): ImagePositionPoint {
+    switch (anchor) {
+        case "top-left":
+            return { x: 0, y: 0 };
+        case "top":
+            return { x: 0.5, y: 0 };
+        case "top-right":
+            return { x: 1, y: 0 };
+        case "left":
+            return { x: 0, y: 0.5 };
+        case "right":
+            return { x: 1, y: 0.5 };
+        case "bottom-left":
+            return { x: 0, y: 1 };
+        case "bottom":
+            return { x: 0.5, y: 1 };
+        case "bottom-right":
+            return { x: 1, y: 1 };
+        case "center":
+        case "attention":
+        case "entropy":
+        default:
+            return { x: 0.5, y: 0.5 };
+    }
+}
+
+/**
+ * Snap a focal point to its nearest anchor when it lands within ε of one of
+ * the 9 compass points. Used by the drag-to-adjust UI so a tiny mouse jitter
+ * doesn't lose the "Center" pill.
+ */
+export function snapPointToAnchor(
+    point: ImagePositionPoint,
+    epsilon = 0.02,
+): ImagePositionAnchor | null {
+    const stops = [
+        { name: "top-left" as const, x: 0, y: 0 },
+        { name: "top" as const, x: 0.5, y: 0 },
+        { name: "top-right" as const, x: 1, y: 0 },
+        { name: "left" as const, x: 0, y: 0.5 },
+        { name: "center" as const, x: 0.5, y: 0.5 },
+        { name: "right" as const, x: 1, y: 0.5 },
+        { name: "bottom-left" as const, x: 0, y: 1 },
+        { name: "bottom" as const, x: 0.5, y: 1 },
+        { name: "bottom-right" as const, x: 1, y: 1 },
+    ];
+    for (const s of stops) {
+        if (Math.abs(point.x - s.x) <= epsilon && Math.abs(point.y - s.y) <= epsilon) {
+            return s.name;
+        }
+    }
+    return null;
 }
 
 /**
@@ -61,57 +138,31 @@ export function computeSourceCropRect(
         cropH = srcW / dstAspect;
     }
 
-    const smart = position === "attention" || position === "entropy";
-    const effective: ImagePosition = smart ? "center" : position;
+    const smart =
+        typeof position === "string" &&
+        (position === "attention" || position === "entropy");
 
-    const { horiz, vert } = decomposePosition(effective);
+    // Resolve to a normalized focal point in [0..1].
+    const focal: ImagePositionPoint = smart
+        ? { x: 0.5, y: 0.5 }
+        : isPositionPoint(position)
+          ? {
+                x: Math.max(0, Math.min(1, position.x)),
+                y: Math.max(0, Math.min(1, position.y)),
+            }
+          : anchorToFocalPoint(position as ImagePositionAnchor);
 
     const maxX = srcW - cropW;
     const maxY = srcH - cropH;
 
-    let x = 0;
-    let y = 0;
-    if (maxX > 0) {
-        if (horiz === "center") x = maxX / 2;
-        else if (horiz === "right") x = maxX;
-    }
-    if (maxY > 0) {
-        if (vert === "center") y = maxY / 2;
-        else if (vert === "bottom") y = maxY;
-    }
+    // The focal point is the desired centre of the crop; clamp into the
+    // image so the rectangle never escapes the source.
+    const idealLeft = focal.x * srcW - cropW / 2;
+    const idealTop = focal.y * srcH - cropH / 2;
+    const x = Math.max(0, Math.min(maxX > 0 ? maxX : 0, idealLeft));
+    const y = Math.max(0, Math.min(maxY > 0 ? maxY : 0, idealTop));
 
     return { x, y, w: cropW, h: cropH, exact: !smart };
-}
-
-type HorizSlot = "left" | "center" | "right";
-type VertSlot = "top" | "center" | "bottom";
-
-function decomposePosition(position: ImagePosition): {
-    horiz: HorizSlot;
-    vert: VertSlot;
-} {
-    switch (position) {
-        case "top-left":
-            return { horiz: "left", vert: "top" };
-        case "top":
-            return { horiz: "center", vert: "top" };
-        case "top-right":
-            return { horiz: "right", vert: "top" };
-        case "left":
-            return { horiz: "left", vert: "center" };
-        case "center":
-            return { horiz: "center", vert: "center" };
-        case "right":
-            return { horiz: "right", vert: "center" };
-        case "bottom-left":
-            return { horiz: "left", vert: "bottom" };
-        case "bottom":
-            return { horiz: "center", vert: "bottom" };
-        case "bottom-right":
-            return { horiz: "right", vert: "bottom" };
-        default:
-            return { horiz: "center", vert: "center" };
-    }
 }
 
 /**

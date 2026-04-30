@@ -16,7 +16,14 @@ import type {
   ColumnFilters,
   ModifiedFilter,
   SizeFilter,
+  SortBy,
+  SortDirection,
 } from "@/features/files/types";
+import {
+  compareNodes,
+  fileToSortable,
+  folderToSortable,
+} from "@/features/files/redux/tree-utils";
 import type { CloudFilesSection } from "./section";
 import type { FilterChipKey } from "./FilterChips";
 
@@ -75,6 +82,24 @@ export interface BuildRowsArg {
   /** Per-column filters from the column-header dropdowns. */
   columnFilters?: ColumnFilters;
   permissionsByResourceId: Record<string, CloudFilePermission[]>;
+  /**
+   * Active column sort. The Recents filter overrides this with its own
+   * `updatedAt desc` sort because that's what "recents" means; everything
+   * else respects the user's chosen column.
+   */
+  sortBy?: SortBy;
+  sortDir?: SortDirection;
+}
+
+export interface BuildRowsResult {
+  rows: RowItem[];
+  /**
+   * Total rows that matched filters before any cap (e.g. the Recents
+   * 100-row cap) was applied. Surfaces in the UI as "Showing N of M".
+   */
+  totalBeforeCap: number;
+  /** True when `rows.length < totalBeforeCap`. */
+  capped: boolean;
 }
 
 export function buildRows({
@@ -86,7 +111,9 @@ export function buildRows({
   kindFilter = "all",
   columnFilters,
   permissionsByResourceId,
-}: BuildRowsArg): RowItem[] {
+  sortBy = "name",
+  sortDir = "asc",
+}: BuildRowsArg): BuildRowsResult {
   const q = searchQuery.trim().toLowerCase();
   const nameFilter = columnFilters?.name?.trim().toLowerCase() ?? "";
   const matchesQuery = (name: string) =>
@@ -165,23 +192,62 @@ export function buildRows({
 
   let rows: RowItem[] = [...folderRows, ...fileRows];
 
-  // Filter chip: Recents → sort by updatedAt desc, cap at the most-recent
-  // 100 so a user with thousands of files doesn't render the whole tree on
-  // one page. 100 covers ~6 weeks of active use; to see older history,
-  // navigate by folder. Starred → empty (placeholder).
+  // ─── Sort ─────────────────────────────────────────────────────────────
+  //
+  // Recents filter forces `updated_at desc` regardless of column header
+  // — that's what "recents" means. Every other view honours the user's
+  // chosen sort key + direction from Redux.
+  //
+  // Implementation reuses the same `compareNodes` comparator used by the
+  // sidebar tree (`tree-utils.ts`) so the table and tree always agree on
+  // ordering. Folders before files, numeric size, getTime-based dates,
+  // null tie-breakers — all centralised there.
+
+  const effectiveSortBy: SortBy =
+    filter === "recents" ? "updated_at" : sortBy;
+  const effectiveSortDir: SortDirection =
+    filter === "recents" ? "desc" : sortDir;
+  const sign = effectiveSortDir === "asc" ? 1 : -1;
+
+  const sortableForRow = (r: RowItem) =>
+    r.kind === "file" ? fileToSortable(r.file) : folderToSortable(r.folder);
+
+  // Decorate-sort-undecorate: build SortableNode once per row, sort by
+  // index, then read back. Avoids paying the .fileName / .folderName
+  // branch in every comparator call (O(N log N) saves M comparisons).
+  const decorated = rows.map((row, index) => ({
+    row,
+    index,
+    sortable: sortableForRow(row),
+  }));
+  decorated.sort((a, b) => {
+    const cmp = compareNodes(a.sortable, b.sortable, effectiveSortBy);
+    return cmp !== 0
+      ? sign * cmp
+      : // Stable fallback so equal keys keep their original order.
+        a.index - b.index;
+  });
+  rows = decorated.map((d) => d.row);
+
+  // ─── Cap ──────────────────────────────────────────────────────────────
+  //
+  // Recents caps at 100 to keep the render budget bounded for users with
+  // thousands of files. Surface this through `BuildRowsResult` so the
+  // calling component can render "Showing 100 of N" instead of silently
+  // truncating. Starred is still a placeholder.
+
+  const totalBeforeCap = rows.length;
+  let capped = false;
   if (filter === "recents") {
-    rows = [...rows]
-      .sort((a, b) => {
-        const aDate = a.kind === "file" ? a.file.updatedAt : a.folder.updatedAt;
-        const bDate = b.kind === "file" ? b.file.updatedAt : b.folder.updatedAt;
-        return new Date(bDate).getTime() - new Date(aDate).getTime();
-      })
-      .slice(0, 100);
+    if (rows.length > 100) {
+      rows = rows.slice(0, 100);
+      capped = true;
+    }
   } else if (filter === "starred") {
     rows = [];
   }
 
-  return rows;
+  return { rows, totalBeforeCap, capped };
 }
 
 export function memberCountForResource(

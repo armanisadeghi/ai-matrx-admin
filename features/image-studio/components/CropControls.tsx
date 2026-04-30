@@ -21,7 +21,11 @@ import {
     Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { ImageFit, ImagePosition } from "../types";
+import type {
+    ImageFit,
+    ImagePosition,
+    ImagePositionAnchor,
+} from "../types";
 
 interface CropControlsProps {
     fit: ImageFit;
@@ -56,7 +60,7 @@ const FIT_OPTIONS: Array<{
     },
 ];
 
-const POSITION_GRID: Array<{ id: ImagePosition; label: string }> = [
+const POSITION_GRID: Array<{ id: ImagePositionAnchor; label: string }> = [
     { id: "top-left", label: "Top-left" },
     { id: "top", label: "Top" },
     { id: "top-right", label: "Top-right" },
@@ -69,7 +73,7 @@ const POSITION_GRID: Array<{ id: ImagePosition; label: string }> = [
 ];
 
 const SMART_OPTIONS: Array<{
-    id: ImagePosition;
+    id: ImagePositionAnchor;
     label: string;
     blurb: string;
     icon: React.ReactNode;
@@ -144,7 +148,8 @@ export function CropControls({
                     <div className="inline-flex flex-col gap-1 rounded-lg border border-border bg-muted/20 p-2">
                         <div className="grid grid-cols-3 gap-1">
                             {POSITION_GRID.map((p) => {
-                                const active = position === p.id;
+                                const active =
+                                    typeof position === "string" && position === p.id;
                                 return (
                                     <button
                                         key={p.id}
@@ -171,14 +176,23 @@ export function CropControls({
                             })}
                         </div>
                         <p className="text-[10px] font-medium text-center tabular-nums">
-                            {POSITION_GRID.find((p) => p.id === position)?.label ??
-                                (position === "attention"
-                                    ? "Smart — Attention"
-                                    : position === "entropy"
-                                      ? "Smart — Entropy"
-                                      : "")}
+                            {typeof position === "object"
+                                ? `Custom · ${(position.x * 100).toFixed(0)}%, ${(position.y * 100).toFixed(0)}%`
+                                : (POSITION_GRID.find((p) => p.id === position)?.label ??
+                                  (position === "attention"
+                                      ? "Smart — Attention"
+                                      : position === "entropy"
+                                        ? "Smart — Entropy"
+                                        : ""))}
                         </p>
                     </div>
+
+                    {typeof position === "object" && (
+                        <p className="text-[11px] text-muted-foreground leading-snug rounded-md bg-primary/5 border border-primary/30 px-2 py-1.5">
+                            Custom focal point set by drag. Click any anchor above to snap
+                            back, or open the live preview to drag to a new spot.
+                        </p>
+                    )}
 
                     {/* Smart crop options */}
                     <div>
@@ -194,7 +208,8 @@ export function CropControls({
                                     title={opt.blurb}
                                     className={cn(
                                         "flex items-center gap-1.5 rounded-md border px-2 py-1.5 text-[11px] font-medium transition-colors",
-                                        position === opt.id
+                                        typeof position === "string" &&
+                                            position === opt.id
                                             ? "border-primary bg-primary/10 text-primary"
                                             : "border-border bg-background hover:bg-muted/40",
                                     )}

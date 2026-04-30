@@ -291,6 +291,13 @@ export const launchAgentExecution = createAsyncThunk<
       (shortcut.displayMode as ResultDisplayMode) ??
       "direct";
 
+    // jsonExtraction precedence: caller-supplied (rare; back-compat for
+    // pre-DB-column callers) wins, otherwise the persisted shortcut row's
+    // value. Once every legacy caller stops passing this explicitly, the
+    // first leg of the ?? becomes dead code and we can drop it.
+    const resolvedJsonExtraction =
+      jsonExtraction ?? shortcut.jsonExtraction ?? undefined;
+
     conversationId = await dispatch(
       createInstanceFromShortcut({
         shortcutId,
@@ -313,7 +320,7 @@ export const launchAgentExecution = createAsyncThunk<
         responseDensity,
         preExecutionMessage,
         bypassGateSeconds,
-        jsonExtraction,
+        jsonExtraction: resolvedJsonExtraction,
         originalText,
       }),
     ).unwrap();

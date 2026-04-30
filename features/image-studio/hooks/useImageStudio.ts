@@ -720,15 +720,14 @@ export function useImageStudio(
         //    key to a resource), we manually do create → attach → execute.
         //    TODO(arman): drop this once the launcher carries resources.
         //
-        //    `jsonExtraction` is migration debt mirrored from the registry —
-        //    without it process-stream skips the StreamingJsonTracker and
-        //    waitForExtraction below times out at 120s. Pull from the
-        //    registry so there's exactly one place to update when the
-        //    shortcut row finally carries it.
+        //    NOTE: `jsonExtraction` is intentionally NOT passed here — it
+        //    now lives on the shortcut row (`agx_shortcut.json_extraction`)
+        //    and the launch thunk reads it from there. If you ever see
+        //    "did not return structured JSON" again, the row's column is
+        //    null, not the call site's job.
         const launchResult = await trigger(DESCRIBE.id, {
           sourceFeature: "image-studio",
           config: { autoRun: false, displayMode: "background" },
-          jsonExtraction: DESCRIBE.temporaryConfigs?.jsonExtraction,
           ...(contextHint?.trim()
             ? { runtime: { userInput: contextHint.trim() } }
             : {}),

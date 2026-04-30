@@ -174,8 +174,17 @@ export function FileVersionsList({ fileId, className }: FileVersionsListProps) {
     );
   }
 
-  // Sorted desc by version number — newest at top.
-  const sorted = [...versions].sort((a, b) => b.versionNumber - a.versionNumber);
+  // Sorted desc by version number — newest at top. Null/undefined
+  // version numbers (corrupt rows) sort to the end so they don't poison
+  // the "latest" lookup below.
+  const sorted = [...versions].sort((a, b) => {
+    const av = a.versionNumber;
+    const bv = b.versionNumber;
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    return bv - av;
+  });
   const latest = sorted[0]?.versionNumber ?? null;
   const currentVersion = (file as { version?: number } | null)?.version ?? latest;
 

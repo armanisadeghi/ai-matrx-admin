@@ -54,6 +54,8 @@ export function useDataStores(): {
     name: string;
     description?: string;
     organizationId?: string | null;
+    kind?: string;
+    shortCode?: string | null;
   }) => Promise<DataStore | null>;
 } {
   const userId = useAppSelector(selectUserId);
@@ -125,6 +127,8 @@ export function useDataStores(): {
       name: string;
       description?: string;
       organizationId?: string | null;
+      kind?: string;
+      shortCode?: string | null;
     }) => {
       if (!userId) return null;
       const { data, error: err } = await sb
@@ -134,6 +138,8 @@ export function useDataStores(): {
           name: input.name,
           description: input.description ?? null,
           organization_id: input.organizationId ?? null,
+          kind: input.kind ?? "general",
+          short_code: input.shortCode ?? null,
           created_by: userId,
           is_active: true,
         })
@@ -151,6 +157,241 @@ export function useDataStores(): {
 
   return { stores, loading, error, refresh, createStore };
 }
+
+/**
+ * useDataStoreDetail — full detail + members of a single store, with
+ * RLS-respecting label enrichment for known source kinds.
+ *
+ * Used by the management page (not the bind panel — that one only needs
+ * the membership Set for the active document).
+ */
+export interface EnrichedMember {
+  dataStoreId: string;
+  sourceKind: string;
+  sourceId: string;
+  addedBy: string | null;
+  addedAt: string;
+  notes: string | null;
+  /** Best-effort human label looked up per source_kind. Null on miss. */
+  label: string | null;
+}
+
+export function useDataStoreDetail(storeId: string | null) {
+  const [store, setStore] = useState<DataStore | null>(null);
+  const [members, setMembers] = useState<EnrichedMember[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [bumper, setBumper] = useState(0);
+
+  const refresh = useCallback(() => setBumper((b) => b + 1), []);
+
+  useEffect(() => {
+    if (!storeId) {
+      setStore(null);
+      setMembers([]);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    (async () => {
+      try {
+        const { data: storeRow, error: sErr } = await sb
+          .schema("rag")
+          .from("data_stores")
+          .select("*")
+          .eq("id", storeId)
+          .single();
+        if (sErr) throw sErr;
+        if (cancelled) return;
+        setStore(rowToStore(storeRow as Record<string, unknown>));
+
+        const { data: rawMembers, error: mErr } = await sb
+          .schema("rag")
+          .from("data_store_members")
+          .select("*")
+          .eq("data_store_id", storeId)
+          .order("added_at", { ascending: false });
+        if (mErr) throw mErr;
+        if (cancelled) return;
+
+        const memberRows = (rawMembers ?? []) as Record<string, unknown>[];
+
+        // Bucket source_ids by kind for the label lookup.
+        const idsByKind = new Map<string, string[]>();
+        for (const m of memberRows) {
+          const k = m.source_kind as string;
+          const arr = idsByKind.get(k) ?? [];
+          arr.push(m.source_id as string);
+          idsByKind.set(k, arr);
+        }
+
+        const labelByKey = new Map<string, string>();
+        for (const [kind, ids] of idsByKind) {
+          if (ids.length === 0) continue;
+          if (kind === "cld_file") {
+            const { data } = await supabase
+              .from("cld_files")
+              .select("id, file_name")
+              .in("id", ids);
+            for (const r of (data ?? []) as Record<string, unknown>[]) {
+              labelByKey.set(`${kind}/${r.id}`, r.file_name as string);
+            }
+          } else if (kind === "processed_document") {
+            const { data } = await supabase
+              .from("processed_documents")
+              .select("id, name")
+              .in("id", ids);
+            for (const r of (data ?? []) as Record<string, unknown>[]) {
+              labelByKey.set(`${kind}/${r.id}`, r.name as string);
+            }
+          } else if (kind === "library_doc") {
+            const { data } = await sb
+              .schema("rag")
+              .from("library_docs")
+              .select("id, title")
+              .in("id", ids);
+            for (const r of (data ?? []) as Record<string, unknown>[]) {
+              labelByKey.set(`${kind}/${r.id}`, r.title as string);
+            }
+          }
+          // Other source_kinds fall through with label=null.
+        }
+
+        if (cancelled) return;
+        setMembers(
+          memberRows.map((m) => ({
+            dataStoreId: m.data_store_id as string,
+            sourceKind: m.source_kind as string,
+            sourceId: m.source_id as string,
+            addedBy: (m.added_by as string | null) ?? null,
+            addedAt: m.added_at as string,
+            notes: (m.notes as string | null) ?? null,
+            label: labelByKey.get(
+              `${m.source_kind}/${m.source_id}`,
+            ) ?? null,
+          })),
+        );
+      } catch (e) {
+        if (cancelled) return;
+        setError(
+          e instanceof Error ? e.message : "Could not load data store",
+        );
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [storeId, bumper]);
+
+  const addMember = useCallback(
+    async (input: {
+      sourceKind: string;
+      sourceId: string;
+      notes?: string;
+    }) => {
+      if (!storeId) return false;
+      const { error: err } = await sb
+        .schema("rag")
+        .from("data_store_members")
+        .upsert({
+          data_store_id: storeId,
+          source_kind: input.sourceKind,
+          source_id: input.sourceId,
+          notes: input.notes ?? null,
+        });
+      if (err) {
+        setError(err.message);
+        return false;
+      }
+      refresh();
+      return true;
+    },
+    [storeId, refresh],
+  );
+
+  const removeMember = useCallback(
+    async (sourceKind: string, sourceId: string) => {
+      if (!storeId) return false;
+      const { error: err } = await sb
+        .schema("rag")
+        .from("data_store_members")
+        .delete()
+        .eq("data_store_id", storeId)
+        .eq("source_kind", sourceKind)
+        .eq("source_id", sourceId);
+      if (err) {
+        setError(err.message);
+        return false;
+      }
+      refresh();
+      return true;
+    },
+    [storeId, refresh],
+  );
+
+  const updateStore = useCallback(
+    async (patch: {
+      name?: string;
+      description?: string | null;
+      shortCode?: string | null;
+      kind?: string | null;
+      isActive?: boolean;
+    }) => {
+      if (!storeId) return false;
+      const update: Record<string, unknown> = {};
+      if (patch.name !== undefined) update.name = patch.name;
+      if (patch.description !== undefined) update.description = patch.description;
+      if (patch.shortCode !== undefined) update.short_code = patch.shortCode;
+      if (patch.kind !== undefined) update.kind = patch.kind;
+      if (patch.isActive !== undefined) update.is_active = patch.isActive;
+      if (Object.keys(update).length === 0) return true;
+      const { error: err } = await sb
+        .schema("rag")
+        .from("data_stores")
+        .update(update)
+        .eq("id", storeId);
+      if (err) {
+        setError(err.message);
+        return false;
+      }
+      refresh();
+      return true;
+    },
+    [storeId, refresh],
+  );
+
+  const deleteStore = useCallback(async () => {
+    if (!storeId) return false;
+    const { error: err } = await sb
+      .schema("rag")
+      .from("data_stores")
+      .delete()
+      .eq("id", storeId);
+    if (err) {
+      setError(err.message);
+      return false;
+    }
+    return true;
+  }, [storeId]);
+
+  return {
+    store,
+    members,
+    loading,
+    error,
+    refresh,
+    addMember,
+    removeMember,
+    updateStore,
+    deleteStore,
+  };
+}
+
 
 /**
  * useDocumentDataStores — which stores does this document belong to,

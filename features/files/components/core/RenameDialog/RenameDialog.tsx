@@ -20,11 +20,17 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { extractErrorMessage } from "@/utils/errors";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   renameFile as renameFileThunk,
   updateFolder as updateFolderThunk,
 } from "@/features/files/redux/thunks";
+import {
+  selectAllFilesMap,
+  selectAllFoldersMap,
+  selectFileById,
+  selectFolderById,
+} from "@/features/files/redux/selectors";
 
 export type RenameKind = "file" | "folder";
 
@@ -36,16 +42,125 @@ export interface RenameDialogProps {
   currentName: string;
 }
 
+export interface ValidateRenameOptions {
+  /**
+   * Names of sibling files/folders in the same parent. The new name is
+   * rejected if it matches any of these (case-insensitive). Pass `[]`
+   * if the caller doesn't have sibling info — the validation simply
+   * skips collision detection in that case (server-side enforcement
+   * remains the source of truth).
+   */
+  siblingNames?: string[];
+  /**
+   * "file" — enforces extension shape rules ("data." / "data" with
+   * dropped extension are rejected when the original had one).
+   * "folder" — skips extension rules.
+   */
+  kind?: RenameKind;
+  /** The original extension when `kind === "file"`. */
+  originalExt?: string;
+}
+
+/**
+ * Validate a rename target. Catches the common ways a user can shoot
+ * themselves in the foot:
+ *   - empty / whitespace-only
+ *   - reserved or control characters (`/`, `\`, NUL, control chars)
+ *   - same name as before
+ *   - dropped or malformed extension on a file
+ *   - collision with an existing sibling in the same folder
+ *
+ * Returns a stable error code in addition to the human-readable
+ * message so callers can surface tooltips or inline hints contextually.
+ */
 export function validateRenameInput(
   raw: string,
   currentName: string,
-): { ok: true; value: string } | { ok: false; error: string } {
+  options: ValidateRenameOptions = {},
+):
+  | { ok: true; value: string }
+  | {
+      ok: false;
+      code:
+        | "empty"
+        | "reserved_chars"
+        | "control_chars"
+        | "unchanged"
+        | "trailing_dot"
+        | "dropped_extension"
+        | "extension_changed_to_invalid"
+        | "sibling_collision";
+      error: string;
+    } {
   const value = raw.trim();
-  if (!value) return { ok: false, error: "Name cannot be empty." };
+  if (!value) return { ok: false, code: "empty", error: "Name cannot be empty." };
   if (/[/\\]/.test(value))
-    return { ok: false, error: "Name cannot contain '/' or '\\'." };
+    return {
+      ok: false,
+      code: "reserved_chars",
+      error: "Name cannot contain '/' or '\\'.",
+    };
+  // Reject NUL + ASCII control characters. These can be paste-injected
+  // accidentally and confuse downstream filesystems / object stores.
+  // eslint-disable-next-line no-control-regex
+  if (/[\x00-\x1f\x7f]/.test(value))
+    return {
+      ok: false,
+      code: "control_chars",
+      error: "Name cannot contain control characters.",
+    };
   if (value === currentName)
-    return { ok: false, error: "New name is the same as the current name." };
+    return {
+      ok: false,
+      code: "unchanged",
+      error: "New name is the same as the current name.",
+    };
+  if (value.endsWith("."))
+    return {
+      ok: false,
+      code: "trailing_dot",
+      error: "Name cannot end with '.'.",
+    };
+
+  // File-only extension rules. If the original had an extension and the
+  // user's new name has lost it (or has a malformed one like "."), block
+  // — this catches the foot-gun where typing into the extension field
+  // and then deleting it silently changes the file's type.
+  if (options.kind === "file" && options.originalExt) {
+    const lastDot = value.lastIndexOf(".");
+    const newExt = lastDot <= 0 ? "" : value.slice(lastDot);
+    if (!newExt) {
+      return {
+        ok: false,
+        code: "dropped_extension",
+        error: `Filename is missing its extension (was '${options.originalExt}').`,
+      };
+    }
+    if (!/^\.[A-Za-z0-9]+$/.test(newExt)) {
+      return {
+        ok: false,
+        code: "extension_changed_to_invalid",
+        error: `'${newExt}' is not a valid extension.`,
+      };
+    }
+  }
+
+  // Sibling collision — case-insensitive because most consumer file
+  // systems are CI-collapsed (macOS APFS default, Windows NTFS, S3
+  // buckets configured for object-name normalization).
+  if (options.siblingNames && options.siblingNames.length > 0) {
+    const lowered = value.toLowerCase();
+    const conflict = options.siblingNames.some(
+      (n) => n.toLowerCase() === lowered,
+    );
+    if (conflict)
+      return {
+        ok: false,
+        code: "sibling_collision",
+        error: `A ${options.kind === "folder" ? "folder" : "file"} named '${value}' already exists in this folder.`,
+      };
+  }
+
   return { ok: true, value };
 }
 
@@ -70,6 +185,41 @@ export function RenameDialog({
   const dispatch = useAppDispatch();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const extInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Resolve the resource and its parent folder so we can collect sibling
+  // names for collision detection. We exclude the resource itself from
+  // the sibling list because renaming to the current name is a separate
+  // (and tighter) check inside `validateRenameInput`.
+  const filesById = useAppSelector(selectAllFilesMap);
+  const foldersById = useAppSelector(selectAllFoldersMap);
+  const file = useAppSelector((s) =>
+    kind === "file" ? selectFileById(s, resourceId) : null,
+  );
+  const folder = useAppSelector((s) =>
+    kind === "folder" ? selectFolderById(s, resourceId) : null,
+  );
+  const parentId =
+    kind === "file"
+      ? (file?.parentFolderId ?? null)
+      : (folder?.parentId ?? null);
+
+  const siblingNames = useMemo<string[]>(() => {
+    const out: string[] = [];
+    for (const f of Object.values(filesById)) {
+      if (!f) continue;
+      if (f.id === resourceId) continue;
+      if (f.deletedAt) continue;
+      if ((f.parentFolderId ?? null) === parentId) out.push(f.fileName);
+    }
+    for (const fo of Object.values(foldersById)) {
+      if (!fo) continue;
+      if (fo.id === resourceId) continue;
+      if (fo.deletedAt) continue;
+      if ((fo.parentId ?? null) === parentId) out.push(fo.folderName);
+    }
+    return out;
+  }, [filesById, foldersById, parentId, resourceId]);
+
   const [originalBase, originalExt] = useMemo(
     () => (kind === "file" ? splitNameAndExtension(currentName) : [currentName, ""]),
     [kind, currentName],
@@ -95,7 +245,11 @@ export function RenameDialog({
   const extChanged = kind === "file" && ext !== originalExt;
 
   const handleSubmit = useCallback(async () => {
-    const result = validateRenameInput(composedName, currentName);
+    const result = validateRenameInput(composedName, currentName, {
+      kind,
+      originalExt,
+      siblingNames,
+    });
     if (result.ok === false) {
       setError(result.error);
       return;
@@ -122,7 +276,16 @@ export function RenameDialog({
     } finally {
       setBusy(false);
     }
-  }, [dispatch, kind, resourceId, composedName, currentName, onOpenChange]);
+  }, [
+    dispatch,
+    kind,
+    resourceId,
+    composedName,
+    currentName,
+    originalExt,
+    siblingNames,
+    onOpenChange,
+  ]);
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>

@@ -168,6 +168,7 @@ export function LinkAgentToShortcutModal({
         defaultVariables: null,
         contextOverrides: null,
         llmOverrides: null,
+        jsonExtraction: null,
         isActive: true,
         userId: null,
         organizationId: null,

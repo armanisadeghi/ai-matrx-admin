@@ -30,6 +30,7 @@ import type { ResultDisplayMode } from "@/features/agents/utils/run-ui-utils";
 import type { ShortcutContext } from "@/features/agents/utils/shortcut-context-utils";
 import type { VariablesPanelStyle } from "@/features/agents/components/inputs/variable-input-variations/variable-input-options";
 import type { LLMParams } from "@/features/agents/types/agent-api-types";
+import type { JsonExtractionConfig } from "@/features/agents/types/instance.types";
 import {
   type AgentExecutionConfig,
   DEFAULT_AGENT_EXECUTION_CONFIG,
@@ -122,14 +123,18 @@ export function dbRowToAgentShortcut(row: ShortcutRow): AgentShortcut {
     contextSlots: [],
 
     enabledFeatures:
-      ((loose.enabled_features ?? loose.enabled_contexts) as unknown as ShortcutContext[]) ?? [],
+      ((loose.enabled_features ??
+        loose.enabled_contexts) as unknown as ShortcutContext[]) ?? [],
     scopeMappings:
       (row.scope_mappings as unknown as Record<string, string>) ?? null,
-    contextMappings: rJsonObject<Record<string, string>>(loose, "context_mappings"),
+    contextMappings: rJsonObject<Record<string, string>>(
+      loose,
+      "context_mappings",
+    ),
 
     // Renamed columns — fall back to old names if pre-migration build
-    displayMode: ((rString(loose, "display_mode") ??
-      rString(loose, "result_display")) ??
+    displayMode: (rString(loose, "display_mode") ??
+      rString(loose, "result_display") ??
       DEFAULT_AGENT_EXECUTION_CONFIG.displayMode) as ResultDisplayMode,
 
     showPreExecutionGate: rBool(
@@ -154,8 +159,8 @@ export function dbRowToAgentShortcut(row: ShortcutRow): AgentShortcut {
       "show_variable_panel",
       DEFAULT_AGENT_EXECUTION_CONFIG.showVariablePanel,
     ),
-    variablesPanelStyle: ((rString(loose, "variables_panel_style") ??
-      DEFAULT_AGENT_EXECUTION_CONFIG.variablesPanelStyle) as VariablesPanelStyle),
+    variablesPanelStyle: (rString(loose, "variables_panel_style") ??
+      DEFAULT_AGENT_EXECUTION_CONFIG.variablesPanelStyle) as VariablesPanelStyle,
 
     showDefinitionMessages: rBool(
       loose,
@@ -195,6 +200,7 @@ export function dbRowToAgentShortcut(row: ShortcutRow): AgentShortcut {
       "context_overrides",
     ),
     llmOverrides: rJsonObject<Partial<LLMParams>>(loose, "llm_overrides"),
+    jsonExtraction: rJsonObject<JsonExtractionConfig>(loose, "json_extraction"),
 
     isActive: row.is_active,
 
@@ -209,12 +215,17 @@ export function dbRowToAgentShortcut(row: ShortcutRow): AgentShortcut {
 }
 
 /**
- * Extract just the AgentExecutionConfig bundle from a shortcut record.
- * Used by launchAgentExecution to seed the resolved config.
+ * Extract the AgentExecutionConfig bundle from a shortcut record.
+ *
+ * Returns Partial<AgentExecutionConfig> deliberately — the AgentShortcut
+ * domain type does not yet carry every config field (e.g. `responseDensity`
+ * lives on the DB row but is not yet on AgentShortcut). Consumers should
+ * merge this through `resolveExecutionConfig(...)` so missing fields fall
+ * through to DEFAULT_AGENT_EXECUTION_CONFIG.
  */
 export function shortcutToExecutionConfig(
   shortcut: AgentShortcut,
-): AgentExecutionConfig {
+): Partial<AgentExecutionConfig> {
   return {
     displayMode: shortcut.displayMode,
     showVariablePanel: shortcut.showVariablePanel,
@@ -234,6 +245,7 @@ export function shortcutToExecutionConfig(
     llmOverrides: shortcut.llmOverrides,
     scopeMappings: shortcut.scopeMappings,
     contextMappings: shortcut.contextMappings,
+    jsonExtraction: shortcut.jsonExtraction,
   };
 }
 
@@ -276,6 +288,7 @@ export function agentShortcutToInsert(shortcut: AgentShortcut): ShortcutInsert {
     default_variables: shortcut.defaultVariables,
     context_overrides: shortcut.contextOverrides,
     llm_overrides: shortcut.llmOverrides,
+    json_extraction: shortcut.jsonExtraction,
 
     is_active: shortcut.isActive,
 
@@ -319,7 +332,8 @@ export function agentShortcutToUpdate(
     update.context_mappings = partial.contextMappings;
 
   // ── AgentExecutionConfig bundle ──
-  if (partial.displayMode !== undefined) update.display_mode = partial.displayMode;
+  if (partial.displayMode !== undefined)
+    update.display_mode = partial.displayMode;
   if (partial.showVariablePanel !== undefined)
     update.show_variable_panel = partial.showVariablePanel;
   if (partial.variablesPanelStyle !== undefined)
@@ -329,7 +343,8 @@ export function agentShortcutToUpdate(
   if (partial.showDefinitionMessages !== undefined)
     update.show_definition_messages = partial.showDefinitionMessages;
   if (partial.showDefinitionMessageContent !== undefined)
-    update.show_definition_message_content = partial.showDefinitionMessageContent;
+    update.show_definition_message_content =
+      partial.showDefinitionMessageContent;
   if (partial.hideReasoning !== undefined)
     update.hide_reasoning = partial.hideReasoning;
   if (partial.hideToolResults !== undefined)
@@ -348,6 +363,8 @@ export function agentShortcutToUpdate(
     update.context_overrides = partial.contextOverrides;
   if (partial.llmOverrides !== undefined)
     update.llm_overrides = partial.llmOverrides;
+  if (partial.jsonExtraction !== undefined)
+    update.json_extraction = partial.jsonExtraction;
 
   if (partial.isActive !== undefined) update.is_active = partial.isActive;
 
