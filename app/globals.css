@@ -1497,9 +1497,13 @@
   /* Border utilities */
   .border {
     border-width: 1px;
-    border-style: solid;
-    /* In Tailwind v4, border defaults to currentColor to allow color utilities to work */
-    /* If you need the default border color, use: border border-border */
+    /* DO NOT add `border-style: solid` here. Tailwind v4 Preflight already
+       sets `border-style: solid` on `*, ::before, ::after` at the base layer,
+       so it's the default automatically. Re-declaring it on `.border` made
+       this rule clobber `border-dotted` / `border-dashed` / `border-double`
+       (same specificity, later in source order → wins the cascade).
+       In Tailwind v4, border color defaults to currentColor; use
+       `border border-border` for the themed border color. */
   }
 
   .border-0 {
