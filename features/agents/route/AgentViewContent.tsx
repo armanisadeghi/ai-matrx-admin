@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AgentDefinitionMessage } from "@/features/agents/types/agent-message-types";
+import MarkdownStream from "@/components/MarkdownStream";
 
 function extractTextContent(msg: AgentDefinitionMessage): string {
   if (!msg.content || !Array.isArray(msg.content)) return "";
@@ -82,9 +83,7 @@ export function AgentViewContent({ agentId }: { agentId: string }) {
     selectAgentContextSlots(state, agentId),
   );
   const modelId = useAppSelector((state) => selectAgentModelId(state, agentId));
-  const version = useAppSelector((state) =>
-    selectAgentVersion(state, agentId),
-  );
+  const version = useAppSelector((state) => selectAgentVersion(state, agentId));
   const tags = useAppSelector((state) => selectAgentTags(state, agentId));
 
   if (!mounted || !agent) {
@@ -151,9 +150,10 @@ export function AgentViewContent({ agentId }: { agentId: string }) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <pre className="text-sm whitespace-pre-wrap font-mono bg-muted/50 rounded-lg p-4 max-h-[400px] overflow-y-auto">
-                {extractTextContent(systemMessage) || "—"}
-              </pre>
+              <MarkdownStream
+                content={extractTextContent(systemMessage) || "—"}
+                isStreamActive={false}
+              />
             </CardContent>
           </Card>
         )}
@@ -164,16 +164,17 @@ export function AgentViewContent({ agentId }: { agentId: string }) {
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-sm">
                 <MessageSquare className="w-4 h-4 text-primary" />
-                Example Messages ({conversationMessages.length})
+                Messages ({conversationMessages.length})
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {conversationMessages.map((msg, i) => (
                 <div key={i} className="space-y-1">
                   <RoleBadge role={msg.role} />
-                  <pre className="text-sm whitespace-pre-wrap font-mono bg-muted/30 rounded-lg p-3 max-h-[200px] overflow-y-auto">
-                    {extractTextContent(msg) || "—"}
-                  </pre>
+                  <MarkdownStream
+                    content={extractTextContent(msg) || "—"}
+                    isStreamActive={false}
+                  />
                 </div>
               ))}
             </CardContent>

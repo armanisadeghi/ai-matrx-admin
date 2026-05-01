@@ -13,6 +13,8 @@ import { LinkComponent } from "@/components/mardown-display/blocks/links/LinkCom
 import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InlineCodeSnippet } from "@/components/mardown-display/chat-markdown/InlineCodeSnippet";
+import remarkMatrxVariable from "@/components/mardown-display/chat-markdown/matrx-variables/remarkMatrxVariable";
+import { MatrxVariableInline } from "@/components/mardown-display/chat-markdown/matrx-variables/MatrxVariableInline";
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
@@ -697,6 +699,9 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
           </span>
         );
       },
+      "matrx-variable": ({ node, ...props }: any) => (
+        <MatrxVariableInline {...props} />
+      ),
       table: ({ node, children, ...props }: any) => (
         <div className="my-3 overflow-x-auto rounded-md border border-border">
           <table className="w-full text-sm border-collapse" {...props}>
@@ -788,6 +793,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
           remarkGfm,
           remarkBreaks,
           [remarkMath, { singleDollarTextMath: false }],
+          remarkMatrxVariable,
         ]}
         rehypePlugins={[[rehypeKatex, { strict: "ignore" }]]}
         components={components}
