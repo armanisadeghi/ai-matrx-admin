@@ -40,7 +40,6 @@
   --color-warning-foreground: hsl(var(--warning-foreground));
   --color-info: hsl(var(--info));
   --color-border: hsl(var(--border));
-  --color-border-DEFAULT: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
   --color-chart-1: hsl(var(--chart-1));
@@ -110,20 +109,18 @@
   /* Container breakpoints */
   --breakpoint-2xl: 1400px;
 
-  /* Min/Max widths */
-  --min-width-128: 32rem;
-  --max-width-80pct: 80%;
-  --max-width-90pct: 90%;
-
   /* Box shadows */
   --shadow-input:
     0px 2px 3px -1px rgba(0, 0, 0, 0.1), 0px 1px 0px 0px rgba(25, 28, 33, 0.02),
     0px 0px 0px 1px rgba(25, 28, 33, 0.08);
 
-  /* Background images */
-  --background-image-gradient-1: var(--gradient-1);
-  --background-image-gradient-2: var(--gradient-2);
-  --background-image-gradient-3: var(--gradient-3);
+  /* Background images
+     gradient-1/2/3 aliases were removed — they had zero consumers
+     (no `bg-gradient-1`/`-2`/`-3` className uses anywhere in the codebase).
+     The underlying --gradient-1/2/3 raw vars in :root are still used and
+     untouched. Kept here: checkerboard (used by .bg-checkerboard utility
+     below + enables Tailwind v4 modifier variants) and matrx-card-background
+     (used by `bg-matrx-card-background` className in VoicesList.tsx). */
   --background-image-checkerboard: var(--checkerboard);
   --background-image-matrx-card-background: var(--matrx-card-background);
 
@@ -1562,33 +1559,6 @@
 
   .ring-offset-background {
     --tw-ring-offset-color: hsl(var(--background));
-  }
-
-  .step {
-    counter-increment: step;
-  }
-
-  .step:before {
-    position: absolute;
-    width: 2.25rem;
-    height: 2.25rem;
-    background-color: hsl(var(--muted));
-    background-image: var(--background-texture);
-    border-radius: 9999px;
-    font-family: var(--font-mono);
-    font-weight: 500;
-    text-align: center;
-    font-size: 1.05rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-indent: -1px;
-    border-width: 4px;
-    border-style: solid;
-    border-color: hsl(var(--background));
-    margin-left: -50px;
-    margin-top: -4px;
-    content: counter(step);
   }
 
   /* Hide scrollbar utility */
