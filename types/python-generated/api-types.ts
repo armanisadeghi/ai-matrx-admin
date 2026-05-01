@@ -2459,6 +2459,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/research/topics/{topic_id}/sources/{source_id}/mark-complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark Source Complete */
+        post: operations["mark_source_complete_research_topics__topic_id__sources__source_id__mark_complete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/research/topics/{topic_id}/costs": {
         parameters: {
             query?: never;
@@ -2491,6 +2508,302 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/datasets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Datasets */
+        get: operations["list_datasets_datasets_get"];
+        put?: never;
+        /**
+         * Create Dataset
+         * @description Create a dataset.
+         *
+         *     Three flavors, all driven by the same body:
+         *
+         *     1. **rows only**           — schema is auto-detected from row keys.
+         *     2. **fields only**         — empty dataset with an explicit schema.
+         *     3. **fields + rows**       — explicit schema, then bulk-load rows.
+         *     4. **neither**             — empty dataset with no fields (you can add them later).
+         */
+        post: operations["create_dataset_datasets_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/datasets/{dataset_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Dataset */
+        get: operations["get_dataset_datasets__dataset_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/datasets/{dataset_id}/fields": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Fields */
+        get: operations["list_fields_datasets__dataset_id__fields_get"];
+        put?: never;
+        /**
+         * Add Field
+         * @description Add a column to an existing dataset.
+         *
+         *     The underlying SQL bumps the dataset version and back-fills every
+         *     existing row with the supplied default (or JSONB null).
+         */
+        post: operations["add_field_datasets__dataset_id__fields_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/datasets/{dataset_id}/rows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Rows */
+        get: operations["list_rows_datasets__dataset_id__rows_get"];
+        put?: never;
+        /**
+         * Add Rows
+         * @description Append one or many rows.
+         *
+         *     A single dict adds one row; an array of dicts triggers a batched insert.
+         *     Values are not coerced — the caller is expected to send JSON-shaped data
+         *     that matches the field definitions. Use `prepare_data_for_user_table`
+         *     upstream if type coercion is needed.
+         */
+        post: operations["add_rows_datasets__dataset_id__rows_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/datasets/{dataset_id}/rows/{row_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Row */
+        get: operations["get_row_datasets__dataset_id__rows__row_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update Row
+         * @description Update a row.
+         *
+         *     By default this performs a *shallow merge* with the existing data, so
+         *     callers can patch a few fields without re-sending the whole row. Pass
+         *     `?replace=true` for a full replacement.
+         */
+        patch: operations["update_row_datasets__dataset_id__rows__row_id__patch"];
+        trace?: never;
+    };
+    "/datasets/{dataset_id}/projection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Project Fields
+         * @description Pull only the listed columns. Avoids transferring full JSONB rows.
+         */
+        get: operations["project_fields_datasets__dataset_id__projection_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/datasets/{dataset_id}/fields/{field_name}/distinct": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Distinct Values
+         * @description Distinct values of a single column. Useful for filter dropdowns.
+         */
+        get: operations["distinct_values_datasets__dataset_id__fields__field_name__distinct_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/datasets/{dataset_id}/filter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Filter Rows
+         * @description Filter rows by one or more column predicates.
+         *
+         *     Type casting is handled by `field_queries.filter_by_multiple_fields`
+         *     based on each field's `data_type`. Pass `match_all: false` for OR
+         *     semantics.
+         */
+        post: operations["filter_rows_datasets__dataset_id__filter_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/datasets/{dataset_id}/schema-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Field Types
+         * @description Lightweight `{field_name: data_type}` map for client-side validators.
+         */
+        get: operations["field_types_datasets__dataset_id__schema_types_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/picklists": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Picklists */
+        get: operations["list_picklists_picklists_get"];
+        put?: never;
+        /**
+         * Create Picklist
+         * @description Create a picklist.
+         *
+         *     Three flavors:
+         *
+         *     1. **items**   — full structured items (label + optional description / help / group / icon).
+         *     2. **labels**  — shortcut for label-only items (optionally with a shared `group_name`).
+         *     3. **neither** — empty list; add items later via POST /picklists/{id}/items.
+         */
+        post: operations["create_picklist_picklists_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/picklists/{list_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Picklist */
+        get: operations["get_picklist_picklists__list_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Picklist */
+        delete: operations["delete_picklist_picklists__list_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Picklist */
+        patch: operations["update_picklist_picklists__list_id__patch"];
+        trace?: never;
+    };
+    "/picklists/{list_id}/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Items */
+        get: operations["list_items_picklists__list_id__items_get"];
+        put?: never;
+        /**
+         * Add Items
+         * @description Add one or many items.
+         *
+         *     A single object adds one item; an array triggers a batched insert.
+         */
+        post: operations["add_items_picklists__list_id__items_post"];
+        /**
+         * Clear Items
+         * @description Remove every item in a picklist while keeping the picklist itself.
+         */
+        delete: operations["clear_items_picklists__list_id__items_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/picklists/{list_id}/items/{item_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Item */
+        get: operations["get_item_picklists__list_id__items__item_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Item */
+        delete: operations["delete_item_picklists__list_id__items__item_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Item */
+        patch: operations["update_item_picklists__list_id__items__item_id__patch"];
         trace?: never;
     };
     "/rag/search": {
@@ -6085,6 +6398,38 @@ export interface components {
                 [key: string]: unknown;
             } | null;
         };
+        /** DatasetCreate */
+        DatasetCreate: {
+            /**
+             * Name
+             * @description User-facing dataset name
+             */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Is Public
+             * @default false
+             */
+            is_public: boolean;
+            /**
+             * Authenticated Read
+             * @default false
+             */
+            authenticated_read: boolean;
+            /**
+             * Fields
+             * @description Explicit schema. Required when no rows are supplied.
+             */
+            fields?: components["schemas"]["FieldDefinition"][] | null;
+            /**
+             * Rows
+             * @description Optional initial data. When supplied without `fields`, the schema is auto-detected from the row keys.
+             */
+            rows?: {
+                [key: string]: unknown;
+            }[] | null;
+        };
         /**
          * Definition
          * @description The canonical workflow definition — ReactFlow-compatible, user-authored.
@@ -6323,10 +6668,92 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** ExtensionContentResponse */
+        ExtensionContentResponse: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "success" | "thin" | "failed" | "manual" | "skipped" | "complete";
+            /** Source Id */
+            source_id: string;
+            /**
+             * Capture Level
+             * @enum {integer}
+             */
+            capture_level: 1 | 2 | 3 | 4;
+            /** Is Good Scrape */
+            is_good_scrape: boolean;
+            /** Char Count */
+            char_count: number;
+            /** Failure Reason */
+            failure_reason?: string | null;
+            /** Content Id */
+            content_id?: string | null;
+            /** Next Level */
+            next_level?: (1 | 2 | 3 | 4) | null;
+            /**
+             * Needs User Action
+             * @default false
+             */
+            needs_user_action: boolean;
+        };
         /** ExtensionContentSubmit */
         ExtensionContentSubmit: {
             /** Html Content */
             html_content: string;
+            /**
+             * Capture Level
+             * @default 1
+             * @enum {integer}
+             */
+            capture_level: 1 | 2 | 3;
+        };
+        /** ExtensionScrapeItem */
+        ExtensionScrapeItem: {
+            /** Source Id */
+            source_id: string;
+            /** Topic Id */
+            topic_id: string;
+            /** Topic Name */
+            topic_name: string;
+            /** Url */
+            url: string;
+            /** Title */
+            title?: string | null;
+            /**
+             * Scrape Status
+             * @enum {string}
+             */
+            scrape_status: "pending" | "success" | "thin" | "failed" | "manual" | "skipped" | "complete";
+            /**
+             * Next Level
+             * @enum {integer}
+             */
+            next_level: 1 | 2 | 3 | 4;
+            /** Attempted Levels */
+            attempted_levels?: (1 | 2 | 3 | 4)[];
+            /** Last Attempt At */
+            last_attempt_at?: string | null;
+            /** Last Char Count */
+            last_char_count?: number | null;
+            /** Last Failure Reason */
+            last_failure_reason?: string | null;
+        };
+        /** ExtensionScrapeQueue */
+        ExtensionScrapeQueue: {
+            /** Level 1 Quick */
+            level_1_quick?: components["schemas"]["ExtensionScrapeItem"][];
+            /** Level 2 Scroll */
+            level_2_scroll?: components["schemas"]["ExtensionScrapeItem"][];
+            /** Level 3 User Gated */
+            level_3_user_gated?: components["schemas"]["ExtensionScrapeItem"][];
+            /** Level 4 Paste */
+            level_4_paste?: components["schemas"]["ExtensionScrapeItem"][];
+            /** Totals */
+            totals?: {
+                [key: string]: number;
+            };
         };
         /** ExtractPagesRequest */
         ExtractPagesRequest: {
@@ -6415,6 +6842,65 @@ export interface components {
             /** Document Name */
             document_name?: string | null;
         };
+        /** FieldAdd */
+        FieldAdd: {
+            /** Display Name */
+            display_name: string;
+            /** Field Name */
+            field_name?: string | null;
+            /**
+             * Data Type
+             * @default string
+             * @enum {string}
+             */
+            data_type: "string" | "number" | "integer" | "boolean" | "date" | "datetime" | "json" | "array";
+            /**
+             * Is Required
+             * @default false
+             */
+            is_required: boolean;
+            /** Default Value */
+            default_value?: unknown;
+            /** Validation Rules */
+            validation_rules?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Field Order
+             * @description Position. Auto-set to last when omitted.
+             */
+            field_order?: number | null;
+        };
+        /** FieldDefinition */
+        FieldDefinition: {
+            /**
+             * Display Name
+             * @description Human-friendly column name
+             */
+            display_name: string;
+            /**
+             * Field Name
+             * @description Internal snake_case identifier; auto-derived from display_name when omitted
+             */
+            field_name?: string | null;
+            /**
+             * Data Type
+             * @default string
+             * @enum {string}
+             */
+            data_type: "string" | "number" | "integer" | "boolean" | "date" | "datetime" | "json" | "array";
+            /**
+             * Is Required
+             * @default false
+             */
+            is_required: boolean;
+            /** Default Value */
+            default_value?: unknown;
+            /** Validation Rules */
+            validation_rules?: {
+                [key: string]: unknown;
+            } | null;
+        };
         /** FilePatchRequest */
         FilePatchRequest: {
             /** Visibility */
@@ -6483,6 +6969,28 @@ export interface components {
             url: string | null;
             /** Is New */
             is_new: boolean;
+        };
+        /** FilterRequest */
+        FilterRequest: {
+            /** Filters */
+            filters: {
+                [key: string]: unknown;
+            };
+            /**
+             * Match All
+             * @default true
+             */
+            match_all: boolean;
+            /**
+             * Limit
+             * @default 100
+             */
+            limit: number;
+            /**
+             * Offset
+             * @default 0
+             */
+            offset: number;
         };
         /** FinalizeUploadRequest */
         FinalizeUploadRequest: {
@@ -7590,6 +8098,106 @@ export interface components {
             /** Expires At */
             expires_at?: string | null;
         };
+        /** PicklistCreate */
+        PicklistCreate: {
+            /**
+             * Name
+             * @description User-facing list name
+             */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Is Public
+             * @default false
+             */
+            is_public: boolean;
+            /**
+             * Authenticated Read
+             * @default true
+             */
+            authenticated_read: boolean;
+            /**
+             * Public Read
+             * @default false
+             */
+            public_read: boolean;
+            /**
+             * Items
+             * @description Structured items. Mutually exclusive with `labels`.
+             */
+            items?: components["schemas"]["PicklistItemInput"][] | null;
+            /**
+             * Labels
+             * @description Shorthand for label-only items. Mutually exclusive with `items`.
+             */
+            labels?: string[] | null;
+            /**
+             * Group Name
+             * @description Optional group applied to every item when using `labels` mode.
+             */
+            group_name?: string | null;
+        };
+        /** PicklistItemInput */
+        PicklistItemInput: {
+            /** Label */
+            label: string;
+            /** Description */
+            description?: string | null;
+            /** Help Text */
+            help_text?: string | null;
+            /** Group Name */
+            group_name?: string | null;
+            /** Icon Name */
+            icon_name?: string | null;
+            /**
+             * Is Public
+             * @default false
+             */
+            is_public: boolean;
+            /**
+             * Authenticated Read
+             * @default true
+             */
+            authenticated_read: boolean;
+            /**
+             * Public Read
+             * @default false
+             */
+            public_read: boolean;
+        };
+        /** PicklistItemUpdate */
+        PicklistItemUpdate: {
+            /** Label */
+            label?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Help Text */
+            help_text?: string | null;
+            /** Group Name */
+            group_name?: string | null;
+            /** Icon Name */
+            icon_name?: string | null;
+            /** Is Public */
+            is_public?: boolean | null;
+            /** Authenticated Read */
+            authenticated_read?: boolean | null;
+            /** Public Read */
+            public_read?: boolean | null;
+        };
+        /** PicklistUpdate */
+        PicklistUpdate: {
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Is Public */
+            is_public?: boolean | null;
+            /** Authenticated Read */
+            authenticated_read?: boolean | null;
+            /** Public Read */
+            public_read?: boolean | null;
+        };
         /** PodcastGenerateRequest */
         PodcastGenerateRequest: {
             /** Show Id */
@@ -7994,6 +8602,13 @@ export interface components {
             persist_output: boolean;
             /** Rotation */
             rotation: number;
+        };
+        /** RowUpdate */
+        RowUpdate: {
+            /** Data */
+            data: {
+                [key: string]: unknown;
+            };
         };
         /** RunPipelineRequest */
         RunPipelineRequest: Record<string, never>;
@@ -11912,7 +12527,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ExtensionScrapeQueue"];
                 };
             };
         };
@@ -13275,6 +13890,38 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    "application/json": components["schemas"]["ExtensionContentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mark_source_complete_research_topics__topic_id__sources__source_id__mark_complete_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                topic_id: string;
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
                     "application/json": unknown;
                 };
             };
@@ -13340,6 +13987,843 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_datasets_datasets_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    create_dataset_datasets_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DatasetCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_dataset_datasets__dataset_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_fields_datasets__dataset_id__fields_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_field_datasets__dataset_id__fields_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FieldAdd"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_rows_datasets__dataset_id__rows_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+                /** @description Snake_case field name to sort by */
+                sort_field?: string | null;
+                sort_direction?: "asc" | "desc";
+                /** @description Substring search across all field values */
+                search?: string | null;
+            };
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_rows_datasets__dataset_id__rows_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    [key: string]: unknown;
+                } | {
+                    [key: string]: unknown;
+                }[];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_row_datasets__dataset_id__rows__row_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+                row_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_row_datasets__dataset_id__rows__row_id__patch: {
+        parameters: {
+            query?: {
+                /** @description If true, replace the entire data object instead of merging. */
+                replace?: boolean;
+            };
+            header?: never;
+            path: {
+                dataset_id: string;
+                row_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RowUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    project_fields_datasets__dataset_id__projection_get: {
+        parameters: {
+            query: {
+                /** @description Comma-separated list of snake_case field names */
+                fields: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    distinct_values_datasets__dataset_id__fields__field_name__distinct_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                dataset_id: string;
+                field_name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    filter_rows_datasets__dataset_id__filter_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FilterRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    field_types_datasets__dataset_id__schema_types_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_picklists_picklists_get: {
+        parameters: {
+            query?: {
+                /** @description Optional search term across name + description */
+                q?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_picklist_picklists_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PicklistCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_picklist_picklists__list_id__get: {
+        parameters: {
+            query?: {
+                /** @description Return items grouped by group_name. */
+                grouped?: boolean;
+            };
+            header?: never;
+            path: {
+                list_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_picklist_picklists__list_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                list_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_picklist_picklists__list_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                list_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PicklistUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_items_picklists__list_id__items_get: {
+        parameters: {
+            query?: {
+                grouped?: boolean;
+            };
+            header?: never;
+            path: {
+                list_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_items_picklists__list_id__items_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                list_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PicklistItemInput"] | components["schemas"]["PicklistItemInput"][];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    clear_items_picklists__list_id__items_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                list_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_item_picklists__list_id__items__item_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                list_id: string;
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_item_picklists__list_id__items__item_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                list_id: string;
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_item_picklists__list_id__items__item_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                list_id: string;
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PicklistItemUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             /** @description Validation Error */

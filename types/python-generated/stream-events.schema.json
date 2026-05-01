@@ -2467,7 +2467,8 @@
           "render_block",
           "record_reserved",
           "record_update",
-          "resource_changed"
+          "resource_changed",
+          "context_analysis"
         ],
         "title": "EventType",
         "type": "string"
@@ -2509,7 +2510,8 @@
       "render_block",
       "record_reserved",
       "record_update",
-      "resource_changed"
+      "resource_changed",
+      "context_analysis"
     ]
   }
 }

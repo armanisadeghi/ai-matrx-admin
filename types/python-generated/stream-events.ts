@@ -22,6 +22,7 @@ export const EventType = {
   RECORD_RESERVED: "record_reserved",
   RECORD_UPDATE: "record_update",
   RESOURCE_CHANGED: "resource_changed",
+  CONTEXT_ANALYSIS: "context_analysis",
 } as const;
 
 export type EventType = (typeof EventType)[keyof typeof EventType];
@@ -175,6 +176,23 @@ export interface ResourceChangedPayload {
   sandbox_id?: string | null;
   user_id?: string | null;
   metadata?: Record<string, unknown>;
+}
+
+export interface ContextAnalysisPayload {
+  provider: string;
+  model?: string | null;
+  iteration?: number | null;
+  conversation_id?: string | null;
+  request_id?: string | null;
+  attempt?: number;
+  is_streaming?: boolean;
+  method: string;
+  url: string;
+  headers: Record<string, string>;
+  body?: Record<string, unknown> | null;
+  body_raw?: string | null;
+  body_size_bytes?: number;
+  timestamp?: number;
 }
 
 // --- Typed Record Reservation Variants (discriminated on `table`) ---
@@ -2203,6 +2221,11 @@ export interface ResourceChangedEvent {
   data: ResourceChangedPayload;
 }
 
+export interface ContextAnalysisEvent {
+  event: "context_analysis";
+  data: ContextAnalysisPayload;
+}
+
 /** Discriminated union — `event.event === "chunk"` narrows `data` automatically. */
 export type TypedStreamEvent =
   | ChunkEvent
@@ -2221,7 +2244,8 @@ export type TypedStreamEvent =
   | RenderBlockEvent
   | RecordReservedEvent
   | RecordUpdateEvent
-  | ResourceChangedEvent;
+  | ResourceChangedEvent
+  | ContextAnalysisEvent;
 
 /**
  * @deprecated Use `TypedStreamEvent` instead — it provides automatic type narrowing
@@ -2323,6 +2347,10 @@ export function isRecordUpdateEvent(e: TypedStreamEvent): e is { event: "record_
 
 export function isResourceChangedEvent(e: TypedStreamEvent): e is { event: "resource_changed"; data: ResourceChangedPayload } {
   return e.event === "resource_changed";
+}
+
+export function isContextAnalysisEvent(e: TypedStreamEvent): e is { event: "context_analysis"; data: ContextAnalysisPayload } {
+  return e.event === "context_analysis";
 }
 
 export function isCompactChunkEvent(e: unknown): e is CompactChunkEvent {

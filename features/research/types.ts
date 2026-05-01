@@ -32,6 +32,16 @@ export type ContentEditRequest = components["schemas"]["ContentEditRequest"];
 export type ContentPasteRequest = components["schemas"]["ContentPasteRequest"];
 export type ExtensionContentSubmit =
   components["schemas"]["ExtensionContentSubmit"];
+export type ExtensionContentResponse =
+  components["schemas"]["ExtensionContentResponse"];
+export type ExtensionScrapeItem = components["schemas"]["ExtensionScrapeItem"];
+export type ExtensionScrapeQueue =
+  components["schemas"]["ExtensionScrapeQueue"];
+
+/** Tier in the extension capture ladder. */
+export type CaptureLevel = 1 | 2 | 3 | 4;
+/** Capture levels the extension is permitted to submit (Level 4 paste flows through the regular paste route). */
+export type ExtensionCaptureLevel = 1 | 2 | 3;
 export type AnalyzeRequest = components["schemas"]["AnalyzeRequest"];
 export type AnalyzeBulkRequest = components["schemas"]["AnalyzeBulkRequest"];
 export type SynthesisRequest = components["schemas"]["SynthesisRequest"];

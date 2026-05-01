@@ -11538,6 +11538,7 @@ export type Database = {
       }
       rs_content: {
         Row: {
+          capture_level: number | null
           capture_method: string | null
           char_count: number | null
           content: string | null
@@ -11560,6 +11561,7 @@ export type Database = {
           version: number | null
         }
         Insert: {
+          capture_level?: number | null
           capture_method?: string | null
           char_count?: number | null
           content?: string | null
@@ -11582,6 +11584,7 @@ export type Database = {
           version?: number | null
         }
         Update: {
+          capture_level?: number | null
           capture_method?: string | null
           char_count?: number | null
           content?: string | null
@@ -16331,6 +16334,160 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      wbx_capture: {
+        Row: {
+          captured_at: string
+          description: string | null
+          id: string
+          lang: string | null
+          ld_json: Json | null
+          markdown: string | null
+          media_count: number
+          metadata: Json | null
+          pattern_id: string | null
+          soup: Json
+          title: string | null
+          url: string
+          user_id: string
+        }
+        Insert: {
+          captured_at?: string
+          description?: string | null
+          id?: string
+          lang?: string | null
+          ld_json?: Json | null
+          markdown?: string | null
+          media_count?: number
+          metadata?: Json | null
+          pattern_id?: string | null
+          soup: Json
+          title?: string | null
+          url: string
+          user_id?: string
+        }
+        Update: {
+          captured_at?: string
+          description?: string | null
+          id?: string
+          lang?: string | null
+          ld_json?: Json | null
+          markdown?: string | null
+          media_count?: number
+          metadata?: Json | null
+          pattern_id?: string | null
+          soup?: Json
+          title?: string | null
+          url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wbx_capture_pattern_fk"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "wbx_pattern"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wbx_pattern: {
+        Row: {
+          config: Json
+          created_at: string
+          domain: string
+          fields: Json
+          id: string
+          kind: string
+          last_run_at: string | null
+          last_run_count: number | null
+          last_status: string | null
+          last_used_at: string | null
+          list_root_selector: string | null
+          name: string
+          route_pattern: string | null
+          target_user_table_id: string | null
+          user_id: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          domain: string
+          fields: Json
+          id?: string
+          kind?: string
+          last_run_at?: string | null
+          last_run_count?: number | null
+          last_status?: string | null
+          last_used_at?: string | null
+          list_root_selector?: string | null
+          name: string
+          route_pattern?: string | null
+          target_user_table_id?: string | null
+          user_id?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          domain?: string
+          fields?: Json
+          id?: string
+          kind?: string
+          last_run_at?: string | null
+          last_run_count?: number | null
+          last_status?: string | null
+          last_used_at?: string | null
+          list_root_selector?: string | null
+          name?: string
+          route_pattern?: string | null
+          target_user_table_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wbx_pattern_target_user_table_id_fkey"
+            columns: ["target_user_table_id"]
+            isOneToOne: false
+            referencedRelation: "user_tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wbx_seo_audit: {
+        Row: {
+          audited_at: string
+          flesch_reading_ease: number | null
+          id: string
+          notes: string | null
+          recommendations: Json | null
+          signals: Json
+          url: string
+          user_id: string
+          word_count: number | null
+        }
+        Insert: {
+          audited_at?: string
+          flesch_reading_ease?: number | null
+          id?: string
+          notes?: string | null
+          recommendations?: Json | null
+          signals: Json
+          url: string
+          user_id?: string
+          word_count?: number | null
+        }
+        Update: {
+          audited_at?: string
+          flesch_reading_ease?: number | null
+          id?: string
+          notes?: string | null
+          recommendations?: Json | null
+          signals?: Json
+          url?: string
+          user_id?: string
+          word_count?: number | null
+        }
+        Relationships: []
       }
       wc_claim: {
         Row: {

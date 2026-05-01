@@ -1,112 +1,163 @@
-'use client';
+"use client";
 
-import { useCallback } from 'react';
-import { useBackendApi } from '@/hooks/useBackendApi';
-import { RESEARCH_ENDPOINTS } from '../service/research-endpoints';
+import { useCallback } from "react";
+import { useBackendApi } from "@/hooks/useBackendApi";
+import { RESEARCH_ENDPOINTS } from "../service/research-endpoints";
 import type {
-    TopicCreate,
-    KeywordCreate,
-    ContentEditRequest,
-    ContentPasteRequest,
-    AnalyzeRequest,
-    AnalyzeBulkRequest,
-    SynthesisRequest,
-    SuggestRequest,
-    AddLinksToScope,
-} from '../types';
+  TopicCreate,
+  KeywordCreate,
+  ContentEditRequest,
+  ContentPasteRequest,
+  AnalyzeRequest,
+  AnalyzeBulkRequest,
+  SynthesisRequest,
+  SuggestRequest,
+  AddLinksToScope,
+  ExtensionContentSubmit,
+} from "../types";
 
 export function useResearchApi() {
-    const api = useBackendApi();
+  const api = useBackendApi();
 
-    const endpoints = useCallback((topicId: string) => RESEARCH_ENDPOINTS.topic(topicId), []);
+  const endpoints = useCallback(
+    (topicId: string) => RESEARCH_ENDPOINTS.topic(topicId),
+    [],
+  );
 
-    return {
-        ...api,
+  return {
+    ...api,
 
-        // --- Suggest (top-level, no topic needed) ---
-        suggest: (body: SuggestRequest) =>
-            api.post(RESEARCH_ENDPOINTS.suggest, body),
+    // --- Suggest (top-level, no topic needed) ---
+    suggest: (body: SuggestRequest) =>
+      api.post(RESEARCH_ENDPOINTS.suggest, body),
 
-        // --- Topic CRUD (project-scoped) ---
-        createTopic: (projectId: string, body: TopicCreate) =>
-            api.post(RESEARCH_ENDPOINTS.projects.createTopic(projectId), body),
+    // --- Topic CRUD (project-scoped) ---
+    createTopic: (projectId: string, body: TopicCreate) =>
+      api.post(RESEARCH_ENDPOINTS.projects.createTopic(projectId), body),
 
-        // --- Topic State (computed progress from Python) ---
-        getTopicState: (topicId: string, signal?: AbortSignal) =>
-            api.get(endpoints(topicId).state, signal),
+    // --- Topic State (computed progress from Python) ---
+    getTopicState: (topicId: string, signal?: AbortSignal) =>
+      api.get(endpoints(topicId).state, signal),
 
-        // --- Pipeline ---
-        runPipeline: (topicId: string, signal?: AbortSignal) =>
-            api.post(endpoints(topicId).run, {}, signal),
+    // --- Pipeline ---
+    runPipeline: (topicId: string, signal?: AbortSignal) =>
+      api.post(endpoints(topicId).run, {}, signal),
 
-        triggerSearch: (topicId: string, signal?: AbortSignal) =>
-            api.post(endpoints(topicId).search, {}, signal),
+    triggerSearch: (topicId: string, signal?: AbortSignal) =>
+      api.post(endpoints(topicId).search, {}, signal),
 
-        triggerScrape: (topicId: string, signal?: AbortSignal) =>
-            api.post(endpoints(topicId).scrape, {}, signal),
+    triggerScrape: (topicId: string, signal?: AbortSignal) =>
+      api.post(endpoints(topicId).scrape, {}, signal),
 
-        analyzeAll: (topicId: string, body?: AnalyzeBulkRequest, signal?: AbortSignal) =>
-            api.post(endpoints(topicId).analyzeAll, body ?? { agent_type: 'page_summary' }, signal),
+    analyzeAll: (
+      topicId: string,
+      body?: AnalyzeBulkRequest,
+      signal?: AbortSignal,
+    ) =>
+      api.post(
+        endpoints(topicId).analyzeAll,
+        body ?? { agent_type: "page_summary" },
+        signal,
+      ),
 
-        synthesize: (topicId: string, body: SynthesisRequest, signal?: AbortSignal) =>
-            api.post(endpoints(topicId).synthesize, body, signal),
+    synthesize: (
+      topicId: string,
+      body: SynthesisRequest,
+      signal?: AbortSignal,
+    ) => api.post(endpoints(topicId).synthesize, body, signal),
 
-        // --- Keywords (Python for validation + project_id resolution) ---
-        addKeywords: (topicId: string, body: KeywordCreate) =>
-            api.post(endpoints(topicId).keywords.add, body),
+    // --- Keywords (Python for validation + project_id resolution) ---
+    addKeywords: (topicId: string, body: KeywordCreate) =>
+      api.post(endpoints(topicId).keywords.add, body),
 
-        // --- Source Actions ---
+    // --- Source Actions ---
 
-        scrapeSource: (topicId: string, sourceId: string) =>
-            api.post(endpoints(topicId).sources.rescrape(sourceId), {}),
+    scrapeSource: (topicId: string, sourceId: string) =>
+      api.post(endpoints(topicId).sources.rescrape(sourceId), {}),
 
-        analyzeSource: (topicId: string, sourceId: string, body?: AnalyzeRequest) =>
-            api.post(endpoints(topicId).sources.analyze(sourceId), body ?? { agent_type: 'page_summary' }),
+    analyzeSource: (topicId: string, sourceId: string, body?: AnalyzeRequest) =>
+      api.post(
+        endpoints(topicId).sources.analyze(sourceId),
+        body ?? { agent_type: "page_summary" },
+      ),
 
-        transcribeSource: (topicId: string, sourceId: string) =>
-            api.post(endpoints(topicId).sources.transcribe(sourceId), {}),
+    transcribeSource: (topicId: string, sourceId: string) =>
+      api.post(endpoints(topicId).sources.transcribe(sourceId), {}),
 
-        uploadFile: (topicId: string, formData: FormData) =>
-            api.upload(endpoints(topicId).sources.upload, formData),
+    uploadFile: (topicId: string, formData: FormData) =>
+      api.upload(endpoints(topicId).sources.upload, formData),
 
-        // --- Content (Python for versioning + hashing) ---
-        editContent: (topicId: string, contentId: string, body: ContentEditRequest) =>
-            api.fetch(endpoints(topicId).content.edit(contentId), { method: 'PATCH', body: JSON.stringify(body) }),
+    // --- Content (Python for versioning + hashing) ---
+    editContent: (
+      topicId: string,
+      contentId: string,
+      body: ContentEditRequest,
+    ) =>
+      api.fetch(endpoints(topicId).content.edit(contentId), {
+        method: "PATCH",
+        body: JSON.stringify(body),
+      }),
 
-        pasteContent: (topicId: string, sourceId: string, body: ContentPasteRequest) =>
-            api.post(endpoints(topicId).content.paste(sourceId), body),
+    pasteContent: (
+      topicId: string,
+      sourceId: string,
+      body: ContentPasteRequest,
+    ) => api.post(endpoints(topicId).content.paste(sourceId), body),
 
-        // --- Tags (Python for LLM actions) ---
-        suggestTags: (topicId: string, sourceId: string) =>
-            api.post(endpoints(topicId).sources.suggestTags(sourceId), {}),
+    // --- Tags (Python for LLM actions) ---
+    suggestTags: (topicId: string, sourceId: string) =>
+      api.post(endpoints(topicId).sources.suggestTags(sourceId), {}),
 
-        consolidateTag: (topicId: string, tagId: string) =>
-            api.post(endpoints(topicId).tags.consolidate(tagId), {}),
+    consolidateTag: (topicId: string, tagId: string) =>
+      api.post(endpoints(topicId).tags.consolidate(tagId), {}),
 
-        // --- Document (Python for LLM generation) ---
-        generateDocument: (topicId: string) =>
-            api.post(endpoints(topicId).document.generate, {}),
+    // --- Document (Python for LLM generation) ---
+    generateDocument: (topicId: string) =>
+      api.post(endpoints(topicId).document.generate, {}),
 
-        // --- Links (Python for aggregation + business logic) ---
-        getLinks: (topicId: string, signal?: AbortSignal) =>
-            api.get(endpoints(topicId).links, signal),
+    // --- Links (Python for aggregation + business logic) ---
+    getLinks: (topicId: string, signal?: AbortSignal) =>
+      api.get(endpoints(topicId).links, signal),
 
-        addLinksToScope: (topicId: string, body: AddLinksToScope) =>
-            api.post(endpoints(topicId).linksAddToScope, body),
+    addLinksToScope: (topicId: string, body: AddLinksToScope) =>
+      api.post(endpoints(topicId).linksAddToScope, body),
 
-        // --- Analysis Retry ---
-        retryAnalysis: (topicId: string, analysisId: string) =>
-            api.post(endpoints(topicId).analyses.retry(analysisId), {}),
+    // --- Analysis Retry ---
+    retryAnalysis: (topicId: string, analysisId: string) =>
+      api.post(endpoints(topicId).analyses.retry(analysisId), {}),
 
-        retryFailedAnalyses: (topicId: string) =>
-            api.post(endpoints(topicId).analyses.retryFailed, {}),
+    retryFailedAnalyses: (topicId: string) =>
+      api.post(endpoints(topicId).analyses.retryFailed, {}),
 
-        // --- Costs (Python for multi-table aggregation) ---
-        getCosts: (topicId: string, signal?: AbortSignal) =>
-            api.get(endpoints(topicId).costs, signal),
+    // --- Costs (Python for multi-table aggregation) ---
+    getCosts: (topicId: string, signal?: AbortSignal) =>
+      api.get(endpoints(topicId).costs, signal),
 
-        // --- Templates (Python) ---
-        getTemplates: (signal?: AbortSignal) =>
-            api.get(RESEARCH_ENDPOINTS.templates.list, signal),
-    };
+    // --- Templates (Python) ---
+    getTemplates: (signal?: AbortSignal) =>
+      api.get(RESEARCH_ENDPOINTS.templates.list, signal),
+
+    // --- Extension capture ladder ---
+
+    /** Fetch the user's queue, bucketed by next capture level. */
+    getExtensionScrapeQueue: (signal?: AbortSignal) =>
+      api.get(RESEARCH_ENDPOINTS.extension.scrapeQueue, signal),
+
+    /**
+     * Submit captured HTML for a source at a specific tier of the capture ladder.
+     * Levels 1-3 only — Level 4 (manual paste) goes through `pasteContent`.
+     */
+    submitExtensionContent: (
+      topicId: string,
+      sourceId: string,
+      body: ExtensionContentSubmit,
+    ) => api.post(endpoints(topicId).sources.extensionContent(sourceId), body),
+
+    /**
+     * Mark a source as complete, removing it from every tier of the queue.
+     * Used when the user confirms a thin page genuinely has no more content.
+     */
+    markSourceComplete: (topicId: string, sourceId: string) =>
+      api.post(endpoints(topicId).sources.markComplete(sourceId), {}),
+  };
 }

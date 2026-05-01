@@ -45,6 +45,8 @@ export const RESEARCH_ENDPOINTS = {
         `${BASE}/topics/${topicId}/sources/${sourceId}/transcribe`,
       extensionContent: (sourceId: string) =>
         `${BASE}/topics/${topicId}/sources/${sourceId}/extension-content`,
+      markComplete: (sourceId: string) =>
+        `${BASE}/topics/${topicId}/sources/${sourceId}/mark-complete`,
       upload: `${BASE}/topics/${topicId}/sources/upload`,
     },
 
