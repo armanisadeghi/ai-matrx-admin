@@ -14,6 +14,7 @@ import type {
   SuggestRequest,
   AddLinksToScope,
   ExtensionContentSubmit,
+  VerdictRequest,
 } from "../types";
 
 export function useResearchApi() {
@@ -155,9 +156,22 @@ export function useResearchApi() {
 
     /**
      * Mark a source as complete, removing it from every tier of the queue.
-     * Used when the user confirms a thin page genuinely has no more content.
+     * Backwards-compat shortcut — internally equivalent to
+     * `applyVerdict(..., { verdict: 'mark_complete' })`.
      */
     markSourceComplete: (topicId: string, sourceId: string) =>
       api.post(endpoints(topicId).sources.markComplete(sourceId), {}),
+
+    /**
+     * Apply a user verdict to a source — the optional escape hatch the user
+     * can use to end the capture cycle on their own terms.
+     *
+     *  - `accept_as_is` → status='complete', removes from queue forever
+     *  - `dead_link`    → status='dead_link', removes from queue forever
+     *  - `retry`        → status='pending', re-enters queue at next_level
+     *  - `mark_complete` → legacy alias for accept_as_is
+     */
+    applyVerdict: (topicId: string, sourceId: string, body: VerdictRequest) =>
+      api.post(endpoints(topicId).sources.verdict(sourceId), body),
   };
 }

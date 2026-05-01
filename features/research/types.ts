@@ -37,6 +37,10 @@ export type ExtensionContentResponse =
 export type ExtensionScrapeItem = components["schemas"]["ExtensionScrapeItem"];
 export type ExtensionScrapeQueue =
   components["schemas"]["ExtensionScrapeQueue"];
+export type VerdictRequest = components["schemas"]["VerdictRequest"];
+export type VerdictResponse = components["schemas"]["VerdictResponse"];
+/** The optional escape-hatch verdict the user can apply to any source. */
+export type UserVerdict = VerdictRequest["verdict"];
 
 /** Tier in the extension capture ladder. */
 export type CaptureLevel = 1 | 2 | 3 | 4;
@@ -69,7 +73,8 @@ export type ScrapeStatus =
   | "failed"
   | "manual"
   | "skipped"
-  | "complete";
+  | "complete"
+  | "dead_link";
 export type SourceType = "web" | "youtube" | "pdf" | "file" | "manual";
 export type SourceOrigin =
   | "search"

@@ -10,8 +10,9 @@ Drop one image in, get 60+ platform-perfect sizes out.
 | `/image-studio/convert` | Interactive tool | Multi-file drop zone + preset catalog + per-variant tile grid + export panel. Main UX. |
 | `/image-studio/presets` | Cached catalog | Browsable reference for every preset (pure server-rendered). |
 | `/image-studio/library` | Per-user Supabase data | Variants the user has saved — grouped by session, public URLs. |
+| `/image-studio/from-base64` | Interactive tool | Paste a base64 string (raw or `data:` URL) → preview + metadata + save to cloud as a hosted asset with a permanent share URL. Pure browser decode (no API hop), uploads via the cloud-files share-link primitive. |
 
-All four live under `app/(a)/image-studio/` and follow the `(a)` route rules — static shell, Suspense boundaries, dimension-matched skeletons.
+All five live under `app/(a)/image-studio/` and follow the `(a)` route rules — static shell, Suspense boundaries, dimension-matched skeletons.
 
 ## Architecture
 
@@ -29,9 +30,14 @@ app/(a)/image-studio/
 │   ├── layout.tsx
 │   ├── page.tsx            Server Component — static catalog render
 │   └── loading.tsx
-└── library/
-    ├── layout.tsx
-    ├── page.tsx            Server Component + Suspense-fetched user data
+├── library/
+│   ├── layout.tsx
+│   ├── page.tsx            Server Component + Suspense-fetched user data
+│   └── loading.tsx
+└── from-base64/
+    ├── layout.tsx          sub-route metadata
+    ├── page.tsx            Server shell + dynamic(Base64DecoderShell, ssr:false)
+    ├── FromBase64ShellClient.tsx
     └── loading.tsx
 
 features/image-studio/
@@ -40,7 +46,8 @@ features/image-studio/
 ├── presets.ts                     catalog (60+ presets, 10 categories, 6 bundles)
 ├── types.ts                       types shared with API
 ├── hooks/
-│   └── useImageStudio.ts          central client state
+│   ├── useImageStudio.ts          central client state for /convert
+│   └── useBase64Decoder.ts        base64 paste → blob → cloud share URL
 ├── components/
 │   ├── ImageStudioShell.tsx       3-column interactive shell
 │   ├── StudioDropZone.tsx         drag-drop + paste
@@ -49,11 +56,13 @@ features/image-studio/
 │   ├── PresetCatalog.tsx          picker + read-only + legend
 │   ├── ExportPanel.tsx            format, quality, bulk actions
 │   ├── StudioLandingHero.tsx      landing page Server Component
+│   ├── Base64DecoderShell.tsx     /from-base64 interactive body
 │   └── LibraryGrid.tsx            library page display
 ├── server/
 │   └── library.ts                 server-only Supabase lister (react cache())
 └── utils/
     ├── download-bundle.ts         JSZip client-side zipper
+    ├── decode-base64.ts           pure-browser base64 → Blob + magic-byte MIME sniff
     ├── format-bytes.ts
     └── slugify-filename.ts
 
@@ -123,6 +132,21 @@ Every preset declares: `id`, `name`, `usage` (where it's used), `width`, `height
 - **Add a one-click bundle**: append to `RECOMMENDED_BUNDLES`.
 - **Agent-generated filenames / alt text**: the `StudioSourceFile.filenameBase` is already editable per file. Wire an agent up to set that field + add a future `altText` field alongside it.
 
+## From Base64 (paste → cloud asset)
+
+`/image-studio/from-base64` is a small standalone tool, separate from the multi-file `/convert` flow.
+
+1. User pastes a string into the textarea — either a `data:image/...;base64,...` URL or just the raw base64 payload. Whitespace, newlines, and the URL-safe alphabet (`-`/`_`) are normalised before decoding.
+2. `decodeBase64Image()` (`utils/decode-base64.ts`) decodes via `atob`, then sniffs the actual MIME type from magic bytes (PNG `89 50 4E 47`, JPEG `FF D8 FF`, GIF, RIFF/WebP, ISOBMFF/AVIF, BMP, ICO, SVG via leading text). Magic bytes win over the declared header — a mismatch surfaces a yellow warning in the UI.
+3. The resulting `Blob` is wrapped in an object URL and rendered into a square preview card with a checkered transparency background. Image dimensions are decoded asynchronously via an `<img>` element.
+4. On Save, the blob is wrapped as a `File` and pushed through `useUploadAndShare` → `cloudUpload` (the same primitive every other feature uses), which:
+   - Creates the canonical folder hierarchy `Images/Generated/{folder}` server-side.
+   - Persists the file as a versioned cloud asset.
+   - Returns a permanent `shareUrl` (NOT a signed Supabase URL — these don't expire) safe to paste into apps, notes, or DB columns.
+5. The UI surfaces the share URL with copy / open / "open in Files" affordances.
+
+**Why the decode is browser-only**: base64 is already a browser-native format (`<img src="data:...">` works directly), the cloud upload primitive does the cloud-document creation server-side, and skipping the server hop for the decode itself avoids re-uploading the same bytes through a Python endpoint just to have Python re-upload them to Supabase. The only network call is the existing share-link upload pipeline.
+
 ## Known follow-ups
 
 - Cropping / reframing before output (we have `ImageCropper` in `components/official/image-cropper/` that could plug into a per-variant override step).
@@ -132,4 +156,5 @@ Every preset declares: `id`, `name`, `usage` (where it's used), `width`, `height
 
 ## Change Log
 
+- **2026-05-01** — Added `/image-studio/from-base64`: paste a base64 string (raw or `data:` URL) → preview the decoded image → save it as a cloud-hosted asset with a permanent share URL. Pure-browser decode + magic-byte MIME sniff; uploads through the existing `useUploadAndShare` primitive. Landing hero, `/convert` nav, and stat row updated.
 - **2026-04-23** — Initial release: landing + convert + presets + library routes; 60+ presets across 10 categories; multi-file processing; ZIP bundle download; Save to library.

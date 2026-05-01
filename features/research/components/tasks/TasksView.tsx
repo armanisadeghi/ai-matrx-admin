@@ -6,13 +6,16 @@ import { toast } from "sonner";
 import {
   AlertCircle,
   CheckCircle2,
+  ChevronDown,
   ClipboardPaste,
   ExternalLink,
   FileWarning,
   Hand,
+  Link2Off,
   Loader2,
   MousePointerClick,
   RefreshCw,
+  RotateCcw,
   Sparkles,
   Zap,
 } from "lucide-react";
@@ -22,6 +25,14 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useTopicId } from "../../context/ResearchContext";
 import { useResearchApi } from "../../hooks/useResearchApi";
 import { PasteContentModal } from "../sources/PasteContentModal";
@@ -29,6 +40,7 @@ import type {
   CaptureLevel,
   ExtensionScrapeItem,
   ExtensionScrapeQueue,
+  UserVerdict,
 } from "../../types";
 
 // ============================================================================
@@ -104,6 +116,63 @@ const LEVEL_BUCKET_FIELD: Record<
   2: "level_2_scroll",
   3: "level_3_user_gated",
   4: "level_4_paste",
+};
+
+// ============================================================================
+// Verdict metadata — the optional escape hatch the user can apply to any row
+// ============================================================================
+//
+// Verdicts are NOT required. The auto-pipeline keeps escalating sources up
+// the capture ladder until something works or they end up in level_4_paste.
+// Verdicts let the user end the cycle on their own terms when they know
+// something the system can't infer (page is genuinely sparse, page is dead,
+// last capture was junk and they want a clean retry).
+
+interface VerdictMeta {
+  label: string;
+  toastTitle: string;
+  description: string;
+  icon: typeof CheckCircle2;
+  accent: string;
+}
+
+/** Display order in the dropdown (most common first). */
+const VERDICT_ORDER: UserVerdict[] = ["accept_as_is", "dead_link", "retry"];
+
+const VERDICT_META: Record<UserVerdict, VerdictMeta> = {
+  accept_as_is: {
+    label: "Accept as-is",
+    toastTitle: "Accepted as the whole page",
+    description:
+      "This sparse content IS the whole page. Marks the source complete.",
+    icon: CheckCircle2,
+    accent: "text-green-600 dark:text-green-400",
+  },
+  dead_link: {
+    label: "Mark dead link",
+    toastTitle: "Marked as dead link",
+    description:
+      "Page is 404, removed, or domain is dead. Removed from queue forever.",
+    icon: Link2Off,
+    accent: "text-zinc-500 dark:text-zinc-400",
+  },
+  retry: {
+    label: "Retry from scratch",
+    toastTitle: "Queued for retry",
+    description:
+      "Throw away the last result and re-queue. Next attempt uses the next escalation level.",
+    icon: RotateCcw,
+    accent: "text-blue-600 dark:text-blue-400",
+  },
+  // Legacy alias — never shown in UI, but kept in the map so we can still
+  // show a sensible toast if the older mark-complete code path is exercised.
+  mark_complete: {
+    label: "Mark complete",
+    toastTitle: "Marked complete",
+    description: "Marks the source complete (legacy alias for accept-as-is).",
+    icon: CheckCircle2,
+    accent: "text-green-600 dark:text-green-400",
+  },
 };
 
 // ============================================================================
@@ -191,16 +260,17 @@ export default function TasksView() {
     }
   }, [fetchQueue]);
 
-  const handleMarkComplete = useCallback(
-    async (item: ExtensionScrapeItem) => {
+  const handleVerdict = useCallback(
+    async (item: ExtensionScrapeItem, verdict: UserVerdict) => {
+      const meta = VERDICT_META[verdict];
       try {
-        await api.markSourceComplete(item.topic_id, item.source_id);
-        toast.success("Marked complete", {
+        await api.applyVerdict(item.topic_id, item.source_id, { verdict });
+        toast.success(meta.toastTitle, {
           description: item.title || safeHostname(item.url),
         });
         await refresh();
       } catch (err) {
-        toast.error("Could not mark complete", {
+        toast.error(`Could not apply: ${meta.label}`, {
           description: err instanceof Error ? err.message : String(err),
         });
       }
@@ -255,9 +325,10 @@ export default function TasksView() {
           </h1>
           <p className="mt-1 text-sm text-muted-foreground max-w-2xl">
             Sources that need help to capture content. The Chrome extension
-            picks up Levels 1 and 2 automatically. Levels 3 and 4 need you to
-            act — open the page and trigger the extension, paste the content
-            here, or mark the source complete.
+            handles Levels 1 and 2 automatically; Levels 3 and 4 need you in the
+            loop. You can always end the cycle for any source by accepting it
+            as-is, marking it a dead link, or asking for a retry — verdicts are
+            optional, the auto-pipeline keeps going if you ignore them.
           </p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
@@ -307,7 +378,7 @@ export default function TasksView() {
                 level={level}
                 items={buckets[level]}
                 scope={scope}
-                onMarkComplete={handleMarkComplete}
+                onVerdict={handleVerdict}
                 onAfterPaste={refresh}
               />
             ))}
@@ -375,13 +446,13 @@ function LevelSection({
   level,
   items,
   scope,
-  onMarkComplete,
+  onVerdict,
   onAfterPaste,
 }: {
   level: CaptureLevel;
   items: ExtensionScrapeItem[];
   scope: "topic" | "all";
-  onMarkComplete: (item: ExtensionScrapeItem) => Promise<void>;
+  onVerdict: (item: ExtensionScrapeItem, verdict: UserVerdict) => Promise<void>;
   onAfterPaste: () => Promise<void>;
 }) {
   const meta = LEVEL_META[level];
@@ -423,7 +494,7 @@ function LevelSection({
                 key={item.source_id}
                 item={item}
                 scope={scope}
-                onMarkComplete={onMarkComplete}
+                onVerdict={onVerdict}
                 onAfterPaste={onAfterPaste}
               />
             ))}
@@ -437,26 +508,28 @@ function LevelSection({
 function TaskRow({
   item,
   scope,
-  onMarkComplete,
+  onVerdict,
   onAfterPaste,
 }: {
   item: ExtensionScrapeItem;
   scope: "topic" | "all";
-  onMarkComplete: (item: ExtensionScrapeItem) => Promise<void>;
+  onVerdict: (item: ExtensionScrapeItem, verdict: UserVerdict) => Promise<void>;
   onAfterPaste: () => Promise<void>;
 }) {
   const [pasteOpen, setPasteOpen] = useState(false);
-  const [completing, setCompleting] = useState(false);
+  const [pendingVerdict, setPendingVerdict] = useState<UserVerdict | null>(
+    null,
+  );
   const isPasteLevel = item.next_level === 4;
   const lastAttempt = formatRelative(item.last_attempt_at);
   const host = safeHostname(item.url);
 
-  const handleComplete = async () => {
-    setCompleting(true);
+  const handleVerdictClick = async (verdict: UserVerdict) => {
+    setPendingVerdict(verdict);
     try {
-      await onMarkComplete(item);
+      await onVerdict(item, verdict);
     } finally {
-      setCompleting(false);
+      setPendingVerdict(null);
     }
   };
 
@@ -559,20 +632,51 @@ function TaskRow({
               Paste
             </Button>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 px-2 text-xs gap-1"
-            onClick={handleComplete}
-            disabled={completing}
-          >
-            {completing ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : (
-              <CheckCircle2 className="h-3 w-3" />
-            )}
-            Complete
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 px-2 text-xs gap-1"
+                disabled={pendingVerdict !== null}
+              >
+                {pendingVerdict !== null ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="h-3 w-3" />
+                )}
+                Resolve
+                <ChevronDown className="h-3 w-3 opacity-60" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-72">
+              <DropdownMenuLabel className="text-[11px] text-muted-foreground font-normal">
+                End the cycle for this source
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {VERDICT_ORDER.map((verdict) => {
+                const meta = VERDICT_META[verdict];
+                const Icon = meta.icon;
+                return (
+                  <DropdownMenuItem
+                    key={verdict}
+                    onSelect={() => handleVerdictClick(verdict)}
+                    className="gap-2 items-start py-2"
+                  >
+                    <Icon
+                      className={cn("h-3.5 w-3.5 mt-0.5 shrink-0", meta.accent)}
+                    />
+                    <div className="min-w-0">
+                      <div className="text-xs font-medium">{meta.label}</div>
+                      <div className="text-[11px] text-muted-foreground leading-snug">
+                        {meta.description}
+                      </div>
+                    </div>
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

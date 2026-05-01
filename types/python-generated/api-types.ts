@@ -2476,6 +2476,32 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/research/topics/{topic_id}/sources/{source_id}/verdict": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Apply Source Verdict
+         * @description User verdict on a source — optional escape hatch.
+         *
+         *     The verdict mechanism lets the user end the capture cycle for a source on
+         *     their own terms (accept sparse content as-is, mark a dead link, request a
+         *     retry from scratch) instead of relying on automatic ladder escalation. It
+         *     is never required — sources without verdicts continue through the normal
+         *     L1 → L2 → L3 → L4 escalation.
+         */
+        post: operations["apply_source_verdict_research_topics__topic_id__sources__source_id__verdict_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/research/topics/{topic_id}/costs": {
         parameters: {
             query?: never;
@@ -6674,7 +6700,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "pending" | "success" | "thin" | "failed" | "manual" | "skipped" | "complete";
+            status: "pending" | "success" | "thin" | "failed" | "manual" | "skipped" | "complete" | "dead_link";
             /** Source Id */
             source_id: string;
             /**
@@ -6725,7 +6751,7 @@ export interface components {
              * Scrape Status
              * @enum {string}
              */
-            scrape_status: "pending" | "success" | "thin" | "failed" | "manual" | "skipped" | "complete";
+            scrape_status: "pending" | "success" | "thin" | "failed" | "manual" | "skipped" | "complete" | "dead_link";
             /**
              * Next Level
              * @enum {integer}
@@ -6950,6 +6976,8 @@ export interface components {
             updated_at?: string | null;
             /** Deleted At */
             deleted_at?: string | null;
+            /** Public Url */
+            public_url?: string | null;
         };
         /** FileUploadResponse */
         FileUploadResponse: {
@@ -6969,6 +6997,8 @@ export interface components {
             url: string | null;
             /** Is New */
             is_new: boolean;
+            /** Cdn Url */
+            cdn_url?: string | null;
         };
         /** FilterRequest */
         FilterRequest: {
@@ -9097,7 +9127,7 @@ export interface components {
             /** Is Stale */
             is_stale?: boolean | null;
             /** Scrape Status */
-            scrape_status?: ("pending" | "success" | "thin" | "failed" | "manual" | "skipped" | "complete") | null;
+            scrape_status?: ("pending" | "success" | "thin" | "failed" | "manual" | "skipped" | "complete" | "dead_link") | null;
         };
         /** SplitPartRequest */
         SplitPartRequest: {
@@ -9508,6 +9538,37 @@ export interface components {
              * @default []
              */
             issues: components["schemas"]["ValidationIssue"][];
+        };
+        /** VerdictRequest */
+        VerdictRequest: {
+            /**
+             * Verdict
+             * @enum {string}
+             */
+            verdict: "accept_as_is" | "dead_link" | "retry" | "mark_complete";
+            /** Notes */
+            notes?: string | null;
+        };
+        /** VerdictResponse */
+        VerdictResponse: {
+            /** Source Id */
+            source_id: string;
+            /**
+             * Verdict
+             * @enum {string}
+             */
+            verdict: "accept_as_is" | "dead_link" | "retry" | "mark_complete";
+            /**
+             * Scrape Status
+             * @enum {string}
+             */
+            scrape_status: "pending" | "success" | "thin" | "failed" | "manual" | "skipped" | "complete" | "dead_link";
+            /** User Verdict At */
+            user_verdict_at: string;
+            /** Is Terminal */
+            is_terminal: boolean;
+            /** Next Level */
+            next_level?: (1 | 2 | 3 | 4) | null;
         };
         /** VerifyRequest */
         VerifyRequest: {
@@ -13923,6 +13984,42 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    apply_source_verdict_research_topics__topic_id__sources__source_id__verdict_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                topic_id: string;
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerdictRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VerdictResponse"];
                 };
             };
             /** @description Validation Error */

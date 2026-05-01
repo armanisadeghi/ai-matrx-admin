@@ -6298,6 +6298,68 @@
         }
       }
     },
+    "/research/topics/{topic_id}/sources/{source_id}/verdict": {
+      "post": {
+        "tags": [
+          "Research"
+        ],
+        "summary": "Apply Source Verdict",
+        "description": "User verdict on a source — optional escape hatch.\n\nThe verdict mechanism lets the user end the capture cycle for a source on\ntheir own terms (accept sparse content as-is, mark a dead link, request a\nretry from scratch) instead of relying on automatic ladder escalation. It\nis never required — sources without verdicts continue through the normal\nL1 → L2 → L3 → L4 escalation.",
+        "operationId": "apply_source_verdict_research_topics__topic_id__sources__source_id__verdict_post",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Topic Id"
+            }
+          },
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerdictRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerdictResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/research/topics/{topic_id}/costs": {
       "get": {
         "tags": [
@@ -19685,7 +19747,8 @@
               "failed",
               "manual",
               "skipped",
-              "complete"
+              "complete",
+              "dead_link"
             ],
             "title": "Status"
           },
@@ -19827,7 +19890,8 @@
               "failed",
               "manual",
               "skipped",
-              "complete"
+              "complete",
+              "dead_link"
             ],
             "title": "Scrape Status"
           },
@@ -20453,6 +20517,17 @@
               }
             ],
             "title": "Deleted At"
+          },
+          "public_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Public Url"
           }
         },
         "type": "object",
@@ -20519,6 +20594,17 @@
           "is_new": {
             "type": "boolean",
             "title": "Is New"
+          },
+          "cdn_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cdn Url"
           }
         },
         "type": "object",
@@ -25850,7 +25936,8 @@
                   "failed",
                   "manual",
                   "skipped",
-                  "complete"
+                  "complete",
+                  "dead_link"
                 ]
               },
               {
@@ -27120,6 +27207,102 @@
           "valid"
         ],
         "title": "ValidationResult"
+      },
+      "VerdictRequest": {
+        "properties": {
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "accept_as_is",
+              "dead_link",
+              "retry",
+              "mark_complete"
+            ],
+            "title": "Verdict"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "verdict"
+        ],
+        "title": "VerdictRequest"
+      },
+      "VerdictResponse": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "accept_as_is",
+              "dead_link",
+              "retry",
+              "mark_complete"
+            ],
+            "title": "Verdict"
+          },
+          "scrape_status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "success",
+              "thin",
+              "failed",
+              "manual",
+              "skipped",
+              "complete",
+              "dead_link"
+            ],
+            "title": "Scrape Status"
+          },
+          "user_verdict_at": {
+            "type": "string",
+            "title": "User Verdict At"
+          },
+          "is_terminal": {
+            "type": "boolean",
+            "title": "Is Terminal"
+          },
+          "next_level": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "enum": [
+                  1,
+                  2,
+                  3,
+                  4
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Level"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "verdict",
+          "scrape_status",
+          "user_verdict_at",
+          "is_terminal"
+        ],
+        "title": "VerdictResponse"
       },
       "VerifyRequest": {
         "properties": {

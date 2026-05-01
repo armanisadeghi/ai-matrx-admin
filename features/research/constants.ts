@@ -56,6 +56,12 @@ export const SCRAPE_STATUS_CONFIG: Record<
     bgClass: "bg-gray-100 dark:bg-gray-800",
     textClass: "text-gray-600 dark:text-gray-400",
   },
+  dead_link: {
+    label: "Dead link",
+    color: "#71717a",
+    bgClass: "bg-zinc-100 dark:bg-zinc-800/60",
+    textClass: "text-zinc-600 dark:text-zinc-400",
+  },
 };
 
 export const SOURCE_TYPE_CONFIG: Record<
