@@ -1729,7 +1729,24 @@
   }
 }
 
-/* ── Dialog / Modal glass — defined outside @layer so nothing overrides it ── */
+/* Dialog / Modal glass — INTENTIONAL outside-@layer + `!important`.
+   -----------------------------------------------------------------------
+   `.mx-glass-overlay` and `.mx-glass-modal` are used by Radix-based
+   dialog / drawer / sheet components (components/ui/alert-dialog.tsx,
+   components/ui/drawer.tsx, components/ui/sheet.tsx, etc.). Both
+   declarations sit OUTSIDE `@layer utilities` and use `!important` on
+   every property because:
+
+     1. `@layer utilities` rules are weakened in cascade vs. unlayered
+        rules — Radix's library CSS is unlayered, so a layered glass
+        rule loses to it.
+     2. Some component libraries (Radix in particular) also emit inline
+        styles on portal/overlay roots that beat any non-`!important`
+        external rule.
+
+   Together this gives a 2-axis cascade win that the simpler @layer
+   placement could not provide. Do NOT move these inside `@layer` and
+   do NOT drop the `!important`. */
 .mx-glass-overlay {
   background: rgba(0, 0, 0, 0.2) !important;
   backdrop-filter: blur(4px) !important;
@@ -1756,6 +1773,22 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.12) !important;
 }
 
+/* Pointer-events overrides — INTENTIONAL `!important`.
+   -----------------------------------------------------------------------
+   Tailwind already generates `pointer-events-none` and `pointer-events-auto`
+   without `!important`. These overrides exist to defeat inline styles
+   injected by component libraries (Radix Dialog/Sheet/Drawer, Vaul, etc.)
+   that set `style="pointer-events: ..."` on portals, scrim layers, and
+   modal backdrops at the inline-style cascade level. Inline styles beat
+   external CSS regardless of source order, so without `!important` the
+   `pointer-events-none` className applied in JSX gets overridden.
+
+   This is a sledgehammer (every use of the class app-wide picks up the
+   `!important`), but it has been working since the original forms work
+   in 2024 and removing it without testing every Radix-based modal is
+   risky. If you need finer-grained control in a specific component,
+   prefer inline `style={{ pointerEvents: 'none' }}` over a class — it
+   bypasses this rule. */
 .pointer-events-none {
   pointer-events: none !important;
 }
