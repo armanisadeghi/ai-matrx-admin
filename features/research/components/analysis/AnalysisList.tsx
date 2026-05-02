@@ -509,18 +509,18 @@ export default function AnalysisList() {
     const res = await api.analyzeAll(topicId);
     stream.startStream(res, {
       onData: (payload: ResearchDataEvent) => {
-        if (payload.event === "analysis_start") {
+        if (payload.type === "analysis_start") {
           setStreamingLabel(
             `Analyzing source ${payload.total > 0 ? `(${payload.total} remaining)` : ""}...`,
           );
         }
         if (
-          payload.event === "analysis_complete" ||
-          payload.event === "analysis_failed"
+          payload.type === "analysis_complete" ||
+          payload.type === "analysis_failed"
         ) {
           refetchAnalyses();
         }
-        if (payload.event === "analyze_all_complete") {
+        if (payload.type === "analyze_all_complete") {
           setStreamingText("");
           setStreamingLabel("");
           refetchAnalyses();

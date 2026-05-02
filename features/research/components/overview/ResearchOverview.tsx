@@ -46,9 +46,9 @@ export default function ResearchOverview() {
         pipeline.dispatch(payload);
         // Refresh topic + sources whenever the backend confirms persistence.
         if (
-            payload.event === 'search_sources_stored' ||
-            payload.event === 'search_complete' ||
-            payload.event === 'pipeline_complete'
+            payload.type === 'search_sources_stored' ||
+            payload.type === 'search_complete' ||
+            payload.type === 'pipeline_complete'
         ) {
             refresh();
         }

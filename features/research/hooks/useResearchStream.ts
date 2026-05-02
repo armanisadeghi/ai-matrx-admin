@@ -130,7 +130,8 @@ export function useResearchStream(
 
             onData: (data) => {
               const record = data as unknown as Record<string, unknown>;
-              if (record.event && typeof record.event === "string") {
+              // Wire format uses `type` as the discriminator (Pydantic Literal).
+              if (record.type && typeof record.type === "string") {
                 callbacks?.onData?.(record as unknown as ResearchDataEvent);
               }
             },

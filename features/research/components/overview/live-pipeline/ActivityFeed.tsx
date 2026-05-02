@@ -80,8 +80,9 @@ function buildEntries(
         primary: `Phase: ${evt.data.phase}`,
       });
     } else if (evt.event === "data") {
-      const data = evt.data as Record<string, unknown> & { event?: string };
-      const subEvent = data.event;
+      const data = evt.data as Record<string, unknown> & { type?: string };
+      // Pydantic discriminator is `type`, not `event`.
+      const subEvent = data.type;
       if (!subEvent || typeof subEvent !== "string") continue;
       const stage = STAGE_FROM_EVENT[subEvent] ?? null;
       const label = subEvent.replace(/_/g, " ");

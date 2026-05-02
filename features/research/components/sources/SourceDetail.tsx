@@ -169,8 +169,8 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
         // rescrape_complete = single-source rescrape endpoint result
         // scrape_complete = bulk scrape (also fires for single source)
         if (
-          (payload.event === "rescrape_complete" ||
-            payload.event === "scrape_complete") &&
+          (payload.type === "rescrape_complete" ||
+            payload.type === "scrape_complete") &&
           payload.source_id === sourceId
         ) {
           // Fetch the new content version from DB — the stream only has metadata (char_count),
@@ -179,7 +179,7 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
           setSelectedVersion(0);
         }
         if (
-          payload.event === "scrape_failed" &&
+          payload.type === "scrape_failed" &&
           payload.source_id === sourceId
         ) {
           // Still refresh source to update scrape_status to 'failed'
@@ -217,7 +217,7 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
       },
       onData: (payload: ResearchDataEvent) => {
         if (
-          payload.event === "analysis_complete" &&
+          payload.type === "analysis_complete" &&
           payload.source_id === sourceId
         ) {
           // Stream only sends metadata (result_length, model_id) — not the full row.
@@ -226,13 +226,13 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
           refetchAnalyses();
         }
         if (
-          payload.event === "analysis_failed" &&
+          payload.type === "analysis_failed" &&
           payload.source_id === sourceId
         ) {
           setStreamingAnalysisText("");
           setIsAnalyzing(false);
         }
-        if (payload.event === "retry_complete") {
+        if (payload.type === "retry_complete") {
           setStreamingAnalysisText("");
           refetchAnalyses();
         }

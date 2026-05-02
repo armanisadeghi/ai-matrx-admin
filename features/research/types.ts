@@ -526,11 +526,12 @@ export interface ResearchStreamStatus {
 
 // ── Research Data Events ─────────────────────────────────────────────────────
 // When top-level `event === "data"`, the `data` object is a research event.
-// The `data.event` field discriminates the specific research event type.
+// The `data.type` field discriminates the specific research event type
+// (matches the Pydantic `Literal["..."]` discriminator on each backend model).
 // Source: research/stream_events.py (Python backend Pydantic models)
 
 export interface SearchPageStart {
-  event: "search_page_start";
+  type: "search_page_start";
   keyword: string;
   keyword_id: string;
   page: number;
@@ -538,7 +539,7 @@ export interface SearchPageStart {
 }
 
 export interface SearchPageComplete {
-  event: "search_page_complete";
+  type: "search_page_complete";
   keyword: string;
   keyword_id: string;
   page: number;
@@ -547,24 +548,24 @@ export interface SearchPageComplete {
 }
 
 export interface SearchSourcesStored {
-  event: "search_sources_stored";
+  type: "search_sources_stored";
   keyword_id: string;
   stored_count: number;
 }
 
 export interface SearchComplete {
-  event: "search_complete";
+  type: "search_complete";
   total_sources: number;
 }
 
 export interface ScrapeStart {
-  event: "scrape_start";
+  type: "scrape_start";
   source_id: string;
   url: string;
 }
 
 export interface ScrapeComplete {
-  event: "scrape_complete";
+  type: "scrape_complete";
   source_id: string;
   url: string;
   status: "success" | "thin" | "failed";
@@ -573,27 +574,27 @@ export interface ScrapeComplete {
 }
 
 export interface ScrapeFailed {
-  event: "scrape_failed";
+  type: "scrape_failed";
   source_id: string;
   url: string;
   reason: string;
 }
 
 export interface RescrapeComplete {
-  event: "rescrape_complete";
+  type: "rescrape_complete";
   source_id: string;
   is_good_scrape: boolean;
   char_count: number;
 }
 
 export interface AnalysisStart {
-  event: "analysis_start";
+  type: "analysis_start";
   source_id: string;
   total: number;
 }
 
 export interface AnalysisComplete {
-  event: "analysis_complete";
+  type: "analysis_complete";
   source_id: string;
   agent_type: string;
   model_id: string | null;
@@ -601,37 +602,37 @@ export interface AnalysisComplete {
 }
 
 export interface AnalysisFailed {
-  event: "analysis_failed";
+  type: "analysis_failed";
   source_id: string;
   error: string;
 }
 
 export interface AnalyzeAllComplete {
-  event: "analyze_all_complete";
+  type: "analyze_all_complete";
   count: number;
 }
 
 export interface RetryComplete {
-  event: "retry_complete";
+  type: "retry_complete";
   analysis_id: string;
   result: Record<string, unknown>;
 }
 
 export interface RetryAllComplete {
-  event: "retry_all_complete";
+  type: "retry_all_complete";
   retried: number;
   succeeded: number;
 }
 
 export interface SynthesisStart {
-  event: "synthesis_start";
+  type: "synthesis_start";
   scope: "keyword" | "project";
   keyword_id?: string | null;
   keyword?: string | null;
 }
 
 export interface SynthesisComplete {
-  event: "synthesis_complete";
+  type: "synthesis_complete";
   scope: "keyword" | "project";
   keyword_id?: string | null;
   keyword?: string | null;
@@ -641,14 +642,14 @@ export interface SynthesisComplete {
 }
 
 export interface SynthesisFailed {
-  event: "synthesis_failed";
+  type: "synthesis_failed";
   scope: "keyword" | "project";
   keyword_id?: string | null;
   error: string;
 }
 
 export interface SuggestSetupComplete {
-  event: "suggest_complete";
+  type: "suggest_complete";
   title: string;
   description: string;
   suggested_keywords: string[];
@@ -656,30 +657,30 @@ export interface SuggestSetupComplete {
 }
 
 export interface ConsolidateComplete {
-  event: "consolidate_complete";
+  type: "consolidate_complete";
   tag_id: string;
   result: Record<string, unknown>;
 }
 
 export interface SuggestTagsComplete {
-  event: "suggest_tags_complete";
+  type: "suggest_tags_complete";
   source_id: string;
   result: Record<string, unknown>;
 }
 
 export interface DocumentComplete {
-  event: "document_complete";
+  type: "document_complete";
   result: Record<string, unknown>;
 }
 
 export interface PipelineComplete {
-  event: "pipeline_complete";
+  type: "pipeline_complete";
   topic_id: string;
 }
 
 /**
  * Discriminated union of all research domain events.
- * Arrives when top-level `event === "data"` — discriminated by `data.event`.
+ * Arrives when top-level `event === "data"` — discriminated by `data.type`.
  * Typed from research/stream_events.py (backend Pydantic models).
  */
 export type ResearchDataEvent =

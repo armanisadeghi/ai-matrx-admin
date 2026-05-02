@@ -236,7 +236,7 @@ export default function SynthesisList() {
     });
     stream.startStream(res, {
       onData: (payload: ResearchDataEvent) => {
-        if (payload.event === "synthesis_start") {
+        if (payload.type === "synthesis_start") {
           // New LLM call starting — reset streaming buffer and label
           setStreamingText("");
           setStreamingLabel(
@@ -245,13 +245,13 @@ export default function SynthesisList() {
               : "Project Report",
           );
         }
-        if (payload.event === "synthesis_complete") {
+        if (payload.type === "synthesis_complete") {
           // Synthesis done — clear streaming state, refetch from DB for the full row
           setStreamingText("");
           setStreamingLabel("");
           refetchSyntheses();
         }
-        if (payload.event === "synthesis_failed") {
+        if (payload.type === "synthesis_failed") {
           setStreamingText("");
           setStreamingLabel("");
         }

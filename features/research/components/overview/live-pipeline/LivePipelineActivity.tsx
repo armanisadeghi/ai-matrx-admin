@@ -55,17 +55,24 @@ export function LivePipelineActivity({
 }: Props) {
   const { state, derived } = pipeline;
 
-  const completedStages = useMemo(
+  /** Stages that have ANY activity — rendered as stacked cards. */
+  const visibleStages = useMemo(
     () =>
       (
         ["search", "scrape", "analyze", "synthesize", "report"] as const
-      ).filter(
-        (kind) =>
-          state.stages[kind].status === "complete" &&
-          kind !== state.activeStage,
-      ),
+      ).filter((kind) => {
+        const s = state.stages[kind];
+        return (
+          s.status !== "pending" ||
+          s.itemOrder.length > 0 ||
+          s.infoMessage != null ||
+          s.totals.started > 0 ||
+          s.totals.succeeded > 0
+        );
+      }),
     [state],
   );
+
 
   const authoritativeCost =
     state.completedAt != null && topic?.cost_summary
@@ -118,16 +125,7 @@ export function LivePipelineActivity({
           </div>
         )}
 
-        {/* Completed stage strips first — collapsed accordion */}
-        {completedStages.length > 0 && (
-          <div className="space-y-1.5">
-            {completedStages.map((kind) => (
-              <CompletedStageStrip key={kind} stage={state.stages[kind]} />
-            ))}
-          </div>
-        )}
-
-        {/* Active stage detail view */}
+        {/* Stage cards stacked — every stage that has activity renders, not just one. */}
         <div
           className={cn(
             "grid gap-3",
@@ -135,58 +133,73 @@ export function LivePipelineActivity({
           )}
         >
           <div className="space-y-3 min-w-0">
-            {state.activeStage === "search" && (
-              <SearchStageView
-                state={state}
-                topicId={topicId}
-                ratePerSec={derived.rate}
-                etaSeconds={derived.etaSeconds}
-                iterationMode={state.iterationMode}
-              />
-            )}
-            {state.activeStage === "scrape" && (
-              <ScrapeStageView
-                state={state}
-                topicId={topicId}
-                ratePerSec={derived.rate}
-                etaSeconds={derived.etaSeconds}
-                onSourceUpdated={onSourceUpdated}
-              />
-            )}
-            {state.activeStage === "analyze" && (
-              <AnalyzeStageView
-                state={state}
-                derived={derived}
-                ratePerSec={derived.rate}
-                etaSeconds={derived.etaSeconds}
-              />
-            )}
-            {state.activeStage === "synthesize" && (
-              <SynthesizeStageView
-                state={state}
-                ratePerSec={derived.rate}
-                etaSeconds={derived.etaSeconds}
-                streamingText={streamingText}
-                isStreaming={isStreaming}
-              />
-            )}
-            {state.activeStage === "report" && (
-              <ReportStageView
-                state={state}
-                topicId={topicId}
-                ratePerSec={derived.rate}
-                etaSeconds={derived.etaSeconds}
-              />
-            )}
-
-            {/* When there's no active stage but the pipeline is streaming, show all stages
-                that have had any activity. This handles the case where the very first
-                events haven't yet activated a stage but data is arriving. */}
-            {state.activeStage == null && isStreaming && (
+            {visibleStages.length === 0 && isStreaming && (
               <div className="rounded-lg border border-dashed border-border/60 bg-card/30 px-4 py-6 text-center text-xs text-muted-foreground">
                 Connecting to backend… first events arriving shortly.
               </div>
             )}
+
+            {visibleStages.map((kind) => {
+              if (kind === "search") {
+                return (
+                  <SearchStageView
+                    key="search"
+                    state={state}
+                    topicId={topicId}
+                    ratePerSec={derived.rate}
+                    etaSeconds={derived.etaSeconds}
+                    iterationMode={state.iterationMode}
+                  />
+                );
+              }
+              if (kind === "scrape") {
+                return (
+                  <ScrapeStageView
+                    key="scrape"
+                    state={state}
+                    topicId={topicId}
+                    ratePerSec={derived.rate}
+                    etaSeconds={derived.etaSeconds}
+                    onSourceUpdated={onSourceUpdated}
+                  />
+                );
+              }
+              if (kind === "analyze") {
+                return (
+                  <AnalyzeStageView
+                    key="analyze"
+                    state={state}
+                    derived={derived}
+                    ratePerSec={derived.rate}
+                    etaSeconds={derived.etaSeconds}
+                  />
+                );
+              }
+              if (kind === "synthesize") {
+                return (
+                  <SynthesizeStageView
+                    key="synthesize"
+                    state={state}
+                    ratePerSec={derived.rate}
+                    etaSeconds={derived.etaSeconds}
+                    streamingText={streamingText}
+                    isStreaming={isStreaming}
+                  />
+                );
+              }
+              if (kind === "report") {
+                return (
+                  <ReportStageView
+                    key="report"
+                    state={state}
+                    topicId={topicId}
+                    ratePerSec={derived.rate}
+                    etaSeconds={derived.etaSeconds}
+                  />
+                );
+              }
+              return null;
+            })}
           </div>
 
           {/* Activity feed — right rail on lg, below on smaller screens */}
