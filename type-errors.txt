@@ -1,0 +1,28 @@
+components/admin/controls/LargeIndicator.tsx(161,28): error TS2339: Property 'name' does not exist on type '{ userMetadata: UserMetadata; fingerprintId: string; shellDataLoaded: boolean; id: string; email: string; phone: string; emailConfirmedAt: string; lastSignInAt: string; appMetadata: AppMetadata; identities: IdentityData[]; isAdmin: boolean; accessToken: string; tokenExpiresAt: number; authReady: boolean; }'.
+components/layout/FloatingTopNav.tsx(3,58): error TS2307: Cannot find module '@/components/animated/navbar-menu' or its corresponding type declarations.
+components/mardown-display/blocks/editor-resources/EditorErrorBlock.tsx(96,17): error TS2322: Type 'string' is not assignable to type 'never'.
+components/mardown-display/blocks/editor-resources/EditorErrorBlock.tsx(106,17): error TS2322: Type 'string' is not assignable to type 'never'.
+features/agent-apps/components/AgentAppEditor.tsx(39,19): error TS2339: Property 'app_kind' does not exist on type 'AgentAppRecord'.
+features/agent-apps/components/AgentAppEditor.tsx(40,31): error TS2339: Property 'shared_context_slots' does not exist on type 'AgentAppRecord'.
+features/agent-apps/components/AgentAppEditor.tsx(46,21): error TS2339: Property 'search_tsv' does not exist on type 'AgentAppRecord'.
+features/agent-apps/components/AgentAppPublicRendererImpl.tsx(96,5): error TS2367: This comparison appears to be unintentional because the types 'RequestStatus' and '"running"' have no overlap.
+features/agents/redux/execution-system/thunks/create-instance.thunk.ts(426,52): error TS2339: Property 'responseDensity' does not exist on type 'AgentShortcutRecord'.
+features/audio/services/audioFallbackUpload.ts(68,8): error TS2339: Property 'unwrap' does not exist on type 'AsyncThunkAction<string, EnsureFolderPathArg, { dispatch: AppDispatch; state: StateWithCloudFiles; extra?: unknown; rejectValue?: unknown; serializedErrorType?: unknown; pendingMeta?: unknown; fulfilledMeta?: unknown; rejectedMeta?: unknown; }>'.
+features/audio/services/audioFallbackUpload.ts(95,10): error TS2339: Property 'unwrap' does not exist on type 'AsyncThunkAction<{ uploaded: string[]; failed: { name: string; error: string; }[]; }, UploadFilesArg, { dispatch: AppDispatch; state: StateWithCloudFiles; extra?: unknown; rejectValue?: unknown; serializedErrorType?: unknown; pendingMeta?: unknown; fulfilledMeta?: unknown; rejectedMeta?: unknown; }>'.
+features/audio/services/audioFallbackUpload.ts(202,14): error TS2339: Property 'unwrap' does not exist on type 'AsyncThunkAction<void, DeleteFileArg, { dispatch: AppDispatch; state: StateWithCloudFiles; extra?: unknown; rejectValue?: unknown; serializedErrorType?: unknown; pendingMeta?: unknown; fulfilledMeta?: unknown; rejectedMeta?: unknown; }>'.
+features/code/agent-context/useDiagnosticHoverActions.ts(256,36): error TS2339: Property 'getLineCount' does not exist on type 'MonacoModel'.
+features/code/agent-context/useDiagnosticHoverActions.ts(260,36): error TS2339: Property 'getLineContent' does not exist on type 'MonacoModel'.
+features/code/editor/EditorArea.tsx(343,15): error TS2322: Type 'RefObject<StandaloneCodeEditor>' is not assignable to type 'MutableRefObject<IStandaloneCodeEditor>'.
+  Types of property 'current' are incompatible.
+    Type 'StandaloneCodeEditor' is missing the following properties from type 'IStandaloneCodeEditor': createContextKey, onDidChangeModelContent, onDidChangeModelLanguage, onDidChangeModelLanguageConfiguration, and 112 more.
+features/code/redux/fsChangesSlice.ts(32,3): error TS2305: Module '"@/types/python-generated/stream-events"' has no exported member 'ResourceChangedAction'.
+features/code/redux/fsChangesSlice.ts(33,3): error TS2724: '"@/types/python-generated/stream-events"' has no exported member named 'ResourceChangedKind'. Did you mean 'ResourceChangedEvent'?
+features/code/redux/fsChangesSlice.ts(34,3): error TS2724: '"@/types/python-generated/stream-events"' has no exported member named 'ResourceChangedMetadata'. Did you mean 'ResourceChangedEvent'?
+features/cx-dashboard/service.ts(14,8): error TS2307: Cannot find module './types' or its corresponding type declarations.
+features/cx-dashboard/utils/filters.ts(2,51): error TS2307: Cannot find module '../types' or its corresponding type declarations.
+features/image-studio/hooks/useBase64Decoder.ts(142,29): error TS2339: Property 'error' does not exist on type 'DecodeResult'.
+  Property 'error' does not exist on type '{ ok: true; blob: Blob; mimeType: SupportedMimeType; byteLength: number; extension: SupportedExtension; declaredMimeType: string; hadDataUrlPrefix: boolean; }'.
+features/tts/components/AudioPlayerButton.tsx(13,33): error TS2307: Cannot find module '../hooks' or its corresponding type declarations.
+hooks/usePublicAuthSync.ts(112,25): error TS2353: Object literal may only specify known properties, and 'tokenExpiresAt' does not exist in type 'LegacyUserPayload'.
+lib/redux/shadow/brokers/middleware/shadowSync.ts(16,9): error TS2304: Cannot find name 'shadowSlices'.
+scripts/generate-favicons.ts(28,17): error TS2339: Property 'label' does not exist on type '{ href: string; favicon: FaviconConfig; }'.

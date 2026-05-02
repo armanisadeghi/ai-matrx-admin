@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectActiveFileId,
+  selectFocusedId,
   selectKindFilter,
   selectAllFoldersMap,
   selectSelection,
@@ -22,6 +23,7 @@ import {
 import {
   setActiveFileId,
   setActiveFolderId,
+  setFocusedId,
   toggleSelection,
 } from "@/features/files/redux/slice";
 import { ShareLinkDialog } from "@/features/files/components/core/ShareLinkDialog/ShareLinkDialog";
@@ -72,6 +74,7 @@ export function FileGrid({
   const dispatch = useAppDispatch();
   const selection = useAppSelector(selectSelection);
   const activeFileId = useAppSelector(selectActiveFileId);
+  const focusedId = useAppSelector(selectFocusedId);
   const foldersById = useAppSelector(selectAllFoldersMap);
 
   const resolveFolderPath = useCallback(
@@ -129,9 +132,11 @@ export function FileGrid({
       if (row.kind === "folder") {
         dispatch(setActiveFolderId(row.folder.id));
         dispatch(setActiveFileId(null));
+        dispatch(setFocusedId(row.folder.id));
         onActivateFolder(row.folder.id);
       } else {
         dispatch(setActiveFileId(row.file.id));
+        dispatch(setFocusedId(row.file.id));
         onActivateFile(row.file.id);
       }
     },
@@ -221,8 +226,12 @@ export function FileGrid({
                 folder={row.kind === "folder" ? row.folder : undefined}
                 selected={selected}
                 isPreviewActive={isPreviewActive}
+                isFocused={focusedId === id}
                 isShared={isShared}
-                onToggleSelected={() => dispatch(toggleSelection({ id }))}
+                onToggleSelected={() => {
+                  dispatch(toggleSelection({ id }));
+                  dispatch(setFocusedId(id));
+                }}
                 onActivate={() => handleActivate(row)}
                 onOpenShare={() =>
                   setShareTarget({

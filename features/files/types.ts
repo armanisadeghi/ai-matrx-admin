@@ -94,8 +94,7 @@ export type CloudFolderInsert = CloudTables["cld_folders"]["Insert"];
 export type CloudFolderUpdate = CloudTables["cld_folders"]["Update"];
 
 export type CloudFileVersionRow = CloudTables["cld_file_versions"]["Row"];
-export type CloudFilePermissionRow =
-  CloudTables["cld_file_permissions"]["Row"];
+export type CloudFilePermissionRow = CloudTables["cld_file_permissions"]["Row"];
 export type CloudShareLinkRow = CloudTables["cld_share_links"]["Row"];
 export type CloudUserGroupRow = CloudTables["cld_user_groups"]["Row"];
 export type CloudUserGroupMemberRow =
@@ -343,8 +342,7 @@ export type CloudFileFieldSnapshot = Partial<
 >;
 
 export interface CloudFileRecord
-  extends CloudFile,
-    RuntimeMetadata<keyof CloudFile> {
+  extends CloudFile, RuntimeMetadata<keyof CloudFile> {
   _fieldHistory: CloudFileFieldSnapshot;
 }
 
@@ -356,8 +354,7 @@ export type CloudFolderFieldSnapshot = Partial<
 >;
 
 export interface CloudFolderRecord
-  extends CloudFolder,
-    RuntimeMetadata<keyof CloudFolder> {
+  extends CloudFolder, RuntimeMetadata<keyof CloudFolder> {
   _fieldHistory: CloudFolderFieldSnapshot;
 }
 
@@ -417,6 +414,13 @@ export interface UiState {
   columnFilters: ColumnFilters;
   activeFileId: string | null;
   activeFolderId: string | null;
+  /**
+   * The single item (file or folder id) that has "keyboard/visual focus" — the
+   * highlighted row in the Google Drive sense. Set after create/upload so the
+   * newly-created item is immediately highlighted and scrolled into view.
+   * Clicking any row also moves focus to that row.
+   */
+  focusedId: string | null;
 }
 
 export interface SelectionState {
@@ -968,9 +972,7 @@ export type CloudFilesErrorCode =
 // 13. Type guards
 // ---------------------------------------------------------------------------
 
-export function isCloudTreeFileRow(
-  row: CloudTreeRow,
-): row is CloudTreeFileRow {
+export function isCloudTreeFileRow(row: CloudTreeRow): row is CloudTreeFileRow {
   return row.kind === "file";
 }
 

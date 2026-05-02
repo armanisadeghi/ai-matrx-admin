@@ -13,7 +13,7 @@ Cross-table slug uniqueness is enforced via DB triggers — a slug cannot exist 
 
 ## Public Routes
 
-`/p/podcast/[slug]` — resolves slug or UUID against episodes first, then shows.
+`/podcast/[slug]` — resolves slug or UUID against episodes first, then shows.
 
 - **Episode page** — renders in one of three modes with full fallback to audio-only:
   - `audio_only` — centered player with default icon

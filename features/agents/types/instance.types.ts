@@ -719,47 +719,9 @@ export interface ManagedAgentOptions {
   isEphemeral?: boolean;
 
   // ═══════════════════════════════════════════════════════════
-  // @deprecated flat config fields — use `config` instead.
-  // Kept for legacy callers; normalized to `config` at thunk entry.
-  // ═══════════════════════════════════════════════════════════
-
-  /** @deprecated Use `config.displayMode`. */
-  displayMode?: ResultDisplayMode;
-  /** @deprecated Use `config.showVariablePanel`. */
-  showVariablePanel?: boolean;
-  /** @deprecated Use `config.variablesPanelStyle`. */
-  variablesPanelStyle?: VariablesPanelStyle;
-  /** @deprecated Use `config.autoRun`. */
-  autoRun?: boolean;
-  /** @deprecated Use `config.allowChat`. */
-  allowChat?: boolean;
-  /** @deprecated Use `config.showDefinitionMessages`. */
-  showDefinitionMessages?: boolean;
-  /** @deprecated Use `config.showDefinitionMessageContent`. */
-  showDefinitionMessageContent?: boolean;
-  /** @deprecated Use `config.showPreExecutionGate`. */
-  showPreExecutionGate?: boolean;
-  /** @deprecated Use `config.preExecutionMessage`. */
-  preExecutionMessage?: string | null;
-  /** @deprecated Use `config.bypassGateSeconds`. */
-  bypassGateSeconds?: number;
-  /** @deprecated Use `config.hideReasoning`. */
-  hideReasoning?: boolean;
-  /** @deprecated Use `config.hideToolResults`. */
-  hideToolResults?: boolean;
-  /** @deprecated Use `config.responseDensity`. */
-  responseDensity?: "comfortable" | "compact";
-  /** @deprecated Use `config.defaultUserInput` for designer-provided instructions, or `runtime.userInput` for live user input. */
-  userInput?: string;
-  /** @deprecated Use `config.defaultVariables` for defaults, or set via runtime.applicationScope for scope-mapped values. */
-  variables?: Record<string, unknown>;
-  /** @deprecated Use `config.llmOverrides`. */
-  overrides?: Partial<LLMParams>;
-
-  // ==== END RUNTIME EXECUTION VALUES ==========================================================================================================
-
-  // ===== APPLICATION UI CONFIGS ==========================================================================================================
+  // APPLICATION UI CONFIGS
   // Options used to configure specific Core Application UIs, such as Builder, Runner, Chat, etc.
+  // ═══════════════════════════════════════════════════════════
 
   showAutoClearToggle?: boolean;
 
@@ -779,30 +741,6 @@ export interface ManagedAgentOptions {
    *
    */
   apiEndpointMode?: ApiEndpointMode;
-
-  // ===== END APPLICATION UI CONFIGS ==========================================================================================================
-
-  /**
-   * @deprecated DERIVED UI STATE. Never set by callers. Computed at runtime
-   * from config.showVariablePanel + execution stage. Kept on the type for
-   * transitional backwards-compat; will be deleted when all legacy callers
-   * drop their references.
-   */
-  showVariables?: boolean;
-
-  /** @deprecated Use `runtime.applicationScope`. */
-  applicationScope?: ApplicationScope;
-
-  /** @deprecated Use `runtime.widgetHandleId`. */
-  widgetHandleId?: string;
-
-  /**
-   * The original text from the editor/notes that was selected before launch.
-   * Forwarded to the widget handle's onTextReplace / onTextInsert* methods
-   * alongside the agent's response.
-   * @deprecated Use `runtime.originalText`.
-   */
-  originalText?: string;
 
   /**
    * Opt-in JSON extraction during streaming. When provided with `enabled: true`,

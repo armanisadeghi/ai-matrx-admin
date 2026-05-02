@@ -171,8 +171,25 @@ Active rebuild governed by `features/agents/migration/MASTER-PLAN.md`. Phase-ord
 
 ---
 
+## UI component conventions
+
+### JSON display
+Always use `JsonInspector` from `@/components/official-candidate/json-inspector/JsonInspector` for any JSON data display.
+Do **not** use raw `<pre>` or custom JSON renderers — `JsonInspector` bundles five display modes (formatted, explorer, tree, JSON-tree, truncator) plus built-in copy, lazy-loading, and an optional edit tab. Give the wrapper a defined height (`h-64`, `h-[calc(100dvh-12rem)]`, etc.) because `JsonInspector` is `flex-col h-full` internally.
+
+```tsx
+import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
+
+<div className="h-64">
+  <JsonInspector data={someObject} label="My data" className="h-full" />
+</div>
+```
+
+---
+
 ## Change log
 
+- `2026-05-02` — AgentViewContent cleanup: hero block (name, copyable ID, description, status pills, tags), stat strip, reordered sections (settings → variables → context slots → tools → MCP → output schema → separator → messages), per-message MD/Plain toggle, JsonInspector for JSON view and output schema, admin-only Pretty/JSON page toggle. Variable rendering extended into inline code and fenced code blocks (`InlineCodeSnippet.renderVariables`, `BasicMarkdownContent` inline `code` handler). JsonInspector convention added to FEATURE.md.
 - `2026-04-29` — Convert-to-system flow (`ConvertAgentToSystemBody`): when existing system agents are listed, each row has an external-link control that opens `/agents/{id}` in a new tab so admins can review before update.
 - `2026-04-25` — Barrel import cleanup: external and core callers no longer import `conversation-list`, `message-crud`, `surfaces`, `mcp-client`, or execution-system index folders without a file — use `*.slice`, `*.thunks`, `*.selectors`, `mcp-client/client`, etc. (includes `lib/redux/rootReducer`, `cx-chat/ConversationInput` → `types/instance.types`, MCP API routes, window panels, `packages/matrx-agents` re-exports, and related).
 - `2026-04-25` — Variable UI: `VariableInputComponent` now lives in `components/inputs/input-components/VariableInputComponent.tsx` (client); `input-components/index.tsx` re-exports only the leaf inputs (`ToggleInput`, `NumberInput`, etc.) and `useContainerWidth` — importers of the dispatcher use the dedicated file, not the barrel.

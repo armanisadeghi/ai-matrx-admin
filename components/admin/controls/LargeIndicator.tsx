@@ -158,7 +158,7 @@ const LargeIndicator: React.FC<LargeIndicatorProps> = ({
               title={reduxUser?.id}
             >
               {reduxUser?.userMetadata?.fullName ||
-                reduxUser?.name ||
+                reduxUser?.userMetadata?.name ||
                 reduxUser?.email ||
                 reduxUser?.id}
               {isAdmin && (

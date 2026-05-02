@@ -23,7 +23,7 @@ interface EditorErrorBlockProps {
 
 const SEVERITY_STYLE: Record<
   string,
-  { icon: React.ElementType; color: string; bg: string; border: string }
+  { icon: React.ComponentType<{ className?: string }>; color: string; bg: string; border: string }
 > = {
   error: {
     icon: AlertCircle,

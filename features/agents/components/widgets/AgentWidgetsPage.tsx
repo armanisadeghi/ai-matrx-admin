@@ -285,30 +285,31 @@ export function AgentWidgetsPage({
     const options: ManagedAgentOptions = {
       surfaceKey: uniqueSurfaceKey,
       sourceFeature: "agent-tester",
-      displayMode,
-      autoRun,
-      allowChat,
-      showPreExecutionGate,
       apiEndpointMode,
-      variablesPanelStyle,
-      showVariablePanel,
-      showDefinitionMessages,
-      showDefinitionMessageContent,
       autoClearConversation,
       showAutoClearToggle,
-      hideReasoning,
-      hideToolResults,
-      variables: variableValues,
+      ...(jsonExtraction ? { jsonExtraction } : {}),
+      config: {
+        displayMode,
+        autoRun,
+        allowChat,
+        showPreExecutionGate,
+        variablesPanelStyle,
+        showVariablePanel,
+        showDefinitionMessages,
+        showDefinitionMessageContent,
+        hideReasoning,
+        hideToolResults,
+        defaultVariables: variableValues,
+        ...(preExecutionMessage ? { preExecutionMessage } : {}),
+        ...(overrides ? { llmOverrides: overrides } : {}),
+      },
+      runtime: {
+        ...(userInput ? { userInput } : {}),
+        ...(includeEditorContext && editorSelection ? { originalText: editorSelection } : {}),
+        ...(applicationScope ? { applicationScope } : {}),
+      },
     };
-
-    if (userInput) options.userInput = userInput;
-    if (preExecutionMessage) options.preExecutionMessage = preExecutionMessage;
-    if (includeEditorContext && editorSelection) {
-      options.originalText = editorSelection;
-    }
-    if (overrides) options.overrides = overrides;
-    if (applicationScope) options.applicationScope = applicationScope;
-    if (jsonExtraction) options.jsonExtraction = jsonExtraction;
 
     try {
       await launchAgent(agentId, options);

@@ -274,6 +274,13 @@ export const selectActiveFolder = createSelector(
   (map, id): CloudFolderRecord | null => (id ? (map[id] ?? null) : null),
 );
 
+/** The id of the single item (file or folder) that has visual focus — used to
+ *  drive the highlight ring and scroll-into-view after create / upload. */
+export const selectFocusedId = createSelector(
+  [selectUiSlice],
+  (ui) => ui.focusedId,
+);
+
 export const selectSortedChildrenOfFolder = createSelector(
   [selectChildrenOfFolder, selectAllFilesMap, selectAllFoldersMap, selectSort],
   (children, filesById, foldersById, sort): TreeChildren =>

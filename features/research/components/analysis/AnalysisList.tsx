@@ -295,7 +295,7 @@ function DetailPanel({
             )}
             {source && (
               <Link
-                href={`/p/research/topics/${topicId}/sources/${source.id}`}
+                href={`/research/topics/${topicId}/sources/${source.id}`}
                 className="inline-flex items-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-medium shell-glass-card text-muted-foreground hover:text-foreground transition-colors"
               >
                 Source

@@ -92,8 +92,7 @@ export function AgentAppPublicRenderer({
     requestId ? selectRequest(requestId)(state) : undefined,
   );
   const requestStatus = request?.status;
-  const isStreaming =
-    requestStatus === "running" || requestStatus === "streaming";
+  const isStreaming = requestStatus === "streaming";
   const isStreamComplete = requestStatus === "complete";
   const requestError =
     requestStatus === "error"

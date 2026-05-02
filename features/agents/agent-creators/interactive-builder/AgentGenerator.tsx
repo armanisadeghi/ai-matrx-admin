@@ -33,6 +33,10 @@ import { ensureShortcutLoaded } from "@/features/agents/redux/agent-shortcuts/th
 import { useDebugContext } from "@/hooks/useDebugContext";
 
 const GENERATOR_SHORTCUT = getSystemShortcut("agent-generator-01");
+
+// Toasts default to bottom-right (Sonner default), which collides with this
+// component's action buttons. Pin every toast in this component to top-center.
+const TOAST_POSITION = "top-center" as const;
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -239,11 +243,13 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
     if (hasExtractedJson) {
       toast.success("Agent generated successfully", {
         description: 'Review the result and click "Create Agent" to save it',
+        position: TOAST_POSITION,
       });
     } else if (streamingText) {
       toast.error("Could not extract JSON", {
         description: "The raw response is still available below.",
         duration: 5000,
+        position: TOAST_POSITION,
       });
     }
     // Only fire once when extraction completes
@@ -298,7 +304,9 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
 
   const handleGenerate = useCallback(async () => {
     if (!selection.trim()) {
-      toast.error("Please describe the purpose of your agent");
+      toast.error("Please describe the purpose of your agent", {
+        position: TOAST_POSITION,
+      });
       return;
     }
 
@@ -332,23 +340,28 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
       console.error("Agent generation failed:", err);
       toast.error("Failed to generate agent", {
         description: err instanceof Error ? err.message : "Unknown error",
+        position: TOAST_POSITION,
       });
     }
   }, [selection, userInput, conversationId, trigger, dispatch]);
 
   const handleCreateAgent = useCallback(async () => {
     if (!extractedValue) {
-      toast.error("No generated agent to save");
+      toast.error("No generated agent to save", { position: TOAST_POSITION });
       return;
     }
     if (!agentName.trim()) {
-      toast.error("Please enter a name for your agent");
+      toast.error("Please enter a name for your agent", {
+        position: TOAST_POSITION,
+      });
       return;
     }
 
     const config = extractAgentConfig(extractedValue);
     if (!config) {
-      toast.error("Could not parse agent configuration from generated JSON");
+      toast.error("Could not parse agent configuration from generated JSON", {
+        position: TOAST_POSITION,
+      });
       return;
     }
 
@@ -371,14 +384,18 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
   const handleCopyGenerated = useCallback(() => {
     if (extractedValue) {
       navigator.clipboard.writeText(JSON.stringify(extractedValue, null, 2));
-      toast.success("Copied generated JSON to clipboard");
+      toast.success("Copied generated JSON to clipboard", {
+        position: TOAST_POSITION,
+      });
     }
   }, [extractedValue]);
 
   const handleCopyRaw = useCallback(() => {
     if (streamingText) {
       navigator.clipboard.writeText(streamingText);
-      toast.success("Copied raw response to clipboard");
+      toast.success("Copied raw response to clipboard", {
+        position: TOAST_POSITION,
+      });
     }
   }, [streamingText]);
 
@@ -441,10 +458,15 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
                   showResult
                 }
                 onTranscriptionComplete={() =>
-                  toast.success("Voice input added")
+                  toast.success("Voice input added", {
+                    position: TOAST_POSITION,
+                  })
                 }
                 onTranscriptionError={(error) =>
-                  toast.error("Voice input failed", { description: error })
+                  toast.error("Voice input failed", {
+                    description: error,
+                    position: TOAST_POSITION,
+                  })
                 }
               />
               <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -470,10 +492,15 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
                   showResult
                 }
                 onTranscriptionComplete={() =>
-                  toast.success("Voice context added")
+                  toast.success("Voice context added", {
+                    position: TOAST_POSITION,
+                  })
                 }
                 onTranscriptionError={(error) =>
-                  toast.error("Voice input failed", { description: error })
+                  toast.error("Voice input failed", {
+                    description: error,
+                    position: TOAST_POSITION,
+                  })
                 }
               />
               <p className="text-xs text-gray-500 dark:text-gray-400">

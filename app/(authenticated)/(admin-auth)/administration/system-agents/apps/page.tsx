@@ -106,7 +106,8 @@ export default function AdminSystemAppsListPage() {
     return (
       (a.name ?? "").toLowerCase().includes(q) ||
       (a.slug ?? "").toLowerCase().includes(q) ||
-      (a.category ?? "").toLowerCase().includes(q)
+      (a.category ?? "").toLowerCase().includes(q) ||
+      (a.id ?? "").toLowerCase().includes(q)
     );
   });
 
@@ -163,9 +164,7 @@ export default function AdminSystemAppsListPage() {
       setDeleteTarget(null);
     } catch (err) {
       toast.error(
-        `Failed to delete: ${
-          err instanceof Error ? err.message : String(err)
-        }`,
+        `Failed to delete: ${err instanceof Error ? err.message : String(err)}`,
       );
     } finally {
       setDeleting(false);
@@ -324,7 +323,9 @@ export default function AdminSystemAppsListPage() {
                               <SelectTrigger className="h-7 text-xs">
                                 <SelectValue>
                                   <Badge
-                                    variant={STATUS_VARIANT[a.status] ?? "outline"}
+                                    variant={
+                                      STATUS_VARIANT[a.status] ?? "outline"
+                                    }
                                     className="text-[10px]"
                                   >
                                     {a.status}

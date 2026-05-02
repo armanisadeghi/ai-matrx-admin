@@ -8,7 +8,7 @@
 
 "use client";
 
-import { forwardRef, useCallback, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { Copy, MoreHorizontal, Share2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -42,6 +42,11 @@ export interface FileTableRowProps {
   selected: boolean;
   /** True when this file is currently open in the preview pane. */
   isPreviewActive?: boolean;
+  /**
+   * True when this item has visual focus (Google-Drive-style blue ring).
+   * Set automatically after create/upload so the user can see the new item.
+   */
+  isFocused?: boolean;
   onToggleSelected: () => void;
   onActivate: () => void;
   onOpenShare: () => void;
@@ -71,6 +76,7 @@ function FileRow({
   file,
   selected,
   isPreviewActive,
+  isFocused,
   onToggleSelected,
   onActivate,
   onOpenShare,
@@ -81,10 +87,18 @@ function FileRow({
 }: FileRowProps) {
   const [hovered, setHovered] = useState(false);
   const actions = useFileActions(file.id);
+  const rowRef = useRef<HTMLTableRowElement>(null);
 
   const handleCopyLink = useCallback(() => {
     void actions.copyShareUrl();
   }, [actions]);
+
+  // Scroll into view whenever this row gains focus.
+  useEffect(() => {
+    if (isFocused) {
+      rowRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+  }, [isFocused]);
 
   // Files are draggable — they can be dropped onto folder rows to move.
   // The drag handle covers the whole row, but the activation distance on
@@ -96,17 +110,25 @@ function FileRow({
     data: { type: "file", id: file.id },
   });
 
+  const mergeRef = (node: HTMLTableRowElement | null) => {
+    (rowRef as React.MutableRefObject<HTMLTableRowElement | null>).current =
+      node;
+    setNodeRef(node);
+  };
+
   return (
     <FileRowContextMenu fileId={file.id}>
       <tr
-        ref={setNodeRef}
+        ref={mergeRef}
         className={cn(
           "group border-b text-sm transition-colors",
           isPreviewActive
             ? "bg-primary/10 border-l-2 border-l-primary"
-            : selected
-              ? "bg-accent/70"
-              : "hover:bg-accent/40",
+            : isFocused
+              ? "bg-primary/15 ring-1 ring-inset ring-primary/40"
+              : selected
+                ? "bg-accent/70"
+                : "hover:bg-accent/40",
           isDragging && "opacity-50",
         )}
         onMouseEnter={() => setHovered(true)}
@@ -182,6 +204,7 @@ interface FolderRowProps extends FileTableRowProps {
 function FolderRow({
   folder,
   selected,
+  isFocused,
   onToggleSelected,
   onActivate,
   isShared,
@@ -191,6 +214,14 @@ function FolderRow({
   parentPath,
 }: FolderRowProps) {
   const [hovered, setHovered] = useState(false);
+  const rowRef = useRef<HTMLTableRowElement>(null);
+
+  // Scroll into view whenever this row gains focus.
+  useEffect(() => {
+    if (isFocused) {
+      rowRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+  }, [isFocused]);
 
   // Folders are both drop targets AND draggable. Drop: another file or
   // folder lands here and we move it under this folder. Drag: this folder
@@ -209,6 +240,8 @@ function FolderRow({
     data: { type: "folder", id: folder.id },
   });
   const setMergedRef = (node: HTMLTableRowElement | null) => {
+    (rowRef as React.MutableRefObject<HTMLTableRowElement | null>).current =
+      node;
     setDropRef(node);
     setDragRef(node);
   };
@@ -219,7 +252,11 @@ function FolderRow({
         ref={setMergedRef}
         className={cn(
           "group border-b text-sm transition-colors",
-          selected ? "bg-accent/70" : "hover:bg-accent/40",
+          isFocused
+            ? "bg-primary/15 ring-1 ring-inset ring-primary/40"
+            : selected
+              ? "bg-accent/70"
+              : "hover:bg-accent/40",
           isOver && "bg-primary/10 ring-1 ring-inset ring-primary",
           isDragging && "opacity-50",
         )}
@@ -399,7 +436,7 @@ interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
  * spread, Radix's injected `onClick`/`aria-*`/`data-state` props get dropped.
  * Both bugs caused the "..." menu to "not always work".
  */
-const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
+const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
   function IconButton(
     { label, title, disabled, className, children, ...rest },
     ref,

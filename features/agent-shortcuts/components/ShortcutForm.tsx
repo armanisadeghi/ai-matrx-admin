@@ -300,6 +300,7 @@ function emptyFormData(): ShortcutFormData {
     showDefinitionMessageContent: false,
     hideReasoning: false,
     hideToolResults: false,
+    responseDensity: "comfortable",
     showPreExecutionGate: false,
     preExecutionMessage: null,
     bypassGateSeconds: 3,

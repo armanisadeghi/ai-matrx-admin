@@ -21,6 +21,10 @@ type StandaloneCodeEditor = {
   onDidChangeCursorPosition: (cb: (e: unknown) => void) => {
     dispose: () => void;
   };
+  onDidChangeCursorSelection: (cb: (e: unknown) => void) => {
+    dispose: () => void;
+  };
+  getPosition: () => { lineNumber: number; column: number } | null;
   addCommand: (keybinding: number, handler: () => void) => void;
   /**
    * Register an item that shows in Monaco's right-click menu (and command
@@ -56,6 +60,10 @@ export type MonacoModel = {
     endLineNumber: number;
     endColumn: number;
   }) => string;
+  getLineCount: () => number;
+  getLineContent: (lineNumber: number) => string;
+  getLanguageId: () => string;
+  uri: { path: string };
 };
 
 export type { StandaloneCodeEditor };

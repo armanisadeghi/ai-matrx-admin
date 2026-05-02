@@ -136,10 +136,11 @@ export function useBase64Decoder(
     }
 
     const result: DecodeResult = decodeBase64Image(input);
-    if (!result.ok) {
+    if (result.ok === false) {
+      const decodeErr = result.error;
       revokeCurrentPreview();
       setDecoded(null);
-      setDecodeError(result.error);
+      setDecodeError(decodeErr);
       return;
     }
 

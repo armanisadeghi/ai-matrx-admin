@@ -235,6 +235,7 @@ const initialState: CloudFilesState = {
     },
     activeFileId: null,
     activeFolderId: null,
+    focusedId: null,
   },
   uploads: {},
   realtime: {
@@ -461,8 +462,7 @@ const slice = createSlice({
       state,
       action: PayloadAction<{ fileId: string; versions: CloudFileVersion[] }>,
     ) {
-      state.versionsByFileId[action.payload.fileId] =
-        action.payload.versions;
+      state.versionsByFileId[action.payload.fileId] = action.payload.versions;
     },
 
     // ---- Permissions -------------------------------------------------------
@@ -509,16 +509,12 @@ const slice = createSlice({
         action.payload.shareLinks;
     },
 
-    removeShareLink(
-      state,
-      action: PayloadAction<{ shareToken: string }>,
-    ) {
+    removeShareLink(state, action: PayloadAction<{ shareToken: string }>) {
       const { shareToken } = action.payload;
       for (const resourceId of Object.keys(state.shareLinksByResourceId)) {
-        state.shareLinksByResourceId[resourceId] =
-          state.shareLinksByResourceId[resourceId].filter(
-            (l) => l.shareToken !== shareToken,
-          );
+        state.shareLinksByResourceId[resourceId] = state.shareLinksByResourceId[
+          resourceId
+        ].filter((l) => l.shareToken !== shareToken);
       }
     },
 
@@ -777,6 +773,15 @@ const slice = createSlice({
       state.ui.activeFolderId = action.payload;
     },
 
+    /**
+     * Move "focus" (Google-Drive-style single-item highlight) to the given id.
+     * Pass null to clear. Automatically set after folder/file creation so the
+     * newly-created item is highlighted and scrolled into view.
+     */
+    setFocusedId(state, action: PayloadAction<string | null>) {
+      state.ui.focusedId = action.payload;
+    },
+
     // ---- Uploads -----------------------------------------------------------
     trackUploadStart(
       state,
@@ -787,8 +792,7 @@ const slice = createSlice({
         parentFolderId: string | null;
       }>,
     ) {
-      const { requestId, fileName, fileSize, parentFolderId } =
-        action.payload;
+      const { requestId, fileName, fileSize, parentFolderId } = action.payload;
       state.uploads[requestId] = {
         requestId,
         fileName,
@@ -845,10 +849,7 @@ const slice = createSlice({
     clearCompletedUploads(state) {
       for (const id of Object.keys(state.uploads)) {
         const entry = state.uploads[id];
-        if (
-          entry.status === "success" ||
-          entry.status === "cancelled"
-        ) {
+        if (entry.status === "success" || entry.status === "cancelled") {
           delete state.uploads[id];
         }
       }
@@ -934,6 +935,7 @@ export const {
   clearColumnFilters,
   setActiveFileId,
   setActiveFolderId,
+  setFocusedId,
   // uploads
   trackUploadStart,
   updateUploadProgress,

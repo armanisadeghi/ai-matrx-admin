@@ -553,7 +553,7 @@ function TaskRow({
         <div className="min-w-0 flex-1 space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
             <Link
-              href={`/p/research/topics/${item.topic_id}/sources/${item.source_id}`}
+              href={`/research/topics/${item.topic_id}/sources/${item.source_id}`}
               className="text-sm font-medium hover:underline truncate max-w-[40ch]"
               title={item.title || item.url}
             >

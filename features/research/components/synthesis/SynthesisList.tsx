@@ -233,6 +233,7 @@ export default function SynthesisList() {
     const res = await api.synthesize(topicId, {
       scope: "project",
       iteration_mode: "initial",
+      use_user_agent_overrides: false,
     });
     stream.startStream(res, {
       onData: (payload: ResearchDataEvent) => {

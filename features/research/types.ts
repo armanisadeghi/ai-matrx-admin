@@ -31,6 +31,9 @@ export type TopicUpdate = {
   max_documents?: number | null;
   max_tag_consolidations?: number | null;
   max_auto_tag_calls?: number | null;
+  // Per-topic agent overrides — JSONB map of role_key → user agent UUID.
+  // See features/research/admin/types.ts:AGENT_CONFIG_KEYS for valid keys.
+  agent_config?: Record<string, string> | null;
 };
 
 export type KeywordCreate = components["schemas"]["KeywordCreate"];
@@ -58,9 +61,20 @@ export type ExtensionCaptureLevel = 1 | 2 | 3;
 export type AnalyzeRequest = components["schemas"]["AnalyzeRequest"];
 export type AnalyzeBulkRequest = components["schemas"]["AnalyzeBulkRequest"];
 export type SynthesisRequest = components["schemas"]["SynthesisRequest"];
-export type SuggestRequest = {
-  topic_name: string;
-  topic_description?: string | null;
+// topic_id was added on 2026-05-02; pending next type regen from Python
+export type SuggestRequest = components["schemas"]["SuggestRequest"] & {
+  topic_id?: string | null;
+};
+
+export type SuggestApplied = {
+  type: "suggest_applied";
+  topic_id: string;
+  name_updated: boolean;
+  description_updated: boolean;
+  keywords_saved: string[];
+  keywords_skipped_duplicate: string[];
+  keywords_dropped_by_quota: string[];
+  max_keywords: number;
 };
 export type TagCreate = components["schemas"]["TagCreate"];
 export type TagUpdate = components["schemas"]["TagUpdate"];

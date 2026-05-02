@@ -28,11 +28,11 @@
  */
 
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type {
-  ResourceChangedAction,
-  ResourceChangedKind,
-  ResourceChangedMetadata,
-} from "@/types/python-generated/stream-events";
+import type { ResourceChangedPayload } from "@/types/python-generated/stream-events";
+
+type ResourceChangedKind = ResourceChangedPayload["kind"];
+type ResourceChangedAction = ResourceChangedPayload["action"];
+type ResourceChangedMetadata = NonNullable<ResourceChangedPayload["metadata"]>;
 
 /**
  * Hard cap on the per-bucket ring buffer. Anything beyond this gets

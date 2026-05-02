@@ -62,7 +62,7 @@ function StatCard({ icon: Icon, label, href, children, highlight }: StatCardProp
 
 export function PipelineCards({ topicId, progress: progressProp }: PipelineCardsProps) {
     const progress = progressProp ?? EMPTY_PROGRESS;
-    const base = `/p/research/topics/${topicId}`;
+    const base = `/research/topics/${topicId}`;
 
     const analysisPercent = progress.total_eligible_for_analysis > 0
         ? Math.round((progress.total_analyses / progress.total_eligible_for_analysis) * 100)

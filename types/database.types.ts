@@ -11865,11 +11865,15 @@ export type Database = {
           is_included: boolean | null
           is_stale: boolean | null
           last_seen_at: string | null
+          last_server_attempt_at: string | null
+          last_server_failure_reason: string | null
           origin: string
           page_age: string | null
           rank: number | null
           raw_search_result: Json | null
           scrape_status: string
+          server_attempts: number
+          server_gave_up: boolean
           source_type: string
           thumbnail_url: string | null
           title: string | null
@@ -11888,11 +11892,15 @@ export type Database = {
           is_included?: boolean | null
           is_stale?: boolean | null
           last_seen_at?: string | null
+          last_server_attempt_at?: string | null
+          last_server_failure_reason?: string | null
           origin?: string
           page_age?: string | null
           rank?: number | null
           raw_search_result?: Json | null
           scrape_status?: string
+          server_attempts?: number
+          server_gave_up?: boolean
           source_type?: string
           thumbnail_url?: string | null
           title?: string | null
@@ -11911,11 +11919,15 @@ export type Database = {
           is_included?: boolean | null
           is_stale?: boolean | null
           last_seen_at?: string | null
+          last_server_attempt_at?: string | null
+          last_server_failure_reason?: string | null
           origin?: string
           page_age?: string | null
           rank?: number | null
           raw_search_result?: Json | null
           scrape_status?: string
+          server_attempts?: number
+          server_gave_up?: boolean
           source_type?: string
           thumbnail_url?: string | null
           title?: string | null
@@ -12171,6 +12183,7 @@ export type Database = {
       rs_topic: {
         Row: {
           agent_config: Json
+          analyses_per_keyword: number
           autonomy_level: string
           created_at: string | null
           created_by: string | null
@@ -12179,6 +12192,12 @@ export type Database = {
           description: string | null
           good_scrape_threshold: number
           id: string
+          max_auto_tag_calls: number
+          max_documents: number
+          max_keyword_syntheses: number
+          max_keywords: number
+          max_project_syntheses: number
+          max_tag_consolidations: number
           metadata: Json
           name: string
           project_id: string
@@ -12189,6 +12208,7 @@ export type Database = {
         }
         Insert: {
           agent_config?: Json
+          analyses_per_keyword?: number
           autonomy_level?: string
           created_at?: string | null
           created_by?: string | null
@@ -12197,6 +12217,12 @@ export type Database = {
           description?: string | null
           good_scrape_threshold?: number
           id?: string
+          max_auto_tag_calls?: number
+          max_documents?: number
+          max_keyword_syntheses?: number
+          max_keywords?: number
+          max_project_syntheses?: number
+          max_tag_consolidations?: number
           metadata?: Json
           name?: string
           project_id: string
@@ -12207,6 +12233,7 @@ export type Database = {
         }
         Update: {
           agent_config?: Json
+          analyses_per_keyword?: number
           autonomy_level?: string
           created_at?: string | null
           created_by?: string | null
@@ -12215,6 +12242,12 @@ export type Database = {
           description?: string | null
           good_scrape_threshold?: number
           id?: string
+          max_auto_tag_calls?: number
+          max_documents?: number
+          max_keyword_syntheses?: number
+          max_keywords?: number
+          max_project_syntheses?: number
+          max_tag_consolidations?: number
           metadata?: Json
           name?: string
           project_id?: string

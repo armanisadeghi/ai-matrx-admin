@@ -1080,7 +1080,11 @@ export default function ExecutionInstanceInspector({
   }
 
   const agentList = Object.values(agents)
-    .filter((a) => a.name?.toLowerCase().includes(agentFilter.toLowerCase()))
+    .filter(
+      (a) =>
+        a.name?.toLowerCase().includes(agentFilter.toLowerCase()) ||
+        a.id?.toLowerCase().includes(agentFilter.toLowerCase()),
+    )
     .sort((a, b) => {
       const ac = agentInstanceCount[a.id] || 0;
       const bc = agentInstanceCount[b.id] || 0;

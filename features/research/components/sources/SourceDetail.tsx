@@ -136,7 +136,7 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
     (id: string) => {
       if (isNavigating) return;
       startNavTransition(() => {
-        router.push(`/p/research/topics/${topicId}/sources/${id}`);
+        router.push(`/research/topics/${topicId}/sources/${id}`);
       });
     },
     [isNavigating, router, topicId],
@@ -288,7 +288,7 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
         <div className="p-4 space-y-4">
           <div className="flex items-center justify-between gap-2">
             <Link
-              href={`/p/research/topics/${topicId}/sources`}
+              href={`/research/topics/${topicId}/sources`}
               className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ChevronLeft className="h-4 w-4" />

@@ -98,7 +98,7 @@ export function ReportStageView({
           </div>
           {docItem.status === "success" && (
             <Link
-              href={`/p/research/topics/${topicId}/document`}
+              href={`/research/topics/${topicId}/document`}
               className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline shrink-0"
             >
               View

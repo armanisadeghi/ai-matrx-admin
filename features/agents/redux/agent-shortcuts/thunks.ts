@@ -104,6 +104,7 @@ function menuItemToConfigFields(item: unknown): {
   showDefinitionMessageContent: boolean;
   hideReasoning: boolean;
   hideToolResults: boolean;
+  responseDensity: "comfortable" | "compact";
   showPreExecutionGate: boolean;
   preExecutionMessage: string | null;
   bypassGateSeconds: number;
@@ -113,7 +114,9 @@ function menuItemToConfigFields(item: unknown): {
   llmOverrides: Partial<
     import("@/features/agents/types/agent-api-types").LLMParams
   > | null;
-  jsonExtraction: import("@/features/agents/types/instance.types").JsonExtractionConfig | null;
+  jsonExtraction:
+    | import("@/features/agents/types/instance.types").JsonExtractionConfig
+    | null;
 } {
   const o = (item ?? {}) as Record<string, unknown>;
   return {
@@ -132,6 +135,9 @@ function menuItemToConfigFields(item: unknown): {
     ),
     hideReasoning: pickBool(o, false, "hide_reasoning"),
     hideToolResults: pickBool(o, false, "hide_tool_results"),
+    responseDensity: (pickString(o, "response_density") ?? "comfortable") as
+      | "comfortable"
+      | "compact",
     showPreExecutionGate: pickBool(
       o,
       false,

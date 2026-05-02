@@ -1,0 +1,87 @@
+import {
+  FileText,
+  Layers,
+  BookMarked,
+  RefreshCw,
+  Combine,
+  Tag,
+  FileStack,
+  Compass,
+  type LucideIcon,
+} from "lucide-react";
+import { AGENT_CONFIG_KEYS, AGENT_CONFIG_META } from "../../admin/types";
+import type { AgentConfigKey } from "../../admin/types";
+
+/**
+ * The eight system agents that drive the research pipeline. Each role has a
+ * canonical "system default" agent — the one the platform ships and the one a
+ * user-supplied agent must conform to.
+ *
+ * Source: `Research System — Agent Setup Guide` (May 2026 edition).
+ *
+ * NOTE: `suggest` is intentionally NOT keyed under AGENT_CONFIG_KEYS — it's
+ * resolved through the module-level `GENERIC_SUGGEST_AGENT_ID` constant on the
+ * Python side, not via `rs_topic.agent_config`. We surface it here as a
+ * read-only role so users can see the full pipeline at a glance.
+ */
+export const SYSTEM_AGENT_UUIDS: Record<AgentConfigKey, string> = {
+  page_summary_agent_id: "7e021d98-5ea7-4ff1-b295-1c941312439d",
+  keyword_synthesis_agent_id: "7294348e-160b-4622-b38c-f6d50e73c1f1",
+  research_report_agent_id: "7a90bace-1c2b-4d40-829d-b6d875573324",
+  updater_agent_id: "6e8c33ce-6a62-44b3-bc3a-57c9579b9ed2",
+  consolidation_agent_id: "3fc601a6-a085-4432-a8d4-de0719aec70e",
+  auto_tagger_agent_id: "dee57c6c-bd06-45ee-9a9d-c9d9b4f2cfe5",
+  document_assembly_agent_id: "2e081af2-713a-4e1c-85d9-606325c6c80f",
+};
+
+export const SUGGEST_AGENT_UUID = "4f802fd1-2132-4347-a598-ef01febbcf2c";
+
+export interface AgentRoleDefinition {
+  /** JSONB key in `rs_topic.agent_config`. `null` for system-only roles. */
+  configKey: AgentConfigKey | null;
+  label: string;
+  description: string;
+  usedBy: string;
+  systemAgentId: string;
+  icon: LucideIcon;
+  /** True when the role can't be overridden via `rs_topic.agent_config`. */
+  systemOnly: boolean;
+}
+
+const ICONS: Record<AgentConfigKey, LucideIcon> = {
+  page_summary_agent_id: FileText,
+  keyword_synthesis_agent_id: Layers,
+  research_report_agent_id: BookMarked,
+  updater_agent_id: RefreshCw,
+  consolidation_agent_id: Combine,
+  auto_tagger_agent_id: Tag,
+  document_assembly_agent_id: FileStack,
+};
+
+/** All agent roles, in pipeline order, with their UI metadata. */
+export const AGENT_ROLES: AgentRoleDefinition[] = AGENT_CONFIG_KEYS.map(
+  (key) => ({
+    configKey: key,
+    label: AGENT_CONFIG_META[key].label,
+    description: AGENT_CONFIG_META[key].description,
+    usedBy: AGENT_CONFIG_META[key].usedBy,
+    systemAgentId: SYSTEM_AGENT_UUIDS[key],
+    icon: ICONS[key],
+    systemOnly: false,
+  }),
+).concat([
+  {
+    configKey: null,
+    label: "Research Setup Suggest Agent",
+    description:
+      "Suggests a topic title, description, keywords, and initial insights from a free-form subject input.",
+    usedBy: "analysis.py → suggest_research_setup()",
+    systemAgentId: SUGGEST_AGENT_UUID,
+    icon: Compass,
+    systemOnly: true,
+  },
+]);
+
+/** UUID v4-ish format check — matches the format Supabase RPC expects. */
+export const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

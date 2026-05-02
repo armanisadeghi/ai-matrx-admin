@@ -1,5 +1,5 @@
 // URL search param <-> CxFilters helpers
-import type { CxFilters, CxTimeframePreset } from "../types";
+import type { CxFilters, CxTimeframePreset } from "../types/cxDashboardTypes";
 
 const TIMEFRAME_PRESETS = ["day", "week", "month", "quarter", "all"] as const;
 

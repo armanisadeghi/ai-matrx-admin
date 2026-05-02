@@ -65,7 +65,7 @@ export const primaryNavItems: ShellNavItem[] = [
   },
   {
     label: "Research",
-    href: "/p/research",
+    href: "/research",
     iconName: "FlaskConical",
     section: "primary",
     description: "Deep research with Automated topic analysis",

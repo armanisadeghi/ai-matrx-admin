@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   Building2,
   FolderKanban,
@@ -79,17 +80,22 @@ export function HierarchyPills({
   className,
   size = "sm",
 }: HierarchyPillsProps) {
+  const [mounted, setMounted] = useState(false);
   const ctx = useHierarchySelection({
     levels,
     controlled: { value, onChange },
   });
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const includesScopes = levels.includes("scope");
   const scopeSelections = value.scopeSelections ?? {};
 
-  if (ctx.isLoading) {
+  if (!mounted || ctx.isLoading) {
     return (
-      <div className={cn("flex items-center gap-1.5", className)}>
+      <div className={cn("flex items-center gap-1.5 flex-wrap", className)}>
         <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
         <span className="text-xs text-muted-foreground">Loading...</span>
       </div>

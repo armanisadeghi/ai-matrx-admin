@@ -17,7 +17,7 @@
  * 2. **Imperative** — call with no arguments for on-demand launching:
  *    ```tsx
  *    const { launchAgent, launchShortcut, launchChat, close } = useAgentLauncher();
- *    const result = await launchAgent("agent-uuid", { displayMode: "modal-full" });
+ *    const result = await launchAgent("agent-uuid", { config: { displayMode: "modal-full" } });
  *    ```
  *
  * All paths delegate to the `launchAgentExecution` orchestrator thunk which
@@ -110,28 +110,15 @@ export function useAgentLauncher(
         agentId: id,
         surfaceKey: opts?.surfaceKey,
         sourceFeature: opts?.sourceFeature,
-        displayMode: opts?.displayMode,
-        autoRun: opts?.autoRun,
-        allowChat: opts?.allowChat,
-        showVariables: opts?.showVariables,
-        showVariablePanel: opts?.showVariablePanel,
-        showDefinitionMessages: opts?.showDefinitionMessages,
-        showDefinitionMessageContent: opts?.showDefinitionMessageContent,
-        showPreExecutionGate: opts?.showPreExecutionGate,
+        config: opts?.config,
+        runtime: opts?.runtime,
+        apiEndpointMode: opts?.apiEndpointMode,
         showAutoClearToggle: opts?.showAutoClearToggle,
         autoClearConversation: opts?.autoClearConversation,
-        apiEndpointMode: opts?.apiEndpointMode,
-        userInput: opts?.userInput,
-        variables: opts?.variables,
-        overrides: opts?.overrides,
-        applicationScope: opts?.applicationScope,
-        variablesPanelStyle: opts?.variablesPanelStyle,
-        hideReasoning: opts?.hideReasoning,
-        hideToolResults: opts?.hideToolResults,
-        preExecutionMessage: opts?.preExecutionMessage,
+        ready: opts?.ready,
+        isEphemeral: opts?.isEphemeral,
         jsonExtraction: opts?.jsonExtraction,
-        widgetHandleId: opts?.widgetHandleId,
-        originalText: opts?.originalText,
+        onConversationCreated: opts?.onConversationCreated,
       };
       return dispatch(launchAgentExecution(payload)).unwrap();
     },
@@ -159,20 +146,10 @@ export function useAgentLauncher(
         sourceFeature: opts?.sourceFeature ?? "context-menu",
         config: opts?.config,
         runtime,
-        // Forward legacy flat fields if any caller still passes them — the
-        // launch thunk's normalizer collapses them into config/runtime.
-        ...(opts?.displayMode !== undefined && {
-          displayMode: opts.displayMode,
-        }),
-        ...(opts?.autoRun !== undefined && { autoRun: opts.autoRun }),
-        ...(opts?.allowChat !== undefined && { allowChat: opts.allowChat }),
-        ...(opts?.showVariablePanel !== undefined && {
-          showVariablePanel: opts.showVariablePanel,
-        }),
-        ...(opts?.showPreExecutionGate !== undefined && {
-          showPreExecutionGate: opts.showPreExecutionGate,
-        }),
-        ...(opts?.userInput !== undefined && { userInput: opts.userInput }),
+        apiEndpointMode: opts?.apiEndpointMode,
+        showAutoClearToggle: opts?.showAutoClearToggle,
+        autoClearConversation: opts?.autoClearConversation,
+        jsonExtraction: opts?.jsonExtraction,
       };
       return dispatch(launchAgentExecution(payload)).unwrap();
     },
@@ -181,46 +158,24 @@ export function useAgentLauncher(
 
   const launchChat = useCallback(
     async (opts?: ManagedAgentOptions): Promise<LaunchResult> => {
-      const apiEndpointMode = opts?.apiEndpointMode ?? "agent";
-      const allowChat = opts?.allowChat ?? true;
-
       const payload: ManagedAgentOptions = {
         manual: {
           label: "Chat",
-          baseSettings: opts?.overrides,
+          baseSettings: opts?.config?.llmOverrides,
         },
         surfaceKey: opts?.surfaceKey,
         sourceFeature: opts?.sourceFeature,
-        displayMode: opts?.displayMode,
-        autoRun: opts?.autoRun,
-        allowChat,
-        showVariables: opts?.showVariables,
-        showVariablePanel: opts?.showVariablePanel,
-        showDefinitionMessages: opts?.showDefinitionMessages,
-        showDefinitionMessageContent: opts?.showDefinitionMessageContent,
-        showPreExecutionGate: opts?.showPreExecutionGate,
-        userInput: opts?.userInput,
-        variables: opts?.variables,
-        apiEndpointMode,
-        widgetHandleId: opts?.widgetHandleId,
-        originalText: opts?.originalText,
+        // allowChat defaults to true for chat mode; caller's config wins.
+        config: { allowChat: true, ...opts?.config },
+        runtime: opts?.runtime,
+        apiEndpointMode: opts?.apiEndpointMode ?? "agent",
+        showAutoClearToggle: opts?.showAutoClearToggle,
+        autoClearConversation: opts?.autoClearConversation,
+        jsonExtraction: opts?.jsonExtraction,
       };
       return dispatch(launchAgentExecution(payload)).unwrap();
     },
     [dispatch],
-  );
-
-  const launch = useCallback(
-    async (opts: ManagedAgentOptions): Promise<LaunchResult> => {
-      if (opts?.apiEndpointMode === "manual") {
-        return await launchChat(opts);
-      } else if (opts?.apiEndpointMode === "agent") {
-        return await launchAgent(agentId!, opts);
-      } else {
-        throw new Error("Invalid API Endpoint Mode");
-      }
-    },
-    [launchAgent, launchChat],
   );
 
   const close = useCallback(
@@ -235,29 +190,13 @@ export function useAgentLauncher(
   const isManaged = agentId != null && surfaceKey != null;
   const {
     ready = true,
-    displayMode = "direct",
-    autoRun = false,
-    allowChat,
-    showVariables,
-    showVariablePanel,
-    showDefinitionMessages,
-    showDefinitionMessageContent,
-    showPreExecutionGate,
+    config,
+    runtime,
+    sourceFeature,
     showAutoClearToggle,
     autoClearConversation,
     apiEndpointMode,
-    userInput,
-    variables,
-    overrides,
-    sourceFeature,
-    applicationScope,
-    variablesPanelStyle,
-    hideReasoning,
-    hideToolResults,
-    preExecutionMessage,
     jsonExtraction,
-    widgetHandleId,
-    originalText,
   } = options ?? {};
 
   useEffect(() => {
@@ -267,29 +206,15 @@ export function useAgentLauncher(
 
     launchAgent(agentId!, {
       surfaceKey,
-      displayMode,
-      autoRun,
-      allowChat,
-      showVariables,
-      showVariablePanel,
-      showDefinitionMessages,
-      showDefinitionMessageContent,
-      showPreExecutionGate,
+      sourceFeature,
+      // Managed-mode defaults: direct display, no auto-run.
+      // Caller's config takes precedence via the spread.
+      config: { displayMode: "direct", autoRun: false, ...config },
+      runtime,
+      apiEndpointMode,
       showAutoClearToggle,
       autoClearConversation,
-      apiEndpointMode,
-      userInput,
-      variables,
-      overrides,
-      sourceFeature,
-      applicationScope,
-      variablesPanelStyle,
-      hideReasoning,
-      hideToolResults,
-      preExecutionMessage,
       jsonExtraction,
-      widgetHandleId,
-      originalText,
     })
       .then((result) => {
         createdId = result.conversationId;

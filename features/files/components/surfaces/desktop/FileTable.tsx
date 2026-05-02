@@ -18,6 +18,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectActiveFileId,
   selectColumnFilters,
+  selectFocusedId,
   selectKindFilter,
   selectAllFoldersMap,
   selectSelection,
@@ -28,6 +29,7 @@ import {
   setActiveFileId,
   setActiveFolderId,
   setColumnFilter,
+  setFocusedId,
   setSelection,
   setSort,
   toggleSelection,
@@ -97,6 +99,7 @@ export function FileTable({
   const dispatch = useAppDispatch();
   const selection = useAppSelector(selectSelection);
   const activeFileId = useAppSelector(selectActiveFileId);
+  const focusedId = useAppSelector(selectFocusedId);
   const { sortBy, sortDir } = useAppSelector(selectSort);
   const kindFilter = useAppSelector(selectKindFilter);
   const columnFilters = useAppSelector(selectColumnFilters);
@@ -178,9 +181,11 @@ export function FileTable({
       if (row.kind === "folder") {
         dispatch(setActiveFolderId(row.folder.id));
         dispatch(setActiveFileId(null));
+        dispatch(setFocusedId(row.folder.id));
         onActivateFolder(row.folder.id);
       } else {
         dispatch(setActiveFileId(row.file.id));
+        dispatch(setFocusedId(row.file.id));
         onActivateFile(row.file.id);
       }
     },
@@ -284,7 +289,10 @@ export function FileTable({
                     value={columnFilters.name}
                     onChange={(e) =>
                       dispatch(
-                        setColumnFilter({ column: "name", value: e.target.value }),
+                        setColumnFilter({
+                          column: "name",
+                          value: e.target.value,
+                        }),
                       )
                     }
                     placeholder="Filter by name…"
@@ -380,7 +388,11 @@ export function FileTable({
                   folder={row.kind === "folder" ? row.folder : undefined}
                   selected={selected}
                   isPreviewActive={isPreviewActive}
-                  onToggleSelected={() => dispatch(toggleSelection({ id }))}
+                  isFocused={focusedId === id}
+                  onToggleSelected={() => {
+                    dispatch(toggleSelection({ id }));
+                    dispatch(setFocusedId(id));
+                  }}
                   onActivate={() => handleRowActivate(row)}
                   onOpenShare={() =>
                     setShareTarget({
@@ -420,13 +432,15 @@ interface ModifiedFilterPickerProps {
   onChange: (next: ModifiedFilter) => void;
 }
 
-const MODIFIED_OPTIONS: ReadonlyArray<{ value: ModifiedFilter; label: string }> =
-  [
-    { value: "any", label: "Any time" },
-    { value: "today", label: "Today" },
-    { value: "week", label: "Last 7 days" },
-    { value: "month", label: "Last 30 days" },
-  ];
+const MODIFIED_OPTIONS: ReadonlyArray<{
+  value: ModifiedFilter;
+  label: string;
+}> = [
+  { value: "any", label: "Any time" },
+  { value: "today", label: "Today" },
+  { value: "week", label: "Last 7 days" },
+  { value: "month", label: "Last 30 days" },
+];
 
 function ModifiedFilterPicker({ value, onChange }: ModifiedFilterPickerProps) {
   return (
@@ -516,10 +530,7 @@ function AccessHeader({ active, onChange }: AccessHeaderProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-48">
         {ACCESS_OPTIONS.map((opt) => (
-          <DropdownMenuItem
-            key={opt.value}
-            onClick={() => onChange(opt.value)}
-          >
+          <DropdownMenuItem key={opt.value} onClick={() => onChange(opt.value)}>
             {active === opt.value ? (
               <Check className="mr-2 h-4 w-4" />
             ) : (

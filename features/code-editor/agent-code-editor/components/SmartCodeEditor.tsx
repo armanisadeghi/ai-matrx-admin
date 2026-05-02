@@ -303,12 +303,16 @@ export function SmartCodeEditor({
         const result = await launchAgent(agentId, {
           surfaceKey: SMART_CODE_EDITOR_SURFACE_KEY,
           sourceFeature: "code-editor",
-          displayMode: "direct",
-          autoRun: false,
-          allowChat: true,
           apiEndpointMode: "agent",
-          widgetHandleId,
-          variables: { [agent.codeVariableKey]: code },
+          config: {
+            displayMode: "direct",
+            autoRun: false,
+            allowChat: true,
+            defaultVariables: { [agent.codeVariableKey]: code },
+          },
+          runtime: {
+            widgetHandleId,
+          },
         });
         setActiveConversationId(result.conversationId);
         setActiveAgentId(agentId);

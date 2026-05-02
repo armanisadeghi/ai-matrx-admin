@@ -37,6 +37,7 @@ export interface UserData {
   identities: IdentityData[];
   isAdmin: boolean;
   accessToken: string | null;
+  tokenExpiresAt: number | null;
 }
 
 /**
@@ -84,8 +85,9 @@ export function mapUserData(
         sub: identity?.identity_data?.sub || null,
         name: identity?.identity_data?.name || null,
       })) || [],
-    isAdmin: isAdmin ?? false, // Use provided value or default to false
+    isAdmin: isAdmin ?? false,
     accessToken: accessToken || null,
+    tokenExpiresAt: null,
   };
 }
 

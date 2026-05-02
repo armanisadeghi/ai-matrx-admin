@@ -46,10 +46,7 @@ import {
   ArrowDownFromLine,
   X,
 } from "lucide-react";
-import type {
-  ResultDisplayMode,
-  VariablesPanelStyle,
-} from "@/features/agents/types/instance.types";
+import type { VariablesPanelStyle } from "@/features/agents/types/instance.types";
 import { ApiEndpointMode } from "@/features/agents/types/instance.types";
 
 interface AgentExecutionTestModalProps {
@@ -105,11 +102,15 @@ function DirectTestMode({
       const result = await launchAgent(agentId, {
         surfaceKey,
         sourceFeature: "agent-builder",
-        displayMode: "direct" as ResultDisplayMode,
-        autoRun: true,
         apiEndpointMode,
-        variables,
-        userInput: userInput || "Hello, please respond briefly.",
+        config: {
+          displayMode: "direct",
+          autoRun: true,
+          defaultVariables: variables,
+        },
+        runtime: {
+          userInput: userInput || "Hello, please respond briefly.",
+        },
       });
       setConversationId(result.conversationId);
     } catch (err) {
@@ -238,11 +239,15 @@ function InlineTestMode({
       const result = await launchAgent(agentId, {
         surfaceKey,
         sourceFeature: "agent-builder",
-        displayMode: "inline" as ResultDisplayMode,
-        autoRun: true,
         apiEndpointMode,
-        variables: { ...variables, selection: selectedText },
-        userInput: userInput || `Process this text: "${selectedText}"`,
+        config: {
+          displayMode: "inline",
+          autoRun: true,
+          defaultVariables: { ...variables, selection: selectedText },
+        },
+        runtime: {
+          userInput: userInput || `Process this text: "${selectedText}"`,
+        },
       });
       setConversationId(result.conversationId);
     } catch (err) {
@@ -412,12 +417,16 @@ function BackgroundTestMode({
       const result = await launchAgent(agentId, {
         surfaceKey,
         sourceFeature: "agent-builder",
-        displayMode: "background" as ResultDisplayMode,
-        autoRun: true,
         apiEndpointMode,
-        variables,
-        userInput: userInput || "Respond briefly with one sentence.",
-        widgetHandleId,
+        config: {
+          displayMode: "background",
+          autoRun: true,
+          defaultVariables: variables,
+        },
+        runtime: {
+          userInput: userInput || "Respond briefly with one sentence.",
+          widgetHandleId,
+        },
       });
 
       setTasks((prev) => [

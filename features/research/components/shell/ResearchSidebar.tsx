@@ -11,10 +11,9 @@ import {
   Search,
   Image,
   DollarSign,
-  ChevronLeft,
   BookOpen,
   FlaskConical,
-  Bot,
+  Cpu,
   Settings2,
   Brain,
   ListChecks,
@@ -37,7 +36,7 @@ const ICON_MAP: Record<string, typeof LayoutDashboard> = {
   DollarSign,
   BookOpen,
   FlaskConical,
-  Bot,
+  Cpu,
   Settings2,
   Brain,
   ListChecks,
@@ -104,15 +103,6 @@ export function ResearchSidebar({ topicId }: ResearchSidebarProps) {
 
   return (
     <aside className="hidden md:flex w-44 flex-col border-r border-border/50 bg-card/30 backdrop-blur-sm shrink-0">
-      <div className="flex items-center gap-1.5 px-2.5 h-10 border-b border-border/50">
-        <Link
-          href="/p/research/topics"
-          className="inline-flex items-center justify-center h-6 w-6 rounded-full shell-glass-card text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ChevronLeft className="h-3.5 w-3.5" />
-        </Link>
-        <span className="text-xs font-semibold truncate">Research</span>
-      </div>
       <nav className="flex-1 py-1.5 px-1.5 overflow-y-auto">
         <div className="space-y-px">{primaryItems.map(renderItem)}</div>
 

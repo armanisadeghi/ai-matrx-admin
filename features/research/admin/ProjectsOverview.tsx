@@ -215,7 +215,7 @@ export function ProjectsOverview() {
                     asChild
                   >
                     <a
-                      href={`/p/research/topics/${config.id}`}
+                      href={`/research/topics/${config.id}`}
                       target="_blank"
                       rel="noreferrer"
                     >

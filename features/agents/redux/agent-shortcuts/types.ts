@@ -77,6 +77,7 @@ export interface AgentShortcut {
   showDefinitionMessageContent: boolean;
   hideReasoning: boolean;
   hideToolResults: boolean;
+  responseDensity: "comfortable" | "compact";
   showPreExecutionGate: boolean;
   preExecutionMessage: string | null;
   bypassGateSeconds: number;

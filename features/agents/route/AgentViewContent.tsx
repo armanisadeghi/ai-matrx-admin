@@ -43,12 +43,14 @@ import {
   Globe,
   Archive,
   Folder,
+  AlignLeft,
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { AgentDefinitionMessage } from "@/features/agents/types/agent-message-types";
 import MarkdownStream from "@/components/MarkdownStream";
+import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
 
 function extractTextContent(msg: AgentDefinitionMessage): string {
   if (!msg.content || !Array.isArray(msg.content)) return "";
@@ -104,6 +106,48 @@ function StatChip({
 }
 
 type ViewMode = "pretty" | "json";
+type MsgRenderMode = "md" | "plain";
+
+function MessageCard({ role, content }: { role?: string; content: string }) {
+  const [mode, setMode] = useState<MsgRenderMode>("md");
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between gap-2">
+        {role && <RoleBadge role={role} />}
+        <ToggleGroup
+          type="single"
+          value={mode}
+          onValueChange={(v) => v && setMode(v as MsgRenderMode)}
+          size="sm"
+          variant="outline"
+          className="ml-auto"
+        >
+          <ToggleGroupItem
+            value="md"
+            className="h-5 px-1.5 text-[0.625rem] gap-0.5"
+            aria-label="Rendered markdown"
+          >
+            <Eye className="w-3 h-3" /> MD
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="plain"
+            className="h-5 px-1.5 text-[0.625rem] gap-0.5"
+            aria-label="Plain text"
+          >
+            <AlignLeft className="w-3 h-3" /> Text
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+      {mode === "md" ? (
+        <MarkdownStream content={content || "—"} isStreamActive={false} />
+      ) : (
+        <pre className="text-sm font-mono whitespace-pre-wrap break-words p-3 rounded-md bg-muted/30 border border-border/40 leading-relaxed">
+          {content || "—"}
+        </pre>
+      )}
+    </div>
+  );
+}
 
 export function AgentViewContent({ agentId }: { agentId: string }) {
   const [mounted, setMounted] = useState(false);
@@ -245,13 +289,13 @@ export function AgentViewContent({ agentId }: { agentId: string }) {
         </div>
 
         {effectiveView === "json" ? (
-          <Card>
-            <CardContent className="p-0">
-              <pre className="text-xs font-mono p-4 overflow-auto bg-muted/30 rounded-md max-h-[calc(100dvh-10rem)] whitespace-pre">
-                {definitionJson}
-              </pre>
-            </CardContent>
-          </Card>
+          <div className="h-[calc(100dvh-12rem)]">
+            <JsonInspector
+              data={definition ?? {}}
+              label="Agent Definition"
+              className="h-full"
+            />
+          </div>
         ) : (
           <>
             {/* Hero — name, id (version), description */}
@@ -572,10 +616,13 @@ export function AgentViewContent({ agentId }: { agentId: string }) {
                     Output Schema
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <pre className="text-xs font-mono p-3 overflow-x-auto bg-muted/30 rounded-md max-h-80 overflow-y-auto whitespace-pre">
-                    {JSON.stringify(outputSchema, null, 2)}
-                  </pre>
+                <CardContent className="p-0 pb-0">
+                  <div className="h-64">
+                    <JsonInspector
+                      data={outputSchema}
+                      className="h-full rounded-t-none"
+                    />
+                  </div>
                 </CardContent>
               </Card>
             )}
@@ -592,10 +639,7 @@ export function AgentViewContent({ agentId }: { agentId: string }) {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <MarkdownStream
-                    content={extractTextContent(systemMessage) || "—"}
-                    isStreamActive={false}
-                  />
+                  <MessageCard content={extractTextContent(systemMessage)} />
                 </CardContent>
               </Card>
             )}
@@ -609,15 +653,13 @@ export function AgentViewContent({ agentId }: { agentId: string }) {
                     Messages ({conversationMessages.length})
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-4">
                   {conversationMessages.map((msg, i) => (
-                    <div key={i} className="space-y-1">
-                      <RoleBadge role={msg.role} />
-                      <MarkdownStream
-                        content={extractTextContent(msg) || "—"}
-                        isStreamActive={false}
-                      />
-                    </div>
+                    <MessageCard
+                      key={i}
+                      role={msg.role}
+                      content={extractTextContent(msg)}
+                    />
                   ))}
                 </CardContent>
               </Card>

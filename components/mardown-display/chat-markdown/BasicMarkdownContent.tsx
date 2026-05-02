@@ -16,6 +16,28 @@ import { InlineCodeSnippet } from "@/components/mardown-display/chat-markdown/In
 import remarkMatrxVariable from "@/components/mardown-display/chat-markdown/matrx-variables/remarkMatrxVariable";
 import { MatrxVariableInline } from "@/components/mardown-display/chat-markdown/matrx-variables/MatrxVariableInline";
 
+const INLINE_VARIABLE_RE = /\{\{([a-zA-Z_][a-zA-Z0-9_.]*)\}\}/g;
+
+/**
+ * Splits a plain string into an array mixing literal spans and
+ * MatrxVariableInline elements. Used for inline code and fenced-code paths
+ * where the remark plugin intentionally leaves `{{var}}` unexpanded.
+ */
+function splitWithVariables(text: string): React.ReactNode[] {
+  INLINE_VARIABLE_RE.lastIndex = 0;
+  const nodes: React.ReactNode[] = [];
+  let lastIdx = 0;
+  let match: RegExpExecArray | null;
+  let i = 0;
+  while ((match = INLINE_VARIABLE_RE.exec(text)) !== null) {
+    if (match.index > lastIdx) nodes.push(text.slice(lastIdx, match.index));
+    nodes.push(<MatrxVariableInline key={i++} data-name={match[1]} />);
+    lastIdx = match.index + match[0].length;
+  }
+  if (lastIdx < text.length) nodes.push(text.slice(lastIdx));
+  return nodes.length > 0 ? nodes : [text];
+}
+
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
 // Detect text direction utility
@@ -631,6 +653,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
                 code={codeText}
                 language={language}
                 className="my-2"
+                renderVariables
               />
             );
           }
@@ -658,6 +681,20 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
           );
         }
 
+        // Expand {{variable}} tokens inside inline code spans.
+        // The remark plugin intentionally skips inlineCode nodes, so we handle
+        // them here at the React render level — the raw source is untouched.
+        const rawText =
+          typeof children === "string"
+            ? children
+            : Array.isArray(children)
+              ? children.join("")
+              : null;
+        const codeContent =
+          rawText && rawText.includes("{{")
+            ? splitWithVariables(rawText)
+            : children;
+
         return (
           <code
             className={cn(
@@ -671,7 +708,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             }}
             {...props}
           >
-            {children}
+            {codeContent}
           </code>
         );
       },

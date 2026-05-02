@@ -22,7 +22,7 @@ import {
   selectDiagnosticsByTabId,
 } from "../redux/diagnosticsSlice";
 import { PLACEMENT_TYPES } from "@/features/agent-shortcuts/constants";
-import type { editor } from "monaco-editor";
+import type { StandaloneCodeEditor } from "../editor/MonacoEditor";
 
 const UnifiedAgentContextMenu = dynamic(
   () =>
@@ -34,7 +34,7 @@ const UnifiedAgentContextMenu = dynamic(
 
 interface CodeWorkspaceContextMenuProps {
   children: React.ReactNode;
-  editorRef: MutableRefObject<editor.IStandaloneCodeEditor | null>;
+  editorRef: MutableRefObject<StandaloneCodeEditor | null>;
   /**
    * Bump-counter incremented on Monaco mount — re-runs the selection-tracking
    * effect once the editor instance is actually attached.

@@ -290,7 +290,7 @@ function SourceRow({
                     onClick={(e) => {
                       if (e.metaKey || e.ctrlKey) {
                         window.open(
-                          `/p/research/topics/${topicId}/sources/${source.id}`,
+                          `/research/topics/${topicId}/sources/${source.id}`,
                           "_blank",
                         );
                         return;
@@ -415,7 +415,7 @@ export default function SourceList() {
       if (navigatingId) return;
       setNavigatingId(id);
       startTransition(() => {
-        router.push(`/p/research/topics/${topicId}/sources/${id}`);
+        router.push(`/research/topics/${topicId}/sources/${id}`);
       });
     },
     [navigatingId, router, topicId],
@@ -603,7 +603,7 @@ export default function SourceList() {
             return (
               <Link
                 key={source.id}
-                href={`/p/research/topics/${topicId}/sources/${source.id}`}
+                href={`/research/topics/${topicId}/sources/${source.id}`}
                 onClick={(e) => !anyNavigating && handleNavigate(source.id, e)}
                 className={cn(
                   "rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm overflow-hidden transition-colors relative block",

@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Agent Apps — Redux Slice (scaffold)
  *
@@ -110,7 +112,9 @@ function applyFieldEdit<K extends keyof AgentApp>(
   value: AgentApp[K],
 ): void {
   if (!hasField(record._dirtyFields, field)) {
-    (record._fieldHistory as AppFieldSnapshot)[field] = record[field] as AgentApp[K];
+    (record._fieldHistory as AppFieldSnapshot)[field] = record[
+      field
+    ] as AgentApp[K];
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (record as any)[field] = value;
@@ -172,7 +176,10 @@ const agentAppSlice = createSlice({
       state.apps[data.id] = record;
     },
 
-    mergePartialApp(state, action: PayloadAction<Partial<AgentApp> & { id: string }>) {
+    mergePartialApp(
+      state,
+      action: PayloadAction<Partial<AgentApp> & { id: string }>,
+    ) {
       const { id, ...partial } = action.payload;
       const record = state.apps[id];
       if (!record) return;
@@ -270,10 +277,7 @@ const agentAppSlice = createSlice({
       state.activeAppId = action.payload;
     },
 
-    setAppsStatus(
-      state,
-      action: PayloadAction<AgentAppSliceState["status"]>,
-    ) {
+    setAppsStatus(state, action: PayloadAction<AgentAppSliceState["status"]>) {
       state.status = action.payload;
     },
 

@@ -35,6 +35,7 @@ export function SearchableAgentSelect({
     return agents.filter(
       (a) =>
         a.name.toLowerCase().includes(q) ||
+        a.id.toLowerCase().includes(q) ||
         (a.description ?? "").toLowerCase().includes(q) ||
         (a.category ?? "").toLowerCase().includes(q),
     );

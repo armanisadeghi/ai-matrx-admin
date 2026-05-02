@@ -8,7 +8,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { Copy, MoreHorizontal, Share2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -37,6 +37,11 @@ export interface FileGridCellProps {
   selected: boolean;
   /** True when this file is currently open in the preview pane. */
   isPreviewActive?: boolean;
+  /**
+   * True when this item has visual focus (Google-Drive-style blue ring).
+   * Set automatically after create/upload so the user can see the new item.
+   */
+  isFocused?: boolean;
   isShared: boolean;
   onToggleSelected: () => void;
   onActivate: () => void;
@@ -64,6 +69,7 @@ function GridFile({
   file,
   selected,
   isPreviewActive,
+  isFocused,
   isShared,
   onToggleSelected,
   onActivate,
@@ -73,6 +79,13 @@ function GridFile({
   const [hovered, setHovered] = useState(false);
   const actions = useFileActions(file.id);
   const ext = file.fileName.split(".").pop()?.toUpperCase() ?? "FILE";
+  const cellRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isFocused) {
+      cellRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+  }, [isFocused]);
 
   // File cells are draggable. The activation distance on the parent
   // PointerSensor (6px) preserves single-click selection.
@@ -81,17 +94,24 @@ function GridFile({
     data: { type: "file", id: file.id },
   });
 
+  const mergeRef = (node: HTMLDivElement | null) => {
+    (cellRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+    setNodeRef(node);
+  };
+
   return (
     <FileRowContextMenu fileId={file.id}>
       <div
-        ref={setNodeRef}
+        ref={mergeRef}
         className={cn(
           "group flex flex-col rounded-lg border bg-card overflow-hidden transition-shadow",
           isPreviewActive
             ? "ring-2 ring-primary bg-primary/5"
-            : selected
-              ? "ring-2 ring-ring"
-              : null,
+            : isFocused
+              ? "ring-2 ring-primary/60 bg-primary/8"
+              : selected
+                ? "ring-2 ring-ring"
+                : null,
           "hover:shadow-sm",
           isDragging && "opacity-50",
         )}
@@ -203,6 +223,7 @@ interface GridFolderProps extends FileGridCellProps {
 function GridFolder({
   folder,
   selected,
+  isFocused,
   isShared,
   onToggleSelected,
   onActivate,
@@ -211,6 +232,13 @@ function GridFolder({
 }: GridFolderProps) {
   const [hovered, setHovered] = useState(false);
   const folderActions = useFolderActions(folder.id);
+  const cellRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isFocused) {
+      cellRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+  }, [isFocused]);
 
   // Folder cells are both drop targets AND draggable. Drop = move file/
   // folder into here. Drag = move this folder under another folder.
@@ -228,6 +256,7 @@ function GridFolder({
     data: { type: "folder", id: folder.id },
   });
   const setMergedRef = (node: HTMLDivElement | null) => {
+    (cellRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
     setDropRef(node);
     setDragRef(node);
   };
@@ -238,7 +267,11 @@ function GridFolder({
         ref={setMergedRef}
         className={cn(
           "group flex flex-col rounded-lg border bg-card overflow-hidden transition-shadow",
-          selected && "ring-2 ring-ring",
+          isFocused
+            ? "ring-2 ring-primary/60 bg-primary/8"
+            : selected
+              ? "ring-2 ring-ring"
+              : null,
           "hover:shadow-sm",
           isOver && "ring-2 ring-primary bg-primary/5",
           isDragging && "opacity-50",

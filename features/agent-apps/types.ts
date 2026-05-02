@@ -58,8 +58,11 @@ export interface AppMetadata {
 // Core — backed by DB row shape (when generated types land, swap in DbRow)
 // ============================================================================
 
-export type AgentAppRow =
-  Database["public"]["Tables"] extends { agent_apps: { Row: infer R } } ? R : never;
+export type AgentAppRow = Database["public"]["Tables"] extends {
+  agent_apps: { Row: infer R };
+}
+  ? R
+  : never;
 
 export interface AgentAppRecord {
   id: string;
@@ -73,6 +76,10 @@ export interface AgentAppRecord {
   agent_id: string;
   agent_version_id: string | null;
   use_latest: boolean;
+
+  app_kind: string;
+  shared_context_slots: Json | null;
+  search_tsv: unknown;
 
   component_code: string;
   component_language: ComponentLanguage;

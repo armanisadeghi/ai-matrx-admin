@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
 import {
   TAB_INDEX_ID,

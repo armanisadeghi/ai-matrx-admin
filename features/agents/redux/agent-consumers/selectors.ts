@@ -72,7 +72,10 @@ export function computeAgentSearchScore(
   if (agent.tags?.some((t) => t.toLowerCase().includes(q))) score += 300;
   if (agent.modelId?.toLowerCase().includes(q)) score += 100;
   if (agent.agentType?.toLowerCase().includes(q)) score += 100;
-  if (agent.id?.toLowerCase().includes(q)) score += 50;
+
+  // ID search — exact UUID match ranks highest so you can always find an agent by its id
+  if (agent.id?.toLowerCase() === q) score += 100000;
+  else if (agent.id?.toLowerCase().includes(q)) score += 5000;
 
   // shared_by_email — helps find agents shared by a specific person
   if (agent.sharedByEmail?.toLowerCase().includes(q)) score += 200;

@@ -11,7 +11,6 @@ import {
   CheckSquare,
   Loader2,
   Plus,
-  Send,
   Save,
   Trash2,
   Check,
@@ -49,6 +48,7 @@ import TaskScopeTags from "./TaskScopeTags";
 import TaskAssigneePicker from "./TaskAssigneePicker";
 import TaskAttachmentsPanel from "./TaskAttachmentsPanel";
 import { Textarea } from "@/components/ui/textarea";
+import { VoiceTextarea } from "@/components/official/VoiceTextarea";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -56,7 +56,10 @@ import { cn } from "@/utils/cn";
 
 type Priority = "low" | "medium" | "high" | null;
 
-const PRIORITY_STYLES: Record<string, { bg: string; text: string; label: string }> = {
+const PRIORITY_STYLES: Record<
+  string,
+  { bg: string; text: string; label: string }
+> = {
   high: {
     bg: "bg-red-500/10 border-red-500/40",
     text: "text-red-600 dark:text-red-400",
@@ -289,7 +292,9 @@ function TaskEditorInner({ taskId }: { taskId: string }) {
     patch("labels", next);
   };
 
-  const completedSubtasks = subtasks.filter((s) => s.status === "completed").length;
+  const completedSubtasks = subtasks.filter(
+    (s) => s.status === "completed",
+  ).length;
 
   return (
     <div className="flex flex-col h-full min-h-0 bg-background">
@@ -610,33 +615,17 @@ function TaskEditorInner({ taskId }: { taskId: string }) {
                 ))}
               </div>
             ) : null}
-            <div className="flex items-start gap-2">
-              <Textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                    e.preventDefault();
-                    handleAddComment();
-                  }
-                }}
-                placeholder="Add a comment... (⌘+Enter to post)"
-                className="text-xs min-h-[60px] resize-y bg-card/40 border-border/60"
-                rows={2}
-              />
-              <Button
-                size="sm"
-                onClick={handleAddComment}
-                disabled={!newComment.trim() || isAddingComment}
-                className="h-auto px-3 py-2 shrink-0"
-              >
-                {isAddingComment ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Send className="w-3.5 h-3.5" />
-                )}
-              </Button>
-            </div>
+            <VoiceTextarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Add a comment...  (⌘+Enter to post)"
+              className="text-sm min-h-[88px] resize-y bg-card/40 border-border/60"
+              rows={3}
+              onSubmit={handleAddComment}
+              submitDisabled={!newComment.trim()}
+              isSubmitting={isAddingComment}
+              submitLabel="Post comment"
+            />
           </section>
 
           {/* Advanced */}
@@ -812,7 +801,9 @@ function ProjectSelect({
   return (
     <select
       value={value ?? "__none__"}
-      onChange={(e) => onChange(e.target.value === "__none__" ? null : e.target.value)}
+      onChange={(e) =>
+        onChange(e.target.value === "__none__" ? null : e.target.value)
+      }
       className="h-8 w-full bg-card border border-border rounded-md px-2 text-xs outline-none hover:border-foreground/30 focus:border-primary/60 transition-colors"
     >
       <option value="__none__">Unassigned</option>

@@ -200,35 +200,31 @@ export function useAgentLauncherTester(
     const options: ManagedAgentOptions = {
       surfaceKey: uniqueSurfaceKey,
       sourceFeature,
-      displayMode,
-      autoRun,
-      allowChat,
-      showPreExecutionGate,
       apiEndpointMode,
-      variablesPanelStyle,
-      showVariablePanel,
-      showDefinitionMessages,
-      showDefinitionMessageContent,
       autoClearConversation,
       showAutoClearToggle,
-      hideReasoning,
-      hideToolResults,
+      ...(jsonExtraction ? { jsonExtraction } : {}),
+      config: {
+        displayMode,
+        autoRun,
+        allowChat,
+        showPreExecutionGate,
+        variablesPanelStyle,
+        showVariablePanel,
+        showDefinitionMessages,
+        showDefinitionMessageContent,
+        hideReasoning,
+        hideToolResults,
+        ...(preExecutionMessage ? { preExecutionMessage } : {}),
+        ...(overrides ? { llmOverrides: overrides } : {}),
+        ...(applyVariables ? { defaultVariables: currentVariables } : {}),
+      },
+      runtime: {
+        ...(includeEditorContext && editorSelection ? { originalText: editorSelection } : {}),
+        ...(applicationScope ? { applicationScope } : {}),
+        ...(applyUserInput && currentInput ? { userInput: currentInput } : {}),
+      },
     };
-
-    if (preExecutionMessage) options.preExecutionMessage = preExecutionMessage;
-    if (includeEditorContext && editorSelection) {
-      options.originalText = editorSelection;
-    }
-    if (overrides) options.overrides = overrides;
-    if (applicationScope) options.applicationScope = applicationScope;
-    if (jsonExtraction) options.jsonExtraction = jsonExtraction;
-
-    if (applyVariables) {
-      options.variables = currentVariables;
-    }
-    if (applyUserInput && currentInput) {
-      options.userInput = currentInput;
-    }
 
     try {
       await launchAgent(instance.agentId, options);

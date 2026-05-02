@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description:
     "AI-powered research pipeline. Gather web content, analyze sources, and generate comprehensive research reports with human-in-the-loop curation.",
   alternates: {
-    canonical: "/p/research",
+    canonical: "/research",
   },
   openGraph: {
     title: "AI Matrx Research",

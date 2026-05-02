@@ -51,12 +51,13 @@ export function AgentBuilderRightPanel({
     surfaceKey,
     sourceFeature,
     apiEndpointMode: "manual",
-    showVariables: true,
-    autoRun: false,
-    allowChat: true,
-    showVariablePanel: true,
     showAutoClearToggle: true,
     autoClearConversation: true,
+    config: {
+      autoRun: false,
+      allowChat: true,
+      showVariablePanel: true,
+    },
   };
 
   const { conversationId, displayConversationId } = useAgentLauncher(

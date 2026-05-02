@@ -19,6 +19,7 @@
 "use client";
 
 import { getStore } from "@/lib/redux/store-singleton";
+import type { AppDispatch } from "@/lib/redux/store";
 import * as Api from "@/features/files/api";
 import { CloudFolders } from "@/features/files/utils/folder-conventions";
 import { extractErrorMessage } from "@/utils/errors";
@@ -56,16 +57,15 @@ async function uploadWithRetry(
 
   // Resolve the hidden staging folder once. `ensureFolderPath` is idempotent
   // — subsequent attempts reuse the existing folder.
+  const dispatch = store.dispatch as AppDispatch;
   let parentFolderId: string | null = null;
   try {
-    parentFolderId = await store
-      .dispatch(
-        ensureFolderPath({
-          folderPath: CloudFolders.TMP_TRANSCRIPTS,
-          visibility: "private",
-        }),
-      )
-      .unwrap();
+    parentFolderId = await dispatch(
+      ensureFolderPath({
+        folderPath: CloudFolders.TMP_TRANSCRIPTS,
+        visibility: "private",
+      }),
+    ).unwrap();
   } catch {
     // If folder creation fails (RLS, transient network), fall back to root.
     parentFolderId = null;
@@ -78,21 +78,19 @@ async function uploadWithRetry(
         type: blob.type || "audio/webm",
       });
 
-      const { uploaded, failed } = await store
-        .dispatch(
-          uploadFiles({
-            files: [file],
-            parentFolderId,
-            visibility: "private",
-            metadata: {
-              origin: "audio-fallback",
-              blob_type: blob.type || "audio/webm",
-              ephemeral: true,
-            },
-            concurrency: 1,
-          }),
-        )
-        .unwrap();
+      const { uploaded, failed } = await dispatch(
+        uploadFiles({
+          files: [file],
+          parentFolderId,
+          visibility: "private",
+          metadata: {
+            origin: "audio-fallback",
+            blob_type: blob.type || "audio/webm",
+            ephemeral: true,
+          },
+          concurrency: 1,
+        }),
+      ).unwrap();
 
       if (failed.length > 0 || uploaded.length === 0) {
         // `failed` items are `{ name, error }` since 2026-04-24 — extract
@@ -195,11 +193,9 @@ export async function uploadAndTranscribeFull(
   } finally {
     if (handle) {
       try {
-        const store = getStore();
-        if (store) {
-          await store
-            .dispatch(deleteFile({ fileId: handle.fileId, hardDelete: true }))
-            .unwrap();
+        const cleanupStore = getStore();
+        if (cleanupStore) {
+          await (cleanupStore.dispatch as AppDispatch)(deleteFile({ fileId: handle.fileId, hardDelete: true })).unwrap();
         }
       } catch {
         // Non-critical cleanup — the file will be auto-pruned by the

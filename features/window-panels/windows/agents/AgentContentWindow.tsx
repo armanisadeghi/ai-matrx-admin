@@ -319,7 +319,12 @@ function AgentPickerFallback({ onSelect }: AgentPickerFallbackProps) {
   const filtered = useMemo(() => {
     if (!search.trim()) return agents;
     const q = search.toLowerCase();
-    return agents.filter((a) => a.name?.toLowerCase().includes(q));
+    return agents.filter(
+      (a) =>
+        a.name?.toLowerCase().includes(q) ||
+        a.id?.toLowerCase().includes(q) ||
+        (a.description ?? "").toLowerCase().includes(q),
+    );
   }, [agents, search]);
 
   const handleSelect = (agentId: string) => {

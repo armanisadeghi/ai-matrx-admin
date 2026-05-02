@@ -182,6 +182,8 @@ export function dbRowToAgentShortcut(row: ShortcutRow): AgentShortcut {
       "hide_tool_results",
       DEFAULT_AGENT_EXECUTION_CONFIG.hideToolResults,
     ),
+    responseDensity: (rString(loose, "response_density") ??
+      DEFAULT_AGENT_EXECUTION_CONFIG.responseDensity) as "comfortable" | "compact",
 
     preExecutionMessage: rString(loose, "pre_execution_message"),
     bypassGateSeconds: rNumber(
@@ -217,11 +219,10 @@ export function dbRowToAgentShortcut(row: ShortcutRow): AgentShortcut {
 /**
  * Extract the AgentExecutionConfig bundle from a shortcut record.
  *
- * Returns Partial<AgentExecutionConfig> deliberately — the AgentShortcut
- * domain type does not yet carry every config field (e.g. `responseDensity`
- * lives on the DB row but is not yet on AgentShortcut). Consumers should
- * merge this through `resolveExecutionConfig(...)` so missing fields fall
- * through to DEFAULT_AGENT_EXECUTION_CONFIG.
+ * Returns Partial<AgentExecutionConfig> deliberately — not every
+ * AgentExecutionConfig field maps 1:1 to a shortcut property. Consumers
+ * should merge this through `resolveExecutionConfig(...)` so missing fields
+ * fall through to DEFAULT_AGENT_EXECUTION_CONFIG.
  */
 export function shortcutToExecutionConfig(
   shortcut: AgentShortcut,
@@ -236,6 +237,7 @@ export function shortcutToExecutionConfig(
     showDefinitionMessageContent: shortcut.showDefinitionMessageContent,
     hideReasoning: shortcut.hideReasoning,
     hideToolResults: shortcut.hideToolResults,
+    responseDensity: shortcut.responseDensity,
     showPreExecutionGate: shortcut.showPreExecutionGate,
     preExecutionMessage: shortcut.preExecutionMessage,
     bypassGateSeconds: shortcut.bypassGateSeconds,
@@ -281,6 +283,7 @@ export function agentShortcutToInsert(shortcut: AgentShortcut): ShortcutInsert {
     show_definition_message_content: shortcut.showDefinitionMessageContent,
     hide_reasoning: shortcut.hideReasoning,
     hide_tool_results: shortcut.hideToolResults,
+    response_density: shortcut.responseDensity,
     show_pre_execution_gate: shortcut.showPreExecutionGate,
     pre_execution_message: shortcut.preExecutionMessage,
     bypass_gate_seconds: shortcut.bypassGateSeconds,
@@ -349,6 +352,8 @@ export function agentShortcutToUpdate(
     update.hide_reasoning = partial.hideReasoning;
   if (partial.hideToolResults !== undefined)
     update.hide_tool_results = partial.hideToolResults;
+  if (partial.responseDensity !== undefined)
+    update.response_density = partial.responseDensity;
   if (partial.showPreExecutionGate !== undefined)
     update.show_pre_execution_gate = partial.showPreExecutionGate;
   if (partial.preExecutionMessage !== undefined)

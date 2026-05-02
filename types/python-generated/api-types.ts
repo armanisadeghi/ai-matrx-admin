@@ -5416,6 +5416,28 @@ export interface components {
              */
             max_retries_per_iteration: number;
         };
+        /**
+         * AgentUserInputBody
+         * @description Minimal request body for endpoints that previously took no body.
+         *
+         *     Use as `request: AgentUserInputBody = Body(default_factory=AgentUserInputBody)`
+         *     in routes that historically POST'd with an empty payload — old clients
+         *     still work (FastAPI parses an absent body as the factory default), and
+         *     new clients can opt into `{"user_input": "..."}` and/or
+         *     `{"use_user_agent_overrides": true}`.
+         */
+        AgentUserInputBody: {
+            /** User Input */
+            user_input?: string | {
+                [key: string]: unknown;
+            }[] | null;
+            /**
+             * Use User Agent Overrides
+             * @description When true, load the caller's `user_preferences.research.agent_overrides` JSONB and use it as a fallback layer between `topic.agent_config` and the system defaults. When false (default), user prefs are ignored entirely. Missing/broken overrides silently fall through to defaults.
+             * @default false
+             */
+            use_user_agent_overrides: boolean;
+        };
         /** AnalyzeBulkRequest */
         AnalyzeBulkRequest: {
             /** Source Ids */
@@ -5427,6 +5449,16 @@ export interface components {
             agent_type: string;
             /** Agent Id */
             agent_id?: string | null;
+            /** User Input */
+            user_input?: string | {
+                [key: string]: unknown;
+            }[] | null;
+            /**
+             * Use User Agent Overrides
+             * @description When true, load the caller's `user_preferences.research.agent_overrides` JSONB and use it as a fallback layer between `topic.agent_config` and the system defaults. When false (default), user prefs are ignored entirely. Missing/broken overrides silently fall through to defaults.
+             * @default false
+             */
+            use_user_agent_overrides: boolean;
         };
         /** AnalyzeRequest */
         AnalyzeRequest: {
@@ -5437,6 +5469,16 @@ export interface components {
             agent_type: string;
             /** Agent Id */
             agent_id?: string | null;
+            /** User Input */
+            user_input?: string | {
+                [key: string]: unknown;
+            }[] | null;
+            /**
+             * Use User Agent Overrides
+             * @description When true, load the caller's `user_preferences.research.agent_overrides` JSONB and use it as a fallback layer between `topic.agent_config` and the system defaults. When false (default), user prefs are ignored entirely. Missing/broken overrides silently fall through to defaults.
+             * @default false
+             */
+            use_user_agent_overrides: boolean;
         };
         /** AppExecuteRequest */
         AppExecuteRequest: {
@@ -8660,7 +8702,14 @@ export interface components {
             };
         };
         /** RunPipelineRequest */
-        RunPipelineRequest: Record<string, never>;
+        RunPipelineRequest: {
+            /**
+             * Use User Agent Overrides
+             * @description When true, load the caller's `user_preferences.research.agent_overrides` JSONB and use it as a fallback layer between `topic.agent_config` and the system defaults. When false (default), user prefs are ignored entirely. Missing/broken overrides silently fall through to defaults.
+             * @default false
+             */
+            use_user_agent_overrides: boolean;
+        };
         /** RunWorkflowRequest */
         RunWorkflowRequest: {
             /** Inputs */
@@ -9234,12 +9283,37 @@ export interface components {
                 [key: string]: unknown;
             };
         };
-        /** SuggestRequest */
+        /**
+         * SuggestRequest
+         * @description Wizard input for the Research Setup Suggest Agent.
+         *
+         *     The agent (`prompt_builtins.id = 4f802fd1-…`) takes ONE variable —
+         *     `subject_name_or_description`. The frontend wizard's single textarea
+         *     feeds this directly. The user can paste a short name ("Arman Sadeghi"),
+         *     a paragraph ("everything we know about photosynthesis cycles…"), or
+         *     anything in between. The agent decides how to title and describe the
+         *     project from that one string.
+         *
+         *     The legacy two-field shape (`topic_name` + `topic_description`) is
+         *     accepted via the validator below so old clients don't 422; they are
+         *     concatenated with a space. New clients should send only
+         *     `subject_name_or_description`.
+         */
         SuggestRequest: {
-            /** Topic Name */
-            topic_name: string;
-            /** Topic Description */
-            topic_description?: string | null;
+            /** Subject Name Or Description */
+            subject_name_or_description: string;
+            /** User Input */
+            user_input?: string | {
+                [key: string]: unknown;
+            }[] | null;
+            /**
+             * Use User Agent Overrides
+             * @description When true, load the caller's `user_preferences.research.agent_overrides` JSONB and use it as a fallback layer between `topic.agent_config` and the system defaults. When false (default), user prefs are ignored entirely. Missing/broken overrides silently fall through to defaults.
+             * @default false
+             */
+            use_user_agent_overrides: boolean;
+            /** Topic Id */
+            topic_id?: string | null;
         };
         /** SynthesisRequest */
         SynthesisRequest: {
@@ -9258,6 +9332,16 @@ export interface components {
             iteration_mode: "initial" | "rebuild" | "update";
             /** Agent Id */
             agent_id?: string | null;
+            /** User Input */
+            user_input?: string | {
+                [key: string]: unknown;
+            }[] | null;
+            /**
+             * Use User Agent Overrides
+             * @description When true, load the caller's `user_preferences.research.agent_overrides` JSONB and use it as a fallback layer between `topic.agent_config` and the system defaults. When false (default), user prefs are ignored entirely. Missing/broken overrides silently fall through to defaults.
+             * @default false
+             */
+            use_user_agent_overrides: boolean;
         };
         /** TagCreate */
         TagCreate: {
@@ -9414,6 +9498,8 @@ export interface components {
              * @default 0
              */
             max_auto_tag_calls: number;
+            /** Keywords */
+            keywords?: string[] | null;
         };
         /** TopicUpdate */
         TopicUpdate: {
@@ -13279,7 +13365,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["AgentUserInputBody"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -13310,7 +13400,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["AgentUserInputBody"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -13445,7 +13539,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
+        requestBody?: {
             content: {
                 "application/json": components["schemas"]["RunPipelineRequest"];
             };
@@ -13651,7 +13745,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["AgentUserInputBody"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -13683,7 +13781,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["AgentUserInputBody"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -13745,7 +13847,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["AgentUserInputBody"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

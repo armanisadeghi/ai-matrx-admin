@@ -11,7 +11,7 @@ import type {
   CxFilters,
   CxPaginatedResponse,
   CxCostVerification,
-} from "./types";
+} from "./types/cxDashboardTypes";
 import { getTimeframeRange } from "./utils/filters";
 
 function buildTimeframeCondition(filters: CxFilters, col: string): string {

@@ -9,12 +9,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { extractErrorMessage } from "@/utils/errors";
-import {
-  FileUp,
-  FolderPlus,
-  FolderUp,
-  Plus,
-} from "lucide-react";
+import { FileUp, FolderPlus, FolderUp, Plus } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,6 +30,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { createFolder } from "@/features/files/redux/thunks";
+import { setFocusedId } from "@/features/files/redux/slice";
 import { useFileUpload } from "@/features/files/hooks/useFileUpload";
 import { TooltipIcon } from "@/features/files/components/core/Tooltip/TooltipIcon";
 
@@ -58,22 +54,33 @@ export function NewMenu({ parentFolderId, className }: NewMenuProps) {
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(event.target.files ?? []);
       if (files.length) {
-        void upload(files, { parentFolderId });
+        void (async () => {
+          const result = await upload(files, { parentFolderId });
+          // Focus the last successfully uploaded file so it's highlighted
+          if (result?.uploaded?.length) {
+            dispatch(setFocusedId(result.uploaded[result.uploaded.length - 1]));
+          }
+        })();
       }
       event.target.value = "";
     },
-    [upload, parentFolderId],
+    [dispatch, upload, parentFolderId],
   );
 
   const handleUploadFolder = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(event.target.files ?? []);
       if (files.length) {
-        void upload(files, { parentFolderId });
+        void (async () => {
+          const result = await upload(files, { parentFolderId });
+          if (result?.uploaded?.length) {
+            dispatch(setFocusedId(result.uploaded[result.uploaded.length - 1]));
+          }
+        })();
       }
       event.target.value = "";
     },
-    [upload, parentFolderId],
+    [dispatch, upload, parentFolderId],
   );
 
   const handleCreateFolder = useCallback(async () => {
@@ -85,9 +92,12 @@ export function NewMenu({ parentFolderId, className }: NewMenuProps) {
     setCreating(true);
     setCreateError(null);
     try {
-      await dispatch(
+      const folderId = await dispatch(
         createFolder({ folderName: name, parentId: parentFolderId }),
       ).unwrap();
+      // Move focus to the newly created folder so it's highlighted and scrolled
+      // into view immediately.
+      dispatch(setFocusedId(folderId));
       setNewFolderName("");
       setCreateOpen(false);
     } catch (err) {

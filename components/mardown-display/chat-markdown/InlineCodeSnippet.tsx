@@ -3,11 +3,48 @@
 import React, { useState } from "react";
 import { cn } from "@/styles/themes/utils";
 import { Copy, Check } from "lucide-react";
+import { MatrxVariableInline } from "@/components/mardown-display/chat-markdown/matrx-variables/MatrxVariableInline";
 
 interface InlineCodeSnippetProps {
   code: string;
   language?: string;
   className?: string;
+  /**
+   * When true, `{{variable_name}}` tokens inside the code block are rendered
+   * as interactive MatrxVariableInline pills instead of plain text.
+   * The raw `code` string is still copied verbatim — only the visual display changes.
+   * Defaults to false to preserve existing behaviour everywhere else.
+   */
+  renderVariables?: boolean;
+}
+
+const VARIABLE_RE = /\{\{([a-zA-Z_][a-zA-Z0-9_.]*)\}\}/g;
+
+/**
+ * Splits `text` on `{{var}}` patterns and returns an array of plain strings
+ * interleaved with MatrxVariableInline React elements.
+ * Returns a single-element array with the original string if no matches exist.
+ */
+function splitWithVariables(text: string): React.ReactNode[] {
+  VARIABLE_RE.lastIndex = 0;
+  const nodes: React.ReactNode[] = [];
+  let lastIdx = 0;
+  let match: RegExpExecArray | null;
+  let i = 0;
+
+  while ((match = VARIABLE_RE.exec(text)) !== null) {
+    if (match.index > lastIdx) {
+      nodes.push(text.slice(lastIdx, match.index));
+    }
+    nodes.push(<MatrxVariableInline key={i++} data-name={match[1]} />);
+    lastIdx = match.index + match[0].length;
+  }
+
+  if (lastIdx < text.length) {
+    nodes.push(text.slice(lastIdx));
+  }
+
+  return nodes.length > 0 ? nodes : [text];
 }
 
 const LANGUAGE_COLORS: Record<string, string> = {
@@ -33,6 +70,7 @@ export const InlineCodeSnippet: React.FC<InlineCodeSnippetProps> = ({
   code,
   language,
   className,
+  renderVariables = false,
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -83,7 +121,11 @@ export const InlineCodeSnippet: React.FC<InlineCodeSnippetProps> = ({
         </button>
       </div>
       <pre className="px-3 py-2 text-sm font-mono leading-relaxed text-foreground whitespace-pre-wrap break-words">
-        <code>{code}</code>
+        <code>
+          {renderVariables && VARIABLE_RE.test(code)
+            ? splitWithVariables(code)
+            : code}
+        </code>
       </pre>
     </div>
   );

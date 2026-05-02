@@ -189,7 +189,7 @@ export default function TagManager() {
                             <GripVertical className="h-4 w-4 text-muted-foreground shrink-0 cursor-grab hidden sm:block" />
                             <div className="flex-1 min-w-0">
                                 <Link
-                                    href={`/p/research/topics/${topicId}/tags/${tag.id}`}
+                                    href={`/research/topics/${topicId}/tags/${tag.id}`}
                                     className="font-medium text-sm hover:text-primary transition-colors"
                                 >
                                     {tag.name}

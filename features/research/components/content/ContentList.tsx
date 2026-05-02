@@ -190,7 +190,7 @@ export default function ContentList() {
             {filtered.map((source) => (
               <Link
                 key={source.id}
-                href={`/p/research/topics/${topicId}/sources/${source.id}`}
+                href={`/research/topics/${topicId}/sources/${source.id}`}
                 className="group flex items-center gap-2.5 rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm p-2.5 hover:border-primary/30 transition-colors min-h-[44px]"
               >
                 <div className="shrink-0">
