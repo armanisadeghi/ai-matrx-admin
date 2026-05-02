@@ -700,202 +700,28 @@ function stageFromCode(code: string): StageKind | null {
   return null;
 }
 
-function parseResultsFound(message: string): { count: number; keyword: string } | null {
-  const m = message.match(/Found\s+(\d+)\s+results?\s+for\s+["']?([^"']+?)["']?$/i);
-  if (!m) return null;
-  return { count: Number(m[1]), keyword: m[2].trim() };
-}
-
-function parseScrapeProgress(message: string): { scraped: number; good: number } | null {
-  const m = message.match(/Scraped\s+(\d+)\s+pages?,?\s*(\d+)\s+good/i);
-  if (!m) return null;
-  return { scraped: Number(m[1]), good: Number(m[2]) };
-}
-
-function parseAnalysisProgress(message: string): { queued: number; done: number } | null {
-  const m = message.match(/Analy[sz]ing\s+(\d+)\s+page\(?s?\)?\s*\(?(\d+)\s+already\s+done/i);
-  if (!m) return null;
-  return { queued: Number(m[1]), done: Number(m[2]) };
-}
-
-function parseKeywordPassComplete(message: string): string | null {
-  const m = message.match(/Keyword\s+["']([^"']+)["']:\s*pass\s+complete/i);
-  return m ? m[1].trim() : null;
-}
-
-function parseKeywordCount(message: string): number | null {
-  const m = message.match(/(\d+)\s+keyword/i);
-  return m ? Number(m[1]) : null;
-}
-
+/**
+ * Route info events to their stage so the stage activates and shows the latest
+ * status message. Counts/items come from the structured data events — we don't
+ * regex-parse free-text messages.
+ */
 function reduceInfo(state: PipelineState, info: InfoMessage): PipelineState {
-  const code = info.code;
-  const message = info.message;
-  const ts = info.timestamp;
-  const stageKind = stageFromCode(code);
+  const stageKind = stageFromCode(info.code);
+  if (!stageKind) return state;
 
-  let next = state;
-
-  if (stageKind) {
-    next = activateStage(next, stageKind, ts);
-    const stage = next.stages[stageKind];
-    next = {
-      ...next,
-      stages: {
-        ...next.stages,
-        [stageKind]: {
-          ...stage,
-          infoMessage: message,
-          lastInfoAt: ts,
-        },
+  const next = activateStage(state, stageKind, info.timestamp);
+  const stage = next.stages[stageKind];
+  return {
+    ...next,
+    stages: {
+      ...next.stages,
+      [stageKind]: {
+        ...stage,
+        infoMessage: info.message,
+        lastInfoAt: info.timestamp,
       },
-    };
-  }
-
-  if (code === "search_results_found") {
-    const parsed = parseResultsFound(message);
-    if (parsed) {
-      const id = `kw:${parsed.keyword}`;
-      next = upsertItem(next, "search", id, (existing) => ({
-        id,
-        label: existing?.label ?? parsed.keyword,
-        status: "success",
-        progress: existing?.progress,
-        metadata: {
-          ...(existing?.metadata ?? {}),
-          keyword: parsed.keyword,
-          sources_found: Math.max(
-            existing?.metadata.sources_found ?? 0,
-            parsed.count,
-          ),
-        },
-        startedAt: existing?.startedAt ?? ts,
-        updatedAt: ts,
-        completedAt: ts,
-      }));
-      next = bumpCompletion(next, "search", ts, "succeeded");
-    }
-  }
-
-  if (code === "search_start") {
-    const total = parseKeywordCount(message);
-    if (total != null) {
-      const stage = next.stages.search;
-      next = {
-        ...next,
-        stages: {
-          ...next.stages,
-          search: { ...stage, totals: { ...stage.totals, target: total } },
-        },
-      };
-    }
-  }
-
-  if (code === "scrape_progress") {
-    const kw = parseKeywordPassComplete(message);
-    if (kw) {
-      const id = `scrape-kw:${kw}`;
-      next = upsertItem(next, "scrape", id, (existing) => ({
-        id,
-        label: existing?.label ?? `${kw} pass`,
-        status: "success",
-        metadata: {
-          ...(existing?.metadata ?? {}),
-          keyword: kw,
-        },
-        startedAt: existing?.startedAt ?? ts,
-        updatedAt: ts,
-        completedAt: ts,
-      }));
-      next = bumpCompletion(next, "scrape", ts, "succeeded");
-    }
-    const counts = parseScrapeProgress(message);
-    if (counts) {
-      const stage = next.stages.scrape;
-      next = {
-        ...next,
-        stages: {
-          ...next.stages,
-          scrape: {
-            ...stage,
-            scrapeAggregate: {
-              scraped: Math.max(
-                stage.scrapeAggregate?.scraped ?? 0,
-                counts.scraped,
-              ),
-              good: Math.max(stage.scrapeAggregate?.good ?? 0, counts.good),
-            },
-            totals: {
-              ...stage.totals,
-              succeeded: Math.max(stage.totals.succeeded, counts.good),
-              target: Math.max(stage.totals.target ?? 0, counts.scraped),
-            },
-          },
-        },
-      };
-    }
-  }
-
-  if (code === "analysis_progress" || code === "analysis_start") {
-    const parsed = parseAnalysisProgress(message);
-    if (parsed) {
-      const stage = next.stages.analyze;
-      next = {
-        ...next,
-        stages: {
-          ...next.stages,
-          analyze: {
-            ...stage,
-            analyzeAggregate: {
-              queued: parsed.queued,
-              alreadyDone: parsed.done,
-              inFlight: stage.analyzeAggregate?.inFlight ?? 0,
-            },
-            totals: {
-              ...stage.totals,
-              target: parsed.queued + parsed.done,
-            },
-          },
-        },
-      };
-    }
-  }
-
-  if (code === "search_complete") {
-    const stage = next.stages.search;
-    next = {
-      ...next,
-      stages: {
-        ...next.stages,
-        search: { ...stage, status: "complete", completedAt: ts },
-      },
-    };
-  }
-
-  if (code === "analyze_all_complete") {
-    const stage = next.stages.analyze;
-    next = {
-      ...next,
-      stages: {
-        ...next.stages,
-        analyze: { ...stage, status: "complete", completedAt: ts },
-      },
-    };
-  }
-
-  if (code === "document_complete" || code === "pipeline_complete") {
-    const stage = next.stages.report;
-    next = {
-      ...next,
-      stages: {
-        ...next.stages,
-        report: { ...stage, status: "complete", completedAt: ts },
-      },
-      completedAt: code === "pipeline_complete" ? ts : next.completedAt,
-    };
-  }
-
-  return next;
+    },
+  };
 }
 
 function reducer(state: PipelineState, action: Action): PipelineState {

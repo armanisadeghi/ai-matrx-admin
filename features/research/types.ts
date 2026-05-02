@@ -732,7 +732,7 @@ export interface ResearchStreamCallbacks {
     message: string,
     metadata?: Record<string, unknown>,
   ) => void;
-  /** Typed research data event — discriminate on `payload.event` */
+  /** Typed research data event — discriminate on `payload.type` */
   onData?: (payload: ResearchDataEvent) => void;
   /** First-class `info` event — used for quota_exceeded and search_results_found. */
   onInfo?: (info: ResearchInfoEvent) => void;
