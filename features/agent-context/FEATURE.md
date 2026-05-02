@@ -132,6 +132,21 @@ Both are declared in the Builder and returned to clients on agent-load (no syste
 - **Server stamps scope on the conversation** at first-turn time. Subsequent turns inherit.
 - **Do not create per-feature scope state.** Use `appContext` + brokers — scattered scope state breaks the mental model.
 
+### Personal-projects sentinel
+
+`get_user_full_context` synthesises a virtual **Personal** organization for every user so personal projects (`ctx_projects.organization_id IS NULL`) appear inside the same nav-tree shape as real orgs. The sentinel id is exported from `redux/hierarchySlice.ts`:
+
+```ts
+export const PERSONAL_PSEUDO_ORG_ID = "00000000-0000-0000-0000-000000000001" as const;
+export function isPersonalPseudoOrgId(id: string | null | undefined): boolean;
+```
+
+Rules of the road for the sentinel:
+
+1. **Storable in Redux / passable in UI props.** The `HierarchyCascade`, `useHierarchyReduxBridge`, and `appContextSlice.organizationId` may all carry the sentinel — that's how the UI knows to show "Personal" instead of "All organizations".
+2. **Never send it to the backend.** The single API boundary (`lib/api/call-api.ts → resolveScope`) sanitizes it to `undefined` before any request. The canonical `features/projects/service.ts createProject` normalizes it to `NULL` before insert. New API code paths must do the same — use `isPersonalPseudoOrgId()` to guard.
+3. **Never create routes under `/org/personal/...`.** Personal projects redirect to `/projects/{slug}/...` — `CreateProjectModal` and `ProjectFormSheet` already enforce this.
+
 ---
 
 ## Related features
@@ -149,6 +164,7 @@ Brokers is production. The agent-context scope-system build is in-flight; see `f
 
 ## Change log
 
+- `2026-05-01` — codex: documented `PERSONAL_PSEUDO_ORG_ID` sentinel rules; `get_user_full_context` now returns a virtual Personal org so personal projects appear in the nav tree; `lib/api/call-api.ts → resolveScope` strips the sentinel before any backend call.
 - `2026-04-22` — claude: initial combined FEATURE.md for agent-context + brokers.
 
 ---

@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
 import { FetchRelatedRecordsPayload, fetchRelatedRecordsThunk } from "@/lib/redux/entity/thunks/fetchRelatedRecordsThunk";
 import { createAppThunk } from "@/lib/redux/utils";

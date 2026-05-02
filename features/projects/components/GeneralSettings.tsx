@@ -1,21 +1,23 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Save, X, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import { updateProject } from '../service';
+import React, { useState, useEffect } from "react";
+import { Save, X, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import { updateProject } from "../service";
 import {
   validateProjectName,
   getRoleLabel,
   type Project,
   type ProjectRole,
-} from '../types';
-import { format } from 'date-fns';
+} from "../types";
+import { format } from "date-fns";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { invalidateAndRefetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
 
 interface GeneralSettingsProps {
   project: Project;
@@ -23,44 +25,58 @@ interface GeneralSettingsProps {
   userRole: ProjectRole;
 }
 
-export function GeneralSettings({ project, canEdit, userRole }: GeneralSettingsProps) {
+export function GeneralSettings({
+  project,
+  canEdit,
+  userRole,
+}: GeneralSettingsProps) {
+  const dispatch = useAppDispatch();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const [name, setName] = useState(project.name);
-  const [description, setDescription] = useState(project.description ?? '');
+  const [description, setDescription] = useState(project.description ?? "");
 
   useEffect(() => {
     setName(project.name);
-    setDescription(project.description ?? '');
+    setDescription(project.description ?? "");
     setIsEditing(false);
   }, [project]);
 
   const hasChanges =
-    name !== project.name || description !== (project.description ?? '');
+    name !== project.name || description !== (project.description ?? "");
 
   const nameValidation = name
     ? validateProjectName(name)
-    : { valid: false, error: 'Name is required' };
+    : { valid: false, error: "Name is required" };
   const isFormValid = nameValidation.valid;
 
   const handleSave = async () => {
     if (!isFormValid) {
-      toast.error('Please fix validation errors');
+      toast.error("Please fix validation errors");
       return;
     }
 
     setIsSaving(true);
     try {
-      const result = await updateProject(project.id, { name, description: description || undefined });
+      const result = await updateProject(project.id, {
+        name,
+        description: description || undefined,
+      });
       if (result.success) {
-        toast.success('Project updated successfully');
+        dispatch(
+          invalidateAndRefetchFullContext() as unknown as Parameters<
+            typeof dispatch
+          >[0],
+        );
+        toast.success("Project updated successfully");
         setIsEditing(false);
       } else {
-        toast.error(result.error ?? 'Failed to update project');
+        toast.error(result.error ?? "Failed to update project");
       }
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : 'An unexpected error occurred';
+      const msg =
+        error instanceof Error ? error.message : "An unexpected error occurred";
       toast.error(msg);
     } finally {
       setIsSaving(false);
@@ -69,7 +85,7 @@ export function GeneralSettings({ project, canEdit, userRole }: GeneralSettingsP
 
   const handleCancel = () => {
     setName(project.name);
-    setDescription(project.description ?? '');
+    setDescription(project.description ?? "");
     setIsEditing(false);
   };
 
@@ -78,16 +94,27 @@ export function GeneralSettings({ project, canEdit, userRole }: GeneralSettingsP
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">General Settings</h2>
-          <p className="text-sm text-muted-foreground">Manage project details</p>
+          <p className="text-sm text-muted-foreground">
+            Manage project details
+          </p>
         </div>
         {canEdit && !isEditing && (
-          <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsEditing(true)}
+          >
             Edit
           </Button>
         )}
         {canEdit && isEditing && (
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={handleCancel} disabled={isSaving}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCancel}
+              disabled={isSaving}
+            >
               <X className="h-4 w-4 mr-1" />
               Cancel
             </Button>
@@ -119,10 +146,12 @@ export function GeneralSettings({ project, canEdit, userRole }: GeneralSettingsP
                 onChange={(e) => setName(e.target.value)}
                 maxLength={50}
                 disabled={isSaving}
-                className={!nameValidation.valid ? 'border-red-500' : ''}
+                className={!nameValidation.valid ? "border-red-500" : ""}
               />
               {!nameValidation.valid && (
-                <p className="text-xs text-red-600 dark:text-red-400">{nameValidation.error}</p>
+                <p className="text-xs text-red-600 dark:text-red-400">
+                  {nameValidation.error}
+                </p>
               )}
             </>
           ) : (
@@ -133,8 +162,12 @@ export function GeneralSettings({ project, canEdit, userRole }: GeneralSettingsP
         {project.slug && (
           <div className="space-y-1.5">
             <Label>URL Slug</Label>
-            <p className="text-sm font-mono text-muted-foreground">{project.slug}</p>
-            <p className="text-xs text-muted-foreground">Slug cannot be changed after creation</p>
+            <p className="text-sm font-mono text-muted-foreground">
+              {project.slug}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Slug cannot be changed after creation
+            </p>
           </div>
         )}
 
@@ -152,7 +185,7 @@ export function GeneralSettings({ project, canEdit, userRole }: GeneralSettingsP
             />
           ) : (
             <p className="text-sm text-muted-foreground">
-              {project.description ?? 'No description provided'}
+              {project.description ?? "No description provided"}
             </p>
           )}
         </div>
@@ -165,7 +198,7 @@ export function GeneralSettings({ project, canEdit, userRole }: GeneralSettingsP
         <div className="space-y-1.5">
           <Label>Created</Label>
           <p className="text-sm text-muted-foreground">
-            {format(new Date(project.createdAt), 'MMMM d, yyyy')}
+            {format(new Date(project.createdAt), "MMMM d, yyyy")}
           </p>
         </div>
       </div>

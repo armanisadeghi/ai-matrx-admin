@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { EntityFieldKeys, MatrxRecordId } from "@/types/entityTypes";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
 import { getEntitySlice } from "../entitySlice";

@@ -62,11 +62,7 @@ export function SidebarHeader({
         <SearchGroupTrigger id="agent-run-header-search-group" />
         <PanelLeftTapButton variant="group" onClick={() => onToggleSidebar()} />
       </SearchGroup>
-      <AgentNewRunButton
-        agentId={agentId}
-        conversationId={conversationId}
-        surfaceKey={surfaceKey}
-      />
+      <AgentNewRunButton surfaceKey={surfaceKey} />
     </div>
   );
 }

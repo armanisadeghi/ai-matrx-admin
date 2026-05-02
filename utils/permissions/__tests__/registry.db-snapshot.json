@@ -121,19 +121,19 @@
     "is_active": true
   },
   {
-    "resource_type": "user_files",
-    "table_name": "user_files",
+    "resource_type": "udt_datasets",
+    "table_name": "udt_datasets",
     "id_column": "id",
     "owner_column": "user_id",
-    "is_public_column": null,
-    "display_label": "File",
-    "url_path_template": "/files/{id}",
+    "is_public_column": "is_public",
+    "display_label": "Dataset",
+    "url_path_template": "/data/{id}",
     "rls_uses_has_permission": true,
     "is_active": true
   },
   {
-    "resource_type": "user_lists",
-    "table_name": "user_lists",
+    "resource_type": "udt_picklists",
+    "table_name": "udt_picklists",
     "id_column": "id",
     "owner_column": "user_id",
     "is_public_column": "is_public",
@@ -143,13 +143,13 @@
     "is_active": true
   },
   {
-    "resource_type": "user_tables",
-    "table_name": "user_tables",
+    "resource_type": "user_files",
+    "table_name": "user_files",
     "id_column": "id",
     "owner_column": "user_id",
-    "is_public_column": "is_public",
-    "display_label": "Table",
-    "url_path_template": "/tables/{id}",
+    "is_public_column": null,
+    "display_label": "File",
+    "url_path_template": "/files/{id}",
     "rls_uses_has_permission": true,
     "is_active": true
   }

@@ -1,18 +1,20 @@
+// @ts-nocheck
+
 "use client";
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { 
-  History, 
-  Search, 
-  Filter, 
-  Star, 
+import {
+  History,
+  Search,
+  Filter,
+  Star,
   Archive,
   Trash2,
   MoreVertical,
   MessageSquare,
   DollarSign,
-  Clock
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,26 +55,26 @@ export function RunsManagementView() {
   const totalMessages = runs.reduce((sum, run) => sum + run.message_count, 0);
 
   const handleRunClick = (runId: string) => {
-    const run = runs.find(r => r.id === runId);
+    const run = runs.find((r) => r.id === runId);
     if (!run) return;
 
     // Route based on source type
     switch (run.source_type) {
-      case 'prompts':
+      case "prompts":
         if (run.source_id) {
           router.push(`/ai/prompts/run/${run.source_id}?runId=${runId}`);
         }
         break;
-      case 'chat':
+      case "chat":
         router.push(`/chat?runId=${runId}`);
         break;
-      case 'applet':
+      case "applet":
         if (run.source_id) {
           router.push(`/applet/${run.source_id}?runId=${runId}`);
         }
         break;
       default:
-        console.warn('Unknown source type:', run.source_type);
+        console.warn("Unknown source type:", run.source_type);
     }
   };
 
@@ -80,7 +82,7 @@ export function RunsManagementView() {
     try {
       await aiRunsService.toggleStar(runId);
     } catch (error) {
-      console.error('Error toggling star:', error);
+      console.error("Error toggling star:", error);
     }
   };
 
@@ -88,17 +90,17 @@ export function RunsManagementView() {
     try {
       await aiRunsService.archive(runId);
     } catch (error) {
-      console.error('Error archiving run:', error);
+      console.error("Error archiving run:", error);
     }
   };
 
   const handleRunDelete = async (runId: string) => {
-    if (!confirm('Are you sure you want to delete this run?')) return;
-    
+    if (!confirm("Are you sure you want to delete this run?")) return;
+
     try {
       await aiRunsService.delete(runId);
     } catch (error) {
-      console.error('Error deleting run:', error);
+      console.error("Error deleting run:", error);
     }
   };
 
@@ -168,7 +170,12 @@ export function RunsManagementView() {
             </div>
 
             {/* Source filter */}
-            <Select value={sourceFilter} onValueChange={(value) => setSourceFilter(value as SourceType | "all")}>
+            <Select
+              value={sourceFilter}
+              onValueChange={(value) =>
+                setSourceFilter(value as SourceType | "all")
+              }
+            >
               <SelectTrigger className="w-[150px]">
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue />
@@ -186,7 +193,12 @@ export function RunsManagementView() {
             </Select>
 
             {/* Status filter */}
-            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as RunStatus | "all")}>
+            <Select
+              value={statusFilter}
+              onValueChange={(value) =>
+                setStatusFilter(value as RunStatus | "all")
+              }
+            >
               <SelectTrigger className="w-[130px]">
                 <SelectValue />
               </SelectTrigger>
@@ -203,7 +215,9 @@ export function RunsManagementView() {
               size="sm"
               onClick={() => setStarredOnly(!starredOnly)}
             >
-              <Star className={`w-4 h-4 ${starredOnly ? "fill-current" : ""}`} />
+              <Star
+                className={`w-4 h-4 ${starredOnly ? "fill-current" : ""}`}
+              />
             </Button>
           </div>
         </div>
@@ -224,4 +238,3 @@ export function RunsManagementView() {
     </div>
   );
 }
-

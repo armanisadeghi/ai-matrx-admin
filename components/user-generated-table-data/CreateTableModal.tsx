@@ -1,6 +1,6 @@
-'use client';
-import { useState, useEffect } from 'react';
-import { supabase } from '@/utils/supabase/client';
+"use client";
+import { useState, useEffect } from "react";
+import { supabase } from "@/utils/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -21,13 +21,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  createTable, 
-  type FieldDefinition, 
-  VALID_DATA_TYPES 
-} from '@/utils/user-table-utls/table-utils';
-import { sanitizeFieldName } from '@/utils/user-table-utls/field-name-sanitizer';
-
+import {
+  createTable,
+  type FieldDefinition,
+  VALID_DATA_TYPES,
+} from "@/utils/user-table-utls/table-utils";
+import { sanitizeFieldName } from "@/utils/user-table-utls/field-name-sanitizer";
 
 interface CreateTableModalProps {
   isOpen: boolean;
@@ -35,9 +34,13 @@ interface CreateTableModalProps {
   onSuccess: (tableId: string) => void;
 }
 
-export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateTableModalProps) {
-  const [tableName, setTableName] = useState('');
-  const [description, setDescription] = useState('');
+export default function CreateTableModal({
+  isOpen,
+  onClose,
+  onSuccess,
+}: CreateTableModalProps) {
+  const [tableName, setTableName] = useState("");
+  const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(false);
   const [authenticatedRead, setAuthenticatedRead] = useState(false);
   const [addFields, setAddFields] = useState(false);
@@ -62,19 +65,21 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
     setCheckingName(true);
     try {
       const { data, error } = await supabase
-        .from('user_tables')
-        .select('id')
-        .eq('table_name', name)
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .from("udt_datasets")
+        .select("id")
+        .eq("table_name", name)
+        .eq("user_id", (await supabase.auth.getUser()).data.user?.id)
         .maybeSingle();
 
       if (data) {
-        setTableNameWarning(`A table named "${name}" already exists. Please choose a different name.`);
+        setTableNameWarning(
+          `A table named "${name}" already exists. Please choose a different name.`,
+        );
       } else {
         setTableNameWarning(null);
       }
     } catch (err) {
-      console.error('Error checking table name:', err);
+      console.error("Error checking table name:", err);
       setTableNameWarning(null);
     } finally {
       setCheckingName(false);
@@ -95,13 +100,13 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
   // Add a new field
   const addField = () => {
     const newField: FieldDefinition = {
-      field_name: '',
-      display_name: '',
-      data_type: 'string',
+      field_name: "",
+      display_name: "",
+      data_type: "string",
       field_order: fields.length,
-      is_required: false
+      is_required: false,
     };
-    
+
     setFields([...fields, newField]);
   };
 
@@ -109,98 +114,101 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
   const removeField = (index: number) => {
     const newFields = [...fields];
     newFields.splice(index, 1);
-    
+
     // Update field_order for remaining fields
     const updatedFields = newFields.map((field, idx) => ({
       ...field,
-      field_order: idx
+      field_order: idx,
     }));
-    
+
     setFields(updatedFields);
   };
 
   // Update a field property
-  const updateField = (index: number, property: keyof FieldDefinition, value: any) => {
+  const updateField = (
+    index: number,
+    property: keyof FieldDefinition,
+    value: any,
+  ) => {
     const newFields = [...fields];
     newFields[index] = {
       ...newFields[index],
-      [property]: value
+      [property]: value,
     };
-    
+
     // If display name changes, update field_name
-    if (property === 'display_name') {
+    if (property === "display_name") {
       newFields[index].field_name = generateFieldName(value);
     }
-    
+
     setFields(newFields);
   };
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       setLoading(true);
       setError(null);
-      
+
       // Prepare fields if any were added
       const initialFields = addFields && fields.length > 0 ? fields : null;
-      
+
       // Call the utility function
       const result = await createTable(supabase, {
         tableName,
         description,
         isPublic,
         authenticatedRead,
-        fields: initialFields
+        fields: initialFields,
       });
-      
+
       if (!result.success) {
         throw new Error(result.error);
       }
-      
+
       // Reset form
-      setTableName('');
-      setDescription('');
+      setTableName("");
+      setDescription("");
       setIsPublic(false);
       setAuthenticatedRead(false);
       setAddFields(false);
       setFields([]);
-      
+
       // Call success callback with the new table ID
       if (result.tableId) {
         onSuccess(result.tableId);
       }
       onClose();
     } catch (err) {
-      console.error('Error creating table:', err);
+      console.error("Error creating table:", err);
       if (err instanceof Error) {
         setError(err.message);
-      } else if (typeof err === 'object' && err !== null) {
+      } else if (typeof err === "object" && err !== null) {
         setError(JSON.stringify(err));
       } else {
-        setError('An unexpected error occurred');
+        setError("An unexpected error occurred");
       }
     } finally {
       setLoading(false);
     }
   };
 
-  
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Create New Table</DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           {error && (
             <div className="bg-red-50 p-2 rounded-md text-red-500 text-sm">
               {error}
             </div>
           )}
-          
+
           <div className="space-y-2">
             <Label htmlFor="tableName">Table Name</Label>
             <Input
@@ -209,10 +217,16 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
               onChange={(e) => setTableName(e.target.value)}
               placeholder="e.g. Customer Data"
               required
-              className={tableNameWarning ? 'border-orange-500 focus:ring-orange-500' : ''}
+              className={
+                tableNameWarning
+                  ? "border-orange-500 focus:ring-orange-500"
+                  : ""
+              }
             />
             {checkingName && (
-              <p className="text-xs text-muted-foreground">Checking availability...</p>
+              <p className="text-xs text-muted-foreground">
+                Checking availability...
+              </p>
             )}
             {tableNameWarning && !checkingName && (
               <p className="text-xs text-orange-600 dark:text-orange-400 flex items-center gap-1">
@@ -220,7 +234,7 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
               </p>
             )}
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="description">Description (optional)</Label>
             <Textarea
@@ -231,7 +245,7 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
               rows={3}
             />
           </div>
-          
+
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <Switch
@@ -250,7 +264,7 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
               <Label htmlFor="authenticatedRead">Authenticated Access</Label>
             </div>
           </div>
-          
+
           <div className="space-y-2 border-t pt-4">
             <div className="flex items-center space-x-2">
               <Switch
@@ -265,7 +279,7 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
               />
               <Label htmlFor="addFields">Add Initial Fields</Label>
             </div>
-            
+
             {addFields && (
               <div className="space-y-4 mt-4">
                 <div className="flex justify-between items-center">
@@ -280,7 +294,7 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
                     Add Field
                   </Button>
                 </div>
-                
+
                 {fields.length === 0 ? (
                   <div className="text-center py-4 text-muted-foreground">
                     No fields added yet. Click 'Add Field' to begin.
@@ -288,8 +302,8 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
                 ) : (
                   <div className="space-y-4 max-h-[40vh] overflow-y-auto pr-2">
                     {fields.map((field, index) => (
-                      <div 
-                        key={index} 
+                      <div
+                        key={index}
                         className="border p-3 rounded-md space-y-3 relative"
                       >
                         <Button
@@ -301,27 +315,38 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
                         >
                           <Trash className="h-4 w-4" />
                         </Button>
-                        
+
                         <div className="space-y-2">
-                          <Label htmlFor={`field-${index}-display`}>Field Name</Label>
+                          <Label htmlFor={`field-${index}-display`}>
+                            Field Name
+                          </Label>
                           <Input
                             id={`field-${index}-display`}
                             value={field.display_name}
-                            onChange={(e) => updateField(index, 'display_name', e.target.value)}
+                            onChange={(e) =>
+                              updateField(index, "display_name", e.target.value)
+                            }
                             placeholder="e.g. Total Revenue"
                             required
                           />
                           <p className="text-xs text-muted-foreground">
-                            Internal field name: <code className="bg-muted px-1 py-0.5 rounded font-mono text-xs">{field.field_name || 'auto-generated'}</code>
+                            Internal field name:{" "}
+                            <code className="bg-muted px-1 py-0.5 rounded font-mono text-xs">
+                              {field.field_name || "auto-generated"}
+                            </code>
                           </p>
                         </div>
-                        
+
                         <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-2">
-                            <Label htmlFor={`field-${index}-type`}>Data Type</Label>
+                            <Label htmlFor={`field-${index}-type`}>
+                              Data Type
+                            </Label>
                             <Select
                               value={field.data_type}
-                              onValueChange={(value) => updateField(index, 'data_type', value)}
+                              onValueChange={(value) =>
+                                updateField(index, "data_type", value)
+                              }
                             >
                               <SelectTrigger id={`field-${index}-type`}>
                                 <SelectValue placeholder="Select type" />
@@ -329,20 +354,25 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
                               <SelectContent>
                                 {VALID_DATA_TYPES.map((type) => (
                                   <SelectItem key={type} value={type}>
-                                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                                    {type.charAt(0).toUpperCase() +
+                                      type.slice(1)}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
                           </div>
-                          
+
                           <div className="flex items-center space-x-2 pt-8">
                             <Switch
                               id={`field-${index}-required`}
                               checked={field.is_required}
-                              onCheckedChange={(checked) => updateField(index, 'is_required', checked)}
+                              onCheckedChange={(checked) =>
+                                updateField(index, "is_required", checked)
+                              }
                             />
-                            <Label htmlFor={`field-${index}-required`}>Required</Label>
+                            <Label htmlFor={`field-${index}-required`}>
+                              Required
+                            </Label>
                           </div>
                         </div>
                       </div>
@@ -352,13 +382,21 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
               </div>
             )}
           </div>
-          
+
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={loading}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || !!tableNameWarning || checkingName}>
-              {loading ? 'Creating...' : 'Create Table'}
+            <Button
+              type="submit"
+              disabled={loading || !!tableNameWarning || checkingName}
+            >
+              {loading ? "Creating..." : "Create Table"}
             </Button>
           </DialogFooter>
         </form>

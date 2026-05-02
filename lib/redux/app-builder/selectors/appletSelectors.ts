@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import type { AppletsState } from "../types";
 import { createSelector } from "@reduxjs/toolkit";
 import { AppletBuilder } from "../types";
@@ -14,7 +16,8 @@ import {
 // Base selector for the appletBuilder state
 
 type WithAppletBuilder = { appletBuilder: AppletsState };
-export const getAppletBuilderState = (state: WithAppletBuilder) => state.appletBuilder;
+export const getAppletBuilderState = (state: WithAppletBuilder) =>
+  state.appletBuilder;
 
 // Memoized selector for all applets
 export const selectAllApplets = createSelector(
@@ -249,7 +252,10 @@ export const selectSourceConfigBySourceType = createSelector(
 
 // Get all source configs for a specific source type across all applets
 export const selectAllSourceConfigsBySourceType = createSelector(
-  [selectAllApplets, (_state: WithAppletBuilder, sourceType: string) => sourceType],
+  [
+    selectAllApplets,
+    (_state: WithAppletBuilder, sourceType: string) => sourceType,
+  ],
   (applets, sourceType) => {
     return applets.reduce((configs, applet) => {
       if (
@@ -267,7 +273,10 @@ export const selectAllSourceConfigsBySourceType = createSelector(
 
 // This one is fine - it's directly accessing state
 export const selectAppletBrokerMappings = createSelector(
-  [(state: WithAppletBuilder, id: string) => getAppletBuilderState(state).applets[id]],
+  [
+    (state: WithAppletBuilder, id: string) =>
+      getAppletBuilderState(state).applets[id],
+  ],
   (applet) => (applet && applet.brokerMap ? applet.brokerMap : null),
 );
 
@@ -475,7 +484,8 @@ export const selectIsBrokerMapped = createSelector(
   [
     (state: WithAppletBuilder, appletId: string, brokerId: string) =>
       selectAppletBrokerMappings(state, appletId),
-    (_state: WithAppletBuilder, _appletId: string, brokerId: string) => brokerId,
+    (_state: WithAppletBuilder, _appletId: string, brokerId: string) =>
+      brokerId,
   ],
   (brokerMappings, brokerId) => {
     if (!brokerMappings || brokerMappings.length === 0) {

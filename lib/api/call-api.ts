@@ -74,6 +74,7 @@ import {
   selectTaskId,
   selectConversationId,
 } from "@/features/agent-context/redux/appContextSlice";
+import { isPersonalPseudoOrgId } from "@/features/agent-context/redux/hierarchySlice";
 // BACKEND_URLS no longer needed here — URL resolution is owned by apiConfigSlice
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import { resilientFetch } from "@/lib/net/resilient-fetch";
@@ -530,11 +531,15 @@ function resolveScope(
   // Guard defensively so callApi never crashes on a missing key — all fields are nullable.
   const hasAppContext = !!(state as any)?.appContext;
 
+  // Drop the synthetic Personal pseudo-org id before sending to the backend.
+  // The sentinel is a UI-only construct that maps to "no org" server-side.
+  const rawOrgId = hasAppContext ? selectOrganizationId(state) : undefined;
+  const sanitizedOrgId =
+    rawOrgId && !isPersonalPseudoOrgId(rawOrgId) ? rawOrgId : undefined;
+
   const resolved: CallScope = {
     user_id: userId,
-    organization_id: hasAppContext
-      ? (selectOrganizationId(state) ?? undefined)
-      : undefined,
+    organization_id: sanitizedOrgId,
     project_id: hasAppContext
       ? (selectProjectId(state) ?? undefined)
       : undefined,

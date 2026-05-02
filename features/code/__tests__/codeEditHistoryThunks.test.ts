@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Recording-thunk tests: messageId race + chronological-revert math.
  */

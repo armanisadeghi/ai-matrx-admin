@@ -78,7 +78,7 @@ export async function deleteListAction(listId: string) {
   if (!user) throw new Error("Not authenticated");
 
   const { error } = await supabase
-    .from("user_lists")
+    .from("udt_picklists")
     .delete()
     .eq("id", listId)
     .eq("user_id", user.id);
@@ -105,7 +105,7 @@ export async function addItemAction(params: {
   if (!user) throw new Error("Not authenticated");
 
   const { data, error } = await supabase
-    .from("user_list_items")
+    .from("udt_picklist_items")
     .insert({
       list_id: params.listId,
       user_id: user.id,
@@ -151,7 +151,7 @@ export async function updateItemAction(params: {
   if (params.iconName !== undefined) patch.icon_name = params.iconName;
 
   const { data, error } = await supabase
-    .from("user_list_items")
+    .from("udt_picklist_items")
     .update(patch)
     .eq("id", params.itemId)
     .select()
@@ -171,7 +171,7 @@ export async function deleteItemAction(itemId: string, listId: string) {
   if (!user) throw new Error("Not authenticated");
 
   const { error } = await supabase
-    .from("user_list_items")
+    .from("udt_picklist_items")
     .delete()
     .eq("id", itemId)
     .eq("user_id", user.id);

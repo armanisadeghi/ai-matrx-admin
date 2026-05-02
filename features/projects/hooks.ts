@@ -4,9 +4,20 @@
  *
  * React hooks for project management in components.
  * Mirrors features/organizations/hooks.ts
+ *
+ * NOTE: Listing hooks (useUserProjects / useOrgProjects / usePersonalProjects)
+ * read from the Redux nav tree (`get_user_full_context`) — the same source the
+ * agent-context hierarchy cascade uses. This keeps `/projects`,
+ * `/org/[slug]/projects`, and any wizard view in lock-step. Mutations elsewhere
+ * call `invalidateAndRefetchFullContext()` to refresh every consumer at once.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
+import { invalidateAndRefetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
+import { isPersonalPseudoOrgId } from "@/features/agent-context/redux/hierarchySlice";
+import type { NavOrganization } from "@/features/agent-context/redux/hierarchySlice";
 import {
   Project,
   ProjectWithRole,
@@ -17,11 +28,8 @@ import {
   CreateProjectOptions,
   UpdateProjectOptions,
   InviteProjectMemberOptions,
-} from './types';
+} from "./types";
 import {
-  getOrgProjects,
-  getPersonalProjects,
-  getUserProjects,
   getProject,
   createProject,
   updateProject,
@@ -38,93 +46,128 @@ import {
   getUserProjectInvitations,
   acceptProjectInvitation,
   isProjectSlugAvailable,
-} from './service';
+} from "./service";
 
 // ============================================================================
-// Project Listing Hooks
+// Project Listing Hooks (Redux-backed)
 // ============================================================================
+
+const EMPTY_PROJECTS: ProjectWithRole[] = [];
+
+/** Map a NavOrganization's role to a ProjectRole. The nav tree only carries
+ * org-level roles, not per-project roles. For org projects this is a sane
+ * default until a finer query is needed; for the synthetic Personal pseudo-org
+ * the user is always the owner of their personal projects. */
+function roleForOrgProject(orgRole: string): ProjectRole {
+  if (orgRole === "owner" || orgRole === "admin") return orgRole;
+  return "member";
+}
+
+function projectsFromOrg(org: NavOrganization): ProjectWithRole[] {
+  const isPersonalOrg =
+    org.is_personal === true || isPersonalPseudoOrgId(org.id);
+  const role: ProjectRole = isPersonalOrg
+    ? "owner"
+    : roleForOrgProject(org.role);
+  return org.projects.map((p) => ({
+    id: p.id,
+    name: p.name,
+    slug: p.slug ?? null,
+    description: null,
+    organizationId: isPersonalOrg ? null : org.id,
+    createdBy: null,
+    isPersonal: !!p.is_personal,
+    settings: {},
+    createdAt: "",
+    updatedAt: "",
+    role,
+    memberCount: undefined,
+  }));
+}
 
 export function useOrgProjects(organizationId: string | undefined) {
-  const [projects, setProjects] = useState<ProjectWithRole[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const { orgs, isLoading, isError, error } = useNavTree();
 
-  const fetchProjects = useCallback(async () => {
-    if (!organizationId) {
-      setProjects([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getOrgProjects(organizationId);
-      setProjects(data);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to fetch projects';
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  }, [organizationId]);
+  const projects = useMemo<ProjectWithRole[]>(() => {
+    if (!organizationId) return EMPTY_PROJECTS;
+    const org = orgs.find((o) => o.id === organizationId);
+    if (!org) return EMPTY_PROJECTS;
+    return projectsFromOrg(org).sort((a, b) => a.name.localeCompare(b.name));
+  }, [orgs, organizationId]);
 
-  useEffect(() => {
-    fetchProjects();
-  }, [fetchProjects]);
+  const refresh = useCallback(() => {
+    // Cast: the thunk returns a Promise but we surface a void-shaped refresh.
+    dispatch(
+      invalidateAndRefetchFullContext() as unknown as Parameters<
+        typeof dispatch
+      >[0],
+    );
+  }, [dispatch]);
 
-  return { projects, loading, error, refresh: fetchProjects };
+  return {
+    projects,
+    loading: isLoading,
+    error: isError ? (error ?? "Failed to fetch projects") : null,
+    refresh,
+  };
 }
 
 export function useUserProjects() {
-  const [projects, setProjects] = useState<ProjectWithRole[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const { orgs, isLoading, isError, error } = useNavTree();
 
-  const fetchProjects = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getUserProjects();
-      setProjects(data);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to fetch projects';
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const projects = useMemo<ProjectWithRole[]>(() => {
+    const out: ProjectWithRole[] = [];
+    for (const org of orgs) out.push(...projectsFromOrg(org));
+    return out.sort((a, b) => a.name.localeCompare(b.name));
+  }, [orgs]);
 
-  useEffect(() => {
-    fetchProjects();
-  }, [fetchProjects]);
+  const refresh = useCallback(() => {
+    dispatch(
+      invalidateAndRefetchFullContext() as unknown as Parameters<
+        typeof dispatch
+      >[0],
+    );
+  }, [dispatch]);
 
-  return { projects, loading, error, refresh: fetchProjects };
+  return {
+    projects,
+    loading: isLoading,
+    error: isError ? (error ?? "Failed to fetch projects") : null,
+    refresh,
+  };
 }
 
 export function usePersonalProjects() {
-  const [projects, setProjects] = useState<ProjectWithRole[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const { orgs, isLoading, isError, error } = useNavTree();
 
-  const fetchProjects = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getPersonalProjects();
-      setProjects(data);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to fetch personal projects';
-      setError(msg);
-    } finally {
-      setLoading(false);
+  const projects = useMemo<ProjectWithRole[]>(() => {
+    const out: ProjectWithRole[] = [];
+    for (const org of orgs) {
+      const isPersonalOrg =
+        org.is_personal === true || isPersonalPseudoOrgId(org.id);
+      if (!isPersonalOrg) continue;
+      out.push(...projectsFromOrg(org));
     }
-  }, []);
+    return out.sort((a, b) => a.name.localeCompare(b.name));
+  }, [orgs]);
 
-  useEffect(() => {
-    fetchProjects();
-  }, [fetchProjects]);
+  const refresh = useCallback(() => {
+    dispatch(
+      invalidateAndRefetchFullContext() as unknown as Parameters<
+        typeof dispatch
+      >[0],
+    );
+  }, [dispatch]);
 
-  return { projects, loading, error, refresh: fetchProjects };
+  return {
+    projects,
+    loading: isLoading,
+    error: isError ? (error ?? "Failed to fetch personal projects") : null,
+    refresh,
+  };
 }
 
 export function useProject(projectId: string | undefined) {
@@ -144,7 +187,8 @@ export function useProject(projectId: string | undefined) {
       const data = await getProject(projectId);
       setProject(data);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to fetch project';
+      const msg =
+        err instanceof Error ? err.message : "Failed to fetch project";
       setError(msg);
     } finally {
       setLoading(false);
@@ -171,10 +215,11 @@ export function useProjectOperations() {
     setError(null);
     try {
       const result = await createProject(options);
-      if (!result.success) setError(result.error ?? 'Failed to create project');
+      if (!result.success) setError(result.error ?? "Failed to create project");
       return result;
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to create project';
+      const msg =
+        err instanceof Error ? err.message : "Failed to create project";
       setError(msg);
       return { success: false, error: msg };
     } finally {
@@ -182,31 +227,37 @@ export function useProjectOperations() {
     }
   }, []);
 
-  const update = useCallback(async (projectId: string, updates: UpdateProjectOptions) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await updateProject(projectId, updates);
-      if (!result.success) setError(result.error ?? 'Failed to update project');
-      return result;
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to update project';
-      setError(msg);
-      return { success: false, error: msg };
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const update = useCallback(
+    async (projectId: string, updates: UpdateProjectOptions) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await updateProject(projectId, updates);
+        if (!result.success)
+          setError(result.error ?? "Failed to update project");
+        return result;
+      } catch (err: unknown) {
+        const msg =
+          err instanceof Error ? err.message : "Failed to update project";
+        setError(msg);
+        return { success: false, error: msg };
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   const remove = useCallback(async (projectId: string) => {
     setLoading(true);
     setError(null);
     try {
       const result = await deleteProject(projectId);
-      if (!result.success) setError(result.error ?? 'Failed to delete project');
+      if (!result.success) setError(result.error ?? "Failed to delete project");
       return result;
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to delete project';
+      const msg =
+        err instanceof Error ? err.message : "Failed to delete project";
       setError(msg);
       return { success: false, error: msg };
     } finally {
@@ -238,7 +289,8 @@ export function useProjectMembers(projectId: string | undefined) {
       const data = await getProjectMembers(projectId);
       setMembers(data);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to fetch members';
+      const msg =
+        err instanceof Error ? err.message : "Failed to fetch members";
       setError(msg);
     } finally {
       setLoading(false);
@@ -262,19 +314,25 @@ export function useProjectMemberOperations(projectId: string) {
       setLoading(true);
       setError(null);
       try {
-        const result = await updateProjectMemberRole(projectId, userId, newRole);
-        if (!result.success) setError(result.error ?? 'Failed to update member role');
+        const result = await updateProjectMemberRole(
+          projectId,
+          userId,
+          newRole,
+        );
+        if (!result.success)
+          setError(result.error ?? "Failed to update member role");
         else await refreshMembers();
         return result;
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Failed to update member role';
+        const msg =
+          err instanceof Error ? err.message : "Failed to update member role";
         setError(msg);
         return { success: false, error: msg };
       } finally {
         setLoading(false);
       }
     },
-    [projectId, refreshMembers]
+    [projectId, refreshMembers],
   );
 
   const remove = useCallback(
@@ -283,18 +341,20 @@ export function useProjectMemberOperations(projectId: string) {
       setError(null);
       try {
         const result = await removeProjectMember(projectId, userId);
-        if (!result.success) setError(result.error ?? 'Failed to remove member');
+        if (!result.success)
+          setError(result.error ?? "Failed to remove member");
         else await refreshMembers();
         return result;
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Failed to remove member';
+        const msg =
+          err instanceof Error ? err.message : "Failed to remove member";
         setError(msg);
         return { success: false, error: msg };
       } finally {
         setLoading(false);
       }
     },
-    [projectId, refreshMembers]
+    [projectId, refreshMembers],
   );
 
   const leave = useCallback(async () => {
@@ -302,10 +362,11 @@ export function useProjectMemberOperations(projectId: string) {
     setError(null);
     try {
       const result = await leaveProject(projectId);
-      if (!result.success) setError(result.error ?? 'Failed to leave project');
+      if (!result.success) setError(result.error ?? "Failed to leave project");
       return result;
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to leave project';
+      const msg =
+        err instanceof Error ? err.message : "Failed to leave project";
       setError(msg);
       return { success: false, error: msg };
     } finally {
@@ -338,11 +399,11 @@ export function useProjectUserRole(projectId: string | undefined) {
   return {
     role,
     loading,
-    isOwner: role === 'owner',
-    isAdmin: role === 'admin' || role === 'owner',
-    canManageMembers: role === 'admin' || role === 'owner',
-    canManageSettings: role === 'admin' || role === 'owner',
-    canDelete: role === 'owner',
+    isOwner: role === "owner",
+    isAdmin: role === "admin" || role === "owner",
+    canManageMembers: role === "admin" || role === "owner",
+    canManageSettings: role === "admin" || role === "owner",
+    canDelete: role === "owner",
   };
 }
 
@@ -367,7 +428,8 @@ export function useProjectInvitations(projectId: string | undefined) {
       const data = await getProjectInvitations(projectId);
       setInvitations(data);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to fetch invitations';
+      const msg =
+        err instanceof Error ? err.message : "Failed to fetch invitations";
       setError(msg);
     } finally {
       setLoading(false);
@@ -387,23 +449,25 @@ export function useProjectInvitationOperations(projectId: string) {
   const { refresh: refreshInvitations } = useProjectInvitations(projectId);
 
   const invite = useCallback(
-    async (options: Omit<InviteProjectMemberOptions, 'projectId'>) => {
+    async (options: Omit<InviteProjectMemberOptions, "projectId">) => {
       setLoading(true);
       setError(null);
       try {
         const result = await inviteToProject({ ...options, projectId });
-        if (!result.success) setError(result.error ?? 'Failed to send invitation');
+        if (!result.success)
+          setError(result.error ?? "Failed to send invitation");
         else await refreshInvitations();
         return result;
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Failed to send invitation';
+        const msg =
+          err instanceof Error ? err.message : "Failed to send invitation";
         setError(msg);
         return { success: false, error: msg };
       } finally {
         setLoading(false);
       }
     },
-    [projectId, refreshInvitations]
+    [projectId, refreshInvitations],
   );
 
   const cancel = useCallback(
@@ -412,18 +476,20 @@ export function useProjectInvitationOperations(projectId: string) {
       setError(null);
       try {
         const result = await cancelProjectInvitation(invitationId);
-        if (!result.success) setError(result.error ?? 'Failed to cancel invitation');
+        if (!result.success)
+          setError(result.error ?? "Failed to cancel invitation");
         else await refreshInvitations();
         return result;
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Failed to cancel invitation';
+        const msg =
+          err instanceof Error ? err.message : "Failed to cancel invitation";
         setError(msg);
         return { success: false, error: msg };
       } finally {
         setLoading(false);
       }
     },
-    [refreshInvitations]
+    [refreshInvitations],
   );
 
   const resend = useCallback(
@@ -432,25 +498,29 @@ export function useProjectInvitationOperations(projectId: string) {
       setError(null);
       try {
         const result = await resendProjectInvitation(invitationId);
-        if (!result.success) setError(result.error ?? 'Failed to resend invitation');
+        if (!result.success)
+          setError(result.error ?? "Failed to resend invitation");
         else await refreshInvitations();
         return result;
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Failed to resend invitation';
+        const msg =
+          err instanceof Error ? err.message : "Failed to resend invitation";
         setError(msg);
         return { success: false, error: msg };
       } finally {
         setLoading(false);
       }
     },
-    [refreshInvitations]
+    [refreshInvitations],
   );
 
   return { invite, cancel, resend, loading, error };
 }
 
 export function useUserProjectInvitations() {
-  const [invitations, setInvitations] = useState<ProjectInvitationWithProject[]>([]);
+  const [invitations, setInvitations] = useState<
+    ProjectInvitationWithProject[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -461,7 +531,8 @@ export function useUserProjectInvitations() {
       const data = await getUserProjectInvitations();
       setInvitations(data);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to fetch invitations';
+      const msg =
+        err instanceof Error ? err.message : "Failed to fetch invitations";
       setError(msg);
     } finally {
       setLoading(false);
@@ -478,18 +549,20 @@ export function useUserProjectInvitations() {
       setError(null);
       try {
         const result = await acceptProjectInvitation(token);
-        if (!result.success) setError(result.error ?? 'Failed to accept invitation');
+        if (!result.success)
+          setError(result.error ?? "Failed to accept invitation");
         else await fetchInvitations();
         return result;
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Failed to accept invitation';
+        const msg =
+          err instanceof Error ? err.message : "Failed to accept invitation";
         setError(msg);
         return { success: false, error: msg };
       } finally {
         setLoading(false);
       }
     },
-    [fetchInvitations]
+    [fetchInvitations],
   );
 
   return { invitations, loading, error, accept, refresh: fetchInvitations };
@@ -502,7 +575,7 @@ export function useUserProjectInvitations() {
 export function useProjectSlugAvailability(
   slug: string,
   organizationId: string | undefined | null,
-  debounceMs = 500
+  debounceMs = 500,
 ) {
   const [available, setAvailable] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(false);
@@ -516,7 +589,10 @@ export function useProjectSlugAvailability(
     setChecking(true);
 
     const timer = setTimeout(async () => {
-      const isAvailable = await isProjectSlugAvailable(slug, organizationId ?? null);
+      const isAvailable = await isProjectSlugAvailable(
+        slug,
+        organizationId ?? null,
+      );
       setAvailable(isAvailable);
       setChecking(false);
     }, debounceMs);

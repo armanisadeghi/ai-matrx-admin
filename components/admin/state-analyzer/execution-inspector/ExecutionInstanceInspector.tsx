@@ -975,9 +975,9 @@ function RequestsTab({ requests }: { requests: ActiveRequest[] }) {
                 </StatusBadge>
               )}
             </div>
-            {req.errorMessage && (
+            {req.error?.message && (
               <p className="text-sm text-destructive mt-1">
-                {req.errorMessage}
+                {req.error.message}
               </p>
             )}
             {isExpanded && (

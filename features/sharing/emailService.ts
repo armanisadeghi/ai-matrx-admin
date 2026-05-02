@@ -59,17 +59,33 @@ async function getResourceDetails(
           : null;
       }
 
-      case "collection": {
+      case "collection":
+      case "udt_picklists": {
         const { data } = await supabase
-          .from("user_lists")
+          .from("udt_picklists")
           .select("list_name")
           .eq("id", resourceId)
           .single();
 
         return data
           ? {
-              title: data.list_name ?? "Untitled Collection",
-              url: `${siteUrl}/collections/${resourceId}`,
+              title: data.list_name ?? "Untitled List",
+              url: `${siteUrl}/lists/${resourceId}`,
+            }
+          : null;
+      }
+
+      case "udt_datasets": {
+        const { data } = await supabase
+          .from("udt_datasets")
+          .select("table_name")
+          .eq("id", resourceId)
+          .single();
+
+        return data
+          ? {
+              title: data.table_name ?? "Untitled Dataset",
+              url: `${siteUrl}/data/${resourceId}`,
             }
           : null;
       }

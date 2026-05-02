@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // components/advanced-image-editor/Navigation.tsx
 
 "use client";

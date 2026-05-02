@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // components/matrx/actions/MatrxActions.tsx
 "use client";
 

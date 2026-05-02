@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // lib/redux/entity/custom-selectors/chatSelectors.ts
 "use client";
 

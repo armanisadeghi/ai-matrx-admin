@@ -38,7 +38,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { openAgentContentWindow } from "@/lib/redux/slices/overlaySlice";
-import { AgentContentTab } from "@/features/window-panels/windows/agents/AgentContentWindow";
 
 interface AgentListItemProps {
   id: string;

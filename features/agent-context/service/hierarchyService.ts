@@ -7,6 +7,8 @@ import type {
   NavTreeResponse,
   FullContextResponse,
 } from "@/features/agent-context/redux/hierarchySlice";
+import { createProject as createProjectCanonical } from "@/features/projects/service";
+import { generateProjectSlug } from "@/features/projects/types";
 
 function toTaskPriority(
   p: string | undefined,
@@ -364,15 +366,36 @@ export const hierarchyService = {
     organization_id?: string;
     description?: string;
   }): Promise<HierarchyProject> {
-    const userId = requireUserId();
+    // Delegate to the canonical create path so an owner `ctx_project_members`
+    // row is always written and `is_personal` is set correctly. Without that
+    // member row the project becomes invisible to `/projects` and to every
+    // permission/sharing query that traverses project membership.
+    //
+    // The canonical service also normalizes the synthetic "Personal"
+    // pseudo-org sentinel to `null`, so passing it through is safe.
+    const result = await createProjectCanonical({
+      name: data.name,
+      slug: generateProjectSlug(data.name),
+      organizationId: data.organization_id ?? undefined,
+      description: data.description,
+    });
 
-    const { data: proj, error } = await supabase
-      .from("ctx_projects")
-      .insert({ ...data, created_by: userId })
-      .select()
-      .single();
-    if (error) throw error;
-    return proj as HierarchyProject;
+    if (!result.success || !result.project) {
+      throw new Error(result.error ?? "Failed to create project");
+    }
+
+    const proj = result.project;
+    return {
+      id: proj.id,
+      name: proj.name,
+      slug: proj.slug,
+      description: proj.description ?? null,
+      organization_id: proj.organizationId ?? null,
+      is_personal: proj.isPersonal,
+      settings: (proj.settings as Record<string, unknown> | null) ?? null,
+      created_at: proj.createdAt,
+      created_by: proj.createdBy ?? null,
+    };
   },
 
   async createTask(data: {

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Plus, Loader2, Check, X, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Plus, Loader2, Check, X, AlertCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -9,28 +9,43 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
-import { cn } from '@/lib/utils';
-import { createProject } from '../service';
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { createProject } from "../service";
 import {
   generateProjectSlug,
   validateProjectName,
   validateProjectSlug,
-} from '../types';
-import { useProjectSlugAvailability } from '../hooks';
+} from "../types";
+import { useProjectSlugAvailability } from "../hooks";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { invalidateAndRefetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
+
+interface CreatedProjectInfo {
+  id: string;
+  slug: string | null;
+  name: string;
+  organizationId: string | null;
+}
 
 interface CreateProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (project: CreatedProjectInfo) => void;
   organizationId?: string | null;
   orgSlug?: string | null;
+  /**
+   * When true (default) the modal navigates to the new project's settings page
+   * after creation. Set false when used inside another flow (e.g. wizards) that
+   * should keep the user in place and consume the new project via onSuccess.
+   */
+  redirectOnSuccess?: boolean;
 }
 
 export function CreateProjectModal({
@@ -39,20 +54,19 @@ export function CreateProjectModal({
   onSuccess,
   organizationId = null,
   orgSlug = null,
+  redirectOnSuccess = true,
 }: CreateProjectModalProps) {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [name, setName] = useState('');
-  const [slug, setSlug] = useState('');
-  const [description, setDescription] = useState('');
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [description, setDescription] = useState("");
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
 
-  const { available: slugAvailable, checking: checkingSlug } = useProjectSlugAvailability(
-    slug,
-    organizationId ?? undefined,
-    500
-  );
+  const { available: slugAvailable, checking: checkingSlug } =
+    useProjectSlugAvailability(slug, organizationId ?? undefined, 500);
 
   useEffect(() => {
     if (name && !isSlugManuallyEdited) {
@@ -63,16 +77,20 @@ export function CreateProjectModal({
   useEffect(() => {
     if (!isOpen) {
       setTimeout(() => {
-        setName('');
-        setSlug('');
-        setDescription('');
+        setName("");
+        setSlug("");
+        setDescription("");
         setIsSlugManuallyEdited(false);
       }, 200);
     }
   }, [isOpen]);
 
-  const nameValidation = name ? validateProjectName(name) : { valid: true, error: '' };
-  const slugValidation = slug ? validateProjectSlug(slug) : { valid: true, error: '' };
+  const nameValidation = name
+    ? validateProjectName(name)
+    : { valid: true, error: "" };
+  const slugValidation = slug
+    ? validateProjectSlug(slug)
+    : { valid: true, error: "" };
 
   const isFormValid =
     name &&
@@ -85,7 +103,7 @@ export function CreateProjectModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) {
-      toast.error('Please fix validation errors before submitting');
+      toast.error("Please fix validation errors before submitting");
       return;
     }
 
@@ -99,19 +117,38 @@ export function CreateProjectModal({
       });
 
       if (result.success && result.project) {
-        toast.success('Project created successfully!');
+        // Refresh the global hierarchy so /projects, /org/[slug]/projects,
+        // and the agent-context cascade pick up the new project at once.
+        dispatch(
+          invalidateAndRefetchFullContext() as unknown as Parameters<
+            typeof dispatch
+          >[0],
+        );
+        toast.success("Project created successfully!");
         onClose();
-        onSuccess?.();
-        if (orgSlug) {
-          router.push(`/org/${orgSlug}/projects/${result.project.slug ?? result.project.id}/settings`);
-        } else {
-          router.push(`/projects/${result.project.slug ?? result.project.id}/settings`);
+        onSuccess?.({
+          id: result.project.id,
+          slug: result.project.slug ?? null,
+          name: result.project.name,
+          organizationId: result.project.organizationId ?? null,
+        });
+        if (redirectOnSuccess) {
+          // The canonical service normalizes the personal pseudo-org sentinel
+          // to a null organization id; redirect personal projects to /projects
+          // rather than the non-existent /org/personal route.
+          const projectPath = result.project.slug ?? result.project.id;
+          if (orgSlug && result.project.organizationId) {
+            router.push(`/org/${orgSlug}/projects/${projectPath}/settings`);
+          } else {
+            router.push(`/projects/${projectPath}/settings`);
+          }
         }
       } else {
-        toast.error(result.error || 'Failed to create project');
+        toast.error(result.error || "Failed to create project");
       }
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : 'An unexpected error occurred';
+      const msg =
+        error instanceof Error ? error.message : "An unexpected error occurred";
       toast.error(msg);
     } finally {
       setIsSubmitting(false);
@@ -159,8 +196,8 @@ export function CreateProjectModal({
           <DialogTitle>Create New Project</DialogTitle>
           <DialogDescription>
             {organizationId
-              ? 'Set up a new project to collaborate with your team'
-              : 'Create a personal project to organize your work'}
+              ? "Set up a new project to collaborate with your team"
+              : "Create a personal project to organize your work"}
           </DialogDescription>
         </DialogHeader>
 
@@ -174,7 +211,7 @@ export function CreateProjectModal({
               placeholder="e.g., Website Redesign"
               maxLength={50}
               disabled={isSubmitting}
-              className={!nameValidation.valid ? 'border-red-500' : ''}
+              className={!nameValidation.valid ? "border-red-500" : ""}
             />
             {!nameValidation.valid && (
               <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
@@ -182,14 +219,16 @@ export function CreateProjectModal({
                 {nameValidation.error}
               </p>
             )}
-            <p className="text-xs text-muted-foreground">{name.length}/50 characters</p>
+            <p className="text-xs text-muted-foreground">
+              {name.length}/50 characters
+            </p>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="project-slug">URL Slug *</Label>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground whitespace-nowrap">
-                {orgSlug ? `/org/${orgSlug}/projects/` : '/projects/'}
+                {orgSlug ? `/org/${orgSlug}/projects/` : "/projects/"}
               </span>
               <Input
                 id="project-slug"
@@ -202,18 +241,23 @@ export function CreateProjectModal({
                 maxLength={50}
                 disabled={isSubmitting}
                 className={cn(
-                  'flex-1',
-                  !slugValidation.valid || (!checkingSlug && slug && !slugAvailable)
-                    ? 'border-red-500'
-                    : '',
-                  slug && slugAvailable && slugValidation.valid ? 'border-green-500' : ''
+                  "flex-1",
+                  !slugValidation.valid ||
+                    (!checkingSlug && slug && !slugAvailable)
+                    ? "border-red-500"
+                    : "",
+                  slug && slugAvailable && slugValidation.valid
+                    ? "border-green-500"
+                    : "",
                 )}
               />
             </div>
             <div className="flex items-center justify-between">
               {getSlugIndicator()}
               {!isSlugManuallyEdited && (
-                <p className="text-xs text-muted-foreground">Auto-generated from name</p>
+                <p className="text-xs text-muted-foreground">
+                  Auto-generated from name
+                </p>
               )}
             </div>
           </div>
@@ -229,11 +273,18 @@ export function CreateProjectModal({
               maxLength={500}
               disabled={isSubmitting}
             />
-            <p className="text-xs text-muted-foreground">{description.length}/500 characters</p>
+            <p className="text-xs text-muted-foreground">
+              {description.length}/500 characters
+            </p>
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
             <Button

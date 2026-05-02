@@ -13,6 +13,7 @@
 import { supabase } from "@/utils/supabase/client";
 import { requireUserId, getUserEmail } from "@/utils/auth/getUserId";
 import type { DbRpcRow } from "@/types/supabase-rpc";
+import { isPersonalPseudoOrgId } from "@/features/agent-context/redux/hierarchySlice";
 import {
   Project,
   ProjectWithRole,
@@ -33,6 +34,18 @@ import {
   generateProjectSlug,
 } from "./types";
 
+// The HierarchyCascade can surface a synthetic "Personal" pseudo-org whose id
+// is the personal sentinel. Anything that hits the real organizations table
+// must treat that sentinel as `null`, otherwise we get FK violations or
+// nonsensical org-scoped queries.
+function normalizeOrgId(
+  organizationId: string | null | undefined,
+): string | null {
+  if (!organizationId) return null;
+  if (isPersonalPseudoOrgId(organizationId)) return null;
+  return organizationId;
+}
+
 // ============================================================================
 // DB Row Interfaces
 // ============================================================================
@@ -47,7 +60,8 @@ export async function createProject(
   options: CreateProjectOptions,
 ): Promise<ProjectResult> {
   try {
-    const { name, slug, organizationId, description, settings } = options;
+    const { name, slug, description, settings } = options;
+    const organizationId = normalizeOrgId(options.organizationId);
 
     const nameValidation = validateProjectName(name);
     if (!nameValidation.valid) {
@@ -59,7 +73,7 @@ export async function createProject(
       return { success: false, error: slugValidation.error };
     }
 
-    const slugFree = await isProjectSlugAvailable(slug, organizationId ?? null);
+    const slugFree = await isProjectSlugAvailable(slug, organizationId);
     if (!slugFree) {
       const scope = organizationId
         ? "in this organization"
@@ -77,7 +91,7 @@ export async function createProject(
       .insert({
         name,
         slug,
-        organization_id: organizationId ?? null,
+        organization_id: organizationId,
         description: description ?? null,
         created_by: currentUserId,
         is_personal: !organizationId,
@@ -335,9 +349,10 @@ export async function isProjectSlugAvailable(
   organizationId: string | null,
 ): Promise<boolean> {
   try {
+    const orgId = normalizeOrgId(organizationId);
     let query = supabase.from("ctx_projects").select("id").eq("slug", slug);
-    if (organizationId) {
-      query = query.eq("organization_id", organizationId);
+    if (orgId) {
+      query = query.eq("organization_id", orgId);
     } else {
       // Personal project: scope uniqueness to the current user
       const userId = requireUserId();
@@ -413,20 +428,22 @@ export async function getProjectMembers(
     );
     if (error) throw error;
 
-    return (data as unknown as ProjectMemberWithUserRow[] ?? []).map((row) => ({
-      id: row.id,
-      projectId: row.project_id,
-      userId: row.user_id,
-      role: row.role as ProjectRole,
-      joinedAt: row.joined_at,
-      invitedBy: row.invited_by as string | null,
-      user: {
-        id: row.user_id,
-        email: row.user_email || "",
-        displayName: row.user_display_name || undefined,
-        avatarUrl: row.user_avatar_url || undefined,
-      },
-    }));
+    return ((data as unknown as ProjectMemberWithUserRow[]) ?? []).map(
+      (row) => ({
+        id: row.id,
+        projectId: row.project_id,
+        userId: row.user_id,
+        role: row.role as ProjectRole,
+        joinedAt: row.joined_at,
+        invitedBy: row.invited_by as string | null,
+        user: {
+          id: row.user_id,
+          email: row.user_email || "",
+          displayName: row.user_display_name || undefined,
+          avatarUrl: row.user_avatar_url || undefined,
+        },
+      }),
+    );
   } catch (error) {
     console.error("Error fetching project members:", error);
     return [];
@@ -722,7 +739,10 @@ export async function acceptProjectInvitation(
       throw memberError;
     }
 
-    await supabase.from("ctx_project_invitations").delete().eq("id", invitation.id);
+    await supabase
+      .from("ctx_project_invitations")
+      .delete()
+      .eq("id", invitation.id);
 
     return {
       success: true,

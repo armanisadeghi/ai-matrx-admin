@@ -21,10 +21,12 @@ organizations → projects → project_members → auth.users
 | `name` | text | Required |
 | `slug` | text | URL-safe, unique per org |
 | `description` | text | Optional |
-| `organization_id` | uuid | FK → organizations |
+| `organization_id` | uuid \| null | FK → organizations. **`NULL` ⇒ personal project** |
 | `created_by` | uuid | FK → auth.users |
-| `is_personal` | boolean | Reserved for personal orgs |
+| `is_personal` | boolean | Mirrors `organization_id IS NULL` — must always match |
 | `settings` | jsonb | Extensible config |
+
+> **Personal projects** have `organization_id = NULL` and `is_personal = true`. The canonical `createProject` service in `features/projects/service.ts` enforces this invariant (and accepts the UI sentinel `PERSONAL_PSEUDO_ORG_ID = '00000000-0000-0000-0000-000000000001'` as input — it normalizes the sentinel to `NULL` before insert). All other write paths (`features/agent-context/service/hierarchyService.createProject`) delegate here so the row + member entry + flag are always written together.
 
 ### `project_members`
 | Column | Type | Notes |
@@ -99,7 +101,8 @@ Both require authentication and project admin role (enforced by RLS).
 
 ```ts
 useOrgProjects(organizationId)      // Projects in an org where user is a member
-useUserProjects()                   // All user's projects across all orgs
+useUserProjects()                   // All user's projects across all orgs (incl. personal)
+usePersonalProjects()               // Personal projects only (organization_id IS NULL)
 useProject(projectId)               // Single project
 useProjectUserRole(projectId)       // Current user's role + permission flags
 useProjectMembers(projectId)        // Member list with user details
@@ -108,6 +111,21 @@ useProjectInvitations(projectId)    // Invitation list
 useProjectInvitationOperations(projectId) // invite, cancel, resend
 useProjectSlugAvailability(slug, orgId) // Debounced slug check
 ```
+
+> **`useUserProjects` / `usePersonalProjects` / `useOrgProjects` are now derived from the Redux nav tree** (`features/agent-context`). They no longer issue their own queries — the single source of truth is the `get_user_full_context` RPC, hydrated into Redux on mount. Any project mutation must dispatch `invalidateAndRefetchFullContext()` so consumers stay in sync.
+
+## Cross-cutting Cache Invalidation
+
+Every project write path dispatches `invalidateAndRefetchFullContext()` from `features/agent-context/redux/hierarchyThunks` so `/projects`, `/org/[slug]/projects`, the `HierarchyCascade`, the `NoteSidebar`, the wizard, and any other nav-tree consumer all converge on the same data.
+
+| Write path | Where | Notes |
+|------------|-------|-------|
+| Create (canonical) | `features/projects/service.ts createProject` | Always writes `ctx_projects` row + `ctx_project_members` owner row + `is_personal` flag |
+| Create modal | `CreateProjectModal` | Dispatches invalidation. New `redirectOnSuccess` prop (default `true`) — set to `false` when embedded in a wizard so the user stays in place; the modal hands the new project to `onSuccess(project)` for inline auto-selection |
+| Create sheet | `ProjectFormSheet` | Dispatches invalidation; redirects personal projects to `/projects/...` (no `/org/personal/...` route exists) |
+| Update settings | `GeneralSettings` | Dispatches invalidation on save |
+| Delete | `DangerZone` | Dispatches invalidation before navigating away |
+| Hierarchy service create | `hierarchyService.createProject` | Delegates to canonical `createProject` — single owner of the write |
 
 ## Email Templates
 

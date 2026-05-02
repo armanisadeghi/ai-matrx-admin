@@ -373,8 +373,11 @@ export default function ResearchInitForm() {
       <CreateProjectModal
         isOpen={createProjectOpen}
         onClose={() => setCreateProjectOpen(false)}
-        onSuccess={() => {
+        redirectOnSuccess={false}
+        onSuccess={(project) => {
           dispatch(invalidateNavTree());
+          setSelectedProjectId(project.id);
+          setSelectedProjectName(project.name);
           setCreateProjectOpen(false);
         }}
       />

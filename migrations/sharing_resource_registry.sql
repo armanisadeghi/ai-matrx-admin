@@ -157,8 +157,11 @@ INSERT INTO public.shareable_resource_registry (
   -- Active table-name-style types (TS sends table_name as-is)
   ('cx_conversation',    'cx_conversation',   'id', 'user_id', 'is_public', 'Conversation',  '/chat/{id}',                 true,  null),
   ('canvas_items',       'canvas_items',      'id', 'user_id', 'is_public', 'Canvas',        '/canvas/{id}',               true,  null),
-  ('user_tables',        'user_tables',       'id', 'user_id', 'is_public', 'Table',         '/tables/{id}',               true,  null),
-  ('user_lists',         'user_lists',        'id', 'user_id', 'is_public', 'List',          '/lists/{id}',                true,  null),
+  -- udt_datasets / udt_picklists are the post-migration-0011 names; the legacy
+  -- aliases user_tables / user_lists were removed in the same migration that
+  -- renamed the underlying tables (see aidream/db/migrations/0011_udt_rename_and_rpc_consolidation.sql).
+  ('udt_datasets',       'udt_datasets',      'id', 'user_id', 'is_public', 'Dataset',       '/data/{id}',                 true,  'Renamed from user_tables in migration 0011_udt_rename_and_rpc_consolidation.'),
+  ('udt_picklists',      'udt_picklists',     'id', 'user_id', 'is_public', 'List',          '/lists/{id}',                true,  'Renamed from user_lists in migration 0011_udt_rename_and_rpc_consolidation.'),
   ('transcripts',        'transcripts',       'id', 'user_id', 'is_public', 'Transcript',    '/transcripts/{id}',          true,  null),
   ('quiz_sessions',      'quiz_sessions',     'id', 'user_id', null,        'Quiz',          '/quizzes/{id}',              true,  null),
   ('sandbox_instances',  'sandbox_instances', 'id', 'user_id', null,        'Sandbox',       '/sandbox/{id}',              true,  null),

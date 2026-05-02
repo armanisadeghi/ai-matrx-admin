@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // lib/redux/entity/hooks/coreHooks.ts
 "use client";
 

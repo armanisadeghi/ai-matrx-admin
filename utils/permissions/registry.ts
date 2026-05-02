@@ -115,19 +115,19 @@ export const SHAREABLE_RESOURCE_REGISTRY = {
     urlPathTemplate: "/canvas/{id}",
     rlsUsesHasPermission: true,
   },
-  user_tables: {
-    resourceType: "user_tables",
-    tableName: "user_tables",
+  udt_datasets: {
+    resourceType: "udt_datasets",
+    tableName: "udt_datasets",
     idColumn: "id",
     ownerColumn: "user_id",
     isPublicColumn: "is_public",
-    displayLabel: "Table",
-    urlPathTemplate: "/tables/{id}",
+    displayLabel: "Dataset",
+    urlPathTemplate: "/data/{id}",
     rlsUsesHasPermission: true,
   },
-  user_lists: {
-    resourceType: "user_lists",
-    tableName: "user_lists",
+  udt_picklists: {
+    resourceType: "udt_picklists",
+    tableName: "udt_picklists",
     idColumn: "id",
     ownerColumn: "user_id",
     isPublicColumn: "is_public",

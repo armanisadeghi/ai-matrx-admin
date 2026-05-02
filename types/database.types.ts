@@ -15082,100 +15082,6 @@ export type Database = {
           },
         ]
       }
-      table_data: {
-        Row: {
-          created_at: string
-          data: Json
-          id: string
-          is_public: boolean
-          table_id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          data: Json
-          id?: string
-          is_public?: boolean
-          table_id: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          data?: Json
-          id?: string
-          is_public?: boolean
-          table_id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "table_data_table_id_fkey"
-            columns: ["table_id"]
-            isOneToOne: false
-            referencedRelation: "user_tables"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      table_fields: {
-        Row: {
-          created_at: string
-          data_type: Database["public"]["Enums"]["field_data_type"]
-          default_value: Json | null
-          display_name: string
-          field_name: string
-          field_order: number
-          id: string
-          is_public: boolean
-          is_required: boolean
-          table_id: string
-          updated_at: string
-          user_id: string
-          validation_rules: Json | null
-        }
-        Insert: {
-          created_at?: string
-          data_type?: Database["public"]["Enums"]["field_data_type"]
-          default_value?: Json | null
-          display_name: string
-          field_name: string
-          field_order?: number
-          id?: string
-          is_public?: boolean
-          is_required?: boolean
-          table_id: string
-          updated_at?: string
-          user_id: string
-          validation_rules?: Json | null
-        }
-        Update: {
-          created_at?: string
-          data_type?: Database["public"]["Enums"]["field_data_type"]
-          default_value?: Json | null
-          display_name?: string
-          field_name?: string
-          field_order?: number
-          id?: string
-          is_public?: boolean
-          is_required?: boolean
-          table_id?: string
-          updated_at?: string
-          user_id?: string
-          validation_rules?: Json | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "table_fields_table_id_fkey"
-            columns: ["table_id"]
-            isOneToOne: false
-            referencedRelation: "user_tables"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       tool_test_samples: {
         Row: {
           admin_comments: string | null
@@ -15691,6 +15597,253 @@ export type Database = {
         }
         Relationships: []
       }
+      udt_dataset_fields: {
+        Row: {
+          created_at: string
+          data_type: Database["public"]["Enums"]["field_data_type"]
+          default_value: Json | null
+          display_name: string
+          field_name: string
+          field_order: number
+          id: string
+          is_public: boolean
+          is_required: boolean
+          table_id: string
+          updated_at: string
+          user_id: string
+          validation_rules: Json | null
+        }
+        Insert: {
+          created_at?: string
+          data_type?: Database["public"]["Enums"]["field_data_type"]
+          default_value?: Json | null
+          display_name: string
+          field_name: string
+          field_order?: number
+          id?: string
+          is_public?: boolean
+          is_required?: boolean
+          table_id: string
+          updated_at?: string
+          user_id: string
+          validation_rules?: Json | null
+        }
+        Update: {
+          created_at?: string
+          data_type?: Database["public"]["Enums"]["field_data_type"]
+          default_value?: Json | null
+          display_name?: string
+          field_name?: string
+          field_order?: number
+          id?: string
+          is_public?: boolean
+          is_required?: boolean
+          table_id?: string
+          updated_at?: string
+          user_id?: string
+          validation_rules?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "udt_dataset_fields_dataset_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "udt_datasets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      udt_dataset_rows: {
+        Row: {
+          created_at: string
+          data: Json
+          id: string
+          is_public: boolean
+          table_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data: Json
+          id?: string
+          is_public?: boolean
+          table_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: string
+          is_public?: boolean
+          table_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "udt_dataset_rows_dataset_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "udt_datasets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      udt_datasets: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean
+          organization_id: string | null
+          project_id: string | null
+          row_ordering_config: Json | null
+          table_name: string
+          task_id: string | null
+          updated_at: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          organization_id?: string | null
+          project_id?: string | null
+          row_ordering_config?: Json | null
+          table_name: string
+          task_id?: string | null
+          updated_at?: string
+          user_id: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          organization_id?: string | null
+          project_id?: string | null
+          row_ordering_config?: Json | null
+          table_name?: string
+          task_id?: string | null
+          updated_at?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "udt_datasets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "udt_datasets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ctx_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "udt_datasets_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "ctx_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      udt_picklist_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          group_name: string | null
+          help_text: string | null
+          icon_name: string | null
+          id: string
+          is_public: boolean | null
+          label: string | null
+          list_id: string | null
+          public_read: boolean | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          group_name?: string | null
+          help_text?: string | null
+          icon_name?: string | null
+          id?: string
+          is_public?: boolean | null
+          label?: string | null
+          list_id?: string | null
+          public_read?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          group_name?: string | null
+          help_text?: string | null
+          icon_name?: string | null
+          id?: string
+          is_public?: boolean | null
+          label?: string | null
+          list_id?: string | null
+          public_read?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "udt_picklist_items_picklist_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "udt_picklists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      udt_picklists: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean | null
+          list_name: string | null
+          public_read: boolean | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          list_name?: string | null
+          public_read?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          list_name?: string | null
+          public_read?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_achievements: {
         Row: {
           achievement_data: Json | null
@@ -16104,92 +16257,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_list_items: {
-        Row: {
-          created_at: string
-          description: string | null
-          group_name: string | null
-          help_text: string | null
-          icon_name: string | null
-          id: string
-          is_public: boolean | null
-          label: string | null
-          list_id: string | null
-          public_read: boolean | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          group_name?: string | null
-          help_text?: string | null
-          icon_name?: string | null
-          id?: string
-          is_public?: boolean | null
-          label?: string | null
-          list_id?: string | null
-          public_read?: boolean | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          group_name?: string | null
-          help_text?: string | null
-          icon_name?: string | null
-          id?: string
-          is_public?: boolean | null
-          label?: string | null
-          list_id?: string | null
-          public_read?: boolean | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_list_items_list_id_fkey"
-            columns: ["list_id"]
-            isOneToOne: false
-            referencedRelation: "user_lists"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_lists: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          is_public: boolean | null
-          list_name: string | null
-          public_read: boolean | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          is_public?: boolean | null
-          list_name?: string | null
-          public_read?: boolean | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          is_public?: boolean | null
-          list_name?: string | null
-          public_read?: boolean | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       user_preferences: {
         Row: {
           created_at: string
@@ -16276,73 +16343,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      user_tables: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          is_public: boolean
-          organization_id: string | null
-          project_id: string | null
-          row_ordering_config: Json | null
-          table_name: string
-          task_id: string | null
-          updated_at: string
-          user_id: string
-          version: number
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          is_public?: boolean
-          organization_id?: string | null
-          project_id?: string | null
-          row_ordering_config?: Json | null
-          table_name: string
-          task_id?: string | null
-          updated_at?: string
-          user_id: string
-          version?: number
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          is_public?: boolean
-          organization_id?: string | null
-          project_id?: string | null
-          row_ordering_config?: Json | null
-          table_name?: string
-          task_id?: string | null
-          updated_at?: string
-          user_id?: string
-          version?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_tables_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_tables_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "ctx_projects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_tables_task_id_fkey"
-            columns: ["task_id"]
-            isOneToOne: false
-            referencedRelation: "ctx_tasks"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       wbx_capture: {
         Row: {
@@ -16457,7 +16457,7 @@ export type Database = {
             foreignKeyName: "wbx_pattern_target_user_table_id_fkey"
             columns: ["target_user_table_id"]
             isOneToOne: false
-            referencedRelation: "user_tables"
+            referencedRelation: "udt_datasets"
             referencedColumns: ["id"]
           },
         ]

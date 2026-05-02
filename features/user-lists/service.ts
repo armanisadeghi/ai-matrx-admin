@@ -28,7 +28,9 @@ export async function getOwnedListsSummary(
     p_user_id: userId,
   });
   if (error) throw new Error(`Failed to load lists: ${error.message}`);
-  return ((data as unknown as UserListSummaryRaw[]) ?? []).map(normalizeUserList);
+  return ((data as unknown as UserListSummaryRaw[]) ?? []).map(
+    normalizeUserList,
+  );
 }
 
 /**
@@ -37,7 +39,7 @@ export async function getOwnedListsSummary(
  */
 export async function getAccessibleLists(): Promise<UserList[]> {
   const { data, error } = await supabase
-    .from("user_lists")
+    .from("udt_picklists")
     .select("*")
     .order("created_at", { ascending: false });
   if (error) throw new Error(`Failed to load lists: ${error.message}`);
@@ -90,7 +92,10 @@ export async function updateList(input: UpdateListInput) {
 // ─── Delete ────────────────────────────────────────────────────────────────────
 
 export async function deleteList(listId: string): Promise<void> {
-  const { error } = await supabase.from("user_lists").delete().eq("id", listId);
+  const { error } = await supabase
+    .from("udt_picklists")
+    .delete()
+    .eq("id", listId);
   if (error) throw new Error(`Failed to delete list: ${error.message}`);
 }
 
@@ -108,7 +113,7 @@ export async function addItemToList(params: {
   publicRead?: boolean;
 }) {
   const { data, error } = await supabase
-    .from("user_list_items")
+    .from("udt_picklist_items")
     .insert({
       list_id: params.listId,
       user_id: params.userId,
@@ -137,7 +142,7 @@ export async function updateItem(
   },
 ) {
   const { data, error } = await supabase
-    .from("user_list_items")
+    .from("udt_picklist_items")
     .update({ ...patch, updated_at: new Date().toISOString() })
     .eq("id", itemId)
     .select()
@@ -148,7 +153,7 @@ export async function updateItem(
 
 export async function deleteItem(itemId: string): Promise<void> {
   const { error } = await supabase
-    .from("user_list_items")
+    .from("udt_picklist_items")
     .delete()
     .eq("id", itemId);
   if (error) throw new Error(`Failed to delete item: ${error.message}`);
