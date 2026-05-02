@@ -598,6 +598,20 @@
     --glass-shadow-lg:
       0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
 
+    /* Shell Glass — iOS-style frosted glass system, single source of truth.
+       Originally lived in styles/shell.css (loaded only by (a) and (ssr) routes).
+       Hoisted to globals.css so .shell-glass* utilities work app-wide.
+       Light-mode tokens. */
+    --shell-glass-bg:           rgba(210, 225, 255, 0.14);
+    --shell-glass-bg-hover:     rgba(210, 225, 255, 0.22);
+    --shell-glass-bg-active:    rgba(210, 225, 255, 0.32);
+    --shell-glass-border:       rgba(180, 205, 255, 0.40);
+    --shell-glass-border-width: 2.5px;
+    --shell-glass-card-bg:      rgba(220, 230, 255, 0.18);
+    --shell-glass-blur:         16px;
+    --shell-glass-shadow:       0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shell-glass-shadow-lg:    0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+
     /* Base Background - Zinc-100 with texture (rgb 244 244 245) */
     --background: 240 5% 96%;
 
@@ -759,6 +773,15 @@
     --glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
     --glass-shadow-lg:
       0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.15);
+
+    /* Shell Glass — Dark mode tokens */
+    --shell-glass-bg:        rgba(180, 200, 255, 0.05);
+    --shell-glass-bg-hover:  rgba(180, 200, 255, 0.09);
+    --shell-glass-bg-active: rgba(180, 200, 255, 0.13);
+    --shell-glass-border:    rgba(255, 255, 255, 0.07);
+    --shell-glass-card-bg:   rgba(255, 255, 255, 0.06);
+    --shell-glass-shadow:    0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
+    --shell-glass-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.12);
 
     /* Base Background - Zinc-850 with texture (rgb 39 39 42) */
     --background: 240 4% 16%;
@@ -1294,7 +1317,11 @@
     z-index: -1;
   }
 
-  /* ===== END GLASS EFFECT UTILITIES ===== */
+  /* ===== END GLASS EFFECT UTILITIES =====
+     Note: .shell-glass / .shell-glass-dock / .shell-glass-sheet / .shell-glass-card
+     utilities live further down in this file (search "Shell Glass + Tactile
+     Utilities") so they sit alongside the .shell-tactile family. Tokens for them
+     are declared in @layer base above. */
 
   /* Textured background utilities — opt-in.
      -----------------------------------------------------------------------
@@ -1641,7 +1668,7 @@
 
 /* Dialog / Modal glass — INTENTIONAL outside-@layer + `!important`.
    -----------------------------------------------------------------------
-   `.mx-glass-overlay` and `.mx-glass-modal` are used by Radix-based
+   `.shell-glass-overlay` and `.shell-glass-modal` are used by Radix-based
    dialog / drawer / sheet components (components/ui/alert-dialog.tsx,
    components/ui/drawer.tsx, components/ui/sheet.tsx, etc.). Both
    declarations sit OUTSIDE `@layer utilities` and use `!important` on
@@ -1656,7 +1683,12 @@
 
    Together this gives a 2-axis cascade win that the simpler @layer
    placement could not provide. Do NOT move these inside `@layer` and
-   do NOT drop the `!important`. */
+   do NOT drop the `!important`.
+
+   The legacy `.mx-glass-overlay` / `.mx-glass-modal` classes below are
+   kept temporarily to support unmigrated consumers and will be removed
+   once Commit 6 of the glass-consolidation series finishes the codemod. */
+.shell-glass-overlay,
 .mx-glass-overlay {
   background: rgba(0, 0, 0, 0.2) !important;
   backdrop-filter: blur(4px) !important;
@@ -1665,10 +1697,12 @@
   box-shadow: none !important;
 }
 
+.dark .shell-glass-overlay,
 .dark .mx-glass-overlay {
   background: rgba(0, 0, 0, 0.5) !important;
 }
 
+.shell-glass-modal,
 .mx-glass-modal {
   background: rgba(210, 225, 255, 0.14) !important;
   backdrop-filter: blur(16px) saturate(1.8) brightness(1.1) !important;
@@ -1677,6 +1711,7 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04) !important;
 }
 
+.dark .shell-glass-modal,
 .dark .mx-glass-modal {
   background: rgba(180, 200, 255, 0.05) !important;
   border-color: rgba(255, 255, 255, 0.07) !important;
@@ -1816,21 +1851,24 @@
 
 /* =============================================================================
    SSR Module CSS — now split into dedicated files loaded per-route:
-   • Scrollbar utilities  → app/(ssr)/shell.css  (section 18)
+   • Scrollbar utilities  → styles/shell.css  (section 18)
    • Notes module CSS     → app/(ssr)/ssr/notes/notes.css
    ============================================================================= */
 
 /* =============================================================================
-   Shell Design Tokens
-   Tokens are defined in app/(ssr)/shell.css (loaded per-route).
-   The @layer utilities below make glass/tactile classes available globally
-   so non-shell routes (e.g. public chat, notes overlays) can use them too.
-   ============================================================================= */
-
-/* =============================================================================
-   Shell Glass + Tactile Utilities
-   Tokens live in app/(ssr)/shell.css. These @layer utilities entries make the
-   glass/tactile classes composable with Tailwind's cn() system globally.
+   Shell Glass + Tactile Utilities — single source of truth.
+   Token declarations (--shell-glass-*) live in @layer base :root / .dark above.
+   These utilities are inside @layer utilities so they're composable with
+   Tailwind's cn() system and available in EVERY layout, not just (a)/(ssr).
+   The four glass variants are the entire public API:
+     .shell-glass         — base (cards, panels, popovers, glass pills)
+     .shell-glass-dock    — heavier shadow for floating chrome (dock, FAB)
+     .shell-glass-sheet   — right-edge border only (slide-in side sheets)
+     .shell-glass-card    — no backdrop-filter (avoids stacking-context bugs
+                              in Chromium that break shell chrome blur). For
+                              in-page content surfaces only.
+   For Radix Dialog/Drawer/Sheet overlays, see .shell-glass-overlay /
+   .shell-glass-modal further up — those live OUTSIDE @layer with !important.
    ============================================================================= */
 
 @layer utilities {

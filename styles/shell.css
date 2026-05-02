@@ -35,20 +35,13 @@
 }
 
 /* ---------------------------------------------------------------------------
-   2. Glass Design Tokens — Light Mode
+   2. Shell-Specific Design Tokens — Light Mode
    --------------------------------------------------------------------------- */
 
+/* NOTE: Glass tokens (--shell-glass-*) live in app/globals.css :root / .dark
+   so they're available in every layout, not just (a) and (ssr). The :root
+   block below defines tokens that are scoped to the shell layout. */
 :root {
-  --shell-glass-bg: rgba(210, 225, 255, 0.14);
-  --shell-glass-bg-hover: rgba(210, 225, 255, 0.22);
-  --shell-glass-bg-active: rgba(210, 225, 255, 0.32);
-  --shell-glass-border: rgba(180, 205, 255, 0.40);
-  --shell-glass-border-width: 2.5px;
-  --shell-glass-card-bg: rgba(220, 230, 255, 0.18);
-  --shell-glass-blur: 16px;
-  --shell-glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shell-glass-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
-
   --shell-sidebar-bg: transparent;
   --shell-sidebar-bg-expanded: var(--background);
   --shell-sidebar-border: transparent;
@@ -69,21 +62,13 @@
 }
 
 /* ---------------------------------------------------------------------------
-   3. Glass Design Tokens — Dark Mode
+   3. Shell-Specific Design Tokens — Dark Mode
    --------------------------------------------------------------------------- */
 
 .dark {
   /* Panel sidebar background — matches .dark .bg-textured (zinc-850 + subtle grid) */
   --shell-panel-bg: rgb(39 39 42);
   --shell-panel-bg-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' viewBox='0 0 2 2'%3E%3Cpath fill='%23999' fill-opacity='0.07' d='M1 1h0.5v0.5H1V1z'%3E%3C/path%3E%3C/svg%3E");
-
-  --shell-glass-bg: rgba(180, 200, 255, 0.05);
-  --shell-glass-bg-hover: rgba(180, 200, 255, 0.09);
-  --shell-glass-bg-active: rgba(180, 200, 255, 0.13);
-  --shell-glass-border: rgba(255, 255, 255, 0.07);
-  --shell-glass-card-bg: rgba(255, 255, 255, 0.06);
-  --shell-glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
-  --shell-glass-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.12);
 
   --shell-sidebar-bg: transparent;
   --shell-sidebar-bg-expanded: var(--background);
@@ -212,46 +197,10 @@
   background: var(--shell-glass-bg-active) !important;
 }
 
-/* ── Core glass — the single definition everything else inherits ── */
-.shell-glass,
-.shell-glass-dock,
-.shell-glass-sheet {
-  background: var(--shell-glass-bg);
-  backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
-  -webkit-backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
-  border: var(--shell-glass-border-width) solid var(--shell-glass-border);
-  box-shadow: var(--shell-glass-shadow);
-}
-
-/* ── Content glass — for in-page elements (cards, welcome, etc.)
-   NO backdrop-filter — avoids creating stacking contexts that break
-   shell chrome (dock, panel) backdrop-filter in Chromium. ── */
-.shell-glass-card {
-  background: var(--shell-glass-card-bg);
-  border: var(--shell-glass-border-width) solid var(--shell-glass-border);
-  box-shadow: var(--shell-glass-shadow);
-}
-
-.shell-glass:hover,
-.shell-glass-dock:hover {
-  background: var(--shell-glass-bg-hover);
-}
-
-.shell-glass:active,
-.shell-glass-dock:active {
-  background: var(--shell-glass-bg-active);
-}
-
-/* Dock — only differs in shadow */
-.shell-glass-dock {
-  box-shadow: var(--shell-glass-shadow-lg);
-}
-
-/* Sheet — only differs in border direction (left edge only, not all sides) */
-.shell-glass-sheet {
-  border: none;
-  border-right: var(--shell-glass-border-width) solid var(--shell-glass-border);
-}
+/* NOTE: .shell-glass / .shell-glass-dock / .shell-glass-sheet / .shell-glass-card
+   are now defined in app/globals.css so the utilities work in every layout, not
+   just (a) and (ssr). The variables they reference (--shell-glass-*) also live
+   in globals.css. */
 
 /* Active route pill — visual definition (used by CSS-driven selectors below) */
 .shell-active-pill {
