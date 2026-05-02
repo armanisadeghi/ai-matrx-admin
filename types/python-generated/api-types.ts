@@ -6700,7 +6700,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "pending" | "success" | "thin" | "failed" | "manual" | "skipped" | "complete" | "dead_link";
+            status: "pending" | "success" | "thin" | "failed" | "manual" | "skipped" | "complete" | "dead_link" | "gated";
             /** Source Id */
             source_id: string;
             /**
@@ -6751,7 +6751,7 @@ export interface components {
              * Scrape Status
              * @enum {string}
              */
-            scrape_status: "pending" | "success" | "thin" | "failed" | "manual" | "skipped" | "complete" | "dead_link";
+            scrape_status: "pending" | "success" | "thin" | "failed" | "manual" | "skipped" | "complete" | "dead_link" | "gated";
             /**
              * Next Level
              * @enum {integer}
@@ -9127,7 +9127,7 @@ export interface components {
             /** Is Stale */
             is_stale?: boolean | null;
             /** Scrape Status */
-            scrape_status?: ("pending" | "success" | "thin" | "failed" | "manual" | "skipped" | "complete" | "dead_link") | null;
+            scrape_status?: ("pending" | "success" | "thin" | "failed" | "manual" | "skipped" | "complete" | "dead_link" | "gated") | null;
         };
         /** SplitPartRequest */
         SplitPartRequest: {
@@ -9545,7 +9545,7 @@ export interface components {
              * Verdict
              * @enum {string}
              */
-            verdict: "accept_as_is" | "dead_link" | "retry" | "mark_complete";
+            verdict: "accept_as_is" | "dead_link" | "retry" | "mark_complete" | "gated";
             /** Notes */
             notes?: string | null;
         };
@@ -9557,12 +9557,12 @@ export interface components {
              * Verdict
              * @enum {string}
              */
-            verdict: "accept_as_is" | "dead_link" | "retry" | "mark_complete";
+            verdict: "accept_as_is" | "dead_link" | "retry" | "mark_complete" | "gated";
             /**
              * Scrape Status
              * @enum {string}
              */
-            scrape_status: "pending" | "success" | "thin" | "failed" | "manual" | "skipped" | "complete" | "dead_link";
+            scrape_status: "pending" | "success" | "thin" | "failed" | "manual" | "skipped" | "complete" | "dead_link" | "gated";
             /** User Verdict At */
             user_verdict_at: string;
             /** Is Terminal */

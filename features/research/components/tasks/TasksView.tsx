@@ -13,6 +13,7 @@ import {
   Hand,
   Link2Off,
   Loader2,
+  Lock,
   MousePointerClick,
   RefreshCw,
   RotateCcw,
@@ -137,7 +138,12 @@ interface VerdictMeta {
 }
 
 /** Display order in the dropdown (most common first). */
-const VERDICT_ORDER: UserVerdict[] = ["accept_as_is", "dead_link", "retry"];
+const VERDICT_ORDER: UserVerdict[] = [
+  "accept_as_is",
+  "gated",
+  "dead_link",
+  "retry",
+];
 
 const VERDICT_META: Record<UserVerdict, VerdictMeta> = {
   accept_as_is: {
@@ -147,6 +153,14 @@ const VERDICT_META: Record<UserVerdict, VerdictMeta> = {
       "This sparse content IS the whole page. Marks the source complete.",
     icon: CheckCircle2,
     accent: "text-green-600 dark:text-green-400",
+  },
+  gated: {
+    label: "Page is gated (login/paywall)",
+    toastTitle: "Marked as gated",
+    description:
+      "Page exists but is behind a login wall, paywall, or captcha we can't practically defeat. Removed from queue (admin can requeue later).",
+    icon: Lock,
+    accent: "text-orange-600 dark:text-orange-400",
   },
   dead_link: {
     label: "Mark dead link",

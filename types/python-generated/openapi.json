@@ -2079,7 +2079,7 @@
             "schema": {
               "type": "number",
               "exclusiveMinimum": 0,
-              "default": 10,
+              "default": 10.0,
               "title": "Target Size Mb"
             }
           },
@@ -15825,15 +15825,15 @@
           },
           "limit": {
             "type": "integer",
-            "maximum": 100,
-            "minimum": 1,
+            "maximum": 100.0,
+            "minimum": 1.0,
             "title": "Limit",
             "default": 10
           },
           "multi_query": {
             "type": "integer",
-            "maximum": 5,
-            "minimum": 1,
+            "maximum": 5.0,
+            "minimum": 1.0,
             "title": "Multi Query",
             "default": 1
           },
@@ -18506,8 +18506,8 @@
           },
           "max_steps": {
             "type": "integer",
-            "maximum": 100000,
-            "minimum": 1,
+            "maximum": 100000.0,
+            "minimum": 1.0,
             "title": "Max Steps",
             "default": 1000
           },
@@ -18713,15 +18713,15 @@
           },
           "limit_per_side": {
             "type": "integer",
-            "maximum": 20,
-            "minimum": 1,
+            "maximum": 20.0,
+            "minimum": 1.0,
             "title": "Limit Per Side",
             "default": 4
           },
           "multi_query": {
             "type": "integer",
-            "maximum": 4,
-            "minimum": 1,
+            "maximum": 4.0,
+            "minimum": 1.0,
             "title": "Multi Query",
             "default": 2
           },
@@ -19748,7 +19748,8 @@
               "manual",
               "skipped",
               "complete",
-              "dead_link"
+              "dead_link",
+              "gated"
             ],
             "title": "Status"
           },
@@ -19891,7 +19892,8 @@
               "manual",
               "skipped",
               "complete",
-              "dead_link"
+              "dead_link",
+              "gated"
             ],
             "title": "Scrape Status"
           },
@@ -22554,29 +22556,29 @@
         "properties": {
           "chunk_count": {
             "type": "integer",
-            "maximum": 10000,
-            "minimum": 1,
+            "maximum": 10000.0,
+            "minimum": 1.0,
             "title": "Chunk Count",
             "default": 10
           },
           "chunk_delay_ms": {
             "type": "integer",
-            "maximum": 60000,
-            "minimum": 0,
+            "maximum": 60000.0,
+            "minimum": 0.0,
             "title": "Chunk Delay Ms",
             "default": 200
           },
           "heartbeat_interval_ms": {
             "type": "integer",
-            "maximum": 60000,
-            "minimum": 1000,
+            "maximum": 60000.0,
+            "minimum": 1000.0,
             "title": "Heartbeat Interval Ms",
             "default": 10000
           },
           "max_lifetime_ms": {
             "type": "integer",
-            "maximum": 600000,
-            "minimum": 1000,
+            "maximum": 600000.0,
+            "minimum": 1000.0,
             "title": "Max Lifetime Ms",
             "default": 120000
           },
@@ -22958,12 +22960,12 @@
         "properties": {
           "start": {
             "type": "integer",
-            "minimum": 1,
+            "minimum": 1.0,
             "title": "Start"
           },
           "end": {
             "type": "integer",
-            "minimum": 1,
+            "minimum": 1.0,
             "title": "End"
           }
         },
@@ -24589,8 +24591,8 @@
           },
           "anchor_size": {
             "type": "integer",
-            "maximum": 1000,
-            "minimum": 10,
+            "maximum": 1000.0,
+            "minimum": 10.0,
             "title": "Anchor Size",
             "default": 100
           },
@@ -24723,8 +24725,8 @@
           },
           "max_steps": {
             "type": "integer",
-            "maximum": 100000,
-            "minimum": 1,
+            "maximum": 100000.0,
+            "minimum": 1.0,
             "title": "Max Steps",
             "default": 1000
           },
@@ -24970,8 +24972,8 @@
           },
           "max_steps": {
             "type": "integer",
-            "maximum": 100000,
-            "minimum": 1,
+            "maximum": 100000.0,
+            "minimum": 1.0,
             "title": "Max Steps",
             "default": 1000
           },
@@ -25195,8 +25197,8 @@
           },
           "anchor_size": {
             "type": "integer",
-            "maximum": 1000,
-            "minimum": 10,
+            "maximum": 1000.0,
+            "minimum": 10.0,
             "title": "Anchor Size",
             "default": 100
           },
@@ -25211,8 +25213,8 @@
           },
           "max_page_read": {
             "type": "integer",
-            "maximum": 20,
-            "minimum": 1,
+            "maximum": 20.0,
+            "minimum": 1.0,
             "title": "Max Page Read",
             "default": 10
           },
@@ -25292,8 +25294,8 @@
           },
           "anchor_size": {
             "type": "integer",
-            "maximum": 1000,
-            "minimum": 10,
+            "maximum": 1000.0,
+            "minimum": 10.0,
             "title": "Anchor Size",
             "default": 100
           },
@@ -25311,8 +25313,8 @@
           },
           "total_results_per_keyword": {
             "type": "integer",
-            "maximum": 30,
-            "minimum": 10,
+            "maximum": 30.0,
+            "minimum": 10.0,
             "title": "Total Results Per Keyword",
             "default": 10
           },
@@ -25474,8 +25476,8 @@
           },
           "total_results_per_keyword": {
             "type": "integer",
-            "maximum": 100,
-            "minimum": 1,
+            "maximum": 100.0,
+            "minimum": 1.0,
             "title": "Total Results Per Keyword",
             "default": 5
           },
@@ -25510,8 +25512,8 @@
           },
           "limit": {
             "type": "integer",
-            "maximum": 100,
-            "minimum": 1,
+            "maximum": 100.0,
+            "minimum": 1.0,
             "title": "Limit",
             "default": 20
           },
@@ -25542,8 +25544,8 @@
           },
           "multi_query": {
             "type": "integer",
-            "maximum": 5,
-            "minimum": 1,
+            "maximum": 5.0,
+            "minimum": 1.0,
             "title": "Multi Query",
             "description": "If >1, the query is rewritten into N paraphrases via gpt-4o-mini and each one contributes a separate vector ranking that gets fused via RRF. Boosts recall on awkward phrasings.",
             "default": 1
@@ -25937,7 +25939,8 @@
                   "manual",
                   "skipped",
                   "complete",
-                  "dead_link"
+                  "dead_link",
+                  "gated"
                 ]
               },
               {
@@ -27216,7 +27219,8 @@
               "accept_as_is",
               "dead_link",
               "retry",
-              "mark_complete"
+              "mark_complete",
+              "gated"
             ],
             "title": "Verdict"
           },
@@ -27250,7 +27254,8 @@
               "accept_as_is",
               "dead_link",
               "retry",
-              "mark_complete"
+              "mark_complete",
+              "gated"
             ],
             "title": "Verdict"
           },
@@ -27264,7 +27269,8 @@
               "manual",
               "skipped",
               "complete",
-              "dead_link"
+              "dead_link",
+              "gated"
             ],
             "title": "Scrape Status"
           },
@@ -27391,18 +27397,18 @@
           "x": {
             "type": "number",
             "title": "X",
-            "default": 0
+            "default": 0.0
           },
           "y": {
             "type": "number",
             "title": "Y",
-            "default": 0
+            "default": 0.0
           },
           "zoom": {
             "type": "number",
-            "exclusiveMinimum": 0,
+            "exclusiveMinimum": 0.0,
             "title": "Zoom",
-            "default": 1
+            "default": 1.0
           }
         },
         "type": "object",

@@ -11875,6 +11875,9 @@ export type Database = {
           title: string | null
           topic_id: string
           url: string
+          user_verdict: string | null
+          user_verdict_at: string | null
+          user_verdict_notes: string | null
         }
         Insert: {
           description?: string | null
@@ -11895,6 +11898,9 @@ export type Database = {
           title?: string | null
           topic_id: string
           url: string
+          user_verdict?: string | null
+          user_verdict_at?: string | null
+          user_verdict_notes?: string | null
         }
         Update: {
           description?: string | null
@@ -11915,6 +11921,9 @@ export type Database = {
           title?: string | null
           topic_id?: string
           url?: string
+          user_verdict?: string | null
+          user_verdict_at?: string | null
+          user_verdict_notes?: string | null
         }
         Relationships: [
           {
@@ -19237,6 +19246,10 @@ export type Database = {
         Returns: Json
       }
       agx_update_from_source: { Args: { p_agent_id: string }; Returns: Json }
+      append_rows_to_user_table: {
+        Args: { p_rows: Json; p_table_id: string }
+        Returns: number
+      }
       assign_random_colors_to_node_all_nodes: {
         Args: never
         Returns: undefined
@@ -19815,6 +19828,18 @@ export type Database = {
           p_user_id: string
         }
         Returns: Json
+      }
+      create_user_table_with_fields: {
+        Args: {
+          p_description?: string
+          p_fields?: Json
+          p_is_public?: boolean
+          p_organization_id?: string
+          p_project_id?: string
+          p_table_name: string
+          p_task_id?: string
+        }
+        Returns: string
       }
       cx_canvas_archive: {
         Args: { p_canvas_id: string; p_include_versions?: boolean }
@@ -22220,6 +22245,7 @@ export type Database = {
         }
         Returns: Json
       }
+      list_field_data_types: { Args: never; Returns: string[] }
       list_scope_types: { Args: { p_org_id: string }; Returns: Json }
       list_scopes: {
         Args: {

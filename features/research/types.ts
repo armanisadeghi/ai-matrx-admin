@@ -74,7 +74,8 @@ export type ScrapeStatus =
   | "manual"
   | "skipped"
   | "complete"
-  | "dead_link";
+  | "dead_link"
+  | "gated";
 export type SourceType = "web" | "youtube" | "pdf" | "file" | "manual";
 export type SourceOrigin =
   | "search"

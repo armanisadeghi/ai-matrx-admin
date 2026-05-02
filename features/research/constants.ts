@@ -62,6 +62,12 @@ export const SCRAPE_STATUS_CONFIG: Record<
     bgClass: "bg-zinc-100 dark:bg-zinc-800/60",
     textClass: "text-zinc-600 dark:text-zinc-400",
   },
+  gated: {
+    label: "Gated",
+    color: "#f97316",
+    bgClass: "bg-orange-100 dark:bg-orange-900/30",
+    textClass: "text-orange-700 dark:text-orange-400",
+  },
 };
 
 export const SOURCE_TYPE_CONFIG: Record<
