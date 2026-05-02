@@ -54,11 +54,11 @@ export const MatrxVariableInline: React.FC<MatrxVariableInlineProps> = (
         <span
           className={cn(
             "inline rounded px-1 mx-0.5",
-            "bg-primary/10 text-primary",
+            "bg-primary/50 text-foreground",
             "ring-1 ring-inset ring-primary/20",
-            "hover:bg-primary/15 hover:ring-primary/35",
+            "hover:bg-primary/75 hover:ring-primary/85",
             "cursor-help transition-colors",
-            "border border-dashed border-emerald-500",
+            "border border-dashed border-primary",
           )}
           data-name={rawName}
           data-matrx-variable=""
@@ -70,7 +70,7 @@ export const MatrxVariableInline: React.FC<MatrxVariableInlineProps> = (
         align="start"
         side="top"
         sideOffset={6}
-        className="w-64 p-3"
+        className="w-64 p-3 border border-border rounded-xl"
       >
         <div className="space-y-2">
           <div className="flex items-center gap-1.5">

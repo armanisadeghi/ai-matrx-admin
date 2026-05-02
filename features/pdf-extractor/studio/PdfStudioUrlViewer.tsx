@@ -41,7 +41,8 @@ import { cn } from "@/lib/utils";
 // renderer module's top-level executes the worker-source assignment
 // — no point pulling that in until a viewer actually opens.
 const PdfDocumentRenderer = dynamic(
-  () => import("@/features/files/components/core/FilePreview/previewers/PdfDocumentRenderer"),
+  () =>
+    import("@/features/files/components/core/FilePreview/previewers/PdfDocumentRenderer"),
   {
     ssr: false,
     loading: () => (
@@ -98,7 +99,9 @@ export default function PdfStudioUrlViewer({
       try {
         const res = await fetch(url, { credentials: "omit" });
         if (!res.ok) {
-          throw new Error(`${res.status} ${res.statusText} when fetching the PDF`);
+          throw new Error(
+            `${res.status} ${res.statusText} when fetching the PDF`,
+          );
         }
         // Stream-read so we can report progress. `Content-Length` may
         // be absent (e.g. transfer-encoded responses); fall back to
@@ -109,7 +112,7 @@ export default function PdfStudioUrlViewer({
         if (total != null && Number.isFinite(total)) setBytesTotal(total);
 
         const reader = res.body?.getReader();
-        const chunks: Uint8Array[] = [];
+        const chunks: Uint8Array<ArrayBuffer>[] = [];
         let received = 0;
         if (reader) {
           // eslint-disable-next-line no-constant-condition

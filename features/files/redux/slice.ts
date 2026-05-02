@@ -63,6 +63,7 @@ function emptyFileRecord(id: string): CloudFileRecord {
     createdAt: "",
     updatedAt: "",
     deletedAt: null,
+    publicUrl: null,
     source: { kind: "real" },
 
     _dirty: false,

@@ -32,7 +32,10 @@ import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
 import type { CloudFile } from "@/features/files/types";
 
 export interface MediaThumbnailProps {
-  file: Pick<CloudFile, "id" | "fileName" | "mimeType" | "fileSize" | "metadata">;
+  file: Pick<
+    CloudFile,
+    "id" | "fileName" | "mimeType" | "fileSize" | "metadata" | "publicUrl"
+  >;
   /** Pixel size for the icon fallback. Image/video fill their container. */
   iconSize?: number;
   /** Aspect ratio classes applied to the container, e.g. "aspect-[4/3]". */
@@ -55,11 +58,18 @@ export function MediaThumbnail({
 
   const strategy = profile.thumbnailStrategy;
 
-  // For strategies that need bytes (image / video), fetch a signed URL.
-  const needsSignedUrl = strategy === "image" || strategy === "video-poster";
-  const { url } = useSignedUrl(needsSignedUrl ? file.id : null, {
+  // For strategies that need bytes (image / video), prefer the permanent
+  // CDN URL when the server marked the file public — saves a round-trip
+  // to /files/{id}/url AND the rendered URL is cacheable indefinitely
+  // by Cloudflare. Fall back to a signed URL when publicUrl is null
+  // (private/shared files, or rows from a direct DB read).
+  const needsBytes = strategy === "image" || strategy === "video-poster";
+  const cdnUrl = needsBytes ? (file.publicUrl ?? null) : null;
+  const signedUrlEnabled = needsBytes && !cdnUrl;
+  const { url: signedUrl } = useSignedUrl(signedUrlEnabled ? file.id : null, {
     expiresIn: 3600,
   });
+  const url = cdnUrl ?? signedUrl;
 
   // Backend-thumbnail strategy reads the metadata field directly. The Python
   // team's contract for this field is logged in for_python/REQUESTS.md — until it

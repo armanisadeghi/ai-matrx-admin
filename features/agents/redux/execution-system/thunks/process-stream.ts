@@ -39,6 +39,7 @@ import {
   isCxMessageReservation,
   isCxRequestReservation,
   isCxToolCallReservation,
+  isContextAnalysisEvent,
   type ConversationIdData,
   type ConversationLabeledData,
   type MemoryBufferSpawnedData,
@@ -1196,6 +1197,20 @@ export async function processStream({
             seq: 0,
             timestamp: now,
             data: event.data,
+          },
+        }),
+      );
+    } else if (isContextAnalysisEvent(event)) {
+      otherEvents++;
+      dispatch(
+        appendTimeline({
+          requestId,
+          entry: {
+            kind: "unknown",
+            seq: 0,
+            timestamp: now,
+            originalEvent: "context_analysis",
+            rawData: event.data,
           },
         }),
       );

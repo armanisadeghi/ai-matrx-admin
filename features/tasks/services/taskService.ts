@@ -12,6 +12,8 @@ import {
 import { ensureFolderPath } from "@/features/files/redux/thunks";
 import { folderForTask } from "@/features/files/utils/folder-conventions";
 import { getStore } from "@/lib/redux/store-singleton";
+// Type-only import — does not introduce a runtime cycle through store-singleton.
+import type { AppDispatch } from "@/lib/redux/store";
 
 export interface CreateTaskInput {
   title: string;
@@ -204,36 +206,35 @@ export async function uploadTaskAttachment(
       console.error("Redux store not ready for upload");
       return null;
     }
+    // store-singleton intentionally types dispatch loosely (EnhancedStore<any,any,any>)
+    // to stay cycle-free; recover the thunk-aware Promise so `.unwrap()` resolves.
+    const dispatch = store.dispatch as AppDispatch;
 
     // Ensure the user-visible folder `Task Attachments/{taskId}` exists.
     let parentFolderId: string | null = null;
     try {
-      parentFolderId = await store
-        .dispatch(
-          ensureFolderPath({
-            folderPath: folderForTask(taskId),
-            visibility: "private",
-          }),
-        )
-        .unwrap();
+      parentFolderId = await dispatch(
+        ensureFolderPath({
+          folderPath: folderForTask(taskId),
+          visibility: "private",
+        }),
+      ).unwrap();
     } catch (err) {
       console.error("Failed to ensure task attachments folder:", err);
     }
 
-    const { uploaded, failed } = await store
-      .dispatch(
-        cloudUploadFiles({
-          files: [file],
-          parentFolderId,
-          visibility: "private",
-          metadata: {
-            origin: "task-attachment",
-            task_id: taskId,
-          },
-          concurrency: 1,
-        }),
-      )
-      .unwrap();
+    const { uploaded, failed } = await dispatch(
+      cloudUploadFiles({
+        files: [file],
+        parentFolderId,
+        visibility: "private",
+        metadata: {
+          origin: "task-attachment",
+          task_id: taskId,
+        },
+        concurrency: 1,
+      }),
+    ).unwrap();
 
     if (failed.length > 0 || uploaded.length === 0) {
       // `failed` is `Array<{name, error}>` since 2026-04-24 — extract the
@@ -263,9 +264,7 @@ export async function uploadTaskAttachment(
       console.error("Error recording attachment:", insertError.message);
       // Best-effort cleanup of the orphaned cloud-files upload.
       try {
-        await store
-          .dispatch(cloudDeleteFile({ fileId, hardDelete: false }))
-          .unwrap();
+        await dispatch(cloudDeleteFile({ fileId, hardDelete: false })).unwrap();
       } catch {
         /* best effort */
       }
@@ -318,9 +317,10 @@ export async function deleteTaskAttachment(
       const store = getStore();
       if (store) {
         try {
-          await store
-            .dispatch(cloudDeleteFile({ fileId: filePath, hardDelete: false }))
-            .unwrap();
+          const dispatch = store.dispatch as AppDispatch;
+          await dispatch(
+            cloudDeleteFile({ fileId: filePath, hardDelete: false }),
+          ).unwrap();
         } catch (err) {
           // Non-fatal — the DB row still gets removed, and the realtime
           // subscription + trash tab let the user recover/purge.
@@ -626,7 +626,7 @@ export async function getSharedWithMeTasks(): Promise<DatabaseTask[]> {
     } = await supabase.auth.getUser();
     if (userError || !user) return [];
 
-    const grants = await getSharedWithMe("tasks");
+    const grants = await getSharedWithMe("task");
     if (grants.length === 0) return [];
 
     const taskIds = grants.map((g) => g.resourceId);

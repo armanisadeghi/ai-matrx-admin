@@ -81,6 +81,10 @@ export function dbRowToCloudFile(row: CloudFileRow): CloudFile {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
+    // The DB has no public_url column — it's computed server-side. For
+    // direct DB reads (Supabase realtime, server-side SSR), callers
+    // should fall back to useSignedUrl(fileId) when this is null.
+    publicUrl: null,
     source: { kind: "real" },
   };
 }
@@ -106,6 +110,9 @@ export function apiFileRecordToCloudFile(row: FileRecordApi): CloudFile {
     createdAt: row.created_at ?? new Date().toISOString(),
     updatedAt: row.updated_at ?? new Date().toISOString(),
     deletedAt: row.deleted_at ?? null,
+    // CDN URL for visibility="public" files when the server has the CDN
+    // feature enabled. Includes a ?v=<checksum[:8]> cache-buster.
+    publicUrl: row.public_url ?? null,
     source: { kind: "real" },
   };
 }

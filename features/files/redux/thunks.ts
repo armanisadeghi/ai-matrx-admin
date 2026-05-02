@@ -209,6 +209,10 @@ export const loadUserFileTree = createAsyncThunk<
           createdAt: f.createdAt ?? "",
           updatedAt: f.updatedAt ?? "",
           deletedAt: f.deletedAt ?? null,
+          // Tree-spine reconstruction is internal — public_url is only
+          // populated when records arrive via the API. Default to null
+          // here; surfaces that need a CDN URL fetch via useSignedUrl.
+          publicUrl: null,
           source: { kind: "real" },
           _dirty: false,
           _dirtyFields: {},
@@ -234,6 +238,10 @@ export const loadUserFileTree = createAsyncThunk<
           createdAt: f.createdAt ?? "",
           updatedAt: f.updatedAt ?? "",
           deletedAt: f.deletedAt ?? null,
+          // Tree-spine reconstruction is internal — public_url is only
+          // populated when records arrive via the API. Default to null
+          // here; surfaces that need a CDN URL fetch via useSignedUrl.
+          publicUrl: null,
           source: { kind: "real" },
           _dirty: false,
           _dirtyFields: {},
