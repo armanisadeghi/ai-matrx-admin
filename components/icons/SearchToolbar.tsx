@@ -63,7 +63,7 @@ function InputBar({
 }) {
   return (
     <div className={`stb-input-bar ${className ?? ""}`}>
-      <div className="stb-input-bar-inner matrx-glass-thin-border">
+      <div className="stb-input-bar-inner shell-glass">
         <SearchIcon className="stb-search-icon-sm text-foreground" />
         <input
           type="search"
@@ -159,7 +159,7 @@ export function SearchGroup({
     <>
       <input type="checkbox" className="stb-toggle" id={checkboxId} />
       <div className={`stb-group ${fillClass} ${expandClass} ${className ?? ""}`.trim()}>
-        <div className="stb-group-pill matrx-glass-thin-border">
+        <div className="stb-group-pill shell-glass">
           <div className="stb-group-icons">
             {children}
           </div>

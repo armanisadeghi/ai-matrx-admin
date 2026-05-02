@@ -147,7 +147,7 @@ export function NoteEditorDock({
       <nav className="md:hidden absolute bottom-0 left-0 right-0 z-40 pb-safe px-3 pointer-events-none">
         <div
           ref={navRef}
-          className="relative flex items-stretch matrx-glass-core rounded-[22px] mb-2 pointer-events-auto"
+          className="relative flex items-stretch shell-glass-dock rounded-[22px] mb-2 pointer-events-auto"
         >
           {/* Sliding pill indicator */}
           {pill && (

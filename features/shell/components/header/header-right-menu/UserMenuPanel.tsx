@@ -24,14 +24,14 @@ interface UserMenuPanelProps {
 export default function UserMenuPanel({ userData }: UserMenuPanelProps) {
   if (!userData) {
     return (
-      <div className="matrx-glass-core w-52 p-1.5 rounded-xl shadow-2xl">
+      <div className="shell-glass w-52 p-1.5 rounded-xl shadow-2xl">
         <LinkMenuItem href="/login" icon="LogOut" label="Sign In" />
       </div>
     );
   }
 
   return (
-    <div className="matrx-glass-core w-60 max-lg:w-auto p-1.5 rounded-xl max-lg:rounded-2xl max-lg:p-2 shadow-2xl">
+    <div className="shell-glass w-60 max-lg:w-auto p-1.5 rounded-xl max-lg:rounded-2xl max-lg:p-2 shadow-2xl">
       <UserProfileHeader userData={userData} />
 
       {divider}
