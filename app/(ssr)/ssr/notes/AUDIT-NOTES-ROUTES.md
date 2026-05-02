@@ -1,7 +1,7 @@
 # Notes Route Audit: Original vs SSR
 
 ## Original Route: `(authenticated)/notes`
-## New Route: `(ssr)/ssr/notes`
+## New Route: `(a)/notes`
 
 ---
 

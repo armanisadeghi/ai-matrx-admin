@@ -1583,7 +1583,7 @@
 /* =============================================================================
    SSR Module CSS — now split into dedicated files loaded per-route:
    • Scrollbar utilities  → styles/shell.css  (section 18)
-   • Notes module CSS     → app/(ssr)/ssr/notes/notes.css
+   • Notes module CSS     → app/(a)/notes/notes.css
    ============================================================================= */
 
 /* =============================================================================

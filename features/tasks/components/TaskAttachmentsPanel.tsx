@@ -75,7 +75,7 @@ export default function TaskAttachmentsPanel({
               key: n.id,
               primary: n.label,
               secondary: n.folder_name || undefined,
-              href: `/ssr/notes-v2?active=${n.id}`,
+              href: `/notes?active=${n.id}`,
               onRemove: () => handleRemove("note", n.id),
             }))}
           />

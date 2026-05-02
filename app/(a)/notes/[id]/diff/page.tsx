@@ -1,22 +1,13 @@
-import { NoteViewShell } from "@/features/notes/components/shell/NoteViewShell";
-import { NoteEditorPlaceholder } from "@/features/notes/components/shell/NoteEditorPlaceholder";
+import { NoteVersionDiffPage } from "@/features/notes/components/diff/NoteVersionDiffPage";
 
-export function generateMetadata() {
-    return { title: "Diff" };
-}
+export const metadata = { title: "Note Version History | AI Matrx" };
 
-export default async function NoteDiffPage({
-    params,
+export default async function NoteDiffRoute({
+  params,
 }: {
-    params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>;
 }) {
-    const { id } = await params;
+  const { id } = await params;
 
-    return (
-        <NoteViewShell
-            noteId={id}
-            mode="diff"
-            leftPanel={<NoteEditorPlaceholder noteId={id} mode="diff" />}
-        />
-    );
+  return <NoteVersionDiffPage noteId={id} />;
 }

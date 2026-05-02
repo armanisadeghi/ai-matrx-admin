@@ -1,13 +1,48 @@
+// app/(a)/notes/layout.tsx
+
+import "./notes.css";
+import { NotesView } from "@/features/notes/components/NotesView";
 import { createRouteMetadata } from "@/utils/route-metadata";
 
 export const metadata = createRouteMetadata("/notes", {
-    title: "Notes",
-    description: "Create, organize, and manage your notes and documents",
-    additionalMetadata: {
-        keywords: ["notes", "documents", "markdown", "editor", "writing"],
-    },
+  titlePrefix: "v2",
+  title: "Notes",
+  description: "SSR test route for the 6-layer notes architecture",
+  letter: "Nv",
 });
 
-export default function NotesLayout({ children }: { children: React.ReactNode }) {
-    return <>{children}</>;
+const highlightStyles = `
+/* CSS Highlights API for the markdown preview panel. */
+::highlight(notes-find-match) {
+  background-color: hsl(48 100% 60% / 0.45);
+  color: inherit;
+}
+::highlight(notes-find-match-active) {
+  background-color: hsl(24 100% 55% / 0.7);
+  color: inherit;
+}
+.dark ::highlight(notes-find-match) {
+  background-color: hsl(48 100% 55% / 0.35);
+}
+.dark ::highlight(notes-find-match-active) {
+  background-color: hsl(24 100% 55% / 0.55);
+}
+`;
+
+export default function NotesV2Layout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className="notes-root h-full overflow-hidden relative z-0"
+      style={{ paddingTop: "var(--shell-header-h)" }}
+    >
+      <style dangerouslySetInnerHTML={{ __html: highlightStyles }} />
+      <span className="shell-hide-dock" aria-hidden="true" />
+      <NotesView className="h-full" />
+      <div style={{ display: "none" }}>{children}</div>
+    </div>
+  );
 }

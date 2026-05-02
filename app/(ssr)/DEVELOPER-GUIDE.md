@@ -114,7 +114,7 @@ Use `window.history.pushState()` for client-side state changes that don't need a
 
 ```tsx
 // Navigate without server request:
-window.history.pushState({}, "", `/ssr/notes/${noteId}?tabs=a,b,c`);
+window.history.pushState({}, "", `/notes/${noteId}?tabs=a,b,c`);
 
 // Update query params in-place:
 window.history.replaceState({}, "", `${pathname}?${params.toString()}`);

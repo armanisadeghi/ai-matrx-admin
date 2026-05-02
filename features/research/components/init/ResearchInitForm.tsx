@@ -62,24 +62,86 @@ async function readJsonlStream(
   response: Response,
   onEvent: (event: Record<string, unknown>) => void,
 ): Promise<void> {
-  if (!response.body) return;
+  console.log("[suggest-stream] response received", {
+    ok: response.ok,
+    status: response.status,
+    statusText: response.statusText,
+    contentType: response.headers.get("content-type"),
+    contentLength: response.headers.get("content-length"),
+    transferEncoding: response.headers.get("transfer-encoding"),
+    hasBody: !!response.body,
+    allHeaders: Object.fromEntries(response.headers.entries()),
+  });
+
+  if (!response.body) {
+    console.warn(
+      "[suggest-stream] response has no body — aborting stream read",
+    );
+    return;
+  }
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
+  let chunkIndex = 0;
+  let lineIndex = 0;
+  let eventIndex = 0;
+  const startedAt = performance.now();
 
   while (true) {
     const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
+    if (done) {
+      console.log("[suggest-stream] stream done", {
+        totalChunks: chunkIndex,
+        totalLines: lineIndex,
+        totalEvents: eventIndex,
+        leftoverBuffer: buffer,
+        elapsedMs: Math.round(performance.now() - startedAt),
+      });
+      if (buffer.trim()) {
+        console.warn(
+          "[suggest-stream] non-empty buffer at stream end — attempting to parse",
+          buffer,
+        );
+        try {
+          const parsed = JSON.parse(buffer.trim()) as Record<string, unknown>;
+          console.log("[suggest-stream] parsed leftover buffer", parsed);
+          eventIndex += 1;
+          onEvent(parsed);
+        } catch (err) {
+          console.error(
+            "[suggest-stream] failed to parse leftover buffer",
+            err,
+          );
+        }
+      }
+      break;
+    }
+    const text = decoder.decode(value, { stream: true });
+    chunkIndex += 1;
+    console.log(`[suggest-stream] chunk #${chunkIndex}`, {
+      bytes: value?.byteLength ?? 0,
+      text,
+    });
+    buffer += text;
     const lines = buffer.split("\n");
     buffer = lines.pop() ?? "";
     for (const line of lines) {
+      lineIndex += 1;
       const trimmed = line.trim();
-      if (!trimmed) continue;
+      if (!trimmed) {
+        console.log(`[suggest-stream] line #${lineIndex} (empty, skipped)`);
+        continue;
+      }
       try {
-        onEvent(JSON.parse(trimmed) as Record<string, unknown>);
-      } catch {
-        // skip malformed lines
+        const parsed = JSON.parse(trimmed) as Record<string, unknown>;
+        eventIndex += 1;
+        console.log(`[suggest-stream] event #${eventIndex}`, parsed);
+        onEvent(parsed);
+      } catch (err) {
+        console.warn(
+          `[suggest-stream] line #${lineIndex} failed to parse — skipping`,
+          { trimmed, err },
+        );
       }
     }
   }
@@ -550,9 +612,14 @@ export default function ResearchInitForm() {
         suggestBody.user_input = additionalInstructions.trim();
       }
 
+      console.log("[suggest-stream] sending request", suggestBody);
       const suggestRes = await api.suggest(suggestBody);
       if (!suggestRes.ok) {
         const body = await suggestRes.text();
+        console.error("[suggest-stream] non-ok response", {
+          status: suggestRes.status,
+          body,
+        });
         throw new Error(`AI analysis failed: ${body}`);
       }
 
@@ -560,8 +627,14 @@ export default function ResearchInitForm() {
       let appliedName: string | null = null;
       let appliedDescription: string | null = null;
       let applied: SuggestApplied | null = null;
+      const allEvents: Record<string, unknown>[] = [];
+      const eventTypes: Record<string, number> = {};
 
       await readJsonlStream(suggestRes, (ev) => {
+        allEvents.push(ev);
+        const evType = typeof ev.type === "string" ? ev.type : "(no type)";
+        eventTypes[evType] = (eventTypes[evType] ?? 0) + 1;
+
         if (ev.type === "record_update" && ev.table === "rs_topic") {
           const rec = ev.record as
             | { name?: string; description?: string }
@@ -574,7 +647,20 @@ export default function ResearchInitForm() {
         }
       });
 
+      console.log("[suggest-stream] aggregation complete", {
+        totalEvents: allEvents.length,
+        eventTypes,
+        appliedName,
+        appliedDescription,
+        applied,
+        allEvents,
+      });
+
       if (!applied) {
+        console.error(
+          "[suggest-stream] no suggest_applied event was received",
+          { eventTypes, allEvents },
+        );
         throw new Error(
           "AI did not return suggestions. The topic was created — you can find it in your topic list.",
         );

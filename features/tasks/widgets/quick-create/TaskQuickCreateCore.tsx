@@ -137,7 +137,9 @@ export function TaskQuickCreateCore({
     !!parent && !!parent.entity_type && !!parent.entity_id && !!source;
 
   const [title, setTitle] = useState(prePopulate?.title ?? "");
-  const [description, setDescription] = useState(prePopulate?.description ?? "");
+  const [description, setDescription] = useState(
+    prePopulate?.description ?? "",
+  );
   const [priority, setPriority] = useState<Priority>(
     (prePopulate?.priority as Priority) ?? "",
   );
@@ -324,7 +326,8 @@ export function TaskQuickCreateCore({
           <span className="font-medium">Task created</span>
           {source && (
             <span className="text-muted-foreground">
-              · linked to {entityTypeLabel(
+              · linked to{" "}
+              {entityTypeLabel(
                 linkScope === "conversation" && parent
                   ? parent.entity_type
                   : source.entity_type,
@@ -405,19 +408,27 @@ export function TaskQuickCreateCore({
       {!savedTaskId && (
         <div className="shrink-0 grid grid-cols-3 gap-2 min-w-0">
           <div className="grid gap-1 min-w-0">
-            <Label htmlFor="tqc-project" className="text-xs flex items-center gap-1">
+            <Label
+              htmlFor="tqc-project"
+              className="text-xs flex items-center gap-1"
+            >
               <Folder className="w-3 h-3" /> Project
             </Label>
             <Select
               value={projectId || "__none__"}
               onValueChange={(v) => setProjectId(v === "__none__" ? "" : v)}
             >
-              <SelectTrigger id="tqc-project" className="h-8 text-xs rounded-md">
+              <SelectTrigger
+                id="tqc-project"
+                className="h-8 text-xs rounded-md"
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none__">
-                  {appProjectName ? `Inherit (${appProjectName})` : "Unassigned"}
+                  {appProjectName
+                    ? `Inherit (${appProjectName})`
+                    : "Unassigned"}
                 </SelectItem>
                 {projects
                   .filter((p) => p.id !== "__unassigned__")
@@ -430,14 +441,22 @@ export function TaskQuickCreateCore({
             </Select>
           </div>
           <div className="grid gap-1 min-w-0">
-            <Label htmlFor="tqc-priority" className="text-xs flex items-center gap-1">
+            <Label
+              htmlFor="tqc-priority"
+              className="text-xs flex items-center gap-1"
+            >
               <Flag className="w-3 h-3" /> Priority
             </Label>
             <Select
               value={priority || "none"}
-              onValueChange={(v) => setPriority((v === "none" ? "" : v) as Priority)}
+              onValueChange={(v) =>
+                setPriority((v === "none" ? "" : v) as Priority)
+              }
             >
-              <SelectTrigger id="tqc-priority" className="h-8 text-xs rounded-md">
+              <SelectTrigger
+                id="tqc-priority"
+                className="h-8 text-xs rounded-md"
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -449,7 +468,10 @@ export function TaskQuickCreateCore({
             </Select>
           </div>
           <div className="grid gap-1 min-w-0">
-            <Label htmlFor="tqc-due" className="text-xs flex items-center gap-1">
+            <Label
+              htmlFor="tqc-due"
+              className="text-xs flex items-center gap-1"
+            >
               <Calendar className="w-3 h-3" /> Due
             </Label>
             <Input
@@ -482,17 +504,26 @@ export function TaskQuickCreateCore({
                 entityId={source.entity_id}
                 parentEntityId={parent?.entity_id}
                 label={source.label}
-                onOpen={() => openEntity(source.entity_type, source.entity_id, parent?.entity_id)}
+                onOpen={() =>
+                  openEntity(
+                    source.entity_type,
+                    source.entity_id,
+                    parent?.entity_id,
+                  )
+                }
               />
             )}
-            {hasParent && (linkScope === "conversation" || linkScope === "both") && (
-              <ResourceLinkChip
-                entityType={parent!.entity_type}
-                entityId={parent!.entity_id}
-                label={parent!.label ?? source.label}
-                onOpen={() => openEntity(parent!.entity_type, parent!.entity_id)}
-              />
-            )}
+            {hasParent &&
+              (linkScope === "conversation" || linkScope === "both") && (
+                <ResourceLinkChip
+                  entityType={parent!.entity_type}
+                  entityId={parent!.entity_id}
+                  label={parent!.label ?? source.label}
+                  onOpen={() =>
+                    openEntity(parent!.entity_type, parent!.entity_id)
+                  }
+                />
+              )}
           </div>
         </div>
       )}
@@ -638,11 +669,7 @@ function ScopeTagsEditor({
                       key={scope.id}
                       type="button"
                       onClick={() =>
-                        onToggle(
-                          scope.id,
-                          group.type_id,
-                          group.max_assignments,
-                        )
+                        onToggle(scope.id, group.type_id, group.max_assignments)
                       }
                       className={cn(
                         "inline-flex items-center gap-1 h-6 px-2 rounded-full border text-[11px] font-medium transition-colors",
@@ -890,7 +917,7 @@ function openEntity(
       "noopener,noreferrer",
     );
   } else if (entityType === "note") {
-    window.open(`/ssr/notes-v2?active=${entityId}`, "_blank", "noopener,noreferrer");
+    window.open(`/notes?active=${entityId}`, "_blank", "noopener,noreferrer");
   }
   // Unknown types: no-op (chip still shows what's linked)
 }
