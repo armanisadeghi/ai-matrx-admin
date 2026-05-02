@@ -469,9 +469,9 @@ export const TapTargetButtonForGroup = forwardRef<
   // CHANGE 2026-04-27: matrx-tap-pill replaces the prior inline
   // `transition-[background,transform] active:scale-95` so this variant shares
   // the same timing curve and scale as glass/transparent/solid. Background
-  // flash on press still comes from `.matrx-glass-interactive:active`.
+  // flash on press still comes from `.shell-glass:active`.
   const inner = (
-    <div className="matrx-tap-pill flex h-6 w-6 items-center justify-center rounded-full matrx-glass-interactive">
+    <div className="matrx-tap-pill flex h-6 w-6 items-center justify-center rounded-full shell-glass">
       <IconContent
         icon={icon}
         strokeWidth={strokeWidth}
