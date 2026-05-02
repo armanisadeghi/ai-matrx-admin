@@ -235,15 +235,19 @@ export function AgentAppPublicRenderer({
             agentId: app.agent_id,
             surfaceKey: `agent-app:${slug}`,
             sourceFeature: "agent-app",
-            displayMode: "direct",
-            userInput,
-            variables: validVariables,
-            // Without this the launcher creates the conversation + sets it
-            // ready, but returns without dispatching executeInstance — see
-            // launch-agent-execution.thunk.ts step 5. Agent apps always want
-            // immediate execution on submit; there is no manual "Run" button
-            // separate from the form.
-            autoRun: true,
+            config: {
+              displayMode: "direct",
+              // Without this the launcher creates the conversation + sets it
+              // ready, but returns without dispatching executeInstance — see
+              // launch-agent-execution.thunk.ts step 5. Agent apps always want
+              // immediate execution on submit; there is no manual "Run" button
+              // separate from the form.
+              autoRun: true,
+            },
+            runtime: {
+              userInput,
+              variables: validVariables,
+            },
             // Capture conversationId synchronously, before the stream starts.
             // The launcher's awaited promise doesn't resolve until the stream
             // has fully completed (see pollForCompletion in

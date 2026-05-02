@@ -152,16 +152,19 @@ export function AICodeEditorModalV2({
           const result = await launchAgent(defaultBuiltinId, {
             surfaceKey: `code-editor:${defaultBuiltinId}`,
             sourceFeature: "code-editor",
-            displayMode: "modal-full",
-            autoRun: false,
-            allowChat: true,
-            showVariables: false,
-            showPreExecutionGate: false,
-            variables: {
-              current_code: currentCode,
-              content: currentCode,
-              ...(selection && { selection }),
-              ...(context && { context }),
+            config: {
+              displayMode: "modal-full",
+              autoRun: false,
+              allowChat: true,
+              showPreExecutionGate: false,
+            },
+            runtime: {
+              variables: {
+                current_code: currentCode,
+                content: currentCode,
+                ...(selection && { selection }),
+                ...(context && { context }),
+              },
             },
           });
           conversationIdRef.current = result.conversationId;

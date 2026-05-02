@@ -159,6 +159,12 @@ export interface AgentExecutionRuntime {
   widgetHandleId?: string;
   /** Original text the user had selected before the shortcut launched (for widget handoff). */
   originalText?: string;
+  /**
+   * Per-invocation variable values to inject into the instance on launch.
+   * Keyed by variable NAME. Takes precedence over defaultVariables from config.
+   * Never persisted on a shortcut — these are caller-supplied at runtime.
+   */
+  variables?: Record<string, unknown>;
 }
 
 /**

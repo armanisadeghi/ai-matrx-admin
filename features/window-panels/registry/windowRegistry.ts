@@ -22,7 +22,11 @@ import {
   getStaticEntryByOverlayId,
   getStaticEntryBySlug,
 } from "./windowRegistryMetadata";
-import type { WindowRegistryEntry, TrayPreviewContext, ComponentImport } from "./windowRegistryTypes";
+import type {
+  WindowRegistryEntry,
+  TrayPreviewContext,
+  ComponentImport,
+} from "./windowRegistryTypes";
 import {
   notesTrayPreview,
   quickTasksTrayPreview,
@@ -78,43 +82,43 @@ const DYNAMIC: Record<string, DynamicAddition> = {
   // ── Code File Manager ────────────────────────────────────────────────────
   codeFileManagerWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/code/CodeFileManagerWindow"
-      ).then((m) => ({ default: m.CodeFileManagerWindow })),
+      import("@/features/window-panels/windows/code/CodeFileManagerWindow").then(
+        (m) => ({ default: m.CodeFileManagerWindow }),
+      ),
   },
 
   // ── Multi-file Smart Code Editor ─────────────────────────────────────────
   multiFileSmartCodeEditorWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/multi-file-smart-code-editor/MultiFileSmartCodeEditorWindow"
-      ).then((m) => ({ default: m.MultiFileSmartCodeEditorWindow })),
+      import("@/features/window-panels/windows/multi-file-smart-code-editor/MultiFileSmartCodeEditorWindow").then(
+        (m) => ({ default: m.MultiFileSmartCodeEditorWindow }),
+      ),
   },
 
   // ── Smart Code Editor ────────────────────────────────────────────────────
   smartCodeEditorWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/smart-code-editor/SmartCodeEditorWindow"
-      ).then((m) => ({ default: m.SmartCodeEditorWindow })),
+      import("@/features/window-panels/windows/smart-code-editor/SmartCodeEditorWindow").then(
+        (m) => ({ default: m.SmartCodeEditorWindow }),
+      ),
     renderTrayPreview: smartCodeEditorTrayPreview,
   },
 
   // ── Notes ────────────────────────────────────────────────────────────────
   notesWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/notes/NotesWindow"
-      ).then((m) => ({ default: m.NotesWindow })),
+      import("@/features/window-panels/windows/notes/NotesWindow").then(
+        (m) => ({ default: m.NotesWindow }),
+      ),
     renderTrayPreview: notesTrayPreview,
   },
 
   // ── Notes Beta ───────────────────────────────────────────────────────────
   notesBetaWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/notes/NotesBetaWindow"
-      ).then((m) => ({ default: m.NotesBetaWindow })),
+      import("@/features/window-panels/windows/notes/NotesBetaWindow").then(
+        (m) => ({ default: m.NotesBetaWindow }),
+      ),
   },
 
   // ── Quick Note Save ──────────────────────────────────────────────────────
@@ -132,35 +136,27 @@ const DYNAMIC: Record<string, DynamicAddition> = {
   // ── Quick Tasks ──────────────────────────────────────────────────────────
   quickTasksWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/context-scopes/QuickTasksWindow"
-      ),
+      import("@/features/window-panels/windows/context-scopes/QuickTasksWindow"),
     renderTrayPreview: quickTasksTrayPreview,
   },
 
   // ── Quick Task Create ────────────────────────────────────────────────────
   taskQuickCreateWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/tasks/TaskQuickCreateWindow"
-      ),
+      import("@/features/window-panels/windows/tasks/TaskQuickCreateWindow"),
   },
 
   // ── Cloud Files ──────────────────────────────────────────────────────────
   cloudFilesWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/cloud-files/CloudFilesWindow"
-      ),
+      import("@/features/window-panels/windows/cloud-files/CloudFilesWindow"),
     renderTrayPreview: cloudFilesTrayPreview,
   },
 
   // ── File Preview ─────────────────────────────────────────────────────────
   filePreviewWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/cloud-files/FilePreviewWindow"
-      ),
+      import("@/features/window-panels/windows/cloud-files/FilePreviewWindow"),
   },
 
   // ── Web Scraper ──────────────────────────────────────────────────────────
@@ -195,9 +191,7 @@ const DYNAMIC: Record<string, DynamicAddition> = {
   },
   browserWorkbenchWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/iframe/BrowserWorkbenchWindow"
-      ),
+      import("@/features/window-panels/windows/iframe/BrowserWorkbenchWindow"),
   },
 
   // ── List Manager ─────────────────────────────────────────────────────────
@@ -215,17 +209,13 @@ const DYNAMIC: Record<string, DynamicAddition> = {
   // ── Agent Settings ────────────────────────────────────────────────────────
   agentSettingsWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentSettingsWindow"
-      ),
+      import("@/features/window-panels/windows/agents/AgentSettingsWindow"),
   },
 
   // ── Agent Run History ─────────────────────────────────────────────────────
   agentRunHistoryWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentRunHistoryWindow"
-      ),
+      import("@/features/window-panels/windows/agents/AgentRunHistoryWindow"),
   },
 
   // ── Agent Run ─────────────────────────────────────────────────────────────
@@ -237,17 +227,13 @@ const DYNAMIC: Record<string, DynamicAddition> = {
   // ── Agent Content (advanced editor) ──────────────────────────────────────
   agentAdvancedEditorWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentContentWindow"
-      ),
+      import("@/features/window-panels/windows/agents/AgentContentWindow"),
   },
 
   // ── Agent Content Sidebar ─────────────────────────────────────────────────
   agentContentSidebarWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentContentSidebarWindow"
-      ),
+      import("@/features/window-panels/windows/agents/AgentContentSidebarWindow"),
   },
 
   // ── Agent Gate ────────────────────────────────────────────────────────────
@@ -271,49 +257,43 @@ const DYNAMIC: Record<string, DynamicAddition> = {
   // ── Instance UI State ─────────────────────────────────────────────────────
   instanceUIStateWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/admin/InstanceUIStateWindow"
-      ),
+      import("@/features/window-panels/windows/admin/InstanceUIStateWindow"),
   },
 
   // ── Execution Inspector ───────────────────────────────────────────────────
   executionInspectorWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/admin/ExecutionInspectorWindow"
-      ),
+      import("@/features/window-panels/windows/admin/ExecutionInspectorWindow"),
   },
 
   // ── Context Switcher ──────────────────────────────────────────────────────
   contextSwitcherWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/context-scopes/ContextSwitcherWindow"
-      ).then((m) => ({ default: m.ContextSwitcherWindow })),
+      import("@/features/window-panels/windows/context-scopes/ContextSwitcherWindow").then(
+        (m) => ({ default: m.ContextSwitcherWindow }),
+      ),
   },
 
   // ── Hierarchy Creation ────────────────────────────────────────────────────
   hierarchyCreationWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/context-scopes/HierarchyCreationWindow"
-      ),
+      import("@/features/window-panels/windows/context-scopes/HierarchyCreationWindow"),
   },
 
   // ── Canvas Viewer ─────────────────────────────────────────────────────────
   canvasViewerWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/CanvasViewerWindow"
-      ).then((m) => ({ default: m.CanvasViewerWindow })),
+      import("@/features/window-panels/windows/CanvasViewerWindow").then(
+        (m) => ({ default: m.CanvasViewerWindow }),
+      ),
   },
 
   // ── Feedback ──────────────────────────────────────────────────────────────
   feedbackDialog: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/FeedbackWindow"
-      ).then((m) => ({ default: m.FeedbackWindow })),
+      import("@/features/window-panels/windows/FeedbackWindow").then((m) => ({
+        default: m.FeedbackWindow,
+      })),
   },
 
   // ── Share Modal Window ────────────────────────────────────────────────────
@@ -337,17 +317,15 @@ const DYNAMIC: Record<string, DynamicAddition> = {
   // ── Image Viewer ──────────────────────────────────────────────────────────
   imageViewer: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/image/ImageViewerWindow"
-      ).then((m) => ({ default: m.ImageViewerWindow })),
+      import("@/features/window-panels/windows/image/ImageViewerWindow").then(
+        (m) => ({ default: m.ImageViewerWindow }),
+      ),
   },
 
   // ── Image Uploader ────────────────────────────────────────────────────────
   imageUploaderWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/image/ImageUploaderWindow"
-      ),
+      import("@/features/window-panels/windows/image/ImageUploaderWindow"),
   },
 
   // ── AI Voice ──────────────────────────────────────────────────────────────
@@ -359,21 +337,15 @@ const DYNAMIC: Record<string, DynamicAddition> = {
   // ── Voice Pad ─────────────────────────────────────────────────────────────
   voicePad: {
     componentImport: () =>
-      import(
-        "@/components/official-candidate/voice-pad/components/VoicePad"
-      ),
+      import("@/components/official-candidate/voice-pad/components/VoicePad"),
   },
   voicePadAdvanced: {
     componentImport: () =>
-      import(
-        "@/components/official-candidate/voice-pad/components/VoicePadAdvanced"
-      ),
+      import("@/components/official-candidate/voice-pad/components/VoicePadAdvanced"),
   },
   voicePadAi: {
     componentImport: () =>
-      import(
-        "@/components/official-candidate/voice-pad/components/VoicePadAi"
-      ),
+      import("@/components/official-candidate/voice-pad/components/VoicePadAi"),
   },
 
   // ── AI Results ────────────────────────────────────────────────────────────
@@ -388,25 +360,21 @@ const DYNAMIC: Record<string, DynamicAddition> = {
   // ── Stream Debug ──────────────────────────────────────────────────────────
   streamDebug: {
     componentImport: () =>
-      import(
-        "@/features/agents/components/debug/StreamDebugFloating"
-      ).then((m) => ({ default: m.StreamDebugFloating })),
+      import("@/features/agents/components/debug/StreamDebugFloating").then(
+        (m) => ({ default: m.StreamDebugFloating }),
+      ),
   },
 
   // ── Message Analysis ──────────────────────────────────────────────────────
   messageAnalysisWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/MessageAnalysisWindow"
-      ),
+      import("@/features/window-panels/windows/agents/MessageAnalysisWindow"),
   },
 
   // ── Stream Debug History ──────────────────────────────────────────────────
   streamDebugHistoryWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/admin/StreamDebugHistoryWindow"
-      ),
+      import("@/features/window-panels/windows/admin/StreamDebugHistoryWindow"),
   },
 
   // ── State Analyzer ────────────────────────────────────────────────────────
@@ -418,145 +386,124 @@ const DYNAMIC: Record<string, DynamicAddition> = {
   // ── JSON Truncator ────────────────────────────────────────────────────────
   jsonTruncator: {
     componentImport: () =>
-      import(
-        "@/components/official-candidate/json-truncator/JsonTruncatorDialog"
-      ),
+      import("@/components/official-candidate/json-truncator/JsonTruncatorDialog"),
   },
 
   // ── Resource Picker ───────────────────────────────────────────────────────
   resourcePickerWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/ResourcePickerWindow"
-      ).then((m) => ({ default: m.ResourcePickerWindow })),
+      import("@/features/window-panels/windows/ResourcePickerWindow").then(
+        (m) => ({ default: m.ResourcePickerWindow }),
+      ),
   },
 
   // ── Projects ──────────────────────────────────────────────────────────────
   projectsWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/context-scopes/ProjectsWindow"
-      ),
+      import("@/features/window-panels/windows/context-scopes/ProjectsWindow"),
   },
 
   // ── Agent MD Debug ────────────────────────────────────────────────────────
   agentAssistantMarkdownDebugWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentAssistantMarkdownDebugWindow"
-      ),
+      import("@/features/window-panels/windows/agents/AgentAssistantMarkdownDebugWindow"),
   },
 
   // ── Agent Import ──────────────────────────────────────────────────────────
   agentImportWindow: {
-    componentImport: () =>
-      import("@/features/agents/import/AgentImportWindow"),
+    componentImport: () => import("@/features/agents/import/AgentImportWindow"),
   },
 
   // ── Content Editor ────────────────────────────────────────────────────────
   contentEditorWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/content-editors/ContentEditorWindow"
-      ).then((m) => ({ default: m.ContentEditorWindow })),
+      import("@/features/window-panels/windows/content-editors/ContentEditorWindow").then(
+        (m) => ({ default: m.ContentEditorWindow }),
+      ),
   },
 
   // ── Content Editor List ───────────────────────────────────────────────────
   contentEditorListWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/content-editors/ContentEditorListWindow"
-      ).then((m) => ({ default: m.ContentEditorListWindow })),
+      import("@/features/window-panels/windows/content-editors/ContentEditorListWindow").then(
+        (m) => ({ default: m.ContentEditorListWindow }),
+      ),
   },
 
   // ── Content Editor Workspace ──────────────────────────────────────────────
   contentEditorWorkspaceWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/content-editors/ContentEditorWorkspaceWindow"
-      ).then((m) => ({ default: m.ContentEditorWorkspaceWindow })),
+      import("@/features/window-panels/windows/content-editors/ContentEditorWorkspaceWindow").then(
+        (m) => ({ default: m.ContentEditorWorkspaceWindow }),
+      ),
   },
 
   // ── Agent Connections ─────────────────────────────────────────────────────
   agentConnectionsWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentConnectionsWindow"
-      ),
+      import("@/features/window-panels/windows/agents/AgentConnectionsWindow"),
   },
 
   // ── Agent Placeholder Windows ─────────────────────────────────────────────
   agentOptimizerWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentPlaceholderWindows"
-      ).then((m) => ({ default: m.AgentOptimizerWindow })),
+      import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
+        (m) => ({ default: m.AgentOptimizerWindow }),
+      ),
   },
   agentInterfaceVariationsWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentPlaceholderWindows"
-      ).then((m) => ({ default: m.AgentInterfaceVariationsWindow })),
+      import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
+        (m) => ({ default: m.AgentInterfaceVariationsWindow }),
+      ),
   },
   agentCreateAppWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentCreateAppWindow"
-      ),
+      import("@/features/window-panels/windows/agents/AgentCreateAppWindow"),
   },
   agentDataStorageWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentPlaceholderWindows"
-      ).then((m) => ({ default: m.AgentDataStorageWindow })),
+      import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
+        (m) => ({ default: m.AgentDataStorageWindow }),
+      ),
   },
   agentFindUsagesWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentPlaceholderWindows"
-      ).then((m) => ({ default: m.AgentFindUsagesWindow })),
+      import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
+        (m) => ({ default: m.AgentFindUsagesWindow }),
+      ),
   },
   agentConvertSystemWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentConvertSystemWindow"
-      ),
+      import("@/features/window-panels/windows/agents/AgentConvertSystemWindow"),
   },
   agentAdminShortcutWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentShortcutQuickCreateWindow"
-      ),
+      import("@/features/window-panels/windows/agents/AgentShortcutQuickCreateWindow"),
   },
   agentAdminFindUsagesWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentPlaceholderWindows"
-      ).then((m) => ({ default: m.AgentAdminFindUsagesWindow })),
+      import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
+        (m) => ({ default: m.AgentAdminFindUsagesWindow }),
+      ),
   },
 
   // ── Tool Call Window ──────────────────────────────────────────────────────
   toolCallWindow: {
     componentImport: () =>
-      import(
-        "@/features/tool-call-visualization/window-panel/ToolCallWindowPanel"
-      ),
+      import("@/features/tool-call-visualization/window-panel/ToolCallWindowPanel"),
   },
 
   // ── Observational Memory ──────────────────────────────────────────────────
   observationalMemoryWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/ObservationalMemoryWindow"
-      ),
+      import("@/features/window-panels/windows/agents/ObservationalMemoryWindow"),
   },
 
   // ── Non-window overlays ───────────────────────────────────────────────────
   markdownEditor: {
     componentImport: () =>
-      import(
-        "@/components/mardown-display/markdown-classification/FullscreenMarkdownEditor"
-      ),
+      import("@/components/mardown-display/markdown-classification/FullscreenMarkdownEditor"),
   },
   socketAccordion: {
     componentImport: () =>
@@ -574,9 +521,9 @@ const DYNAMIC: Record<string, DynamicAddition> = {
   },
   undoHistory: {
     componentImport: () =>
-      import(
-        "@/features/agents/components/undo-history/UndoHistoryOverlay"
-      ).then((m) => ({ default: m.UndoHistoryOverlay })),
+      import("@/features/agents/components/undo-history/UndoHistoryOverlay").then(
+        (m) => ({ default: m.UndoHistoryOverlay }),
+      ),
   },
   adminStateAnalyzer: {
     componentImport: () =>
@@ -584,39 +531,39 @@ const DYNAMIC: Record<string, DynamicAddition> = {
   },
   htmlPreview: {
     componentImport: () =>
-      import(
-        "@/features/cx-conversation/components/HtmlPreviewBridge"
-      ).then((m) => ({ default: m.HtmlPreviewBridge })),
+      import("@/features/cx-conversation/components/HtmlPreviewBridge").then(
+        (m) => ({ default: m.HtmlPreviewBridge }),
+      ),
   },
   fullScreenEditor: {
     componentImport: () =>
-      import(
-        "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor"
+      import("@/components/mardown-display/chat-markdown/FullScreenMarkdownEditorBridge").then(
+        (m) => ({ default: m.FullScreenMarkdownEditorBridge }),
       ),
   },
   contentHistory: {
     componentImport: () =>
-      import(
-        "@/features/agents/components/TO-BE-ORGANIZED/ContentHistoryViewer"
-      ).then((m) => ({ default: m.ContentHistoryViewer })),
+      import("@/features/agents/components/TO-BE-ORGANIZED/ContentHistoryViewer").then(
+        (m) => ({ default: m.ContentHistoryViewer }),
+      ),
   },
   saveToNotes: {
     componentImport: () =>
-      import(
-        "@/features/notes/actions/quick-save/QuickNoteSaveOverlay"
-      ).then((m) => ({ default: m.QuickNoteSaveOverlay })),
+      import("@/features/notes/actions/quick-save/QuickNoteSaveOverlay").then(
+        (m) => ({ default: m.QuickNoteSaveOverlay }),
+      ),
   },
   saveToNotesFullscreen: {
     componentImport: () =>
-      import(
-        "@/features/notes/actions/quick-save/QuickNoteSaveOverlay"
-      ).then((m) => ({ default: m.QuickNoteSaveOverlay })),
+      import("@/features/notes/actions/quick-save/QuickNoteSaveOverlay").then(
+        (m) => ({ default: m.QuickNoteSaveOverlay }),
+      ),
   },
   saveToCode: {
     componentImport: () =>
-      import(
-        "@/features/code-files/actions/QuickSaveCodeDialog"
-      ).then((m) => ({ default: m.QuickSaveCodeDialog })),
+      import("@/features/code-files/actions/QuickSaveCodeDialog").then((m) => ({
+        default: m.QuickSaveCodeDialog,
+      })),
   },
   quickNotes: {
     componentImport: () =>
@@ -626,27 +573,27 @@ const DYNAMIC: Record<string, DynamicAddition> = {
   },
   quickTasks: {
     componentImport: () =>
-      import(
-        "@/features/tasks/components/QuickTasksSheet"
-      ).then((m) => ({ default: m.QuickTasksSheet })),
+      import("@/features/tasks/components/QuickTasksSheet").then((m) => ({
+        default: m.QuickTasksSheet,
+      })),
   },
   quickChat: {
     componentImport: () =>
-      import(
-        "@/features/quick-actions/components/QuickChatSheet"
-      ).then((m) => ({ default: m.QuickChatSheet })),
+      import("@/features/quick-actions/components/QuickChatSheet").then(
+        (m) => ({ default: m.QuickChatSheet }),
+      ),
   },
   quickData: {
     componentImport: () =>
-      import(
-        "@/features/quick-actions/components/QuickDataSheet"
-      ).then((m) => ({ default: m.QuickDataSheet })),
+      import("@/features/quick-actions/components/QuickDataSheet").then(
+        (m) => ({ default: m.QuickDataSheet }),
+      ),
   },
   quickUtilities: {
     componentImport: () =>
-      import(
-        "@/features/quick-actions/components/UtilitiesOverlay"
-      ).then((m) => ({ default: m.UtilitiesOverlay })),
+      import("@/features/quick-actions/components/UtilitiesOverlay").then(
+        (m) => ({ default: m.UtilitiesOverlay }),
+      ),
   },
   userPreferences: {
     componentImport: () =>
@@ -659,8 +606,7 @@ const DYNAMIC: Record<string, DynamicAddition> = {
       })),
   },
   emailDialog: {
-    componentImport: () =>
-      import("@/components/dialogs/EmailInputDialog"),
+    componentImport: () => import("@/components/dialogs/EmailInputDialog"),
   },
   shareModal: {
     componentImport: () =>
@@ -672,69 +618,69 @@ const DYNAMIC: Record<string, DynamicAddition> = {
   // ── Agent widgets ──────────────────────────────────────────────────────
   agentFullModal: {
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/AgentFullModal"
-      ).then((m) => ({ default: m.AgentFullModal })),
+      import("@/features/agents/components/agent-widgets/AgentFullModal").then(
+        (m) => ({ default: m.AgentFullModal }),
+      ),
   },
   agentCompactModal: {
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/AgentCompactModal"
-      ).then((m) => ({ default: m.AgentCompactModal })),
+      import("@/features/agents/components/agent-widgets/AgentCompactModal").then(
+        (m) => ({ default: m.AgentCompactModal }),
+      ),
   },
   agentChatBubble: {
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/AgentChatBubble"
-      ).then((m) => ({ default: m.AgentChatBubble })),
+      import("@/features/agents/components/agent-widgets/AgentChatBubble").then(
+        (m) => ({ default: m.AgentChatBubble }),
+      ),
   },
   agentInlineOverlay: {
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/AgentInlineOverlay"
-      ).then((m) => ({ default: m.AgentInlineOverlay })),
+      import("@/features/agents/components/agent-widgets/AgentInlineOverlay").then(
+        (m) => ({ default: m.AgentInlineOverlay }),
+      ),
   },
   agentSidebarOverlay: {
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/AgentSidebarOverlay"
-      ).then((m) => ({ default: m.AgentSidebarOverlay })),
+      import("@/features/agents/components/agent-widgets/AgentSidebarOverlay").then(
+        (m) => ({ default: m.AgentSidebarOverlay }),
+      ),
   },
   agentFlexiblePanel: {
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/AgentFlexiblePanel"
-      ).then((m) => ({ default: m.AgentFlexiblePanel })),
+      import("@/features/agents/components/agent-widgets/AgentFlexiblePanel").then(
+        (m) => ({ default: m.AgentFlexiblePanel }),
+      ),
   },
   agentPanelOverlay: {
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/AgentPanelOverlay"
-      ).then((m) => ({ default: m.AgentPanelOverlay })),
+      import("@/features/agents/components/agent-widgets/AgentPanelOverlay").then(
+        (m) => ({ default: m.AgentPanelOverlay }),
+      ),
   },
   agentToastOverlay: {
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/AgentToastOverlay"
-      ).then((m) => ({ default: m.AgentToastOverlay })),
+      import("@/features/agents/components/agent-widgets/AgentToastOverlay").then(
+        (m) => ({ default: m.AgentToastOverlay }),
+      ),
   },
   agentFloatingChat: {
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/AgentFloatingChat"
-      ).then((m) => ({ default: m.AgentFloatingChat })),
+      import("@/features/agents/components/agent-widgets/AgentFloatingChat").then(
+        (m) => ({ default: m.AgentFloatingChat }),
+      ),
   },
   agentChatCollapsible: {
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/ChatCollapsible"
-      ).then((m) => ({ default: m.ChatCollapsible })),
+      import("@/features/agents/components/agent-widgets/ChatCollapsible").then(
+        (m) => ({ default: m.ChatCollapsible }),
+      ),
   },
   agentChatAssistant: {
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/chat-assistant/AgentChatAssistant"
-      ).then((m) => ({ default: m.AgentChatAssistant })),
+      import("@/features/agents/components/agent-widgets/chat-assistant/AgentChatAssistant").then(
+        (m) => ({ default: m.AgentChatAssistant }),
+      ),
   },
 };
 
@@ -753,7 +699,9 @@ const REGISTRY: WindowRegistryEntry[] = ALL_WINDOW_STATIC_METADATA.map(
       // Fallback: render nothing (prevents a crash while surfacing the error)
       return {
         ...meta,
-        componentImport: async () => ({ default: () => null as unknown as React.ReactElement }),
+        componentImport: async () => ({
+          default: () => null as unknown as React.ReactElement,
+        }),
       } as WindowRegistryEntry;
     }
     return { ...meta, ...dynamic } as WindowRegistryEntry;
@@ -810,7 +758,9 @@ export function isPersistableWindow(overlayId: string): boolean {
  * Filter entries by kind. Useful for the unified renderer's per-kind
  * render loops.
  */
-export function getEntriesByKind(kind: import("./windowRegistryTypes").OverlayKind): WindowRegistryEntry[] {
+export function getEntriesByKind(
+  kind: import("./windowRegistryTypes").OverlayKind,
+): WindowRegistryEntry[] {
   return REGISTRY.filter((e) => e.kind === kind);
 }
 

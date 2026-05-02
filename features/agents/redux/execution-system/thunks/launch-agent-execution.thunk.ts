@@ -25,7 +25,6 @@ import type {
   ResultDisplayMode,
 } from "@/features/agents/types/instance.types";
 import { mapScopeToInstance } from "@/features/agents/utils/scope-mapping";
-import { resolveVisibilitySettings } from "../instance-ui-state/instance-ui-state.slice";
 import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
 import { selectAgentExecutionPayload } from "@/features/agents/redux/agent-definition/selectors";
 import { getShortcutRecordFromState } from "@/features/agents/redux/agent-shortcuts/selectors";
@@ -124,41 +123,17 @@ export const launchAgentExecution = createAsyncThunk<
     shortcutId,
     manual,
     sourceFeature,
-    applicationScope: flatApplicationScope,
-    displayMode: flatDisplayMode,
-    autoRun: flatAutoRun,
-    allowChat: flatAllowChat,
-    showVariables,
-    showVariablePanel: flatShowVariablePanel,
-    showDefinitionMessages: flatShowDefinitionMessages,
-    showDefinitionMessageContent: flatShowDefinitionMessageContent,
-    showPreExecutionGate: flatShowPreExecutionGate,
     showAutoClearToggle,
     autoClearConversation,
     apiEndpointMode = "agent",
-    userInput: flatUserInput,
-    variables,
-    overrides,
-    variablesPanelStyle: flatVariablesPanelStyle,
-    hideReasoning: flatHideReasoning,
-    hideToolResults: flatHideToolResults,
-    responseDensity: flatResponseDensity,
-    preExecutionMessage: flatPreExecutionMessage,
-    bypassGateSeconds: flatBypassGateSeconds,
     jsonExtraction,
-    originalText: flatOriginalText,
-    widgetHandleId: flatWidgetHandleId,
     isEphemeral,
     runtime,
     config,
     onConversationCreated,
   } = options;
 
-  // ── Nested (new) shape wins over flat (legacy) shape ──────────────────────
-  // New callers (useShortcutTrigger, triggerShortcut, launchShortcut) put
-  // scope / userInput / originalText under `runtime.*` and per-run config
-  // overrides under `config.*`. Legacy callers used top-level flat fields.
-  // Pull from both so everyone works.
+  // ── Read all config/runtime values from the nested bundles ────────────────
   //
   // CRITICAL: do NOT default boolean/scalar fields to concrete values here.
   // Down in createInstanceFromShortcut every field does
@@ -168,29 +143,25 @@ export const launchAgentExecution = createAsyncThunk<
   // not specify" with a concrete `false`, and `false ?? shortcut.autoRun`
   // resolves to `false` (?? only falls through on null/undefined). Leave
   // these undefined on purpose so the shortcut's own value survives.
-  const applicationScope = runtime?.applicationScope ?? flatApplicationScope;
-  const userInput = runtime?.userInput ?? flatUserInput;
-  const originalText = runtime?.originalText ?? flatOriginalText;
-  const widgetHandleId = runtime?.widgetHandleId ?? flatWidgetHandleId;
+  const applicationScope = runtime?.applicationScope;
+  const userInput = runtime?.userInput;
+  const originalText = runtime?.originalText;
+  const widgetHandleId = runtime?.widgetHandleId;
+  const variables = runtime?.variables;
 
-  const displayModeOverride = config?.displayMode ?? flatDisplayMode;
-  const autoRun = config?.autoRun ?? flatAutoRun;
-  const allowChat = config?.allowChat ?? flatAllowChat;
-  const showVariablePanel = config?.showVariablePanel ?? flatShowVariablePanel;
-  const showDefinitionMessages =
-    config?.showDefinitionMessages ?? flatShowDefinitionMessages;
-  const showDefinitionMessageContent =
-    config?.showDefinitionMessageContent ?? flatShowDefinitionMessageContent;
-  const showPreExecutionGate =
-    config?.showPreExecutionGate ?? flatShowPreExecutionGate;
-  const preExecutionMessage =
-    config?.preExecutionMessage ?? flatPreExecutionMessage;
-  const bypassGateSeconds = config?.bypassGateSeconds ?? flatBypassGateSeconds;
-  const hideReasoning = config?.hideReasoning ?? flatHideReasoning;
-  const hideToolResults = config?.hideToolResults ?? flatHideToolResults;
-  const responseDensity = config?.responseDensity ?? flatResponseDensity;
-  const variablesPanelStyle =
-    config?.variablesPanelStyle ?? flatVariablesPanelStyle;
+  const displayModeOverride = config?.displayMode;
+  const autoRun = config?.autoRun;
+  const allowChat = config?.allowChat;
+  const showVariablePanel = config?.showVariablePanel;
+  const showDefinitionMessages = config?.showDefinitionMessages;
+  const showDefinitionMessageContent = config?.showDefinitionMessageContent;
+  const showPreExecutionGate = config?.showPreExecutionGate;
+  const preExecutionMessage = config?.preExecutionMessage;
+  const bypassGateSeconds = config?.bypassGateSeconds;
+  const hideReasoning = config?.hideReasoning;
+  const hideToolResults = config?.hideToolResults;
+  const responseDensity = config?.responseDensity;
+  const variablesPanelStyle = config?.variablesPanelStyle;
 
   // ── Trace: launch envelope ────────────────────────────────────────────────
   // One line summarizing what the caller actually sent, then a structured
@@ -239,15 +210,9 @@ export const launchAgentExecution = createAsyncThunk<
   // stream end. Nothing to register or wrap here.
   // =========================================================================
 
-  const visibilityFromConfig = resolveVisibilitySettings(showVariables);
-
-  const resolvedShowVariablePanel =
-    showVariablePanel ?? visibilityFromConfig.showVariablePanel;
-  const resolvedShowDefinitionMessages =
-    showDefinitionMessages ?? visibilityFromConfig.showDefinitionMessages;
-  const resolvedShowDefinitionMessageContent =
-    showDefinitionMessageContent ??
-    visibilityFromConfig.showDefinitionMessageContent;
+  const resolvedShowVariablePanel = showVariablePanel;
+  const resolvedShowDefinitionMessages = showDefinitionMessages;
+  const resolvedShowDefinitionMessageContent = showDefinitionMessageContent;
 
   let conversationId: string;
   let resolvedDisplayMode: ResultDisplayMode = displayModeOverride ?? "direct";
@@ -335,10 +300,11 @@ export const launchAgentExecution = createAsyncThunk<
       dispatch(setUserVariableValues({ conversationId, values: variables }));
     }
 
-    if (overrides && Object.keys(overrides).length > 0) {
+    const shortcutLlmOverrides = config?.llmOverrides;
+    if (shortcutLlmOverrides && Object.keys(shortcutLlmOverrides).length > 0) {
       const { setOverrides } =
         await import("../instance-model-overrides/instance-model-overrides.slice");
-      dispatch(setOverrides({ conversationId, changes: overrides }));
+      dispatch(setOverrides({ conversationId, changes: shortcutLlmOverrides }));
     }
   } else if (agentId) {
     conversationId = await dispatch(
@@ -396,10 +362,11 @@ export const launchAgentExecution = createAsyncThunk<
       dispatch(setUserVariableValues({ conversationId, values: variables }));
     }
 
-    if (overrides && Object.keys(overrides).length > 0) {
+    const llmOverrides = config?.llmOverrides;
+    if (llmOverrides && Object.keys(llmOverrides).length > 0) {
       const { setOverrides } =
         await import("../instance-model-overrides/instance-model-overrides.slice");
-      dispatch(setOverrides({ conversationId, changes: overrides }));
+      dispatch(setOverrides({ conversationId, changes: llmOverrides }));
     }
 
     if (displayModeOverride) {

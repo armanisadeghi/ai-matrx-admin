@@ -19,14 +19,15 @@ export function AgentRunWrapper({
     surfaceKey,
     sourceFeature,
     apiEndpointMode: "agent",
-    showVariables: true,
-    autoRun: false,
-    allowChat: true,
-    showVariablePanel: true,
-    showDefinitionMessages: true,
-    showDefinitionMessageContent: true,
-    showPreExecutionGate: false,
     autoClearConversation: false,
+    config: {
+      autoRun: false,
+      allowChat: true,
+      showVariablePanel: true,
+      showDefinitionMessages: true,
+      showDefinitionMessageContent: true,
+      showPreExecutionGate: false,
+    },
   });
 
   return (

@@ -1011,6 +1011,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
   const tuiEditorRef = useRef<TuiEditorContentRef>(null);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+
   const mode = useAppSelector((s) => s.theme.mode);
   const isAdmin = useAppSelector(selectIsAdmin);
   const isMobile = useIsMobile();

@@ -274,14 +274,18 @@ export function MultiFileSmartCodeEditorWindow({
             agentId,
             surfaceKey: SMART_CODE_EDITOR_SURFACE_KEY,
             sourceFeature: "code-editor",
-            displayMode: "direct",
-            autoRun: false,
-            allowChat: true,
             apiEndpointMode: "agent",
-            widgetHandleId,
-            ...(variablesRef.current
-              ? { variables: variablesRef.current }
-              : {}),
+            config: {
+              displayMode: "direct",
+              autoRun: false,
+              allowChat: true,
+            },
+            runtime: {
+              widgetHandleId,
+              ...(variablesRef.current
+                ? { variables: variablesRef.current }
+                : {}),
+            },
           }),
         ).unwrap();
 
