@@ -22,6 +22,15 @@ export type TopicUpdate = {
   good_scrape_threshold?: number | null;
   scrapes_per_keyword?: number | null;
   project_id?: string | null;
+  // Quota ladder fields (migration 0013) — accepted by Supabase even though
+  // database.types.ts hasn't been regenerated with them yet.
+  max_keywords?: number | null;
+  analyses_per_keyword?: number | null;
+  max_keyword_syntheses?: number | null;
+  max_project_syntheses?: number | null;
+  max_documents?: number | null;
+  max_tag_consolidations?: number | null;
+  max_auto_tag_calls?: number | null;
 };
 
 export type KeywordCreate = components["schemas"]["KeywordCreate"];
@@ -105,7 +114,62 @@ export type TopicStatus =
 // ============================================================================
 
 /** Database row — canonical shape for `rs_topic` */
-export type ResearchTopic = Database["public"]["Tables"]["rs_topic"]["Row"];
+export type ResearchTopicRow = Database["public"]["Tables"]["rs_topic"]["Row"];
+
+/**
+ * Quota ladder fields added in migration 0013_rs_topic_quota_ladder.sql.
+ * The Supabase generated types are stale; we layer these on at the type level
+ * until `database.types.ts` is regenerated. Values are guaranteed present on
+ * `rs_topic` rows since the migration backfilled defaults.
+ */
+export interface TopicQuotaFields {
+  max_keywords: number;
+  scrapes_per_keyword: number;
+  analyses_per_keyword: number;
+  max_keyword_syntheses: number;
+  max_project_syntheses: number;
+  max_documents: number;
+  max_tag_consolidations: number;
+  max_auto_tag_calls: number;
+}
+
+/** Per-phase cost line item — mirrors backend `CostBreakdownItem`. */
+export interface CostBreakdownItem {
+  label: string;
+  calls: number;
+  input_tokens: number;
+  output_tokens: number;
+  estimated_cost_usd: number;
+}
+
+/** Cost summary returned on `GET /research/topics/{id}` per QUOTA_LADDER.md. */
+export interface TopicCostSummary {
+  total_llm_calls: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  total_estimated_cost_usd: number;
+  page_analyses: CostBreakdownItem;
+  keyword_syntheses: CostBreakdownItem;
+  project_syntheses: CostBreakdownItem;
+  tag_consolidations: CostBreakdownItem;
+  document_assembly: CostBreakdownItem;
+}
+
+/**
+ * Canonical topic shape used throughout the UI.
+ * Combines the Supabase row with quota ladder fields and an optional
+ * `cost_summary` (only present when fetched via the Python API endpoint).
+ *
+ * `autonomy_level` is narrowed from the loose Supabase `string` to the
+ * three documented values per FRONTEND_SPEC §2 — Supabase column
+ * regeneration would do this automatically; for now we narrow at the
+ * application boundary.
+ */
+export type ResearchTopic = Omit<ResearchTopicRow, "autonomy_level"> &
+  TopicQuotaFields & {
+    autonomy_level: "auto" | "semi" | "manual";
+    cost_summary?: TopicCostSummary | null;
+  };
 
 export type LlmStatus = "success" | "failed";
 
@@ -645,6 +709,21 @@ export type ResearchDataEvent =
 /** @deprecated Use ResearchDataEvent instead — matches real backend contract */
 export type ResearchStreamDataPayload = ResearchDataEvent;
 
+/**
+ * Backend `info` event payload — per FRONTEND_SPEC §18 and QUOTA_LADDER §"Quota-exceeded errors".
+ *
+ * Codes we expect:
+ * - `search_results_found` — fired after each keyword search completes.
+ * - `quota_exceeded` — fired when a phase hits a quota cap; stream continues, does NOT crash.
+ * - Future codes are passed through verbatim; UI handles unknown codes generically.
+ */
+export interface ResearchInfoEvent {
+  code: string;
+  message: string;
+  user_message?: string | null;
+  metadata?: Record<string, unknown>;
+}
+
 export interface ResearchStreamCallbacks {
   onChunk?: (text: string) => void;
   onStatusUpdate?: (
@@ -654,6 +733,8 @@ export interface ResearchStreamCallbacks {
   ) => void;
   /** Typed research data event — discriminate on `payload.event` */
   onData?: (payload: ResearchDataEvent) => void;
+  /** First-class `info` event — used for quota_exceeded and search_results_found. */
+  onInfo?: (info: ResearchInfoEvent) => void;
   onCompletion?: (payload: Record<string, unknown>) => void;
   onToolEvent?: (event: Record<string, unknown>) => void;
   onError?: (message: string) => void;

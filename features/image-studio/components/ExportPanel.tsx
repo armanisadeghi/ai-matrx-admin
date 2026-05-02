@@ -59,7 +59,13 @@ interface ExportPanelProps {
     onGenerate: () => void;
     onDownloadAll: () => void;
     onDownloadSelected: () => void;
-    onSaveAll: (folder: string) => void;
+    /**
+     * Save all generated variants to the user's library. `makePublic`
+     * controls visibility — when true, files become public and the
+     * response carries permanent CDN URLs safe to share. When false
+     * (default), they're private and require auth to view.
+     */
+    onSaveAll: (folder: string, makePublic: boolean) => void;
     onOpenPreview?: () => void;
     canOpenPreview?: boolean;
     isPreviewOpen?: boolean;
@@ -105,6 +111,7 @@ export function ExportPanel({
     describedFileCount = 0,
 }: ExportPanelProps) {
     const [folder, setFolder] = useState("image-studio");
+    const [makePublic, setMakePublic] = useState(false);
 
     return (
         <aside className="flex flex-col h-full min-h-0 border-l border-border bg-card/50">
@@ -359,9 +366,24 @@ export function ExportPanel({
                             placeholder="image-studio"
                         />
                     </div>
+                    <label className="mt-1.5 flex items-start gap-2 text-xs cursor-pointer select-none">
+                        <input
+                            type="checkbox"
+                            checked={makePublic}
+                            onChange={(e) => setMakePublic(e.target.checked)}
+                            className="mt-0.5 h-3.5 w-3.5 rounded border-border accent-primary cursor-pointer"
+                        />
+                        <span className="leading-snug">
+                            <span className="font-medium">Make publicly viewable</span>
+                            <span className="block text-[10px] text-muted-foreground">
+                                Returns permanent CDN URLs anyone can load — safe to share.
+                                Leave unchecked to keep variants private to your account.
+                            </span>
+                        </span>
+                    </label>
                     <button
                         type="button"
-                        onClick={() => onSaveAll(folder)}
+                        onClick={() => onSaveAll(folder, makePublic)}
                         disabled={!canSave || isSaving}
                         className={cn(
                             "mt-1.5 w-full h-9 rounded-md text-xs font-medium flex items-center justify-center gap-1.5 transition-colors",
@@ -371,11 +393,16 @@ export function ExportPanel({
                         )}
                     >
                         <CloudUpload className="h-3.5 w-3.5" />
-                        {isSaving ? "Saving…" : "Save all to library"}
+                        {isSaving
+                            ? "Saving…"
+                            : makePublic
+                                ? "Save all to library (public)"
+                                : "Save all to library (private)"}
                     </button>
                     <p className="text-[10px] text-muted-foreground mt-1 leading-snug">
-                        Uploads every generated variant to Supabase storage under your user
-                        folder. Returns public URLs you can copy from each tile.
+                        Uploads every generated variant to your cloud-files library under
+                        {" "}
+                        <code className="font-mono">Images/Generated/{folder || "image-studio"}</code>.
                     </p>
                 </div>
             </div>

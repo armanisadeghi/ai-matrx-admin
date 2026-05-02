@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { RunItem } from "./RunItem";
 import { RunsEmptyState } from "./RunsEmptyState";
 import { useAiRunsList } from "../hooks/useAiRunsList";
-import type { AiRunsListFilters } from "../types";
+import type { AiRunsListFilters } from "../types/aiRunTypes";
 
 interface RunsListProps {
   filters?: AiRunsListFilters;
@@ -27,7 +27,9 @@ export function RunsList({
   emptyMessage,
   emptySubmessage,
 }: RunsListProps) {
-  const { runs, isLoading, hasMore, loadMore, refresh } = useAiRunsList(filters || {});
+  const { runs, isLoading, hasMore, loadMore, refresh } = useAiRunsList(
+    filters || {},
+  );
 
   // Refresh list when activeRunId changes (new run created or selected)
   React.useEffect(() => {
@@ -36,7 +38,7 @@ export function RunsList({
       const timer = setTimeout(() => {
         refresh();
       }, 500);
-      
+
       return () => clearTimeout(timer);
     }
   }, [activeRunId, refresh]);
@@ -50,7 +52,9 @@ export function RunsList({
   }
 
   if (runs.length === 0) {
-    return <RunsEmptyState message={emptyMessage} submessage={emptySubmessage} />;
+    return (
+      <RunsEmptyState message={emptyMessage} submessage={emptySubmessage} />
+    );
   }
 
   return (
@@ -94,4 +98,3 @@ export function RunsList({
     </div>
   );
 }
-

@@ -19897,6 +19897,11 @@
             ],
             "title": "Scrape Status"
           },
+          "is_included": {
+            "type": "boolean",
+            "title": "Is Included",
+            "default": true
+          },
           "next_level": {
             "type": "integer",
             "enum": [
@@ -19952,6 +19957,38 @@
               }
             ],
             "title": "Last Failure Reason"
+          },
+          "server_attempts": {
+            "type": "integer",
+            "title": "Server Attempts",
+            "default": 0
+          },
+          "last_server_attempt_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Server Attempt At"
+          },
+          "last_server_failure_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Server Failure Reason"
+          },
+          "server_gave_up": {
+            "type": "boolean",
+            "title": "Server Gave Up",
+            "default": false
           }
         },
         "type": "object",
@@ -26608,10 +26645,45 @@
             "title": "Good Scrape Threshold",
             "default": 1000
           },
+          "max_keywords": {
+            "type": "integer",
+            "title": "Max Keywords",
+            "default": 3
+          },
           "scrapes_per_keyword": {
             "type": "integer",
             "title": "Scrapes Per Keyword",
             "default": 5
+          },
+          "analyses_per_keyword": {
+            "type": "integer",
+            "title": "Analyses Per Keyword",
+            "default": 5
+          },
+          "max_keyword_syntheses": {
+            "type": "integer",
+            "title": "Max Keyword Syntheses",
+            "default": 3
+          },
+          "max_project_syntheses": {
+            "type": "integer",
+            "title": "Max Project Syntheses",
+            "default": 1
+          },
+          "max_documents": {
+            "type": "integer",
+            "title": "Max Documents",
+            "default": 1
+          },
+          "max_tag_consolidations": {
+            "type": "integer",
+            "title": "Max Tag Consolidations",
+            "default": 0
+          },
+          "max_auto_tag_calls": {
+            "type": "integer",
+            "title": "Max Auto Tag Calls",
+            "default": 0
           }
         },
         "type": "object",
@@ -26695,6 +26767,17 @@
             ],
             "title": "Good Scrape Threshold"
           },
+          "max_keywords": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Keywords"
+          },
           "scrapes_per_keyword": {
             "anyOf": [
               {
@@ -26705,6 +26788,72 @@
               }
             ],
             "title": "Scrapes Per Keyword"
+          },
+          "analyses_per_keyword": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Analyses Per Keyword"
+          },
+          "max_keyword_syntheses": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Keyword Syntheses"
+          },
+          "max_project_syntheses": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Project Syntheses"
+          },
+          "max_documents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Documents"
+          },
+          "max_tag_consolidations": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Tag Consolidations"
+          },
+          "max_auto_tag_calls": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Auto Tag Calls"
           },
           "agent_config": {
             "anyOf": [

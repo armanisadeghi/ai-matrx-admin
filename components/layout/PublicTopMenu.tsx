@@ -3,7 +3,7 @@ import { Menu } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import Link from 'next/link';
 import { StandaloneThemeSwitcher } from "@/styles/themes/StandaloneThemeSwitcher";
-import { LogoHorizontal } from '@/public/MatrixLogo';
+import { LogoHorizontal } from '@/components/branding/MatrixLogo';
 import NavigationButton from "@/components/ui/navigation-button";
 
 const DesktopMenu = () => {

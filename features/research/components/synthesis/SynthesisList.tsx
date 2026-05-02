@@ -24,6 +24,8 @@ import { useResearchStream } from "../../hooks/useResearchStream";
 import { ResearchFilterBar, type FilterDef } from "../shared/ResearchFilterBar";
 import type { FilterOption } from "@/components/hierarchy-filter/HierarchyFilterPill";
 import type { ResearchSynthesis, ResearchDataEvent } from "../../types";
+import MarkdownStream from "@/components/markdown";
+import { ContentActionBar } from "@/components/content-actions/ContentActionBar";
 
 function SynthesisCard({
   synthesis,
@@ -88,10 +90,24 @@ function SynthesisCard({
               {synthesis.error}
             </div>
           ) : synthesis.result ? (
-            <div className="prose prose-sm dark:prose-invert max-w-none prose-p:text-xs prose-headings:text-sm">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {synthesis.result}
-              </ReactMarkdown>
+            <div className="space-y-2">
+              <div className="prose prose-sm dark:prose-invert max-w-none prose-p:text-xs prose-headings:text-sm">
+                <MarkdownStream content={synthesis.result} />
+              </div>
+              <div className="flex justify-end">
+                <ContentActionBar
+                  content={synthesis.result}
+                  title={label}
+                  instanceKey={`synthesis-${synthesis.id}`}
+                  metadata={{
+                    synthesisId: synthesis.id,
+                    scope: synthesis.scope,
+                    version: synthesis.version,
+                    model_id: synthesis.model_id ?? undefined,
+                    keyword_id: synthesis.keyword_id ?? undefined,
+                  }}
+                />
+              </div>
             </div>
           ) : (
             <div className="flex items-center gap-2 py-3 text-xs text-muted-foreground">

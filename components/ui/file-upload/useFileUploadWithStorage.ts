@@ -28,6 +28,7 @@ import type { StorageMetadata } from "@/utils/file-operations/types";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { CloudFolders } from "@/features/files/utils/folder-conventions";
 import { cloudUpload, isCloudUploadFailure } from "@/features/files/upload";
+import type { Visibility } from "@/features/files/types";
 
 // ---------------------------------------------------------------------------
 // Bucket → folder mapping
@@ -69,6 +70,14 @@ function composeFolderPath(bucket: string, path?: string): string {
   const top = mapLegacyBucket(bucket).replace(/^\/+|\/+$/g, "");
   const sub = (path ?? "").replace(/^\/+|\/+$/g, "");
   return sub ? `${top}/${sub}` : top;
+}
+
+// `user-public-assets` is the only legacy bucket whose name promised
+// public-read semantics. Everything else (chat attachments, private user
+// assets, generic "userContent", etc.) stays private. Callers that want
+// public for an unknown bucket should use `uploadToPublicUserAssets`.
+function defaultVisibilityForBucket(bucket: string): Visibility {
+  return bucket === "user-public-assets" ? "public" : "private";
 }
 
 // ---------------------------------------------------------------------------
@@ -148,7 +157,11 @@ export const useFileUploadWithStorage = (bucket: string, path?: string) => {
   // -------------------------------------------------------------------------
 
   const uploadOneTo = useCallback(
-    async (folderPath: string, file: File): Promise<UploadResult | null> => {
+    async (
+      folderPath: string,
+      file: File,
+      visibility: Visibility = "private",
+    ): Promise<UploadResult | null> => {
       setIsLoading(true);
       setError(null);
 
@@ -161,10 +174,11 @@ export const useFileUploadWithStorage = (bucket: string, path?: string) => {
         file,
         {
           folderPath,
-          visibility: "private",
+          visibility,
           metadata: {
             origin: "legacy-compat:useFileUploadWithStorage",
             legacy_bucket: bucket,
+            requested_visibility: visibility,
           },
           createShareLink: true,
         },
@@ -212,10 +226,14 @@ export const useFileUploadWithStorage = (bucket: string, path?: string) => {
   );
 
   const uploadMultipleTo = useCallback(
-    async (folderPath: string, files: File[]): Promise<UploadResult[]> => {
+    async (
+      folderPath: string,
+      files: File[],
+      visibility: Visibility = "private",
+    ): Promise<UploadResult[]> => {
       const out: UploadResult[] = [];
       for (const file of files) {
-        const r = await uploadOneTo(folderPath, file);
+        const r = await uploadOneTo(folderPath, file, visibility);
         if (r) out.push(r);
       }
       return out;
@@ -231,19 +249,23 @@ export const useFileUploadWithStorage = (bucket: string, path?: string) => {
     () => composeFolderPath(bucket, path),
     [bucket, path],
   );
+  const defaultVisibility = useMemo(
+    () => defaultVisibilityForBucket(bucket),
+    [bucket],
+  );
 
   const uploadFile = useCallback(
-    (file: File) => uploadOneTo(defaultFolder, file),
-    [uploadOneTo, defaultFolder],
+    (file: File) => uploadOneTo(defaultFolder, file, defaultVisibility),
+    [uploadOneTo, defaultFolder, defaultVisibility],
   );
 
   const uploadFiles = useCallback(
     async (files: File[]): Promise<UploadResult[]> => {
-      const res = await uploadMultipleTo(defaultFolder, files);
+      const res = await uploadMultipleTo(defaultFolder, files, defaultVisibility);
       setResults(res);
       return res;
     },
-    [uploadMultipleTo, defaultFolder],
+    [uploadMultipleTo, defaultFolder, defaultVisibility],
   );
 
   const getLocalFile = useCallback(async (_localId: string) => {
@@ -264,13 +286,13 @@ export const useFileUploadWithStorage = (bucket: string, path?: string) => {
   }, []);
 
   const uploadToPublicUserAssets = useCallback(
-    (file: File) => uploadOneTo("Shared Assets", file),
+    (file: File) => uploadOneTo("Shared Assets", file, "public"),
     [uploadOneTo],
   );
 
   const uploadMultipleToPublicUserAssets = useCallback(
     async (files: File[]) => {
-      const res = await uploadMultipleTo("Shared Assets", files);
+      const res = await uploadMultipleTo("Shared Assets", files, "public");
       setResults(res);
       return res;
     },
@@ -278,13 +300,13 @@ export const useFileUploadWithStorage = (bucket: string, path?: string) => {
   );
 
   const uploadToPrivateUserAssets = useCallback(
-    (file: File) => uploadOneTo("Private Assets", file),
+    (file: File) => uploadOneTo("Private Assets", file, "private"),
     [uploadOneTo],
   );
 
   const uploadMultipleToPrivateUserAssets = useCallback(
     async (files: File[]) => {
-      const res = await uploadMultipleTo("Private Assets", files);
+      const res = await uploadMultipleTo("Private Assets", files, "private");
       setResults(res);
       return res;
     },

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAgentById,
+  selectAgentDefinition,
   selectAgentMessages,
   selectAgentVariableDefinitions,
   selectAgentSettings,
@@ -13,10 +14,17 @@ import {
   selectAgentModelId,
   selectAgentVersion,
   selectAgentTags,
+  selectAgentCategory,
+  selectAgentMcpServers,
+  selectAgentOutputSchema,
+  selectAgentChangeNote,
 } from "@/features/agents/redux/agent-definition/selectors";
+import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Webhook,
   MessageSquare,
@@ -25,8 +33,19 @@ import {
   Layers,
   Settings,
   Tag,
-  Hash,
+  Copy,
+  Check,
+  Eye,
+  Braces,
+  Server,
+  FileJson,
+  Lock,
+  Globe,
+  Archive,
+  Folder,
+  type LucideIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { AgentDefinitionMessage } from "@/features/agents/types/agent-message-types";
 import MarkdownStream from "@/components/MarkdownStream";
@@ -59,13 +78,46 @@ function RoleBadge({ role }: { role: string }) {
   );
 }
 
+function StatChip({
+  icon: Icon,
+  label,
+  count,
+  accent,
+}: {
+  icon: LucideIcon;
+  label: string;
+  count: number;
+  accent: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-1.5 text-xs",
+        count === 0 && "opacity-40",
+      )}
+    >
+      <Icon className={cn("w-3.5 h-3.5", accent)} />
+      <span className="tabular-nums font-medium">{count}</span>
+      <span className="text-muted-foreground">{label}</span>
+    </div>
+  );
+}
+
+type ViewMode = "pretty" | "json";
+
 export function AgentViewContent({ agentId }: { agentId: string }) {
   const [mounted, setMounted] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("pretty");
+  const [copied, setCopied] = useState<string | null>(null);
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
   const agent = useAppSelector((state) => selectAgentById(state, agentId));
+  const definition = useAppSelector((state) =>
+    selectAgentDefinition(state, agentId),
+  );
   const messages = useAppSelector((state) =>
     selectAgentMessages(state, agentId),
   );
@@ -85,6 +137,30 @@ export function AgentViewContent({ agentId }: { agentId: string }) {
   const modelId = useAppSelector((state) => selectAgentModelId(state, agentId));
   const version = useAppSelector((state) => selectAgentVersion(state, agentId));
   const tags = useAppSelector((state) => selectAgentTags(state, agentId));
+  const category = useAppSelector((state) =>
+    selectAgentCategory(state, agentId),
+  );
+  const mcpServers = useAppSelector((state) =>
+    selectAgentMcpServers(state, agentId),
+  );
+  const outputSchema = useAppSelector((state) =>
+    selectAgentOutputSchema(state, agentId),
+  );
+  const changeNote = useAppSelector((state) =>
+    selectAgentChangeNote(state, agentId),
+  );
+  const isAdmin = useAppSelector(selectIsAdmin);
+
+  const handleCopy = async (key: string, text: string, message: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(key);
+      toast.success(message);
+      setTimeout(() => setCopied(null), 1500);
+    } catch {
+      toast.error("Copy failed");
+    }
+  };
 
   if (!mounted || !agent) {
     return (
@@ -97,229 +173,456 @@ export function AgentViewContent({ agentId }: { agentId: string }) {
   const systemMessage = messages?.find((m) => m.role === "system");
   const conversationMessages =
     messages?.filter((m) => m.role !== "system") ?? [];
+  const settingsEntries = settings
+    ? Object.entries(settings).filter(([, v]) => v != null)
+    : [];
   const totalTools = (tools?.length ?? 0) + (customTools?.length ?? 0);
+  const variableCount = variables?.length ?? 0;
+  const contextSlotCount = contextSlots?.length ?? 0;
+  const settingsCount = settingsEntries.length;
+  const mcpCount = mcpServers?.length ?? 0;
+  const definitionJson = JSON.stringify(definition ?? {}, null, 2);
+
+  const allowJsonView = isAdmin;
+  const effectiveView: ViewMode = allowJsonView ? viewMode : "pretty";
 
   return (
     <div
       className="h-full overflow-y-auto"
       style={{ paddingTop: "var(--shell-header-h)" }}
     >
-      <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-        {/* Top info bar */}
-        <div className="flex flex-wrap items-center gap-3">
-          {agent.description && (
-            <p className="text-sm text-muted-foreground flex-1 min-w-[200px]">
-              {agent.description}
-            </p>
-          )}
-          <div className="flex items-center gap-2 shrink-0">
-            {modelId && (
-              <Badge variant="secondary" className="gap-1">
-                <Webhook className="w-3 h-3" /> {modelId}
-              </Badge>
+      <div className="max-w-5xl mx-auto px-4 pb-6 space-y-5">
+        {/* Sticky toolbar */}
+        <div className="sticky top-0 -mx-4 px-4 py-2 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70 border-b border-border/50 z-10 flex items-center justify-between gap-2">
+          <div className="text-xs text-muted-foreground truncate">
+            {effectiveView === "pretty" ? "Overview" : "Raw definition (JSON)"}
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 gap-1.5 text-xs"
+              onClick={() =>
+                handleCopy(
+                  "definition",
+                  definitionJson,
+                  "Agent definition copied as JSON",
+                )
+              }
+            >
+              {copied === "definition" ? (
+                <Check className="w-3.5 h-3.5 text-emerald-500" />
+              ) : (
+                <Copy className="w-3.5 h-3.5" />
+              )}
+              Copy JSON
+            </Button>
+            {allowJsonView && (
+              <ToggleGroup
+                type="single"
+                value={viewMode}
+                onValueChange={(v) => v && setViewMode(v as ViewMode)}
+                size="sm"
+                variant="outline"
+              >
+                <ToggleGroupItem
+                  value="pretty"
+                  className="h-7 px-2 text-xs gap-1"
+                  aria-label="Pretty view"
+                >
+                  <Eye className="w-3.5 h-3.5" /> Pretty
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="json"
+                  className="h-7 px-2 text-xs gap-1"
+                  aria-label="JSON view"
+                >
+                  <Braces className="w-3.5 h-3.5" /> JSON
+                </ToggleGroupItem>
+              </ToggleGroup>
             )}
-            {version != null && (
-              <Badge variant="outline" className="gap-1 tabular-nums">
-                <Hash className="w-3 h-3" /> v{version}
-              </Badge>
-            )}
-            {!agent.isActive && <Badge variant="destructive">Inactive</Badge>}
           </div>
         </div>
 
-        {tags && tags.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5">
-            <Tag className="w-3.5 h-3.5 text-muted-foreground" />
-            {tags.map((t) => (
-              <Badge key={t} variant="secondary" className="text-xs">
-                {t}
-              </Badge>
-            ))}
-          </div>
-        )}
-
-        <Separator />
-
-        {/* System prompt */}
-        {systemMessage && (
+        {effectiveView === "json" ? (
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm">
-                <MessageSquare className="w-4 h-4 text-amber-500" />
-                System Instructions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <MarkdownStream
-                content={extractTextContent(systemMessage) || "—"}
-                isStreamActive={false}
-              />
+            <CardContent className="p-0">
+              <pre className="text-xs font-mono p-4 overflow-auto bg-muted/30 rounded-md max-h-[calc(100dvh-10rem)] whitespace-pre">
+                {definitionJson}
+              </pre>
             </CardContent>
           </Card>
-        )}
+        ) : (
+          <>
+            {/* Hero — name, id (version), description */}
+            <div className="space-y-2 pt-1">
+              <h1 className="text-2xl font-bold tracking-tight leading-tight">
+                {agent.name}
+              </h1>
+              <button
+                type="button"
+                onClick={() => handleCopy("id", agent.id, "Agent ID copied")}
+                className="group inline-flex items-center gap-1.5 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
+                title="Copy agent ID"
+              >
+                <span>{agent.id}</span>
+                {version != null && (
+                  <span className="text-muted-foreground/70">· v{version}</span>
+                )}
+                {copied === "id" ? (
+                  <Check className="w-3 h-3 text-emerald-500" />
+                ) : (
+                  <Copy className="w-3 h-3 opacity-0 group-hover:opacity-60 transition-opacity" />
+                )}
+              </button>
+              {agent.description && (
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {agent.description}
+                </p>
+              )}
+              {agent.isVersion && changeNote && (
+                <p className="text-xs italic text-muted-foreground/80 border-l-2 border-muted-foreground/30 pl-2">
+                  {changeNote}
+                </p>
+              )}
 
-        {/* Conversation messages */}
-        {conversationMessages.length > 0 && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm">
-                <MessageSquare className="w-4 h-4 text-primary" />
-                Messages ({conversationMessages.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {conversationMessages.map((msg, i) => (
-                <div key={i} className="space-y-1">
-                  <RoleBadge role={msg.role} />
+              {/* Status / metadata pills */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                {modelId && (
+                  <Badge variant="secondary" className="gap-1">
+                    <Webhook className="w-3 h-3" /> {modelId}
+                  </Badge>
+                )}
+                {category && (
+                  <Badge variant="outline" className="gap-1">
+                    <Folder className="w-3 h-3" /> {category}
+                  </Badge>
+                )}
+                {!agent.isVersion && agent.isPublic && (
+                  <Badge
+                    variant="outline"
+                    className="gap-1 text-emerald-600 dark:text-emerald-400 border-emerald-500/40"
+                  >
+                    <Globe className="w-3 h-3" /> Public
+                  </Badge>
+                )}
+                {!agent.isVersion && !agent.isPublic && (
+                  <Badge
+                    variant="outline"
+                    className="gap-1 text-muted-foreground"
+                  >
+                    <Lock className="w-3 h-3" /> Private
+                  </Badge>
+                )}
+                {agent.isArchived && (
+                  <Badge
+                    variant="outline"
+                    className="gap-1 text-amber-600 dark:text-amber-400 border-amber-500/40"
+                  >
+                    <Archive className="w-3 h-3" /> Archived
+                  </Badge>
+                )}
+                {!agent.isActive && (
+                  <Badge variant="destructive">Inactive</Badge>
+                )}
+              </div>
+
+              {tags && tags.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <Tag className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                  {tags.map((t) => (
+                    <Badge key={t} variant="secondary" className="text-xs">
+                      {t}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Stat strip */}
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 px-3 py-2 rounded-md bg-muted/30 border border-border/50">
+              <StatChip
+                icon={Settings}
+                label="settings"
+                count={settingsCount}
+                accent="text-muted-foreground"
+              />
+              <StatChip
+                icon={Variable}
+                label="variables"
+                count={variableCount}
+                accent="text-purple-500"
+              />
+              <StatChip
+                icon={Layers}
+                label="context slots"
+                count={contextSlotCount}
+                accent="text-cyan-500"
+              />
+              <StatChip
+                icon={Wrench}
+                label="tools"
+                count={totalTools}
+                accent="text-orange-500"
+              />
+              {mcpCount > 0 && (
+                <StatChip
+                  icon={Server}
+                  label="MCP servers"
+                  count={mcpCount}
+                  accent="text-blue-500"
+                />
+              )}
+              <StatChip
+                icon={MessageSquare}
+                label="messages"
+                count={conversationMessages.length}
+                accent="text-primary"
+              />
+            </div>
+
+            <Separator />
+
+            {/* Settings — first per ordering request */}
+            {settingsCount > 0 && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <Settings className="w-4 h-4 text-muted-foreground" />
+                    Model Settings
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {settingsEntries.map(([key, value]) => (
+                      <div key={key} className="space-y-0.5">
+                        <div className="text-[0.625rem] uppercase tracking-wider text-muted-foreground font-medium">
+                          {key.replace(/([A-Z])/g, " $1").trim()}
+                        </div>
+                        <div className="text-sm font-mono break-all">
+                          {String(value)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Variables */}
+            {variables && variableCount > 0 && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <Variable className="w-4 h-4 text-purple-500" />
+                    Variables ({variableCount})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-2">
+                    {variables.map((v) => (
+                      <div
+                        key={v.name}
+                        className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/30"
+                      >
+                        <code className="text-xs font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded shrink-0">
+                          {`{{${v.name}}}`}
+                        </code>
+                        <div className="flex-1 min-w-0 text-sm space-y-0.5">
+                          {v.helpText && (
+                            <div className="text-foreground/90">
+                              {v.helpText}
+                            </div>
+                          )}
+                          {v.defaultValue != null &&
+                            String(v.defaultValue) !== "" && (
+                              <div className="text-muted-foreground text-xs">
+                                Default:{" "}
+                                <span className="font-mono">
+                                  {String(v.defaultValue)}
+                                </span>
+                              </div>
+                            )}
+                        </div>
+                        {v.required && (
+                          <Badge
+                            variant="outline"
+                            className="text-[0.625rem] shrink-0"
+                          >
+                            required
+                          </Badge>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Context Slots */}
+            {contextSlots && contextSlotCount > 0 && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <Layers className="w-4 h-4 text-cyan-500" />
+                    Context Slots ({contextSlotCount})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-2">
+                    {contextSlots.map((slot, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/30"
+                      >
+                        <code className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 shrink-0">
+                          {slot.key}
+                        </code>
+                        <div className="flex-1 min-w-0 text-sm space-y-0.5">
+                          {slot.label && (
+                            <div className="text-foreground/90">
+                              {slot.label}
+                            </div>
+                          )}
+                          {slot.description && (
+                            <div className="text-muted-foreground/80 text-xs">
+                              {slot.description}
+                            </div>
+                          )}
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className="text-[0.625rem] shrink-0"
+                        >
+                          {slot.type}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Tools */}
+            {totalTools > 0 && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <Wrench className="w-4 h-4 text-orange-500" />
+                    Tools ({totalTools})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {tools?.map((t) => (
+                      <Badge
+                        key={t}
+                        variant="secondary"
+                        className="font-mono text-xs"
+                      >
+                        {t}
+                      </Badge>
+                    ))}
+                    {customTools?.map((t) => (
+                      <Badge
+                        key={t.name}
+                        variant="outline"
+                        className="font-mono text-xs gap-1"
+                      >
+                        {t.name}
+                        <span className="text-muted-foreground">(custom)</span>
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* MCP Servers */}
+            {mcpServers && mcpCount > 0 && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <Server className="w-4 h-4 text-blue-500" />
+                    MCP Servers ({mcpCount})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {mcpServers.map((id) => (
+                      <Badge
+                        key={id}
+                        variant="secondary"
+                        className="font-mono text-xs"
+                      >
+                        {id}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Output Schema */}
+            {outputSchema && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <FileJson className="w-4 h-4 text-pink-500" />
+                    Output Schema
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <pre className="text-xs font-mono p-3 overflow-x-auto bg-muted/30 rounded-md max-h-80 overflow-y-auto whitespace-pre">
+                    {JSON.stringify(outputSchema, null, 2)}
+                  </pre>
+                </CardContent>
+              </Card>
+            )}
+
+            <Separator />
+
+            {/* System prompt */}
+            {systemMessage && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <MessageSquare className="w-4 h-4 text-amber-500" />
+                    System Instructions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
                   <MarkdownStream
-                    content={extractTextContent(msg) || "—"}
+                    content={extractTextContent(systemMessage) || "—"}
                     isStreamActive={false}
                   />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
+                </CardContent>
+              </Card>
+            )}
 
-        {/* Variables */}
-        {variables && variables.length > 0 && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm">
-                <Variable className="w-4 h-4 text-purple-500" />
-                Variables ({variables.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-2">
-                {variables.map((v) => (
-                  <div
-                    key={v.name}
-                    className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/30"
-                  >
-                    <code className="text-xs font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded shrink-0">
-                      {`{{${v.name}}}`}
-                    </code>
-                    <div className="flex-1 min-w-0 text-sm">
-                      {v.defaultValue != null && (
-                        <span className="text-muted-foreground">
-                          Default: {String(v.defaultValue)}
-                        </span>
-                      )}
-                      {v.helpText && (
-                        <span className="text-muted-foreground/70 text-xs">
-                          {v.helpText}
-                        </span>
-                      )}
-                    </div>
-                    {v.required && (
-                      <Badge
-                        variant="outline"
-                        className="text-[0.625rem] shrink-0"
-                      >
-                        required
-                      </Badge>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Tools */}
-        {totalTools > 0 && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm">
-                <Wrench className="w-4 h-4 text-orange-500" />
-                Tools ({totalTools})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {tools?.map((t) => (
-                  <Badge
-                    key={t}
-                    variant="secondary"
-                    className="font-mono text-xs"
-                  >
-                    {t}
-                  </Badge>
-                ))}
-                {customTools?.map((t) => (
-                  <Badge
-                    key={t.name}
-                    variant="outline"
-                    className="font-mono text-xs gap-1"
-                  >
-                    {t.name}
-                    <span className="text-muted-foreground">(custom)</span>
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Context Slots */}
-        {contextSlots && contextSlots.length > 0 && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm">
-                <Layers className="w-4 h-4 text-cyan-500" />
-                Context Slots ({contextSlots.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-2">
-                {contextSlots.map((slot, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/30"
-                  >
-                    <code className="text-xs font-semibold text-cyan-600 dark:text-cyan-400">
-                      {slot.key}
-                    </code>
-                    {slot.label && (
-                      <span className="text-sm text-muted-foreground">
-                        {slot.label}
-                      </span>
-                    )}
-                    <Badge variant="outline" className="text-[0.625rem]">
-                      {slot.type}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Settings */}
-        {settings && Object.keys(settings).length > 0 && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm">
-                <Settings className="w-4 h-4 text-muted-foreground" />
-                Model Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {Object.entries(settings)
-                  .filter(([, v]) => v != null)
-                  .map(([key, value]) => (
-                    <div key={key} className="space-y-0.5">
-                      <div className="text-[0.625rem] uppercase tracking-wider text-muted-foreground font-medium">
-                        {key.replace(/([A-Z])/g, " $1").trim()}
-                      </div>
-                      <div className="text-sm font-mono">{String(value)}</div>
+            {/* Conversation messages */}
+            {conversationMessages.length > 0 && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <MessageSquare className="w-4 h-4 text-primary" />
+                    Messages ({conversationMessages.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {conversationMessages.map((msg, i) => (
+                    <div key={i} className="space-y-1">
+                      <RoleBadge role={msg.role} />
+                      <MarkdownStream
+                        content={extractTextContent(msg) || "—"}
+                        isStreamActive={false}
+                      />
                     </div>
                   ))}
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            )}
+          </>
         )}
       </div>
     </div>

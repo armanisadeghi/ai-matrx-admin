@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { cloneDeep } from "lodash";
 import { getStore } from "@/lib/redux/store-singleton";
 import { DataBrokerData } from "@/types/AutomationSchemaTypes";

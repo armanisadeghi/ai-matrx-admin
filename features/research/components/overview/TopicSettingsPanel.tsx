@@ -38,12 +38,14 @@ import type {
   AutonomyLevel,
   SearchProvider,
   TopicStatus,
+  TopicQuotaFields,
 } from "../../types";
 import {
   autonomyLevelFromDb,
   searchProviderFromDb,
   topicStatusFromDb,
 } from "../../types";
+import { QuotaSettingsSection } from "./QuotaSettingsSection";
 
 interface TopicSettingsPanelProps {
   open: boolean;
@@ -92,6 +94,16 @@ export function TopicSettingsPanel({
   const [scrapesPerKeyword, setScrapesPerKeyword] = useState(
     topic.scrapes_per_keyword,
   );
+  const [quotas, setQuotas] = useState<TopicQuotaFields>({
+    max_keywords: topic.max_keywords,
+    scrapes_per_keyword: topic.scrapes_per_keyword,
+    analyses_per_keyword: topic.analyses_per_keyword,
+    max_keyword_syntheses: topic.max_keyword_syntheses,
+    max_project_syntheses: topic.max_project_syntheses,
+    max_documents: topic.max_documents,
+    max_tag_consolidations: topic.max_tag_consolidations,
+    max_auto_tag_calls: topic.max_auto_tag_calls,
+  });
   const [selectedProjectId, setSelectedProjectId] = useState(topic.project_id);
   const [newProjectOpen, setNewProjectOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -106,6 +118,16 @@ export function TopicSettingsPanel({
       setStatus(topicStatusFromDb(topic.status));
       setGoodScrapeThreshold(topic.good_scrape_threshold);
       setScrapesPerKeyword(topic.scrapes_per_keyword);
+      setQuotas({
+        max_keywords: topic.max_keywords,
+        scrapes_per_keyword: topic.scrapes_per_keyword,
+        analyses_per_keyword: topic.analyses_per_keyword,
+        max_keyword_syntheses: topic.max_keyword_syntheses,
+        max_project_syntheses: topic.max_project_syntheses,
+        max_documents: topic.max_documents,
+        max_tag_consolidations: topic.max_tag_consolidations,
+        max_auto_tag_calls: topic.max_auto_tag_calls,
+      });
       setSelectedProjectId(topic.project_id);
       setError(null);
     }
@@ -130,8 +152,15 @@ export function TopicSettingsPanel({
         default_search_provider: searchProvider,
         status,
         good_scrape_threshold: goodScrapeThreshold,
-        scrapes_per_keyword: scrapesPerKeyword,
+        scrapes_per_keyword: quotas.scrapes_per_keyword ?? scrapesPerKeyword,
         project_id: selectedProjectId,
+        max_keywords: quotas.max_keywords,
+        analyses_per_keyword: quotas.analyses_per_keyword,
+        max_keyword_syntheses: quotas.max_keyword_syntheses,
+        max_project_syntheses: quotas.max_project_syntheses,
+        max_documents: quotas.max_documents,
+        max_tag_consolidations: quotas.max_tag_consolidations,
+        max_auto_tag_calls: quotas.max_auto_tag_calls,
       });
       onSaved();
       onOpenChange(false);
@@ -277,46 +306,42 @@ export function TopicSettingsPanel({
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label
-                htmlFor="scrapes-per-kw"
-                className="text-[11px] font-medium text-muted-foreground"
-              >
-                Scrapes/Keyword
-              </label>
-              <Input
-                id="scrapes-per-kw"
-                type="number"
-                min={1}
-                max={50}
-                value={scrapesPerKeyword}
-                onChange={(e) => setScrapesPerKeyword(Number(e.target.value))}
-                className="h-8 text-xs rounded-lg"
-                style={{ fontSize: "16px" }}
-              />
-            </div>
-            <div className="space-y-1">
-              <label
-                htmlFor="scrape-threshold"
-                className="text-[11px] font-medium text-muted-foreground"
-              >
-                Good Threshold
-              </label>
-              <Input
-                id="scrape-threshold"
-                type="number"
-                min={100}
-                max={50000}
-                step={100}
-                value={goodScrapeThreshold}
-                onChange={(e) => setGoodScrapeThreshold(Number(e.target.value))}
-                className="h-8 text-xs rounded-lg"
-                style={{ fontSize: "16px" }}
-              />
-            </div>
+          <div className="space-y-1">
+            <label
+              htmlFor="scrape-threshold"
+              className="text-[11px] font-medium text-muted-foreground"
+            >
+              Good content threshold (chars)
+            </label>
+            <Input
+              id="scrape-threshold"
+              type="number"
+              min={100}
+              max={50000}
+              step={100}
+              value={goodScrapeThreshold}
+              onChange={(e) => setGoodScrapeThreshold(Number(e.target.value))}
+              className="h-8 text-xs rounded-lg"
+              style={{ fontSize: "16px" }}
+            />
+            <p className="text-[10px] text-muted-foreground/80 leading-snug">
+              Below this character count, a scrape is classified as &quot;thin&quot;.
+            </p>
           </div>
         </section>
+
+        {/* Pipeline limits / quota ladder */}
+        <QuotaSettingsSection
+          values={quotas}
+          onChange={(partial) => {
+            setQuotas((q) => ({ ...q, ...partial }));
+            // keep legacy scrapesPerKeyword state in sync if it changes
+            if (partial.scrapes_per_keyword != null) {
+              setScrapesPerKeyword(partial.scrapes_per_keyword);
+            }
+          }}
+          disabled={saving}
+        />
 
         {error && (
           <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-2.5 py-1.5 text-[11px] text-destructive">

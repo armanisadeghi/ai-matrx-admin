@@ -164,10 +164,14 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
   }, [allGeneratedVariants, selectedFilenames, studio.files.length]);
 
   const handleSaveAll = useCallback(
-    async (folder: string) => {
-      await studio.saveAll(folder);
+    async (folder: string, makePublic: boolean) => {
+      await studio.saveAll(folder, {
+        visibility: makePublic ? "public" : "private",
+      });
       if (!studio.error) {
-        toast.success("Saved to your library");
+        toast.success(
+          makePublic ? "Saved to your library (public)" : "Saved to your library",
+        );
       }
     },
     [studio],

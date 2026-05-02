@@ -6,16 +6,16 @@ import type {
   AiRun,
   AiRunsListFilters,
   UseAiRunsListReturn,
-} from "../types";
+} from "../types/aiRunTypes";
 
 /**
  * Hook for listing and filtering AI runs
- * 
+ *
  * Features:
  * - Auto-refresh every 10 seconds to pick up new/updated runs
  * - Manual refresh capability
  * - Pagination support
- * 
+ *
  * Usage:
  * ```tsx
  * const { runs, loadMore, setFilters, refresh } = useAiRunsList({
@@ -25,7 +25,9 @@ import type {
  * });
  * ```
  */
-export function useAiRunsList(initialFilters: AiRunsListFilters = {}): UseAiRunsListReturn {
+export function useAiRunsList(
+  initialFilters: AiRunsListFilters = {},
+): UseAiRunsListReturn {
   const [runs, setRuns] = useState<AiRun[]>([]);
   const [filters, setFilters] = useState<AiRunsListFilters>(initialFilters);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,34 +38,37 @@ export function useAiRunsList(initialFilters: AiRunsListFilters = {}): UseAiRuns
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load runs
-  const loadRuns = useCallback(async (
-    currentFilters: AiRunsListFilters,
-    currentOffset: number,
-    append: boolean = false
-  ) => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const response = await aiRunsService.list({
-        ...currentFilters,
-        offset: currentOffset,
-      });
-      
-      if (append) {
-        setRuns(prev => [...prev, ...response.runs]);
-      } else {
-        setRuns(response.runs);
+  const loadRuns = useCallback(
+    async (
+      currentFilters: AiRunsListFilters,
+      currentOffset: number,
+      append: boolean = false,
+    ) => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await aiRunsService.list({
+          ...currentFilters,
+          offset: currentOffset,
+        });
+
+        if (append) {
+          setRuns((prev) => [...prev, ...response.runs]);
+        } else {
+          setRuns(response.runs);
+        }
+
+        setHasMore(response.hasMore);
+        setTotal(response.total);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setIsLoading(false);
       }
-      
-      setHasMore(response.hasMore);
-      setTotal(response.total);
-    } catch (err) {
-      setError(err as Error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   // Load initial data when filters change
   useEffect(() => {
@@ -95,7 +100,7 @@ export function useAiRunsList(initialFilters: AiRunsListFilters = {}): UseAiRuns
   // Load more (pagination)
   const loadMore = useCallback(async () => {
     if (isLoading || !hasMore) return;
-    
+
     const limit = filters.limit || 20;
     const newOffset = offset + limit;
     setOffset(newOffset);
@@ -109,9 +114,12 @@ export function useAiRunsList(initialFilters: AiRunsListFilters = {}): UseAiRuns
   }, [filters, loadRuns]);
 
   // Update filters
-  const updateFilters = useCallback((newFilters: Partial<AiRunsListFilters>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
-  }, []);
+  const updateFilters = useCallback(
+    (newFilters: Partial<AiRunsListFilters>) => {
+      setFilters((prev) => ({ ...prev, ...newFilters }));
+    },
+    [],
+  );
 
   return {
     runs,
@@ -119,11 +127,10 @@ export function useAiRunsList(initialFilters: AiRunsListFilters = {}): UseAiRuns
     error,
     hasMore,
     total,
-    
+
     // Actions
     loadMore,
     refresh,
     setFilters: updateFilters,
   };
 }
-

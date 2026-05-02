@@ -19,7 +19,16 @@
  *
  * Every consumer migration should pick its folder from this file or add a
  * new constant here — do NOT hand-roll folder paths at call sites.
+ *
+ * This file is also the source of truth for the **default visibility** of
+ * every folder — see `resolveDefaultVisibility` near the bottom. Callers
+ * should pick visibility based on render context, not user role: anything
+ * rendered on a public page (org logo, podcast cover, agent-app icon)
+ * defaults to `"public"` so it gets a CDN URL; anything user-scoped
+ * (chat attachment, task attachment, ephemeral temp) stays `"private"`.
  */
+
+import type { Visibility } from "@/features/files/types";
 
 // ---------------------------------------------------------------------------
 // Static (feature-level) folders
@@ -45,6 +54,14 @@ export const CloudFolders = {
   AUDIO_RECORDINGS: "Audio/Recordings",
   /** Podcast asset uploads. */
   AUDIO_PODCASTS: "Audio/Podcasts",
+
+  /**
+   * Static app assets (sounds, hero images, model-card thumbnails, demo
+   * data) owned by an admin service account and rendered globally.
+   * Always public — CDN URL is the goal. Source of truth for the
+   * static-asset migration (see scripts/migrate-public-assets-to-cdn.ts).
+   */
+  APP_ASSETS: "App Assets",
 
   /** Top-level documents (PDF, DOCX, etc.). */
   DOCUMENTS: "Documents",
@@ -161,6 +178,7 @@ export const CloudFolderDescriptions: Record<string, string> = {
   [CloudFolders.AUDIO]: "Audio files.",
   [CloudFolders.AUDIO_RECORDINGS]: "Voice recordings.",
   [CloudFolders.AUDIO_PODCASTS]: "Podcast assets.",
+  [CloudFolders.APP_ASSETS]: "Static app assets shared across the platform.",
   [CloudFolders.DOCUMENTS]: "Documents and reports.",
   [CloudFolders.DOCUMENTS_PDFS]: "PDFs.",
   [CloudFolders.CODE]: "Code files.",
@@ -172,3 +190,60 @@ export const CloudFolderDescriptions: Record<string, string> = {
   [CloudFolders.SCRAPED_CONTENT]: "Captures from the web scraper.",
   [CloudFolders.TMP]: "Internal temporary workspace (hidden).",
 };
+
+// ---------------------------------------------------------------------------
+// Default visibility per folder
+//
+// Source of truth for "what visibility should this upload land with?" when
+// the caller hasn't picked one explicitly. Order matters — we longest-prefix
+// match against `folderPath` so e.g. `Shared Assets/feedback-images` wins
+// over a generic `Shared Assets/` rule.
+//
+// Public defaults are for content rendered on public pages or shared
+// surfaces (logos, podcasts, app icons, feedback screenshots that admin
+// reviews). Private defaults are for user-scoped content (chat, task,
+// ephemeral). When in doubt, default to private and let the caller opt in.
+// ---------------------------------------------------------------------------
+
+const DEFAULT_VISIBILITY_RULES: ReadonlyArray<{
+  prefix: string;
+  visibility: Visibility;
+}> = [
+  // Most-specific rules first — longest-prefix wins.
+  { prefix: "Shared Assets/feedback-images", visibility: "public" },
+  { prefix: CloudFolders.APP_ASSETS, visibility: "public" },
+  { prefix: CloudFolders.IMAGES_AVATARS, visibility: "public" },
+  { prefix: CloudFolders.AUDIO_PODCASTS, visibility: "public" },
+  { prefix: CloudFolders.AGENT_APPS, visibility: "public" },
+  { prefix: "Shared Assets", visibility: "public" },
+
+  { prefix: CloudFolders.IMAGES_GENERATED, visibility: "private" },
+  { prefix: CloudFolders.CHAT_ATTACHMENTS, visibility: "private" },
+  { prefix: CloudFolders.TASK_ATTACHMENTS, visibility: "private" },
+  { prefix: CloudFolders.SLACK_IMPORTS, visibility: "private" },
+  { prefix: CloudFolders.SCRAPED_CONTENT, visibility: "private" },
+  { prefix: "Private Assets", visibility: "private" },
+  { prefix: CloudFolders.TMP, visibility: "private" },
+];
+
+/**
+ * Resolve the default visibility for a given folder path. Longest-prefix
+ * match against `DEFAULT_VISIBILITY_RULES`; falls back to `"private"` for
+ * any folder not in the table. Use at upload sites that don't have an
+ * obvious context-driven choice.
+ */
+export function resolveDefaultVisibility(folderPath: string): Visibility {
+  const normalized = folderPath.replace(/^\/+|\/+$/g, "");
+  let best: { prefix: string; visibility: Visibility } | null = null;
+  for (const rule of DEFAULT_VISIBILITY_RULES) {
+    if (
+      normalized === rule.prefix ||
+      normalized.startsWith(`${rule.prefix}/`)
+    ) {
+      if (!best || rule.prefix.length > best.prefix.length) {
+        best = rule;
+      }
+    }
+  }
+  return best?.visibility ?? "private";
+}

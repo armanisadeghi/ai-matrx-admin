@@ -15,7 +15,7 @@ import type {
   AiRunsListFilters,
   AiRunsListResponse,
   RunMessage,
-} from "../types";
+} from "../types/aiRunTypes";
 
 /**
  * AI Runs Service - Client-side CRUD operations for ai_runs table

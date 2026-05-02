@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import {
   type SettingsTreeNode,
+  findAncestorPath,
   flattenLeaves,
   searchTree,
   withAncestors,
@@ -48,8 +49,8 @@ export function SettingsTree({
   const [query, setQuery] = useState("");
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => {
     if (defaultExpandedIds) return new Set(defaultExpandedIds);
-    // By default, expand top-level categories
-    return new Set(nodes.filter((n) => n.children).map((n) => n.id));
+    // Start collapsed — users expand only what they need.
+    return new Set();
   });
 
   const searchRef = useRef<HTMLInputElement | null>(null);
@@ -72,10 +73,17 @@ export function SettingsTree({
   const matches = query ? searchTree(nodes, query) : null;
   const visibleSet = matches ? withAncestors(nodes, matches) : null;
 
+  // Always keep ancestors of the active leaf expanded so the selected tab is visible.
+  const activeAncestors = activeId ? findAncestorPath(nodes, activeId) : [];
+
   // When searching, expand every ancestor so matches are visible
   const effectiveExpanded = query
-    ? new Set([...expandedIds, ...(visibleSet ? Array.from(visibleSet) : [])])
-    : expandedIds;
+    ? new Set([
+        ...expandedIds,
+        ...activeAncestors,
+        ...(visibleSet ? Array.from(visibleSet) : []),
+      ])
+    : new Set([...expandedIds, ...activeAncestors]);
 
   const toggleExpanded = (id: string) => {
     setExpandedIds((prev) => {
@@ -93,7 +101,7 @@ export function SettingsTree({
       const walk = (arr: SettingsTreeNode[]) => {
         for (const n of arr) {
           if (n.children && n.children.length > 0) {
-            if (expandedIds.has(n.id)) walk(n.children);
+            if (effectiveExpanded.has(n.id)) walk(n.children);
           } else {
             out.push(n);
           }

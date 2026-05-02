@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Logo } from '@/public/MatrixLogo';
+import { Logo } from '@/components/branding/MatrixLogo';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, ExternalLink, AlertTriangle, X } from 'lucide-react';
 import { getAppConfig, buildDeepLinkUrl } from '../app-config';

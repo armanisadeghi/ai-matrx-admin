@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { IconBrandGithub, IconBrandGoogle, IconBrandApple } from "@tabler/icons-react";
-import MatrixLogo from "@/public/MatrixLogo";
+import MatrixLogo from "@/components/branding/MatrixLogo";
 
 
 function AuthSignInForm() {

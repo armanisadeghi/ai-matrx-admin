@@ -18,27 +18,26 @@ const sizeConfig = {
     "2xl": { icon: 48, text: "text-2xl", spacing: "space-x-2.5" },
 };
 
-export const Logo: React.FC<LogoProps> = ({ 
-    size = "md", 
-    variant = "horizontal", 
-    href = "/", 
-    linkEnabled = true 
+export const Logo: React.FC<LogoProps> = ({
+    size = "md",
+    variant = "horizontal",
+    href = "/",
+    linkEnabled = true,
 }) => {
     const { icon: iconSize, text: textSize, spacing } = sizeConfig[size];
-    
+
     const renderIcon = () => (
-        // Using a more consistent path format that works reliably in both development and production
-        <Image 
+        <Image
             src={`/matrx/favicon-32x32.png`}
-            alt="Matrx Logo" 
-            width={iconSize} 
+            alt="Matrx Logo"
+            width={iconSize}
             height={iconSize}
-            priority // Add priority to ensure the logo loads quickly
+            priority
         />
     );
-    
+
     const renderText = () => <span className={`font-bold ${textSize} px-2`}>AI Matrx</span>;
-    
+
     const renderContent = () => {
         switch (variant) {
             case "icon":
@@ -60,7 +59,7 @@ export const Logo: React.FC<LogoProps> = ({
                 );
         }
     };
-    
+
     if (linkEnabled) {
         return (
             <Link href={href} className="cursor-pointer">
@@ -68,7 +67,7 @@ export const Logo: React.FC<LogoProps> = ({
             </Link>
         );
     }
-    
+
     return renderContent();
 };
 

@@ -38,6 +38,7 @@ import { CloudFolders } from "@/features/files/utils/folder-conventions";
 import { uploadFiles, ensureFolderPath } from "@/features/files/redux/thunks";
 import { useShortcutTrigger } from "@/features/agents/hooks/useShortcutTrigger";
 import { ensureShortcutLoaded } from "@/features/agents/redux/agent-shortcuts/thunks";
+import type { Visibility } from "@/features/files/types";
 import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/conversations/conversations.thunks";
 import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
 import {
@@ -94,7 +95,16 @@ export interface UseImageStudioResult {
 
   // Actions
   generate: () => Promise<void>;
-  saveAll: (folder?: string) => Promise<void>;
+  /**
+   * Save every generated variant to the user's cloud-files library.
+   * Visibility defaults to `"private"` — the user opts in to `"public"`
+   * via the Save panel toggle when they want a CDN-served URL safe to
+   * share publicly.
+   */
+  saveAll: (
+    folder?: string,
+    options?: { visibility?: Visibility },
+  ) => Promise<void>;
 
   // AI describe
   describeFile: (fileId: string, contextHint?: string) => Promise<void>;
@@ -399,7 +409,9 @@ export function useImageStudio(
   ]);
 
   const saveAll = useCallback(
-    async (folder?: string) => {
+    async (folder?: string, saveOptions?: { visibility?: Visibility }) => {
+      const visibility: Visibility = saveOptions?.visibility ?? "private";
+
       // Collect every variant that hasn't been saved yet.
       const pending: Array<{
         studioFileId: string;
@@ -439,6 +451,9 @@ export function useImageStudio(
           ? `${CloudFolders.IMAGES_GENERATED}/${folderSegment}`
           : CloudFolders.IMAGES_GENERATED;
 
+        // The folder itself stays private — visibility is per-file. Public
+        // user-saved images go into a private folder but get individual
+        // CDN URLs when rendered.
         const parentFolderId = await dispatch(
           ensureFolderPath({ folderPath, visibility: "private" }),
         ).unwrap();
@@ -480,11 +495,12 @@ export function useImageStudio(
             uploadFiles({
               files: uploadables,
               parentFolderId,
-              visibility: "private",
+              visibility,
               metadata: {
                 source: "image-studio",
                 folder_segment: folderSegment,
                 studio_file_id: studioFileId,
+                requested_visibility: visibility,
                 ...(meta
                   ? {
                       alt_text: meta.alt_text,

@@ -6,16 +6,16 @@ import type {
   AiTask,
   AiTasksListFilters,
   UseAiTasksReturn,
-} from "../types";
+} from "../types/aiRunTypes";
 
 /**
  * Hook for listing and filtering AI tasks
- * 
+ *
  * Features:
  * - Auto-refresh every 10 seconds to pick up new/updated tasks
  * - Manual refresh capability
  * - Pagination support
- * 
+ *
  * Usage:
  * ```tsx
  * const { tasks, loadMore, setFilters, refresh } = useAiTasks({
@@ -24,7 +24,9 @@ import type {
  * });
  * ```
  */
-export function useAiTasks(initialFilters: AiTasksListFilters = {}): UseAiTasksReturn {
+export function useAiTasks(
+  initialFilters: AiTasksListFilters = {},
+): UseAiTasksReturn {
   const [tasks, setTasks] = useState<AiTask[]>([]);
   const [filters, setFilters] = useState<AiTasksListFilters>(initialFilters);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,34 +37,37 @@ export function useAiTasks(initialFilters: AiTasksListFilters = {}): UseAiTasksR
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load tasks
-  const loadTasks = useCallback(async (
-    currentFilters: AiTasksListFilters,
-    currentOffset: number,
-    append: boolean = false
-  ) => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const response = await aiTasksService.list({
-        ...currentFilters,
-        offset: currentOffset,
-      });
-      
-      if (append) {
-        setTasks(prev => [...prev, ...response.tasks]);
-      } else {
-        setTasks(response.tasks);
+  const loadTasks = useCallback(
+    async (
+      currentFilters: AiTasksListFilters,
+      currentOffset: number,
+      append: boolean = false,
+    ) => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await aiTasksService.list({
+          ...currentFilters,
+          offset: currentOffset,
+        });
+
+        if (append) {
+          setTasks((prev) => [...prev, ...response.tasks]);
+        } else {
+          setTasks(response.tasks);
+        }
+
+        setHasMore(response.hasMore);
+        setTotal(response.total);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setIsLoading(false);
       }
-      
-      setHasMore(response.hasMore);
-      setTotal(response.total);
-    } catch (err) {
-      setError(err as Error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   // Load initial data when filters change
   useEffect(() => {
@@ -94,7 +99,7 @@ export function useAiTasks(initialFilters: AiTasksListFilters = {}): UseAiTasksR
   // Load more (pagination)
   const loadMore = useCallback(async () => {
     if (isLoading || !hasMore) return;
-    
+
     const limit = filters.limit || 20;
     const newOffset = offset + limit;
     setOffset(newOffset);
@@ -108,9 +113,12 @@ export function useAiTasks(initialFilters: AiTasksListFilters = {}): UseAiTasksR
   }, [filters, loadTasks]);
 
   // Update filters
-  const updateFilters = useCallback((newFilters: Partial<AiTasksListFilters>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
-  }, []);
+  const updateFilters = useCallback(
+    (newFilters: Partial<AiTasksListFilters>) => {
+      setFilters((prev) => ({ ...prev, ...newFilters }));
+    },
+    [],
+  );
 
   return {
     tasks,
@@ -118,7 +126,7 @@ export function useAiTasks(initialFilters: AiTasksListFilters = {}): UseAiTasksR
     error,
     hasMore,
     total,
-    
+
     // Actions
     loadMore,
     refresh,

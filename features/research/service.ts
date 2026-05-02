@@ -1,4 +1,5 @@
 import { supabase } from "@/utils/supabase/client";
+import type { Database } from "@/types/database.types";
 import type {
   ResearchTopic,
   ResearchProgress,
@@ -49,7 +50,7 @@ export async function getTopicsForProject(
     .eq("project_id", projectId)
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as ResearchTopic[];
 }
 
 export async function getTopicsForProjects(
@@ -62,7 +63,7 @@ export async function getTopicsForProjects(
     .in("project_id", projectIds)
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as ResearchTopic[];
 }
 
 export async function getTopic(topicId: string): Promise<ResearchTopic | null> {
@@ -75,21 +76,26 @@ export async function getTopic(topicId: string): Promise<ResearchTopic | null> {
     if (error.code === "PGRST116") return null;
     throw error;
   }
-  return data;
+  return data as ResearchTopic;
 }
 
 export async function updateTopic(
   topicId: string,
   updates: TopicUpdate,
 ): Promise<ResearchTopic> {
+  // Cast: TopicUpdate includes quota ladder fields (migration 0013) which
+  // Supabase's generated `Update` type hasn't picked up yet. The columns
+  // exist on the row; the cast is safe and only narrows back when types regen.
   const { data, error } = await supabase
     .from("rs_topic")
-    .update(updates)
+    .update(
+      updates as Database["public"]["Tables"]["rs_topic"]["Update"],
+    )
     .eq("id", topicId)
     .select()
     .single();
   if (error) throw error;
-  return data;
+  return data as ResearchTopic;
 }
 
 // ============================================================================

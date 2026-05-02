@@ -5,17 +5,17 @@ export const runtime = "nodejs";
  *
  * Accepts a single image file + a preset name, runs Sharp server-side to
  * generate every configured size, uploads each variant to the cloud-files
- * backend via `ServerFiles.uploadAndShare`, and returns the resulting
- * permanent share URLs.
+ * backend via `ServerFiles.uploadAndShare`, and returns the resulting URLs.
  *
- * Previously this route wrote to Supabase Storage. After the cloud-files
- * migration (Phase C6, 2026-04-23) it goes through the new backend so:
+ * Variants default to `visibility="public"` so the response carries CDN
+ * URLs (Cloudflare-fronted, permanent, checksum cache-busted) — render
+ * directly without `/share/{token}` redirects. Pass `visibility=private`
+ * (or `shared`) on the FormData to override per-call.
  *
  *   • Every variant appears in the user's cloud-files tree under
  *     `Images/<folder-or-Generated>/<uuid>/` — visible in `/files`.
- *   • The returned URLs are share links (`/share/:token`) that never
- *     expire; safe to persist into DB rows as OG / cover images.
- *   • The caller API is unchanged — same FormData in, same JSON shape out.
+ *   • For public variants the URL is a permanent CDN URL; for private/
+ *     shared it falls back to a `/share/{token}` link (also stable).
  *
  * Presets (keyed on the client):
  *   - social   : 1400²  cover, 1200×630 OG, 400²  thumbnail      (default)
@@ -32,6 +32,13 @@ import sharp from "sharp";
 import { randomUUID } from "crypto";
 import * as Api from "@/features/files/api";
 import { CloudFolders } from "@/features/files/utils/folder-conventions";
+import type { Visibility } from "@/features/files/types";
+
+const VISIBILITY_VALUES: readonly Visibility[] = ["public", "private", "shared"];
+
+function isVisibility(value: unknown): value is Visibility {
+  return typeof value === "string" && (VISIBILITY_VALUES as readonly string[]).includes(value);
+}
 
 // ── Config ────────────────────────────────────────────────────────────────
 const MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB
@@ -92,6 +99,8 @@ export interface ImageUploadResponse {
   bucket: string;
   /** The cloud-files folder path where variants were written. */
   folder: string;
+  /** Visibility applied to every uploaded variant. */
+  visibility: Visibility;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
@@ -131,8 +140,10 @@ async function processAndUploadImage(
   folderPath: string,
   appOrigin: string,
   variants: readonly ImageVariantSpec[],
+  visibility: Visibility,
 ): Promise<Partial<Record<ImageVariantKey, UploadedVariantInfo>>> {
   const results: Partial<Record<ImageVariantKey, UploadedVariantInfo>> = {};
+  const appOriginTrimmed = appOrigin.replace(/\/$/, "");
 
   for (const variant of variants) {
     const processed = await sharp(imageBuffer)
@@ -144,23 +155,41 @@ async function processAndUploadImage(
       .toBuffer();
 
     const filePath = `${folderPath}/${variant.suffix}.jpg`;
-    const { shareUrl } = await Api.Server.uploadAndShare(ctx, {
+    const { data: uploaded } = await Api.Server.uploadFile(ctx, {
       file: processed,
       filePath,
       fileName: `${variant.suffix}.jpg`,
       contentType: "image/jpeg",
-      visibility: "private",
-      permissionLevel: "read",
+      visibility,
       metadata: {
         origin: "images-upload-route",
         preset_variant: variant.key,
         width: variant.width,
         height: variant.height,
+        requested_visibility: visibility,
       },
-      appOrigin,
     });
 
-    results[variant.key] = { url: shareUrl };
+    // Public → permanent Cloudflare CDN URL (carries `?v=<checksum>` for
+    // cache-busting). Private/shared → create an indefinite share link;
+    // the `/share/{token}` URL is stable to persist in a DB row.
+    let url: string;
+    if (visibility === "public" && uploaded.cdn_url) {
+      url = uploaded.cdn_url;
+    } else {
+      const link = await Api.Server.createFileShareLink(
+        ctx,
+        uploaded.file_id,
+        {
+          permission_level: "read",
+          expires_at: null,
+          max_uses: null,
+        },
+      );
+      url = `${appOriginTrimmed}/share/${link.share_token}`;
+    }
+
+    results[variant.key] = { url };
   }
 
   return results;
@@ -190,6 +219,7 @@ export async function POST(request: NextRequest) {
     const file = formData.get("file") as File | null;
     const presetRaw = formData.get("preset");
     const folderRaw = formData.get("folder");
+    const visibilityRaw = formData.get("visibility");
     // `bucket` is accepted for back-compat but ignored — everything goes
     // to cloud-files now. (Legacy callers send "userContent",
     // "podcast-assets", etc.)
@@ -208,6 +238,20 @@ export async function POST(request: NextRequest) {
         { error: "Image exceeds 20MB limit" },
         { status: 400 },
       );
+    }
+
+    // Default to public — these presets (avatar/logo/og/cover/social) are
+    // almost always rendered on public pages. Callers that want a private
+    // image (e.g. a personal asset) pass visibility=private explicitly.
+    let visibility: Visibility = "public";
+    if (visibilityRaw !== null && visibilityRaw !== "") {
+      if (!isVisibility(visibilityRaw)) {
+        return NextResponse.json(
+          { error: "Invalid visibility (expected public, private, or shared)" },
+          { status: 400 },
+        );
+      }
+      visibility = visibilityRaw;
     }
 
     const preset: ImagePreset = isPresetName(presetRaw) ? presetRaw : "social";
@@ -237,6 +281,7 @@ export async function POST(request: NextRequest) {
       folderPath,
       appOrigin,
       variants,
+      visibility,
     );
 
     const primary = variantUrls.image_url?.url;
@@ -256,6 +301,7 @@ export async function POST(request: NextRequest) {
       preset,
       bucket: "cloud-files",
       folder: folderPath,
+      visibility,
     } satisfies ImageUploadResponse);
   } catch (err: unknown) {
     console.error("[api/images/upload] error:", err);

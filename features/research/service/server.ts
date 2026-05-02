@@ -12,7 +12,7 @@ export async function getTopicServer(topicId: string): Promise<ResearchTopic | n
         if (error.code === 'PGRST116') return null;
         throw error;
     }
-    return data;
+    return data as ResearchTopic;
 }
 
 export async function getTopicOverviewServer(topicId: string): Promise<ResearchProgress | null> {

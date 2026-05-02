@@ -27,6 +27,8 @@ import { VersionHistory } from "./VersionHistory";
 import { VersionDiff } from "./VersionDiff";
 import type { ResearchDocument } from "../../types";
 import { tokenUsageFromJson } from "../../types";
+import MarkdownStream from "@/components/MarkdownStream";
+import { ContentActionBar } from "@/components/content-actions/ContentActionBar";
 
 export default function DocumentViewer() {
   const { topicId, refresh } = useTopicContext();
@@ -140,9 +142,7 @@ export default function DocumentViewer() {
         </div>
         {streamingDocText && (
           <article className="prose prose-sm dark:prose-invert max-w-none prose-headings:scroll-mt-4">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {streamingDocText}
-            </ReactMarkdown>
+            <MarkdownStream content={streamingDocText} />
             <span className="inline-block w-0.5 h-4 bg-primary animate-pulse ml-0.5 align-middle" />
           </article>
         )}
@@ -361,6 +361,25 @@ export default function DocumentViewer() {
             <span className="inline-block w-0.5 h-4 bg-primary animate-pulse ml-0.5 align-middle" />
           )}
         </article>
+
+        {/* Content actions — copy, TTS, full-screen viewer, save to notes/code/tasks, HTML preview, email, print. */}
+        {!stream.isStreaming && document.content && (
+          <div className="mt-6 pt-3 border-t border-border flex justify-end">
+            <ContentActionBar
+              content={document.content}
+              title={document.title ?? "Research Document"}
+              instanceKey={`research-document-${topicId}-${document.version}`}
+              metadata={{
+                topicId,
+                documentId: document.id,
+                version: document.version,
+                title: document.title ?? null,
+                created_at: document.created_at,
+                ...(docTokenUsage ? { token_usage: docTokenUsage } : {}),
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Version History */}

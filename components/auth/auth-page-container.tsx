@@ -1,6 +1,6 @@
 // Updated components/auth/auth-page-container.tsx
 import React from 'react';
-import MatrixLogo from "@/public/MatrixLogo";
+import MatrixLogo from "@/components/branding/MatrixLogo";
 import { FormMessage, AuthMessageType } from "@/components/form-message";
 
 export interface AuthPageContainerProps {

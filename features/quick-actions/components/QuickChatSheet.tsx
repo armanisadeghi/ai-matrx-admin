@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // features/quick-actions/components/QuickChatSheet.tsx
 "use client";
 

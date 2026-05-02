@@ -191,6 +191,62 @@ URL will start 404'ing within seconds.
 
 ---
 
+## Default-visibility policy
+
+**Pick visibility based on render context, not user role.** A logo is
+public because pages render it for unauthenticated visitors — not
+because the user uploading it is special. A chat attachment is private
+because only the conversation participants need it.
+
+The source of truth lives in
+[`features/files/utils/folder-conventions.ts`](../features/files/utils/folder-conventions.ts)
+(`resolveDefaultVisibility(folderPath)`). Use it whenever a caller
+hasn't picked visibility explicitly:
+
+| Folder prefix | Default | Why |
+|---|---|---|
+| `App Assets/` | `public` | Static app assets (sounds, hero images, demo data) — rendered globally, want CDN URLs. |
+| `Images/Avatars/` | `public` | Profile pictures rendered on public profile pages. |
+| `Audio/Podcasts/` | `public` | Podcast covers and audio render publicly. |
+| `Agent Apps/` | `public` | App icons render in public app catalog. |
+| `Shared Assets/` (incl. `feedback-images/`) | `public` | Cross-user shared content; admin-team review surfaces. |
+| `Images/Generated/` | `private` | AI-generated images — user opts in to public via Image Studio toggle. |
+| `Chat Attachments/` | `private` | Per-conversation context. |
+| `Task Attachments/` | `private` | Task-scoped. |
+| `Slack Imports/`, `Scraped Content/` | `private` | User-owned, may contain sensitive data. |
+| `Private Assets/` | `private` | Explicit user choice. |
+| `.matrx-tmp/` | `private` | Ephemeral; deleted after use. |
+| anything else | `private` | Safe default — make it explicit if you mean public. |
+
+### Two upload-helper conventions
+
+- **`useFileUpload({ visibility })`** (cloud-files thunk) — pass
+  `visibility` directly when you have the choice. No default beyond
+  `"private"`.
+- **`useFileUploadWithStorage(bucket, path)`** (legacy compat) — the
+  bucket name resolves to a default visibility:
+  `user-public-assets` → `"public"`, anything else → `"private"`.
+  `uploadToPublicUserAssets` / `uploadToPrivateUserAssets` are
+  explicit and ignore the bucket-derived default.
+
+### Image upload route — `/api/images/upload`
+
+Defaults to `visibility=public` because every preset (avatar, logo,
+og, cover, social, favicon, square) is meant for a public surface.
+Pass `visibility=private` (or `shared`) on the FormData to override.
+For public uploads the response carries direct CDN URLs (no
+`/share/{token}` redirect hop); for private/shared, stable share-link
+URLs.
+
+### Image Studio save
+
+Defaults to `private` — generated images are user-scoped by default.
+The Save panel exposes a "Make publicly viewable" checkbox; checking
+it threads `visibility: "public"` through `studio.saveAll` so each
+variant gets a permanent CDN URL safe to share.
+
+---
+
 ## Code cookbook
 
 ### Render an image thumbnail (already done in `MediaThumbnail`)

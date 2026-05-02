@@ -26,6 +26,12 @@ import {
   Camera,
   AppWindow,
   Activity,
+  Building2,
+  Plug,
+  HardDrive,
+  Chrome,
+  MessageSquareMore,
+  FileText,
 } from "lucide-react";
 import type { SettingsTabDef, ResolvedSettingsTab } from "./types";
 import type { SettingsTreeNode } from "@/components/official/settings/tree/types";
@@ -69,6 +75,14 @@ const WindowsTab = lazyTab(() => import("./tabs/WindowsTab"));
 const SystemTab = lazyTab(() => import("./tabs/SystemTab"));
 const LanguageTab = lazyTab(() => import("./tabs/LanguageTab"));
 const PrivacyTab = lazyTab(() => import("./tabs/PrivacyTab"));
+const ProfileTab = lazyTab(() => import("./tabs/ProfileTab"));
+const OrganizationsTab = lazyTab(() => import("./tabs/OrganizationsTab"));
+const IntegrationsTab = lazyTab(() => import("./tabs/IntegrationsTab"));
+const SandboxStorageTab = lazyTab(() => import("./tabs/SandboxStorageTab"));
+const FeedbackTab = lazyTab(() => import("./tabs/FeedbackTab"));
+const ExtensionTab = lazyTab(() => import("./tabs/ExtensionTab"));
+const ContentTemplatesTab = lazyTab(() => import("./tabs/ContentTemplatesTab"));
+const VoiceMicTab = lazyTab(() => import("./tabs/VoiceMicTab"));
 
 export const settingsRegistry: SettingsTabDef[] = [
   // ── General ───────────────────────────────────────────────────────────────
@@ -301,6 +315,16 @@ export const settingsRegistry: SettingsTabDef[] = [
     component: TextToSpeechTab,
     persistence: "synced",
   },
+  {
+    id: "voice.diagnostics",
+    label: "Mic diagnostics",
+    icon: Mic,
+    parentId: "voice",
+    description: "Test your microphone and troubleshoot input issues.",
+    searchKeywords: ["microphone", "test", "troubleshoot", "permissions"],
+    component: VoiceMicTab,
+    persistence: "local-only",
+  },
 
   // ── Communication ─────────────────────────────────────────────────────────
   {
@@ -341,8 +365,84 @@ export const settingsRegistry: SettingsTabDef[] = [
     id: "account",
     label: "Profile",
     icon: User,
-    component: Placeholder,
+    description: "Your profile, account info, and connected providers.",
+    searchKeywords: ["account", "name", "email", "avatar", "profile"],
+    component: ProfileTab,
     persistence: "synced",
+  },
+
+  // ── Organizations ─────────────────────────────────────────────────────────
+  {
+    id: "organizations",
+    label: "Organizations",
+    icon: Building2,
+    description: "Manage organizations you belong to and create new ones.",
+    searchKeywords: ["org", "orgs", "team", "teams", "workspace", "members"],
+    component: OrganizationsTab,
+    persistence: "synced",
+  },
+
+  // ── Templates ─────────────────────────────────────────────────────────────
+  {
+    id: "templates",
+    label: "Content templates",
+    icon: FileText,
+    description: "Reusable content templates for your prompts and responses.",
+    searchKeywords: ["template", "content", "snippets", "saved"],
+    component: ContentTemplatesTab,
+    persistence: "synced",
+  },
+
+  // ── Integrations ──────────────────────────────────────────────────────────
+  {
+    id: "integrations",
+    label: "Integrations",
+    icon: Plug,
+    description: "Connect MCP servers and external tools to your agents.",
+    searchKeywords: [
+      "mcp",
+      "integration",
+      "connect",
+      "tools",
+      "github",
+      "slack",
+      "linear",
+    ],
+    component: IntegrationsTab,
+    persistence: "synced",
+  },
+
+  // ── Sandbox storage ───────────────────────────────────────────────────────
+  {
+    id: "sandboxStorage",
+    label: "Sandbox storage",
+    icon: HardDrive,
+    description: "Persistent storage for your Matrx sandboxes.",
+    searchKeywords: ["sandbox", "storage", "volume", "wipe", "persist"],
+    component: SandboxStorageTab,
+    persistence: "synced",
+  },
+
+  // ── Feedback ──────────────────────────────────────────────────────────────
+  {
+    id: "feedback",
+    label: "My feedback",
+    icon: MessageSquareMore,
+    description: "Track the bugs, features, and suggestions you've reported.",
+    searchKeywords: ["bugs", "feature requests", "issues", "report"],
+    component: FeedbackTab,
+    persistence: "synced",
+  },
+
+  // ── Chrome extension ──────────────────────────────────────────────────────
+  {
+    id: "extension",
+    label: "Chrome extension",
+    icon: Chrome,
+    description: "Generate codes to authenticate the AI Matrx Chrome extension.",
+    searchKeywords: ["chrome", "browser", "extension", "auth", "code"],
+    component: ExtensionTab,
+    persistence: "local-only",
   },
 
   // ── Admin (admin-gated) ───────────────────────────────────────────────────

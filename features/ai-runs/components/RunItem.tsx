@@ -6,7 +6,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { MessageSquare, Star, Pencil, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { aiRunsService } from "../services/ai-runs-service";
-import type { AiRun } from "../types";
+import type { AiRun } from "../types/aiRunTypes";
 
 interface RunItemProps {
   run: AiRun;

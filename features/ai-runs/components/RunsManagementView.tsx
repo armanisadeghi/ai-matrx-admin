@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import { RunsList } from "./RunsList";
 import { aiRunsService } from "../services/ai-runs-service";
-import type { SourceType, RunStatus } from "../types";
+import type { SourceType, RunStatus } from "../types/aiRunTypes";
 import { formatCost } from "../utils/cost-calculator";
 import { useAiRunsList } from "../hooks/useAiRunsList";
 

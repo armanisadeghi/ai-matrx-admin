@@ -3,14 +3,17 @@
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { Settings, AlertCircle, ArrowRight, Zap, SlidersHorizontal, Hand, Search, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTopicContext, useStreamDebug } from '../../context/ResearchContext';
 import { useResearchApi } from '../../hooks/useResearchApi';
 import { useResearchStream } from '../../hooks/useResearchStream';
+import { usePipelineProgress } from '../../hooks/usePipelineProgress';
 import { PipelineCards } from './PipelineCards';
 import { ActionBar } from './ActionBar';
-import { ProgressPanel } from './ProgressPanel';
+import { LivePipelineActivity } from './live-pipeline/LivePipelineActivity';
+import { CostMetricsCard } from './CostMetricsCard';
 import { IterationControls } from '../iteration/IterationControls';
 import { TopicSettingsPanel } from './TopicSettingsPanel';
 import { StatusBadge } from '../shared/StatusBadge';
@@ -18,6 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import type { ResearchInfoEvent } from '../../types';
 
 const AUTONOMY_ICONS = { auto: Zap, semi: SlidersHorizontal, manual: Hand } as const;
 const AUTONOMY_LABELS = { auto: 'Auto', semi: 'Semi', manual: 'Manual' } as const;
@@ -29,112 +33,87 @@ export default function ResearchOverview() {
     const debug = useStreamDebug();
 
     const stream = useResearchStream();
+    const pipeline = usePipelineProgress({ topic });
 
     const [keywordModalOpen, setKeywordModalOpen] = useState(false);
     const [newKeyword, setNewKeyword] = useState('');
     const [addingKeyword, setAddingKeyword] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
 
-    // Live counters derived from stream data events — shown in ProgressPanel
-    const [liveStats, setLiveStats] = useState<{
-        sourcesFound: number;
-        scraped: number;
-        scrapeGood: number;
-        analyzed: number;
-        analysisFailed: number;
-    }>({ sourcesFound: 0, scraped: 0, scrapeGood: 0, analyzed: 0, analysisFailed: 0 });
-
-    // When sources are stored (search_sources_stored) or a phase completes, refresh topic state.
-    // The stream doesn't carry full row data — events like search_sources_stored tell us
-    // how many rows were stored, then we refetch from Supabase.
+    // Drives every live-pipeline view. The reducer in usePipelineProgress
+    // converts each event into normalized stage/work-item state.
     const handleStreamData = useCallback((payload: import('../../types').ResearchDataEvent) => {
-        // Update live counters from real data events
-        if (payload.event === 'search_sources_stored') {
-            setLiveStats(s => ({ ...s, sourcesFound: s.sourcesFound + payload.stored_count }));
-        }
-        if (payload.event === 'search_page_complete') {
-            setLiveStats(s => ({ ...s, sourcesFound: Math.max(s.sourcesFound, payload.total_so_far) }));
-        }
-        if (payload.event === 'scrape_complete') {
-            setLiveStats(s => ({
-                ...s,
-                scraped: s.scraped + 1,
-                scrapeGood: payload.is_good_scrape ? s.scrapeGood + 1 : s.scrapeGood,
-            }));
-        }
-        if (payload.event === 'analysis_complete') {
-            setLiveStats(s => ({ ...s, analyzed: s.analyzed + 1 }));
-        }
-        if (payload.event === 'analysis_failed') {
-            setLiveStats(s => ({ ...s, analysisFailed: s.analysisFailed + 1 }));
-        }
-        // Refresh source list when the backend confirms sources were persisted
-        if (payload.event === 'search_sources_stored' || payload.event === 'search_complete') {
+        pipeline.dispatch(payload);
+        // Refresh topic + sources whenever the backend confirms persistence.
+        if (
+            payload.event === 'search_sources_stored' ||
+            payload.event === 'search_complete' ||
+            payload.event === 'pipeline_complete'
+        ) {
             refresh();
         }
-    }, [refresh]);
+    }, [pipeline, refresh]);
 
-    const resetStats = useCallback(() => {
-        setLiveStats({ sourcesFound: 0, scraped: 0, scrapeGood: 0, analyzed: 0, analysisFailed: 0 });
-    }, []);
+    const handleStreamInfo = useCallback((info: ResearchInfoEvent) => {
+        pipeline.dispatchInfo(info);
+        if (info.code === 'quota_exceeded') {
+            toast.warning(info.message);
+        }
+    }, [pipeline]);
+
+    const handleStreamPhase = useCallback((step: import('../../types').ResearchStreamStep) => {
+        pipeline.dispatchPhase(step);
+    }, [pipeline]);
+
+    type StartOpts = { iterationMode: 'initial' | 'rebuild' | 'update' };
+    const startStream = useCallback(
+        async (response: Response, label: string, opts: StartOpts = { iterationMode: 'initial' }) => {
+            pipeline.reset({ iterationMode: opts.iterationMode });
+            await stream.startStream(response, {
+                onData: handleStreamData,
+                onInfo: handleStreamInfo,
+                onStatusUpdate: handleStreamPhase,
+                onEnd: () => refresh(),
+            });
+            debug.pushEvents(stream.rawEvents, label);
+        },
+        [pipeline, stream, handleStreamData, handleStreamInfo, handleStreamPhase, refresh, debug],
+    );
 
     const handleRun = useCallback(async () => {
-        resetStats();
         const response = await api.runPipeline(topicId);
-        stream.startStream(response, {
-            onData: handleStreamData,
-            onEnd: () => refresh(),
-        });
-        debug.pushEvents(stream.rawEvents, 'pipeline');
-    }, [api, topicId, stream, handleStreamData, refresh, debug, resetStats]);
+        await startStream(response, 'pipeline');
+    }, [api, topicId, startStream]);
 
     const handleSearch = useCallback(async () => {
-        resetStats();
         const response = await api.triggerSearch(topicId);
-        stream.startStream(response, {
-            onData: handleStreamData,
-            onEnd: () => refresh(),
-        });
-        debug.pushEvents(stream.rawEvents, 'search');
-    }, [api, topicId, stream, handleStreamData, refresh, debug, resetStats]);
+        await startStream(response, 'search');
+    }, [api, topicId, startStream]);
 
     const handleScrape = useCallback(async () => {
-        resetStats();
         const response = await api.triggerScrape(topicId);
-        stream.startStream(response, {
-            onData: handleStreamData,
-            onEnd: () => refresh(),
-        });
-        debug.pushEvents(stream.rawEvents, 'scrape');
-    }, [api, topicId, stream, handleStreamData, refresh, debug, resetStats]);
+        await startStream(response, 'scrape');
+    }, [api, topicId, startStream]);
 
     const handleAnalyze = useCallback(async () => {
-        resetStats();
         const response = await api.analyzeAll(topicId);
-        stream.startStream(response, {
-            onData: handleStreamData,
-            onEnd: () => refresh(),
-        });
-        debug.pushEvents(stream.rawEvents, 'analyze-all');
-    }, [api, topicId, stream, handleStreamData, refresh, debug, resetStats]);
+        await startStream(response, 'analyze-all');
+    }, [api, topicId, startStream]);
 
     const handleReport = useCallback(async () => {
         const response = await api.synthesize(topicId, { scope: 'project', iteration_mode: 'initial' });
-        stream.startStream(response, { onEnd: () => refresh() });
-        debug.pushEvents(stream.rawEvents, 'synthesize');
-    }, [api, topicId, stream, refresh, debug]);
+        await startStream(response, 'synthesize', { iterationMode: 'initial' });
+    }, [api, topicId, startStream]);
 
     const handleRebuild = useCallback(async () => {
         const response = await api.synthesize(topicId, { scope: 'project', iteration_mode: 'rebuild' });
-        stream.startStream(response, { onEnd: () => refresh() });
-        debug.pushEvents(stream.rawEvents, 'synthesize-rebuild');
-    }, [api, topicId, stream, refresh, debug]);
+        await startStream(response, 'synthesize-rebuild', { iterationMode: 'rebuild' });
+    }, [api, topicId, startStream]);
 
     const handleUpdate = useCallback(async () => {
         const response = await api.synthesize(topicId, { scope: 'project', iteration_mode: 'update' });
-        stream.startStream(response, { onEnd: () => refresh() });
-        debug.pushEvents(stream.rawEvents, 'synthesize-update');
-    }, [api, topicId, stream, refresh, debug]);
+        await startStream(response, 'synthesize-update', { iterationMode: 'update' });
+    }, [api, topicId, startStream]);
 
     const handleAddKeyword = useCallback(async () => {
         if (!newKeyword.trim()) return;
@@ -257,19 +236,32 @@ export default function ResearchOverview() {
                 isStreaming={stream.isStreaming}
             />
 
-            {/* Progress Panel */}
-            <ProgressPanel
-                isStreaming={stream.isStreaming}
-                currentStep={stream.currentStep}
-                messages={stream.messages}
-                error={stream.error}
-                liveStats={liveStats}
-                onClose={stream.clearMessages}
-                onCancel={stream.cancel}
-            />
+            {/* Live Pipeline Activity — replaces the legacy spinner-style ProgressPanel */}
+            {(stream.isStreaming ||
+                pipeline.state.activeStage ||
+                pipeline.state.completedAt) && (
+                <LivePipelineActivity
+                    pipeline={pipeline}
+                    topic={topic}
+                    topicId={topicId}
+                    isStreaming={stream.isStreaming}
+                    streamingText={stream.streamingText}
+                    error={stream.error}
+                    rawEvents={stream.rawEvents}
+                    onCancel={stream.cancel}
+                    onClose={() => {
+                        stream.clearMessages();
+                        pipeline.reset();
+                    }}
+                    onSourceUpdated={refresh}
+                />
+            )}
 
             {/* Pipeline Cards */}
             <PipelineCards topicId={topicId} progress={progress} />
+
+            {/* Cost summary — populated by backend cost_summary on each topic refresh */}
+            <CostMetricsCard costSummary={topic.cost_summary} />
 
             {/* Iteration Controls */}
             {hasReport && (

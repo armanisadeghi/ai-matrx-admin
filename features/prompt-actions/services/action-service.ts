@@ -12,7 +12,7 @@ import type {
   UpdateActionPayload,
   ActionSummary,
   ActionExecutionConfig,
-} from "../types";
+} from "../types/promptActionTypes";
 
 type PromptActionRow = Database["public"]["Tables"]["prompt_actions"]["Row"];
 

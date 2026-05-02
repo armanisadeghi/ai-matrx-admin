@@ -7,11 +7,13 @@ import type {
   EndPayload,
   CompletionPayload,
   ToolEventPayload,
+  InfoPayload,
 } from "@/lib/api/types";
 import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
 import type {
   ResearchStreamStep,
   ResearchDataEvent,
+  ResearchInfoEvent,
   ResearchStreamCallbacks,
 } from "../types";
 
@@ -29,6 +31,7 @@ export interface UseResearchStreamReturn {
   currentStep: ResearchStreamStep | null;
   error: string | null;
   rawEvents: TypedStreamEvent[];
+  infos: ResearchInfoEvent[];
   startStream: (
     response: Response,
     callbacks?: ResearchStreamCallbacks,
@@ -58,6 +61,7 @@ export function useResearchStream(
   );
   const [error, setError] = useState<string | null>(null);
   const [rawEvents, setRawEvents] = useState<TypedStreamEvent[]>([]);
+  const [infos, setInfos] = useState<ResearchInfoEvent[]>([]);
   const abortRef = useRef<AbortController | null>(null);
   const idCounter = useRef(0);
 
@@ -86,6 +90,7 @@ export function useResearchStream(
       setCurrentStep(null);
       setStreamingText("");
       setRawEvents([]);
+      setInfos([]);
 
       try {
         await consumeStream(
@@ -103,7 +108,8 @@ export function useResearchStream(
                 "heartbeat",
                 "end",
               ];
-              if (!handled.includes(event.event)) {
+              const handledWithInfo = [...handled, "info"];
+              if (!handledWithInfo.includes(event.event)) {
                 callbacks?.onUnknownEvent?.(
                   event as { event: string; data: unknown },
                 );
@@ -127,6 +133,18 @@ export function useResearchStream(
               if (record.event && typeof record.event === "string") {
                 callbacks?.onData?.(record as unknown as ResearchDataEvent);
               }
+            },
+
+            onInfo: (data: InfoPayload) => {
+              const info: ResearchInfoEvent = {
+                code: data.code,
+                message:
+                  data.user_message ?? data.system_message ?? data.code,
+                user_message: data.user_message,
+                metadata: data.metadata,
+              };
+              setInfos((prev) => [...prev, info]);
+              callbacks?.onInfo?.(info);
             },
 
             onCompletion: (data: CompletionPayload) => {
@@ -184,6 +202,7 @@ export function useResearchStream(
     setError(null);
     setStreamingText("");
     setRawEvents([]);
+    setInfos([]);
   }, []);
 
   return {
@@ -193,6 +212,7 @@ export function useResearchStream(
     currentStep,
     error,
     rawEvents,
+    infos,
     startStream,
     cancel,
     clearMessages,

@@ -6753,6 +6753,11 @@ export interface components {
              */
             scrape_status: "pending" | "success" | "thin" | "failed" | "manual" | "skipped" | "complete" | "dead_link" | "gated";
             /**
+             * Is Included
+             * @default true
+             */
+            is_included: boolean;
+            /**
              * Next Level
              * @enum {integer}
              */
@@ -6765,6 +6770,20 @@ export interface components {
             last_char_count?: number | null;
             /** Last Failure Reason */
             last_failure_reason?: string | null;
+            /**
+             * Server Attempts
+             * @default 0
+             */
+            server_attempts: number;
+            /** Last Server Attempt At */
+            last_server_attempt_at?: string | null;
+            /** Last Server Failure Reason */
+            last_server_failure_reason?: string | null;
+            /**
+             * Server Gave Up
+             * @default false
+             */
+            server_gave_up: boolean;
         };
         /** ExtensionScrapeQueue */
         ExtensionScrapeQueue: {
@@ -9356,10 +9375,45 @@ export interface components {
              */
             good_scrape_threshold: number;
             /**
+             * Max Keywords
+             * @default 3
+             */
+            max_keywords: number;
+            /**
              * Scrapes Per Keyword
              * @default 5
              */
             scrapes_per_keyword: number;
+            /**
+             * Analyses Per Keyword
+             * @default 5
+             */
+            analyses_per_keyword: number;
+            /**
+             * Max Keyword Syntheses
+             * @default 3
+             */
+            max_keyword_syntheses: number;
+            /**
+             * Max Project Syntheses
+             * @default 1
+             */
+            max_project_syntheses: number;
+            /**
+             * Max Documents
+             * @default 1
+             */
+            max_documents: number;
+            /**
+             * Max Tag Consolidations
+             * @default 0
+             */
+            max_tag_consolidations: number;
+            /**
+             * Max Auto Tag Calls
+             * @default 0
+             */
+            max_auto_tag_calls: number;
         };
         /** TopicUpdate */
         TopicUpdate: {
@@ -9377,8 +9431,22 @@ export interface components {
             } | null;
             /** Good Scrape Threshold */
             good_scrape_threshold?: number | null;
+            /** Max Keywords */
+            max_keywords?: number | null;
             /** Scrapes Per Keyword */
             scrapes_per_keyword?: number | null;
+            /** Analyses Per Keyword */
+            analyses_per_keyword?: number | null;
+            /** Max Keyword Syntheses */
+            max_keyword_syntheses?: number | null;
+            /** Max Project Syntheses */
+            max_project_syntheses?: number | null;
+            /** Max Documents */
+            max_documents?: number | null;
+            /** Max Tag Consolidations */
+            max_tag_consolidations?: number | null;
+            /** Max Auto Tag Calls */
+            max_auto_tag_calls?: number | null;
             /** Agent Config */
             agent_config?: {
                 [key: string]: unknown;

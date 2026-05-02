@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Logo } from '@/public/MatrixLogo';
+import { Logo } from '@/components/branding/MatrixLogo';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
 

@@ -246,12 +246,19 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
     // Preserve exact whitespace after the bullet marker
     processed = processed.replace(/^(\s*)\*([ \t]+)/gm, "$1-$2");
 
-    // Force list termination before bold text that starts with a number (like **4. Test**)
-    // CommonMark treats single blank lines as "loose list" continuations
-    // The HTML comment forces the list to terminate properly
+    // Force list termination before bold text that starts with a number (like **4. Test**).
+    // CommonMark can treat single blank lines as "loose list" continuations, so we need
+    // to inject an unambiguous block-level break between the list and the next paragraph.
+    //
+    // We use `&nbsp;` (a single non-breaking space on its own paragraph) instead of an
+    // HTML comment (`<!-- -->`) because react-markdown is configured WITHOUT `rehype-raw`
+    // (see the disabled-block comment above) — meaning raw HTML, including comments, is
+    // emitted as literal text. The `&nbsp;` paragraph is rendered invisibly by the `p`
+    // component below (it detects a single `\u00A0` child and emits a zero-content
+    // spacer div), so it visually disappears while still acting as a block-level break.
     processed = processed.replace(
       /(^[ \t]*-[ \t]+[^\n]+)\n\n(\*\*\d)/gm,
-      "$1\n\n<!-- -->\n$2",
+      "$1\n\n&nbsp;\n\n$2",
     );
 
     // Fix setext-style heading patterns by ensuring there's a blank line before ---

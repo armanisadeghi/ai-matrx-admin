@@ -15,7 +15,7 @@ import type {
   CompleteAiTaskInput,
   RunMessage,
   UseAiRunReturn,
-} from "../types";
+} from "../types/aiRunTypes";
 
 /**
  * Main hook for managing AI runs and their tasks

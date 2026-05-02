@@ -28,6 +28,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AlertCircle, CheckCircle2, ImageIcon, Link as LinkIcon, Loader2, Trash2, Upload, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ImagePreset, ImageUploadResponse } from '@/app/api/images/upload/route';
+import type { Visibility } from '@/features/files/types';
 
 // ── Types exported for consumers ──────────────────────────────────────────
 
@@ -62,6 +63,14 @@ export interface ImageAssetUploaderProps {
     bucket?: string;
     /** Optional folder prefix under `Images/` (e.g. "logos" → `Images/logos/{uuid}/`). */
     folder?: string;
+    /**
+     * Visibility for the uploaded variants. Default: `"public"` — every
+     * preset (avatar/logo/og/cover/social/favicon/square) is meant to be
+     * rendered on a public surface, so the response carries CDN URLs and
+     * pages render without `/share/{token}` redirects. Pass `"private"` for
+     * personal-use images (e.g. a recipe photo the user wants kept private).
+     */
+    visibility?: Visibility;
     /** Compact mode — smaller drop zone, one-line status. */
     compact?: boolean;
     /** Show "or paste image URL" toggle. Default: true. */
@@ -144,6 +153,7 @@ export function ImageAssetUploader({
     currentVariants,
     bucket,
     folder,
+    visibility = 'public',
     compact = false,
     allowUrlPaste = true,
     label = 'Image',
@@ -181,6 +191,7 @@ export function ImageAssetUploader({
             const formData = new FormData();
             formData.append('file', file);
             formData.append('preset', preset);
+            formData.append('visibility', visibility);
             if (bucket) formData.append('bucket', bucket);
             if (folder) formData.append('folder', folder);
 
@@ -203,7 +214,7 @@ export function ImageAssetUploader({
             const message = err instanceof Error ? err.message : 'Upload failed';
             setSection({ state: 'error', error: message, fileName: file.name });
         }
-    }, [disabled, preset, bucket, folder, onComplete]);
+    }, [disabled, preset, bucket, folder, visibility, onComplete]);
 
     const remove = useCallback((e?: React.MouseEvent) => {
         e?.stopPropagation();

@@ -1,4 +1,4 @@
-import { Logo } from '@/public/MatrixLogo';
+import { Logo } from '@/components/branding/MatrixLogo';
 import { CheckCircle } from 'lucide-react';
 
 export default function OAuthSuccessPage() {

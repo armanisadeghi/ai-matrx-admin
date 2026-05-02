@@ -6,11 +6,11 @@ import type {
   CreateAiTaskInput,
   UpdateAiTaskInput,
   CompleteAiTaskInput,
-} from "../types";
+} from "../types/aiRunTypes";
 
 /**
  * AI Tasks Service - Client-side CRUD operations for ai_tasks table
- * 
+ *
  * This service provides all operations needed to manage individual AI tasks.
  * Each task represents a single request/response cycle in a conversation.
  * Task IDs must match socket.io task IDs for proper tracking.
@@ -22,7 +22,7 @@ export const aiTasksService = {
    */
   async create(input: CreateAiTaskInput): Promise<AiTask> {
     const supabase = createClient();
-    
+
     const userId = requireUserId();
 
     const { data, error } = await supabase
@@ -108,21 +108,21 @@ export const aiTasksService = {
     status?: string;
     limit?: number;
     offset?: number;
-    order_by?: 'created_at' | 'updated_at';
-    order_direction?: 'asc' | 'desc';
+    order_by?: "created_at" | "updated_at";
+    order_direction?: "asc" | "desc";
   }): Promise<{ tasks: AiTask[]; total: number; hasMore: boolean }> {
     const supabase = createClient();
-    
+
     const userId = requireUserId();
 
     const limit = filters?.limit || 20;
     const offset = filters?.offset || 0;
-    const orderBy = filters?.order_by || 'created_at';
-    const orderDirection = filters?.order_direction || 'desc';
+    const orderBy = filters?.order_by || "created_at";
+    const orderDirection = filters?.order_direction || "desc";
 
     let query = supabase
       .from("ai_tasks")
-      .select("*", { count: 'exact' })
+      .select("*", { count: "exact" })
       .eq("user_id", userId);
 
     if (filters?.run_id) {
@@ -134,7 +134,7 @@ export const aiTasksService = {
     }
 
     query = query
-      .order(orderBy, { ascending: orderDirection === 'asc' })
+      .order(orderBy, { ascending: orderDirection === "asc" })
       .range(offset, offset + limit - 1);
 
     const { data, error, count } = await query;
@@ -211,7 +211,7 @@ export const aiTasksService = {
       .single();
 
     if (error) throw error;
-    
+
     // Database triggers will automatically update the parent run's aggregates
     return mapAiTaskRow(data);
   },
@@ -261,13 +261,13 @@ export const aiTasksService = {
    * Update streaming status (convenience method)
    */
   async updateStreaming(
-    taskId: string, 
+    taskId: string,
     responseText: string,
     additionalData?: {
       response_data?: Record<string, any>;
       response_info?: Record<string, any>;
       tool_updates?: Record<string, any>;
-    }
+    },
   ): Promise<AiTask> {
     const supabase = createClient();
 
@@ -324,4 +324,3 @@ export const aiTasksService = {
     return mapAiTaskRow(data);
   },
 };
-
