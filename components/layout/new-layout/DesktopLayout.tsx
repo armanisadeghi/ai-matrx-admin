@@ -122,7 +122,7 @@ export default function DesktopLayout({
     >
       <div id={uniqueId} className="min-h-dvh text-gray-800 dark:text-gray-100">
         {/* Main Header — mx-glass bar, content blurs through */}
-        <header className="fixed top-0 left-0 right-0 z-50 h-10 overflow-visible mx-glass-header">
+        <header className="fixed top-0 left-0 right-0 z-50 h-10 overflow-visible shell-glass">
           <div className="flex items-center justify-between h-full pl-1 pr-2 overflow-visible">
             {/* Left side - Menu toggle and page-specific content */}
             <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -130,14 +130,14 @@ export default function DesktopLayout({
                 <TooltipTrigger asChild>
                   <button
                     onClick={toggleSidebar}
-                    className="p-1.5 rounded-full mx-glass transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 flex-shrink-0"
+                    className="p-1.5 rounded-full shell-glass transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 flex-shrink-0"
                   >
                     <Menu className="w-4 h-4 text-foreground transition-all duration-200 ease-in-out" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent
                   side="right"
-                  className="mx-glass-strong text-foreground"
+                  className="shell-glass text-foreground"
                 >
                   {isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                 </TooltipContent>
@@ -151,8 +151,8 @@ export default function DesktopLayout({
             </div>
             {/* Right side - Actions */}
             <div className="flex items-center gap-0.5 overflow-visible">
-              <QuickActionsMenu className="mx-glass text-foreground transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
-              <FeedbackButton className="mx-glass text-foreground transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
+              <QuickActionsMenu className="shell-glass text-foreground transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
+              <FeedbackButton className="shell-glass text-foreground transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
               <MessageIcon />
               <NotificationDropdown
                 notifications={notifications}

@@ -49,7 +49,7 @@ export default function MediaGallery() {
 
     return (
         <div className="p-3 sm:p-4 space-y-3">
-            <div className="flex items-center gap-2 rounded-full mx-glass px-3 py-1.5">
+            <div className="flex items-center gap-2 rounded-full shell-glass px-3 py-1.5">
                 <span className="text-xs font-medium text-foreground/80">Media</span>
                 <span className="text-[10px] text-muted-foreground tabular-nums">{filtered.length}/{mediaList.length}</span>
                 <div className="flex-1 relative">
@@ -58,12 +58,12 @@ export default function MediaGallery() {
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         placeholder="Search alt text, caption, url..."
-                        className="w-full h-6 pl-7 pr-2 text-[11px] rounded-full mx-glass-subtle border-0 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+                        className="w-full h-6 pl-7 pr-2 text-[11px] rounded-full shell-glass-card border-0 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
                         style={{ fontSize: '16px' }}
                     />
                 </div>
                 <Select value={relevanceFilter} onValueChange={setRelevanceFilter}>
-                    <SelectTrigger className="w-24 h-6 text-[11px] rounded-full mx-glass-subtle border-0 shrink-0" style={{ fontSize: '16px' }}>
+                    <SelectTrigger className="w-24 h-6 text-[11px] rounded-full shell-glass-card border-0 shrink-0" style={{ fontSize: '16px' }}>
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -73,7 +73,7 @@ export default function MediaGallery() {
                     </SelectContent>
                 </Select>
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
-                    <SelectTrigger className="w-24 h-6 text-[11px] rounded-full mx-glass-subtle border-0 shrink-0" style={{ fontSize: '16px' }}>
+                    <SelectTrigger className="w-24 h-6 text-[11px] rounded-full shell-glass-card border-0 shrink-0" style={{ fontSize: '16px' }}>
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

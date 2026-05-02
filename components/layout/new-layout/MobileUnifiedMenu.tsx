@@ -79,7 +79,7 @@ export function MobileUnifiedMenu() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className="flex items-center rounded-full p-1 mx-glass-pill transition focus:outline-none"
+            className="flex items-center rounded-full p-1 shell-glass transition focus:outline-none"
             aria-label="Open menu"
           >
             {profilePhoto ? (

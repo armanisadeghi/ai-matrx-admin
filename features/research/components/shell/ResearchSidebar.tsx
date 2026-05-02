@@ -107,7 +107,7 @@ export function ResearchSidebar({ topicId }: ResearchSidebarProps) {
       <div className="flex items-center gap-1.5 px-2.5 h-10 border-b border-border/50">
         <Link
           href="/p/research/topics"
-          className="inline-flex items-center justify-center h-6 w-6 rounded-full mx-glass-subtle text-muted-foreground hover:text-foreground transition-colors"
+          className="inline-flex items-center justify-center h-6 w-6 rounded-full shell-glass-card text-muted-foreground hover:text-foreground transition-colors"
         >
           <ChevronLeft className="h-3.5 w-3.5" />
         </Link>

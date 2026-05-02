@@ -557,7 +557,7 @@ function MobileCanvasShareSheet(props: CanvasShareSheetProps) {
     <Drawer open={props.open} onOpenChange={props.onOpenChange}>
       <DrawerPortal>
         <DrawerOverlay className="z-[20000]" />
-        <DrawerPrimitive.Content className="fixed inset-x-0 bottom-0 z-[20000] mt-24 flex h-auto max-h-[92dvh] flex-col rounded-t-[10px] mx-glass-drawer">
+        <DrawerPrimitive.Content className="fixed inset-x-0 bottom-0 z-[20000] mt-24 flex h-auto max-h-[92dvh] flex-col rounded-t-[10px] shell-glass-sheet">
           {/* Drag handle */}
           <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted shrink-0" />
 

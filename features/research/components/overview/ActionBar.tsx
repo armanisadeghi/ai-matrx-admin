@@ -45,7 +45,7 @@ export function ActionBar({ onRun, onSearch, onScrape, onAnalyze, onReport, isSt
 
     return (
         <div className="@container w-full">
-            <div className="flex items-center gap-1 p-1 rounded-full mx-glass w-full">
+            <div className="flex items-center gap-1 p-1 rounded-full shell-glass w-full">
                 {ACTIONS.map((action) => {
                     const isThisLoading = loadingKey === action.key;
                     const Icon = action.icon;
@@ -61,7 +61,7 @@ export function ActionBar({ onRun, onSearch, onScrape, onAnalyze, onReport, isSt
                                         'disabled:opacity-40 disabled:pointer-events-none',
                                         action.primary
                                             ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                                            : 'mx-glass-subtle text-muted-foreground hover:text-foreground',
+                                            : 'shell-glass-card text-muted-foreground hover:text-foreground',
                                     )}
                                 >
                                     {isThisLoading ? (

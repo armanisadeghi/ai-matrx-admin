@@ -63,7 +63,7 @@ export default function NotificationDropdown({
                     variant="ghost"
                     size="sm"
                     className={cn(
-                        'relative p-2 rounded-full mx-glass transition-all duration-200 ease-in-out hover:scale-105 active:scale-95',
+                        'relative p-2 rounded-full shell-glass transition-all duration-200 ease-in-out hover:scale-105 active:scale-95',
                         className
                     )}
                 >
