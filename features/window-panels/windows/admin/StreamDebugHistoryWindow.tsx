@@ -85,7 +85,7 @@ function ConversationSidebarRow({
   const shortId = conversationId.slice(0, 8) + "…";
   const reqStatus = latestRequest?.status;
   const eventCount = latestRequest?.timeline.length ?? 0;
-  const hasError = latestRequest?.errorMessage != null;
+  const hasError = latestRequest?.error?.message != null;
 
   return (
     <div

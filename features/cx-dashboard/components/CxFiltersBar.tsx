@@ -3,13 +3,20 @@
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useCallback, useTransition } from "react";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Download, Search, X } from "lucide-react";
-import { filtersFromSearchParams, filtersToSearchParams } from "../utils/filters";
-import type { CxFilters } from "../types";
+import {
+  filtersFromSearchParams,
+  filtersToSearchParams,
+} from "../utils/filters";
+import type { CxFilters } from "../types/cxDashboardTypes";
 
 type Props = {
   showSearch?: boolean;
@@ -49,7 +56,7 @@ export function CxFiltersBar({
         router.push(`${pathname}?${params.toString()}`);
       });
     },
-    [filters, pathname, router]
+    [filters, pathname, router],
   );
 
   const clearFilters = useCallback(() => {
@@ -63,7 +70,10 @@ export function CxFiltersBar({
   return (
     <div className="flex items-center gap-2 flex-wrap">
       {/* Timeframe */}
-      <Select value={filters.timeframe} onValueChange={(v) => updateFilter("timeframe", v)}>
+      <Select
+        value={filters.timeframe}
+        onValueChange={(v) => updateFilter("timeframe", v)}
+      >
         <SelectTrigger className="w-[120px] h-8 text-xs">
           <SelectValue placeholder="Timeframe" />
         </SelectTrigger>
@@ -80,7 +90,9 @@ export function CxFiltersBar({
       {showStatusFilter && (
         <Select
           value={filters.status || "all_values"}
-          onValueChange={(v) => updateFilter("status", v === "all_values" ? undefined : v)}
+          onValueChange={(v) =>
+            updateFilter("status", v === "all_values" ? undefined : v)
+          }
         >
           <SelectTrigger className="w-[120px] h-8 text-xs">
             <SelectValue placeholder="Status" />
@@ -88,7 +100,9 @@ export function CxFiltersBar({
           <SelectContent>
             <SelectItem value="all_values">All Status</SelectItem>
             {statusOptions.map((s) => (
-              <SelectItem key={s} value={s}>{s}</SelectItem>
+              <SelectItem key={s} value={s}>
+                {s}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -98,7 +112,9 @@ export function CxFiltersBar({
       {showProviderFilter && providerOptions.length > 0 && (
         <Select
           value={filters.provider || "all_values"}
-          onValueChange={(v) => updateFilter("provider", v === "all_values" ? undefined : v)}
+          onValueChange={(v) =>
+            updateFilter("provider", v === "all_values" ? undefined : v)
+          }
         >
           <SelectTrigger className="w-[120px] h-8 text-xs">
             <SelectValue placeholder="Provider" />
@@ -106,7 +122,9 @@ export function CxFiltersBar({
           <SelectContent>
             <SelectItem value="all_values">All Providers</SelectItem>
             {providerOptions.map((p) => (
-              <SelectItem key={p} value={p}>{p}</SelectItem>
+              <SelectItem key={p} value={p}>
+                {p}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -122,7 +140,10 @@ export function CxFiltersBar({
             defaultValue={filters.search || ""}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                updateFilter("search", (e.target as HTMLInputElement).value || undefined);
+                updateFilter(
+                  "search",
+                  (e.target as HTMLInputElement).value || undefined,
+                );
               }
             }}
           />
@@ -131,28 +152,51 @@ export function CxFiltersBar({
 
       <div className="flex items-center gap-1 ml-auto">
         {hasActiveFilters && (
-          <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={clearFilters}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 text-xs"
+            onClick={clearFilters}
+          >
             <X className="w-3 h-3 mr-1" />
             Clear
           </Button>
         )}
 
         {onRefresh && (
-          <Button variant="ghost" size="sm" className="h-8" onClick={onRefresh} disabled={isPending}>
-            <RefreshCw className={`w-3.5 h-3.5 ${isPending ? "animate-spin" : ""}`} />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8"
+            onClick={onRefresh}
+            disabled={isPending}
+          >
+            <RefreshCw
+              className={`w-3.5 h-3.5 ${isPending ? "animate-spin" : ""}`}
+            />
           </Button>
         )}
 
         {(onExportCSV || onExportJSON) && (
           <div className="flex items-center">
             {onExportCSV && (
-              <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={onExportCSV}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 text-xs"
+                onClick={onExportCSV}
+              >
                 <Download className="w-3 h-3 mr-1" />
                 CSV
               </Button>
             )}
             {onExportJSON && (
-              <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={onExportJSON}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 text-xs"
+                onClick={onExportJSON}
+              >
                 <Download className="w-3 h-3 mr-1" />
                 JSON
               </Button>

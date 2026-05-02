@@ -11,7 +11,7 @@ import {
   startPromptAction,
   type StartActionPayload,
 } from "@/lib/redux/prompt-execution/thunks/startPromptActionThunk";
-import type { ActionExecutionResult } from "../types";
+import type { ActionExecutionResult } from "../types/promptActionTypes";
 
 /**
  * Hook for executing and managing prompt actions
