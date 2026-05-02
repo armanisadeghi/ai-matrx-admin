@@ -117,7 +117,7 @@ export default function KeywordManager() {
 
   return (
     <div className="p-3 sm:p-4 space-y-3">
-      {/* Add keyword — mx-glass toolbar (renders instantly) */}
+      {/* Add keyword — shell-glass toolbar (renders instantly) */}
       <div className="flex items-center gap-1.5 p-1 rounded-full shell-glass">
         <div className="flex-1 flex items-center gap-1.5 min-w-0 h-6 px-2 rounded-full shell-glass-card">
           <Search className="h-3 w-3 text-muted-foreground shrink-0" />

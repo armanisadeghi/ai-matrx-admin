@@ -3,7 +3,7 @@
 /**
  * NoteEditorDock — fixed bottom action dock for the mobile note editor.
  *
- * Visual DNA identical to MobileDock (mx-glass-subtle, rounded-[22px], pb-safe,
+ * Visual DNA identical to MobileDock (shell-glass-card, rounded-[22px], pb-safe,
  * fixed bottom-0, pointer-events-none wrapper) but uses action callbacks instead
  * of Link-based navigation, since this is a contextual toolbar, not a nav bar.
  */

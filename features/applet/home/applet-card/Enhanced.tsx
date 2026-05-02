@@ -1,4 +1,4 @@
-// EnhancedAppletCard.tsx - Default card with mx-glass effect
+// EnhancedAppletCard.tsx - Default card with glass effect
 'use client';
 import React from 'react';
 import { getAppIcon } from '@/features/applet/styles/StyledComponents';
@@ -89,7 +89,7 @@ const EnhancedAppletCard: React.FC<AppletCardProps> = ({
               </span>
             )}
             
-            {/* Access button with mx-glass effect */}
+            {/* Access button with glass effect */}
             <div className="px-3 py-1 text-sm rounded-full bg-gray-100/40 dark:bg-gray-100/20 backdrop-blur-sm border border-gray-300/60 dark:border-gray-100/40 text-gray-800 dark:text-gray-200 font-medium transition-all duration-300 hover:bg-gray-100/60 hover:border-gray-300/80 dark:hover:bg-gray-100/30 dark:hover:border-gray-100/60 hover:shadow-lg hover:translate-y-[-2px]">
               Open
             </div>

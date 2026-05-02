@@ -121,7 +121,7 @@ export default function DesktopLayout({
       skipDelayDuration={0}
     >
       <div id={uniqueId} className="min-h-dvh text-gray-800 dark:text-gray-100">
-        {/* Main Header — mx-glass bar, content blurs through */}
+        {/* Main Header — shell-glass bar, content blurs through */}
         <header className="fixed top-0 left-0 right-0 z-50 h-10 overflow-visible shell-glass">
           <div className="flex items-center justify-between h-full pl-1 pr-2 overflow-visible">
             {/* Left side - Menu toggle and page-specific content */}

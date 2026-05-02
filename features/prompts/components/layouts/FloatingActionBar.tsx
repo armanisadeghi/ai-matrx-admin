@@ -121,14 +121,14 @@ export function FloatingActionBar({
         );
     }
 
-    // Default state - compact bar with mx-glass elements
+    // Default state - compact bar with shell-glass elements
     if (!isSearchActive) {
         return (
             <>
                 <div className="fixed bottom-0 left-0 right-0 pb-safe z-40">
                     <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 max-w-[1800px] pb-4">
                         <div className="flex items-center gap-2 p-2">
-                            {/* Filter Button — mx-glass pill */}
+                            {/* Filter Button — shell-glass pill */}
                             <Button
                                 variant="ghost"
                                 size="icon"
@@ -141,7 +141,7 @@ export function FloatingActionBar({
                                 )}
                             </Button>
 
-                            {/* Compact Search Bar — mx-glass input */}
+                            {/* Compact Search Bar — shell-glass */}
                             <button
                                 onClick={handleSearchActivate}
                                 className="flex-1 flex items-center gap-2 h-10 px-3 rounded-full shell-glass transition-colors"
@@ -173,7 +173,7 @@ export function FloatingActionBar({
         );
     }
 
-    // Search Active State - Full width search with mx-glass
+    // Search Active State - Full width search with shell-glass
     return (
         <>
             {/* Backdrop blur overlay */}
@@ -182,7 +182,7 @@ export function FloatingActionBar({
                 onClick={handleSearchCancel}
             />
 
-            {/* Active Search Bar — mx-glass container */}
+            {/* Active Search Bar — shell-glass container */}
             <div className="fixed bottom-0 left-0 right-0 pb-safe z-40">
                 <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 max-w-[1800px] pb-4">
                     <div className="flex items-center gap-2 p-2 rounded-full shell-glass">

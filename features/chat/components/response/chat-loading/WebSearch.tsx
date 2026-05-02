@@ -21,7 +21,7 @@ const WebSearch: React.FC<WebSearchProps> = ({
   return (
     <div className={`flex items-center ${className}`}>
       <div className="relative w-6 h-6 flex items-center justify-center">
-        {/* Magnifying mx-glass icon with animation */}
+        {/* Magnifying glass icon with animation */}
         <div className="absolute">
           <svg 
             width="24" 

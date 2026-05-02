@@ -116,7 +116,7 @@ function TopBar({
                     </button>
                 </div>
 
-                {/* Search — mx-glass-input per spec */}
+                {/* Search — shell-glass per spec */}
                 <div className="flex-1 flex items-center gap-1.5 h-8 px-2.5 rounded-full shell-glass min-w-0">
                     <Search className="h-3.5 w-3.5 text-glass-foreground flex-shrink-0" />
                     <input

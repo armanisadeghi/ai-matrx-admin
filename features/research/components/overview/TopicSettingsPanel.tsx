@@ -325,7 +325,7 @@ export function TopicSettingsPanel({
         )}
       </div>
 
-      {/* Footer — mx-glass pill buttons */}
+      {/* Footer — shell-glass pill buttons */}
       <div className="shrink-0 flex justify-end gap-2 px-4 py-2.5 border-t border-border/50">
         <button
           onClick={() => onOpenChange(false)}

@@ -208,7 +208,7 @@ export default function ResearchOverview() {
 
     return (
         <div className="p-2 space-y-3">
-            {/* Header — compact mx-glass bar */}
+            {/* Header — compact shell-glass bar */}
             <div className="@container flex items-center gap-2 p-1.5 rounded-full shell-glass">
                 <div className="min-w-0 flex-1 flex items-center gap-1.5 px-1 overflow-hidden">
                     <h1 className="text-xs font-semibold truncate">{topic.name}</h1>

@@ -93,7 +93,7 @@ const ModernGlassAppDisplay: React.FC<AppDisplayProps> = ({
                   <div className="absolute top-1/4 right-1/4 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
                   <div className="absolute bottom-1/3 right-1/3 w-16 h-16 bg-white/5 rounded-full blur-lg"></div>
                   
-                  {/* App preview image with mx-glass frame */}
+                  {/* App preview image with glass frame */}
                   <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] rounded-xl overflow-hidden border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm">
                     <Image 
                       src={appImageUrl} 

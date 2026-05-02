@@ -4,7 +4,7 @@ import React, { ReactNode } from 'react';
 import Image from 'next/image';
 
 export interface GlassContainerProps {
-  /** Content to display inside the mx-glass container */
+  /** Content to display inside the glass container */
   children: ReactNode;
   
   /** Optional background image URL */
