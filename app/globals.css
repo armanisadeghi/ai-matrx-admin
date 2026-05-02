@@ -744,18 +744,6 @@
     --typography-p-lineHeight: 1.6;
     --typography-p-margin: 1rem;
     --typography-letter-spacing: 0.01em;
-
-    /* SSR Glass tokens — light mode */
-    --ssr-glass-bg:           rgba(210, 225, 255, 0.14);
-    --ssr-glass-bg-hover:     rgba(210, 225, 255, 0.22);
-    --ssr-glass-bg-active:    rgba(210, 225, 255, 0.32);
-    --ssr-glass-bg-card:      rgba(220, 230, 255, 0.18);
-    --ssr-glass-border:       rgba(180, 205, 255, 0.40);
-    --ssr-glass-border-width: 2.5px;
-    --ssr-glass-blur:         16px;
-    --ssr-glass-shadow:       0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-    --ssr-glass-shadow-lg:    0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
-    --ssr-glass-overlay-bg:   rgba(0, 0, 0, 0.2);
   }
 
   .dark {
@@ -888,16 +876,6 @@
     --scrollbar-thumb: 240 4% 35%; /* zinc-700 - subtle and minimal */
     --scrollbar-thumb-hover: 240 5% 45%; /* zinc-600 - slightly more visible */
     --scrollbar-thumb-active: 240 5% 55%; /* zinc-500 - active state */
-
-    /* SSR Glass tokens — dark mode */
-    --ssr-glass-bg:           rgba(180, 200, 255, 0.05);
-    --ssr-glass-bg-hover:     rgba(180, 200, 255, 0.09);
-    --ssr-glass-bg-active:    rgba(180, 200, 255, 0.13);
-    --ssr-glass-bg-card:      rgba(255, 255, 255, 0.06);
-    --ssr-glass-border:       rgba(255, 255, 255, 0.07);
-    --ssr-glass-shadow:       0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
-    --ssr-glass-shadow-lg:    0 4px 16px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.12);
-    --ssr-glass-overlay-bg:   rgba(0, 0, 0, 0.5);
   }
 }
 
@@ -1315,74 +1293,6 @@
     pointer-events: none;
     z-index: -1;
   }
-
-  /* ===== SSR GLASS SYSTEM — iOS-grade, battle-tested in the SSR shell =====
-
-     Tokens live in @layer base :root / .dark above (correct cascade level).
-     Only utility classes are defined here inside @layer utilities.
-
-  /* ── Core glass — shared backdrop-filter; all variants inherit this ── */
-  .ssr-glass,
-  .ssr-glass-dock,
-  .ssr-glass-sheet,
-  .ssr-glass-modal,
-  .ssr-glass-overlay {
-    background: var(--ssr-glass-bg);
-    backdrop-filter: blur(var(--ssr-glass-blur)) saturate(1.8) brightness(1.1);
-    -webkit-backdrop-filter: blur(var(--ssr-glass-blur)) saturate(1.8) brightness(1.1);
-    border: var(--ssr-glass-border-width) solid var(--ssr-glass-border);
-    box-shadow: var(--ssr-glass-shadow);
-  }
-
-  .ssr-glass:hover,
-  .ssr-glass-dock:hover {
-    background: var(--ssr-glass-bg-hover);
-  }
-
-  .ssr-glass:active,
-  .ssr-glass-dock:active {
-    background: var(--ssr-glass-bg-active);
-  }
-
-  /* Dock — heavier shadow */
-  .ssr-glass-dock {
-    box-shadow: var(--ssr-glass-shadow-lg);
-  }
-
-  /* Sheet — left-edge border only (slides in from side) */
-  .ssr-glass-sheet {
-    border: none;
-    border-right: var(--ssr-glass-border-width) solid var(--ssr-glass-border);
-  }
-
-  /* Overlay — dialog/modal backdrop scrim (no glass blur on the backdrop itself,
-     matches iOS: dark semi-transparent scrim + glass on the panel above it) */
-  .ssr-glass-overlay {
-    background: var(--ssr-glass-overlay-bg);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    border: none;
-    box-shadow: none;
-  }
-
-  /* Modal panel — the content surface that sits above the overlay */
-  .ssr-glass-modal {
-    background: var(--ssr-glass-bg);
-    backdrop-filter: blur(var(--ssr-glass-blur)) saturate(1.8) brightness(1.1);
-    -webkit-backdrop-filter: blur(var(--ssr-glass-blur)) saturate(1.8) brightness(1.1);
-    border: var(--ssr-glass-border-width) solid var(--ssr-glass-border);
-    box-shadow: var(--ssr-glass-shadow-lg);
-  }
-
-  /* Card — in-page content surfaces (NO backdrop-filter: avoids creating
-     stacking contexts that break shell chrome backdrop-filter in Chromium) */
-  .ssr-glass-card {
-    background: var(--ssr-glass-bg-card);
-    border: var(--ssr-glass-border-width) solid var(--ssr-glass-border);
-    box-shadow: var(--ssr-glass-shadow);
-  }
-
-  /* ===== END SSR GLASS SYSTEM ===== */
 
   /* ===== END GLASS EFFECT UTILITIES ===== */
 
