@@ -1040,288 +1040,27 @@
 }
 
 @layer utilities {
-  /* ===== GLASS EFFECT UTILITIES — iOS-inspired frosted glass =====
+  /* Glass utilities live in the "Shell Glass + Tactile Utilities" block
+     further down in this file. The four canonical variants are:
+       .shell-glass         — base (cards, panels, popovers, glass pills)
+       .shell-glass-dock    — heavier shadow for floating chrome (dock, FAB)
+       .shell-glass-sheet   — right-edge border only (slide-in side sheets)
+       .shell-glass-card    — no backdrop-filter (in-page content surfaces)
+     Tokens (--shell-glass-*) live in @layer base :root / .dark above.
+     Modal/overlay variants (.shell-glass-overlay, .shell-glass-modal)
+     live OUTSIDE @layer further down for Radix !important cascade.
 
-     Philosophy: real glass scatters + slightly displaces what's behind it
-     rather than obscuring it. We achieve this with three combined tools:
-       1. backdrop-filter: blur() — softens edges behind the element
-       2. backdrop-filter: saturate() — capped at 110-145%, never higher
-       3. SVG feDisplacementMap — optical distortion that makes it read as
-          physical glass rather than a frosted pane
-
-     Nesting tiers — use the lowest tier that gives enough visual separation:
-       nano   → child inside a glass container (buttons, chips inside cards)
-       micro  → subtle second-level differentiation
-       subtle → outermost containers, headers, sidebars
-       glass  → standard interactive cards and panels
-       strong → modals, drawers, sheets (typically not nested inside glass)
-
-     Two levels of nano+subtle land at ~0.30 effective opacity — still clearly
-     transparent. Old values (0.50 subtle) would hit ~0.75 when nested once.   */
-
-  /* SVG displacement filter — opt-in class mx-glass-displaced.
-     Adds feDisplacementMap distortion to simulate optical scatter of physical glass.
-     Apply to a wrapper element that has position: relative and no text children —
-     the filter warps all pixels of the element including children, so isolate it
-     to a bg-only layer or a container whose content you want to subtly distort.
-     Scale 2-4 is the sweet spot; higher values read as warped/glitchy, not glassy. */
-  .mx-glass-displaced {
-    filter: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><filter id='gd' x='0%25' y='0%25' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' seed='2' stitchTiles='stitch' result='noise'/><feDisplacementMap in='SourceGraphic' in2='noise' scale='3' xChannelSelector='R' yChannelSelector='G'/></filter></svg>#gd");
-  }
-
-  /* Nano glass — for children nested inside glass containers.
-     Use on buttons, chips, badges, icon wrappers that sit on glass surfaces. */
-  .mx-glass-nano {
-    background: var(--glass-bg-nano);
-    backdrop-filter: blur(3px) saturate(115%);
-    -webkit-backdrop-filter: blur(3px) saturate(115%);
-    border: 1px solid var(--glass-border-subtle);
-  }
-
-  .mx-glass-nano:hover {
-    background: var(--glass-bg-micro);
-  }
-
-  /* Micro glass — second-level nesting, light differentiation.
-     Use when nano isn't quite enough visual separation. */
-  .mx-glass-micro {
-    background: var(--glass-bg-micro);
-    backdrop-filter: blur(5px) saturate(120%);
-    -webkit-backdrop-filter: blur(5px) saturate(120%);
-    border: 1px solid var(--glass-border-subtle);
-  }
-
-  .mx-glass-micro:hover {
-    background: var(--glass-bg-subtle);
-  }
-
-  /* Subtle glass — outermost containers, headers, light panels.
-     Safe to nest nano/micro children inside without going opaque. */
-  .mx-glass-subtle {
-    background: var(--glass-bg-subtle);
-    backdrop-filter: blur(7px) saturate(125%);
-    -webkit-backdrop-filter: blur(7px) saturate(125%);
-    border: 1px solid var(--glass-border-subtle);
-  }
-
-  .mx-glass-subtle:hover {
-    background: var(--glass-bg);
-  }
-
-  /* Standard glass — interactive cards, panels, popovers. */
-  .mx-glass {
-    background: var(--glass-bg);
-    backdrop-filter: blur(10px) saturate(135%);
-    -webkit-backdrop-filter: blur(10px) saturate(135%);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
-  }
-
-  .mx-glass:hover {
-    background: var(--glass-bg-hover);
-  }
-
-  /* Strong glass — modals, drawers, sheets. Highest tier, not intended for nesting. */
-  .mx-glass-strong {
-    background: var(--glass-bg-strong);
-    backdrop-filter: blur(14px) saturate(140%);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow-lg);
-  }
-
-  .mx-glass-strong:hover {
-    background: var(--glass-bg-hover);
-  }
-
-  /* Glass pill — rounded-full glass for icon buttons and tags.
-     Uses nano values since pills are almost always nested inside glass surfaces. */
-  .mx-glass-pill {
-    background: var(--glass-bg-micro);
-    backdrop-filter: blur(5px) saturate(120%);
-    -webkit-backdrop-filter: blur(5px) saturate(120%);
-    border: 1px solid var(--glass-border-subtle);
-    box-shadow: var(--glass-shadow);
-    border-radius: 9999px;
-  }
-
-  .mx-glass-pill:hover {
-    background: var(--glass-bg-subtle);
-  }
-
-  /* Glass input — text inputs and search fields inside glass containers. */
-  .mx-glass-input {
-    background: var(--glass-bg-nano);
-    backdrop-filter: blur(4px) saturate(115%);
-    -webkit-backdrop-filter: blur(4px) saturate(115%);
-    border: 1px solid var(--glass-border-subtle);
-  }
-
-  .mx-glass-input:focus,
-  .mx-glass-input:focus-within {
-    background: var(--glass-bg-micro);
-    border-color: hsl(var(--ring));
-  }
-
-  /* Glass header — frosted bar for fixed chrome that content scrolls behind.
-     Subtle tint + moderate blur. Children use nano/micro, not glass/strong. */
-  .mx-glass-header {
-    background: var(--glass-bg-subtle);
-    backdrop-filter: blur(10px) saturate(130%);
-    -webkit-backdrop-filter: blur(10px) saturate(130%);
-  }
-
-  /* Gradient fade below the header — soft edge, no hard border line. */
-  .mx-glass-header::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 100%;
-    height: 3.5rem;
-    background: linear-gradient(to bottom, var(--glass-bg-subtle), transparent);
-    mask-image: linear-gradient(to bottom, black 10%, transparent);
-    -webkit-mask-image: linear-gradient(to bottom, black 10%, transparent);
-    pointer-events: none;
-    z-index: -1;
-  }
-
-  /* Glass footer — frosted bar for fixed bottom chrome. */
-  .mx-glass-footer {
-    background: var(--glass-bg-subtle);
-    backdrop-filter: blur(10px) saturate(130%);
-    -webkit-backdrop-filter: blur(10px) saturate(130%);
-  }
-
-  /* Gradient fade above the footer — soft edge. */
-  .mx-glass-footer::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 100%;
-    height: 3.5rem;
-    background: linear-gradient(to top, var(--glass-bg-subtle), transparent);
-    mask-image: linear-gradient(to top, black 10%, transparent);
-    -webkit-mask-image: linear-gradient(to top, black 10%, transparent);
-    pointer-events: none;
-    z-index: -1;
-  }
-
-
-  /* Glass sheet — for side sheets sliding in from edges */
-  .mx-glass-sheet {
-    background: var(--glass-bg-strong);
-    backdrop-filter: blur(14px) saturate(140%);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
-    border: 1px solid var(--glass-border);
-  }
-
-  /* Glass drawer — for bottom drawers/sheets */
-  .mx-glass-drawer {
-    background: var(--glass-bg-strong);
-    backdrop-filter: blur(14px) saturate(140%);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
-    border: 1px solid var(--glass-border);
-    border-bottom: none;
-  }
-
-  /* Glass scrim — very subtle blur behind bottom sheets (no darkening) */
-  .mx-glass-scrim {
-    backdrop-filter: blur(2px) saturate(110%);
-    -webkit-backdrop-filter: blur(2px) saturate(110%);
-    background: rgba(0, 0, 0, 0.05);
-  }
-
-  /* Vibrancy — mode-agnostic frosted glass.
-     All visual layers live on ::before/::after so the container itself stays
-     layout-neutral: no overflow:hidden, no background, no border on the element.
-     This prevents iOS Safari flex shifts and icon color bleed into the blur. */
-  .mx-glass-vibrancy {
-    position: relative;
-  }
-
-  /* Blur + tint layer — sits behind children, never clips them */
-  .mx-glass-vibrancy::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: rgba(255, 255, 255, 0.10);
-    backdrop-filter: blur(20px) saturate(155%);
-    -webkit-backdrop-filter: blur(20px) saturate(155%);
-    border: 1px solid rgba(255, 255, 255, 0.20);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.30),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.08),
-      inset 1px 0 0 rgba(255, 255, 255, 0.12),
-      inset -1px 0 0 rgba(255, 255, 255, 0.12);
-    pointer-events: none;
-    z-index: -1;
-  }
-
-  /* Edge dispersion — radial brightening at the rim, on top of blur layer */
-  .mx-glass-vibrancy::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: radial-gradient(
-      ellipse at center,
-      transparent 58%,
-      rgba(255, 255, 255, 0.06) 80%,
-      rgba(255, 255, 255, 0.13) 100%
-    );
-    pointer-events: none;
-    z-index: -1;
-  }
-
-  /* Vibrancy dock — same approach, tuned for a bottom nav pill */
-  .mx-glass-vibrancy-dock {
-    position: relative;
-  }
-
-  .mx-glass-vibrancy-dock::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: rgba(255, 255, 255, 0.10);
-    backdrop-filter: blur(24px) saturate(155%);
-    -webkit-backdrop-filter: blur(24px) saturate(155%);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow:
-      0 6px 24px rgba(0, 0, 0, 0.10),
-      0 2px 6px rgba(0, 0, 0, 0.06),
-      inset 0 1px 0 rgba(255, 255, 255, 0.32),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.08),
-      inset 1px 0 0 rgba(255, 255, 255, 0.14),
-      inset -1px 0 0 rgba(255, 255, 255, 0.14);
-    pointer-events: none;
-    z-index: -1;
-  }
-
-  /* Edge dispersion ring */
-  .mx-glass-vibrancy-dock::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: radial-gradient(
-      ellipse at center,
-      transparent 55%,
-      rgba(255, 255, 255, 0.05) 78%,
-      rgba(255, 255, 255, 0.12) 100%
-    );
-    pointer-events: none;
-    z-index: -1;
-  }
-
-  /* ===== END GLASS EFFECT UTILITIES =====
-     Note: .shell-glass / .shell-glass-dock / .shell-glass-sheet / .shell-glass-card
-     utilities live further down in this file (search "Shell Glass + Tactile
-     Utilities") so they sit alongside the .shell-tactile family. Tokens for them
-     are declared in @layer base above. */
+     The legacy mx-glass-* family (mx-glass, mx-glass-subtle, mx-glass-strong,
+     mx-glass-pill, mx-glass-input, mx-glass-header, mx-glass-footer,
+     mx-glass-sheet, mx-glass-drawer, mx-glass-vibrancy{,-dock}, mx-glass-nano,
+     mx-glass-micro, mx-glass-scrim, mx-glass-displaced) was deleted in the
+     glass-consolidation Tier 3 migration — see git log for the codemod.
+     The matching --glass-bg{-nano,-micro,-subtle,-hover,-strong}, --glass-border{-subtle},
+     --glass-shadow{-lg} tokens are kept because some JSX components still
+     reference them via inline `style={{ background: "var(--glass-bg-subtle)" }}`
+     (AgentsGrid, PromptsGrid, ResearchFilterBar, BottomSheet). Migrate
+     those inline-style consumers to shell-glass-* classes to fully retire
+     the old tokens. */
 
   /* Textured background utilities — opt-in.
      -----------------------------------------------------------------------
@@ -1683,13 +1422,8 @@
 
    Together this gives a 2-axis cascade win that the simpler @layer
    placement could not provide. Do NOT move these inside `@layer` and
-   do NOT drop the `!important`.
-
-   The legacy `.mx-glass-overlay` / `.mx-glass-modal` classes below are
-   kept temporarily to support unmigrated consumers and will be removed
-   once Commit 6 of the glass-consolidation series finishes the codemod. */
-.shell-glass-overlay,
-.mx-glass-overlay {
+   do NOT drop the `!important`. */
+.shell-glass-overlay {
   background: rgba(0, 0, 0, 0.2) !important;
   backdrop-filter: blur(4px) !important;
   -webkit-backdrop-filter: blur(4px) !important;
@@ -1697,13 +1431,11 @@
   box-shadow: none !important;
 }
 
-.dark .shell-glass-overlay,
-.dark .mx-glass-overlay {
+.dark .shell-glass-overlay {
   background: rgba(0, 0, 0, 0.5) !important;
 }
 
-.shell-glass-modal,
-.mx-glass-modal {
+.shell-glass-modal {
   background: rgba(210, 225, 255, 0.14) !important;
   backdrop-filter: blur(16px) saturate(1.8) brightness(1.1) !important;
   -webkit-backdrop-filter: blur(16px) saturate(1.8) brightness(1.1) !important;
@@ -1711,8 +1443,7 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04) !important;
 }
 
-.dark .shell-glass-modal,
-.dark .mx-glass-modal {
+.dark .shell-glass-modal {
   background: rgba(180, 200, 255, 0.05) !important;
   border-color: rgba(255, 255, 255, 0.07) !important;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.12) !important;
@@ -1939,40 +1670,3 @@
   .shell-active-pill .shell-nav-icon { color: var(--shell-pill-text); }
   .shell-active-pill .shell-nav-label { color: var(--shell-pill-text); font-weight: 600; }
 }
-
-/* ---------------------------------------------------------------------------
-   Matrx Glass Design Tokens
-   Portable subset from shell.css — enables TapTargetButton / glass components
-   outside the (ssr) route group. When the SSR shell wraps the full site,
-   shell.css will override these (identical values, so no conflict).
-   --------------------------------------------------------------------------- */
-
-:root {
-  --matrx-glass-bg:           rgba(210, 225, 255, 0.14);
-  --matrx-glass-bg-hover:     rgba(210, 225, 255, 0.22);
-  --matrx-glass-bg-active:    rgba(210, 225, 255, 0.32);
-  --matrx-glass-border-color: rgba(180, 205, 255, 0.70);
-  --matrx-glass-border-width: 1.5px;
-  --matrx-glass-blur:         4px;
-  --matrx-glass-shadow:       0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --matrx-glass-shadow-lg:    0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
-}
-
-.dark {
-  --matrx-glass-bg:           rgba(180, 200, 255, 0.05);
-  --matrx-glass-bg-hover:     rgba(180, 200, 255, 0.09);
-  --matrx-glass-bg-active:    rgba(180, 200, 255, 0.13);
-  --matrx-glass-border-color: rgba(255, 255, 255, 0.07);
-  --matrx-glass-shadow:       0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
-  --matrx-glass-shadow-lg:    0 4px 16px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.12);
-}
-
-.matrx-glass-thin-border {
-  background: var(--matrx-glass-bg);
-  backdrop-filter: blur(var(--matrx-glass-blur)) saturate(1.8);
-  border: 1.5px solid var(--matrx-glass-border-color);
-  box-shadow: var(--matrx-glass-shadow);
-}
-
-.matrx-glass-interactive:hover  { background: var(--matrx-glass-bg-hover); }
-.matrx-glass-interactive:active { background: var(--matrx-glass-bg-active); }

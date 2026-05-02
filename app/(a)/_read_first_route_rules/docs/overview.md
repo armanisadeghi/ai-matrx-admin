@@ -267,6 +267,6 @@ Key design decisions:
 
 6. **Route-level controls** via sentinel elements: `<span class="shell-hide-dock">` and `<span class="shell-hide-sidebar">` — routes drop invisible zero-size spans; shell detects them with `:has()` and adjusts layout globally.
 
-7. **Glass tokens** are defined in two systems: `--shell-glass-*` (used by shell chrome itself) and `--matrx-glass-*` (composable layer system for in-app components). The `matrx-glass-core` class is used in `UserMenuPanel`.
+7. **Glass tokens** are defined in `--shell-glass-*` (single source of truth in `app/globals.css`). The four canonical utility classes are `.shell-glass`, `.shell-glass-dock`, `.shell-glass-sheet`, and `.shell-glass-card`. Modal/overlay variants (`.shell-glass-overlay`, `.shell-glass-modal`) live outside `@layer utilities` with `!important` to win the cascade against Radix-injected inline styles.
 
 8. **Panel sidebar system** (section 17b): Routes can opt into a secondary sidebar by rendering `<aside class="shell-panel">`. The shell splits `shell-main` into a two-column grid automatically. Desktop uses `#shell-panel-toggle`; mobile uses `#shell-panel-mobile` as a drawer.

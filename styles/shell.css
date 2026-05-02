@@ -1926,87 +1926,29 @@
 .scrollbar-h-none::-webkit-scrollbar { height: 0; }
 
 /* =============================================================================
-   Matrx Glass — Composable Layer System
-   Fully self-contained. Zero dependency on --shell-* tokens or shell-glass classes.
-   Own tokens (--matrx-glass-*), own dark mode, own classes.
+   Tap-pill press feedback (CSS-only, instant)
+   ----------------------------------------------------------------------------
+   Single source of truth for TapTargetButton press feedback. Applied to the
+   visible inner pill of every tap button variant (glass, transparent, solid,
+   group). If press feedback ever feels wrong (too subtle, too aggressive,
+   jittery on mobile) — start here.
+
+   Effects:
+     - 8% scale-down on :active (visible pill shrinks slightly when pressed)
+     - smooth bg + transform transitions
+     - touch-action: manipulation kills the 300ms mobile tap delay
+     - -webkit-tap-highlight-color: transparent suppresses the iOS gray flash
+       that would otherwise paint OVER our custom feedback
+
+   Background-color animation pairs with each variant's own :active rule
+   (.shell-glass:active or Tailwind `active:bg-*` utilities on transparent/
+   solid). This class only owns the timing curve and the scale.
+
+   The matrx-glass-* layered system (own tokens + own classes) that used to
+   live here was deleted in the Tier 3 glass consolidation — every consumer
+   was migrated to .shell-glass-* in earlier commits. matrx-tap-pill keeps
+   its name because it's a tap-feedback timing utility, not glass styling.
    ============================================================================= */
-
-/* --- Matrx Glass Design Tokens — Light Mode --- */
-:root {
-  --matrx-glass-bg:          rgba(210, 225, 255, 0.14);
-  --matrx-glass-bg-hover:    rgba(210, 225, 255, 0.22);
-  --matrx-glass-bg-active:   rgba(210, 225, 255, 0.32);
-  --matrx-glass-border-color: rgba(180, 205, 255, 0.70);
-  --matrx-glass-border-width: 1.5px;
-  --matrx-glass-blur:        4px;
-  --matrx-glass-shadow:      0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --matrx-glass-shadow-lg:   0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
-}
-
-/* --- Matrx Glass Design Tokens — Dark Mode --- */
-.dark {
-  --matrx-glass-bg:          rgba(180, 200, 255, 0.05);
-  --matrx-glass-bg-hover:    rgba(180, 200, 255, 0.09);
-  --matrx-glass-bg-active:   rgba(180, 200, 255, 0.13);
-  --matrx-glass-border-color: rgba(255, 255, 255, 0.07);
-  --matrx-glass-shadow:      0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
-  --matrx-glass-shadow-lg:   0 4px 16px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.12);
-}
-
-/* --- Layer 1: Backdrop blur/filter — the physical glass effect --- */
-.matrx-glass-fx {
-  backdrop-filter: blur(var(--matrx-glass-blur)) saturate(1.8);
-}
-
-/* --- Layer 2: Background fill — the tinted glass surface --- */
-.matrx-glass-bg {
-  background: var(--matrx-glass-bg);
-}
-
-/* --- Layer 3: Border --- */
-.matrx-glass-border {
-  border: var(--matrx-glass-border-width) solid var(--matrx-glass-border-color);
-}
-
-.matrx-glass-core {
-  background: var(--matrx-glass-bg);
-  backdrop-filter: blur(var(--matrx-glass-blur)) saturate(1.8);
-  border: 3.5px solid var(--matrx-glass-border-color);
-  box-shadow: var(--matrx-glass-shadow);
-}
-.matrx-glass-thin-border {
-  background: var(--matrx-glass-bg);
-  backdrop-filter: blur(var(--matrx-glass-blur)) saturate(1.8);
-  border: 1.5px solid var(--matrx-glass-border-color);
-  box-shadow: var(--matrx-glass-shadow);
-}
-
-/* --- Layer 4: Shadows --- */
-.matrx-glass-shadow    { box-shadow: var(--matrx-glass-shadow); }
-.matrx-glass-shadow-lg { box-shadow: var(--matrx-glass-shadow-lg); }
-
-/* --- Layer 5: Interactive states — opt-in only for clickable elements --- */
-.matrx-glass-interactive:hover  { background: var(--matrx-glass-bg-hover); }
-.matrx-glass-interactive:active { background: var(--matrx-glass-bg-active); }
-
-/* --- Layer 6: Tap-pill press feedback (CSS-only, instant) ---
- * Single source of truth for TapTargetButton press feedback.
- * Applied to the visible inner pill of every tap button variant
- * (glass, transparent, solid, group). If press feedback ever feels
- * wrong (too subtle, too aggressive, jittery on mobile) — start here.
- *
- * Effects:
- *   - 8% scale-down on :active (visible pill shrinks slightly when pressed)
- *   - smooth bg + transform transitions
- *   - touch-action: manipulation kills the 300ms mobile tap delay
- *   - -webkit-tap-highlight-color: transparent suppresses the iOS gray flash
- *     that would otherwise paint OVER our custom feedback
- *
- * Background-color animation pairs with each variant's own :active rule
- * (.shell-glass:active, .matrx-glass-interactive:active, or Tailwind
- * `active:bg-*` utilities on transparent/solid). This class only owns the
- * timing curve and the scale.
- */
 .matrx-tap-pill {
   transition: background-color 150ms ease, transform 100ms ease;
   touch-action: manipulation;
