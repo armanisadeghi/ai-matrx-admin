@@ -43,7 +43,7 @@ function SearchTapLabel({ htmlFor }: { htmlFor: string }) {
       className="flex h-11 w-11 items-center justify-center bg-transparent transition-transform active:scale-95 outline-none cursor-pointer"
       aria-label="Open search"
     >
-      <div className="flex h-8 w-8 items-center justify-center rounded-full matrx-shell-glass transition-colors">
+      <div className="flex h-8 w-8 items-center justify-center rounded-full shell-glass transition-colors">
         <SearchIcon className="w-4 h-4 text-foreground" />
       </div>
     </label>

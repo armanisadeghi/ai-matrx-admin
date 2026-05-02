@@ -2040,16 +2040,6 @@
 .matrx-glass-interactive:hover  { background: var(--matrx-glass-bg-hover); }
 .matrx-glass-interactive:active { background: var(--matrx-glass-bg-active); }
 
-/* --- Composed: identical visual result to shell-glass, built from layers above --- */
-.matrx-shell-glass {
-  background: var(--matrx-glass-bg);
-  backdrop-filter: blur(var(--matrx-glass-blur)) saturate(1.8);
-  border: var(--matrx-glass-border-width) solid var(--matrx-glass-border-color);
-  box-shadow: var(--matrx-glass-shadow);
-}
-.matrx-shell-glass:hover  { background: var(--matrx-glass-bg-hover); }
-.matrx-shell-glass:active { background: var(--matrx-glass-bg-active); }
-
 /* --- Layer 6: Tap-pill press feedback (CSS-only, instant) ---
  * Single source of truth for TapTargetButton press feedback.
  * Applied to the visible inner pill of every tap button variant
@@ -2064,7 +2054,7 @@
  *     that would otherwise paint OVER our custom feedback
  *
  * Background-color animation pairs with each variant's own :active rule
- * (.matrx-shell-glass:active, .matrx-glass-interactive:active, or Tailwind
+ * (.shell-glass:active, .matrx-glass-interactive:active, or Tailwind
  * `active:bg-*` utilities on transparent/solid). This class only owns the
  * timing curve and the scale.
  */

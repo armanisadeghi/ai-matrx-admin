@@ -55,7 +55,7 @@ export function AgentSelectorIsland({
       <AgentListDropdown
         onSelect={handleAgentSelect}
         label={displayName}
-        className="max-w-[120px] md:max-w-[180px] py-3.5 rounded-full matrx-shell-glass"
+        className="max-w-[120px] md:max-w-[180px] py-3.5 rounded-full shell-glass"
         triggerSlot={triggerSlot}
       />
       {version != null && (

@@ -1938,12 +1938,3 @@
 
 .matrx-glass-interactive:hover  { background: var(--matrx-glass-bg-hover); }
 .matrx-glass-interactive:active { background: var(--matrx-glass-bg-active); }
-
-.matrx-shell-glass {
-  background: var(--matrx-glass-bg);
-  backdrop-filter: blur(var(--matrx-glass-blur)) saturate(1.8);
-  border: var(--matrx-glass-border-width) solid var(--matrx-glass-border-color);
-  box-shadow: var(--matrx-glass-shadow);
-}
-.matrx-shell-glass:hover  { background: var(--matrx-glass-bg-hover); }
-.matrx-shell-glass:active { background: var(--matrx-glass-bg-active); }

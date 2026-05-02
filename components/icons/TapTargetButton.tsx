@@ -268,9 +268,9 @@ export const TapTargetButton = forwardRef<
   const color = className ?? "text-foreground";
   // CHANGE 2026-04-27: matrx-tap-pill replaces the prior `transition-colors`
   // and provides the press-down scale + mobile tap hygiene. Background-flash
-  // on press still comes from `.matrx-shell-glass:active` in shell.css.
+  // on press still comes from `.shell-glass:active`.
   const inner = (
-    <div className="matrx-tap-pill flex h-8 w-8 items-center justify-center rounded-full matrx-shell-glass">
+    <div className="matrx-tap-pill flex h-8 w-8 items-center justify-center rounded-full shell-glass">
       <IconContent
         icon={icon}
         strokeWidth={strokeWidth}
