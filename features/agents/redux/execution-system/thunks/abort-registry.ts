@@ -2,8 +2,8 @@
  * Abort Registry
  *
  * Simple module-level map: conversationId → AbortController.
- * Both executeInstance and executeChatInstance register here so
- * cancelExecution can abort the in-flight fetch from anywhere.
+ * executeInstance registers here so cancelExecution can abort the
+ * in-flight fetch from anywhere.
  */
 
 const registry = new Map<string, AbortController>();

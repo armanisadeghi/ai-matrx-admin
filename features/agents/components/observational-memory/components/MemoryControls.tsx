@@ -5,8 +5,8 @@
  *
  * Admin-only controls for enabling / disabling / configuring Observational
  * Memory on a conversation. The toggle is a one-shot Redux flag — once set,
- * the next outbound turn (see execute-instance / execute-chat-instance
- * thunks) will send `memory: true|false` plus the selected model/scope.
+ * the next outbound turn (see execute-instance thunk) will send
+ * `memory: true|false` plus the selected model/scope.
  *
  * For unpersisted conversations (no turns yet), the toggle is still queued —
  * it rides the first turn and the backend persists the metadata from there.

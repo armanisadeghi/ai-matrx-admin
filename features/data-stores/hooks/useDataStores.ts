@@ -1,49 +1,98 @@
 "use client";
 
 /**
- * useDataStores — list + create + bind hook for `rag.data_stores`.
+ * Hooks for `rag.data_stores` and `rag.data_store_members`.
  *
- * Lazy by design: nothing fires until a consumer mounts. RLS scopes the
- * list to (caller-owns) OR (org-member). Server-side membership lookups
- * use `data_store_members.source_kind = 'processed_document'` as the
- * canonical binding for PDF documents.
+ * All reads/writes go through the FastAPI HTTP endpoints at
+ * `/rag/data-stores/*`. The earlier Supabase-direct path didn't work
+ * because PostgREST only exposes the `public` schema by default —
+ * adding `rag` to the exposed schemas is a Supabase-dashboard config
+ * change. The HTTP endpoints use the service-role pool with explicit
+ * user_id checks, so they work regardless of PostgREST config.
+ *
+ * Lazy by design: nothing fires until a consumer mounts.
  */
 
 import { useEffect, useState, useCallback } from "react";
-import { supabase } from "@/utils/supabase/client";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { del, getJson, patchJson, postJson } from "@/features/files/api/client";
 import type { DataStore, DataStoreWithMemberCount } from "../types";
 
-/**
- * Loose-typed view of the supabase client for tables in the `rag` schema.
- *
- * The generated `types/database.types.ts` only carries the `public` schema,
- * so calls like `supabase.schema('rag').from('data_stores')` fail to type-
- * check against the strict `Database` generic. RLS still enforces access on
- * the server, so this is a typing escape only — the runtime is unchanged.
- *
- * When the type-gen pipeline starts emitting non-public schemas, drop this
- * cast and import the proper schema-typed client.
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const sb = supabase as any;
+// ---------------------------------------------------------------------------
+// Wire shapes returned by /rag/data-stores/* (snake_case Pydantic).
+// Mapped to the camelCase DataStore / DataStoreMember shapes the rest
+// of the app expects.
+// ---------------------------------------------------------------------------
 
-function rowToStore(row: Record<string, unknown>): DataStore {
+interface ApiDataStoreSummary {
+  id: string;
+  name: string;
+  short_code: string | null;
+  description: string | null;
+  kind: string;
+  member_count: number;
+  is_active: boolean;
+}
+
+interface ApiDataStoreMember {
+  source_kind: string;
+  source_id: string;
+  label: string | null;
+  notes: string | null;
+  added_at: string;
+}
+
+interface ApiDataStoreDetail {
+  id: string;
+  name: string;
+  short_code: string | null;
+  description: string | null;
+  kind: string;
+  organization_id: string | null;
+  is_active: boolean;
+  settings: Record<string, unknown>;
+  members: ApiDataStoreMember[];
+}
+
+function summaryToStore(
+  s: ApiDataStoreSummary,
+): DataStoreWithMemberCount {
   return {
-    id: row.id as string,
-    organizationId: (row.organization_id as string | null) ?? null,
-    name: (row.name as string) ?? "Untitled",
-    shortCode: (row.short_code as string | null) ?? null,
-    description: (row.description as string | null) ?? null,
-    kind: (row.kind as string | null) ?? null,
-    settings: (row.settings as Record<string, unknown>) ?? {},
-    isActive: (row.is_active as boolean) ?? false,
-    createdBy: (row.created_by as string | null) ?? null,
-    createdAt: row.created_at as string,
-    updatedAt: row.updated_at as string,
+    id: s.id,
+    organizationId: null, // list endpoint doesn't return it; detail does
+    name: s.name,
+    shortCode: s.short_code,
+    description: s.description,
+    kind: s.kind,
+    settings: {},
+    isActive: s.is_active,
+    createdBy: null,
+    createdAt: "",
+    updatedAt: "",
+    memberCount: s.member_count,
   };
 }
+
+function detailToStore(d: ApiDataStoreDetail): DataStore {
+  return {
+    id: d.id,
+    organizationId: d.organization_id,
+    name: d.name,
+    shortCode: d.short_code,
+    description: d.description,
+    kind: d.kind,
+    settings: d.settings,
+    isActive: d.is_active,
+    createdBy: null,
+    createdAt: "",
+    updatedAt: "",
+  };
+}
+
+// ---------------------------------------------------------------------------
+// useDataStores — list + create
+// ---------------------------------------------------------------------------
 
 export function useDataStores(): {
   stores: DataStoreWithMemberCount[];
@@ -74,39 +123,11 @@ export function useDataStores(): {
 
     (async () => {
       try {
-        const { data, error: err } = await sb
-          .schema("rag")
-          .from("data_stores")
-          .select("*")
-          .order("created_at", { ascending: false });
-        if (err) throw err;
-        if (cancelled) return;
-        const baseRows = ((data ?? []) as Record<string, unknown>[]).map(
-          rowToStore,
+        const { data } = await getJson<ApiDataStoreSummary[]>(
+          "/rag/data-stores?include_inactive=false",
         );
-
-        // Member counts — one round-trip, scoped by RLS.
-        const ids = baseRows.map((s) => s.id);
-        let counts = new Map<string, number>();
-        if (ids.length > 0) {
-          const { data: memberRows } = await sb
-            .schema("rag")
-            .from("data_store_members")
-            .select("data_store_id")
-            .in("data_store_id", ids);
-          for (const m of (memberRows ?? []) as Record<string, unknown>[]) {
-            const k = m.data_store_id as string;
-            counts.set(k, (counts.get(k) ?? 0) + 1);
-          }
-        }
-
         if (cancelled) return;
-        setStores(
-          baseRows.map((s) => ({
-            ...s,
-            memberCount: counts.get(s.id) ?? 0,
-          })),
-        );
+        setStores(data.map(summaryToStore));
       } catch (e) {
         if (cancelled) return;
         setError(
@@ -131,26 +152,25 @@ export function useDataStores(): {
       shortCode?: string | null;
     }) => {
       if (!userId) return null;
-      const { data, error: err } = await sb
-        .schema("rag")
-        .from("data_stores")
-        .insert({
-          name: input.name,
-          description: input.description ?? null,
-          organization_id: input.organizationId ?? null,
-          kind: input.kind ?? "general",
-          short_code: input.shortCode ?? null,
-          created_by: userId,
-          is_active: true,
-        })
-        .select("*")
-        .single();
-      if (err || !data) {
-        setError(err?.message ?? "Could not create data store");
+      try {
+        const { data } = await postJson<ApiDataStoreDetail>(
+          "/rag/data-stores",
+          {
+            name: input.name,
+            description: input.description ?? undefined,
+            kind: input.kind ?? "general",
+            short_code: input.shortCode ?? undefined,
+            organization_id: input.organizationId ?? undefined,
+          },
+        );
+        refresh();
+        return detailToStore(data);
+      } catch (e) {
+        setError(
+          e instanceof Error ? e.message : "Could not create data store",
+        );
         return null;
       }
-      refresh();
-      return rowToStore(data as Record<string, unknown>);
     },
     [userId, refresh],
   );
@@ -158,13 +178,10 @@ export function useDataStores(): {
   return { stores, loading, error, refresh, createStore };
 }
 
-/**
- * useDataStoreDetail — full detail + members of a single store, with
- * RLS-respecting label enrichment for known source kinds.
- *
- * Used by the management page (not the bind panel — that one only needs
- * the membership Set for the active document).
- */
+// ---------------------------------------------------------------------------
+// useDataStoreDetail — full detail + members + write actions
+// ---------------------------------------------------------------------------
+
 export interface EnrichedMember {
   dataStoreId: string;
   sourceKind: string;
@@ -172,7 +189,7 @@ export interface EnrichedMember {
   addedBy: string | null;
   addedAt: string;
   notes: string | null;
-  /** Best-effort human label looked up per source_kind. Null on miss. */
+  /** Best-effort human label. Null on miss. */
   label: string | null;
 }
 
@@ -197,80 +214,20 @@ export function useDataStoreDetail(storeId: string | null) {
 
     (async () => {
       try {
-        const { data: storeRow, error: sErr } = await sb
-          .schema("rag")
-          .from("data_stores")
-          .select("*")
-          .eq("id", storeId)
-          .single();
-        if (sErr) throw sErr;
+        const { data: detail } = await getJson<ApiDataStoreDetail>(
+          `/rag/data-stores/${encodeURIComponent(storeId)}`,
+        );
         if (cancelled) return;
-        setStore(rowToStore(storeRow as Record<string, unknown>));
-
-        const { data: rawMembers, error: mErr } = await sb
-          .schema("rag")
-          .from("data_store_members")
-          .select("*")
-          .eq("data_store_id", storeId)
-          .order("added_at", { ascending: false });
-        if (mErr) throw mErr;
-        if (cancelled) return;
-
-        const memberRows = (rawMembers ?? []) as Record<string, unknown>[];
-
-        // Bucket source_ids by kind for the label lookup.
-        const idsByKind = new Map<string, string[]>();
-        for (const m of memberRows) {
-          const k = m.source_kind as string;
-          const arr = idsByKind.get(k) ?? [];
-          arr.push(m.source_id as string);
-          idsByKind.set(k, arr);
-        }
-
-        const labelByKey = new Map<string, string>();
-        for (const [kind, ids] of idsByKind) {
-          if (ids.length === 0) continue;
-          if (kind === "cld_file") {
-            const { data } = await supabase
-              .from("cld_files")
-              .select("id, file_name")
-              .in("id", ids);
-            for (const r of (data ?? []) as Record<string, unknown>[]) {
-              labelByKey.set(`${kind}/${r.id}`, r.file_name as string);
-            }
-          } else if (kind === "processed_document") {
-            const { data } = await supabase
-              .from("processed_documents")
-              .select("id, name")
-              .in("id", ids);
-            for (const r of (data ?? []) as Record<string, unknown>[]) {
-              labelByKey.set(`${kind}/${r.id}`, r.name as string);
-            }
-          } else if (kind === "library_doc") {
-            const { data } = await sb
-              .schema("rag")
-              .from("library_docs")
-              .select("id, title")
-              .in("id", ids);
-            for (const r of (data ?? []) as Record<string, unknown>[]) {
-              labelByKey.set(`${kind}/${r.id}`, r.title as string);
-            }
-          }
-          // Other source_kinds fall through with label=null.
-        }
-
-        if (cancelled) return;
+        setStore(detailToStore(detail));
         setMembers(
-          memberRows.map((m) => ({
-            dataStoreId: m.data_store_id as string,
-            sourceKind: m.source_kind as string,
-            sourceId: m.source_id as string,
-            addedBy: (m.added_by as string | null) ?? null,
-            addedAt: m.added_at as string,
-            notes: (m.notes as string | null) ?? null,
-            label: labelByKey.get(
-              `${m.source_kind}/${m.source_id}`,
-            ) ?? null,
+          (detail.members ?? []).map((m) => ({
+            dataStoreId: detail.id,
+            sourceKind: m.source_kind,
+            sourceId: m.source_id,
+            addedBy: null,
+            addedAt: m.added_at,
+            notes: m.notes,
+            label: m.label,
           })),
         );
       } catch (e) {
@@ -295,21 +252,21 @@ export function useDataStoreDetail(storeId: string | null) {
       notes?: string;
     }) => {
       if (!storeId) return false;
-      const { error: err } = await sb
-        .schema("rag")
-        .from("data_store_members")
-        .upsert({
-          data_store_id: storeId,
-          source_kind: input.sourceKind,
-          source_id: input.sourceId,
-          notes: input.notes ?? null,
-        });
-      if (err) {
-        setError(err.message);
+      try {
+        await postJson<ApiDataStoreDetail>(
+          `/rag/data-stores/${encodeURIComponent(storeId)}/members`,
+          {
+            source_kind: input.sourceKind,
+            source_id: input.sourceId,
+            notes: input.notes ?? undefined,
+          },
+        );
+        refresh();
+        return true;
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Could not add member");
         return false;
       }
-      refresh();
-      return true;
     },
     [storeId, refresh],
   );
@@ -317,19 +274,16 @@ export function useDataStoreDetail(storeId: string | null) {
   const removeMember = useCallback(
     async (sourceKind: string, sourceId: string) => {
       if (!storeId) return false;
-      const { error: err } = await sb
-        .schema("rag")
-        .from("data_store_members")
-        .delete()
-        .eq("data_store_id", storeId)
-        .eq("source_kind", sourceKind)
-        .eq("source_id", sourceId);
-      if (err) {
-        setError(err.message);
+      try {
+        await del(
+          `/rag/data-stores/${encodeURIComponent(storeId)}/members/${encodeURIComponent(sourceKind)}/${encodeURIComponent(sourceId)}`,
+        );
+        refresh();
+        return true;
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Could not remove member");
         return false;
       }
-      refresh();
-      return true;
     },
     [storeId, refresh],
   );
@@ -343,40 +297,39 @@ export function useDataStoreDetail(storeId: string | null) {
       isActive?: boolean;
     }) => {
       if (!storeId) return false;
-      const update: Record<string, unknown> = {};
-      if (patch.name !== undefined) update.name = patch.name;
-      if (patch.description !== undefined) update.description = patch.description;
-      if (patch.shortCode !== undefined) update.short_code = patch.shortCode;
-      if (patch.kind !== undefined) update.kind = patch.kind;
-      if (patch.isActive !== undefined) update.is_active = patch.isActive;
-      if (Object.keys(update).length === 0) return true;
-      const { error: err } = await sb
-        .schema("rag")
-        .from("data_stores")
-        .update(update)
-        .eq("id", storeId);
-      if (err) {
-        setError(err.message);
+      const body: Record<string, unknown> = {};
+      if (patch.name !== undefined) body.name = patch.name;
+      if (patch.description !== undefined) body.description = patch.description;
+      if (patch.shortCode !== undefined) body.short_code = patch.shortCode;
+      if (patch.isActive !== undefined) body.is_active = patch.isActive;
+      // Backend doesn't accept `kind` patches today; ignore silently.
+      if (Object.keys(body).length === 0) return true;
+      try {
+        await patchJson<ApiDataStoreDetail>(
+          `/rag/data-stores/${encodeURIComponent(storeId)}`,
+          body,
+        );
+        refresh();
+        return true;
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Could not update data store");
         return false;
       }
-      refresh();
-      return true;
     },
     [storeId, refresh],
   );
 
   const deleteStore = useCallback(async () => {
     if (!storeId) return false;
-    const { error: err } = await sb
-      .schema("rag")
-      .from("data_stores")
-      .delete()
-      .eq("id", storeId);
-    if (err) {
-      setError(err.message);
+    try {
+      await del(
+        `/rag/data-stores/${encodeURIComponent(storeId)}`,
+      );
+      return true;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not delete data store");
       return false;
     }
-    return true;
   }, [storeId]);
 
   return {
@@ -392,63 +345,79 @@ export function useDataStoreDetail(storeId: string | null) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// useDocumentDataStores — bind/unbind a single document to N stores.
+//
+// Used by DataStoreBindPanel inside the file workspace + the 4-pane
+// viewer's "Data stores" dialog. The membership Set is computed
+// client-side from the per-store member listings (one HTTP call).
+// ---------------------------------------------------------------------------
 
-/**
- * useDocumentDataStores — which stores does this document belong to,
- * and a `bind`/`unbind` toggle action.
- */
 export function useDocumentDataStores(processedDocumentId: string | null) {
+  const list = useDataStores();
   const [memberOf, setMemberOf] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [bumper, setBumper] = useState(0);
+
   const refresh = useCallback(() => setBumper((b) => b + 1), []);
 
   useEffect(() => {
-    if (!processedDocumentId) return;
+    if (!processedDocumentId || list.stores.length === 0) {
+      setMemberOf(new Set());
+      return;
+    }
     let cancelled = false;
     setLoading(true);
+
     (async () => {
       try {
-        const { data } = await sb
-          .schema("rag")
-          .from("data_store_members")
-          .select("data_store_id")
-          .eq("source_kind", "processed_document")
-          .eq("source_id", processedDocumentId);
-        if (cancelled) return;
-        setMemberOf(
-          new Set(
-            ((data ?? []) as Record<string, unknown>[]).map(
-              (r) => r.data_store_id as string,
-            ),
-          ),
+        // Fan out one detail-fetch per visible store. Each returns its
+        // member list; we check for our doc id in each.
+        const results = await Promise.all(
+          list.stores.map(async (s) => {
+            try {
+              const { data } = await getJson<ApiDataStoreDetail>(
+                `/rag/data-stores/${encodeURIComponent(s.id)}`,
+              );
+              const isMember = (data.members ?? []).some(
+                (m) =>
+                  m.source_kind === "processed_document" &&
+                  m.source_id === processedDocumentId,
+              );
+              return isMember ? s.id : null;
+            } catch {
+              return null;
+            }
+          }),
         );
+        if (cancelled) return;
+        setMemberOf(new Set(results.filter(Boolean) as string[]));
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
+
     return () => {
       cancelled = true;
     };
-  }, [processedDocumentId, bumper]);
+  }, [processedDocumentId, list.stores, bumper]);
 
   const bind = useCallback(
     async (dataStoreId: string) => {
       if (!processedDocumentId) return false;
-      const { error: err } = await sb
-        .schema("rag")
-        .from("data_store_members")
-        .insert({
-          data_store_id: dataStoreId,
-          source_kind: "processed_document",
-          source_id: processedDocumentId,
-        });
-      if (err) {
-        // 23505 = duplicate (already a member). Treat as success.
-        if (!String(err.code).startsWith("23")) return false;
+      try {
+        await postJson<ApiDataStoreDetail>(
+          `/rag/data-stores/${encodeURIComponent(dataStoreId)}/members`,
+          {
+            source_kind: "processed_document",
+            source_id: processedDocumentId,
+          },
+        );
+        refresh();
+        return true;
+      } catch {
+        return false;
       }
-      refresh();
-      return true;
     },
     [processedDocumentId, refresh],
   );
@@ -456,16 +425,15 @@ export function useDocumentDataStores(processedDocumentId: string | null) {
   const unbind = useCallback(
     async (dataStoreId: string) => {
       if (!processedDocumentId) return false;
-      const { error: err } = await sb
-        .schema("rag")
-        .from("data_store_members")
-        .delete()
-        .eq("data_store_id", dataStoreId)
-        .eq("source_kind", "processed_document")
-        .eq("source_id", processedDocumentId);
-      if (err) return false;
-      refresh();
-      return true;
+      try {
+        await del(
+          `/rag/data-stores/${encodeURIComponent(dataStoreId)}/members/processed_document/${encodeURIComponent(processedDocumentId)}`,
+        );
+        refresh();
+        return true;
+      } catch {
+        return false;
+      }
     },
     [processedDocumentId, refresh],
   );

@@ -1,8 +1,9 @@
 /**
  * Shared Stream Processor — V2 Event System
  *
- * Extracts the NDJSON stream processing logic used by both executeInstance
- * and executeChatInstance into a single reusable function.
+ * NDJSON stream processing used by executeInstance — handles every typed
+ * stream event the backend emits (chunks, phases, tool events, render
+ * blocks, resource_changed, errors, etc.).
  *
  * V2 changes from V1:
  *  - `status_update` → `phase` (closed-enum state machine transitions)

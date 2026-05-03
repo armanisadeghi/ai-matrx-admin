@@ -569,7 +569,7 @@ export interface InstanceUIState {
   /**
    * When set, processStream will run a StreamingJsonTracker during execution
    * and dispatch extractedJson updates into the active request slice.
-   * Read by executeInstance / executeChatInstance at stream time.
+   * Read by executeInstance at stream time.
    */
   jsonExtraction?: JsonExtractionConfig | null;
 
@@ -596,9 +596,9 @@ export interface InstanceUIState {
   /**
    * Per-conversation backend URL override.
    *
-   * When set, the agent execute thunks (`executeInstance`,
-   * `executeChatInstance`, tool-result POSTs) prefer this URL over the
-   * global `selectResolvedBaseUrl(state)`. This is how Sandbox-mode
+   * When set, the agent execute thunks (`executeInstance`, tool-result
+   * POSTs) prefer this URL over the global `selectResolvedBaseUrl(state)`.
+   * This is how Sandbox-mode
    * conversations talk to the in-container Python server without
    * disturbing every other backend call in the page.
    *
@@ -711,10 +711,10 @@ export interface ManagedAgentOptions {
    * When true, the server writes nothing to the DB and Redux becomes the sole
    * source of truth for the transcript.
    *   Turn 1:  POST /ai/agents/{id} with `is_new:false, store:false`.
-   *   Turn 2+: delegates to `executeChatInstance` → POST /ai/manual with
-   *            the full accumulated history.
+   *   Turn 2+: POST /ai/conversations/{id} with `store:false`. The server
+   *            still streams the next iteration; nothing is persisted.
    * Stamped onto the conversation record via `createInstance`; the execute
-   * thunks read `instance.isEphemeral` to branch.
+   * thunk reads `instance.isEphemeral` to branch.
    */
   isEphemeral?: boolean;
 

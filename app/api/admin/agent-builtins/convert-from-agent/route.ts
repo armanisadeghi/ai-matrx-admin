@@ -86,6 +86,10 @@ export async function POST(request: Request) {
       output_schema: (src.output_schema as unknown) ?? null,
       tools: (src.tools as string[] | null) ?? [],
       custom_tools: (src.custom_tools as unknown) ?? [],
+      // Pass the canonical tool_config through so the system agent row
+      // carries the consolidated shape if backend stops syncing legacy
+      // columns. Backend keeps both in sync today.
+      tool_config: (src.tool_config as unknown) ?? null,
       context_slots: (src.context_slots as unknown) ?? [],
       mcp_servers: (src.mcp_servers as string[] | null) ?? [],
     };
