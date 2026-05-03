@@ -1,0 +1,338 @@
+/* ============================================================================
+ * Pipeline Orchestra — animated CSS for the research topic page.
+ *
+ * Visual primitives:
+ *   .orchestra-node            base node card (status-aware fill/border)
+ *   .orchestra-node[data-status]
+ *                              variants: idle | gated | queued | active |
+ *                              complete | partial | failed | empty
+ *   .orchestra-edge-flow       horizontal animated gradient (source→target)
+ *   .orchestra-edge-curve      SVG curved path with the same gradient
+ *   .orchestra-pulse-ring      breathing ring around active nodes
+ *   .orchestra-collapsed-pill  shrunken state for completed stage cards
+ *
+ * All flow animations honor `prefers-reduced-motion`.
+ * Color tokens come from app/globals.css — no hard-coded palette.
+ * ========================================================================== */
+
+@layer components {
+  /* ---------- Node base ----------------------------------------------------- */
+
+  .orchestra-node {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 0.25rem;
+    padding: 0.625rem 0.75rem;
+    border-radius: 1rem;
+    border: 1px solid hsl(var(--border) / 0.6);
+    background: hsl(var(--card) / 0.6);
+    backdrop-filter: blur(8px);
+    transition:
+      transform 220ms cubic-bezier(0.2, 0.7, 0.3, 1),
+      border-color 220ms ease,
+      background-color 220ms ease,
+      box-shadow 220ms ease;
+    min-height: 4.5rem;
+  }
+
+  .orchestra-node:hover {
+    border-color: hsl(var(--primary) / 0.4);
+    background: hsl(var(--card) / 0.85);
+    transform: translateY(-1px);
+  }
+
+  /* Status variants — idle is the default. */
+
+  .orchestra-node[data-status="empty"] {
+    background: hsl(var(--muted) / 0.25);
+    border-color: hsl(var(--border) / 0.4);
+    border-style: dashed;
+  }
+
+  .orchestra-node[data-status="gated"] {
+    border-style: dashed;
+    border-color: hsl(43 96% 56% / 0.55);
+    background:
+      linear-gradient(135deg, hsl(43 96% 56% / 0.04), transparent 60%),
+      hsl(var(--card) / 0.6);
+  }
+
+  .orchestra-node[data-status="queued"] {
+    border-color: hsl(var(--primary) / 0.4);
+    animation: orchestra-soft-pulse 2.6s ease-in-out infinite;
+  }
+
+  .orchestra-node[data-status="active"] {
+    border-color: hsl(var(--primary) / 0.9);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary) / 0.12),
+      hsl(var(--card) / 0.85)
+    );
+    box-shadow:
+      0 0 0 1px hsl(var(--primary) / 0.25),
+      0 8px 28px -10px hsl(var(--primary) / 0.45);
+    transform: translateY(-1px);
+  }
+
+  .orchestra-node[data-status="active"]::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    pointer-events: none;
+    background: conic-gradient(
+      from var(--orchestra-spin, 0deg),
+      hsl(var(--primary) / 0.65) 0deg,
+      hsl(var(--primary) / 0.05) 110deg,
+      hsl(var(--primary) / 0.05) 250deg,
+      hsl(var(--primary) / 0.65) 360deg
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    padding: 1px;
+    animation: orchestra-spin 3.4s linear infinite;
+    opacity: 0.9;
+  }
+
+  @property --orchestra-spin {
+    syntax: "<angle>";
+    inherits: false;
+    initial-value: 0deg;
+  }
+
+  @keyframes orchestra-spin {
+    to {
+      --orchestra-spin: 360deg;
+    }
+  }
+
+  .orchestra-node[data-status="complete"] {
+    border-color: hsl(142 71% 45% / 0.45);
+    background: linear-gradient(
+      135deg,
+      hsl(142 71% 45% / 0.06),
+      hsl(var(--card) / 0.7)
+    );
+  }
+
+  .orchestra-node[data-status="partial"] {
+    border-color: hsl(43 96% 56% / 0.55);
+    background: linear-gradient(
+      135deg,
+      hsl(43 96% 56% / 0.06),
+      hsl(var(--card) / 0.7)
+    );
+  }
+
+  .orchestra-node[data-status="failed"] {
+    border-color: hsl(var(--destructive) / 0.5);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--destructive) / 0.06),
+      hsl(var(--card) / 0.7)
+    );
+  }
+
+  /* ---------- Soft pulse for queued nodes ---------------------------------- */
+
+  @keyframes orchestra-soft-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 hsl(var(--primary) / 0);
+    }
+    50% {
+      box-shadow: 0 0 0 4px hsl(var(--primary) / 0.12);
+    }
+  }
+
+  /* ---------- Edges -------------------------------------------------------- */
+
+  .orchestra-edge-flow {
+    position: relative;
+    height: 2px;
+    flex: 1 1 auto;
+    min-width: 0.75rem;
+    background: linear-gradient(
+      to right,
+      hsl(var(--border) / 0.45),
+      hsl(var(--border) / 0.45)
+    );
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .orchestra-edge-flow[data-state="active"] {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--primary) / 0.05),
+      hsl(var(--primary)) 30%,
+      hsl(var(--primary)) 60%,
+      hsl(var(--primary) / 0.05)
+    );
+    background-size: 220% 100%;
+    animation: orchestra-flow 1.6s linear infinite;
+    box-shadow: 0 0 8px hsl(var(--primary) / 0.5);
+  }
+
+  .orchestra-edge-flow[data-state="complete"] {
+    background: linear-gradient(
+      to right,
+      hsl(142 71% 45% / 0.6),
+      hsl(142 71% 45% / 0.6)
+    );
+  }
+
+  .orchestra-edge-flow[data-state="dashed"] {
+    background: none;
+    border-top: 2px dashed hsl(var(--border) / 0.6);
+    height: 0;
+  }
+
+  @keyframes orchestra-flow {
+    from {
+      background-position: 100% 50%;
+    }
+    to {
+      background-position: 0% 50%;
+    }
+  }
+
+  /* SVG curve variant — used for the Tags branch fork/merge. */
+
+  .orchestra-edge-curve path {
+    fill: none;
+    stroke: hsl(var(--border) / 0.55);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-dasharray: 4 4;
+    transition: stroke 200ms ease;
+  }
+
+  .orchestra-edge-curve[data-state="active"] path {
+    stroke: hsl(var(--primary));
+    stroke-dasharray: 6 4;
+    stroke-width: 2;
+    animation: orchestra-dash-flow 0.7s linear infinite;
+    filter: drop-shadow(0 0 3px hsl(var(--primary) / 0.5));
+  }
+
+  .orchestra-edge-curve[data-state="complete"] path {
+    stroke: hsl(142 71% 45% / 0.65);
+    stroke-dasharray: none;
+  }
+
+  @keyframes orchestra-dash-flow {
+    to {
+      stroke-dashoffset: -20;
+    }
+  }
+
+  /* ---------- Floating particle along an active edge ----------------------- */
+
+  .orchestra-edge-particle {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: hsl(var(--primary));
+    box-shadow: 0 0 8px hsl(var(--primary));
+    transform: translate(-50%, -50%);
+    animation: orchestra-particle 1.4s linear infinite;
+  }
+
+  @keyframes orchestra-particle {
+    from {
+      left: 0%;
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    to {
+      left: 100%;
+      opacity: 0;
+    }
+  }
+
+  /* ---------- Collapsed completed pill (in the active drawer) -------------- */
+
+  .orchestra-collapsed-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 1.75rem;
+    padding: 0 0.625rem 0 0.5rem;
+    border-radius: 999px;
+    border: 1px solid hsl(142 71% 45% / 0.4);
+    background: linear-gradient(
+      90deg,
+      hsl(142 71% 45% / 0.08),
+      hsl(var(--card) / 0.7)
+    );
+    color: hsl(var(--foreground));
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 160ms ease;
+  }
+
+  .orchestra-collapsed-pill:hover {
+    background: linear-gradient(
+      90deg,
+      hsl(142 71% 45% / 0.18),
+      hsl(var(--card) / 0.85)
+    );
+  }
+
+  /* ---------- Number ticker / count flash ---------------------------------- */
+
+  .orchestra-count {
+    font-variant-numeric: tabular-nums;
+    transition: color 220ms ease;
+  }
+
+  .orchestra-count[data-bumped="true"] {
+    animation: orchestra-count-bump 0.45s ease;
+    color: hsl(var(--primary));
+  }
+
+  @keyframes orchestra-count-bump {
+    0% {
+      transform: scale(1);
+    }
+    40% {
+      transform: scale(1.18);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  /* ---------- Reduced motion safety --------------------------------------- */
+
+  @media (prefers-reduced-motion: reduce) {
+    .orchestra-node[data-status="active"]::before,
+    .orchestra-node[data-status="queued"],
+    .orchestra-edge-flow[data-state="active"],
+    .orchestra-edge-curve[data-state="active"] path,
+    .orchestra-edge-particle,
+    .orchestra-count[data-bumped="true"] {
+      animation: none !important;
+    }
+    .orchestra-edge-flow[data-state="active"] {
+      background: hsl(var(--primary));
+    }
+  }
+}

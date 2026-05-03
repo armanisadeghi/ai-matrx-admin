@@ -52,6 +52,13 @@ export interface RagSearchRequest {
   use_hyde?: boolean;
   use_mmr?: boolean;
   filters?: RagSearchFilters;
+  /**
+   * Scope the search to one curated data store. When set, only chunks
+   * from that store's members are returned.
+   */
+  data_store_id?: string | null;
+  /** Hard-pin to specific (source_kind, source_id) pairs. */
+  include_sources?: { source_kind: string; source_id: string }[];
 }
 
 /** Run a single RAG search. Throws on non-OK responses. */

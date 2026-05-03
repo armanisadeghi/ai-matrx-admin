@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -17,6 +18,8 @@ import {
   Settings2,
   Brain,
   ListChecks,
+  Info,
+  ChevronDown,
 } from "lucide-react";
 import { RESEARCH_NAV_ITEMS } from "../../constants";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +28,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useTopicData } from "../../context/ResearchContext";
 
 const ICON_MAP: Record<string, typeof LayoutDashboard> = {
   LayoutDashboard,
@@ -110,6 +114,43 @@ export function ResearchSidebar({ topicId }: ResearchSidebarProps) {
 
         <div className="space-y-px">{secondaryItems.map(renderItem)}</div>
       </nav>
+
+      {/* Topic description — collapsible footer so the user can recall what
+          this topic is about without it eating prime real estate on the page. */}
+      <TopicAbout />
     </aside>
+  );
+}
+
+function TopicAbout() {
+  const { topic } = useTopicData();
+  const [open, setOpen] = useState(false);
+  const description = topic?.description?.trim();
+  if (!description) return null;
+
+  return (
+    <div className="border-t border-border/40 bg-card/20">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className={cn(
+          "w-full flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-medium uppercase tracking-wider",
+          "text-muted-foreground/70 hover:text-foreground hover:bg-accent/40 transition-colors",
+        )}
+      >
+        <Info className="h-3 w-3 shrink-0" />
+        <span className="flex-1 text-left">About</span>
+        <ChevronDown
+          className={cn(
+            "h-3 w-3 shrink-0 transition-transform",
+            open && "rotate-180",
+          )}
+        />
+      </button>
+      {open && (
+        <div className="px-2.5 pb-2 text-[11px] leading-snug text-muted-foreground/85">
+          {description}
+        </div>
+      )}
+    </div>
   );
 }

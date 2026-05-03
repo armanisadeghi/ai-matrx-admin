@@ -25,11 +25,21 @@
  */
 
 import { useCallback, useState } from "react";
+import { Database, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { DataStoreBindPanel } from "@/features/data-stores/components/DataStoreBindPanel";
 import { ChunksPane } from "@/features/documents/components/panes/ChunksPane";
 import { CleanedMarkdownPane } from "@/features/documents/components/panes/CleanedMarkdownPane";
 import { PdfPane } from "@/features/documents/components/panes/PdfPane";

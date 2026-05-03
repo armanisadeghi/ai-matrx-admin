@@ -19,6 +19,7 @@ import type { ImageFit, ImagePosition, ProcessedVariant } from "../types";
 import { getPresetById } from "../presets";
 import { formatBytes, formatDimensions } from "../utils/format-bytes";
 import { downloadSingleVariant } from "../utils/download-bundle";
+import { getSignedUrl } from "@/features/files/api/files";
 
 function fitIcon(fit: ImageFit): React.ReactNode {
   switch (fit) {
@@ -74,27 +75,60 @@ export function StudioVariantTile({
   onToggleSelect,
 }: StudioVariantTileProps) {
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState<string | null>(null);
   const preset = getPresetById(variant.presetId);
   const usage = preset?.usage ?? "";
   const presetName = preset?.name ?? variant.presetId;
 
+  /**
+   * Resolve the URL we want users to actually paste. Priority:
+   *   1. Permanent CDN URL — set on save when visibility=public.
+   *      This is a Cloudflare-fronted, checksum-versioned URL that never
+   *      expires. ALWAYS prefer this.
+   *   2. Signed URL — for private saved variants, lazy-fetch from the API
+   *      (good for ~1h). Better than nothing, never as good as #1.
+   *   3. Data URL — base64 in-memory bytes. ONLY for variants that haven't
+   *      been saved yet. We never copy this to the clipboard for saved
+   *      variants because pasting a 2MB string into chat/HTML is a disaster.
+   */
+  const resolveCopyableUrl = async (): Promise<string> => {
+    if (variant.publicUrl) return variant.publicUrl;
+    if (variant.fileId) {
+      const { data } = await getSignedUrl(variant.fileId, { expiresIn: 3600 });
+      return data.url;
+    }
+    return variant.dataUrl;
+  };
+
   const handleCopyUrl = async () => {
-    // After save, the variant lives in Cloud Files as `variant.fileId`. A
-    // signed URL would require an async round-trip; for now we keep the
-    // copy action instant by always copying the data URL (which works
-    // anywhere: browser tab, HTML, Markdown, etc.).
+    setCopyError(null);
     try {
-      await navigator.clipboard.writeText(variant.dataUrl);
+      const url = await resolveCopyableUrl();
+      await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
-    } catch {
-      /* no-op */
+    } catch (err) {
+      setCopyError(err instanceof Error ? err.message : "Copy failed");
+      setTimeout(() => setCopyError(null), 2500);
     }
   };
 
   const handleDownload = () => {
+    // Local download — always uses the in-memory bytes for instant save,
+    // since the user already has them and a network round-trip would be
+    // pointless here.
     downloadSingleVariant(variant.dataUrl, variant.filename);
   };
+
+  // The "open in new tab" link prefers the CDN URL. For private saved
+  // variants we fall back to opening the Cloud Files file page (which
+  // resolves to a signed URL inside). For unsaved variants the link is
+  // hidden entirely.
+  const externalHref = variant.publicUrl
+    ? variant.publicUrl
+    : variant.fileId
+      ? `/files/f/${variant.fileId}`
+      : null;
 
   return (
     <div
@@ -212,9 +246,19 @@ export function StudioVariantTile({
           type="button"
           onClick={handleCopyUrl}
           className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-          title="Copy data URL to clipboard"
+          title={
+            variant.publicUrl
+              ? "Copy permanent CDN URL"
+              : variant.fileId
+                ? "Copy a fresh signed URL (≈1h)"
+                : "Save first to get a sharable URL — copies the data URL otherwise"
+          }
         >
-          {copied ? (
+          {copyError ? (
+            <span className="text-destructive truncate max-w-[120px]">
+              {copyError}
+            </span>
+          ) : copied ? (
             <>
               <Check className="h-3 w-3 text-success" />
               <span className="text-success">Copied</span>
@@ -222,17 +266,27 @@ export function StudioVariantTile({
           ) : (
             <>
               <Copy className="h-3 w-3" />
-              Copy URL
+              {variant.publicUrl
+                ? "Copy CDN"
+                : variant.fileId
+                  ? "Copy URL"
+                  : "Copy URL"}
             </>
           )}
         </button>
-        {variant.fileId && (
+        {externalHref && (
           <>
             <div className="w-px bg-border" />
             <a
-              href={`/files/f/${variant.fileId}`}
+              href={externalHref}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center justify-center px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-              title="Open this variant in Cloud Files"
+              title={
+                variant.publicUrl
+                  ? "Open the CDN URL in a new tab"
+                  : "Open in Cloud Files"
+              }
             >
               <ExternalLink className="h-3 w-3" />
             </a>

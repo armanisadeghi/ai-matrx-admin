@@ -507,6 +507,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/legal/webhooks/courtlistener": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Courtlistener Webhook */
+        post: operations["courtlistener_webhook_legal_webhooks_courtlistener_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ai/agent/{agent_id}": {
         parameters: {
             query?: never;
@@ -1937,7 +1954,14 @@ export interface paths {
         /** Get Keywords */
         get: operations["get_keywords_research_topics__topic_id__keywords_get"];
         put?: never;
-        /** Add Keywords */
+        /**
+         * Add Keywords
+         * @description Insert keywords onto a topic.
+         *
+         *     No cap on count — the user can have as many keywords as they want.
+         *     `max_keywords` is consulted by the `/run` orchestrator only (it
+         *     bounds how many keywords get processed per pipeline pass).
+         */
         post: operations["add_keywords_research_topics__topic_id__keywords_post"];
         delete?: never;
         options?: never;
@@ -1960,6 +1984,48 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/research/topics/{topic_id}/keywords/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Reorder Keywords
+         * @description Persist drag-to-reorder of a topic's keywords.
+         *
+         *     Body: `{"keyword_ids": ["id1", "id2", ...]}` — the COMPLETE new
+         *     ordering. Each row's `position` is rewritten to `idx + 1`
+         *     (1-indexed) inside a single ORM transaction; the
+         *     `rs_keyword_topic_position_unique` constraint is `DEFERRABLE
+         *     INITIALLY DEFERRED` so transient duplicates during the swap are
+         *     tolerated.
+         *
+         *     The `/run` orchestrator processes the first `rs_topic.max_keywords`
+         *     rows ordered by `(position, created_at)`, so reordering keywords
+         *     bubbles their priority — drag the keyword you want auto-processed
+         *     next into the top N slot. Keywords beyond the cap stay on the
+         *     topic (visible in the UI) but never enter auto-mode until you
+         *     raise the cap or move them into the top N.
+         *
+         *     Returns the topic's keywords in their new persisted order. Emits
+         *     one `RecordUpdate(table=rs_keyword)` per touched row for reactive
+         *     frontend stores.
+         *
+         *     400 if the request body lists keyword IDs that don't belong to
+         *     this topic, omits any current keyword, or contains duplicates. Use
+         *     POST /keywords / DELETE /keywords/{id} to add or remove keywords.
+         */
+        patch: operations["reorder_keywords_research_topics__topic_id__keywords_reorder_patch"];
         trace?: never;
     };
     "/research/topics/{topic_id}/search": {
@@ -2528,6 +2594,247 @@ export interface paths {
         };
         /** Export Document */
         get: operations["export_document_research_topics__topic_id__document_export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/legal/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Legal Search
+         * @description Streaming search — emits one data event per hit, then a final summary.
+         */
+        post: operations["legal_search_legal_search_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/legal/opinions/{opinion_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Opinion Endpoint */
+        get: operations["get_opinion_endpoint_legal_opinions__opinion_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/legal/dockets/{docket_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Docket Endpoint */
+        get: operations["get_docket_endpoint_legal_dockets__docket_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/legal/citations/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Citations Lookup */
+        post: operations["citations_lookup_legal_citations_lookup_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/legal/admin/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Overview */
+        get: operations["overview_legal_admin_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/legal/admin/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stats */
+        get: operations["stats_legal_admin_stats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/legal/admin/courts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Courts */
+        get: operations["courts_legal_admin_courts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/legal/admin/presets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Presets */
+        get: operations["presets_legal_admin_presets_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/legal/admin/ingest-runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ingest Runs */
+        get: operations["ingest_runs_legal_admin_ingest_runs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/legal/admin/sync/courts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sync Courts */
+        post: operations["sync_courts_legal_admin_sync_courts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/legal/admin/sync/clusters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sync Clusters */
+        post: operations["sync_clusters_legal_admin_sync_clusters_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/legal/admin/sync/opinions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sync Opinions */
+        post: operations["sync_opinions_legal_admin_sync_opinions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/legal/admin/clusters/local": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search Local */
+        get: operations["search_local_legal_admin_clusters_local_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/legal/admin/clusters/{cluster_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cluster Detail */
+        get: operations["cluster_detail_legal_admin_clusters__cluster_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -5346,6 +5653,14 @@ export interface components {
              */
             debug: boolean;
             /**
+             * Tools
+             * @default []
+             */
+            tools: (components["schemas"]["RegisteredToolSpec"] | components["schemas"]["InlineToolSpec"] | components["schemas"]["AgentToolSpec"])[];
+            /** Tools Replace */
+            tools_replace?: (components["schemas"]["RegisteredToolSpec"] | components["schemas"]["InlineToolSpec"] | components["schemas"]["AgentToolSpec"])[] | null;
+            client?: components["schemas"]["ClientContext"] | null;
+            /**
              * Client Tools
              * @default []
              */
@@ -5415,6 +5730,34 @@ export interface components {
              * @default 2
              */
             max_retries_per_iteration: number;
+        };
+        /** AgentToolSpec */
+        AgentToolSpec: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "agent";
+            /**
+             * Agent Id
+             * @description UUID of the saved agent to project as a tool.
+             */
+            agent_id: string;
+            /**
+             * Is Version
+             * @description When True, agent_id refers to an agx_version row instead of agx_agent.
+             * @default false
+             */
+            is_version: boolean;
+            /**
+             * Description Override
+             * @description Optional override of the projected tool's description. When omitted, the agent's own description is used.
+             */
+            description_override?: string | null;
+            /** Max Calls Per Conversation */
+            max_calls_per_conversation?: number | null;
+            /** Cost Cap Per Call */
+            cost_cap_per_call?: number | null;
         };
         /**
          * AgentUserInputBody
@@ -5918,8 +6261,14 @@ export interface components {
             debug: boolean;
             /** System Instruction */
             system_instruction?: string | null;
-            /** Tools */
-            tools?: string[] | null;
+            /**
+             * Tools
+             * @default []
+             */
+            tools: (components["schemas"]["RegisteredToolSpec"] | components["schemas"]["InlineToolSpec"] | components["schemas"]["AgentToolSpec"])[];
+            /** Tools Replace */
+            tools_replace?: (components["schemas"]["RegisteredToolSpec"] | components["schemas"]["InlineToolSpec"] | components["schemas"]["AgentToolSpec"])[] | null;
+            client?: components["schemas"]["ClientContext"] | null;
             config_overrides?: components["schemas"]["LLMParams"] | null;
             /** Variables */
             variables?: {
@@ -6046,6 +6395,17 @@ export interface components {
             /** Section Kind */
             section_kind?: string | null;
         };
+        /** CitationLookupRequest */
+        CitationLookupRequest: {
+            /** Text */
+            text?: string | null;
+            /** Volume */
+            volume?: string | null;
+            /** Reporter */
+            reporter?: string | null;
+            /** Page */
+            page?: string | null;
+        };
         /** ClaimVerdictOut */
         ClaimVerdictOut: {
             /** Claim */
@@ -6058,6 +6418,40 @@ export interface components {
             supporting_chunk_ids: string[];
             /** Reasoning */
             reasoning: string;
+        };
+        /**
+         * ClientContext
+         * @description Request envelope describing the calling client's capabilities + state.
+         *
+         *     Replaces per-feature fields like ``ide_state`` and ``sandbox``. A client
+         *     declares what it can do via a set of capability names and carries typed
+         *     state keyed by capability name for tools that need to read it at
+         *     execution time.
+         *
+         *     Wire shape::
+         *
+         *         {
+         *           "capabilities": ["editor-state", "sandbox-fs"],
+         *           "state": {
+         *             "editor-state": {"active_file": {"path": "...", ...}, ...},
+         *             "sandbox-fs":   {"sandbox_id": "...", ...}
+         *           }
+         *         }
+         *
+         *     A client that's both a coding IDE and a browser extension declares both
+         *     capabilities and supplies both payloads. No per-client field
+         *     proliferation — adding a new client type is a registry entry, not a
+         *     request schema change.
+         */
+        ClientContext: {
+            /** Capabilities */
+            capabilities?: string[];
+            /** State */
+            state?: {
+                [key: string]: {
+                    [key: string]: unknown;
+                };
+            };
         };
         /** ClientToolResult */
         ClientToolResult: {
@@ -6143,6 +6537,14 @@ export interface components {
              * @default false
              */
             debug: boolean;
+            /**
+             * Tools
+             * @default []
+             */
+            tools: (components["schemas"]["RegisteredToolSpec"] | components["schemas"]["InlineToolSpec"] | components["schemas"]["AgentToolSpec"])[];
+            /** Tools Replace */
+            tools_replace?: (components["schemas"]["RegisteredToolSpec"] | components["schemas"]["InlineToolSpec"] | components["schemas"]["AgentToolSpec"])[] | null;
+            client?: components["schemas"]["ClientContext"] | null;
             /**
              * Client Tools
              * @default []
@@ -6375,6 +6777,28 @@ export interface components {
              * @default false
              */
             skip_verify: boolean;
+        };
+        /**
+         * CustomToolInputSchema
+         * @description JSON Schema for a custom tool's input parameters.
+         *
+         *     Follows the MCP / JSON Schema standard. The type must be "object" and
+         *     properties defines the named parameters. Required is the list of
+         *     parameter names that must be present in every call.
+         */
+        CustomToolInputSchema: {
+            /**
+             * Type
+             * @default object
+             * @constant
+             */
+            type: "object";
+            /** Properties */
+            properties?: {
+                [key: string]: unknown;
+            };
+            /** Required */
+            required?: string[];
         };
         /** DataStoreAdminRow */
         DataStoreAdminRow: {
@@ -7366,6 +7790,25 @@ export interface components {
             /** Error */
             error?: string | null;
         };
+        /** InlineToolSpec */
+        InlineToolSpec: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "inline";
+            /**
+             * Name
+             * @description Unique tool name. Must match [a-zA-Z0-9_-]{1,64}.
+             */
+            name: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            input_schema?: components["schemas"]["CustomToolInputSchema"];
+        };
         /**
          * InputDataType
          * @enum {string}
@@ -7419,6 +7862,24 @@ export interface components {
             keywords: string[];
             /** Search Provider */
             search_provider?: ("brave" | "google") | null;
+        };
+        /**
+         * KeywordReorderRequest
+         * @description Payload for PATCH /topics/{topic_id}/keywords/reorder.
+         *
+         *     `keyword_ids` is the new full ordering of the topic's keywords. The
+         *     server assigns `position = index_in_list + 1` (1-indexed) to each
+         *     row inside a single ORM transaction, then returns the keywords in
+         *     their new order. The list must contain exactly the topic's current
+         *     keyword IDs (no additions, no deletions) — that's a separate concern,
+         *     handled by POST/DELETE /topics/{topic_id}/keywords.
+         *
+         *     Wire shape:
+         *         {"keyword_ids": ["uuid1", "uuid2", "uuid3"]}
+         */
+        KeywordReorderRequest: {
+            /** Keyword Ids */
+            keyword_ids: string[];
         };
         /** LLMParams */
         LLMParams: {
@@ -7506,6 +7967,44 @@ export interface components {
             image_loras?: unknown[] | null;
             /** Disable Safety Checker */
             disable_safety_checker?: boolean | null;
+        };
+        /** LegalSearchRequest */
+        LegalSearchRequest: {
+            /** Query */
+            query: string;
+            /**
+             * Type
+             * @default o
+             */
+            type: string;
+            /** Court */
+            court?: string | null;
+            /** Judge */
+            judge?: string | null;
+            /** Case Name */
+            case_name?: string | null;
+            /** Citation */
+            citation?: string | null;
+            /** Status */
+            status?: string | null;
+            /** Filed After */
+            filed_after?: string | null;
+            /** Filed Before */
+            filed_before?: string | null;
+            /** Cited Gt */
+            cited_gt?: number | null;
+            /** Order By */
+            order_by?: string | null;
+            /**
+             * Limit
+             * @default 20
+             */
+            limit: number;
+            /**
+             * Highlight
+             * @default true
+             */
+            highlight: boolean;
         };
         /** LibraryDocOut */
         LibraryDocOut: {
@@ -8463,6 +8962,14 @@ export interface components {
              */
             debug: boolean;
             /**
+             * Tools
+             * @default []
+             */
+            tools: (components["schemas"]["RegisteredToolSpec"] | components["schemas"]["InlineToolSpec"] | components["schemas"]["AgentToolSpec"])[];
+            /** Tools Replace */
+            tools_replace?: (components["schemas"]["RegisteredToolSpec"] | components["schemas"]["InlineToolSpec"] | components["schemas"]["AgentToolSpec"])[] | null;
+            client?: components["schemas"]["ClientContext"] | null;
+            /**
              * Client Tools
              * @default []
              */
@@ -8577,6 +9084,30 @@ export interface components {
              */
             stream: boolean;
         };
+        /** RegisteredToolSpec */
+        RegisteredToolSpec: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "registered";
+            /**
+             * Name
+             * @description Registry name. Required. tool_id may also be provided for UUID lookup.
+             */
+            name: string;
+            /**
+             * Tool Id
+             * @description Optional registry UUID. When set, takes precedence over name for lookup.
+             */
+            tool_id?: string | null;
+            /**
+             * Delegate
+             * @description When True, the executor short-circuits dispatch and emits tool_delegated for the client to execute. When False (default), the server runs the tool via its registry implementation.
+             * @default false
+             */
+            delegate: boolean;
+        };
         /** RenameFileRequest */
         RenameFileRequest: {
             /**
@@ -8595,6 +9126,14 @@ export interface components {
              * @default false
              */
             debug: boolean;
+            /**
+             * Tools
+             * @default []
+             */
+            tools: (components["schemas"]["RegisteredToolSpec"] | components["schemas"]["InlineToolSpec"] | components["schemas"]["AgentToolSpec"])[];
+            /** Tools Replace */
+            tools_replace?: (components["schemas"]["RegisteredToolSpec"] | components["schemas"]["InlineToolSpec"] | components["schemas"]["AgentToolSpec"])[] | null;
+            client?: components["schemas"]["ClientContext"] | null;
             /**
              * Client Tools
              * @default []
@@ -9053,6 +9592,16 @@ export interface components {
              */
             only_children: boolean;
             /**
+             * Data Store Id
+             * @description Scope the search to one curated bucket (rag.data_stores.id). When set, only chunks from that store's members are returned. Combines with include_sources / source_kinds via AND.
+             */
+            data_store_id?: string | null;
+            /**
+             * Include Sources
+             * @description Hard-pin the search to a list of (source_kind, source_id) pairs.
+             */
+            include_sources?: components["schemas"]["SearchSourceRef"][] | null;
+            /**
              * Embedding Models
              * @description Optional override — pass multiple to fan out across embedding tables (e.g. ['openai:text-embedding-3-small', 'voyage:voyage-code-3']) and let RRF unify the rankings.
              */
@@ -9100,6 +9649,13 @@ export interface components {
             reranker_model: string | null;
             /** Latency Ms */
             latency_ms: number;
+        };
+        /** SearchSourceRef */
+        SearchSourceRef: {
+            /** Source Kind */
+            source_kind: string;
+            /** Source Id */
+            source_id: string;
         };
         /** ShareLinkResolveResponse */
         ShareLinkResolveResponse: {
@@ -9314,6 +9870,29 @@ export interface components {
             use_user_agent_overrides: boolean;
             /** Topic Id */
             topic_id?: string | null;
+        };
+        /** SyncClustersRequest */
+        SyncClustersRequest: {
+            /**
+             * Court Ids
+             * @description Explicit court_id list to sync. Either court_ids OR preset_key is required.
+             */
+            court_ids?: string[] | null;
+            /**
+             * Preset Key
+             * @description One of the preset keys from /legal/admin/presets.
+             */
+            preset_key?: string | null;
+            /**
+             * Limit Per Court
+             * @description Cap each court's pull at N clusters. None = pull everything. Useful for smoke-testing a sync before committing to a full run.
+             */
+            limit_per_court?: number | null;
+        };
+        /** SyncOpinionsRequest */
+        SyncOpinionsRequest: {
+            /** Cluster Ids */
+            cluster_ids: number[];
         };
         /** SynthesisRequest */
         SynthesisRequest: {
@@ -10470,6 +11049,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    courtlistener_webhook_legal_webhooks_courtlistener_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
         };
@@ -13010,6 +13611,41 @@ export interface operations {
             };
         };
     };
+    reorder_keywords_research_topics__topic_id__keywords_reorder_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                topic_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KeywordReorderRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     trigger_search_research_topics__topic_id__search_post: {
         parameters: {
             query?: never;
@@ -14258,6 +14894,429 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    legal_search_legal_search_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LegalSearchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_opinion_endpoint_legal_opinions__opinion_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                opinion_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_docket_endpoint_legal_dockets__docket_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                docket_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    citations_lookup_legal_citations_lookup_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CitationLookupRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    overview_legal_admin_overview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    stats_legal_admin_stats_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    courts_legal_admin_courts_get: {
+        parameters: {
+            query?: {
+                /** @description Only courts currently active */
+                in_use_only?: boolean;
+                jurisdiction?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    presets_legal_admin_presets_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    ingest_runs_legal_admin_ingest_runs_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    sync_courts_legal_admin_sync_courts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    sync_clusters_legal_admin_sync_clusters_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SyncClustersRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    sync_opinions_legal_admin_sync_opinions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SyncOpinionsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_local_legal_admin_clusters_local_get: {
+        parameters: {
+            query: {
+                q: string;
+                court_ids?: string[] | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cluster_detail_legal_admin_clusters__cluster_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cluster_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             /** @description Validation Error */

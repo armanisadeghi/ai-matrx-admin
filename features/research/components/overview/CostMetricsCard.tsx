@@ -10,16 +10,21 @@ import {
   FileText,
   Tags,
   Wand2,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type {
-  TopicCostSummary,
-  CostBreakdownItem,
-} from "../../types";
+import { useTopicId } from "../../context/ResearchContext";
+import { useCostSummary } from "../../hooks/useCostSummary";
+import type { TopicCostSummary, CostBreakdownItem } from "../../types";
 
 interface Props {
-  costSummary: TopicCostSummary | null | undefined;
   className?: string;
+  /**
+   * Optional override — if provided, takes precedence over the
+   * topicId from `ResearchContext`. Useful when the card needs to
+   * render outside of a `<TopicProvider>`.
+   */
+  topicId?: string;
 }
 
 function formatCost(usd: number): string {
@@ -64,12 +69,7 @@ function BreakdownRow({
 }) {
   const greyed = item.calls === 0;
   return (
-    <tr
-      className={cn(
-        "border-t border-border/30",
-        greyed && "opacity-50",
-      )}
-    >
+    <tr className={cn("border-t border-border/30", greyed && "opacity-50")}>
       <td className="py-1.5 px-2">
         <div className="flex items-center gap-1.5">
           <Icon className="h-3 w-3 text-muted-foreground shrink-0" />
@@ -93,14 +93,38 @@ function BreakdownRow({
 }
 
 /**
- * Renders the topic's `cost_summary` (per QUOTA_LADDER.md). Always-visible
- * total + collapsible per-phase breakdown. Hidden entirely when no cost
- * data has been recorded yet (e.g., topic just created).
+ * Always-visible total + collapsible per-phase breakdown for the
+ * Overview page. Self-fetches via `useCostSummary` — the topic row
+ * coming from Supabase does NOT include the computed cost summary.
+ *
+ * Hidden entirely until the first LLM call has been recorded
+ * (`total_llm_calls === 0`). On error we also hide rather than show a
+ * broken card; the user can still see costs on the dedicated /costs
+ * page where the empty state is more prominent.
  */
-export function CostMetricsCard({ costSummary, className }: Props) {
+export function CostMetricsCard({ className, topicId: topicIdProp }: Props) {
+  const ctxTopicId = useTopicId();
+  const topicId = topicIdProp ?? ctxTopicId;
+  const { data: costSummary, isLoading, error } = useCostSummary(topicId);
   const [open, setOpen] = useState(false);
 
-  if (!costSummary || costSummary.total_llm_calls === 0) return null;
+  if (isLoading && !costSummary) {
+    return (
+      <div
+        className={cn(
+          "rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden",
+          className,
+        )}
+      >
+        <div className="flex items-center gap-2 px-3 py-2 text-muted-foreground">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          <span className="text-xs">Loading costs...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !costSummary || costSummary.total_llm_calls === 0) return null;
 
   return (
     <div

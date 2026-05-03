@@ -171,8 +171,10 @@ export interface TopicCostSummary {
 
 /**
  * Canonical topic shape used throughout the UI.
- * Combines the Supabase row with quota ladder fields and an optional
- * `cost_summary` (only present when fetched via the Python API endpoint).
+ * Combines the Supabase row with quota ladder fields. Topics on the wire
+ * come from Supabase (`rs_topic`), which does NOT carry the computed
+ * `cost_summary` — that lives only on the Python `TopicResponse` and
+ * must be fetched via `useCostSummary(topicId)` separately.
  *
  * `autonomy_level` is narrowed from the loose Supabase `string` to the
  * three documented values per FRONTEND_SPEC §2 — Supabase column
@@ -182,7 +184,6 @@ export interface TopicCostSummary {
 export type ResearchTopic = Omit<ResearchTopicRow, "autonomy_level"> &
   TopicQuotaFields & {
     autonomy_level: "auto" | "semi" | "manual";
-    cost_summary?: TopicCostSummary | null;
   };
 
 export type LlmStatus = "success" | "failed";
@@ -214,6 +215,13 @@ export interface ResearchKeyword {
   id: string;
   topic_id: string;
   keyword: string;
+  /**
+   * 1-indexed priority order within a topic. Position 1 = highest priority.
+   * The server MUST search/scrape keywords in ascending position order, and
+   * apply per-topic max-keywords limits by holding back the highest positions
+   * (e.g. limit=3 with 5 keywords processes 1,2,3 and holds 4,5).
+   */
+  position: number;
   search_provider: string;
   search_params: Json;
   last_searched_at: string | null;
@@ -488,20 +496,6 @@ export function sourceTypeFromDb(value: string): SourceType {
 
 export function sourceOriginFromDb(value: string): SourceOrigin {
   return SOURCE_ORIGINS_SET.has(value) ? (value as SourceOrigin) : "search";
-}
-
-export interface CostBreakdown {
-  category: string;
-  calls: number;
-  input_tokens: number;
-  output_tokens: number;
-  estimated_cost: number;
-}
-
-export interface ResearchCosts {
-  total_estimated_cost: number;
-  total_llm_calls: number;
-  breakdown: CostBreakdown[];
 }
 
 export interface SuggestResponse {

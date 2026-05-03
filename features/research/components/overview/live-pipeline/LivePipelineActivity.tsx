@@ -1,13 +1,15 @@
 "use client";
 
-import { useMemo } from "react";
-import { AlertTriangle, AlertCircle } from "lucide-react";
+import { useEffect, useMemo } from "react";
+import { AlertTriangle, AlertCircle, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ResearchTopic } from "../../../types";
 import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
-import type { UsePipelineProgressResult } from "../../../hooks/usePipelineProgress";
-import { PipelineHeader } from "./PipelineHeader";
-import { PipelineRail } from "./PipelineRail";
+import type {
+  UsePipelineProgressResult,
+  StageKind,
+} from "../../../hooks/usePipelineProgress";
+import { useCostSummary } from "../../../hooks/useCostSummary";
 import { MetricsStrip } from "./MetricsStrip";
 import { QuotaStrip } from "./QuotaStrip";
 import { CompletedStageStrip } from "./CompletedStageStrip";
@@ -36,10 +38,23 @@ interface Props {
   onSourceUpdated?: () => void;
 }
 
+const STAGE_ORDER: StageKind[] = [
+  "search",
+  "scrape",
+  "analyze",
+  "synthesize",
+  "report",
+];
+
 /**
- * Top-level live activity dashboard. Renders header, pipeline rail, metric and
- * quota strips, the active stage view, completed stage accordions, and the
- * activity feed. Replaces the legacy ProgressPanel for all pipeline operations.
+ * Live activity dashboard. Rendered BELOW the PipelineOrchestra (which owns
+ * the header + per-stage rail above). This component focuses on the
+ * "what's happening right now" detail: metric strips, the active stage card,
+ * collapsed pills for completed stages, warnings, and the raw activity feed.
+ *
+ * Auto-collapse rule: only the active / partial / failed stage renders as a
+ * full card. Already-complete stages collapse into thin clickable strips so
+ * they don't crowd out the work that's still in flight.
  */
 export function LivePipelineActivity({
   pipeline,
@@ -55,12 +70,13 @@ export function LivePipelineActivity({
 }: Props) {
   const { state, derived } = pipeline;
 
-  /** Stages that have ANY activity — rendered as stacked cards. */
+  /**
+   * Stages with any meaningful activity. Filters out untouched "pending"
+   * stages so they don't appear as empty placeholders.
+   */
   const visibleStages = useMemo(
     () =>
-      (
-        ["search", "scrape", "analyze", "synthesize", "report"] as const
-      ).filter((kind) => {
+      STAGE_ORDER.filter((kind) => {
         const s = state.stages[kind];
         return (
           s.status !== "pending" ||
@@ -73,22 +89,88 @@ export function LivePipelineActivity({
     [state],
   );
 
+  /**
+   * For each visible stage, decide whether to render it as a full card or
+   * a collapsed strip. Completed stages always collapse — a stage that
+   * finished cleanly doesn't need to keep its detail card open while later
+   * work is in flight (or after the run is done). Failed/partial stages
+   * stay full so the user can see what went wrong.
+   */
+  const stageRender = useMemo(() => {
+    return visibleStages.map((kind) => {
+      const s = state.stages[kind];
+      const collapsed = s.status === "complete";
+      return { kind, collapsed };
+    });
+  }, [visibleStages, state]);
+
+  const { data: costSummary, refetch: refetchCosts } = useCostSummary(topicId);
+
+  useEffect(() => {
+    if (state.completedAt != null) {
+      void refetchCosts();
+    }
+  }, [state.completedAt, refetchCosts]);
 
   const authoritativeCost =
-    state.completedAt != null && topic?.cost_summary
-      ? topic.cost_summary.total_estimated_cost_usd
+    state.completedAt != null && costSummary
+      ? costSummary.total_estimated_cost_usd
       : null;
+
+  const isPipelineDone = state.completedAt != null && !isStreaming;
 
   return (
     <div className="rounded-xl border border-border/60 bg-card/40 backdrop-blur-sm overflow-hidden">
-      <PipelineHeader
-        state={state}
-        isStreaming={isStreaming}
-        etaSeconds={derived.etaSeconds}
-        onCancel={onCancel}
-        onClose={onClose}
-      />
-      <PipelineRail state={state} />
+      {/* Slim status bar — replaces the fat PipelineHeader. The orchestra
+          above already shows the controls + per-stage rail; this just
+          provides minimal context + a close affordance once done. */}
+      <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border/40 bg-muted/20">
+        {isStreaming ? (
+          <>
+            <Loader2 className="h-3 w-3 animate-spin text-primary" />
+            <span className="text-[11px] font-medium text-foreground">
+              {state.activeStage
+                ? `${state.activeStage[0].toUpperCase()}${state.activeStage.slice(1)}…`
+                : "Working…"}
+            </span>
+            {derived.etaSeconds != null && (
+              <span className="text-[10px] text-muted-foreground tabular-nums">
+                ~{derived.etaSeconds}s remaining
+              </span>
+            )}
+            <button
+              onClick={onCancel}
+              className="ml-auto inline-flex items-center gap-1 h-6 px-2 rounded-md text-[10px] font-medium text-destructive hover:bg-destructive/10 transition-colors"
+            >
+              Cancel
+            </button>
+          </>
+        ) : (
+          <>
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+            <span className="text-[11px] font-medium text-foreground">
+              Last run
+            </span>
+            {state.startedAt && state.completedAt && (
+              <span className="text-[10px] text-muted-foreground tabular-nums">
+                {Math.max(
+                  1,
+                  Math.round((state.completedAt - state.startedAt) / 1000),
+                )}
+                s total
+              </span>
+            )}
+            <button
+              onClick={onClose}
+              className="ml-auto inline-flex items-center justify-center h-6 w-6 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              aria-label="Dismiss"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </>
+        )}
+      </div>
+
       <MetricsStrip
         state={state}
         derived={derived}
@@ -104,7 +186,6 @@ export function LivePipelineActivity({
           </div>
         )}
 
-        {/* Quota / info warnings inline (separate from feed for prominence) */}
         {state.infos.some((i) => i.level === "warning") && (
           <div className="space-y-1">
             {state.infos
@@ -125,21 +206,21 @@ export function LivePipelineActivity({
           </div>
         )}
 
-        {/* Stage cards stacked — every stage that has activity renders, not just one. */}
-        <div
-          className={cn(
-            "grid gap-3",
-            "lg:grid-cols-[minmax(0,1fr)_320px]",
-          )}
-        >
-          <div className="space-y-3 min-w-0">
-            {visibleStages.length === 0 && isStreaming && (
+        <div className={cn("grid gap-3", "lg:grid-cols-[minmax(0,1fr)_320px]")}>
+          <div className="space-y-2 min-w-0">
+            {stageRender.length === 0 && isStreaming && (
               <div className="rounded-lg border border-dashed border-border/60 bg-card/30 px-4 py-6 text-center text-xs text-muted-foreground">
                 Connecting to backend… first events arriving shortly.
               </div>
             )}
 
-            {visibleStages.map((kind) => {
+            {stageRender.map(({ kind, collapsed }) => {
+              const stage = state.stages[kind];
+
+              if (collapsed) {
+                return <CompletedStageStrip key={kind} stage={stage} />;
+              }
+
               if (kind === "search") {
                 return (
                   <SearchStageView
@@ -200,9 +281,18 @@ export function LivePipelineActivity({
               }
               return null;
             })}
+
+            {/* When the whole pipeline is done and only collapsed pills
+                remain, surface a small celebratory summary line. */}
+            {isPipelineDone &&
+              stageRender.every((s) => s.collapsed) &&
+              stageRender.length > 0 && (
+                <div className="text-[11px] text-muted-foreground italic px-1">
+                  All stages complete. Click any pill above to expand details.
+                </div>
+              )}
           </div>
 
-          {/* Activity feed — right rail on lg, below on smaller screens */}
           <ActivityFeed
             rawEvents={rawEvents}
             state={state}

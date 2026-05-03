@@ -181,6 +181,32 @@ export const primaryNavItems: ShellNavItem[] = [
     description: "Manage context items, templates, and knowledge",
     color: "cyan",
   },
+  {
+    label: "Knowledge",
+    href: "/rag/data-stores",
+    iconName: "Database",
+    section: "primary",
+    description:
+      "Documents, data stores, and RAG search across your indexed content",
+    color: "amber",
+    children: [
+      {
+        label: "Data Stores",
+        href: "/rag/data-stores",
+        iconName: "Database",
+      },
+      {
+        label: "Search",
+        href: "/rag/search",
+        iconName: "Search",
+      },
+      {
+        label: "Documents",
+        href: "/rag/documents",
+        iconName: "FileText",
+      },
+    ],
+  },
 ];
 
 // Admin navigation items

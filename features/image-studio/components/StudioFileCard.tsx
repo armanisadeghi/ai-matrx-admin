@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
     AlertCircle,
     Check,
@@ -46,6 +46,19 @@ interface StudioFileCardProps {
     onMetadataPatch?: (patch: Partial<ImageMetadata>) => void;
     /** Drop the AI-authored metadata for this file. */
     onMetadataClear?: () => void;
+    /**
+     * Highlight the rename pencil — used by the auto-name banner to draw
+     * the eye toward files that still carry an auto-derived filename.
+     */
+    needsRename?: boolean;
+    /**
+     * Register an imperative "open the rename input + focus" action with
+     * the parent. Called once on mount and on unmount with `null`.
+     */
+    registerRenameAction?: (
+        fileId: string,
+        action: (() => void) | null,
+    ) => void;
 }
 
 export function StudioFileCard({
@@ -61,11 +74,36 @@ export function StudioFileCard({
     onDescribe,
     onMetadataPatch,
     onMetadataClear,
+    needsRename = false,
+    registerRenameAction,
 }: StudioFileCardProps) {
     const [collapsed, setCollapsed] = useState(false);
     const [renaming, setRenaming] = useState(false);
     const [rawBase, setRawBase] = useState(file.filenameBase);
+    const renameInputRef = useRef<HTMLInputElement | null>(null);
     const variantList = Object.values(file.variants);
+
+    // Imperative rename trigger so the shell's auto-name banner can scroll
+    // to + open this card's rename input from afar. The renameInputRef has
+    // `autoFocus` attached so we just flip into renaming mode and the next
+    // microtask lands focus + selection on the input.
+    React.useEffect(() => {
+        if (!registerRenameAction) return;
+        const action = () => {
+            setRawBase(file.filenameBase);
+            setRenaming(true);
+            requestAnimationFrame(() => {
+                const el = renameInputRef.current;
+                if (el) {
+                    el.focus();
+                    el.select();
+                    el.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+            });
+        };
+        registerRenameAction(file.id, action);
+        return () => registerRenameAction(file.id, null);
+    }, [registerRenameAction, file.id, file.filenameBase]);
 
     // Which preset ids are still to be processed?
     const pendingPresetIds = selectedPresetIds.filter(
@@ -104,6 +142,7 @@ export function StudioFileCard({
                     {renaming ? (
                         <div className="flex items-center gap-1">
                             <input
+                                ref={renameInputRef}
                                 type="text"
                                 value={rawBase}
                                 onChange={(e) => setRawBase(e.target.value)}
@@ -141,7 +180,10 @@ export function StudioFileCard({
                     ) : (
                         <div className="flex items-center gap-1.5">
                             <p
-                                className="font-mono text-sm truncate"
+                                className={cn(
+                                    "font-mono text-sm truncate",
+                                    needsRename && "text-amber-600 dark:text-amber-400",
+                                )}
                                 title={file.filenameBase}
                             >
                                 {file.filenameBase}
@@ -149,11 +191,25 @@ export function StudioFileCard({
                             <button
                                 type="button"
                                 onClick={() => setRenaming(true)}
-                                className="h-5 w-5 rounded hover:bg-accent text-muted-foreground hover:text-foreground flex items-center justify-center"
-                                title="Rename filename base"
+                                className={cn(
+                                    "h-5 w-5 rounded flex items-center justify-center transition-colors",
+                                    needsRename
+                                        ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 hover:bg-amber-500/25 ring-1 ring-amber-500/40"
+                                        : "hover:bg-accent text-muted-foreground hover:text-foreground",
+                                )}
+                                title={
+                                    needsRename
+                                        ? "Auto-generated name — click to rename before generating variants"
+                                        : "Rename filename base"
+                                }
                             >
                                 <Edit3 className="h-3 w-3" />
                             </button>
+                            {needsRename && (
+                                <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-300 whitespace-nowrap">
+                                    auto-named
+                                </span>
+                            )}
                         </div>
                     )}
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">

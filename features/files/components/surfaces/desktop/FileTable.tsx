@@ -43,6 +43,7 @@ import type {
   SizeFilter,
 } from "@/features/files/types";
 import { ShareLinkDialog } from "@/features/files/components/core/ShareLinkDialog/ShareLinkDialog";
+import { useInfiniteWindow } from "@/features/files/hooks/useInfiniteWindow";
 import type { CloudFilesSection } from "./section";
 import {
   buildRows,
@@ -133,6 +134,26 @@ export function FileTable({
       sortBy,
       sortDir,
     ],
+  );
+
+  // Infinite scroll — slice the rows window. Resets to the top
+  // whenever the user changes context (section / folder / filters /
+  // search / sort). Without the reset, a user who scrolled deep into
+  // /shared and then jumps to /trash would inherit a 500-row window
+  // pre-loaded for nothing.
+  //
+  // The reset key is intentionally coarse: any of these changing
+  // means "the user is looking at a different list now."
+  const resetKey = `${section}|${searchQuery}|${filter ?? ""}|${kindFilter}|${sortBy}:${sortDir}|${JSON.stringify(columnFilters)}`;
+  const { visibleCount, hasMore, sentinelRef } = useInfiniteWindow({
+    total: rows.length,
+    initial: 50,
+    pageSize: 50,
+    resetKey,
+  });
+  const visibleRows = useMemo(
+    () => rows.slice(0, visibleCount),
+    [rows, visibleCount],
   );
 
   // Resolve "Parent/Child" path for a given folder id. Cached per-render via
@@ -351,7 +372,7 @@ export function FileTable({
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => {
+            {visibleRows.map((row) => {
               const id = row.kind === "file" ? row.file.id : row.folder.id;
               const visibility =
                 row.kind === "file"
@@ -407,6 +428,33 @@ export function FileTable({
                 />
               );
             })}
+            {/*
+              Infinite-scroll sentinel + footer. The sentinel is an
+              empty <tr> the IntersectionObserver watches; when it
+              enters the viewport (with a 300px lead) the visible
+              window grows by `pageSize`. The footer shows the
+              loaded-vs-total count so the user has a sense of
+              progress on long lists.
+            */}
+            {hasMore ? (
+              <tr ref={sentinelRef as React.LegacyRef<HTMLTableRowElement>}>
+                <td colSpan={5} className="px-4 py-4 text-center">
+                  <span className="inline-flex items-center gap-2 text-[11px] text-muted-foreground">
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                    Loading more…
+                  </span>
+                </td>
+              </tr>
+            ) : rows.length > 50 ? (
+              <tr>
+                <td
+                  colSpan={5}
+                  className="px-4 py-3 text-center text-[11px] text-muted-foreground"
+                >
+                  Showing all {rows.length.toLocaleString()} items.
+                </td>
+              </tr>
+            ) : null}
           </tbody>
         </table>
       </div>

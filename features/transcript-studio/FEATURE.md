@@ -1,0 +1,105 @@
+# FEATURE.md — `transcript-studio`
+
+**Status:** `scaffolded`
+**Tier:** `1`
+**Last updated:** `2026-05-02`
+
+---
+
+## Purpose
+
+A 4-column live transcription workspace. Users record audio, see raw transcript stream into Column 1, watch an AI agent clean it in Column 2 every ~30s, see concepts extracted by a different agent in Column 3 every ~200s, and configure Column 4 with a pluggable module (default: action-item tasks; alternates: flashcards, decisions, quiz). Built for long sessions (1–3h meetings, lectures) with crash-safe IndexedDB safeguarding.
+
+---
+
+## Entry points
+
+**Routes**
+- `app/(authenticated)/transcript-studio/` — full-page workspace, sidebar + active session view.
+
+**Window panel** _(planned, Phase 10)_
+- `features/window-panels/windows/transcript-studio/` — same `StudioView` inside a floating overlay.
+
+**Components**
+- `features/transcript-studio/components/StudioView.tsx` — config-driven core. Both the route and the (future) window mount this component.
+- `features/transcript-studio/components/StudioLayout.tsx` — sidebar + main area shell with mobile drawer.
+- `features/transcript-studio/components/StudioSidebar.tsx` — session list + new-session button.
+- `features/transcript-studio/components/EmptySessionState.tsx` — empty workspace before any session is selected.
+- `features/transcript-studio/components/ActiveSessionPlaceholder.tsx` — Phase 1 stub for the active session view; replaced in Phase 3+.
+
+**Hooks** _(planned, Phases 2–7)_
+- `useStudioSession()` — bridges the global recording portal ↔ studio Redux state.
+- `useTriggerScheduler()` — drives the 30s / 200s cleaning + concept ticks.
+- `useColumnAgent()` — generic shortcut invocation per column.
+- `useScrollSync()` — 4-way time-anchored scroll coordination.
+
+**Services**
+- `features/transcript-studio/service/studioService.ts` — Supabase CRUD for `studio_sessions`. Phase 2+ will add per-segment helpers.
+
+**Redux slice**
+- `features/transcript-studio/redux/slice.ts` — `transcriptStudio` slice. State: `{ byId, activeSessionId, fetchStatus, ui }` where `ui[sessionId]` carries ephemeral autoscroll / cursor-time / leader-column state.
+
+---
+
+## Data model
+
+**Database tables** (Supabase)
+- `studio_sessions` — parent. Multi-scope (`user_id`, `organization_id`, `project_id`, `is_public`). `transcript_id` is a nullable FK to `transcripts(id)` for bidirectional conversion with the simpler transcripts feature.
+- `studio_recording_segments` — one row per start/stop cycle.
+- `studio_raw_segments` — append-only chunk log (Column 1).
+- `studio_cleaned_segments` — versioned cleaned text (Column 2). `superseded_at` flips when a later run replaces from the same time anchor forward.
+- `studio_concept_items` — Column 3 output (themes, key ideas, entities, questions).
+- `studio_module_segments` — Column 4 output (polymorphic `payload jsonb` keyed by `module_id` + `block_type`).
+- `studio_runs` — agent invocation audit trail (column 2/3/4, conversation_id, status).
+- `studio_session_settings` — 1:1 with session. Per-session shortcut + interval + module overrides; bounds enforced via DB CHECK constraints (`cleaning_interval_ms BETWEEN 15000 AND 120000`, `concept_interval_ms BETWEEN 60000 AND 600000`, `module_interval_ms BETWEEN 15000 AND 1800000`).
+
+RLS uses the canonical `check_resource_access(...)` pattern. Child tables inherit access via `EXISTS` on the parent `studio_sessions` row.
+
+**Migration**
+- `migrations/transcript_studio_schema.sql`
+
+**Key types**
+- `StudioSession`, `RawSegment`, `CleanedSegment`, `ConceptItem`, `ModuleSegment`, `AgentRun`, `SessionSettings`, `StudioViewConfig` — all in `features/transcript-studio/types.ts`.
+
+---
+
+## Key flows
+
+### Phase 1 (current): list + create session
+1. Route SSR-fetches `studio_sessions` via `listSessionsServer`, hands them to `StudioHydrator` which seeds Redux during the first render pass.
+2. `StudioView` reads `fetchStatus` and runs a client-side `fetchSessionsThunk()` if SSR didn't seed.
+3. `StudioSidebar` renders the list. "New" calls `createSessionThunk({ userId, activate: true })` → inserts a `studio_sessions` row → updates Redux → activates the new session.
+4. The active session renders `ActiveSessionPlaceholder` until Phase 3 wires the 4-column workspace.
+
+### Bidirectional conversion (Phase 9)
+- "Promote to Studio" on any `transcripts` row → creates a `studio_sessions` row with `transcript_id` set + migrates `transcripts.segments` JSONB into `studio_raw_segments` rows.
+- "Save as Transcript" on a studio session → materializes a `transcripts` row and back-links via `transcript_id`.
+
+### Resume-marker cleaning (Phase 5)
+- Cleaning prompt embeds the last ~1000 chars of prior cleaned output ending in `[[RESUME]]`, followed by the new raw text since that anchor. The agent replies starting with `[[RESUME]]`; we strip it and replace any `studio_cleaned_segments` rows whose `t_start >= replaceFromTime`.
+
+### Synchronized scrolling (Phase 4)
+- Each segment renders a `<div data-tstart=N data-tend=M>` wrapper. A `wheel` / `touchstart` listener flips a column to "leader" for 600ms; while leader, an IntersectionObserver writes `cursorTime` to Redux. The other three columns binary-search their segments for `[t_start, t_end]` containing `cursorTime` and `scrollIntoView`. Per-column "autoscroll" flag pauses when the user scrolls past 80px from the bottom.
+
+---
+
+## Coexistence with `features/transcripts/`
+
+These are sibling features. The simple `features/transcripts/` view is shaped for one-shot, finished transcripts (one JSONB segments blob per row). The studio uses per-segment rows because live append + per-segment realtime + indexed time queries don't fit a hot JSONB blob. Bidirectional one-click conversion is the integration contract — see `service/transcriptBridge.ts` (Phase 9).
+
+---
+
+## Invariants
+
+- Every segment in every column has `t_start`/`t_end` in seconds-from-session-start, paused time excluded. This is the single coordinate system for sync scrolling.
+- `studio_raw_segments` is append-only from the application's perspective (RLS allows updates for editor scope, but the recorder must never patch existing rows).
+- `studio_cleaned_segments` keeps superseded rows for audit; the active selector filters `superseded_at IS NULL`.
+- Module switch mid-session preserves prior module segments tagged with their original `module_id`. The active selector returns segments where `module_id === session.module_id`. A "show prior modules" toggle on the column header (`studio_session_settings.show_prior_modules`) reveals the rest.
+- Recording lives in a global provider (Phase 2), not in `StudioView` — recording continues across route navigations.
+- All agent runs go through `useShortcutTrigger` / `launchAgentExecution`; never call agents directly.
+
+---
+
+## Change Log
+
+- **2026-05-02** — Phase 1 scaffolding: 8-table schema migrated, slice + thunks + service for sessions CRUD, route + SSR hydrator + sidebar + empty state. Active-session view is a placeholder until Phase 3.

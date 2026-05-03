@@ -27,6 +27,8 @@ import { UniformHeightProvider } from "@/features/applet/runner/layouts/core/Uni
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import { TranscriptsProvider } from "@/features/transcripts/context/TranscriptsContext";
 import { AudioRecoveryProvider } from "@/features/audio/providers/AudioRecoveryProvider";
+import { GlobalRecordingProvider } from "@/providers/GlobalRecordingProvider";
+import { RecordingPill } from "@/components/global/RecordingPill";
 import { RequestRecoveryProvider } from "@/features/request-recovery/providers/RequestRecoveryProvider";
 import { RecoveryWindow } from "@/features/request-recovery/components/RecoveryWindow";
 import { RecoveryNudge } from "@/features/request-recovery/components/RecoveryNudge";
@@ -34,6 +36,7 @@ import DeferredSingletons from "./DeferredSingletons";
 import GlobalTaskShortcut from "@/features/tasks/widgets/GlobalTaskShortcut";
 import CreateTaskFromSourceDialog from "@/features/tasks/widgets/CreateTaskFromSourceDialog";
 import { CloudFilesPickerHost } from "@/features/files/components/pickers/CloudFilesPickerHost";
+import { UploadGuardHost } from "@/features/files/upload/UploadGuardHost";
 
 // Phase 11 — legacy file system providers removed:
 //   - lib/redux/fileSystem/Provider (FileSystemProvider)
@@ -70,7 +73,10 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                         <TranscriptsProvider>
                           <AudioRecoveryProvider>
                             <RequestRecoveryProvider>
-                              {children}
+                              <GlobalRecordingProvider>
+                                {children}
+                                <RecordingPill />
+                              </GlobalRecordingProvider>
                               <RecoveryWindow />
                               <RecoveryNudge />
                               <DeferredSingletons />
@@ -81,6 +87,13 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                   are callable from anywhere in the app once this host
                                   mounts. See features/files/components/pickers/. */}
                               <CloudFilesPickerHost />
+                              {/* Upload guard — exposes the imperative
+                                  `requestUpload()` API. Hashes incoming
+                                  files, scans Redux for duplicates,
+                                  shows the resolution dialog when
+                                  needed, then dispatches the upload.
+                                  See features/files/upload/. */}
+                              <UploadGuardHost />
                               {/* File preview is delivered via a registered
                                   WindowPanel (`filePreviewWindow`) mounted by
                                   the UnifiedOverlayController — no host needed

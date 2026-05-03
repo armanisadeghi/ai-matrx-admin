@@ -534,6 +534,28 @@ export interface UploadFilesArg {
   metadata?: Record<string, unknown>;
   /** Parallel upload ceiling. Defaults to 3. */
   concurrency?: number;
+  /**
+   * Per-file path overrides. Keyed by index into `files` (string
+   * because Records use string keys). When set for a file, the
+   * upload uses this exact path (relative to the parent prefix)
+   * instead of the file's own name — i.e. it can target an EXISTING
+   * file's path so the backend version-bumps it.
+   *
+   * The auto " (1)" / " (2)" rename in `uploadFiles` is bypassed
+   * for any index that has an override, since the override is the
+   * user's explicit choice (typically "Overwrite" from the
+   * duplicate-upload dialog).
+   *
+   * Indices not present here use the default name resolution.
+   */
+  filenameOverrides?: Record<number, string>;
+  /**
+   * Indices to drop from the upload entirely. Used by the
+   * duplicate-upload dialog's "Skip" action — we want to keep the
+   * batch shape stable for telemetry, but not actually upload
+   * those files. Indices reference the original `files` array.
+   */
+  skipIndices?: number[];
 }
 
 export interface SignedUrlArg {

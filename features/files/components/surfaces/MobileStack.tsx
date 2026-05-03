@@ -621,20 +621,17 @@ function FloatingUploadAction({ parentFolderId }: FloatingUploadActionProps) {
           input.addEventListener("change", async () => {
             if (!input.files?.length) return;
             const files = Array.from(input.files);
-            const { store } = await import("@/lib/redux/store").then((mod) => {
-              const storeInstance = mod.getStore();
-              if (!storeInstance) throw new Error("Store not ready");
-              return { store: storeInstance };
-            });
-            const { uploadFiles } =
-              await import("@/features/files/redux/thunks");
-            void store.dispatch(
-              uploadFiles({
-                files,
-                parentFolderId,
-                visibility: "private",
-              }),
+            // Routes through the upload guard so the user gets the
+            // duplicate-detection pre-flight + dialog (same UX as
+            // the desktop drag-drop / FAB).
+            const { requestUpload } = await import(
+              "@/features/files/upload/UploadGuardHost"
             );
+            void requestUpload({
+              files,
+              parentFolderId,
+              visibility: "private",
+            });
           });
           input.click();
         }}

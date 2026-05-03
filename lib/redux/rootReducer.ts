@@ -55,6 +55,8 @@ import canvasReducer from "@/features/canvas/redux/canvasSlice";
 import textDiffReducer from "./slices/textDiffSlice";
 import noteVersionsReducer from "./slices/noteVersionsSlice";
 import notesReducer from "@/features/notes/redux/slice";
+import transcriptStudioReducer from "@/features/transcript-studio/redux/slice";
+import recordingsReducer from "@/lib/redux/slices/recordingsSlice";
 import { codeFilesReducer } from "@/features/code-files/redux/slice";
 import codeWorkspaceReducer from "@/features/code/redux/codeWorkspaceSlice";
 import codeTabsReducer from "@/features/code/redux/tabsSlice";
@@ -188,6 +190,8 @@ export const slimReducerMap = {
   textDiff: textDiffReducer,
   noteVersions: noteVersionsReducer,
   notes: notesReducer,
+  transcriptStudio: transcriptStudioReducer,
+  recordings: recordingsReducer,
   codeFiles: codeFilesReducer,
 
   // New VSCode-style workspace (features/code) ----------------------------

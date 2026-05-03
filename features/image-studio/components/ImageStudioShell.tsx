@@ -13,7 +13,7 @@
  * zero layout shift.
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { PresetCatalog } from "./PresetCatalog";
 import { StudioDropZone } from "./StudioDropZone";
@@ -26,7 +26,9 @@ import {
   downloadVariantsAsZip,
   type BundleEntry,
 } from "../utils/download-bundle";
+import { slugifyFilename } from "../utils/slugify-filename";
 import type { ProcessedVariant } from "../types";
+import { Sparkles, Wand2, Edit3, X } from "lucide-react";
 
 interface ImageStudioShellProps {
   /** Optional default folder for Save-to-library. */
@@ -53,6 +55,34 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
   // optionally crop it before the rest of the studio sees it. When the
   // queue is empty the dialog stays closed.
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+
+  // ── Rename-warning gate ──────────────────────────────────────────────
+  // Each file's filenameBase becomes the per-source subfolder AND the
+  // slug for every variant it produces. Generating 30 variants under an
+  // ugly auto-derived name like "img-7234" is a chore to clean up later,
+  // so we surface a banner that asks the user to either (a) rename the
+  // root, (b) describe with AI to get a name, or (c) acknowledge and
+  // generate anyway. Acknowledgement is per-Generate-click — adding a
+  // file or AI-describing one resets it.
+  const [renameAcknowledged, setRenameAcknowledged] = useState(false);
+  // Each file card registers a `focusRename` action here on mount; the
+  // shell calls it to enter rename mode and focus the input from afar
+  // (e.g. when the user clicks "Rename now" in the auto-name banner).
+  const renameActionsRef = useRef(new Map<string, () => void>());
+  const registerRenameAction = useCallback(
+    (fileId: string, action: (() => void) | null) => {
+      if (action) renameActionsRef.current.set(fileId, action);
+      else renameActionsRef.current.delete(fileId);
+    },
+    [],
+  );
+
+  // Reset the ack whenever the file set grows or any file is described.
+  // (Removing a file or finishing a describe = enough has changed that
+  // the banner deserves a fresh look.)
+  useEffect(() => {
+    setRenameAcknowledged(false);
+  }, [studio.files.length, studio.describingFileIds]);
 
   const queueForCrop = useCallback((incoming: File[]) => {
     const images = incoming.filter((f) => f.type.startsWith("image/"));
@@ -177,14 +207,51 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
     [studio],
   );
 
+  // A file is "auto-named" when its current filenameBase matches the
+  // slug of its original upload name AND the AI describe agent hasn't
+  // overwritten it. These are the names the user almost always wants
+  // to set BEFORE 30 variants get generated under them.
+  const autoNamedFileIds = useMemo(() => {
+    const ids: string[] = [];
+    for (const f of studio.files) {
+      const looksAuto =
+        f.filenameBase === slugifyFilename(f.originalName) && !f.imageMetadata;
+      if (looksAuto) ids.push(f.id);
+    }
+    return ids;
+  }, [studio.files]);
+
+  const focusFirstAutoNamed = useCallback(() => {
+    const id = autoNamedFileIds[0];
+    if (!id) return;
+    const action = renameActionsRef.current.get(id);
+    action?.();
+  }, [autoNamedFileIds]);
+
   const handleGenerate = useCallback(async () => {
+    // First click while auto-named files exist surfaces the banner —
+    // don't generate yet. The user can rename, describe with AI, or
+    // click Generate again to proceed.
+    if (autoNamedFileIds.length > 0 && !renameAcknowledged) {
+      setRenameAcknowledged(true);
+      focusFirstAutoNamed();
+      toast.warning(
+        `${autoNamedFileIds.length} file${autoNamedFileIds.length === 1 ? "" : "s"} still uses an auto-generated name`,
+        {
+          description:
+            "Rename them first or click Generate again to use the auto names.",
+          duration: 4500,
+        },
+      );
+      return;
+    }
     await studio.generate();
     if (studio.files.some((f) => f.status !== "error")) {
       toast.success(
         `Generated ${studio.files.length * studio.selectedPresetIds.length} variants`,
       );
     }
-  }, [studio]);
+  }, [studio, autoNamedFileIds, renameAcknowledged, focusFirstAutoNamed]);
 
   const handleDescribeAll = useCallback(async () => {
     if (studio.files.length === 0) return;
@@ -242,6 +309,62 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
                   Remove all
                 </button>
               </div>
+              {/* Auto-name banner — surfaces when one or more files
+                  still carry an auto-derived filenameBase. The slug
+                  becomes the per-source subfolder AND every variant's
+                  filename, so renaming up front saves a 30-file rename
+                  later. */}
+              {autoNamedFileIds.length > 0 && (
+                <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 dark:bg-amber-500/5 p-3 flex items-start gap-3">
+                  <div className="h-8 w-8 shrink-0 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                    <Edit3 className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
+                      {autoNamedFileIds.length === 1
+                        ? "1 file still has an auto-generated name"
+                        : `${autoNamedFileIds.length} files still have auto-generated names`}
+                    </p>
+                    <p className="text-xs text-amber-800/80 dark:text-amber-300/80 leading-snug mt-0.5">
+                      Rename now and your variants will inherit a clean,
+                      shareable slug. Otherwise every preset will be saved
+                      under the auto name.
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                      <button
+                        type="button"
+                        onClick={focusFirstAutoNamed}
+                        className="inline-flex items-center gap-1 rounded-md bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 text-xs font-medium"
+                      >
+                        <Edit3 className="h-3 w-3" />
+                        Rename now
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleDescribeAll}
+                        className="inline-flex items-center gap-1 rounded-md border border-amber-500/40 hover:bg-amber-500/10 text-amber-800 dark:text-amber-300 px-2.5 py-1 text-xs font-medium"
+                      >
+                        <Wand2 className="h-3 w-3" />
+                        Use AI to name
+                      </button>
+                      {renameAcknowledged && (
+                        <span className="inline-flex items-center gap-1 text-[11px] text-amber-700 dark:text-amber-400">
+                          <Sparkles className="h-3 w-3" />
+                          Click Generate again to use the auto names
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setRenameAcknowledged(true)}
+                    className="h-6 w-6 rounded-md hover:bg-amber-500/15 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0"
+                    title="Dismiss for this Generate"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              )}
               <div className="flex flex-col gap-3">
                 {studio.files.map((f) => (
                   <StudioFileCard
@@ -250,6 +373,8 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
                     selectedPresetIds={studio.selectedPresetIds}
                     selectedVariantFilenames={selectedFilenames}
                     isPreviewActive={previewFileId === f.id && previewOpen}
+                    needsRename={autoNamedFileIds.includes(f.id)}
+                    registerRenameAction={registerRenameAction}
                     onToggleVariantSelect={toggleVariantSelect}
                     onRemove={() => studio.removeFile(f.id)}
                     onRename={(base) => studio.setFilenameBase(f.id, base)}

@@ -31,6 +31,8 @@ import { UniformHeightProvider } from "@/features/applet/runner/layouts/core/Uni
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import { TranscriptsProvider } from "@/features/transcripts/context/TranscriptsContext";
 import { AudioRecoveryProvider } from "@/features/audio/providers/AudioRecoveryProvider";
+import { GlobalRecordingProvider } from "@/providers/GlobalRecordingProvider";
+import { RecordingPill } from "@/components/global/RecordingPill";
 import { RequestRecoveryProvider } from "@/features/request-recovery/providers/RequestRecoveryProvider";
 import { RecoveryWindow } from "@/features/request-recovery/components/RecoveryWindow";
 import { RecoveryNudge } from "@/features/request-recovery/components/RecoveryNudge";
@@ -77,7 +79,10 @@ export function EntityProviders({
                         <TranscriptsProvider>
                           <AudioRecoveryProvider>
                             <RequestRecoveryProvider>
-                              <EntityPack>{children}</EntityPack>
+                              <GlobalRecordingProvider>
+                                <EntityPack>{children}</EntityPack>
+                                <RecordingPill />
+                              </GlobalRecordingProvider>
                               <RecoveryWindow />
                               <RecoveryNudge />
                               <DeferredSingletons />

@@ -905,6 +905,29 @@
         }
       }
     },
+    "/legal/webhooks/courtlistener": {
+      "post": {
+        "tags": [
+          "Legal"
+        ],
+        "summary": "Courtlistener Webhook",
+        "operationId": "courtlistener_webhook_legal_webhooks_courtlistener_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Courtlistener Webhook Legal Webhooks Courtlistener Post"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/ai/agent/{agent_id}": {
       "post": {
         "tags": [
@@ -4352,6 +4375,7 @@
           "Research"
         ],
         "summary": "Add Keywords",
+        "description": "Insert keywords onto a topic.\n\nNo cap on count — the user can have as many keywords as they want.\n`max_keywords` is consulted by the `/run` orchestrator only (it\nbounds how many keywords get processed per pipeline pass).",
         "operationId": "add_keywords_research_topics__topic_id__keywords_post",
         "parameters": [
           {
@@ -4461,6 +4485,57 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/research/topics/{topic_id}/keywords/reorder": {
+      "patch": {
+        "tags": [
+          "Research"
+        ],
+        "summary": "Reorder Keywords",
+        "description": "Persist drag-to-reorder of a topic's keywords.\n\nBody: `{\"keyword_ids\": [\"id1\", \"id2\", ...]}` — the COMPLETE new\nordering. Each row's `position` is rewritten to `idx + 1`\n(1-indexed) inside a single ORM transaction; the\n`rs_keyword_topic_position_unique` constraint is `DEFERRABLE\nINITIALLY DEFERRED` so transient duplicates during the swap are\ntolerated.\n\nThe `/run` orchestrator processes the first `rs_topic.max_keywords`\nrows ordered by `(position, created_at)`, so reordering keywords\nbubbles their priority — drag the keyword you want auto-processed\nnext into the top N slot. Keywords beyond the cap stay on the\ntopic (visible in the UI) but never enter auto-mode until you\nraise the cap or move them into the top N.\n\nReturns the topic's keywords in their new persisted order. Emits\none `RecordUpdate(table=rs_keyword)` per touched row for reactive\nfrontend stores.\n\n400 if the request body lists keyword IDs that don't belong to\nthis topic, omits any current keyword, or contains duplicates. Use\nPOST /keywords / DELETE /keywords/{id} to add or remove keywords.",
+        "operationId": "reorder_keywords_research_topics__topic_id__keywords_reorder_patch",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Topic Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KeywordReorderRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -6478,6 +6553,585 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/legal/search": {
+      "post": {
+        "tags": [
+          "Legal"
+        ],
+        "summary": "Legal Search",
+        "description": "Streaming search — emits one data event per hit, then a final summary.",
+        "operationId": "legal_search_legal_search_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegalSearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/legal/opinions/{opinion_id}": {
+      "get": {
+        "tags": [
+          "Legal"
+        ],
+        "summary": "Get Opinion Endpoint",
+        "operationId": "get_opinion_endpoint_legal_opinions__opinion_id__get",
+        "parameters": [
+          {
+            "name": "opinion_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Opinion Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Opinion Endpoint Legal Opinions  Opinion Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/legal/dockets/{docket_id}": {
+      "get": {
+        "tags": [
+          "Legal"
+        ],
+        "summary": "Get Docket Endpoint",
+        "operationId": "get_docket_endpoint_legal_dockets__docket_id__get",
+        "parameters": [
+          {
+            "name": "docket_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Docket Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Docket Endpoint Legal Dockets  Docket Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/legal/citations/lookup": {
+      "post": {
+        "tags": [
+          "Legal"
+        ],
+        "summary": "Citations Lookup",
+        "operationId": "citations_lookup_legal_citations_lookup_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CitationLookupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Citations Lookup Legal Citations Lookup Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/legal/admin/overview": {
+      "get": {
+        "tags": [
+          "Legal Admin"
+        ],
+        "summary": "Overview",
+        "operationId": "overview_legal_admin_overview_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Overview Legal Admin Overview Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/legal/admin/stats": {
+      "get": {
+        "tags": [
+          "Legal Admin"
+        ],
+        "summary": "Stats",
+        "operationId": "stats_legal_admin_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Stats Legal Admin Stats Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/legal/admin/courts": {
+      "get": {
+        "tags": [
+          "Legal Admin"
+        ],
+        "summary": "Courts",
+        "operationId": "courts_legal_admin_courts_get",
+        "parameters": [
+          {
+            "name": "in_use_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Only courts currently active",
+              "default": false,
+              "title": "In Use Only"
+            },
+            "description": "Only courts currently active"
+          },
+          {
+            "name": "jurisdiction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Jurisdiction"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 5000,
+              "minimum": 1,
+              "default": 500,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Courts Legal Admin Courts Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/legal/admin/presets": {
+      "get": {
+        "tags": [
+          "Legal Admin"
+        ],
+        "summary": "Presets",
+        "operationId": "presets_legal_admin_presets_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Presets Legal Admin Presets Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/legal/admin/ingest-runs": {
+      "get": {
+        "tags": [
+          "Legal Admin"
+        ],
+        "summary": "Ingest Runs",
+        "operationId": "ingest_runs_legal_admin_ingest_runs_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Ingest Runs Legal Admin Ingest Runs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/legal/admin/sync/courts": {
+      "post": {
+        "tags": [
+          "Legal Admin"
+        ],
+        "summary": "Sync Courts",
+        "operationId": "sync_courts_legal_admin_sync_courts_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/legal/admin/sync/clusters": {
+      "post": {
+        "tags": [
+          "Legal Admin"
+        ],
+        "summary": "Sync Clusters",
+        "operationId": "sync_clusters_legal_admin_sync_clusters_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncClustersRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/legal/admin/sync/opinions": {
+      "post": {
+        "tags": [
+          "Legal Admin"
+        ],
+        "summary": "Sync Opinions",
+        "operationId": "sync_opinions_legal_admin_sync_opinions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncOpinionsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/legal/admin/clusters/local": {
+      "get": {
+        "tags": [
+          "Legal Admin"
+        ],
+        "summary": "Search Local",
+        "operationId": "search_local_legal_admin_clusters_local_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Q"
+            }
+          },
+          {
+            "name": "court_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Court Ids"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Search Local Legal Admin Clusters Local Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/legal/admin/clusters/{cluster_id}": {
+      "get": {
+        "tags": [
+          "Legal Admin"
+        ],
+        "summary": "Cluster Detail",
+        "operationId": "cluster_detail_legal_admin_clusters__cluster_id__get",
+        "parameters": [
+          {
+            "name": "cluster_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Cluster Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Cluster Detail Legal Admin Clusters  Cluster Id  Get"
+                }
               }
             }
           },
@@ -16143,6 +16797,74 @@
             "title": "Debug",
             "default": false
           },
+          "tools": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/RegisteredToolSpec"
+                },
+                {
+                  "$ref": "#/components/schemas/InlineToolSpec"
+                },
+                {
+                  "$ref": "#/components/schemas/AgentToolSpec"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "kind",
+                "mapping": {
+                  "agent": "#/components/schemas/AgentToolSpec",
+                  "inline": "#/components/schemas/InlineToolSpec",
+                  "registered": "#/components/schemas/RegisteredToolSpec"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Tools",
+            "default": []
+          },
+          "tools_replace": {
+            "anyOf": [
+              {
+                "items": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/RegisteredToolSpec"
+                    },
+                    {
+                      "$ref": "#/components/schemas/InlineToolSpec"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AgentToolSpec"
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "kind",
+                    "mapping": {
+                      "agent": "#/components/schemas/AgentToolSpec",
+                      "inline": "#/components/schemas/InlineToolSpec",
+                      "registered": "#/components/schemas/RegisteredToolSpec"
+                    }
+                  }
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tools Replace"
+          },
+          "client": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClientContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "client_tools": {
             "items": {
               "type": "string"
@@ -16286,6 +17008,66 @@
         },
         "type": "object",
         "title": "AgentStartRequest"
+      },
+      "AgentToolSpec": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "agent",
+            "title": "Kind",
+            "default": "agent"
+          },
+          "agent_id": {
+            "type": "string",
+            "title": "Agent Id",
+            "description": "UUID of the saved agent to project as a tool."
+          },
+          "is_version": {
+            "type": "boolean",
+            "title": "Is Version",
+            "description": "When True, agent_id refers to an agx_version row instead of agx_agent.",
+            "default": false
+          },
+          "description_override": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description Override",
+            "description": "Optional override of the projected tool's description. When omitted, the agent's own description is used."
+          },
+          "max_calls_per_conversation": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Calls Per Conversation"
+          },
+          "cost_cap_per_call": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Cap Per Call"
+          }
+        },
+        "type": "object",
+        "required": [
+          "agent_id"
+        ],
+        "title": "AgentToolSpec"
       },
       "AgentUserInputBody": {
         "properties": {
@@ -17706,10 +18488,54 @@
             "title": "System Instruction"
           },
           "tools": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/RegisteredToolSpec"
+                },
+                {
+                  "$ref": "#/components/schemas/InlineToolSpec"
+                },
+                {
+                  "$ref": "#/components/schemas/AgentToolSpec"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "kind",
+                "mapping": {
+                  "agent": "#/components/schemas/AgentToolSpec",
+                  "inline": "#/components/schemas/InlineToolSpec",
+                  "registered": "#/components/schemas/RegisteredToolSpec"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Tools",
+            "default": []
+          },
+          "tools_replace": {
             "anyOf": [
               {
                 "items": {
-                  "type": "string"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/RegisteredToolSpec"
+                    },
+                    {
+                      "$ref": "#/components/schemas/InlineToolSpec"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AgentToolSpec"
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "kind",
+                    "mapping": {
+                      "agent": "#/components/schemas/AgentToolSpec",
+                      "inline": "#/components/schemas/InlineToolSpec",
+                      "registered": "#/components/schemas/RegisteredToolSpec"
+                    }
+                  }
                 },
                 "type": "array"
               },
@@ -17717,7 +18543,17 @@
                 "type": "null"
               }
             ],
-            "title": "Tools"
+            "title": "Tools Replace"
+          },
+          "client": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClientContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "config_overrides": {
             "anyOf": [
@@ -18130,6 +18966,56 @@
         ],
         "title": "ChunkRow"
       },
+      "CitationLookupRequest": {
+        "properties": {
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "volume": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Volume"
+          },
+          "reporter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reporter"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page"
+          }
+        },
+        "type": "object",
+        "title": "CitationLookupRequest"
+      },
       "ClaimVerdictOut": {
         "properties": {
           "claim": {
@@ -18165,6 +19051,28 @@
           "reasoning"
         ],
         "title": "ClaimVerdictOut"
+      },
+      "ClientContext": {
+        "properties": {
+          "capabilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Capabilities"
+          },
+          "state": {
+            "additionalProperties": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "object",
+            "title": "State"
+          }
+        },
+        "type": "object",
+        "title": "ClientContext",
+        "description": "Request envelope describing the calling client's capabilities + state.\n\nReplaces per-feature fields like ``ide_state`` and ``sandbox``. A client\ndeclares what it can do via a set of capability names and carries typed\nstate keyed by capability name for tools that need to read it at\nexecution time.\n\nWire shape::\n\n    {\n      \"capabilities\": [\"editor-state\", \"sandbox-fs\"],\n      \"state\": {\n        \"editor-state\": {\"active_file\": {\"path\": \"...\", ...}, ...},\n        \"sandbox-fs\":   {\"sandbox_id\": \"...\", ...}\n      }\n    }\n\nA client that's both a coding IDE and a browser extension declares both\ncapabilities and supplies both payloads. No per-client field\nproliferation — adding a new client type is a registry entry, not a\nrequest schema change."
       },
       "ClientToolResult": {
         "properties": {
@@ -18364,6 +19272,74 @@
             "type": "boolean",
             "title": "Debug",
             "default": false
+          },
+          "tools": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/RegisteredToolSpec"
+                },
+                {
+                  "$ref": "#/components/schemas/InlineToolSpec"
+                },
+                {
+                  "$ref": "#/components/schemas/AgentToolSpec"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "kind",
+                "mapping": {
+                  "agent": "#/components/schemas/AgentToolSpec",
+                  "inline": "#/components/schemas/InlineToolSpec",
+                  "registered": "#/components/schemas/RegisteredToolSpec"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Tools",
+            "default": []
+          },
+          "tools_replace": {
+            "anyOf": [
+              {
+                "items": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/RegisteredToolSpec"
+                    },
+                    {
+                      "$ref": "#/components/schemas/InlineToolSpec"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AgentToolSpec"
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "kind",
+                    "mapping": {
+                      "agent": "#/components/schemas/AgentToolSpec",
+                      "inline": "#/components/schemas/InlineToolSpec",
+                      "registered": "#/components/schemas/RegisteredToolSpec"
+                    }
+                  }
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tools Replace"
+          },
+          "client": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClientContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "client_tools": {
             "items": {
@@ -18898,6 +19874,31 @@
           "case_query"
         ],
         "title": "CrossDocRequest"
+      },
+      "CustomToolInputSchema": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "object",
+            "title": "Type",
+            "default": "object"
+          },
+          "properties": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Properties"
+          },
+          "required": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Required"
+          }
+        },
+        "type": "object",
+        "title": "CustomToolInputSchema",
+        "description": "JSON Schema for a custom tool's input parameters.\n\nFollows the MCP / JSON Schema standard. The type must be \"object\" and\nproperties defines the named parameters. Required is the list of\nparameter names that must be present in every call."
       },
       "DataStoreAdminRow": {
         "properties": {
@@ -21423,6 +22424,34 @@
         ],
         "title": "IngestResponse"
       },
+      "InlineToolSpec": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "inline",
+            "title": "Kind",
+            "default": "inline"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Unique tool name. Must match [a-zA-Z0-9_-]{1,64}."
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          },
+          "input_schema": {
+            "$ref": "#/components/schemas/CustomToolInputSchema"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "InlineToolSpec"
+      },
       "InputDataType": {
         "type": "string",
         "enum": [
@@ -21605,6 +22634,23 @@
           "keywords"
         ],
         "title": "KeywordCreate"
+      },
+      "KeywordReorderRequest": {
+        "properties": {
+          "keyword_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Keyword Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "keyword_ids"
+        ],
+        "title": "KeywordReorderRequest",
+        "description": "Payload for PATCH /topics/{topic_id}/keywords/reorder.\n\n`keyword_ids` is the new full ordering of the topic's keywords. The\nserver assigns `position = index_in_list + 1` (1-indexed) to each\nrow inside a single ORM transaction, then returns the keywords in\ntheir new order. The list must contain exactly the topic's current\nkeyword IDs (no additions, no deletions) — that's a separate concern,\nhandled by POST/DELETE /topics/{topic_id}/keywords.\n\nWire shape:\n    {\"keyword_ids\": [\"uuid1\", \"uuid2\", \"uuid3\"]}"
       },
       "LLMParams": {
         "properties": {
@@ -22095,6 +23141,136 @@
         "additionalProperties": false,
         "type": "object",
         "title": "LLMParams"
+      },
+      "LegalSearchRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Query"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "default": "o"
+          },
+          "court": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Court"
+          },
+          "judge": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Judge"
+          },
+          "case_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Name"
+          },
+          "citation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Citation"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "filed_after": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filed After"
+          },
+          "filed_before": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filed Before"
+          },
+          "cited_gt": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cited Gt"
+          },
+          "order_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order By"
+          },
+          "limit": {
+            "type": "integer",
+            "maximum": 200,
+            "minimum": 1,
+            "title": "Limit",
+            "default": 20
+          },
+          "highlight": {
+            "type": "boolean",
+            "title": "Highlight",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "LegalSearchRequest"
       },
       "LibraryDocOut": {
         "properties": {
@@ -24594,6 +25770,74 @@
             "title": "Debug",
             "default": false
           },
+          "tools": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/RegisteredToolSpec"
+                },
+                {
+                  "$ref": "#/components/schemas/InlineToolSpec"
+                },
+                {
+                  "$ref": "#/components/schemas/AgentToolSpec"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "kind",
+                "mapping": {
+                  "agent": "#/components/schemas/AgentToolSpec",
+                  "inline": "#/components/schemas/InlineToolSpec",
+                  "registered": "#/components/schemas/RegisteredToolSpec"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Tools",
+            "default": []
+          },
+          "tools_replace": {
+            "anyOf": [
+              {
+                "items": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/RegisteredToolSpec"
+                    },
+                    {
+                      "$ref": "#/components/schemas/InlineToolSpec"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AgentToolSpec"
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "kind",
+                    "mapping": {
+                      "agent": "#/components/schemas/AgentToolSpec",
+                      "inline": "#/components/schemas/InlineToolSpec",
+                      "registered": "#/components/schemas/RegisteredToolSpec"
+                    }
+                  }
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tools Replace"
+          },
+          "client": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClientContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "client_tools": {
             "items": {
               "type": "string"
@@ -24780,6 +26024,44 @@
         ],
         "title": "QuickScrapeRequest"
       },
+      "RegisteredToolSpec": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "registered",
+            "title": "Kind",
+            "default": "registered"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Registry name. Required. tool_id may also be provided for UUID lookup."
+          },
+          "tool_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool Id",
+            "description": "Optional registry UUID. When set, takes precedence over name for lookup."
+          },
+          "delegate": {
+            "type": "boolean",
+            "title": "Delegate",
+            "description": "When True, the executor short-circuits dispatch and emits tool_delegated for the client to execute. When False (default), the server runs the tool via its registry implementation.",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "RegisteredToolSpec"
+      },
       "RenameFileRequest": {
         "properties": {
           "new_path": {
@@ -24814,6 +26096,74 @@
             "type": "boolean",
             "title": "Debug",
             "default": false
+          },
+          "tools": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/RegisteredToolSpec"
+                },
+                {
+                  "$ref": "#/components/schemas/InlineToolSpec"
+                },
+                {
+                  "$ref": "#/components/schemas/AgentToolSpec"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "kind",
+                "mapping": {
+                  "agent": "#/components/schemas/AgentToolSpec",
+                  "inline": "#/components/schemas/InlineToolSpec",
+                  "registered": "#/components/schemas/RegisteredToolSpec"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Tools",
+            "default": []
+          },
+          "tools_replace": {
+            "anyOf": [
+              {
+                "items": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/RegisteredToolSpec"
+                    },
+                    {
+                      "$ref": "#/components/schemas/InlineToolSpec"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AgentToolSpec"
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "kind",
+                    "mapping": {
+                      "agent": "#/components/schemas/AgentToolSpec",
+                      "inline": "#/components/schemas/InlineToolSpec",
+                      "registered": "#/components/schemas/RegisteredToolSpec"
+                    }
+                  }
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tools Replace"
+          },
+          "client": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClientContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "client_tools": {
             "items": {
@@ -25694,6 +27044,33 @@
             "title": "Only Children",
             "default": true
           },
+          "data_store_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Store Id",
+            "description": "Scope the search to one curated bucket (rag.data_stores.id). When set, only chunks from that store's members are returned. Combines with include_sources / source_kinds via AND."
+          },
+          "include_sources": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/SearchSourceRef"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Include Sources",
+            "description": "Hard-pin the search to a list of (source_kind, source_id) pairs."
+          },
           "embedding_models": {
             "anyOf": [
               {
@@ -25816,6 +27193,24 @@
           "latency_ms"
         ],
         "title": "SearchResponseOut"
+      },
+      "SearchSourceRef": {
+        "properties": {
+          "source_kind": {
+            "type": "string",
+            "title": "Source Kind"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_kind",
+          "source_id"
+        ],
+        "title": "SearchSourceRef"
       },
       "ShareLinkResolveResponse": {
         "properties": {
@@ -26451,6 +27846,69 @@
         ],
         "title": "SuggestRequest",
         "description": "Wizard input for the Research Setup Suggest Agent.\n\nThe agent (`prompt_builtins.id = 4f802fd1-…`) takes ONE variable —\n`subject_name_or_description`. The frontend wizard's single textarea\nfeeds this directly. The user can paste a short name (\"Arman Sadeghi\"),\na paragraph (\"everything we know about photosynthesis cycles…\"), or\nanything in between. The agent decides how to title and describe the\nproject from that one string.\n\nThe legacy two-field shape (`topic_name` + `topic_description`) is\naccepted via the validator below so old clients don't 422; they are\nconcatenated with a space. New clients should send only\n`subject_name_or_description`."
+      },
+      "SyncClustersRequest": {
+        "properties": {
+          "court_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Court Ids",
+            "description": "Explicit court_id list to sync. Either court_ids OR preset_key is required."
+          },
+          "preset_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preset Key",
+            "description": "One of the preset keys from /legal/admin/presets."
+          },
+          "limit_per_court": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Per Court",
+            "description": "Cap each court's pull at N clusters. None = pull everything. Useful for smoke-testing a sync before committing to a full run."
+          }
+        },
+        "type": "object",
+        "title": "SyncClustersRequest"
+      },
+      "SyncOpinionsRequest": {
+        "properties": {
+          "cluster_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 10000,
+            "minItems": 1,
+            "title": "Cluster Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cluster_ids"
+        ],
+        "title": "SyncOpinionsRequest"
       },
       "SynthesisRequest": {
         "properties": {

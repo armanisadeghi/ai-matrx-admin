@@ -50,6 +50,22 @@ import {
   selectJsonExtractionComplete,
 } from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
 
+/**
+ * Folder-segment sanitizer. Cloud-files folder names tolerate spaces, but
+ * we strip them anyway so per-file subfolders look clean in the tree and
+ * sort alongside the variants inside.
+ */
+function sanitizePathSegment(raw: string): string {
+  return raw
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/-{2,}/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
 const DEFAULT_QUALITY = 88;
 const DEFAULT_FORMAT: OutputFormat = "webp";
 const DEFAULT_BACKGROUND = "#ffffff";
@@ -410,7 +426,11 @@ export function useImageStudio(
 
   const saveAll = useCallback(
     async (folder?: string, saveOptions?: { visibility?: Visibility }) => {
-      const visibility: Visibility = saveOptions?.visibility ?? "private";
+      // Default to PUBLIC so we get permanent Cloudflare CDN URLs on every
+      // variant. The whole point of saving from the studio is to share the
+      // result — private + signed-URL would mean every consumer paste
+      // expires in an hour. Callers that need private can pass it explicitly.
+      const visibility: Visibility = saveOptions?.visibility ?? "public";
 
       // Collect every variant that hasn't been saved yet.
       const pending: Array<{
@@ -440,28 +460,21 @@ export function useImageStudio(
       try {
         // Anchor the save under the canonical Images/Generated tree so
         // everything the studio produces is grouped and filterable.
-        const folderSegment = (
+        const rootSegment = (
           folder ??
           options.defaultFolder ??
           "image-studio"
         )
           .trim()
           .replace(/^\/+|\/+$/g, "");
-        const folderPath = folderSegment
-          ? `${CloudFolders.IMAGES_GENERATED}/${folderSegment}`
+        const rootFolderPath = rootSegment
+          ? `${CloudFolders.IMAGES_GENERATED}/${rootSegment}`
           : CloudFolders.IMAGES_GENERATED;
 
-        // The folder itself stays private — visibility is per-file. Public
-        // user-saved images go into a private folder but get individual
-        // CDN URLs when rendered.
-        const parentFolderId = await dispatch(
-          ensureFolderPath({ folderPath, visibility: "private" }),
-        ).unwrap();
-
-        // Group pending variants by their source file so each upload batch
-        // can carry that file's specific AI-described metadata (alt text,
-        // caption, keywords). Sharing a single metadata bag across files
-        // would lose the per-file alt-text — which defeats the whole point.
+        // Group pending variants by source file so each upload batch can
+        // carry that file's specific AI-described metadata AND land in its
+        // own per-source subfolder. Otherwise 30 variants from 5 different
+        // sources would all jumble together in one folder.
         const pendingByFile = new Map<string, typeof pending>();
         for (const p of pending) {
           const arr = pendingByFile.get(p.studioFileId) ?? [];
@@ -470,12 +483,30 @@ export function useImageStudio(
         }
 
         const fileIdByName = new Map<string, string>();
+        const publicUrlByName = new Map<string, string | null>();
         const allUploaded: string[] = [];
         const allFailed: Array<{ name: string; error: string }> = [];
+        let lastFolderPath = rootFolderPath;
+        let lastParentFolderId: string | null = null;
 
         for (const [studioFileId, group] of pendingByFile) {
           const sourceFile = files.find((f) => f.id === studioFileId);
           if (!sourceFile) continue;
+
+          // Each source file gets its own subfolder so all of its variants
+          // live together. The leaf is the source's editable filenameBase
+          // (which the AI describe agent or the user will have set to a
+          // proper, descriptive name by the time Save runs).
+          const perFileSegment = sanitizePathSegment(sourceFile.filenameBase) ||
+            sanitizePathSegment(sourceFile.originalName) ||
+            studioFileId;
+          const folderPath = `${rootFolderPath}/${perFileSegment}`;
+
+          const parentFolderId = await dispatch(
+            ensureFolderPath({ folderPath, visibility: "private" }),
+          ).unwrap();
+          lastFolderPath = folderPath;
+          lastParentFolderId = parentFolderId;
 
           const uploadables = await Promise.all(
             group.map(async (p) => {
@@ -498,7 +529,8 @@ export function useImageStudio(
               visibility,
               metadata: {
                 source: "image-studio",
-                folder_segment: folderSegment,
+                folder_segment: rootSegment,
+                source_filename_base: sourceFile.filenameBase,
                 studio_file_id: studioFileId,
                 requested_visibility: visibility,
                 ...(meta
@@ -516,55 +548,58 @@ export function useImageStudio(
             }),
           ).unwrap();
 
-          // Match new file ids back to variants by filename.
+          // Match new file ids back to variants by filename — and pick up
+          // the publicUrl that the API wrote into the cloudFiles slice
+          // (set by `apiFileRecordToCloudFile` from `row.public_url`). For
+          // public uploads this is a Cloudflare CDN URL with a checksum
+          // cache-buster; for private uploads it's null and the tile will
+          // fall back to a signed URL on demand.
           const fresh = Object.values(
             store.getState().cloudFiles.filesById,
           ).filter((f) => !knownIdsBefore.has(f.id));
           for (const file of fresh) {
             fileIdByName.set(file.fileName, file.id);
+            publicUrlByName.set(file.fileName, file.publicUrl ?? null);
           }
 
           allUploaded.push(...result.uploaded);
           allFailed.push(...result.failed);
         }
 
-        // `failed` shape changed in 2026-04-24: each entry is now
-        // `{ name, error }` so the real backend error reaches callers
-        // instead of just the filename. The set we build for variant-
-        // matching only needs the names.
         const failedFilenamesSet = new Set<string>(
           allFailed.map((f) => f.name),
         );
         const savedAt = new Date().toISOString();
-        const result = {
-          uploaded: allUploaded,
-          failed: allFailed,
-        };
 
         setFiles((prev) =>
           prev.map((sourceFile) => {
             const nextVariants: Record<string, ProcessedVariant> = {};
             for (const [key, v] of Object.entries(sourceFile.variants)) {
               if (failedFilenamesSet.has(v.filename)) {
-                nextVariants[key] = v; // leave unchanged on failure
+                nextVariants[key] = v;
                 continue;
               }
               const fileId = fileIdByName.get(v.filename);
               if (!fileId) {
-                nextVariants[key] = v; // couldn't correlate; treat as unsaved
+                nextVariants[key] = v;
                 continue;
               }
-              nextVariants[key] = { ...v, fileId, savedAt };
+              nextVariants[key] = {
+                ...v,
+                fileId,
+                publicUrl: publicUrlByName.get(v.filename) ?? null,
+                savedAt,
+              };
             }
             return { ...sourceFile, variants: nextVariants };
           }),
         );
 
         setLastSaveResult({
-          folderPath,
-          parentFolderId,
-          savedCount: result.uploaded.length,
-          failedFilenames: result.failed.map((f) => f.name),
+          folderPath: lastFolderPath,
+          parentFolderId: lastParentFolderId ?? "",
+          savedCount: allUploaded.length,
+          failedFilenames: allFailed.map((f) => f.name),
         });
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Save failed";

@@ -88,9 +88,7 @@ export async function updateTopic(
   // exist on the row; the cast is safe and only narrows back when types regen.
   const { data, error } = await supabase
     .from("rs_topic")
-    .update(
-      updates as Database["public"]["Tables"]["rs_topic"]["Update"],
-    )
+    .update(updates as Database["public"]["Tables"]["rs_topic"]["Update"])
     .eq("id", topicId)
     .select()
     .single();
@@ -103,13 +101,36 @@ export async function updateTopic(
 // ============================================================================
 
 export async function getKeywords(topicId: string): Promise<ResearchKeyword[]> {
+  // Order by user-controlled priority (position ASC). created_at is only a
+  // tiebreaker for the rare case where two rows share a position transiently
+  // (the unique constraint is DEFERRABLE, so this can happen mid-transaction
+  // but never at SELECT time).
   const { data, error } = await supabase
     .from("rs_keyword")
     .select("*")
     .eq("topic_id", topicId)
-    .order("created_at", { ascending: false });
+    .order("position", { ascending: true })
+    .order("created_at", { ascending: true });
   if (error) throw error;
   return data ?? [];
+}
+
+/**
+ * Atomically rewrite the priority order of every keyword in a topic. The
+ * order of `keywordIds` becomes the new 1-indexed `position` for each row.
+ * Server work (search/scrape/analysis) MUST honor this order — see
+ * `rs_keyword.position` column comment.
+ */
+export async function reorderKeywords(
+  topicId: string,
+  keywordIds: string[],
+): Promise<void> {
+  if (keywordIds.length === 0) return;
+  const { error } = await supabase.rpc("reorder_keywords", {
+    p_topic_id: topicId,
+    p_keyword_ids: keywordIds,
+  });
+  if (error) throw error;
 }
 
 export async function deleteKeyword(keywordId: string): Promise<void> {
@@ -117,6 +138,45 @@ export async function deleteKeyword(keywordId: string): Promise<void> {
     .from("rs_keyword")
     .delete()
     .eq("id", keywordId);
+  if (error) throw error;
+}
+
+export async function updateKeywordText(
+  keywordId: string,
+  keyword: string,
+): Promise<void> {
+  const trimmed = keyword.trim();
+  if (!trimmed) throw new Error("Keyword cannot be empty");
+  const { error } = await supabase
+    .from("rs_keyword")
+    .update({ keyword: trimmed })
+    .eq("id", keywordId);
+  if (error) throw error;
+}
+
+// ============================================================================
+// Topic
+// ============================================================================
+
+export async function updateTopicMeta(
+  topicId: string,
+  patch: { name?: string | null; description?: string | null },
+): Promise<void> {
+  const update: { name?: string; description?: string | null } = {};
+  if (patch.name !== undefined) {
+    const trimmed = (patch.name ?? "").trim();
+    if (!trimmed) throw new Error("Topic name cannot be empty");
+    update.name = trimmed;
+  }
+  if (patch.description !== undefined) {
+    const trimmed = (patch.description ?? "").trim();
+    update.description = trimmed.length > 0 ? trimmed : null;
+  }
+  if (Object.keys(update).length === 0) return;
+  const { error } = await supabase
+    .from("rs_topic")
+    .update(update)
+    .eq("id", topicId);
   if (error) throw error;
 }
 
@@ -143,22 +203,79 @@ export async function getSources(
   topicId: string,
   filters?: Partial<SourceFilters>,
 ): Promise<ResearchSource[]> {
-  let sourceIdsInKeyword: string[] | undefined;
-
+  // When filtering by a single keyword, source order MUST be the search
+  // engine rank for THAT keyword (e.g. Google position 1 vs 60). The same
+  // source can appear under multiple keywords with different ranks, so
+  // rs_source.rank is ambiguous and must not be used here. Instead, pull
+  // ranks from rs_keyword_source.rank_for_keyword and order client-side.
   if (filters?.keyword_id) {
     const { data: links, error: linkErr } = await supabase
       .from("rs_keyword_source")
-      .select("source_id")
-      .eq("keyword_id", filters.keyword_id);
+      .select("source_id, rank_for_keyword")
+      .eq("keyword_id", filters.keyword_id)
+      .order("rank_for_keyword", { ascending: true, nullsFirst: false });
     if (linkErr) throw linkErr;
-    const ids = [...new Set((links ?? []).map((r) => r.source_id))];
-    if (ids.length === 0) return [];
-    sourceIdsInKeyword = ids;
+    const orderedIds: string[] = [];
+    const rankBySourceId = new Map<string, number | null>();
+    for (const r of links ?? []) {
+      if (!rankBySourceId.has(r.source_id)) {
+        orderedIds.push(r.source_id);
+        rankBySourceId.set(r.source_id, r.rank_for_keyword);
+      }
+    }
+    if (orderedIds.length === 0) return [];
+
+    let query = supabase
+      .from("rs_source")
+      .select("*")
+      .eq("topic_id", topicId)
+      .in("id", orderedIds);
+
+    if (filters?.scrape_status)
+      query = query.eq("scrape_status", filters.scrape_status);
+    if (filters?.source_type)
+      query = query.eq("source_type", filters.source_type);
+    if (filters?.hostname) query = query.eq("hostname", filters.hostname);
+    if (filters?.is_included !== undefined)
+      query = query.eq("is_included", filters.is_included);
+    if (filters?.origin) query = query.eq("origin", filters.origin);
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    // If the caller supplied an explicit sort, honor it; otherwise restore
+    // the per-keyword search rank order by reordering by `orderedIds`.
+    let rows = data ?? [];
+    if (filters?.sort_by) {
+      const dir = filters.sort_dir === "desc" ? -1 : 1;
+      const key = filters.sort_by as keyof ResearchSource;
+      rows = [...rows].sort((a, b) => {
+        const av = a[key];
+        const bv = b[key];
+        if (av === bv) return 0;
+        if (av == null) return 1;
+        if (bv == null) return -1;
+        return av < bv ? -1 * dir : 1 * dir;
+      });
+    } else {
+      const idIndex = new Map(orderedIds.map((id, i) => [id, i]));
+      rows = [...rows].sort(
+        (a, b) =>
+          (idIndex.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
+          (idIndex.get(b.id) ?? Number.MAX_SAFE_INTEGER),
+      );
+    }
+
+    const offset = filters?.offset ?? 0;
+    const limit = filters?.limit ?? 50;
+    return rows.slice(offset, offset + limit);
   }
 
+  // Topic-wide source list: no keyword filter, so use the global search
+  // rank as a coarse default. Server still owes us a "best rank across all
+  // keywords" if we want true cross-keyword priority — see server-team spec.
   let query = supabase.from("rs_source").select("*").eq("topic_id", topicId);
 
-  if (sourceIdsInKeyword) query = query.in("id", sourceIdsInKeyword);
   if (filters?.scrape_status)
     query = query.eq("scrape_status", filters.scrape_status);
   if (filters?.source_type)
@@ -176,7 +293,6 @@ export async function getSources(
       })
       .order("rank", { ascending: true, nullsFirst: false });
   } else {
-    // Default: rank ASC (search result relevance), nulls last; then discovered_at DESC
     query = query
       .order("rank", { ascending: true, nullsFirst: false })
       .order("discovered_at", { ascending: false });

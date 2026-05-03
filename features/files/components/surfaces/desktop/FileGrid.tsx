@@ -27,6 +27,7 @@ import {
   toggleSelection,
 } from "@/features/files/redux/slice";
 import { ShareLinkDialog } from "@/features/files/components/core/ShareLinkDialog/ShareLinkDialog";
+import { useInfiniteWindow } from "@/features/files/hooks/useInfiniteWindow";
 import type {
   CloudFilePermission,
   CloudFileRecord,
@@ -125,6 +126,21 @@ export function FileGrid({
     ],
   );
 
+  // Infinite scroll. Initial 60 cells = 4–6 visible rows depending on
+  // breakpoint, which fills the viewport on every screen size. Reset
+  // when the user navigates between sections / searches / filters.
+  const resetKey = `${section}|${searchQuery}|${filter ?? ""}|${kindFilter}|${sortBy}:${sortDir}`;
+  const { visibleCount, hasMore, sentinelRef } = useInfiniteWindow({
+    total: rows.length,
+    initial: 60,
+    pageSize: 60,
+    resetKey,
+  });
+  const visibleRows = useMemo(
+    () => rows.slice(0, visibleCount),
+    [rows, visibleCount],
+  );
+
   const [shareTarget, setShareTarget] = useState<ShareDialogState | null>(null);
 
   const handleActivate = useCallback(
@@ -199,7 +215,7 @@ export function FileGrid({
       ) : null}
       <div className="flex-1 overflow-auto p-4">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {rows.map((row) => {
+          {visibleRows.map((row) => {
             const id = row.kind === "file" ? row.file.id : row.folder.id;
             const visibility =
               row.kind === "file" ? row.file.visibility : row.folder.visibility;
@@ -244,6 +260,27 @@ export function FileGrid({
             );
           })}
         </div>
+        {/*
+          Sentinel + footer for infinite scroll. Lives BELOW the grid
+          (not inside) because the grid is a `grid` container — a
+          grid item with `col-span` would interfere with column
+          balancing on the last visible row. Outside the grid we get
+          a clean centered footer regardless of how many cells are
+          rendered above.
+        */}
+        {hasMore ? (
+          <div
+            ref={sentinelRef}
+            className="flex items-center justify-center gap-2 pt-6 pb-2 text-[11px] text-muted-foreground"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+            Loading more…
+          </div>
+        ) : rows.length > 60 ? (
+          <div className="pt-6 pb-2 text-center text-[11px] text-muted-foreground">
+            Showing all {rows.length.toLocaleString()} items.
+          </div>
+        ) : null}
       </div>
 
       {shareTarget ? (

@@ -1,0 +1,179 @@
+/**
+ * features/transcript-studio/types.ts
+ *
+ * Domain types for the 4-column live transcription studio. The single
+ * load-bearing convention: every segment carries `tStart` and `tEnd` —
+ * seconds elapsed from session start, paused time excluded.
+ */
+
+export type SessionStatus =
+  | "idle"
+  | "recording"
+  | "paused"
+  | "stopped"
+  | "errored";
+
+export type RunStatus = "queued" | "running" | "complete" | "failed";
+
+export type TriggerCause =
+  | "interval"
+  | "session-start"
+  | "session-stop"
+  | "manual"
+  | "module-switch";
+
+export type ModuleId = "tasks" | "flashcards" | "decisions" | "quiz" | string;
+
+export type RawSegmentSource = "chunk" | "fallback" | "imported" | "manual";
+
+export type ConceptKind =
+  | "theme"
+  | "key_idea"
+  | "entity"
+  | "question"
+  | "other";
+
+// ── DB row shapes (camelCase domain types) ────────────────────────────
+
+export interface StudioSession {
+  id: string;
+  userId: string;
+  organizationId: string | null;
+  projectId: string | null;
+  isPublic: boolean;
+  transcriptId: string | null;
+
+  title: string;
+  status: SessionStatus;
+  moduleId: ModuleId;
+  startedAt: string;
+  endedAt: string | null;
+  totalDurationMs: number;
+  audioStoragePath: string | null;
+  isDeleted: boolean;
+
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RecordingSegment {
+  id: string;
+  sessionId: string;
+  segmentIndex: number;
+  tStart: number;
+  tEnd: number | null;
+  audioPath: string | null;
+  startedAt: string;
+  endedAt: string | null;
+}
+
+export interface RawSegment {
+  id: string;
+  sessionId: string;
+  recordingSegmentId: string | null;
+  chunkIndex: number;
+  tStart: number;
+  tEnd: number;
+  text: string;
+  speaker: string | null;
+  source: RawSegmentSource;
+}
+
+export interface CleanedSegment {
+  id: string;
+  sessionId: string;
+  runId: string | null;
+  passIndex: number;
+  tStart: number;
+  tEnd: number;
+  text: string;
+  triggerCause: TriggerCause;
+  supersededAt: string | null;
+}
+
+export interface ConceptItem {
+  id: string;
+  sessionId: string;
+  runId: string | null;
+  passIndex: number;
+  tStart: number | null;
+  tEnd: number | null;
+  kind: ConceptKind;
+  label: string;
+  description: string | null;
+  confidence: number | null;
+}
+
+export interface ModuleSegment {
+  id: string;
+  sessionId: string;
+  runId: string | null;
+  passIndex: number;
+  moduleId: ModuleId;
+  blockType: string;
+  tStart: number | null;
+  tEnd: number | null;
+  payload: unknown;
+}
+
+export interface AgentRun {
+  id: string;
+  sessionId: string;
+  columnIdx: 2 | 3 | 4;
+  conversationId: string | null;
+  shortcutId: string | null;
+  triggerCause: TriggerCause;
+  inputCharRange: [number, number] | null;
+  resumeMarker: string | null;
+  status: RunStatus;
+  startedAt: string | null;
+  endedAt: string | null;
+  error: string | null;
+}
+
+export interface SessionSettings {
+  sessionId: string;
+  cleaningShortcutId: string | null;
+  cleaningIntervalMs: number;
+  conceptShortcutId: string | null;
+  conceptIntervalMs: number;
+  moduleId: ModuleId;
+  moduleShortcutId: string | null;
+  moduleIntervalMs: number | null;
+  columnWidths: number[] | null;
+  showPriorModules: boolean;
+}
+
+// ── Inputs for service layer ──────────────────────────────────────────
+
+export interface CreateSessionInput {
+  title?: string;
+  organizationId?: string | null;
+  projectId?: string | null;
+  transcriptId?: string | null;
+  moduleId?: ModuleId;
+}
+
+export interface UpdateSessionInput {
+  title?: string;
+  status?: SessionStatus;
+  moduleId?: ModuleId;
+  endedAt?: string | null;
+  totalDurationMs?: number;
+  audioStoragePath?: string | null;
+  transcriptId?: string | null;
+  isDeleted?: boolean;
+}
+
+// ── View-model helpers ────────────────────────────────────────────────
+
+export interface StudioViewConfig {
+  /** Whether to render the session-list sidebar. False in compact window mode. */
+  showSidebar?: boolean;
+  /** Whether to expose the right-edge settings panel. */
+  showSettings?: boolean;
+  /** When set, hydrates and locks the view to a specific session. */
+  initialSessionId?: string | null;
+  /** Chrome variant: "page" uses the global header portal; "window" doesn't. */
+  containerVariant: "page" | "window";
+}

@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
   Loader2,
   Plus,
-  Zap,
   Hand,
   ChevronRight,
   LayoutTemplate,
@@ -15,10 +14,30 @@ import {
   FolderOpen,
   Building2,
   ChevronDown,
-  AlertTriangle,
-  Sparkles,
+  Atom,
   FlaskConical,
+  GripVertical,
+  X,
+  Pencil,
 } from "lucide-react";
+import {
+  DndContext,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  closestCenter,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,8 +50,16 @@ import type {
   ResearchTemplate,
   SuggestRequest,
   SuggestApplied,
+  ResearchKeyword,
 } from "../../types";
 import { keywordTemplatesFromJson } from "../../types";
+import {
+  getKeywords,
+  deleteKeyword as deleteKeywordService,
+  updateKeywordText,
+  updateTopicMeta,
+  reorderKeywords,
+} from "../../service";
 import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { invalidateNavTree } from "@/features/agent-context/redux/hierarchySlice";
@@ -45,16 +72,135 @@ type Mode = "manual" | "template" | "ai";
 type AiPhase =
   | { status: "idle" }
   | { status: "creating" }
-  | { status: "suggesting"; topicId: string }
+  | {
+      status: "suggesting";
+      topicId: string;
+      // Live-streaming preview parsed from the AI's content tokens.
+      streamTitle: string | null;
+      streamDescription: string;
+      streamDescriptionComplete: boolean;
+      streamKeywords: string[];
+    }
   | {
       status: "reviewing";
       topicId: string;
       appliedName: string | null;
       appliedDescription: string | null;
       applied: SuggestApplied;
+      // All keywords the AI suggested (kept for backfill of any rows the
+      // server failed to persist due to the legacy quota bug).
+      suggestedKeywords: string[];
+      // Editable rows with DB ids. `null` = still loading after the stream.
+      keywordRows: KeywordRow[] | null;
+      // True once the user clicks "Start Research"; UI keeps the review
+      // canvas mounted so the navigation feels continuous.
+      isLaunching: boolean;
     }
-  | { status: "launching"; topicId: string }
   | { status: "error"; topicId: string | null; message: string };
+
+// ── Streaming JSON field parsers ──────────────────────────────────────────────
+//
+// The AI streams its response as a sequence of `{ e: "c", t: "<chunk>" }`
+// tokens whose concatenation is a single JSON object:
+//   { "title": "...", "description": "...", "suggested_keywords": [...] }
+//
+// We can't `JSON.parse` partial JSON, so these helpers walk the buffer and
+// extract whatever is available so the UI can update live as each chunk lands.
+
+function parsePartialString(
+  buffer: string,
+  fieldName: string,
+): { value: string; complete: boolean } | null {
+  const re = new RegExp(`"${fieldName}"\\s*:\\s*"`);
+  const match = re.exec(buffer);
+  if (!match) return null;
+  let i = match.index + match[0].length;
+  let value = "";
+  while (i < buffer.length) {
+    const ch = buffer[i];
+    if (ch === "\\" && i + 1 < buffer.length) {
+      const next = buffer[i + 1];
+      switch (next) {
+        case "n":
+          value += "\n";
+          break;
+        case "t":
+          value += "\t";
+          break;
+        case "r":
+          value += "\r";
+          break;
+        case '"':
+          value += '"';
+          break;
+        case "\\":
+          value += "\\";
+          break;
+        case "/":
+          value += "/";
+          break;
+        default:
+          value += next;
+      }
+      i += 2;
+    } else if (ch === '"') {
+      return { value, complete: true };
+    } else {
+      value += ch;
+      i += 1;
+    }
+  }
+  return { value, complete: false };
+}
+
+function parseStringArray(buffer: string, fieldName: string): string[] {
+  const re = new RegExp(`"${fieldName}"\\s*:\\s*\\[`);
+  const match = re.exec(buffer);
+  if (!match) return [];
+  const result: string[] = [];
+  let i = match.index + match[0].length;
+  while (i < buffer.length) {
+    while (i < buffer.length && /[\s,]/.test(buffer[i])) i += 1;
+    if (i >= buffer.length || buffer[i] === "]") break;
+    if (buffer[i] !== '"') break;
+    i += 1;
+    let value = "";
+    let complete = false;
+    while (i < buffer.length) {
+      const ch = buffer[i];
+      if (ch === "\\" && i + 1 < buffer.length) {
+        const next = buffer[i + 1];
+        switch (next) {
+          case "n":
+            value += "\n";
+            break;
+          case "t":
+            value += "\t";
+            break;
+          case '"':
+            value += '"';
+            break;
+          case "\\":
+            value += "\\";
+            break;
+          default:
+            value += next;
+        }
+        i += 2;
+      } else if (ch === '"') {
+        complete = true;
+        i += 1;
+        break;
+      } else {
+        value += ch;
+        i += 1;
+      }
+    }
+    if (!complete) break;
+    result.push(value);
+  }
+  return result;
+}
 
 // ── JSONL stream reader ───────────────────────────────────────────────────────
 
@@ -145,15 +291,6 @@ async function readJsonlStream(
       }
     }
   }
-}
-
-// ── Helper ────────────────────────────────────────────────────────────────────
-
-function deriveTopicName(description: string): string {
-  const trimmed = description.trim();
-  if (!trimmed) return "";
-  const words = trimmed.split(/\s+/);
-  return words.length <= 8 ? trimmed : words.slice(0, 8).join(" ") + "…";
 }
 
 // ── Step dots ─────────────────────────────────────────────────────────────────
@@ -281,155 +418,682 @@ function ProjectList({
   );
 }
 
-// ── AI Phase UIs ──────────────────────────────────────────────────────────────
+// ── EditableText ──────────────────────────────────────────────────────────────
+//
+// Hover-revealed pencil. Click to edit inline; Enter/blur commits, Esc cancels.
+// Used for both the topic title (single-line) and the description (multi-line).
 
-function AiProcessing({ phase }: { phase: "creating" | "suggesting" }) {
+interface EditableTextProps {
+  value: string;
+  onCommit: (next: string) => Promise<void> | void;
+  multiline?: boolean;
+  className?: string;
+  placeholder?: string;
+  /** Empty fallback rendered when `value` is empty AND the field is not being edited. */
+  emptyFallback?: React.ReactNode;
+  /** When false, allows committing an empty value (only used by description). */
+  required?: boolean;
+}
+
+function EditableText({
+  value,
+  onCommit,
+  multiline = false,
+  className,
+  placeholder,
+  emptyFallback,
+  required = true,
+}: EditableTextProps) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const [busy, setBusy] = useState(false);
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    if (!editing) setDraft(value);
+  }, [value, editing]);
+
+  const start = () => {
+    setDraft(value);
+    setEditing(true);
+    setTimeout(() => {
+      const el = inputRef.current;
+      if (el) {
+        el.focus();
+        el.select();
+      }
+    }, 0);
+  };
+
+  const cancel = () => {
+    setDraft(value);
+    setEditing(false);
+  };
+
+  const commit = async () => {
+    const next = draft;
+    if (required && !next.trim()) {
+      cancel();
+      return;
+    }
+    if (next === value) {
+      setEditing(false);
+      return;
+    }
+    setBusy(true);
+    try {
+      await onCommit(next);
+      setEditing(false);
+    } catch (err) {
+      toast.error((err as Error).message ?? "Could not save changes");
+      cancel();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (editing) {
+    return multiline ? (
+      <Textarea
+        ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            e.preventDefault();
+            cancel();
+          }
+          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            commit();
+          }
+        }}
+        disabled={busy}
+        rows={4}
+        className={cn(
+          "text-base sm:text-lg leading-relaxed resize-none",
+          className,
+        )}
+        style={{ fontSize: "16px" }}
+        placeholder={placeholder}
+      />
+    ) : (
+      <Input
+        ref={inputRef as React.RefObject<HTMLInputElement>}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            commit();
+          } else if (e.key === "Escape") {
+            e.preventDefault();
+            cancel();
+          }
+        }}
+        disabled={busy}
+        className={cn(
+          "h-auto py-2 text-3xl sm:text-4xl font-bold tracking-tight leading-tight",
+          className,
+        )}
+        style={{ fontSize: "16px" }}
+        placeholder={placeholder}
+      />
+    );
+  }
+
+  const isEmpty = !value.trim();
+
   return (
-    <div className="flex flex-col items-center justify-center py-16 space-y-5 text-center">
-      <div className="relative">
-        <div className="h-16 w-16 rounded-2xl bg-violet-500/10 flex items-center justify-center">
-          <Zap className="h-7 w-7 text-violet-500 animate-pulse" />
+    <div className="group/edit relative">
+      {isEmpty && emptyFallback ? (
+        <div onClick={start} className="cursor-text">
+          {emptyFallback}
         </div>
-        <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-violet-500 flex items-center justify-center">
-          <Loader2 className="h-2.5 w-2.5 animate-spin text-white" />
-        </div>
-      </div>
-      <div className="space-y-1.5">
-        <p className="font-semibold text-lg">
-          {phase === "creating"
-            ? "Creating your topic…"
-            : "AI is shaping your research…"}
+      ) : multiline ? (
+        <p
+          onClick={start}
+          className={cn(
+            "cursor-text rounded-md -mx-2 px-2 py-1 transition-colors hover:bg-muted/40",
+            className,
+          )}
+        >
+          {value}
         </p>
-        <p className="text-sm text-muted-foreground max-w-xs">
-          {phase === "creating"
-            ? "Setting up your research topic"
-            : "Analyzing your subject, generating a title, description, and the best search keywords"}
-        </p>
+      ) : (
+        <h2
+          onClick={start}
+          className={cn(
+            "cursor-text rounded-md -mx-2 px-2 py-1 transition-colors hover:bg-muted/40",
+            className,
+          )}
+        >
+          {value}
+        </h2>
+      )}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          start();
+        }}
+        className="absolute -right-1 top-1 opacity-0 group-hover/edit:opacity-100 focus:opacity-100 transition-opacity h-7 w-7 rounded-md bg-background/80 backdrop-blur border border-border/60 flex items-center justify-center hover:bg-muted text-muted-foreground hover:text-foreground"
+        aria-label="Edit"
+      >
+        <Pencil className="h-3 w-3" />
+      </button>
+    </div>
+  );
+}
+
+// ── KeywordEditor ─────────────────────────────────────────────────────────────
+//
+// Drag-reorderable, inline-editable, deletable list with always-visible draft
+// input at the bottom. The parent owns persistence; this component is fully
+// controlled and signals all mutations through callbacks.
+// Reorder is local-only until the DB grows a `position` column.
+
+interface KeywordRow {
+  localId: string;
+  dbId: string | null; // null = optimistically added, not yet persisted
+  value: string;
+  pending: boolean; // an in-flight backend write
+}
+
+let kwRowCounter = 0;
+const genKwRowId = () => `kw-${++kwRowCounter}`;
+
+interface KeywordEditorProps {
+  rows: KeywordRow[];
+  onAdd: (value: string) => void;
+  onRemove: (row: KeywordRow) => void;
+  onRename: (row: KeywordRow, next: string) => void;
+  onReorder: (rows: KeywordRow[]) => void;
+}
+
+function KeywordEditor({
+  rows,
+  onAdd,
+  onRemove,
+  onRename,
+  onReorder,
+}: KeywordEditorProps) {
+  const [draft, setDraft] = useState("");
+  // Track keywords that arrived during this session so we stagger their
+  // appearance on first render only.
+  const seenIds = useRef<Set<string>>(new Set());
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIdx = rows.findIndex((r) => r.localId === active.id);
+    const newIdx = rows.findIndex((r) => r.localId === over.id);
+    if (oldIdx < 0 || newIdx < 0) return;
+    onReorder(arrayMove(rows, oldIdx, newIdx));
+  };
+
+  const submitDraft = () => {
+    const value = draft.trim();
+    if (!value) return;
+    if (rows.some((r) => r.value.toLowerCase() === value.toLowerCase())) {
+      setDraft("");
+      return;
+    }
+    onAdd(value);
+    setDraft("");
+  };
+
+  return (
+    <div className="space-y-2">
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={rows.map((r) => r.localId)}
+          strategy={verticalListSortingStrategy}
+        >
+          <ul className="space-y-1.5">
+            {rows.map((row, i) => {
+              const isFirstRender = !seenIds.current.has(row.localId);
+              if (isFirstRender) seenIds.current.add(row.localId);
+              return (
+                <SortableKeywordRow
+                  key={row.localId}
+                  row={row}
+                  animate={isFirstRender}
+                  delayMs={isFirstRender ? i * 50 : 0}
+                  onRename={(next) => onRename(row, next)}
+                  onRemove={() => onRemove(row)}
+                />
+              );
+            })}
+          </ul>
+        </SortableContext>
+      </DndContext>
+
+      {/* Add new */}
+      <div
+        className={cn(
+          "group flex items-center gap-2 rounded-xl border border-dashed border-border/60 bg-transparent px-3 py-2 transition-colors",
+          "focus-within:border-violet-500/50 focus-within:bg-violet-500/[0.03] hover:border-violet-500/40",
+        )}
+      >
+        <Plus className="h-4 w-4 text-muted-foreground/70 group-focus-within:text-violet-500/80 shrink-0 transition-colors" />
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              submitDraft();
+            }
+          }}
+          placeholder="Add a keyword…"
+          className="flex-1 min-w-0 bg-transparent border-0 outline-none text-base text-foreground placeholder:text-muted-foreground/60"
+          style={{ fontSize: "16px" }}
+        />
+        {draft.trim() && (
+          <button
+            type="button"
+            onClick={submitDraft}
+            className="text-xs font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 px-2 py-0.5 rounded transition-colors"
+          >
+            Add
+          </button>
+        )}
       </div>
     </div>
   );
 }
 
-interface AiReviewProps {
-  phase: Extract<AiPhase, { status: "reviewing" }>;
-  onStart: () => void;
-  onViewFirst: () => void;
-  isLaunching: boolean;
+interface SortableKeywordRowProps {
+  row: KeywordRow;
+  animate: boolean;
+  delayMs: number;
+  onRename: (next: string) => void;
+  onRemove: () => void;
 }
 
-function AiReview({ phase, onStart, onViewFirst, isLaunching }: AiReviewProps) {
-  const { applied, appliedName, appliedDescription } = phase;
-  const hasQuotaDrop = applied.keywords_dropped_by_quota.length > 0;
-  const hasSkipped = applied.keywords_skipped_duplicate.length > 0;
+function SortableKeywordRow({
+  row,
+  animate,
+  delayMs,
+  onRename,
+  onRemove,
+}: SortableKeywordRowProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: row.localId });
+
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(row.value);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (!editing) setDraft(row.value);
+  }, [row.value, editing]);
+
+  const startEdit = () => {
+    setDraft(row.value);
+    setEditing(true);
+    setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }, 0);
+  };
+
+  const commitEdit = () => {
+    const next = draft.trim();
+    if (!next) {
+      setDraft(row.value);
+      setEditing(false);
+      return;
+    }
+    if (next !== row.value) onRename(next);
+    setEditing(false);
+  };
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    ...(animate ? { animationDelay: `${delayMs}ms` } : {}),
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <div className="h-7 w-7 rounded-lg bg-violet-500/10 flex items-center justify-center">
-          <Sparkles className="h-3.5 w-3.5 text-violet-500" />
-        </div>
-        <span className="text-xs font-medium text-violet-500 uppercase tracking-wider">
-          AI Review
+    <li
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "group flex items-center gap-2 rounded-xl border border-border/60 bg-card px-2 py-1.5 transition-colors",
+        "hover:border-violet-500/30 hover:bg-violet-500/[0.03]",
+        editing && "border-violet-500/50 bg-violet-500/[0.04]",
+        isDragging && "shadow-lg shadow-violet-500/10 z-10",
+        animate &&
+          "animate-in fade-in zoom-in-95 slide-in-from-bottom-1 duration-300 fill-mode-both",
+      )}
+    >
+      <button
+        type="button"
+        {...attributes}
+        {...listeners}
+        className="h-7 w-5 flex items-center justify-center text-muted-foreground/40 hover:text-muted-foreground transition-colors cursor-grab active:cursor-grabbing touch-none"
+        aria-label="Drag to reorder"
+      >
+        <GripVertical className="h-3.5 w-3.5" />
+      </button>
+
+      {editing ? (
+        <input
+          ref={inputRef}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commitEdit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              commitEdit();
+            } else if (e.key === "Escape") {
+              e.preventDefault();
+              setDraft(row.value);
+              setEditing(false);
+            }
+          }}
+          className="flex-1 min-w-0 bg-transparent border-0 outline-none text-base font-medium"
+          style={{ fontSize: "16px" }}
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={startEdit}
+          className="flex-1 min-w-0 text-left text-base font-medium leading-tight py-0.5 truncate hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
+        >
+          {row.value}
+        </button>
+      )}
+
+      {row.pending && (
+        <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground/60 shrink-0" />
+      )}
+
+      <button
+        type="button"
+        onClick={onRemove}
+        className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground/50 opacity-0 group-hover:opacity-100 focus:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-all shrink-0"
+        aria-label="Remove keyword"
+      >
+        <X className="h-3.5 w-3.5" />
+      </button>
+    </li>
+  );
+}
+
+// ── AI Canvas ─────────────────────────────────────────────────────────────────
+//
+// Single component for both the streaming-in-progress and the final review
+// states. The visual language is intentionally restrained — large refined
+// typography, a thin accent rule, content-first layout, no emoji-tier icons.
+
+interface AiCanvasProps {
+  variant: "creating" | "streaming" | "review";
+  // Content (any of these may be null/empty during streaming):
+  title: string | null;
+  description: string;
+  descriptionStreaming: boolean; // shows blinking cursor at end while true
+  // Keywords for the streaming state (`string[]`).
+  keywords: string[];
+  // Persistable keyword rows for the review state (with DB ids).
+  // `null` means the rows haven't been fetched yet — show a skeleton.
+  reviewKeywordRows: KeywordRow[] | null;
+  // Set only on `review` — kept around for future metadata display.
+  applied: SuggestApplied | null;
+  // Topic + keyword mutators — only used in `review`.
+  onUpdateTitle?: (next: string) => Promise<void>;
+  onUpdateDescription?: (next: string) => Promise<void>;
+  onAddKeyword?: (value: string) => void;
+  onRemoveKeyword?: (row: KeywordRow) => void;
+  onRenameKeyword?: (row: KeywordRow, next: string) => void;
+  onReorderKeywords?: (rows: KeywordRow[]) => void;
+  // Final actions (only used in `review` state):
+  onStart?: () => void;
+  onViewFirst?: () => void;
+  isLaunching?: boolean;
+}
+
+function AiCanvas({
+  variant,
+  title,
+  description,
+  descriptionStreaming,
+  keywords,
+  reviewKeywordRows,
+  applied,
+  onUpdateTitle,
+  onUpdateDescription,
+  onAddKeyword,
+  onRemoveKeyword,
+  onRenameKeyword,
+  onReorderKeywords,
+  onStart,
+  onViewFirst,
+  isLaunching,
+}: AiCanvasProps) {
+  const isReview = variant === "review";
+  const hasTitle = !!title;
+  const hasDescription = description.length > 0;
+  const hasKeywords = isReview
+    ? !!reviewKeywordRows && reviewKeywordRows.length > 0
+    : keywords.length > 0;
+
+  return (
+    <div className="space-y-10">
+      {/* Status rail — a thin coloured line + text label, no icon. */}
+      <div className="flex items-center gap-3">
+        <div
+          className={cn(
+            "h-px w-12",
+            isReview ? "bg-violet-500" : "bg-violet-500 animate-pulse",
+          )}
+        />
+        <span className="text-[11px] font-semibold text-violet-600 dark:text-violet-400 uppercase tracking-[0.18em]">
+          {variant === "creating"
+            ? "Initialising"
+            : variant === "streaming"
+              ? hasTitle
+                ? "Composing"
+                : "Analysing your subject"
+              : "Topic ready"}
         </span>
+        {!isReview && (
+          <Loader2 className="h-3 w-3 animate-spin text-violet-500/70" />
+        )}
       </div>
 
-      <div className="space-y-1">
-        <h2 className="text-2xl font-bold tracking-tight">
-          Your topic is ready
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Review what the AI prepared, then start or edit first.
-        </p>
+      {/* Title */}
+      <div className="min-h-[3.5rem]">
+        {hasTitle ? (
+          isReview && onUpdateTitle ? (
+            <EditableText
+              value={title!}
+              onCommit={onUpdateTitle}
+              className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight text-balance"
+              placeholder="Untitled topic"
+            />
+          ) : (
+            <h2
+              key={title}
+              className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight text-balance animate-in fade-in slide-in-from-bottom-2 duration-500"
+            >
+              {title}
+            </h2>
+          )
+        ) : (
+          <div className="space-y-3 pt-1">
+            <div className="h-7 w-3/4 rounded-md bg-muted/60 animate-pulse" />
+            <div className="h-7 w-1/2 rounded-md bg-muted/40 animate-pulse" />
+          </div>
+        )}
       </div>
 
-      {/* Topic card */}
-      <div className="rounded-2xl border border-border/60 bg-card p-5 space-y-3">
-        <div>
-          <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium mb-1">
-            Topic name
-          </p>
-          <p className="font-semibold text-foreground text-lg leading-snug">
-            {appliedName ?? deriveTopicName(phase.appliedDescription ?? "")}
-          </p>
-          {appliedDescription && (
-            <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
-              {appliedDescription}
+      {/* Description */}
+      {(hasDescription || !hasTitle || isReview) && (
+        <div className="max-w-prose">
+          {isReview && onUpdateDescription ? (
+            <EditableText
+              value={description}
+              onCommit={onUpdateDescription}
+              multiline
+              required={false}
+              className="text-base sm:text-lg leading-relaxed text-foreground/85 text-pretty"
+              placeholder="Add a description…"
+              emptyFallback={
+                <p className="text-base sm:text-lg leading-relaxed text-muted-foreground/60 italic">
+                  Add a description…
+                </p>
+              }
+            />
+          ) : hasDescription ? (
+            <p className="text-base sm:text-lg leading-relaxed text-foreground/85 text-pretty animate-in fade-in duration-300">
+              {description}
+              {descriptionStreaming && (
+                <span className="inline-block ml-0.5 w-[2px] h-[1em] align-[-0.15em] bg-violet-500 animate-pulse" />
+              )}
             </p>
+          ) : hasTitle ? null : (
+            <div className="space-y-2 pt-1">
+              <div className="h-4 w-full rounded bg-muted/40 animate-pulse" />
+              <div className="h-4 w-[92%] rounded bg-muted/40 animate-pulse" />
+              <div className="h-4 w-[78%] rounded bg-muted/40 animate-pulse" />
+            </div>
           )}
         </div>
+      )}
 
-        {applied.keywords_saved.length > 0 && (
-          <div>
-            <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium mb-2">
-              Keywords ({applied.keywords_saved.length})
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {applied.keywords_saved.map((kw) => (
+      {/* Keywords — the centerpiece in review mode */}
+      {isReview ? (
+        <div
+          className={cn(
+            "rounded-2xl border border-border/50 bg-card/40 p-4 sm:p-5 space-y-4",
+            "animate-in fade-in duration-500 fill-mode-both",
+          )}
+        >
+          <div className="flex items-baseline justify-between gap-3">
+            <div className="flex items-baseline gap-2">
+              <span className="text-[11px] font-semibold text-violet-600 dark:text-violet-400 uppercase tracking-[0.18em]">
+                Keywords
+              </span>
+              {reviewKeywordRows && (
+                <span className="text-[11px] text-muted-foreground/70 tabular-nums">
+                  {reviewKeywordRows.length}
+                </span>
+              )}
+            </div>
+            <span className="text-[11px] text-muted-foreground/60">
+              These drive your search. Click to edit · drag to reorder · ✕ to
+              remove
+            </span>
+          </div>
+          {reviewKeywordRows &&
+          onAddKeyword &&
+          onRemoveKeyword &&
+          onRenameKeyword &&
+          onReorderKeywords ? (
+            <KeywordEditor
+              rows={reviewKeywordRows}
+              onAdd={onAddKeyword}
+              onRemove={onRemoveKeyword}
+              onRename={onRenameKeyword}
+              onReorder={onReorderKeywords}
+            />
+          ) : (
+            <div className="space-y-1.5">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-9 rounded-xl bg-muted/30 animate-pulse"
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        hasKeywords && (
+          <div className="space-y-3">
+            <div className="flex items-baseline gap-2">
+              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.18em]">
+                Keywords
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {keywords.map((kw, i) => (
                 <span
                   key={kw}
-                  className="inline-flex items-center rounded-full bg-violet-500/10 text-violet-700 dark:text-violet-400 px-2.5 py-0.5 text-xs font-medium"
+                  style={{ animationDelay: `${i * 70}ms` }}
+                  className={cn(
+                    "inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium",
+                    "animate-in fade-in zoom-in-95 slide-in-from-bottom-1 duration-300 fill-mode-both",
+                    "border-violet-500/30 bg-violet-500/[0.06] text-foreground",
+                  )}
                 >
                   {kw}
                 </span>
               ))}
+              <span
+                aria-hidden
+                className="inline-flex items-center rounded-full border border-dashed border-violet-500/30 px-3 py-1"
+              >
+                <span className="flex gap-1">
+                  <span className="h-1 w-1 rounded-full bg-violet-500/60 animate-bounce [animation-delay:-0.3s]" />
+                  <span className="h-1 w-1 rounded-full bg-violet-500/60 animate-bounce [animation-delay:-0.15s]" />
+                  <span className="h-1 w-1 rounded-full bg-violet-500/60 animate-bounce" />
+                </span>
+              </span>
             </div>
           </div>
-        )}
-
-        {hasSkipped && (
-          <p className="text-xs text-muted-foreground">
-            {applied.keywords_skipped_duplicate.length} keyword
-            {applied.keywords_skipped_duplicate.length !== 1 ? "s" : ""} already
-            existed and were kept.
-          </p>
-        )}
-      </div>
-
-      {/* Quota banner */}
-      {hasQuotaDrop && (
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 flex items-start gap-3">
-          <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-          <div className="space-y-1 min-w-0">
-            <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
-              {applied.keywords_dropped_by_quota.length} keyword
-              {applied.keywords_dropped_by_quota.length !== 1 ? "s" : ""}{" "}
-              dropped by quota
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Your topic&apos;s limit is {applied.max_keywords} keywords. Raise
-              the cap in topic settings to include:{" "}
-              <span className="font-medium text-foreground">
-                {applied.keywords_dropped_by_quota.join(", ")}
-              </span>
-            </p>
-          </div>
-        </div>
+        )
       )}
 
-      {/* Actions */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
-        <Button
-          onClick={onStart}
-          disabled={isLaunching}
-          className="gap-2 bg-violet-600 hover:bg-violet-700 text-white flex-1 sm:flex-none sm:px-6 min-h-[44px]"
-        >
-          {isLaunching ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <FlaskConical className="h-4 w-4" />
-          )}
-          Start Research
-        </Button>
-        <Button
-          variant="outline"
-          onClick={onViewFirst}
-          disabled={isLaunching}
-          className="min-h-[44px]"
-        >
-          View &amp; Edit First
-        </Button>
-      </div>
+      {/* Actions — only in review */}
+      {isReview && onStart && onViewFirst && (
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 fill-mode-both">
+          <Button
+            onClick={onStart}
+            disabled={isLaunching}
+            className="gap-2 bg-violet-600 hover:bg-violet-700 text-white flex-1 sm:flex-none sm:px-7 min-h-[44px] shadow-sm shadow-violet-500/20"
+          >
+            {isLaunching ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <FlaskConical className="h-4 w-4" />
+            )}
+            Start Research
+          </Button>
+          <Button
+            variant="outline"
+            onClick={onViewFirst}
+            disabled={isLaunching}
+            className="min-h-[44px] gap-2"
+          >
+            View &amp; Edit First
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -600,7 +1264,14 @@ export default function ResearchInitForm() {
       const topic: { id: string } = await createRes.json();
       const topicId = topic.id;
 
-      setAiPhase({ status: "suggesting", topicId });
+      setAiPhase({
+        status: "suggesting",
+        topicId,
+        streamTitle: null,
+        streamDescription: "",
+        streamDescriptionComplete: false,
+        streamKeywords: [],
+      });
 
       // Step 2: Stream suggest WITH topic_id so backend auto-applies results
       const suggestBody: SuggestRequest = {
@@ -623,27 +1294,82 @@ export default function ResearchInitForm() {
         throw new Error(`AI analysis failed: ${body}`);
       }
 
-      // Collect stream events
+      // Collect stream events.
+      //
+      // The backend emits NDJSON with two envelope shapes:
+      //   • Control events: { event: "<name>", data: {...} }
+      //       e.g. event="phase" | "record_reserved" | "record_update" |
+      //            "heartbeat" | "info" | "end"
+      //       …and event="data" with an inner data.type discriminator:
+      //         data.type="conversation_labeled" | "suggest_complete" |
+      //                   "suggest_applied"
+      //   • Content tokens: { e: "c", t: "<chunk>" }  (streamed JSON chunks
+      //       from the assistant — we ignore these here, they're rendered
+      //       elsewhere if needed)
+      //
+      // The two pieces we care about for review UI:
+      //   1. "suggest_complete" — carries final title + description + keywords
+      //   2. "suggest_applied"  — carries what the backend actually persisted
+      //                           (after dedup/quota), shape = SuggestApplied
       let appliedName: string | null = null;
       let appliedDescription: string | null = null;
       let applied: SuggestApplied | null = null;
+      let suggestedKeywords: string[] = [];
+      let contentBuffer = ""; // accumulates `{ e: "c", t: "..." }` chunks
       const allEvents: Record<string, unknown>[] = [];
       const eventTypes: Record<string, number> = {};
 
       await readJsonlStream(suggestRes, (ev) => {
         allEvents.push(ev);
-        const evType = typeof ev.type === "string" ? ev.type : "(no type)";
-        eventTypes[evType] = (eventTypes[evType] ?? 0) + 1;
+        const envelope =
+          typeof ev.event === "string"
+            ? ev.event
+            : typeof ev.e === "string"
+              ? `content(${ev.e})`
+              : "(unknown)";
+        const innerKey =
+          ev.event === "data" &&
+          ev.data &&
+          typeof (ev.data as Record<string, unknown>).type === "string"
+            ? `data:${(ev.data as Record<string, unknown>).type as string}`
+            : envelope;
+        eventTypes[innerKey] = (eventTypes[innerKey] ?? 0) + 1;
 
-        if (ev.type === "record_update" && ev.table === "rs_topic") {
-          const rec = ev.record as
-            | { name?: string; description?: string }
-            | undefined;
-          if (rec?.name) appliedName = rec.name;
-          if (rec?.description) appliedDescription = rec.description;
+        // Live-streaming preview from content tokens.
+        if (ev.e === "c" && typeof ev.t === "string") {
+          contentBuffer += ev.t;
+          const titleField = parsePartialString(contentBuffer, "title");
+          const descField = parsePartialString(contentBuffer, "description");
+          const kws = parseStringArray(contentBuffer, "suggested_keywords");
+          setAiPhase((prev) => {
+            if (prev.status !== "suggesting") return prev;
+            return {
+              ...prev,
+              streamTitle:
+                titleField && titleField.complete ? titleField.value : null,
+              streamDescription: descField?.value ?? "",
+              streamDescriptionComplete: !!descField?.complete,
+              streamKeywords: kws,
+            };
+          });
         }
-        if (ev.type === "suggest_applied") {
-          applied = ev as unknown as SuggestApplied;
+
+        if (ev.event === "data" && ev.data && typeof ev.data === "object") {
+          const inner = ev.data as Record<string, unknown>;
+          if (inner.type === "suggest_complete") {
+            if (typeof inner.title === "string") appliedName = inner.title;
+            if (typeof inner.description === "string") {
+              appliedDescription = inner.description;
+            }
+            if (Array.isArray(inner.suggested_keywords)) {
+              suggestedKeywords = inner.suggested_keywords.filter(
+                (k): k is string => typeof k === "string",
+              );
+            }
+          }
+          if (inner.type === "suggest_applied") {
+            applied = inner as unknown as SuggestApplied;
+          }
         }
       });
 
@@ -653,6 +1379,7 @@ export default function ResearchInitForm() {
         appliedName,
         appliedDescription,
         applied,
+        suggestedKeywords,
         allEvents,
       });
 
@@ -666,12 +1393,33 @@ export default function ResearchInitForm() {
         );
       }
 
+      // If the backend never sent the `suggest_complete` envelope (e.g. the
+      // response was truncated) fall back to anything we managed to parse out
+      // of the streamed content tokens, plus the persisted keyword sets.
+      const fallbackKeywords = parseStringArray(
+        contentBuffer,
+        "suggested_keywords",
+      );
+      const finalSuggestedKeywords =
+        suggestedKeywords.length > 0
+          ? suggestedKeywords
+          : fallbackKeywords.length > 0
+            ? fallbackKeywords
+            : [
+                ...applied.keywords_saved,
+                ...applied.keywords_dropped_by_quota,
+                ...applied.keywords_skipped_duplicate,
+              ];
+
       setAiPhase({
         status: "reviewing",
         topicId,
         appliedName,
         appliedDescription,
         applied,
+        suggestedKeywords: finalSuggestedKeywords,
+        keywordRows: null,
+        isLaunching: false,
       });
     } catch (err) {
       setAiPhase((prev) => ({
@@ -687,7 +1435,7 @@ export default function ResearchInitForm() {
   const handleStartResearch = () => {
     if (aiPhase.status !== "reviewing") return;
     const { topicId } = aiPhase;
-    setAiPhase({ status: "launching", topicId });
+    setAiPhase({ ...aiPhase, isLaunching: true });
     startTransition(() => {
       api.runPipeline(topicId).catch(() => {});
       router.push(`/research/topics/${topicId}`);
@@ -696,9 +1444,208 @@ export default function ResearchInitForm() {
 
   const handleViewTopicFirst = () => {
     if (aiPhase.status !== "reviewing" && aiPhase.status !== "error") return;
-    const topicId =
-      aiPhase.status === "reviewing" ? aiPhase.topicId : aiPhase.topicId;
+    const topicId = aiPhase.topicId;
     if (topicId) router.push(`/research/topics/${topicId}`);
+  };
+
+  // ── Keyword editor — load + CRUD handlers ─────────────────────────────────
+  //
+  // Once the stream finishes and we transition to `reviewing`, we still need
+  // to know each keyword's database id before the user can rename / delete /
+  // reorder them. We also work around the legacy quota bug here: any keywords
+  // that were "dropped by quota" get persisted now — the user has no quota
+  // limits in this product. After backfill, we fetch the full list and
+  // hydrate `aiPhase.keywordRows`, ordered by the AI's original suggestion
+  // sequence so the user sees them in the same order the AI proposed them.
+  useEffect(() => {
+    if (aiPhase.status !== "reviewing" || aiPhase.keywordRows !== null) return;
+    let cancelled = false;
+    const topicId = aiPhase.topicId;
+    // Newer server payloads omit `keywords_dropped_by_quota` entirely (the
+    // legacy quota concept was removed). Treat missing as empty.
+    const dropped = aiPhase.applied.keywords_dropped_by_quota ?? [];
+    const aiOrder = aiPhase.suggestedKeywords;
+    (async () => {
+      try {
+        if (dropped.length > 0) {
+          await api.addKeywords(topicId, { keywords: dropped });
+        }
+        const persisted = await getKeywords(topicId);
+        if (cancelled) return;
+
+        // Order rows by the AI's original suggestion order, then any extras.
+        const byKeyword = new Map<string, ResearchKeyword>();
+        for (const k of persisted) byKeyword.set(k.keyword.toLowerCase(), k);
+
+        const ordered: ResearchKeyword[] = [];
+        for (const kw of aiOrder) {
+          const match = byKeyword.get(kw.toLowerCase());
+          if (match) {
+            ordered.push(match);
+            byKeyword.delete(kw.toLowerCase());
+          }
+        }
+        // Append anything left over (manually added in a prior session, etc.)
+        for (const remaining of byKeyword.values()) ordered.push(remaining);
+
+        const rows: KeywordRow[] = ordered.map((k) => ({
+          localId: genKwRowId(),
+          dbId: k.id,
+          value: k.keyword,
+          pending: false,
+        }));
+        setAiPhase((prev) =>
+          prev.status === "reviewing" && prev.topicId === topicId
+            ? { ...prev, keywordRows: rows }
+            : prev,
+        );
+      } catch (err) {
+        if (cancelled) return;
+        console.error("[review] failed to load keywords", err);
+        setAiPhase((prev) =>
+          prev.status === "reviewing" && prev.topicId === topicId
+            ? { ...prev, keywordRows: [] }
+            : prev,
+        );
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [aiPhase, api]);
+
+  const setKeywordRows = (
+    updater: (prev: KeywordRow[]) => KeywordRow[],
+  ): void => {
+    setAiPhase((prev) => {
+      if (prev.status !== "reviewing" || prev.keywordRows === null) return prev;
+      return { ...prev, keywordRows: updater(prev.keywordRows) };
+    });
+  };
+
+  const handleAddKeyword = (value: string) => {
+    if (aiPhase.status !== "reviewing") return;
+    const topicId = aiPhase.topicId;
+    const localId = genKwRowId();
+    const optimistic: KeywordRow = {
+      localId,
+      dbId: null,
+      value,
+      pending: true,
+    };
+    setKeywordRows((prev) => [...prev, optimistic]);
+    (async () => {
+      try {
+        await api.addKeywords(topicId, { keywords: [value] });
+        const persisted = await getKeywords(topicId);
+        const lookup = new Map(persisted.map((k) => [k.keyword, k.id]));
+        setKeywordRows((prev) =>
+          prev.map((r) =>
+            r.localId === localId
+              ? {
+                  ...r,
+                  dbId: lookup.get(value) ?? r.dbId,
+                  pending: false,
+                }
+              : r,
+          ),
+        );
+      } catch (err) {
+        toast.error((err as Error).message ?? "Could not add keyword");
+        setKeywordRows((prev) => prev.filter((r) => r.localId !== localId));
+      }
+    })();
+  };
+
+  const handleRemoveKeyword = (row: KeywordRow) => {
+    setKeywordRows((prev) => prev.filter((r) => r.localId !== row.localId));
+    if (!row.dbId) return;
+    (async () => {
+      try {
+        await deleteKeywordService(row.dbId!);
+      } catch (err) {
+        toast.error((err as Error).message ?? "Could not remove keyword");
+        setKeywordRows((prev) => [...prev, row]);
+      }
+    })();
+  };
+
+  const handleRenameKeyword = (row: KeywordRow, next: string) => {
+    const trimmed = next.trim();
+    if (!trimmed || trimmed === row.value) return;
+    setKeywordRows((prev) =>
+      prev.map((r) =>
+        r.localId === row.localId ? { ...r, value: trimmed, pending: true } : r,
+      ),
+    );
+    (async () => {
+      try {
+        if (row.dbId) await updateKeywordText(row.dbId, trimmed);
+        setKeywordRows((prev) =>
+          prev.map((r) =>
+            r.localId === row.localId ? { ...r, pending: false } : r,
+          ),
+        );
+      } catch (err) {
+        toast.error((err as Error).message ?? "Could not rename keyword");
+        setKeywordRows((prev) =>
+          prev.map((r) =>
+            r.localId === row.localId
+              ? { ...r, value: row.value, pending: false }
+              : r,
+          ),
+        );
+      }
+    })();
+  };
+
+  const handleReorderKeywords = (rows: KeywordRow[]) => {
+    if (aiPhase.status !== "reviewing") return;
+    const topicId = aiPhase.topicId;
+    // Optimistic local update.
+    const previousRows =
+      aiPhase.keywordRows !== null ? [...aiPhase.keywordRows] : null;
+    setKeywordRows(() => rows);
+    // Persist server-side: every row that already exists in the DB is
+    // included in the order array, in 1-indexed positions matching the UI.
+    const persistedIds = rows
+      .map((r) => r.dbId)
+      .filter((id): id is string => Boolean(id));
+    if (persistedIds.length === 0) return;
+    (async () => {
+      try {
+        await reorderKeywords(topicId, persistedIds);
+      } catch (err) {
+        toast.error((err as Error).message ?? "Could not save keyword order");
+        if (previousRows) setKeywordRows(() => previousRows);
+      }
+    })();
+  };
+
+  // ── Topic metadata mutators ────────────────────────────────────────────────
+  const handleUpdateTitle = async (next: string) => {
+    if (aiPhase.status !== "reviewing") return;
+    const trimmed = next.trim();
+    if (!trimmed) return;
+    const topicId = aiPhase.topicId;
+    await updateTopicMeta(topicId, { name: trimmed });
+    setAiPhase((prev) =>
+      prev.status === "reviewing" && prev.topicId === topicId
+        ? { ...prev, appliedName: trimmed }
+        : prev,
+    );
+  };
+
+  const handleUpdateDescription = async (next: string) => {
+    if (aiPhase.status !== "reviewing") return;
+    const topicId = aiPhase.topicId;
+    const value = next.trim().length > 0 ? next.trim() : null;
+    await updateTopicMeta(topicId, { description: value });
+    setAiPhase((prev) =>
+      prev.status === "reviewing" && prev.topicId === topicId
+        ? { ...prev, appliedDescription: value }
+        : prev,
+    );
   };
 
   // ── Validation ────────────────────────────────────────────────────────────
@@ -714,7 +1661,7 @@ export default function ResearchInitForm() {
   const aiIsProcessing =
     aiPhase.status === "creating" ||
     aiPhase.status === "suggesting" ||
-    aiPhase.status === "launching";
+    (aiPhase.status === "reviewing" && aiPhase.isLaunching);
 
   // ─────────────────────────────────────────────────────────────────────────
   // RENDER
@@ -779,7 +1726,7 @@ export default function ResearchInitForm() {
               className="group relative flex flex-col gap-4 rounded-2xl border-2 border-border bg-card p-6 text-left transition-all duration-200 hover:border-violet-500/40 hover:bg-violet-500/5 hover:shadow-lg min-h-[210px]"
             >
               <div className="h-11 w-11 rounded-xl bg-violet-500/10 flex items-center justify-center group-hover:bg-violet-500/20 transition-colors">
-                <Zap className="h-5 w-5 text-violet-500" />
+                <Atom className="h-5 w-5 text-violet-500" />
               </div>
               <div className="space-y-1.5">
                 <h2 className="text-base font-semibold">Help me shape this</h2>
@@ -937,17 +1884,48 @@ export default function ResearchInitForm() {
       {currentStep === 1 && currentMode === "ai" && (
         <div className="w-full max-w-2xl">
           {/* Show AI state machine when processing */}
-          {aiPhase.status === "creating" || aiPhase.status === "suggesting" ? (
-            <AiProcessing phase={aiPhase.status} />
+          {aiPhase.status === "creating" ? (
+            <AiCanvas
+              variant="creating"
+              title={null}
+              description=""
+              descriptionStreaming={false}
+              keywords={[]}
+              reviewKeywordRows={null}
+              applied={null}
+            />
+          ) : aiPhase.status === "suggesting" ? (
+            <AiCanvas
+              variant="streaming"
+              title={aiPhase.streamTitle}
+              description={aiPhase.streamDescription}
+              descriptionStreaming={
+                aiPhase.streamDescription.length > 0 &&
+                !aiPhase.streamDescriptionComplete
+              }
+              keywords={aiPhase.streamKeywords}
+              reviewKeywordRows={null}
+              applied={null}
+            />
           ) : aiPhase.status === "reviewing" ? (
-            <AiReview
-              phase={aiPhase}
+            <AiCanvas
+              variant="review"
+              title={aiPhase.appliedName}
+              description={aiPhase.appliedDescription ?? ""}
+              descriptionStreaming={false}
+              keywords={aiPhase.suggestedKeywords}
+              reviewKeywordRows={aiPhase.keywordRows}
+              applied={aiPhase.applied}
+              onUpdateTitle={handleUpdateTitle}
+              onUpdateDescription={handleUpdateDescription}
+              onAddKeyword={handleAddKeyword}
+              onRemoveKeyword={handleRemoveKeyword}
+              onRenameKeyword={handleRenameKeyword}
+              onReorderKeywords={handleReorderKeywords}
               onStart={handleStartResearch}
               onViewFirst={handleViewTopicFirst}
-              isLaunching={false}
+              isLaunching={aiPhase.isLaunching}
             />
-          ) : aiPhase.status === "launching" ? (
-            <AiProcessing phase="suggesting" />
           ) : aiPhase.status === "error" ? (
             <div className="space-y-6 py-8">
               <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-5 space-y-2">
@@ -978,7 +1956,7 @@ export default function ResearchInitForm() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 mb-1">
                   <div className="h-6 w-6 rounded-lg bg-violet-500/10 flex items-center justify-center">
-                    <Zap className="h-3.5 w-3.5 text-violet-500" />
+                    <Atom className="h-3.5 w-3.5 text-violet-500" />
                   </div>
                   <span className="text-xs font-medium text-violet-500 uppercase tracking-wider">
                     AI-Assisted
@@ -1155,9 +2133,9 @@ export default function ResearchInitForm() {
               <Button
                 onClick={handleAiSubmit}
                 disabled={!canContinue || !selectedProjectId}
-                className="gap-2 min-h-[44px] bg-violet-600 hover:bg-violet-700 text-white px-6"
+                className="gap-2 min-h-[44px] bg-violet-600 hover:bg-violet-700 text-white px-6 shadow-sm shadow-violet-500/20"
               >
-                <Zap className="h-4 w-4" />
+                <Atom className="h-4 w-4" />
                 Build with AI
               </Button>
             ) : currentStep === 1 ? (

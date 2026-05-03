@@ -156,6 +156,17 @@ export interface ProcessedVariant {
     position: ImagePosition | null;
     /** Cloud-files file id once the variant has been saved to the library. */
     fileId?: string | null;
+    /**
+     * Permanent public CDN URL (Cloudflare-fronted, with a `?v=<checksum>`
+     * cache-buster) when the file is uploaded with `visibility: "public"`
+     * and the API returned a CDN URL. ``null`` otherwise — for private
+     * variants, callers should call `getSignedUrl(fileId)` for a 1h
+     * AWS-signed URL.
+     *
+     * **Never** copy the data URL once the variant is saved; that's the
+     * massive base64 string we ship for in-browser preview only.
+     */
+    publicUrl?: string | null;
     /** Saved-to-library state — controlled by the save step. */
     savedAt?: string | null;
 }

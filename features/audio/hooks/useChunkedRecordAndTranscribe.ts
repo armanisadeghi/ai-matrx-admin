@@ -26,9 +26,27 @@ import { getErrorSolution } from '../utils/microphone-diagnostics';
 import { audioSafetyStore } from '../services/audioSafetyStore';
 import { uploadAndTranscribeFull, logClientError } from '../services/audioFallbackUpload';
 
+/**
+ * Per-chunk timing + content payload. Fires once per chunk after a successful
+ * transcription. `tStart` / `tEnd` are session-relative seconds (paused time
+ * excluded), measured from the most recent `startRecording()` call.
+ *
+ * Consumers that need to anchor downstream content to the audio timeline
+ * (transcript-studio's Column 1, sync-scroll, etc.) subscribe via
+ * `onChunkComplete`. Plain text consumers can keep using `onChunkTranscribed`.
+ */
+export interface ChunkCompleteInfo {
+  chunkIndex: number;
+  tStart: number;
+  tEnd: number;
+  text: string;
+  accumulatedText: string;
+}
+
 export interface UseChunkedRecordAndTranscribeProps {
   onTranscriptionComplete?: (result: TranscriptionResult) => void;
   onChunkTranscribed?: (chunkText: string, accumulatedText: string) => void;
+  onChunkComplete?: (info: ChunkCompleteInfo) => void;
   onChunkError?: (chunkIndex: number, error: string) => void;
   onError?: (error: string, errorCode?: string) => void;
   chunkDurationMs?: number;
@@ -38,6 +56,7 @@ export interface UseChunkedRecordAndTranscribeProps {
 export function useChunkedRecordAndTranscribe({
   onTranscriptionComplete,
   onChunkTranscribed,
+  onChunkComplete,
   onChunkError,
   onError,
   chunkDurationMs = AUDIO_LIMITS.CHUNK_DURATION_MS,
@@ -71,18 +90,27 @@ export function useChunkedRecordAndTranscribe({
   const allChunkBlobsRef   = useRef<Blob[]>([]);
   const userIdRef          = useRef<string>('');
   const transcriptsMapRef  = useRef<Map<number, string>>(new Map());
+  const chunkTimingsRef    = useRef<Map<number, { tStart: number; tEnd: number }>>(new Map());
   const scheduleNextRotationRef = useRef<(() => void) | null>(null);
 
   const onTranscriptionCompleteRef = useRef(onTranscriptionComplete);
   const onChunkTranscribedRef      = useRef(onChunkTranscribed);
+  const onChunkCompleteRef         = useRef(onChunkComplete);
   const onChunkErrorRef            = useRef(onChunkError);
   const onErrorRef                 = useRef(onError);
   const transcriptionOptionsRef    = useRef(transcriptionOptions);
   useEffect(() => { onTranscriptionCompleteRef.current = onTranscriptionComplete; }, [onTranscriptionComplete]);
   useEffect(() => { onChunkTranscribedRef.current = onChunkTranscribed; }, [onChunkTranscribed]);
+  useEffect(() => { onChunkCompleteRef.current = onChunkComplete; }, [onChunkComplete]);
   useEffect(() => { onChunkErrorRef.current = onChunkError; }, [onChunkError]);
   useEffect(() => { onErrorRef.current = onError; }, [onError]);
   useEffect(() => { transcriptionOptionsRef.current = transcriptionOptions; }, [transcriptionOptions]);
+
+  const sessionRelativeSec = useCallback(() => {
+    if (!startTimeRef.current) return 0;
+    const elapsed = Date.now() - startTimeRef.current - pausedDurationRef.current;
+    return Math.max(0, elapsed) / 1000;
+  }, []);
 
   const cleanup = useCallback(() => {
     if (rotationTimerRef.current)  { clearTimeout(rotationTimerRef.current as any);  rotationTimerRef.current  = null; }
@@ -272,6 +300,38 @@ export function useChunkedRecordAndTranscribe({
         setLiveTranscript(full);
         await persistText(full);
         onChunkTranscribedRef.current?.(snippet, full);
+
+        // Per-chunk timing payload for timeline-anchored consumers
+        // (transcript-studio Column 1). The combo-chunk at idx 2 covers the
+        // span from idx 0's start to idx 2's end; emit one event spanning
+        // that whole window so Column 1 stays append-only without overlap.
+        const cb = onChunkCompleteRef.current;
+        if (cb) {
+          if (isCombo) {
+            const t0 = chunkTimingsRef.current.get(0);
+            const t2 = chunkTimingsRef.current.get(2);
+            if (t0 && t2) {
+              cb({
+                chunkIndex: 2,
+                tStart: t0.tStart,
+                tEnd: t2.tEnd,
+                text: snippet,
+                accumulatedText: full,
+              });
+            }
+          } else {
+            const timing = chunkTimingsRef.current.get(idx);
+            if (timing) {
+              cb({
+                chunkIndex: idx,
+                tStart: timing.tStart,
+                tEnd: timing.tEnd,
+                text: snippet,
+                accumulatedText: full,
+              });
+            }
+          }
+        }
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Chunk transcription failed';
@@ -305,15 +365,21 @@ export function useChunkedRecordAndTranscribe({
     const idx = chunkIndexRef.current++;
     const mr  = new MediaRecorder(stream, { mimeType: mime });
 
+    // Anchor this chunk's session-relative window so downstream consumers
+    // (transcript-studio Column 1) can place text on the audio timeline.
+    chunkTimingsRef.current.set(idx, { tStart: sessionRelativeSec(), tEnd: 0 });
+
     mr.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
     mr.onstop          = ()  => {
+      const timing = chunkTimingsRef.current.get(idx);
+      if (timing) timing.tEnd = sessionRelativeSec();
       const blob = new Blob(chunks, { type: mime });
       transcribeBlob(blob, idx);
     };
 
     mr.start(100);
     return mr;
-  }, [transcribeBlob]);
+  }, [transcribeBlob, sessionRelativeSec]);
 
   const rotateChunk = useCallback(() => {
     if (!streamRef.current || !mediaRecorderRef.current) return;
@@ -366,6 +432,7 @@ export function useChunkedRecordAndTranscribe({
       failedIndicesRef.current = [];
       allChunkBlobsRef.current = [];
       transcriptsMapRef.current.clear();
+      chunkTimingsRef.current.clear();
       setLiveTranscript('');
       setFailedChunkCount(0);
 
@@ -496,6 +563,7 @@ export function useChunkedRecordAndTranscribe({
     failedIndicesRef.current = [];
     allChunkBlobsRef.current = [];
     transcriptsMapRef.current.clear();
+    chunkTimingsRef.current.clear();
   }, [cleanup]);
 
   return {

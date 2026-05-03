@@ -802,16 +802,45 @@ export const uploadFiles = createAsyncThunk<
     return originalName;
   }
 
-  const queue = [...arg.files];
+  // ─── Per-file overrides from the duplicate-upload dialog ────────────
+  //
+  // When a user picks "Overwrite" on a duplicate, the dialog passes the
+  // existing file's exact name back as a `filenameOverrides[index]`
+  // entry. We honour the override verbatim — the auto " (1)" rename
+  // would defeat the point. When they pick "Skip", the dialog adds the
+  // index to `skipIndices` and we drop that file from the queue.
+  const overrides = arg.filenameOverrides ?? {};
+  const skipSet = new Set(arg.skipIndices ?? []);
+
+  // Reserve override target names in `existingNames` BEFORE the loop
+  // runs, so two overrides into the same path can't both win and so
+  // a file with no override doesn't accidentally collide-rename onto
+  // an override target.
+  for (const [, name] of Object.entries(overrides)) {
+    if (typeof name === "string") existingNames.add(name.toLowerCase());
+  }
+
+  // Build the queue as [originalIndex, file] pairs so workers can
+  // look up overrides by index regardless of dequeue order.
+  const queue: Array<{ index: number; file: File }> = arg.files
+    .map((file, index) => ({ index, file }))
+    .filter(({ index }) => !skipSet.has(index));
+
   async function worker(): Promise<void> {
     while (queue.length) {
-      const file = queue.shift();
-      if (!file) return;
+      const next = queue.shift();
+      if (!next) return;
+      const { file, index } = next;
       const requestId = newRequestId();
-      // Resolve the actual upload name with collision avoidance. We
-      // track display name separately from the original file.name so
-      // progress + telemetry continue to use what the user dragged in.
-      const targetName = uniqueName(file.name);
+      // Override (from duplicate dialog "Overwrite") wins. Otherwise
+      // the auto " (1)" rename runs. We track the display name
+      // separately from the original file.name so progress + telemetry
+      // continue to use what the user dragged in.
+      const overrideName = overrides[index];
+      const targetName =
+        typeof overrideName === "string" && overrideName
+          ? overrideName
+          : uniqueName(file.name);
       dispatch(
         trackUploadStart({
           requestId,
