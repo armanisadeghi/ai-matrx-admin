@@ -27,7 +27,14 @@
 
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import {
   AlertCircle,
@@ -165,27 +172,77 @@ export default function PdfDocumentRenderer({
 
   // ── Container size via ResizeObserver — drives fit math on splitter
   //    drags / window resizes without a remount.
+  //
+  // Two failure modes we have to defend against:
+  //   1. The first effect runs before the parent flex container has
+  //      laid out — `clientWidth/Height` reads 0×0. If we then hit
+  //      the fit-page math with 0 dims, the `Math.max(120, …)` floor
+  //      below would yield a ridiculous ~15% scale and the PDF
+  //      renders as a postage stamp. Layout-effect + re-poll on
+  //      every paint until non-zero handles this.
+  //   2. The container is briefly mounted inside `display: none` (the
+  //      tab system uses `hidden` to keep blob caches warm). Going
+  //      from hidden → visible IS supposed to fire ResizeObserver,
+  //      but doesn't reliably across browsers. Polling on each render
+  //      until measured is a cheap belt-and-suspenders.
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [containerSize, setContainerSize] = useState<{
     width: number;
     height: number;
   }>({ width: 0, height: 0 });
-  useEffect(() => {
+
+  // Layout-effect — runs synchronously after DOM mutation, before paint.
+  // Catches the initial measurement on the same frame as mount.
+  useLayoutEffect(() => {
     const node = containerRef.current;
     if (!node) return;
-    setContainerSize({ width: node.clientWidth, height: node.clientHeight });
+    const w = node.clientWidth;
+    const h = node.clientHeight;
+    setContainerSize((prev) =>
+      prev.width === w && prev.height === h ? prev : { width: w, height: h },
+    );
     const ro = new ResizeObserver((entries) => {
       const entry = entries[0];
       if (entry) {
-        setContainerSize({
-          width: entry.contentRect.width,
-          height: entry.contentRect.height,
-        });
+        const nextW = entry.contentRect.width;
+        const nextH = entry.contentRect.height;
+        setContainerSize((prev) =>
+          prev.width === nextW && prev.height === nextH
+            ? prev
+            : { width: nextW, height: nextH },
+        );
       }
     });
     ro.observe(node);
     return () => ro.disconnect();
   }, []);
+
+  // Re-measure on every render UNTIL we have non-zero dims. Once
+  // measured, this becomes a no-op. Cheap insurance for the "parent
+  // was hidden during initial mount" case where the ResizeObserver
+  // didn't fire on the display:none → block transition.
+  useEffect(() => {
+    if (containerSize.width > 0 && containerSize.height > 0) return;
+    const node = containerRef.current;
+    if (!node) return;
+    const w = node.clientWidth;
+    const h = node.clientHeight;
+    if (w > 0 && h > 0) {
+      setContainerSize({ width: w, height: h });
+      return;
+    }
+    // Schedule another check on the next frame in case the layout is
+    // mid-resolution. Animation frame batches naturally so this
+    // doesn't spin even if we're in a long mount sequence.
+    const raf = requestAnimationFrame(() => {
+      const w2 = node.clientWidth;
+      const h2 = node.clientHeight;
+      if (w2 > 0 && h2 > 0) {
+        setContainerSize({ width: w2, height: h2 });
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  });
 
   // Stable file descriptor — react-pdf reloads the document whenever
   // the `file` prop's identity changes, so memoise it.
@@ -231,8 +288,27 @@ export default function PdfDocumentRenderer({
    * Compute the `scale` we hand to `<Page>`. We use `scale` (not
    * `width`) because it composes correctly with rotation. Fit-page
    * expands until ONE axis fills and then stops.
+   *
+   * **Important:** for fit-modes, we REFUSE to compute a scale until
+   * we have a real container measurement (both axes > 0). The old
+   * `Math.max(120, …)` floor would yield ~15% when containerSize
+   * was 0×0 (parent hidden / not yet laid out), which is the
+   * "postage-stamp PDF" bug. Returning `null` lets `<Page>` render
+   * at its natural size for the brief moment before the
+   * ResizeObserver fires; it's MUCH less jarring than 15%.
+   *
+   * Explicit-percent / actual-size modes don't depend on the
+   * container, so they're fine to compute regardless.
    */
+  const containerMeasured =
+    containerSize.width > 0 && containerSize.height > 0;
+
   const pageScale = useMemo(() => {
+    // Explicit modes don't need a container measurement.
+    if (zoom.kind === "actual") return ACTUAL_SIZE_SCALE;
+    if (zoom.kind === "scale") return zoom.scale;
+
+    // Fit modes need both the page natural dims AND a real container.
     if (
       !effectiveDims ||
       effectiveDims.width <= 0 ||
@@ -240,8 +316,15 @@ export default function PdfDocumentRenderer({
     ) {
       return null;
     }
-    const availW = Math.max(120, containerSize.width - VIEWPORT_PADDING_PX * 2);
-    const availH = Math.max(120, containerSize.height - VIEWPORT_PADDING_PX * 2);
+    if (!containerMeasured) return null;
+
+    const availW = containerSize.width - VIEWPORT_PADDING_PX * 2;
+    const availH = containerSize.height - VIEWPORT_PADDING_PX * 2;
+    // Defensive: in case the padding is bigger than the viewport
+    // (very narrow popovers etc.) fall back to the natural scale
+    // rather than producing a negative or absurd ratio.
+    if (availW <= 0 || availH <= 0) return 1;
+
     switch (zoom.kind) {
       case "fit": {
         const sX = availW / effectiveDims.width;
@@ -250,12 +333,8 @@ export default function PdfDocumentRenderer({
       }
       case "fit-width":
         return availW / effectiveDims.width;
-      case "actual":
-        return ACTUAL_SIZE_SCALE;
-      case "scale":
-        return zoom.scale;
     }
-  }, [containerSize, effectiveDims, zoom]);
+  }, [containerMeasured, containerSize, effectiveDims, zoom]);
 
   const zoomLabel = useMemo(() => {
     if (zoom.kind === "fit") {
