@@ -11,7 +11,7 @@ import {
   XCircle,
   RefreshCw,
   Loader2,
-  Sparkles,
+  Hammer,
   ChevronLeft,
   ArrowUpRight,
 } from "lucide-react";
@@ -57,7 +57,7 @@ function StatsBar({
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
       <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/40 px-2.5 py-2">
         <div className="h-7 w-7 rounded-lg bg-primary/8 flex items-center justify-center shrink-0">
-          <Sparkles className="h-3.5 w-3.5 text-primary" />
+          <Hammer className="h-3.5 w-3.5 text-primary" />
         </div>
         <div>
           <p className="text-[10px] text-muted-foreground leading-none">

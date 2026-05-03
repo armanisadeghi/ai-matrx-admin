@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Sparkles } from "lucide-react";
+import { PartyPopper } from "lucide-react";
 
 export interface FloatingSelectionIconProps {
   selectionRect: DOMRect | null;
@@ -89,7 +89,7 @@ export const FloatingSelectionIcon = React.forwardRef<
         }
       }}
     >
-      <Sparkles className={isMobile ? "h-6 w-6" : "h-5 w-5"} />
+      <PartyPopper className={isMobile ? "h-6 w-6" : "h-5 w-5"} />
     </button>
   );
 });

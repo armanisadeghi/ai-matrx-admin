@@ -1,38 +1,69 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
+import type { Layout } from "react-resizable-panels";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { fetchRawSegmentsThunk } from "../redux/thunks";
+import { ResizablePanel } from "@/components/ui/resizable";
+import {
+  fetchCleanedSegmentsThunk,
+  fetchRawSegmentsThunk,
+} from "../redux/thunks";
 import type { StudioSession } from "../types";
 import { RecordButton } from "./recording/RecordButton";
+import { CleanedTranscriptColumn } from "./columns/CleanedTranscriptColumn";
+import { ConceptsColumn } from "./columns/ConceptsColumn";
+import { ModuleColumn } from "./columns/ModuleColumn";
 import { RawTranscriptColumn } from "./columns/RawTranscriptColumn";
+import {
+  STUDIO_COLUMN_PANEL_IDS,
+  StudioColumnHandle,
+  StudioPanelGroup,
+} from "./resize/StudioPanelGroup";
+import { ScrollSyncProvider } from "./scroll-sync/ScrollSyncProvider";
 import { useStudioSession } from "../hooks/useStudioSession";
+import { useTriggerScheduler } from "../hooks/useTriggerScheduler";
 
 interface ActiveSessionViewProps {
   session: StudioSession;
+  /** Server-supplied layout from the studio columns cookie. */
+  defaultColumnLayout?: Layout;
 }
 
 /**
- * Phase 3 active-session view: header (title + record button) + Column 1.
- * Columns 2/3/4 + the resizable shell + sync-scroll all land in Phase 4.
+ * Active-session view (Phase 4): header + 4-column resizable shell wrapped
+ * in the scroll-sync provider. Columns 2/3/4 are placeholder shells until
+ * Phases 5-7 ship their respective agents and renderers; the resizable
+ * geometry, persistence, and sync-scroll plumbing are all in place now so
+ * later phases just drop content into existing columns.
  */
-export function ActiveSessionView({ session }: ActiveSessionViewProps) {
+export function ActiveSessionView({
+  session,
+  defaultColumnLayout,
+}: ActiveSessionViewProps) {
   const dispatch = useAppDispatch();
   const recording = useStudioSession({ sessionId: session.id });
 
-  // Hydrate raw segments for this session on mount + when the session
-  // identity changes. The list is small for v1 (one chunk every ~10s,
-  // a few hundred for a 1h session) so a single fetch is fine.
-  const hasIds = useAppSelector(
-    (state) => Boolean(state.transcriptStudio.rawIdsBySession[session.id]),
+  // First-paint hydration of raw + cleaned segments. Subscribes to stable
+  // booleans — doesn't re-fire on every appended chunk.
+  const hasRawIds = useAppSelector((state) =>
+    Boolean(state.transcriptStudio.rawIdsBySession[session.id]),
+  );
+  const hasCleanedIds = useAppSelector((state) =>
+    Boolean(state.transcriptStudio.cleanedIdsBySession[session.id]),
   );
   useEffect(() => {
-    if (!hasIds) {
+    if (!hasRawIds) {
       void dispatch(fetchRawSegmentsThunk({ sessionId: session.id }));
     }
-    // Only refetch on session swap; subsequent appends use rawSegmentsAppended.
+    if (!hasCleanedIds) {
+      void dispatch(fetchCleanedSegmentsThunk({ sessionId: session.id }));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session.id, dispatch]);
+
+  // Drive Column 2's cleanup ticks while recording. Survives unmount only if
+  // you stay on the studio route — leaving pauses cleaning until you return.
+  useTriggerScheduler({ sessionId: session.id });
 
   const subtitle = useMemo(() => {
     const created = new Date(session.createdAt).toLocaleString(undefined, {
@@ -54,18 +85,56 @@ export function ActiveSessionView({ session }: ActiveSessionViewProps) {
         <RecordButton sessionId={session.id} />
       </header>
 
-      <div className="flex flex-1 min-h-0 flex-col overflow-hidden p-2 gap-2">
-        {/*
-          Phase 3 lays Column 1 alone. Phase 4 introduces the 4-column
-          resizable shell + sync-scroll provider. Until then we render
-          Column 1 full-width inside a stable card.
-        */}
+      <div className="flex flex-1 min-h-0 flex-col overflow-hidden p-2">
         <div className="flex flex-1 min-h-0 overflow-hidden rounded-md border border-border/60 bg-background">
-          <RawTranscriptColumn
-            sessionId={session.id}
-            isRecording={recording.isOwnedRecording}
-            className="flex-1"
-          />
+          <ScrollSyncProvider sessionId={session.id}>
+            <StudioPanelGroup defaultLayout={defaultColumnLayout}>
+              <ResizablePanel
+                id={STUDIO_COLUMN_PANEL_IDS.raw}
+                defaultSize="35%"
+                minSize="15%"
+                style={{ overflow: "hidden", height: "100%" }}
+              >
+                <RawTranscriptColumn
+                  sessionId={session.id}
+                  isRecording={recording.isOwnedRecording}
+                />
+              </ResizablePanel>
+
+              <StudioColumnHandle />
+
+              <ResizablePanel
+                id={STUDIO_COLUMN_PANEL_IDS.cleaned}
+                defaultSize="35%"
+                minSize="15%"
+                style={{ overflow: "hidden", height: "100%" }}
+              >
+                <CleanedTranscriptColumn sessionId={session.id} />
+              </ResizablePanel>
+
+              <StudioColumnHandle />
+
+              <ResizablePanel
+                id={STUDIO_COLUMN_PANEL_IDS.concepts}
+                defaultSize="15%"
+                minSize="10%"
+                style={{ overflow: "hidden", height: "100%" }}
+              >
+                <ConceptsColumn sessionId={session.id} />
+              </ResizablePanel>
+
+              <StudioColumnHandle />
+
+              <ResizablePanel
+                id={STUDIO_COLUMN_PANEL_IDS.module}
+                defaultSize="15%"
+                minSize="10%"
+                style={{ overflow: "hidden", height: "100%" }}
+              >
+                <ModuleColumn sessionId={session.id} />
+              </ResizablePanel>
+            </StudioPanelGroup>
+          </ScrollSyncProvider>
         </div>
       </div>
     </div>

@@ -47,7 +47,7 @@ import {
   RotateCcw,
   Square,
   Circle,
-  Sparkles,
+  Rainbow,
   Shuffle,
   Camera,
   ExternalLink,
@@ -1060,7 +1060,7 @@ function getDiagramIcon(type: string): React.ReactNode {
     case "flowchart":
       return <GitBranch className="h-4 w-4" />;
     case "mindmap":
-      return <Sparkles className="h-4 w-4" />;
+      return <Rainbow className="h-4 w-4" />;
     case "orgchart":
       return <Users className="h-4 w-4" />;
     case "network":

@@ -14,7 +14,7 @@ import React from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAgentName } from "@/features/agents/redux/agent-definition/selectors";
 import { AgentRunner } from "@/features/agents/components/smart/AgentRunner";
-import { Sparkles } from "lucide-react";
+import { Hammer } from "lucide-react";
 import { SMART_CODE_EDITOR_SURFACE_KEY } from "../../constants";
 
 interface AgentRunnerColumnProps {
@@ -34,7 +34,7 @@ export function AgentRunnerColumn({
   if (!conversationId) {
     return (
       <div className="flex flex-col h-full min-h-0 bg-background border-r border-border items-center justify-center text-center p-6">
-        <Sparkles className="w-6 h-6 text-muted-foreground mb-2" />
+        <Hammer className="w-6 h-6 text-muted-foreground mb-2" />
         <p className="text-xs font-medium text-foreground">
           No active conversation
         </p>
@@ -48,7 +48,7 @@ export function AgentRunnerColumn({
   return (
     <div className="flex flex-col h-full min-h-0 bg-background border-r border-border">
       <div className="shrink-0 px-3 py-1.5 border-b border-border flex items-center gap-1.5">
-        <Sparkles className="w-3 h-3 text-muted-foreground" />
+        <Hammer className="w-3 h-3 text-muted-foreground" />
         <span className="text-[11px] font-medium truncate">
           {agentName ?? "Agent"}
         </span>

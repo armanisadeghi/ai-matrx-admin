@@ -29438,7 +29438,7 @@ export const initialAutomationTableSchema = {
           | undefined
         >,
         enumValues: [
-          "Bot",
+          "Boxes",
           "amber",
           "blue",
           "cyan",
@@ -47342,7 +47342,7 @@ export const initialAutomationTableSchema = {
           "BookOpen",
           "Bookmark",
           "BookmarkPlus",
-          "Bot",
+          "Boxes",
           "Brain",
           "Brush",
           "Building",
@@ -47732,7 +47732,7 @@ export const initialAutomationTableSchema = {
           | undefined
         >,
         enumValues: [
-          "Bot",
+          "Boxes",
           "amber",
           "blue",
           "cyan",
@@ -60947,7 +60947,7 @@ export const initialAutomationTableSchema = {
           "BookOpen",
           "Bookmark",
           "BookmarkPlus",
-          "Bot",
+          "Boxes",
           "Brain",
           "Brush",
           "Building",
@@ -64010,7 +64010,7 @@ export const initialAutomationTableSchema = {
           "BookOpen",
           "Bookmark",
           "BookmarkPlus",
-          "Bot",
+          "Boxes",
           "Brain",
           "Brush",
           "Building",
@@ -64472,7 +64472,7 @@ export const initialAutomationTableSchema = {
           | undefined
         >,
         enumValues: [
-          "Bot",
+          "Boxes",
           "amber",
           "blue",
           "cyan",

@@ -31,7 +31,7 @@ import {
   MessageSquare,
   Puzzle,
   Settings,
-  Sparkles,
+  Gem,
   Variable,
 } from "lucide-react";
 import MarkdownStream from "@/components/MarkdownStream";
@@ -273,7 +273,7 @@ function PrettyView({
         <div className="border-l-2 border-purple-400 dark:border-purple-600 pl-3 py-1.5">
           {data.name && (
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+              <Gem className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                 {data.name}
               </h3>

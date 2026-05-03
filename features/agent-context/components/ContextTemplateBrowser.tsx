@@ -14,7 +14,7 @@ import {
   Brain,
   Globe,
   ChevronRight,
-  Bot,
+  Cpu,
   Building2,
   FolderKanban,
   ListTodo,
@@ -571,7 +571,7 @@ function ApplyTemplateDialog({
                 type="button"
                 className="w-full flex items-center gap-2 rounded-lg border border-purple-500/20 bg-purple-500/5 p-2.5 text-left hover:bg-purple-500/10 transition-colors"
               >
-                <Bot className="h-4 w-4 text-purple-500 shrink-0" />
+                <Cpu className="h-4 w-4 text-purple-500 shrink-0" />
                 <div>
                   <p className="text-xs font-medium">AI Pre-fill Suggestions</p>
                   <p className="text-[10px] text-muted-foreground">

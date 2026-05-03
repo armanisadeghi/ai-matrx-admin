@@ -8,7 +8,7 @@ import {
     ClipboardList, BadgeCheck, Gauge, Box, Brain, Cable, FileOutput,
     Monitor, CircleEllipsis, GraduationCap, Library, Cog, Workflow,
     SquareFunction, Goal, Zap, Play, RotateCw, Drill, Wrench,Bolt,
-    Binary, Cpu, Stars, Sparkles, Bot, Power, Lightbulb,
+    Binary, Cpu, Stars, Star, LayoutTemplate, Power, Lightbulb,
     LucideIcon
 } from 'lucide-react';
 
@@ -107,9 +107,9 @@ const iconMatches: IconMatch[] = [
     { pattern: 'ml', icon: Brain, priority: 11 },
     { pattern: 'neural', icon: Brain, priority: 10 },
     { pattern: 'intelligence', icon: Brain, priority: 10 },
-    { pattern: 'auto', icon: Bot, priority: 9 },
-    { pattern: 'automation', icon: Bot, priority: 10 },
-    { pattern: 'robot', icon: Bot, priority: 10 },
+    { pattern: 'auto', icon: LayoutTemplate, priority: 9 },
+    { pattern: 'automation', icon: LayoutTemplate, priority: 10 },
+    { pattern: 'robot', icon: LayoutTemplate, priority: 10 },
     { pattern: 'process', icon: Workflow, priority: 8 },
     { pattern: 'workflow', icon: Workflow, priority: 9 },
 
@@ -159,8 +159,8 @@ const iconMatches: IconMatch[] = [
 
     // Features & Enhancements
     { pattern: 'feature', icon: Stars, priority: 8 },
-    { pattern: 'enhancement', icon: Sparkles, priority: 8 },
-    { pattern: 'improvement', icon: Sparkles, priority: 8 },
+    { pattern: 'enhancement', icon: Star, priority: 8 },
+    { pattern: 'improvement', icon: Star, priority: 8 },
     { pattern: 'optimize', icon: Gauge, priority: 8 },
     { pattern: 'power', icon: Power, priority: 8 },
     { pattern: 'idea', icon: Lightbulb, priority: 8 },

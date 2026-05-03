@@ -23,7 +23,7 @@ import {
   Loader2,
   Maximize2,
   PanelRightOpen,
-  Sparkles,
+  Gem,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -255,7 +255,7 @@ const ToolCallVisualizationInner: React.FC<{
           )}
         >
           {phase !== "complete" && !isCompact && (
-            <Sparkles className="w-3 h-3 mr-0.5 text-blue-500 dark:text-blue-400 animate-pulse" />
+            <Gem className="w-3 h-3 mr-0.5 text-blue-500 dark:text-blue-400 animate-pulse" />
           )}
           <span
             role="button"

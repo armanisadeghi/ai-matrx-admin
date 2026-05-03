@@ -1,7 +1,7 @@
 "use client";
 
 // Static shell: ContextMenu + Trigger always wrap `children` (small bundle).
-// Heavy logic (AI, Redux, Sparkles, modals) loads on demand via next/dynamic.
+// Heavy logic (AI, Redux, Flame, modals) loads on demand via next/dynamic.
 
 import dynamic from "next/dynamic";
 import { useRef, type ReactNode } from "react";

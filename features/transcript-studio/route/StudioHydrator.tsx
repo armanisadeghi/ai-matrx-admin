@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef } from "react";
 import { useStore } from "react-redux";
-import { sessionsListLoaded, activeSessionIdSet } from "../redux/slice";
+import { activeSessionIdSet, sessionsListLoaded } from "../redux/slice";
 import type { StudioSession } from "../types";
 
 interface StudioHydratorProps {
@@ -11,32 +11,43 @@ interface StudioHydratorProps {
 }
 
 /**
- * One-shot Redux hydrator. Server-fetches the session list and seeds Redux
- * before any subscribed component reads from the store, so cold loads skip
- * the loading flash.
+ * One-shot Redux hydrator. Seeds the studio session list from server-fetched
+ * data into the store after the first commit.
  *
- * Implementation note (React 19): dispatching from the render body fires
- * subscription updates on sibling components, which logs a "Cannot update a
- * component while rendering a different component" warning. We use
- * `useState`'s lazy initializer to perform the dispatch — it runs once,
- * synchronously, before sibling components' subscriptions activate.
+ * Implementation note (React 19 + react-redux 9):
+ *   We use `useEffect` rather than the render body or `useState`'s lazy
+ *   initializer. Both render-phase paths fire React's "Cannot update a
+ *   component while rendering a different component" warning because the
+ *   dispatch synchronously notifies every subscribed component (sidebar,
+ *   layout, etc.) which queues setStates inside their `useSyncExternalStore`
+ *   subscriptions.
  *
- * This sidesteps a `useEffect` (which causes a one-frame flash because it
- * fires after paint) and keeps the seed deterministic.
+ *   `useEffect` runs after the first commit, so subscribers see the update
+ *   on the second render — no in-render warning. The visible cost is one
+ *   frame where the sidebar shows the loading skeleton; in practice it's a
+ *   single tick on warm caches and not perceptible. To eliminate it
+ *   entirely, plumb the seeds through the authenticated layout's
+ *   `initialReduxState` (Phase 9 polish — out of scope here).
  */
 export function StudioHydrator({
   seeds,
   initialSessionId,
 }: StudioHydratorProps) {
   const store = useStore();
+  const hydratedRef = useRef(false);
 
-  useState(() => {
+  useEffect(() => {
+    if (hydratedRef.current) return;
+    hydratedRef.current = true;
     store.dispatch(sessionsListLoaded(seeds));
     if (initialSessionId && seeds.some((s) => s.id === initialSessionId)) {
       store.dispatch(activeSessionIdSet(initialSessionId));
     }
-    return null;
-  });
+    // Effect is intentionally one-shot. Seeds + initialSessionId are
+    // captured once on mount; subsequent navigations to the same route
+    // unmount/remount the page wrapper anyway.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return null;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { MessageSquare, Sparkles } from "lucide-react";
+import { MessageSquare, Lightbulb } from "lucide-react";
 
 interface RunsEmptyStateProps {
   message?: string;
@@ -19,7 +19,7 @@ export function RunsEmptyState({
           <MessageSquare className="w-8 h-8 text-gray-400 dark:text-gray-500" />
         </div>
         <div className="absolute -top-1 -right-1 p-1 bg-blue-500 dark:bg-blue-600 rounded-full">
-          <Sparkles className="w-3 h-3 text-white" />
+          <Lightbulb className="w-3 h-3 text-white" />
         </div>
       </div>
       

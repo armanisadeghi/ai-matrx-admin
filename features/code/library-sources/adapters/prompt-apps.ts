@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
+import { Lightbulb } from "lucide-react";
 import { extensionForLanguage } from "@/features/code-files/actions/languageOptions";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
@@ -53,7 +53,7 @@ const COLUMNS =
 export const promptAppsAdapter: LibrarySourceAdapter = {
   sourceId: "prompt_apps",
   label: "Prompt Apps",
-  icon: Sparkles,
+  icon: Lightbulb,
   tabIdPrefix: PREFIX,
   multiField: false,
 

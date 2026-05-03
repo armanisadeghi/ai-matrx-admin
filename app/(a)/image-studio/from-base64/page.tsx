@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, FileImage, Layers, Library, Sparkles } from "lucide-react";
+import { ArrowLeft, FileImage, Layers, Library, PartyPopper } from "lucide-react";
 import FromBase64ShellClient from "./FromBase64ShellClient";
 
 /**
@@ -25,7 +25,7 @@ export default function FromBase64Page() {
           </Link>
           <div className="min-w-0">
             <h1 className="text-sm font-semibold flex items-center gap-1.5 truncate">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <PartyPopper className="h-3.5 w-3.5 text-primary" />
               Image Studio — From Base64
             </h1>
           </div>

@@ -15,7 +15,7 @@ import {
     Zap,
     Settings,
     Command,
-    Bot,
+    Boxes,
     Cog,
     Filter,
     File,
@@ -29,7 +29,7 @@ import {
 
 export const CATEGORY_DEFINITIONS = [
     { id: "prompts", icon: MessageSquare, label: "Prompts" },
-    { id: "agents", icon: Bot, label: "Agents" },
+    { id: "agents", icon: Boxes, label: "Agents" },
     { id: "recipes", icon: Brain, label: "Recipes" },
     { id: "processors", icon: Cog, label: "Processors" },
     { id: "extractors", icon: Filter, label: "Extractors" },

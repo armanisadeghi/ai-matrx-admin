@@ -17,11 +17,13 @@ import { StudioSidebar } from "./StudioSidebar";
 interface StudioLayoutProps {
   className?: string;
   showSidebar?: boolean;
+  defaultColumnLayout?: Record<string, number>;
 }
 
 export function StudioLayout({
   className,
   showSidebar = true,
+  defaultColumnLayout,
 }: StudioLayoutProps) {
   const activeSession = useAppSelector(selectActiveSession);
   const fetchStatus = useAppSelector(selectFetchStatus);
@@ -84,7 +86,10 @@ export function StudioLayout({
             Loading sessions…
           </div>
         ) : activeSession ? (
-          <ActiveSessionView session={activeSession} />
+          <ActiveSessionView
+            session={activeSession}
+            defaultColumnLayout={defaultColumnLayout}
+          />
         ) : (
           <EmptySessionState />
         )}

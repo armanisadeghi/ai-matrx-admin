@@ -840,7 +840,7 @@ export const subCategories = [
       "name": "Lifestyle Management",
       "description": "Tools for managing personal lifestyle and activities",
       "slug": "lifestyle-management",
-      "icon": "Sparkles",
+      "icon": "Stars",
       "features": [
         "Activity planning",
         "Lifestyle tracking",

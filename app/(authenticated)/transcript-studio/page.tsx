@@ -1,7 +1,12 @@
 import { Suspense } from "react";
+import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { listSessionsServer } from "@/features/transcript-studio/service/studioService";
 import { StudioHydrator } from "@/features/transcript-studio/route/StudioHydrator";
+import {
+  STUDIO_COLUMN_COOKIE_NAME,
+  decodeStudioLayoutCookie,
+} from "@/features/transcript-studio/components/resize/studioPanelCookie";
 import { StudioRoute } from "./_components/StudioRoute";
 
 interface PageProps {
@@ -11,15 +16,23 @@ interface PageProps {
 export default async function TranscriptStudioPage({ searchParams }: PageProps) {
   const { session: initialSessionId } = await searchParams;
 
+  const supabase = await createClient();
+  const cookieStore = await cookies();
+
   // Best-effort SSR seed of the session list. Failures fall through to a
   // client-side fetch in StudioView (showing the loading state briefly).
-  const supabase = await createClient();
   let seeds: Awaited<ReturnType<typeof listSessionsServer>> = [];
   try {
     seeds = await listSessionsServer(supabase);
   } catch {
     seeds = [];
   }
+
+  // Read the studio columns layout cookie so the 4-column shell paints
+  // with the user's saved widths on the first frame.
+  const defaultColumnLayout = decodeStudioLayoutCookie(
+    cookieStore.get(STUDIO_COLUMN_COOKIE_NAME)?.value,
+  );
 
   return (
     <>
@@ -28,7 +41,7 @@ export default async function TranscriptStudioPage({ searchParams }: PageProps) 
         initialSessionId={initialSessionId ?? null}
       />
       <Suspense fallback={null}>
-        <StudioRoute />
+        <StudioRoute defaultColumnLayout={defaultColumnLayout} />
       </Suspense>
     </>
   );

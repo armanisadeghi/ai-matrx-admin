@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, User } from "lucide-react";
+import { SquareStack, User } from "lucide-react";
 import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
 import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
 import { SettingsSlider } from "@/components/official/settings/primitives/SettingsSlider";
@@ -50,7 +50,7 @@ export default function AssistantTab() {
       <SettingsSubHeader
         title="Assistant"
         description="How your AI assistant should behave."
-        icon={Bot}
+        icon={SquareStack}
       />
 
       <SettingsSection title="Activation">

@@ -30,7 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Wand2, Check, X, Loader2, Copy, Sparkles } from "lucide-react";
+import { Wand2, Check, X, Loader2, Copy, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { usePromptsBasePath } from "@/features/prompts/hooks/usePromptsBasePath";
@@ -300,7 +300,7 @@ export function SystemPromptOptimizer({
                   }}
                   className="h-8 text-xs border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950"
                 >
-                  <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                  <Zap className="h-3.5 w-3.5 mr-1.5" />
                   Full Prompt Optimizer
                   <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30">
                     BETA

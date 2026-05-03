@@ -69,7 +69,7 @@ export function isQuickCreateTab(value: unknown): value is QuickCreateTab {
 // Defaults
 // ───────────────────────────────────────────────────────────────────────────
 
-export const DEFAULT_ICON = "Sparkles";
+export const DEFAULT_ICON = "MousePointerClick";
 export const DEFAULT_SURFACE: ShortcutContext = "general";
 export const FALLBACK_CATEGORY_LABEL = "My Shortcuts";
 export const FALLBACK_SHORTCUT_LABEL = "Untitled shortcut";

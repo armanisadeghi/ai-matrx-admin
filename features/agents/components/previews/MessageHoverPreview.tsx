@@ -25,7 +25,7 @@ import {
   Check,
   Copy,
   ExternalLink,
-  Sparkles,
+  CircleDot,
   User,
   Settings,
   Wrench,
@@ -52,7 +52,7 @@ const ROLE_STYLE: Record<
     label: "User",
   },
   assistant: {
-    Icon: Sparkles,
+    Icon: CircleDot,
     color:
       "bg-violet-500/15 text-violet-600 dark:text-violet-400 border-violet-500/30",
     label: "Assistant",

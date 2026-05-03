@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Hammer, Loader2 } from "lucide-react";
 
 export function TextAnalyzerExample() {
   const [text, setText] = useState("");
@@ -71,7 +71,7 @@ export function TextAnalyzerExample() {
             </>
           ) : (
             <>
-              <Sparkles className="mr-2 h-4 w-4" />
+              <Hammer className="mr-2 h-4 w-4" />
               Analyze Text
             </>
           )}

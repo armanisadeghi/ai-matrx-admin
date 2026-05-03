@@ -30,7 +30,7 @@ import {
   Tag,
   ArrowUp,
   ArrowDown,
-  Sparkles,
+  Hammer,
 } from "lucide-react";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import {
@@ -480,11 +480,11 @@ export function CategoriesAdmin() {
                             onChange={(e) =>
                               handleEditChange("icon", e.target.value)
                             }
-                            placeholder="e.g., Sparkles"
+                            placeholder="e.g., Hammer"
                           />
                         </div>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          Use icon names from lucide-react (e.g., Sparkles, Zap,
+                          Use icon names from lucide-react (e.g., Hammer, Zap,
                           Star)
                         </p>
                       </div>
@@ -511,7 +511,7 @@ export function CategoriesAdmin() {
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center text-gray-500 dark:text-gray-400">
-              <Sparkles className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <Hammer className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <h3 className="text-lg font-medium mb-2">No Category Selected</h3>
               <p>
                 Select a category from the sidebar to view and edit its details.
@@ -596,7 +596,7 @@ export function CategoriesAdmin() {
                         icon: e.target.value,
                       })
                     }
-                    placeholder="e.g., Sparkles"
+                    placeholder="e.g., Hammer"
                   />
                 </div>
               </div>

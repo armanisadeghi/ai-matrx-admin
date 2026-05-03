@@ -16,7 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { GitMerge, Sparkles, Info, AlertTriangle, Check } from "lucide-react";
+import { GitMerge, Rainbow, Info, AlertTriangle, Check } from "lucide-react";
 import { toast } from "sonner";
 import { ResultPreview } from "./ResultPreview";
 import {
@@ -392,7 +392,7 @@ export function MergePanel({
             {requiresKeys && suggestions.length > 0 && (
               <div className="space-y-1">
                 <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                  <Sparkles className="h-3 w-3 text-amber-500" />
+                  <Rainbow className="h-3 w-3 text-amber-500" />
                   Suggested keys
                 </div>
                 <div className="flex flex-wrap gap-1.5">

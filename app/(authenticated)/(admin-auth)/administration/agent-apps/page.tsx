@@ -11,7 +11,7 @@ import {
   Loader2,
   RefreshCw,
   ShieldCheck,
-  Sparkles,
+  Stars,
   Star,
   Tag,
 } from "lucide-react";
@@ -263,7 +263,7 @@ export default function AgentAppsAdminDashboardPage() {
             ) : featuredApps.length === 0 ? (
               <Card className="border-dashed">
                 <CardContent className="p-4 text-xs text-muted-foreground flex items-center gap-2">
-                  <Sparkles className="h-3.5 w-3.5" />
+                  <Stars className="h-3.5 w-3.5" />
                   No featured apps yet. Feature an app from the apps list to
                   highlight it.
                 </CardContent>

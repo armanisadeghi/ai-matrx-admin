@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Wrench, Sparkles } from 'lucide-react';
+import { Wrench, Rocket } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { CreatePromptAppForm } from './CreatePromptAppForm';
 import { AutoCreatePromptAppForm } from './AutoCreatePromptAppForm';
@@ -84,7 +84,7 @@ export function CreatePromptAppFormWrapper({
               className="gap-2"
               disabled={!selectedPromptId}
             >
-              <Sparkles className="w-4 h-4" />
+              <Rocket className="w-4 h-4" />
               Auto Create
             </TabsTrigger>
             <TabsTrigger 

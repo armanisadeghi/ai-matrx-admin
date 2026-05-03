@@ -276,7 +276,7 @@ function emptyFormData(): ShortcutFormData {
     categoryId: "",
     label: "",
     description: null,
-    iconName: "Sparkles",
+    iconName: "Frown",
     keyboardShortcut: null,
     sortOrder: 0,
     agentId: null,
@@ -659,7 +659,7 @@ export function ShortcutForm({
             id="shortcut-icon"
             value={formData.iconName ?? ""}
             onChange={(value) => handleChange("iconName", value || null)}
-            placeholder="e.g., Sparkles"
+            placeholder="e.g., Star"
             className="h-9 text-[16px]"
             disabled={saving}
           />

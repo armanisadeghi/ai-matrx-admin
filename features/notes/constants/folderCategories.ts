@@ -42,7 +42,7 @@ import {
     PenTool,
     // Matrx AI app-specific icons
     MessageSquareText,
-    Sparkles,
+    Gem,
     Boxes,
     Wrench,
     type LucideIcon,
@@ -351,7 +351,7 @@ export const FOLDER_CATEGORIES: FolderCategory[] = [
     {
         id: 'prompt-idea',
         label: 'Prompt Idea',
-        icon: Sparkles,
+        icon: Gem,
         description: 'Prompt engineering ideas and templates',
         color: 'text-amber-500 dark:text-amber-300'
     },

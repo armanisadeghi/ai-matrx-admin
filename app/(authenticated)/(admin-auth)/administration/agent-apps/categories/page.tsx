@@ -8,7 +8,7 @@ import {
   RefreshCw,
   Save,
   Search,
-  Sparkles,
+  Lightbulb,
   Tag,
   Trash2,
   X,
@@ -479,12 +479,12 @@ export default function AgentAppsCategoriesAdminPage() {
                             onChange={(e) =>
                               handleEditChange("icon", e.target.value)
                             }
-                            placeholder="e.g., Sparkles"
+                            placeholder="e.g., Lightbulb"
                             className="text-[16px]"
                           />
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Use names from lucide-react (e.g., Sparkles, Zap,
+                          Use names from lucide-react (e.g., Lightbulb, Zap,
                           PenTool)
                         </p>
                       </div>
@@ -512,7 +512,7 @@ export default function AgentAppsCategoriesAdminPage() {
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center text-muted-foreground">
-              <Sparkles className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <Lightbulb className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <h3 className="text-lg font-medium mb-2">No Category Selected</h3>
               <p className="text-sm">
                 Select a category from the sidebar to view and edit its
@@ -587,7 +587,7 @@ export default function AgentAppsCategoriesAdminPage() {
                     onChange={(e) =>
                       setCreateData({ ...createData, icon: e.target.value })
                     }
-                    placeholder="e.g., Sparkles"
+                    placeholder="e.g., Lightbulb"
                     className="text-[16px]"
                   />
                 </div>

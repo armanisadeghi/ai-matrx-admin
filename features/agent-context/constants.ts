@@ -109,7 +109,7 @@ export const STATUS_CONFIG: Record<ContextItemStatus, StatusConfig> = {
     colorDot: "bg-purple-400",
     colorBg: "bg-purple-500/10",
     colorText: "text-purple-600 dark:text-purple-400",
-    iconName: "Sparkles",
+    iconName: "Rainbow",
   },
   in_revision: {
     label: "In Revision",

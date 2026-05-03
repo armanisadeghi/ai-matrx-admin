@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ChevronRight, Bot, Lock, Search, X } from "lucide-react";
+import { ChevronRight, Boxes, Lock, Search, X } from "lucide-react";
 import { useSelector } from "react-redux";
 import { selectUser } from "@/lib/redux/slices/userSlice";
 import {
@@ -59,7 +59,7 @@ function AgentListItem({
               : "text-foreground/70 hover:bg-accent/40 hover:text-foreground"
           }`}
         >
-          <Bot className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+          <Boxes className="h-3 w-3 text-muted-foreground flex-shrink-0" />
           <span className="text-[11px] truncate flex-1">{name}</span>
           {isSelected && (
             <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />

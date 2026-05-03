@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { COLUMN_IDS } from "../../constants";
 import type { RawSegment } from "../../types";
+import { useScrollSyncOptional } from "../scroll-sync/ScrollSyncProvider";
 import { ColumnEmptyState } from "./ColumnEmptyState";
 import { ColumnHeader } from "./ColumnHeader";
 import { SegmentWrapper } from "./SegmentWrapper";
@@ -61,6 +62,18 @@ export function RawTranscriptColumn({
   }, [ids, byId]);
   const status = useMemo(() => summarizeSegments(segments), [segments]);
 
+  const sync = useScrollSyncOptional();
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!sync) return;
+    sync.registerColumn(COLUMN_IDS.raw, scrollRef.current);
+    return () => sync.registerColumn(COLUMN_IDS.raw, null);
+  }, [sync]);
+
+  const onPointerLead = sync
+    ? () => sync.markLeader(COLUMN_IDS.raw)
+    : undefined;
+
   return (
     <section
       className={cn(
@@ -86,7 +99,13 @@ export function RawTranscriptColumn({
           }
         />
       ) : (
-        <div className="flex-1 min-h-0 overflow-y-auto py-1.5">
+        <div
+          ref={scrollRef}
+          onWheel={onPointerLead}
+          onTouchStart={onPointerLead}
+          onPointerDown={onPointerLead}
+          className="flex-1 min-h-0 overflow-y-auto py-1.5"
+        >
           {segments.map((seg) => (
             <SegmentWrapper
               key={seg.id}

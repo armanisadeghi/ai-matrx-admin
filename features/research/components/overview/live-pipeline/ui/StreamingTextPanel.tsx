@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Sparkles } from "lucide-react";
+import { MousePointerClick } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -42,7 +42,7 @@ export function StreamingTextPanel({
     >
       <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border/40 bg-gradient-to-r from-primary/5 to-transparent">
         <div className="flex items-center gap-1.5 text-[11px] font-semibold">
-          <Sparkles className="h-3 w-3 text-primary" />
+          <MousePointerClick className="h-3 w-3 text-primary" />
           <span>{title}</span>
         </div>
         {isStreaming && (

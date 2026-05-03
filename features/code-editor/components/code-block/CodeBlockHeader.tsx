@@ -19,7 +19,7 @@ import {
   Maximize2,
   ListOrdered,
   FileText,
-  Sparkles,
+  Atom,
   Rocket,
   Zap,
   Paintbrush,
@@ -240,11 +240,11 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Code2,
   Brain,
   FileText,
-  Sparkles,
+  Atom,
 };
 
 const getIconComponent = (iconName: string): LucideIcon => {
-  return ICON_MAP[iconName] || Sparkles;
+  return ICON_MAP[iconName] || Atom;
 };
 
 const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
@@ -533,7 +533,7 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
           <DropdownMenuTrigger asChild>
             <div>
               <IconButton
-                icon={Sparkles}
+                icon={Atom}
                 tooltip="AI Code Editor (click for options)"
                 size="sm"
                 variant="ghost"

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Sparkles, Brain, MessageSquare, BookOpen, Clock, UserCircle, Sliders, Save, Zap, Code, ListChecks, Palette, Bot, Wand2, UserCog, PanelTop, Image, BellRing, Smile } from 'lucide-react';
+import { Stars, Brain, MessageSquare, BookOpen, Clock, UserCircle, Sliders, Save, Zap, Code, ListChecks, Palette, CircuitBoard, Wand2, UserCog, PanelTop, Image, BellRing, Smile } from 'lucide-react';
 
 export default function AIExperienceCustomizer() {
   // State for all customization options
@@ -410,7 +410,7 @@ export default function AIExperienceCustomizer() {
                 />
               </Card>
               
-              <Card title="Creativity Level" icon={<Sparkles className="h-5 w-5" />}>
+              <Card title="Creativity Level" icon={<Stars className="h-5 w-5" />}>
                 <Slider
                   label="Creative Thinking"
                   value={knowledge.creativity}

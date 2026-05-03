@@ -22,7 +22,7 @@ import {
   Search,
   FileText,
   Link2,
-  Sparkles,
+  Hammer,
 } from 'lucide-react';
 import { toast } from '@/lib/toast-service';
 import { ScopeMappingEditor } from './ScopeMappingEditor';
@@ -201,7 +201,7 @@ export function SelectBuiltinForShortcutModal({
                     onClick={() => setFilterSource('generated')}
                     className="h-8 text-xs"
                   >
-                    <Sparkles className="h-3 w-3 mr-1" />
+                    <Hammer className="h-3 w-3 mr-1" />
                     Generated ({builtins.filter((b) => !b.source_prompt_id).length})
                   </Button>
                 </div>
@@ -258,7 +258,7 @@ export function SelectBuiltinForShortcutModal({
                                   </Badge>
                                 ) : (
                                   <Badge variant="outline" className="text-xs gap-1">
-                                    <Sparkles className="h-3 w-3" />
+                                    <Hammer className="h-3 w-3" />
                                     Generated
                                   </Badge>
                                 )}

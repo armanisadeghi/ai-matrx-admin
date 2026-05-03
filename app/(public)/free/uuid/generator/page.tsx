@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { motion } from 'motion/react'
-import { Copy, RefreshCw, Check, AlertCircle, Sparkles } from 'lucide-react'
+import { Copy, RefreshCw, Check, AlertCircle, CircleDot } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -94,7 +94,7 @@ export default function UUIDGenerator() {
             >
                 <div className="flex items-center space-x-2">
                     <h1 className="text-4xl font-bold tracking-tight">UUID Generator</h1>
-                    <Sparkles className="w-8 h-8 text-primary animate-pulse" />
+                    <CircleDot className="w-8 h-8 text-primary animate-pulse" />
                 </div>
                 <p className="text-muted-foreground">
                     Generate and validate secure, random UUIDs (Universally Unique Identifiers)

@@ -28,7 +28,7 @@ import {
   Link2,
   Loader2,
   ImageIcon,
-  Sparkles,
+  Star,
   X,
   RotateCcw,
 } from "lucide-react";
@@ -370,7 +370,7 @@ export function GalleryFloatingWorkspace() {
                 showTopics && "bg-accent text-foreground",
               )}
             >
-              <Sparkles className="w-3 h-3" />
+              <Star className="w-3 h-3" />
             </button>
 
             {activeQuery && (

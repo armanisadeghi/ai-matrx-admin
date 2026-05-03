@@ -20,7 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   Code,
   Settings,
-  Sparkles,
+  Rocket,
   Plus,
   X,
   Loader2,
@@ -317,7 +317,7 @@ export function CreatePromptAppForm({
               Component Code
             </TabsTrigger>
             <TabsTrigger value="advanced">
-              <Sparkles className="w-4 h-4 mr-2" />
+              <Rocket className="w-4 h-4 mr-2" />
               Advanced
             </TabsTrigger>
           </TabsList>
@@ -493,7 +493,7 @@ export function CreatePromptAppForm({
                   onClick={() => setShowAIEditor(true)}
                   className="ml-auto"
                 >
-                  <Sparkles className="w-4 h-4 mr-2" />
+                  <Rocket className="w-4 h-4 mr-2" />
                   AI Edit
                 </Button>
               </CardHeader>

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   AppWindow,
   ArrowRight,
-  Bot,
+  Brain,
   FileText,
   Folder,
   GitBranch,
@@ -47,7 +47,7 @@ const TILES: Tile[] = [
     label: "Agents",
     description:
       "Browse, build, and run system (builtin) agents shipped to every user.",
-    icon: Bot,
+    icon: Brain,
     count: (c) => c.agents,
   },
   {

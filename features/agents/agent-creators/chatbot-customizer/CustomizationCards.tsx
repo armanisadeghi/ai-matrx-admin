@@ -5,7 +5,7 @@ import {
   MessageSquare,
   Brain,
   BookOpen,
-  Sparkles,
+  Zap,
   Code,
   Clock,
   ListChecks,

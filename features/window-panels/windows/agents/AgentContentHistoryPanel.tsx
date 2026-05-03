@@ -8,7 +8,7 @@ import {
   MessageSquare,
   Loader2,
   History,
-  Bot,
+  SquareStack,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
@@ -338,7 +338,7 @@ export function AgentContentHistoryPanel({
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-center px-6 text-muted-foreground">
-              <Bot className="w-10 h-10 mb-3 opacity-20" />
+              <SquareStack className="w-10 h-10 mb-3 opacity-20" />
               <p className="text-sm font-medium">Select a conversation</p>
               <p className="text-xs opacity-60 mt-1">
                 Choose a run from the list to view the conversation (read-only)

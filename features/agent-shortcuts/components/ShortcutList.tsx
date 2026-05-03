@@ -40,7 +40,7 @@ import {
   Globe,
   Plus,
   RefreshCw,
-  Sparkles,
+  MousePointerClick,
   X,
   Zap,
 } from "lucide-react";
@@ -385,7 +385,7 @@ export function ShortcutList({
                   <CardContent className="p-3 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-start gap-2 min-w-0">
-                        <Sparkles className="h-4 w-4 text-primary mt-0.5" />
+                        <MousePointerClick className="h-4 w-4 text-primary mt-0.5" />
                         <div className="min-w-0">
                           <div className="font-medium text-sm truncate">
                             {shortcut.label}
@@ -703,7 +703,7 @@ export function ShortcutList({
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Sparkles className="h-4 w-4 text-primary" />
+                          <MousePointerClick className="h-4 w-4 text-primary" />
                           <div className="font-medium">{shortcut.label}</div>
                         </div>
                       </TableCell>
@@ -865,7 +865,7 @@ export function ShortcutList({
             </Table>
             {filtered.length === 0 && (
               <div className="text-center py-12">
-                <Sparkles className="h-12 w-12 mx-auto text-muted-foreground mb-3 opacity-50" />
+                <MousePointerClick className="h-12 w-12 mx-auto text-muted-foreground mb-3 opacity-50" />
                 <p className="text-muted-foreground">No shortcuts found</p>
                 {hasActiveFilters && (
                   <Button

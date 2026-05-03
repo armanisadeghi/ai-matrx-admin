@@ -19,7 +19,7 @@ import {
     Trash2,
     MessageSquare,
     Variable,
-    Bot,
+    Network,
     User,
     Settings2
 } from "lucide-react";
@@ -100,7 +100,7 @@ export const PromptMessageList: React.FC = () => {
                         )}>
                             {isSystem ? <Settings2 className="w-3 h-3 mr-1" /> :
                                 message.role === 'user' ? <User className="w-3 h-3 mr-1" /> :
-                                    <Bot className="w-3 h-3 mr-1" />}
+                                    <Network className="w-3 h-3 mr-1" />}
                             {message.role}
                         </Badge>
                     </div>

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { 
-    Sparkles, 
+    Lightbulb, 
     Plus, 
     Table, 
     Briefcase, 
@@ -141,7 +141,7 @@ export default function ReviseCommentsModal({
     };
 
     const quickActions = [
-        { key: 'creative', label: 'More Creative', icon: Sparkles, show: config.showCreativeOptions },
+        { key: 'creative', label: 'More Creative', icon: Lightbulb, show: config.showCreativeOptions },
         { key: 'expand', label: 'Expand Content', icon: Plus, show: config.showExpandContent },
         { key: 'table', label: 'Show as Table', icon: Table, show: config.showTableView },
         { key: 'professional', label: 'More Professional', icon: Briefcase, show: config.showProfessionalTone },

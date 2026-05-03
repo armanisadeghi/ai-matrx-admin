@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Brain, Sparkles } from "lucide-react";
+import { Brain, Rocket } from "lucide-react";
 
 const QuizLoadingVisualization: React.FC = () => {
     return (
@@ -14,7 +14,7 @@ const QuizLoadingVisualization: React.FC = () => {
                                 <Brain className="h-12 w-12 text-blue-600 dark:text-blue-400" />
                             </div>
                             <Brain className="h-12 w-12 text-blue-600 dark:text-blue-400 animate-pulse" style={{ animationDuration: '2s' }} />
-                            <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400 absolute -top-1 -right-1 animate-bounce" style={{ animationDuration: '1s' }} />
+                            <Rocket className="h-5 w-5 text-purple-600 dark:text-purple-400 absolute -top-1 -right-1 animate-bounce" style={{ animationDuration: '1s' }} />
                         </div>
 
                         {/* Loading Text */}

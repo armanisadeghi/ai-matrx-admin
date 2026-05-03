@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Lightbulb, Workflow, Bot, Zap, Globe } from 'lucide-react';
+import { Lightbulb, Workflow, LayoutTemplate, Zap, Globe } from 'lucide-react';
 
 
 interface SourceSelectorProps {
@@ -32,7 +32,7 @@ const AppletSourceSelection = ({ onSelect, itemCounts = {}, activeSourceType = n
     {
       id: 'ai-agent',
       name: 'AI Agent',
-      icon: Bot,
+      icon: LayoutTemplate,
       description: 'Deploy autonomous agents'
     },
     {

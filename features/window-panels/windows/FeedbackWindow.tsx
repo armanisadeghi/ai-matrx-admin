@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import {
   AlertCircle,
-  Bot,
+  Component,
   Bug,
   Camera,
   Check,
@@ -562,7 +562,7 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
               </>
             ) : (
               <>
-                <Bot className="w-3.5 h-3.5" />
+                <Component className="w-3.5 h-3.5" />
                 Copy for Coding Agent
               </>
             )}

@@ -1,11 +1,11 @@
 // components/cards/CustomizationCards.tsx
 import React from 'react';
 import { 
-  Bot, 
+  Boxes, 
   MessageSquare, 
   Brain, 
   BookOpen, 
-  Sparkles, 
+  PartyPopper, 
   Code, 
   Clock,
   ListChecks,

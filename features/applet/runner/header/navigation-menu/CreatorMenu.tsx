@@ -2,7 +2,7 @@
 import React, { useMemo } from "react";
 import { DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Crown, FileText, Server, Cpu, Paintbrush, Code, Database, Sparkles, Layout } from "lucide-react";
+import { Crown, FileText, Server, Cpu, Paintbrush, Code, Database, Stars, Layout } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";

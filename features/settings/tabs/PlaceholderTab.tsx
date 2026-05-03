@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
+import { PartyPopper } from "lucide-react";
 import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
 import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
 
@@ -14,7 +14,7 @@ export default function PlaceholderTab() {
       <SettingsSubHeader
         title="Coming soon"
         description="This tab will be implemented by a later migration phase."
-        icon={Sparkles}
+        icon={PartyPopper}
       />
       <SettingsCallout tone="info">
         Tab components compose only primitives from

@@ -22,7 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Circle, Loader2, Sparkles } from "lucide-react";
+import { CheckCircle2, Circle, Loader2, Stars } from "lucide-react";
 
 interface Step {
   id: string;
@@ -225,7 +225,7 @@ export function ChainedPromptsExample() {
               </>
             ) : (
               <>
-                <Sparkles className="mr-2 h-4 w-4" />
+                <Stars className="mr-2 h-4 w-4" />
                 Run Workflow
               </>
             )}

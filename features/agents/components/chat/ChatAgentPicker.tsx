@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Bot, ChevronDown, Search, Sparkles, Users } from "lucide-react";
+import { Boxes, ChevronDown, Search, Lightbulb, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -36,9 +36,9 @@ interface ChatAgentPickerProps {
   autoFocus?: boolean;
 }
 
-const TAB_META: Record<ChatTab, { label: string; icon: typeof Bot }> = {
-  own: { label: "My Agents", icon: Bot },
-  system: { label: "System", icon: Sparkles },
+const TAB_META: Record<ChatTab, { label: string; icon: typeof Boxes }> = {
+  own: { label: "My Agents", icon: Boxes },
+  system: { label: "System", icon: Lightbulb },
   community: { label: "Community", icon: Users },
 };
 
@@ -106,7 +106,7 @@ export function ChatAgentPicker({
         triggerClassName,
       )}
     >
-      <Bot className="w-3.5 h-3.5 text-primary" />
+      <Boxes className="w-3.5 h-3.5 text-primary" />
       <span className="truncate max-w-[10rem] sm:max-w-[16rem]">
         {label ?? "Choose an agent"}
       </span>
@@ -187,7 +187,7 @@ export function ChatAgentPicker({
                   )}
                 >
                   <span className="shrink-0 w-7 h-7 rounded-md bg-muted flex items-center justify-center">
-                    <Bot className="w-3.5 h-3.5 text-primary" />
+                    <Boxes className="w-3.5 h-3.5 text-primary" />
                   </span>
                   <span className="flex-1 min-w-0">
                     <span className="block text-sm font-medium text-foreground truncate">
@@ -221,7 +221,7 @@ export function ChatAgentPicker({
             triggerClassName,
           )}
         >
-          <Bot className="w-4 h-4 text-primary" />
+          <Boxes className="w-4 h-4 text-primary" />
           <span className="truncate max-w-[10rem]">
             {label ?? "Choose an agent"}
           </span>

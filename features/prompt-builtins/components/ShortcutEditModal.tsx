@@ -119,7 +119,7 @@ export function ShortcutEditModal({
         label: '',
         description: '',
         category_id: categories[0]?.id || '',
-        icon_name: 'Sparkles',
+        icon_name: 'Wand2',
         keyboard_shortcut: '',
         sort_order: 0,
         prompt_builtin_id: null,

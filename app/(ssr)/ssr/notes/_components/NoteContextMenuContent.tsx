@@ -1,7 +1,7 @@
 "use client";
 
 // SSR notes editor context menu — parity with UnifiedContextMenu for selection,
-// floating Sparkles menu, admin debug, and prompt execution.
+// floating Flame menu, admin debug, and prompt execution.
 
 import React, {
   useState,
@@ -40,7 +40,7 @@ import {
   Link2,
   Share2,
   FolderInput,
-  Sparkles,
+  Flame,
   Trash2,
   X,
   Search,
@@ -158,8 +158,8 @@ function resolveActiveTextarea(
 }
 
 function GroupIcon({ iconName }: { iconName: string | null }) {
-  if (!iconName) return <Sparkles className="w-3 h-3 shrink-0" />;
-  const Icon = getIconComponent(iconName, "Sparkles");
+  if (!iconName) return <Flame className="w-3 h-3 shrink-0" />;
+  const Icon = getIconComponent(iconName, "Flame");
   return <Icon className="w-3 h-3 shrink-0" />;
 }
 
@@ -173,8 +173,8 @@ function ShortcutMenuItem({
   Item: MenuKit["Item"];
 }) {
   const Icon = item.icon_name
-    ? getIconComponent(item.icon_name, "Sparkles")
-    : Sparkles;
+    ? getIconComponent(item.icon_name, "Flame")
+    : Flame;
   return (
     <Item
       className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
@@ -277,7 +277,7 @@ function CategoryItems({
   );
 }
 
-// ── Heavy chunk: menu panels + Sparkles (loaded via next/dynamic from NoteContextMenu) ───
+// ── Heavy chunk: menu panels + Flame (loaded via next/dynamic from NoteContextMenu) ───
 
 export function NoteContextMenuHeavy({
   noteId,
@@ -948,7 +948,7 @@ export function NoteContextMenuHeavy({
           if (e.key === "Escape") setShowFloatingIcon(false);
         }}
       >
-        <Sparkles className={isMobile ? "h-6 w-6" : "h-5 w-5"} />
+        <Flame className={isMobile ? "h-6 w-6" : "h-5 w-5"} />
       </button>
     );
   };
@@ -1125,7 +1125,7 @@ export function NoteContextMenuHeavy({
 
         <Sub>
           <SubTrigger className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5 text-purple-600 dark:text-purple-400 [&_svg]:text-purple-500">
-            <Sparkles /> AI Actions
+            <Flame /> AI Actions
             {groupsLoading && (
               <Loader2 className="w-3 h-3 animate-spin ml-auto opacity-50" />
             )}

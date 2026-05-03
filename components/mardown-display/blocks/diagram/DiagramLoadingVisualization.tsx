@@ -2,7 +2,7 @@
 import React from 'react';
 import { 
   Network, GitBranch, Users, Database, Server, Globe, Settings,
-  Sparkles, ArrowRight, ArrowDown, Circle, Square, Diamond,
+  CircleDot, ArrowRight, ArrowDown, Circle, Square, Diamond,
   Layers, Cpu, HardDrive, Triangle, Zap, Move, RotateCcw
 } from 'lucide-react';
 
@@ -36,7 +36,7 @@ const DiagramLoadingVisualization: React.FC<DiagramLoadingVisualizationProps> = 
               </div>
             </div>
             <div className="absolute top-0 left-8 animate-pulse delay-500">
-              <Sparkles className="h-5 w-5 text-blue-400 dark:text-blue-300" />
+              <CircleDot className="h-5 w-5 text-blue-400 dark:text-blue-300" />
             </div>
           </div>
           
@@ -129,7 +129,7 @@ const DiagramLoadingVisualization: React.FC<DiagramLoadingVisualizationProps> = 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
           {[
             { type: 'Flowchart', icon: GitBranch, color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-950/30' },
-            { type: 'Mind Map', icon: Sparkles, color: 'text-purple-600 dark:text-purple-400', bgColor: 'bg-purple-100 dark:bg-purple-950/30' },
+            { type: 'Mind Map', icon: CircleDot, color: 'text-purple-600 dark:text-purple-400', bgColor: 'bg-purple-100 dark:bg-purple-950/30' },
             { type: 'Org Chart', icon: Users, color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-950/30' },
             { type: 'Network', icon: Network, color: 'text-orange-600 dark:text-orange-400', bgColor: 'bg-orange-100 dark:bg-orange-950/30' },
             { type: 'System', icon: Server, color: 'text-indigo-600 dark:text-indigo-400', bgColor: 'bg-indigo-100 dark:bg-indigo-950/30' },

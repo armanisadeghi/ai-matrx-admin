@@ -6,7 +6,7 @@ import {
     ChevronDown,
     ChevronRight,
     Search,
-    Sparkles,
+    Star,
     X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -105,7 +105,7 @@ export function PresetCatalog({
             {!query && (
                 <div className="p-3 border-b border-border bg-gradient-to-b from-primary/5 to-transparent">
                     <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider font-semibold text-muted-foreground mb-2">
-                        <Sparkles className="h-3 w-3" /> Recommended bundles
+                        <Star className="h-3 w-3" /> Recommended bundles
                     </div>
                     <div className="grid grid-cols-1 gap-1.5">
                         {RECOMMENDED_BUNDLES.map((b) => {

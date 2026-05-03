@@ -28,7 +28,7 @@ import {
 } from "../utils/download-bundle";
 import { slugifyFilename } from "../utils/slugify-filename";
 import type { ProcessedVariant } from "../types";
-import { Sparkles, Wand2, Edit3, X } from "lucide-react";
+import { Zap, Wand2, Edit3, X } from "lucide-react";
 
 interface ImageStudioShellProps {
   /** Optional default folder for Save-to-library. */
@@ -349,7 +349,7 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
                       </button>
                       {renameAcknowledged && (
                         <span className="inline-flex items-center gap-1 text-[11px] text-amber-700 dark:text-amber-400">
-                          <Sparkles className="h-3 w-3" />
+                          <Zap className="h-3 w-3" />
                           Click Generate again to use the auto names
                         </span>
                       )}

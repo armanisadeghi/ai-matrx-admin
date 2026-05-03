@@ -12,9 +12,9 @@ import {
   Search,
   X,
   Check,
-  Bot,
+  Cuboid,
   Loader2,
-  Sparkles,
+  Star,
   User,
   Globe,
 } from "lucide-react";
@@ -49,7 +49,7 @@ type FilterType = "all" | "system" | "mine";
 
 const FILTERS: { id: FilterType; label: string; icon: React.ReactNode }[] = [
   { id: "all", label: "All", icon: <Globe className="h-3 w-3" /> },
-  { id: "system", label: "System", icon: <Sparkles className="h-3 w-3" /> },
+  { id: "system", label: "System", icon: <Star className="h-3 w-3" /> },
   { id: "mine", label: "My Agents", icon: <User className="h-3 w-3" /> },
 ];
 
@@ -145,7 +145,7 @@ function MobileAgentItem({
     >
       <div className="flex-shrink-0 flex items-center justify-center rounded-lg bg-muted w-9 h-9">
         <span className="text-muted-foreground [&_svg]:h-4 [&_svg]:w-4">
-          {icon || <Bot className="h-4 w-4" />}
+          {icon || <Cuboid className="h-4 w-4" />}
         </span>
       </div>
       <div className="flex-1 min-w-0">
@@ -204,7 +204,7 @@ function DesktopAgentCard({
           <span
             className={`[&_svg]:h-4 [&_svg]:w-4 ${isSelected ? "text-primary" : "text-muted-foreground"}`}
           >
-            {icon || <Bot className="h-4 w-4" />}
+            {icon || <Cuboid className="h-4 w-4" />}
           </span>
         </div>
         {isSelected && <Check className="h-3.5 w-3.5 text-primary" />}
@@ -641,7 +641,7 @@ function DesktopAgentPicker({
 
             {totalResults === 0 && !isLoading && (
               <div className="py-12 text-center">
-                <Bot className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
+                <Cuboid className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
                 <p className="text-sm text-muted-foreground">
                   {searchTerm
                     ? `No agents matching "${searchTerm}"`

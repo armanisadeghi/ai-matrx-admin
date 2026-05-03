@@ -1,5 +1,5 @@
 import { join } from "path";
-import { Bot } from "lucide-react";
+import { CircuitBoard } from "lucide-react";
 import { RouteIndexPage } from "@/components/ssr/RouteIndexPage";
 
 import { createRouteMetadata } from "@/utils/route-metadata";
@@ -23,7 +23,7 @@ export default async function MatrxAiDemosIndexPage() {
       basePath="/demos/api-tests/matrx-ai"
       title="Matrx AI demos"
       description="Agent, chat, conversation, dynamic API, and tools demos."
-      icon={Bot}
+      icon={CircuitBoard}
     />
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, Loader2, Sparkles, ChevronDown } from "lucide-react";
+import { Search, Loader2, PartyPopper, ChevronDown } from "lucide-react";
 import { LuBrain } from "react-icons/lu";
 import {
   Popover,
@@ -361,7 +361,7 @@ function AgentButton({
         )}
         {variableCount > 0 && (
           <div className="flex items-center gap-1 mt-1.5">
-            <Sparkles size={11} className="text-amber-500" />
+            <PartyPopper size={11} className="text-amber-500" />
             <span className="text-xs text-amber-600 dark:text-amber-400">
               {variableCount} variable{variableCount > 1 ? "s" : ""}
             </span>

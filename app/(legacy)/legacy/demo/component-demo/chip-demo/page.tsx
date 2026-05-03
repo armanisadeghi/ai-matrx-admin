@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Chip, EnhancedChip } from '@/components/ui/chip';
-import { Star, Heart, Sparkles, Flame, Zap, Crown, Diamond, Shield, Award, Trophy, Medal, Gift, Rocket, Sparkle } from 'lucide-react';
+import { Star, Heart, Stars, Flame, Zap, Crown, Diamond, Shield, Award, Trophy, Medal, Gift, Rocket, Sparkle } from 'lucide-react';
 import TextDivider from '@/components/matrx/TextDivider';
 import {Lightning} from "@mynaui/icons-react";
 
@@ -105,7 +105,7 @@ export default function DemoPage() {
                                     <div className="flex flex-wrap gap-2">
                                         <EnhancedChip icon={Star}>Default</EnhancedChip>
                                         <EnhancedChip variant="primary" icon={Heart}>Primary</EnhancedChip>
-                                        <EnhancedChip variant="success" icon={Sparkles}>Success</EnhancedChip>
+                                        <EnhancedChip variant="success" icon={Stars}>Success</EnhancedChip>
                                         <EnhancedChip variant="warning" icon={Flame}>Warning</EnhancedChip>
                                         <EnhancedChip variant="danger" icon={Zap}>Danger</EnhancedChip>
                                     </div>
@@ -187,7 +187,7 @@ export default function DemoPage() {
                             <TextDivider text="Hover Animations" />
                             <div className="flex flex-wrap gap-2">
                                 <EnhancedChip variant="primary" animated icon={Rocket}>Hover Me!</EnhancedChip>
-                                <EnhancedChip variant="success" animated glow icon={Sparkles }>Hover Glow</EnhancedChip>
+                                <EnhancedChip variant="success" animated glow icon={Stars }>Hover Glow</EnhancedChip>
                                 <EnhancedChip variant="warning" gradient animated icon={Lightning}>Hover Gradient</EnhancedChip>
                             </div>
 
@@ -286,7 +286,7 @@ export default function DemoPage() {
                             <div className="flex flex-wrap gap-2">
                                 <EnhancedChip icon={Star}>Default</EnhancedChip>
                                 <EnhancedChip variant="primary" icon={Heart}>Primary</EnhancedChip>
-                                <EnhancedChip variant="success" icon={Sparkles}>Success</EnhancedChip>
+                                <EnhancedChip variant="success" icon={Stars}>Success</EnhancedChip>
                                 <EnhancedChip variant="warning" icon={Flame}>Warning</EnhancedChip>
                                 <EnhancedChip variant="danger" icon={Zap}>Danger</EnhancedChip>
                             </div>

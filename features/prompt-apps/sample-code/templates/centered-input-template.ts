@@ -15,7 +15,7 @@
  */
 
 const centeredInputTemplate = `import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Sparkles, Loader2, AlertCircle, Send, ArrowUp, RotateCcw } from 'lucide-react';
+import { PartyPopper, Loader2, AlertCircle, Send, ArrowUp, RotateCcw } from 'lucide-react';
 import MarkdownStream from '@/components/MarkdownStream';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -122,7 +122,7 @@ export default function CenteredInputApp({
           {/* Hero section */}
           <div className="space-y-3">
             <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
-              <Sparkles className="w-7 h-7 text-primary" />
+              <PartyPopper className="w-7 h-7 text-primary" />
             </div>
             <h1 className="text-3xl md:text-4xl font-semibold text-foreground">
               {appName || 'Ask anything'}
@@ -185,7 +185,7 @@ export default function CenteredInputApp({
       {/* Header */}
       <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 border-b border-border">
         <div className="flex items-center gap-2 min-w-0">
-          <Sparkles className="w-4 h-4 text-primary flex-shrink-0" />
+          <PartyPopper className="w-4 h-4 text-primary flex-shrink-0" />
           <h1 className="text-sm font-medium text-foreground truncate">{appName || 'Chat'}</h1>
         </div>
         <Button variant="ghost" size="sm" onClick={handleNewChat} className="h-7 text-xs">

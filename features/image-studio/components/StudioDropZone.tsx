@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { Clipboard, ImageIcon, Sparkles, Upload } from "lucide-react";
+import { Clipboard, ImageIcon, Lightbulb, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StudioDropZoneProps {
@@ -128,7 +128,7 @@ export function StudioDropZone({
                 )}
             >
                 {isDragActive ? (
-                    <Sparkles className="h-8 w-8" />
+                    <Lightbulb className="h-8 w-8" />
                 ) : (
                     <ImageIcon className="h-8 w-8" />
                 )}

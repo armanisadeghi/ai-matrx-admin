@@ -1,7 +1,7 @@
 import {
   Home,
   Hexagon,
-  Bot,
+  Brain,
   Lightbulb,
   Blocks,
   FolderOpen,
@@ -18,7 +18,7 @@ import type { OverviewCard, SidebarSection } from "./types";
 export const SIDEBAR_SECTIONS: SidebarSection[] = [
   { value: "overview", label: "Overview", icon: Home },
   { value: "agents", label: "Agents", icon: Hexagon },
-  { value: "subagents", label: "Sub-agents", icon: Bot },
+  { value: "subagents", label: "Sub-agents", icon: Brain },
   { value: "skills", label: "Skills", icon: Lightbulb },
   { value: "renderBlocks", label: "Render Blocks", icon: Blocks },
   { value: "resources", label: "Resources", icon: FolderOpen },
@@ -43,7 +43,7 @@ export const OVERVIEW_CARDS: OverviewCard[] = [
   {
     value: "subagents",
     label: "Sub-agents",
-    icon: Bot,
+    icon: Brain,
     description:
       "Specialist agents invoked by other agents for focused tasks like reviewing code, debugging, or optimizing performance.",
     action: "new",

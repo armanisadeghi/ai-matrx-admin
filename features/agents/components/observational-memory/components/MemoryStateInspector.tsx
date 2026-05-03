@@ -26,7 +26,7 @@ import {
   Loader2,
   MessageSquare,
   RefreshCw,
-  Sparkles,
+  Hammer,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
@@ -385,7 +385,7 @@ function BufferedObservationCard({
           />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <Sparkles className="w-3 h-3 text-amber-500 shrink-0" />
+              <Hammer className="w-3 h-3 text-amber-500 shrink-0" />
               <span className="text-[11px] font-medium text-foreground">
                 {cycle.thread_title || "Cycle"}
               </span>

@@ -10,7 +10,7 @@ import { MetricsOverview } from "./MetricsOverview";
 import { ScoreProgress } from "./ScoreProgress";
 import { LLMDataModal } from "./LLMDataModal";
 import { formatPageSpeedForLLM } from "../utils/formatForLLM";
-import { ExternalLink, Calendar, Globe, Sparkles } from "lucide-react";
+import { ExternalLink, Calendar, Globe, Stars } from "lucide-react";
 
 interface PageSpeedResultsProps {
     data: PageSpeedResponse;
@@ -70,7 +70,7 @@ export function PageSpeedResults({ data, strategy }: PageSpeedResultsProps) {
                         onClick={() => setLlmModalOpen(true)}
                         className="h-7 gap-1.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
                     >
-                        <Sparkles className="w-3.5 h-3.5" />
+                        <Stars className="w-3.5 h-3.5" />
                         View AI Data
                         {llmData.issues.length > 0 && (
                             <Badge variant="secondary" className="ml-1 h-4 px-1 text-xs bg-white/20">

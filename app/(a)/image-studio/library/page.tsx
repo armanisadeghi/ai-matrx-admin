@@ -6,7 +6,7 @@ import {
   FolderOpen,
   Layers,
   Library,
-  Sparkles,
+  Zap,
 } from "lucide-react";
 import { CloudFolders } from "@/features/files/utils/folder-conventions";
 
@@ -55,7 +55,7 @@ export default function LibraryPage() {
               href="/image-studio/convert"
               className="flex items-center gap-1 rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium hover:bg-primary/90 transition-colors"
             >
-              <Sparkles className="h-3.5 w-3.5" />
+              <Zap className="h-3.5 w-3.5" />
               Convert
               <ArrowRight className="h-3 w-3" />
             </Link>
@@ -106,7 +106,7 @@ export default function LibraryPage() {
         {/* Workflow reminder */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <StepCard
-            icon={<Sparkles className="h-4 w-4" />}
+            icon={<Zap className="h-4 w-4" />}
             title="1. Generate"
             body="Drop an image, pick presets, hit Generate."
           />

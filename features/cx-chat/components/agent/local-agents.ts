@@ -3,7 +3,7 @@
 import React from "react";
 import {
   MessageCircle,
-  Sparkles,
+  Rainbow,
   Search,
   Newspaper,
   Lightbulb,
@@ -34,7 +34,7 @@ export const DEFAULT_AGENTS: AgentOption[] = [
     id: "custom-chat",
     name: "Custom Chat",
     description: "A warm, chatty assistant with customizable model & settings.",
-    icon: React.createElement(Sparkles, { size: 18 }),
+    icon: React.createElement(Rainbow, { size: 18 }),
     promptId: "3ca61863-43cf-49cd-8da5-7e0a4b192867",
     variableDefaults: [],
   },

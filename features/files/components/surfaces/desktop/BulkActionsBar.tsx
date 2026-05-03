@@ -23,7 +23,7 @@ import {
   Globe,
   Loader2,
   Lock,
-  Sparkles,
+  Star,
   Trash2,
   Users,
   X,
@@ -370,7 +370,7 @@ export function BulkActionsBar({ className }: { className?: string }) {
         </DropdownMenuContent>
       </DropdownMenu>
       <BulkActionButton
-        icon={<Sparkles className="h-3.5 w-3.5" />}
+        icon={<Star className="h-3.5 w-3.5" />}
         label="Reprocess for RAG"
         onClick={handleReprocess}
         running={busyKind === "reprocess"}

@@ -11,7 +11,7 @@
  */
 
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import { Copy, Loader2, Sparkles, Trash2 } from "lucide-react";
+import { Copy, Loader2, Stars, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -271,7 +271,7 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
             </>
           ) : (
             <>
-              <Sparkles className="h-3.5 w-3.5" /> Process
+              <Stars className="h-3.5 w-3.5" /> Process
             </>
           )}
         </button>
@@ -301,7 +301,7 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
       defaultSidebarOpen={true}
       actionsRight={
         <>
-          <Sparkles className="h-3.5 w-3.5 text-primary/80" />
+          <Stars className="h-3.5 w-3.5 text-primary/80" />
           <MicrophoneIconButton
             id={micId}
             onTranscriptionComplete={handleTranscriptionComplete}
@@ -347,7 +347,7 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="flex shrink-0 items-center justify-between px-3 py-1.5 border-b border-border/40">
             <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-              <Sparkles className="h-3 w-3 text-primary/80" />
+              <Stars className="h-3 w-3 text-primary/80" />
               AI Response
               <span className="font-mono text-[9px] text-muted-foreground/70">
                 ({ai.phase})

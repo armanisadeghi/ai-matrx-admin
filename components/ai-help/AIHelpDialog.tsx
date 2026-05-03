@@ -4,7 +4,7 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/dialog';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import {Button} from '@/components/ui/button';
-import {Bot, Code, Copy, Download, FileJson, Image, Loader2} from 'lucide-react';
+import {Cuboid, Code, Copy, Download, FileJson, Image, Loader2} from 'lucide-react';
 import type {AIHelpContext} from '@/types/contextCollection';
 import type {ImageQuality} from '@/types/screenshot';
 import {AI_HELP_PROMPTS} from '@/constants/aiHelp';
@@ -111,7 +111,7 @@ export function AIHelpDialog(
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
                             <TabsList className="flex w-full overflow-x-auto sm:grid sm:grid-cols-5">
                                 <TabsTrigger value="ai-ready">
-                                    <Bot className="h-4 w-4 mr-2"/>
+                                    <Cuboid className="h-4 w-4 mr-2"/>
                                     AI Ready
                                 </TabsTrigger>
                                 <TabsTrigger value="api-ready">

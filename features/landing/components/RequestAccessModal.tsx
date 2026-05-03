@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Check, AlertCircle, Loader2, Sparkles, Phone, Brain, Radio, Lightbulb } from 'lucide-react';
+import { Check, AlertCircle, Loader2, Lightbulb, Phone, Brain, Radio } from 'lucide-react';
 import { submitInvitationRequestStep1, submitInvitationRequestStep2 } from '../actions';
 import { InvitationRequestStep1, InvitationRequestStep2, USER_TYPE_OPTIONS } from '../types';
 
@@ -164,7 +164,7 @@ export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalPro
                     className="shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg"
                     style={{ background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(262 80% 55%) 100%)' }}
                   >
-                    <Sparkles className="w-7 h-7 text-white" />
+                    <Lightbulb className="w-7 h-7 text-white" />
                   </div>
 
                   <div>

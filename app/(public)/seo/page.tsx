@@ -17,7 +17,7 @@ import {
   Clock,
   Star,
   ArrowRight,
-  Sparkles,
+  PartyPopper,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -168,7 +168,7 @@ const categories: Category[] = [
         title: "AI Meta Tag Writer",
         description:
           "Paste your page content or URL, and the AI drafts optimized title and description variants ranked by predicted CTR.",
-        icon: Sparkles,
+        icon: PartyPopper,
         href: "/seo/meta-writer",
         status: "coming-soon",
       },
@@ -375,7 +375,7 @@ export default function SeoLandingPage() {
         <div className="relative mx-auto max-w-[1200px] px-6 py-6 md:py-8 xl:py-9">
           <div className="mb-2 flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              <Sparkles className="h-3 w-3" />
+              <PartyPopper className="h-3 w-3" />
               AI-Powered SEO Suite
             </span>
           </div>

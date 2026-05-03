@@ -1,6 +1,6 @@
 "use client";
 import React from 'react';
-import { FolderOpen, BookOpen, ExternalLink, Star, Sparkles } from 'lucide-react';
+import { FolderOpen, BookOpen, ExternalLink, Star, PartyPopper } from 'lucide-react';
 
 interface ResourcesLoadingVisualizationProps {
   title?: string;
@@ -22,10 +22,10 @@ const ResourcesLoadingVisualization: React.FC<ResourcesLoadingVisualizationProps
             
             {/* Floating sparkles */}
             <div className="absolute -top-2 -right-2 animate-pulse">
-              <Sparkles className="h-6 w-6 text-violet-400 dark:text-violet-300" />
+              <PartyPopper className="h-6 w-6 text-violet-400 dark:text-violet-300" />
             </div>
             <div className="absolute -bottom-1 -left-2 animate-pulse delay-300">
-              <Sparkles className="h-4 w-4 text-purple-400 dark:text-purple-300" />
+              <PartyPopper className="h-4 w-4 text-purple-400 dark:text-purple-300" />
             </div>
           </div>
           

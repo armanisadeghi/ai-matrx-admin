@@ -17,7 +17,7 @@ import {
   Layers,
   MonitorSmartphone,
   Search,
-  Sparkles,
+  Hammer,
   Variable,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -72,7 +72,7 @@ export function ShortcutQuickCreateBody({
           Shortcut for agent
         </div>
         <div className="text-sm font-semibold text-foreground truncate mt-0.5 flex items-center gap-1.5">
-          <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+          <Hammer className="h-3.5 w-3.5 text-primary shrink-0" />
           {agent?.name ?? "Loading…"}
         </div>
         {agent?.description && (
@@ -153,7 +153,7 @@ function EssentialsTab({ state }: { state: ShortcutQuickCreateState }) {
             id="qc-icon"
             value={iconName}
             onChange={(value) => setIconName(value || DEFAULT_ICON)}
-            placeholder="e.g. Sparkles"
+            placeholder="e.g. Hammer"
             className="h-9 text-[16px]"
             disabled={isSaving}
           />

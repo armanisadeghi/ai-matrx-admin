@@ -19,7 +19,7 @@ import {
   AlertCircle, 
   Search,
   Clock,
-  Sparkles,
+  PartyPopper,
   Plus,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -160,7 +160,7 @@ export function SelectPromptForBuiltinModal({
                 className="flex-shrink-0 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white mr-6"
                 size="sm"
               >
-                <Sparkles className="h-4 w-4 mr-2" />
+                <PartyPopper className="h-4 w-4 mr-2" />
                 Generate with AI
               </Button>
             </div>
@@ -212,7 +212,7 @@ export function SelectPromptForBuiltinModal({
                           onClick={() => setShowGenerateModal(true)}
                           className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
                         >
-                          <Sparkles className="h-4 w-4 mr-2" />
+                          <PartyPopper className="h-4 w-4 mr-2" />
                           Generate New Prompt with AI
                         </Button>
                       </>

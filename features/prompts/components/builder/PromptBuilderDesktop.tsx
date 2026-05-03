@@ -5,7 +5,7 @@ import {
   Save,
   Maximize2,
   Settings,
-  Sparkles,
+  PartyPopper,
   ChevronRight,
   Loader2,
   History,
@@ -212,7 +212,7 @@ export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
                     className="h-6 w-6 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                     title="Optimize System Message"
                   >
-                    <Sparkles className="h-3 w-3" />
+                    <PartyPopper className="h-3 w-3" />
                   </button>
                   <button
                     onClick={() => setIsFullScreenEditorOpen(true)}

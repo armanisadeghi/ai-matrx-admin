@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Sparkles, ArrowUp } from "lucide-react";
+import { Star, ArrowUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { OVERVIEW_CARDS } from "../../constants";
@@ -63,7 +63,7 @@ export function OverviewSection() {
         )}
       >
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-foreground" />
+          <Star className="h-4 w-4 text-foreground" />
           <h2 className="text-base font-semibold text-foreground">
             Customize Your Agent
           </h2>

@@ -7,7 +7,7 @@
 
 "use client";
 
-import { Sparkles } from "lucide-react";
+import { Star } from "lucide-react";
 import { registerVirtualSource } from "@/features/files/virtual-sources/registry";
 import { makeCodeInlinePreview } from "./CodeInlinePreview";
 import type {
@@ -44,7 +44,7 @@ function mapLanguage(raw: string | null | undefined): string {
 const promptAppsAdapter: VirtualSourceAdapter = {
   sourceId: "prompt_apps",
   label: "Prompt Apps",
-  icon: Sparkles,
+  icon: Star,
   capabilities: {
     list: true,
     read: true,

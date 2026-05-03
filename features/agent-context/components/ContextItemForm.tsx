@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   Type, Hash, ToggleLeft, Braces, List, FileText, Link as LinkIcon,
-  Plus, Trash2, Bot, ChevronDown, ChevronUp, Info, Wand2, Globe,
+  Plus, Trash2, Boxes, ChevronDown, ChevronUp, Info, Wand2, Globe,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';

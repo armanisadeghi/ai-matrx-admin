@@ -29,7 +29,7 @@ import React, {
   useState,
 } from "react";
 import {
-  Bot,
+  Cpu,
   CalendarDays,
   ChevronDown,
   ChevronRight,
@@ -310,7 +310,7 @@ export const ConversationHistorySidebar: React.FC<
               id={bucket.agentId ?? "unknown"}
               label={bucket.label}
               count={bucket.items.length}
-              icon={<Bot size={11} />}
+              icon={<Cpu size={11} />}
               defaultOpen
             >
               {bucket.items.map((conv) => (
@@ -388,7 +388,7 @@ const GroupingToggle: React.FC<GroupingToggleProps> = ({ value, onChange }) => {
         title="Group by agent"
         aria-label="Group by agent"
       >
-        <Bot size={11} />
+        <Cpu size={11} />
       </ToggleBtn>
     </div>
   );

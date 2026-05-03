@@ -1,4 +1,4 @@
-import { Sparkles, CheckCircle, Mail, Clock, ArrowRight } from "lucide-react";
+import { CircleDot, CheckCircle, Mail, Clock, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -36,7 +36,7 @@ export default function ThankYouPage() {
         {/* Animated icon */}
         <div className="relative mb-8">
           <div className="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto shadow-[0_0_60px_hsl(var(--primary)/0.3)]">
-            <Sparkles className="w-12 h-12 text-primary" />
+            <CircleDot className="w-12 h-12 text-primary" />
           </div>
           <div className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
             <CheckCircle className="w-4 h-4 text-white" />

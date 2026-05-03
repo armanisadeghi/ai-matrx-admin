@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Database, CheckCircle, AlertTriangle, FileText, Bot, ChevronRight, Activity } from 'lucide-react';
+import { Database, CheckCircle, AlertTriangle, FileText, Cpu, ChevronRight, Activity } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -67,7 +67,7 @@ export function ContextDashboard({ scope }: Props) {
           <CardHeader className="pb-2 pt-3 px-4 flex-row items-center justify-between">
             <CardTitle className="text-sm font-semibold">Attention Queue</CardTitle>
             <Button variant="ghost" size="sm" className="h-6 text-[11px] gap-1 text-muted-foreground">
-              <Bot className="h-3 w-3" /> Auto-Triage
+              <Cpu className="h-3 w-3" /> Auto-Triage
               {/* TODO: Wire agent */}
             </Button>
           </CardHeader>

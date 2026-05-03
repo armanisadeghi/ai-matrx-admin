@@ -8,7 +8,7 @@ import {
   Gauge,
   Layers,
   Palette,
-  Sparkles,
+  Atom,
   Upload,
   Wand2,
   Zap,
@@ -43,7 +43,7 @@ export function StudioLandingHero() {
         />
         <div className="relative container mx-auto px-4 sm:px-6 md:px-10 py-12 md:py-16 max-w-[1400px]">
           <div className="flex items-center gap-1.5 text-xs font-medium text-primary mb-4">
-            <Sparkles className="h-3.5 w-3.5" />
+            <Atom className="h-3.5 w-3.5" />
             <span className="uppercase tracking-wider">Image Studio</span>
           </div>
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight max-w-3xl">

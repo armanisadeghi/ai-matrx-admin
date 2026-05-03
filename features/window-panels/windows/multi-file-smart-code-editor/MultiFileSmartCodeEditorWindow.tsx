@@ -43,7 +43,7 @@ import {
   Map as MapIcon,
   Wand2,
   FolderOpen,
-  Sparkles,
+  CircleDot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -406,7 +406,7 @@ export function MultiFileSmartCodeEditorWindow({
                 </span>
                 {!conversationId && (
                   <span className="text-[10px] text-muted-foreground flex items-center gap-1 ml-2 shrink-0">
-                    <Sparkles className="w-3 h-3" /> Launching agent…
+                    <CircleDot className="w-3 h-3" /> Launching agent…
                   </span>
                 )}
               </div>

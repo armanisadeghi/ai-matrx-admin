@@ -22,7 +22,7 @@ import {
   Plus,
   Eye,
   EyeOff,
-  Sparkles,
+  Atom,
   Crown,
   Zap,
   Target,
@@ -761,7 +761,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
 
                 <div className="bg-textured rounded-lg p-4 border-border">
                   <div className="flex items-center gap-3 mb-2">
-                    <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    <Atom className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                     <span className="font-semibold text-gray-900 dark:text-gray-100">
                       Avg Score
                     </span>

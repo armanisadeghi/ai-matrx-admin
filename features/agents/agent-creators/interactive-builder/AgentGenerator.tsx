@@ -41,7 +41,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
-  Sparkles,
+  Hammer,
   Check,
   Loader2,
   Copy,
@@ -624,7 +624,7 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center p-4 sm:p-6">
-                  <Sparkles className="h-10 w-10 sm:h-12 sm:w-12 text-gray-300 dark:text-gray-600 mb-3" />
+                  <Hammer className="h-10 w-10 sm:h-12 sm:w-12 text-gray-300 dark:text-gray-600 mb-3" />
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
                     Ready to generate
                   </p>
@@ -664,7 +664,7 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
                 disabled={isSaving}
                 className="flex-1 sm:flex-initial"
               >
-                <Sparkles className="h-4 w-4 mr-2" />
+                <Hammer className="h-4 w-4 mr-2" />
                 Regenerate
               </Button>
               <Button

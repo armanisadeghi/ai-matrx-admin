@@ -7,7 +7,6 @@ import {
   Brain,
   Mic,
   Volume2,
-  Bot,
   Mail,
   Video,
   Image as ImageIcon,
@@ -213,7 +212,7 @@ export const settingsRegistry: SettingsTabDef[] = [
   {
     id: "ai.assistants",
     label: "Assistants",
-    icon: Bot,
+    icon: Brain,
     parentId: "ai",
     description: "Default assistant behaviour.",
     component: AssistantTab,

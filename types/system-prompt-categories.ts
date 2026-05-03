@@ -74,7 +74,7 @@ export const SYSTEM_PROMPT_CATEGORIES: Record<string, SystemPromptCategory> = {
         description: 'Generates content based on topic and parameters. Flexible content creation.',
         requiredVariables: ['topic'],
         optionalVariables: ['tone', 'length', 'style', 'audience'],
-        icon: 'Sparkles',
+        icon: 'Lightbulb',
         placementTypes: ['card', 'button'],
         examples: [
             'Article generator',

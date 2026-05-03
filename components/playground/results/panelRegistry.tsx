@@ -6,7 +6,7 @@ import {
     Gem,
     FormInput,
     Image,
-    Sparkles,
+    PartyPopper,
     FileCode,
     LayoutTemplate,
     AlignCenterVertical,
@@ -468,7 +468,7 @@ export const PANEL_REGISTRY: Record<string, PanelConfig> = {
     dynamic: {
         id: "dynamic",
         component: ResultPanel,
-        icon: Sparkles,
+        icon: PartyPopper,
         label: "Dynamic",
         value: "dynamic",
         defaultProps: {},

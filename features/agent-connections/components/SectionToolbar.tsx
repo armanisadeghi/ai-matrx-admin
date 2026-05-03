@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ChevronDown, Sparkles, Plus, Library } from "lucide-react";
+import { ChevronDown, Stars, Plus, Library } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SectionToolbarProps {
@@ -65,7 +65,7 @@ export function SectionToolbar({
               "bg-sky-600 hover:bg-sky-500 text-white transition-colors",
             )}
           >
-            <Sparkles className="h-3.5 w-3.5" />
+            <Stars className="h-3.5 w-3.5" />
             {generateLabel}
           </button>
           <button

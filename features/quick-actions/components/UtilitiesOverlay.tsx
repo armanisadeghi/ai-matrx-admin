@@ -27,7 +27,7 @@ import {
   Database,
   FolderOpen,
   ExternalLink,
-  Sparkles,
+  Flame,
 } from "lucide-react";
 
 interface UtilitiesOverlayProps {
@@ -131,7 +131,7 @@ export function UtilitiesOverlay({
       id: "ai-results",
       label: (
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4" />
+          <Flame className="h-4 w-4" />
           <span>AI Results</span>
         </div>
       ) as any,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useSelector } from "react-redux";
-import { Sparkles, ShieldCheck, Palette, Brain, Search } from "lucide-react";
+import { Hammer, ShieldCheck, Palette, Brain, Search } from "lucide-react";
 import type { RootState } from "@/lib/redux/store";
 import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
 import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
@@ -296,7 +296,7 @@ export default function SettingsHooksDemoPage() {
         </div>
 
         {/* System info */}
-        <SettingsSubHeader title="About" icon={Sparkles} />
+        <SettingsSubHeader title="About" icon={Hammer} />
         <SettingsSection title="This page">
           <SettingsReadOnlyValue
             label="Hook"

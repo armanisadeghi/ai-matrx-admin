@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { Bot, Sparkles } from "lucide-react";
+import { Cuboid, Zap } from "lucide-react";
 import { ChatPageShell } from "./ChatPageShell";
 import { ChatAgentPicker } from "./ChatAgentPicker";
 import { ChatRoomClient } from "./ChatRoomClient";
@@ -31,7 +31,7 @@ export function ChatNewClient() {
       <div className="flex-1 min-h-0 flex items-center justify-center px-6">
         <div className="max-w-md w-full text-center flex flex-col items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-            <Sparkles className="w-6 h-6 text-primary" />
+            <Zap className="w-6 h-6 text-primary" />
           </div>
           <div>
             <h2 className="text-lg font-semibold text-foreground">
@@ -50,7 +50,7 @@ export function ChatNewClient() {
             triggerClassName="h-10 px-4 text-sm"
           />
           <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-            <Bot className="w-3 h-3" />
+            <Cuboid className="w-3 h-3" />
             Tip: press <kbd className="px-1 py-0.5 rounded bg-muted text-[10px]">⌘K</kbd>
             {" "}anywhere to open a new chat.
           </p>

@@ -1,6 +1,6 @@
 "use client";
 import React from 'react';
-import { BarChart3, Target, CheckCircle2, TrendingUp, Sparkles, Zap } from 'lucide-react';
+import { BarChart3, Target, CheckCircle2, TrendingUp, Atom, Zap } from 'lucide-react';
 
 interface ProgressLoadingVisualizationProps {
   title?: string;
@@ -32,7 +32,7 @@ const ProgressLoadingVisualization: React.FC<ProgressLoadingVisualizationProps> 
               </div>
             </div>
             <div className="absolute top-0 left-8 animate-pulse delay-500">
-              <Sparkles className="h-5 w-5 text-blue-400 dark:text-blue-300" />
+              <Atom className="h-5 w-5 text-blue-400 dark:text-blue-300" />
             </div>
           </div>
           

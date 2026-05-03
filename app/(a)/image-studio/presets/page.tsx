@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Library, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Library, Rainbow } from "lucide-react";
 import { PresetCatalogReadOnly } from "@/features/image-studio/components/PresetCatalog";
 import { ALL_PRESETS, PRESET_CATEGORIES } from "@/features/image-studio/presets";
 
@@ -48,7 +48,7 @@ export default function PresetsPage() {
                             href="/image-studio/convert"
                             className="flex items-center gap-1 rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium hover:bg-primary/90 transition-colors"
                         >
-                            <Sparkles className="h-3.5 w-3.5" />
+                            <Rainbow className="h-3.5 w-3.5" />
                             Convert
                             <ArrowRight className="h-3 w-3" />
                         </Link>

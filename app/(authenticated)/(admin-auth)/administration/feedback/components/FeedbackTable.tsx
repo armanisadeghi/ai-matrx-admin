@@ -10,8 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
-    AlertCircle, Sparkles, Lightbulb, HelpCircle, Search, ArrowUpDown, Eye, ImageIcon,
-    ChevronLeft, ChevronRight, Loader2, Brain, CheckCircle2, Hash, ArrowRight, User, Bot,
+    AlertCircle, Zap, Lightbulb, HelpCircle, Search, ArrowUpDown, Eye, ImageIcon,
+    ChevronLeft, ChevronRight, Loader2, Brain, CheckCircle2, Hash, ArrowRight, User, Component,
     ClipboardCheck, Archive, ChevronDown, Copy, UserCheck, XCircle, MinusCircle, TestTube,
     AlertTriangle, Tag, GitBranch, CornerDownRight,
 } from 'lucide-react';
@@ -35,7 +35,7 @@ const statusOptions: { value: FeedbackStatus; label: string; color: string }[] =
 
 const feedbackTypeIcons: Record<FeedbackType, React.ReactNode> = {
     bug: <AlertCircle className="w-4 h-4 text-red-500" />,
-    feature: <Sparkles className="w-4 h-4 text-purple-500" />,
+    feature: <Zap className="w-4 h-4 text-purple-500" />,
     suggestion: <Lightbulb className="w-4 h-4 text-yellow-500" />,
     other: <HelpCircle className="w-4 h-4 text-gray-500" />,
 };
@@ -66,7 +66,7 @@ const pipelineStages: StageConfig[] = [
         label: 'Untriaged',
         shortLabel: 'New',
         owner: 'agent',
-        icon: <Bot className="w-3.5 h-3.5" />,
+        icon: <Component className="w-3.5 h-3.5" />,
         color: 'text-blue-700 dark:text-blue-400',
         activeColor: 'bg-blue-600 dark:bg-blue-600 text-white',
         borderColor: 'border-blue-300 dark:border-blue-700',
@@ -90,7 +90,7 @@ const pipelineStages: StageConfig[] = [
         label: 'Agent Working',
         shortLabel: 'Fixing',
         owner: 'agent',
-        icon: <Bot className="w-3.5 h-3.5" />,
+        icon: <Component className="w-3.5 h-3.5" />,
         color: 'text-purple-700 dark:text-purple-400',
         activeColor: 'bg-purple-600 dark:bg-purple-600 text-white',
         borderColor: 'border-purple-300 dark:border-purple-700',
@@ -832,7 +832,7 @@ export default function FeedbackTable() {
                                         <div className="flex flex-col items-center gap-1">
                                             {activeStage === 'untriaged' && (
                                                 <>
-                                                    <Bot className="w-6 h-6 opacity-30 mb-1" />
+                                                    <Component className="w-6 h-6 opacity-30 mb-1" />
                                                     <span className="text-sm">No untriaged items</span>
                                                     <span className="text-xs">All feedback has been analyzed</span>
                                                 </>
@@ -846,7 +846,7 @@ export default function FeedbackTable() {
                                             )}
                                             {activeStage === 'agent_working' && (
                                                 <>
-                                                    <Bot className="w-6 h-6 opacity-30 mb-1" />
+                                                    <Component className="w-6 h-6 opacity-30 mb-1" />
                                                     <span className="text-sm">No items in the work queue</span>
                                                     <span className="text-xs">Approve items to add them here</span>
                                                 </>

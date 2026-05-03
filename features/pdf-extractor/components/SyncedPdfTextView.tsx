@@ -23,7 +23,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   FileText,
-  Sparkles,
+  Flame,
   Loader2,
   AlertCircle,
   Layers,
@@ -214,7 +214,7 @@ function PaneList({
     return () => observer.disconnect();
   }, [pages.length, onActivePage]);
 
-  const Icon = field === "cleaned" ? Sparkles : FileText;
+  const Icon = field === "cleaned" ? Flame : FileText;
 
   return (
     <div className="flex-1 min-w-0 flex flex-col border-r last:border-r-0 border-border">
@@ -331,7 +331,7 @@ function LegacyEmptyState({ doc }: { doc: PdfDocument }) {
         </div>
         <div className="border border-border rounded-md bg-card p-2">
           <div className="flex items-center gap-1.5 mb-1.5">
-            <Sparkles className="w-3 h-3 text-primary" />
+            <Flame className="w-3 h-3 text-primary" />
             <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/70">
               Source PDF
             </span>

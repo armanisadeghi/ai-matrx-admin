@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, User, MapPin, MessageSquare, AlertCircle, Sparkles, Lightbulb, HelpCircle } from 'lucide-react';
+import { Calendar, User, MapPin, MessageSquare, AlertCircle, PartyPopper, Lightbulb, HelpCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 const statusOptions: { value: FeedbackStatus; label: string; color: string }[] = [
@@ -22,7 +22,7 @@ const statusOptions: { value: FeedbackStatus; label: string; color: string }[] =
 
 const feedbackTypeIcons: Record<string, React.ReactNode> = {
     bug: <AlertCircle className="w-4 h-4" />,
-    feature: <Sparkles className="w-4 h-4" />,
+    feature: <PartyPopper className="w-4 h-4" />,
     suggestion: <Lightbulb className="w-4 h-4" />,
     other: <HelpCircle className="w-4 h-4" />,
 };

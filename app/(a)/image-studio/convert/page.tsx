@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Braces, Layers, Library, Sparkles } from "lucide-react";
+import { ArrowLeft, Braces, Layers, Library, Stars } from "lucide-react";
 import ImageStudioShellClient from "./ImageStudioShellClient";
 
 /**
@@ -26,7 +26,7 @@ export default function ConvertPage() {
           </Link>
           <div className="min-w-0">
             <h1 className="text-sm font-semibold flex items-center gap-1.5 truncate">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <Stars className="h-3.5 w-3.5 text-primary" />
               Image Studio — Convert
             </h1>
           </div>

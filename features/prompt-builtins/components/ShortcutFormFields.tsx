@@ -368,7 +368,7 @@ export function ShortcutFormFields({
             id="shortcut-icon"
             value={formData.icon_name || ""}
             onChange={(value) => onChange({ icon_name: value || null })}
-            placeholder="e.g., Sparkles"
+            placeholder="e.g., Gem"
             className="h-9"
           />
         </div>

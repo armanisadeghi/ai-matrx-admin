@@ -67,6 +67,21 @@ export const SHORTCUT_CONTEXT_META = {
     description: "Dashboard and analytics views",
     icon: "LayoutDashboard",
   },
+  research: {
+    label: "Research",
+    description: "Research and analysis views",
+    icon: "Book",
+  },
+  transcripts: {
+    label: "Transcripts",
+    description: "Transcript and transcription views",
+    icon: "Mic",
+  },
+  scraper: {
+    label: "Scraper",
+    description: "Web scraper and data extraction views",
+    icon: "Globe",
+  },
 } as const;
 
 export type ShortcutContext = keyof typeof SHORTCUT_CONTEXT_META;

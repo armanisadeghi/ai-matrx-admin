@@ -11,7 +11,7 @@ import {
   MessageSquare,
   FileText,
   Box,
-  Sparkles,
+  Rocket,
   Code2,
   Zap,
   Clock,
@@ -427,7 +427,7 @@ export function AutoCreateAgentAppForm({
           >
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 mx-auto">
-                <Sparkles className="w-8 h-8 text-white" />
+                <Rocket className="w-8 h-8 text-white" />
               </div>
               <div className="text-center space-y-2">
                 <h3 className="font-semibold text-lg">Let Us Handle It</h3>
@@ -482,7 +482,7 @@ export function AutoCreateAgentAppForm({
                 </p>
               </div>
               <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground font-medium pt-2">
-                <Sparkles className="w-3.5 h-3.5" />
+                <Rocket className="w-3.5 h-3.5" />
                 <span>Most flexible</span>
               </div>
             </CardContent>
@@ -823,7 +823,7 @@ export function AutoCreateAgentAppForm({
 
               {/* Info Footer */}
               <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2 border-t">
-                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                <Rocket className="w-3.5 h-3.5 text-primary" />
                 <span>
                   Toggle each field to control whether users can modify it or if
                   it uses the default value. Hover for details.
@@ -960,7 +960,7 @@ export function AutoCreateAgentAppForm({
             <CardContent className="p-6 space-y-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500">
-                  <Sparkles className="w-8 h-8 text-white" />
+                  <Rocket className="w-8 h-8 text-white" />
                 </div>
                 {displayMode === "matrx-format" && (
                   <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary">
@@ -1113,7 +1113,7 @@ export function AutoCreateAgentAppForm({
             <CardContent className="p-6 space-y-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500">
-                  <Sparkles className="w-8 h-8 text-white" />
+                  <Rocket className="w-8 h-8 text-white" />
                 </div>
                 {colorMode === "auto" && (
                   <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary">
@@ -1223,7 +1223,7 @@ export function AutoCreateAgentAppForm({
                   {/* Accent Color */}
                   <div className="space-y-3">
                     <Label className="text-sm font-medium flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-accent" />
+                      <Rocket className="w-4 h-4 text-accent" />
                       Accent Color
                     </Label>
                     <div className="flex items-center gap-3">

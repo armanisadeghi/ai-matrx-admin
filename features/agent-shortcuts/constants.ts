@@ -15,7 +15,7 @@ export const PLACEMENT_TYPE_META = {
   [PLACEMENT_TYPES.AI_ACTION]: {
     label: "AI Actions",
     description: "Agent actions available in context menus",
-    icon: "Sparkles",
+    icon: "Lightbulb",
   },
   [PLACEMENT_TYPES.BUTTON]: {
     label: "Button",
@@ -206,10 +206,10 @@ export const SCOPE_UNAVAILABLE_VALUES = {
 } as const;
 
 export const ICON_PRESETS = [
-  "Sparkles",
+  "Lightbulb",
   "Zap",
   "Wand2",
-  "Bot",
+  "LayoutTemplate",
   "Brain",
   "MessageSquare",
   "FileText",

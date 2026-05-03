@@ -14,7 +14,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Wrench, Sparkles } from "lucide-react";
+import { Wrench, MousePointerClick } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { CreateAgentAppForm } from "./CreateAgentAppForm";
 import { AutoCreateAgentAppForm } from "./AutoCreateAgentAppForm";
@@ -135,7 +135,7 @@ export function CreateAgentAppFormWrapper({
               className="gap-2"
               disabled={!selectedAgentId}
             >
-              <Sparkles className="w-4 h-4" />
+              <MousePointerClick className="w-4 h-4" />
               Auto Create
             </TabsTrigger>
             <TabsTrigger

@@ -1,5 +1,5 @@
 const sampleSimplePromptAppCode = `import React, { useState, useMemo } from 'react';
-import { Loader2, Sparkles, AlertCircle } from 'lucide-react';
+import { Loader2, Rainbow, AlertCircle } from 'lucide-react';
 import MarkdownStream from '@/components/MarkdownStream';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,7 +62,7 @@ export default function PromptAppComponent({
       <Card className="bg-card border-border">
         <CardHeader className="bg-muted/50">
           <CardTitle className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <Rainbow className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             Generate Content
           </CardTitle>
           {appTagline && (
@@ -191,7 +191,7 @@ export default function PromptAppComponent({
         <Card className="bg-card border-border">
           <CardHeader className="bg-muted/50">
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-green-600 dark:text-green-400" />
+              <Rainbow className="w-5 h-5 text-green-600 dark:text-green-400" />
               Generated Content
             </CardTitle>
           </CardHeader>

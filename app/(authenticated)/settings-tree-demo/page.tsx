@@ -9,7 +9,7 @@ import {
   Brain,
   Mic,
   Volume2,
-  Bot,
+  CircuitBoard,
   Mail,
   Video,
   Image as ImageIcon,
@@ -19,7 +19,7 @@ import {
   ShieldCheck,
   FileText,
   Database,
-  Sparkles,
+  Gem,
   Globe,
   User,
   CircuitBoard,
@@ -97,13 +97,13 @@ const nodes: SettingsTreeNode[] = [
       {
         id: "ai.generation",
         label: "Generation",
-        icon: Sparkles,
+        icon: Gem,
         description: "Temperature, thinking mode",
       },
       {
         id: "ai.assistants",
         label: "Assistants",
-        icon: Bot,
+        icon: CircuitBoard,
         description: "Default assistant settings",
       },
     ],
@@ -147,7 +147,7 @@ const nodes: SettingsTreeNode[] = [
     icon: ImageIcon,
     children: [
       { id: "media.images", label: "Image generation", icon: ImageIcon },
-      { id: "media.photos", label: "Photo editing", icon: Sparkles },
+      { id: "media.photos", label: "Photo editing", icon: Gem },
     ],
   },
   {
@@ -182,7 +182,7 @@ const nodes: SettingsTreeNode[] = [
       {
         id: "advanced.experimental",
         label: "Experimental flags",
-        icon: Sparkles,
+        icon: Gem,
         disabled: true,
       },
     ],

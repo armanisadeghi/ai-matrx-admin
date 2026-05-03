@@ -1,4 +1,4 @@
-import { Blocks, Bot, Layers, Wrench } from 'lucide-react';
+import { Blocks, Boxes, Layers, Wrench } from 'lucide-react';
 import type { ModulePage } from '@/components/matrx/navigation/types';
 
 export const pages: ModulePage[] = [
@@ -14,7 +14,7 @@ export const pages: ModulePage[] = [
     path: 'chatbot-customizer',
     relative: true,
     description: 'Customize and configure AI chatbot behavior',
-    icon: Bot,
+    icon: Boxes,
   },
   {
     title: 'Instant Custom Chatbot',

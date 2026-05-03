@@ -15,7 +15,7 @@ import {
     DialogTitle
 } from '@/components/ui/dialog';
 import {
-    Sparkles,
+    Zap,
     Code,
     BookOpen,
     MessageSquare,
@@ -473,7 +473,7 @@ export function RecipeTemplatesGallery({
                 <div className="p-6 border-b border-border">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900">
-                            <Sparkles className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                            <Zap className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">

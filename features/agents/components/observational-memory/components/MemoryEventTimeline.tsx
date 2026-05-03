@@ -25,7 +25,7 @@ import {
   Eye,
   Layers,
   MessageCircle,
-  Sparkles,
+  CircleDot,
   Timer,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -74,7 +74,7 @@ const EVENT_META: Record<
   },
   reflector_completed: {
     label: "Reflector",
-    icon: Sparkles,
+    icon: CircleDot,
     tone: "text-purple-500 bg-purple-500/10",
     description: "Reflector LLM compressed observations",
   },

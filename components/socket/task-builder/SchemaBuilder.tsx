@@ -337,7 +337,7 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({
                           onChange={(value) =>
                             updateField(index, { ICON_NAME: value })
                           }
-                          placeholder="e.g., Sparkles"
+                          placeholder="e.g., Gem"
                         />
                         {iconValidation[index] === true && field.ICON_NAME && (
                           <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-950 border-border rounded flex justify-center items-center">

@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     Search,
-    Sparkles,
+    Hammer,
     FileText,
     Code,
     Palette,
@@ -116,7 +116,7 @@ export function TemplateLibraryPanel({
             case 'formatting':
                 return <Palette className="w-4 h-4" />;
             case 'special':
-                return <Sparkles className="w-4 h-4" />;
+                return <Hammer className="w-4 h-4" />;
             case 'ai-prompts':
                 return <Code className="w-4 h-4" />;
             default:
@@ -143,7 +143,7 @@ export function TemplateLibraryPanel({
         return (
             <div className={cn("flex items-center justify-center h-full p-8", className)}>
                 <div className="text-center">
-                    <Sparkles className="w-8 h-8 mx-auto mb-2 animate-pulse text-blue-600 dark:text-blue-400" />
+                    <Hammer className="w-8 h-8 mx-auto mb-2 animate-pulse text-blue-600 dark:text-blue-400" />
                     <p className="text-sm text-gray-600 dark:text-gray-400">Loading templates...</p>
                 </div>
             </div>
@@ -166,7 +166,7 @@ export function TemplateLibraryPanel({
             {/* Header */}
             <div className="p-4 border-b border-border">
                 <div className="flex items-center gap-2 mb-4">
-                    <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <Hammer className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                         Template Library
                     </h2>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Eye, Code2, Play, Sparkles } from 'lucide-react';
+import { Eye, Code2, Play, Gem } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -54,7 +54,7 @@ export function PromptAppHeaderCompact({ mode, onModeChange, isSaving, onAIEdit 
                     disabled={isSaving}
                     className="h-7 px-2.5 text-xs border-primary/30 hover:bg-primary/10 hover:text-primary hover:border-primary transition-colors"
                 >
-                    <Sparkles className="w-3.5 h-3.5 mr-0 sm:mr-1.5 text-primary" />
+                    <Gem className="w-3.5 h-3.5 mr-0 sm:mr-1.5 text-primary" />
                     <span className="hidden sm:inline">AI Edit</span>
                 </Button>
             )}

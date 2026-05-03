@@ -15,7 +15,7 @@ import {
   Calculator,
   Globe2,
   Database,
-  Bot,
+  Brain,
   Settings,
   Music,
   Video,
@@ -40,7 +40,7 @@ const DemoPage = () => {
     { icon: Calculator, label: 'Calculator', value: 'calculator' },
     { icon: Globe2, label: 'Translation', value: 'translation' },
     { icon: Database, label: 'Knowledge Base', value: 'knowledge-base' },
-    { icon: Bot, label: 'AI Assistant', value: 'ai-assistant' },
+    { icon: Brain, label: 'AI Assistant', value: 'ai-assistant' },
     { icon: FileSearch, label: 'Document Analysis', value: 'doc-analysis' }
   ];
 

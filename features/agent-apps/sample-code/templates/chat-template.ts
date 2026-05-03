@@ -14,7 +14,7 @@
  */
 
 const chatTemplate = `import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { MessageCircle, Loader2, AlertCircle, Send, RotateCcw, Sparkles } from 'lucide-react';
+import { MessageCircle, Loader2, AlertCircle, Send, RotateCcw, Flame } from 'lucide-react';
 import MarkdownStream from '@/components/MarkdownStream';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -128,7 +128,7 @@ export default function ChatApp({
           /* Welcome state */
           <div className="h-full flex flex-col items-center justify-center px-6 text-center">
             <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-              <Sparkles className="w-6 h-6 text-primary" />
+              <Flame className="w-6 h-6 text-primary" />
             </div>
             <h2 className="text-xl font-semibold text-foreground mb-2">
               {appName || 'Chat'}

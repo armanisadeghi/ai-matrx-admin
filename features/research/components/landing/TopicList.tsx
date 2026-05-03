@@ -9,7 +9,7 @@ import {
   Trash2,
   Search,
   X,
-  Sparkles,
+  CircleDot,
   FolderKanban,
   ArrowRight,
 } from "lucide-react";
@@ -241,7 +241,7 @@ function FirstRunHero({ isPending, onCreate }: FirstRunHeroProps) {
         className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/15"
         aria-hidden
       >
-        <Sparkles className="h-7 w-7 text-primary" />
+        <CircleDot className="h-7 w-7 text-primary" />
       </div>
       <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-[28px]">
         Begin your first inquiry
@@ -260,7 +260,7 @@ function FirstRunHero({ isPending, onCreate }: FirstRunHeroProps) {
         }}
       >
         <div className="relative flex-1">
-          <Sparkles
+          <CircleDot
             className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/50"
             aria-hidden
           />

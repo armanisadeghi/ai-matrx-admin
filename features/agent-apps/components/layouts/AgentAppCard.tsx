@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Gem } from "lucide-react";
 import type { AgentApp, PublicAgentApp } from "../../types";
 
 interface AgentAppCardProps {
@@ -16,7 +16,7 @@ export function AgentAppCard({ app, href, onClick }: AgentAppCardProps) {
     <div className="group h-full flex flex-col gap-2 p-4 bg-card border border-border rounded-lg hover:border-primary/40 hover:shadow-sm transition-all">
       <div className="flex items-start gap-2">
         <div className="flex-shrink-0 w-8 h-8 rounded-md bg-primary/10 text-primary inline-flex items-center justify-center">
-          <Sparkles className="w-4 h-4" />
+          <Gem className="w-4 h-4" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="text-sm font-semibold text-foreground truncate">

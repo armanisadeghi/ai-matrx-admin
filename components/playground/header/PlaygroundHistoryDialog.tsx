@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageSquare, Bot } from 'lucide-react';
+import { MessageSquare, Cuboid } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import {
   CommandDialog,
@@ -33,7 +33,7 @@ const PlaygroundHistoryDialog: React.FC<PlaygroundHistoryDialogProps> = ({
             </Badge>
           </CommandItem>
           <CommandItem className="flex items-center gap-2">
-            <Bot size={14} />
+            <Cuboid size={14} />
             <span>Claude Agent Experiment</span>
             <Badge variant="secondary" className="ml-auto">
               5h ago

@@ -25,7 +25,7 @@ import {
   Home,
   MoreVertical,
   Share2,
-  Sparkles,
+  Zap,
   Trash2,
   X,
 } from "lucide-react";
@@ -439,7 +439,7 @@ function MobileFileActionSheet({
                 onPress={openDocumentTab}
               />
               <ActionRow
-                icon={<Sparkles className="h-4 w-4" />}
+                icon={<Zap className="h-4 w-4" />}
                 label="Reprocess for RAG"
                 description="Re-run extract / clean / chunk / embed."
                 onPress={fireReprocess}

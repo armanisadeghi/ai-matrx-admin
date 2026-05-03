@@ -8,7 +8,13 @@ import { Card, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MatrxButton, ButtonGroup } from "@/components/ui/samples/button";
 import {
@@ -21,7 +27,7 @@ import {
 
 import {
   Infinity,
-  Bot,
+  Brain,
   Handshake,
   Smile,
   Loader2,
@@ -57,7 +63,7 @@ export default function DemoPage() {
     tooltip: "",
     dropdown: false,
     count: 0,
-    icon: "none" as "none" | "infinity" | "bot" | "handshake" | "smile",
+    icon: "none" as "none" | "infinity" | "assistant" | "handshake" | "smile",
   });
 
   const iconOptions = [
@@ -67,7 +73,11 @@ export default function DemoPage() {
       label: "Infinity",
       icon: <Infinity className="h-4 w-4" />,
     },
-    { value: "bot", label: "Bot", icon: <Bot className="h-4 w-4" /> },
+    {
+      value: "assistant",
+      label: "Assistant",
+      icon: <Brain className="h-4 w-4" />,
+    },
     {
       value: "handshake",
       label: "Handshake",

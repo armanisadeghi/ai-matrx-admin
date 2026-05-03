@@ -16,7 +16,7 @@ import {
   LayoutPanelTop,
   Globe,
   FileText,
-  Sparkles,
+  Flame,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { RootState } from "@/lib/redux/store";
@@ -272,7 +272,7 @@ export function AgentListItem({
                 </DropdownMenuItem>
               </Link>
               <DropdownMenuItem onClick={handleSneakPeek} disabled={isDisabled}>
-                <Sparkles className="mr-2 h-4 w-4" />
+                <Flame className="mr-2 h-4 w-4" />
                 Sneak Peek
               </DropdownMenuItem>
               <DropdownMenuItem

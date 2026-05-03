@@ -17,7 +17,7 @@ import {
   Save,
   Play,
   Code2,
-  Sparkles,
+  Rocket,
   Loader2,
   TrendingUp,
   Users,
@@ -510,7 +510,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                       onClick={handlePublish}
                       className="flex-1 sm:flex-initial bg-green-600 hover:bg-green-700 text-white"
                     >
-                      <Sparkles className="w-4 h-4 mr-2" />
+                      <Rocket className="w-4 h-4 mr-2" />
                       Publish
                     </Button>
                   )}
@@ -1134,7 +1134,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                     onClick={() => setShowAIEditor(true)}
                     className="ml-auto hover:bg-primary/10 hover:text-primary hover:border-primary transition-colors"
                   >
-                    <Sparkles className="w-4 h-4 mr-2" />
+                    <Rocket className="w-4 h-4 mr-2" />
                     AI Edit
                   </Button>
                 </CardHeader>

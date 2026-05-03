@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { BookOpen, Sparkles, Search, Database } from "lucide-react";
+import { BookOpen, Star, Search, Database } from "lucide-react";
 
 const ResearchLoadingVisualization: React.FC = () => {
     return (
@@ -14,7 +14,7 @@ const ResearchLoadingVisualization: React.FC = () => {
                                 <BookOpen className="h-12 w-12 text-emerald-600 dark:text-emerald-400" />
                             </div>
                             <BookOpen className="h-12 w-12 text-emerald-600 dark:text-emerald-400 animate-pulse" style={{ animationDuration: '2s' }} />
-                            <Sparkles className="h-5 w-5 text-teal-600 dark:text-teal-400 absolute -top-1 -right-1 animate-bounce" style={{ animationDuration: '1s' }} />
+                            <Star className="h-5 w-5 text-teal-600 dark:text-teal-400 absolute -top-1 -right-1 animate-bounce" style={{ animationDuration: '1s' }} />
                         </div>
 
                         {/* Loading Text */}

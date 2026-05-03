@@ -1,5 +1,5 @@
 import { join } from "path";
-import { Sparkles } from "lucide-react";
+import { Lightbulb } from "lucide-react";
 import { RouteIndexPage } from "@/components/ssr/RouteIndexPage";
 
 export default async function AnimationTestsIndexPage() {
@@ -15,7 +15,7 @@ export default async function AnimationTestsIndexPage() {
       basePath="/legacy/tests/animation-tests"
       title="Animation tests"
       description="Motion experiments: menus, showcases, and scale demos."
-      icon={Sparkles}
+      icon={Lightbulb}
     />
   );
 }

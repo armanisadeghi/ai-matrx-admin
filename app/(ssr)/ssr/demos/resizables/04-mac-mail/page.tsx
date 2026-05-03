@@ -5,10 +5,10 @@ import {
   FileEdit,
   Trash,
   Star,
-  Sparkles,
+  Lightbulb,
   Search,
   Plus,
-  Bot,
+  Cuboid,
   ChevronDown,
 } from "lucide-react";
 import PageHeader from "@/features/shell/components/header/PageHeader";
@@ -206,7 +206,7 @@ function Inspector() {
   return (
     <div className="h-full overflow-auto bg-muted pt-[var(--shell-header-h)]">
       <div className="px-3 py-1.5 text-[11px] uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-        <Sparkles className="h-3 w-3" /> AI summary
+        <Lightbulb className="h-3 w-3" /> AI summary
       </div>
       <div className="p-3 text-xs text-foreground/85 leading-relaxed">
         Three repos saw activity today — review GitHub PR first; Linear and
@@ -234,7 +234,7 @@ function ChatHistorySurface() {
           />
         </div>
         <button className="flex items-center gap-1.5 px-2 py-1 rounded bg-background w-full text-xs">
-          <Bot className="h-3 w-3 text-muted-foreground shrink-0" />
+          <Cuboid className="h-3 w-3 text-muted-foreground shrink-0" />
           <span className="flex-1 text-left text-foreground">Mail Triage</span>
           <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
         </button>

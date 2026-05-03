@@ -24,7 +24,7 @@ import {
   Loader2,
   Search,
   RefreshCw,
-  Sparkles,
+  PartyPopper,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -166,7 +166,7 @@ export function PdfStudioToolbar({
               </>
             ) : (
               <>
-                <Sparkles className="w-3 h-3" />
+                <PartyPopper className="w-3 h-3" />
                 AI Clean
               </>
             )}

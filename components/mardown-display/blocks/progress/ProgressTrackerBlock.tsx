@@ -29,7 +29,7 @@ import {
   Coffee,
   Heart,
   PartyPopper,
-  Sparkles,
+  Rainbow,
   ExternalLink,
   Upload,
   Printer,
@@ -689,7 +689,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
                         <h3 className="text-2xl font-bold text-yellow-900 dark:text-yellow-100">
                           Congratulations!
                         </h3>
-                        <Sparkles className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                        <Rainbow className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
                       </div>
                       <p className="text-yellow-700 dark:text-yellow-300 text-lg">
                         You've completed all tasks in {tracker.title}!

@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { ChefHat, Sparkles, Clock } from "lucide-react";
+import { ChefHat, Rocket, Clock } from "lucide-react";
 
 const RecipeLoadingVisualization: React.FC = () => {
     return (
@@ -14,7 +14,7 @@ const RecipeLoadingVisualization: React.FC = () => {
                                 <ChefHat className="h-12 w-12 text-orange-600 dark:text-orange-400" />
                             </div>
                             <ChefHat className="h-12 w-12 text-orange-600 dark:text-orange-400 animate-pulse" style={{ animationDuration: '2s' }} />
-                            <Sparkles className="h-5 w-5 text-amber-600 dark:text-amber-400 absolute -top-1 -right-1 animate-bounce" style={{ animationDuration: '1s' }} />
+                            <Rocket className="h-5 w-5 text-amber-600 dark:text-amber-400 absolute -top-1 -right-1 animate-bounce" style={{ animationDuration: '1s' }} />
                         </div>
 
                         {/* Loading Text */}

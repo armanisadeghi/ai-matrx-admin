@@ -3,7 +3,7 @@
 import { STATUS_CONFIG, STATUS_TRANSITIONS, STATUS_PHASES } from '../constants';
 import type { ContextItemStatus } from '../types';
 import {
-  Lightbulb, FileText, Download, PieChart, Eye, Sparkles,
+  Lightbulb, FileText, Download, PieChart, Eye, Flame,
   Pencil, Clock, CheckCircle, ShieldAlert, Clock4, AlertTriangle,
   ArrowRightLeft, Archive, Trash2,
 } from 'lucide-react';
@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  Lightbulb, FileText, Download, PieChart, Eye, Sparkles,
+  Lightbulb, FileText, Download, PieChart, Eye, Flame,
   Pencil, Clock, CheckCircle, ShieldAlert, Clock4, AlertTriangle,
   ArrowRightLeft, Archive, Trash2,
 };

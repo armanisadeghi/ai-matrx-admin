@@ -25,7 +25,7 @@ import {
   type EditorMode,
 } from "./NoteEditorCore";
 
-// ── Lazy-loaded context menu (heavy: AI, Redux, Sparkles, modals) ──────
+// ── Lazy-loaded context menu (heavy: AI, Redux, Gem, modals) ──────
 
 const NoteContextMenu = dynamic(
   () => import("@/app/(ssr)/ssr/notes/_components/NoteContextMenu"),

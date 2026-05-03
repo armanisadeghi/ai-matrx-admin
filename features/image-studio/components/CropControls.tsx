@@ -18,7 +18,7 @@ import {
     Maximize2,
     Scan,
     Scaling,
-    Sparkles,
+    Flame,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
@@ -82,7 +82,7 @@ const SMART_OPTIONS: Array<{
         id: "attention",
         label: "Attention",
         blurb: "Crops toward the most visually prominent area (faces, high contrast).",
-        icon: <Sparkles className="h-3 w-3" />,
+        icon: <Flame className="h-3 w-3" />,
     },
     {
         id: "entropy",

@@ -14,7 +14,12 @@
  */
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { RawSegment, StudioSession } from "../types";
+import type {
+  AgentRun,
+  CleanedSegment,
+  RawSegment,
+  StudioSession,
+} from "../types";
 import type { ColumnId } from "../constants";
 
 // ── State shape ───────────────────────────────────────────────────────
@@ -43,6 +48,21 @@ export interface TranscriptStudioState {
    */
   rawById: Record<string, Record<string, RawSegment>>;
   rawIdsBySession: Record<string, string[]>;
+  /**
+   * Cleaned-segment registry per session. Holds ACTIVE rows only — superseded
+   * rows are dropped on apply (the DB still keeps them for audit). Ordered by
+   * `tStart`. Each cleaned segment is the result of one cleanup pass.
+   */
+  cleanedById: Record<string, Record<string, CleanedSegment>>;
+  cleanedIdsBySession: Record<string, string[]>;
+  /**
+   * Agent-run audit registry per session. One row per agent invocation
+   * (cleanup, concept extraction, module). Used by Column 2/3/4 headers to
+   * surface "running"/"failed" status and by the trigger scheduler to find
+   * the most recent successful pass when computing the next raw window.
+   */
+  runsById: Record<string, Record<string, AgentRun>>;
+  runIdsBySession: Record<string, string[]>;
 }
 
 const DEFAULT_UI: StudioUiState = {
@@ -61,6 +81,10 @@ const initialState: TranscriptStudioState = {
   ui: {},
   rawById: {},
   rawIdsBySession: {},
+  cleanedById: {},
+  cleanedIdsBySession: {},
+  runsById: {},
+  runIdsBySession: {},
 };
 
 // ── Slice ─────────────────────────────────────────────────────────────
@@ -172,6 +196,84 @@ const slice = createSlice({
       delete state.rawById[action.payload.sessionId];
       delete state.rawIdsBySession[action.payload.sessionId];
     },
+    cleanedSegmentsLoaded(
+      state,
+      action: PayloadAction<{ sessionId: string; segments: CleanedSegment[] }>,
+    ) {
+      const { sessionId, segments } = action.payload;
+      state.cleanedById[sessionId] = {};
+      const ids: string[] = [];
+      for (const seg of segments) {
+        state.cleanedById[sessionId]![seg.id] = seg;
+        ids.push(seg.id);
+      }
+      state.cleanedIdsBySession[sessionId] = ids;
+    },
+    /**
+     * Apply a cleanup-pass result. Stamps any active prior segments whose
+     * tStart >= newSegment.tStart as superseded (drops them from the active
+     * registry — the DB still has them for audit), then inserts the new row
+     * at the right ordered position. Mirrors `applyCleanupRun` in
+     * studioService.ts so client + server stay in sync.
+     */
+    cleanedSegmentApplied(
+      state,
+      action: PayloadAction<{ sessionId: string; segment: CleanedSegment }>,
+    ) {
+      const { sessionId, segment } = action.payload;
+      if (!state.cleanedById[sessionId]) state.cleanedById[sessionId] = {};
+      if (!state.cleanedIdsBySession[sessionId])
+        state.cleanedIdsBySession[sessionId] = [];
+
+      const byId = state.cleanedById[sessionId]!;
+      const ids = state.cleanedIdsBySession[sessionId]!;
+
+      // Drop active rows whose tStart >= segment.tStart (now superseded).
+      const survivingIds: string[] = [];
+      for (const id of ids) {
+        const c = byId[id];
+        if (!c) continue;
+        if (c.tStart >= segment.tStart) {
+          delete byId[id];
+        } else {
+          survivingIds.push(id);
+        }
+      }
+      // Insert new segment.
+      byId[segment.id] = segment;
+      survivingIds.push(segment.id);
+      survivingIds.sort((a, b) => byId[a]!.tStart - byId[b]!.tStart);
+      state.cleanedIdsBySession[sessionId] = survivingIds;
+    },
+    cleanedSegmentsCleared(
+      state,
+      action: PayloadAction<{ sessionId: string }>,
+    ) {
+      delete state.cleanedById[action.payload.sessionId];
+      delete state.cleanedIdsBySession[action.payload.sessionId];
+    },
+    runUpserted(state, action: PayloadAction<{ run: AgentRun }>) {
+      const run = action.payload.run;
+      const sid = run.sessionId;
+      if (!state.runsById[sid]) state.runsById[sid] = {};
+      if (!state.runIdsBySession[sid]) state.runIdsBySession[sid] = [];
+      const isNew = !state.runsById[sid]![run.id];
+      state.runsById[sid]![run.id] = run;
+      if (isNew) state.runIdsBySession[sid]!.push(run.id);
+    },
+    runsLoaded(
+      state,
+      action: PayloadAction<{ sessionId: string; runs: AgentRun[] }>,
+    ) {
+      const { sessionId, runs } = action.payload;
+      state.runsById[sessionId] = {};
+      const ids: string[] = [];
+      for (const r of runs) {
+        state.runsById[sessionId]![r.id] = r;
+        ids.push(r.id);
+      }
+      state.runIdsBySession[sessionId] = ids;
+    },
   },
 });
 
@@ -189,6 +291,11 @@ export const {
   rawSegmentsLoaded,
   rawSegmentsAppended,
   rawSegmentsCleared,
+  cleanedSegmentsLoaded,
+  cleanedSegmentApplied,
+  cleanedSegmentsCleared,
+  runUpserted,
+  runsLoaded,
 } = slice.actions;
 
 export default slice.reducer;

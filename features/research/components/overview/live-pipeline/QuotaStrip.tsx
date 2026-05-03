@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
+import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ResearchTopic } from "../../../types";
 import type {
@@ -113,7 +113,7 @@ export function QuotaStrip({ topic, state, derived }: Props) {
       </div>
       {derived.dedupLabel && (
         <div className="flex items-center gap-1.5 text-[10px] text-emerald-700 dark:text-emerald-400">
-          <Sparkles className="h-2.5 w-2.5 shrink-0" />
+          <Star className="h-2.5 w-2.5 shrink-0" />
           <span>
             <span className="font-semibold">8-for-1 dedup:</span>{" "}
             {derived.dedupLabel}

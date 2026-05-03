@@ -31,7 +31,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
-  Sparkles,
+  Rainbow,
   Check,
   X,
   Loader2,
@@ -251,7 +251,7 @@ export function FullPromptOptimizer({
       <DialogContent className="max-w-7xl h-[95vh] flex flex-col p-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            <Rainbow className="h-5 w-5 text-amber-600 dark:text-amber-400" />
             Full Prompt Optimizer
             <span className="text-xs px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 font-normal">
               EXPERIMENTAL
@@ -387,7 +387,7 @@ export function FullPromptOptimizer({
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center p-6">
-                  <Sparkles className="h-12 w-12 text-gray-300 dark:text-gray-600 mb-3" />
+                  <Rainbow className="h-12 w-12 text-gray-300 dark:text-gray-600 mb-3" />
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     Click "Optimize" to see the AI's response
                   </p>
@@ -453,7 +453,7 @@ export function FullPromptOptimizer({
             {hasOptimizedObject && !isOptimizing ? (
               <>
                 <Button variant="outline" onClick={handleOptimize}>
-                  <Sparkles className="h-4 w-4 mr-2" />
+                  <Rainbow className="h-4 w-4 mr-2" />
                   Re-optimize
                 </Button>
                 {onAcceptAsCopy && (
@@ -487,7 +487,7 @@ export function FullPromptOptimizer({
                   </>
                 ) : (
                   <>
-                    <Sparkles className="h-4 w-4 mr-2" />
+                    <Rainbow className="h-4 w-4 mr-2" />
                     Optimize Full Prompt
                   </>
                 )}

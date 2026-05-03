@@ -12,7 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { User, Bot, Settings } from "lucide-react";
+import { User, Boxes, Settings } from "lucide-react";
 
 type CompiledRecipeRecord = Record<
   string,
@@ -140,7 +140,7 @@ export const CompiledRecipeView = ({ recipeId }: { recipeId: string }) => {
             ) : isUser ? (
               <User className="h-4 w-4 text-green-600 dark:text-green-400" />
             ) : (
-              <Bot className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+              <Boxes className="h-4 w-4 text-gray-600 dark:text-gray-400" />
             )}
           </div>
           <div className="flex-1 min-w-0">

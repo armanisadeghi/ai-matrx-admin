@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, Brain, Workflow, Bot, Combine } from 'lucide-react';
+import { MessageSquare, Brain, Workflow, Network, Combine } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
 // Prompt Button Component
@@ -65,7 +65,7 @@ export const AgentButton = ({ isActive, onClick }: { isActive: boolean; onClick:
         className={cn('gap-1.5 h-8 rounded-none', isActive && 'bg-primary text-primary-foreground')}
         onClick={onClick}
     >
-        <Bot size={16} />
+        <Network size={16} />
         <span className='text-sm'>Agent</span>
     </Button>
 );

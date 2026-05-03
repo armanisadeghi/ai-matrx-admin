@@ -72,7 +72,7 @@ const SYSTEM_PROMPT_SEEDS: SystemPromptSeed[] = [
     category: 'standalone',
     sort_order: 40,
     placement_settings: { requiresSelection: false, minSelectionLength: 10 },
-    display_config: { icon: 'Sparkles' },
+    display_config: { icon: 'Hammer' },
     status: 'draft',
     is_active: false
   },

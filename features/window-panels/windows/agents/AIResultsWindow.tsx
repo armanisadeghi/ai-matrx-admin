@@ -15,7 +15,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Bot,
+  SquareStack,
   ChevronDown,
   ChevronRight,
   CalendarDays,
@@ -24,7 +24,7 @@ import {
   Loader2,
   MessageSquare,
   Search,
-  Sparkles,
+  Flame,
   X,
 } from "lucide-react";
 
@@ -488,7 +488,7 @@ function AIResultsSidebar({
                   : "text-muted-foreground hover:bg-muted/40",
               )}
             >
-              <Bot className="w-3 h-3" />
+              <SquareStack className="w-3 h-3" />
               Agent
             </button>
           </div>
@@ -730,7 +730,7 @@ function AIResultsWindowInner({
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-center px-6 text-muted-foreground">
-            <Sparkles className="w-10 h-10 mb-3 opacity-20" />
+            <Flame className="w-10 h-10 mb-3 opacity-20" />
             <p className="text-sm font-medium">Select a conversation</p>
             <p className="text-xs opacity-60 mt-1">
               Pick any past run from the list to view it here. Switch between

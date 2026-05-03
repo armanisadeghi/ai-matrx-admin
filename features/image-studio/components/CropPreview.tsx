@@ -14,7 +14,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, Info, Move, Sparkles, Scan } from "lucide-react";
+import { AlertCircle, Info, Move, Zap, Scan } from "lucide-react";
 import type { ImageFit, ImagePosition } from "../types";
 import {
     computeSourceCropRect,
@@ -379,7 +379,7 @@ export function CropPreview({
                     {smartCrop && (
                         <p className="text-[11px] rounded-md bg-primary/5 border border-primary/30 text-primary px-2 py-1 flex items-center gap-1.5">
                             {position === "attention" ? (
-                                <Sparkles className="h-3 w-3 shrink-0" />
+                                <Zap className="h-3 w-3 shrink-0" />
                             ) : (
                                 <Scan className="h-3 w-3 shrink-0" />
                             )}

@@ -21,16 +21,28 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import {
   AlertCircle,
+  CloudUpload,
   Database,
+  FilePlus,
   Loader2,
   Pencil,
   Plus,
   Trash2,
+  Upload,
   X,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { CldFilePicker } from "@/features/data-stores/components/CldFilePicker";
 import {
   useDataStoreDetail,
   useDataStores,
@@ -41,6 +53,7 @@ import {
   SOURCE_KINDS,
 } from "@/features/data-stores/types-ext";
 import type { DataStoreWithMemberCount } from "@/features/data-stores/types";
+import { uploadFile } from "@/features/files/api/files";
 
 export function DataStoresPage() {
   const router = useRouter();
@@ -286,9 +299,145 @@ function StoreDetailPanel({
   detail: ReturnType<typeof useDataStoreDetail>;
   onDeleted: () => void;
 }) {
-  void storeId;
   const [editing, setEditing] = useState(false);
-  const [showAdd, setShowAdd] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const [dropPending, setDropPending] = useState(false);
+
+  // ─── Bind + auto-ingest helpers ──────────────────────────────────
+  // When a user adds a cld_file member to a data store, we ALSO
+  // dispatch the existing "cloud-files:reprocess-document" event so
+  // the file gets queued for RAG ingestion if it wasn't already.
+  // That collapses two manual steps into one click.
+
+  const bindAndReprocess = useCallback(
+    async (
+      picks: { cldFileId: string; fileName: string }[],
+      label: string,
+    ) => {
+      if (!picks.length) return;
+      const tid = toast.loading(
+        `${label}: 0 / ${picks.length}`,
+        { description: "Binding to store + queuing for RAG ingestion." },
+      );
+      let bound = 0;
+      let reprocessed = 0;
+      for (const p of picks) {
+        try {
+          const ok = await detail.addMember({
+            sourceKind: "cld_file",
+            sourceId: p.cldFileId,
+          });
+          if (ok) bound += 1;
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent("cloud-files:reprocess-document", {
+                detail: { fileId: p.cldFileId, force: false, silent: true },
+              }),
+            );
+            reprocessed += 1;
+          }
+          await new Promise<void>((r) => setTimeout(r, 150));
+          toast.loading(`${label}: ${bound} / ${picks.length}`, { id: tid });
+        } catch (err) {
+          toast.error(
+            `Failed to bind ${p.fileName}: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
+      }
+      toast.success(
+        `${bound} of ${picks.length} bound · ${reprocessed} queued for RAG`,
+        {
+          id: tid,
+          description:
+            "Each file streams its ingestion progress in the file viewer. Refresh to see chunk counts.",
+        },
+      );
+    },
+    [detail],
+  );
+
+  // ─── Drag-and-drop: upload then bind ─────────────────────────────
+  // Files dropped on the panel are uploaded into the user's cloud
+  // root (file_path = "/<filename>"), then bound + queued for RAG.
+
+  const onPanelDragOver = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      // Only react when actual files are being dragged (not text or
+      // internal moves). DataTransfer.types contains "Files" only for
+      // OS-level file drags.
+      if (!e.dataTransfer.types.includes("Files")) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setDragActive(true);
+    },
+    [],
+  );
+
+  const onPanelDragLeave = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Only clear when leaving the outer container, not inner children.
+      if (e.currentTarget === e.target) setDragActive(false);
+    },
+    [],
+  );
+
+  const onPanelDrop = useCallback(
+    async (e: React.DragEvent<HTMLDivElement>) => {
+      if (!e.dataTransfer.types.includes("Files")) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setDragActive(false);
+      const files = Array.from(e.dataTransfer.files ?? []);
+      if (files.length === 0) return;
+
+      setDropPending(true);
+      const tid = toast.loading(
+        `Uploading ${files.length} file${files.length === 1 ? "" : "s"}…`,
+      );
+      const picks: { cldFileId: string; fileName: string }[] = [];
+      for (const file of files) {
+        try {
+          // file_path lands in the user's root. The user can move it
+          // later from the files page if they want a different folder.
+          const { data } = await uploadFile({
+            file,
+            filePath: `/${file.name}`,
+            visibility: "private",
+            metadata: { uploaded_via: "data-store-drop" },
+          });
+          if (data?.file_id) {
+            picks.push({ cldFileId: data.file_id, fileName: file.name });
+          }
+        } catch (err) {
+          toast.error(`Upload failed for ${file.name}`, {
+            description: err instanceof Error ? err.message : String(err),
+          });
+        }
+      }
+      toast.dismiss(tid);
+      setDropPending(false);
+      if (picks.length > 0) {
+        await bindAndReprocess(picks, `Uploaded ${picks.length}`);
+      }
+    },
+    [bindAndReprocess],
+  );
+
+  // Hoisted ABOVE any conditional returns to satisfy Rules of Hooks.
+  // detail.members is always an array (the hook initializes it to []).
+  const boundCldFileIds = useMemo<Set<string>>(
+    () =>
+      new Set(
+        detail.members
+          .filter((m) => m.sourceKind === "cld_file")
+          .map((m) => m.sourceId),
+      ),
+    [detail.members],
+  );
 
   if (detail.loading && !detail.store) {
     return (
@@ -308,7 +457,26 @@ function StoreDetailPanel({
   const s = detail.store;
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div
+      className="relative flex flex-col h-full overflow-hidden"
+      onDragOver={onPanelDragOver}
+      onDragLeave={onPanelDragLeave}
+      onDrop={(e) => void onPanelDrop(e)}
+    >
+      {dragActive && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none rounded-md border-2 border-dashed border-primary bg-primary/10">
+          <div className="text-sm font-medium text-primary flex items-center gap-2">
+            <CloudUpload className="h-5 w-5" />
+            Drop files to upload + bind to {s.name}
+          </div>
+        </div>
+      )}
+      {dropPending && (
+        <div className="absolute top-2 right-2 z-30 rounded-md bg-card border px-2 py-1 text-xs flex items-center gap-1.5 shadow">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Uploading…
+        </div>
+      )}
+
       <header className="border-b px-4 py-3 space-y-2 shrink-0">
         <div className="flex items-center gap-2 flex-wrap">
           <Database className="h-4 w-4 text-muted-foreground" />
@@ -384,41 +552,111 @@ function StoreDetailPanel({
           <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Members ({detail.members.length})
           </h2>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setShowAdd((v) => !v)}
-          >
-            <Plus className="h-3.5 w-3.5" /> Bind document
-          </Button>
+          <div className="flex items-center gap-1.5">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setPickerOpen(true)}
+            >
+              <FilePlus className="h-3.5 w-3.5" /> Pick from your files
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-muted-foreground"
+              onClick={() => setAdvancedOpen(true)}
+              title="Bind a non-cld_file source by id"
+            >
+              <Plus className="h-3.5 w-3.5" /> Advanced
+            </Button>
+          </div>
         </div>
 
-        {showAdd && (
-          <AddMemberForm
-            onAdd={async (input) => {
-              const ok = await detail.addMember(input);
-              if (ok) setShowAdd(false);
-            }}
-            onCancel={() => setShowAdd(false)}
-          />
+        {/* Hint about drag-drop */}
+        {detail.members.length === 0 && (
+          <div className="rounded-md border-2 border-dashed border-border bg-muted/20 p-6 text-xs text-muted-foreground text-center">
+            <CloudUpload className="h-6 w-6 mx-auto mb-2 text-muted-foreground/60" />
+            <p className="font-medium text-foreground/80 mb-1">
+              No members yet
+            </p>
+            <p>
+              Drop files here to upload, bind to <strong>{s.name}</strong>,
+              and queue them for RAG ingestion in one step. Or use{" "}
+              <strong>Pick from your files</strong> to add already-uploaded
+              documents.
+            </p>
+          </div>
         )}
 
-        {detail.members.length === 0 ? (
-          <div className="rounded-md border bg-muted/20 p-4 text-xs text-muted-foreground">
-            No members yet. Bind a PDF, processed document, or library doc
-            using the button above. Agents calling{" "}
-            <code className="font-mono bg-muted px-1 py-0.5 rounded">
-              rag_search_data_store({s.id.slice(0, 8)}…, query)
-            </code>{" "}
-            will return zero hits until at least one member is bound.
-          </div>
-        ) : (
+        {detail.members.length > 0 && (
           <MemberTable
             members={detail.members}
             onRemove={(m) => detail.removeMember(m.sourceKind, m.sourceId)}
           />
         )}
+
+        {detail.members.length > 0 && (
+          <div className="text-[11px] text-muted-foreground/70 pt-1">
+            Tip: drag files from your computer onto this panel to upload +
+            bind + queue for RAG in one step.
+          </div>
+        )}
       </div>
+
+      {/* Pick-from-your-files dialog */}
+      <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
+        <DialogContent className="max-w-2xl p-0">
+          <DialogHeader className="px-4 pt-4 pb-2 border-b">
+            <DialogTitle className="text-sm flex items-center gap-2">
+              <FilePlus className="h-4 w-4" />
+              Add files to {s.name}
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              Pick existing cloud files. Selected files will be bound to
+              this store and queued for RAG ingestion if not already
+              indexed.
+            </DialogDescription>
+          </DialogHeader>
+          <CldFilePicker
+            mimePrefixes={["application/pdf", "text/", "image/"]}
+            excludeIds={boundCldFileIds}
+            onConfirm={async (picks) => {
+              setPickerOpen(false);
+              await bindAndReprocess(picks, `Adding ${picks.length} to ${s.name}`);
+            }}
+            onCancel={() => setPickerOpen(false)}
+            confirmLabel="Add + queue"
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Advanced: bind by raw source_kind/UUID */}
+      <Dialog open={advancedOpen} onOpenChange={setAdvancedOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-sm">
+              Bind by source_kind + UUID (advanced)
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              For non-cld_file sources (notes, code files, library docs,
+              processed documents). The cld_file picker handles the common
+              case.
+            </DialogDescription>
+          </DialogHeader>
+          <AddMemberForm
+            onAdd={async (input) => {
+              const ok = await detail.addMember(input);
+              if (ok) {
+                toast.success("Member bound", {
+                  description: `${input.sourceKind}/${input.sourceId.slice(0, 8)}…`,
+                });
+                setAdvancedOpen(false);
+              }
+            }}
+            onCancel={() => setAdvancedOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

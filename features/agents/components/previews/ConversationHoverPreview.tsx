@@ -22,7 +22,7 @@ import { selectInstance } from "@/features/agents/redux/execution-system/convers
 import { selectAgentName } from "@/features/agents/redux/agent-definition/selectors";
 import { selectMessageCount } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import {
-  Bot,
+  CircuitBoard,
   Check,
   Copy,
   ExternalLink,
@@ -103,7 +103,7 @@ export function ConversationPreviewContent({
           </div>
           {agentName && (
             <div className="flex items-center gap-1 text-[11px] text-muted-foreground mt-0.5">
-              <Bot className="w-3 h-3" />
+              <CircuitBoard className="w-3 h-3" />
               <span className="truncate">{agentName}</span>
             </div>
           )}

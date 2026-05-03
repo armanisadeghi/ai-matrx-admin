@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import { Stars } from "lucide-react";
 import type { AgentApp, PublicAgentApp } from "../../types";
 
 interface AgentAppListItemProps {
@@ -21,7 +21,7 @@ export function AgentAppListItem({
   const body = (
     <div className="flex items-center gap-3 px-3 py-2 hover:bg-accent rounded-md transition-colors">
       <div className="flex-shrink-0 w-8 h-8 rounded-md bg-primary/10 text-primary inline-flex items-center justify-center">
-        <Sparkles className="w-4 h-4" />
+        <Stars className="w-4 h-4" />
       </div>
       <div className="min-w-0 flex-1">
         <div className="text-sm font-medium text-foreground truncate">

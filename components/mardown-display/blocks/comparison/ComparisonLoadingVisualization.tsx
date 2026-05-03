@@ -1,6 +1,6 @@
 "use client";
 import React from 'react';
-import { Table, BarChart3, TrendingUp, Star, DollarSign, Sparkles, Trophy } from 'lucide-react';
+import { Table, BarChart3, TrendingUp, Star, DollarSign, Gem, Trophy } from 'lucide-react';
 
 interface ComparisonLoadingVisualizationProps {
   title?: string;
@@ -32,7 +32,7 @@ const ComparisonLoadingVisualization: React.FC<ComparisonLoadingVisualizationPro
               </div>
             </div>
             <div className="absolute top-0 left-8 animate-pulse delay-500">
-              <Sparkles className="h-5 w-5 text-emerald-400 dark:text-emerald-300" />
+              <Gem className="h-5 w-5 text-emerald-400 dark:text-emerald-300" />
             </div>
           </div>
           

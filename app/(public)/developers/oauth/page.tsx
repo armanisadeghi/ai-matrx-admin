@@ -8,7 +8,7 @@ import {
   Lock,
   BookOpen,
   ArrowRight,
-  Bot,
+  Cpu,
   Users,
   ShieldAlert,
   LogIn,

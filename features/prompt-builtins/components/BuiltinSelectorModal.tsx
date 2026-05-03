@@ -32,7 +32,7 @@ import {
   AlertCircle,
   Search,
   FileText,
-  Sparkles,
+  PartyPopper,
   CheckCircle2,
 } from 'lucide-react';
 import { fetchPromptBuiltins } from '../services/admin-service';
@@ -166,7 +166,7 @@ export function BuiltinSelectorModal({
                   </SelectItem>
                   <SelectItem value="generated">
                     <div className="flex items-center gap-2">
-                      <Sparkles className="h-3 w-3" />
+                      <PartyPopper className="h-3 w-3" />
                       Generated
                     </div>
                   </SelectItem>
@@ -216,7 +216,7 @@ export function BuiltinSelectorModal({
                                 {isConverted ? (
                                   <FileText className="h-3 w-3 flex-shrink-0" />
                                 ) : (
-                                  <Sparkles className="h-3 w-3 flex-shrink-0" />
+                                  <PartyPopper className="h-3 w-3 flex-shrink-0" />
                                 )}
                               </div>
                               {builtin.description && (
@@ -275,7 +275,7 @@ export function BuiltinSelectorModal({
                         {selectedBuiltin.source_prompt_id ? (
                           <><FileText className="h-2.5 w-2.5 mr-1" /> Converted</>
                         ) : (
-                          <><Sparkles className="h-2.5 w-2.5 mr-1" /> Generated</>
+                          <><PartyPopper className="h-2.5 w-2.5 mr-1" /> Generated</>
                         )}
                       </Badge>
                     </div>

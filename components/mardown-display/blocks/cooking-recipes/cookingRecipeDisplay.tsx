@@ -11,7 +11,7 @@ import {
   Flame,
   UtensilsCrossed,
   AlertCircle,
-  Sparkles,
+  Star,
   Plus,
   Minus,
   ExternalLink,
@@ -277,7 +277,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe, taskId }) => {
                   <div className="bg-textured rounded-xl p-4 shadow-md border-border">
                     <div className="flex items-center justify-between mb-3">
                       <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                        <Star className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                         Ingredients
                       </h2>
                       <div className="flex items-center gap-1.5">

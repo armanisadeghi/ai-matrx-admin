@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { PlusCircle, Book, Boxes, Sparkles, Zap } from 'lucide-react';
+import { PlusCircle, Book, Boxes, Atom, Zap } from 'lucide-react';
 import { BackgroundBeamsWithCollision } from '@/components/ui/background-beams-with-collision';
 import QuickRefSelect from '@/app/entities/quick-reference/QuickRefSelectFloatingLabel';
 import QuickRefSearchableSelect from '@/app/entities/quick-reference/QuickRefSearchableSelect';
@@ -47,7 +47,7 @@ const AICockpitIntro = ({ onNewRecipe }) => {
                         <div className='flex items-center justify-center mb-4'>
                             <div className='relative'>
                                 <Boxes className='h-16 w-16 text-blue-600 dark:text-blue-400' />
-                                <Sparkles className='absolute -right-4 -top-4 h-6 w-6 text-amber-500 dark:text-amber-400 animate-pulse' />
+                                <Atom className='absolute -right-4 -top-4 h-6 w-6 text-amber-500 dark:text-amber-400 animate-pulse' />
                             </div>
                         </div>
                         <h1 className='text-4xl font-bold mb-2 text-slate-900 dark:text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.1)]'>AI Cockpit</h1>

@@ -61,7 +61,7 @@ type ValidationState = "idle" | "validating" | "valid" | "invalid";
 export default function IconInputWithValidation({
   value,
   onChange,
-  placeholder = "e.g. Sparkles, alarm-clock, or svg:icons/Home",
+  placeholder = "e.g. Flame, alarm-clock, or svg:icons/Home",
   className,
   id,
   disabled = false,

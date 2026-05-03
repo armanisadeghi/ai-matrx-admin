@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import {
   Loader2,
-  Sparkles,
+  Stars,
   CheckCircle2,
   AlertCircle,
   Code2,
@@ -227,7 +227,7 @@ export function AICodeEditor({
 
               {parsedEdits.explanation && (
                 <Alert className="mb-2 shrink-0 py-2">
-                  <Sparkles className="w-3.5 h-3.5 text-primary" />
+                  <Stars className="w-3.5 h-3.5 text-primary" />
                   <AlertDescription className="text-xs">
                     {parsedEdits.explanation}
                   </AlertDescription>

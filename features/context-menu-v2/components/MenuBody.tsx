@@ -23,7 +23,7 @@ import {
   MessageSquare,
   Database,
   FolderOpen,
-  Sparkles,
+  Rocket,
   FileText,
   Zap,
   Building,
@@ -106,7 +106,7 @@ function resolveIcon(iconName: string | null | undefined, fallback: string = "Fi
 function getPlacementIcon(placementType: string) {
   switch (placementType) {
     case PLACEMENT_TYPES.AI_ACTION:
-      return Sparkles;
+      return Rocket;
     case PLACEMENT_TYPES.CONTENT_BLOCK:
       return FileText;
     case PLACEMENT_TYPES.ORGANIZATION_TOOL:

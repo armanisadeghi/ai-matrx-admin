@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { GitCompare, Sparkles, BarChart, Save, Maximize2, Settings, MoreHorizontal, Edit3, Play, Route, AppWindow, LayoutTemplate, Code2, ChevronLeft, Copy, Loader2 } from "lucide-react";
+import { GitCompare, Hammer, BarChart, Save, Maximize2, Settings, MoreHorizontal, Edit3, Play, Route, AppWindow, LayoutTemplate, Code2, ChevronLeft, Copy, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
@@ -224,7 +224,7 @@ export function PromptBuilderHeaderCompact({
                             onClick={() => setIsOptimizerOpen(true)}
                             title="Optimize System Message"
                         >
-                            <Sparkles className="h-3 w-3" />
+                            <Hammer className="h-3 w-3" />
                         </Button>
                         {isAdminMode && (
                             <>
@@ -334,7 +334,7 @@ export function PromptBuilderHeaderCompact({
                             onClick={() => setIsOptimizerOpen(true)}
                             className="flex items-center gap-3 w-full h-12 px-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
                         >
-                            <Sparkles className="h-4 w-4 text-muted-foreground" />
+                            <Hammer className="h-4 w-4 text-muted-foreground" />
                             Optimize
                         </button>
                     </DrawerClose>

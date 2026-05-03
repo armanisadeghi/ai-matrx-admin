@@ -7,7 +7,7 @@ import {
   ChevronRight,
   Globe,
   Loader2,
-  Sparkles,
+  Stars,
   Code2,
   Search,
   Users,
@@ -496,7 +496,7 @@ export function ScopeTemplateStarter({
           onClick={() => setSheetOpen(true)}
           className="w-full flex items-center gap-2 rounded-lg border border-dashed border-border p-2.5 text-left hover:bg-muted/50 transition-colors"
         >
-          <Sparkles className="h-4 w-4 text-primary flex-shrink-0" />
+          <Stars className="h-4 w-4 text-primary flex-shrink-0" />
           <div className="min-w-0">
             <p className="text-xs font-medium">Quick Start Templates</p>
             <p className="text-[10px] text-muted-foreground">
@@ -550,7 +550,7 @@ export function ScopeTemplateStarter({
         <CardContent className="p-6">
           <div className="flex items-start gap-3 mb-4">
             <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="h-5 w-5 text-primary" />
+              <Stars className="h-5 w-5 text-primary" />
             </div>
             <div>
               <h3 className="text-sm font-semibold mb-0.5">

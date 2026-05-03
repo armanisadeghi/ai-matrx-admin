@@ -17,7 +17,7 @@ import {
   MousePointerClick,
   RefreshCw,
   RotateCcw,
-  Sparkles,
+  MousePointerClick,
   Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -75,7 +75,7 @@ const LEVEL_META: Record<CaptureLevel, LevelMeta> = {
     short: "Scroll",
     blurb:
       "Quick scrape returned thin content. The extension will retry with a full page load + auto-scroll for lazy content.",
-    icon: Sparkles,
+    icon: MousePointerClick,
     accent: "text-violet-600 dark:text-violet-400",
     badge:
       "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",

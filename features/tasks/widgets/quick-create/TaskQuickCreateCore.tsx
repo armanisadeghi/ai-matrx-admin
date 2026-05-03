@@ -17,13 +17,13 @@ import {
   Folder,
   Link2,
   Tag,
-  Sparkles,
+  Flame,
   MessagesSquare,
   StickyNote,
   MessageSquare,
   CheckSquare,
   FileText,
-  Bot,
+  Cpu,
 } from "lucide-react";
 import { Button } from "@/components/ui/ButtonMine";
 import { Input } from "@/components/ui/input";
@@ -834,7 +834,7 @@ function getEntityStyle(entityType: string): {
   switch (entityType) {
     case "cx_message":
       return {
-        Icon: Sparkles,
+        Icon: Flame,
         colorClass: "text-violet-600 dark:text-violet-400",
         bgClass: "bg-violet-500/10",
         typeLabel: "AI message",
@@ -862,7 +862,7 @@ function getEntityStyle(entityType: string): {
       };
     case "agent_conversation":
       return {
-        Icon: Bot,
+        Icon: Cpu,
         colorClass: "text-indigo-600 dark:text-indigo-400",
         bgClass: "bg-indigo-500/10",
         typeLabel: "Agent chat",

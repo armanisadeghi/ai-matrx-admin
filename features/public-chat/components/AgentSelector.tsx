@@ -4,7 +4,7 @@ import React, { useState, useCallback, useMemo } from "react";
 import {
   ChevronDown,
   ChevronLeft,
-  Bot,
+  Boxes,
   Search,
   BookOpen,
   Code,
@@ -15,7 +15,7 @@ import {
   Video,
   BarChart,
   ChefHat,
-  Sparkles,
+  Atom,
 } from "lucide-react";
 import type { AgentConfig } from "../context/DEPRECATED-ChatContext";
 
@@ -56,7 +56,7 @@ export const DEFAULT_AGENTS: AgentOption[] = [
     id: "custom-chat",
     name: "Custom Chat",
     description: "A warm, chatty assistant with customizable model & settings.",
-    icon: <Sparkles size={18} />,
+    icon: <Atom size={18} />,
     promptId: "3ca61863-43cf-49cd-8da5-7e0a4b192867",
     variableDefaults: [],
   },
@@ -181,7 +181,7 @@ export function AgentSelector({
         }`}
       >
         <div className="flex items-center gap-2">
-          {selected.icon || <Bot size={18} />}
+          {selected.icon || <Boxes size={18} />}
           <span className="text-sm font-medium text-foreground">
             {selected.name}
           </span>
@@ -214,7 +214,7 @@ export function AgentSelector({
                   }`}
                 >
                   <div className="flex-shrink-0 mt-0.5 text-muted-foreground">
-                    {agent.icon || <Bot size={18} />}
+                    {agent.icon || <Boxes size={18} />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-foreground">

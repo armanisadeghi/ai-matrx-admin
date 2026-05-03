@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import {
-    Sparkles,
+    Wand2,
     FileText,
     Code,
     Palette,
@@ -128,7 +128,7 @@ export function QuickTemplateInsertButton({
             case 'formatting':
                 return <Palette className="w-3 h-3" />;
             case 'special':
-                return <Sparkles className="w-3 h-3" />;
+                return <Wand2 className="w-3 h-3" />;
             case 'ai-prompts':
                 return <Code className="w-3 h-3" />;
             default:
@@ -139,7 +139,7 @@ export function QuickTemplateInsertButton({
     if (loading) {
         return (
             <Button variant={variant} size={size} disabled className={className}>
-                <Sparkles className="w-4 h-4 mr-1 animate-pulse" />
+                <Wand2 className="w-4 h-4 mr-1 animate-pulse" />
                 Templates
             </Button>
         );
@@ -149,7 +149,7 @@ export function QuickTemplateInsertButton({
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant={variant} size={size} className={className}>
-                    <Sparkles className="w-4 h-4 mr-1" />
+                    <Wand2 className="w-4 h-4 mr-1" />
                     Templates
                 </Button>
             </DropdownMenuTrigger>
@@ -158,7 +158,7 @@ export function QuickTemplateInsertButton({
                 {suggestedTemplates.length > 0 && (
                     <>
                         <DropdownMenuLabel className="flex items-center gap-2 text-xs">
-                            <Sparkles className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                            <Wand2 className="w-3 h-3 text-blue-600 dark:text-blue-400" />
                             Suggested for {messageRole} message
                         </DropdownMenuLabel>
                         {suggestedTemplates.map(template => (

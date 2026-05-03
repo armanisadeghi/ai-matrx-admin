@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  Sparkles,
+  PartyPopper,
   Layers,
   Database,
   Search,
@@ -78,7 +78,7 @@ export function AgentOptimizerWindow(props: PlaceholderProps) {
       slug="agent-optimizer-window"
       overlayId="agentOptimizerWindow"
       title="Matrx Agent Optimizer"
-      icon={Sparkles}
+      icon={PartyPopper}
       description="Automated tuning for this agent. Analyzes prompts, variables, and tool usage to suggest concrete improvements."
       bullets={[
         "Prompt quality & clarity scoring",

@@ -214,6 +214,7 @@ function IconPickerTapestry({
           <TapTargetButton
             type="button"
             ariaLabel={id}
+            tooltip={false}
             onClick={() => onPick(id)}
             icon={
               <IconResolver
@@ -243,6 +244,7 @@ function AiTapTapestry({
           <TapTargetLabeled key={`${label}-${selectValue}`} label={label}>
             <Component
               ariaLabel={label}
+              tooltip={false}
               colored={colored}
               onClick={() => onPick(selectValue)}
             />

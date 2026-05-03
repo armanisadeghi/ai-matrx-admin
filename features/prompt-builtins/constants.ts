@@ -23,7 +23,7 @@ export const PLACEMENT_TYPE_META = {
   [PLACEMENT_TYPES.AI_ACTION]: {
     label: 'AI Actions',
     description: 'AI actions available in context menus',
-    icon: 'Sparkles',
+    icon: 'Rainbow',
   },
   [PLACEMENT_TYPES.BUTTON]: {
     label: 'Button',

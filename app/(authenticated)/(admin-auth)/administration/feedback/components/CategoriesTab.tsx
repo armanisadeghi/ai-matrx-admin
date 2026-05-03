@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
     AlertCircle,
-    Sparkles,
+    Rainbow,
     Lightbulb,
     HelpCircle,
     Loader2,
@@ -69,7 +69,7 @@ const EMPTY_EDIT: EditingCategory = { id: null, name: '', slug: '', description:
 
 const feedbackTypeIcons: Record<FeedbackType, React.ReactNode> = {
     bug: <AlertCircle className="w-3.5 h-3.5 text-red-500" />,
-    feature: <Sparkles className="w-3.5 h-3.5 text-purple-500" />,
+    feature: <Rainbow className="w-3.5 h-3.5 text-purple-500" />,
     suggestion: <Lightbulb className="w-3.5 h-3.5 text-yellow-500" />,
     other: <HelpCircle className="w-3.5 h-3.5 text-gray-500" />,
 };

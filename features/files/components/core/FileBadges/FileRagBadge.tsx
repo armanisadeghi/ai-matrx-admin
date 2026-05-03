@@ -26,7 +26,7 @@
 
 "use client";
 
-import { GitBranch, Sparkles } from "lucide-react";
+import { GitBranch, Lightbulb } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFileById } from "@/features/files/redux/selectors";
 import { useFileDocument } from "@/features/files/hooks/useFileDocument";
@@ -75,7 +75,7 @@ export function FileRagBadge({
           title="Indexed for RAG search"
           className="inline-flex items-center gap-0.5 rounded-sm bg-primary/10 text-primary px-1 py-px text-[9px] font-semibold leading-none"
         >
-          <Sparkles className="h-2.5 w-2.5" />
+          <Lightbulb className="h-2.5 w-2.5" />
           {iconOnly ? null : <span>RAG</span>}
         </span>
       ) : null}

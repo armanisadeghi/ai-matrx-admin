@@ -8,7 +8,7 @@ import {
   MessageSquare,
   Loader2,
   History,
-  Bot,
+  Workflow,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
@@ -284,7 +284,7 @@ function RunHistoryBody({
   if (!selectedConversationId) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center px-6 text-muted-foreground">
-        <Bot className="w-10 h-10 mb-3 opacity-20" />
+        <Workflow className="w-10 h-10 mb-3 opacity-20" />
         <p className="text-sm font-medium">Select a conversation</p>
         <p className="text-xs opacity-60 mt-1">
           Choose a run from the sidebar to view the conversation
@@ -416,7 +416,7 @@ function AgentRunHistoryWindowInner({
         />
       ) : (
         <div className="flex flex-col items-center justify-center h-full gap-3 px-6 text-center text-muted-foreground">
-          <Bot className="w-12 h-12 opacity-15" />
+          <Workflow className="w-12 h-12 opacity-15" />
           <div className="space-y-1">
             <p className="text-sm font-medium text-foreground">
               No agent selected

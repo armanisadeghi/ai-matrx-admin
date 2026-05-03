@@ -27,7 +27,7 @@ import {
   FolderPlus,
   Scissors,
   Share2,
-  Sparkles,
+  Stars,
   Trash2,
 } from "lucide-react";
 import {
@@ -270,7 +270,7 @@ export function FileRowContextMenu({ fileId, children }: FileRowContextMenuProps
                 Open document view
               </ContextMenuItem>
               <ContextMenuItem onClick={handleReprocess}>
-                <Sparkles className="mr-2 h-4 w-4" />
+                <Stars className="mr-2 h-4 w-4" />
                 Reprocess for RAG
               </ContextMenuItem>
             </>

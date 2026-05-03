@@ -3,7 +3,11 @@
 import { useSearchParams } from "next/navigation";
 import { StudioView } from "@/features/transcript-studio/components/StudioView";
 
-export function StudioRoute() {
+interface StudioRouteProps {
+  defaultColumnLayout?: Record<string, number>;
+}
+
+export function StudioRoute({ defaultColumnLayout }: StudioRouteProps) {
   const searchParams = useSearchParams();
   const initialSessionId = searchParams.get("session");
 
@@ -14,6 +18,7 @@ export function StudioRoute() {
         showSidebar: true,
         showSettings: true,
         initialSessionId,
+        defaultColumnLayout,
       }}
     />
   );

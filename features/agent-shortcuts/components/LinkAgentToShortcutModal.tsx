@@ -32,7 +32,7 @@ import {
   Loader2,
   Plus,
   Search,
-  Sparkles,
+  Hammer,
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -136,7 +136,7 @@ export function LinkAgentToShortcutModal({
         categoryId: selectedCategoryId,
         label,
         description: agent.description ?? null,
-        iconName: "Sparkles",
+        iconName: "Hammer",
         keyboardShortcut: null,
         sortOrder: 0,
         agentId: agent.id,
@@ -225,7 +225,7 @@ export function LinkAgentToShortcutModal({
     <div className="flex flex-col gap-4">
       <div className="p-3 rounded-md border border-border bg-card">
         <div className="flex items-center gap-2 mb-1">
-          <Sparkles className="h-4 w-4 text-primary" />
+          <Hammer className="h-4 w-4 text-primary" />
           <span className="font-semibold text-sm">{agent.name}</span>
         </div>
         {agent.description && (

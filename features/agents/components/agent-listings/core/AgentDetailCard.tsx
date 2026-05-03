@@ -10,7 +10,7 @@ import {
   Clock,
   Globe,
   ExternalLink,
-  Sparkles,
+  Rocket,
   CircleCheck,
 } from "lucide-react";
 import type { AgentDefinitionRecord } from "@/features/agents/types/agent-definition.types";
@@ -175,7 +175,7 @@ export function AgentDetailCard({ agent, onSelect }: AgentDetailCardProps) {
               title="Sneak Peek — hover to preview"
               className="flex items-center justify-center h-7 w-7 rounded-md border border-border bg-background text-muted-foreground hover:text-primary hover:bg-muted/50 transition-colors shrink-0"
             >
-              <Sparkles className="w-3.5 h-3.5" />
+              <Rocket className="w-3.5 h-3.5" />
             </button>
           </HoverCardTrigger>
           <HoverCardContent

@@ -50,7 +50,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   AlertCircle,
-  Sparkles,
+  Flame,
   Lightbulb,
   HelpCircle,
   Calendar,
@@ -101,7 +101,7 @@ interface FeedbackDetailDialogProps {
 
 const feedbackTypeIcons: Record<FeedbackType, React.ReactNode> = {
   bug: <AlertCircle className="w-5 h-5 text-red-500" />,
-  feature: <Sparkles className="w-5 h-5 text-purple-500" />,
+  feature: <Flame className="w-5 h-5 text-purple-500" />,
   suggestion: <Lightbulb className="w-5 h-5 text-yellow-500" />,
   other: <HelpCircle className="w-5 h-5 text-gray-500" />,
 };

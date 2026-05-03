@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import {
   ChevronDown,
   ChevronRight,
-  Bot,
+  Cpu,
   MessageSquare,
   Copy,
   Check,
@@ -141,7 +141,7 @@ function AgentGroup({
         ) : (
           <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
         )}
-        <Bot
+        <Cpu
           className={cn(
             "h-3.5 w-3.5 shrink-0",
             isUnassigned

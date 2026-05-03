@@ -27,7 +27,7 @@ import {
   ArrowUp,
   AudioLines,
   BookMarked,
-  Bot,
+  SquareStack,
   Box,
   Boxes,
   Brackets,
@@ -72,7 +72,7 @@ import {
   Share2,
   Shrink,
   SlidersHorizontal,
-  Sparkles,
+  CircleDot,
   StickyNote,
   TestTube2,
   ToyBrick,
@@ -223,7 +223,7 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
   {
     id: "tile.voice-pad-ai",
     label: "Transcription Cleanup",
-    icon: Sparkles,
+    icon: CircleDot,
     category: "voice",
     overlayId: "voicePadAi",
   },
@@ -280,7 +280,7 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
   {
     id: "tile.smart-code-editor",
     label: "Smart Code Editor",
-    icon: Sparkles,
+    icon: CircleDot,
     category: "content",
     overlayId: "smartCodeEditorWindow",
     instanceStrategy: "fresh-per-click",
@@ -295,7 +295,7 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
   {
     id: "tile.smart-multi-file",
     label: "Smart Multi-file",
-    icon: Sparkles,
+    icon: CircleDot,
     category: "content",
     overlayId: "multiFileSmartCodeEditorWindow",
     instanceStrategy: "fresh-per-click",
@@ -415,7 +415,7 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
   {
     id: "tile.agent-optimizer",
     label: "Matrx Agent Optimizer (new)",
-    icon: Sparkles,
+    icon: CircleDot,
     category: "agents",
     overlayId: "agentOptimizerWindow",
     seedData: (ctx) => seedAgentId(ctx),
@@ -818,7 +818,7 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
   {
     id: "tile.agent-chat-assistant",
     label: "Agent Chat Assistant (new)",
-    icon: Bot,
+    icon: SquareStack,
     category: "admin",
     gate: "admin",
     overlayId: "agentChatAssistant",

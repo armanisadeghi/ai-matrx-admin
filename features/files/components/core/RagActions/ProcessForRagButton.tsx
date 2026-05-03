@@ -19,7 +19,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Rocket } from "lucide-react";
 import {
   ingestFileStream,
   type IngestProgress,
@@ -224,7 +224,7 @@ export function ProcessForRagButton({
       {isBusy ? (
         <Loader2 className="h-3.5 w-3.5 animate-spin" />
       ) : (
-        <Sparkles className="h-3.5 w-3.5" />
+        <Rocket className="h-3.5 w-3.5" />
       )}
       {!iconOnly && (
         <span>

@@ -40,7 +40,7 @@ import {
   ExternalLink,
   Loader2,
   RotateCw,
-  Sparkles,
+  Rainbow,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -236,7 +236,7 @@ function NotIngestedCard({
       )}
     >
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-        <Sparkles className="h-6 w-6 text-primary" />
+        <Rainbow className="h-6 w-6 text-primary" />
       </div>
       <div className="space-y-1 max-w-md">
         <h3 className="text-sm font-semibold">
@@ -253,7 +253,7 @@ function NotIngestedCard({
           onClick={() => void ingest.run()}
           className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
         >
-          <Sparkles className="h-3.5 w-3.5" />
+          <Rainbow className="h-3.5 w-3.5" />
           Process for RAG
         </button>
         {ingest.status === "error" && (

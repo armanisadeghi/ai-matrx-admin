@@ -12,7 +12,7 @@
 import {
   Zap,
   Rocket,
-  Sparkles,
+  Hammer,
   Images,
   Calculator,
   Brain,
@@ -66,7 +66,7 @@ export const CAPABILITIES: readonly Capability[] = [
     label: 'Balanced',
     description: 'A great all-around helper.',
     tagline: 'Most tasks',
-    icon: Sparkles,
+    icon: Hammer,
     accent: 'blue',
     modelId: '49848d52-9cc8-4ce4-bacb-32aa2201cd10',
   },

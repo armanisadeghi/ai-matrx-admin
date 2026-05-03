@@ -19,7 +19,7 @@ import dynamic from "next/dynamic";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, GitCompare, File, FileCode, FileText } from "lucide-react";
+import { Rainbow, GitCompare, File, FileCode, FileText } from "lucide-react";
 import MarkdownStream from "@/components/MarkdownStream";
 import { DiffView } from "./DiffView";
 import type { ParseResult } from "../../utils/parseCodeEdits";
@@ -77,7 +77,7 @@ export function ReviewStage({
 
       {parsedEdits.explanation && (
         <Alert className="mb-2 shrink-0 py-2">
-          <Sparkles className="w-3.5 h-3.5 text-primary" />
+          <Rainbow className="w-3.5 h-3.5 text-primary" />
           <AlertDescription className="text-xs">
             {parsedEdits.explanation}
           </AlertDescription>

@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
  */
 export default function LucideFullDemo() {
   const [pickerIcon, setPickerIcon] = useState("Folder");
-  const [inputIcon, setInputIcon] = useState("Sparkles");
+  const [inputIcon, setInputIcon] = useState("Rainbow");
 
   return (
     <div className="space-y-4">
@@ -22,7 +22,7 @@ export default function LucideFullDemo() {
             <code className="font-mono text-foreground">alarm-clock</code> or
             paste a JSX import like{" "}
             <code className="font-mono text-foreground">
-              &lt;Sparkles /&gt;
+              &lt;Rainbow /&gt;
             </code>
             ) — the field auto-corrects it.
           </li>

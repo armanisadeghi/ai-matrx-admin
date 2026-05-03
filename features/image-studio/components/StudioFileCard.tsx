@@ -23,7 +23,7 @@ import {
     StudioVariantTileError,
 } from "./StudioVariantTile";
 import { MetadataPanel } from "./MetadataPanel";
-import { Sparkles } from "lucide-react";
+import { MousePointerClick } from "lucide-react";
 
 interface StudioFileCardProps {
     file: StudioSourceFile;
@@ -279,7 +279,7 @@ export function StudioFileCard({
                             {isDescribing ? (
                                 <Loader2 className="h-3 w-3 animate-spin" />
                             ) : (
-                                <Sparkles className="h-3 w-3" />
+                                <MousePointerClick className="h-3 w-3" />
                             )}
                             {isDescribing
                                 ? "Describing"

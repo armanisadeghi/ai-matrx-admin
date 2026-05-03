@@ -169,9 +169,14 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         console.log("[useAgentChat] CONTINUE conversation →", executeUrl);
         console.log("[useAgentChat] dbConversationId:", state.dbConversationId);
       } else {
+        // Both branches now hit `/ai/agents/{id}` — the legacy
+        // `/ai/prompts/{id}` endpoint is going away. `promptId` is a
+        // historical field name; the value stored there has been an agent
+        // UUID since the prompts→agents migration, so the endpoint swap
+        // is the only change required.
         const startEndpoint = blockMode
           ? ENDPOINTS.ai.agentBlocksStart(promptId)
-          : ENDPOINTS.ai.promptStart(promptId);
+          : ENDPOINTS.ai.agentStart(promptId);
         executeUrl = `${BACKEND_URL}${startEndpoint}`;
         requestBody = {
           user_input: userInput,

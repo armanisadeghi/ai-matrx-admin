@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, FileText, Sparkles } from 'lucide-react';
+import { AlertCircle, FileText, Hammer } from 'lucide-react';
 import type { CreatePromptBuiltinInput } from '../types/core';
 
 interface BuiltinFormFieldsProps {
@@ -103,7 +103,7 @@ export function BuiltinFormFields({
                   </>
                 ) : (
                   <>
-                    <Sparkles className="h-2.5 w-2.5 mr-1" />
+                    <Hammer className="h-2.5 w-2.5 mr-1" />
                     Generated
                   </>
                 )}

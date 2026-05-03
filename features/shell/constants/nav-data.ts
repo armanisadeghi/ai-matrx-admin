@@ -235,7 +235,7 @@ export const adminNavItems: ShellNavItem[] = [
   {
     label: "App Builder",
     href: "/apps/app-builder",
-    iconName: "Sparkles",
+    iconName: "Lightbulb",
     section: "admin",
     color: "amber",
   },

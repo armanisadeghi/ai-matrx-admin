@@ -15,7 +15,7 @@ import {
   Check,
   Loader2,
   Palette,
-  Sparkles,
+  Wand2,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -45,7 +45,7 @@ export function MetadataPanel({
       <div className="rounded-lg border border-dashed border-border bg-muted/10 p-3 flex items-center justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-xs font-medium flex items-center gap-1.5">
-            <Sparkles className="h-3 w-3 text-primary" /> AI-authored metadata
+            <Wand2 className="h-3 w-3 text-primary" /> AI-authored metadata
           </p>
           <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
             Generate filename, alt text, caption, SEO keywords, and dominant
@@ -67,7 +67,7 @@ export function MetadataPanel({
           {isDescribing ? (
             <Loader2 className="h-3 w-3 animate-spin" />
           ) : (
-            <Sparkles className="h-3 w-3" />
+            <Wand2 className="h-3 w-3" />
           )}
           {status === "error" ? "Try again" : "Describe with AI"}
         </button>

@@ -16,7 +16,7 @@
  */
 
 import React, { useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, Sparkles } from "lucide-react";
+import { ChevronDown, ChevronRight, Lightbulb } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
 import {
@@ -73,7 +73,7 @@ export const PendingChangesSection: React.FC = () => {
         ) : (
           <ChevronRight className="h-3 w-3" />
         )}
-        <Sparkles className="h-3 w-3" />
+        <Lightbulb className="h-3 w-3" />
         <span className="font-medium">Pending Changes</span>
         <span className="ml-auto rounded bg-blue-600 px-1.5 py-[1px] text-[10px] font-semibold text-white">
           {rows.length} {rows.length === 1 ? "file" : "files"} · {totalEdits}{" "}

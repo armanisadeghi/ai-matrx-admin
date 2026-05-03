@@ -2,7 +2,7 @@
 
 import React, { Suspense, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // Lazy load modals for better initial page load
@@ -27,7 +27,7 @@ export function LandingCTAs() {
         size="lg"
         className="w-full sm:w-auto text-base bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 text-white border-0 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300"
       >
-        <Sparkles className="mr-2 h-5 w-5" />
+        <Lightbulb className="mr-2 h-5 w-5" />
         Enter Invitation Code
       </Button>
       

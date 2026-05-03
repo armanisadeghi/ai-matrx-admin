@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Bot } from "lucide-react";
+import { CircuitBoard } from "lucide-react";
 import { SectionToolbar } from "../SectionToolbar";
 import { SectionFooter } from "../SectionFooter";
 
@@ -22,7 +22,7 @@ export function SubAgentsSection() {
       />
       <div className="flex-1 overflow-y-auto scrollbar-thin flex items-center justify-center">
         <div className="flex flex-col items-center gap-2 text-center max-w-md px-8 py-12">
-          <Bot className="h-10 w-10 text-muted-foreground/50" />
+          <CircuitBoard className="h-10 w-10 text-muted-foreground/50" />
           <h3 className="text-sm font-semibold text-foreground mt-2">
             Sub-agents coming soon
           </h3>

@@ -9,7 +9,7 @@ import { ContextValuePreview } from './ContextValuePreview';
 import { useContextItem, useContextVersionHistory, useCreateContextValue } from '../hooks/useContextItems';
 import type { ContextItemValue } from '../types';
 import type { ScopeState } from '../hooks/useContextScope';
-import { AlertTriangle, RotateCcw, User, Bot } from 'lucide-react';
+import { AlertTriangle, RotateCcw, User, Component } from 'lucide-react';
 import { toast } from 'sonner';
 
 type Props = {
@@ -100,7 +100,7 @@ export function ContextVersionHistory({ itemId, scope }: Props) {
                   {v.authored_by ? (
                     <>
                       {v.source_type === 'ai_generated' || v.source_type === 'ai_enriched'
-                        ? <Bot className="h-2.5 w-2.5 text-purple-400" />
+                        ? <Component className="h-2.5 w-2.5 text-purple-400" />
                         : <User className="h-2.5 w-2.5 text-muted-foreground" />}
                       <span className="text-[10px] text-muted-foreground">{v.authored_by}</span>
                     </>

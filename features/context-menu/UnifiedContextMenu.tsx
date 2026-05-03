@@ -43,7 +43,7 @@ import {
   MessageSquare,
   Database,
   FolderOpen,
-  Sparkles,
+  Lightbulb,
   FileText,
   Zap,
   Building,
@@ -1036,7 +1036,7 @@ export function UnifiedContextMenu({
   // Get icon for placement type
   const getPlacementIcon = (placementType: string) => {
     const icons: Record<string, any> = {
-      [PLACEMENT_TYPES.AI_ACTION]: Sparkles,
+      [PLACEMENT_TYPES.AI_ACTION]: Lightbulb,
       [PLACEMENT_TYPES.CONTENT_BLOCK]: FileText,
       [PLACEMENT_TYPES.ORGANIZATION_TOOL]: Building,
       [PLACEMENT_TYPES.USER_TOOL]: User,
@@ -1544,7 +1544,7 @@ export function UnifiedContextMenu({
           }
         }}
       >
-        <Sparkles className={isMobile ? "h-6 w-6" : "h-5 w-5"} />
+        <Lightbulb className={isMobile ? "h-6 w-6" : "h-5 w-5"} />
       </button>
     );
   };

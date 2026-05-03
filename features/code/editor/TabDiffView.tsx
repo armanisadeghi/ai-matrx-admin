@@ -41,7 +41,7 @@ import React, {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
-import { Check, ChevronLeft, ChevronRight, Sparkles, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Rocket, X } from "lucide-react";
 import { DiffEditor, type DiffOnMount } from "@monaco-editor/react";
 import type { editor as MonacoEditorNS } from "monaco-editor";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -504,7 +504,7 @@ export const TabDiffView: React.FC<TabDiffViewProps> = ({ tab }) => {
 
         <span className="mx-1 h-3 w-px bg-blue-200 dark:bg-blue-900/60" />
 
-        <Sparkles className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+        <Rocket className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
         <span className="font-medium text-blue-900 dark:text-blue-200">
           {patches.length} {patches.length === 1 ? "edit" : "edits"}
         </span>

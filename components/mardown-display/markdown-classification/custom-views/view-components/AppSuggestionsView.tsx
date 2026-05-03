@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Image, Sparkles, ArrowRight, ExternalLink, Lightbulb, Loader2 } from 'lucide-react';
+import { Image, Rocket, ArrowRight, ExternalLink, Lightbulb, Loader2 } from 'lucide-react';
 import { useIsMobile } from "@/hooks/use-mobile";
 import DefaultErrorFallback from "@/components/mardown-display/markdown-classification/custom-views/common/DefaultErrorFallback";
 
@@ -189,7 +189,7 @@ const AppSuggestionsDisplay = ({ data, handleGenerate, handleSelect, imageUrls =
                                                     }}
                                                     className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors text-sm font-medium"
                                                 >
-                                                    <Sparkles size={16} />
+                                                    <Rocket size={16} />
                                                     Generate Image
                                                 </button>
                                             )}

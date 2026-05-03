@@ -1,6 +1,6 @@
 // config/aiCustomizationConfig.ts
 import { 
-    Bot, 
+    SquareStack, 
     MessageSquare, 
     Brain, 
     BookOpen, 
@@ -10,7 +10,7 @@ import {
     Palette,
     PanelTop,
     Code,
-    Sparkles,
+    MousePointerClick,
     Wand2,
     Settings,
     ListChecks
@@ -72,13 +72,13 @@ import {
       {
         id: 'communicationStyle',
         title: 'Personality & Style',
-        icon: Bot,
+        icon: SquareStack,
         description: 'Configure how your AI assistant communicates with you',
         cards: [
           {
             id: 'personality',
             title: 'Choose AI Personality',
-            icon: Bot,
+            icon: SquareStack,
             size: 'large',
             component: PersonalityCard
           },
@@ -129,7 +129,7 @@ import {
           {
             id: 'creativity',
             title: 'Creativity Level',
-            icon: Sparkles,
+            icon: MousePointerClick,
             component: CreativityLevelCard
           },
           {

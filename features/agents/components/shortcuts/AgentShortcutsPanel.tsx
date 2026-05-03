@@ -19,7 +19,7 @@ import {
   KeyRound,
   Loader2,
   Plus,
-  Sparkles,
+  Stars,
   UserRound,
   Wand2,
   Zap,
@@ -127,7 +127,7 @@ export function AgentShortcutsPanel({
           <CountCard
             label="Other scopes"
             value={otherShortcuts.length}
-            icon={Sparkles}
+            icon={Stars}
             tone="muted"
             isLoading={isLoading}
             help="Organization, project, or task scoped shortcuts you can see."
@@ -352,5 +352,5 @@ function getScopeBadge(shortcut: AgentShortcutRecord): ScopeBadge {
   ) {
     return { label: "Global", icon: Globe, variant: "default" };
   }
-  return { label: "Shared", icon: Sparkles, variant: "outline" };
+  return { label: "Shared", icon: Stars, variant: "outline" };
 }

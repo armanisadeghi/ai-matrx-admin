@@ -10,7 +10,7 @@ import {
     Gauge,
     Loader2,
     Paintbrush,
-    Sparkles,
+    Zap,
     Zap,
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
@@ -288,7 +288,7 @@ export function ExportPanel({
                             : "bg-muted text-muted-foreground cursor-not-allowed",
                     )}
                 >
-                    <Sparkles
+                    <Zap
                         className={cn(
                             "h-4 w-4",
                             isProcessing && "animate-pulse",
@@ -317,7 +317,7 @@ export function ExportPanel({
                         {isDescribing ? (
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
                         ) : (
-                            <Sparkles className="h-3.5 w-3.5" />
+                            <Zap className="h-3.5 w-3.5" />
                         )}
                         {isDescribing
                             ? "Describing with AI…"

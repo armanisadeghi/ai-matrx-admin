@@ -1,7 +1,7 @@
 // Content block templates for the rich text editor
 import { 
     FileText, Code, List, CheckSquare, Table, Calendar, AlertCircle, Info, Lightbulb, Quote, MessageSquare, Brain, Zap, Layers, ClipboardList, BookOpen,
-    Clock, BarChart3, HelpCircle, FolderOpen, GitBranch, Search, Network, Palette, Sparkles 
+    Clock, BarChart3, HelpCircle, FolderOpen, GitBranch, Search, Network, Palette, MousePointerClick 
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { 
@@ -390,7 +390,7 @@ export const categoryConfigs: CategoryConfig[] = [
     {
         id: 'special',
         label: 'Special',
-        icon: Sparkles,
+        icon: MousePointerClick,
         color: 'amber',
     },
 ];

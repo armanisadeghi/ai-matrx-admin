@@ -14,7 +14,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   FileText,
-  Sparkles,
+  Lightbulb,
   Languages,
   ListChecks,
   Lightbulb,
@@ -68,7 +68,7 @@ export function ContextMenuExample() {
             },
             {
               label: 'Improve Writing',
-              icon: Sparkles,
+              icon: Lightbulb,
               group: 'content',
               config: {
                 promptId: 'improve-writing',

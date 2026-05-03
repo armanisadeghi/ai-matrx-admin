@@ -8,7 +8,7 @@
  */
 
 const formTemplate = `import React, { useState, useMemo } from 'react';
-import { Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import { PartyPopper, Loader2, AlertCircle } from 'lucide-react';
 import MarkdownStream from '@/components/MarkdownStream';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,7 +46,7 @@ export default function FormApp({
       <Card className="bg-card border-border">
         <CardHeader className="bg-muted/50">
           <CardTitle className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <PartyPopper className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             {appName || 'Generate Content'}
           </CardTitle>
           {appTagline && (
@@ -131,7 +131,7 @@ export default function FormApp({
         <Card className="bg-card border-border">
           <CardHeader className="bg-muted/50">
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-green-600 dark:text-green-400" />
+              <PartyPopper className="w-5 h-5 text-green-600 dark:text-green-400" />
               Result
             </CardTitle>
           </CardHeader>

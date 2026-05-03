@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { LogIn, Sparkles, Lock } from 'lucide-react';
+import { LogIn, Gem, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -72,7 +72,7 @@ export function AuthGateDialog({
                     className="w-full gap-2"
                     onClick={() => { window.location.href = signUpUrl; }}
                 >
-                    <Sparkles className="w-4 h-4" />
+                    <Gem className="w-4 h-4" />
                     Create Free Account
                 </Button>
             </div>

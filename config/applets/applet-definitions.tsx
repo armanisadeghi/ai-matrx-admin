@@ -1,7 +1,7 @@
 // config/applet-definitions.tsx
 
 import {
-    Brain, Bot, GitBranch, Wrench, ArrowRightCircle,
+    Brain, SquareStack, GitBranch, Wrench, ArrowRightCircle,
     HardDrive, GraduationCap, ShoppingBag, Database, Book,
     Image, MessageCircle, Mic, Code, Download, Megaphone,
     Camera, Video, Globe, Mail, Calendar, CheckSquare,
@@ -196,7 +196,7 @@ export const appletDefinitions: AppletDefinition[] = [
         key: "ai-agents",
         title: "AI Agents",
         description: "Create and manage autonomous AI agents",
-        icon: <Bot size={24} />,
+        icon: <SquareStack size={24} />,
         category: "AI",
         link: "/applets/matrx/ai-agents",
         features: ["Agent Creation", "Behavior Configuration", "Task Assignment"]

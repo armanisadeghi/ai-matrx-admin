@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Search, X, Bot, Loader2, LayoutGrid } from "lucide-react";
+import { Search, X, Workflow, Loader2, LayoutGrid } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -78,7 +78,7 @@ function PromptItem({
           compact ? "w-8 h-8" : "w-10 h-10"
         }`}
       >
-        <Bot
+        <Workflow
           className={`text-muted-foreground ${compact ? "h-[16px] w-[16px]" : "h-[18px] w-[18px]"}`}
         />
       </div>
@@ -364,7 +364,7 @@ export function PromptSwitcherButton({
         className="h-9 w-9 p-0 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
         title="Switch prompt"
       >
-        <Bot className="w-4 h-4" />
+        <Workflow className="w-4 h-4" />
       </Button>
 
       <PromptSwitcherSheet

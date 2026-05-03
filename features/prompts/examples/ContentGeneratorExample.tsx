@@ -11,7 +11,7 @@
 
 import { PromptExecutionButton } from "@/features/prompts/components/actions/PromptExecutionButton";
 import { createHardcodedMap } from "@/features/prompts/utils/variable-resolver";
-import { Sparkles, FileText, Newspaper } from "lucide-react";
+import { Hammer, FileText, Newspaper } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -82,7 +82,7 @@ export function ContentGeneratorExample() {
               },
             }}
             label="Generate Email"
-            icon={Sparkles}
+            icon={Hammer}
             variant="outline"
             fullWidth
           />

@@ -7,7 +7,7 @@ import {
   ChevronDown,
   Plus,
   X,
-  Bot,
+  SquareStack,
 } from "lucide-react";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { createRouteMetadata } from "@/utils/route-metadata";
@@ -369,7 +369,7 @@ function ChatHistorySurface() {
           />
         </div>
         <button className="flex items-center gap-1.5 px-2 py-1 rounded bg-background w-full text-xs">
-          <Bot className="h-3 w-3 text-muted-foreground shrink-0" />
+          <SquareStack className="h-3 w-3 text-muted-foreground shrink-0" />
           <span className="flex-1 text-left text-foreground">Claude Sonnet 4.6</span>
           <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
         </button>

@@ -28,7 +28,7 @@ import {
   Wand2,
   Loader2,
   CheckCircle2,
-  Sparkles,
+  Zap,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -160,7 +160,7 @@ export function CodeOrDiffColumn({
             </span>
             {state === "processing" && (
               <span className="ml-2 flex items-center gap-1 text-[10px] text-muted-foreground italic shrink-0">
-                <Sparkles className="w-3 h-3 animate-pulse" />
+                <Zap className="w-3 h-3 animate-pulse" />
                 Agent working…
               </span>
             )}

@@ -1,6 +1,6 @@
 "use client";
 import React from 'react';
-import { HelpCircle, Bug, Wrench, AlertTriangle, CheckCircle2, Sparkles, Zap } from 'lucide-react';
+import { HelpCircle, Bug, Wrench, AlertTriangle, CheckCircle2, Stars, Zap } from 'lucide-react';
 
 interface TroubleshootingLoadingVisualizationProps {
   title?: string;
@@ -32,7 +32,7 @@ const TroubleshootingLoadingVisualization: React.FC<TroubleshootingLoadingVisual
               </div>
             </div>
             <div className="absolute top-0 left-8 animate-pulse delay-500">
-              <Sparkles className="h-5 w-5 text-red-400 dark:text-red-300" />
+              <Stars className="h-5 w-5 text-red-400 dark:text-red-300" />
             </div>
           </div>
           

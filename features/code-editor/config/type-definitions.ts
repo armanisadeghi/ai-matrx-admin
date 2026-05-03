@@ -134,7 +134,7 @@ declare module 'lucide-react' {
 
   // Common icons used in prompt apps
   export const Loader2: LucideIcon;
-  export const Sparkles: LucideIcon;
+  export const Atom: LucideIcon;
   export const AlertCircle: LucideIcon;
   export const CheckCircle: LucideIcon;
   export const CheckCircle2: LucideIcon;
@@ -198,7 +198,7 @@ declare module 'lucide-react' {
   export const ArrowUp: LucideIcon;
   export const ArrowDown: LucideIcon;
   export const BookOpen: LucideIcon;
-  export const Brain: LucidIcon;
+  export const Brain: LucideIcon;
   export const GraduationCap: LucideIcon;
 }
 `;
@@ -578,10 +578,21 @@ declare module '@/components/Markdown' {
  */
 export const getAllTypeDefinitions = () => {
   return [
-    { content: reactTypes, filePath: 'file:///node_modules/@types/react/index.d.ts' },
-    { content: lucideReactTypes, filePath: 'file:///node_modules/@types/lucide-react/index.d.ts' },
-    { content: uiComponentTypes, filePath: 'file:///node_modules/@types/ui-components/index.d.ts' },
-    { content: customComponentTypes, filePath: 'file:///node_modules/@types/custom-components/index.d.ts' },
+    {
+      content: reactTypes,
+      filePath: "file:///node_modules/@types/react/index.d.ts",
+    },
+    {
+      content: lucideReactTypes,
+      filePath: "file:///node_modules/@types/lucide-react/index.d.ts",
+    },
+    {
+      content: uiComponentTypes,
+      filePath: "file:///node_modules/@types/ui-components/index.d.ts",
+    },
+    {
+      content: customComponentTypes,
+      filePath: "file:///node_modules/@types/custom-components/index.d.ts",
+    },
   ];
 };
-

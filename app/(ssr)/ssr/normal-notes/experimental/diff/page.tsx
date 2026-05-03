@@ -42,7 +42,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, Upload, AlertCircle, ArrowLeft } from "lucide-react";
+import { Stars, Upload, AlertCircle, ArrowLeft } from "lucide-react";
 import { useToastManager } from "@/hooks/useToastManager";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
@@ -225,7 +225,7 @@ export default function DiffExperimentalPage() {
     return (
       <div className="h-[calc(100vh-2.5rem)] flex flex-col items-center justify-center bg-textured">
         <Card className="p-8 text-center max-w-md">
-          <Sparkles className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+          <Stars className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
           <h2 className="text-lg font-semibold mb-2">No Note Selected</h2>
           <p className="text-sm text-muted-foreground mb-4">
             Go to the notes page and select a note to try the AI diff system
@@ -256,7 +256,7 @@ export default function DiffExperimentalPage() {
               </Button>
               <div className="h-6 w-px bg-border" />
               <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-purple-500" />
+                <Stars className="h-5 w-5 text-purple-500" />
                 <h1 className="text-lg font-bold">
                   AI Diff System (Experimental)
                 </h1>
@@ -317,7 +317,7 @@ export default function DiffExperimentalPage() {
             {pendingDiffs.length > 0 ? (
               <Card className="p-4 flex-1 overflow-hidden flex flex-col">
                 <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-purple-500" />
+                  <Stars className="h-4 w-4 text-purple-500" />
                   AI Suggested Changes ({pendingDiffs.length})
                 </h3>
                 <ScrollArea className="flex-1">

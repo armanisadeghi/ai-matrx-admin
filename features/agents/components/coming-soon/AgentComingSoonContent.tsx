@@ -1,7 +1,7 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
-import { Sparkles } from "lucide-react";
+import { Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AgentComingSoonContentProps {
@@ -14,7 +14,7 @@ interface AgentComingSoonContentProps {
 }
 
 export function AgentComingSoonContent({
-  icon: Icon = Sparkles,
+  icon: Icon = Flame,
   title,
   description,
   agentId,

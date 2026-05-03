@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Calendar, Sparkles, Clock } from "lucide-react";
+import { Calendar, PartyPopper, Clock } from "lucide-react";
 
 const TimelineLoadingVisualization: React.FC = () => {
     return (
@@ -14,7 +14,7 @@ const TimelineLoadingVisualization: React.FC = () => {
                                 <Calendar className="h-12 w-12 text-blue-600 dark:text-blue-400" />
                             </div>
                             <Calendar className="h-12 w-12 text-blue-600 dark:text-blue-400 animate-pulse" style={{ animationDuration: '2s' }} />
-                            <Sparkles className="h-5 w-5 text-indigo-600 dark:text-indigo-400 absolute -top-1 -right-1 animate-bounce" style={{ animationDuration: '1s' }} />
+                            <PartyPopper className="h-5 w-5 text-indigo-600 dark:text-indigo-400 absolute -top-1 -right-1 animate-bounce" style={{ animationDuration: '1s' }} />
                         </div>
 
                         {/* Loading Text */}

@@ -20,7 +20,7 @@ import {
   Sun,
   Moon,
   FolderOpen,
-  Sparkles,
+  Rainbow,
   Bug,
   Mic,
 } from "lucide-react";
@@ -172,7 +172,7 @@ export function MobileUnifiedMenu() {
           </DropdownMenuItem>
 
           <DropdownMenuItem onClick={() => openQuickAIResults()}>
-            <Sparkles className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
+            <Rainbow className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
             <span className="text-sm">AI Results</span>
           </DropdownMenuItem>
 

@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {X, Star, Heart, Flame, Sparkles, Zap, Award, Crown, Diamond, Shield} from 'lucide-react';
+import {X, Star, Heart, Flame, Gem, Zap, Award, Crown, Diamond, Shield} from 'lucide-react';
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
 import { cn } from '@/utils/cn';
 
@@ -302,7 +302,7 @@ const EnhancedChipExamples = () => {
                 <div className="flex flex-wrap gap-2">
                     <EnhancedChip icon={Star}>Default</EnhancedChip>
                     <EnhancedChip variant="primary" icon={Heart}>Primary</EnhancedChip>
-                    <EnhancedChip variant="success" icon={Sparkles}>Success</EnhancedChip>
+                    <EnhancedChip variant="success" icon={Gem}>Success</EnhancedChip>
                     <EnhancedChip variant="warning" icon={Flame}>Warning</EnhancedChip>
                     <EnhancedChip variant="danger" icon={Zap}>Danger</EnhancedChip>
                 </div>
@@ -367,7 +367,7 @@ const EnhancedChipExamples = () => {
                 <h3 className="text-lg font-semibold mb-2">Animated</h3>
                 <div className="flex flex-wrap gap-2">
                     <EnhancedChip variant="primary" animated>Animated Primary</EnhancedChip>
-                    <EnhancedChip variant="success" animated icon={Sparkles}>Animated Success</EnhancedChip>
+                    <EnhancedChip variant="success" animated icon={Gem}>Animated Success</EnhancedChip>
                     <EnhancedChip variant="warning" animated icon={Flame}>Animated Warning</EnhancedChip>
                 </div>
             </div>

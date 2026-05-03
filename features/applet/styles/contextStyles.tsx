@@ -13,7 +13,7 @@ import {
     Calendar, Clock, Mail, Phone,
     Headphones, Tv, Star, Ticket,
     Bed, Bath, Sofa, Lightbulb,
-    Sparkles, Gift, PartyPopper, Sun
+    MousePointerClick, Gift, PartyPopper, Sun
 } from "lucide-react";
 import { TbBeach } from "react-icons/tb";
 
@@ -235,7 +235,7 @@ export const contextStyles = {
     },
     beauty: {
         fallbackBg: "linear-gradient(to right, #FAD961, #F76B1C)",
-        icon: <Sparkles size={24} />,
+        icon: <MousePointerClick size={24} />,
     },
     weather: {
         fallbackBg: "linear-gradient(to right, #56ccf2, #2f80ed)",

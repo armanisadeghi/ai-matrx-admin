@@ -28,7 +28,7 @@ import {
   FileImage,
   Library,
   Loader2,
-  Sparkles,
+  Lightbulb,
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -102,7 +102,7 @@ export function Base64DecoderShell({ defaultFolder }: Base64DecoderShellProps) {
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div>
             <h2 className="text-sm font-semibold flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <Lightbulb className="h-3.5 w-3.5 text-primary" />
               Paste your base64
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">

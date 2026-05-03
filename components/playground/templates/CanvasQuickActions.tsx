@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-    Sparkles,
+    Lightbulb,
     BookOpen,
     Code,
     BarChart3,
@@ -208,7 +208,7 @@ export function CanvasQuickActions({
             <div className="p-6 border-b border-border">
                 <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
-                        <Sparkles className="w-6 h-6 text-white" />
+                        <Lightbulb className="w-6 h-6 text-white" />
                     </div>
                     <div>
                         <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">

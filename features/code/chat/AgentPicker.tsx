@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
-  Bot,
+  Boxes,
   ChevronDown,
   Filter,
   Loader2,
@@ -188,7 +188,7 @@ export const AgentPicker: React.FC<AgentPickerProps> = ({
             "hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800",
           )}
         >
-          <Bot size={12} />
+          <Boxes size={12} />
           <span className="max-w-[160px] truncate">
             {currentAgent?.name ?? "Pick agent"}
           </span>
@@ -225,7 +225,7 @@ export const AgentPicker: React.FC<AgentPickerProps> = ({
         className,
       )}
     >
-      <Bot
+      <Boxes
         size={36}
         strokeWidth={1.2}
         className="text-neutral-400 dark:text-neutral-500"
@@ -410,7 +410,7 @@ function AgentList({
                 "bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200",
             )}
           >
-            <Bot size={12} className="mt-[3px] shrink-0" />
+            <Boxes size={12} className="mt-[3px] shrink-0" />
             <div className="flex min-w-0 flex-1 flex-col">
               <span className="truncate font-medium">{agent.name}</span>
               {agent.description && (

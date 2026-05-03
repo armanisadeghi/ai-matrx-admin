@@ -31,7 +31,7 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
-  Sparkles,
+  Lightbulb,
   Layers,
   MoreVertical,
   X,
@@ -240,7 +240,7 @@ export function PdfStudioMobile({ initialDocumentId }: PdfStudioMobileProps) {
           <TabBtn
             active={tab === "clean"}
             onClick={() => setTab("clean")}
-            icon={<Sparkles className="w-3.5 h-3.5" />}
+            icon={<Lightbulb className="w-3.5 h-3.5" />}
             label="Cleaned"
           />
         </div>

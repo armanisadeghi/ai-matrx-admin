@@ -176,4 +176,12 @@ export interface StudioViewConfig {
   initialSessionId?: string | null;
   /** Chrome variant: "page" uses the global header portal; "window" doesn't. */
   containerVariant: "page" | "window";
+  /**
+   * Server-read studio columns layout (panel id -> percentage). When provided,
+   * the 4-column shell paints with these widths on the very first frame so
+   * the user doesn't see a flash of the auto-distributed default. Pass
+   * `decodeStudioLayoutCookie(cookies().get(STUDIO_COLUMN_COOKIE_NAME)?.value)`
+   * from the route handler.
+   */
+  defaultColumnLayout?: Record<string, number>;
 }

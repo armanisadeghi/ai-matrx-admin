@@ -27,7 +27,7 @@ import {
   History,
   Info,
   Loader2,
-  Sparkles,
+  Gem,
   X,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -324,7 +324,7 @@ export function PreviewPane({
         aria-label="Preview tabs"
       >
         <PreviewTabButton
-          icon={<Sparkles className="h-3.5 w-3.5" />}
+          icon={<Gem className="h-3.5 w-3.5" />}
           label="Preview"
           active={activeTab === "preview"}
           onClick={() => setActiveTab("preview")}

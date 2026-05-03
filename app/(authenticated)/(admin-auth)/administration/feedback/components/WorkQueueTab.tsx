@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     AlertCircle,
-    Sparkles,
+    Rainbow,
     Lightbulb,
     HelpCircle,
     ArrowUp,
@@ -33,7 +33,7 @@ import FeedbackDetailDialog from './FeedbackDetailDialog';
 
 const feedbackTypeIcons: Record<string, React.ReactNode> = {
     bug: <AlertCircle className="w-4 h-4 text-red-500" />,
-    feature: <Sparkles className="w-4 h-4 text-purple-500" />,
+    feature: <Rainbow className="w-4 h-4 text-purple-500" />,
     suggestion: <Lightbulb className="w-4 h-4 text-yellow-500" />,
     other: <HelpCircle className="w-4 h-4 text-gray-500" />,
 };

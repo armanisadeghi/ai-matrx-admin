@@ -27,7 +27,7 @@ import {
   History,
   GitBranch,
   SlidersHorizontal,
-  Sparkles,
+  Atom,
   Maximize2,
   Play,
   Copy,
@@ -86,7 +86,7 @@ const THIS_AGENT_ITEMS: MenuItem[] = [
   { label: "View All Versions", icon: GitBranch },
   { label: "Open Run Modal", icon: Play },
   { label: "Full Screen Editor", icon: Maximize2, soon: true },
-  { label: "Matrx Agent Optimizer", icon: Sparkles },
+  { label: "Matrx Agent Optimizer", icon: Atom },
   { label: "Find Usages", icon: Search },
 ];
 

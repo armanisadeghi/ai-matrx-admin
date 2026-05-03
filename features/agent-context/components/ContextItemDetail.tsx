@@ -3,7 +3,7 @@
 import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Pencil, MoreHorizontal, Copy, History, Archive, Trash2, Bot, ExternalLink,
+  Pencil, MoreHorizontal, Copy, History, Archive, Trash2, Cable, ExternalLink,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -197,7 +197,7 @@ export function ContextItemDetail({ itemId, scope }: Props) {
 
           {/* Agent placeholder */}
           <Button variant="outline" size="sm" className="w-full text-xs gap-1 h-7">
-            <Bot className="h-3 w-3" /> Suggest Dependencies
+            <Cable className="h-3 w-3" /> Suggest Dependencies
             {/* TODO: Wire agent */}
           </Button>
         </div>

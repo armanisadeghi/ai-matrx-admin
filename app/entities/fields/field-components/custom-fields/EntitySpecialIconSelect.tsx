@@ -18,7 +18,7 @@ const PRESET_CONFIGURATIONS = {
     { iconName: "Calculator", label: "Calculator", value: "calculator" },
     { iconName: "Globe2", label: "Translation", value: "translation" },
     { iconName: "Database", label: "Knowledge Base", value: "knowledge-base" },
-    { iconName: "Bot", label: "AI Assistant", value: "ai-assistant" },
+    { iconName: "LayoutTemplate", label: "AI Assistant", value: "ai-assistant" },
     {
       iconName: "FileSearch",
       label: "Document Analysis",

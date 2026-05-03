@@ -1,7 +1,7 @@
 // EntityControlSet.tsx
 import React from 'react';
 import {
-    Layout, Layers, ArrowRightLeft, Maximize2, Sparkles,
+    Layout, Layers, ArrowRightLeft, Maximize2, Rocket,
     Columns, Maximize, Columns2, Type, Laptop,
     BoxSelect, LayoutGrid, Palette, Settings,
     TreeDeciduous, Component, SlidersHorizontal, LayoutList, Blocks,
@@ -408,7 +408,7 @@ export const EntityControlSetStacked: React.FC<EntityControlSetProps> = ({
                     />
                     <CompactSelect
                         label="Animation Style"
-                        icon={Sparkles}
+                        icon={Rocket}
                         value={currentAnimation}
                         options={animationPresetOptions}
                         onChange={(value: AnimationPreset) =>

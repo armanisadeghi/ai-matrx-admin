@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, useCallback } from 'react';
-import { Search, Plus, SlidersHorizontal, LayoutGrid, Table2, Columns3, Bot, LayoutTemplate, X, CheckSquare } from 'lucide-react';
+import { Search, Plus, SlidersHorizontal, LayoutGrid, Table2, Columns3, Cpu, LayoutTemplate, X, CheckSquare } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -154,7 +154,7 @@ export function ContextItemList({ scope }: Props) {
         <div className="flex-1" />
 
         <Button variant="ghost" size="sm" className="h-8 text-xs gap-1 text-muted-foreground">
-          <Bot className="h-3.5 w-3.5" /> AI Health Check
+          <Cpu className="h-3.5 w-3.5" /> AI Health Check
           {/* TODO: Wire agent — scans all items in scope, flags quality issues, suggests which stale items to update or archive */}
         </Button>
 

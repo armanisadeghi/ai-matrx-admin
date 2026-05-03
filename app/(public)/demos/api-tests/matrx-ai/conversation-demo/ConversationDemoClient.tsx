@@ -28,7 +28,7 @@ import {
   Loader2,
   Shuffle,
   User,
-  Bot,
+  SquareStack,
   AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -162,7 +162,7 @@ function TurnBubble({ turn }: { turn: ConvTurn }) {
       <div
         className={`h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${isUser ? "bg-primary text-primary-foreground" : "bg-muted"}`}
       >
-        {isUser ? <User className="h-3 w-3" /> : <Bot className="h-3 w-3" />}
+        {isUser ? <User className="h-3 w-3" /> : <SquareStack className="h-3 w-3" />}
       </div>
       <div
         className={`flex-1 min-w-0 ${isUser ? "items-end flex flex-col" : ""}`}
@@ -692,7 +692,7 @@ export default function ConversationDemoClient() {
                       {currentStream && (
                         <div className="flex gap-2 items-start">
                           <div className="h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-muted">
-                            <Bot className="h-3 w-3" />
+                            <SquareStack className="h-3 w-3" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-[10px] text-muted-foreground mb-1">

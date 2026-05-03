@@ -38,7 +38,7 @@ export default function UserMenuPanel({ userData }: UserMenuPanelProps) {
 
       <MenuGroup
         id="quick"
-        icon="Sparkles"
+        icon="Rocket"
         label="Quick Access"
         defaultOpen={true}
       >

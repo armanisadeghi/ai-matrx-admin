@@ -23,7 +23,7 @@ import {
   History,
   RotateCcw,
   User,
-  Sparkles,
+  Zap,
   Settings,
   Loader2,
   ChevronDown,
@@ -109,7 +109,7 @@ export function DiffHistory({
   const getSourceIcon = (source: string) => {
     switch (source) {
       case "ai":
-        return <Sparkles className="h-3.5 w-3.5 text-purple-500" />;
+        return <Zap className="h-3.5 w-3.5 text-purple-500" />;
       case "system":
         return <Settings className="h-3.5 w-3.5 text-blue-500" />;
       default:

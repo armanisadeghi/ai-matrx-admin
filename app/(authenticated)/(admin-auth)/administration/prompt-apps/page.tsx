@@ -1,12 +1,12 @@
 import Link from 'next/link';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Star } from 'lucide-react';
 import { PromptAppsAdminContainer } from './components/PromptAppsAdminContainer';
 
 export default function PromptAppsAdminPage() {
     return (
         <div className="h-[calc(100vh-2.5rem)] flex flex-col overflow-hidden">
             <div className="flex-shrink-0 flex items-center gap-3 border-b border-border bg-warning/10 px-4 py-2 text-sm">
-                <Sparkles className="h-4 w-4 text-warning flex-shrink-0" />
+                <Star className="h-4 w-4 text-warning flex-shrink-0" />
                 <div className="flex-1">
                     <span className="font-medium text-foreground">Legacy:</span>{' '}
                     <span className="text-muted-foreground">

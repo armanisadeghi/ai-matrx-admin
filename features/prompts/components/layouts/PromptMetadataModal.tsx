@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { X, Tag, Star, Archive, Sparkles, Loader2 } from "lucide-react";
+import { X, Tag, Star, Archive, Hammer, Loader2 } from "lucide-react";
 import type { PromptData } from "../../types/core";
 import { usePromptCategorizer } from "../../hooks/usePromptCategorizer";
 
@@ -305,7 +305,7 @@ function MetadataForm({
         {isCategorizing ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
-          <Sparkles className="h-4 w-4 text-primary" />
+          <Hammer className="h-4 w-4 text-primary" />
         )}
         {isCategorizing ? "Categorizing..." : "Auto-Categorize with AI"}
       </Button>

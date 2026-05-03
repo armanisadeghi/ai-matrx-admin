@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { X, FileText, MessageSquare, Plus, Wand2, Settings2, Variable, Wrench, Save, Eye, Edit2, Sparkles, CheckCircle2, AlertTriangle, FileJson, Info, Check, RefreshCw, AlertCircle } from "lucide-react";
+import { X, FileText, MessageSquare, Plus, Wand2, Settings2, Variable, Wrench, Save, Eye, Edit2, Rainbow, CheckCircle2, AlertTriangle, FileJson, Info, Check, RefreshCw, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -595,7 +595,7 @@ export function FullScreenEditor({
                                                             : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
                                                     }`}
                                                 >
-                                                    <Sparkles className="w-3 h-3" />
+                                                    <Rainbow className="w-3 h-3" />
                                                     <span>Pretty</span>
                                                 </button>
                                             </div>

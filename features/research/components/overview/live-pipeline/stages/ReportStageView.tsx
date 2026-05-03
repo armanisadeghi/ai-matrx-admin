@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FileText, Tags, ArrowRight, Sparkles } from "lucide-react";
+import { FileText, Tags, ArrowRight, CircleDot } from "lucide-react";
 import type {
   PipelineState,
   WorkItem,
@@ -56,7 +56,7 @@ export function ReportStageView({
     <SectionCard
       title={
         <>
-          <Sparkles className="h-3 w-3 text-amber-500" />
+          <CircleDot className="h-3 w-3 text-amber-500" />
           <span>Report assembly</span>
         </>
       }

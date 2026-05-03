@@ -16,7 +16,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
-import { Sparkles, Code2 } from 'lucide-react';
+import { MousePointerClick, Code2 } from 'lucide-react';
 import { PROMPT_BUILTINS, PromptBuiltin } from '@/lib/redux/prompt-execution/builtins';
 import { CODE_FILES, type CodeFile } from '../sample-data';
 
@@ -54,7 +54,7 @@ export default function AICodeEditorDemoPage() {
           {/* Header */}
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Sparkles className="w-8 h-8 text-primary" />
+              <MousePointerClick className="w-8 h-8 text-primary" />
               AI Code Editor Demo
             </h1>
           </div>
@@ -131,7 +131,7 @@ export default function AICodeEditorDemoPage() {
 
             <div className="mt-6">
               <Button onClick={handleOpenModal} size="lg" className="w-full md:w-auto">
-                <Sparkles className="w-4 h-4 mr-2" />
+                <MousePointerClick className="w-4 h-4 mr-2" />
                 Open AI Code Editor
               </Button>
             </div>

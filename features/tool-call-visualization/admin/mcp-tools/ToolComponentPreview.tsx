@@ -6,7 +6,7 @@ import {
   RefreshCw,
   Send,
   Loader2,
-  Sparkles,
+  Rainbow,
   X,
   AlertTriangle,
   CheckCircle,
@@ -601,7 +601,7 @@ export function ToolComponentPreview({
       <Card>
         <CardHeader className="pb-2 pt-3 px-4">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Sparkles className="h-4 w-4" />
+            <Rainbow className="h-4 w-4" />
             Request AI Revision
           </CardTitle>
         </CardHeader>

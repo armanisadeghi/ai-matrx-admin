@@ -19,7 +19,7 @@ export default function IconInputWithValidationDisplay({
 
   const [iconName1, setIconName1] = useState("Home");
   const [iconName2, setIconName2] = useState("");
-  const [iconName3, setIconName3] = useState("sparkles"); // lowercase to demonstrate auto-capitalize
+  const [iconName3, setIconName3] = useState("wand2"); // lowercase to demonstrate auto-capitalize
   const [iconName4, setIconName4] = useState("Home");
 
   // Example code with all available props
@@ -29,7 +29,7 @@ export default function IconInputWithValidationDisplay({
 <IconInputWithValidation
   value={iconName}
   onChange={setIconName}
-  placeholder="e.g., Sparkles"
+  placeholder="e.g., Flame"
   showLucideLink={true}              // default true
 />
 
@@ -65,7 +65,7 @@ export default function IconInputWithValidationDisplay({
     id="shortcut-icon"
     value={formData.icon_name || ''}
     onChange={(value) => onChange({ icon_name: value || null })}
-    placeholder="e.g., Sparkles"
+    placeholder="e.g., Flame"
     className="h-9"
   />
 </div>
@@ -74,7 +74,7 @@ export default function IconInputWithValidationDisplay({
 // ✅ Real-time validation with visual feedback
 // ✅ Green checkmark when valid, red X when invalid
 // ✅ Live icon preview when validated
-// ✅ Auto-capitalizes first letter (sparkles → Sparkles)
+// ✅ Auto-capitalizes first letter (wand2 → Wand2)
 // ✅ Press Enter to validate
 // ✅ Search Lucide opens site frame; paste <IconName />; optional Icon gallery window
 // ✅ Seamlessly replaces standard Input component`;
@@ -98,7 +98,7 @@ export default function IconInputWithValidationDisplay({
                 id="demo-1"
                 value={iconName1}
                 onChange={setIconName1}
-                placeholder="e.g., Sparkles"
+                placeholder="e.g., Flame"
               />
             </div>
             <p className="text-xs text-muted-foreground">

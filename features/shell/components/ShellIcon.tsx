@@ -21,7 +21,6 @@ import {
   Settings,
   ShieldCheck,
   Database,
-  Sparkles,
   Radio,
   LogIn,
   User,
@@ -35,6 +34,7 @@ import {
   ArrowLeftRight,
   Loader2,
   Code2,
+  Lightbulb,
   type LucideProps,
 } from "lucide-react";
 
@@ -58,7 +58,6 @@ const iconMap: Record<string, React.ComponentType<LucideProps>> = {
   Settings,
   ShieldCheck,
   Database,
-  Sparkles,
   Radio,
   LogIn,
   User,
@@ -72,6 +71,7 @@ const iconMap: Record<string, React.ComponentType<LucideProps>> = {
   ArrowLeftRight,
   Loader2,
   Code2,
+  Lightbulb,
 };
 
 interface ShellIconProps extends LucideProps {

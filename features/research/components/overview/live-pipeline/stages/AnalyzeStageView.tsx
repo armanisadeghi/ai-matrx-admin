@@ -1,6 +1,6 @@
 "use client";
 
-import { Brain, Sparkles } from "lucide-react";
+import { Brain, Star } from "lucide-react";
 import type {
   PipelineState,
   PipelineDerived,
@@ -130,7 +130,7 @@ export function AnalyzeStageView({
       {/* 8-for-1 dedup callout */}
       {derived.dedupLabel && (
         <div className="mt-2 flex items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-2.5 py-1.5">
-          <Sparkles className="h-3 w-3 text-emerald-500 shrink-0" />
+          <Star className="h-3 w-3 text-emerald-500 shrink-0" />
           <span className="text-[11px] text-emerald-700 dark:text-emerald-400">
             <span className="font-semibold">8-for-1 dedup:</span>{" "}
             {derived.dedupLabel}

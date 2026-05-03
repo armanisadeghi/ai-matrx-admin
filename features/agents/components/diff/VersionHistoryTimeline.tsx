@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { GitCompareArrows, ArrowRight, Loader2, ChevronDown, Sparkles } from "lucide-react";
+import { GitCompareArrows, ArrowRight, Loader2, ChevronDown, Atom } from "lucide-react";
 import type { AgentVersionHistoryItem } from "@/features/agents/redux/agent-definition/thunks";
 import { useSmartVersionFetch } from "@/features/agents/hooks/useSmartVersionFetch";
 import type { EnrichedVersion } from "@/features/agents/hooks/useSmartVersionFetch";
@@ -57,7 +57,7 @@ export function VersionHistoryTimeline({
           className="gap-2"
           onClick={fetchEnrichedHistory}
         >
-          <Sparkles className="w-4 h-4" />
+          <Atom className="w-4 h-4" />
           Load Full History
         </Button>
 

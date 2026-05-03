@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Globe, Sparkles, FileCode2 } from 'lucide-react';
+import { Globe, Stars, FileCode2 } from 'lucide-react';
 
 interface PreviewPlaceholderProps {
     isLoading?: boolean;
@@ -47,10 +47,10 @@ export function PreviewPlaceholder({ isLoading = false }: PreviewPlaceholderProp
                 {/* Icon arrangement */}
                 <div className="relative">
                     <div className="absolute -top-4 -left-4 opacity-30">
-                        <Sparkles className="w-8 h-8 text-yellow-400 dark:text-yellow-300 animate-pulse" />
+                        <Stars className="w-8 h-8 text-yellow-400 dark:text-yellow-300 animate-pulse" />
                     </div>
                     <div className="absolute -bottom-4 -right-4 opacity-30">
-                        <Sparkles className="w-6 h-6 text-purple-400 dark:text-purple-300 animate-pulse" style={{ animationDelay: '500ms' }} />
+                        <Stars className="w-6 h-6 text-purple-400 dark:text-purple-300 animate-pulse" style={{ animationDelay: '500ms' }} />
                     </div>
                     <div className="relative bg-textured rounded-2xl p-8 shadow-xl">
                         <div className="flex space-x-4">

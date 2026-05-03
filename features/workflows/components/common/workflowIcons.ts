@@ -11,7 +11,7 @@ import {
   Globe,
   User,
   Share2,
-  Sparkles,
+  Rocket,
   ArrowRightLeft,
   type LucideIcon,
 } from "lucide-react";
@@ -32,7 +32,7 @@ import { getIconComponent } from "@/components/official/icons/IconResolver";
  */
 const FUNCTION_ID_ICON_MAP: Record<string, LucideIcon> = {
   "2ac5576b-d1ab-45b1-ab48-4e196629fdd8": Brain,
-  "8ff3af1c-3975-4a2d-89d1-0f799c784302": Sparkles,
+  "8ff3af1c-3975-4a2d-89d1-0f799c784302": Rocket,
   // Add more function ID mappings here as needed
 };
 

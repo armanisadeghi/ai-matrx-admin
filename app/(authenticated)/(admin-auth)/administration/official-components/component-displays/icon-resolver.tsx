@@ -96,11 +96,11 @@ const Icon = getIconComponent("Settings", "Zap");
             </div>
             <div className="flex flex-col items-center gap-2">
               <IconResolver
-                iconName="Sparkles"
+                iconName="Gem"
                 className="h-8 w-8 text-purple-500"
               />
               <span className="text-xs text-gray-600 dark:text-gray-400">
-                Dynamic (Sparkles)
+                Dynamic (Gem)
               </span>
             </div>
             <div className="flex flex-col items-center gap-2">

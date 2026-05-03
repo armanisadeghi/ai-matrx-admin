@@ -29,7 +29,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import {
-  Bot,
+  Cable,
   Play,
   Square,
   Zap,
@@ -504,7 +504,7 @@ export default function AgentDemoClient() {
             config={config}
             title={
               <div className="flex items-center gap-2 flex-shrink-0">
-                <Bot className="h-4 w-4 text-primary" />
+                <Cable className="h-4 w-4 text-primary" />
                 <h1 className="text-base font-bold">Agent Demo</h1>
                 <Badge variant="outline" className="text-[10px] h-5 px-1.5">
                   POST {ENDPOINTS.ai.agentStart("{id}")}

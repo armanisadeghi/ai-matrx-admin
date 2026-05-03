@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
-    Sparkles, 
+    MousePointerClick, 
     Check, 
     Zap, 
     Shield,
@@ -46,7 +46,7 @@ export function SignupConversionModal({
                 <DialogHeader>
                     <div className="flex items-center justify-center mb-4">
                         <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                            <Sparkles className="w-8 h-8 text-white" />
+                            <MousePointerClick className="w-8 h-8 text-white" />
                         </div>
                     </div>
                     <DialogTitle className="text-2xl text-center">
@@ -155,7 +155,7 @@ export function SignupConversionModal({
                             size="lg"
                             className="w-full text-base font-semibold"
                         >
-                            <Sparkles className="w-5 h-5 mr-2" />
+                            <MousePointerClick className="w-5 h-5 mr-2" />
                             Create Free Account
                         </Button>
                         

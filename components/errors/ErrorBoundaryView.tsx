@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   AlertTriangle,
-  Bot,
+  Boxes,
   Bug,
   Check,
   ChevronDown,
@@ -184,7 +184,7 @@ function CopyForAIButton({
       )}
       title="Copy a clean, structured summary for pasting into an AI chat"
     >
-      {copied ? <Check className="h-3 w-3" /> : <Bot className="h-3 w-3" />}
+      {copied ? <Check className="h-3 w-3" /> : <Boxes className="h-3 w-3" />}
       {copied ? "Copied!" : "Copy for AI"}
     </button>
   );

@@ -18,7 +18,7 @@ import {
   Webhook,
   FileText,
   Archive,
-  Sparkles,
+  Lightbulb,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { RootState } from "@/lib/redux/store";
@@ -339,7 +339,7 @@ export function AgentCard({
             />
           </Link>
           <IconButton
-            icon={Sparkles}
+            icon={Lightbulb}
             tooltip={isDisabled ? "Please wait..." : "Sneak Peek"}
             size="sm"
             variant="ghost"

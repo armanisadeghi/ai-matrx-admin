@@ -7,7 +7,7 @@ import {
   Check,
   ChevronRight,
   ChevronDown,
-  Bot,
+  Cpu,
   MessageSquare,
   AlertCircle,
   Layers,
@@ -93,7 +93,7 @@ interface TabDef {
 
 const TABS: TabDef[] = [
   { key: "overview", label: "Overview", icon: LayoutDashboard },
-  { key: "definition", label: "Definition", icon: Bot },
+  { key: "definition", label: "Definition", icon: Cpu },
   { key: "instances", label: "Instances", icon: Layers },
   { key: "variables", label: "Variables", icon: Sliders },
   { key: "input", label: "User Input", icon: User },
@@ -714,7 +714,7 @@ function AgentSidebarItem({
         ) : (
           <span className="w-3 shrink-0" />
         )}
-        <Bot
+        <Cpu
           className={cn(
             "h-3 w-3 shrink-0",
             isSelected ? "text-primary" : "text-muted-foreground",
@@ -1093,7 +1093,7 @@ function AgentDebugWindowInner({
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground">
-          <Bot className="h-10 w-10 opacity-15" />
+          <Cpu className="h-10 w-10 opacity-15" />
           <p className="text-sm font-medium text-foreground">
             No agent selected
           </p>

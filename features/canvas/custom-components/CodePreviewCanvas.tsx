@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   CheckCircle2,
   X,
-  Sparkles,
+  Star,
   GitCompare,
   File,
   FileCode,
@@ -99,7 +99,7 @@ export function CodePreviewCanvas({
 
           {explanation && (
             <Alert className="mb-4 max-w-md text-left">
-              <Sparkles className="h-3.5 w-3.5" />
+              <Star className="h-3.5 w-3.5" />
               <AlertDescription className="text-xs">
                 {explanation}
               </AlertDescription>

@@ -14,14 +14,13 @@ import {
   Check,
   FileSearch,
   Trash2,
-  Bot,
+  Cable,
   Eye,
   Plus,
   StickyNote,
   ExternalLink,
-  Sparkles,
-  RefreshCw,
   Wand2,
+  RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -680,7 +679,7 @@ function ExtractionTabContent({
         <SubTabBtn
           active={subTab === "clean"}
           onClick={() => setSubTab("clean")}
-          icon={<Bot className="w-3 h-3" />}
+          icon={<Cable className="w-3 h-3" />}
           label="AI Clean"
           badge={doc.cleanContent ? undefined : undefined}
         />
@@ -915,7 +914,7 @@ function AiCleanView({
     return (
       <div className="p-3 space-y-2">
         <div className="flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-primary" />
+          <Wand2 className="w-3.5 h-3.5 text-primary" />
           <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
             AI Cleaned
           </span>
@@ -946,7 +945,7 @@ function AiCleanView({
         {hasError ? (
           <AlertCircle className="w-5 h-5 text-destructive" />
         ) : (
-          <Bot className="w-5 h-5 text-primary" />
+          <Cable className="w-5 h-5 text-primary" />
         )}
       </div>
       <div>
@@ -965,7 +964,7 @@ function AiCleanView({
           className="h-7 text-xs"
           onClick={() => onClean(tab.id)}
         >
-          <Sparkles className="w-3 h-3 mr-1.5" />
+          <Wand2 className="w-3 h-3 mr-1.5" />
           {hasError ? "Re-run Cleanup" : "Run AI Cleanup"}
         </Button>
         {hasError && (

@@ -10,7 +10,7 @@ import {
   Palette,
   PanelTop,
   Code,
-  Sparkles,
+  Rocket,
   Wand2,
   Settings,
   ListChecks,
@@ -129,7 +129,7 @@ export const aiCustomizationConfig: AICustomizationConfig = {
         {
           id: "creativity",
           title: "Creativity Level",
-          icon: Sparkles,
+          icon: Rocket,
           component: CreativityLevelCard,
         },
         {

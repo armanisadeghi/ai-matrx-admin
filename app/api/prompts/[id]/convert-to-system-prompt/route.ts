@@ -106,7 +106,7 @@ export async function POST(
 
     // Default display config
     const defaultDisplayConfig = {
-      icon: "Sparkles",
+      icon: "MousePointerClick",
       label: originalPrompt.name,
       tooltip: originalPrompt.description || `Execute ${originalPrompt.name}`,
     };

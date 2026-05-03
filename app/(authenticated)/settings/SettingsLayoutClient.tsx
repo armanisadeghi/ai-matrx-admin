@@ -15,7 +15,7 @@ import {
   Monitor,
   MessageSquare,
   Volume2,
-  Bot,
+  SquareStack,
   Mail,
   Video,
   Image as ImageIcon,
@@ -74,7 +74,7 @@ const settingsNavItems: SettingsNavItem[] = [
       {
         title: "Assistant",
         param: "assistant",
-        icon: <Bot className="h-3 w-3" />,
+        icon: <SquareStack className="h-3 w-3" />,
       },
       {
         title: "AI Models",

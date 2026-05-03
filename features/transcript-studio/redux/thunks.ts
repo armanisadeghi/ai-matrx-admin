@@ -11,12 +11,14 @@ import type { ChunkCompleteInfo } from "@/features/audio/hooks/useChunkedRecordA
 import {
   createSession,
   insertRawSegment,
+  listCleanedSegments,
   listRawSegments,
   listSessions,
   softDeleteSession,
   updateSession,
 } from "../service/studioService";
 import type {
+  CleanedSegment,
   CreateSessionInput,
   RawSegment,
   StudioSession,
@@ -24,6 +26,7 @@ import type {
 } from "../types";
 import {
   activeSessionIdSet,
+  cleanedSegmentsLoaded,
   rawSegmentsAppended,
   rawSegmentsLoaded,
   sessionRemoved,
@@ -177,12 +180,36 @@ export const fetchRawSegmentsThunk = createAsyncThunk<
   },
 );
 
+export const fetchCleanedSegmentsThunk = createAsyncThunk<
+  CleanedSegment[],
+  { sessionId: string }
+>(
+  "transcriptStudio/fetchCleanedSegments",
+  async ({ sessionId }, { dispatch, rejectWithValue }) => {
+    try {
+      const segments = await listCleanedSegments(sessionId);
+      dispatch(cleanedSegmentsLoaded({ sessionId, segments }));
+      return segments;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load cleaned segments";
+      return rejectWithValue(message);
+    }
+  },
+);
+
 /**
  * Persist a single chunk's transcription as a raw segment. Called once per
  * `onChunkComplete` from the global recording provider. Append-only: never
  * patches existing rows. Surface errors quietly via toast — losing one
  * chunk to a transient network blip should not abort the recording.
  */
+// Re-export the cleanup pipeline so callers don't have to know which file
+// each thunk lives in. The actual implementation lives in
+// `runCleaningPass.thunk.ts` to keep this file focused on session + raw CRUD.
+export { runCleaningPassThunk } from "./runCleaningPass.thunk";
+export type { RunCleaningPassResult } from "./runCleaningPass.thunk";
+
 export const ingestRawChunkThunk = createAsyncThunk<
   RawSegment,
   { sessionId: string; info: ChunkCompleteInfo }

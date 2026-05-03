@@ -30,7 +30,7 @@ import React, { useEffect, useRef, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
 import {
   FileText,
-  Sparkles,
+  MousePointerClick,
   Loader2,
   Eye,
   EyeOff,
@@ -177,7 +177,7 @@ export function PdfStudioReader({
           paneKey="clean"
           title="AI-cleaned"
           subtitle="System B · per-page"
-          icon={<Sparkles className="w-3 h-3 text-primary" />}
+          icon={<MousePointerClick className="w-3 h-3 text-primary" />}
           doc={doc}
           pages={pages}
           field="cleaned"

@@ -49,5 +49,10 @@ export function StudioView({ config }: StudioViewProps) {
     }
   }, [config.initialSessionId, activeSessionId, dispatch]);
 
-  return <StudioLayout showSidebar={config.showSidebar ?? true} />;
+  return (
+    <StudioLayout
+      showSidebar={config.showSidebar ?? true}
+      defaultColumnLayout={config.defaultColumnLayout}
+    />
+  );
 }

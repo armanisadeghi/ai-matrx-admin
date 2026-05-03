@@ -12,7 +12,7 @@ import {
     Circle,
     FileText,
     Cpu,
-    Bot,
+    Boxes,
     Scissors,
     File,
     HardDrive,
@@ -89,7 +89,7 @@ export const NODE_TYPE_CONFIGS: Record<string, NodeTypeConfig> = {
     },
     agents: {
         id: "agents",
-        icon: Bot,
+        icon: Boxes,
         label: "Agents",
         borderColor: "border-cyan-500 dark:border-cyan-400",
         backgroundColor: "bg-cyan-50 dark:bg-cyan-950/20",

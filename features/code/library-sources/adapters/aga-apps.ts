@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot } from "lucide-react";
+import { SquareStack } from "lucide-react";
 import { extensionForLanguage } from "@/features/code-files/actions/languageOptions";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
@@ -43,7 +43,7 @@ const COLUMNS =
 export const agaAppsAdapter: LibrarySourceAdapter = {
   sourceId: "aga_apps",
   label: "Agent Apps",
-  icon: Bot,
+  icon: SquareStack,
   tabIdPrefix: PREFIX,
   multiField: false,
 

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   Save,
   AlertTriangle,
-  Sparkles,
+  Rocket,
   FileText,
   Eye,
   Columns2,
@@ -244,7 +244,7 @@ export function QuickNoteSaveCore({
 
             {/* Remove thinking */}
             <IconButton
-              icon={Sparkles}
+              icon={Rocket}
               size="md"
               variant={stripThinkingEnabled ? "default" : "outline"}
               onClick={() => setStripThinkingEnabled((v) => !v)}

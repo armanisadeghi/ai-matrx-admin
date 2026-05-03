@@ -25,7 +25,7 @@ import {
   RefreshCw,
   AlertCircle,
   X,
-  Sparkles,
+  Rocket,
   Wrench,
   Sliders,
   AlertCircle as UnusedIcon,
@@ -598,7 +598,7 @@ export function PromptSettingsModal({
               <Card className="p-4 bg-gradient-to-br from-blue-50 to-orange-50 dark:from-blue-950/30 dark:to-orange-950/30 border-blue-200 dark:border-blue-800">
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
-                    <Sparkles className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <Rocket className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -620,7 +620,7 @@ export function PromptSettingsModal({
                       onClick={() => setIsFullOptimizerOpen(true)}
                       className="h-8 text-xs bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white"
                     >
-                      <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                      <Rocket className="h-3.5 w-3.5 mr-1.5" />
                       Optimize All Settings
                     </Button>
                   </div>
@@ -731,7 +731,7 @@ export function PromptSettingsModal({
                     {isCategorizing ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <Sparkles className="h-4 w-4 text-primary" />
+                      <Rocket className="h-4 w-4 text-primary" />
                     )}
                     {isCategorizing
                       ? "Categorizing..."

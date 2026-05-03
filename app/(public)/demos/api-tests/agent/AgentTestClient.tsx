@@ -5,7 +5,7 @@ import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import { extractErrorMessage } from "@/utils/errors";
 import {
-  Bot,
+  Network,
   Loader2,
   Send,
   Zap,
@@ -530,7 +530,7 @@ export default function AgentTestClient() {
       {/* ── Header + Config ── */}
       <div className="flex-shrink-0 border-b border-border bg-card">
         <div className="flex items-center gap-2 px-4 pt-3 pb-1">
-          <Bot className="w-5 h-5 text-primary" />
+          <Network className="w-5 h-5 text-primary" />
           <h1 className="text-base font-bold">Agent Testing Playground</h1>
           <Badge
             variant={isRunning ? "default" : "secondary"}

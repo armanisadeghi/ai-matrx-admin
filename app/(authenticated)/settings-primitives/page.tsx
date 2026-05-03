@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import {
-  Sparkles,
+  Wand2,
   Zap,
   Shield,
   ShieldCheck,
@@ -375,7 +375,7 @@ export default function SettingsPrimitivesDemoPage() {
           <SettingsReadOnlyValue
             label="App version"
             value="0.3.217"
-            icon={Sparkles}
+            icon={Wand2}
           />
           <SettingsReadOnlyValue
             label="Build ID"

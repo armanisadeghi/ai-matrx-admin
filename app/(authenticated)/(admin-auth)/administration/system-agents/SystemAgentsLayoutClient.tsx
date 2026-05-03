@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   AppWindow,
   ArrowLeft,
-  Bot,
+  SquareStack,
   FileText,
   Folder,
   GitBranch,
@@ -26,7 +26,7 @@ const NAV_ITEMS = [
   {
     label: "Agents",
     href: "/administration/system-agents/agents",
-    icon: Bot,
+    icon: SquareStack,
   },
   {
     label: "Lineage",

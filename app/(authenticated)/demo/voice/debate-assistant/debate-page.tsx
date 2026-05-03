@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Send, MessageSquare, User, Bot, Volume2 } from 'lucide-react';
+import { Loader2, Send, MessageSquare, User, LayoutTemplate, Volume2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Message {
@@ -121,7 +121,7 @@ export default function DebatePage() {
                                     >
                                         {message.role === 'assistant' && (
                                             <div className="shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                                <Bot className="w-4 h-4 text-primary" />
+                                                <LayoutTemplate className="w-4 h-4 text-primary" />
                                             </div>
                                         )}
                                         <div
@@ -145,7 +145,7 @@ export default function DebatePage() {
                                 {isPending && (
                                     <div className="flex gap-3 justify-start">
                                         <div className="shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                            <Bot className="w-4 h-4 text-primary" />
+                                            <LayoutTemplate className="w-4 h-4 text-primary" />
                                         </div>
                                         <div className="rounded-lg px-4 py-3 bg-muted">
                                             <div className="flex items-center gap-2">

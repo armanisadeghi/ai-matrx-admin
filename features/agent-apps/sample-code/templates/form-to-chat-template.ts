@@ -16,7 +16,7 @@
  */
 
 const formToChatTemplate = `import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { Sparkles, Loader2, AlertCircle, Send, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
+import { Stars, Loader2, AlertCircle, Send, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
 import MarkdownStream from '@/components/MarkdownStream';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -142,7 +142,7 @@ export default function FormToChatApp({
                 <CardHeader className="bg-muted/50">
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      <Stars className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                       {appName || 'Get Started'}
                     </CardTitle>
                     {hasResponse && (

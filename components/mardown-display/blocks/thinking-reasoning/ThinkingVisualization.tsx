@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { ArrowDown, ArrowUp, Sparkles } from "lucide-react";
+import { ArrowDown, ArrowUp, Star } from "lucide-react";
 import { aiProcessText, tagMappings } from "../../chat-markdown/constants";
 
 // Helper function to get tag type from a line
@@ -77,7 +77,7 @@ const ThinkingVisualization = ({ thinkingText, showThinking = true, isStreaming 
     }
   }, [thinkingText]);
 
-  // Detect content changes for visual effect (Sparkles animation)
+  // Detect content changes for visual effect (Star animation)
   useEffect(() => {
     const currentLength = thinkingText?.length || 0;
     if (currentLength !== prevTextLengthRef.current) {
@@ -215,10 +215,10 @@ const ThinkingVisualization = ({ thinkingText, showThinking = true, isStreaming 
         style={{ zIndex: 10 }}
       >
         <div className="flex items-center space-x-2">
-          {/* Sparkles icon container with fixed dimensions */}
+          {/* Star icon container with fixed dimensions */}
           <div className="w-5 h-5 flex items-center justify-center">
             <div className={isContentChanging ? "animate-sparkle" : ""}>
-              <Sparkles className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+              <Star className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
             </div>
           </div>
           

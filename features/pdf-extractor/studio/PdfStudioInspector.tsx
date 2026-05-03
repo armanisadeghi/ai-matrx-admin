@@ -12,12 +12,12 @@
 
 import React, { useState } from "react";
 import {
-  Sparkles,
+  Rocket,
   GitBranch,
   Wand2,
   Database,
   Wrench,
-  Bot,
+  SquareStack,
   Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -157,7 +157,7 @@ function AiActionsPanel({
   return (
     <div className="p-3 space-y-2">
       <div className="flex items-center gap-1.5 mb-1">
-        <Sparkles className="w-3.5 h-3.5 text-primary" />
+        <Rocket className="w-3.5 h-3.5 text-primary" />
         <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
           Run an Agent
         </span>
@@ -180,7 +180,7 @@ function AiActionsPanel({
               className="flex items-start gap-2 px-2.5 py-2 bg-card border border-border rounded-md"
             >
               <div className="shrink-0 w-6 h-6 rounded bg-primary/10 flex items-center justify-center mt-0.5">
-                <Bot className="w-3 h-3 text-primary" />
+                <SquareStack className="w-3 h-3 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium leading-tight">{s.label}</p>

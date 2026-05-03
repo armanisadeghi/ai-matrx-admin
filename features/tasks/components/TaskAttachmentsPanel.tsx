@@ -7,13 +7,13 @@ import {
   Paperclip,
   MessageSquare,
   MessagesSquare,
-  Bot,
+  Brain,
   Layers,
   X,
   ExternalLink,
   Loader2,
   PlusCircle,
-  Sparkles,
+  Star,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -92,7 +92,7 @@ export default function TaskAttachmentsPanel({
           />
           {/* AI messages from cx_message — linked back to the conversation */}
           <Section
-            icon={Sparkles}
+            icon={Star}
             label="AI Messages"
             count={bundle.cx_messages.length}
             items={bundle.cx_messages.map((m) => ({
@@ -139,7 +139,7 @@ export default function TaskAttachmentsPanel({
             }))}
           />
           <Section
-            icon={Bot}
+            icon={Brain}
             label="Agent Conversations"
             count={bundle.agent_conversations.length}
             items={bundle.agent_conversations.map((a) => ({

@@ -11,7 +11,7 @@ import {
   Save,
   Eye,
   Database,
-  Sparkles,
+  Gem,
   FlaskConical,
   ChevronDown,
   ChevronUp,
@@ -1387,7 +1387,7 @@ export function ToolUiComponentGenerator({
             <div className="flex items-center gap-2">
               {agent.isStreaming ? (
                 <>
-                  <Sparkles className="w-4 h-4 animate-pulse text-primary" />
+                  <Gem className="w-4 h-4 animate-pulse text-primary" />
                   <span className="text-sm font-medium">Generating…</span>
                 </>
               ) : step === "review" && parseError ? (

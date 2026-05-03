@@ -35,7 +35,7 @@ import React, {
 } from "react";
 import {
   AlertTriangle,
-  Bot,
+  Brain,
   ChevronRight,
   Loader2,
   MessageSquare,
@@ -153,7 +153,7 @@ function AgentRunWindowSidebar({
       <div className="flex-1 min-h-0 overflow-y-auto">
         {!agentId && (
           <div className="flex flex-col items-center justify-center py-10 px-3 text-center gap-2">
-            <Bot className="w-6 h-6 text-muted-foreground opacity-25" />
+            <Brain className="w-6 h-6 text-muted-foreground opacity-25" />
             <p className="text-xs text-muted-foreground">
               Select an agent from the header to see its history.
             </p>
@@ -588,7 +588,7 @@ function AgentRunWindowInner({
         />
       ) : (
         <div className="flex flex-col items-center justify-center h-full gap-3 px-6 text-center text-muted-foreground">
-          <Bot className="w-12 h-12 opacity-15" />
+          <Brain className="w-12 h-12 opacity-15" />
           <div className="space-y-1">
             <p className="text-sm font-medium text-foreground">
               Pick an agent to start

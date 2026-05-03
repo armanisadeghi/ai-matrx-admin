@@ -27,7 +27,7 @@ import {
   Download,
   FileText,
   BookOpen,
-  Sparkles,
+  CircleDot,
   Flag,
   Code,
   Settings,
@@ -86,7 +86,7 @@ export default function ContentEditorDisplay({
       id: "doc-extra",
       title: "Appendix",
       description: "Reference material",
-      icon: Sparkles,
+      icon: CircleDot,
     },
     {
       id: "doc-end",
@@ -114,7 +114,7 @@ export default function ContentEditorDisplay({
       id: "d2",
       title: "Getting Started",
       description: "Quick setup",
-      icon: Sparkles,
+      icon: CircleDot,
       value: "# Getting Started\n\nInstall and run.",
     },
     {

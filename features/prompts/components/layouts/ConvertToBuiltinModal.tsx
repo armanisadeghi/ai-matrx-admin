@@ -159,7 +159,7 @@ export function ConvertToBuiltinModal({
   const [newShortcutData, setNewShortcutData] = useState<Partial<CreatePromptShortcutInput>>({
     label: promptName,
     description: '',
-    icon_name: 'Sparkles',
+    icon_name: 'Hammer',
     category_id: '',
     prompt_builtin_id: null,
     scope_mappings: null,
@@ -190,7 +190,7 @@ export function ConvertToBuiltinModal({
       setNewShortcutData({
         label: promptName,
         description: '',
-        icon_name: 'Sparkles',
+        icon_name: 'Hammer',
         category_id: '',
         prompt_builtin_id: null,
         scope_mappings: null,
@@ -378,7 +378,7 @@ export function ConvertToBuiltinModal({
         const shortcutInput: CreatePromptShortcutInput = {
           label: newShortcutData.label || promptName,
           description: newShortcutData.description || '',
-          icon_name: newShortcutData.icon_name || 'Sparkles',
+          icon_name: newShortcutData.icon_name || 'Hammer',
           category_id: newShortcutData.category_id || '',
           prompt_builtin_id: createdBuiltin.id,
           scope_mappings: newShortcutData.scope_mappings,

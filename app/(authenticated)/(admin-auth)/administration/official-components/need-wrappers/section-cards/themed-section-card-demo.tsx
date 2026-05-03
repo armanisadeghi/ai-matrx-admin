@@ -25,7 +25,7 @@ import {
   AlertTriangle,
   AlertCircle,
   Briefcase,
-  Sparkles,
+  MousePointerClick,
   BellRing,
   Zap,
   PenLine,
@@ -90,7 +90,7 @@ const PresetIcon: React.FC<{ preset: ThemePreset }> = ({ preset }) => {
     vibrant: <Zap className="h-4 w-4" />,
     subtle: <BellRing className="h-4 w-4" />,
     professional: <Briefcase className="h-4 w-4" />,
-    creative: <Sparkles className="h-4 w-4" />,
+    creative: <MousePointerClick className="h-4 w-4" />,
   };
   
   return <>{iconMap[preset]}</>;

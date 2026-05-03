@@ -32,7 +32,7 @@ import {
   RotateCcw,
   Settings2,
   Sliders,
-  Sparkles,
+  Flame,
   User as UserIcon,
   Variable,
 } from "lucide-react";
@@ -188,7 +188,7 @@ const TAB_META: Record<
 > = {
   essentials: {
     label: "Essentials",
-    icon: Sparkles,
+    icon: Flame,
     hint: "Category, icon, widget",
   },
   variables: {

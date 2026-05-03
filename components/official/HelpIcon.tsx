@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { InfoIcon, HelpCircleIcon, CopyIcon, CheckIcon, SparklesIcon } from 'lucide-react';
+import { InfoIcon, HelpCircleIcon, CopyIcon, CheckIcon, CircleDot } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 interface HelpIconProps {
@@ -196,7 +196,7 @@ const HelpIcon: React.FC<HelpIconProps> = ({
                 onClick={handleAiClick}
                 className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white text-sm font-medium rounded-md transition-all duration-200 shadow-sm hover:shadow-md"
               >
-                <SparklesIcon className="h-4 w-4" />
+                <CircleDot className="h-4 w-4" />
                 Get Help From Matrx AI
               </button>
             )}

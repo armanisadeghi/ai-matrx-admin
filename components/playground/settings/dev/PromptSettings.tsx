@@ -21,7 +21,7 @@
 //   Calculator,
 //   Globe2,
 //   Database,
-//   Bot,
+//   Network,
 //   Settings,
 //   Music,
 //   Book,
@@ -85,7 +85,7 @@
 //     { icon: Calculator, label: "Calculator", value: "calculator" },
 //     { icon: Globe2, label: "Translation", value: "translation" },
 //     { icon: Database, label: "Knowledge Base", value: "knowledge-base" },
-//     { icon: Bot, label: "AI Assistant", value: "ai-assistant" },
+//     { icon: Network, label: "AI Assistant", value: "ai-assistant" },
 //     { icon: FileSearch, label: "Document Analysis", value: "doc-analysis" },
 //   ];
 

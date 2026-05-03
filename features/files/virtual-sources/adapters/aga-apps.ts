@@ -12,7 +12,7 @@
 
 "use client";
 
-import { Bot } from "lucide-react";
+import { Workflow } from "lucide-react";
 import { registerVirtualSource } from "@/features/files/virtual-sources/registry";
 import { makeCodeInlinePreview } from "./CodeInlinePreview";
 import type {
@@ -50,7 +50,7 @@ function mapLanguage(raw: string | null | undefined): string {
 const agaAppsAdapter: VirtualSourceAdapter = {
   sourceId: "aga_apps",
   label: "Agent Apps",
-  icon: Bot,
+  icon: Workflow,
   capabilities: {
     list: true,
     read: true,

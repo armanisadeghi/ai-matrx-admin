@@ -21,6 +21,10 @@ export interface AITapButtonProps {
   iconColor?: string;
   hoverBgColor?: string;
   activeBgColor?: string;
+  /** Pass `false` to suppress the built-in tooltip (e.g. when a parent already provides one). */
+  tooltip?: string | false;
+  tooltipSide?: "top" | "right" | "bottom" | "left";
+  tooltipAlign?: "start" | "center" | "end";
   // Link support — see tap-buttons.tsx for full semantics.
   href?: string;
   target?: "_blank" | "_self" | "_parent" | "_top";
@@ -32,23 +36,37 @@ function Wrap({
   variant = "glass",
   children,
   colored: _colored,
+  tooltip,
+  tooltipSide,
+  tooltipAlign,
   ...props
 }: AITapButtonProps & { children: React.ReactNode }) {
+  const tooltipProps = { tooltip, tooltipSide, tooltipAlign };
   switch (variant) {
     case "transparent":
       return (
-        <TapTargetButtonTransparent {...props}>
+        <TapTargetButtonTransparent {...props} {...tooltipProps}>
           {children}
         </TapTargetButtonTransparent>
       );
     case "solid":
-      return <TapTargetButtonSolid {...props}>{children}</TapTargetButtonSolid>;
+      return (
+        <TapTargetButtonSolid {...props} {...tooltipProps}>
+          {children}
+        </TapTargetButtonSolid>
+      );
     case "group":
       return (
-        <TapTargetButtonForGroup {...props}>{children}</TapTargetButtonForGroup>
+        <TapTargetButtonForGroup {...props} {...tooltipProps}>
+          {children}
+        </TapTargetButtonForGroup>
       );
     default:
-      return <TapTargetButton {...props}>{children}</TapTargetButton>;
+      return (
+        <TapTargetButton {...props} {...tooltipProps}>
+          {children}
+        </TapTargetButton>
+      );
   }
 }
 

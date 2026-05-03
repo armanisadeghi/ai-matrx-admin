@@ -18,7 +18,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   AppWindow,
-  Bot,
+  Cpu,
   ChevronDown,
   ChevronRight,
   ExternalLink,
@@ -267,7 +267,7 @@ function LineageCard({
           <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
         )}
         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary shrink-0">
-          <Bot className="h-4 w-4" />
+          <Cpu className="h-4 w-4" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-sm font-medium truncate">{agent.name}</div>
