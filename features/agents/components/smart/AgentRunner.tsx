@@ -29,13 +29,9 @@ import {
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { selectInstanceDisplayTitle } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { selectInstanceStatus } from "@/features/agents/redux/execution-system/conversations/conversations.selectors";
-import {
-  selectIsExecuting,
-  selectApiEndpointMode,
-} from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
+import { selectIsExecuting } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { selectHasUserInput } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
-import { executeChatInstance } from "@/features/agents/redux/execution-system/thunks/execute-chat-instance.thunk";
 import { SmartAgentInput } from "../inputs/smart-input/SmartAgentInput";
 import { PreExecutionAgentInput } from "../inputs/PreExecutionAgentInput";
 import { AgentConversationDisplay } from "../messages-display/AgentConversationDisplay";
@@ -69,7 +65,6 @@ export function AgentRunner({
   const status = useAppSelector(selectInstanceStatus(conversationId));
   const isExecuting = useAppSelector(selectIsExecuting(conversationId));
   const hasUserInput = useAppSelector(selectHasUserInput(conversationId));
-  const apiEndpointMode = useAppSelector(selectApiEndpointMode(conversationId));
   const showVariablePanel = useAppSelector(
     selectShowVariablePanel(conversationId),
   );
@@ -82,19 +77,13 @@ export function AgentRunner({
     if (needsPreExecution) return;
 
     autoRunFiredRef.current = true;
-
-    if (apiEndpointMode === "manual") {
-      dispatch(executeChatInstance({ conversationId: conversationId }));
-    } else {
-      dispatch(executeInstance({ conversationId }));
-    }
+    dispatch(executeInstance({ conversationId }));
   }, [
     autoRun,
     status,
     isExecuting,
     needsPreExecution,
     conversationId,
-    apiEndpointMode,
     dispatch,
   ]);
 

@@ -322,6 +322,73 @@ export function FileContextMenu({
     }
   }, [fileId, openInPreview]);
 
+  // "Reprocess N for RAG" — bulk variant. Fires the same per-file
+  // event the single-file path uses, but in series with progress
+  // toasts. Serial (not parallel) so we don't blow the matrx-orm
+  // pool — that's what the dev server saw on the bulk-ingest script.
+  const handleBatchReprocess = useCallback(async () => {
+    if (typeof window === "undefined") return;
+    const ids = batchFileIds.length > 0 ? batchFileIds : [fileId];
+    const { toast } = await import("sonner");
+    const tid = toast.loading(`Reprocessing ${ids.length} files for RAG…`, {
+      description: "Running serially to avoid pool saturation.",
+    });
+    let done = 0;
+    for (const id of ids) {
+      try {
+        window.dispatchEvent(
+          new CustomEvent("cloud-files:reprocess-document", {
+            detail: { fileId: id, force: true, silent: true },
+          }),
+        );
+        // Pace the queue so the underlying pipeline doesn't stack up.
+        // The actual ingest runs async on the backend; we just throttle
+        // the dispatch rate.
+        await new Promise<void>((r) => setTimeout(r, 300));
+        done += 1;
+        toast.loading(
+          `Reprocessing for RAG: ${done} / ${ids.length} dispatched`,
+          { id: tid },
+        );
+      } catch (err) {
+        toast.error(`Failed to dispatch reprocess for ${id.slice(0, 8)}…`, {
+          description: err instanceof Error ? err.message : String(err),
+        });
+      }
+    }
+    toast.success(`${done} of ${ids.length} files queued for RAG ingestion`, {
+      id: tid,
+      description:
+        "Watch the per-file Document tab for progress. Reload the file list when done to see the new viewer links.",
+    });
+  }, [batchFileIds, fileId]);
+
+  // "Open in 4-pane RAG viewer" — looks up the processed_documents row
+  // anchored to this cld_files id and opens /rag/viewer/{id}. If the
+  // file has never been processed, shows a toast with a hint.
+  const handleOpenRagViewer = useCallback(async () => {
+    try {
+      const { getJson } = await import("@/features/files/api/client");
+      const { data } = await getJson<{ document_id: string | null; found: boolean }>(
+        `/api/document/by-cld-file/${encodeURIComponent(fileId)}`,
+      );
+      if (data.found && data.document_id) {
+        window.open(`/rag/viewer/${data.document_id}`, "_blank", "noopener");
+      } else {
+        const { toast } = await import("sonner");
+        toast.info("Not yet processed for RAG", {
+          description:
+            'Run "Reprocess for RAG" first — the 4-pane viewer needs the per-page extraction.',
+        });
+      }
+    } catch (err) {
+      const { toast } = await import("sonner");
+      toast.error("Could not look up document", {
+        description: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }, [fileId]);
+
   return (
     <>
       <DropdownMenu>
@@ -353,6 +420,14 @@ export function FileContextMenu({
               >
                 <FolderInput className="mr-2 h-4 w-4" />
                 Move {batchFileIds.length}…
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => void handleBatchReprocess()}
+                disabled={busy !== null}
+              >
+                <RotateCw className="mr-2 h-4 w-4" />
+                Reprocess {batchFileIds.length} for RAG
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -479,6 +554,10 @@ export function FileContextMenu({
                   <DropdownMenuItem onClick={handleShowDocument}>
                     <FileSearch className="mr-2 h-4 w-4" />
                     Open document view
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => void handleOpenRagViewer()}>
+                    <FileSearch className="mr-2 h-4 w-4" />
+                    Open in 4-pane RAG viewer
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleReprocess}>
                     <RotateCw className="mr-2 h-4 w-4" />

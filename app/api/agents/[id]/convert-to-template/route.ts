@@ -61,6 +61,11 @@ export async function POST(
         output_schema: agent.output_schema ?? null,
         tools: agent.tools ?? [],
         custom_tools: agent.custom_tools ?? [],
+        // Pass the canonical tool_config through so the new template row
+        // doesn't lose the consolidated shape if backend ever stops syncing
+        // legacy columns. Backend keeps the legacy + tool_config columns
+        // in sync today; we send both for symmetry.
+        tool_config: agent.tool_config ?? null,
         context_slots: agent.context_slots ?? [],
         mcp_servers: agent.mcp_servers ?? [],
         is_public: false,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useMemo } from "react";
 import { useBackendApi } from "@/hooks/useBackendApi";
 import { RESEARCH_ENDPOINTS } from "../service/research-endpoints";
 import type {
@@ -17,16 +17,23 @@ import type {
   VerdictRequest,
 } from "../types";
 
+/**
+ * Bundles every research-domain endpoint over the memoized `useBackendApi`
+ * surface. The whole returned object is wrapped in `useMemo` keyed on `api`
+ * so it is reference-stable across renders — consumers can safely depend on
+ * the `api` reference inside `useEffect` / `useCallback` without re-firing
+ * every render. Without this memo, hooks like `useCostSummary` (which
+ * include `api` in their effect deps) would loop indefinitely and hammer the
+ * backend.
+ */
 export function useResearchApi() {
   const api = useBackendApi();
 
-  const endpoints = useCallback(
-    (topicId: string) => RESEARCH_ENDPOINTS.topic(topicId),
-    [],
-  );
+  return useMemo(() => {
+    const endpoints = (topicId: string) => RESEARCH_ENDPOINTS.topic(topicId);
 
-  return {
-    ...api,
+    return {
+      ...api,
 
     // --- Suggest (top-level, no topic needed) ---
     suggest: (body: SuggestRequest) =>

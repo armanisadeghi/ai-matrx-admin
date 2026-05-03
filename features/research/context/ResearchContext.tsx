@@ -36,20 +36,30 @@ export function useTopicId(): string {
   return useTopicStore((s) => s.topicId);
 }
 
+/**
+ * Returns the topic + flags. Each field is selected individually so the
+ * returned object is reference-stable when nothing changes — bare object
+ * literals would create a new ref on every store update and trip React's
+ * "result of getSnapshot should be cached" warning.
+ */
 export function useTopicData(): {
   topic: ResearchTopic | null;
   isLoading: boolean;
   error: string | null;
 } {
-  return useTopicStore((s) => ({
-    topic: s.topic,
-    isLoading: s.isLoading,
-    error: s.error,
-  }));
+  const topic = useTopicStore((s) => s.topic);
+  const isLoading = useTopicStore((s) => s.isLoading);
+  const error = useTopicStore((s) => s.error);
+  return { topic, isLoading, error };
 }
 
 export function useTopicProgress(): ResearchProgress | null {
   return useTopicStore((s) => s.progress);
+}
+
+/** Targeted selector — primitive return, stable across rerenders. */
+export function useTopicDescription(): string | null {
+  return useTopicStore((s) => s.topic?.description ?? null);
 }
 
 // ============================================================================

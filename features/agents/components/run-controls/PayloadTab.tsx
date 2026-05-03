@@ -269,7 +269,9 @@ export function PayloadTab({ conversationId }: PayloadTabProps) {
   const userInput = request.user_input;
   const variables = request.variables;
   const configOverrides = request.config_overrides;
-  const clientTools = request.client_tools;
+  const tools = request.tools;
+  const toolsReplace = request.tools_replace;
+  const clientEnvelope = request.client;
   const hasContextSection =
     slotMatched.length > 0 || adHoc.length > 0 || declaredUnset.length > 0;
 
@@ -432,22 +434,89 @@ export function PayloadTab({ conversationId }: PayloadTabProps) {
         <StatRow label="source_feature" value={request.source_feature ?? "—"} />
       </StatSection>
 
-      {/* ── Client tools ─────────────────────────────────────────────────── */}
-      <StatSection title="Client tools">
-        {clientTools && clientTools.length > 0 ? (
-          <div className="flex flex-wrap gap-1">
-            {clientTools.map((name) => (
-              <span
-                key={name}
-                className="inline-flex items-center px-1.5 py-0.5 rounded border border-border/40 bg-muted/30 font-mono text-[10px] text-foreground/90"
-              >
-                {name}
-              </span>
-            ))}
-          </div>
+      {/* ── Tool injection ───────────────────────────────────────────────── */}
+      <StatSection title="Tools (added to agent's set)">
+        {(tools && tools.length > 0) ||
+        (toolsReplace && toolsReplace.length > 0) ? (
+          <>
+            {tools && tools.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {tools.map((spec, i) => (
+                  <span
+                    key={`${spec.kind}-${("name" in spec ? spec.name : spec.agent_id)}-${i}`}
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-border/40 bg-muted/30 font-mono text-[10px] text-foreground/90"
+                    title={JSON.stringify(spec)}
+                  >
+                    <span className="text-muted-foreground/70">{spec.kind}</span>
+                    <span>
+                      {"name" in spec ? spec.name : spec.agent_id}
+                    </span>
+                    {"delegate" in spec && spec.delegate ? (
+                      <span className="text-amber-600 dark:text-amber-400">
+                        ↳client
+                      </span>
+                    ) : null}
+                  </span>
+                ))}
+              </div>
+            )}
+            {toolsReplace && toolsReplace.length > 0 && (
+              <div className="mt-2">
+                <div className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 mb-0.5">
+                  tools_replace — overrides agent's saved set ({toolsReplace.length})
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {toolsReplace.map((spec, i) => (
+                    <span
+                      key={`r-${spec.kind}-${("name" in spec ? spec.name : spec.agent_id)}-${i}`}
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-amber-500/40 bg-amber-500/10 font-mono text-[10px] text-foreground/90"
+                      title={JSON.stringify(spec)}
+                    >
+                      <span className="text-muted-foreground/70">
+                        {spec.kind}
+                      </span>
+                      <span>
+                        {"name" in spec ? spec.name : spec.agent_id}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-[11px] text-muted-foreground/60 italic py-1">
             — none —
+          </div>
+        )}
+      </StatSection>
+
+      {/* ── Client capability envelope ───────────────────────────────────── */}
+      <StatSection title="Client capabilities">
+        {clientEnvelope && clientEnvelope.capabilities.length > 0 ? (
+          <>
+            <div className="flex flex-wrap gap-1 mb-1">
+              {clientEnvelope.capabilities.map((cap) => (
+                <span
+                  key={cap}
+                  className="inline-flex items-center px-1.5 py-0.5 rounded border border-emerald-500/40 bg-emerald-500/10 font-mono text-[10px] text-foreground/90"
+                >
+                  {cap}
+                </span>
+              ))}
+            </div>
+            <details>
+              <summary className="text-[10px] font-semibold text-muted-foreground/80 cursor-pointer hover:text-foreground select-none">
+                Capability state (raw JSON)
+              </summary>
+              <pre className="mt-1 font-mono text-[11px] text-foreground/90 bg-muted/30 border border-border/40 rounded px-2 py-1.5 overflow-x-auto whitespace-pre-wrap break-all">
+                {JSON.stringify(clientEnvelope.state, null, 2)}
+              </pre>
+            </details>
+          </>
+        ) : (
+          <div className="text-[11px] text-muted-foreground/60 italic py-1">
+            — no surfaces declared —
           </div>
         )}
       </StatSection>

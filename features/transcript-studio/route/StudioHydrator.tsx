@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { sessionsListLoaded } from "../redux/slice";
+import { useState } from "react";
+import { useStore } from "react-redux";
+import { sessionsListLoaded, activeSessionIdSet } from "../redux/slice";
 import type { StudioSession } from "../types";
 
 interface StudioHydratorProps {
@@ -12,30 +12,31 @@ interface StudioHydratorProps {
 
 /**
  * One-shot Redux hydrator. Server-fetches the session list and seeds Redux
- * during the first render pass — before child components subscribe — so we
- * skip the loading flash on cold loads.
+ * before any subscribed component reads from the store, so cold loads skip
+ * the loading flash.
  *
- * Do NOT use useEffect: that fires after paint, producing a one-frame flash.
+ * Implementation note (React 19): dispatching from the render body fires
+ * subscription updates on sibling components, which logs a "Cannot update a
+ * component while rendering a different component" warning. We use
+ * `useState`'s lazy initializer to perform the dispatch — it runs once,
+ * synchronously, before sibling components' subscriptions activate.
+ *
+ * This sidesteps a `useEffect` (which causes a one-frame flash because it
+ * fires after paint) and keeps the seed deterministic.
  */
-export function StudioHydrator({ seeds, initialSessionId }: StudioHydratorProps) {
-  const dispatch = useAppDispatch();
-  const hydrated = useRef(false);
+export function StudioHydrator({
+  seeds,
+  initialSessionId,
+}: StudioHydratorProps) {
+  const store = useStore();
 
-  if (!hydrated.current) {
-    dispatch(sessionsListLoaded(seeds));
-    if (initialSessionId) {
-      // Defer to slice action only when the id resolves to a known session.
-      // Unknown ids fall through to "no active session" — the empty state.
-      const exists = seeds.some((s) => s.id === initialSessionId);
-      if (exists) {
-        dispatch({
-          type: "transcriptStudio/activeSessionIdSet",
-          payload: initialSessionId,
-        });
-      }
+  useState(() => {
+    store.dispatch(sessionsListLoaded(seeds));
+    if (initialSessionId && seeds.some((s) => s.id === initialSessionId)) {
+      store.dispatch(activeSessionIdSet(initialSessionId));
     }
-    hydrated.current = true;
-  }
+    return null;
+  });
 
   return null;
 }

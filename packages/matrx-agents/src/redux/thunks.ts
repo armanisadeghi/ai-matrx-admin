@@ -13,7 +13,6 @@ export {
 
 // ── Execution thunks ───────────────────────────────────────────────────────
 export { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
-export { executeChatInstance } from "@/features/agents/redux/execution-system/thunks/execute-chat-instance.thunk";
 export { launchAgentExecution } from "@/features/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
 export type { LaunchResult } from "@/features/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
 

@@ -35,7 +35,6 @@ import {
   createManualInstanceNoAgent,
 } from "./create-instance.thunk";
 import { executeInstance } from "./execute-instance.thunk";
-import { executeChatInstance } from "./execute-chat-instance.thunk";
 import { setUserVariableValues } from "../instance-variable-values/instance-variable-values.slice";
 import { setContextEntries } from "../instance-context/instance-context.slice";
 import { setUserInputText } from "../instance-user-input/instance-user-input.slice";
@@ -490,15 +489,12 @@ export const launchAgentExecution = createAsyncThunk<
     return { conversationId };
   }
 
-  const isManualMode = apiEndpointMode === "manual";
-
   if (
     resolvedDisplayMode === "direct" ||
     resolvedDisplayMode === "background" ||
     resolvedDisplayMode === "inline"
   ) {
-    const executeThunk = isManualMode ? executeChatInstance : executeInstance;
-    const result = await dispatch(executeThunk({ conversationId })).unwrap();
+    const result = await dispatch(executeInstance({ conversationId })).unwrap();
 
     const responseText = await pollForCompletion(getState, result.requestId);
 
@@ -513,8 +509,7 @@ export const launchAgentExecution = createAsyncThunk<
   }
 
   if (isInteractive(resolvedDisplayMode) || resolvedDisplayMode === "toast") {
-    const executeThunk = isManualMode ? executeChatInstance : executeInstance;
-    const result = await dispatch(executeThunk({ conversationId })).unwrap();
+    const result = await dispatch(executeInstance({ conversationId })).unwrap();
 
     return {
       conversationId,

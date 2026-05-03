@@ -189,3 +189,101 @@ export async function listSessionsServer(
   }
   return ((data ?? []) as SessionRow[]).map(rowToSession);
 }
+
+// ── studio_raw_segments ───────────────────────────────────────────────
+
+interface RawSegmentRow {
+  id: string;
+  session_id: string;
+  recording_segment_id: string | null;
+  chunk_index: number;
+  t_start: number | string;
+  t_end: number | string;
+  text: string;
+  speaker: string | null;
+  source: import("../types").RawSegmentSource;
+}
+
+function rowToRawSegment(
+  row: RawSegmentRow,
+): import("../types").RawSegment {
+  return {
+    id: row.id,
+    sessionId: row.session_id,
+    recordingSegmentId: row.recording_segment_id,
+    chunkIndex: row.chunk_index,
+    tStart: typeof row.t_start === "string" ? Number(row.t_start) : row.t_start,
+    tEnd: typeof row.t_end === "string" ? Number(row.t_end) : row.t_end,
+    text: row.text,
+    speaker: row.speaker,
+    source: row.source,
+  };
+}
+
+export interface InsertRawSegmentInput {
+  sessionId: string;
+  chunkIndex: number;
+  tStart: number;
+  tEnd: number;
+  text: string;
+  recordingSegmentId?: string | null;
+  speaker?: string | null;
+  source?: import("../types").RawSegmentSource;
+}
+
+export async function insertRawSegment(
+  input: InsertRawSegmentInput,
+): Promise<import("../types").RawSegment> {
+  const { data, error } = await db
+    .from("studio_raw_segments")
+    .insert({
+      session_id: input.sessionId,
+      recording_segment_id: input.recordingSegmentId ?? null,
+      chunk_index: input.chunkIndex,
+      t_start: input.tStart,
+      t_end: input.tEnd,
+      text: input.text,
+      speaker: input.speaker ?? null,
+      source: input.source ?? "chunk",
+    })
+    .select("*")
+    .single();
+  if (error || !data) {
+    throw new Error(
+      `[studio] insertRawSegment failed: ${error?.message ?? "no row"}`,
+    );
+  }
+  return rowToRawSegment(data as RawSegmentRow);
+}
+
+export async function listRawSegments(
+  sessionId: string,
+): Promise<import("../types").RawSegment[]> {
+  const { data, error } = await db
+    .from("studio_raw_segments")
+    .select("*")
+    .eq("session_id", sessionId)
+    .order("t_start", { ascending: true });
+  if (error) {
+    throw new Error(`[studio] listRawSegments failed: ${error.message}`);
+  }
+  return ((data ?? []) as RawSegmentRow[]).map(rowToRawSegment);
+}
+
+export async function listRawSegmentsServer(
+  serverClient: { from: (table: string) => unknown },
+  sessionId: string,
+): Promise<import("../types").RawSegment[]> {
+  const looseClient = serverClient as unknown as LooseSupabase;
+  const { data, error } = await looseClient
+    .from("studio_raw_segments")
+    .select("*")
+    .eq("session_id", sessionId)
+    .order("t_start", { ascending: true });
+  if (error) {
+    throw new Error(
+      `[studio] listRawSegmentsServer failed: ${error.message}`,
+    );
+  }
+  return ((data ?? []) as RawSegmentRow[]).map(rowToRawSegment);
+}

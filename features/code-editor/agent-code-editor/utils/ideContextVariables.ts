@@ -19,6 +19,7 @@ import {
   AGENT_CONTEXT_KEYS,
   CONTEXT_LABELS,
 } from "../constants";
+import type { IdeState } from "@/features/agents/types/agent-api-types";
 
 /**
  * Shape the instanceContext.setContextEntries action accepts. Matches
@@ -118,4 +119,66 @@ export function buildIdeContextEntries(
   }
 
   return entries;
+}
+
+/**
+ * Build a structured `IdeState` payload for the `editor-state` client
+ * capability. Mirrors the same source data fed into the legacy
+ * `instanceContext` `vsc_*` keys, but in the typed shape the new envelope
+ * expects. Returns `null` when the editor has nothing meaningful to
+ * declare — keeps the capability out of the request envelope entirely
+ * instead of declaring it with empty payloads.
+ */
+export function buildIdeState(input: CodeContextInput): IdeState | null {
+  const {
+    code,
+    language,
+    filePath,
+    selection,
+    workspaceName,
+    workspaceFolders,
+    gitBranch,
+    gitStatus,
+  } = input;
+
+  const ideState: IdeState = {};
+  let hasAny = false;
+
+  if (filePath && code !== undefined && language) {
+    ideState.active_file = {
+      path: filePath,
+      content: code,
+      language,
+    };
+    hasAny = true;
+  }
+
+  if (selection && selection.length > 0) {
+    ideState.selected_text = selection;
+    hasAny = true;
+  }
+
+  if (workspaceName || (workspaceFolders && workspaceFolders.length > 0)) {
+    ideState.workspace = {
+      name: workspaceName ?? "",
+      folders: workspaceFolders
+        ? workspaceFolders.split("\n").filter(Boolean)
+        : [],
+    };
+    hasAny = true;
+  }
+
+  if (gitBranch || gitStatus) {
+    ideState.git = {
+      branch: gitBranch ?? "",
+      status: gitStatus ?? "",
+    };
+    hasAny = true;
+  }
+
+  // Diagnostics in CodeContextInput is a free-form string — leave the
+  // structured array empty until the editor surface starts shipping
+  // structured diagnostics. The server tolerates an empty list.
+
+  return hasAny ? ideState : null;
 }

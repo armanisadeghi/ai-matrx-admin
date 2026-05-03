@@ -28,7 +28,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useTopicData } from "../../context/ResearchContext";
+import { useTopicDescription } from "../../context/ResearchContext";
 
 const ICON_MAP: Record<string, typeof LayoutDashboard> = {
   LayoutDashboard,
@@ -123,9 +123,9 @@ export function ResearchSidebar({ topicId }: ResearchSidebarProps) {
 }
 
 function TopicAbout() {
-  const { topic } = useTopicData();
+  const rawDescription = useTopicDescription();
   const [open, setOpen] = useState(false);
-  const description = topic?.description?.trim();
+  const description = rawDescription?.trim();
   if (!description) return null;
 
   return (

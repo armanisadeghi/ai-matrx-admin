@@ -38,6 +38,13 @@ import CreateTaskFromSourceDialog from "@/features/tasks/widgets/CreateTaskFromS
 import { CloudFilesPickerHost } from "@/features/files/components/pickers/CloudFilesPickerHost";
 import { UploadGuardHost } from "@/features/files/upload/UploadGuardHost";
 
+// Side-effect import: registers every client-capability provider with the
+// tool-injection registry so `buildToolInjection` can walk them on every turn.
+// Adding a new surface (Chrome extension, desktop app, etc.) is a new file in
+// features/agents/redux/execution-system/client-capabilities/ + an import line
+// in register-all.ts — no edits to the agents thunks.
+import "@/features/agents/redux/execution-system/client-capabilities/register-all";
+
 // Phase 11 — legacy file system providers removed:
 //   - lib/redux/fileSystem/Provider (FileSystemProvider)
 //   - components/file-system/preview (FilePreviewProvider)

@@ -54,19 +54,6 @@ type NonNullableFields<T> = {
  */
 export type LLMParams = NonNullableFields<components["schemas"]["LLMParams"]>;
 
-/**
- * Wire format for POST /api/ai/chat.
- *
- * Single source of truth: auto-generated from components['schemas']['ChatRequest']
- * in types/python-generated/api-types.ts.
- *
- * Run `pnpm update-api-types` after backend changes — TypeScript will
- * immediately flag any field drift here.
- */
-export type ChatRequestPayload = NonNullableFields<
-  components["schemas"]["ChatRequest"]
->;
-
 // =============================================================================
 // Structured System Instructions
 // =============================================================================
@@ -245,28 +232,32 @@ export interface AgentStartRequest {
   debug?: boolean;
 
   /**
-   * Tool names the CLIENT will execute instead of the server.
-   * When the model calls one of these, a tool_call stream event is emitted
-   * instead of running the tool server-side. The client must handle the call
-   * and continue the conversation with the result.
+   * Additive tool injection. Each entry is a ToolSpec discriminated on
+   * `kind` — registered (server-side or delegated), inline (caller-supplied
+   * schema), or agent (project a saved agent as an opaque tool).
+   *
+   * Tools listed here are added on top of the capability defaults brought
+   * online by `client.capabilities` and the agent's own declared tools.
+   * Conflicting `(kind, delegate)` for the same name returns 422.
    */
-  client_tools?: string[];
+  tools?: import("./tool-injection.types").ToolSpec[];
 
   /**
-   * Inline tool definitions not stored in the registry.
-   * Each tool is always delegated back to the caller — its name is
-   * automatically added to client_tools; you do NOT need to list it there.
-   * These are merged with any custom_tools from the agent's own definition.
-   * See CustomToolDefinition for the full schema.
+   * When set, this list becomes the entire active tool set for the turn —
+   * capability defaults skipped, agent's own declared tools skipped. Use
+   * when the caller wants full control. Send the full desired list to
+   * "subtract" anything; there is no per-tool subtraction API.
    */
-  custom_tools?: CustomToolDefinition[];
+  tools_replace?: import("./tool-injection.types").ToolSpec[] | null;
 
   /**
-   * Current IDE/editor snapshot. Fields become vsc_* substitution variables.
-   * Agents must declare any vsc_* variables they want to use.
-   * vsc_get_state tool is auto-injected when this is present.
+   * Capability envelope describing the calling client. Each capability the
+   * client declares enables a typed payload (validated server-side) and may
+   * bring tools online for the agent — e.g. `editor-state` brings
+   * `vsc_get_state` online; `sandbox-fs` carries the binding the fs/shell
+   * tools need to route into the container.
    */
-  ide_state?: IdeState | null;
+  client?: import("./tool-injection.types").ClientContext;
 
   /**
    * Deferred context objects keyed by arbitrary string names.
@@ -381,13 +372,12 @@ export interface ConversationContinueRequest {
   config_overrides?: LLMParams | null;
   stream?: boolean;
   debug?: boolean;
-  client_tools?: string[];
-  /**
-   * Inline tool definitions for this turn only. Same semantics as
-   * AgentStartRequest.custom_tools. Names are auto-added to client_tools.
-   */
-  custom_tools?: CustomToolDefinition[];
-  ide_state?: IdeState | null;
+  /** Same shape and semantics as `AgentStartRequest.tools`. */
+  tools?: import("./tool-injection.types").ToolSpec[];
+  /** Same shape and semantics as `AgentStartRequest.tools_replace`. */
+  tools_replace?: import("./tool-injection.types").ToolSpec[] | null;
+  /** Same shape and semantics as `AgentStartRequest.client`. */
+  client?: import("./tool-injection.types").ClientContext;
   context?: Record<string, ContextValue>;
 
   /**

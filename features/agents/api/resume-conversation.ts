@@ -19,6 +19,11 @@
  *
  * Callers typically wire this to the same `onStreamEvent` pipeline that
  * execute-instance uses for initial turns — the events are identical.
+ *
+ * Tool-injection contract: pass `tools` + `client` to mirror the original
+ * launch's capability surface. Build them via `buildToolInjection(state, id)`
+ * inside the dispatching code so the resume sees the same merged
+ * widget-handle + sandbox-fs + editor-state envelope as the initial turn.
  */
 
 import { callApi } from "@/lib/api/call-api";
@@ -27,14 +32,10 @@ import type { ThunkAction } from "redux-thunk";
 import type { UnknownAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
 import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
-
-// ── Local types ──────────────────────────────────────────────────────────────
-//
-// Mirror of FastAPI `ResumeRequest` at aidream/api/routers/conversations.py.
-// Once python-generated api-types are regenerated, prefer:
-//
-//     import type { components } from "@/types/python-generated/api-types";
-//     type ResumeRequestBody = components["schemas"]["ResumeRequest"];
+import type {
+  ClientContext,
+  ToolSpec,
+} from "@/features/agents/types/tool-injection.types";
 
 export interface ResumeConversationOptions {
   /** cx_user_request.id of the stalled loop we are re-entering. Reused so
@@ -44,14 +45,20 @@ export interface ResumeConversationOptions {
   /** Optional LLM param overrides for this continuation turn. */
   configOverrides?: Record<string, unknown>;
 
-  /** List of tool names the client will execute locally this turn. Should
-   *  mirror the original launch's client_tools so the model sees the same
-   *  capability surface as before the suspend. */
-  clientTools?: string[];
+  /**
+   * ToolSpec entries to add to the agent's resolved tool set for this
+   * continuation. Mirrors the original launch's `tools` so the model sees
+   * the same capability surface as before the suspend. Build via
+   * `buildToolInjection(state, conversationId, {mode: "additive"})`.
+   */
+  tools?: ToolSpec[];
 
-  /** Inline (non-registry) tool definitions. Matches the shape used by
-   *  launchConversation → ConversationContinueRequest.custom_tools. */
-  customTools?: Array<Record<string, unknown>>;
+  /**
+   * Capability envelope (editor-state, sandbox-fs, …) for this continuation.
+   * Mirrors the original launch's `client` envelope. Build via
+   * `buildToolInjection(state, conversationId)`.
+   */
+  client?: ClientContext;
 
   debug?: boolean;
 
@@ -86,8 +93,10 @@ export const resumeConversation = (
         body: {
           user_request_id: options.userRequestId,
           config_overrides: options.configOverrides,
-          client_tools: options.clientTools ?? [],
-          custom_tools: options.customTools ?? [],
+          ...(options.tools && options.tools.length > 0 && {
+            tools: options.tools,
+          }),
+          ...(options.client && { client: options.client }),
           debug: options.debug ?? false,
         } as never,
         stream: true,

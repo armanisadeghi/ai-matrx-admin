@@ -23,7 +23,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
 import type { AssembledAgentStartRequest } from "@/features/agents/types/request.types";
-import { getActiveSandboxBinding } from "@/lib/sandbox/active-binding";
+import { buildToolInjection } from "../utils/build-tool-injection";
 import type { MessagePart } from "@/types/python-generated/stream-events";
 import { generateRequestId } from "../utils/ids";
 import { setInstanceStatus } from "../conversations/conversations.slice";
@@ -50,12 +50,6 @@ import { v4 as uuidv4 } from "uuid";
 import type { CxContentBlock } from "@/features/public-chat/types/cx-tables";
 import { processStream } from "./process-stream";
 import { formatVariablesForDisplay } from "@/features/agents/utils/variable-utils";
-import { callbackManager } from "@/utils/callbackManager";
-import {
-  deriveClientToolsFromHandle,
-  isWidgetActionName,
-  type WidgetHandle,
-} from "@/features/agents/types/widget-handle.types";
 import {
   selectIsBlockMode,
   selectIsMemoryToggleRequested,
@@ -63,7 +57,6 @@ import {
   selectMemoryModel,
   selectMemoryScope,
   selectMemoryToggleTarget,
-  selectWidgetHandleIdFor,
 } from "../instance-ui-state/instance-ui-state.selectors";
 import { clearMemoryToggleRequest } from "../instance-ui-state/instance-ui-state.slice";
 import { setMemoryEnabledOptimistic } from "../observational-memory/observational-memory.slice";
@@ -72,6 +65,7 @@ import {
   unregisterAbortController,
 } from "./abort-registry";
 import { assertConversationIdMatches } from "../utils/assert-conversation-id";
+import { toast } from "sonner";
 
 // =============================================================================
 // Assemble Request (pure selector logic, extracted for testability)
@@ -148,24 +142,10 @@ export function assembleRequest(
   // Context dict
   const context = selectContextPayload(conversationId)(state);
 
-  // Client tools — per-turn derivation.
-  //
-  // The widget handle is the source of truth for widget_* capabilities: we
-  // read it LIVE from CallbackManager on every turn so a rehydrated
-  // conversation that just attached a widget, or a widget that just gained a
-  // method, takes effect without re-launching. The `instanceClientTools`
-  // slice still holds non-widget client-delegated tools.
-  const nonWidgetClientTools = (
-    state.instanceClientTools.byConversationId[conversationId] ?? []
-  ).filter((name) => !isWidgetActionName(name));
-  const widgetHandleId = selectWidgetHandleIdFor(state, conversationId);
-  const widgetHandle = widgetHandleId
-    ? callbackManager.get<WidgetHandle>(widgetHandleId)
-    : null;
-  const widgetClientTools = deriveClientToolsFromHandle(widgetHandle);
-  const mergedClientTools = [...nonWidgetClientTools, ...widgetClientTools];
-  const client_tools =
-    mergedClientTools.length > 0 ? mergedClientTools : undefined;
+  // Tool injection (`tools` + `client` envelope) is layered on by the thunk
+  // body via `buildToolInjection` after this sync assembly returns. Keeping
+  // it out of this pure function lets capability providers stay async (e.g.
+  // sandbox-fs mints a short-lived bearer token on demand).
 
   // Scope — snapshot from appContextSlice at the moment of execution
   const organization_id = selectOrganizationId(state) ?? undefined;
@@ -200,7 +180,6 @@ export function assembleRequest(
   if (Object.keys(variables).length > 0) request.variables = variables;
   if (config_overrides) request.config_overrides = config_overrides;
   if (context) request.context = context;
-  if (client_tools) request.client_tools = client_tools;
   if (organization_id) request.organization_id = organization_id;
   if (project_id) request.project_id = project_id;
   if (task_id) request.task_id = task_id;
@@ -265,12 +244,22 @@ export const executeInstance = createAsyncThunk<
       // the user's raw prose; on reload from the DB the same message would
       // render as prose + chips — a visible mismatch during the first turn.
 
-      // Assemble the request
+      // Assemble the request (sync — pure selector logic).
       const payload = assembleRequest(state, conversationId);
       if (!payload) {
         throw new Error(`Failed to assemble request for ${conversationId}`);
       }
       if (debug) payload.debug = true;
+
+      // Layer the unified tool-injection envelope (`tools`, `tools_replace`,
+      // `client`) onto the assembled payload. Async because capability
+      // providers may need network calls (sandbox token mint).
+      const injection = await buildToolInjection(state, conversationId, {
+        mode: "additive",
+      });
+      if (injection.tools) payload.tools = injection.tools;
+      if (injection.tools_replace) payload.tools_replace = injection.tools_replace;
+      if (injection.client) payload.client = injection.client;
 
       // Observational Memory — if we emitted a `memory` signal this turn,
       // (a) optimistically mirror it into the observational-memory slice so
@@ -315,16 +304,12 @@ export const executeInstance = createAsyncThunk<
       // /agents/{id}. Captured before the optimistic user turn is added below.
       const isContinuation = selectMessageCount(conversationId)(state) > 0;
 
-      // Ephemeral turn 2+: delegate BEFORE we create an outer request or
-      // optimistic user turn — the inner executeChatInstance owns that work
-      // in the /ai/manual path. Short-circuit here so we don't leak a dead
-      // outer request entry into activeRequests.
+      // Ephemeral conversations stream without writing any cx_* rows. The
+      // server flag pair `is_new:false, store:false` (see turn-1 routing
+      // below) keeps everything stateless. Turn 2+ rides the same
+      // `/ai/conversations/{id}` endpoint as a persistent turn — the server
+      // honors the same `store:false` semantics.
       const isEphemeral = instance.isEphemeral === true;
-      if (isEphemeral && isContinuation) {
-        const { executeChatInstance } =
-          await import("./execute-chat-instance.thunk");
-        return dispatch(executeChatInstance({ conversationId })).unwrap();
-      }
 
       // Add the user's message to history immediately — before the API call fires.
       // Include resource payload parts so they display even before the DB round-trip.
@@ -411,9 +396,11 @@ export const executeInstance = createAsyncThunk<
       if (isContinuation) {
         // Turn 2+: POST /ai/conversations/{conversationId}
         url = `${baseUrl}/ai/conversations/${conversationId}`;
-        // Continuation only needs user_input, config_overrides, context, client_tools, stream.
-        // Admin flags (block_mode, snapshot) are forwarded so each turn honors
-        // the latest toggle value, not just turn 1.
+        // Continuation only needs user_input, config_overrides, context,
+        // tools, client, stream. Admin flags (block_mode, snapshot) are
+        // forwarded so each turn honors the latest toggle value, not just
+        // turn 1. `tools` / `tools_replace` / `client` come from
+        // buildToolInjection above.
         routedPayload = {
           user_input: payload.user_input,
           stream: true,
@@ -421,7 +408,11 @@ export const executeInstance = createAsyncThunk<
             config_overrides: payload.config_overrides,
           }),
           ...(payload.context && { context: payload.context }),
-          ...(payload.client_tools && { client_tools: payload.client_tools }),
+          ...(payload.tools && { tools: payload.tools }),
+          ...(payload.tools_replace !== undefined && {
+            tools_replace: payload.tools_replace,
+          }),
+          ...(payload.client && { client: payload.client }),
           ...(debug && { debug: true }),
           ...(payload.block_mode && { block_mode: true }),
           ...(payload.snapshot && { snapshot: true }),
@@ -431,6 +422,7 @@ export const executeInstance = createAsyncThunk<
           ...(payload.memory_model && { memory_model: payload.memory_model }),
           ...(payload.memory_scope && { memory_scope: payload.memory_scope }),
           ...(pendingBypass && { cache_bypass: pendingBypass }),
+          ...(isEphemeral && { store: false }),
         };
       } else {
         // Turn 1: POST /ai/agents/{id}
@@ -439,7 +431,7 @@ export const executeInstance = createAsyncThunk<
         // version-pinned shortcut/app (`initialAgentVersionId` set), we
         // target the frozen version row instead of the live agent. The
         // server uses the same endpoint with `is_version: true` to read
-        // from `agx_version` — mirroring executeChatInstance.
+        // from `agx_version`.
         //
         // Persistent → is_new:true (server creates the cx_conversation row).
         // Ephemeral → is_new:false, store:false (server streams without writing).
@@ -454,16 +446,6 @@ export const executeInstance = createAsyncThunk<
           ...(isEphemeral && { store: false }),
           ...(pendingBypass && { cache_bypass: pendingBypass }),
         } as Record<string, unknown>;
-      }
-
-      // Attach the active sandbox binding (if any). matrx-ai's fs/shell
-      // tools read this off AppContext.metadata to decide whether to run
-      // locally on the aidream host or proxy into the sandbox container.
-      // Mints/refreshes the scoped access token on demand; null means
-      // "no sandbox bound" → request flows unchanged.
-      const sandboxBinding = await getActiveSandboxBinding(getState);
-      if (sandboxBinding) {
-        (routedPayload as Record<string, unknown>).sandbox = sandboxBinding;
       }
 
       // Record the true submit moment — this is t=0 for all client timing.
@@ -495,6 +477,25 @@ export const executeInstance = createAsyncThunk<
         } else if (code === 404) {
           throw new Error(`Conversation not found: ${serverMessage}`);
         } else if (code === 422) {
+          // 422 covers two distinct shapes from the backend:
+          //   • Tool injection errors — capability resolution failed,
+          //     unknown capability, ToolMergeError. Message starts with
+          //     "client capability" or "tool". Surface as toast so the
+          //     user sees what actually broke instead of a generic banner.
+          //   • Validation errors — bad conversation id, schema mismatch.
+          //     Throw as before.
+          const lower =
+            typeof serverMessage === "string" ? serverMessage.toLowerCase() : "";
+          if (
+            lower.startsWith("client capability") ||
+            lower.includes("toolmergeerror") ||
+            lower.includes("conflicting tool") ||
+            (lower.includes("tool") &&
+              (lower.includes("merge") || lower.includes("capability")))
+          ) {
+            toast.error("Tool injection failed", { description: serverMessage });
+            throw new Error(`Tool injection failed: ${serverMessage}`);
+          }
           throw new Error(`Invalid conversation ID: ${serverMessage}`);
         }
         throw new Error(`API error: ${serverMessage}`);

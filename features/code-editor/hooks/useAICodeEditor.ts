@@ -193,7 +193,7 @@ export function useAICodeEditor({
               //        selectMergedVariables →
               //          `selectInstanceVariableValues(cid)`
               //   4. Replace `executeMessage` (multi-turn send) with
-              //      `dispatch(executeChatInstance({ conversationId }))`.
+              //      `dispatch(executeInstance({ conversationId }))`.
               //   5. Drop `completeExecutionThunk` — the agent stream
               //      machinery handles completion natively; the existing
               //      `useEffect` that watches `isResponseEnded` should

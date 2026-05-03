@@ -51,7 +51,7 @@ export function RagSearchPage() {
 
   const stores = useDataStores();
 
-  const sourceKinds = useMemo<RagSearchHit["source_kind"][] | undefined>(() => {
+  const sourceKinds = useMemo<("cld_file" | "note" | "code_file")[] | undefined>(() => {
     if (kindFilter === "all") return undefined;
     if (kindFilter === "library") return ["cld_file"];
     return [kindFilter];

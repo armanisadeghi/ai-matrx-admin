@@ -47,6 +47,53 @@ type AgentUpdate = Omit<
 export type { AgentInsert, AgentUpdate };
 
 // ---------------------------------------------------------------------------
+// tool_config — the canonical JSONB on agx_agent.
+// Shape:
+//   { tools: ToolSpec[], excluded_tools: string[], auto_tools_disabled: bool }
+// where ToolSpec is the same discriminated union as the request schema:
+//   { kind: "registered", tool_id: uuid, ... } | { kind: "inline", ... }
+//
+// Backend keeps the legacy `tools` (uuid[]) + `custom_tools` (jsonb[]) columns
+// in sync with `tool_config` for back-compat; we prefer `tool_config` on read
+// so when legacy columns get dropped this file keeps working unchanged. On
+// write we still hit the legacy columns — backend's dual-sync keeps both
+// coherent, and switching writes to `tool_config` is a separate move once
+// backend confirms legacy is no longer required.
+// ---------------------------------------------------------------------------
+
+interface ToolConfigJson {
+  tools?: Array<Record<string, unknown>>;
+  excluded_tools?: string[];
+  auto_tools_disabled?: boolean;
+}
+
+function splitToolConfig(toolConfig: unknown): {
+  tools: string[];
+  customTools: AgentDefinition["customTools"];
+} | null {
+  if (!toolConfig || typeof toolConfig !== "object") return null;
+  const cfg = toolConfig as ToolConfigJson;
+  if (!Array.isArray(cfg.tools)) return null;
+  const tools: string[] = [];
+  const customTools: AgentDefinition["customTools"] = [];
+  for (const spec of cfg.tools) {
+    if (!spec || typeof spec !== "object") continue;
+    const kind = spec.kind;
+    if (kind === "registered") {
+      const toolId = (spec.tool_id ?? spec.name) as string | undefined;
+      if (toolId) tools.push(toolId);
+    } else if (kind === "inline") {
+      customTools.push(
+        spec as unknown as AgentDefinition["customTools"][number],
+      );
+    }
+    // kind === "agent" is per-request only (not stored on the agent row);
+    // ignore here.
+  }
+  return { tools, customTools };
+}
+
+// ---------------------------------------------------------------------------
 // DB → Frontend
 // ---------------------------------------------------------------------------
 
@@ -55,6 +102,15 @@ export type { AgentInsert, AgentUpdate };
  * Safe to call with any row — all JSONB fields are cast but not key-converted.
  */
 export function dbRowToAgentDefinition(row: AgentRow): AgentDefinition {
+  // Prefer tool_config (canonical) over the legacy split columns. Legacy
+  // columns are still maintained backend-side, but will eventually be
+  // dropped — reading from tool_config insulates us from that.
+  const fromToolConfig = splitToolConfig(row.tool_config);
+  const tools = fromToolConfig?.tools ?? row.tools ?? [];
+  const customTools =
+    fromToolConfig?.customTools ??
+    ((row.custom_tools as unknown as AgentDefinition["customTools"]) ?? []);
+
   return {
     id: row.id,
     name: row.name,
@@ -76,7 +132,7 @@ export function dbRowToAgentDefinition(row: AgentRow): AgentDefinition {
     settings:
       (row.settings as unknown as AgentDefinition["settings"]) ??
       ({} as AgentDefinition["settings"]),
-    tools: row.tools ?? [],
+    tools,
 
     contextSlots:
       (row.context_slots as unknown as AgentDefinition["contextSlots"]) ?? [],
@@ -85,8 +141,7 @@ export function dbRowToAgentDefinition(row: AgentRow): AgentDefinition {
       (row.model_tiers as unknown as AgentDefinition["modelTiers"]) ?? null,
     outputSchema:
       (row.output_schema as unknown as AgentDefinition["outputSchema"]) ?? null,
-    customTools:
-      (row.custom_tools as unknown as AgentDefinition["customTools"]) ?? [],
+    customTools,
     mcpServers: row.mcp_servers ?? [],
 
     userId: row.user_id,

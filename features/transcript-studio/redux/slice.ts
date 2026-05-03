@@ -14,7 +14,7 @@
  */
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { StudioSession } from "../types";
+import type { RawSegment, StudioSession } from "../types";
 import type { ColumnId } from "../constants";
 
 // ── State shape ───────────────────────────────────────────────────────
@@ -35,6 +35,14 @@ export interface TranscriptStudioState {
   fetchError: string | null;
   /** Per-session ephemeral UI state — never round-trips to Supabase. */
   ui: Record<string, StudioUiState>;
+  /**
+   * Raw-segment registry per session, ordered by `tStart`. Append-only from
+   * the application's perspective; supersession + edits live on cleaned
+   * segments instead. Loaded via `listRawSegments` and appended via
+   * `rawSegmentsAppended` as chunks complete.
+   */
+  rawById: Record<string, Record<string, RawSegment>>;
+  rawIdsBySession: Record<string, string[]>;
 }
 
 const DEFAULT_UI: StudioUiState = {
@@ -51,6 +59,8 @@ const initialState: TranscriptStudioState = {
   fetchStatus: "idle",
   fetchError: null,
   ui: {},
+  rawById: {},
+  rawIdsBySession: {},
 };
 
 // ── Slice ─────────────────────────────────────────────────────────────
@@ -128,6 +138,40 @@ const slice = createSlice({
       ui.settingsOpen = open;
       state.ui[sessionId] = ui;
     },
+    rawSegmentsLoaded(
+      state,
+      action: PayloadAction<{ sessionId: string; segments: RawSegment[] }>,
+    ) {
+      const { sessionId, segments } = action.payload;
+      state.rawById[sessionId] = {};
+      const ids: string[] = [];
+      for (const seg of segments) {
+        state.rawById[sessionId]![seg.id] = seg;
+        ids.push(seg.id);
+      }
+      state.rawIdsBySession[sessionId] = ids;
+    },
+    rawSegmentsAppended(
+      state,
+      action: PayloadAction<{ sessionId: string; segments: RawSegment[] }>,
+    ) {
+      const { sessionId, segments } = action.payload;
+      if (!state.rawById[sessionId]) state.rawById[sessionId] = {};
+      if (!state.rawIdsBySession[sessionId]) state.rawIdsBySession[sessionId] = [];
+      const ids = state.rawIdsBySession[sessionId]!;
+      const byId = state.rawById[sessionId]!;
+      for (const seg of segments) {
+        if (byId[seg.id]) continue;          // de-duplicate (race on retry)
+        byId[seg.id] = seg;
+        ids.push(seg.id);
+      }
+      // Keep ordered by tStart — segments may arrive out-of-order on retries.
+      ids.sort((a, b) => byId[a]!.tStart - byId[b]!.tStart);
+    },
+    rawSegmentsCleared(state, action: PayloadAction<{ sessionId: string }>) {
+      delete state.rawById[action.payload.sessionId];
+      delete state.rawIdsBySession[action.payload.sessionId];
+    },
   },
 });
 
@@ -142,6 +186,9 @@ export const {
   leaderColumnReleased,
   autoscrollToggled,
   settingsToggled,
+  rawSegmentsLoaded,
+  rawSegmentsAppended,
+  rawSegmentsCleared,
 } = slice.actions;
 
 export default slice.reducer;

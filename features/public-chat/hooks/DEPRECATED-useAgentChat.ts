@@ -163,8 +163,6 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
           store: true,
           stream: true,
           debug: true,
-          client_tools: [] as string[],
-          custom_tools: [] as Array<Record<string, unknown>>,
           context: {},
           block_mode: blockMode,
         } satisfies ConversationContinueRequestBody;
@@ -185,8 +183,6 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
               : undefined,
           stream: true,
           debug: true,
-          client_tools: [] as string[],
-          custom_tools: [] as Array<Record<string, unknown>>,
           context: {},
           block_mode: blockMode,
         } satisfies AgentStartRequestBody;

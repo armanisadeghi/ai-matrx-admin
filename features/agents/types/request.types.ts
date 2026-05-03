@@ -636,13 +636,22 @@ export interface PendingToolCall {
  * Assembled snake_case wire payload for POST /ai/agents/{agent_id}.
  * Built by assembleRequest() from all instance slices + appContextSlice.
  * Scope fields are snapshotted at execution time.
+ *
+ * Tool injection uses the unified contract — `tools`, `tools_replace`, and
+ * `client` replace the legacy `client_tools`, `custom_tools`, `ide_state`,
+ * and `sandbox` fields. See `features/agents/types/tool-injection.types.ts`.
  */
 export interface AssembledAgentStartRequest {
   user_input?: string | MessagePart[];
   variables?: Record<string, unknown>;
   config_overrides?: Record<string, unknown>;
   context?: Record<string, unknown>;
-  client_tools?: string[];
+  /** Additive tools — added on top of capability defaults + agent's saved tool set. */
+  tools?: import("./tool-injection.types").ToolSpec[];
+  /** When set, becomes the entire active tool set for the turn. */
+  tools_replace?: import("./tool-injection.types").ToolSpec[] | null;
+  /** Capability envelope — declares what the calling surface can do. */
+  client?: import("./tool-injection.types").ClientContext;
   conversation_id?: string;
   is_new?: boolean | null;
   organization_id?: string;
@@ -677,7 +686,9 @@ export interface AssembledConversationRequest {
   user_input: string | MessagePart[];
   config_overrides?: Record<string, unknown>;
   context?: Record<string, unknown>;
-  client_tools?: string[];
+  tools?: import("./tool-injection.types").ToolSpec[];
+  tools_replace?: import("./tool-injection.types").ToolSpec[] | null;
+  client?: import("./tool-injection.types").ClientContext;
   organization_id?: string;
   project_id?: string;
   task_id?: string;

@@ -15,10 +15,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { setUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.slice";
 import { selectUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
-import {
-  selectIsExecuting,
-  selectApiEndpointMode,
-} from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
+import { selectIsExecuting } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { selectSubmitOnEnter } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import {
   setSubmitOnEnter,
@@ -26,7 +23,6 @@ import {
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import { selectInstanceVariableDefinitions } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
 import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
-import { executeChatInstance } from "@/features/agents/redux/execution-system/thunks/execute-chat-instance.thunk";
 import { Button } from "@/components/ui/button";
 import { ArrowUp, Mic, Braces, CornerDownLeft } from "lucide-react";
 
@@ -54,7 +50,6 @@ export function CompactAssistantInput({
   // ── Redux state ─────────────────────────────────────────────────────────────
   const inputText = useAppSelector(selectUserInputText(conversationId));
   const isExecuting = useAppSelector(selectIsExecuting(conversationId));
-  const apiEndpointMode = useAppSelector(selectApiEndpointMode(conversationId));
   const submitOnEnter = useAppSelector(selectSubmitOnEnter(conversationId));
   const variableDefs = useAppSelector(
     selectInstanceVariableDefinitions(conversationId),
@@ -108,12 +103,8 @@ export function CompactAssistantInput({
   // ── Send logic ──────────────────────────────────────────────────────────────
   const handleSend = useCallback(() => {
     if (isSendDisabled) return;
-    if (apiEndpointMode === "manual") {
-      dispatch(executeChatInstance({ conversationId }));
-    } else {
-      dispatch(executeInstance({ conversationId }));
-    }
-  }, [isSendDisabled, apiEndpointMode, conversationId, dispatch]);
+    dispatch(executeInstance({ conversationId }));
+  }, [isSendDisabled, conversationId, dispatch]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

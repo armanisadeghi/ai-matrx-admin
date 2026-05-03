@@ -1,9 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
-import { selectApiEndpointMode } from "../selectors/aggregate.selectors";
 import { selectAutoClearConversation } from "../instance-ui-state/instance-ui-state.selectors";
 import { executeInstance } from "./execute-instance.thunk";
-import { executeChatInstance } from "./execute-chat-instance.thunk";
 import { splitInputIntoNewConversation } from "./create-instance.thunk";
 import { abortConversation } from "./abort-registry";
 import { setInstanceStatus } from "../conversations/conversations.slice";
@@ -41,7 +39,6 @@ export const smartExecute = createAsyncThunk<
     const state = getState();
 
     const autoClear = selectAutoClearConversation(conversationId)(state);
-    const apiEndpointMode = selectApiEndpointMode(conversationId)(state);
 
     // Phase 1 — capture the current text + userValues so we can pre-populate
     // the post-split conversation (and so the "re-apply" snapshot is available
@@ -54,10 +51,7 @@ export const smartExecute = createAsyncThunk<
     // Fire the execute on the CURRENT conversation — do NOT await yet.
     // We want to split the input focus before the stream lands so the user
     // sees the fresh input view as quickly as possible.
-    const executePromise =
-      apiEndpointMode === "manual"
-        ? dispatch(executeChatInstance({ conversationId }))
-        : dispatch(executeInstance({ conversationId }));
+    const executePromise = dispatch(executeInstance({ conversationId }));
 
     if (autoClear && surfaceKey) {
       await dispatch(

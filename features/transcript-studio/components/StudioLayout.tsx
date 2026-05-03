@@ -10,7 +10,7 @@ import {
   selectActiveSession,
   selectFetchStatus,
 } from "../redux/selectors";
-import { ActiveSessionPlaceholder } from "./ActiveSessionPlaceholder";
+import { ActiveSessionView } from "./ActiveSessionView";
 import { EmptySessionState } from "./EmptySessionState";
 import { StudioSidebar } from "./StudioSidebar";
 
@@ -84,7 +84,7 @@ export function StudioLayout({
             Loading sessions…
           </div>
         ) : activeSession ? (
-          <ActiveSessionPlaceholder session={activeSession} />
+          <ActiveSessionView session={activeSession} />
         ) : (
           <EmptySessionState />
         )}

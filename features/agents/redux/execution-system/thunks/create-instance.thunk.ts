@@ -25,7 +25,6 @@ import type { LLMParams } from "@/features/agents/types/agent-api-types";
 import type { ApiEndpointMode } from "@/features/agents/types/instance.types";
 import { getShortcutRecordFromState } from "@/features/agents/redux/agent-shortcuts/selectors";
 import { executeInstance } from "./execute-instance.thunk";
-import { executeChatInstance } from "./execute-chat-instance.thunk";
 
 import { generateConversationId } from "../utils/ids";
 import {
@@ -857,11 +856,12 @@ export const startNewConversationAndExecute = createAsyncThunk<
     const currentUIState =
       state.instanceUIState.byConversationId[currentConversationId];
 
-    // Read the authoritative apiEndpointMode from the history slice
+    // Read the authoritative apiEndpointMode from the history slice — kept
+    // for downstream consumers (initInstanceMessages, instance bookkeeping)
+    // even though execution itself now always flows through executeInstance.
     const currentMode =
       state.messages.byConversationId[currentConversationId]?.apiEndpointMode ??
       "agent";
-    const isManualMode = currentMode === "manual";
 
     const userInputText = currentInput?.text ?? "";
     const userValues = currentVariables?.userValues ?? {};
@@ -967,13 +967,9 @@ export const startNewConversationAndExecute = createAsyncThunk<
 
     dispatch(setFocus({ surfaceKey, conversationId: newConversationId }));
 
-    const result = isManualMode
-      ? await dispatch(
-          executeChatInstance({ conversationId: newConversationId }),
-        ).unwrap()
-      : await dispatch(
-          executeInstance({ conversationId: newConversationId, debug }),
-        ).unwrap();
+    const result = await dispatch(
+      executeInstance({ conversationId: newConversationId, debug }),
+    ).unwrap();
 
     return {
       newConversationId,

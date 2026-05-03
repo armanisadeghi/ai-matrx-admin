@@ -24,12 +24,10 @@ import { selectConversationMessages } from "@/features/agents/redux/execution-sy
 import {
   selectStreamPhase,
   selectLatestRequestId,
-  selectApiEndpointMode,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { selectInstanceVariableDefinitions } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
 import { selectShowVariablePanel } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
-import { executeChatInstance } from "@/features/agents/redux/execution-system/thunks/execute-chat-instance.thunk";
 import { AgentUserMessage } from "../../messages-display/user/AgentUserMessage";
 import { AgentPlanningIndicator } from "../../shared/AgentPlanningIndicator";
 import { ChatAssistantVariableInputs } from "./ChatAssistantVariableInputs";
@@ -91,7 +89,6 @@ export function AssistantCardStack({
   const variableDefs = useAppSelector(
     selectInstanceVariableDefinitions(conversationId),
   );
-  const apiEndpointMode = useAppSelector(selectApiEndpointMode(conversationId));
   const showVariablePanel = useAppSelector(
     selectShowVariablePanel(conversationId),
   );
@@ -149,11 +146,7 @@ export function AssistantCardStack({
 
   // ── Variable submit handler ─────────────────────────────────────────────────
   const handleVariableSubmit = () => {
-    if (apiEndpointMode === "manual") {
-      dispatch(executeChatInstance({ conversationId }));
-    } else {
-      dispatch(executeInstance({ conversationId }));
-    }
+    dispatch(executeInstance({ conversationId }));
   };
 
   const hasVariables = variableDefs.length > 0;

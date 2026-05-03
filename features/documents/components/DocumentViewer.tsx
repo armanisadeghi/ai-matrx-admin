@@ -120,6 +120,7 @@ export function DocumentViewer({
             lineage={lineage.data}
             onOpenAncestor={onOpenAncestor}
           />
+          {doc.data && <BindButton documentId={doc.data.id} documentName={doc.data.name} />}
           <PageNav
             current={activePageIndex}
             total={totalPages}
@@ -169,6 +170,55 @@ export function DocumentViewer({
     </div>
   );
 }
+
+function BindButton({
+  documentId,
+  documentName,
+}: {
+  documentId: string;
+  documentName: string;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs">
+          <Database className="h-3.5 w-3.5" />
+          Data stores
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md p-0">
+        <DialogHeader className="px-4 pt-4 pb-2 border-b">
+          <DialogTitle className="text-sm flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            Bind document to data stores
+          </DialogTitle>
+        </DialogHeader>
+        <div className="max-h-[70vh] overflow-y-auto">
+          <DataStoreBindPanel
+            processedDocumentId={documentId}
+            documentName={documentName}
+          />
+        </div>
+        <div className="px-4 py-2 border-t text-[10px] text-muted-foreground flex items-center justify-between">
+          <span>
+            Manage all stores at{" "}
+            <a
+              href="/rag/data-stores"
+              target="_blank"
+              rel="noreferrer"
+              className="underline inline-flex items-center gap-0.5 hover:text-foreground"
+            >
+              /rag/data-stores
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          </span>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 function PageNav({
   current,

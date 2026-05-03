@@ -136,10 +136,16 @@ const response = await dispatch(
 
 if (!response.error && response.data?.continuation_needed && response.data?.user_request_id) {
   // The originating loop died while waiting. Re-enter it.
+  // Build the same tool-injection envelope the original turn shipped so the
+  // model sees the same capability surface as before the suspend.
+  const injection = await buildToolInjection(state, conversationId, {
+    mode: "additive",
+  });
   dispatch(
     resumeConversation(conversationId, {
       userRequestId: response.data.user_request_id,
-      clientTools: deriveClientToolsFromHandle(handle),
+      tools: injection.tools,
+      client: injection.client,
       onStreamStart: (requestId) => {
         /* optional — thread requestId into active instance state */
       },

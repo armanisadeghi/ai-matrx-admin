@@ -118,6 +118,8 @@ import taskAssociationsReducer from "@/features/tasks/redux/taskAssociationsSlic
 import { default as instanceUIStateReducer } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import { default as instanceClientToolsReducer } from "@/features/agents/redux/execution-system/instance-client-tools/instance-client-tools.slice";
 import { default as instanceContextReducer } from "@/features/agents/redux/execution-system/instance-context/instance-context.slice";
+import { editorStateReducer } from "@/features/code-editor/redux/editor-state.slice";
+import { activeToolsReducer } from "@/features/agents/redux/execution-system/active-tools/active-tools.slice";
 import { default as instanceModelOverridesReducer } from "@/features/agents/redux/execution-system/instance-model-overrides/instance-model-overrides.slice";
 import { default as instanceVariableValuesReducer } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.slice";
 import { default as instanceResourcesReducer } from "@/features/agents/redux/execution-system/instance-resources/instance-resources.slice";
@@ -303,6 +305,8 @@ export const slimReducerMap = {
   instanceUserInput: instanceUserInputReducer,
   instanceClientTools: instanceClientToolsReducer,
   instanceUIState: instanceUIStateReducer,
+  editorState: editorStateReducer,
+  activeTools: activeToolsReducer,
 
   activeRequests: activeRequestsReducer,
   netRequests: netRequestsReducer,

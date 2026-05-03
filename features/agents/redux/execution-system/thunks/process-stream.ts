@@ -76,6 +76,7 @@ import {
 } from "../active-requests/active-requests.slice";
 import { confirmServerSync } from "../conversations/conversations.slice";
 import { receivedFsChange } from "@/features/code/redux/fsChangesSlice";
+import { invalidateActiveTools } from "../active-tools/active-tools.slice";
 import {
   recordBufferSpawned,
   recordContextInjected,
@@ -1053,26 +1054,40 @@ export async function processStream({
     } else if (isResourceChangedEvent(event)) {
       // Generic "this resource just changed" primitive. Today it's emitted
       // by matrx-ai's `fs_write` / `fs_patch` / `fs_mkdir` tools (kind
-      // `fs.file` / `fs.directory`). Future kinds (`cld_files`,
-      // `sandbox.cwd`, `cache.*`) will land on the same wire shape. The
-      // slice swallows ALL kinds; downstream consumers branch on `kind`
-      // and ignore unknown ones — see
-      // `features/code/SANDBOX_PROXY_AND_FS_EVENTS_FE_INTEGRATION.md` §2.
+      // `fs.file` / `fs.directory`) and by the orchestrator when the
+      // active tool set mutates mid-loop (kind `active_tools` — fired by
+      // tools that load other tools, e.g. the Chrome-extension discovery
+      // tool). Future kinds (`cld_files`, `sandbox.cwd`, `cache.*`) will
+      // land on the same wire shape. The fs slice swallows ALL kinds;
+      // downstream consumers branch on `kind` and ignore unknown ones —
+      // see `features/code/SANDBOX_PROXY_AND_FS_EVENTS_FE_INTEGRATION.md` §2.
       resourceChangedEvents++;
       const d = event.data;
-      dispatch(
-        receivedFsChange({
-          kind: d.kind,
-          action: d.action,
-          resourceId: d.resource_id,
-          sandboxId: d.sandbox_id ?? null,
-          userId: d.user_id ?? null,
-          metadata: d.metadata ?? {},
-          receivedAt: Date.now(),
-          requestId,
-          conversationId,
-        }),
-      );
+      if (d.kind === "active_tools") {
+        // Tool set was invalidated by a mid-loop injection. Bump the
+        // per-conversation revision so any toolbar / capability-display UI
+        // bound to the active set refetches. `metadata.added/removed` carry
+        // the deltas — surfaced for UX hints (toast, badge, etc.).
+        const added =
+          typeof d.metadata?.added === "number" ? d.metadata.added : 0;
+        const removed =
+          typeof d.metadata?.removed === "number" ? d.metadata.removed : 0;
+        dispatch(invalidateActiveTools({ conversationId, added, removed }));
+      } else {
+        dispatch(
+          receivedFsChange({
+            kind: d.kind,
+            action: d.action,
+            resourceId: d.resource_id,
+            sandboxId: d.sandbox_id ?? null,
+            userId: d.user_id ?? null,
+            metadata: d.metadata ?? {},
+            receivedAt: Date.now(),
+            requestId,
+            conversationId,
+          }),
+        );
+      }
       dispatch(
         appendTimeline({
           requestId,
