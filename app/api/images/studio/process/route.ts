@@ -20,7 +20,7 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import sharp from "sharp";
-import { ALL_PRESETS, getPresetById } from "@/features/image-studio/presets";
+import { ALL_PRESETS, getPresetById } from "@/features/images/presets";
 import type {
     ImageFit,
     ImagePosition,
@@ -30,7 +30,7 @@ import type {
     ProcessStudioRequestBody,
     ProcessStudioResponse,
     ProcessStudioResponseVariant,
-} from "@/features/image-studio/types";
+} from "@/features/images/studio-types";
 
 const MAX_SIZE = 25 * 1024 * 1024; // 25MB
 const MIN_QUALITY = 30;

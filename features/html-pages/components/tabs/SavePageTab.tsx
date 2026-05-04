@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/tooltip";
 import { PreviewPlaceholder } from "../PreviewPlaceholder";
 import type { HtmlPreviewTabProps } from "../types";
-import { EmbeddedImageStudio } from "@/features/image-studio/components/EmbeddedImageStudio";
+import { EmbeddedImageStudio } from "@/features/images/components/studio/EmbeddedImageStudio";
 
 export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
   const previewUrl = actions.getCurrentPreviewUrl();
