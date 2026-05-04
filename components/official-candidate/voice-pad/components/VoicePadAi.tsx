@@ -26,6 +26,9 @@ import {
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
 import ActionFeedbackButton from "@/components/official/ActionFeedbackButton";
+import { ContentActionBar } from "@/components/content-actions/ContentActionBar";
+import { useSetting } from "@/features/settings/hooks/useSetting";
+import type { CustomCleanerAgent } from "@/lib/redux/slices/userPreferencesSlice";
 import {
   AI_POST_PROCESS_AGENTS,
   DEFAULT_AI_POST_PROCESS_AGENT_ID,
@@ -56,6 +59,24 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
 
   const ai = useAiPostProcess();
 
+  // Custom user-defined cleaners (from preferences) merged into the picker
+  // alongside the system-owned agents. Empty by default.
+  const [customAgents] = useSetting<CustomCleanerAgent[]>(
+    "userPreferences.transcription.customCleanerAgents",
+  );
+  const allAgents = useMemo<AiPostProcessAgent[]>(() => {
+    if (!customAgents || customAgents.length === 0)
+      return AI_POST_PROCESS_AGENTS;
+    const customMapped: AiPostProcessAgent[] = customAgents.map((a) => ({
+      id: a.id,
+      name: a.displayName,
+      transcriptVariableKey: a.transcriptVariableKey,
+      contextSlotKey: a.contextSlotKey,
+      contextVariableKey: a.contextVariableKey,
+    }));
+    return [...AI_POST_PROCESS_AGENTS, ...customMapped];
+  }, [customAgents]);
+
   // Keep the latest selection + context so the async transcription-complete
   // callback can read them without stale closures.
   const agentIdRef = useRef(agentId);
@@ -67,10 +88,8 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
   const micId = `voice-pad-ai-mic-${instanceId}`;
 
   const selectedAgent = useMemo<AiPostProcessAgent>(
-    () =>
-      AI_POST_PROCESS_AGENTS.find((a) => a.id === agentId) ??
-      AI_POST_PROCESS_AGENTS[0],
-    [agentId],
+    () => allAgents.find((a) => a.id === agentId) ?? allAgents[0],
+    [agentId, allAgents],
   );
 
   const allText = useMemo(
@@ -120,8 +139,7 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
       baseTextRef.current = combined;
 
       const agent =
-        AI_POST_PROCESS_AGENTS.find((a) => a.id === agentIdRef.current) ??
-        AI_POST_PROCESS_AGENTS[0];
+        allAgents.find((a) => a.id === agentIdRef.current) ?? allAgents[0];
       setEditedResponse(null);
       ai.process({
         agent,
@@ -129,7 +147,7 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
         context: contextRef.current,
       });
     },
-    [ai, dispatch, instanceId],
+    [ai, dispatch, instanceId, allAgents],
   );
 
   const handleLiveTranscript = useCallback((text: string) => {
@@ -203,7 +221,7 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
           Agent
         </div>
         <div className="flex flex-col gap-1">
-          {AI_POST_PROCESS_AGENTS.map((agent) => (
+          {allAgents.map((agent) => (
             <label
               key={agent.id}
               className={cn(
@@ -322,12 +340,24 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
                 ({entries.length})
               </span>
             </span>
-            <ActionFeedbackButton
-              icon={<Trash2 />}
-              tooltip="Clear transcript"
-              onClick={handleClearAll}
-              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-            />
+            <div className="flex items-center gap-1">
+              {transcriptDisplay.trim().length > 0 && (
+                <ContentActionBar
+                  content={transcriptDisplay}
+                  title="Voice Pad Transcript"
+                  instanceKey={`voice-pad-ai-transcript-${instanceId}`}
+                  hideSpeaker
+                  hidePencil
+                  hideCopy
+                />
+              )}
+              <ActionFeedbackButton
+                icon={<Trash2 />}
+                tooltip="Clear transcript"
+                onClick={handleClearAll}
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              />
+            </div>
           </div>
           <textarea
             value={transcriptDisplay}
@@ -357,12 +387,27 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
               {isBusyEarly && (
                 <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
               )}
-              <ActionFeedbackButton
-                icon={<Copy />}
-                tooltip="Copy response"
-                onClick={handleCopyResponse}
-                className="text-muted-foreground"
-              />
+              {ai.phase === "complete" && responseValue.trim().length > 0 ? (
+                <ContentActionBar
+                  content={responseValue}
+                  title={`AI-cleaned: ${selectedAgent.name}`}
+                  metadata={{
+                    agent_id: selectedAgent.id,
+                    agent_name: selectedAgent.name,
+                    source: "voice-pad-ai",
+                  }}
+                  instanceKey={`voice-pad-ai-response-${instanceId}`}
+                  hideSpeaker
+                  hidePencil
+                />
+              ) : (
+                <ActionFeedbackButton
+                  icon={<Copy />}
+                  tooltip="Copy response"
+                  onClick={handleCopyResponse}
+                  className="text-muted-foreground"
+                />
+              )}
             </div>
           </div>
           <textarea

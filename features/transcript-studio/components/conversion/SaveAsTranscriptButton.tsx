@@ -67,7 +67,7 @@ export function SaveAsTranscriptButton({
       )}
     >
       <Icon className={cn("h-3.5 w-3.5", busy && "animate-spin")} />
-      {label}
+      <span className="hidden sm:inline">{label}</span>
     </button>
   );
 }

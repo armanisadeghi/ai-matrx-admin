@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { ContentActionBar } from "@/components/content-actions/ContentActionBar";
 import { COLUMN_IDS } from "../../constants";
 import type { RawSegment } from "../../types";
 import { useScrollSyncOptional } from "../scroll-sync/ScrollSyncProvider";
@@ -62,6 +63,37 @@ export function RawTranscriptColumn({
   }, [ids, byId]);
   const status = useMemo(() => summarizeSegments(segments), [segments]);
 
+  const sessionTitle = useAppSelector(
+    (state) => state.transcriptStudio.byId[sessionId]?.title,
+  );
+
+  const exportText = useMemo(
+    () =>
+      segments
+        .map((seg) => `[${formatTimecode(seg.tStart)}] ${seg.text}`)
+        .join("\n\n"),
+    [segments],
+  );
+
+  const headerActions =
+    segments.length > 0 ? (
+      <ContentActionBar
+        content={exportText}
+        title={
+          sessionTitle ? `Raw Transcript — ${sessionTitle}` : "Raw Transcript"
+        }
+        metadata={{
+          source: "transcript-studio",
+          column: "raw",
+          session_id: sessionId,
+          session_title: sessionTitle,
+        }}
+        instanceKey={`studio-raw-${sessionId}`}
+        hideSpeaker
+        hidePencil
+      />
+    ) : undefined;
+
   const sync = useScrollSyncOptional();
   const scrollRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -87,6 +119,7 @@ export function RawTranscriptColumn({
         label="Raw"
         status={status || undefined}
         dotState={isRecording ? "live" : "idle"}
+        actions={headerActions}
       />
       {segments.length === 0 ? (
         <ColumnEmptyState

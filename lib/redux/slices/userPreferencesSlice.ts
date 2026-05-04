@@ -249,6 +249,29 @@ export interface PromptsPreferences {
   autoClearResponsesInEditMode: boolean;
 }
 
+/**
+ * One user-defined transcription cleaner agent. Mirrors
+ * `AiPostProcessAgent` so VoicePadAi can drop these straight into its
+ * agent picker alongside the system-owned agents in `ai-agents.ts`.
+ */
+export interface CustomCleanerAgent {
+  /** Agent UUID (must exist in the agents system). */
+  id: string;
+  /** Label shown in the picker. */
+  displayName: string;
+  /** Variable key on the agent that should receive the transcript. */
+  transcriptVariableKey: string;
+  /** Optional context slot key for slot-based agents. */
+  contextSlotKey?: string;
+  /** Optional context variable key for variable-based agents. */
+  contextVariableKey?: string;
+}
+
+export interface TranscriptionPreferences {
+  /** User-added cleaner agents merged into the VoicePadAi picker. */
+  customCleanerAgents: CustomCleanerAgent[];
+}
+
 // Combine all module preferences into one interface
 export interface UserPreferences {
   display: DisplayPreferences;
@@ -268,6 +291,7 @@ export interface UserPreferences {
   system: SystemPreferences;
   messaging: MessagingPreferences;
   agentContext: AgentContextPreferences;
+  transcription: TranscriptionPreferences;
 }
 
 // Add state interface for async operations
@@ -437,6 +461,9 @@ export const initializeUserPreferencesState = (
       projectId: null,
       taskId: null,
     },
+    transcription: {
+      customCleanerAgents: [],
+    },
   };
 
   // Merge with defaults to ensure all properties exist
@@ -475,6 +502,10 @@ export const initializeUserPreferencesState = (
     agentContext: {
       ...defaultPreferences.agentContext,
       ...preferences.agentContext,
+    },
+    transcription: {
+      ...defaultPreferences.transcription,
+      ...preferences.transcription,
     },
   };
 

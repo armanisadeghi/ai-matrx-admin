@@ -26,9 +26,14 @@ import {
 } from "./resize/StudioPanelGroup";
 import { ScrollSyncProvider } from "./scroll-sync/ScrollSyncProvider";
 import { SettingsSidebar } from "./settings/SettingsSidebar";
+import { StudioColumnsMobile } from "./StudioColumnsMobile";
+import { useStudioAutoLabel } from "../hooks/useStudioAutoLabel";
 import { useStudioSession } from "../hooks/useStudioSession";
 import { useStudioSettings } from "../hooks/useStudioSettings";
 import { useTriggerScheduler } from "../hooks/useTriggerScheduler";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { getModule } from "../modules/registry";
+import { EditableSessionTitle } from "./EditableSessionTitle";
 
 // Side-effect import — populates the module registry so getModule(id) works
 // from the moment any session view mounts. Adding a new module is a one-line
@@ -100,7 +105,12 @@ export function ActiveSessionView({
     moduleIntervalMs: studioSettings.moduleIntervalMs,
   });
 
+  // Auto-derive a session title from the first few raw segments while the
+  // session still has the placeholder name. Stops once the user renames.
+  useStudioAutoLabel({ sessionId: session.id, currentTitle: session.title });
+
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const subtitle = useMemo(() => {
     const created = new Date(session.createdAt).toLocaleString(undefined, {
@@ -112,14 +122,22 @@ export function ActiveSessionView({
     return `${status} · ${link} · ${created}`;
   }, [session.createdAt, session.status, session.transcriptId]);
 
+  const moduleLabel =
+    getModule(session.moduleId)?.label ?? String(session.moduleId);
+
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col bg-textured">
-      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-border bg-background px-4 py-2">
+      <header className="flex shrink-0 items-center justify-between gap-2 border-b border-border bg-background px-3 py-2 sm:px-4 sm:gap-3">
         <div className="flex min-w-0 flex-col">
-          <h2 className="truncate text-sm font-semibold">{session.title}</h2>
-          <p className="text-[11px] text-muted-foreground">{subtitle}</p>
+          <EditableSessionTitle
+            sessionId={session.id}
+            title={session.title}
+          />
+          <p className="hidden sm:block text-[11px] text-muted-foreground">
+            {subtitle}
+          </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <SaveAsTranscriptButton
             sessionId={session.id}
             hasLinkedTranscript={Boolean(session.transcriptId)}
@@ -146,55 +164,80 @@ export function ActiveSessionView({
         onOpenChange={setSettingsOpen}
       />
 
-      <div className="flex flex-1 min-h-0 flex-col overflow-hidden p-2">
-        <div className="flex flex-1 min-h-0 overflow-hidden rounded-md border border-border/60 bg-background">
+      <div
+        className={cn(
+          "flex flex-1 min-h-0 flex-col overflow-hidden",
+          isMobile ? "p-0" : "p-2",
+        )}
+      >
+        <div
+          className={cn(
+            "flex flex-1 min-h-0 overflow-hidden bg-background",
+            !isMobile && "rounded-md border border-border/60",
+          )}
+        >
           <ScrollSyncProvider sessionId={session.id}>
-            <StudioPanelGroup defaultLayout={defaultColumnLayout}>
-              <ResizablePanel
-                id={STUDIO_COLUMN_PANEL_IDS.raw}
-                defaultSize="35%"
-                minSize="15%"
-                style={{ overflow: "hidden", height: "100%" }}
-              >
-                <RawTranscriptColumn
-                  sessionId={session.id}
-                  isRecording={recording.isOwnedRecording}
-                />
-              </ResizablePanel>
+            {isMobile ? (
+              <StudioColumnsMobile
+                moduleLabel={moduleLabel}
+                raw={
+                  <RawTranscriptColumn
+                    sessionId={session.id}
+                    isRecording={recording.isOwnedRecording}
+                  />
+                }
+                cleaned={<CleanedTranscriptColumn sessionId={session.id} />}
+                concepts={<ConceptsColumn sessionId={session.id} />}
+                module={<ModuleColumn sessionId={session.id} />}
+              />
+            ) : (
+              <StudioPanelGroup defaultLayout={defaultColumnLayout}>
+                <ResizablePanel
+                  id={STUDIO_COLUMN_PANEL_IDS.raw}
+                  defaultSize="35%"
+                  minSize="15%"
+                  style={{ overflow: "hidden", height: "100%" }}
+                >
+                  <RawTranscriptColumn
+                    sessionId={session.id}
+                    isRecording={recording.isOwnedRecording}
+                  />
+                </ResizablePanel>
 
-              <StudioColumnHandle />
+                <StudioColumnHandle />
 
-              <ResizablePanel
-                id={STUDIO_COLUMN_PANEL_IDS.cleaned}
-                defaultSize="35%"
-                minSize="15%"
-                style={{ overflow: "hidden", height: "100%" }}
-              >
-                <CleanedTranscriptColumn sessionId={session.id} />
-              </ResizablePanel>
+                <ResizablePanel
+                  id={STUDIO_COLUMN_PANEL_IDS.cleaned}
+                  defaultSize="35%"
+                  minSize="15%"
+                  style={{ overflow: "hidden", height: "100%" }}
+                >
+                  <CleanedTranscriptColumn sessionId={session.id} />
+                </ResizablePanel>
 
-              <StudioColumnHandle />
+                <StudioColumnHandle />
 
-              <ResizablePanel
-                id={STUDIO_COLUMN_PANEL_IDS.concepts}
-                defaultSize="15%"
-                minSize="10%"
-                style={{ overflow: "hidden", height: "100%" }}
-              >
-                <ConceptsColumn sessionId={session.id} />
-              </ResizablePanel>
+                <ResizablePanel
+                  id={STUDIO_COLUMN_PANEL_IDS.concepts}
+                  defaultSize="15%"
+                  minSize="10%"
+                  style={{ overflow: "hidden", height: "100%" }}
+                >
+                  <ConceptsColumn sessionId={session.id} />
+                </ResizablePanel>
 
-              <StudioColumnHandle />
+                <StudioColumnHandle />
 
-              <ResizablePanel
-                id={STUDIO_COLUMN_PANEL_IDS.module}
-                defaultSize="15%"
-                minSize="10%"
-                style={{ overflow: "hidden", height: "100%" }}
-              >
-                <ModuleColumn sessionId={session.id} />
-              </ResizablePanel>
-            </StudioPanelGroup>
+                <ResizablePanel
+                  id={STUDIO_COLUMN_PANEL_IDS.module}
+                  defaultSize="15%"
+                  minSize="10%"
+                  style={{ overflow: "hidden", height: "100%" }}
+                >
+                  <ModuleColumn sessionId={session.id} />
+                </ResizablePanel>
+              </StudioPanelGroup>
+            )}
           </ScrollSyncProvider>
         </div>
       </div>

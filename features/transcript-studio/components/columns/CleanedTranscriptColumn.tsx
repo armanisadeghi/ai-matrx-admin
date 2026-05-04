@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { RefreshCw, Stars } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { ContentActionBar } from "@/components/content-actions/ContentActionBar";
 import { COLUMN_IDS } from "../../constants";
 import { runCleaningPassThunk } from "../../redux/runCleaningPass.thunk";
 import type { CleanedSegment } from "../../types";
@@ -130,6 +131,41 @@ export function CleanedTranscriptColumn({
     </button>
   );
 
+  const sessionTitle = useAppSelector(
+    (state) => state.transcriptStudio.byId[sessionId]?.title,
+  );
+
+  const exportText = useMemo(
+    () => segments.map((seg) => seg.text).join("\n\n"),
+    [segments],
+  );
+
+  const headerActions = (
+    <>
+      {manualButton}
+      {segments.length > 0 && (
+        <ContentActionBar
+          content={exportText}
+          title={
+            sessionTitle
+              ? `Cleaned Transcript — ${sessionTitle}`
+              : "Cleaned Transcript"
+          }
+          metadata={{
+            source: "transcript-studio",
+            column: "cleaned",
+            session_id: sessionId,
+            session_title: sessionTitle,
+            passes: segments.length,
+          }}
+          instanceKey={`studio-cleaned-${sessionId}`}
+          hideSpeaker
+          hidePencil
+        />
+      )}
+    </>
+  );
+
   return (
     <section
       className={cn("flex h-full min-h-0 flex-col bg-background", className)}
@@ -140,7 +176,7 @@ export function CleanedTranscriptColumn({
         label="Cleaned"
         status={status}
         dotState={dotState}
-        actions={manualButton}
+        actions={headerActions}
       />
       {segments.length === 0 ? (
         <ColumnEmptyState

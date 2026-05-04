@@ -2,7 +2,7 @@
 
 **Status:** `active`
 **Tier:** `2`
-**Last updated:** `2026-04-25`
+**Last updated:** `2026-05-03`
 
 > Combined doc covering the three audio-adjacent features. This doc lives under `features/audio/` as the umbrella.
 
@@ -43,6 +43,21 @@ Three sibling features that together form the audio pipeline:
 - **LiveKit** for real-time voice conversations (mobile-relevant)
 - Provider abstraction in `providers/` and `voice/`
 - **Mobile constraint from CLAUDE.md:** LiveKit requires `npx expo prebuild` and is **not Expo Go compatible**
+
+#### Transcription window panels (registry: `features/window-panels/registry/windowRegistryMetadata.ts`)
+
+| Slug | Component | AI cleanup | Notes |
+|---|---|---|---|
+| `voice-pad` | `components/official-candidate/voice-pad/components/VoicePad.tsx` | No | Compact recorder + transcript |
+| `voice-pad-advanced` | `components/official-candidate/voice-pad/components/VoicePadAdvanced.tsx` | No | Same Redux slice as `voice-pad`; UI variant. Likely retire candidate. |
+| `voice-pad-ai` | `components/official-candidate/voice-pad/components/VoicePadAi.tsx` | Yes | "Transcription Cleanup" — system-owned cleaner agents in `ai-agents.ts` |
+| `ai-voice-window` | `features/audio/voice/AiVoiceFloatingWorkspace.tsx` | N/A — TTS only | Unrelated to transcription |
+
+The full-page `Transcript Studio` (`features/transcript-studio/`) is the most capable transcription surface; see its FEATURE.md.
+
+#### Save-to-X capability
+
+All transcription surfaces (window panels above, all 4 Transcript Studio columns, and the legacy `/transcripts` viewer) render `<ContentActionBar />` from `components/content-actions/`. This delivers Save to Notes (with append/replace), Save to Tasks, Save to Scratch, Save to Code, Save as File, Email, Print, plus copy variants — without per-surface implementation. The append/replace flow lives in `features/notes/actions/quick-save/QuickNoteSaveCore.tsx`.
 
 ### TTS
 - Text → audio via provider adapters
@@ -118,6 +133,7 @@ Verify exact schemas in Supabase before extending.
 
 ## Change log
 
+- `2026-05-03` — VoicePadAi: replaced 6 hardcoded user-owned cleaner agents with 3 system-owned agents in `ai-agents.ts`; added `contextVariableKey` field on the agent shape so context can be wired as a regular variable for agents that don't use a context slot. All transcription window panels (voicePad, voicePadAdvanced, voicePadAi) and the legacy `/transcripts` viewer now expose `ContentActionBar` for Save to Notes/Tasks/Scratch/etc.
 - `2026-04-25` — Removed `features/audio` barrel `index.ts` files; consumers import from source files (and official voice components) per project no-barrel policy.
 - `2026-04-22` — claude: initial combined FEATURE.md for audio + tts + podcasts.
 

@@ -19,6 +19,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { PromoteToStudioButton } from '@/features/transcript-studio/components/conversion/PromoteToStudioButton';
+import { ContentActionBar } from '@/components/content-actions/ContentActionBar';
 
 export function TranscriptViewer() {
     const { activeTranscript, updateTranscript } = useTranscriptsContext();
@@ -229,6 +230,21 @@ export function TranscriptViewer() {
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
+                            {transcriptContent.trim().length > 0 && (
+                                <ContentActionBar
+                                    content={transcriptContent}
+                                    title={activeTranscript.title}
+                                    metadata={{
+                                        source: 'transcripts',
+                                        transcript_id: activeTranscript.id,
+                                        description: activeTranscript.description,
+                                        tags: activeTranscript.tags,
+                                    }}
+                                    instanceKey={`transcript-${activeTranscript.id}`}
+                                    hideSpeaker
+                                    hidePencil
+                                />
+                            )}
                             <PromoteToStudioButton transcript={activeTranscript} />
                             <Button variant="ghost" size="icon" onClick={() => setIsEditingMetadata(true)}>
                                 <Edit2 className="h-4 w-4" />

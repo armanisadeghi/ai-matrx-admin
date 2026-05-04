@@ -21,12 +21,12 @@
  *      variable_definitions + context_slots.
  *   2. createManualInstance({ agentId, displayMode: "direct", autoRun: false,
  *      apiEndpointMode: "agent" }) — snapshots definitions onto the instance.
- *   3. setUserVariableValues({ [agent.transcriptVariableKey]: transcript })
- *      — userValues takes priority in the three-tier resolution.
- *   4. setContextEntries(...) — always set when context is provided. If the
- *      agent declared a matching slot we mark `slotMatched: true` and use the
- *      declared key; otherwise we use a generic "user_context" key so the
- *      agent can still reach it via tools.
+ *   3. setUserVariableValues — wire the transcript to its variable key, and
+ *      (if the agent declares `contextVariableKey`) wire user context as a
+ *      regular variable too. userValues take priority in resolution.
+ *   4. setContextEntries — only when the agent uses slot-based context
+ *      (contextSlotKey) or as a fallback for free-form context. Skipped when
+ *      the agent uses contextVariableKey instead.
  *   5. executeInstance — fire-and-forget. Redux is the source of truth for
  *      streaming progress; selectors below feed the UI live.
  *
@@ -116,15 +116,23 @@ export function useAiPostProcess() {
           }),
         ).unwrap();
 
+        const contextValue = context.trim();
+        const hasContext = contextValue.length > 0;
+
+        const variableValues: Record<string, string> = {
+          [agent.transcriptVariableKey]: transcript,
+        };
+        if (hasContext && agent.contextVariableKey) {
+          variableValues[agent.contextVariableKey] = contextValue;
+        }
         dispatch(
           setUserVariableValues({
             conversationId: cid,
-            values: { [agent.transcriptVariableKey]: transcript },
+            values: variableValues,
           }),
         );
 
-        const contextValue = context.trim();
-        if (contextValue.length > 0) {
+        if (hasContext && !agent.contextVariableKey) {
           const key = agent.contextSlotKey ?? FALLBACK_CONTEXT_KEY;
           dispatch(
             setContextEntries({

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Loader2, Mic, Plus } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Loader2, Mic, Pencil, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -14,7 +14,9 @@ import { activeSessionIdSet } from "../redux/slice";
 import {
   createSessionThunk,
   fetchSessionsThunk,
+  updateSessionThunk,
 } from "../redux/thunks";
+import { NEW_SESSION_DEFAULT_TITLE } from "../constants";
 import type { StudioSession } from "../types";
 
 interface StudioSidebarProps {
@@ -144,26 +146,111 @@ interface SidebarItemProps {
 }
 
 function SidebarItem({ session, isActive, onPick }: SidebarItemProps) {
+  const dispatch = useAppDispatch();
   const subtitle = formatSessionSubtitle(session);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(session.title);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (!editing) setDraft(session.title);
+  }, [session.title, editing]);
+
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editing]);
+
+  const startEdit = useCallback(() => {
+    setDraft(session.title);
+    setEditing(true);
+  }, [session.title]);
+
+  const commit = useCallback(() => {
+    const next = draft.trim() || NEW_SESSION_DEFAULT_TITLE;
+    setEditing(false);
+    if (next === session.title) return;
+    void dispatch(
+      updateSessionThunk({ id: session.id, patch: { title: next } }),
+    );
+  }, [draft, session.title, session.id, dispatch]);
+
   return (
-    <li>
-      <button
-        type="button"
-        onClick={onPick}
-        className={cn(
-          "flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left transition-colors",
-          isActive
-            ? "bg-primary/10 border-l-2 border-primary"
-            : "border-l-2 border-transparent hover:bg-accent/40",
+    <li
+      className={cn(
+        "group relative flex flex-col gap-0.5 px-3 py-2 text-left transition-colors",
+        isActive
+          ? "bg-primary/10 border-l-2 border-primary"
+          : "border-l-2 border-transparent hover:bg-accent/40",
+        !editing && "cursor-pointer",
+      )}
+      onClick={() => {
+        if (!editing) onPick();
+      }}
+      onDoubleClick={(e) => {
+        e.stopPropagation();
+        startEdit();
+      }}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (editing) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onPick();
+        }
+      }}
+    >
+      <div className="flex min-w-0 items-center gap-1">
+        {editing ? (
+          <input
+            ref={inputRef}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              e.stopPropagation();
+              if (e.key === "Enter") {
+                e.preventDefault();
+                commit();
+              } else if (e.key === "Escape") {
+                e.preventDefault();
+                setDraft(session.title);
+                setEditing(false);
+              }
+            }}
+            maxLength={120}
+            aria-label="Rename session"
+            className="min-w-0 flex-1 rounded-sm bg-background px-1 text-xs font-medium outline-none ring-1 ring-ring"
+          />
+        ) : (
+          <>
+            <span className="line-clamp-1 flex-1 min-w-0 text-xs font-medium">
+              {session.title}
+            </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                startEdit();
+              }}
+              aria-label="Rename session"
+              title="Rename"
+              className="hidden h-5 w-5 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-accent hover:text-foreground group-hover:flex"
+            >
+              <Pencil className="h-3 w-3" />
+            </button>
+          </>
         )}
-      >
-        <span className="line-clamp-1 text-xs font-medium">
-          {session.title}
-        </span>
+      </div>
+      {!editing && (
         <span className="line-clamp-1 text-[10px] text-muted-foreground">
           {subtitle}
         </span>
-      </button>
+      )}
     </li>
   );
 }

@@ -14,6 +14,7 @@ import {
 } from "@/lib/redux/slices/voicePadSlice";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
+import { ContentActionBar } from "@/components/content-actions/ContentActionBar";
 
 const VoicePadExpanded = lazy(() => import("./VoicePadExpanded"));
 
@@ -85,6 +86,10 @@ export default function VoicePad({ instanceId }: VoicePadProps) {
     [dispatch, instanceId],
   );
 
+  const allText = entries.map((e) => e.text).join("\n\n");
+  const currentText = draftText !== null ? draftText : allText;
+  const hasContent = currentText.trim().length > 0;
+
   return (
     <WindowPanel
       id={windowId}
@@ -106,6 +111,16 @@ export default function VoicePad({ instanceId }: VoicePadProps) {
           variant="icon-only"
           size="xs"
         />
+      }
+      footerRight={
+        hasContent ? (
+          <ContentActionBar
+            content={currentText}
+            title="Voice Pad Transcript"
+            hideSpeaker
+            hidePencil
+          />
+        ) : undefined
       }
     >
       <Suspense fallback={<ExpandedLoadingFallback />}>

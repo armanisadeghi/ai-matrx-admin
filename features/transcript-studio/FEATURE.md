@@ -2,7 +2,7 @@
 
 **Status:** `scaffolded`
 **Tier:** `1`
-**Last updated:** `2026-05-02`
+**Last updated:** `2026-05-03`
 
 ---
 
@@ -108,3 +108,4 @@ These are sibling features. The simple `features/transcripts/` view is shaped fo
 - **2026-05-02** — Phase 1 scaffolding: 8-table schema migrated, slice + thunks + service for sessions CRUD, route + SSR hydrator + sidebar + empty state. Active-session view is a placeholder until Phase 3.
 - **2026-05-03** — Phases 2–10 shipped: global recording portal, Column 1 wiring, 4-column shell + sync scroll, cleaning agent (resume marker), concept agent, module column + tasks, settings sidebar, bidirectional `transcripts` ↔ studio conversion, window-panel registration (overlayId `transcriptStudioWindow`, Tools-grid tile, `?panels=studio` deep-link).
 - **2026-05-03** — Phase 11: cross-tab realtime via Postgres Changes — `transcriptStudioRealtimeMiddleware` subscribes to `studio_sessions` (user-wide) and to `studio_raw_segments` / `studio_cleaned_segments` / `studio_concept_items` / `studio_module_segments` (active-session-scoped, re-binds on session switch). All five tables added to the `supabase_realtime` publication. Three v1.5 modules registered: `flashcards` (XML `<flashcards>` block), `decisions` (`decision_tree` JSON), `quiz` (`quiz_title` JSON) — each reuses a shared `buildModuleScopeFromInputs` helper. Default shortcut ids are placeholders until the agents are authored.
+- **2026-05-03** — Per-column save toolbars: every column header (Raw, Cleaned, Concepts, Module) renders `<ContentActionBar />` from `components/content-actions/` once it has content. Users can Save to Notes (with append/replace), Tasks, Scratch, Code, File, Email, etc. Saves carry session metadata (`session_id`, `session_title`, `column`, plus column-specific fields like `module_id`, `passes`, `concept_count`).

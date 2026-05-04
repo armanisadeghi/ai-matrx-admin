@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { ContentActionBar } from "@/components/content-actions/ContentActionBar";
 import { COLUMN_IDS } from "../../constants";
 import { runConceptPassThunk } from "../../redux/runConceptPass.thunk";
 import type { ConceptItem, ConceptKind } from "../../types";
@@ -145,6 +146,56 @@ export function ConceptsColumn({ sessionId, className }: ConceptsColumnProps) {
     </button>
   );
 
+  const sessionTitle = useAppSelector(
+    (state) => state.transcriptStudio.byId[sessionId]?.title,
+  );
+
+  const exportMarkdown = useMemo(() => {
+    if (items.length === 0) return "";
+    const groups = new Map<ConceptKind, ConceptItem[]>();
+    for (const item of items) {
+      const list = groups.get(item.kind) ?? [];
+      list.push(item);
+      groups.set(item.kind, list);
+    }
+    const sections: string[] = [];
+    for (const [kind, list] of groups) {
+      const heading = KIND_LABEL[kind].replace(/^./, (c) => c.toUpperCase());
+      const lines = list.map((it) => {
+        const tc = formatTimecode(it.tStart);
+        const time = tc ? ` *(${tc})*` : "";
+        const desc = it.description ? `\n  ${it.description}` : "";
+        return `- **${it.label}**${time}${desc}`;
+      });
+      sections.push(`## ${heading}s\n\n${lines.join("\n")}`);
+    }
+    return sections.join("\n\n");
+  }, [items]);
+
+  const headerActions = (
+    <>
+      {manualButton}
+      {items.length > 0 && (
+        <ContentActionBar
+          content={exportMarkdown}
+          title={
+            sessionTitle ? `Concepts — ${sessionTitle}` : "Concepts"
+          }
+          metadata={{
+            source: "transcript-studio",
+            column: "concepts",
+            session_id: sessionId,
+            session_title: sessionTitle,
+            concept_count: items.length,
+          }}
+          instanceKey={`studio-concepts-${sessionId}`}
+          hideSpeaker
+          hidePencil
+        />
+      )}
+    </>
+  );
+
   return (
     <section
       className={cn("flex h-full min-h-0 flex-col bg-background", className)}
@@ -155,7 +206,7 @@ export function ConceptsColumn({ sessionId, className }: ConceptsColumnProps) {
         label="Concepts"
         status={status}
         dotState={dotState}
-        actions={manualButton}
+        actions={headerActions}
       />
       {items.length === 0 ? (
         <ColumnEmptyState

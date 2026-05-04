@@ -51,12 +51,12 @@ export function RecordButton({ sessionId, className }: RecordButtonProps) {
         {isRecording ? (
           <>
             <Square className="h-3 w-3 fill-current" />
-            <span>Stop</span>
+            <span className="hidden sm:inline">Stop</span>
           </>
         ) : (
           <>
             <Mic className="h-3.5 w-3.5" />
-            <span>Record</span>
+            <span className="hidden sm:inline">Record</span>
           </>
         )}
       </button>

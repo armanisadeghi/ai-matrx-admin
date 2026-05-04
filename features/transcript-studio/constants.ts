@@ -75,12 +75,8 @@ export const DEFAULT_CONCEPT_SHORTCUT_ID =
 // Tasks module agent (Column 4 default). Variable surface: cleaned_window /
 // prior_tasks / session_title. Output: a markdown checklist that
 // BlockRenderer's `tasks` block can render directly. See FEATURE.md for spec.
-//
-// PLACEHOLDER — replace with the real shortcut id when the agent is created.
-// The pipeline + parser + UI all work; agent invocation will fail until a
-// valid id lands here, surfacing as `failed` runs in Column 4.
 export const DEFAULT_TASKS_SHORTCUT_ID =
-  "00000000-0000-0000-0000-000000000000";
+  "c32f3884-65f1-41dd-b426-727d60cb7d6b";
 
 // V1.5 module agents — placeholders until the corresponding shortcuts are
 // authored. Each module declares the agent contract via the FEATURE.md spec

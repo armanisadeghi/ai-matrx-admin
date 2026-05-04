@@ -1,21 +1,10 @@
 "use client";
 
 import React, { useRef, useCallback, useState } from "react";
-import {
-  Copy,
-  Mic,
-  Plus,
-  Minus,
-  Type,
-  Trash2,
-  X,
-  StickyNote,
-} from "lucide-react";
+import { Mic, Plus, Minus, Type, Trash2, X } from "lucide-react";
 import ActionFeedbackButton from "@/components/official/ActionFeedbackButton";
+import { ContentActionBar } from "@/components/content-actions/ContentActionBar";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { openSaveToNotes } from "@/lib/redux/slices/overlaySlice";
 
 interface TranscriptEntry {
   id: string;
@@ -77,37 +66,9 @@ export function VoicePadFooterRight({
   fontSize,
   onFontSizeChange,
 }: VoicePadFooterProps) {
-  const dispatch = useAppDispatch();
   const allText = entries.map((e) => e.text).join("\n\n");
-
-  const handleSaveToNotes = useCallback(() => {
-    const text = draftText !== null ? draftText : allText;
-    if (!text.trim()) {
-      toast.info("Nothing to save");
-      return;
-    }
-    dispatch(
-      openSaveToNotes({
-        content: text,
-        defaultFolder: "transcripts",
-        instanceId: crypto.randomUUID(),
-      }),
-    );
-  }, [dispatch, draftText, allText]);
-
-  const handleCopyAll = useCallback(async () => {
-    const text = draftText !== null ? draftText : allText;
-    if (!text.trim()) {
-      toast.info("Nothing to copy");
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success("Copied to clipboard");
-    } catch {
-      toast.error("Failed to copy");
-    }
-  }, [draftText, allText]);
+  const text = draftText !== null ? draftText : allText;
+  const hasContent = text.trim().length > 0;
 
   return (
     <>
@@ -129,18 +90,14 @@ export function VoicePadFooterRight({
         <Plus />
       </button>
       <div className="mx-0.5 h-3 w-px bg-border/50" />
-      <ActionFeedbackButton
-        icon={<Copy />}
-        tooltip="Copy"
-        onClick={handleCopyAll}
-        className="text-muted-foreground"
-      />
-      <ActionFeedbackButton
-        icon={<StickyNote />}
-        tooltip="Save to Notes"
-        onClick={handleSaveToNotes}
-        className="text-muted-foreground"
-      />
+      {hasContent && (
+        <ContentActionBar
+          content={text}
+          title="Voice Pad Transcript"
+          hideSpeaker
+          hidePencil
+        />
+      )}
       <ActionFeedbackButton
         icon={<Trash2 />}
         tooltip="Clear"

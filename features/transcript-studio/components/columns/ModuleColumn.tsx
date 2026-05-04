@@ -5,6 +5,7 @@ import { ListChecks, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import MarkdownStream from "@/components/MarkdownStream";
+import { ContentActionBar } from "@/components/content-actions/ContentActionBar";
 import { COLUMN_IDS } from "../../constants";
 import { runModulePassThunk } from "../../redux/runModulePass.thunk";
 import type { ModuleSegment } from "../../types";
@@ -119,6 +120,48 @@ export function ModuleColumn({ sessionId, className }: ModuleColumnProps) {
     </button>
   );
 
+  const sessionTitle = useAppSelector(
+    (state) => state.transcriptStudio.byId[sessionId]?.title,
+  );
+
+  const exportMarkdown = useMemo(() => {
+    if (segments.length === 0) return "";
+    return segments
+      .map((seg) => {
+        return typeof seg.payload === "string"
+          ? seg.payload
+          : JSON.stringify(seg.payload, null, 2);
+      })
+      .join("\n\n---\n\n");
+  }, [segments]);
+
+  const headerActions = (
+    <>
+      {manualButton}
+      {segments.length > 0 && (
+        <ContentActionBar
+          content={exportMarkdown}
+          title={
+            sessionTitle
+              ? `${moduleDef?.label ?? "Module"} — ${sessionTitle}`
+              : moduleDef?.label ?? "Module Output"
+          }
+          metadata={{
+            source: "transcript-studio",
+            column: "module",
+            session_id: sessionId,
+            session_title: sessionTitle,
+            module_id: moduleId,
+            passes: segments.length,
+          }}
+          instanceKey={`studio-module-${sessionId}-${moduleId}`}
+          hideSpeaker
+          hidePencil
+        />
+      )}
+    </>
+  );
+
   const HeaderIcon = moduleDef?.icon ?? ListChecks;
 
   return (
@@ -131,7 +174,7 @@ export function ModuleColumn({ sessionId, className }: ModuleColumnProps) {
         label="Module"
         status={status}
         dotState={dotState}
-        actions={manualButton}
+        actions={headerActions}
       />
       {!moduleDef ? (
         <ColumnEmptyState
