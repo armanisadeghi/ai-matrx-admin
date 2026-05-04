@@ -442,7 +442,14 @@ function saveItems(ctx: ContentActionContext): MenuItem[] {
           )
         )
           return;
-        dispatch(openSaveToNotes({ content }));
+        dispatch(
+          openSaveToNotes({
+            content,
+            instanceId: ctx.instanceKey
+              ? `save-notes-${ctx.instanceKey}`
+              : `save-notes-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          }),
+        );
       },
       category: "Actions",
       showToast: false,
@@ -688,13 +695,19 @@ export function resumePendingContentAuthAction(
         .then(() => toast.success("Saved to Scratch!"))
         .catch(() => toast.error("Failed to save to Scratch"));
     } else if (action === "save-notes") {
-      dispatch(openSaveToNotes({ content: savedContent }));
+      dispatch(
+        openSaveToNotes({
+          content: savedContent,
+          instanceId: `save-notes-resume-${Date.now()}`,
+        }),
+      );
     } else if (action === "save-to-code") {
       const { code, language } = extractFirstCodeBlock(savedContent);
       dispatch(
         openSaveToCode({
           content: code.trim() ? code : savedContent,
           language,
+          instanceId: `save-code-resume-${Date.now()}`,
         }),
       );
     } else if (action === "save-code-scratch") {

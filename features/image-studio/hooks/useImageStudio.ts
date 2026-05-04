@@ -204,6 +204,14 @@ export function useImageStudio(
   const store = useAppStore();
 
   const [files, setFiles] = useState<StudioSourceFile[]>([]);
+  // Mirror `files` into a ref so async actions (saveAll, describeFile) can
+  // read the LATEST state mid-flight. React's state-closure semantics mean
+  // a saveAll() invoked immediately after `await generate()` would see the
+  // pre-generate snapshot of `files` — every variant.dataUrl missing —
+  // unless we read through this ref. Updated synchronously on every render
+  // so the ref is fresh by the time React commits.
+  const filesRef = useRef<StudioSourceFile[]>(files);
+  filesRef.current = files;
   const [selectedPresetIds, setSelectedPresetIds] = useState<string[]>([]);
   const [format, setFormat] = useState<OutputFormat>(DEFAULT_FORMAT);
   const [quality, setQuality] = useState<number>(DEFAULT_QUALITY);
@@ -432,7 +440,11 @@ export function useImageStudio(
       // expires in an hour. Callers that need private can pass it explicitly.
       const visibility: Visibility = saveOptions?.visibility ?? "public";
 
-      // Collect every variant that hasn't been saved yet.
+      // Collect every variant that hasn't been saved yet. Read through
+      // `filesRef.current` so we see variants that were just produced by a
+      // sibling `await studio.generate()` — the closure-captured `files`
+      // would still be the pre-generate snapshot.
+      const liveFiles = filesRef.current;
       const pending: Array<{
         studioFileId: string;
         variantKey: string;
@@ -440,7 +452,7 @@ export function useImageStudio(
         presetId: string;
         dataUrl: string;
       }> = [];
-      for (const f of files) {
+      for (const f of liveFiles) {
         for (const [key, v] of Object.entries(f.variants)) {
           if (v.savedAt) continue;
           pending.push({
@@ -490,7 +502,7 @@ export function useImageStudio(
         let lastParentFolderId: string | null = null;
 
         for (const [studioFileId, group] of pendingByFile) {
-          const sourceFile = files.find((f) => f.id === studioFileId);
+          const sourceFile = liveFiles.find((f) => f.id === studioFileId);
           if (!sourceFile) continue;
 
           // Each source file gets its own subfolder so all of its variants

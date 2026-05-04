@@ -564,7 +564,14 @@ export function getMessageActions(ctx: MessageActionContext): MenuItem[] {
           )
         )
           return;
-        dispatch(openSaveToNotes({ content }));
+        dispatch(
+          openSaveToNotes({
+            content,
+            instanceId: messageId
+              ? `save-notes-${messageId}`
+              : `save-notes-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          }),
+        );
       },
       category: "Actions",
       showToast: false,
@@ -693,7 +700,12 @@ export function resumePendingAuthAction(
         .then(() => toast.success("Saved to Scratch!"))
         .catch(() => toast.error("Failed to save to Scratch"));
     } else if (action === "save-notes") {
-      dispatch(openSaveToNotes({ content: savedContent }));
+      dispatch(
+        openSaveToNotes({
+          content: savedContent,
+          instanceId: `save-notes-resume-${Date.now()}`,
+        }),
+      );
     } else if (action === "add-to-tasks") {
       dispatch(
         openOverlay({

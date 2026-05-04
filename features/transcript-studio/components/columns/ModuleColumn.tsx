@@ -8,12 +8,17 @@ import MarkdownStream from "@/components/MarkdownStream";
 import { ContentActionBar } from "@/components/content-actions/ContentActionBar";
 import { COLUMN_IDS } from "../../constants";
 import { runModulePassThunk } from "../../redux/runModulePass.thunk";
+import {
+  deleteModuleSegmentThunk,
+  updateModuleSegmentPayloadThunk,
+} from "../../redux/thunks";
 import type { ModuleSegment } from "../../types";
 import { getModule } from "../../modules/registry";
 import { useStudioSettings } from "../../hooks/useStudioSettings";
 import { useScrollSyncOptional } from "../scroll-sync/ScrollSyncProvider";
 import { ColumnEmptyState } from "./ColumnEmptyState";
 import { ColumnHeader } from "./ColumnHeader";
+import { EditableTextSegmentRow } from "./EditableTextSegmentRow";
 import { SegmentWrapper } from "./SegmentWrapper";
 
 interface ModuleColumnProps {
@@ -205,7 +210,27 @@ export function ModuleColumn({ sessionId, className }: ModuleColumnProps) {
           className="flex-1 min-h-0 overflow-y-auto py-1.5"
         >
           {segments.map((seg) => (
-            <ModuleSegmentRender key={seg.id} segment={seg} />
+            <ModuleSegmentRender
+              key={seg.id}
+              segment={seg}
+              onSave={(text) =>
+                void dispatch(
+                  updateModuleSegmentPayloadThunk({
+                    sessionId,
+                    segmentId: seg.id,
+                    payload: text,
+                  }),
+                )
+              }
+              onDelete={() =>
+                void dispatch(
+                  deleteModuleSegmentThunk({
+                    sessionId,
+                    segmentId: seg.id,
+                  }),
+                )
+              }
+            />
           ))}
         </div>
       )}
@@ -226,11 +251,21 @@ export function ModuleColumn({ sessionId, className }: ModuleColumnProps) {
  * same way the chat surface does. MarkdownStream parses the block type out
  * of the content and dispatches to the right renderer.
  */
-function ModuleSegmentRender({ segment }: { segment: ModuleSegment }) {
+interface ModuleSegmentRenderProps {
+  segment: ModuleSegment;
+  onSave: (text: string) => void;
+  onDelete: () => void;
+}
+
+function ModuleSegmentRender({
+  segment,
+  onSave,
+  onDelete,
+}: ModuleSegmentRenderProps) {
   const content =
     typeof segment.payload === "string"
       ? segment.payload
-      : JSON.stringify(segment.payload);
+      : JSON.stringify(segment.payload, null, 2);
   return (
     <SegmentWrapper
       column={COLUMN_IDS.module}
@@ -238,7 +273,16 @@ function ModuleSegmentRender({ segment }: { segment: ModuleSegment }) {
       tEnd={segment.tEnd ?? segment.tStart ?? 0}
       className="px-2"
     >
-      <MarkdownStream content={content} hideCopyButton />
+      <EditableTextSegmentRow
+        text={content}
+        itemKind="module pass"
+        onSave={onSave}
+        onDelete={onDelete}
+      >
+        <div className="pr-12">
+          <MarkdownStream content={content} hideCopyButton />
+        </div>
+      </EditableTextSegmentRow>
     </SegmentWrapper>
   );
 }

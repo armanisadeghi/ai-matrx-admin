@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Settings2 } from "lucide-react";
+import { Settings2, Trash2 } from "lucide-react";
 import type { Layout } from "react-resizable-panels";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ResizablePanel } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
 import {
+  deleteSessionThunk,
   fetchCleanedSegmentsThunk,
   fetchConceptItemsThunk,
   fetchModuleSegmentsThunk,
@@ -27,6 +29,7 @@ import {
 import { ScrollSyncProvider } from "./scroll-sync/ScrollSyncProvider";
 import { SettingsSidebar } from "./settings/SettingsSidebar";
 import { StudioColumnsMobile } from "./StudioColumnsMobile";
+import { StudioHeaderPortal } from "./StudioHeaderPortal";
 import { useStudioAutoLabel } from "../hooks/useStudioAutoLabel";
 import { useStudioSession } from "../hooks/useStudioSession";
 import { useStudioSettings } from "../hooks/useStudioSettings";
@@ -110,6 +113,7 @@ export function ActiveSessionView({
   useStudioAutoLabel({ sessionId: session.id, currentTitle: session.title });
 
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const isMobile = useIsMobile();
 
   const subtitle = useMemo(() => {
@@ -127,33 +131,57 @@ export function ActiveSessionView({
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col bg-textured">
-      <header className="flex shrink-0 items-center justify-between gap-2 border-b border-border bg-background px-3 py-2 sm:px-4 sm:gap-3">
+      {/* Mount the page-specific portal inside the active session — this
+          puts the title + Record + Save-as-Transcript into the global app
+          header, leaving the studio's local header for status + settings. */}
+      <StudioHeaderPortal session={session} />
+
+      <header className="flex shrink-0 items-center justify-between gap-2 border-b border-border bg-background px-3 py-1.5 sm:px-4 sm:gap-3">
         <div className="flex min-w-0 flex-col">
+          {/* Title is in the global header; show a thinner secondary label
+              here on small viewports where the global header is hidden. */}
           <EditableSessionTitle
             sessionId={session.id}
             title={session.title}
+            className="sm:hidden"
           />
           <p className="hidden sm:block text-[11px] text-muted-foreground">
             {subtitle}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-          <SaveAsTranscriptButton
-            sessionId={session.id}
-            hasLinkedTranscript={Boolean(session.transcriptId)}
-          />
-          <RecordButton sessionId={session.id} />
+          {/* Mobile-only — the global header isn't visible to the studio
+              tab strip on phones, so keep the action buttons here. */}
+          <div className="flex items-center gap-1.5 sm:hidden">
+            <SaveAsTranscriptButton
+              sessionId={session.id}
+              hasLinkedTranscript={Boolean(session.transcriptId)}
+            />
+            <RecordButton sessionId={session.id} />
+          </div>
           <button
             type="button"
             onClick={() => setSettingsOpen(true)}
             aria-label="Open session settings"
             title="Session settings"
             className={cn(
-              "inline-flex h-8 w-8 items-center justify-center rounded-md transition-colors",
+              "inline-flex h-7 w-7 items-center justify-center rounded-md transition-colors",
               "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
             )}
           >
             <Settings2 className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setConfirmDelete(true)}
+            aria-label="Delete session"
+            title="Delete session"
+            className={cn(
+              "inline-flex h-7 w-7 items-center justify-center rounded-md transition-colors",
+              "text-muted-foreground hover:bg-destructive/15 hover:text-destructive",
+            )}
+          >
+            <Trash2 className="h-4 w-4" />
           </button>
         </div>
       </header>
@@ -162,6 +190,24 @@ export function ActiveSessionView({
         sessionId={session.id}
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
+      />
+
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title="Delete session?"
+        description={
+          <>
+            Permanently remove <b>{session.title}</b> and all of its raw,
+            cleaned, concept, and module data. This cannot be undone.
+          </>
+        }
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={() => {
+          setConfirmDelete(false);
+          void dispatch(deleteSessionThunk(session.id));
+        }}
       />
 
       <div

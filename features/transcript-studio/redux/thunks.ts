@@ -10,6 +10,10 @@ import { toast } from "sonner";
 import type { ChunkCompleteInfo } from "@/features/audio/hooks/useChunkedRecordAndTranscribe";
 import {
   createSession,
+  deleteCleanedSegment,
+  deleteConceptItem,
+  deleteModuleSegment,
+  deleteRawSegment,
   fetchSessionSettings,
   insertRawSegment,
   listCleanedSegments,
@@ -18,8 +22,13 @@ import {
   listRawSegments,
   listSessions,
   softDeleteSession,
+  updateCleanedSegmentText,
+  updateConceptItem,
+  updateModuleSegmentPayload,
+  updateRawSegmentText,
   updateSession,
   upsertSessionSettings,
+  type ConceptItemPatch,
   type UpsertSessionSettingsInput,
 } from "../service/studioService";
 import type {
@@ -34,10 +43,18 @@ import type {
 } from "../types";
 import {
   activeSessionIdSet,
+  cleanedSegmentRemoved,
+  cleanedSegmentUpdated,
   cleanedSegmentsLoaded,
+  conceptItemRemoved,
+  conceptItemUpdated,
   conceptsLoaded,
+  moduleSegmentRemoved,
+  moduleSegmentUpdated,
   moduleSegmentsLoaded,
   moduleSwitched,
+  rawSegmentRemoved,
+  rawSegmentUpdated,
   rawSegmentsAppended,
   rawSegmentsLoaded,
   sessionRemoved,
@@ -349,3 +366,162 @@ export const ingestRawChunkThunk = createAsyncThunk<
     }
   },
 );
+
+// ── Per-row edit / delete thunks ────────────────────────────────────
+//
+// Each thunk does an optimistic update first, persists, and reverts on
+// error. The reducers (`*Updated` / `*Removed`) are idempotent, so the
+// realtime middleware echoing the same change is harmless.
+
+export const updateRawSegmentTextThunk = createAsyncThunk<
+  RawSegment,
+  { sessionId: string; segmentId: string; text: string }
+>(
+  "transcriptStudio/updateRawSegmentText",
+  async ({ sessionId, segmentId, text }, { dispatch, rejectWithValue }) => {
+    try {
+      const updated = await updateRawSegmentText(segmentId, text);
+      dispatch(rawSegmentUpdated({ sessionId, segment: updated }));
+      return updated;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update raw segment";
+      toast.error(message);
+      return rejectWithValue(message);
+    }
+  },
+);
+
+export const deleteRawSegmentThunk = createAsyncThunk<
+  void,
+  { sessionId: string; segmentId: string }
+>(
+  "transcriptStudio/deleteRawSegment",
+  async ({ sessionId, segmentId }, { dispatch, rejectWithValue }) => {
+    try {
+      dispatch(rawSegmentRemoved({ sessionId, segmentId }));
+      await deleteRawSegment(segmentId);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to delete raw segment";
+      toast.error(message);
+      return rejectWithValue(message);
+    }
+  },
+);
+
+export const updateCleanedSegmentTextThunk = createAsyncThunk<
+  CleanedSegment,
+  { sessionId: string; segmentId: string; text: string }
+>(
+  "transcriptStudio/updateCleanedSegmentText",
+  async ({ sessionId, segmentId, text }, { dispatch, rejectWithValue }) => {
+    try {
+      const updated = await updateCleanedSegmentText(segmentId, text);
+      dispatch(cleanedSegmentUpdated({ sessionId, segment: updated }));
+      return updated;
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to update cleaned segment";
+      toast.error(message);
+      return rejectWithValue(message);
+    }
+  },
+);
+
+export const deleteCleanedSegmentThunk = createAsyncThunk<
+  void,
+  { sessionId: string; segmentId: string }
+>(
+  "transcriptStudio/deleteCleanedSegment",
+  async ({ sessionId, segmentId }, { dispatch, rejectWithValue }) => {
+    try {
+      dispatch(cleanedSegmentRemoved({ sessionId, segmentId }));
+      await deleteCleanedSegment(segmentId);
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to delete cleaned segment";
+      toast.error(message);
+      return rejectWithValue(message);
+    }
+  },
+);
+
+export const updateConceptItemThunk = createAsyncThunk<
+  ConceptItem,
+  { sessionId: string; itemId: string; patch: ConceptItemPatch }
+>(
+  "transcriptStudio/updateConceptItem",
+  async ({ sessionId, itemId, patch }, { dispatch, rejectWithValue }) => {
+    try {
+      const updated = await updateConceptItem(itemId, patch);
+      dispatch(conceptItemUpdated({ sessionId, item: updated }));
+      return updated;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update concept";
+      toast.error(message);
+      return rejectWithValue(message);
+    }
+  },
+);
+
+export const deleteConceptItemThunk = createAsyncThunk<
+  void,
+  { sessionId: string; itemId: string }
+>(
+  "transcriptStudio/deleteConceptItem",
+  async ({ sessionId, itemId }, { dispatch, rejectWithValue }) => {
+    try {
+      dispatch(conceptItemRemoved({ sessionId, itemId }));
+      await deleteConceptItem(itemId);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to delete concept";
+      toast.error(message);
+      return rejectWithValue(message);
+    }
+  },
+);
+
+export const updateModuleSegmentPayloadThunk = createAsyncThunk<
+  ModuleSegment,
+  { sessionId: string; segmentId: string; payload: unknown }
+>(
+  "transcriptStudio/updateModuleSegmentPayload",
+  async ({ sessionId, segmentId, payload }, { dispatch, rejectWithValue }) => {
+    try {
+      const updated = await updateModuleSegmentPayload(segmentId, payload);
+      dispatch(moduleSegmentUpdated({ sessionId, segment: updated }));
+      return updated;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update module segment";
+      toast.error(message);
+      return rejectWithValue(message);
+    }
+  },
+);
+
+export const deleteModuleSegmentThunk = createAsyncThunk<
+  void,
+  { sessionId: string; segmentId: string }
+>(
+  "transcriptStudio/deleteModuleSegment",
+  async ({ sessionId, segmentId }, { dispatch, rejectWithValue }) => {
+    try {
+      dispatch(moduleSegmentRemoved({ sessionId, segmentId }));
+      await deleteModuleSegment(segmentId);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to delete module segment";
+      toast.error(message);
+      return rejectWithValue(message);
+    }
+  },
+);
+

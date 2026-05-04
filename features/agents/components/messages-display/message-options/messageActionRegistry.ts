@@ -437,7 +437,17 @@ function exportItems(ctx: MessageActionContext): MenuItem[] {
 }
 
 function saveItems(ctx: MessageActionContext): MenuItem[] {
-  const { content, dispatch, onClose } = ctx;
+  const { content, dispatch, onClose, messageId } = ctx;
+  // Per-message instance keys so saving from two different messages doesn't
+  // overwrite the first window's draft via the singleton "default" slot.
+  // Falls back to a random id when there's no messageId (shouldn't happen
+  // for saved messages, but keeps the contract robust).
+  const saveNotesInstanceId = messageId
+    ? `save-notes-${messageId}`
+    : `save-notes-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const saveCodeInstanceId = messageId
+    ? `save-code-${messageId}`
+    : `save-code-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   return [
     {
       key: "save-scratch",
@@ -480,7 +490,7 @@ function saveItems(ctx: MessageActionContext): MenuItem[] {
           )
         )
           return;
-        dispatch(openSaveToNotes({ content }));
+        dispatch(openSaveToNotes({ content, instanceId: saveNotesInstanceId }));
       },
       category: "Actions",
       showToast: false,
@@ -541,6 +551,7 @@ function saveItems(ctx: MessageActionContext): MenuItem[] {
           openSaveToCode({
             content: code.trim() ? code : content,
             language,
+            instanceId: saveCodeInstanceId,
           }),
         );
       },
@@ -1132,13 +1143,19 @@ export function resumePendingAuthAction(
         .then(() => toast.success("Saved to Scratch!"))
         .catch(() => toast.error("Failed to save to Scratch"));
     } else if (action === "save-notes") {
-      dispatch(openSaveToNotes({ content: savedContent }));
+      dispatch(
+        openSaveToNotes({
+          content: savedContent,
+          instanceId: `save-notes-resume-${Date.now()}`,
+        }),
+      );
     } else if (action === "save-to-code") {
       const { code, language } = extractFirstCodeBlock(savedContent);
       dispatch(
         openSaveToCode({
           content: code.trim() ? code : savedContent,
           language,
+          instanceId: `save-code-resume-${Date.now()}`,
         }),
       );
     } else if (action === "save-code-scratch") {

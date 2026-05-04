@@ -10,22 +10,18 @@ import { useIdleReady } from "@/utils/idle-scheduler";
 // Do NOT add a wrapper here — register the overlay in
 // `windowRegistry.ts` + `windowRegistryMetadata.ts` and let
 // `UnifiedOverlayController` handle it. (Bug found 2026-04-29.)
+//
+// Messaging islands (LazyMessagingInitializer + MessagingSideSheet) used to
+// mount here, which left the (authenticated) route group without messaging
+// (icon click did nothing, conversations never loaded). They now mount in
+// `app/DeferredSingletons.tsx` via `LazyMessagingIsland` so they work on
+// every authenticated route.
 
 const CanvasSideSheetInner = dynamic(
   () =>
     import("@/features/canvas/core/CanvasSideSheetInner").then(
       (m) => m.CanvasSideSheetInner,
     ),
-  { ssr: false, loading: () => null },
-);
-
-const LazyMessagingInitializer = dynamic(
-  () => import("@/features/messaging/components/LazyMessagingInitializer"),
-  { ssr: false, loading: () => null },
-);
-
-const LazyMessagingSideSheet = dynamic(
-  () => import("@/features/messaging").then((m) => m.MessagingSideSheet),
   { ssr: false, loading: () => null },
 );
 
@@ -42,8 +38,6 @@ export default function DeferredIslands() {
   return (
     <>
       <CanvasSideSheetInner />
-      <LazyMessagingInitializer />
-      <LazyMessagingSideSheet />
       <WindowTraySync />
     </>
   );

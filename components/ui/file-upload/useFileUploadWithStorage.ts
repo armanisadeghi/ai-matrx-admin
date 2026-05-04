@@ -97,11 +97,30 @@ interface UploadResult {
    */
   fileId?: string;
   /**
-   * Persistent share URL — the public `/share/<token>` link. Use this
-   * for display / share-with-a-stranger flows, NOT for AI API calls.
-   * Prefer `fileId` for any backend payload.
+   * **Direct, embeddable URL for the file bytes.**
+   *
+   * Resolves via `/api/share/<token>/file` which 302-redirects to a
+   * freshly signed storage URL on every hit. This is the right URL to
+   * drop into:
+   *   - `<img src>`, `<video src>`, `<audio src>`, `<iframe src>`
+   *   - `<a href download>`
+   *   - any markdown image / OG-image meta tag / external embed
+   *
+   * It is NOT the HTML "view-file landing page" — for that, use
+   * `pageUrl` below. The historical bug was returning the page URL here,
+   * which made `<img src>` render a broken icon because the page is
+   * HTML, not bytes.
+   *
+   * Prefer `fileId` for AI API payloads (cheaper — no redirect dance).
    */
   url: string;
+  /**
+   * Optional HTML LANDING PAGE for the share link
+   * (`/share/<token>`) — renders metadata + a download button. Use
+   * this when you want to give someone a clickable "share with a
+   * person" link. Distinct from `url`, which is the binary URL.
+   */
+  pageUrl?: string;
   type: string;
   details: EnhancedFileDetails;
   metadata?: StorageMetadata;
@@ -201,9 +220,21 @@ export const useFileUploadWithStorage = (bucket: string, path?: string) => {
         return null;
       }
 
-      const shareUrl = result.shareUrl ?? "";
+      // Prefer the direct-file URL (`/api/share/<token>/file`) for the
+      // primary `url` so consumers that drop it into `<img src>` see the
+      // image, not a broken icon. The HTML landing page lives on
+      // `pageUrl` for callers that want a "click here to view" link.
+      //
+      // Fall back to `shareUrl` (page) if for some reason the upload
+      // didn't produce a direct URL — e.g. a future path that skips
+      // share-link creation. Last fallback to the raw signed URL the
+      // backend emitted; that one expires in ~1h but at least lets
+      // immediate UI render the file before it goes stale.
+      const directUrl =
+        result.directUrl ?? result.shareUrl ?? result.url ?? "";
+      const pageUrl = result.shareUrl;
       const metadata = synthesizeMetadata(file);
-      const details = getFileDetailsByUrl(shareUrl, metadata, result.fileId);
+      const details = getFileDetailsByUrl(directUrl, metadata, result.fileId);
 
       const out: UploadResult = {
         // cld_files UUID — first-class field. Callers building outbound
@@ -211,7 +242,8 @@ export const useFileUploadWithStorage = (bucket: string, path?: string) => {
         // rather than the share URL. Build a MediaRef via
         // `fileIdToMediaRef` from features/files/redux/converters.ts.
         fileId: result.fileId,
-        url: shareUrl,
+        url: directUrl,
+        pageUrl,
         type: classifyFileType(file.type),
         details,
         metadata,

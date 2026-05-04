@@ -7,6 +7,10 @@ import {
   STUDIO_COLUMN_COOKIE_NAME,
   decodeStudioLayoutCookie,
 } from "@/features/transcript-studio/components/resize/studioPanelCookie";
+import {
+  STUDIO_SIDEBAR_COOKIE_NAME,
+  decodeStudioSidebarCookie,
+} from "@/features/transcript-studio/components/resize/studioSidebarCookie";
 import { StudioRoute } from "./_components/StudioRoute";
 
 interface PageProps {
@@ -33,6 +37,9 @@ export default async function TranscriptStudioPage({ searchParams }: PageProps) 
   const defaultColumnLayout = decodeStudioLayoutCookie(
     cookieStore.get(STUDIO_COLUMN_COOKIE_NAME)?.value,
   );
+  const defaultSidebarLayout = decodeStudioSidebarCookie(
+    cookieStore.get(STUDIO_SIDEBAR_COOKIE_NAME)?.value,
+  );
 
   return (
     <>
@@ -41,7 +48,10 @@ export default async function TranscriptStudioPage({ searchParams }: PageProps) 
         initialSessionId={initialSessionId ?? null}
       />
       <Suspense fallback={null}>
-        <StudioRoute defaultColumnLayout={defaultColumnLayout} />
+        <StudioRoute
+          defaultColumnLayout={defaultColumnLayout}
+          defaultSidebarLayout={defaultSidebarLayout}
+        />
       </Suspense>
     </>
   );

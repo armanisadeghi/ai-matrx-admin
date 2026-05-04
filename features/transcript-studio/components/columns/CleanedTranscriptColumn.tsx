@@ -7,10 +7,15 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { ContentActionBar } from "@/components/content-actions/ContentActionBar";
 import { COLUMN_IDS } from "../../constants";
 import { runCleaningPassThunk } from "../../redux/runCleaningPass.thunk";
+import {
+  deleteCleanedSegmentThunk,
+  updateCleanedSegmentTextThunk,
+} from "../../redux/thunks";
 import type { CleanedSegment } from "../../types";
 import { useScrollSyncOptional } from "../scroll-sync/ScrollSyncProvider";
 import { ColumnEmptyState } from "./ColumnEmptyState";
 import { ColumnHeader } from "./ColumnHeader";
+import { EditableTextSegmentRow } from "./EditableTextSegmentRow";
 import { SegmentWrapper } from "./SegmentWrapper";
 
 interface CleanedTranscriptColumnProps {
@@ -207,14 +212,36 @@ export function CleanedTranscriptColumn({
               tStart={seg.tStart}
               tEnd={seg.tEnd}
             >
-              <div className="flex items-baseline gap-2">
-                <span className="font-mono text-[10px] tabular-nums text-muted-foreground/70">
-                  {formatTimecode(seg.tStart)}
-                </span>
-                <span className="flex-1 whitespace-pre-wrap break-words leading-snug">
-                  {seg.text}
-                </span>
-              </div>
+              <EditableTextSegmentRow
+                text={seg.text}
+                itemKind="cleaned pass"
+                onSave={(text) =>
+                  void dispatch(
+                    updateCleanedSegmentTextThunk({
+                      sessionId,
+                      segmentId: seg.id,
+                      text,
+                    }),
+                  )
+                }
+                onDelete={() =>
+                  void dispatch(
+                    deleteCleanedSegmentThunk({
+                      sessionId,
+                      segmentId: seg.id,
+                    }),
+                  )
+                }
+              >
+                <div className="flex items-baseline gap-2 pr-12">
+                  <span className="font-mono text-[10px] tabular-nums text-muted-foreground/70">
+                    {formatTimecode(seg.tStart)}
+                  </span>
+                  <span className="flex-1 whitespace-pre-wrap break-words leading-snug">
+                    {seg.text}
+                  </span>
+                </div>
+              </EditableTextSegmentRow>
             </SegmentWrapper>
           ))}
         </div>

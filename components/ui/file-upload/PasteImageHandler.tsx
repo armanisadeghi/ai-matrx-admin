@@ -1,10 +1,13 @@
 import React, { useRef, useEffect } from 'react';
-import { usePasteImageUpload } from './usePasteImageUpload';
+import {
+    usePasteImageUpload,
+    type PasteImageUploadResult,
+} from './usePasteImageUpload';
 
 type PasteImageHandlerProps = {
     bucket?: string;
     path?: string;
-    onImagePasted?: (result: { url: string; type: string }) => void;
+    onImagePasted?: (result: PasteImageUploadResult) => void;
     targetElement?: HTMLElement | null; // Optional external element
     disabled?: boolean;
     children?: React.ReactNode;

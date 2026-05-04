@@ -122,7 +122,26 @@ export interface CloudUploadSuccess {
   /** Backend-provided URL (storage URL — typically requires auth or signed). */
   url: string | null;
   shareToken?: string;
+  /**
+   * The PUBLIC LANDING PAGE for the share link, e.g.
+   * `https://app.example.com/share/<token>`. Renders an HTML page with
+   * file metadata and a download button. **Do NOT** use this for
+   * `<img src>`, `<video src>`, or hot-linking — the page is HTML, not
+   * the file bytes.
+   */
   shareUrl?: string;
+  /**
+   * The PUBLIC DIRECT URL for the file bytes, e.g.
+   * `https://app.example.com/api/share/<token>/file`. This route 302-
+   * redirects to a freshly signed storage URL each time it's hit, so
+   * `<img src>`, `<a href download>`, and any other binary-consuming
+   * surface works correctly. **Use this** anywhere you want the file
+   * itself to be the response.
+   *
+   * Populated whenever `shareUrl` is — they always go in pairs because
+   * both are derived from the same share token.
+   */
+  directUrl?: string;
 }
 
 export interface CloudUploadFailure {
@@ -171,6 +190,22 @@ function buildShareUrl(token: string): string {
   const origin =
     typeof window !== "undefined" ? window.location.origin : "";
   return `${origin.replace(/\/$/, "")}/share/${token}`;
+}
+
+/**
+ * Build the public DIRECT-FILE URL for a share token. This is the
+ * URL that 302s to the signed S3 URL — embed in `<img src>`,
+ * `<video src>`, or any binary-consuming surface. The `/share/<token>`
+ * page URL renders the HTML landing page instead, which is fine for
+ * "click to view metadata" but useless for hot-linking.
+ *
+ * Path mirrors the route at `app/api/share/[token]/file/route.ts` —
+ * keep these in sync if the route ever moves.
+ */
+function buildDirectShareUrl(token: string): string {
+  const origin =
+    typeof window !== "undefined" ? window.location.origin : "";
+  return `${origin.replace(/\/$/, "")}/api/share/${encodeURIComponent(token)}/file`;
 }
 
 // ─── Upload primitive (no Redux side effects) ────────────────────────────
@@ -227,6 +262,7 @@ export async function cloudUploadRaw(
 
     let shareToken: string | undefined;
     let shareUrl: string | undefined;
+    let directUrl: string | undefined;
     if (options.createShareLink) {
       try {
         const linkRes = await createFileShareLink(
@@ -240,6 +276,10 @@ export async function cloudUploadRaw(
         );
         shareToken = linkRes.data.share_token;
         shareUrl = buildShareUrl(shareToken);
+        // Always emit the direct-file URL alongside the page URL.
+        // Consumers default to `directUrl` for img/video/audio/iframe
+        // src; `shareUrl` is for "click here to view file metadata".
+        directUrl = buildDirectShareUrl(shareToken);
       } catch (linkErr) {
         // Upload succeeded; share-link creation didn't. Surface a
         // distinct error so the caller can decide whether to keep the
@@ -262,6 +302,7 @@ export async function cloudUploadRaw(
       url: upload.data.url ?? null,
       shareToken,
       shareUrl,
+      directUrl,
     };
   } catch (err) {
     return {
@@ -383,6 +424,7 @@ export async function cloudUpload(
     // 3. Optional share link.
     let shareToken: string | undefined;
     let shareUrl: string | undefined;
+    let directUrl: string | undefined;
     if (options.createShareLink) {
       try {
         const linkRes = await createFileShareLink(
@@ -396,6 +438,10 @@ export async function cloudUpload(
         );
         shareToken = linkRes.data.share_token;
         shareUrl = buildShareUrl(shareToken);
+        // Always emit the direct-file URL alongside the page URL.
+        // Consumers default to `directUrl` for img/video/audio/iframe
+        // src; `shareUrl` is for "click here to view file metadata".
+        directUrl = buildDirectShareUrl(shareToken);
       } catch (linkErr) {
         return {
           ok: false,
@@ -415,6 +461,7 @@ export async function cloudUpload(
       url: upload.data.url ?? null,
       shareToken,
       shareUrl,
+      directUrl,
     };
   } catch (err) {
     const message = extractErrorMessage(err);

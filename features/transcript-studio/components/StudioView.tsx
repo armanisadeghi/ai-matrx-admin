@@ -53,6 +53,7 @@ export function StudioView({ config }: StudioViewProps) {
     <StudioLayout
       showSidebar={config.showSidebar ?? true}
       defaultColumnLayout={config.defaultColumnLayout}
+      defaultSidebarLayout={config.defaultSidebarLayout}
     />
   );
 }

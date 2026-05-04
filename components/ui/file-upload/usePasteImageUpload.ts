@@ -4,12 +4,32 @@ import { useFileUploadWithStorage } from './useFileUploadWithStorage';
 
 type SaveToOption = 'public' | 'private'; // New type for saveTo prop
 
+/**
+ * Shape passed to `onImagePasted`. `url` is the embeddable direct-file
+ * URL (`/api/share/<token>/file`) — drop into `<img src>`, `<video>`,
+ * `<a href>`, etc. and the browser does the right thing.
+ *
+ * `pageUrl` is the optional HTML landing page (`/share/<token>`) for
+ * "click here to view file metadata" surfaces. `fileId` is the
+ * canonical cld_files UUID — prefer it for AI API calls.
+ *
+ * Type kept loose / additive on top of the historical `{ url, type }`
+ * shape so existing consumers continue to compile unchanged. New
+ * consumers can pick up the extra fields.
+ */
+export interface PasteImageUploadResult {
+    url: string;
+    type: string;
+    fileId?: string;
+    pageUrl?: string;
+}
+
 type PasteImageUploadProps = {
     bucket?: string;
     path?: string;
     saveTo?: SaveToOption; // New optional prop to override bucket and path
     targetRef: React.RefObject<HTMLElement>;
-    onImagePasted?: (result: { url: string; type: string }) => void;
+    onImagePasted?: (result: PasteImageUploadResult) => void;
     /**
      * Called when the upload fails. If omitted, a toast is shown with the
      * real backend error so the user always knows what happened.

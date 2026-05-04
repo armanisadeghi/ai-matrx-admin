@@ -15,10 +15,15 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { ContentActionBar } from "@/components/content-actions/ContentActionBar";
 import { COLUMN_IDS } from "../../constants";
 import { runConceptPassThunk } from "../../redux/runConceptPass.thunk";
+import {
+  deleteConceptItemThunk,
+  updateConceptItemThunk,
+} from "../../redux/thunks";
 import type { ConceptItem, ConceptKind } from "../../types";
 import { useScrollSyncOptional } from "../scroll-sync/ScrollSyncProvider";
 import { ColumnEmptyState } from "./ColumnEmptyState";
 import { ColumnHeader } from "./ColumnHeader";
+import { EditableConceptRow } from "./EditableConceptRow";
 import { SegmentWrapper } from "./SegmentWrapper";
 
 interface ConceptsColumnProps {
@@ -240,42 +245,61 @@ export function ConceptsColumn({ sessionId, className }: ConceptsColumnProps) {
                 tStart={item.tStart ?? 0}
                 tEnd={item.tEnd ?? item.tStart ?? 0}
               >
-                <button
-                  type="button"
-                  onClick={() => onConceptClick(item)}
-                  className={cn(
-                    "flex w-full flex-col gap-0.5 text-left",
-                    item.tStart !== null
-                      ? "cursor-pointer"
-                      : "cursor-default",
-                  )}
-                  disabled={item.tStart === null}
-                  title={
-                    item.tStart !== null
-                      ? `Jump to ${tc} in all columns`
-                      : undefined
+                <EditableConceptRow
+                  item={item}
+                  displayClickable={item.tStart !== null}
+                  onClickJump={() => onConceptClick(item)}
+                  onSave={(patch) =>
+                    void dispatch(
+                      updateConceptItemThunk({
+                        sessionId,
+                        itemId: item.id,
+                        patch,
+                      }),
+                    )
                   }
-                >
-                  <div className="flex items-center gap-1.5">
-                    <Icon className={cn("h-3 w-3 shrink-0", KIND_COLOR[item.kind])} />
-                    <span className={cn("text-[10px] font-medium uppercase tracking-wide", KIND_COLOR[item.kind])}>
-                      {KIND_LABEL[item.kind]}
-                    </span>
-                    {tc && (
-                      <span className="ml-auto font-mono text-[10px] tabular-nums text-muted-foreground/70">
-                        {tc}
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-sm font-medium leading-tight">
-                    {item.label}
-                  </div>
-                  {item.description && (
-                    <div className="text-[11px] leading-snug text-muted-foreground">
-                      {item.description}
-                    </div>
-                  )}
-                </button>
+                  onDelete={() =>
+                    void dispatch(
+                      deleteConceptItemThunk({
+                        sessionId,
+                        itemId: item.id,
+                      }),
+                    )
+                  }
+                  display={
+                    <>
+                      <div className="flex items-center gap-1.5">
+                        <Icon
+                          className={cn(
+                            "h-3 w-3 shrink-0",
+                            KIND_COLOR[item.kind],
+                          )}
+                        />
+                        <span
+                          className={cn(
+                            "text-[10px] font-medium uppercase tracking-wide",
+                            KIND_COLOR[item.kind],
+                          )}
+                        >
+                          {KIND_LABEL[item.kind]}
+                        </span>
+                        {tc && (
+                          <span className="ml-auto font-mono text-[10px] tabular-nums text-muted-foreground/70">
+                            {tc}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-sm font-medium leading-tight">
+                        {item.label}
+                      </div>
+                      {item.description && (
+                        <div className="text-[11px] leading-snug text-muted-foreground">
+                          {item.description}
+                        </div>
+                      )}
+                    </>
+                  }
+                />
               </SegmentWrapper>
             );
           })}

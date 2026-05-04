@@ -19,6 +19,7 @@
 //     inside that callback so its module is not in this file's static
 //     graph at all (`brokerActions`, `fetchFullContext` below).
 
+import dynamic from "next/dynamic";
 import { useIdleReady, useIdleTask } from "@/utils/idle-scheduler";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
@@ -29,6 +30,11 @@ import { AudioRecoveryToast } from "@/features/audio/components/AudioRecoveryToa
 import AuthSessionWatcher from "@/components/layout/AuthSessionWatcher";
 import AnnouncementProvider from "@/components/layout/AnnouncementProvider";
 import AdminFeatureProvider from "@/features/admin/AdminFeatureProvider";
+
+const LazyMessagingIsland = dynamic(
+  () => import("@/features/shell/islands/LazyMessagingIsland"),
+  { ssr: false, loading: () => null },
+);
 
 // ─── Static system broker descriptors (data only) ─────────────────────────
 
@@ -133,6 +139,7 @@ export default function DeferredSingletons() {
       <PersistentDOMConnector />
       <UnifiedOverlayController />
       <LegacyPromptOverlaysController />
+      <LazyMessagingIsland />
       <AudioRecoveryToast />
       <AuthSessionWatcher />
       <AnnouncementProvider />

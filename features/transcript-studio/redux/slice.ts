@@ -226,6 +226,26 @@ const slice = createSlice({
       delete state.rawById[action.payload.sessionId];
       delete state.rawIdsBySession[action.payload.sessionId];
     },
+    rawSegmentUpdated(
+      state,
+      action: PayloadAction<{ sessionId: string; segment: RawSegment }>,
+    ) {
+      const { sessionId, segment } = action.payload;
+      const byId = state.rawById[sessionId];
+      if (byId && byId[segment.id]) byId[segment.id] = segment;
+    },
+    rawSegmentRemoved(
+      state,
+      action: PayloadAction<{ sessionId: string; segmentId: string }>,
+    ) {
+      const { sessionId, segmentId } = action.payload;
+      delete state.rawById[sessionId]?.[segmentId];
+      const ids = state.rawIdsBySession[sessionId];
+      if (ids) {
+        const idx = ids.indexOf(segmentId);
+        if (idx >= 0) ids.splice(idx, 1);
+      }
+    },
     cleanedSegmentsLoaded(
       state,
       action: PayloadAction<{ sessionId: string; segments: CleanedSegment[] }>,
@@ -282,6 +302,26 @@ const slice = createSlice({
       delete state.cleanedById[action.payload.sessionId];
       delete state.cleanedIdsBySession[action.payload.sessionId];
     },
+    cleanedSegmentUpdated(
+      state,
+      action: PayloadAction<{ sessionId: string; segment: CleanedSegment }>,
+    ) {
+      const { sessionId, segment } = action.payload;
+      const byId = state.cleanedById[sessionId];
+      if (byId && byId[segment.id]) byId[segment.id] = segment;
+    },
+    cleanedSegmentRemoved(
+      state,
+      action: PayloadAction<{ sessionId: string; segmentId: string }>,
+    ) {
+      const { sessionId, segmentId } = action.payload;
+      delete state.cleanedById[sessionId]?.[segmentId];
+      const ids = state.cleanedIdsBySession[sessionId];
+      if (ids) {
+        const idx = ids.indexOf(segmentId);
+        if (idx >= 0) ids.splice(idx, 1);
+      }
+    },
     runUpserted(state, action: PayloadAction<{ run: AgentRun }>) {
       const run = action.payload.run;
       const sid = run.sessionId;
@@ -337,6 +377,26 @@ const slice = createSlice({
       delete state.conceptsById[action.payload.sessionId];
       delete state.conceptIdsBySession[action.payload.sessionId];
     },
+    conceptItemUpdated(
+      state,
+      action: PayloadAction<{ sessionId: string; item: ConceptItem }>,
+    ) {
+      const { sessionId, item } = action.payload;
+      const byId = state.conceptsById[sessionId];
+      if (byId && byId[item.id]) byId[item.id] = item;
+    },
+    conceptItemRemoved(
+      state,
+      action: PayloadAction<{ sessionId: string; itemId: string }>,
+    ) {
+      const { sessionId, itemId } = action.payload;
+      delete state.conceptsById[sessionId]?.[itemId];
+      const ids = state.conceptIdsBySession[sessionId];
+      if (ids) {
+        const idx = ids.indexOf(itemId);
+        if (idx >= 0) ids.splice(idx, 1);
+      }
+    },
     moduleSegmentsLoaded(
       state,
       action: PayloadAction<{ sessionId: string; segments: ModuleSegment[] }>,
@@ -373,6 +433,26 @@ const slice = createSlice({
     ) {
       delete state.moduleSegmentsById[action.payload.sessionId];
       delete state.moduleSegmentIdsBySession[action.payload.sessionId];
+    },
+    moduleSegmentUpdated(
+      state,
+      action: PayloadAction<{ sessionId: string; segment: ModuleSegment }>,
+    ) {
+      const { sessionId, segment } = action.payload;
+      const byId = state.moduleSegmentsById[sessionId];
+      if (byId && byId[segment.id]) byId[segment.id] = segment;
+    },
+    moduleSegmentRemoved(
+      state,
+      action: PayloadAction<{ sessionId: string; segmentId: string }>,
+    ) {
+      const { sessionId, segmentId } = action.payload;
+      delete state.moduleSegmentsById[sessionId]?.[segmentId];
+      const ids = state.moduleSegmentIdsBySession[sessionId];
+      if (ids) {
+        const idx = ids.indexOf(segmentId);
+        if (idx >= 0) ids.splice(idx, 1);
+      }
     },
     moduleSwitched(
       state,
@@ -412,17 +492,25 @@ export const {
   rawSegmentsLoaded,
   rawSegmentsAppended,
   rawSegmentsCleared,
+  rawSegmentUpdated,
+  rawSegmentRemoved,
   cleanedSegmentsLoaded,
   cleanedSegmentApplied,
   cleanedSegmentsCleared,
+  cleanedSegmentUpdated,
+  cleanedSegmentRemoved,
   runUpserted,
   runsLoaded,
   conceptsLoaded,
   conceptsAppended,
   conceptsCleared,
+  conceptItemUpdated,
+  conceptItemRemoved,
   moduleSegmentsLoaded,
   moduleSegmentsAppended,
   moduleSegmentsCleared,
+  moduleSegmentUpdated,
+  moduleSegmentRemoved,
   moduleSwitched,
   sessionSettingsLoaded,
   sessionSettingsCleared,

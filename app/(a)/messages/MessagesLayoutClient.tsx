@@ -25,7 +25,7 @@ export default function MessagesLayoutClient({
   const userId = user?.id;
 
   return (
-    <div className="h-[calc(100vh-2.5rem)] flex overflow-hidden bg-background">
+    <div className="h-[calc(100dvh-var(--shell-header-h))] flex overflow-hidden bg-background">
       {/* Desktop Sidebar - Persistent Conversation List */}
       <div className="hidden md:flex md:w-80 flex-col border-r border-zinc-200 dark:border-zinc-800 shrink-0">
         <div className="p-3 border-b border-zinc-200 dark:border-zinc-800">

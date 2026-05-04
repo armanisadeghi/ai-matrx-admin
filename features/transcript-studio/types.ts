@@ -186,4 +186,10 @@ export interface StudioViewConfig {
    * from the route handler.
    */
   defaultColumnLayout?: Record<string, number>;
+  /**
+   * Server-read sidebar/main split (panel id -> percentage). Same pattern as
+   * `defaultColumnLayout` but for the resizable split between the sessions
+   * sidebar and the active-session column shell.
+   */
+  defaultSidebarLayout?: Record<string, number>;
 }

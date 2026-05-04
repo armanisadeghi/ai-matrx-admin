@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2, Mic, Pencil, Plus } from "lucide-react";
+import { ChevronsLeft, Loader2, Mic, Pencil, Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import {
@@ -13,6 +14,7 @@ import {
 import { activeSessionIdSet } from "../redux/slice";
 import {
   createSessionThunk,
+  deleteSessionThunk,
   fetchSessionsThunk,
   updateSessionThunk,
 } from "../redux/thunks";
@@ -23,12 +25,15 @@ interface StudioSidebarProps {
   className?: string;
   onPickSession?: (sessionId: string) => void;
   onCreateSession?: (sessionId: string) => void;
+  /** When provided, renders a collapse toggle in the header. */
+  onCollapse?: () => void;
 }
 
 export function StudioSidebar({
   className,
   onPickSession,
   onCreateSession,
+  onCollapse,
 }: StudioSidebarProps) {
   const dispatch = useAppDispatch();
   const sessions = useAppSelector(selectAllSessions);
@@ -77,24 +82,37 @@ export function StudioSidebar({
       )}
     >
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-3 py-2">
-        <div className="flex items-center gap-1.5 text-sm font-semibold">
-          <Mic className="h-4 w-4 text-primary" />
+        <div className="flex min-w-0 items-center gap-1.5 text-sm font-semibold">
+          <Mic className="h-4 w-4 shrink-0 text-primary" />
           Studio
         </div>
-        <button
-          type="button"
-          onClick={handleCreate}
-          disabled={!userId}
-          className={cn(
-            "inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors",
-            userId
-              ? "bg-primary text-primary-foreground hover:bg-primary/90"
-              : "bg-muted text-muted-foreground cursor-not-allowed",
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={handleCreate}
+            disabled={!userId}
+            className={cn(
+              "inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors",
+              userId
+                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                : "bg-muted text-muted-foreground cursor-not-allowed",
+            )}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            New
+          </button>
+          {onCollapse && (
+            <button
+              type="button"
+              onClick={onCollapse}
+              aria-label="Collapse sidebar"
+              title="Collapse sidebar"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              <ChevronsLeft className="h-3.5 w-3.5" />
+            </button>
           )}
-        >
-          <Plus className="h-3.5 w-3.5" />
-          New
-        </button>
+        </div>
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto">
@@ -150,6 +168,7 @@ function SidebarItem({ session, isActive, onPick }: SidebarItemProps) {
   const subtitle = formatSessionSubtitle(session);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(session.title);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -243,6 +262,18 @@ function SidebarItem({ session, isActive, onPick }: SidebarItemProps) {
             >
               <Pencil className="h-3 w-3" />
             </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setConfirmDelete(true);
+              }}
+              aria-label="Delete session"
+              title="Delete"
+              className="hidden h-5 w-5 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-destructive hover:text-destructive-foreground group-hover:flex"
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
           </>
         )}
       </div>
@@ -251,6 +282,23 @@ function SidebarItem({ session, isActive, onPick }: SidebarItemProps) {
           {subtitle}
         </span>
       )}
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title="Delete session?"
+        description={
+          <>
+            Permanently remove <b>{session.title}</b> and all of its raw,
+            cleaned, concept, and module data. This cannot be undone.
+          </>
+        }
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={() => {
+          setConfirmDelete(false);
+          void dispatch(deleteSessionThunk(session.id));
+        }}
+      />
     </li>
   );
 }

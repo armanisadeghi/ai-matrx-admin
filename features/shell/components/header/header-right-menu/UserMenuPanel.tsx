@@ -3,6 +3,7 @@ import { OverlayMenuItem } from "./OverlayMenuItem";
 import { LinkMenuItem } from "./LinkMenuItem";
 import { AdminIndicatorMenuItem } from "./AdminIndicatorMenuItem";
 import { NotificationsMenuItem } from "./NotificationsMenuItem";
+import { MessagesMenuItem } from "./MessagesMenuItem";
 import { ThemeToggleMenuItem } from "./ThemeToggleMenuItem";
 import { SignOutMenuItem } from "./SignOutMenuItem";
 import { UserProfileHeader } from "./UserProfileHeader";
@@ -49,11 +50,7 @@ export default function UserMenuPanel({ userData }: UserMenuPanelProps) {
 
       {divider}
 
-      <LinkMenuItem
-        href="/messages"
-        icon="MessageSquare"
-        label="Direct Messages"
-      />
+      <MessagesMenuItem />
       <NotificationsMenuItem />
       {COMMUNICATION_ITEMS.map((item) => (
         <OverlayMenuItem key={item.overlayId} {...item} />

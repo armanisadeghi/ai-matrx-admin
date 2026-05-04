@@ -59,7 +59,7 @@ export function SaveAsTranscriptButton({
           : "Materialize this session as a regular transcript"
       }
       className={cn(
-        "inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-medium transition-colors",
+        "inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium transition-colors",
         busy
           ? "bg-muted text-muted-foreground cursor-wait"
           : "bg-secondary/30 text-foreground hover:bg-secondary/50",

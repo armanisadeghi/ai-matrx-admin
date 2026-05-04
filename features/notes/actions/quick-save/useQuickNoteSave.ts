@@ -45,9 +45,15 @@ function defaultNoteName(): string {
 }
 
 export function useQuickNoteSave({
-  initialContent,
+  initialContent: rawInitialContent,
   defaultFolder = "Scratch",
 }: UseQuickNoteSaveArgs) {
+  // Coerce to string at the boundary — every call below (`.length`, `.trim()`,
+  // `applyTrim`, `stripThinking`, persistence payload) assumes a string.
+  // A null/undefined leak from a parent (overlay data, stale props) would
+  // crash the editor on mount otherwise.
+  const initialContent =
+    typeof rawInitialContent === "string" ? rawInitialContent : "";
   const dispatch = useAppDispatch();
   const toast = useToastManager("notes");
 

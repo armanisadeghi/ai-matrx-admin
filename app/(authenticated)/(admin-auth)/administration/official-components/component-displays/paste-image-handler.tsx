@@ -13,13 +13,25 @@ interface ComponentDisplayProps {
 
 export default function PasteImageHandlerDisplay({ component }: ComponentDisplayProps) {
   if (!component) return null;
-  
-  const [pastedImages, setPastedImages] = useState<Array<{ url: string; type: string }>>([]);
+
+  // The `url` we store + render into <img src> is the EMBEDDABLE direct
+  // URL (`/api/share/<token>/file`). The `pageUrl` (`/share/<token>`)
+  // is the HTML landing page — useful as a clickable link, but NOT for
+  // <img src>. Showing both helps anyone copy/pasting this code see
+  // the difference.
+  const [pastedImages, setPastedImages] = useState<
+    Array<{ url: string; type: string; fileId?: string; pageUrl?: string }>
+  >([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleImagePasted = (result: { url: string; type: string }) => {
+  const handleImagePasted = (result: {
+    url: string;
+    type: string;
+    fileId?: string;
+    pageUrl?: string;
+  }) => {
     console.log('Image pasted:', result);
-    setPastedImages(prev => [...prev, result]);
+    setPastedImages((prev) => [...prev, result]);
   };
 
   const handleProcessingChange = (processing: boolean) => {
@@ -108,17 +120,44 @@ function MyComponent() {
               <p className="font-semibold mb-2">Successfully uploaded {pastedImages.length} pasted image(s):</p>
               <div className="space-y-3">
                 {pastedImages.map((image, idx) => (
-                  <div key={idx} className="space-y-1">
+                  <div key={idx} className="space-y-1.5">
                     <div className="flex items-start gap-2">
-                      <span className="text-xs font-mono bg-green-100 dark:bg-green-900/40 px-2 py-1 rounded">
+                      <span className="text-xs font-mono bg-green-100 dark:bg-green-900/40 px-2 py-1 rounded shrink-0">
                         #{idx + 1}
                       </span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs break-all">{image.url}</p>
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wide text-green-700 dark:text-green-400 font-semibold">
+                            Direct URL (embeds)
+                          </span>
+                          <p className="text-xs break-all font-mono">
+                            {image.url}
+                          </p>
+                        </div>
+                        {image.pageUrl ? (
+                          <div>
+                            <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">
+                              Share page URL
+                            </span>
+                            <p className="text-xs break-all font-mono text-muted-foreground">
+                              {image.pageUrl}
+                            </p>
+                          </div>
+                        ) : null}
+                        {image.fileId ? (
+                          <div>
+                            <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">
+                              File ID (for AI APIs)
+                            </span>
+                            <p className="text-xs break-all font-mono text-muted-foreground">
+                              {image.fileId}
+                            </p>
+                          </div>
+                        ) : null}
                       </div>
                     </div>
-                    <img 
-                      src={image.url} 
+                    <img
+                      src={image.url}
                       alt={`Pasted ${idx + 1}`}
                       className="max-w-xs rounded border border-green-200 dark:border-green-800"
                     />

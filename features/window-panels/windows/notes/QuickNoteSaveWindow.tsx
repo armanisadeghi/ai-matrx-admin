@@ -30,17 +30,26 @@ const BASE_WINDOW_ID = "quick-note-save-window";
 export default function QuickNoteSaveWindow({
   isOpen,
   onClose,
-  initialContent = "",
-  defaultFolder = "Scratch",
+  initialContent,
+  defaultFolder,
   instanceId,
   initialEditorMode,
 }: QuickNoteSaveWindowProps) {
   if (!isOpen) return null;
+  // Coerce null/undefined to safe primitives — the prop's declared default
+  // ("") only applies when the value is `undefined`, but callers (e.g. the
+  // OverlayController reading from Redux overlay data) can pass `null` if a
+  // payload was cleared. The inner component dereferences `.length` on the
+  // content string, so a `null` would crash the page on mount.
   return (
     <QuickNoteSaveWindowInner
       onClose={onClose}
-      initialContent={initialContent}
-      defaultFolder={defaultFolder}
+      initialContent={typeof initialContent === "string" ? initialContent : ""}
+      defaultFolder={
+        typeof defaultFolder === "string" && defaultFolder
+          ? defaultFolder
+          : "Scratch"
+      }
       instanceId={instanceId}
       initialEditorMode={initialEditorMode}
     />

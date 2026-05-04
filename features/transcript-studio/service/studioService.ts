@@ -288,6 +288,33 @@ export async function listRawSegmentsServer(
   return ((data ?? []) as RawSegmentRow[]).map(rowToRawSegment);
 }
 
+/** Update the text of a single raw segment. Used by the inline editor. */
+export async function updateRawSegmentText(
+  id: string,
+  text: string,
+): Promise<import("../types").RawSegment> {
+  const { data, error } = await db
+    .from("studio_raw_segments")
+    .update({ text })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error || !data) {
+    throw new Error(
+      `[studio] updateRawSegmentText failed: ${error?.message ?? "no row"}`,
+    );
+  }
+  return rowToRawSegment(data as RawSegmentRow);
+}
+
+/** Hard-delete a raw segment. Use case: corrective edits on noisy chunks. */
+export async function deleteRawSegment(id: string): Promise<void> {
+  const { error } = await db.from("studio_raw_segments").delete().eq("id", id);
+  if (error) {
+    throw new Error(`[studio] deleteRawSegment failed: ${error.message}`);
+  }
+}
+
 // ── studio_runs ───────────────────────────────────────────────────────
 
 interface AgentRunRow {
@@ -524,6 +551,36 @@ export async function applyCleanupRun(
   return rowToCleanedSegment(data as CleanedSegmentRow);
 }
 
+/** Update the text of a cleaned segment in place (no supersession). */
+export async function updateCleanedSegmentText(
+  id: string,
+  text: string,
+): Promise<import("../types").CleanedSegment> {
+  const { data, error } = await db
+    .from("studio_cleaned_segments")
+    .update({ text })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error || !data) {
+    throw new Error(
+      `[studio] updateCleanedSegmentText failed: ${error?.message ?? "no row"}`,
+    );
+  }
+  return rowToCleanedSegment(data as CleanedSegmentRow);
+}
+
+/** Hard-delete a cleaned segment. Audit trail (`studio_runs`) is unaffected. */
+export async function deleteCleanedSegment(id: string): Promise<void> {
+  const { error } = await db
+    .from("studio_cleaned_segments")
+    .delete()
+    .eq("id", id);
+  if (error) {
+    throw new Error(`[studio] deleteCleanedSegment failed: ${error.message}`);
+  }
+}
+
 // ── studio_concept_items ─────────────────────────────────────────────
 
 export interface ConceptItemRow {
@@ -635,6 +692,48 @@ export async function listConceptItemsServer(
   return ((data ?? []) as ConceptItemRow[]).map(rowToConceptItem);
 }
 
+export interface ConceptItemPatch {
+  kind?: import("../types").ConceptKind;
+  label?: string;
+  description?: string | null;
+  confidence?: number | null;
+}
+
+/** Update fields on a concept item. Only `label`, `description`, `kind`,
+ *  `confidence` are user-editable. */
+export async function updateConceptItem(
+  id: string,
+  patch: ConceptItemPatch,
+): Promise<import("../types").ConceptItem> {
+  const dbPatch: Record<string, unknown> = {};
+  if (patch.kind !== undefined) dbPatch.kind = patch.kind;
+  if (patch.label !== undefined) dbPatch.label = patch.label;
+  if (patch.description !== undefined) dbPatch.description = patch.description;
+  if (patch.confidence !== undefined) dbPatch.confidence = patch.confidence;
+  const { data, error } = await db
+    .from("studio_concept_items")
+    .update(dbPatch)
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error || !data) {
+    throw new Error(
+      `[studio] updateConceptItem failed: ${error?.message ?? "no row"}`,
+    );
+  }
+  return rowToConceptItem(data as ConceptItemRow);
+}
+
+export async function deleteConceptItem(id: string): Promise<void> {
+  const { error } = await db
+    .from("studio_concept_items")
+    .delete()
+    .eq("id", id);
+  if (error) {
+    throw new Error(`[studio] deleteConceptItem failed: ${error.message}`);
+  }
+}
+
 // ── studio_module_segments ───────────────────────────────────────────
 
 export interface ModuleSegmentRow {
@@ -742,6 +841,35 @@ export async function listModuleSegmentsServer(
     );
   }
   return ((data ?? []) as ModuleSegmentRow[]).map(rowToModuleSegment);
+}
+
+/** Update the payload of a module segment. Used by the inline editor. */
+export async function updateModuleSegmentPayload(
+  id: string,
+  payload: unknown,
+): Promise<import("../types").ModuleSegment> {
+  const { data, error } = await db
+    .from("studio_module_segments")
+    .update({ payload })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error || !data) {
+    throw new Error(
+      `[studio] updateModuleSegmentPayload failed: ${error?.message ?? "no row"}`,
+    );
+  }
+  return rowToModuleSegment(data as ModuleSegmentRow);
+}
+
+export async function deleteModuleSegment(id: string): Promise<void> {
+  const { error } = await db
+    .from("studio_module_segments")
+    .delete()
+    .eq("id", id);
+  if (error) {
+    throw new Error(`[studio] deleteModuleSegment failed: ${error.message}`);
+  }
 }
 
 // ── studio_session_settings ──────────────────────────────────────────

@@ -28,7 +28,7 @@
  *   - Filename-rename gate before mass variant creation.
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     AlertCircle,
     CheckCircle2,
@@ -36,10 +36,13 @@ import {
     Edit3,
     Eye,
     ExternalLink,
+    FolderOpen,
     Image as ImageIcon,
+    Link as LinkIcon,
     Loader2,
     RefreshCw,
     Trash2,
+    Upload,
     Wand2,
     Zap,
 } from "lucide-react";
@@ -52,6 +55,9 @@ import { formatBytes, formatDimensions } from "../utils/format-bytes";
 import type { ImagePosition, StudioSourceFile } from "../types";
 import { StudioDropZone } from "./StudioDropZone";
 import { InitialCropDialog } from "./InitialCropDialog";
+import { useFilePicker } from "@/features/files/components/pickers/FilePicker";
+import { useAppStore } from "@/lib/redux/hooks";
+import { getSignedUrl } from "@/features/files/api/files";
 
 // ── Public surface ───────────────────────────────────────────────────────
 
@@ -135,6 +141,8 @@ export function EmbeddedImageStudio({
     className,
 }: EmbeddedImageStudioProps) {
     const studio = useImageStudio({ defaultFolder: rootFolderSegment });
+    const store = useAppStore();
+    const filePicker = useFilePicker();
 
     // ── Local UI state ────────────────────────────────────────────────────
     const [pendingFiles, setPendingFiles] = useState<File[]>([]);
@@ -143,11 +151,31 @@ export function EmbeddedImageStudio({
     const [showInitial, setShowInitial] = useState(Boolean(initialUrl));
     const [autoFlowError, setAutoFlowError] = useState<string | null>(null);
 
-    // We don't auto-redo work, even if the parent re-renders us with the
-    // same file. This guards generate+save against double-firing.
+    // External URL — populated when the user pastes a URL or picks a file
+    // from their library. The host receives this URL via `onSaved` directly,
+    // without any pipeline run. We track it locally so we can render the
+    // "current" preview + Replace controls.
+    const [externalUrl, setExternalUrl] = useState<string | null>(null);
+    const [externalSource, setExternalSource] = useState<
+        "url" | "library" | null
+    >(null);
+    const [externalLabel, setExternalLabel] = useState<string | null>(null);
+    const [pasteUrlInput, setPasteUrlInput] = useState("");
+    const [intakeMode, setIntakeMode] = useState<
+        "choose" | "drop" | "url"
+    >("choose");
+
+    // Pipeline lifecycle — used only when the user goes through the
+    // drop→crop→generate→save path. URL/library picks skip this entirely.
     const [pipelineState, setPipelineState] = useState<
         "idle" | "ready-to-generate" | "generating" | "saving" | "done" | "error"
     >("idle");
+
+    // Always read the latest studio mid-flight. After `await studio.generate()`
+    // the studio object has rotated and our closure-captured `studio.saveAll`
+    // would otherwise close over the pre-generate snapshot.
+    const studioRef = useRef(studio);
+    studioRef.current = studio;
 
     // The component manages a single source file at a time. If the user
     // drops something while a previous result is showing, we clear and
@@ -224,18 +252,29 @@ export function EmbeddedImageStudio({
     }, [sourceFile, renameDraft, studio]);
 
     // ── Pipeline: Generate → Save (auto) ──────────────────────────────────
+    // Always read through `studioRef.current` because the closure-captured
+    // `studio` rotates on every render. Calling the OLD studio.saveAll
+    // after `await studio.generate()` would close over the pre-generate
+    // files snapshot — every variant's dataUrl/publicUrl missing.
     const runPipeline = useCallback(async () => {
-        if (!sourceFile) return;
+        const live = studioRef.current;
+        if (!live.files[0]) return;
         setAutoFlowError(null);
         setPipelineState("generating");
         try {
-            await studio.generate();
-            const errored = studio.files.some((f) => f.status === "error");
+            await studioRef.current.generate();
+            // Yield to let React commit the generated state before we read.
+            await new Promise<void>((resolve) => setTimeout(resolve, 0));
+            const errored = studioRef.current.files.some(
+                (f) => f.status === "error",
+            );
             if (errored) {
                 throw new Error("One or more variants failed to generate");
             }
             setPipelineState("saving");
-            await studio.saveAll(rootFolderSegment, { visibility: "public" });
+            await studioRef.current.saveAll(rootFolderSegment, {
+                visibility: "public",
+            });
             setPipelineState("done");
         } catch (err) {
             const msg = err instanceof Error ? err.message : "Pipeline failed";
@@ -243,7 +282,7 @@ export function EmbeddedImageStudio({
             setPipelineState("error");
             toast.error(msg);
         }
-    }, [sourceFile, studio, rootFolderSegment]);
+    }, [rootFolderSegment]);
 
     // After saveAll resolves we fold the public URLs back to the host.
     useEffect(() => {
@@ -289,8 +328,115 @@ export function EmbeddedImageStudio({
         setPipelineState("idle");
         setShowInitial(false);
         setAutoFlowError(null);
+        setExternalUrl(null);
+        setExternalSource(null);
+        setExternalLabel(null);
+        setIntakeMode("choose");
         onCleared?.();
     }, [studio, onCleared]);
+
+    // ── URL / Library intake ──────────────────────────────────────────────
+    // Both paths set `externalUrl` and emit onSaved with that URL as primary
+    // — no Sharp pipeline runs. The user explicitly chose this URL; the
+    // host gets the URL it asked for and the studio stays out of the way.
+    const emitExternalSaved = useCallback(
+        (url: string, sourceLabel: string) => {
+            const primaryId = primaryPresetId ?? presetIds[0] ?? null;
+            const byPreset: Record<string, string> = {};
+            if (primaryId) byPreset[primaryId] = url;
+            const result: EmbeddedImageStudioResult = {
+                byPreset,
+                primary:
+                    primaryId !== null
+                        ? { presetId: primaryId, publicUrl: url }
+                        : null,
+                filenameBase: slugifyFilename(sourceLabel || "image"),
+                parentFolderId: "",
+            };
+            onSaved?.(result);
+        },
+        [presetIds, primaryPresetId, onSaved],
+    );
+
+    const validateImageUrl = useCallback(
+        (raw: string): string | null => {
+            const trimmed = raw.trim();
+            if (!trimmed) return null;
+            const withScheme = /^https?:\/\//i.test(trimmed)
+                ? trimmed
+                : `https://${trimmed}`;
+            try {
+                new URL(withScheme);
+                return withScheme;
+            } catch {
+                return null;
+            }
+        },
+        [],
+    );
+
+    const handleCommitUrl = useCallback(() => {
+        const cleaned = validateImageUrl(pasteUrlInput);
+        if (!cleaned) {
+            toast.error("Please enter a valid image URL");
+            return;
+        }
+        // Take it as-is, no pipeline. The user told us to use this URL.
+        studio.clearAll();
+        setShowInitial(false);
+        setPipelineState("idle");
+        setExternalUrl(cleaned);
+        setExternalSource("url");
+        setExternalLabel("Pasted URL");
+        setIntakeMode("choose");
+        emitExternalSaved(cleaned, "external-url");
+        toast.success("Using pasted URL");
+    }, [pasteUrlInput, validateImageUrl, studio, emitExternalSaved]);
+
+    const handlePickFromLibrary = useCallback(async () => {
+        try {
+            const result = await filePicker.open({
+                multi: false,
+                title: "Pick an image from your library",
+                allowedExtensions: ["jpg", "jpeg", "png", "webp", "avif", "gif"],
+            });
+            if (!result || result.length === 0) return;
+            const fileId = result[0];
+            const cloudFile =
+                store.getState().cloudFiles.filesById[fileId];
+            if (!cloudFile) {
+                toast.error("Could not load that file");
+                return;
+            }
+            // Prefer the permanent CDN URL — fall back to a fresh signed
+            // URL if the file is private (still good for ~1h, host-side
+            // copy will paste it as-is).
+            let url = cloudFile.publicUrl;
+            if (!url) {
+                try {
+                    const signed = await getSignedUrl(fileId, {
+                        expiresIn: 3600,
+                    });
+                    url = signed.data.url;
+                } catch {
+                    toast.error("Could not generate URL for that file");
+                    return;
+                }
+            }
+            studio.clearAll();
+            setShowInitial(false);
+            setPipelineState("idle");
+            setExternalUrl(url);
+            setExternalSource("library");
+            setExternalLabel(cloudFile.fileName);
+            setIntakeMode("choose");
+            emitExternalSaved(url, cloudFile.fileName);
+            toast.success(`Using ${cloudFile.fileName}`);
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : "Pick cancelled";
+            toast.error(msg);
+        }
+    }, [filePicker, store, studio, emitExternalSaved]);
 
     // ── Render ────────────────────────────────────────────────────────────
 

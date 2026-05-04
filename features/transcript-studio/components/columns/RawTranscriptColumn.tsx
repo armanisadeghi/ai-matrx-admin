@@ -1,15 +1,22 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
-import { Mic } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { FileAudio, Mic, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { ContentActionBar } from "@/components/content-actions/ContentActionBar";
 import { COLUMN_IDS } from "../../constants";
 import type { RawSegment } from "../../types";
+import {
+  deleteRawSegmentThunk,
+  updateRawSegmentTextThunk,
+} from "../../redux/thunks";
 import { useScrollSyncOptional } from "../scroll-sync/ScrollSyncProvider";
+import { AudioImportDialog } from "./AudioImportDialog";
 import { ColumnEmptyState } from "./ColumnEmptyState";
 import { ColumnHeader } from "./ColumnHeader";
+import { EditableTextSegmentRow } from "./EditableTextSegmentRow";
+import { PasteRawContentDialog } from "./PasteRawContentDialog";
 import { SegmentWrapper } from "./SegmentWrapper";
 
 interface RawTranscriptColumnProps {
@@ -41,6 +48,9 @@ export function RawTranscriptColumn({
   isRecording,
   className,
 }: RawTranscriptColumnProps) {
+  const dispatch = useAppDispatch();
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   // Subscribe to the raw segment ids + the byId map separately so React-Redux
   // sees stable references for both. Materialize the array via `useMemo` —
   // not a `createSelector`, since per-(sessionId) selectors that close over
@@ -75,24 +85,53 @@ export function RawTranscriptColumn({
     [segments],
   );
 
-  const headerActions =
-    segments.length > 0 ? (
-      <ContentActionBar
-        content={exportText}
-        title={
-          sessionTitle ? `Raw Transcript — ${sessionTitle}` : "Raw Transcript"
-        }
-        metadata={{
-          source: "transcript-studio",
-          column: "raw",
-          session_id: sessionId,
-          session_title: sessionTitle,
-        }}
-        instanceKey={`studio-raw-${sessionId}`}
-        hideSpeaker
-        hidePencil
-      />
-    ) : undefined;
+  const importButton = (
+    <button
+      type="button"
+      onClick={() => setImportOpen(true)}
+      title="Import audio from a file, URL, or cloud storage"
+      aria-label="Import audio"
+      className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent/40 hover:text-foreground"
+    >
+      <FileAudio className="h-3.5 w-3.5" />
+    </button>
+  );
+  const pasteButton = (
+    <button
+      type="button"
+      onClick={() => setPasteOpen(true)}
+      title="Paste in transcript content from another source"
+      aria-label="Paste in content"
+      className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent/40 hover:text-foreground"
+    >
+      <Plus className="h-3.5 w-3.5" />
+    </button>
+  );
+  const headerActions = (
+    <>
+      {importButton}
+      {pasteButton}
+      {segments.length > 0 && (
+        <ContentActionBar
+          content={exportText}
+          title={
+            sessionTitle
+              ? `Raw Transcript — ${sessionTitle}`
+              : "Raw Transcript"
+          }
+          metadata={{
+            source: "transcript-studio",
+            column: "raw",
+            session_id: sessionId,
+            session_title: sessionTitle,
+          }}
+          instanceKey={`studio-raw-${sessionId}`}
+          hideSpeaker
+          hidePencil
+        />
+      )}
+    </>
+  );
 
   const sync = useScrollSyncOptional();
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -146,18 +185,47 @@ export function RawTranscriptColumn({
               tStart={seg.tStart}
               tEnd={seg.tEnd}
             >
-              <div className="flex items-baseline gap-2">
-                <span className="font-mono text-[10px] tabular-nums text-muted-foreground/70">
-                  {formatTimecode(seg.tStart)}
-                </span>
-                <span className="flex-1 whitespace-pre-wrap break-words">
-                  {seg.text}
-                </span>
-              </div>
+              <EditableTextSegmentRow
+                text={seg.text}
+                itemKind="chunk"
+                onSave={(text) =>
+                  void dispatch(
+                    updateRawSegmentTextThunk({
+                      sessionId,
+                      segmentId: seg.id,
+                      text,
+                    }),
+                  )
+                }
+                onDelete={() =>
+                  void dispatch(
+                    deleteRawSegmentThunk({ sessionId, segmentId: seg.id }),
+                  )
+                }
+              >
+                <div className="flex items-baseline gap-2 pr-12">
+                  <span className="font-mono text-[10px] tabular-nums text-muted-foreground/70">
+                    {formatTimecode(seg.tStart)}
+                  </span>
+                  <span className="flex-1 whitespace-pre-wrap break-words">
+                    {seg.text}
+                  </span>
+                </div>
+              </EditableTextSegmentRow>
             </SegmentWrapper>
           ))}
         </div>
       )}
+      <PasteRawContentDialog
+        sessionId={sessionId}
+        open={pasteOpen}
+        onOpenChange={setPasteOpen}
+      />
+      <AudioImportDialog
+        sessionId={sessionId}
+        open={importOpen}
+        onOpenChange={setImportOpen}
+      />
     </section>
   );
 }

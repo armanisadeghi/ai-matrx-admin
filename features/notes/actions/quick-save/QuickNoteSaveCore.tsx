@@ -96,6 +96,11 @@ export function QuickNoteSaveCore({
   className,
   saveLabel,
 }: QuickNoteSaveCoreProps) {
+  // Defensive: callers occasionally hand us a null content (e.g. when an
+  // overlay opens from a cleared/legacy payload). Coerce to string so every
+  // downstream `.length` / `.trim()` / `.slice()` call stays safe.
+  const safeInitialContent =
+    typeof initialContent === "string" ? initialContent : "";
   const dispatch = useAppDispatch();
   const router = useRouter();
 
@@ -127,7 +132,7 @@ export function QuickNoteSaveCore({
     isSaveDisabled,
     savedNote,
     save,
-  } = useQuickNoteSave({ initialContent, defaultFolder });
+  } = useQuickNoteSave({ initialContent: safeInitialContent, defaultFolder });
 
   const [editorMode, setEditorMode] = useState<EditorMode>(initialEditorMode);
   const [showOverwriteWarning, setShowOverwriteWarning] = useState(false);
@@ -181,7 +186,7 @@ export function QuickNoteSaveCore({
     [savedNote, router, dispatch, onSaved],
   );
 
-  const rawLen = initialContent.length;
+  const rawLen = safeInitialContent.length;
   const charCount = workingContent.length;
   const trimMax = Math.max(0, maxTrim);
 

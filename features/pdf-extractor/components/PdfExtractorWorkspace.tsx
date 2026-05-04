@@ -135,6 +135,11 @@ export function PdfExtractorFloatingWorkspace({
       openSaveToNotes({
         content: text,
         defaultFolder: "Scratch",
+        // Per-doc instance so two concurrent extractions don't overwrite
+        // each other's draft via the shared singleton "default" slot.
+        instanceId: doc?.id
+          ? `save-notes-pdf-${doc.id}`
+          : `save-notes-pdf-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         // Large extractions can stall the markdown preview pane on open.
         // Force the plain editor for big payloads — users can still toggle
         // back to split/preview from the toolbar once it's mounted.

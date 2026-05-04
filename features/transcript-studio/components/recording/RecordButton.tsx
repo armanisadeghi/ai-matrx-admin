@@ -40,7 +40,7 @@ export function RecordButton({ sessionId, className }: RecordButtonProps) {
               : "Start recording"
         }
         className={cn(
-          "inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors",
+          "inline-flex h-7 items-center gap-1 rounded-full px-2.5 text-xs font-medium transition-colors",
           isRecording
             ? "bg-red-500 text-white hover:bg-red-600"
             : blockedByOther
