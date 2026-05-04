@@ -14,7 +14,10 @@ import { autoSaveMiddleware } from "@/features/notes/redux/autoSaveMiddleware";
 import { codeFilesAutoSaveMiddleware } from "@/features/code-files/redux/autoSaveMiddleware";
 import { cloudFilesRealtimeMiddleware } from "@/features/files/redux/realtime-middleware";
 import { transcriptStudioRealtimeMiddleware } from "@/features/transcript-studio/redux/realtimeMiddleware";
-import { createSyncMiddleware } from "@/lib/sync/engine/middleware";
+import {
+  createSyncMiddleware,
+  type SyncEngineApi,
+} from "@/lib/sync/engine/middleware";
 import { openSyncChannel, type SyncChannel } from "@/lib/sync/channel";
 import { deriveIdentity } from "@/lib/sync/identity";
 import { syncPolicies } from "@/lib/sync/registry";
@@ -71,12 +74,18 @@ const sagaMiddleware = createSagaMiddleware();
 /**
  * Sync engine context attached to the store as `_sync`. Consumed by
  * `StoreProvider` to drive `bootSync` without double-opening the channel.
+ *
+ * Phase 5 adds `engineApi` — a getter for the engine's external API
+ * (isPendingEcho + flushAutoSave). Consumers (notes realtime middleware,
+ * window panels' visibility-flush handler) read from here.
  */
 export interface StoreSyncContext {
   channel: SyncChannel;
   identity: IdentityKey;
   getIdentity: () => IdentityKey;
   setIdentity: (next: IdentityKey) => void;
+  /** Phase 5: read the engine's external API. Null until middleware constructs. */
+  engineApi: () => SyncEngineApi | null;
 }
 
 function resolveUserPreferencesForBootstrap(
@@ -159,10 +168,15 @@ export const makeStore = (initialState?: Partial<BaseReduxState>) => {
   });
   let currentIdentity: IdentityKey = initialIdentity;
   const syncChannel: SyncChannel = openSyncChannel(initialIdentity);
+  // Phase 5: mutable holder for the engine API (isPendingEcho + flushAutoSave).
+  // Populated by `createSyncMiddleware` inside its closure; read by the
+  // `StoreSyncContext.engineApi()` getter below.
+  const engineApiRef: { current: SyncEngineApi | null } = { current: null };
   const syncMiddleware = createSyncMiddleware({
     policies: syncPolicies,
     channel: syncChannel,
     getIdentity: () => currentIdentity,
+    apiRef: engineApiRef,
   });
 
   const store = configureStore({
@@ -197,6 +211,7 @@ export const makeStore = (initialState?: Partial<BaseReduxState>) => {
       syncChannel.setIdentity(next);
       syncContext.identity = next;
     },
+    engineApi: () => engineApiRef.current,
   };
   const storeWithSync = Object.assign(store, { _sync: syncContext });
 

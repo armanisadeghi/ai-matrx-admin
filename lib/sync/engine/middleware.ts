@@ -34,6 +34,10 @@ import {
   createRemoteWriteScheduler,
   type RemoteWriteScheduler,
 } from "./remoteWrite";
+import {
+  createAutoSaveScheduler,
+  type AutoSaveScheduler,
+} from "./autoSaveScheduler";
 
 interface ActionWithMeta {
   type: string;
@@ -57,6 +61,25 @@ function adapterFor(policy: Policy<any>): PersistenceAdapter {
 function selectSliceState(rootState: unknown, sliceName: string): unknown {
   if (rootState === null || typeof rootState !== "object") return undefined;
   return (rootState as Record<string, unknown>)[sliceName];
+}
+
+/**
+ * Phase 5: extract a recordId from an autoSave-triggering action payload.
+ * Conventions checked, in order:
+ *   - payload.id (most slices: notes, agents)
+ *   - payload.recordId (explicit)
+ *   - payload.noteId / payload.fileId / payload.agentId (legacy slice fields)
+ * Returns undefined if no recognized id present (action is dropped from
+ * the autoSave path — the slice still mutates).
+ */
+function extractRecordId(payload: unknown): string | undefined {
+  if (!payload || typeof payload !== "object") return undefined;
+  const p = payload as Record<string, unknown>;
+  for (const key of ["id", "recordId", "noteId", "fileId", "agentId"]) {
+    const v = p[key];
+    if (typeof v === "string" && v.length > 0) return v;
+  }
+  return undefined;
 }
 
 function partialize(
@@ -91,6 +114,24 @@ function serializeBody(policy: Policy<any>, sliceState: unknown): unknown {
   return filtered;
 }
 
+/**
+ * Phase 5: external-facing engine API. Returned to consumers via
+ * `apiRef.current` after the store is constructed. Used by:
+ *   - `realtimeMiddleware` (notes) → `isPendingEcho` to skip Supabase echoes
+ *   - window panels' visibility-flush handler → `flushAutoSave` programmatic
+ *   - dev-only debug panels — observability hooks
+ */
+export interface SyncEngineApi {
+  /** True if an autoSave write is in flight or scheduled for `(slice, recordId)`. */
+  isPendingEcho(sliceName: string, recordId: string): boolean;
+  /**
+   * Programmatic flush. With `recordId`, flushes that one record; without,
+   * flushes every pending record across every autoSave slice. Awaited so
+   * callers can sequence around it.
+   */
+  flushAutoSave(sliceName: string, recordId?: string): Promise<void>;
+}
+
 export interface SyncMiddlewareContext {
   policies: readonly Policy<any>[];
   channel: SyncChannel;
@@ -100,6 +141,11 @@ export interface SyncMiddlewareContext {
    * level `remote.debounceMs` still wins. Production callers omit this.
    */
   defaultDebounceMs?: number;
+  /**
+   * Phase 5: mutable holder so the store can read out the engine API after
+   * construction. Optional — tests that don't need the API can omit it.
+   */
+  apiRef?: { current: SyncEngineApi | null };
 }
 
 /**
@@ -142,6 +188,35 @@ export function createSyncMiddleware(ctx: SyncMiddlewareContext): Middleware {
   const hasWarmCache = ctx.policies.some(
     (p) => getPreset(p.config.preset).writeStrategy === "debounced",
   );
+  // Phase 5: per-record auto-save. Lazy — only constructed when at least one
+  // policy declares an autoSave block AND a triggerActions match lands.
+  let autoSaveScheduler: AutoSaveScheduler | null = null;
+  // Action allowlist → policies (for autoSave). One action may trigger
+  // multiple policies, but in practice we keep these disjoint per slice.
+  const autoSaveTriggerIndex = new Map<string, Policy<any>[]>();
+
+  // Expose the engine API via the optional caller-supplied ref. Read by
+  // `realtimeMiddleware.ts` for echo suppression + by panels for
+  // programmatic flush.
+  if (ctx.apiRef) {
+    ctx.apiRef.current = {
+      isPendingEcho: (slice, recordId) =>
+        autoSaveScheduler?.isPendingEcho(slice, recordId) ?? false,
+      flushAutoSave: async (slice, recordId) => {
+        if (!autoSaveScheduler) return;
+        await autoSaveScheduler.flush(slice, recordId);
+      },
+    };
+  }
+  for (const p of ctx.policies) {
+    const cfg = p.config.autoSave;
+    if (!cfg) continue;
+    for (const t of cfg.triggerActions) {
+      const list = autoSaveTriggerIndex.get(t) ?? [];
+      list.push(p);
+      autoSaveTriggerIndex.set(t, list);
+    }
+  }
   // Track identity across actions so a swap clears in-flight writes (and
   // we never re-key a write-in-progress to the new identity).
   let lastSeenIdentity = ctx.getIdentity().key;
@@ -207,6 +282,38 @@ export function createSyncMiddleware(ctx: SyncMiddlewareContext): Middleware {
     if (currentIdentityKey !== lastSeenIdentity) {
       lastSeenIdentity = currentIdentityKey;
       remoteWriteScheduler?.onIdentitySwap();
+      autoSaveScheduler?.onIdentitySwap();
+    }
+
+    // --- AutoSave (per-record, post-reducer) ---
+    // For each policy whose `autoSave.triggerActions` includes this action,
+    // schedule a save on the recordId carried in the action payload.
+    // Convention: action.payload.id (or .recordId, or .noteId, or .fileId)
+    // is the per-record key. The slice reducer is responsible for the
+    // mutation; the engine just schedules the write.
+    if (!isRehydrateAction(a)) {
+      const triggered = autoSaveTriggerIndex.get(a.type);
+      if (triggered && triggered.length > 0) {
+        const recordId = extractRecordId(a.payload);
+        if (recordId) {
+          if (!autoSaveScheduler) {
+            autoSaveScheduler = createAutoSaveScheduler({
+              policies: ctx.policies,
+              store: {
+                getState: api.getState,
+                dispatch: api.dispatch,
+              } as Parameters<typeof createAutoSaveScheduler>[0]["store"],
+              getIdentity: ctx.getIdentity,
+              ...(ctx.defaultDebounceMs !== undefined
+                ? { defaultDebounceMs: ctx.defaultDebounceMs }
+                : {}),
+            });
+          }
+          for (const policy of triggered) {
+            autoSaveScheduler.schedule(policy.config.sliceName, recordId);
+          }
+        }
+      }
     }
 
     // --- Persist (sync write-through for boot-critical; debounced for warm-cache) ---

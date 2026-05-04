@@ -133,6 +133,92 @@ export interface PolicyConfig<TState = unknown> {
         write?: WriteRemoteFn<TState>;
         debounceMs?: number;
     };
+
+    /**
+     * Phase 5 — per-record auto-save capability. Layered on top of `warm-cache`
+     * (no new preset). When present, the engine schedules a per-record write
+     * pipeline distinct from the slice-wide `remote.write` path. Useful for
+     * slices shaped as `Record<id, T>` (notes, code-files, agents, panels)
+     * where each record has its own dirty state and write target.
+     *
+     * See `phase-5-plan.md` §4.
+     */
+    autoSave?: AutoSaveConfig<TState>;
+}
+
+/**
+ * Per-record auto-save configuration. The engine consumes this on `warm-cache`
+ * policies. Only legal when `preset === "warm-cache"` (validator enforces).
+ */
+export interface AutoSaveConfig<TState = unknown> {
+    /** Slice key whose value is the per-record map (`Record<id, T>`). */
+    recordsKey: keyof TState;
+    /** Action allowlist that triggers an auto-save schedule. */
+    triggerActions: readonly string[];
+    /**
+     * Should this record save now? Default: `record._dirty === true`.
+     * Use this for read-only guards, "saving in progress" guards, etc.
+     */
+    shouldSave?: (record: any, recordId: string) => boolean;
+    /**
+     * Constant or content-adaptive debounce in ms. Default: 1500.
+     * Function form receives the record so policies can size by content
+     * length — notes uses 3s/5s/10s tiers based on body length.
+     */
+    debounceMs?: number | ((record: any, recordId: string) => number);
+    /**
+     * Per-record write. The engine awaits this. Returning a value (the saved
+     * row, etc.) is forwarded to `optimistic.onSuccess` if defined.
+     *
+     * The engine catches throws and forwards them to `optimistic.onError`.
+     * No retry storm — the next change to that record schedules a fresh save.
+     */
+    write: (ctx: AutoSaveWriteContext<any>) => Promise<unknown>;
+    /**
+     * Optimistic-state action creators. Engine dispatches these around the
+     * `write` call so consumers can avoid hand-rolling timer-aware reducers.
+     *
+     *   - onStart   — before the write fires (good for `_saving` flags)
+     *   - onSuccess — after the write resolves; receives the returned value
+     *   - onError   — after the write throws; receives the error message
+     */
+    optimistic?: {
+        onStart?: (recordId: string) => unknown;
+        onSuccess?: (recordId: string, saved: unknown) => unknown;
+        onError?: (recordId: string, error: string) => unknown;
+    };
+    /**
+     * When true, the engine adds the recordId to a per-policy "pending writes"
+     * set during the write window (from schedule → after write resolves/rejects).
+     * Realtime middleware can read this via `engine.isPendingEcho(slice, id)`
+     * to suppress its own UPDATE echoes from the same record.
+     *
+     * Default: false. Notes is the only consumer that needs this in Phase 5.
+     */
+    trackEchoes?: boolean;
+    /**
+     * Flush all pending records on `pagehide`. Default: true. Set to false
+     * for slices where the visibility-flush is owned elsewhere (e.g. window
+     * panels manage their own visibilitychange handler and call the engine's
+     * `flushAutoSave` programmatically).
+     */
+    flushOnHide?: boolean;
+}
+
+/**
+ * Context passed to a policy's `autoSave.write`. Mirrors `WriteContext` but
+ * carries the per-record data + recordId.
+ */
+export interface AutoSaveWriteContext<TRecord = unknown> {
+    identity: IdentityKey;
+    signal: AbortSignal;
+    recordId: string;
+    record: TRecord;
+    /**
+     * The slice's current state at the moment of write. Useful for policies
+     * that need to look up related records (e.g. notes' folder_id resolution).
+     */
+    sliceState: unknown;
 }
 
 /**

@@ -184,6 +184,73 @@ export function definePolicy<TState>(config: PolicyConfig<TState>): Policy<TStat
         }
     }
 
+    // Phase 5: autoSave is only legal on warm-cache. Validate the block.
+    if (config.autoSave !== undefined) {
+        if (preset !== "warm-cache") {
+            fail(
+                `"${sliceName}": autoSave is only legal on the "warm-cache" preset (got "${preset}")`,
+            );
+        }
+        const a = config.autoSave;
+        if (
+            typeof a.recordsKey !== "string" ||
+            (a.recordsKey as string).length === 0
+        ) {
+            fail(
+                `"${sliceName}": autoSave.recordsKey must be a non-empty string slice-state key`,
+            );
+        }
+        if (!Array.isArray(a.triggerActions) || a.triggerActions.length === 0) {
+            fail(
+                `"${sliceName}": autoSave.triggerActions must be a non-empty array`,
+            );
+        } else {
+            const seen = new Set<string>();
+            for (const t of a.triggerActions) {
+                if (typeof t !== "string" || t.length === 0) {
+                    fail(
+                        `"${sliceName}": autoSave.triggerActions entries must be non-empty strings`,
+                    );
+                }
+                if (seen.has(t)) {
+                    fail(
+                        `"${sliceName}": duplicate autoSave.triggerActions "${t}"`,
+                    );
+                }
+                seen.add(t);
+            }
+        }
+        if (typeof a.write !== "function") {
+            fail(`"${sliceName}": autoSave.write must be a function`);
+        }
+        if (a.debounceMs !== undefined) {
+            if (typeof a.debounceMs === "number") {
+                if (!Number.isFinite(a.debounceMs) || a.debounceMs < 0) {
+                    fail(
+                        `"${sliceName}": autoSave.debounceMs (number) must be >= 0`,
+                    );
+                }
+            } else if (typeof a.debounceMs !== "function") {
+                fail(
+                    `"${sliceName}": autoSave.debounceMs must be a number or a function`,
+                );
+            }
+        }
+        if (a.shouldSave !== undefined && typeof a.shouldSave !== "function") {
+            fail(`"${sliceName}": autoSave.shouldSave must be a function`);
+        }
+        if (a.optimistic !== undefined) {
+            for (const k of ["onStart", "onSuccess", "onError"] as const) {
+                const v = a.optimistic[k];
+                if (v !== undefined && typeof v !== "function") {
+                    fail(
+                        `"${sliceName}": autoSave.optimistic.${k} must be a function`,
+                    );
+                }
+            }
+        }
+    }
+
     const storageKey = caps.persists ? config.storageKey ?? `matrx:${sliceName}` : "";
 
     const policy: Policy<TState> = Object.freeze({

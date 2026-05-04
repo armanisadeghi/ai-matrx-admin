@@ -22,7 +22,10 @@ import { socketMiddleware } from "./socket-io/connection/socketMiddleware";
 import { autoSaveMiddleware } from "@/features/notes/redux/autoSaveMiddleware";
 import { codeFilesAutoSaveMiddleware } from "@/features/code-files/redux/autoSaveMiddleware";
 import { cloudFilesRealtimeMiddleware } from "@/features/files/redux/realtime-middleware";
-import { createSyncMiddleware } from "@/lib/sync/engine/middleware";
+import {
+  createSyncMiddleware,
+  type SyncEngineApi,
+} from "@/lib/sync/engine/middleware";
 import { openSyncChannel, type SyncChannel } from "@/lib/sync/channel";
 import { deriveIdentity } from "@/lib/sync/identity";
 import { syncPolicies } from "@/lib/sync/registry";
@@ -45,6 +48,8 @@ interface EntityStoreSyncContext {
   identity: IdentityKey;
   getIdentity: () => IdentityKey;
   setIdentity: (next: IdentityKey) => void;
+  /** Phase 5: read the engine's external API. Mirrors slim store. */
+  engineApi: () => SyncEngineApi | null;
 }
 
 function splitUserData(user: UserData): {
@@ -155,10 +160,12 @@ export const makeEntityStore = (initialState?: Partial<InitialReduxState>) => {
   });
   let currentIdentity: IdentityKey = initialIdentity;
   const syncChannel: SyncChannel = openSyncChannel(initialIdentity);
+  const engineApiRef: { current: SyncEngineApi | null } = { current: null };
   const syncMiddleware = createSyncMiddleware({
     policies: syncPolicies,
     channel: syncChannel,
     getIdentity: () => currentIdentity,
+    apiRef: engineApiRef,
   });
 
   const store = configureStore({
@@ -193,6 +200,7 @@ export const makeEntityStore = (initialState?: Partial<InitialReduxState>) => {
       syncChannel.setIdentity(next);
       syncContext.identity = next;
     },
+    engineApi: () => engineApiRef.current,
   };
   const storeWithSync = Object.assign(store, { _sync: syncContext });
 
