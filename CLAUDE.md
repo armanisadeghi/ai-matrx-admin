@@ -195,12 +195,19 @@ If you're tempted to write `confirm("Delete this?")`, stop. Use the components b
 
 | Use case | Component |
 |---|---|
-| Confirm a destructive or irreversible action (replaces `window.confirm`) | `<ConfirmDialog />` from `@/components/ui/confirm-dialog` |
+| Confirm a destructive or irreversible action — **inline, with busy state** | `<ConfirmDialog />` from `@/components/ui/confirm-dialog` |
+| Confirm — **imperative one-liner from anywhere** (Promise<boolean>) | `confirm({title, ...})` from `@/components/dialogs/confirm/ConfirmDialogHost` |
 | Show success / error / info to the user (replaces `window.alert`) | `toast.success(...)` / `toast.error(...)` from `sonner` |
-| Capture a single string from the user (replaces `window.prompt`) | An inline form, or a `<Dialog />` from `@/components/ui/dialog` with an `<Input />`, or an `EmailInputDialog`-style modal |
+| Capture a single string from the user (replaces `window.prompt`) | `<TextInputDialog />` from `@/components/dialogs/text-input/TextInputDialog` (Drawer on mobile, Dialog on desktop) |
+| Show a URL for manual copy when the clipboard API fails | `<ClipboardFallbackDialog />` from `@/components/dialogs/clipboard-fallback/ClipboardFallbackDialog` |
 | Unsaved-changes guard on close/leave | `<ConfirmDialog />` driven by a `beforeunload`/`router.events` blocker — **never** `confirm("Discard changes?")` |
 
-**`<ConfirmDialog />` canonical usage:**
+#### When to pick which confirm
+
+- **Inline `<ConfirmDialog>`** — when you want busy state inside the dialog (e.g. dialog stays open with a spinner during a network delete) or fine-grained control over open/close. Most cases.
+- **Imperative `confirm()`** — when you want a one-liner: `if (!(await confirm({title: "Delete?", variant: "destructive"}))) return;`. Backed by a global host mounted in `app/Providers.tsx`, `app/EntityProviders.tsx`, and `app/(public)/PublicProviders.tsx`. The dialog closes immediately on click; show your own busy state outside.
+
+**`<ConfirmDialog />` canonical usage (inline):**
 
 ```tsx
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -223,6 +230,46 @@ const [busy, setBusy] = useState(false);
   onConfirm={async () => {
     setBusy(true);
     try { await deleteItem(target!.id); setTarget(null); }
+    finally { setBusy(false); }
+  }}
+/>
+```
+
+**`confirm()` canonical usage (imperative):**
+
+```tsx
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+
+async function handleDelete(item: Item) {
+  const ok = await confirm({
+    title: "Delete item",
+    description: `Permanently delete "${item.name}". This cannot be undone.`,
+    confirmLabel: "Delete",
+    variant: "destructive",
+  });
+  if (!ok) return;
+  await deleteItem(item.id);
+}
+```
+
+**`<TextInputDialog />` canonical usage:**
+
+```tsx
+import { TextInputDialog } from "@/components/dialogs/text-input/TextInputDialog";
+
+const [open, setOpen] = useState(false);
+const [busy, setBusy] = useState(false);
+
+<TextInputDialog
+  open={open}
+  onOpenChange={(o) => { if (!busy) setOpen(o); }}
+  title="New folder"
+  placeholder="Folder name"
+  confirmLabel="Create"
+  busy={busy}
+  onConfirm={async (name) => {
+    setBusy(true);
+    try { await createFolder(name); setOpen(false); }
     finally { setBusy(false); }
   }}
 />

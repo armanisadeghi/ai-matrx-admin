@@ -1,5 +1,6 @@
 {
-    "recommendations": [
-        "weiskopfsodefa.vercel-vscode-by-sodefa"
-    ]
+  "recommendations": [
+    "weiskopfsodefa.vercel-vscode-by-sodefa",
+    "anthropic.claude-code"
+  ]
 }

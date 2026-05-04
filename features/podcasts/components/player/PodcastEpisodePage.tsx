@@ -16,7 +16,7 @@ export function PodcastEpisodePage({ episode }: PodcastEpisodePageProps) {
     const [videoFailed, setVideoFailed] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
     const [videoSrc, setVideoSrc] = useState<string | null>(null);
-    const { share, copied } = useShare();
+    const { share, copied, fallbackDialog } = useShare();
 
     const coverExists = !!(episode.title || coverImage || episode.description);
     const effectiveMode = (() => {
@@ -108,6 +108,7 @@ export function PodcastEpisodePage({ episode }: PodcastEpisodePageProps) {
                         />
                     </div>
                 </div>
+                {fallbackDialog}
             </div>
         );
     }
@@ -177,6 +178,7 @@ export function PodcastEpisodePage({ episode }: PodcastEpisodePageProps) {
                         )}
                     </div>
                 </div>
+                {fallbackDialog}
             </div>
         );
     }
@@ -201,6 +203,7 @@ export function PodcastEpisodePage({ episode }: PodcastEpisodePageProps) {
                     />
                 </div>
             </div>
+            {fallbackDialog}
         </div>
     );
 }

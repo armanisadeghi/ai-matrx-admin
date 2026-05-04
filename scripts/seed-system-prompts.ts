@@ -312,10 +312,13 @@ const SYSTEM_PROMPT_SEEDS: SystemPromptSeed[] = [
 ];
 
 export async function seedSystemPrompts() {
-  // Create Supabase client for script
+  // Create Supabase client for script.
+  // SUPABASE_SECRET_KEY (sb_secret_*) is the current admin key.
+  // The legacy JWT-based SUPABASE_SERVICE_ROLE_KEY is deprecated — do not reintroduce it.
+  // Docs: https://supabase.com/docs/guides/getting-started/api-keys
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  
+  const supabaseKey = process.env.SUPABASE_SECRET_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
   if (!supabaseUrl || !supabaseKey) {
     throw new Error('Missing Supabase environment variables');
   }

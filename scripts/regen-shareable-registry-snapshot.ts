@@ -19,7 +19,11 @@
  *
  * Required environment variables (loaded from .env.local automatically):
  *   NEXT_PUBLIC_SUPABASE_URL
- *   SUPABASE_SERVICE_ROLE_KEY (read-only access to the registry table is enough)
+ *   SUPABASE_SECRET_KEY (read-only access to the registry table is enough)
+ *
+ * SUPABASE_SECRET_KEY (sb_secret_*) is the current admin key.
+ * The legacy JWT-based SUPABASE_SERVICE_ROLE_KEY is deprecated — do not reintroduce it.
+ * Docs: https://supabase.com/docs/guides/getting-started/api-keys
  */
 
 import { createClient } from "@supabase/supabase-js";
@@ -42,8 +46,8 @@ const SNAPSHOT_PATH = join(
 async function main() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_ANON_KEY ||
+    process.env.SUPABASE_SECRET_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key) {

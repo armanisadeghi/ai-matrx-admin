@@ -37,6 +37,7 @@ import GlobalTaskShortcut from "@/features/tasks/widgets/GlobalTaskShortcut";
 import CreateTaskFromSourceDialog from "@/features/tasks/widgets/CreateTaskFromSourceDialog";
 import { CloudFilesPickerHost } from "@/features/files/components/pickers/CloudFilesPickerHost";
 import { UploadGuardHost } from "@/features/files/upload/UploadGuardHost";
+import { ConfirmDialogHost } from "@/components/dialogs/confirm/ConfirmDialogHost";
 
 // Side-effect import: registers every client-capability provider with the
 // tool-injection registry so `buildToolInjection` can walk them on every turn.
@@ -101,6 +102,11 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                   needed, then dispatches the upload.
                                   See features/files/upload/. */}
                               <UploadGuardHost />
+                              {/* Imperative confirm dialog host. Exposes
+                                  `confirm({title, variant, ...})` — the
+                                  global replacement for `window.confirm`.
+                                  See components/dialogs/confirm/. */}
+                              <ConfirmDialogHost />
                               {/* File preview is delivered via a registered
                                   WindowPanel (`filePreviewWindow`) mounted by
                                   the UnifiedOverlayController — no host needed

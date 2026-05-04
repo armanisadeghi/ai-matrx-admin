@@ -19,13 +19,16 @@ dotenv.config({ path: resolve(process.cwd(), '.env.local') });
 // import { problemsData } from '../app/(authenticated)/tests/math/local-data/sample-data';
 const problemsData = [];
 
+// SUPABASE_SECRET_KEY (sb_secret_*) is the current admin key.
+// The legacy JWT-based SUPABASE_SERVICE_ROLE_KEY is deprecated — do not reintroduce it.
+// Docs: https://supabase.com/docs/guides/getting-started/api-keys
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SECRET_KEY;
 
 if (!supabaseUrl || !supabaseServiceKey) {
     console.error('❌ Missing required environment variables:');
     console.error('   - NEXT_PUBLIC_SUPABASE_URL');
-    console.error('   - SUPABASE_SERVICE_ROLE_KEY');
+    console.error('   - SUPABASE_SECRET_KEY');
     process.exit(1);
 }
 

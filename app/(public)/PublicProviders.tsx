@@ -8,6 +8,7 @@ import type { BaseReduxState } from "@/types/reduxTypes";
 import { PublicAuthSync } from "./PublicAuthSync";
 import UnifiedOverlayController from "@/features/window-panels/UnifiedOverlayController";
 import LegacyPromptOverlaysController from "@/features/prompts/components/results-display/LegacyPromptOverlaysController";
+import { ConfirmDialogHost } from "@/components/dialogs/confirm/ConfirmDialogHost";
 
 // Thin static shell — the heavy bits (window registry traversal, prompt
 // surfaces) are dynamic-loaded INSIDE each leaf widget's own file, not at
@@ -40,6 +41,8 @@ export function PublicProviders({
           <PublicAuthSync />
           <UnifiedOverlayController />
           <LegacyPromptOverlaysController />
+          {/* See app/Providers.tsx for the rationale. */}
+          <ConfirmDialogHost />
           {children}
         </TooltipProvider>
       </StoreProvider>
