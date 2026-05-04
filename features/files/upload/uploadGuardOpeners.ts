@@ -18,6 +18,7 @@
  */
 
 import type { UploadFilesArg } from "@/features/files/types";
+import type { AppDispatch } from "@/lib/redux/store";
 
 /**
  * The handler the host registers at mount. Returns a promise that
@@ -43,7 +44,9 @@ export function registerUploadGuardHandler(handler: UploadGuardHandler): void {
 }
 
 /** Called by the host's cleanup. */
-export function unregisterUploadGuardHandler(handler: UploadGuardHandler): void {
+export function unregisterUploadGuardHandler(
+  handler: UploadGuardHandler,
+): void {
   if (registered === handler) registered = null;
 }
 
@@ -90,9 +93,8 @@ export async function requestUpload(
     };
   }
   try {
-    const result = await store
-      .dispatch(uploadFiles(arg))
-      .unwrap();
+    const dispatch = store.dispatch as AppDispatch;
+    const result = await dispatch(uploadFiles(arg)).unwrap();
     return { ...result, cancelled: false };
   } catch (err) {
     return {

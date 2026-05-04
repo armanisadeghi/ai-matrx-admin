@@ -20,6 +20,7 @@ import type {
   ConceptItem,
   ModuleSegment,
   RawSegment,
+  SessionSettings,
   StudioSession,
 } from "../types";
 import type { ColumnId } from "../constants";
@@ -80,6 +81,13 @@ export interface TranscriptStudioState {
    */
   moduleSegmentsById: Record<string, Record<string, ModuleSegment>>;
   moduleSegmentIdsBySession: Record<string, string[]>;
+  /**
+   * Per-session settings. `null` means we haven't fetched yet OR no row
+   * exists in `studio_session_settings` (UI falls back to global defaults).
+   * Loaded lazily when `ActiveSessionView` mounts; a row is created on the
+   * first user-driven settings change.
+   */
+  settingsBySession: Record<string, SessionSettings>;
 }
 
 const DEFAULT_UI: StudioUiState = {
@@ -106,6 +114,7 @@ const initialState: TranscriptStudioState = {
   conceptIdsBySession: {},
   moduleSegmentsById: {},
   moduleSegmentIdsBySession: {},
+  settingsBySession: {},
 };
 
 // ── Slice ─────────────────────────────────────────────────────────────
@@ -373,6 +382,19 @@ const slice = createSlice({
       const session = state.byId[sessionId];
       if (session) session.moduleId = moduleId;
     },
+    sessionSettingsLoaded(
+      state,
+      action: PayloadAction<{ sessionId: string; settings: SessionSettings }>,
+    ) {
+      const { sessionId, settings } = action.payload;
+      state.settingsBySession[sessionId] = settings;
+    },
+    sessionSettingsCleared(
+      state,
+      action: PayloadAction<{ sessionId: string }>,
+    ) {
+      delete state.settingsBySession[action.payload.sessionId];
+    },
   },
 });
 
@@ -402,6 +424,8 @@ export const {
   moduleSegmentsAppended,
   moduleSegmentsCleared,
   moduleSwitched,
+  sessionSettingsLoaded,
+  sessionSettingsCleared,
 } = slice.actions;
 
 export default slice.reducer;

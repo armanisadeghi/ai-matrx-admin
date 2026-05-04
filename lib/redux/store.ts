@@ -13,6 +13,7 @@ import { socketMiddleware } from "./socket-io/connection/socketMiddleware";
 import { autoSaveMiddleware } from "@/features/notes/redux/autoSaveMiddleware";
 import { codeFilesAutoSaveMiddleware } from "@/features/code-files/redux/autoSaveMiddleware";
 import { cloudFilesRealtimeMiddleware } from "@/features/files/redux/realtime-middleware";
+import { transcriptStudioRealtimeMiddleware } from "@/features/transcript-studio/redux/realtimeMiddleware";
 import { createSyncMiddleware } from "@/lib/sync/engine/middleware";
 import { openSyncChannel, type SyncChannel } from "@/lib/sync/channel";
 import { deriveIdentity } from "@/lib/sync/identity";
@@ -182,6 +183,7 @@ export const makeStore = (initialState?: Partial<BaseReduxState>) => {
         autoSaveMiddleware,
         codeFilesAutoSaveMiddleware,
         cloudFilesRealtimeMiddleware,
+        transcriptStudioRealtimeMiddleware,
       ),
     devTools: process.env.NODE_ENV !== "production",
   });

@@ -347,6 +347,12 @@ const DYNAMIC: Record<string, DynamicAddition> = {
     componentImport: () =>
       import("@/components/official-candidate/voice-pad/components/VoicePadAi"),
   },
+  transcriptStudioWindow: {
+    componentImport: () =>
+      import(
+        "@/features/window-panels/windows/transcript-studio/TranscriptStudioWindow"
+      ).then((m) => ({ default: m.TranscriptStudioWindow })),
+  },
 
   // ── AI Results ────────────────────────────────────────────────────────────
   // Cross-agent conversation history. Replaces the legacy

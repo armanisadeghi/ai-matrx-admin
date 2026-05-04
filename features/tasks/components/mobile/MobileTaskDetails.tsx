@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   ChevronLeft,
   Calendar,
@@ -11,45 +11,48 @@ import {
   X,
   Loader2,
   MoreVertical,
-} from 'lucide-react';
-import { useAppDispatch } from '@/lib/redux/hooks';
-import { selectProjects } from '@/features/tasks/redux/selectors';
+} from "lucide-react";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { selectProjects } from "@/features/tasks/redux/selectors";
 import {
   updateTaskFieldThunk,
   toggleTaskCompleteThunk,
   deleteTaskThunk,
   moveTaskThunk,
-} from '@/features/tasks/redux/thunks';
-import { invalidateAndRefetchFullContext } from '@/features/agent-context/redux/hierarchyThunks';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
+} from "@/features/tasks/redux/thunks";
+import { invalidateAndRefetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
-import * as taskService from '@/features/tasks/services/taskService';
-import { ScopePicker } from '@/features/agent-context/components/ScopePicker';
-import { useAppSelector } from '@/lib/redux/hooks';
-import { selectOrganizationId } from '@/features/agent-context/redux/appContextSlice';
+} from "@/components/ui/dropdown-menu";
+import * as taskService from "@/features/tasks/services/taskService";
+import { ScopePicker } from "@/features/agent-context/components/ScopePicker";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectOrganizationId } from "@/features/agent-context/redux/appContextSlice";
 
 interface MobileTaskDetailsProps {
   task: any;
   onBack: () => void;
 }
 
-export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsProps) {
+export default function MobileTaskDetails({
+  task,
+  onBack,
+}: MobileTaskDetailsProps) {
   const dispatch = useAppDispatch();
   const projects = useAppSelector(selectProjects);
   const orgId = useAppSelector(selectOrganizationId);
@@ -68,28 +71,37 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
     if (ok) await dispatch(invalidateAndRefetchFullContext());
   };
 
-  const [title, setTitle] = useState(task.title || '');
-  const [description, setDescription] = useState(task.description || '');
-  const [dueDate, setDueDate] = useState(task.dueDate || '');
-  const [projectId, setProjectId] = useState<string | null>(task.projectId || null);
-  const [priority, setPriority] = useState<'low' | 'medium' | 'high' | null>(
-    task.priority || null
+  const [title, setTitle] = useState(task.title || "");
+  const [description, setDescription] = useState(task.description || "");
+  const [dueDate, setDueDate] = useState(task.dueDate || "");
+  const [projectId, setProjectId] = useState<string | null>(
+    task.projectId || null,
+  );
+  const [priority, setPriority] = useState<"low" | "medium" | "high" | null>(
+    task.priority || null,
   );
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
-  const [newSubtask, setNewSubtask] = useState('');
+  const [newSubtask, setNewSubtask] = useState("");
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Update local state when task changes
   useEffect(() => {
-    setTitle(task.title || '');
-    setDescription(task.description || '');
-    setDueDate(task.dueDate || '');
+    setTitle(task.title || "");
+    setDescription(task.description || "");
+    setDueDate(task.dueDate || "");
     setProjectId(task.projectId || null);
     setPriority(task.priority || null);
     setIsDirty(false);
-  }, [task.id, task.title, task.description, task.dueDate, task.projectId, task.priority]);
+  }, [
+    task.id,
+    task.title,
+    task.description,
+    task.dueDate,
+    task.projectId,
+    task.priority,
+  ]);
 
   const handleSave = async () => {
     if (!isDirty || isSaving) return;
@@ -97,7 +109,9 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
     setIsSaving(true);
     try {
       if (title !== task.title) {
-        await dispatch(updateTaskFieldThunk({ taskId: task.id, patch: { title } }));
+        await dispatch(
+          updateTaskFieldThunk({ taskId: task.id, patch: { title } }),
+        );
       }
       if (description !== task.description) {
         await dispatch(
@@ -128,7 +142,7 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
       }
       setIsDirty(false);
     } catch (error) {
-      console.error('Error saving task:', error);
+      console.error("Error saving task:", error);
     } finally {
       setIsSaving(false);
     }
@@ -144,7 +158,7 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
       );
       onBack();
     } catch (error) {
-      console.error('Error deleting task:', error);
+      console.error("Error deleting task:", error);
     } finally {
       setIsDeleting(false);
     }
@@ -156,10 +170,10 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
     setIsAddingSubtask(true);
     try {
       await createSubtask(task.id, newSubtask);
-      setNewSubtask('');
+      setNewSubtask("");
       await refresh();
     } catch (error) {
-      console.error('Error adding subtask:', error);
+      console.error("Error adding subtask:", error);
     } finally {
       setIsAddingSubtask(false);
     }
@@ -173,7 +187,7 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
       await updateSubtaskStatus(subtaskId, !subtask.completed);
       await refresh();
     } catch (error) {
-      console.error('Error toggling subtask:', error);
+      console.error("Error toggling subtask:", error);
     }
   };
 
@@ -182,20 +196,20 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
       await deleteSubtask(subtaskId);
       await refresh();
     } catch (error) {
-      console.error('Error deleting subtask:', error);
+      console.error("Error deleting subtask:", error);
     }
   };
 
   const getPriorityColor = (p: string | null) => {
     switch (p) {
-      case 'high':
-        return 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400';
-      case 'medium':
-        return 'bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400';
-      case 'low':
-        return 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400';
+      case "high":
+        return "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400";
+      case "medium":
+        return "bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400";
+      case "low":
+        return "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400";
       default:
-        return 'bg-muted text-muted-foreground';
+        return "bg-muted text-muted-foreground";
     }
   };
 
@@ -209,17 +223,26 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
       <div className="flex-shrink-0 border-b border-border bg-card">
         <div className="flex items-center justify-between p-3">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <Button variant="ghost" size="icon" onClick={onBack} className="flex-shrink-0 h-7 w-7 rounded-full">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onBack}
+              className="flex-shrink-0 h-7 w-7 rounded-full"
+            >
               <ChevronLeft size={18} />
             </Button>
             <Checkbox
               checked={task.completed}
-              onCheckedChange={() => dispatch(toggleTaskCompleteThunk({ taskId: task.id }))}
+              onCheckedChange={() =>
+                dispatch(toggleTaskCompleteThunk({ taskId: task.id }))
+              }
               className="flex-shrink-0"
             />
             <h1
               className={`text-lg font-semibold flex-1 truncate ${
-                task.completed ? 'line-through text-muted-foreground' : 'text-foreground'
+                task.completed
+                  ? "line-through text-muted-foreground"
+                  : "text-foreground"
               }`}
             >
               {task.title}
@@ -227,7 +250,11 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="flex-shrink-0 h-7 w-7 rounded-full">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="flex-shrink-0 h-7 w-7 rounded-full"
+              >
                 <MoreVertical size={16} />
               </Button>
             </DropdownMenuTrigger>
@@ -241,7 +268,7 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
                         Saving...
                       </>
                     ) : (
-                      'Save Changes'
+                      "Save Changes"
                     )}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -274,7 +301,9 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
         <div className="p-4 space-y-5 pb-6">
           {/* Title */}
           <div>
-            <label className="text-sm font-medium text-muted-foreground mb-2 block">Title</label>
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">
+              Title
+            </label>
             <Input
               value={title}
               onChange={(e) => {
@@ -283,7 +312,10 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
               }}
               onFocus={(e) => {
                 setTimeout(() => {
-                  e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  e.target.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                  });
                 }, 300);
               }}
               className="text-base"
@@ -303,11 +335,15 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
               }}
               onFocus={(e) => {
                 setTimeout(() => {
-                  e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  e.target.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                  });
                 }, 300);
               }}
               placeholder="Add details..."
-              className="text-sm resize-y min-h-[100px]"
+              className="text-base resize-y min-h-[100px]"
+              style={{ fontSize: "16px" }}
             />
           </div>
 
@@ -324,7 +360,8 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
                 setDueDate(e.target.value);
                 setIsDirty(true);
               }}
-              className="text-sm"
+              className="text-base"
+              style={{ fontSize: "16px" }}
             />
           </div>
 
@@ -335,15 +372,17 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
               Project
             </label>
             <Select
-              value={projectId || 'none'}
+              value={projectId || "none"}
               onValueChange={(val) => {
-                setProjectId(val === 'none' ? null : val);
+                setProjectId(val === "none" ? null : val);
                 setIsDirty(true);
               }}
             >
               <SelectTrigger className="text-sm">
                 <SelectValue>
-                  {projectId ? projects.find((p) => p.id === projectId)?.name : 'No Project'}
+                  {projectId
+                    ? projects.find((p) => p.id === projectId)?.name
+                    : "No Project"}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -365,11 +404,7 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
                 Scopes
               </label>
-              <ScopePicker
-                entityType="task"
-                entityId={task.id}
-                orgId={orgId}
-              />
+              <ScopePicker entityType="task" entityId={task.id} orgId={orgId} />
             </div>
           )}
 
@@ -380,16 +415,20 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
               Priority
             </label>
             <Select
-              value={priority || 'none'}
+              value={priority || "none"}
               onValueChange={(val) => {
-                setPriority(val === 'none' ? null : (val as any));
+                setPriority(val === "none" ? null : (val as any));
                 setIsDirty(true);
               }}
             >
               <SelectTrigger className="text-sm">
                 <SelectValue>
-                  <span className={`px-2 py-1 rounded-md text-xs font-medium ${getPriorityColor(priority)}`}>
-                    {priority ? priority.charAt(0).toUpperCase() + priority.slice(1) : 'None'}
+                  <span
+                    className={`px-2 py-1 rounded-md text-xs font-medium ${getPriorityColor(priority)}`}
+                  >
+                    {priority
+                      ? priority.charAt(0).toUpperCase() + priority.slice(1)
+                      : "None"}
                   </span>
                 </SelectValue>
               </SelectTrigger>
@@ -417,18 +456,24 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
           {/* Subtasks */}
           <div>
             <label className="text-sm font-medium text-muted-foreground mb-2 block">
-              Subtasks {totalSubtasks > 0 && `(${completedSubtasks}/${totalSubtasks})`}
+              Subtasks{" "}
+              {totalSubtasks > 0 && `(${completedSubtasks}/${totalSubtasks})`}
             </label>
             <div className="space-y-2">
               {subtasks.map((subtask: any) => (
-                <div key={subtask.id} className="flex items-center gap-2 group py-1">
+                <div
+                  key={subtask.id}
+                  className="flex items-center gap-2 group py-1"
+                >
                   <Checkbox
                     checked={subtask.completed}
                     onCheckedChange={() => handleToggleSubtask(subtask.id)}
                   />
                   <span
                     className={`text-sm flex-1 ${
-                      subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'
+                      subtask.completed
+                        ? "line-through text-muted-foreground"
+                        : "text-foreground"
                     }`}
                   >
                     {subtask.title}
@@ -449,13 +494,19 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
                   onChange={(e) => setNewSubtask(e.target.value)}
                   placeholder="Add a subtask..."
                   disabled={isAddingSubtask}
-                  className="text-sm flex-1"
+                  className="text-base flex-1"
+                  style={{ fontSize: "16px" }}
                   onFocus={(e) => {
                     setTimeout(() => {
-                      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      e.target.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center",
+                      });
                     }, 300);
                   }}
-                  onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleAddSubtask()}
+                  onKeyPress={(e) =>
+                    e.key === "Enter" && !e.shiftKey && handleAddSubtask()
+                  }
                 />
                 <Button
                   size="icon"
@@ -464,7 +515,11 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
                   disabled={isAddingSubtask || !newSubtask.trim()}
                   className="h-8 w-8 flex-shrink-0 rounded-full"
                 >
-                  {isAddingSubtask ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                  {isAddingSubtask ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Plus size={16} />
+                  )}
                 </Button>
               </div>
             </div>
@@ -472,22 +527,41 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
         </div>
       </div>
 
-      {/* Save Button (Sticky at bottom if dirty) */}
-      {isDirty && (
-        <div className="flex-shrink-0 border-t border-border bg-card p-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-          <Button onClick={handleSave} disabled={isSaving} className="w-full" size="lg">
-            {isSaving ? (
-              <>
-                <Loader2 size={18} className="mr-2 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              'Save Changes'
-            )}
-          </Button>
-        </div>
-      )}
+      {/* Sticky bottom action bar — Save (when dirty) + Delete. Always
+          visible so the user never has to scroll back up. `pb-safe` covers
+          the iOS home-indicator inset on real devices. */}
+      <div className="flex-shrink-0 border-t border-border bg-card px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="lg"
+          onClick={handleDelete}
+          disabled={isDeleting}
+          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+        >
+          {isDeleting ? (
+            <Loader2 size={18} className="animate-spin" />
+          ) : (
+            <Trash2 size={18} />
+          )}
+        </Button>
+        <Button
+          onClick={handleSave}
+          disabled={!isDirty || isSaving}
+          className="flex-1"
+          size="lg"
+        >
+          {isSaving ? (
+            <>
+              <Loader2 size={18} className="mr-2 animate-spin" />
+              Saving...
+            </>
+          ) : isDirty ? (
+            "Save Changes"
+          ) : (
+            "Saved"
+          )}
+        </Button>
+      </div>
     </div>
   );
 }
-

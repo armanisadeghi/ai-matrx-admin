@@ -1,9 +1,19 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { ChevronRight, Plus, MoreVertical, Search, X, Loader2 } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { selectFilteredTasks, selectProjects } from '@/features/tasks/redux/selectors';
+import React, { useState } from "react";
+import {
+  ChevronRight,
+  Plus,
+  MoreVertical,
+  Search,
+  X,
+  Loader2,
+} from "lucide-react";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import {
+  selectFilteredTasks,
+  selectProjects,
+} from "@/features/tasks/redux/selectors";
 import {
   selectNewTaskTitle,
   selectIsCreatingTask,
@@ -12,19 +22,22 @@ import {
   selectActiveProject,
   setNewTaskTitle,
   setSearchQuery,
-} from '@/features/tasks/redux/taskUiSlice';
-import { createTaskThunk, toggleTaskCompleteThunk } from '@/features/tasks/redux/thunks';
+} from "@/features/tasks/redux/taskUiSlice";
+import {
+  createTaskThunk,
+  toggleTaskCompleteThunk,
+} from "@/features/tasks/redux/thunks";
 import {
   selectOrganizationId,
   selectScopeSelectionsContext,
-} from '@/features/agent-context/redux/appContextSlice';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import MobileFilterMenu from './MobileFilterMenu';
-import MobileProjectSelector from './MobileProjectSelector';
-import { ScopeTagsDisplay } from '@/features/agent-context/components/ScopeTagsDisplay';
-import { ActiveScopeFilterChips } from '../TaskScopeFilter';
+} from "@/features/agent-context/redux/appContextSlice";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import MobileFilterMenu from "./MobileFilterMenu";
+import MobileProjectSelector from "./MobileProjectSelector";
+import { ScopeTagsDisplay } from "@/features/agent-context/components/ScopeTagsDisplay";
+import { ActiveScopeFilterChips } from "../TaskScopeFilter";
 import {
   Sheet,
   SheetContent,
@@ -32,13 +45,15 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '@/components/ui/sheet';
+} from "@/components/ui/sheet";
 
 interface MobileTasksListProps {
   onTaskSelect: (taskId: string) => void;
 }
 
-export default function MobileTasksList({ onTaskSelect }: MobileTasksListProps) {
+export default function MobileTasksList({
+  onTaskSelect,
+}: MobileTasksListProps) {
   const dispatch = useAppDispatch();
   const filteredTasks = useAppSelector(selectFilteredTasks);
   const projects = useAppSelector(selectProjects);
@@ -52,9 +67,9 @@ export default function MobileTasksList({ onTaskSelect }: MobileTasksListProps) 
 
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
-  const [selectedProjectForTask, setSelectedProjectForTask] = useState<string | null>(
-    activeProject || null
-  );
+  const [selectedProjectForTask, setSelectedProjectForTask] = useState<
+    string | null
+  >(activeProject || null);
 
   const canShowTasks = activeProject || showAllProjects;
 
@@ -62,7 +77,7 @@ export default function MobileTasksList({ onTaskSelect }: MobileTasksListProps) 
     e.preventDefault();
     if (!newTaskTitle.trim()) return;
     const defaultScopeIds = Object.values(scopeSelections ?? {}).filter(
-      (v): v is string => typeof v === 'string' && v.length > 0,
+      (v): v is string => typeof v === "string" && v.length > 0,
     );
     await dispatch(
       createTaskThunk({
@@ -75,14 +90,18 @@ export default function MobileTasksList({ onTaskSelect }: MobileTasksListProps) 
     setShowQuickAdd(false);
   };
 
-  const handleTaskToggle = (_projectId: string, taskId: string, e: React.MouseEvent) => {
+  const handleTaskToggle = (
+    _projectId: string,
+    taskId: string,
+    e: React.MouseEvent,
+  ) => {
     e.stopPropagation();
     dispatch(toggleTaskCompleteThunk({ taskId }));
   };
 
   const currentProjectName = activeProject
-    ? projects.find(p => p.id === activeProject)?.name
-    : 'All Tasks';
+    ? projects.find((p) => p.id === activeProject)?.name
+    : "All Tasks";
 
   return (
     <div className="h-full flex flex-col bg-background overflow-hidden">
@@ -118,11 +137,12 @@ export default function MobileTasksList({ onTaskSelect }: MobileTasksListProps) 
               value={searchQuery}
               onChange={(e) => dispatch(setSearchQuery(e.target.value))}
               placeholder="Search tasks..."
-              className="pl-9 pr-9 h-10 bg-muted/50"
+              className="pl-9 pr-9 h-10 bg-muted/50 text-base"
+              style={{ fontSize: "16px" }}
             />
             {searchQuery && (
               <button
-                onClick={() => dispatch(setSearchQuery(''))}
+                onClick={() => dispatch(setSearchQuery(""))}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 <X size={16} />
@@ -144,26 +164,41 @@ export default function MobileTasksList({ onTaskSelect }: MobileTasksListProps) 
                 onFocus={(e) => {
                   // Scroll into view when keyboard appears on mobile
                   setTimeout(() => {
-                    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    e.target.scrollIntoView({
+                      behavior: "smooth",
+                      block: "center",
+                    });
                   }, 300);
                 }}
-                className="h-10"
+                className="h-10 text-base"
+                style={{ fontSize: "16px" }}
               />
               <div className="flex items-center gap-2">
-                <Sheet open={showProjectSelector} onOpenChange={setShowProjectSelector}>
+                <Sheet
+                  open={showProjectSelector}
+                  onOpenChange={setShowProjectSelector}
+                >
                   <SheetTrigger asChild>
-                    <Button variant="outline" size="sm" className="flex-1 justify-start">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 justify-start"
+                    >
                       <span className="truncate">
                         {selectedProjectForTask
-                          ? projects.find(p => p.id === selectedProjectForTask)?.name
-                          : 'Select Project'}
+                          ? projects.find(
+                              (p) => p.id === selectedProjectForTask,
+                            )?.name
+                          : "Select Project"}
                       </span>
                     </Button>
                   </SheetTrigger>
                   <SheetContent side="bottom" className="h-[50vh]">
                     <SheetHeader className="sr-only">
                       <SheetTitle>Select Project</SheetTitle>
-                      <SheetDescription>Choose a project for this task</SheetDescription>
+                      <SheetDescription>
+                        Choose a project for this task
+                      </SheetDescription>
                     </SheetHeader>
                     <MobileProjectSelector
                       selectedProjectId={selectedProjectForTask}
@@ -176,13 +211,17 @@ export default function MobileTasksList({ onTaskSelect }: MobileTasksListProps) 
                 </Sheet>
                 <Button
                   type="submit"
-                  disabled={!newTaskTitle.trim() || isCreatingTask || !selectedProjectForTask}
+                  disabled={
+                    !newTaskTitle.trim() ||
+                    isCreatingTask ||
+                    !selectedProjectForTask
+                  }
                   size="sm"
                 >
                   {isCreatingTask ? (
                     <Loader2 size={16} className="animate-spin" />
                   ) : (
-                    'Add'
+                    "Add"
                   )}
                 </Button>
               </div>
@@ -208,7 +247,9 @@ export default function MobileTasksList({ onTaskSelect }: MobileTasksListProps) 
           <div className="flex items-center justify-center h-full p-8">
             <div className="text-center">
               <p className="text-muted-foreground text-sm">
-                {searchQuery ? 'No tasks found' : 'No tasks yet. Create one above!'}
+                {searchQuery
+                  ? "No tasks found"
+                  : "No tasks yet. Create one above!"}
               </p>
             </div>
           </div>
@@ -217,7 +258,7 @@ export default function MobileTasksList({ onTaskSelect }: MobileTasksListProps) 
             {filteredTasks.map((task) => {
               const isPastDue =
                 task.dueDate &&
-                task.dueDate < new Date().toISOString().split('T')[0] &&
+                task.dueDate < new Date().toISOString().split("T")[0] &&
                 !task.completed;
 
               return (
@@ -227,8 +268,15 @@ export default function MobileTasksList({ onTaskSelect }: MobileTasksListProps) 
                   className="flex items-center gap-3 p-4 active:bg-muted/50 transition-colors cursor-pointer"
                 >
                   {/* Checkbox */}
-                  <div onClick={(e) => handleTaskToggle(task.projectId, task.id, e)}>
-                    <Checkbox checked={task.completed} className="pointer-events-none" />
+                  <div
+                    onClick={(e) =>
+                      handleTaskToggle(task.projectId, task.id, e)
+                    }
+                  >
+                    <Checkbox
+                      checked={task.completed}
+                      className="pointer-events-none"
+                    />
                   </div>
 
                   {/* Content */}
@@ -236,28 +284,32 @@ export default function MobileTasksList({ onTaskSelect }: MobileTasksListProps) 
                     <h3
                       className={`text-base font-medium mb-1 ${
                         task.completed
-                          ? 'line-through text-muted-foreground'
-                          : 'text-foreground'
+                          ? "line-through text-muted-foreground"
+                          : "text-foreground"
                       }`}
                     >
                       {task.title}
                     </h3>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       {task.projectName && showAllProjects && (
-                        <span className="text-primary">● {task.projectName}</span>
+                        <span className="text-primary">
+                          ● {task.projectName}
+                        </span>
                       )}
                       {task.dueDate && (
-                        <span className={isPastDue ? 'text-destructive font-medium' : ''}>
-                          {new Date(task.dueDate).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
+                        <span
+                          className={
+                            isPastDue ? "text-destructive font-medium" : ""
+                          }
+                        >
+                          {new Date(task.dueDate).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
                           })}
                         </span>
                       )}
                       {task.priority && (
-                        <span className="capitalize">
-                          {task.priority}
-                        </span>
+                        <span className="capitalize">{task.priority}</span>
                       )}
                     </div>
                     <ScopeTagsDisplay
@@ -268,7 +320,10 @@ export default function MobileTasksList({ onTaskSelect }: MobileTasksListProps) 
                   </div>
 
                   {/* Chevron */}
-                  <ChevronRight size={20} className="text-muted-foreground flex-shrink-0" />
+                  <ChevronRight
+                    size={20}
+                    className="text-muted-foreground flex-shrink-0"
+                  />
                 </div>
               );
             })}
@@ -278,4 +333,3 @@ export default function MobileTasksList({ onTaskSelect }: MobileTasksListProps) 
     </div>
   );
 }
-

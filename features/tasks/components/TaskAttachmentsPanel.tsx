@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   FileText,
@@ -14,15 +14,23 @@ import {
   Loader2,
   PlusCircle,
   Star,
+  FolderOpen,
+  Upload,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   fetchTaskAssociations,
   dissociateFromTask,
+  associateWithTask,
   selectAssociations,
   selectAssociationCount,
   selectAssociationsLoading,
 } from "@/features/tasks/redux/taskAssociationsSlice";
+import { openFilePicker } from "@/features/files/components/pickers/CloudFilesPickerHost";
+import { requestUpload } from "@/features/files/upload/uploadGuardOpeners";
+import { folderForTask } from "@/features/files/utils/folder-conventions";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { cn } from "@/utils/cn";
 
 interface TaskAttachmentsPanelProps {
@@ -38,6 +46,9 @@ export default function TaskAttachmentsPanel({
   const bundle = useAppSelector(selectAssociations(taskId));
   const count = useAppSelector(selectAssociationCount(taskId));
   const isLoading = useAppSelector(selectAssociationsLoading(taskId));
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isAttaching, setIsAttaching] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     dispatch(fetchTaskAssociations(taskId));
@@ -47,8 +58,107 @@ export default function TaskAttachmentsPanel({
     dispatch(dissociateFromTask({ taskId, entityType, entityId }));
   };
 
+  // Attach existing files from the user's cloud storage.
+  const handlePickExisting = async () => {
+    if (isAttaching) return;
+    setIsAttaching(true);
+    try {
+      const fileIds = await openFilePicker({
+        multi: true,
+        title: "Attach files to task",
+        description: "Pick existing files from your cloud storage.",
+      });
+      if (!fileIds || fileIds.length === 0) return;
+      let attached = 0;
+      for (const id of fileIds) {
+        try {
+          await dispatch(
+            associateWithTask({
+              taskId,
+              entityType: "user_file",
+              entityId: id,
+            }),
+          ).unwrap();
+          attached += 1;
+        } catch (err) {
+          console.error("[TaskAttachmentsPanel] associate failed", err);
+        }
+      }
+      if (attached > 0) {
+        toast.success(
+          attached === 1 ? "Attached 1 file" : `Attached ${attached} files`,
+        );
+      }
+    } finally {
+      setIsAttaching(false);
+    }
+  };
+
+  // Upload new files from disk and attach them to the task in one flow.
+  const handleUploadClick = () => {
+    if (isUploading) return;
+    fileInputRef.current?.click();
+  };
+
+  const handleFilesSelected = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = e.target.files;
+    e.target.value = "";
+    if (!files || files.length === 0) return;
+    setIsUploading(true);
+    try {
+      const fileArray = Array.from(files);
+      const result = await requestUpload({
+        files: fileArray,
+        folderPath: folderForTask(taskId),
+        visibility: "private",
+      });
+      if (result.cancelled) return;
+      let attached = 0;
+      for (const fileId of result.uploaded) {
+        try {
+          await dispatch(
+            associateWithTask({
+              taskId,
+              entityType: "user_file",
+              entityId: fileId,
+            }),
+          ).unwrap();
+          attached += 1;
+        } catch (err) {
+          console.error("[TaskAttachmentsPanel] associate failed", err);
+        }
+      }
+      if (attached > 0) {
+        toast.success(
+          attached === 1
+            ? "Uploaded and attached 1 file"
+            : `Uploaded and attached ${attached} files`,
+        );
+      }
+      if (result.failed.length > 0) {
+        const first = result.failed[0];
+        toast.error(
+          result.failed.length === 1
+            ? `Failed to upload ${first.name}: ${first.error}`
+            : `Failed to upload ${result.failed.length} files`,
+        );
+      }
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
     <div className={cn("space-y-3", className)}>
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        className="sr-only"
+        onChange={handleFilesSelected}
+      />
       <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
         <Paperclip className="w-3 h-3" />
         <span>Attachments</span>
@@ -56,13 +166,46 @@ export default function TaskAttachmentsPanel({
         {isLoading && (
           <Loader2 className="w-3 h-3 animate-spin text-muted-foreground/60" />
         )}
+        <div className="ml-auto flex items-center gap-1">
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={handlePickExisting}
+            disabled={isAttaching || isUploading}
+            className="h-6 px-2 text-[11px] gap-1 text-muted-foreground hover:text-foreground"
+          >
+            {isAttaching ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <FolderOpen className="w-3 h-3" />
+            )}
+            Pick
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={handleUploadClick}
+            disabled={isAttaching || isUploading}
+            className="h-6 px-2 text-[11px] gap-1 text-muted-foreground hover:text-foreground"
+          >
+            {isUploading ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <Upload className="w-3 h-3" />
+            )}
+            Upload
+          </Button>
+        </div>
       </div>
 
       {count === 0 && !isLoading ? (
         <div className="rounded-lg border border-dashed border-border/60 px-3 py-4 text-center">
           <p className="text-xs text-muted-foreground">Nothing attached yet.</p>
           <p className="text-[10px] text-muted-foreground/70 mt-0.5">
-            Link notes, messages, files and more from anywhere in the app.
+            Pick a cloud file, upload one from disk, or link notes, messages,
+            and conversations from anywhere in the app.
           </p>
         </div>
       ) : (

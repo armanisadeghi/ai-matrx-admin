@@ -104,8 +104,15 @@ function buildPriorTasksSummary(prior: ReturnType<() => never[]> | unknown[]): s
 }
 
 /**
- * The agent returns a markdown checklist. We accept it raw (no fences) but
- * also tolerate a fenced ``` or ```markdown block.
+ * The agent returns a markdown checklist. We accept it raw, fenced as
+ * `\`\`\`markdown`, or fenced as `\`\`\`tasks` (the canonical platform
+ * block-syntax). We persist the body wrapped in a `\`\`\`tasks` fence so
+ * `MarkdownStream`'s splitter dispatches to the rich `TasksBlock` →
+ * `TaskChecklist` UI rather than rendering plain markdown checkboxes.
+ *
+ * See `components/mardown-display/markdown-classification/processors/utils/
+ * content-splitter-v2.ts` — "tasks" is one of the recognized fenced-code
+ * languages that triggers a rich block instead of code highlighting.
  */
 function parseRun(
   responseText: string,
@@ -113,8 +120,8 @@ function parseRun(
   const trimmed = responseText.trim();
   if (!trimmed) return [];
 
-  // Strip a code fence if the agent wrapped it.
-  const fence = trimmed.match(/```(?:markdown)?\s*([\s\S]*?)```/i);
+  // Strip a code fence if the agent wrapped it (markdown / tasks / plain).
+  const fence = trimmed.match(/```(?:tasks|markdown)?\s*([\s\S]*?)```/i);
   const body = fence ? fence[1]!.trim() : trimmed;
 
   if (!body) return [];
@@ -127,7 +134,8 @@ function parseRun(
 
   return [
     {
-      payload: body,
+      // Wrap in the `tasks` fence so MarkdownStream renders the rich block.
+      payload: "```tasks\n" + body + "\n```",
       tStart: null,
       tEnd: null,
     },

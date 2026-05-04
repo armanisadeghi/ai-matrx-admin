@@ -167,6 +167,18 @@ export function initUrlHydration() {
     dispatch(openOverlay({ overlayId: "agentAssistantMarkdownDebugWindow" }));
   });
 
+  // Transcript Studio Window — `?panels=studio` opens the floating studio.
+  // Optional `?panels=studio:<sessionId>` deep-links to a specific session
+  // (StudioView reads activeSessionId from data on mount).
+  registerPanelHydrator("studio", (dispatch, id) => {
+    dispatch(
+      openOverlay({
+        overlayId: "transcriptStudioWindow",
+        data: id ? { activeSessionId: id } : null,
+      }),
+    );
+  });
+
   // ── Dev-only integrity check ─────────────────────────────────────────────
   // Every registry entry that declares `urlSync.key` must have a hydrator
   // registered above. Drift here is silent: `?panels=<key>` would just

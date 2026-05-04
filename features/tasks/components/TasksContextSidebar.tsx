@@ -19,7 +19,10 @@ import {
 } from "lucide-react";
 import * as icons from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectProjects, selectValidProjectIds } from "@/features/tasks/redux/selectors";
+import {
+  selectProjects,
+  selectValidProjectIds,
+} from "@/features/tasks/redux/selectors";
 import {
   selectSearchQuery,
   selectTaskFilter,
@@ -140,8 +143,10 @@ export default function TasksContextSidebar() {
     const arr = [...allScopeTypes].sort((a, b) => {
       // Put current-org types first
       if (orgId) {
-        if (a.organization_id === orgId && b.organization_id !== orgId) return -1;
-        if (b.organization_id === orgId && a.organization_id !== orgId) return 1;
+        if (a.organization_id === orgId && b.organization_id !== orgId)
+          return -1;
+        if (b.organization_id === orgId && a.organization_id !== orgId)
+          return 1;
       }
       return (a.sort_order ?? 0) - (b.sort_order ?? 0);
     });
@@ -174,12 +179,7 @@ export default function TasksContextSidebar() {
 
   return (
     <div className="flex flex-col h-full min-h-0 bg-card">
-      {/* Title */}
-      <div className="shrink-0 px-3 py-2 border-b border-border/50 flex items-center justify-between">
-        <h1 className="text-sm font-semibold text-foreground">Tasks</h1>
-      </div>
-
-      {/* Search */}
+      {/* Search — page title lives in the shell header (PageHeader) */}
       <div className="shrink-0 px-2 pt-2 pb-1">
         <div className="flex items-center gap-1.5 px-2 py-1 bg-muted/50 rounded-md border border-border/30">
           <Search className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
@@ -257,7 +257,9 @@ export default function TasksContextSidebar() {
                 key={o.id}
                 label={o.name}
                 active={orgId === o.id}
-                dimmed={false /* orgs are never dimmed — picking one is always valid */}
+                dimmed={
+                  false /* orgs are never dimmed — picking one is always valid */
+                }
                 accentColor="text-violet-500"
                 onClick={() => handleSelectOrg(orgId === o.id ? null : o.id)}
               />
@@ -311,8 +313,7 @@ export default function TasksContextSidebar() {
                   // A scope is dimmed if its org doesn't match the current
                   // active org selection. If no org selected, all scopes are
                   // active.
-                  const dimmed =
-                    !!orgId && scope.organization_id !== orgId;
+                  const dimmed = !!orgId && scope.organization_id !== orgId;
                   const isActive = selectedId === scope.id;
                   return (
                     <ContextRow
@@ -419,7 +420,9 @@ export default function TasksContextSidebar() {
               return (
                 <button
                   key={opt.field}
-                  onClick={() => dispatch(setSortBy(opt.field as TaskSortField))}
+                  onClick={() =>
+                    dispatch(setSortBy(opt.field as TaskSortField))
+                  }
                   className={cn(
                     "flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] transition-colors",
                     isActive

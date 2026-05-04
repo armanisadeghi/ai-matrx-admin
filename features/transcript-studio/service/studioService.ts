@@ -32,7 +32,7 @@ const db = supabase as unknown as LooseSupabase;
 
 // ── Mappers ───────────────────────────────────────────────────────────
 
-interface SessionRow {
+export interface SessionRow {
   id: string;
   user_id: string;
   organization_id: string | null;
@@ -51,7 +51,7 @@ interface SessionRow {
   updated_at: string;
 }
 
-function rowToSession(row: SessionRow): StudioSession {
+export function rowToSession(row: SessionRow): StudioSession {
   return {
     id: row.id,
     userId: row.user_id,
@@ -192,7 +192,7 @@ export async function listSessionsServer(
 
 // ── studio_raw_segments ───────────────────────────────────────────────
 
-interface RawSegmentRow {
+export interface RawSegmentRow {
   id: string;
   session_id: string;
   recording_segment_id: string | null;
@@ -204,7 +204,7 @@ interface RawSegmentRow {
   source: import("../types").RawSegmentSource;
 }
 
-function rowToRawSegment(
+export function rowToRawSegment(
   row: RawSegmentRow,
 ): import("../types").RawSegment {
   return {
@@ -398,7 +398,7 @@ export async function finalizeAgentRun(
 
 // ── studio_cleaned_segments ──────────────────────────────────────────
 
-interface CleanedSegmentRow {
+export interface CleanedSegmentRow {
   id: string;
   session_id: string;
   run_id: string | null;
@@ -410,7 +410,7 @@ interface CleanedSegmentRow {
   superseded_at: string | null;
 }
 
-function rowToCleanedSegment(
+export function rowToCleanedSegment(
   row: CleanedSegmentRow,
 ): import("../types").CleanedSegment {
   return {
@@ -526,7 +526,7 @@ export async function applyCleanupRun(
 
 // ── studio_concept_items ─────────────────────────────────────────────
 
-interface ConceptItemRow {
+export interface ConceptItemRow {
   id: string;
   session_id: string;
   run_id: string | null;
@@ -539,7 +539,7 @@ interface ConceptItemRow {
   confidence: number | null;
 }
 
-function rowToConceptItem(row: ConceptItemRow): import("../types").ConceptItem {
+export function rowToConceptItem(row: ConceptItemRow): import("../types").ConceptItem {
   return {
     id: row.id,
     sessionId: row.session_id,
@@ -637,7 +637,7 @@ export async function listConceptItemsServer(
 
 // ── studio_module_segments ───────────────────────────────────────────
 
-interface ModuleSegmentRow {
+export interface ModuleSegmentRow {
   id: string;
   session_id: string;
   run_id: string | null;
@@ -649,7 +649,7 @@ interface ModuleSegmentRow {
   payload: unknown;
 }
 
-function rowToModuleSegment(
+export function rowToModuleSegment(
   row: ModuleSegmentRow,
 ): import("../types").ModuleSegment {
   return {
@@ -742,4 +742,110 @@ export async function listModuleSegmentsServer(
     );
   }
   return ((data ?? []) as ModuleSegmentRow[]).map(rowToModuleSegment);
+}
+
+// ── studio_session_settings ──────────────────────────────────────────
+
+interface SessionSettingsRow {
+  session_id: string;
+  cleaning_shortcut_id: string | null;
+  cleaning_interval_ms: number;
+  concept_shortcut_id: string | null;
+  concept_interval_ms: number;
+  module_id: string;
+  module_shortcut_id: string | null;
+  module_interval_ms: number | null;
+  column_widths: number[] | null;
+  show_prior_modules: boolean;
+}
+
+function rowToSessionSettings(
+  row: SessionSettingsRow,
+): import("../types").SessionSettings & { showPriorModules: boolean } {
+  return {
+    sessionId: row.session_id,
+    cleaningShortcutId: row.cleaning_shortcut_id,
+    cleaningIntervalMs: row.cleaning_interval_ms,
+    conceptShortcutId: row.concept_shortcut_id,
+    conceptIntervalMs: row.concept_interval_ms,
+    moduleId: row.module_id,
+    moduleShortcutId: row.module_shortcut_id,
+    moduleIntervalMs: row.module_interval_ms,
+    columnWidths: row.column_widths,
+    showPriorModules: row.show_prior_modules,
+  };
+}
+
+export async function fetchSessionSettings(
+  sessionId: string,
+): Promise<(import("../types").SessionSettings & { showPriorModules: boolean }) | null> {
+  const { data, error } = await db
+    .from("studio_session_settings")
+    .select("*")
+    .eq("session_id", sessionId)
+    .maybeSingle();
+  if (error) {
+    throw new Error(
+      `[studio] fetchSessionSettings failed: ${error.message}`,
+    );
+  }
+  return data ? rowToSessionSettings(data as SessionSettingsRow) : null;
+}
+
+export interface UpsertSessionSettingsInput {
+  sessionId: string;
+  cleaningShortcutId?: string | null;
+  cleaningIntervalMs?: number;
+  conceptShortcutId?: string | null;
+  conceptIntervalMs?: number;
+  moduleId?: string;
+  moduleShortcutId?: string | null;
+  moduleIntervalMs?: number | null;
+  columnWidths?: number[] | null;
+  showPriorModules?: boolean;
+}
+
+/**
+ * Upsert per-session settings. Only the fields present on `input` are
+ * written; missing fields preserve their existing DB values (for an
+ * existing row) or fall back to the column defaults (for a new row).
+ *
+ * The `studio_session_settings` table has DB-level CHECK constraints on
+ * the interval bounds — caller-side clamping in `IntervalSlider` is just
+ * UI hygiene; the DB is the final guard.
+ */
+export async function upsertSessionSettings(
+  input: UpsertSessionSettingsInput,
+): Promise<import("../types").SessionSettings & { showPriorModules: boolean }> {
+  const update: Record<string, unknown> = {
+    session_id: input.sessionId,
+  };
+  if (input.cleaningShortcutId !== undefined)
+    update.cleaning_shortcut_id = input.cleaningShortcutId;
+  if (input.cleaningIntervalMs !== undefined)
+    update.cleaning_interval_ms = input.cleaningIntervalMs;
+  if (input.conceptShortcutId !== undefined)
+    update.concept_shortcut_id = input.conceptShortcutId;
+  if (input.conceptIntervalMs !== undefined)
+    update.concept_interval_ms = input.conceptIntervalMs;
+  if (input.moduleId !== undefined) update.module_id = input.moduleId;
+  if (input.moduleShortcutId !== undefined)
+    update.module_shortcut_id = input.moduleShortcutId;
+  if (input.moduleIntervalMs !== undefined)
+    update.module_interval_ms = input.moduleIntervalMs;
+  if (input.columnWidths !== undefined) update.column_widths = input.columnWidths;
+  if (input.showPriorModules !== undefined)
+    update.show_prior_modules = input.showPriorModules;
+
+  const { data, error } = await db
+    .from("studio_session_settings")
+    .upsert(update, { onConflict: "session_id" })
+    .select("*")
+    .single();
+  if (error || !data) {
+    throw new Error(
+      `[studio] upsertSessionSettings failed: ${error?.message ?? "no row"}`,
+    );
+  }
+  return rowToSessionSettings(data as SessionSettingsRow);
 }

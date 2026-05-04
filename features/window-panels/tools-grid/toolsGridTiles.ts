@@ -66,6 +66,7 @@ import {
   Orbit,
   PanelRight,
   Radio,
+  Captions,
   ScrollText,
   Search,
   Settings,
@@ -240,6 +241,13 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
     icon: AudioLines,
     category: "voice",
     overlayId: "voicePad",
+  },
+  {
+    id: "tile.transcript-studio",
+    label: "Transcript Studio",
+    icon: Captions,
+    category: "voice",
+    overlayId: "transcriptStudioWindow",
   },
 
   // ── Notes ──────────────────────────────────────────────────────────────

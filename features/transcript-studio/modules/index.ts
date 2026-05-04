@@ -11,3 +11,6 @@
  */
 
 import "./tasks/TasksModule";
+import "./flashcards/FlashcardsModule";
+import "./decisions/DecisionsModule";
+import "./quiz/QuizModule";

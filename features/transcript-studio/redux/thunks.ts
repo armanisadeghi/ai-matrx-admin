@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import type { ChunkCompleteInfo } from "@/features/audio/hooks/useChunkedRecordAndTranscribe";
 import {
   createSession,
+  fetchSessionSettings,
   insertRawSegment,
   listCleanedSegments,
   listConceptItems,
@@ -18,6 +19,8 @@ import {
   listSessions,
   softDeleteSession,
   updateSession,
+  upsertSessionSettings,
+  type UpsertSessionSettingsInput,
 } from "../service/studioService";
 import type {
   CleanedSegment,
@@ -25,6 +28,7 @@ import type {
   CreateSessionInput,
   ModuleSegment,
   RawSegment,
+  SessionSettings,
   StudioSession,
   UpdateSessionInput,
 } from "../types";
@@ -33,9 +37,11 @@ import {
   cleanedSegmentsLoaded,
   conceptsLoaded,
   moduleSegmentsLoaded,
+  moduleSwitched,
   rawSegmentsAppended,
   rawSegmentsLoaded,
   sessionRemoved,
+  sessionSettingsLoaded,
   sessionsListFailed,
   sessionsListLoaded,
   sessionsListLoading,
@@ -233,6 +239,65 @@ export const fetchModuleSegmentsThunk = createAsyncThunk<
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to load module segments";
+      return rejectWithValue(message);
+    }
+  },
+);
+
+// ── Session settings (Phase 8) ────────────────────────────────────────
+
+export const fetchSessionSettingsThunk = createAsyncThunk<
+  SessionSettings | null,
+  { sessionId: string }
+>(
+  "transcriptStudio/fetchSessionSettings",
+  async ({ sessionId }, { dispatch, rejectWithValue }) => {
+    try {
+      const settings = await fetchSessionSettings(sessionId);
+      if (settings) {
+        dispatch(sessionSettingsLoaded({ sessionId, settings }));
+      }
+      return settings;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load session settings";
+      return rejectWithValue(message);
+    }
+  },
+);
+
+/**
+ * Upsert per-session settings. Optimistically writes the supplied patch
+ * into Redux first (so the UI reflects the change immediately), then
+ * persists to Supabase. On failure we surface a toast and refetch to
+ * restore the canonical state.
+ */
+export const updateSessionSettingsThunk = createAsyncThunk<
+  SessionSettings,
+  Omit<UpsertSessionSettingsInput, "sessionId"> & { sessionId: string }
+>(
+  "transcriptStudio/updateSessionSettings",
+  async (input, { dispatch, rejectWithValue }) => {
+    try {
+      const settings = await upsertSessionSettings(input);
+      dispatch(
+        sessionSettingsLoaded({ sessionId: input.sessionId, settings }),
+      );
+      // Mid-session module switch: also flip the session row's moduleId so
+      // Column 4 swaps without losing prior segments.
+      if (input.moduleId !== undefined) {
+        dispatch(
+          moduleSwitched({
+            sessionId: input.sessionId,
+            moduleId: input.moduleId,
+          }),
+        );
+      }
+      return settings;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update settings";
+      toast.error(message);
       return rejectWithValue(message);
     }
   },

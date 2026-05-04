@@ -600,6 +600,21 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     instanceMode: "multi",
   },
 
+  {
+    // 4-column live transcription studio. Same `StudioView` as the route
+    // at /transcript-studio, but mounted inside a floating WindowPanel so
+    // users can record + watch agents work without leaving the page they're
+    // on. Recording continues across navigation because the recorder lives
+    // in the global provider.
+    slug: "transcript-studio-window",
+    overlayId: "transcriptStudioWindow",
+    kind: "window",
+    label: "Transcript Studio",
+    defaultData: { activeSessionId: null },
+    mobilePresentation: "fullscreen",
+    urlSync: { key: "studio" },
+  },
+
   // ── AI Results ────────────────────────────────────────────────────────────
   // Cross-agent conversation history. Sidebar groups by date (default) or by
   // agent, with search + agent multi-select filter. Replaces the legacy

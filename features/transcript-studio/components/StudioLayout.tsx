@@ -82,7 +82,7 @@ export function StudioLayout({
                 />
               </SheetContent>
             </Sheet>
-            {activeSession && (
+            {isHydrated && activeSession && (
               <div className="flex-1 truncate px-2 text-xs font-medium text-foreground">
                 {activeSession.title}
               </div>

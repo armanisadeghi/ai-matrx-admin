@@ -17,8 +17,11 @@ A 4-column live transcription workspace. Users record audio, see raw transcript 
 **Routes**
 - `app/(authenticated)/transcript-studio/` — full-page workspace, sidebar + active session view.
 
-**Window panel** _(planned, Phase 10)_
-- `features/window-panels/windows/transcript-studio/` — same `StudioView` inside a floating overlay.
+**Window panel**
+- `features/window-panels/windows/transcript-studio/TranscriptStudioWindow.tsx` — same `StudioView` inside a floating `WindowPanel` (`overlayId: "transcriptStudioWindow"`, slug: `"transcript-studio-window"`).
+- Discoverable from the Tools grid (`Voice` category, "Transcript Studio" tile).
+- URL deep-link: `?panels=studio` opens the window; `?panels=studio:<sessionId>` deep-links to a session.
+- Persists `activeSessionId` to `window_sessions.data` via `useWindowPersistence` so the last-open session restores on remount.
 
 **Components**
 - `features/transcript-studio/components/StudioView.tsx` — config-driven core. Both the route and the (future) window mount this component.
@@ -103,3 +106,5 @@ These are sibling features. The simple `features/transcripts/` view is shaped fo
 ## Change Log
 
 - **2026-05-02** — Phase 1 scaffolding: 8-table schema migrated, slice + thunks + service for sessions CRUD, route + SSR hydrator + sidebar + empty state. Active-session view is a placeholder until Phase 3.
+- **2026-05-03** — Phases 2–10 shipped: global recording portal, Column 1 wiring, 4-column shell + sync scroll, cleaning agent (resume marker), concept agent, module column + tasks, settings sidebar, bidirectional `transcripts` ↔ studio conversion, window-panel registration (overlayId `transcriptStudioWindow`, Tools-grid tile, `?panels=studio` deep-link).
+- **2026-05-03** — Phase 11: cross-tab realtime via Postgres Changes — `transcriptStudioRealtimeMiddleware` subscribes to `studio_sessions` (user-wide) and to `studio_raw_segments` / `studio_cleaned_segments` / `studio_concept_items` / `studio_module_segments` (active-session-scoped, re-binds on session switch). All five tables added to the `supabase_realtime` publication. Three v1.5 modules registered: `flashcards` (XML `<flashcards>` block), `decisions` (`decision_tree` JSON), `quiz` (`quiz_title` JSON) — each reuses a shared `buildModuleScopeFromInputs` helper. Default shortcut ids are placeholders until the agents are authored.

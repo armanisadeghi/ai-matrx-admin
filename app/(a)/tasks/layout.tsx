@@ -16,15 +16,16 @@ export const metadata = createRouteMetadata("/tasks", {
   },
 });
 
+/**
+ * No body-level wrapper — the page itself uses the shell's full-height area
+ * (per the agents/[id]/build pattern). Adding `h-page`, `bg-textured`, or any
+ * extra padding here forces every panel below the transparent shell header
+ * and creates the boxed look the design rejects.
+ */
 export default function TasksLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="h-page flex flex-col bg-textured">
-      {/* Uses h-page utility: auto-adjusts for header height (Mobile: 3rem, Desktop: 2.5rem) */}
-      <div className="flex-1 flex flex-col min-h-0">{children}</div>
-    </div>
-  );
+  return <>{children}</>;
 }

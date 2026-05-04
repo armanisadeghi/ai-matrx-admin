@@ -82,6 +82,16 @@ export const DEFAULT_CONCEPT_SHORTCUT_ID =
 export const DEFAULT_TASKS_SHORTCUT_ID =
   "00000000-0000-0000-0000-000000000000";
 
+// V1.5 module agents — placeholders until the corresponding shortcuts are
+// authored. Each module declares the agent contract via the FEATURE.md spec
+// and validates the response shape in its own `parseRun`.
+export const DEFAULT_FLASHCARDS_SHORTCUT_ID =
+  "00000000-0000-0000-0000-000000000000";
+export const DEFAULT_DECISIONS_SHORTCUT_ID =
+  "00000000-0000-0000-0000-000000000000";
+export const DEFAULT_QUIZ_SHORTCUT_ID =
+  "00000000-0000-0000-0000-000000000000";
+
 // Default cadence per Column 4 module. Modules can override this in their
 // metadata; per-session overrides land in studio_session_settings.
 export const MODULE_INTERVAL_DEFAULT_MS = 120_000;

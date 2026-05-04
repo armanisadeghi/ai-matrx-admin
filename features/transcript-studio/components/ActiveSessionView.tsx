@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Settings2 } from "lucide-react";
 import type { Layout } from "react-resizable-panels";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { ResizablePanel } from "@/components/ui/resizable";
+import { cn } from "@/lib/utils";
 import {
   fetchCleanedSegmentsThunk,
   fetchConceptItemsThunk,
@@ -12,6 +14,7 @@ import {
 } from "../redux/thunks";
 import type { StudioSession } from "../types";
 import { RecordButton } from "./recording/RecordButton";
+import { SaveAsTranscriptButton } from "./conversion/SaveAsTranscriptButton";
 import { CleanedTranscriptColumn } from "./columns/CleanedTranscriptColumn";
 import { ConceptsColumn } from "./columns/ConceptsColumn";
 import { ModuleColumn } from "./columns/ModuleColumn";
@@ -22,7 +25,9 @@ import {
   StudioPanelGroup,
 } from "./resize/StudioPanelGroup";
 import { ScrollSyncProvider } from "./scroll-sync/ScrollSyncProvider";
+import { SettingsSidebar } from "./settings/SettingsSidebar";
 import { useStudioSession } from "../hooks/useStudioSession";
+import { useStudioSettings } from "../hooks/useStudioSettings";
 import { useTriggerScheduler } from "../hooks/useTriggerScheduler";
 
 // Side-effect import — populates the module registry so getModule(id) works
@@ -80,9 +85,22 @@ export function ActiveSessionView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session.id, dispatch]);
 
-  // Drive Column 2's cleanup ticks while recording. Survives unmount only if
-  // you stay on the studio route — leaving pauses cleaning until you return.
-  useTriggerScheduler({ sessionId: session.id });
+  // Per-session settings — feeds the trigger scheduler with effective
+  // intervals (per-session overrides clamped to DB-enforced bounds, or
+  // global defaults when no row exists yet).
+  const { effective: studioSettings } = useStudioSettings(session.id);
+
+  // Drive Columns 2/3/4 ticks while recording. Survives unmount only if
+  // you stay on the studio route — leaving pauses agent passes until you
+  // return. Recording itself lives in the global provider and continues.
+  useTriggerScheduler({
+    sessionId: session.id,
+    cleaningIntervalMs: studioSettings.cleaningIntervalMs,
+    conceptIntervalMs: studioSettings.conceptIntervalMs,
+    moduleIntervalMs: studioSettings.moduleIntervalMs,
+  });
+
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const subtitle = useMemo(() => {
     const created = new Date(session.createdAt).toLocaleString(undefined, {
@@ -101,8 +119,32 @@ export function ActiveSessionView({
           <h2 className="truncate text-sm font-semibold">{session.title}</h2>
           <p className="text-[11px] text-muted-foreground">{subtitle}</p>
         </div>
-        <RecordButton sessionId={session.id} />
+        <div className="flex items-center gap-2">
+          <SaveAsTranscriptButton
+            sessionId={session.id}
+            hasLinkedTranscript={Boolean(session.transcriptId)}
+          />
+          <RecordButton sessionId={session.id} />
+          <button
+            type="button"
+            onClick={() => setSettingsOpen(true)}
+            aria-label="Open session settings"
+            title="Session settings"
+            className={cn(
+              "inline-flex h-8 w-8 items-center justify-center rounded-md transition-colors",
+              "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+            )}
+          >
+            <Settings2 className="h-4 w-4" />
+          </button>
+        </div>
       </header>
+
+      <SettingsSidebar
+        sessionId={session.id}
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+      />
 
       <div className="flex flex-1 min-h-0 flex-col overflow-hidden p-2">
         <div className="flex flex-1 min-h-0 overflow-hidden rounded-md border border-border/60 bg-background">

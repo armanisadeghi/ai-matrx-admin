@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/tooltip";
 import { PreviewPlaceholder } from "../PreviewPlaceholder";
 import type { HtmlPreviewTabProps } from "../types";
-import { ImageAssetUploader } from "@/components/official/ImageAssetUploader";
+import { EmbeddedImageStudio } from "@/features/image-studio/components/EmbeddedImageStudio";
 
 export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
   const previewUrl = actions.getCurrentPreviewUrl();
@@ -247,29 +247,34 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
             </p>
           </div>
 
-          {/* Social Share Image — drop ONE image, get 4 auto-generated sizes */}
+          {/* Social Share Image — drop ONE image → crop → 4 sizes saved
+              publicly with permanent Cloudflare CDN URLs.
+              The og-image preset is what ends up in the OG meta tag. */}
           <div>
-            <ImageAssetUploader
-              preset="social"
-              currentUrl={state.metadata.ogImage || null}
-              currentVariants={{
-                og_image_url: state.metadata.ogImage || null,
-              }}
-              onComplete={(result) => {
-                // Prefer the 1200×630 OG variant for the link-preview URL.
-                // Falls back to the primary 1400×1400 cover if OG isn't available.
-                actions.setMetadataField(
-                  "ogImage",
-                  result?.og_image_url ?? result?.primary_url ?? "",
-                );
-              }}
+            <EmbeddedImageStudio
+              presetIds={["og-image", "fb-post", "tw-card-large", "ig-square"]}
+              primaryPresetId="og-image"
+              rootFolderSegment="html-pages"
+              defaultFilenameBase={
+                state.metadata.title?.trim() || "page-social-image"
+              }
+              initialUrl={state.metadata.ogImage || null}
               disabled={!user}
               label="Social Share Image"
+              onSaved={(result) => {
+                if (result.primary?.publicUrl) {
+                  actions.setMetadataField(
+                    "ogImage",
+                    result.primary.publicUrl,
+                  );
+                }
+              }}
+              onCleared={() => actions.setMetadataField("ogImage", "")}
             />
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Drop one image — we generate 1400×1400 cover, 1200×630 link
-              preview, 400×400 thumb, and 128×128 tiny. The 1200×630 variant is
-              used for the social share URL.
+              Drop one image, crop it, and we generate four social sizes
+              (Open Graph 1200×630 · Facebook · Twitter · Instagram) — every
+              variant gets a permanent CDN URL you can copy below.
             </p>
           </div>
 

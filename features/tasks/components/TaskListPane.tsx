@@ -12,7 +12,10 @@ import {
   Folder,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectGroupedFilteredTasks, selectProjects } from "@/features/tasks/redux/selectors";
+import {
+  selectGroupedFilteredTasks,
+  selectProjects,
+} from "@/features/tasks/redux/selectors";
 import {
   selectSelectedTaskId,
   selectIsCreatingTask,
@@ -23,7 +26,10 @@ import {
   setNewTaskTitle,
 } from "@/features/tasks/redux/taskUiSlice";
 import { selectScopeNameMap } from "@/features/agent-context/redux/scope/scopesSlice";
-import { createTaskThunk, toggleTaskCompleteThunk } from "@/features/tasks/redux/thunks";
+import {
+  createTaskThunk,
+  toggleTaskCompleteThunk,
+} from "@/features/tasks/redux/thunks";
 import {
   selectOrganizationId,
   selectScopeSelectionsContext,
@@ -44,7 +50,9 @@ export default function TaskListPane() {
   const loading = useAppSelector(selectTasksLoading);
   const orgId = useAppSelector(selectOrganizationId);
   const scopeSelections = useAppSelector(selectScopeSelectionsContext);
-  const scopeNameMap = useAppSelector((state) => selectScopeNameMap(state, orgId ?? ""));
+  const scopeNameMap = useAppSelector((state) =>
+    selectScopeNameMap(state, orgId ?? ""),
+  );
 
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
@@ -86,19 +94,12 @@ export default function TaskListPane() {
 
   return (
     <div className="flex flex-col h-full min-h-0 bg-background">
-      {/* Header */}
-      <div className="shrink-0 px-3 py-2 border-b border-border/50 flex items-center justify-between bg-card">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-foreground">Tasks</span>
-          <span className="text-[11px] text-muted-foreground tabular-nums">
-            {totalCount}
-          </span>
-        </div>
-      </div>
-
-      {/* Quick-add */}
-      <div className="shrink-0 px-2 py-2 border-b border-border/40 bg-muted/20">
-        <form onSubmit={handleAddTask} className="flex gap-1">
+      {/* Quick-add — title moved to the shell header (PageHeader). */}
+      <div className="shrink-0 px-2 py-2 border-b border-border/40 bg-muted/20 flex items-center gap-2">
+        <span className="text-[11px] text-muted-foreground tabular-nums shrink-0 pl-1">
+          {totalCount}
+        </span>
+        <form onSubmit={handleAddTask} className="flex gap-1 flex-1 min-w-0">
           <Input
             type="text"
             value={newTaskTitle}
@@ -217,9 +218,7 @@ function TaskRow({
       onClick={onSelect}
       className={cn(
         "group flex items-start gap-2.5 px-3 py-2 cursor-pointer transition-colors relative",
-        isSelected
-          ? "bg-primary/[0.08]"
-          : "hover:bg-accent/40",
+        isSelected ? "bg-primary/[0.08]" : "hover:bg-accent/40",
       )}
     >
       {/* Active indicator bar */}
@@ -277,9 +276,7 @@ function TaskRow({
             <span
               className={cn(
                 "flex items-center gap-0.5",
-                isPastDue
-                  ? "text-destructive font-medium"
-                  : "",
+                isPastDue ? "text-destructive font-medium" : "",
               )}
             >
               <Calendar className="w-2.5 h-2.5" />

@@ -4,11 +4,12 @@ import { useEffect, useMemo, useRef } from "react";
 import { ListChecks, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { BlockRenderer } from "@/components/mardown-display/chat-markdown/block-registry/BlockRenderer";
+import MarkdownStream from "@/components/MarkdownStream";
 import { COLUMN_IDS } from "../../constants";
 import { runModulePassThunk } from "../../redux/runModulePass.thunk";
 import type { ModuleSegment } from "../../types";
 import { getModule } from "../../modules/registry";
+import { useStudioSettings } from "../../hooks/useStudioSettings";
 import { useScrollSyncOptional } from "../scroll-sync/ScrollSyncProvider";
 import { ColumnEmptyState } from "./ColumnEmptyState";
 import { ColumnHeader } from "./ColumnHeader";
@@ -24,10 +25,9 @@ export function ModuleColumn({ sessionId, className }: ModuleColumnProps) {
   const moduleId = useAppSelector(
     (state) => state.transcriptStudio.byId[sessionId]?.moduleId ?? "tasks",
   );
-  const showPriorModules = useAppSelector(
-    // Phase 8 will add the settings slice; until then default to false.
-    () => false,
-  );
+  // Phase 8: per-session settings drive the "show prior modules" toggle.
+  const { effective: settings } = useStudioSettings(sessionId);
+  const showPriorModules = settings.showPriorModules;
 
   const ids = useAppSelector(
     (state) => state.transcriptStudio.moduleSegmentIdsBySession[sessionId],
@@ -171,14 +171,17 @@ export function ModuleColumn({ sessionId, className }: ModuleColumnProps) {
 }
 
 /**
- * Render one module segment. We delegate to the existing markdown-block
- * registry — `tasks` segments dispatch to `<TasksBlock content={payload} />`,
- * future modules dispatch to whatever `blockType` they declare.
+ * Render one module segment via the canonical `MarkdownStream` component.
  *
- * BlockRenderer expects content to be a string (Python's markdown body). For
- * modules whose payload is a string (tasks → markdown checklist), we pass it
- * straight through. For modules whose payload is structured JSON, we
- * stringify it — those blocks parse it back via `serverData` or similar.
+ * `MarkdownStream` is the universal markdown renderer for the platform —
+ * it owns the block-registry dispatch, code highlighting, and lazy-loaded
+ * heavy deps (jspdf, html2canvas, etc.) and is dynamic-imported with
+ * `ssr: false` so none of that touches the studio page's SSR.
+ *
+ * The agent's payload is markdown — `tasks` modules emit a markdown
+ * checklist, future modules will emit `<flashcards>`/`<quiz>` blocks the
+ * same way the chat surface does. MarkdownStream parses the block type out
+ * of the content and dispatches to the right renderer.
  */
 function ModuleSegmentRender({ segment }: { segment: ModuleSegment }) {
   const content =
@@ -192,16 +195,7 @@ function ModuleSegmentRender({ segment }: { segment: ModuleSegment }) {
       tEnd={segment.tEnd ?? segment.tStart ?? 0}
       className="px-2"
     >
-      <BlockRenderer
-        block={{ type: segment.blockType, content }}
-        index={segment.passIndex}
-        replaceBlockContent={() => {
-          // Module segments are agent-emitted, not user-edited. No-op.
-        }}
-        handleOpenEditor={() => {
-          // No editor surface inside the studio column. No-op.
-        }}
-      />
+      <MarkdownStream content={content} hideCopyButton />
     </SegmentWrapper>
   );
 }

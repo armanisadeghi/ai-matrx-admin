@@ -322,34 +322,97 @@ function TaskEditorInner({ taskId }: { taskId: string }) {
 
   return (
     <div className="flex flex-col h-full min-h-0 bg-background">
-      {/* Header band */}
-      <div className="shrink-0 border-b border-border/50 bg-card/50 backdrop-blur-sm px-5 py-3">
-        <div className="flex items-start gap-3">
-          <button
-            onClick={handleToggleComplete}
-            disabled={isOperating}
-            className="mt-1 shrink-0 text-muted-foreground hover:text-primary transition-colors"
-            title={completed ? "Mark incomplete" : "Mark complete"}
-          >
-            {completed ? (
-              <CheckCircle2 className="w-6 h-6 text-green-500" />
-            ) : (
-              <CircleDashed className="w-6 h-6" />
-            )}
-          </button>
+      {/* Compact title row — single line, minimal vertical real estate.
+          Pills, description, properties etc. live in the scrollable body. */}
+      <div className="shrink-0 border-b border-border/50 bg-card/40 px-3 h-9 flex items-center gap-1.5">
+        <button
+          onClick={handleToggleComplete}
+          disabled={isOperating}
+          className="shrink-0 text-muted-foreground hover:text-primary transition-colors"
+          title={completed ? "Mark incomplete" : "Mark complete"}
+        >
+          {completed ? (
+            <CheckCircle2 className="w-4 h-4 text-green-500" />
+          ) : (
+            <CircleDashed className="w-4 h-4" />
+          )}
+        </button>
 
-          <div className="flex-1 min-w-0">
-            <input
-              value={effective.title}
-              onChange={(e) => patch("title", e.target.value)}
-              placeholder="Untitled task"
-              className={cn(
-                "w-full bg-transparent border-none outline-none text-xl font-semibold text-foreground placeholder:text-muted-foreground/40",
-                completed && "line-through text-muted-foreground",
-              )}
-            />
-            {/* Meta pills under title */}
-            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+        <input
+          value={effective.title}
+          onChange={(e) => patch("title", e.target.value)}
+          placeholder="Untitled task"
+          className={cn(
+            "flex-1 min-w-0 h-7 bg-transparent border-none outline-none text-sm font-medium text-foreground placeholder:text-muted-foreground/50",
+            completed && "line-through text-muted-foreground",
+          )}
+          style={{ fontSize: "16px" }}
+        />
+
+        <div className="flex items-center gap-0.5 shrink-0">
+          {isDirty && (
+            <>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleDiscard}
+                disabled={isSaving}
+                className="h-7 px-2 text-[11px]"
+              >
+                Discard
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="h-7 px-2 text-[11px]"
+              >
+                {isSaving ? (
+                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                ) : (
+                  <Save className="w-3 h-3 mr-1" />
+                )}
+                Save
+              </Button>
+            </>
+          )}
+          <Button
+            size="sm"
+            variant="ghost"
+            asChild
+            className="h-7 w-7 p-0"
+            title="Open in full page"
+          >
+            <Link href={`/tasks/${taskId}`}>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </Link>
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleDelete}
+            disabled={isDeleting || isOperating}
+            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+            title="Delete task"
+          >
+            {isDeleting ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Trash2 className="w-3.5 h-3.5" />
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* Scrollable body — left-aligned so content tracks the panel edge
+          regardless of the editor column width. max-w-3xl just caps the
+          reading width on ultra-wide displays so lines don't sprawl. */}
+      <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="max-w-3xl px-4 py-4 space-y-5">
+          {/* Quick meta pills — at-a-glance task vitals, moved out of the
+              compact title row so the row stays single-line. */}
+          {(effective.priority || effective.dueDate || subtasks.length > 0) && (
+            <div className="flex items-center gap-1.5 flex-wrap -mt-1">
               {effective.priority && (
                 <span
                   className={cn(
@@ -379,67 +442,7 @@ function TaskEditorInner({ taskId }: { taskId: string }) {
                 </span>
               )}
             </div>
-          </div>
-
-          <div className="flex items-center gap-1 shrink-0">
-            {isDirty && (
-              <>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleDiscard}
-                  disabled={isSaving}
-                  className="h-8 text-xs"
-                >
-                  Discard
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="h-8 text-xs"
-                >
-                  {isSaving ? (
-                    <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
-                  ) : (
-                    <Save className="w-3.5 h-3.5 mr-1" />
-                  )}
-                  Save
-                </Button>
-              </>
-            )}
-            <Button
-              size="sm"
-              variant="ghost"
-              asChild
-              className="h-8 w-8 p-0"
-              title="Open in full page"
-            >
-              <Link href={`/tasks/${taskId}`}>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </Link>
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleDelete}
-              disabled={isDeleting || isOperating}
-              className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-              title="Delete task"
-            >
-              {isDeleting ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Trash2 className="w-3.5 h-3.5" />
-              )}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Scrollable body */}
-      <div className="flex-1 overflow-y-auto min-h-0">
-        <div className="max-w-3xl mx-auto px-6 py-5 space-y-6">
+          )}
           {/* Scope tags — prominent, directly under header */}
           {orgId && (
             <section>
@@ -702,6 +705,74 @@ function TaskEditorInner({ taskId }: { taskId: string }) {
           </section>
         </div>
       </div>
+
+      {/* Sticky bottom action bar — duplicates the top-right cluster so save
+          is always one tap away after long scrolls. `pb-safe` covers iOS
+          home-indicator inset on responsive web. */}
+      <div className="shrink-0 border-t border-border/60 bg-card/60 backdrop-blur-sm px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center gap-1.5">
+        <Button
+          size="sm"
+          variant={completed ? "secondary" : "ghost"}
+          onClick={handleToggleComplete}
+          disabled={isOperating}
+          className="h-8 text-[11px] gap-1.5"
+        >
+          {completed ? (
+            <>
+              <CircleDashed className="w-3.5 h-3.5" />
+              Mark incomplete
+            </>
+          ) : (
+            <>
+              <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+              Mark complete
+            </>
+          )}
+        </Button>
+
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={handleDelete}
+          disabled={isDeleting || isOperating}
+          className="h-8 text-[11px] gap-1.5 text-muted-foreground hover:text-destructive"
+        >
+          {isDeleting ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Trash2 className="w-3.5 h-3.5" />
+          )}
+          Delete
+        </Button>
+
+        <div className="ml-auto flex items-center gap-1.5">
+          {isDirty && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleDiscard}
+              disabled={isSaving}
+              className="h-8 text-[11px]"
+            >
+              Discard
+            </Button>
+          )}
+          <Button
+            size="sm"
+            onClick={handleSave}
+            disabled={!isDirty || isSaving}
+            className="h-8 text-[11px] gap-1.5 min-w-[80px]"
+          >
+            {isSaving ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Save className="w-3.5 h-3.5" />
+            )}
+            {isDirty ? "Save" : "Saved"}
+          </Button>
+        </div>
+      </div>
+
       <ConfirmDialog
         open={deleteConfirmOpen}
         onOpenChange={(open) => {
