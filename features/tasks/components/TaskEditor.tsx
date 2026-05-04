@@ -38,8 +38,13 @@ import {
   saveTaskEditsThunk,
   toggleTaskCompleteThunk,
   deleteTaskThunk,
+  createSubtaskThunk,
 } from "@/features/tasks/redux/thunks";
-import { selectTaskById } from "@/features/agent-context/redux/tasksSlice";
+import {
+  selectTaskById,
+  selectSubtasksByParent,
+  upsertTaskWithLevel,
+} from "@/features/agent-context/redux/tasksSlice";
 import { selectOrganizationId } from "@/features/agent-context/redux/appContextSlice";
 import * as taskService from "@/features/tasks/services/taskService";
 import { TASK_LABEL_OPTIONS } from "@/features/tasks/services/taskService";
@@ -119,9 +124,9 @@ function TaskEditorInner({ taskId }: { taskId: string }) {
   const [isLoadingComments, setIsLoadingComments] = useState(true);
   const [isAddingComment, setIsAddingComment] = useState(false);
 
-  const [subtasks, setSubtasks] = useState<
-    Awaited<ReturnType<typeof taskService.getSubtasks>>
-  >([]);
+  // Subtasks live in the global tasks slice — derive them via selector so any
+  // component (TaskListPane counts, mobile views, sidebar) stays in sync.
+  const subtasks = useAppSelector((s) => selectSubtasksByParent(s, taskId));
   const [newSubtask, setNewSubtask] = useState("");
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
 
@@ -138,16 +143,42 @@ function TaskEditorInner({ taskId }: { taskId: string }) {
     };
   }, [taskId]);
 
+  // One-shot freshness fetch — Redux is the source of truth, but the user
+  // may have created subtasks elsewhere or RLS scope changed. Upsert any
+  // missing rows into the slice so the selector reflects the DB.
   useEffect(() => {
     let cancelled = false;
     taskService.getSubtasks(taskId).then((data) => {
       if (cancelled) return;
-      setSubtasks(data);
+      for (const row of data) {
+        dispatch(
+          upsertTaskWithLevel({
+            record: {
+              id: row.id,
+              title: row.title,
+              status: row.status,
+              priority: row.priority,
+              due_date: row.due_date,
+              assignee_id: row.assignee_id,
+              project_id: row.project_id,
+              parent_task_id: row.parent_task_id,
+              organization_id: row.organization_id ?? orgId ?? "",
+              description: row.description,
+              settings:
+                (row as { settings?: Record<string, unknown> }).settings ??
+                null,
+              created_at: row.created_at ?? null,
+              user_id: row.user_id,
+            },
+            level: "full-data",
+          }),
+        );
+      }
     });
     return () => {
       cancelled = true;
     };
-  }, [taskId]);
+  }, [taskId, dispatch, orgId]);
 
   if (!task) {
     return (
@@ -236,36 +267,29 @@ function TaskEditorInner({ taskId }: { taskId: string }) {
     if (!newSubtask.trim() || isAddingSubtask) return;
     setIsAddingSubtask(true);
     try {
-      const created = await taskService.createSubtask(
-        taskId,
-        newSubtask.trim(),
-      );
-      if (created) {
-        setSubtasks((prev) => [...prev, created]);
-        setNewSubtask("");
-      }
+      const newId = await dispatch(
+        createSubtaskThunk({
+          parentTaskId: taskId,
+          title: newSubtask.trim(),
+        }),
+      ).unwrap();
+      if (newId) setNewSubtask("");
     } finally {
       setIsAddingSubtask(false);
     }
   };
 
-  const handleToggleSubtask = async (
-    subtaskId: string,
-    currentlyCompleted: boolean,
-  ) => {
-    await taskService.updateSubtaskStatus(subtaskId, !currentlyCompleted);
-    setSubtasks((prev) =>
-      prev.map((s) =>
-        s.id === subtaskId
-          ? { ...s, status: !currentlyCompleted ? "completed" : "incomplete" }
-          : s,
-      ),
-    );
+  const handleToggleSubtask = (subtaskId: string) => {
+    dispatch(toggleTaskCompleteThunk({ taskId: subtaskId }));
   };
 
-  const handleDeleteSubtask = async (subtaskId: string) => {
-    await taskService.deleteSubtask(subtaskId);
-    setSubtasks((prev) => prev.filter((s) => s.id !== subtaskId));
+  const handleDeleteSubtask = (subtaskId: string) => {
+    dispatch(
+      deleteTaskThunk({
+        taskId: subtaskId,
+        projectId: task.project_id ?? "__unassigned__",
+      }),
+    );
   };
 
   const handleAddComment = async () => {
@@ -519,9 +543,7 @@ function TaskEditorInner({ taskId }: { taskId: string }) {
                   >
                     <Checkbox
                       checked={st.status === "completed"}
-                      onCheckedChange={() =>
-                        handleToggleSubtask(st.id, st.status === "completed")
-                      }
+                      onCheckedChange={() => handleToggleSubtask(st.id)}
                     />
                     <span
                       className={cn(

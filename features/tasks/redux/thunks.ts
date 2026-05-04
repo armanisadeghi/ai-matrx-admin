@@ -39,17 +39,14 @@ export const loadProjectsWithTasks = createAsyncThunk<
   void,
   { force?: boolean } | undefined,
   { state: RootState; dispatch: AppDispatch }
->(
-  "tasksUi/loadProjectsWithTasks",
-  async (arg, { dispatch }) => {
-    const { force } = arg ?? {};
-    if (force) {
-      await dispatch(invalidateAndRefetchFullContext());
-      return;
-    }
-    await dispatch(fetchFullContext());
-  },
-);
+>("tasksUi/loadProjectsWithTasks", async (arg, { dispatch }) => {
+  const { force } = arg ?? {};
+  if (force) {
+    await dispatch(invalidateAndRefetchFullContext());
+    return;
+  }
+  await dispatch(fetchFullContext());
+});
 
 /**
  * Idempotent initialization — ensures hierarchy is loaded and auto-selects
@@ -66,8 +63,11 @@ export const initializeTasks = createAsyncThunk<
   const state = getState();
   if (!state.tasksUi.activeProject) {
     const allProjects = Object.values(
-      (state as RootState & { projects: { entities: Record<string, { id: string }> } })
-        .projects.entities,
+      (
+        state as RootState & {
+          projects: { entities: Record<string, { id: string }> };
+        }
+      ).projects.entities,
     ) as Array<{ id: string } | undefined>;
     const first = allProjects.find((p): p is { id: string } => !!p);
     if (first) {
@@ -227,6 +227,50 @@ export const createTaskThunk = createAsyncThunk<
   }
 });
 
+/**
+ * Create a subtask for a parent task and dispatch it to the agent-context
+ * tasks slice so every consumer (TaskEditor, TaskListPane counts, nested
+ * subtask renderers, etc.) reflects the new row immediately — no refetch
+ * round-trip required.
+ *
+ * Subtasks inherit `organization_id` and `project_id` from the parent.
+ * Same-project nesting matters for `selectProjects`: `buildNested()` only
+ * pairs subtasks with parents inside the same project bucket, so a subtask
+ * with `project_id = null` ends up as a standalone row under "Unassigned"
+ * instead of nesting under its parent. Inheriting fixes that.
+ */
+export const createSubtaskThunk = createAsyncThunk<
+  string | null,
+  { parentTaskId: string; title: string; description?: string | null },
+  { state: RootState; dispatch: AppDispatch }
+>(
+  "tasksUi/createSubtask",
+  async ({ parentTaskId, title, description }, { dispatch, getState }) => {
+    const trimmed = title.trim();
+    if (!trimmed) return null;
+
+    const parent = getState().tasks.entities[parentTaskId];
+    const inheritedOrgId = parent?.organization_id ?? null;
+    const inheritedProjectId = parent?.project_id ?? null;
+
+    const created = await taskService.createTask({
+      title: trimmed,
+      description: description ?? null,
+      parent_task_id: parentTaskId,
+      project_id: inheritedProjectId,
+      organization_id: inheritedOrgId,
+      status: "incomplete",
+    });
+    if (!created) return null;
+
+    const record = toTaskRecord(created, inheritedOrgId);
+    if (record) {
+      dispatch(upsertTaskWithLevel({ record, level: "full-data" }));
+    }
+    return created.id;
+  },
+);
+
 export const toggleTaskCompleteThunk = createAsyncThunk<
   void,
   { taskId: string },
@@ -256,11 +300,7 @@ export const toggleTaskCompleteThunk = createAsyncThunk<
       adjustProjectTaskCount({
         projectId: current.project_id,
         openDelta:
-          newStatus === "completed"
-            ? -1
-            : prevStatus === "completed"
-              ? 1
-              : 0,
+          newStatus === "completed" ? -1 : prevStatus === "completed" ? 1 : 0,
         totalDelta: 0,
       }),
     );
@@ -305,35 +345,38 @@ export const updateTaskFieldThunk = createAsyncThunk<
     patch: UpdateTaskInput;
   },
   { state: RootState; dispatch: AppDispatch }
->("tasksUi/updateTaskField", async ({ taskId, patch }, { dispatch, getState }) => {
-  dispatch(setOperatingTaskId(taskId));
-  const current = getState().tasks.entities[taskId];
-  if (!current) {
-    dispatch(setOperatingTaskId(null));
-    return;
-  }
-
-  dispatch(
-    upsertTaskWithLevel({
-      record: { ...current, ...patch } as TaskRecord,
-      level: "full-data",
-    }),
-  );
-
-  try {
-    const updated = await taskService.updateTask(taskId, patch);
-    if (!updated) {
-      dispatch(
-        upsertTaskWithLevel({
-          record: current as TaskRecord,
-          level: "full-data",
-        }),
-      );
+>(
+  "tasksUi/updateTaskField",
+  async ({ taskId, patch }, { dispatch, getState }) => {
+    dispatch(setOperatingTaskId(taskId));
+    const current = getState().tasks.entities[taskId];
+    if (!current) {
+      dispatch(setOperatingTaskId(null));
+      return;
     }
-  } finally {
-    dispatch(setOperatingTaskId(null));
-  }
-});
+
+    dispatch(
+      upsertTaskWithLevel({
+        record: { ...current, ...patch } as TaskRecord,
+        level: "full-data",
+      }),
+    );
+
+    try {
+      const updated = await taskService.updateTask(taskId, patch);
+      if (!updated) {
+        dispatch(
+          upsertTaskWithLevel({
+            record: current as TaskRecord,
+            level: "full-data",
+          }),
+        );
+      }
+    } finally {
+      dispatch(setOperatingTaskId(null));
+    }
+  },
+);
 
 export const moveTaskThunk = createAsyncThunk<
   void,

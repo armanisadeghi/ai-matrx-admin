@@ -17,6 +17,8 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type {
   AgentRun,
   CleanedSegment,
+  ConceptItem,
+  ModuleSegment,
   RawSegment,
   StudioSession,
 } from "../types";
@@ -63,6 +65,21 @@ export interface TranscriptStudioState {
    */
   runsById: Record<string, Record<string, AgentRun>>;
   runIdsBySession: Record<string, string[]>;
+  /**
+   * Concept-item registry per session, ordered by insertion. Append-only —
+   * concept extraction passes ADD new items (never replace), so there's no
+   * supersede flag here. Each pass inserts N items.
+   */
+  conceptsById: Record<string, Record<string, ConceptItem>>;
+  conceptIdsBySession: Record<string, string[]>;
+  /**
+   * Module-segment registry per session, ordered by insertion. Append-only.
+   * Mid-session module switches preserve existing segments tagged with their
+   * original `moduleId`; the active selector filters by the session's
+   * current `moduleId` unless `show_prior_modules` is enabled.
+   */
+  moduleSegmentsById: Record<string, Record<string, ModuleSegment>>;
+  moduleSegmentIdsBySession: Record<string, string[]>;
 }
 
 const DEFAULT_UI: StudioUiState = {
@@ -85,6 +102,10 @@ const initialState: TranscriptStudioState = {
   cleanedIdsBySession: {},
   runsById: {},
   runIdsBySession: {},
+  conceptsById: {},
+  conceptIdsBySession: {},
+  moduleSegmentsById: {},
+  moduleSegmentIdsBySession: {},
 };
 
 // ── Slice ─────────────────────────────────────────────────────────────
@@ -274,6 +295,84 @@ const slice = createSlice({
       }
       state.runIdsBySession[sessionId] = ids;
     },
+    conceptsLoaded(
+      state,
+      action: PayloadAction<{ sessionId: string; items: ConceptItem[] }>,
+    ) {
+      const { sessionId, items } = action.payload;
+      state.conceptsById[sessionId] = {};
+      const ids: string[] = [];
+      for (const it of items) {
+        state.conceptsById[sessionId]![it.id] = it;
+        ids.push(it.id);
+      }
+      state.conceptIdsBySession[sessionId] = ids;
+    },
+    conceptsAppended(
+      state,
+      action: PayloadAction<{ sessionId: string; items: ConceptItem[] }>,
+    ) {
+      const { sessionId, items } = action.payload;
+      if (!state.conceptsById[sessionId]) state.conceptsById[sessionId] = {};
+      if (!state.conceptIdsBySession[sessionId])
+        state.conceptIdsBySession[sessionId] = [];
+      const byId = state.conceptsById[sessionId]!;
+      const ids = state.conceptIdsBySession[sessionId]!;
+      for (const it of items) {
+        if (byId[it.id]) continue;
+        byId[it.id] = it;
+        ids.push(it.id);
+      }
+    },
+    conceptsCleared(state, action: PayloadAction<{ sessionId: string }>) {
+      delete state.conceptsById[action.payload.sessionId];
+      delete state.conceptIdsBySession[action.payload.sessionId];
+    },
+    moduleSegmentsLoaded(
+      state,
+      action: PayloadAction<{ sessionId: string; segments: ModuleSegment[] }>,
+    ) {
+      const { sessionId, segments } = action.payload;
+      state.moduleSegmentsById[sessionId] = {};
+      const ids: string[] = [];
+      for (const s of segments) {
+        state.moduleSegmentsById[sessionId]![s.id] = s;
+        ids.push(s.id);
+      }
+      state.moduleSegmentIdsBySession[sessionId] = ids;
+    },
+    moduleSegmentsAppended(
+      state,
+      action: PayloadAction<{ sessionId: string; segments: ModuleSegment[] }>,
+    ) {
+      const { sessionId, segments } = action.payload;
+      if (!state.moduleSegmentsById[sessionId])
+        state.moduleSegmentsById[sessionId] = {};
+      if (!state.moduleSegmentIdsBySession[sessionId])
+        state.moduleSegmentIdsBySession[sessionId] = [];
+      const byId = state.moduleSegmentsById[sessionId]!;
+      const ids = state.moduleSegmentIdsBySession[sessionId]!;
+      for (const s of segments) {
+        if (byId[s.id]) continue;
+        byId[s.id] = s;
+        ids.push(s.id);
+      }
+    },
+    moduleSegmentsCleared(
+      state,
+      action: PayloadAction<{ sessionId: string }>,
+    ) {
+      delete state.moduleSegmentsById[action.payload.sessionId];
+      delete state.moduleSegmentIdsBySession[action.payload.sessionId];
+    },
+    moduleSwitched(
+      state,
+      action: PayloadAction<{ sessionId: string; moduleId: string }>,
+    ) {
+      const { sessionId, moduleId } = action.payload;
+      const session = state.byId[sessionId];
+      if (session) session.moduleId = moduleId;
+    },
   },
 });
 
@@ -296,6 +395,13 @@ export const {
   cleanedSegmentsCleared,
   runUpserted,
   runsLoaded,
+  conceptsLoaded,
+  conceptsAppended,
+  conceptsCleared,
+  moduleSegmentsLoaded,
+  moduleSegmentsAppended,
+  moduleSegmentsCleared,
+  moduleSwitched,
 } = slice.actions;
 
 export default slice.reducer;

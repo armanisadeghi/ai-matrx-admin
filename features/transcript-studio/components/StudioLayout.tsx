@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Menu } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Loader2, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -28,6 +28,15 @@ export function StudioLayout({
   const activeSession = useAppSelector(selectActiveSession);
   const fetchStatus = useAppSelector(selectFetchStatus);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // Hydration gate — same reasoning as StudioSidebar. Server renders with
+  // empty store (no active session) so the empty-state placeholder lands
+  // in the SSR HTML; client gets seeds + initialSessionId via the hydrator
+  // post-mount and would otherwise render `<ActiveSessionView>` instead.
+  // We render the loading shell on both server and the first client paint
+  // so hydration matches, then flip after.
+  const [isHydrated, setIsHydrated] = useState(false);
+  useEffect(() => setIsHydrated(true), []);
 
   const closeMobileSidebar = () => setMobileSidebarOpen(false);
 
@@ -81,7 +90,11 @@ export function StudioLayout({
           </div>
         )}
 
-        {fetchStatus === "loading" && !activeSession ? (
+        {!isHydrated ? (
+          <div className="flex flex-1 items-center justify-center">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : fetchStatus === "loading" && !activeSession ? (
           <div className="flex flex-1 items-center justify-center text-xs text-muted-foreground">
             Loading sessions…
           </div>

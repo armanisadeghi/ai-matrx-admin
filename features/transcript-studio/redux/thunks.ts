@@ -12,6 +12,8 @@ import {
   createSession,
   insertRawSegment,
   listCleanedSegments,
+  listConceptItems,
+  listModuleSegments,
   listRawSegments,
   listSessions,
   softDeleteSession,
@@ -19,7 +21,9 @@ import {
 } from "../service/studioService";
 import type {
   CleanedSegment,
+  ConceptItem,
   CreateSessionInput,
+  ModuleSegment,
   RawSegment,
   StudioSession,
   UpdateSessionInput,
@@ -27,6 +31,8 @@ import type {
 import {
   activeSessionIdSet,
   cleanedSegmentsLoaded,
+  conceptsLoaded,
+  moduleSegmentsLoaded,
   rawSegmentsAppended,
   rawSegmentsLoaded,
   sessionRemoved,
@@ -204,11 +210,51 @@ export const fetchCleanedSegmentsThunk = createAsyncThunk<
  * patches existing rows. Surface errors quietly via toast — losing one
  * chunk to a transient network blip should not abort the recording.
  */
-// Re-export the cleanup pipeline so callers don't have to know which file
-// each thunk lives in. The actual implementation lives in
-// `runCleaningPass.thunk.ts` to keep this file focused on session + raw CRUD.
+// Re-export per-column pipelines so callers don't have to know which file
+// each thunk lives in. The implementations live in dedicated files to keep
+// this file focused on session + raw CRUD.
 export { runCleaningPassThunk } from "./runCleaningPass.thunk";
 export type { RunCleaningPassResult } from "./runCleaningPass.thunk";
+export { runConceptPassThunk } from "./runConceptPass.thunk";
+export type { RunConceptPassResult } from "./runConceptPass.thunk";
+export { runModulePassThunk } from "./runModulePass.thunk";
+export type { RunModulePassResult } from "./runModulePass.thunk";
+
+export const fetchModuleSegmentsThunk = createAsyncThunk<
+  ModuleSegment[],
+  { sessionId: string }
+>(
+  "transcriptStudio/fetchModuleSegments",
+  async ({ sessionId }, { dispatch, rejectWithValue }) => {
+    try {
+      const segments = await listModuleSegments(sessionId);
+      dispatch(moduleSegmentsLoaded({ sessionId, segments }));
+      return segments;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load module segments";
+      return rejectWithValue(message);
+    }
+  },
+);
+
+export const fetchConceptItemsThunk = createAsyncThunk<
+  ConceptItem[],
+  { sessionId: string }
+>(
+  "transcriptStudio/fetchConceptItems",
+  async ({ sessionId }, { dispatch, rejectWithValue }) => {
+    try {
+      const items = await listConceptItems(sessionId);
+      dispatch(conceptsLoaded({ sessionId, items }));
+      return items;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load concept items";
+      return rejectWithValue(message);
+    }
+  },
+);
 
 export const ingestRawChunkThunk = createAsyncThunk<
   RawSegment,

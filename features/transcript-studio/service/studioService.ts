@@ -523,3 +523,223 @@ export async function applyCleanupRun(
   }
   return rowToCleanedSegment(data as CleanedSegmentRow);
 }
+
+// ── studio_concept_items ─────────────────────────────────────────────
+
+interface ConceptItemRow {
+  id: string;
+  session_id: string;
+  run_id: string | null;
+  pass_index: number;
+  t_start: number | string | null;
+  t_end: number | string | null;
+  kind: import("../types").ConceptKind;
+  label: string;
+  description: string | null;
+  confidence: number | null;
+}
+
+function rowToConceptItem(row: ConceptItemRow): import("../types").ConceptItem {
+  return {
+    id: row.id,
+    sessionId: row.session_id,
+    runId: row.run_id,
+    passIndex: row.pass_index,
+    tStart:
+      row.t_start === null
+        ? null
+        : typeof row.t_start === "string"
+          ? Number(row.t_start)
+          : row.t_start,
+    tEnd:
+      row.t_end === null
+        ? null
+        : typeof row.t_end === "string"
+          ? Number(row.t_end)
+          : row.t_end,
+    kind: row.kind,
+    label: row.label,
+    description: row.description,
+    confidence: row.confidence,
+  };
+}
+
+export interface InsertConceptItemInput {
+  sessionId: string;
+  runId: string;
+  passIndex: number;
+  kind: import("../types").ConceptKind;
+  label: string;
+  description?: string | null;
+  tStart?: number | null;
+  tEnd?: number | null;
+  confidence?: number | null;
+}
+
+export async function insertConceptItems(
+  inputs: InsertConceptItemInput[],
+): Promise<import("../types").ConceptItem[]> {
+  if (inputs.length === 0) return [];
+  const rows = inputs.map((i) => ({
+    session_id: i.sessionId,
+    run_id: i.runId,
+    pass_index: i.passIndex,
+    kind: i.kind,
+    label: i.label,
+    description: i.description ?? null,
+    t_start: i.tStart ?? null,
+    t_end: i.tEnd ?? null,
+    confidence: i.confidence ?? null,
+  }));
+  const { data, error } = await db
+    .from("studio_concept_items")
+    .insert(rows)
+    .select("*");
+  if (error || !data) {
+    throw new Error(
+      `[studio] insertConceptItems failed: ${error?.message ?? "no rows"}`,
+    );
+  }
+  return (data as ConceptItemRow[]).map(rowToConceptItem);
+}
+
+export async function listConceptItems(
+  sessionId: string,
+): Promise<import("../types").ConceptItem[]> {
+  const { data, error } = await db
+    .from("studio_concept_items")
+    .select("*")
+    .eq("session_id", sessionId)
+    .order("created_at", { ascending: true });
+  if (error) {
+    throw new Error(`[studio] listConceptItems failed: ${error.message}`);
+  }
+  return ((data ?? []) as ConceptItemRow[]).map(rowToConceptItem);
+}
+
+export async function listConceptItemsServer(
+  serverClient: { from: (table: string) => unknown },
+  sessionId: string,
+): Promise<import("../types").ConceptItem[]> {
+  const looseClient = serverClient as unknown as LooseSupabase;
+  const { data, error } = await looseClient
+    .from("studio_concept_items")
+    .select("*")
+    .eq("session_id", sessionId)
+    .order("created_at", { ascending: true });
+  if (error) {
+    throw new Error(
+      `[studio] listConceptItemsServer failed: ${error.message}`,
+    );
+  }
+  return ((data ?? []) as ConceptItemRow[]).map(rowToConceptItem);
+}
+
+// ── studio_module_segments ───────────────────────────────────────────
+
+interface ModuleSegmentRow {
+  id: string;
+  session_id: string;
+  run_id: string | null;
+  pass_index: number;
+  module_id: string;
+  block_type: string;
+  t_start: number | string | null;
+  t_end: number | string | null;
+  payload: unknown;
+}
+
+function rowToModuleSegment(
+  row: ModuleSegmentRow,
+): import("../types").ModuleSegment {
+  return {
+    id: row.id,
+    sessionId: row.session_id,
+    runId: row.run_id,
+    passIndex: row.pass_index,
+    moduleId: row.module_id,
+    blockType: row.block_type,
+    tStart:
+      row.t_start === null
+        ? null
+        : typeof row.t_start === "string"
+          ? Number(row.t_start)
+          : row.t_start,
+    tEnd:
+      row.t_end === null
+        ? null
+        : typeof row.t_end === "string"
+          ? Number(row.t_end)
+          : row.t_end,
+    payload: row.payload,
+  };
+}
+
+export interface InsertModuleSegmentInput {
+  sessionId: string;
+  runId: string;
+  passIndex: number;
+  moduleId: string;
+  blockType: string;
+  tStart?: number | null;
+  tEnd?: number | null;
+  payload: unknown;
+}
+
+export async function insertModuleSegments(
+  inputs: InsertModuleSegmentInput[],
+): Promise<import("../types").ModuleSegment[]> {
+  if (inputs.length === 0) return [];
+  const rows = inputs.map((i) => ({
+    session_id: i.sessionId,
+    run_id: i.runId,
+    pass_index: i.passIndex,
+    module_id: i.moduleId,
+    block_type: i.blockType,
+    t_start: i.tStart ?? null,
+    t_end: i.tEnd ?? null,
+    payload: i.payload,
+  }));
+  const { data, error } = await db
+    .from("studio_module_segments")
+    .insert(rows)
+    .select("*");
+  if (error || !data) {
+    throw new Error(
+      `[studio] insertModuleSegments failed: ${error?.message ?? "no rows"}`,
+    );
+  }
+  return (data as ModuleSegmentRow[]).map(rowToModuleSegment);
+}
+
+export async function listModuleSegments(
+  sessionId: string,
+): Promise<import("../types").ModuleSegment[]> {
+  const { data, error } = await db
+    .from("studio_module_segments")
+    .select("*")
+    .eq("session_id", sessionId)
+    .order("created_at", { ascending: true });
+  if (error) {
+    throw new Error(`[studio] listModuleSegments failed: ${error.message}`);
+  }
+  return ((data ?? []) as ModuleSegmentRow[]).map(rowToModuleSegment);
+}
+
+export async function listModuleSegmentsServer(
+  serverClient: { from: (table: string) => unknown },
+  sessionId: string,
+): Promise<import("../types").ModuleSegment[]> {
+  const looseClient = serverClient as unknown as LooseSupabase;
+  const { data, error } = await looseClient
+    .from("studio_module_segments")
+    .select("*")
+    .eq("session_id", sessionId)
+    .order("created_at", { ascending: true });
+  if (error) {
+    throw new Error(
+      `[studio] listModuleSegmentsServer failed: ${error.message}`,
+    );
+  }
+  return ((data ?? []) as ModuleSegmentRow[]).map(rowToModuleSegment);
+}

@@ -365,6 +365,21 @@ export const selectTasksByProject = createSelector(
   (tasks, projectId) => tasks.filter((t) => t.project_id === projectId),
 );
 
+export const selectSubtasksByParent = createSelector(
+  [
+    selectAllTasks,
+    (_state: StateWithTasks, parentTaskId: string) => parentTaskId,
+  ],
+  (tasks, parentTaskId) =>
+    tasks
+      .filter((t) => t.parent_task_id === parentTaskId)
+      .sort((a, b) => {
+        const ac = a.created_at ?? "";
+        const bc = b.created_at ?? "";
+        return ac.localeCompare(bc);
+      }),
+);
+
 export const selectOpenTasksByProject = createSelector(
   [selectTasksByProject],
   (tasks) => tasks.filter((t) => t.status !== "completed"),

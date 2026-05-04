@@ -65,6 +65,27 @@ export const AUTOSCROLL_BOTTOM_THRESHOLD_PX = 80;
 export const DEFAULT_CLEANING_SHORTCUT_ID =
   "e8df1e93-2419-4545-a2d0-935f4958de85";
 
+// Concept extraction agent. Variable surface: raw_window / prior_concepts /
+// session_title / module_id. Output: single JSON code fence with a
+// `concepts: [{ kind, label, description?, t_start?, t_end? }]` array.
+// See FEATURE.md for the full agent spec.
+export const DEFAULT_CONCEPT_SHORTCUT_ID =
+  "633d7da7-e8ec-40b4-bae3-251d2f4a7ee4";
+
+// Tasks module agent (Column 4 default). Variable surface: cleaned_window /
+// prior_tasks / session_title. Output: a markdown checklist that
+// BlockRenderer's `tasks` block can render directly. See FEATURE.md for spec.
+//
+// PLACEHOLDER — replace with the real shortcut id when the agent is created.
+// The pipeline + parser + UI all work; agent invocation will fail until a
+// valid id lands here, surfacing as `failed` runs in Column 4.
+export const DEFAULT_TASKS_SHORTCUT_ID =
+  "00000000-0000-0000-0000-000000000000";
+
+// Default cadence per Column 4 module. Modules can override this in their
+// metadata; per-session overrides land in studio_session_settings.
+export const MODULE_INTERVAL_DEFAULT_MS = 120_000;
+
 // Tick cadence for the trigger scheduler. 500ms is fine for ~10s+ intervals;
 // the scheduler skips ticks where the elapsed-since-last-flush guard
 // hasn't expired.

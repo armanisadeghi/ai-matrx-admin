@@ -19,6 +19,8 @@ import {
 } from "../constants";
 import type {
   CleanedSegment,
+  ConceptItem,
+  ConceptKind,
   RawSegment,
   StudioSession,
 } from "../types";
@@ -149,4 +151,217 @@ export function stripResumeMarker(response: string): string | null {
   body = body.replace(/^\s*\n?/, "").trim();
   if (!body) return null;
   return body;
+}
+
+// ── Concept extraction (Column 3) ────────────────────────────────────
+
+const CONCEPT_KIND_VALUES: ReadonlySet<ConceptKind> = new Set([
+  "theme",
+  "key_idea",
+  "entity",
+  "question",
+  "other",
+]);
+/** How many recent concepts feed back into `prior_concepts` to deduplicate. */
+const CONCEPT_PRIOR_LIMIT = 30;
+
+export interface ConceptWindowInputs {
+  rawSegments: RawSegment[];
+  cleanedSegments: CleanedSegment[];
+  conceptItems: ConceptItem[];
+  /** tEnd of the last raw covered by the most recent SUCCESSFUL concept pass. */
+  lastConceptCoverageTEnd: number;
+  session: StudioSession;
+}
+
+export interface ConceptWindow {
+  rawWindow: string;
+  priorConcepts: string;
+  windowSegments: RawSegment[];
+  /** tStart of the first raw segment in the window, or null when empty. */
+  windowStartTime: number | null;
+  /** tEnd of the last raw segment in the window, or null when empty. */
+  windowEndTime: number | null;
+  inputCharRange: [number, number] | null;
+  scope: {
+    raw_window: string;
+    prior_concepts: string;
+    session_title: string;
+    module_id: string;
+  };
+}
+
+/**
+ * Build the concept-pass payload.
+ *
+ * Window strategy: prefer cleaned text when available (sparser, less noisy),
+ * falling back to raw if cleanup hasn't reached this range yet. The window
+ * starts strictly AFTER `lastConceptCoverageTEnd` so concept passes don't
+ * re-process the same audio. (Cleanup tStart != concept tStart — they run on
+ * independent cadences.)
+ */
+export function buildConceptWindow({
+  rawSegments,
+  cleanedSegments,
+  conceptItems,
+  lastConceptCoverageTEnd,
+  session,
+}: ConceptWindowInputs): ConceptWindow {
+  const windowSegments = rawSegments.filter(
+    (s) => s.tStart >= lastConceptCoverageTEnd,
+  );
+
+  // Use cleaned text where available — read out cleaned segments overlapping
+  // the window and substitute them in. Fallback to raw when no cleaning has
+  // covered the time range yet.
+  const windowStartTime = windowSegments[0]?.tStart ?? null;
+  const windowEndTime =
+    windowSegments[windowSegments.length - 1]?.tEnd ?? null;
+
+  let rawWindow: string;
+  if (windowStartTime !== null && windowEndTime !== null) {
+    const overlapping = cleanedSegments.filter(
+      (c) => c.tEnd > windowStartTime && c.tStart < windowEndTime,
+    );
+    if (overlapping.length > 0) {
+      // Concatenate cleaned text where it exists; fill gaps from raw.
+      const parts: string[] = overlapping.map((c) => c.text);
+      // If raw extends past the last cleaned segment, append the uncovered tail.
+      const lastCleanedEnd = overlapping[overlapping.length - 1]!.tEnd;
+      const tail = windowSegments.filter((s) => s.tStart >= lastCleanedEnd);
+      if (tail.length > 0) parts.push(tail.map((s) => s.text).join("\n"));
+      rawWindow = parts.join("\n\n");
+    } else {
+      rawWindow = windowSegments.map((s) => s.text).join("\n");
+    }
+  } else {
+    rawWindow = "";
+  }
+
+  // Prior concepts summary — most recent N items, formatted for the agent
+  // to scan quickly. Each line: "- [kind] label".
+  const priorConcepts = buildPriorConceptsSummary(conceptItems);
+
+  // Char range within the session raw text — for audit only.
+  let charOffset = 0;
+  for (const seg of rawSegments) {
+    if (seg === windowSegments[0]) break;
+    charOffset += seg.text.length + 1;
+  }
+  const inputCharRange: [number, number] | null = rawWindow
+    ? [charOffset, charOffset + rawWindow.length]
+    : null;
+
+  return {
+    rawWindow,
+    priorConcepts,
+    windowSegments,
+    windowStartTime,
+    windowEndTime,
+    inputCharRange,
+    scope: {
+      raw_window: rawWindow,
+      prior_concepts: priorConcepts,
+      session_title: session.title ?? "",
+      module_id: session.moduleId ?? "",
+    },
+  };
+}
+
+function buildPriorConceptsSummary(items: ConceptItem[]): string {
+  if (items.length === 0) return "";
+  const recent = items.slice(-CONCEPT_PRIOR_LIMIT);
+  return recent.map((c) => `- [${c.kind}] ${c.label}`).join("\n");
+}
+
+export interface ParsedConcept {
+  kind: ConceptKind;
+  label: string;
+  description: string | null;
+  tStart: number | null;
+  tEnd: number | null;
+}
+
+/**
+ * Parse the concept-extraction agent's response. Looks for the first JSON
+ * code fence containing a `concepts` array and validates each item against
+ * the schema. Returns an empty array on parse failure (we surface this via
+ * the run's status — the recording continues either way).
+ *
+ * Tolerant of: missing fences (parses bare JSON object), extra prose around
+ * the fence, items missing optional fields.
+ */
+export function parseConceptResponse(response: string): ParsedConcept[] {
+  if (!response || !response.trim()) return [];
+
+  const candidate = extractJsonBlock(response);
+  if (!candidate) return [];
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(candidate);
+  } catch {
+    return [];
+  }
+
+  const concepts =
+    parsed && typeof parsed === "object" && "concepts" in parsed
+      ? (parsed as { concepts: unknown }).concepts
+      : null;
+  if (!Array.isArray(concepts)) return [];
+
+  const out: ParsedConcept[] = [];
+  for (const raw of concepts) {
+    if (!raw || typeof raw !== "object") continue;
+    const it = raw as Record<string, unknown>;
+
+    const kindRaw = typeof it.kind === "string" ? it.kind : null;
+    const kind: ConceptKind | null =
+      kindRaw && CONCEPT_KIND_VALUES.has(kindRaw as ConceptKind)
+        ? (kindRaw as ConceptKind)
+        : null;
+    if (!kind) continue;
+
+    const label =
+      typeof it.label === "string" ? it.label.trim() : null;
+    if (!label) continue;
+
+    const description =
+      typeof it.description === "string" && it.description.trim()
+        ? it.description.trim()
+        : null;
+    const tStart =
+      typeof it.t_start === "number" && Number.isFinite(it.t_start)
+        ? it.t_start
+        : null;
+    const tEnd =
+      typeof it.t_end === "number" && Number.isFinite(it.t_end)
+        ? it.t_end
+        : null;
+
+    out.push({ kind, label, description, tStart, tEnd });
+  }
+  return out;
+}
+
+/**
+ * Pull the JSON payload out of an agent response. Tries, in order:
+ *   1. The first ````json ... ```` fenced block.
+ *   2. The first ```` ... ```` fenced block (untyped).
+ *   3. A bare object literal — heuristic: from the first `{` to the last `}`.
+ */
+function extractJsonBlock(response: string): string | null {
+  const fencedJson = response.match(/```json\s*([\s\S]*?)```/i);
+  if (fencedJson) return fencedJson[1]!.trim();
+  const fenced = response.match(/```\s*([\s\S]*?)```/);
+  if (fenced) {
+    const body = fenced[1]!.trim();
+    if (body.startsWith("{")) return body;
+  }
+  const first = response.indexOf("{");
+  const last = response.lastIndexOf("}");
+  if (first >= 0 && last > first) {
+    return response.slice(first, last + 1);
+  }
+  return null;
 }

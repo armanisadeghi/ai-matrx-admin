@@ -9,7 +9,6 @@ import {
   Brain,
   Mic,
   Volume2,
-  CircuitBoard,
   Mail,
   Video,
   Image as ImageIcon,

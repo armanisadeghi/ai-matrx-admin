@@ -6,6 +6,8 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { ResizablePanel } from "@/components/ui/resizable";
 import {
   fetchCleanedSegmentsThunk,
+  fetchConceptItemsThunk,
+  fetchModuleSegmentsThunk,
   fetchRawSegmentsThunk,
 } from "../redux/thunks";
 import type { StudioSession } from "../types";
@@ -22,6 +24,11 @@ import {
 import { ScrollSyncProvider } from "./scroll-sync/ScrollSyncProvider";
 import { useStudioSession } from "../hooks/useStudioSession";
 import { useTriggerScheduler } from "../hooks/useTriggerScheduler";
+
+// Side-effect import — populates the module registry so getModule(id) works
+// from the moment any session view mounts. Adding a new module is a one-line
+// import inside `modules/index.ts`.
+import "../modules";
 
 interface ActiveSessionViewProps {
   session: StudioSession;
@@ -43,13 +50,19 @@ export function ActiveSessionView({
   const dispatch = useAppDispatch();
   const recording = useStudioSession({ sessionId: session.id });
 
-  // First-paint hydration of raw + cleaned segments. Subscribes to stable
-  // booleans — doesn't re-fire on every appended chunk.
+  // First-paint hydration of raw + cleaned + concept registries. Subscribes
+  // to stable booleans — doesn't re-fire on every appended chunk.
   const hasRawIds = useAppSelector((state) =>
     Boolean(state.transcriptStudio.rawIdsBySession[session.id]),
   );
   const hasCleanedIds = useAppSelector((state) =>
     Boolean(state.transcriptStudio.cleanedIdsBySession[session.id]),
+  );
+  const hasConceptIds = useAppSelector((state) =>
+    Boolean(state.transcriptStudio.conceptIdsBySession[session.id]),
+  );
+  const hasModuleSegmentIds = useAppSelector((state) =>
+    Boolean(state.transcriptStudio.moduleSegmentIdsBySession[session.id]),
   );
   useEffect(() => {
     if (!hasRawIds) {
@@ -57,6 +70,12 @@ export function ActiveSessionView({
     }
     if (!hasCleanedIds) {
       void dispatch(fetchCleanedSegmentsThunk({ sessionId: session.id }));
+    }
+    if (!hasConceptIds) {
+      void dispatch(fetchConceptItemsThunk({ sessionId: session.id }));
+    }
+    if (!hasModuleSegmentIds) {
+      void dispatch(fetchModuleSegmentsThunk({ sessionId: session.id }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session.id, dispatch]);

@@ -14,7 +14,6 @@ import {
   Link2Off,
   Loader2,
   Lock,
-  MousePointerClick,
   RefreshCw,
   RotateCcw,
   MousePointerClick,

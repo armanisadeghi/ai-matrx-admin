@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Loader2, Mic, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -32,6 +33,17 @@ export function StudioSidebar({
   const activeSessionId = useAppSelector(selectActiveSessionId);
   const fetchStatus = useAppSelector(selectFetchStatus);
   const userId = useAppSelector(selectUserId);
+
+  // Hydration gate. Server-rendered output uses the EMPTY initial Redux
+  // store (StudioHydrator's seeds are dispatched in a useEffect, after
+  // mount). The client's first render must match — so we render the
+  // loading shell on both server and the first client render, then flip
+  // to the real content after hydration. Without this, the
+  // empty-state-div ↔ session-list-ul element-type swap trips React's
+  // hydration mismatch warning, which `suppressHydrationWarning` can't
+  // suppress because it doesn't cover divergent element types.
+  const [isHydrated, setIsHydrated] = useState(false);
+  useEffect(() => setIsHydrated(true), []);
 
   const handlePick = (id: string) => {
     dispatch(activeSessionIdSet(id));
@@ -84,7 +96,11 @@ export function StudioSidebar({
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto">
-        {fetchStatus === "loading" && sessions.length === 0 ? (
+        {!isHydrated ? (
+          <div className="flex items-center justify-center p-6">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          </div>
+        ) : fetchStatus === "loading" && sessions.length === 0 ? (
           <div className="flex items-center justify-center p-6">
             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           </div>

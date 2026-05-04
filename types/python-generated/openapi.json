@@ -2862,6 +2862,49 @@
         }
       }
     },
+    "/api/document/by-cld-file/{cld_file_id}": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Find Document By Cld File",
+        "description": "Return the newest processed_documents row anchored to this\ncld_files id. Caller-scoped — RLS on processed_documents ensures\nonly docs the user can see are returned. Resolves to None if the\nfile has never been processed for RAG.",
+        "operationId": "find_document_by_cld_file_api_document_by_cld_file__cld_file_id__get",
+        "parameters": [
+          {
+            "name": "cld_file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Cld File Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentLookupResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/document/{doc_id}": {
       "get": {
         "tags": [
@@ -6756,6 +6799,30 @@
                   "additionalProperties": true,
                   "type": "object",
                   "title": "Response Overview Legal Admin Overview Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/legal/admin/diagnose": {
+      "get": {
+        "tags": [
+          "Legal Admin"
+        ],
+        "summary": "Diagnose",
+        "description": "Synchronous self-test — bypasses streaming entirely.\n\nVerifies, in order:\n  1. matrx-legal package configured (settings + db_models registered)\n  2. CourtListener API token resolvable\n  3. legal.* tables exist + reachable (counts succeed)\n  4. CourtListener API reachable (one tiny call to /courts/?in_use=true&limit=1)\n  5. Local insert path works (upsert + delete a sentinel ingest_run row)\n\nReturns a structured report so the dashboard can render which step is\nbroken instead of staring at a hung streaming connection.",
+        "operationId": "diagnose_legal_admin_diagnose_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Diagnose Legal Admin Diagnose Get"
                 }
               }
             }
@@ -11829,6 +11896,98 @@
                 "schema": {
                   "$ref": "#/components/schemas/PodcastMediaUploadResponse"
                 }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/media/upload": {
+      "post": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "Upload an image as a vision master + optional eager variants",
+        "description": "Store a full-resolution master and eagerly render any requested variants.\n\nThe body is a standard multipart form:\n\n- ``file`` — required. The image bytes. ``Content-Type`` must be one\n  of ``SUPPORTED_IMAGE_TYPES``.\n- ``vision_class`` — optional. A single class to eagerly render.\n- ``vision_classes`` — optional. Comma-separated list of additional\n  classes to eagerly render alongside ``vision_class``.\n- ``folder`` — optional. Defaults to ``vision-uploads``. The master is\n  stored at ``u/{user_id}/{folder}/{uuid}/master.{ext}``.\n\nVariants that fail to render don't fail the request; their errors land\nin ``variant_errors``. Master upload failure is fatal.",
+        "operationId": "upload_vision_master_media_upload_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_vision_master_media_upload_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VisionMediaUploadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/media/{file_id}/v/{vision_class}": {
+      "get": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "Lazy-render and redirect to a vision-class variant of a master",
+        "description": "Render (or fetch the cached) variant and 302 to its signed URL.\n\nThe first call for a given ``(file_id, vision_class)`` pair runs the\nencoder and persists the variant row. Subsequent calls hit the cached\nrow and return immediately.",
+        "operationId": "get_or_render_variant_media__file_id__v__vision_class__get",
+        "parameters": [
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File Id"
+            }
+          },
+          {
+            "name": "vision_class",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Vision Class"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },
@@ -17593,6 +17752,49 @@
         ],
         "title": "Body_upload_podcast_video_media_podcast_upload_video_post"
       },
+      "Body_upload_vision_master_media_upload_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          },
+          "vision_class": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vision Class"
+          },
+          "vision_classes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vision Classes",
+            "description": "Comma-separated list of additional vision classes to eagerly render"
+          },
+          "folder": {
+            "type": "string",
+            "title": "Folder",
+            "description": "Logical folder under the user's namespace",
+            "default": "vision-uploads"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_vision_master_media_upload_post"
+      },
       "BulkFileDeleteRequest": {
         "properties": {
           "file_ids": {
@@ -20682,6 +20884,42 @@
         "title": "DocumentLineage",
         "description": "Compact lineage breadcrumb chain for the viewer header."
       },
+      "DocumentLookupResult": {
+        "properties": {
+          "document_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Id"
+          },
+          "found": {
+            "type": "boolean",
+            "title": "Found"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_id",
+          "found"
+        ],
+        "title": "DocumentLookupResult"
+      },
       "DocumentRecord": {
         "properties": {
           "id": {
@@ -23570,6 +23808,18 @@
             "type": "object",
             "title": "Metadata",
             "description": "Free-form per-API metadata. Opaque to the resolver."
+          },
+          "vision_class": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vision Class",
+            "description": "Optional name of a registered vision class (e.g. 'anthropic_opus_hires', 'gemini3_high'). When set, resolution produces a derived variant of the master file using the host-registered encoder for the 'vision' family. Wire-stable: frontends and tools may pin a specific variant; otherwise the unified client annotates this field based on the target model."
           },
           "base64_data": {
             "anyOf": [
@@ -29213,6 +29463,91 @@
         },
         "type": "object",
         "title": "Viewport"
+      },
+      "VisionMediaUploadResponse": {
+        "properties": {
+          "file_id": {
+            "type": "string",
+            "title": "File Id",
+            "description": "cld_files UUID for the master image"
+          },
+          "storage_uri": {
+            "type": "string",
+            "title": "Storage Uri"
+          },
+          "file_path": {
+            "type": "string",
+            "title": "File Path"
+          },
+          "mime_type": {
+            "type": "string",
+            "title": "Mime Type"
+          },
+          "file_size": {
+            "type": "integer",
+            "title": "File Size"
+          },
+          "master_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Master Url",
+            "description": "Signed URL for the master file (1 week TTL)"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
+          },
+          "variants": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Variants",
+            "description": "Map of vision_class -> signed variant URL for any classes that were eagerly rendered"
+          },
+          "variant_errors": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Variant Errors",
+            "description": "Map of vision_class -> error message for variants that failed to render"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_id",
+          "storage_uri",
+          "file_path",
+          "mime_type",
+          "file_size"
+        ],
+        "title": "VisionMediaUploadResponse",
+        "description": "Response payload for ``POST /media/upload``."
       },
       "aidream__api__routers__agents__WarmRequest": {
         "properties": {

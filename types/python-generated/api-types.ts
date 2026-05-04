@@ -1392,6 +1392,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/document/by-cld-file/{cld_file_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Find Document By Cld File
+         * @description Return the newest processed_documents row anchored to this
+         *     cld_files id. Caller-scoped — RLS on processed_documents ensures
+         *     only docs the user can see are returned. Resolves to None if the
+         *     file has never been processed for RAG.
+         */
+        get: operations["find_document_by_cld_file_api_document_by_cld_file__cld_file_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/document/{doc_id}": {
         parameters: {
             query?: never;
@@ -2682,6 +2705,36 @@ export interface paths {
         };
         /** Overview */
         get: operations["overview_legal_admin_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/legal/admin/diagnose": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Diagnose
+         * @description Synchronous self-test — bypasses streaming entirely.
+         *
+         *     Verifies, in order:
+         *       1. matrx-legal package configured (settings + db_models registered)
+         *       2. CourtListener API token resolvable
+         *       3. legal.* tables exist + reachable (counts succeed)
+         *       4. CourtListener API reachable (one tiny call to /courts/?in_use=true&limit=1)
+         *       5. Local insert path works (upsert + delete a sentinel ingest_run row)
+         *
+         *     Returns a structured report so the dashboard can render which step is
+         *     broken instead of staring at a hung streaming connection.
+         */
+        get: operations["diagnose_legal_admin_diagnose_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4223,6 +4276,63 @@ export interface paths {
         put?: never;
         /** Upload Podcast Video */
         post: operations["upload_podcast_video_media_podcast_upload_video_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/media/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload an image as a vision master + optional eager variants
+         * @description Store a full-resolution master and eagerly render any requested variants.
+         *
+         *     The body is a standard multipart form:
+         *
+         *     - ``file`` — required. The image bytes. ``Content-Type`` must be one
+         *       of ``SUPPORTED_IMAGE_TYPES``.
+         *     - ``vision_class`` — optional. A single class to eagerly render.
+         *     - ``vision_classes`` — optional. Comma-separated list of additional
+         *       classes to eagerly render alongside ``vision_class``.
+         *     - ``folder`` — optional. Defaults to ``vision-uploads``. The master is
+         *       stored at ``u/{user_id}/{folder}/{uuid}/master.{ext}``.
+         *
+         *     Variants that fail to render don't fail the request; their errors land
+         *     in ``variant_errors``. Master upload failure is fatal.
+         */
+        post: operations["upload_vision_master_media_upload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/media/{file_id}/v/{vision_class}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lazy-render and redirect to a vision-class variant of a master
+         * @description Render (or fetch the cached) variant and 302 to its signed URL.
+         *
+         *     The first call for a given ``(file_id, vision_class)`` pair runs the
+         *     encoder and persists the variant row. Subsequent calls hit the cached
+         *     row and return immediately.
+         */
+        get: operations["get_or_render_variant_media__file_id__v__vision_class__get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -5987,6 +6097,27 @@ export interface components {
              */
             file: string;
         };
+        /** Body_upload_vision_master_media_upload_post */
+        Body_upload_vision_master_media_upload_post: {
+            /**
+             * File
+             * Format: binary
+             */
+            file: string;
+            /** Vision Class */
+            vision_class?: string | null;
+            /**
+             * Vision Classes
+             * @description Comma-separated list of additional vision classes to eagerly render
+             */
+            vision_classes?: string | null;
+            /**
+             * Folder
+             * @description Logical folder under the user's namespace
+             * @default vision-uploads
+             */
+            folder: string;
+        };
         /** BulkFileDeleteRequest */
         BulkFileDeleteRequest: {
             /** File Ids */
@@ -7087,6 +7218,15 @@ export interface components {
             /** Processing Parent Kind */
             processing_parent_kind?: string | null;
         };
+        /** DocumentLookupResult */
+        DocumentLookupResult: {
+            /** Document Id */
+            document_id: string | null;
+            /** Found */
+            found: boolean;
+            /** Name */
+            name?: string | null;
+        };
         /** DocumentRecord */
         DocumentRecord: {
             /** Id */
@@ -8114,6 +8254,11 @@ export interface components {
             metadata?: {
                 [key: string]: unknown;
             };
+            /**
+             * Vision Class
+             * @description Optional name of a registered vision class (e.g. 'anthropic_opus_hires', 'gemini3_high'). When set, resolution produces a derived variant of the master file using the host-registered encoder for the 'vision' family. Wire-stable: frontends and tools may pin a specific variant; otherwise the unified client annotates this field based on the target model.
+             */
+            vision_class?: string | null;
             /**
              * Base64 Data
              * @description Inline bytes (base64). Set by resolver when needs_bytes=True.
@@ -10348,6 +10493,48 @@ export interface components {
              */
             zoom: number;
         };
+        /**
+         * VisionMediaUploadResponse
+         * @description Response payload for ``POST /media/upload``.
+         */
+        VisionMediaUploadResponse: {
+            /**
+             * File Id
+             * @description cld_files UUID for the master image
+             */
+            file_id: string;
+            /** Storage Uri */
+            storage_uri: string;
+            /** File Path */
+            file_path: string;
+            /** Mime Type */
+            mime_type: string;
+            /** File Size */
+            file_size: number;
+            /**
+             * Master Url
+             * @description Signed URL for the master file (1 week TTL)
+             */
+            master_url?: string | null;
+            /** Width */
+            width?: number | null;
+            /** Height */
+            height?: number | null;
+            /**
+             * Variants
+             * @description Map of vision_class -> signed variant URL for any classes that were eagerly rendered
+             */
+            variants?: {
+                [key: string]: string;
+            };
+            /**
+             * Variant Errors
+             * @description Map of vision_class -> error message for variants that failed to render
+             */
+            variant_errors?: {
+                [key: string]: string;
+            };
+        };
         /** WarmRequest */
         aidream__api__routers__agents__WarmRequest: {
             /**
@@ -12422,6 +12609,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DocumentRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    find_document_by_cld_file_api_document_by_cld_file__cld_file_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cld_file_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentLookupResult"];
                 };
             };
             /** @description Validation Error */
@@ -15042,6 +15260,28 @@ export interface operations {
         };
     };
     overview_legal_admin_overview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    diagnose_legal_admin_diagnose_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -18329,6 +18569,71 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PodcastMediaUploadResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_vision_master_media_upload_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_vision_master_media_upload_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VisionMediaUploadResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_or_render_variant_media__file_id__v__vision_class__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                file_id: string;
+                vision_class: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
