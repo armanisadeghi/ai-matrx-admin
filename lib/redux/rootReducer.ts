@@ -18,7 +18,6 @@ import { createFeatureSlice } from "./slices/featureSliceCreator";
 import { createModuleSlice } from "./slices/moduleSliceCreator";
 import { moduleSchemas, ModuleName } from "./dynamic/moduleSchema";
 import layoutReducer from "./slices/layoutSlice";
-import formReducer from "./slices/formSlice";
 // Phase 4: legacy `userSlice` replaced by userAuth + userProfile (decisions D1).
 // userAuth is volatile (auth secrets MUST NOT persist).
 // userProfile uses boot-critical preset (userMetadata persists for first paint).
@@ -26,7 +25,6 @@ import userAuthReducer from "./slices/userAuthSlice";
 import userProfileReducer from "./slices/userProfileSlice";
 
 import userPreferencesReducer from "./slices/userPreferencesSlice";
-import testRoutesReducer from "./slices/testRoutesSlice";
 import flashcardChatReducer from "./slices/flashcardChatSlice";
 import adminDebugReducer from "./slices/adminDebugSlice";
 import themeReducer from "@/styles/themes/themeSlice";
@@ -215,8 +213,6 @@ export const slimReducerMap = {
   ...featureReducers,
   ...moduleReducers,
   layout: layoutReducer,
-  form: formReducer,
-  testRoutes: testRoutesReducer,
   flashcardChat: flashcardChatReducer,
   ui: uiReducer,
 

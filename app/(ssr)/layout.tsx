@@ -76,7 +76,6 @@ export default async function SSRLayout({
 
     initialReduxState = {
       user: userData,
-      testRoutes: [],
       globalCache: emptyGlobalCache,
     };
   } else {
@@ -86,7 +85,6 @@ export default async function SSRLayout({
 
     initialReduxState = {
       user: guestUserData,
-      testRoutes: [],
       globalCache: emptyGlobalCache,
     };
   }

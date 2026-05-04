@@ -76,7 +76,6 @@ export default async function AppLayout({
 
     initialReduxState = {
       user: userData,
-      testRoutes: [],
       globalCache: emptyGlobalCache,
     };
   } else {
@@ -85,7 +84,6 @@ export default async function AppLayout({
 
     initialReduxState = {
       user: guestUserData,
-      testRoutes: [],
       globalCache: emptyGlobalCache,
     };
   }

@@ -127,7 +127,6 @@ export function resolveStoreBootstrapState(
     return {
       userAuth: baseSplit.userAuth,
       userProfile: baseSplit.userProfile,
-      testRoutes: [] as string[],
       userPreferences: baseUserPreferences,
     };
   }
@@ -141,7 +140,6 @@ export function resolveStoreBootstrapState(
   const out: Record<string, unknown> = {
     userAuth: split.userAuth,
     userProfile: split.userProfile,
-    testRoutes: input.testRoutes ?? [],
     userPreferences: resolveUserPreferencesForBootstrap(input, {
       userPreferences: baseUserPreferences,
     }),

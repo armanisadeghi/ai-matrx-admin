@@ -95,7 +95,6 @@ function resolveEntityStoreBootstrapState(
     return {
       userAuth: baseSplit.userAuth,
       userProfile: baseSplit.userProfile,
-      testRoutes: [] as string[],
       userPreferences: baseUserPreferences,
       globalCache: baseGlobalCache,
     };
@@ -123,7 +122,6 @@ function resolveEntityStoreBootstrapState(
   const out: Record<string, unknown> = {
     userAuth: split.userAuth,
     userProfile: split.userProfile,
-    testRoutes: input.testRoutes ?? [],
     userPreferences,
     globalCache:
       input.globalCache !== undefined ? input.globalCache : baseGlobalCache,

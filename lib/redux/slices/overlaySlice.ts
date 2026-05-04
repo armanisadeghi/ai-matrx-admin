@@ -427,8 +427,13 @@ export const openSaveToNotes = (options: SaveToNotesPayload) =>
   openOverlay({
     overlayId: "saveToNotes",
     instanceId: options.instanceId,
+    // Data keys MUST match `QuickNoteSaveWindow` prop names — the
+    // unified `OverlaySurface` spreads `data` directly as props
+    // (`<Component {...merged} />`) instead of explicit mapping. Using
+    // `content` here would land as a `content` prop, leaving the
+    // component's `initialContent` undefined and showing an empty editor.
     data: {
-      content: options.content,
+      initialContent: options.content,
       defaultFolder: options.defaultFolder,
       initialEditorMode: options.initialEditorMode,
     },
@@ -450,9 +455,11 @@ export const openSaveToCode = (options: SaveToCodePayload) =>
   openOverlay({
     overlayId: "saveToCode",
     instanceId: options.instanceId,
+    // Data keys MUST match `QuickSaveCodeDialog` prop names — the unified
+    // `OverlaySurface` spreads `data` directly as props.
     data: {
-      content: options.content,
-      language: options.language ?? "plaintext",
+      initialContent: options.content,
+      initialLanguage: options.language ?? "plaintext",
       suggestedName: options.suggestedName,
       defaultFolderId: options.defaultFolderId ?? null,
     },

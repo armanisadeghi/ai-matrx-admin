@@ -27,7 +27,6 @@ import type { ContextMenuRow } from "@/utils/supabase/ssrShellData";
  */
 export interface BaseReduxState {
   user: UserData;
-  testRoutes: string[];
   // Preferences are no longer fetched server-side; the
   // `userPreferencesPolicy` warm-cache cold-boot path (IDB → LS → remote.fetch)
   // owns hydration entirely on the client. `resolveStoreBootstrapState` falls

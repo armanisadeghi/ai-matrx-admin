@@ -46,7 +46,6 @@ export default async function LegacyLayout({
 
   const initialReduxState: EntityReduxState = {
     user: userData,
-    testRoutes: [],
     globalCache,
     // Pre-mark the entity system as initialized so `EntitySystemProvider`
     // (inside `EntityPack`) skips its lazy `/api/schema` fetch + replaceReducer

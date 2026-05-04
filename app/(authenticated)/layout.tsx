@@ -70,11 +70,8 @@ export default async function AuthenticatedLayout({
     serverIsMobile: isMobile,
   };
 
-  const testDirectories: string[] = [];
-
   const initialReduxState: InitialReduxState = {
     user: userData,
-    testRoutes: testDirectories,
     globalCache: emptyGlobalCache,
   };
 
