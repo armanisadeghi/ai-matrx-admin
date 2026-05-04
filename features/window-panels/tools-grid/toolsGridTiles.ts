@@ -582,6 +582,13 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
     overlayId: "feedbackDialog",
   },
   {
+    id: "tile.messages",
+    label: "Messages",
+    icon: MessageSquare,
+    category: "general",
+    overlayId: "messagesWindow",
+  },
+  {
     id: "tile.json-truncator",
     label: "JSON Truncator",
     icon: FileJson,

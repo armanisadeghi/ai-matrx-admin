@@ -506,6 +506,16 @@ const DYNAMIC: Record<string, DynamicAddition> = {
       import("@/features/window-panels/windows/agents/ObservationalMemoryWindow"),
   },
 
+  // ── Messages ──────────────────────────────────────────────────────────────
+  messagesWindow: {
+    componentImport: () =>
+      import("@/features/window-panels/windows/messaging/MessagesWindow"),
+  },
+  singleMessageWindow: {
+    componentImport: () =>
+      import("@/features/window-panels/windows/messaging/SingleMessageWindow"),
+  },
+
   // ── Non-window overlays ───────────────────────────────────────────────────
   markdownEditor: {
     componentImport: () =>

@@ -17,6 +17,20 @@ This is the **only** approved pattern for image inputs going forward. It is forb
 
 ---
 
+## Three intake paths — all built in
+
+The user has three ways to give us an image. The component surfaces them up-front so we never push the user out of our system to find what they already have.
+
+| Path | When to use | What happens |
+|---|---|---|
+| **Drop / Browse** | Brand-new image | Crop dialog → Sharp generates every preset → uploads as PUBLIC → CDN URLs returned |
+| **Paste URL** | The user already has a public URL elsewhere | The URL is used **as-is**. No re-upload, no resize. `onSaved` fires immediately with that URL as `primary`. |
+| **From library** | The user already saved this image to Cloud Files | Opens `useFilePicker` → user picks a file → its permanent CDN `publicUrl` (or a 1h signed URL for private files) is used as-is. `onSaved` fires immediately. |
+
+Drop is the "I want all the sizes" path. The other two are "I already have what I need" paths — they emit `result.primary.publicUrl` straight away so the host form gets populated with one click. **Never push a user out of the system to find an image they already have.**
+
+---
+
 ## The pattern at a glance
 
 ```tsx
@@ -199,4 +213,5 @@ setUrl(s); // ← signed URL expires, breaks shares
 
 ## Change log
 
+- **2026-05-04** — Three-way intake (Drop / Paste URL / From library). URL paste and library pick emit `onSaved` immediately with the chosen URL as `primary` — no forced pipeline. Stops pushing users out of the system when they already have what they need. Also fixed a closure-staleness bug in `saveAll` where variants saved right after `generate()` had no `publicUrl` because the function read from a frozen `files` reference; now reads through `filesRef.current`.
 - **2026-05-03** — Initial skill. Defines `EmbeddedImageStudio` as the canonical image-input component for every form. SavePageTab is the reference implementation.

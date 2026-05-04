@@ -28,8 +28,14 @@ import {
 } from "./QuickSaveCodeCore";
 
 export interface QuickSaveCodeDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  /** Legacy: shadcn-style `open`. Use `isOpen` for the unified overlay surface. */
+  open?: boolean;
+  /** Unified overlay surface convention: `isOpen` + `onClose`. */
+  isOpen?: boolean;
+  /** Legacy: shadcn-style change handler. */
+  onOpenChange?: (open: boolean) => void;
+  /** Unified overlay surface convention. */
+  onClose?: () => void;
   initialContent: string;
   initialLanguage?: string;
   suggestedName?: string;
@@ -39,7 +45,9 @@ export interface QuickSaveCodeDialogProps {
 
 export function QuickSaveCodeDialog({
   open,
+  isOpen,
   onOpenChange,
+  onClose,
   initialContent,
   initialLanguage,
   suggestedName,
@@ -48,16 +56,25 @@ export function QuickSaveCodeDialog({
 }: QuickSaveCodeDialogProps) {
   const isMobile = useIsMobile();
 
-  const handleSaved = (file: CodeFile, action: CodePostSaveAction) => {
-    onSaved?.(file, action);
-    onOpenChange(false);
+  // Normalize the two prop styles to a single source of truth so both
+  // the legacy `open` / `onOpenChange` callers and the unified
+  // `isOpen` / `onClose` overlay surface render correctly.
+  const dialogOpen = isOpen ?? open ?? false;
+  const setDialogOpen = (next: boolean) => {
+    onOpenChange?.(next);
+    if (!next) onClose?.();
   };
 
-  const handleCancel = () => onOpenChange(false);
+  const handleSaved = (file: CodeFile, action: CodePostSaveAction) => {
+    onSaved?.(file, action);
+    setDialogOpen(false);
+  };
+
+  const handleCancel = () => setDialogOpen(false);
 
   if (isMobile) {
     return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
+      <Drawer open={dialogOpen} onOpenChange={setDialogOpen}>
         <DrawerContent className="h-[92dvh] flex flex-col">
           <DrawerHeader className="px-3 pt-3 pb-2 shrink-0">
             <DrawerTitle className="text-sm">Quick Save Code</DrawerTitle>
@@ -82,7 +99,7 @@ export function QuickSaveCodeDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogContent className="max-w-4xl h-[min(85vh,780px)] p-3 flex flex-col gap-2">
         <DialogHeader className="shrink-0">
           <DialogTitle className="text-sm">Quick Save Code</DialogTitle>

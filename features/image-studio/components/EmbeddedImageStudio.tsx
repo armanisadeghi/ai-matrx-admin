@@ -441,29 +441,65 @@ export function EmbeddedImageStudio({
     // ── Render ────────────────────────────────────────────────────────────
 
     // 1) Pre-existing initial URL — show as a thumbnail with a Replace CTA.
-    if (showInitial && initialUrl && !sourceFile) {
+    if (showInitial && initialUrl && !sourceFile && !externalUrl) {
         return (
             <Wrapper label={label} className={className}>
                 <InitialUrlBanner
                     url={initialUrl}
-                    onReplace={handleReplace}
+                    onReplace={() => {
+                        setShowInitial(false);
+                        setIntakeMode("choose");
+                    }}
                     onClear={handleClear}
                     disabled={disabled}
                 />
+                {filePicker.element}
             </Wrapper>
         );
     }
 
-    // 2) No file yet → drop zone.
+    // 2a) URL / library pick succeeded — show preview + replace controls.
+    if (externalUrl && !sourceFile) {
+        return (
+            <Wrapper label={label} className={className}>
+                <ExternalUrlBanner
+                    url={externalUrl}
+                    sourceLabel={externalLabel ?? externalUrl}
+                    sourceKind={externalSource ?? "url"}
+                    onReplace={() => {
+                        setExternalUrl(null);
+                        setExternalSource(null);
+                        setExternalLabel(null);
+                        setIntakeMode("choose");
+                    }}
+                    onClear={handleClear}
+                    disabled={disabled}
+                />
+                {filePicker.element}
+            </Wrapper>
+        );
+    }
+
+    // 2b) No file yet → three-way intake chooser.
     if (!sourceFile) {
         return (
             <Wrapper label={label} className={className}>
-                <StudioDropZone onFilesAdded={queueForCrop} />
+                <IntakeChooser
+                    mode={intakeMode}
+                    onSelectMode={setIntakeMode}
+                    onFilesAdded={queueForCrop}
+                    pasteUrlInput={pasteUrlInput}
+                    onPasteUrlChange={setPasteUrlInput}
+                    onCommitUrl={handleCommitUrl}
+                    onOpenLibrary={handlePickFromLibrary}
+                    disabled={disabled}
+                />
                 <InitialCropDialog
                     files={pendingFiles}
                     onComplete={handleCropComplete}
                     onCancel={handleCropCancel}
                 />
+                {filePicker.element}
             </Wrapper>
         );
     }
@@ -538,6 +574,7 @@ export function EmbeddedImageStudio({
                 primaryPresetId={primaryPresetId ?? presetIds[0]}
                 pipelineState={pipelineState}
             />
+            {filePicker.element}
         </Wrapper>
     );
 }
@@ -609,6 +646,264 @@ function InitialUrlBanner({
                     onClick={onReplace}
                     disabled={disabled}
                     className="rounded-md border border-border px-2 py-1 text-xs hover:bg-muted disabled:opacity-50"
+                >
+                    <RefreshCw className="h-3 w-3 inline mr-1" />
+                    Replace
+                </button>
+                <button
+                    type="button"
+                    onClick={onClear}
+                    disabled={disabled}
+                    className="rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive p-1.5 disabled:opacity-50"
+                    title="Clear"
+                >
+                    <Trash2 className="h-3.5 w-3.5" />
+                </button>
+            </div>
+        </div>
+    );
+}
+
+// ── IntakeChooser — three paths into the studio ─────────────────────────
+//
+// Drop, paste a URL, or pick from the user's existing library. Picking
+// the URL or library path emits onSaved straight away with that URL —
+// no Sharp pipeline, no re-upload. The studio stays out of the way when
+// the user already has what they need.
+
+function IntakeChooser({
+    mode,
+    onSelectMode,
+    onFilesAdded,
+    pasteUrlInput,
+    onPasteUrlChange,
+    onCommitUrl,
+    onOpenLibrary,
+    disabled,
+}: {
+    mode: "choose" | "drop" | "url";
+    onSelectMode: (mode: "choose" | "drop" | "url") => void;
+    onFilesAdded: (files: File[]) => void;
+    pasteUrlInput: string;
+    onPasteUrlChange: (next: string) => void;
+    onCommitUrl: () => void;
+    onOpenLibrary: () => void;
+    disabled?: boolean;
+}) {
+    return (
+        <div className="space-y-2">
+            {/* Three-way mode pills */}
+            <div className="grid grid-cols-3 gap-1.5">
+                <ModePill
+                    icon={<Upload className="h-3.5 w-3.5" />}
+                    label="Drop / Browse"
+                    description="New image"
+                    active={mode === "drop"}
+                    onClick={() => onSelectMode("drop")}
+                    disabled={disabled}
+                />
+                <ModePill
+                    icon={<LinkIcon className="h-3.5 w-3.5" />}
+                    label="Paste URL"
+                    description="External link"
+                    active={mode === "url"}
+                    onClick={() => onSelectMode("url")}
+                    disabled={disabled}
+                />
+                <ModePill
+                    icon={<FolderOpen className="h-3.5 w-3.5" />}
+                    label="From library"
+                    description="Already saved"
+                    active={false}
+                    onClick={onOpenLibrary}
+                    disabled={disabled}
+                />
+            </div>
+
+            {/* Active surface — Drop or URL paste */}
+            {mode === "url" ? (
+                <div className="rounded-xl border border-border bg-card p-3 space-y-2">
+                    <label className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">
+                        Image URL
+                    </label>
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="url"
+                            value={pasteUrlInput}
+                            onChange={(e) => onPasteUrlChange(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    onCommitUrl();
+                                }
+                            }}
+                            placeholder="https://example.com/image.jpg"
+                            disabled={disabled}
+                            className="flex-1 h-9 rounded-md border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+                        />
+                        <button
+                            type="button"
+                            onClick={onCommitUrl}
+                            disabled={disabled || !pasteUrlInput.trim()}
+                            className="h-9 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 px-3 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Use
+                        </button>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-snug">
+                        Paste any public image URL — it&apos;ll be used as-is. No
+                        re-upload, no resize.
+                    </p>
+                </div>
+            ) : (
+                <StudioDropZone onFilesAdded={onFilesAdded} />
+            )}
+        </div>
+    );
+}
+
+function ModePill({
+    icon,
+    label,
+    description,
+    active,
+    onClick,
+    disabled,
+}: {
+    icon: React.ReactNode;
+    label: string;
+    description: string;
+    active: boolean;
+    onClick: () => void;
+    disabled?: boolean;
+}) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            disabled={disabled}
+            className={cn(
+                "flex flex-col items-start gap-0.5 rounded-lg border px-3 py-2 text-left transition-colors disabled:opacity-50",
+                active
+                    ? "border-primary bg-primary/5"
+                    : "border-border bg-card hover:border-primary/40 hover:bg-muted/30",
+            )}
+        >
+            <div className="flex items-center gap-1.5">
+                <span
+                    className={cn(
+                        "shrink-0",
+                        active ? "text-primary" : "text-muted-foreground",
+                    )}
+                >
+                    {icon}
+                </span>
+                <span className="text-xs font-medium">{label}</span>
+            </div>
+            <span className="text-[10px] text-muted-foreground leading-tight">
+                {description}
+            </span>
+        </button>
+    );
+}
+
+// ── ExternalUrlBanner — shown after a URL paste / library pick ──────────
+
+function ExternalUrlBanner({
+    url,
+    sourceLabel,
+    sourceKind,
+    onReplace,
+    onClear,
+    disabled,
+}: {
+    url: string;
+    sourceLabel: string;
+    sourceKind: "url" | "library";
+    onReplace: () => void;
+    onClear: () => void;
+    disabled?: boolean;
+}) {
+    const [copied, setCopied] = useState(false);
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(url);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+        } catch {
+            /* no-op */
+        }
+    };
+    return (
+        <div className="rounded-xl border border-success/40 bg-success/5 p-3 flex items-start gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+                src={url}
+                alt={sourceLabel}
+                className="h-16 w-16 rounded-lg object-cover border border-border bg-muted shrink-0"
+                onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                }}
+            />
+            <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                    {sourceKind === "library" ? (
+                        <FolderOpen className="h-3 w-3 text-success" />
+                    ) : (
+                        <LinkIcon className="h-3 w-3 text-success" />
+                    )}
+                    <p className="text-xs font-medium text-foreground">
+                        {sourceKind === "library"
+                            ? "Using from library"
+                            : "Using pasted URL"}
+                    </p>
+                </div>
+                <p
+                    className="text-[11px] font-mono text-muted-foreground truncate mt-0.5"
+                    title={sourceLabel}
+                >
+                    {sourceLabel}
+                </p>
+                <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[10px] text-muted-foreground hover:text-foreground underline truncate block mt-0.5"
+                    title={url}
+                >
+                    {url}
+                </a>
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
+                <button
+                    type="button"
+                    onClick={handleCopy}
+                    className={cn(
+                        "rounded-md border px-2 py-1 text-xs flex items-center gap-1",
+                        copied
+                            ? "border-success/40 bg-success/10 text-success"
+                            : "border-border hover:bg-muted",
+                    )}
+                    title="Copy URL"
+                >
+                    {copied ? (
+                        <>
+                            <CheckCircle2 className="h-3 w-3" />
+                            Copied
+                        </>
+                    ) : (
+                        <>
+                            <Copy className="h-3 w-3" />
+                            Copy
+                        </>
+                    )}
+                </button>
+                <button
+                    type="button"
+                    onClick={onReplace}
+                    disabled={disabled}
+                    className="rounded-md border border-border px-2 py-1 text-xs hover:bg-muted disabled:opacity-50"
+                    title="Replace with a different image"
                 >
                     <RefreshCw className="h-3 w-3 inline mr-1" />
                     Replace

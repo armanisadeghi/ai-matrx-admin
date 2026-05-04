@@ -20,17 +20,31 @@ import { NewConversationDialog } from "./NewConversationDialog";
 interface ConversationListProps {
   userId?: string;
   className?: string;
+  /**
+   * When provided, row clicks call this instead of navigating to /messages/:id.
+   * Used by the window-panel host so the user can browse conversations without
+   * leaving the current route.
+   */
+  onSelectConversation?: (conversationId: string) => void;
+  /**
+   * Optional override for the highlighted row. Defaults to the conversationId
+   * extracted from the current URL. Window-panel hosts pass their own
+   * Redux-driven selection here.
+   */
+  activeConversationId?: string | null;
 }
 
 export function ConversationList({
   userId,
   className,
+  onSelectConversation,
+  activeConversationId,
 }: ConversationListProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
-  
+
   // Read conversations from Redux (centralized state managed by MessagingInitializer)
   const conversations = useAppSelector(selectConversations);
   const isLoading = useAppSelector(selectMessagingIsLoading);
@@ -49,15 +63,20 @@ export function ConversationList({
     );
   });
 
-  // Get current conversation ID from URL
-  const currentConversationId = pathname.includes('/messages/') 
+  // Highlight derives from explicit prop first, then the URL.
+  const urlConversationId = pathname.includes('/messages/')
     ? pathname.split('/messages/')[1]?.split('/')[0]
     : null;
+  const currentConversationId = activeConversationId ?? urlConversationId;
 
   const handleSelect = (conversationId: string, e?: React.MouseEvent) => {
     if (e && (e.metaKey || e.ctrlKey)) return;
     e?.preventDefault();
     setSelectedConversationId(conversationId);
+    if (onSelectConversation) {
+      onSelectConversation(conversationId);
+      return;
+    }
     startTransition(() => {
       router.push(`/messages/${conversationId}`);
     });

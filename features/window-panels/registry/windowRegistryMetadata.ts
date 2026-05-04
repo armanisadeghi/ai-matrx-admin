@@ -919,6 +919,29 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     mobileSidebarAs: "drawer",
   },
 
+  // ── Messages (sidebar list + chat thread) ────────────────────────────────
+  {
+    slug: "messages-window",
+    overlayId: "messagesWindow",
+    kind: "window",
+    label: "Messages",
+    defaultData: { conversationId: null, search: "" },
+    mobilePresentation: "fullscreen",
+    mobileSidebarAs: "drawer",
+    urlSync: { key: "messages" },
+  },
+
+  // ── Single conversation (just one chat thread, multi-instance) ───────────
+  {
+    slug: "single-message-window",
+    overlayId: "singleMessageWindow",
+    kind: "window",
+    label: "Conversation",
+    defaultData: { conversationId: null },
+    mobilePresentation: "drawer",
+    instanceMode: "multi",
+  },
+
   // ── Non-window overlays (widgets / sheets / modals) ───────────────────────
 
   {

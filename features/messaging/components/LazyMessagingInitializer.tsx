@@ -1,10 +1,12 @@
 'use client';
 
-// LazyMessagingInitializer — Only mounts MessagingInitializer when the messaging
-// sheet is opened for the first time. This avoids loading all conversations and
-// subscribing to 3 Supabase Realtime channels until the user actually needs messaging.
+// LazyMessagingInitializer — Mounts MessagingInitializer as soon as a user is
+// authenticated so the avatar-dropdown unread badge is accurate from first
+// paint. Previously gated on the sheet being opened, which left the badge
+// stuck at 0 until the user clicked the icon.
 
 import { useAppSelector } from '@/lib/redux/hooks';
+import { selectUser } from '@/lib/redux/selectors/userSelectors';
 import dynamic from 'next/dynamic';
 
 const MessagingInitializer = dynamic(
@@ -13,13 +15,7 @@ const MessagingInitializer = dynamic(
 );
 
 export default function LazyMessagingInitializer() {
-    // Gate: only mount the real initializer after the sheet has been opened at least once
-    const hasBeenOpened = useAppSelector((state) => state.messaging.isOpen);
-    const isAvailable = useAppSelector((state) => state.messaging.isAvailable);
-
-    // Once available, stay mounted (so realtime subscriptions persist)
-    // First trigger is when isOpen becomes true
-    if (!hasBeenOpened && !isAvailable) return null;
-
+    const userId = useAppSelector(selectUser)?.id;
+    if (!userId) return null;
     return <MessagingInitializer />;
 }
