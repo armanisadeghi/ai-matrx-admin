@@ -133,6 +133,7 @@ import { surfacesReducer } from "@/features/agents/redux/surfaces/surfaces.slice
 import agentAssistantMarkdownDraftReducer from "@/features/agents/redux/agent-assistant-markdown-draft.slice";
 import { default as netRequestsReducer } from "@/lib/redux/net/netRequestsSlice";
 import { default as netHealthReducer } from "@/lib/redux/net/netHealthSlice";
+import imageReducer from "@/features/images/redux/imageSlice";
 
 const featureReducers = Object.keys(featureSchemas).reduce(
   (acc, featureName) => {
@@ -319,6 +320,8 @@ export const slimReducerMap = {
   agentAssistantMarkdownDraft: agentAssistantMarkdownDraftReducer,
 
   mcp: mcpReducer,
+
+  images: imageReducer,
 };
 
 export const createSlimRootReducer = () => combineReducers(slimReducerMap);
