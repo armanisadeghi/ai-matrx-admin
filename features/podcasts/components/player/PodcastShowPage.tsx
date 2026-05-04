@@ -29,7 +29,7 @@ function formatDuration(seconds: number): string {
 export function PodcastShowPage({ show, episodes }: PodcastShowPageProps) {
   const publishedEpisodes = episodes.filter((e) => e.is_published);
   const coverImage = show.image_url ?? null;
-  const { share, copied } = useShare();
+  const { share, copied, fallbackDialog } = useShare();
 
   function handleShare() {
     share({
@@ -183,6 +183,7 @@ export function PodcastShowPage({ show, episodes }: PodcastShowPageProps) {
           )}
         </div>
       </div>
+      {fallbackDialog}
     </div>
   );
 }

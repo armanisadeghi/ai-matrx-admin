@@ -14,17 +14,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
+// SUPABASE_SECRET_KEY (sb_secret_*) is the current admin key.
+// The legacy JWT-based SUPABASE_SERVICE_ROLE_KEY is deprecated — do not reintroduce it.
+// Docs: https://supabase.com/docs/guides/getting-started/api-keys
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!.trim();
 const supabaseAnonKey = (
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
     ''
 ).trim();
-const supabaseServiceKey = (
-    process.env.SUPABASE_SECRET_KEY ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    ''
-).trim();
+const supabaseServiceKey = (process.env.SUPABASE_SECRET_KEY || '').trim();
 
 export async function POST(request: NextRequest) {
     try {

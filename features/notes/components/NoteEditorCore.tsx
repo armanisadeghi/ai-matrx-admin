@@ -228,7 +228,7 @@ export function NoteEditorCore({
             className={cn(
               "absolute inset-0 w-full h-full resize-none border-0",
               "focus-visible:ring-0 focus-visible:ring-offset-0",
-              "text-sm leading-relaxed bg-transparent p-3 pb-[50vh]",
+              "text-sm leading-relaxed bg-transparent p-3 pb-[85vh]",
               textareaClassName,
             )}
           />
@@ -251,6 +251,8 @@ export function NoteEditorCore({
           allowFullScreenEditor={true}
           editorOverlay={findOverlay}
           previewContainerRef={previewContainerRef}
+          textareaClassName={cn("pb-[85vh]", textareaClassName)}
+          previewClassName={cn("pb-[85vh]", previewClassName)}
         />
       )}
 
@@ -269,7 +271,7 @@ export function NoteEditorCore({
             }
           }}
           className={cn(
-            "h-full overflow-y-auto max-w-3xl mx-auto py-2 px-4 pb-safe scrollbar-thin-auto",
+            "h-full overflow-y-auto max-w-3xl mx-auto py-2 px-4 pb-[85vh] scrollbar-thin-auto",
             previewClassName,
           )}
         >
