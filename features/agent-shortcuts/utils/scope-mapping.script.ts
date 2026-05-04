@@ -3,7 +3,10 @@
  * resolver. Ported from the legacy prompt-builtins execution tests plus extra
  * coverage for custom-scope merging and unknown-variable logging.
  *
- * Run with: npx tsx features/agent-shortcuts/utils/scope-mapping.test.ts
+ * Run with: npx tsx features/agent-shortcuts/utils/scope-mapping.script.ts
+ * (Renamed from .test.ts so Jest does not glob it as a test file —
+ * this script has no Jest blocks; it asserts via plain `console.assert`
+ * and is meant to be run via tsx, not jest.)
  */
 
 import {

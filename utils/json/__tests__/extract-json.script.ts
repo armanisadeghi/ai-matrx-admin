@@ -1,7 +1,10 @@
 /**
  * Tests for the unified JSON extraction system.
  *
- * Run with: npx tsx utils/json/__tests__/extract-json.test.ts
+ * Run with: npx tsx utils/json/__tests__/extract-json.script.ts
+ * (Renamed from .test.ts so Jest does not glob it as a test file —
+ * this script has no Jest blocks; it asserts via plain `console.assert`
+ * + custom matchers and is meant to be run via tsx, not jest.)
  */
 
 import {

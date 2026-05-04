@@ -23,6 +23,13 @@ const config: Config = {
     },
     transformIgnorePatterns: ["/node_modules/(?!uuid).+\\.js$"],
     testPathIgnorePatterns: ["/node_modules/", "/.next/", "/.claude/"],
+    // Restrict to *.test.ts(x) / *.spec.ts(x). Jest's default `testMatch`
+    // also globs everything under `**/__tests__/**`, which picked up our
+    // handrolled tsx-runnable `*.script.ts` files (extract-json.script.ts,
+    // scope-mapping.script.ts) and reported them as failed suites because
+    // they have no `describe`/`it` blocks. Restricting `testMatch` makes
+    // the file extension authoritative — Jest only runs real Jest tests.
+    testMatch: ["**/?(*.)+(test|spec).[jt]s?(x)"],
 };
 
 export default config;
