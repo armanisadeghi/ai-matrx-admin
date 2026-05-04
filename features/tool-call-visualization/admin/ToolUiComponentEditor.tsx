@@ -29,6 +29,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -707,11 +708,10 @@ export function ToolUiComponentEditor({
                   key={imp.path}
                   className="flex items-start gap-2 p-2 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer text-xs"
                 >
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={formData.allowed_imports.includes(imp.path)}
-                    onChange={() => handleImportToggle(imp.path)}
-                    className="mt-0.5"
+                    onCheckedChange={() => handleImportToggle(imp.path)}
+                    className="mt-0.5 shrink-0"
                   />
                   <div>
                     <div className="font-mono text-slate-700 dark:text-slate-300">
@@ -1103,11 +1103,10 @@ export function ToolUiComponentEditor({
                   key={imp.path}
                   className="flex items-start gap-2 p-2 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer text-xs"
                 >
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={formData.allowed_imports.includes(imp.path)}
-                    onChange={() => handleImportToggle(imp.path)}
-                    className="mt-0.5"
+                    onCheckedChange={() => handleImportToggle(imp.path)}
+                    className="mt-0.5 shrink-0"
                   />
                   <div>
                     <div className="font-mono text-slate-700 dark:text-slate-300">

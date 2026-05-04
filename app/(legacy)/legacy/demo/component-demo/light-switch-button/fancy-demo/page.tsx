@@ -14,6 +14,7 @@ import TextDivider from "@/components/matrx/TextDivider";
 import LightSwitchToggle from "@/components/matrx/LightSwitchToggle";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function DemoPage() {
   const [basicSwitchState, setBasicSwitchState] = useState(false);
@@ -185,13 +186,17 @@ export default function DemoPage() {
                       <Label className="block text-sm font-medium mb-1">
                         Disabled
                       </Label>
-                      <Input
-                        type="checkbox"
-                        checked={advancedSwitchProps.disabled}
-                        onChange={(e) =>
-                          handleAdvancedChange("disabled", e.target.checked)
-                        }
-                      />
+                      <label className="flex items-center gap-2 cursor-pointer mt-1">
+                        <Checkbox
+                          checked={advancedSwitchProps.disabled}
+                          onCheckedChange={(v) =>
+                            handleAdvancedChange("disabled", v === true)
+                          }
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          Disable switch interaction
+                        </span>
+                      </label>
                     </div>
                   </div>
                 </CardContent>
@@ -228,7 +233,7 @@ export default function DemoPage() {
                 {JSON.stringify(
                   { basicSwitchState, advancedSwitchProps },
                   null,
-                  2
+                  2,
                 )}
               </pre>
             </CardContent>

@@ -1,8 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Mail, Send, Users, FileText, Loader2, CheckCircle, XCircle, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Mail,
+  Send,
+  Users,
+  FileText,
+  Loader2,
+  CheckCircle,
+  XCircle,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface EmailTemplate {
   id: string;
@@ -37,7 +48,10 @@ export default function AdminEmailPage() {
   const [users, setUsers] = useState<UserOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
-  const [result, setResult] = useState<{ success: boolean; msg: string } | null>(null);
+  const [result, setResult] = useState<{
+    success: boolean;
+    msg: string;
+  } | null>(null);
 
   // Fetch templates and config on mount
   useEffect(() => {
@@ -82,7 +96,13 @@ export default function AdminEmailPage() {
       return;
     }
 
-    let payload: { subject: string; message: string; to?: string[]; userIds?: string[]; from?: string } = {
+    let payload: {
+      subject: string;
+      message: string;
+      to?: string[];
+      userIds?: string[];
+      from?: string;
+    } = {
       subject,
       message,
     };
@@ -97,9 +117,12 @@ export default function AdminEmailPage() {
         .split(/[,\n]/)
         .map((e) => e.trim())
         .filter((e) => e.includes("@"));
-      
+
       if (emails.length === 0) {
-        setResult({ success: false, msg: "Please enter at least one valid email address" });
+        setResult({
+          success: false,
+          msg: "Please enter at least one valid email address",
+        });
         return;
       }
       payload.to = emails;
@@ -141,7 +164,9 @@ export default function AdminEmailPage() {
 
   const toggleUserSelection = (userId: string) => {
     setSelectedUserIds((prev) =>
-      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId],
     );
   };
 
@@ -166,7 +191,9 @@ export default function AdminEmailPage() {
               </div>
               <div>
                 <h2 className="font-semibold">Recipients</h2>
-                <p className="text-xs text-muted-foreground">Choose who receives this email</p>
+                <p className="text-xs text-muted-foreground">
+                  Choose who receives this email
+                </p>
               </div>
             </div>
             <div className="p-6 space-y-4">
@@ -224,22 +251,25 @@ export default function AdminEmailPage() {
                           key={user.id}
                           className="flex items-center gap-3 px-3 py-2 hover:bg-muted cursor-pointer border-b last:border-b-0"
                         >
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={selectedUserIds.includes(user.id)}
-                            onChange={() => toggleUserSelection(user.id)}
-                            className="w-4 h-4 rounded border-input"
+                            onCheckedChange={() => toggleUserSelection(user.id)}
+                            className="shrink-0"
                           />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium truncate">
                               {user.display_name || "No name"}
                             </p>
-                            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {user.email}
+                            </p>
                           </div>
                         </label>
                       ))}
                       {users.length === 0 && (
-                        <p className="text-sm text-muted-foreground py-4 text-center">No users found</p>
+                        <p className="text-sm text-muted-foreground py-4 text-center">
+                          No users found
+                        </p>
                       )}
                     </div>
                   )}
@@ -256,7 +286,9 @@ export default function AdminEmailPage() {
               </div>
               <div>
                 <h2 className="font-semibold">Email Content</h2>
-                <p className="text-xs text-muted-foreground">Compose your email message</p>
+                <p className="text-xs text-muted-foreground">
+                  Compose your email message
+                </p>
               </div>
             </div>
             <div className="p-6 space-y-4">
@@ -311,14 +343,23 @@ export default function AdminEmailPage() {
                     type="text"
                     value={customFrom}
                     onChange={(e) => setCustomFrom(e.target.value)}
-                    placeholder={emailConfig?.defaultFrom || "Display Name <email@domain.com>"}
+                    placeholder={
+                      emailConfig?.defaultFrom ||
+                      "Display Name <email@domain.com>"
+                    }
                     className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    {emailConfig?.allowedDomains && emailConfig.allowedDomains.length > 0 ? (
-                      <>Allowed domains: {emailConfig.allowedDomains.join(", ")}</>
+                    {emailConfig?.allowedDomains &&
+                    emailConfig.allowedDomains.length > 0 ? (
+                      <>
+                        Allowed domains: {emailConfig.allowedDomains.join(", ")}
+                      </>
                     ) : (
-                      <>Leave blank to use default: {emailConfig?.defaultFrom || "loading..."}</>
+                      <>
+                        Leave blank to use default:{" "}
+                        {emailConfig?.defaultFrom || "loading..."}
+                      </>
                     )}
                   </p>
                 </div>
@@ -328,7 +369,9 @@ export default function AdminEmailPage() {
               {result && (
                 <div
                   className={`flex items-center gap-2 px-4 py-3 rounded-lg ${
-                    result.success ? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300" : "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300"
+                    result.success
+                      ? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300"
+                      : "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300"
                   }`}
                 >
                   {result.success ? (
@@ -371,7 +414,9 @@ export default function AdminEmailPage() {
               </div>
               <div>
                 <h2 className="font-semibold">Templates</h2>
-                <p className="text-xs text-muted-foreground">Quick-start templates</p>
+                <p className="text-xs text-muted-foreground">
+                  Quick-start templates
+                </p>
               </div>
             </div>
             <div className="p-4 space-y-2">
@@ -381,14 +426,16 @@ export default function AdminEmailPage() {
                   onClick={() => handleTemplateSelect(template.id)}
                   className="w-full text-left px-4 py-3 rounded-lg border hover:border-primary hover:bg-primary/5 transition-colors"
                 >
-                  <p className="text-sm font-medium">
-                    {template.name}
+                  <p className="text-sm font-medium">{template.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {template.subject}
                   </p>
-                  <p className="text-xs text-muted-foreground truncate">{template.subject}</p>
                 </button>
               ))}
               {templates.length === 0 && (
-                <p className="text-sm text-muted-foreground py-4 text-center">Loading templates...</p>
+                <p className="text-sm text-muted-foreground py-4 text-center">
+                  Loading templates...
+                </p>
               )}
             </div>
           </div>

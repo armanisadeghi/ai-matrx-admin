@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { Wrench } from "lucide-react";
+import { Wrench, ClipboardList, FileText, AlignLeft } from "lucide-react";
+import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,12 +19,21 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from "@/components/ui/drawer";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { AgentToolsManager } from "@/features/agents/components/tools-management/AgentToolsManager";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   selectAgentTools,
   selectAgentDirtyFields,
 } from "@/features/agents/redux/agent-definition/selectors";
+import { selectAllTools } from "@/features/agents/redux/tools/tools.selectors";
 import { resetAgentField } from "@/features/agents/redux/agent-definition/slice";
 import { fetchAvailableTools } from "@/features/agents/redux/tools/tools.thunks";
 import { hasField } from "@/features/agents/redux/shared/field-flags";
@@ -40,10 +50,44 @@ export function AgentToolsModal({ agentId }: AgentToolsModalProps) {
   const selectedTools = useAppSelector((state) =>
     selectAgentTools(state, agentId),
   );
+  const allTools = useAppSelector(selectAllTools);
   const dirtyFields = useAppSelector((state) =>
     selectAgentDirtyFields(state, agentId),
   );
   const enabledCount = Array.isArray(selectedTools) ? selectedTools.length : 0;
+
+  const handleCopy = useCallback(
+    (mode: "basic" | "detailed") => {
+      if (!Array.isArray(selectedTools) || selectedTools.length === 0) {
+        toast.info("No tools selected");
+        return;
+      }
+
+      const toolMap = new Map(allTools.map((t) => [t.id, t]));
+      const lines = selectedTools.map((id) => {
+        const tool = toolMap.get(id);
+        if (!tool) return `${id} — (unknown tool)`;
+        if (mode === "basic") {
+          return `${tool.id} | ${tool.name}`;
+        }
+        const parts = [`${tool.id} | ${tool.name}`];
+        if (tool.description) parts.push(`  Description: ${tool.description}`);
+        if (tool.category) parts.push(`  Category: ${tool.category}`);
+        if (tool.function_path) parts.push(`  Function: ${tool.function_path}`);
+        if (tool.semver) parts.push(`  Version: ${tool.semver}`);
+        return parts.join("\n");
+      });
+
+      const text = mode === "basic" ? lines.join("\n") : lines.join("\n\n");
+
+      navigator.clipboard.writeText(text).then(() => {
+        toast.success(
+          `Copied ${selectedTools.length} tool${selectedTools.length === 1 ? "" : "s"} (${mode === "basic" ? "basic" : "detailed"})`,
+        );
+      });
+    },
+    [selectedTools, allTools],
+  );
 
   const hadToolsDirtyOnOpen = useRef(false);
   const hadCustomToolsDirtyOnOpen = useRef(false);
@@ -95,6 +139,49 @@ export function AgentToolsModal({ agentId }: AgentToolsModalProps) {
         <span className="text-[11px] text-muted-foreground mr-auto">
           Unsaved changes
         </span>
+      )}
+      {enabledCount > 0 && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+              title="Copy tool list to clipboard"
+            >
+              <ClipboardList className="h-3.5 w-3.5" />
+              Copy list
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
+              Copy {enabledCount} selected tool{enabledCount === 1 ? "" : "s"}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-xs gap-2 cursor-pointer"
+              onClick={() => handleCopy("basic")}
+            >
+              <FileText className="h-3.5 w-3.5 shrink-0" />
+              <div>
+                <div className="font-medium">Basic</div>
+                <div className="text-muted-foreground">ID and name only</div>
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-xs gap-2 cursor-pointer"
+              onClick={() => handleCopy("detailed")}
+            >
+              <AlignLeft className="h-3.5 w-3.5 shrink-0" />
+              <div>
+                <div className="font-medium">Detailed</div>
+                <div className="text-muted-foreground">
+                  Includes description, category &amp; more
+                </div>
+              </div>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )}
       <Button
         variant="ghost"

@@ -20,17 +20,18 @@
  * Using bits so the main parser can do `if (candidates & Candidate.CODE)`.
  */
 export const Candidate = {
-  NONE:       0,
-  TEXT:       0,        // No special block detected — plain text
-  CODE:       1 << 0,   // ``` fenced code block
-  XML_SIMPLE: 1 << 1,   // <thinking>, <flashcards>, etc.
-  XML_ATTR:   1 << 2,   // <decision prompt="...">, <artifact ...>
-  TABLE:      1 << 3,   // | col | col |
-  IMAGE:      1 << 4,   // ![alt](url) or [Image URL: ...]
-  VIDEO:      1 << 5,   // [Video URL: ...]
-  MATRX:      1 << 6,   // <<<MATRX_START>>>...<<<MATRX_END>>>
-  DIVIDER:    1 << 7,   // *** or # ===
-  TREE:       1 << 8,   // Box-drawing / ASCII tree characters
+  NONE: 0,
+  TEXT: 0, // No special block detected — plain text
+  CODE: 1 << 0, // ``` fenced code block
+  XML_SIMPLE: 1 << 1, // <thinking>, <flashcards>, etc.
+  XML_ATTR: 1 << 2, // <decision prompt="...">, <artifact ...>
+  TABLE: 1 << 3, // | col | col |
+  IMAGE: 1 << 4, // ![alt](url) or [Image URL: ...]
+  VIDEO: 1 << 5, // [Video URL: ...]
+  MATRX: 1 << 6, // <<<MATRX_START>>>...<<<MATRX_END>>>
+  DIVIDER: 1 << 7, // *** or # ===
+  TREE: 1 << 8, // Box-drawing / ASCII tree characters
+  BARE_JSON: 1 << 9, // { "key": ... } JSON object without code fences
 } as const;
 
 export type CandidateFlags = number;
@@ -44,10 +45,24 @@ export type CandidateFlags = number;
  * but Set.has() is O(1) regardless.
  */
 const SIMPLE_XML_TAGS = new Set([
-  "thinking", "think", "reasoning", "info", "task", "database",
-  "private", "plan", "event", "tool", "questionnaire", "flashcards",
-  "cooking_recipe", "timeline", "progress_tracker", "troubleshooting",
-  "resources", "research",
+  "thinking",
+  "think",
+  "reasoning",
+  "info",
+  "task",
+  "database",
+  "private",
+  "plan",
+  "event",
+  "tool",
+  "questionnaire",
+  "flashcards",
+  "cooking_recipe",
+  "timeline",
+  "progress_tracker",
+  "troubleshooting",
+  "resources",
+  "research",
 ]);
 
 /** Attribute-bearing XML tags */
@@ -70,7 +85,17 @@ const ALL_XML_TAGS = new Set([...SIMPLE_XML_TAGS, ...ATTR_XML_TAGS]);
 
 /** Fast lookup for Unicode box-drawing characters */
 const TREE_CHARS = new Set([
-  "├", "└", "│", "┌", "┐", "┘", "┬", "┴", "┤", "┼", "─",
+  "├",
+  "└",
+  "│",
+  "┌",
+  "┐",
+  "┘",
+  "┬",
+  "┴",
+  "┤",
+  "┼",
+  "─",
 ]);
 
 // ============================================================================
@@ -96,7 +121,12 @@ export function classifyLine(line: string, trimmed: string): CandidateFlags {
   // `<<<` is an extremely rare 3-char sequence, so this is nearly free.
   if (line.length >= 3) {
     const ltIdx = line.indexOf("<");
-    if (ltIdx !== -1 && ltIdx + 2 < line.length && line[ltIdx + 1] === "<" && line[ltIdx + 2] === "<") {
+    if (
+      ltIdx !== -1 &&
+      ltIdx + 2 < line.length &&
+      line[ltIdx + 1] === "<" &&
+      line[ltIdx + 2] === "<"
+    ) {
       // Layer 1: verify it's actually "<<<M" (MATRX_START begins with M)
       if (ltIdx + 3 < line.length && line[ltIdx + 3] === "M") {
         flags |= Candidate.MATRX;
@@ -119,6 +149,11 @@ export function classifyLine(line: string, trimmed: string): CandidateFlags {
     if (len >= 3 && trimmed[1] === "`" && trimmed[2] === "`") {
       flags |= Candidate.CODE;
     }
+  }
+
+  // BARE_JSON: line starts with { — potential JSON object without code fences
+  if (first === "{") {
+    flags |= Candidate.BARE_JSON;
   }
 
   // TABLE: line starts with |
@@ -170,7 +205,11 @@ export function classifyLine(line: string, trimmed: string): CandidateFlags {
     if (ltPos === -1) break;
 
     // Skip if this is part of a <<< MATRX sequence (already handled above)
-    if (ltPos + 2 < len && trimmed[ltPos + 1] === "<" && trimmed[ltPos + 2] === "<") {
+    if (
+      ltPos + 2 < len &&
+      trimmed[ltPos + 1] === "<" &&
+      trimmed[ltPos + 2] === "<"
+    ) {
       searchFrom = ltPos + 3;
       continue;
     }
@@ -205,9 +244,15 @@ export function classifyLine(line: string, trimmed: string): CandidateFlags {
       // [Image URL: or [Video URL:
       if (bracketIdx + 10 < len) {
         const after = trimmed[bracketIdx + 1];
-        if (after === "I" && trimmed.substring(bracketIdx + 1, bracketIdx + 11) === "Image URL:") {
+        if (
+          after === "I" &&
+          trimmed.substring(bracketIdx + 1, bracketIdx + 11) === "Image URL:"
+        ) {
           flags |= Candidate.IMAGE;
-        } else if (after === "V" && trimmed.substring(bracketIdx + 1, bracketIdx + 11) === "Video URL:") {
+        } else if (
+          after === "V" &&
+          trimmed.substring(bracketIdx + 1, bracketIdx + 11) === "Video URL:"
+        ) {
           flags |= Candidate.VIDEO;
         }
       }
@@ -237,7 +282,14 @@ export function classifyLine(line: string, trimmed: string): CandidateFlags {
   }
 
   // ASCII tree patterns: lines starting with whitespace/│ followed by ├└+|
-  if (!(flags & Candidate.TREE) && (first === " " || first === "\t" || first === "│" || first === "|" || first === "+")) {
+  if (
+    !(flags & Candidate.TREE) &&
+    (first === " " ||
+      first === "\t" ||
+      first === "│" ||
+      first === "|" ||
+      first === "+")
+  ) {
     if (looksLikeAsciiTree(trimmed)) {
       flags |= Candidate.TREE;
     }
@@ -266,7 +318,12 @@ function extractTagName(str: string, start: number): string | null {
   while (end < str.length) {
     const c = str.charCodeAt(end);
     // a-z, A-Z, 0-9, _ (underscore = 95)
-    if ((c >= 97 && c <= 122) || (c >= 65 && c <= 90) || (c >= 48 && c <= 57) || c === 95) {
+    if (
+      (c >= 97 && c <= 122) ||
+      (c >= 65 && c <= 90) ||
+      (c >= 48 && c <= 57) ||
+      c === 95
+    ) {
       end++;
     } else {
       break;
@@ -320,6 +377,9 @@ export function isPlainText(flags: CandidateFlags): boolean {
  * Quick check for whether flags include a specific candidate.
  * Usage: `if (hasCandidate(flags, Candidate.CODE)) { ... }`
  */
-export function hasCandidate(flags: CandidateFlags, candidate: number): boolean {
+export function hasCandidate(
+  flags: CandidateFlags,
+  candidate: number,
+): boolean {
   return (flags & candidate) !== 0;
 }

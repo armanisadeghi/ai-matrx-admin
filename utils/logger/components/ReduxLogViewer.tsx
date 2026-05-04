@@ -15,6 +15,7 @@ import {
 import { logEmitter } from "./ReduxLogger";
 import DataDisplay from "./DataDisplay";
 import LogDetailView from "./LogDetailView";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface CollapsibleCardProps {
   title: string;
@@ -167,12 +168,11 @@ const ReduxLogViewer: React.FC<ReduxLogViewerProps> = ({ maxLogs = 100 }) => {
           </h2>
         </div>
         <div className="flex items-center gap-2">
-          <label className="flex items-center gap-1 text-sm text-muted-foreground">
-            <input
-              type="checkbox"
+          <label className="flex items-center gap-1 text-sm text-muted-foreground cursor-pointer">
+            <Checkbox
               checked={autoScroll}
-              onChange={(e) => setAutoScroll(e.target.checked)}
-              className="rounded border-gray-300 text-primary focus:ring-primary"
+              onCheckedChange={(v) => setAutoScroll(v === true)}
+              className="shrink-0"
             />
             Auto-scroll
           </label>
@@ -190,7 +190,6 @@ const ReduxLogViewer: React.FC<ReduxLogViewerProps> = ({ maxLogs = 100 }) => {
             <JsonDataDisplay data={state} />
           </CollapsibleCard>
         )}
-
         <CollapsibleCard title="Logs" icon={Bug} defaultExpanded={true}>
           <div className="space-y-1">
             {logs.map((log) => (

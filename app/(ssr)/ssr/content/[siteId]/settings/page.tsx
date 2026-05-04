@@ -6,6 +6,7 @@ import { useSiteContext } from "../SiteLayoutClient";
 import { CmsSiteService } from "@/features/content-manager/services/cmsService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Save, Loader2, ArrowLeft } from "lucide-react";
@@ -121,12 +122,11 @@ export default function SiteSettingsPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <Checkbox
                 checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
-                className="rounded border-input"
+                onCheckedChange={(v) => setIsActive(v === true)}
+                className="shrink-0"
               />
               Site is active
             </label>

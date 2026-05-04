@@ -36,6 +36,7 @@ import {
 } from "@/features/html-pages/css/wordpress-styles";
 import SmallCodeEditor from "@/features/code-editor/components/code-block/SmallCodeEditor";
 import { ImageAssetUploader } from "@/components/official/ImageAssetUploader";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface HtmlPreviewModalProps {
   isOpen: boolean;
@@ -135,8 +136,14 @@ export default function HtmlPreviewModal({
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
     <title>${pageTitle}</title>
     <style>
+html, body {
+    background-color: #ffffff;
+    color: #1a1a1a;
+    color-scheme: light;
+}
 ${wordPressCSS}
     </style>
 </head>
@@ -642,16 +649,13 @@ ${wordPressCSS}
                     )}
                   </button>
                 </div>
-                <div className="flex-1 overflow-y-auto overflow-x-auto border border-gray-300 dark:border-gray-600 rounded-md bg-white p-4">
-                  {/* Inject WordPress CSS for accurate preview */}
-                  <style dangerouslySetInnerHTML={{ __html: wordPressCSS }} />
-                  <div
-                    className="wordpress-preview-container"
-                    dangerouslySetInnerHTML={{
-                      __html: extractBodyContent(getCurrentHtmlContent()),
-                    }}
-                  />
-                </div>
+                <iframe
+                  srcDoc={getCurrentHtmlContent()}
+                  className="flex-1 w-full min-h-0 border border-gray-300 dark:border-gray-600 rounded-md"
+                  sandbox="allow-scripts"
+                  title="HTML Preview"
+                  style={{ colorScheme: "light", background: "white" }}
+                />
               </div>
             ) : activeTab === "html" ? (
               // HTML Code Tab
@@ -771,17 +775,16 @@ ${wordPressCSS}
 
                   <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
                     <div className="space-y-4">
-                      <label className="flex items-center space-x-3 cursor-pointer">
-                        <input
-                          type="checkbox"
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <Checkbox
                           checked={includeBulletStyles}
-                          onChange={(e) =>
-                            setIncludeBulletStyles(e.target.checked)
+                          onCheckedChange={(checked) =>
+                            setIncludeBulletStyles(checked === true)
                           }
-                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                          className="mt-0.5"
                         />
-                        <div className="flex-1">
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <div className="flex-1 min-w-0 space-y-0.5">
+                          <span className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Include Bullet Styles
                           </span>
                           <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -790,17 +793,16 @@ ${wordPressCSS}
                         </div>
                       </label>
 
-                      <label className="flex items-center space-x-3 cursor-pointer">
-                        <input
-                          type="checkbox"
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <Checkbox
                           checked={includeDecorativeLineBreaks}
-                          onChange={(e) =>
-                            setIncludeDecorativeLineBreaks(e.target.checked)
+                          onCheckedChange={(checked) =>
+                            setIncludeDecorativeLineBreaks(checked === true)
                           }
-                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                          className="mt-0.5"
                         />
-                        <div className="flex-1">
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <div className="flex-1 min-w-0 space-y-0.5">
+                          <span className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Include Decorative Line Breaks
                           </span>
                           <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -1192,12 +1194,13 @@ ${wordPressCSS}
                       <h5 className="font-medium text-gray-800 dark:text-gray-300 mb-3 text-center">
                         Live Preview
                       </h5>
-                      <div className="flex-1 border-border rounded-lg overflow-hidden">
+                      <div className="flex-1 border border-border rounded-lg overflow-hidden bg-white">
                         <iframe
                           src={savedPage.url}
                           className="w-full h-full min-h-[600px]"
                           title={savedPage.title}
                           sandbox="allow-scripts allow-same-origin"
+                          style={{ colorScheme: "light" }}
                         />
                       </div>
                     </div>

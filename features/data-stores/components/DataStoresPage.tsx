@@ -41,6 +41,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { CldFilePicker } from "@/features/data-stores/components/CldFilePicker";
 import {
@@ -119,17 +120,15 @@ export function DataStoresPage() {
               What is a data store?
             </p>
             <p className="mb-2">
-              A named, curated bucket of documents. Agents can search inside
-              one with{" "}
+              A named, curated bucket of documents. Agents can search inside one
+              with{" "}
               <code className="font-mono text-[11px] bg-muted px-1 py-0.5 rounded">
                 rag_search_data_store(data_store_id, query)
               </code>
-              . Bind any indexed PDF, note, code file, or library doc; the
-              agent then sees only that bucket when it retrieves.
+              . Bind any indexed PDF, note, code file, or library doc; the agent
+              then sees only that bucket when it retrieves.
             </p>
-            <p>
-              Pick or create a store on the left to get started.
-            </p>
+            <p>Pick or create a store on the left to get started.</p>
           </div>
         ) : (
           <StoreDetailPanel
@@ -164,7 +163,9 @@ function StoreListRow({
       )}
     >
       <div className="flex items-center gap-1.5">
-        <span className="text-xs font-medium truncate flex-1">{store.name}</span>
+        <span className="text-xs font-medium truncate flex-1">
+          {store.name}
+        </span>
         {!store.isActive && (
           <span className="text-[10px] px-1 py-0.5 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300">
             archived
@@ -187,15 +188,12 @@ function StoreListRow({
   );
 }
 
-function CreateStoreInline({
-  onCreated,
-}: {
-  onCreated: (id: string) => void;
-}) {
+function CreateStoreInline({ onCreated }: { onCreated: (id: string) => void }) {
   const list = useDataStores();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [kind, setKind] = useState<(typeof DATA_STORE_KINDS)[number]>("general");
+  const [kind, setKind] =
+    useState<(typeof DATA_STORE_KINDS)[number]>("general");
   const [description, setDescription] = useState("");
   const [pending, setPending] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -271,7 +269,11 @@ function CreateStoreInline({
           className="flex-1"
           disabled={!name.trim() || pending}
         >
-          {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Create"}
+          {pending ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            "Create"
+          )}
         </Button>
         <Button
           type="button"
@@ -312,15 +314,11 @@ function StoreDetailPanel({
   // That collapses two manual steps into one click.
 
   const bindAndReprocess = useCallback(
-    async (
-      picks: { cldFileId: string; fileName: string }[],
-      label: string,
-    ) => {
+    async (picks: { cldFileId: string; fileName: string }[], label: string) => {
       if (!picks.length) return;
-      const tid = toast.loading(
-        `${label}: 0 / ${picks.length}`,
-        { description: "Binding to store + queuing for RAG ingestion." },
-      );
+      const tid = toast.loading(`${label}: 0 / ${picks.length}`, {
+        description: "Binding to store + queuing for RAG ingestion.",
+      });
       let bound = 0;
       let reprocessed = 0;
       for (const p of picks) {
@@ -362,28 +360,22 @@ function StoreDetailPanel({
   // Files dropped on the panel are uploaded into the user's cloud
   // root (file_path = "/<filename>"), then bound + queued for RAG.
 
-  const onPanelDragOver = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      // Only react when actual files are being dragged (not text or
-      // internal moves). DataTransfer.types contains "Files" only for
-      // OS-level file drags.
-      if (!e.dataTransfer.types.includes("Files")) return;
-      e.preventDefault();
-      e.stopPropagation();
-      setDragActive(true);
-    },
-    [],
-  );
+  const onPanelDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    // Only react when actual files are being dragged (not text or
+    // internal moves). DataTransfer.types contains "Files" only for
+    // OS-level file drags.
+    if (!e.dataTransfer.types.includes("Files")) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  }, []);
 
-  const onPanelDragLeave = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
-      // Only clear when leaving the outer container, not inner children.
-      if (e.currentTarget === e.target) setDragActive(false);
-    },
-    [],
-  );
+  const onPanelDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only clear when leaving the outer container, not inner children.
+    if (e.currentTarget === e.target) setDragActive(false);
+  }, []);
 
   const onPanelDrop = useCallback(
     async (e: React.DragEvent<HTMLDivElement>) => {
@@ -580,8 +572,8 @@ function StoreDetailPanel({
               No members yet
             </p>
             <p>
-              Drop files here to upload, bind to <strong>{s.name}</strong>,
-              and queue them for RAG ingestion in one step. Or use{" "}
+              Drop files here to upload, bind to <strong>{s.name}</strong>, and
+              queue them for RAG ingestion in one step. Or use{" "}
               <strong>Pick from your files</strong> to add already-uploaded
               documents.
             </p>
@@ -597,8 +589,8 @@ function StoreDetailPanel({
 
         {detail.members.length > 0 && (
           <div className="text-[11px] text-muted-foreground/70 pt-1">
-            Tip: drag files from your computer onto this panel to upload +
-            bind + queue for RAG in one step.
+            Tip: drag files from your computer onto this panel to upload + bind
+            + queue for RAG in one step.
           </div>
         )}
       </div>
@@ -612,9 +604,8 @@ function StoreDetailPanel({
               Add files to {s.name}
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Pick existing cloud files. Selected files will be bound to
-              this store and queued for RAG ingestion if not already
-              indexed.
+              Pick existing cloud files. Selected files will be bound to this
+              store and queued for RAG ingestion if not already indexed.
             </DialogDescription>
           </DialogHeader>
           <CldFilePicker
@@ -622,7 +613,10 @@ function StoreDetailPanel({
             excludeIds={boundCldFileIds}
             onConfirm={async (picks) => {
               setPickerOpen(false);
-              await bindAndReprocess(picks, `Adding ${picks.length} to ${s.name}`);
+              await bindAndReprocess(
+                picks,
+                `Adding ${picks.length} to ${s.name}`,
+              );
             }}
             onCancel={() => setPickerOpen(false)}
             confirmLabel="Add + queue"
@@ -639,8 +633,7 @@ function StoreDetailPanel({
             </DialogTitle>
             <DialogDescription className="text-xs">
               For non-cld_file sources (notes, code files, library docs,
-              processed documents). The cld_file picker handles the common
-              case.
+              processed documents). The cld_file picker handles the common case.
             </DialogDescription>
           </DialogHeader>
           <AddMemberForm
@@ -690,7 +683,10 @@ function MemberTable({
         </thead>
         <tbody className="divide-y">
           {members.map((m) => (
-            <tr key={`${m.sourceKind}/${m.sourceId}`} className="hover:bg-muted/20">
+            <tr
+              key={`${m.sourceKind}/${m.sourceId}`}
+              className="hover:bg-muted/20"
+            >
               <td className="px-3 py-1.5 text-xs">{m.sourceKind}</td>
               <td className="px-3 py-1.5">
                 <div className="text-xs">{m.label ?? "—"}</div>
@@ -888,11 +884,11 @@ function EditStoreForm({
           className="h-8 text-xs font-mono"
         />
       </label>
-      <label className="flex items-center gap-2 text-xs">
-        <input
-          type="checkbox"
+      <label className="flex items-center gap-2 text-xs cursor-pointer">
+        <Checkbox
           checked={draft.isActive}
-          onChange={(e) => setDraft({ ...draft, isActive: e.target.checked })}
+          onCheckedChange={(v) => setDraft({ ...draft, isActive: v === true })}
+          className="shrink-0"
         />
         <span>active</span>
       </label>
@@ -918,7 +914,9 @@ function EditStoreForm({
                   : undefined,
               kind: draft.kind !== initial.kind ? draft.kind : undefined,
               isActive:
-                draft.isActive !== initial.isActive ? draft.isActive : undefined,
+                draft.isActive !== initial.isActive
+                  ? draft.isActive
+                  : undefined,
             });
             setPending(false);
           }}

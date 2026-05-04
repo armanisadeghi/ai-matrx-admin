@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   RefreshCcw,
   Loader2,
@@ -122,11 +123,10 @@ export default function ModelAuditDashboard() {
         </div>
         <div className="flex items-center gap-2">
           <label className="flex items-center gap-1.5 cursor-pointer select-none">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={excludeDeprecated}
-              onChange={(e) => setExcludeDeprecated(e.target.checked)}
-              className="h-3.5 w-3.5 rounded"
+              onCheckedChange={(v) => setExcludeDeprecated(v === true)}
+              className="shrink-0"
             />
             <span className="text-xs text-muted-foreground flex items-center gap-1">
               <EyeOff className="h-3 w-3" />

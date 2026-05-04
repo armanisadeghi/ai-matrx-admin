@@ -4,8 +4,12 @@ import { CardContent } from "@/components/ui/card";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import AccordionWrapper from "../../matrx/matrx-collapsible/AccordionWrapper";
+import { Checkbox } from "@/components/ui/checkbox";
 import IconInputWithValidation from "@/components/official/icons/IconInputWithValidation.dynamic";
-import { DynamicIcon, isIconRegisteredSync } from "@/components/official/icons/IconResolver";
+import {
+  DynamicIcon,
+  isIconRegisteredSync,
+} from "@/components/official/icons/IconResolver";
 import {
   SchemaField,
   getReferenceOptions,
@@ -342,7 +346,12 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({
                         {iconValidation[index] === true && field.ICON_NAME && (
                           <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-950 border-border rounded flex justify-center items-center">
                             {React.createElement(
-                              ((props: any) => <DynamicIcon name={field.ICON_NAME} {...props} />),
+                              (props: any) => (
+                                <DynamicIcon
+                                  name={field.ICON_NAME}
+                                  {...props}
+                                />
+                              ),
                               {
                                 size: 20,
                                 className: "text-gray-700 dark:text-gray-300",
@@ -403,19 +412,18 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({
                           rows={2}
                         />
                       </div>
-                      <div className="flex items-center">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">
-                          Required
-                        </label>
-                        <input
-                          type="checkbox"
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox
                           checked={field.REQUIRED}
-                          onChange={(e) =>
-                            updateField(index, { REQUIRED: e.target.checked })
+                          onCheckedChange={(v) =>
+                            updateField(index, { REQUIRED: v === true })
                           }
-                          className="rounded border-gray-300 dark:border-gray-600 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50"
+                          className="shrink-0"
                         />
-                      </div>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Required
+                        </span>
+                      </label>
                     </div>
                     <button
                       onClick={() => removeField(index)}

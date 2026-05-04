@@ -56,6 +56,7 @@ import { SandboxFilesystemAdapter } from "../../adapters/SandboxFilesystemAdapte
 import { useCodeWorkspace } from "../../CodeWorkspaceProvider";
 import { openSessionReportTab } from "../../runtime/openSessionReport";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   selectActiveSandboxId,
   selectActiveSandboxProxyUrl,
@@ -303,7 +304,9 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
   }, [activeId, dispatch, setFilesystem, setProcess]);
 
   const createSandbox = useCallback(
-    async (request: SandboxCreateRequest = {}): Promise<SandboxInstance | undefined> => {
+    async (
+      request: SandboxCreateRequest = {},
+    ): Promise<SandboxInstance | undefined> => {
       setCreating(true);
       setError(null);
       try {
@@ -823,24 +826,26 @@ const SandboxRow: React.FC<SandboxRowProps> = ({
         description={
           <div className="space-y-2 text-sm">
             <p>
-              Destroys the running container and re-creates it with the same template /
-              tier / resources, picking up any latest image or config changes.
+              Destroys the running container and re-creates it with the same
+              template / tier / resources, picking up any latest image or config
+              changes.
             </p>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
+            <label className="flex items-start gap-2 cursor-pointer">
+              <Checkbox
                 checked={resetWipe}
-                onChange={(e) => setResetWipe(e.target.checked)}
-                className="h-3 w-3"
+                onCheckedChange={(v) => setResetWipe(v === true)}
+                className="mt-0.5 h-3 w-3 shrink-0"
               />
               <span>
-                Also wipe persistent volume (<code>/home/agent</code>) — destructive,
-                user data is lost.
+                Also wipe persistent volume (<code>/home/agent</code>) —
+                destructive, user data is lost.
               </span>
             </label>
           </div>
         }
-        confirmLabel={resetWipe ? "Reset and wipe volume" : "Reset (preserve volume)"}
+        confirmLabel={
+          resetWipe ? "Reset and wipe volume" : "Reset (preserve volume)"
+        }
         variant={resetWipe ? "destructive" : "default"}
         busy={busy}
         onConfirm={() => {

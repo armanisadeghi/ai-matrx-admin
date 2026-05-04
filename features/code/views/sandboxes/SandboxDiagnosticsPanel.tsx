@@ -34,6 +34,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import {
@@ -99,7 +100,14 @@ export type SandboxDiagnostics = {
   };
 };
 
-const LOG_SOURCES = ["all", "aidream", "matrx_agent", "entrypoint", "autostart", "docker"] as const;
+const LOG_SOURCES = [
+  "all",
+  "aidream",
+  "matrx_agent",
+  "entrypoint",
+  "autostart",
+  "docker",
+] as const;
 type LogSource = (typeof LOG_SOURCES)[number];
 
 /**
@@ -197,11 +205,7 @@ export function SandboxDiagnosticsPanel({
   const showRaw = view === "all";
   const showInternalTabs = showFilesystem || showEnv || showRaw || showLogs;
   const initialTabValue: "filesystem" | "agent-env" | "env" | "raw" =
-    showFilesystem
-      ? "filesystem"
-      : showEnv
-        ? "agent-env"
-        : "raw";
+    showFilesystem ? "filesystem" : showEnv ? "agent-env" : "raw";
   const [diag, setDiag] = useState<SandboxDiagnostics | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -221,7 +225,10 @@ export function SandboxDiagnosticsPanel({
   const [fsRoot, setFsRoot] = useState<FsNode | null>(null);
   const [fsRootLoading, setFsRootLoading] = useState(false);
   const [fsRootError, setFsRootError] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<{ path: string; name: string } | null>(null);
+  const [selectedFile, setSelectedFile] = useState<{
+    path: string;
+    name: string;
+  } | null>(null);
   const [fileContent, setFileContent] = useState<string>("");
   const [fileLoading, setFileLoading] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -232,13 +239,17 @@ export function SandboxDiagnosticsPanel({
   const [agentEnvLoading, setAgentEnvLoading] = useState(false);
   const [agentEnvError, setAgentEnvError] = useState<string | null>(null);
   const [envFilter, setEnvFilter] = useState("");
-  const [envView, setEnvView] = useState<"container_config_env" | "runtime_env" | "aidream_proc_env">("aidream_proc_env");
+  const [envView, setEnvView] = useState<
+    "container_config_env" | "runtime_env" | "aidream_proc_env"
+  >("aidream_proc_env");
 
   const fetchDiagnostics = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const r = await fetch(`/api/sandbox/${sandboxId}/diagnostics`, { cache: "no-store" });
+      const r = await fetch(`/api/sandbox/${sandboxId}/diagnostics`, {
+        cache: "no-store",
+      });
       if (!r.ok) {
         const body = await r.text();
         throw new Error(`HTTP ${r.status}: ${body.slice(0, 300)}`);
@@ -259,14 +270,19 @@ export function SandboxDiagnosticsPanel({
   const fetchLogs = useCallback(async () => {
     setLogsLoading(true);
     try {
-      const r = await fetch(`/api/sandbox/${sandboxId}/logs?source=${logSource}&tail=${logTail}`, { cache: "no-store" });
+      const r = await fetch(
+        `/api/sandbox/${sandboxId}/logs?source=${logSource}&tail=${logTail}`,
+        { cache: "no-store" },
+      );
       if (!r.ok) {
         setLogs(`(could not fetch logs: HTTP ${r.status})\n${await r.text()}`);
       } else {
         setLogs(await r.text());
       }
     } catch (e) {
-      setLogs(`(error fetching logs: ${e instanceof Error ? e.message : String(e)})`);
+      setLogs(
+        `(error fetching logs: ${e instanceof Error ? e.message : String(e)})`,
+      );
     } finally {
       setLogsLoading(false);
     }
@@ -304,7 +320,9 @@ export function SandboxDiagnosticsPanel({
       void fetchDiagnostics();
       return json;
     } catch (e) {
-      toast.error(`Reset failed: ${e instanceof Error ? e.message : String(e)}`);
+      toast.error(
+        `Reset failed: ${e instanceof Error ? e.message : String(e)}`,
+      );
     } finally {
       setResetting(false);
     }
@@ -449,7 +467,9 @@ export function SandboxDiagnosticsPanel({
             throw new Error(`HTTP ${r2.status}: ${t.slice(0, 200)}`);
           }
           const b64 = await r2.text();
-          setFileContent(`(binary, base64 — ${b64.length} chars)\n${b64.slice(0, 4000)}${b64.length > 4000 ? "…" : ""}`);
+          setFileContent(
+            `(binary, base64 — ${b64.length} chars)\n${b64.slice(0, 4000)}${b64.length > 4000 ? "…" : ""}`,
+          );
           return;
         }
         if (!r.ok) {
@@ -471,7 +491,9 @@ export function SandboxDiagnosticsPanel({
     setAgentEnvLoading(true);
     setAgentEnvError(null);
     try {
-      const r = await fetch(`/api/sandbox/${sandboxId}/agent-env`, { cache: "no-store" });
+      const r = await fetch(`/api/sandbox/${sandboxId}/agent-env`, {
+        cache: "no-store",
+      });
       if (!r.ok) {
         const body = await r.text();
         throw new Error(`HTTP ${r.status}: ${body.slice(0, 300)}`);
@@ -494,12 +516,21 @@ export function SandboxDiagnosticsPanel({
       await fetchDiagnostics();
     };
     tick();
-    const interval = setInterval(tick, (diag?.overall_ok ? healthyPollSeconds : unhealthyPollSeconds) * 1000);
+    const interval = setInterval(
+      tick,
+      (diag?.overall_ok ? healthyPollSeconds : unhealthyPollSeconds) * 1000,
+    );
     return () => {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [sandboxId, diag?.overall_ok, fetchDiagnostics, healthyPollSeconds, unhealthyPollSeconds]);
+  }, [
+    sandboxId,
+    diag?.overall_ok,
+    fetchDiagnostics,
+    healthyPollSeconds,
+    unhealthyPollSeconds,
+  ]);
 
   // Poll logs
   useEffect(() => {
@@ -524,7 +555,9 @@ export function SandboxDiagnosticsPanel({
           <AlertCircle className="h-4 w-4" />
           Diagnostics failed
         </div>
-        <pre className="mt-2 text-xs whitespace-pre-wrap font-mono opacity-80">{error}</pre>
+        <pre className="mt-2 text-xs whitespace-pre-wrap font-mono opacity-80">
+          {error}
+        </pre>
       </div>
     );
   }
@@ -546,7 +579,10 @@ export function SandboxDiagnosticsPanel({
           <div className="flex items-center justify-between border-b border-border pb-2">
             <div className="flex items-center gap-2">
               {diag.overall_ok ? (
-                <Badge variant="default" className="bg-success text-success-foreground gap-1">
+                <Badge
+                  variant="default"
+                  className="bg-success text-success-foreground gap-1"
+                >
                   <CheckCircle2 className="h-3 w-3" /> Ready
                 </Badge>
               ) : (
@@ -554,7 +590,9 @@ export function SandboxDiagnosticsPanel({
                   <Activity className="h-3 w-3 animate-pulse" /> Booting
                 </Badge>
               )}
-              <span className="text-xs text-muted-foreground">{diag.sandbox_id}</span>
+              <span className="text-xs text-muted-foreground">
+                {diag.sandbox_id}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               {showResetButton && (
@@ -565,12 +603,21 @@ export function SandboxDiagnosticsPanel({
                   disabled={resetting}
                   title="Destroy + recreate this sandbox with the latest image. Per-user volume preserved by default."
                 >
-                  <RotateCcw className={`h-3 w-3 mr-1 ${resetting ? "animate-spin" : ""}`} />
+                  <RotateCcw
+                    className={`h-3 w-3 mr-1 ${resetting ? "animate-spin" : ""}`}
+                  />
                   Reset
                 </Button>
               )}
-              <Button variant="outline" size="sm" onClick={fetchDiagnostics} disabled={loading}>
-                <RefreshCw className={`h-3 w-3 mr-1 ${loading ? "animate-spin" : ""}`} />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchDiagnostics}
+                disabled={loading}
+              >
+                <RefreshCw
+                  className={`h-3 w-3 mr-1 ${loading ? "animate-spin" : ""}`}
+                />
                 Refresh
               </Button>
             </div>
@@ -578,10 +625,24 @@ export function SandboxDiagnosticsPanel({
 
           {/* Layer-by-layer checks */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-            <CheckCard label="Container" ok={!!diag.container.running} detail={`${diag.container.status ?? "?"} · ${diag.container.health ?? "?"} · ip ${diag.container.container_ip ?? "?"}`} />
-            <CheckCard label="matrx_agent :8000" {...formatCheck(diag.checks.matrx_agent_8000)} />
-            <CheckCard label="aidream :8001 (health)" {...formatCheck(diag.checks.aidream_health_8001)} />
-            <CheckCard label="aidream :8001 (ready)" {...formatCheck(diag.checks.aidream_ready_8001)} colSpan="md:col-span-2" />
+            <CheckCard
+              label="Container"
+              ok={!!diag.container.running}
+              detail={`${diag.container.status ?? "?"} · ${diag.container.health ?? "?"} · ip ${diag.container.container_ip ?? "?"}`}
+            />
+            <CheckCard
+              label="matrx_agent :8000"
+              {...formatCheck(diag.checks.matrx_agent_8000)}
+            />
+            <CheckCard
+              label="aidream :8001 (health)"
+              {...formatCheck(diag.checks.aidream_health_8001)}
+            />
+            <CheckCard
+              label="aidream :8001 (ready)"
+              {...formatCheck(diag.checks.aidream_ready_8001)}
+              colSpan="md:col-span-2"
+            />
             <CheckCard
               label="Env passthrough"
               ok={(diag.container.passthrough_landed?.length ?? 0) > 50}
@@ -596,266 +657,333 @@ export function SandboxDiagnosticsPanel({
       )}
 
       {showInternalTabs && (
-      <Tabs
-        defaultValue={initialTabValue}
-        className="w-full"
-        onValueChange={(v) => {
-          // Lazy-load each tab on first activation
-          if (v === "filesystem" && !fsRoot && !fsRootLoading) void fetchFsRoot();
-          if (v === "agent-env" && !agentEnv && !agentEnvLoading) void fetchAgentEnv();
-        }}
-      >
-        <TabsList>
+        <Tabs
+          defaultValue={initialTabValue}
+          className="w-full"
+          onValueChange={(v) => {
+            // Lazy-load each tab on first activation
+            if (v === "filesystem" && !fsRoot && !fsRootLoading)
+              void fetchFsRoot();
+            if (v === "agent-env" && !agentEnv && !agentEnvLoading)
+              void fetchAgentEnv();
+          }}
+        >
+          <TabsList>
+            {showFilesystem && (
+              <TabsTrigger value="filesystem">Agent filesystem</TabsTrigger>
+            )}
+            {showEnv && <TabsTrigger value="agent-env">Agent env</TabsTrigger>}
+            {showEnv && <TabsTrigger value="env">Passthrough</TabsTrigger>}
+            {showLogs && <TabsTrigger value="logs">Live logs</TabsTrigger>}
+            {showRaw && <TabsTrigger value="raw">Raw response</TabsTrigger>}
+          </TabsList>
+
           {showFilesystem && (
-            <TabsTrigger value="filesystem">Agent filesystem</TabsTrigger>
-          )}
-          {showEnv && <TabsTrigger value="agent-env">Agent env</TabsTrigger>}
-          {showEnv && <TabsTrigger value="env">Passthrough</TabsTrigger>}
-          {showLogs && <TabsTrigger value="logs">Live logs</TabsTrigger>}
-          {showRaw && <TabsTrigger value="raw">Raw response</TabsTrigger>}
-        </TabsList>
-
-        {showFilesystem && (
-        <TabsContent value="filesystem" className="mt-2">
-          <div className="flex items-center gap-2 mb-2">
-            <Input
-              value={fsRootPath}
-              onChange={(e) => setFsRootPath(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") void fetchFsRoot();
-              }}
-              className="text-xs h-8 font-mono max-w-md"
-              placeholder="/home/agent"
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={fetchFsRoot}
-              disabled={fsRootLoading}
-            >
-              <RefreshCw className={`h-3 w-3 mr-1 ${fsRootLoading ? "animate-spin" : ""}`} />
-              Load
-            </Button>
-            <span className="text-[11px] text-muted-foreground">
-              Lists what the agent sees via the same <code>/fs/list</code> endpoint <code>fs_list</code> uses.
-            </span>
-          </div>
-          {fsRootError && (
-            <div className="text-destructive text-xs font-mono mb-2 break-all">
-              {fsRootError}
-            </div>
-          )}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <ScrollArea className="h-96 border border-border rounded-md">
-              <div className="p-2 text-xs font-mono">
-                {fsRootLoading && !fsRoot ? (
-                  <div className="text-muted-foreground flex items-center gap-2">
-                    <Loader2 className="h-3 w-3 animate-spin" /> Loading…
-                  </div>
-                ) : fsRoot ? (
-                  <FsTree
-                    node={fsRoot}
-                    onToggle={toggleNode}
-                    onSelectFile={(p, n) => {
-                      setSelectedFile({ path: p, name: n });
-                      void fetchFileContent(p);
-                    }}
-                    selectedPath={selectedFile?.path}
+            <TabsContent value="filesystem" className="mt-2">
+              <div className="flex items-center gap-2 mb-2">
+                <Input
+                  value={fsRootPath}
+                  onChange={(e) => setFsRootPath(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") void fetchFsRoot();
+                  }}
+                  className="text-xs h-8 font-mono max-w-md"
+                  placeholder="/home/agent"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={fetchFsRoot}
+                  disabled={fsRootLoading}
+                >
+                  <RefreshCw
+                    className={`h-3 w-3 mr-1 ${fsRootLoading ? "animate-spin" : ""}`}
                   />
-                ) : (
-                  <div className="text-muted-foreground">(no tree loaded)</div>
-                )}
+                  Load
+                </Button>
+                <span className="text-[11px] text-muted-foreground">
+                  Lists what the agent sees via the same <code>/fs/list</code>{" "}
+                  endpoint <code>fs_list</code> uses.
+                </span>
               </div>
-            </ScrollArea>
-            <ScrollArea className="h-96 border border-border rounded-md">
-              <div className="p-2 text-xs">
-                {selectedFile ? (
-                  <>
-                    <div className="font-mono text-muted-foreground border-b border-border pb-1 mb-2 flex items-center justify-between gap-2 break-all">
-                      <span>{selectedFile.path}</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => void fetchFileContent(selectedFile.path)}
-                        disabled={fileLoading}
-                      >
-                        <RefreshCw className={`h-3 w-3 ${fileLoading ? "animate-spin" : ""}`} />
-                      </Button>
-                    </div>
-                    {fileLoading ? (
+              {fsRootError && (
+                <div className="text-destructive text-xs font-mono mb-2 break-all">
+                  {fsRootError}
+                </div>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <ScrollArea className="h-96 border border-border rounded-md">
+                  <div className="p-2 text-xs font-mono">
+                    {fsRootLoading && !fsRoot ? (
                       <div className="text-muted-foreground flex items-center gap-2">
-                        <Loader2 className="h-3 w-3 animate-spin" /> Reading…
+                        <Loader2 className="h-3 w-3 animate-spin" /> Loading…
                       </div>
-                    ) : fileError ? (
-                      <pre className="text-destructive whitespace-pre-wrap font-mono">{fileError}</pre>
+                    ) : fsRoot ? (
+                      <FsTree
+                        node={fsRoot}
+                        onToggle={toggleNode}
+                        onSelectFile={(p, n) => {
+                          setSelectedFile({ path: p, name: n });
+                          void fetchFileContent(p);
+                        }}
+                        selectedPath={selectedFile?.path}
+                      />
                     ) : (
-                      <pre className="font-mono whitespace-pre-wrap leading-tight">
-                        {fileContent || "(empty file)"}
-                      </pre>
+                      <div className="text-muted-foreground">
+                        (no tree loaded)
+                      </div>
                     )}
-                  </>
-                ) : (
-                  <div className="text-muted-foreground">Click a file in the tree to read it.</div>
+                  </div>
+                </ScrollArea>
+                <ScrollArea className="h-96 border border-border rounded-md">
+                  <div className="p-2 text-xs">
+                    {selectedFile ? (
+                      <>
+                        <div className="font-mono text-muted-foreground border-b border-border pb-1 mb-2 flex items-center justify-between gap-2 break-all">
+                          <span>{selectedFile.path}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              void fetchFileContent(selectedFile.path)
+                            }
+                            disabled={fileLoading}
+                          >
+                            <RefreshCw
+                              className={`h-3 w-3 ${fileLoading ? "animate-spin" : ""}`}
+                            />
+                          </Button>
+                        </div>
+                        {fileLoading ? (
+                          <div className="text-muted-foreground flex items-center gap-2">
+                            <Loader2 className="h-3 w-3 animate-spin" />{" "}
+                            Reading…
+                          </div>
+                        ) : fileError ? (
+                          <pre className="text-destructive whitespace-pre-wrap font-mono">
+                            {fileError}
+                          </pre>
+                        ) : (
+                          <pre className="font-mono whitespace-pre-wrap leading-tight">
+                            {fileContent || "(empty file)"}
+                          </pre>
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-muted-foreground">
+                        Click a file in the tree to read it.
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              </div>
+            </TabsContent>
+          )}
+
+          {showEnv && (
+            <TabsContent value="agent-env" className="mt-2">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <select
+                  value={envView}
+                  onChange={(e) => setEnvView(e.target.value as typeof envView)}
+                  className="text-xs border border-border rounded-md px-2 py-1 bg-background"
+                >
+                  <option value="aidream_proc_env">
+                    aidream process env (truth)
+                  </option>
+                  <option value="runtime_env">shell env (runtime)</option>
+                  <option value="container_config_env">
+                    docker Config.Env (creation)
+                  </option>
+                </select>
+                <Input
+                  value={envFilter}
+                  onChange={(e) => setEnvFilter(e.target.value)}
+                  className="text-xs h-8 font-mono max-w-xs"
+                  placeholder="filter by key…"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={fetchAgentEnv}
+                  disabled={agentEnvLoading}
+                >
+                  <RefreshCw
+                    className={`h-3 w-3 mr-1 ${agentEnvLoading ? "animate-spin" : ""}`}
+                  />
+                  Refresh
+                </Button>
+                {agentEnv?.aidream_pid && (
+                  <span className="text-[11px] text-muted-foreground font-mono">
+                    aidream pid={agentEnv.aidream_pid}
+                  </span>
                 )}
               </div>
-            </ScrollArea>
-          </div>
-        </TabsContent>
-        )}
-
-        {showEnv && (
-        <TabsContent value="agent-env" className="mt-2">
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
-            <select
-              value={envView}
-              onChange={(e) => setEnvView(e.target.value as typeof envView)}
-              className="text-xs border border-border rounded-md px-2 py-1 bg-background"
-            >
-              <option value="aidream_proc_env">aidream process env (truth)</option>
-              <option value="runtime_env">shell env (runtime)</option>
-              <option value="container_config_env">docker Config.Env (creation)</option>
-            </select>
-            <Input
-              value={envFilter}
-              onChange={(e) => setEnvFilter(e.target.value)}
-              className="text-xs h-8 font-mono max-w-xs"
-              placeholder="filter by key…"
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={fetchAgentEnv}
-              disabled={agentEnvLoading}
-            >
-              <RefreshCw className={`h-3 w-3 mr-1 ${agentEnvLoading ? "animate-spin" : ""}`} />
-              Refresh
-            </Button>
-            {agentEnv?.aidream_pid && (
-              <span className="text-[11px] text-muted-foreground font-mono">
-                aidream pid={agentEnv.aidream_pid}
-              </span>
-            )}
-          </div>
-          {agentEnvError && (
-            <div className="text-destructive text-xs font-mono mb-2 break-all">
-              {agentEnvError}
-            </div>
-          )}
-          {agentEnv?.[`${envView}_error` as keyof AgentEnvResponse] && (
-            <div className="text-destructive text-xs font-mono mb-2 break-all">
-              {String(agentEnv[`${envView}_error` as keyof AgentEnvResponse])}
-            </div>
-          )}
-          <ScrollArea className="h-96 border border-border rounded-md">
-            <table className="w-full text-[11px] font-mono">
-              <thead className="text-left text-muted-foreground sticky top-0 bg-background">
-                <tr>
-                  <th className="p-2 w-1/3">key</th>
-                  <th className="p-2">value</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(() => {
-                  const list: AgentEnvKv[] = (agentEnv?.[envView] as AgentEnvKv[]) || [];
-                  const filtered = envFilter
-                    ? list.filter(
-                        (kv) =>
-                          kv.key.toLowerCase().includes(envFilter.toLowerCase()) ||
-                          kv.value.toLowerCase().includes(envFilter.toLowerCase()),
-                      )
-                    : list;
-                  if (!filtered.length) {
-                    return (
-                      <tr>
-                        <td colSpan={2} className="p-2 text-muted-foreground">
-                          {agentEnvLoading ? "Loading…" : "(no entries)"}
-                        </td>
-                      </tr>
-                    );
-                  }
-                  return filtered.map((kv) => (
-                    <tr key={kv.key} className="border-t border-border align-top">
-                      <td className="p-2 break-all">{kv.key}</td>
-                      <td className="p-2 break-all">{kv.value}</td>
+              {agentEnvError && (
+                <div className="text-destructive text-xs font-mono mb-2 break-all">
+                  {agentEnvError}
+                </div>
+              )}
+              {agentEnv?.[`${envView}_error` as keyof AgentEnvResponse] && (
+                <div className="text-destructive text-xs font-mono mb-2 break-all">
+                  {String(
+                    agentEnv[`${envView}_error` as keyof AgentEnvResponse],
+                  )}
+                </div>
+              )}
+              <ScrollArea className="h-96 border border-border rounded-md">
+                <table className="w-full text-[11px] font-mono">
+                  <thead className="text-left text-muted-foreground sticky top-0 bg-background">
+                    <tr>
+                      <th className="p-2 w-1/3">key</th>
+                      <th className="p-2">value</th>
                     </tr>
-                  ));
-                })()}
-              </tbody>
-            </table>
-          </ScrollArea>
-          <p className="text-[11px] text-muted-foreground mt-2">
-            <strong>aidream process env</strong> is the ground truth — it&apos;s what the FastAPI process actually sees. If a var is here, the agent has it. If not, no amount of <code>env_file</code> tweaking matters until you find why it didn&apos;t propagate.
-          </p>
-        </TabsContent>
-        )}
+                  </thead>
+                  <tbody>
+                    {(() => {
+                      const list: AgentEnvKv[] =
+                        (agentEnv?.[envView] as AgentEnvKv[]) || [];
+                      const filtered = envFilter
+                        ? list.filter(
+                            (kv) =>
+                              kv.key
+                                .toLowerCase()
+                                .includes(envFilter.toLowerCase()) ||
+                              kv.value
+                                .toLowerCase()
+                                .includes(envFilter.toLowerCase()),
+                          )
+                        : list;
+                      if (!filtered.length) {
+                        return (
+                          <tr>
+                            <td
+                              colSpan={2}
+                              className="p-2 text-muted-foreground"
+                            >
+                              {agentEnvLoading ? "Loading…" : "(no entries)"}
+                            </td>
+                          </tr>
+                        );
+                      }
+                      return filtered.map((kv) => (
+                        <tr
+                          key={kv.key}
+                          className="border-t border-border align-top"
+                        >
+                          <td className="p-2 break-all">{kv.key}</td>
+                          <td className="p-2 break-all">{kv.value}</td>
+                        </tr>
+                      ));
+                    })()}
+                  </tbody>
+                </table>
+              </ScrollArea>
+              <p className="text-[11px] text-muted-foreground mt-2">
+                <strong>aidream process env</strong> is the ground truth —
+                it&apos;s what the FastAPI process actually sees. If a var is
+                here, the agent has it. If not, no amount of{" "}
+                <code>env_file</code> tweaking matters until you find why it
+                didn&apos;t propagate.
+              </p>
+            </TabsContent>
+          )}
 
-        {showRaw && (
-        <TabsContent value="raw" className="mt-2">
-          <ScrollArea className="h-72 border border-border rounded-md">
-            <pre className="text-xs font-mono p-3 whitespace-pre-wrap">{JSON.stringify(diag, null, 2)}</pre>
-          </ScrollArea>
-        </TabsContent>
-        )}
+          {showRaw && (
+            <TabsContent value="raw" className="mt-2">
+              <ScrollArea className="h-72 border border-border rounded-md">
+                <pre className="text-xs font-mono p-3 whitespace-pre-wrap">
+                  {JSON.stringify(diag, null, 2)}
+                </pre>
+              </ScrollArea>
+            </TabsContent>
+          )}
 
-        {showEnv && (
-        <TabsContent value="env" className="mt-2">
-          <div className="text-xs space-y-2">
-            <div>
-              <strong>{diag.container.passthrough_landed?.length ?? 0}</strong> env vars landed inside the container:
-            </div>
-            <ScrollArea className="h-60 border border-border rounded-md">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-1 p-2 font-mono">
-                {(diag.container.passthrough_landed ?? []).map((k) => (
-                  <span key={k} className="text-success">✓ {k}</span>
-                ))}
-                {(diag.container.passthrough_missing_sample ?? []).map((k) => (
-                  <span key={k} className="text-muted-foreground">— {k}</span>
-                ))}
+          {showEnv && (
+            <TabsContent value="env" className="mt-2">
+              <div className="text-xs space-y-2">
+                <div>
+                  <strong>
+                    {diag.container.passthrough_landed?.length ?? 0}
+                  </strong>{" "}
+                  env vars landed inside the container:
+                </div>
+                <ScrollArea className="h-60 border border-border rounded-md">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-1 p-2 font-mono">
+                    {(diag.container.passthrough_landed ?? []).map((k) => (
+                      <span key={k} className="text-success">
+                        ✓ {k}
+                      </span>
+                    ))}
+                    {(diag.container.passthrough_missing_sample ?? []).map(
+                      (k) => (
+                        <span key={k} className="text-muted-foreground">
+                          — {k}
+                        </span>
+                      ),
+                    )}
+                  </div>
+                </ScrollArea>
+                {(diag.container.passthrough_missing_count ?? 0) > 0 && (
+                  <div className="text-xs text-muted-foreground">
+                    {diag.container.passthrough_missing_count} more not set on
+                    the orchestrator (see{" "}
+                    <code className="text-xs">missing_keys</code> in the
+                    orchestrator's <code>/integrations</code>).
+                  </div>
+                )}
               </div>
-            </ScrollArea>
-            {(diag.container.passthrough_missing_count ?? 0) > 0 && (
-              <div className="text-xs text-muted-foreground">
-                {diag.container.passthrough_missing_count} more not set on the orchestrator (see{" "}
-                <code className="text-xs">missing_keys</code> in the orchestrator's <code>/integrations</code>).
-              </div>
-            )}
-          </div>
-        </TabsContent>
-        )}
+            </TabsContent>
+          )}
 
-        {showLogs && (
-          <TabsContent value="logs" className="mt-2">
-            <div className="flex items-center gap-2 mb-2">
-              <select
-                value={logSource}
-                onChange={(e) => setLogSource(e.target.value as LogSource)}
-                className="text-xs border border-border rounded-md px-2 py-1 bg-background"
-              >
-                {LOG_SOURCES.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-              <select
-                value={logTail}
-                onChange={(e) => setLogTail(Number(e.target.value))}
-                className="text-xs border border-border rounded-md px-2 py-1 bg-background"
-              >
-                {[100, 200, 500, 1000, 2000].map((n) => (
-                  <option key={n} value={n}>tail {n}</option>
-                ))}
-              </select>
-              <Button variant="outline" size="sm" onClick={fetchLogs} disabled={logsLoading}>
-                <RefreshCw className={`h-3 w-3 mr-1 ${logsLoading ? "animate-spin" : ""}`} />
-                Refresh
-              </Button>
-              <span className="text-xs text-muted-foreground">auto-refreshes every 3s</span>
-            </div>
-            <ScrollArea className="h-96 border border-border rounded-md">
-              <pre className="text-[11px] font-mono p-3 whitespace-pre-wrap leading-tight">{logs || "(empty)"}</pre>
-            </ScrollArea>
-          </TabsContent>
-        )}
-      </Tabs>
+          {showLogs && (
+            <TabsContent value="logs" className="mt-2">
+              <div className="flex items-center gap-2 mb-2">
+                <select
+                  value={logSource}
+                  onChange={(e) => setLogSource(e.target.value as LogSource)}
+                  className="text-xs border border-border rounded-md px-2 py-1 bg-background"
+                >
+                  {LOG_SOURCES.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={logTail}
+                  onChange={(e) => setLogTail(Number(e.target.value))}
+                  className="text-xs border border-border rounded-md px-2 py-1 bg-background"
+                >
+                  {[100, 200, 500, 1000, 2000].map((n) => (
+                    <option key={n} value={n}>
+                      tail {n}
+                    </option>
+                  ))}
+                </select>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={fetchLogs}
+                  disabled={logsLoading}
+                >
+                  <RefreshCw
+                    className={`h-3 w-3 mr-1 ${logsLoading ? "animate-spin" : ""}`}
+                  />
+                  Refresh
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                  auto-refreshes every 3s
+                </span>
+              </div>
+              <ScrollArea className="h-96 border border-border rounded-md">
+                <pre className="text-[11px] font-mono p-3 whitespace-pre-wrap leading-tight">
+                  {logs || "(empty)"}
+                </pre>
+              </ScrollArea>
+            </TabsContent>
+          )}
+        </Tabs>
       )}
 
       <ConfirmDialog
@@ -867,28 +995,30 @@ export function SandboxDiagnosticsPanel({
         description={
           <div className="space-y-2 text-sm">
             <p>
-              Destroys the running container and re-creates it with the same template /
-              tier / resources, picking up any latest image or config changes.
+              Destroys the running container and re-creates it with the same
+              template / tier / resources, picking up any latest image or config
+              changes.
             </p>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
+            <label className="flex items-start gap-2 cursor-pointer">
+              <Checkbox
                 checked={resetWipe}
-                onChange={(e) => setResetWipe(e.target.checked)}
-                className="h-3 w-3"
+                onCheckedChange={(v) => setResetWipe(v === true)}
+                className="mt-0.5 h-3 w-3 shrink-0"
               />
               <span>
-                Also wipe persistent volume (<code>/home/agent</code>) — destructive,
-                user data is lost.
+                Also wipe persistent volume (<code>/home/agent</code>) —
+                destructive, user data is lost.
               </span>
             </label>
             <p className="text-xs text-muted-foreground">
-              Without the wipe, your home dir, git checkouts, and any installed packages
-              survive. With the wipe, you start clean.
+              Without the wipe, your home dir, git checkouts, and any installed
+              packages survive. With the wipe, you start clean.
             </p>
           </div>
         }
-        confirmLabel={resetWipe ? "Reset and wipe volume" : "Reset (preserve volume)"}
+        confirmLabel={
+          resetWipe ? "Reset and wipe volume" : "Reset (preserve volume)"
+        }
         variant={resetWipe ? "destructive" : "default"}
         busy={resetting}
         onConfirm={handleReset}
@@ -941,26 +1071,32 @@ function FsTree({
           <FileIcon className="h-3 w-3 shrink-0 text-muted-foreground" />
         )}
         <span className="break-all">{node.name}</span>
-        {node.loading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+        {node.loading && (
+          <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+        )}
         {node.error && (
           <span className="text-destructive text-[10px]" title={node.error}>
             (error)
           </span>
         )}
         {!node.isDir && typeof node.size === "number" && (
-          <span className="text-[10px] text-muted-foreground ml-auto pr-1">{formatBytes(node.size)}</span>
+          <span className="text-[10px] text-muted-foreground ml-auto pr-1">
+            {formatBytes(node.size)}
+          </span>
         )}
       </div>
-      {node.isDir && node.expanded && node.children.map((c) => (
-        <FsTree
-          key={c.path}
-          node={c}
-          onToggle={onToggle}
-          onSelectFile={onSelectFile}
-          selectedPath={selectedPath}
-          depth={depth + 1}
-        />
-      ))}
+      {node.isDir &&
+        node.expanded &&
+        node.children.map((c) => (
+          <FsTree
+            key={c.path}
+            node={c}
+            onToggle={onToggle}
+            onSelectFile={onSelectFile}
+            selectedPath={selectedPath}
+            depth={depth + 1}
+          />
+        ))}
     </div>
   );
 }
@@ -974,9 +1110,13 @@ function formatBytes(n: number): string {
 
 function formatCheck(c: DiagCheck): { ok: boolean; detail: string } {
   if (!c.checked) return { ok: false, detail: c.reason ?? "not checked" };
-  if (c.error) return { ok: false, detail: `${c.error} · ${c.latency_ms ?? "?"}ms` };
+  if (c.error)
+    return { ok: false, detail: `${c.error} · ${c.latency_ms ?? "?"}ms` };
   const okFlag = c.ok ?? false;
-  return { ok: okFlag, detail: `HTTP ${c.status ?? "?"} · ${c.latency_ms ?? "?"}ms` };
+  return {
+    ok: okFlag,
+    detail: `HTTP ${c.status ?? "?"} · ${c.latency_ms ?? "?"}ms`,
+  };
 }
 
 function CheckCard({
@@ -993,10 +1133,16 @@ function CheckCard({
   return (
     <div className={`border border-border rounded-md p-2 ${colSpan ?? ""}`}>
       <div className="flex items-center gap-2">
-        {ok ? <CheckCircle2 className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />}
+        {ok ? (
+          <CheckCircle2 className="h-4 w-4 text-success" />
+        ) : (
+          <XCircle className="h-4 w-4 text-destructive" />
+        )}
         <span className="text-xs font-medium">{label}</span>
       </div>
-      <div className="text-[11px] text-muted-foreground mt-1 font-mono break-all">{detail}</div>
+      <div className="text-[11px] text-muted-foreground mt-1 font-mono break-all">
+        {detail}
+      </div>
     </div>
   );
 }

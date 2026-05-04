@@ -21,6 +21,7 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { BasicInput } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { NumberStepper } from "@/components/official-candidate/NumberStepper";
 import {
@@ -535,12 +536,11 @@ function TruncateRow({
     <div className={`border-b border-border ${rowBg} group`}>
       <div className="flex items-center gap-1.5 px-2 py-1 hover:bg-accent/20 select-none text-xs">
         {showCheckbox && (
-          <input
-            type="checkbox"
+          <Checkbox
             checked={checked}
-            onChange={(e) => onCheck(entry.pathStr, e.target.checked)}
+            onCheckedChange={(v) => onCheck(entry.pathStr, v === true)}
             onClick={(e) => e.stopPropagation()}
-            className="flex-shrink-0 accent-primary cursor-pointer"
+            className="flex-shrink-0"
           />
         )}
 
@@ -1615,14 +1615,10 @@ function FieldsPanel({
       {/* Column headers */}
       <div className="flex items-center gap-1.5 px-2 py-0.5 bg-card/60 border-b border-border flex-shrink-0 text-[10px]">
         {showCheckboxes && (
-          <input
-            type="checkbox"
-            checked={allChecked}
-            ref={(el) => {
-              if (el) el.indeterminate = someChecked && !allChecked;
-            }}
-            onChange={handleSelectAll}
-            className="flex-shrink-0 accent-primary cursor-pointer"
+          <Checkbox
+            checked={allChecked ? true : someChecked ? "indeterminate" : false}
+            onCheckedChange={() => handleSelectAll()}
+            className="flex-shrink-0"
             title={allChecked ? "Deselect all" : "Select all strings in view"}
           />
         )}

@@ -49,6 +49,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
   AlertDialog,
@@ -675,12 +676,11 @@ function FileRow({
       )}
       onDoubleClick={onOpen}
     >
-      <input
-        type="checkbox"
+      <Checkbox
         checked={selected}
+        onCheckedChange={() => onToggleSelect()}
         onClick={(e) => e.stopPropagation()}
-        onChange={onToggleSelect}
-        className="h-3.5 w-3.5 accent-blue-600"
+        className="h-3.5 w-3.5 shrink-0"
       />
       <div className="shrink-0">
         {getLanguageIconNode(file.language, false)}

@@ -5,6 +5,7 @@ import type { ClientPage } from "@/features/content-manager/types";
 import { useCmsVersions } from "@/features/content-manager/hooks/useCmsVersions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -626,12 +627,11 @@ export default function PageEditor({
                 />
               </div>
               <div className="flex items-center gap-6">
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <Checkbox
                     checked={showInNav}
-                    onChange={(e) => setShowInNav(e.target.checked)}
-                    className="rounded border-input"
+                    onCheckedChange={(v) => setShowInNav(v === true)}
+                    className="shrink-0"
                   />
                   Show in navigation
                 </label>

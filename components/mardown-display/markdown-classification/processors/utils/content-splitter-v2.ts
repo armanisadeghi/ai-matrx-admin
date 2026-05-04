@@ -1548,6 +1548,64 @@ export const splitContentIntoBlocksV2 = (
       continue;
     }
 
+    // 5.6. Check for bare JSON objects (no ``` code fences).
+    // Handles the case where a model outputs { "key": ... } directly without fencing.
+    // Only triggers on lines that start with `{` — never inside an already-open block
+    // because code/XML/table steps above would have consumed those first.
+    if (trimmedLine.startsWith("{")) {
+      const jsonLines: string[] = [processedLine];
+      let openCount = (trimmedLine.match(/\{/g) || []).length;
+      let closeCount = (trimmedLine.match(/\}/g) || []).length;
+      let j = i + 1;
+
+      // Collect subsequent lines until braces balance (multi-line JSON)
+      while (j < lines.length && openCount > closeCount) {
+        const nextLine = removeMatrxPattern(lines[j]);
+        jsonLines.push(nextLine);
+        openCount += (nextLine.match(/\{/g) || []).length;
+        closeCount += (nextLine.match(/\}/g) || []).length;
+        j++;
+      }
+
+      // Only proceed if braces are balanced and we have at least one pair
+      if (openCount === closeCount && openCount > 0) {
+        const jsonContent = jsonLines.join("\n").trim();
+        let parsedOk = false;
+        try {
+          const parsed = JSON.parse(jsonContent);
+          parsedOk = parsed !== null && typeof parsed === "object";
+        } catch {
+          // Not valid JSON — fall through to text accumulation
+        }
+
+        if (parsedOk) {
+          if (currentText.trim()) {
+            blocks.push({ type: "text", content: currentText.trimEnd() });
+            currentText = "";
+          }
+
+          const jsonType = detectJsonBlockType(jsonContent);
+          if (jsonType) {
+            const streamingState = validateJsonBlock(jsonContent, jsonType);
+            blocks.push({
+              type: jsonType as SplitterBlockType,
+              content: jsonContent,
+              language: "json",
+              metadata: streamingState.metadata,
+            });
+          } else {
+            blocks.push({
+              type: "code",
+              content: jsonContent,
+              language: "json",
+            });
+          }
+          i = j;
+          continue;
+        }
+      }
+    }
+
     // 5.5. Check for mid-line attribute XML (e.g. "Hello <decision prompt="...">")
     // The tag is somewhere inside the line, not at the start. We:
     //   1. Emit the text before the tag as a text block.

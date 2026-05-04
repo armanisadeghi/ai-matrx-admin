@@ -1,7 +1,11 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import ControlledLoadingIndicator, { InputControlsSettings, FEATURE_CONFIG } from '@/features/chat/components/response/chat-loading/ControlledLoadingIndicator';
+import React, { useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+import ControlledLoadingIndicator, {
+  InputControlsSettings,
+  FEATURE_CONFIG,
+} from "@/features/chat/components/response/chat-loading/ControlledLoadingIndicator";
 
 export default function LoadingComponentTester() {
   const [settings, setSettings] = useState<InputControlsSettings>({
@@ -16,17 +20,19 @@ export default function LoadingComponentTester() {
     enableBrokers: false,
     hasFiles: false,
     generateImages: false,
-    generateVideos: false
+    generateVideos: false,
   });
 
-  const [messages, setMessages] = useState<Array<{role: string, content: string}>>([]);
-  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState<
+    Array<{ role: string; content: string }>
+  >([]);
+  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const toggleSetting = (setting: keyof InputControlsSettings) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
-      [setting]: !prev[setting]
+      [setting]: !prev[setting],
     }));
   };
 
@@ -34,12 +40,15 @@ export default function LoadingComponentTester() {
     e.preventDefault();
     if (!input.trim()) return;
 
-    setMessages(prev => [...prev, { role: 'user', content: input }]);
-    setInput('');
+    setMessages((prev) => [...prev, { role: "user", content: input }]);
+    setInput("");
     setIsLoading(true);
 
     setTimeout(() => {
-      setMessages(prev => [...prev, { role: 'assistant', content: `Response to: "${input}"` }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: `Response to: "${input}"` },
+      ]);
       setIsLoading(false);
     }, 15000);
   };
@@ -74,16 +83,22 @@ export default function LoadingComponentTester() {
             const hasMultipleSteps = steps.length > 1;
 
             return (
-              <label key={key} className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
+              <label
+                key={key}
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <Checkbox
                   checked={settings[key as keyof InputControlsSettings]}
-                  onChange={() => toggleSetting(key as keyof InputControlsSettings)}
-                  className="rounded border-gray-300 text-primary focus:ring-primary"
+                  onCheckedChange={() =>
+                    toggleSetting(key as keyof InputControlsSettings)
+                  }
+                  className="shrink-0"
                 />
                 <span className="text-sm flex-1">{key}</span>
                 {hasMultipleSteps && (
-                  <span className="text-xs text-gray-500">({steps.length} steps)</span>
+                  <span className="text-xs text-gray-500">
+                    ({steps.length} steps)
+                  </span>
                 )}
               </label>
             );
@@ -102,13 +117,13 @@ export default function LoadingComponentTester() {
         {messages.map((message, index) => (
           <div
             key={index}
-            className={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}
+            className={`mb-4 ${message.role === "user" ? "text-right" : "text-left"}`}
           >
             <div
               className={`inline-block p-3 rounded-lg max-w-xs sm:max-w-md ${
-                message.role === 'user'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200'
+                message.role === "user"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
               }`}
             >
               {message.content}

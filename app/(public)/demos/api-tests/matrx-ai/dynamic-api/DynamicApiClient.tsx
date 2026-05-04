@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { extractErrorMessage } from "@/utils/errors";
@@ -331,12 +332,13 @@ function KVEditor({
           key={i}
           className={`flex gap-1 items-center ${!pair.enabled ? "opacity-40" : ""}`}
         >
-          <input
-            type="checkbox"
-            checked={pair.enabled}
-            onChange={(e) => update(i, "enabled", e.target.checked)}
-            className="h-3 w-3 flex-shrink-0"
-          />
+          <label className="inline-flex items-center cursor-pointer flex-shrink-0">
+            <Checkbox
+              checked={pair.enabled}
+              onCheckedChange={(v) => update(i, "enabled", v === true)}
+              className="h-3 w-3"
+            />
+          </label>
           <Input
             value={pair.key}
             onChange={(e) => update(i, "key", e.target.value)}
@@ -729,10 +731,9 @@ export default function DynamicApiClient() {
                     </Label>
                     <div className="flex items-center gap-2">
                       <label className="flex items-center gap-1 text-[10px] text-muted-foreground cursor-pointer">
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={isStreaming}
-                          onChange={(e) => setIsStreaming(e.target.checked)}
+                          onCheckedChange={(v) => setIsStreaming(v === true)}
                           className="h-3 w-3"
                         />
                         Parse NDJSON stream

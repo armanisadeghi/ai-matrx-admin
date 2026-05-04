@@ -40,6 +40,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { formatFileSize } from "@/features/files/utils/format";
 import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
@@ -141,18 +142,16 @@ export function DuplicateUploadDialog({
 
         {/* Apply-to-all toggle */}
         {conflicts.length > 1 ? (
-          <div className="flex items-center gap-2 px-1 py-2 border-y bg-muted/30">
-            <input
-              type="checkbox"
-              id="apply-to-all"
+          <label className="flex items-center gap-2 px-1 py-2 border-y bg-muted/30 cursor-pointer">
+            <Checkbox
               checked={applyToAll}
-              onChange={(e) => setApplyToAll(e.target.checked)}
-              className="h-3.5 w-3.5"
+              onCheckedChange={(v) => setApplyToAll(v === true)}
+              className="shrink-0"
             />
-            <label htmlFor="apply-to-all" className="text-xs">
+            <span className="text-xs">
               Apply my next choice to all {conflicts.length} duplicates
-            </label>
-          </div>
+            </span>
+          </label>
         ) : null}
 
         {/* Scrollable conflict list */}

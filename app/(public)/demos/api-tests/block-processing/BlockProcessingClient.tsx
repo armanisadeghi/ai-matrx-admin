@@ -8,6 +8,7 @@ import { useApiTestConfig } from "@/components/api-test-config/useApiTestConfig"
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import MarkdownStream from "@/components/MarkdownStream";
 import type {
   TypedStreamEvent,
@@ -368,25 +369,21 @@ export default function BlockProcessingClient() {
           </div>
 
           {/* Options */}
-          <div className="flex items-center gap-2">
-            <input
+          <label
+            className={cn(
+              "flex items-center gap-2 text-xs cursor-pointer",
+              apiMode === "stream" && "text-muted-foreground/50",
+            )}
+          >
+            <Checkbox
               id="include_raw"
-              type="checkbox"
               checked={includeRaw}
-              onChange={(e) => setIncludeRaw(e.target.checked)}
               disabled={isRunning || apiMode === "stream"}
-              className="h-3.5 w-3.5 rounded border-input"
+              onCheckedChange={(v) => setIncludeRaw(v === true)}
+              className="h-3.5 w-3.5 shrink-0"
             />
-            <Label
-              htmlFor="include_raw"
-              className={cn(
-                "text-xs cursor-pointer",
-                apiMode === "stream" && "text-muted-foreground/50",
-              )}
-            >
-              Include raw_content (JSON mode only)
-            </Label>
-          </div>
+            <span>Include raw_content (JSON mode only)</span>
+          </label>
 
           {/* Actions */}
           <div className="flex gap-2">

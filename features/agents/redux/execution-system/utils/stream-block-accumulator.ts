@@ -40,7 +40,14 @@ type BlockSubState =
       earlyTypeResolved: boolean;
     }
   | { kind: "xml_tag"; tagName: string; closingTag: string }
-  | { kind: "table" };
+  | { kind: "table" }
+  | {
+      kind: "bare_json";
+      /** Running count of `{` characters seen so far — including the opening line. */
+      openBraces: number;
+      /** Running count of `}` characters seen so far. */
+      closeBraces: number;
+    };
 
 // ============================================================================
 // Known XML tag sets (mirrored from content-prefilter for closing-tag matching)
@@ -170,6 +177,14 @@ export class StreamBlockAccumulator {
       this.processLine(this.pendingLineFragment, dispatch);
       this.pendingLineFragment = "";
     }
+    // If the stream ended while still inside a bare JSON block (unbalanced braces),
+    // run a final type detection pass so we at least get the right block type.
+    if (this.subState.kind === "bare_json") {
+      const jsonType = detectJsonBlockType(this.currentBlockContent);
+      if (jsonType) {
+        this.currentBlockType = jsonType;
+      }
+    }
     this.emitCurrentBlock(dispatch, "complete");
     // console.log(
     //   `%c[BlockAccumulator] FINALIZED for ${this.requestId.slice(0, 8)} — ${this.ingestCount} ingests, ${this.emitCount} dispatches, ${this.currentBlockIndex + 1} blocks total`,
@@ -293,6 +308,31 @@ export class StreamBlockAccumulator {
       return;
     }
 
+    // ── Bare JSON object (no ``` fences) ──────────────────────────────
+    // A model sometimes outputs {"key": ...} directly. We track brace
+    // depth across lines so the block closes when the object is complete.
+    if (hasCandidate(flags, Candidate.BARE_JSON) && trimmed.startsWith("{")) {
+      const openCount = (trimmed.match(/\{/g) || []).length;
+      const closeCount = (trimmed.match(/\}/g) || []).length;
+      this.closeCurrentBlock(dispatch);
+      this.openBlock("code", dispatch); // may be upgraded to a typed JSON block
+      this.subState = {
+        kind: "bare_json",
+        openBraces: openCount,
+        closeBraces: closeCount,
+      };
+      this.appendToCurrentBlock(rawLine);
+      // Single-line JSON — close immediately after type detection
+      if (openCount === closeCount && openCount > 0) {
+        const jsonType = detectJsonBlockType(this.currentBlockContent);
+        this.currentBlockType = jsonType ?? "code";
+        this.closeCurrentBlock(dispatch);
+        this.subState = { kind: "none" };
+        this.openBlock("text", dispatch);
+      }
+      return;
+    }
+
     // ── Tree lines are accumulated as text (the tree detector in
     // splitContentIntoBlocksV2 requires 3+ consecutive lines — we defer
     // that consolidation to finalization or to BlockRenderer). ──────────
@@ -370,6 +410,27 @@ export class StreamBlockAccumulator {
         }
         return;
       }
+
+      case "bare_json": {
+        this.appendToCurrentBlock(rawLine);
+        this.subState.openBraces += (trimmed.match(/\{/g) || []).length;
+        this.subState.closeBraces += (trimmed.match(/\}/g) || []).length;
+
+        if (
+          this.subState.openBraces === this.subState.closeBraces &&
+          this.subState.openBraces > 0
+        ) {
+          // Braces balanced — detect specific JSON type, then close the block.
+          // closeCurrentBlock must be called BEFORE resetting subState so that
+          // buildBlockData can still return { language: "json" } if needed.
+          const jsonType = detectJsonBlockType(this.currentBlockContent);
+          this.currentBlockType = jsonType ?? "code";
+          this.closeCurrentBlock(dispatch);
+          this.subState = { kind: "none" };
+          this.openBlock("text", dispatch);
+        }
+        return;
+      }
     }
   }
 
@@ -408,7 +469,8 @@ export class StreamBlockAccumulator {
     if (status === "streaming" && this.pendingLineFragment) {
       if (
         this.subState.kind === "none" ||
-        this.subState.kind === "code_fence"
+        this.subState.kind === "code_fence" ||
+        this.subState.kind === "bare_json"
       ) {
         content = content
           ? content + "\n" + this.pendingLineFragment
@@ -442,6 +504,11 @@ export class StreamBlockAccumulator {
       return this.subState.language
         ? { language: this.subState.language }
         : null;
+    }
+    if (this.subState.kind === "bare_json") {
+      // Same rule: only include language metadata for untyped code blocks.
+      if (this.currentBlockType !== "code") return null;
+      return { language: "json" };
     }
     return null;
   }

@@ -13,6 +13,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import TextDivider from "@/components/matrx/TextDivider";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function DemoPage() {
   const [basicDate, setBasicDate] = useState<Date | undefined>(undefined);
@@ -179,36 +180,36 @@ export default function DemoPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
+                    <label className="flex flex-col gap-1.5 cursor-pointer">
+                      <span className="text-sm font-medium">
                         Show Outside Days
-                      </label>
-                      <input
-                        type="checkbox"
+                      </span>
+                      <Checkbox
                         checked={calendarProps.showOutsideDays}
-                        onChange={(e) =>
+                        onCheckedChange={(v) =>
                           handleCalendarPropChange(
                             "showOutsideDays",
-                            e.target.checked,
+                            v === true,
                           )
                         }
+                        className="shrink-0"
                       />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
+                    </label>
+                    <label className="flex flex-col gap-1.5 cursor-pointer">
+                      <span className="text-sm font-medium">
                         Show Week Numbers
-                      </label>
-                      <input
-                        type="checkbox"
+                      </span>
+                      <Checkbox
                         checked={calendarProps.showWeekNumbers}
-                        onChange={(e) =>
+                        onCheckedChange={(v) =>
                           handleCalendarPropChange(
                             "showWeekNumbers",
-                            e.target.checked,
+                            v === true,
                           )
                         }
+                        className="shrink-0"
                       />
-                    </div>
+                    </label>
                     <div>
                       <label className="block text-sm font-medium mb-1">
                         Animation Level
@@ -230,30 +231,28 @@ export default function DemoPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Show Time
-                      </label>
-                      <input
-                        type="checkbox"
+                    <label className="flex flex-col gap-1.5 cursor-pointer">
+                      <span className="text-sm font-medium">Show Time</span>
+                      <Checkbox
                         checked={calendarProps.showTime}
-                        onChange={(e) =>
-                          handleCalendarPropChange("showTime", e.target.checked)
+                        onCheckedChange={(v) =>
+                          handleCalendarPropChange("showTime", v === true)
                         }
+                        className="shrink-0"
                       />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
+                    </label>
+                    <label className="flex flex-col gap-1.5 cursor-pointer">
+                      <span className="text-sm font-medium">
                         24 Hour Format
-                      </label>
-                      <input
-                        type="checkbox"
+                      </span>
+                      <Checkbox
                         checked={calendarProps.is24Hour}
-                        onChange={(e) =>
-                          handleCalendarPropChange("is24Hour", e.target.checked)
+                        onCheckedChange={(v) =>
+                          handleCalendarPropChange("is24Hour", v === true)
                         }
+                        className="shrink-0"
                       />
-                    </div>
+                    </label>
                     <div>
                       <label className="block text-sm font-medium mb-1">
                         Minute Increment

@@ -1,8 +1,23 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, ChevronRight, FileText, Loader2, Regex, Search, X } from "lucide-react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  ChevronDown,
+  ChevronRight,
+  FileText,
+  Loader2,
+  Regex,
+  Search,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useCodeWorkspace } from "../../CodeWorkspaceProvider";
 import { useOpenFile } from "../../hooks/useOpenFile";
 import type { FilesystemNode, FilesystemSearchHit } from "../../types";
@@ -204,7 +219,13 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ className }) => {
         await runWalkerSearch(trimmed, runId);
       }
     },
-    [mode, supportsServerContent, runServerContentSearch, runWalkerSearch, runPathSearch],
+    [
+      mode,
+      supportsServerContent,
+      runServerContentSearch,
+      runWalkerSearch,
+      runPathSearch,
+    ],
   );
 
   useEffect(() => {
@@ -288,7 +309,9 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ className }) => {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={mode === "paths" ? "Find file by name…" : "Search workspace"}
+            placeholder={
+              mode === "paths" ? "Find file by name…" : "Search workspace"
+            }
             className="h-7 w-full rounded-sm border border-neutral-300 bg-white pl-6 pr-6 text-[12px] outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900"
           />
           {query && (
@@ -305,22 +328,20 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ className }) => {
         {mode === "content" && (
           <div className="flex items-center justify-between text-[10px] text-neutral-500 dark:text-neutral-400">
             <div className="flex items-center gap-2">
-              <label className="flex items-center gap-1">
-                <input
-                  type="checkbox"
+              <label className="flex items-center gap-1 cursor-pointer">
+                <Checkbox
                   checked={caseSensitive}
-                  onChange={(e) => setCaseSensitive(e.target.checked)}
-                  className="h-3 w-3"
+                  onCheckedChange={(v) => setCaseSensitive(v === true)}
+                  className="h-3 w-3 shrink-0"
                 />
                 Aa
               </label>
               {supportsServerContent && (
-                <label className="flex items-center gap-1">
-                  <input
-                    type="checkbox"
+                <label className="flex items-center gap-1 cursor-pointer">
+                  <Checkbox
                     checked={regex}
-                    onChange={(e) => setRegex(e.target.checked)}
-                    className="h-3 w-3"
+                    onCheckedChange={(v) => setRegex(v === true)}
+                    className="h-3 w-3 shrink-0"
                   />
                   <Regex size={10} />
                 </label>
@@ -344,12 +365,24 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ className }) => {
               : "Type a query to search across the active workspace."}
           </div>
         )}
-        {query && !searching && !error && mode === "content" && matches.length === 0 && (
-          <div className="p-3 text-[11px] text-neutral-500">No matches found.</div>
-        )}
-        {query && !searching && !error && mode === "paths" && pathResults.length === 0 && (
-          <div className="p-3 text-[11px] text-neutral-500">No paths matched.</div>
-        )}
+        {query &&
+          !searching &&
+          !error &&
+          mode === "content" &&
+          matches.length === 0 && (
+            <div className="p-3 text-[11px] text-neutral-500">
+              No matches found.
+            </div>
+          )}
+        {query &&
+          !searching &&
+          !error &&
+          mode === "paths" &&
+          pathResults.length === 0 && (
+            <div className="p-3 text-[11px] text-neutral-500">
+              No paths matched.
+            </div>
+          )}
         {mode === "paths" &&
           pathResults.map((path) => (
             <button

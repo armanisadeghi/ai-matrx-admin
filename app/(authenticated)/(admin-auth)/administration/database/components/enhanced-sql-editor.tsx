@@ -30,6 +30,7 @@ import JsonTree from "@/components/admin/state-analyzer/components/JsonTree";
 import { JsonTruncator } from "@/components/official-candidate/json-truncator/JsonTruncator";
 import AccordionWrapper from "@/components/matrx/matrx-collapsible/AccordionWrapper";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Tooltip,
   TooltipContent,
@@ -261,14 +262,13 @@ export const EnhancedSQLEditor = ({
             <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
               <label
                 htmlFor="use-cache"
-                className="text-xs flex items-center gap-1 cursor-pointer"
+                className="text-xs flex items-center gap-1.5 cursor-pointer"
               >
-                <input
+                <Checkbox
                   id="use-cache"
-                  type="checkbox"
                   checked={useCache}
-                  onChange={(e) => setUseCache(e.target.checked)}
-                  className="rounded text-blue-600 dark:text-blue-500 h-3 w-3"
+                  onCheckedChange={(v) => setUseCache(v === true)}
+                  className="h-3 w-3"
                 />
                 Use Cache
               </label>
