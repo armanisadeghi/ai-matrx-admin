@@ -1,4 +1,4 @@
-import { StudioLandingHero } from "@/features/image-studio/components/StudioLandingHero";
+import { StudioLandingHero } from "@/features/images/components/studio/StudioLandingHero";
 
 /**
  * Image Studio landing page.

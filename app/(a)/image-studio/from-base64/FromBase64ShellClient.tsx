@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const Base64DecoderShell = dynamic(
   () =>
-    import("@/features/image-studio/components/Base64DecoderShell").then(
+    import("@/features/images/components/studio/Base64DecoderShell").then(
       (m) => ({ default: m.Base64DecoderShell }),
     ),
   {
