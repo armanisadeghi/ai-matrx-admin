@@ -17,7 +17,7 @@ export function ImageCapture({
   surface = 'page',
   folderPath,
   onUploaded,
-  globalPaste = false,
+  globalPaste = true,
   className,
 }: ImageCaptureProps) {
   const { fileInputRef, handlePaste, handleDrop, handleFileInput, openPicker } =
@@ -51,6 +51,7 @@ export function ImageCapture({
         setIsDragOver(false);
         handleDrop(e);
       }}
+      onPaste={(e) => handlePaste(e.nativeEvent)}
     >
       <input
         ref={fileInputRef}
