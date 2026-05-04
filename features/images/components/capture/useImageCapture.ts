@@ -3,7 +3,7 @@ import { useCallback, useRef } from 'react';
 import { useAppDispatch } from '@/lib/redux/hooks';
 import { addToQueue, updateQueueItem } from '../../redux/imageSlice';
 import { compressImage } from '@/utils/image/imageCompression';
-import { CloudFolders } from '@/features/files/utils/folder-conventions';
+import { CloudFolders, resolveDefaultVisibility } from '@/features/files/utils/folder-conventions';
 import { ACCEPTED_IMAGE_TYPES, MAX_IMAGE_SIZE_MB } from '../../constants';
 import { toast } from 'sonner';
 import type { CaptureResult, UploadQueueItem } from '../../types';
@@ -92,6 +92,7 @@ export function useImageCapture({
         const form = new FormData();
         form.append('file', compressedFile, file.name);
         form.append('folder', folderPath);
+        form.append('visibility', resolveDefaultVisibility(folderPath));
 
         const res = await fetch('/api/images/upload', { method: 'POST', body: form });
         if (!res.ok) throw new Error(await res.text());
