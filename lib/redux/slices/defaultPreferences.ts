@@ -143,4 +143,7 @@ export const defaultUserPreferences: UserPreferences = {
     projectId: null,
     taskId: null,
   },
+  transcription: {
+    customCleanerAgents: [],
+  },
 };

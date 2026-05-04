@@ -63,8 +63,7 @@ export default function TranscriptionTab() {
 
   const trimmed = draft.trim();
   const parseResult = useMemo<
-    | { ok: true; entries: CustomCleanerAgent[] }
-    | { ok: false; error: string }
+    { ok: true; entries: CustomCleanerAgent[] } | { ok: false; error: string }
   >(() => {
     if (!trimmed) return { ok: true, entries: [] };
     let parsed: unknown;
@@ -92,7 +91,8 @@ export default function TranscriptionTab() {
   }, [trimmed]);
 
   const dirty =
-    parseResult.ok && JSON.stringify(parseResult.entries) !== JSON.stringify(agents);
+    parseResult.ok &&
+    JSON.stringify(parseResult.entries) !== JSON.stringify(agents);
 
   // Auto-save when the JSON is valid AND differs from the persisted value.
   useEffect(() => {
@@ -100,6 +100,13 @@ export default function TranscriptionTab() {
       setAgents(parseResult.entries);
     }
   }, [parseResult, dirty, setAgents]);
+
+  const description = parseResult.ok
+    ? `${parseResult.entries.length} valid entr${parseResult.entries.length === 1 ? "y" : "ies"}.`
+    : undefined;
+  const errorMessage = parseResult.ok
+    ? undefined
+    : (parseResult as { ok: false; error: string }).error;
 
   return (
     <>
@@ -122,16 +129,12 @@ export default function TranscriptionTab() {
       <SettingsSection title="Custom cleaner agents (JSON)">
         <SettingsTextarea
           label="Entries"
-          description={
-            parseResult.ok
-              ? `${parseResult.entries.length} valid entr${parseResult.entries.length === 1 ? "y" : "ies"}.`
-              : `Error: ${parseResult.error}`
-          }
+          description={description}
+          error={errorMessage}
           value={draft}
           onValueChange={setDraft}
           placeholder={PLACEHOLDER}
           rows={12}
-          stacked
           last
         />
       </SettingsSection>
