@@ -125,4 +125,71 @@ describe("applyPrePaintDescriptors", () => {
         expect(() => applyPrePaintDescriptors([d], { mode: "on" })).not.toThrow();
         expect(document.body.classList.contains("foo")).toBe(true);
     });
+
+    it("preserves explicit light choice when OS prefers dark (regression — Phase 5 follow-up)", () => {
+        // Pre-fix bug: systemFallback used to override the user's stored
+        // value when value !== whenEquals AND OS preferred dark. So
+        // picking "light" on a dark-prefer macOS forced .dark back on.
+        // Now systemFallback only fires when the stored value is *absent*.
+        const original = window.matchMedia;
+        Object.defineProperty(window, "matchMedia", {
+            value: () => ({ matches: true } as MediaQueryList),
+            configurable: true,
+            writable: true,
+        });
+        try {
+            document.documentElement.classList.add("dark");
+            const d: PrePaintDescriptor = {
+                kind: "classToggle",
+                target: "html",
+                className: "dark",
+                fromKey: "mode",
+                whenEquals: "dark",
+                systemFallback: {
+                    mediaQuery: "(prefers-color-scheme: dark)",
+                    applyWhenMatches: true,
+                },
+            };
+            applyPrePaintDescriptors([d], { mode: "light" });
+            expect(document.documentElement.classList.contains("dark")).toBe(false);
+        } finally {
+            Object.defineProperty(window, "matchMedia", {
+                value: original,
+                configurable: true,
+                writable: true,
+            });
+        }
+    });
+
+    it("falls back to systemFallback only when stored value is absent", () => {
+        const original = window.matchMedia;
+        Object.defineProperty(window, "matchMedia", {
+            value: () => ({ matches: true } as MediaQueryList),
+            configurable: true,
+            writable: true,
+        });
+        try {
+            document.documentElement.classList.remove("dark");
+            const d: PrePaintDescriptor = {
+                kind: "classToggle",
+                target: "html",
+                className: "dark",
+                fromKey: "mode",
+                whenEquals: "dark",
+                systemFallback: {
+                    mediaQuery: "(prefers-color-scheme: dark)",
+                    applyWhenMatches: true,
+                },
+            };
+            // No stored mode value → systemFallback applies → OS prefers dark → add .dark
+            applyPrePaintDescriptors([d], {});
+            expect(document.documentElement.classList.contains("dark")).toBe(true);
+        } finally {
+            Object.defineProperty(window, "matchMedia", {
+                value: original,
+                configurable: true,
+                writable: true,
+            });
+        }
+    });
 });

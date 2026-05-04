@@ -62,11 +62,21 @@ export function applyPrePaintDescriptors(
         }
 
         if (d.kind === "classToggle") {
-            const matched = typeof value === "string" && value === d.whenEquals;
-            let add = matched;
-            if (!matched && d.systemFallback) {
+            // Gate `systemFallback` on the *absence* of a stored value, not on
+            // !matched. Otherwise picking "light" while the OS prefers dark
+            // causes the fallback to re-add the `.dark` class, overriding the
+            // user's explicit choice. Mirrors the gating in the `attribute`
+            // branch above (which uses an early `continue` for the same
+            // semantics). Pin: apply-prePaint.test.ts has a regression test
+            // covering this case.
+            let add: boolean;
+            if (typeof value === "string") {
+                add = value === d.whenEquals;
+            } else if (d.systemFallback) {
                 const mq = evalSystemMedia(d.systemFallback.mediaQuery);
-                if (mq) add = Boolean(d.systemFallback.applyWhenMatches);
+                add = mq ? Boolean(d.systemFallback.applyWhenMatches) : false;
+            } else {
+                add = false;
             }
             if (add) target.classList.add(d.className);
             else target.classList.remove(d.className);
