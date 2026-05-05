@@ -103,6 +103,14 @@ export interface CxToolCallRecord {
   userId: string;
   callId: string;
   toolName: string;
+  /**
+   * What the AI literally called the tool (post-bundling alias). Null on
+   * pre-migration rows and on freshly streamed rows where the executor hasn't
+   * recorded the as-called name yet — display logic falls back to `toolName`
+   * (the canonical) in those cases. Renderers always look themselves up by
+   * `toolName`; `toolNameAsCalled` is for display + filtering only.
+   */
+  toolNameAsCalled: string | null;
   toolType: string;
   iteration: number;
   status: string;

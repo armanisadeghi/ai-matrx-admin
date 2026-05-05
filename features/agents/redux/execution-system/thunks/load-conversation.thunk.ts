@@ -146,6 +146,7 @@ interface CxToolCallRow {
   user_id: string;
   call_id: string;
   tool_name: string;
+  tool_name_as_called: string | null;
   tool_type: string;
   iteration: number;
   status: string;
@@ -445,6 +446,7 @@ function toolCallRowToRecord(row: CxToolCallRow): CxToolCallRecord {
     userId: row.user_id,
     callId: row.call_id,
     toolName: row.tool_name,
+    toolNameAsCalled: row.tool_name_as_called ?? null,
     toolType: row.tool_type,
     iteration: row.iteration,
     status: row.status,

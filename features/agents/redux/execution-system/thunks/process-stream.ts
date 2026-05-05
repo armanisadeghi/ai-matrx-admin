@@ -929,6 +929,9 @@ export async function processStream({
             userId: "",
             callId: call_id ?? parentCallId,
             toolName: tool_name,
+            // Streamed events carry the canonical name; the as-called value is
+            // backfilled on conversation reload from cx_tl_call.tool_name_as_called.
+            toolNameAsCalled: null,
             toolType: "",
             iteration,
             status: "pending",

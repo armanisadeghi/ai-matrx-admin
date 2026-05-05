@@ -536,6 +536,7 @@ function buildPreviewEntry(
     {
       callId,
       toolName,
+      displayName: toolName,
       status,
       arguments: args,
       startedAt: new Date().toISOString(),

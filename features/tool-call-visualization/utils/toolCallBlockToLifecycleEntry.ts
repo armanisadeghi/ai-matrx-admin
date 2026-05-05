@@ -47,6 +47,7 @@ export function toolCallBlockToLifecycleEntry(
   return {
     callId: block.callId,
     toolName: block.toolName,
+    displayName: block.toolName,
     status,
     arguments: args,
     startedAt: now,

@@ -122,8 +122,12 @@ const ToolCallVisualizationInner: React.FC<{
   const headerTool = entries[0] ?? null;
   const toolDisplayName = useMemo(() => {
     if (entries.length > 1) return `${entries.length} Tools`;
-    return getToolDisplayName(headerTool?.toolName ?? null);
-  }, [entries.length, headerTool?.toolName]);
+    if (!headerTool) return getToolDisplayName(null);
+    if (headerTool.displayName && headerTool.displayName !== headerTool.toolName) {
+      return headerTool.displayName;
+    }
+    return getToolDisplayName(headerTool.toolName);
+  }, [entries.length, headerTool?.toolName, headerTool?.displayName]);
 
   const headerSubtitle = useMemo(() => {
     if (!headerTool) return null;

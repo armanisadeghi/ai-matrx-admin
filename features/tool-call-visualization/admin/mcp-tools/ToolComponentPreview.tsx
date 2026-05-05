@@ -157,6 +157,7 @@ function buildToolLifecycleEntry(
     {
       callId,
       toolName,
+      displayName: toolName,
       status,
       arguments: args,
       startedAt,
