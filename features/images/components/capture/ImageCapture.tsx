@@ -8,6 +8,7 @@ import type { ImageSurface, UploadQueueItem } from '../../types';
 interface ImageCaptureProps {
   surface?: ImageSurface;
   folderPath?: string;
+  visibility?: 'public' | 'private' | 'shared';
   onUploaded?: (item: UploadQueueItem) => void;
   globalPaste?: boolean;
   className?: string;
@@ -16,12 +17,13 @@ interface ImageCaptureProps {
 export function ImageCapture({
   surface = 'page',
   folderPath,
+  visibility,
   onUploaded,
   globalPaste = true,
   className,
 }: ImageCaptureProps) {
   const { fileInputRef, handlePaste, handleDrop, handleFileInput, openPicker } =
-    useImageCapture({ folderPath, onUploaded });
+    useImageCapture({ folderPath, visibility, onUploaded });
 
   const [isDragOver, setIsDragOver] = useState(false);
 

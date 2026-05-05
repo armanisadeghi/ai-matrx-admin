@@ -75,6 +75,7 @@ export function ImageManager({ surface = 'page', className }: ImageManagerProps)
           <ImageCapture
             surface={surface}
             folderPath={folderPath ?? CloudFolders.IMAGES}
+            visibility="public"
             onUploaded={() => { setShowUpload(false); refresh(); }}
             className="min-h-[120px]"
           />
@@ -87,6 +88,7 @@ export function ImageManager({ surface = 'page', className }: ImageManagerProps)
           <ImageCapture
             surface={surface}
             folderPath={folderPath ?? CloudFolders.IMAGES}
+            visibility="public"
             onUploaded={refresh}
             className="w-full max-w-xl flex-1 min-h-[300px] max-h-[420px]"
           />

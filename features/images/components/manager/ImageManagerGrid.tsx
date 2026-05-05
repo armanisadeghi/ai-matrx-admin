@@ -1,8 +1,9 @@
 'use client';
 import React from 'react';
 import Image from 'next/image';
-import { Loader2, Download, Copy, Wand2 } from 'lucide-react';
+import { Loader2, Download, Copy, Wand2, ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSignedUrl } from '@/features/files/hooks/useSignedUrl';
 import type { ImageRecord, ImageViewMode } from '../../types';
 
 interface ImageManagerGridProps {
@@ -14,6 +15,40 @@ interface ImageManagerGridProps {
   onDownload: (img: ImageRecord) => void;
   onCopyUrl: (img: ImageRecord) => void;
   onOpenInStudio: (img: ImageRecord) => void;
+}
+
+function ImageThumbnail({ img, className }: { img: ImageRecord; className?: string }) {
+  const needsSigned = !img.url;
+  const { url: signedUrl, loading } = useSignedUrl(
+    needsSigned ? img.fileRecord.id : null,
+    { expiresIn: 3600 },
+  );
+  const src = img.url || signedUrl;
+
+  if (loading) {
+    return (
+      <div className={cn('flex items-center justify-center bg-muted', className)}>
+        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+  if (!src) {
+    return (
+      <div className={cn('flex items-center justify-center bg-muted', className)}>
+        <ImageIcon className="w-6 h-6 text-muted-foreground/40" />
+      </div>
+    );
+  }
+  return (
+    <Image
+      src={src}
+      alt={img.name}
+      width={200}
+      height={200}
+      unoptimized
+      className={cn('object-cover', className)}
+    />
+  );
 }
 
 function ImageOverlay({
@@ -96,14 +131,7 @@ export function ImageManagerGrid({
                   : 'border-transparent hover:border-border',
               )}
             >
-              <Image
-                src={img.url}
-                alt={img.name}
-                width={200}
-                height={200}
-                unoptimized
-                className="w-full h-auto object-cover"
-              />
+              <ImageThumbnail img={img} className="w-full h-auto" />
               <ImageOverlay
                 img={img}
                 onDownload={onDownload}
@@ -135,14 +163,7 @@ export function ImageManagerGrid({
                 : 'border-transparent hover:border-border',
             )}
           >
-            <Image
-              src={img.url}
-              alt={img.name}
-              width={200}
-              height={200}
-              unoptimized
-              className="w-full h-full object-cover"
-            />
+            <ImageThumbnail img={img} className="w-full h-full" />
             <ImageOverlay
               img={img}
               onDownload={onDownload}

@@ -10,6 +10,7 @@ import type { CaptureResult, UploadQueueItem } from '../../types';
 
 interface UseImageCaptureOptions {
   folderPath?: string;
+  visibility?: 'public' | 'private' | 'shared';
   onCaptured?: (result: CaptureResult) => void;
   onUploaded?: (item: UploadQueueItem) => void;
 }
@@ -56,6 +57,7 @@ function getImageDimensions(dataUrl: string): Promise<{ width: number; height: n
 
 export function useImageCapture({
   folderPath = CloudFolders.IMAGES_SCREENSHOTS,
+  visibility,
   onCaptured,
   onUploaded,
 }: UseImageCaptureOptions = {}) {
@@ -92,7 +94,7 @@ export function useImageCapture({
         const form = new FormData();
         form.append('file', compressedFile, file.name);
         form.append('folder', folderPath);
-        form.append('visibility', resolveDefaultVisibility(folderPath));
+        form.append('visibility', visibility ?? resolveDefaultVisibility(folderPath));
 
         const res = await fetch('/api/images/upload', { method: 'POST', body: form });
         if (!res.ok) throw new Error(await res.text());
@@ -106,7 +108,7 @@ export function useImageCapture({
         toast.error(msg);
       }
     },
-    [dispatch, folderPath, onCaptured, onUploaded],
+    [dispatch, folderPath, visibility, onCaptured, onUploaded],
   );
 
   const handlePaste = useCallback(

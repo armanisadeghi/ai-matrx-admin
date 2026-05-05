@@ -257,15 +257,25 @@ export async function POST(request: NextRequest) {
     const preset: ImagePreset = isPresetName(presetRaw) ? presetRaw : "social";
     const variants = IMAGE_PRESETS[preset];
 
-    // Build the cloud-files folder path. Users see their uploads under
-    // `Images/<custom-folder-or-Generated>/<uuid>/` — grouped with the
-    // rest of their images rather than scattered by caller feature.
+    // Build the cloud-files folder path. Each upload gets its own UUID
+    // subfolder to group its variants (cover, og, thumb, tiny) together.
+    // If `folder` is already an Images/* path (callers like ImageCapture
+    // pass the full CloudFolders path), use it directly — don't re-prepend
+    // "Images/" and create a double-nested "Images/Images/..." structure.
     const customFolder = sanitizeFolderSegment(
       typeof folderRaw === "string" ? folderRaw : null,
     );
-    const folderRoot = customFolder
-      ? `${CloudFolders.IMAGES}/${customFolder}`
-      : CloudFolders.IMAGES_GENERATED;
+    let folderRoot: string;
+    if (!customFolder) {
+      folderRoot = CloudFolders.IMAGES_GENERATED;
+    } else if (
+      customFolder === CloudFolders.IMAGES ||
+      customFolder.startsWith(`${CloudFolders.IMAGES}/`)
+    ) {
+      folderRoot = customFolder;
+    } else {
+      folderRoot = `${CloudFolders.IMAGES}/${customFolder}`;
+    }
     const folderPath = `${folderRoot}/${randomUUID()}`;
 
     const ctx = Api.Server.createServerContext({
