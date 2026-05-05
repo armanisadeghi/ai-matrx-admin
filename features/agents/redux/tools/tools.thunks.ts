@@ -14,7 +14,7 @@ export const fetchAvailableTools = createAsyncThunk<
   }
 
   const { data, error } = await supabase
-    .from("tools")
+    .from("tl_def")
     .select("*")
     .eq("is_active", true)
     .order("category", { ascending: true })

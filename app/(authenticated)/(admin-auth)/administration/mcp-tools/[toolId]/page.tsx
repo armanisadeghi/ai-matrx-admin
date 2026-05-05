@@ -11,7 +11,7 @@ interface Props {
 async function fetchTool(toolId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("tools")
+    .from("tl_def")
     .select("*")
     .eq("id", toolId)
     .single();

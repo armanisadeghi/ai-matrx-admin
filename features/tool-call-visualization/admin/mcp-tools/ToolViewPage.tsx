@@ -30,7 +30,7 @@ import type { Database, Json } from "@/types/database.types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type ToolRow = Database["public"]["Tables"]["tools"]["Row"];
+type ToolRow = Database["public"]["Tables"]["tl_def"]["Row"];
 
 interface Props {
   tool: ToolRow;

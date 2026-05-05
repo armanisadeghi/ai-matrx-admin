@@ -82,11 +82,11 @@ export function catalogEntryFromRpc(row: CatalogRpcRow): McpCatalogEntry {
 }
 
 // ---------------------------------------------------------------------------
-// Server config — stdio setup variants from mcp_server_configs table
+// Server config — stdio setup variants from tl_mcp_config table
 // ---------------------------------------------------------------------------
 
 type ServerConfigRow =
-  Database["public"]["Tables"]["mcp_server_configs"]["Row"];
+  Database["public"]["Tables"]["tl_mcp_config"]["Row"];
 
 export interface McpServerConfigEntry {
   id: string;

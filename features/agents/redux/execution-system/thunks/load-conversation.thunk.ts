@@ -290,7 +290,7 @@ async function fetchConversationBundle(
       .is("deleted_at", null)
       .order("position", { ascending: true }),
     supabase
-      .from("cx_tool_call")
+      .from("cx_tl_call")
       .select("*")
       .eq("conversation_id", conversationId)
       .is("deleted_at", null)

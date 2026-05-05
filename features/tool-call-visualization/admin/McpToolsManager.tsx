@@ -125,11 +125,11 @@ export function McpToolsManager() {
         async function fetchCounts() {
             const [samplesRes, uiRes] = await Promise.all([
                 supabase
-                    .from("tool_test_samples")
+                    .from("tl_test_sample")
                     .select("tool_name")
                     .in("tool_name", toolNames),
                 supabase
-                    .from("tool_ui_components")
+                    .from("tl_ui")
                     .select("tool_name")
                     .in("tool_name", toolNames),
             ]);
