@@ -15,7 +15,9 @@ const READ_MORE_THRESHOLD = 480;
 
 function renderContent(text: string) {
   const lines = text.split("\n");
-  const blocks: Array<{ kind: "para"; text: string } | { kind: "list"; items: string[] }> = [];
+  const blocks: Array<
+    { kind: "para"; text: string } | { kind: "list"; items: string[] }
+  > = [];
   let buffer: string[] = [];
   let listBuffer: string[] = [];
 
@@ -49,7 +51,7 @@ function renderContent(text: string) {
 
 function InlineCode({ children }: { children: string }) {
   return (
-    <code className="rounded bg-[#0b141a]/40 px-1 py-0.5 font-mono text-[12.5px]">
+    <code className="rounded bg-black/15 px-1 py-0.5 font-mono text-[12.5px] dark:bg-black/30">
       {children}
     </code>
   );
@@ -70,20 +72,29 @@ export function TextBubble({ message }: TextBubbleProps) {
   const isOwn = message.isOwn;
   const isLong = message.content.length > READ_MORE_THRESHOLD;
   const text =
-    isLong && !expanded ? message.content.slice(0, READ_MORE_THRESHOLD) : message.content;
+    isLong && !expanded
+      ? message.content.slice(0, READ_MORE_THRESHOLD)
+      : message.content;
   const blocks = renderContent(text);
 
   return (
-    <div className={cn("flex w-full px-2", isOwn ? "justify-end" : "justify-start")}>
+    <div
+      className={cn(
+        "flex w-full px-2",
+        isOwn ? "justify-end" : "justify-start",
+      )}
+    >
       <div
         className={cn(
-          "relative max-w-[85%] rounded-lg px-2.5 pb-1.5 pt-1.5 text-[14.2px] leading-[19px] shadow-[0_1px_0.5px_rgba(0,0,0,0.13)]",
+          "relative max-w-[85%] rounded-lg px-2.5 pb-1.5 pt-1.5 text-[14.2px] leading-[19px] shadow-sm",
           isOwn
-            ? "bg-[#005c4b] text-[#e9edef]"
-            : "bg-[#202c33] text-[#e9edef]",
+            ? "bg-emerald-100 text-emerald-950 dark:bg-emerald-800/80 dark:text-emerald-50"
+            : "bg-card text-foreground",
         )}
       >
-        {message.reply ? <ReplyQuote reply={message.reply} isOwnBubble={isOwn} /> : null}
+        {message.reply ? (
+          <ReplyQuote reply={message.reply} isOwnBubble={isOwn} />
+        ) : null}
 
         <div className="whitespace-pre-wrap break-words pr-16">
           {blocks.map((block, i) =>
@@ -108,7 +119,7 @@ export function TextBubble({ message }: TextBubbleProps) {
                 <button
                   type="button"
                   onClick={() => setExpanded(true)}
-                  className="text-[#53bdeb] hover:underline"
+                  className="text-sky-600 hover:underline dark:text-sky-400"
                 >
                   Read more
                 </button>
@@ -120,7 +131,9 @@ export function TextBubble({ message }: TextBubbleProps) {
         <div
           className={cn(
             "pointer-events-none absolute bottom-1 right-2 flex items-center gap-1 text-[11px] leading-none",
-            isOwn ? "text-[#aebac1]" : "text-[#8696a0]",
+            isOwn
+              ? "text-emerald-900/70 dark:text-emerald-100/70"
+              : "text-muted-foreground",
           )}
         >
           {message.editedAt ? <span className="italic">edited</span> : null}

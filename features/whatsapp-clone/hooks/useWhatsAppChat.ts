@@ -1,9 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
+import { useChat } from "@/hooks/useSupabaseMessaging";
+import type { MessageWithSender } from "@/features/messaging/types";
 import { getMockMessages } from "../mock-data/messages";
 import type { WAMessage } from "../types";
 import { useWhatsAppDataMode } from "./WhatsAppDataModeProvider";
+
+export interface SendMessageOptions {
+  message_type?: "text" | "image" | "video" | "audio" | "file";
+  media_url?: string;
+  media_thumbnail_url?: string;
+  media_metadata?: Record<string, unknown>;
+  reply_to_id?: string;
+}
 
 export interface UseWhatsAppChatReturn {
   messages: WAMessage[];
@@ -11,111 +23,97 @@ export interface UseWhatsAppChatReturn {
   isSending: boolean;
   error: string | null;
   typingText: string | null;
-  sendMessage: (content: string) => Promise<void>;
+  sendMessage: (content: string, options?: SendMessageOptions) => Promise<void>;
   loadMore: () => Promise<void>;
   markRead: () => Promise<void>;
+}
+
+function adaptMessage(m: MessageWithSender, selfUserId: string | null): WAMessage {
+  return {
+    id: m.id,
+    conversationId: m.conversation_id,
+    type: (m.message_type ?? "text") as WAMessage["type"],
+    content: m.content,
+    authorId: m.sender_id,
+    isOwn: !!selfUserId && m.sender_id === selfUserId,
+    createdAt: m.created_at,
+    editedAt: m.edited_at,
+    status: (m.status ?? "sent") as WAMessage["status"],
+    media:
+      m.message_type === "image" ||
+      m.message_type === "video" ||
+      m.message_type === "audio" ||
+      m.message_type === "file"
+        ? {
+            url: m.media_url ?? undefined,
+            thumbnailUrl: m.media_thumbnail_url ?? undefined,
+            fileName:
+              (m.media_metadata as { file_name?: string } | null)?.file_name,
+            fileSize:
+              (m.media_metadata as { file_size?: number } | null)?.file_size,
+            durationSec:
+              (m.media_metadata as { duration_sec?: number } | null)
+                ?.duration_sec,
+            mimeType: (m.media_metadata as { mime_type?: string } | null)
+              ?.mime_type,
+          }
+        : null,
+    systemKind: m.message_type === "system" ? "encryption" : undefined,
+  };
 }
 
 export function useWhatsAppChat(
   conversationId: string | null,
 ): UseWhatsAppChatReturn {
   const { mode } = useWhatsAppDataMode();
-  const [messages, setMessages] = useState<WAMessage[]>(() =>
-    mode === "mock" && conversationId ? getMockMessages(conversationId) : [],
+  const user = useAppSelector(selectUser);
+  const userId = user?.id ?? null;
+  const displayName =
+    user?.userMetadata?.fullName ??
+    user?.userMetadata?.name ??
+    user?.email?.split("@")[0] ??
+    "User";
+
+  const live = useChat(
+    mode === "live" ? conversationId : null,
+    mode === "live" ? userId : null,
+    displayName,
+    { autoMarkAsRead: true },
   );
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSending, setIsSending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [typingText, setTypingText] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!conversationId) {
-      setMessages([]);
-      return;
-    }
-    if (mode === "mock") {
-      setMessages(getMockMessages(conversationId));
-      setIsLoading(false);
-      setError(null);
-      return;
-    }
+  const liveMessages = useMemo(
+    () => live.messages.map((m) => adaptMessage(m, userId)),
+    [live.messages, userId],
+  );
 
-    let cancelled = false;
-    setIsLoading(true);
-    (async () => {
-      try {
-        const { messagingService } = await import(
-          "@/lib/supabase/messaging"
-        );
-        const fetched = await messagingService.fetchMessages(conversationId);
-        if (cancelled) return;
-        const mapped: WAMessage[] = fetched.map((m) => ({
-          id: m.id,
-          conversationId: m.conversation_id,
-          type: (m.message_type ?? "text") as WAMessage["type"],
-          content: m.content,
-          authorId: m.sender_id,
-          isOwn: false,
-          createdAt: m.created_at,
-          editedAt: m.edited_at,
-          status: (m.status ?? "sent") as WAMessage["status"],
-        }));
-        setMessages(mapped);
-      } catch (e) {
-        if (cancelled) return;
-        setError(e instanceof Error ? e.message : "Failed to load messages");
-      } finally {
-        if (!cancelled) setIsLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
+  if (mode === "mock") {
+    const mocks = conversationId ? getMockMessages(conversationId) : [];
+    return {
+      messages: mocks,
+      isLoading: false,
+      isSending: false,
+      error: null,
+      typingText: null,
+      sendMessage: async () => {},
+      loadMore: async () => {},
+      markRead: async () => {},
     };
-  }, [conversationId, mode]);
-
-  const sendMessage = async (content: string) => {
-    if (!content.trim() || !conversationId) return;
-    setIsSending(true);
-    try {
-      if (mode === "mock") {
-        const optimistic: WAMessage = {
-          id: `m-${Date.now()}`,
-          conversationId,
-          type: "text",
-          content,
-          authorId: "me",
-          isOwn: true,
-          createdAt: new Date().toISOString(),
-          status: "sent",
-        };
-        setMessages((prev) => [...prev, optimistic]);
-        return;
-      }
-      const { messagingService } = await import("@/lib/supabase/messaging");
-      await messagingService.sendMessage({
-        conversation_id: conversationId,
-        content,
-        message_type: "text",
-        client_message_id: `c-${Date.now()}`,
-      });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to send message");
-    } finally {
-      setIsSending(false);
-    }
-  };
-
-  const loadMore = async () => {};
-  const markRead = async () => {};
+  }
 
   return {
-    messages,
-    isLoading,
-    isSending,
-    error,
-    typingText,
-    sendMessage,
-    loadMore,
-    markRead,
+    messages: liveMessages,
+    isLoading: live.isLoading,
+    isSending: live.isSending,
+    error: live.error,
+    typingText: live.typingText ?? null,
+    sendMessage: async (content, options) => {
+      await live.sendMessage(content, options);
+    },
+    loadMore: async () => {
+      await live.loadMoreMessages();
+    },
+    markRead: async () => {
+      await live.markAsRead();
+    },
   };
 }

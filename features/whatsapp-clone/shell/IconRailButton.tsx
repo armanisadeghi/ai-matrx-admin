@@ -30,14 +30,14 @@ export function IconRailButton({
       className={cn(
         "relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
         active
-          ? "bg-[#2a3942] text-white"
-          : "text-[#aebac1] hover:bg-[#202c33] hover:text-white",
+          ? "bg-accent text-foreground"
+          : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
       )}
     >
       <Icon className="h-5 w-5" strokeWidth={1.75} />
       {hasIndicator ? (
         <span
-          className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[#25d366] ring-2 ring-[#161b22]"
+          className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-card"
           aria-hidden
         />
       ) : null}

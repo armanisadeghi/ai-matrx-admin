@@ -13,14 +13,14 @@ export function GalleryToolbar({ className }: GalleryToolbarProps) {
       <button
         type="button"
         aria-label="Filter"
-        className="flex h-8 w-8 items-center justify-center rounded-md text-[#aebac1] hover:bg-[#2a3942] hover:text-white"
+        className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
       >
         <ListFilter className="h-4 w-4" />
       </button>
       <button
         type="button"
         aria-label="Sort"
-        className="flex h-8 items-center gap-0.5 rounded-md px-1.5 text-[#aebac1] hover:bg-[#2a3942] hover:text-white"
+        className="flex h-8 items-center gap-0.5 rounded-md px-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
       >
         <ListFilter className="h-4 w-4" />
         <ChevronDown className="h-3.5 w-3.5" />
@@ -28,7 +28,7 @@ export function GalleryToolbar({ className }: GalleryToolbarProps) {
       <button
         type="button"
         aria-label="Search media"
-        className="flex h-8 w-8 items-center justify-center rounded-md text-[#aebac1] hover:bg-[#2a3942] hover:text-white"
+        className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
       >
         <Search className="h-4 w-4" />
       </button>

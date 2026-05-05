@@ -1,0 +1,145 @@
+"use client";
+
+import { createClient } from "@/utils/supabase/client";
+import type { Database } from "@/types/database.types";
+
+type Tables = Database["public"]["Tables"];
+export type UiClientRow = Tables["ui_client"]["Row"];
+export type UiSurfaceRow = Tables["ui_surface"]["Row"];
+export type ExecutorKindRow = Tables["tl_executor_kind"]["Row"];
+export type GateRow = Tables["tl_gate"]["Row"];
+
+export type UiClientUpsert = Tables["ui_client"]["Insert"];
+export type UiSurfaceUpsert = Tables["ui_surface"]["Insert"];
+export type ExecutorKindUpsert = Tables["tl_executor_kind"]["Insert"];
+
+const sb = () => createClient();
+
+export async function listUiClients(): Promise<UiClientRow[]> {
+  const { data, error } = await sb()
+    .from("ui_client")
+    .select("*")
+    .order("sort_order", { ascending: true })
+    .order("name", { ascending: true });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function listUiSurfaces(): Promise<UiSurfaceRow[]> {
+  const { data, error } = await sb()
+    .from("ui_surface")
+    .select("*")
+    .order("client_name", { ascending: true })
+    .order("sort_order", { ascending: true })
+    .order("name", { ascending: true });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function listExecutorKinds(): Promise<ExecutorKindRow[]> {
+  const { data, error } = await sb()
+    .from("tl_executor_kind")
+    .select("*")
+    .order("name", { ascending: true });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function listGates(): Promise<GateRow[]> {
+  const { data, error } = await sb()
+    .from("tl_gate")
+    .select("*")
+    .order("name", { ascending: true });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function dependentSurfaceCount(clientName: string): Promise<number> {
+  const { count, error } = await sb()
+    .from("ui_surface")
+    .select("name", { count: "exact", head: true })
+    .eq("client_name", clientName);
+  if (error) throw error;
+  return count ?? 0;
+}
+
+export async function upsertUiClient(row: UiClientUpsert): Promise<UiClientRow> {
+  const { data, error } = await sb()
+    .from("ui_client")
+    .upsert(row, { onConflict: "name" })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function upsertUiSurface(row: UiSurfaceUpsert): Promise<UiSurfaceRow> {
+  const { data, error } = await sb()
+    .from("ui_surface")
+    .upsert(row, { onConflict: "name" })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function upsertExecutorKind(
+  row: ExecutorKindUpsert,
+): Promise<ExecutorKindRow> {
+  const { data, error } = await sb()
+    .from("tl_executor_kind")
+    .upsert(row, { onConflict: "name" })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Soft-delete: flip is_active=false. Hard DELETE is intentionally not exposed
+ * here — the lookup tables are FK targets for many rows; removing one would
+ * orphan tools, surfaces, executors. Reactivate by toggling back to true.
+ */
+export async function setUiClientActive(
+  name: string,
+  isActive: boolean,
+): Promise<void> {
+  const { error } = await sb()
+    .from("ui_client")
+    .update({ is_active: isActive })
+    .eq("name", name);
+  if (error) throw error;
+}
+
+export async function setUiSurfaceActive(
+  name: string,
+  isActive: boolean,
+): Promise<void> {
+  const { error } = await sb()
+    .from("ui_surface")
+    .update({ is_active: isActive })
+    .eq("name", name);
+  if (error) throw error;
+}
+
+export async function setExecutorKindActive(
+  name: string,
+  isActive: boolean,
+): Promise<void> {
+  const { error } = await sb()
+    .from("tl_executor_kind")
+    .update({ is_active: isActive })
+    .eq("name", name);
+  if (error) throw error;
+}
+
+export async function setGateActive(
+  name: string,
+  isActive: boolean,
+): Promise<void> {
+  const { error } = await sb()
+    .from("tl_gate")
+    .update({ is_active: isActive })
+    .eq("name", name);
+  if (error) throw error;
+}

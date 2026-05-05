@@ -11,7 +11,7 @@ export function PaneDivider({ className }: PaneDividerProps) {
   return (
     <ResizableHandle
       className={cn(
-        "bg-[#0b141a] data-[separator=hover]:bg-[#25d366]/40 data-[separator=active]:bg-[#25d366]",
+        "bg-border data-[separator=hover]:bg-emerald-500/40 data-[separator=active]:bg-emerald-500",
         className,
       )}
     />

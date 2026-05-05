@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronRight } from "lucide-react";
+import { cn } from "@/styles/themes/utils";
 import type { ModalNavContext } from "../../../types";
 
 interface AccountPanelProps {
@@ -9,7 +10,7 @@ interface AccountPanelProps {
 
 export function AccountPanel({ ctx }: AccountPanelProps) {
   return (
-    <div className="flex flex-col gap-5 pt-2">
+    <div className="flex flex-col gap-5">
       <Card>
         <Row
           label="Security notifications"
@@ -24,7 +25,7 @@ export function AccountPanel({ ctx }: AccountPanelProps) {
       <Card>
         <Row label="Request account info" />
         <Divider />
-        <Row label="Log out" emphasis destructive />
+        <Row label="Log out" destructive />
       </Card>
     </div>
   );
@@ -32,12 +33,12 @@ export function AccountPanel({ ctx }: AccountPanelProps) {
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-lg bg-[#202c33]">{children}</div>
+    <div className="overflow-hidden rounded-lg bg-muted">{children}</div>
   );
 }
 
 function Divider() {
-  return <div className="ml-4 h-px bg-[#2a3942]" />;
+  return <div className="ml-4 h-px bg-border" />;
 }
 
 function Row({
@@ -55,21 +56,21 @@ function Row({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center justify-between px-4 py-3.5 text-left text-[15px] hover:bg-[#2a3942]"
+      className="flex w-full items-center justify-between px-4 py-3.5 text-left text-[15px] hover:bg-accent"
     >
       <span
-        className={
+        className={cn(
           destructive
-            ? "text-[#f15c6d]"
+            ? "text-rose-500"
             : emphasis
-              ? "text-[#25d366]"
-              : "text-[#e9edef]"
-        }
+              ? "text-emerald-600 dark:text-emerald-400"
+              : "text-foreground",
+        )}
       >
         {label}
       </span>
       {onClick ? (
-        <ChevronRight className="h-4 w-4 text-[#8696a0]" aria-hidden />
+        <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden />
       ) : null}
     </button>
   );

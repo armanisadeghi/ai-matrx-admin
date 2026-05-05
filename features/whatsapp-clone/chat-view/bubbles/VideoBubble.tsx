@@ -14,11 +14,16 @@ export function VideoBubble({ message }: VideoBubbleProps) {
   const isOwn = message.isOwn;
   const src = message.media?.thumbnailUrl ?? message.media?.url;
   return (
-    <div className={cn("flex w-full px-2", isOwn ? "justify-end" : "justify-start")}>
+    <div
+      className={cn(
+        "flex w-full px-2",
+        isOwn ? "justify-end" : "justify-start",
+      )}
+    >
       <div
         className={cn(
-          "relative max-w-[60%] overflow-hidden rounded-lg p-1 shadow-[0_1px_0.5px_rgba(0,0,0,0.13)]",
-          isOwn ? "bg-[#005c4b]" : "bg-[#202c33]",
+          "relative max-w-[60%] overflow-hidden rounded-lg p-1 shadow-sm",
+          isOwn ? "bg-emerald-100 dark:bg-emerald-800/80" : "bg-card",
         )}
       >
         <div className="relative overflow-hidden rounded-md">
@@ -30,8 +35,8 @@ export function VideoBubble({ message }: VideoBubbleProps) {
               className="block h-auto w-full"
             />
           ) : (
-            <div className="flex h-48 w-72 items-center justify-center bg-[#0b141a]">
-              <Video className="h-10 w-10 text-[#8696a0]" />
+            <div className="flex h-48 w-72 items-center justify-center bg-muted">
+              <Video className="h-10 w-10 text-muted-foreground" />
             </div>
           )}
           <div className="absolute inset-0 flex items-center justify-center bg-black/20">
@@ -47,7 +52,14 @@ export function VideoBubble({ message }: VideoBubbleProps) {
           ) : null}
         </div>
         {message.content ? (
-          <div className="px-2 pb-1 pt-2 pr-16 text-[14.2px] leading-[19px] text-[#e9edef]">
+          <div
+            className={cn(
+              "px-2 pb-1 pt-2 pr-16 text-[14.2px] leading-[19px]",
+              isOwn
+                ? "text-emerald-950 dark:text-emerald-50"
+                : "text-foreground",
+            )}
+          >
             {message.content}
           </div>
         ) : null}

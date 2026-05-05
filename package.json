@@ -151,6 +151,7 @@
     "date-fns": "^4.1.0",
     "dexie": "^4.4.2",
     "embla-carousel-react": "latest",
+    "emoji-picker-react": "^4.19.1",
     "format-duration": "^3.0.2",
     "groq-sdk": "latest",
     "html-to-image": "^1.11.13",

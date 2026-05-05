@@ -30,7 +30,7 @@ function IconButton({
       type="button"
       onClick={onClick}
       aria-label={ariaLabel}
-      className="flex h-9 w-9 items-center justify-center rounded-full text-[#aebac1] transition-colors hover:bg-[#374248] hover:text-white"
+      className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
     >
       {children}
     </button>
@@ -59,35 +59,24 @@ export function ChatHeaderActions({
           <button
             type="button"
             aria-label="More"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-[#aebac1] transition-colors hover:bg-[#374248] hover:text-white"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
             <MoreVertical className="h-5 w-5" strokeWidth={1.75} />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="min-w-[200px] border-[#2a3942] bg-[#233138] text-[#e9edef]"
+          className="min-w-[200px] border-border bg-popover text-popover-foreground"
         >
-          <DropdownMenuItem className="focus:bg-[#2a3942]">
-            Contact info
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="focus:bg-[#2a3942]"
-            onSelect={() => onOpenMedia()}
-          >
+          <DropdownMenuItem>Contact info</DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => onOpenMedia()}>
             Media, links and docs
           </DropdownMenuItem>
-          <DropdownMenuItem className="focus:bg-[#2a3942]">
-            Mute notifications
-          </DropdownMenuItem>
-          <DropdownMenuItem className="focus:bg-[#2a3942]">
-            Disappearing messages
-          </DropdownMenuItem>
-          <DropdownMenuSeparator className="bg-[#2a3942]" />
-          <DropdownMenuItem className="focus:bg-[#2a3942]">
-            Clear chat
-          </DropdownMenuItem>
-          <DropdownMenuItem className="text-[#f15c6d] focus:bg-[#2a3942]">
+          <DropdownMenuItem>Mute notifications</DropdownMenuItem>
+          <DropdownMenuItem>Disappearing messages</DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem>Clear chat</DropdownMenuItem>
+          <DropdownMenuItem className="text-rose-500">
             Block contact
           </DropdownMenuItem>
         </DropdownMenuContent>

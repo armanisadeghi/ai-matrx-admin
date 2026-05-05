@@ -219,8 +219,18 @@ const slice = createSlice({
         byId[seg.id] = seg;
         ids.push(seg.id);
       }
-      // Keep ordered by tStart — segments may arrive out-of-order on retries.
-      ids.sort((a, b) => byId[a]!.tStart - byId[b]!.tStart);
+      // Keep ordered by tStart, with chunkIndex as a deterministic tie-breaker.
+      // Without the tie-breaker, pasted segments and live recording chunks can
+      // collide on tStart (paste's `nextTStart = maxTEnd` snapshots a moment
+      // when a recorder chunk has the same tStart) and the relative order
+      // becomes whichever the comparator-returns-0 path leaves them in. Using
+      // chunkIndex (monotonic per inserter) restores the user's mental model:
+      // earlier insert wins.
+      ids.sort((a, b) => {
+        const dt = byId[a]!.tStart - byId[b]!.tStart;
+        if (dt !== 0) return dt;
+        return byId[a]!.chunkIndex - byId[b]!.chunkIndex;
+      });
     },
     rawSegmentsCleared(state, action: PayloadAction<{ sessionId: string }>) {
       delete state.rawById[action.payload.sessionId];

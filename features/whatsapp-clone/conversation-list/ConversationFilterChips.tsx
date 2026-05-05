@@ -30,8 +30,8 @@ export function ConversationFilterChips({
           className={cn(
             "h-8 rounded-full px-3.5 text-[13px] font-medium transition-colors",
             active === chip.key
-              ? "bg-[#103529] text-[#25d366]"
-              : "bg-[#202c33] text-[#aebac1] hover:bg-[#2a3942]",
+              ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+              : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground",
           )}
         >
           {chip.label}

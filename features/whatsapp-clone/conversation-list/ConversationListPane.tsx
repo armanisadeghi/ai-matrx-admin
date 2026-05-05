@@ -15,12 +15,14 @@ interface ConversationListPaneProps {
   conversations: WAConversation[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  onNewChat?: () => void;
 }
 
 export function ConversationListPane({
   conversations,
   selectedId,
   onSelect,
+  onNewChat,
 }: ConversationListPaneProps) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
@@ -42,8 +44,8 @@ export function ConversationListPane({
   }, [conversations, filter, search]);
 
   return (
-    <div className="flex h-full flex-col bg-[#111b21]">
-      <ConversationListHeader />
+    <div className="flex h-full flex-col bg-card">
+      <ConversationListHeader onNewChat={onNewChat} />
       <ConversationSearch value={search} onChange={setSearch} />
       <ConversationFilterChips active={filter} onChange={setFilter} />
       <ScrollArea className="flex-1">
@@ -57,8 +59,21 @@ export function ConversationListPane({
             />
           ))}
           {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center text-[13px] text-[#8696a0]">
-              <span>No chats match your filter.</span>
+            <div className="flex flex-col items-center justify-center gap-3 px-6 py-12 text-center">
+              <span className="text-[13px] text-muted-foreground">
+                {conversations.length === 0
+                  ? "No conversations yet."
+                  : "No chats match your filter."}
+              </span>
+              {conversations.length === 0 && onNewChat ? (
+                <button
+                  type="button"
+                  onClick={onNewChat}
+                  className="rounded-md bg-emerald-500 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-emerald-600"
+                >
+                  Start a new chat
+                </button>
+              ) : null}
             </div>
           ) : null}
         </div>

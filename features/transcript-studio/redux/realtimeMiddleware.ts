@@ -6,10 +6,19 @@
 //
 // Channel B (active session): subscribed when an active session is selected
 // and torn down + rebuilt when the active session changes. Listens to the
-// four per-segment tables filtered by `session_id`. Reducers are idempotent
-// (skip-if-exists), so no echo suppression is required for inserts; UPDATEs
-// on `studio_cleaned_segments` re-apply via cleanedSegmentApplied which
-// also handles supersession.
+// four per-segment tables filtered by `session_id`.
+//
+// Routing per event type matters:
+//   - INSERT → *Appended / cleanedSegmentApplied (supersede on new pass)
+//   - UPDATE → *Updated (in-place; never re-fire the supersede logic)
+//   - DELETE → *Removed (cross-tab delete propagation)
+//
+// Earlier versions used `event: "*"` for cleaned segments and routed every
+// echo (including UPDATEs from edits and from supersede stamps) through
+// `cleanedSegmentApplied`, which deletes all active rows where
+// `tStart >= segment.tStart`. That clobbered every later segment any time a
+// user edited an earlier one — the bug behind the "edit a row and lose
+// everything after it" report.
 //
 // Pattern stolen from features/notes/redux/realtimeMiddleware.ts.
 import type { Middleware } from "@reduxjs/toolkit";
@@ -32,9 +41,17 @@ import {
   sessionUpserted,
   sessionRemoved,
   rawSegmentsAppended,
+  rawSegmentUpdated,
+  rawSegmentRemoved,
   cleanedSegmentApplied,
+  cleanedSegmentUpdated,
+  cleanedSegmentRemoved,
   conceptsAppended,
+  conceptItemUpdated,
+  conceptItemRemoved,
   moduleSegmentsAppended,
+  moduleSegmentUpdated,
+  moduleSegmentRemoved,
 } from "./slice";
 import { fetchSessionsThunk } from "./thunks";
 
@@ -103,6 +120,8 @@ export const transcriptStudioRealtimeMiddleware: Middleware =
         const sid = nextActiveId;
         activeSessionChannel = supabase
           .channel(`studio-segments-rt:${sid}`)
+
+          // ── studio_raw_segments ────────────────────────────────────
           .on(
             "postgres_changes",
             {
@@ -125,7 +144,51 @@ export const transcriptStudioRealtimeMiddleware: Middleware =
           .on(
             "postgres_changes",
             {
-              event: "*",
+              event: "UPDATE",
+              schema: "public",
+              table: "studio_raw_segments",
+              filter: `session_id=eq.${sid}`,
+            },
+            (payload) => {
+              const row = payload.new as RawSegmentRow | undefined;
+              if (!row) return;
+              storeApi.dispatch(
+                rawSegmentUpdated({
+                  sessionId: sid,
+                  segment: rowToRawSegment(row),
+                }),
+              );
+            },
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "DELETE",
+              schema: "public",
+              table: "studio_raw_segments",
+              filter: `session_id=eq.${sid}`,
+            },
+            (payload) => {
+              const old = payload.old as { id?: string } | undefined;
+              if (!old?.id) return;
+              storeApi.dispatch(
+                rawSegmentRemoved({ sessionId: sid, segmentId: old.id }),
+              );
+            },
+          )
+
+          // ── studio_cleaned_segments ────────────────────────────────
+          //
+          // INSERT = a new cleanup pass landed → apply with supersede.
+          // UPDATE = either an in-place edit OR the supersede stamp the
+          //   apply-flow itself fires. Both are routed to *Updated which
+          //   does an in-place patch — applying the supersede reducer on
+          //   a UPDATE echo would re-drop every later row.
+          // DELETE = explicit user delete (or session cleanup).
+          .on(
+            "postgres_changes",
+            {
+              event: "INSERT",
               schema: "public",
               table: "studio_cleaned_segments",
               filter: `session_id=eq.${sid}`,
@@ -133,6 +196,9 @@ export const transcriptStudioRealtimeMiddleware: Middleware =
             (payload) => {
               const row = payload.new as CleanedSegmentRow | undefined;
               if (!row) return;
+              // Brand-new active row only — superseded inserts shouldn't
+              // happen but guard anyway.
+              if (row.superseded_at !== null) return;
               storeApi.dispatch(
                 cleanedSegmentApplied({
                   sessionId: sid,
@@ -141,6 +207,58 @@ export const transcriptStudioRealtimeMiddleware: Middleware =
               );
             },
           )
+          .on(
+            "postgres_changes",
+            {
+              event: "UPDATE",
+              schema: "public",
+              table: "studio_cleaned_segments",
+              filter: `session_id=eq.${sid}`,
+            },
+            (payload) => {
+              const row = payload.new as CleanedSegmentRow | undefined;
+              if (!row) return;
+              if (row.superseded_at !== null) {
+                // The row got superseded by a later cleanup pass — drop
+                // it from the active registry so we never render two
+                // overlapping rows after a cross-tab cleanup.
+                storeApi.dispatch(
+                  cleanedSegmentRemoved({
+                    sessionId: sid,
+                    segmentId: row.id,
+                  }),
+                );
+                return;
+              }
+              storeApi.dispatch(
+                cleanedSegmentUpdated({
+                  sessionId: sid,
+                  segment: rowToCleanedSegment(row),
+                }),
+              );
+            },
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "DELETE",
+              schema: "public",
+              table: "studio_cleaned_segments",
+              filter: `session_id=eq.${sid}`,
+            },
+            (payload) => {
+              const old = payload.old as { id?: string } | undefined;
+              if (!old?.id) return;
+              storeApi.dispatch(
+                cleanedSegmentRemoved({
+                  sessionId: sid,
+                  segmentId: old.id,
+                }),
+              );
+            },
+          )
+
+          // ── studio_concept_items ────────────────────────────────────
           .on(
             "postgres_changes",
             {
@@ -163,6 +281,43 @@ export const transcriptStudioRealtimeMiddleware: Middleware =
           .on(
             "postgres_changes",
             {
+              event: "UPDATE",
+              schema: "public",
+              table: "studio_concept_items",
+              filter: `session_id=eq.${sid}`,
+            },
+            (payload) => {
+              const row = payload.new as ConceptItemRow | undefined;
+              if (!row) return;
+              storeApi.dispatch(
+                conceptItemUpdated({
+                  sessionId: sid,
+                  item: rowToConceptItem(row),
+                }),
+              );
+            },
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "DELETE",
+              schema: "public",
+              table: "studio_concept_items",
+              filter: `session_id=eq.${sid}`,
+            },
+            (payload) => {
+              const old = payload.old as { id?: string } | undefined;
+              if (!old?.id) return;
+              storeApi.dispatch(
+                conceptItemRemoved({ sessionId: sid, itemId: old.id }),
+              );
+            },
+          )
+
+          // ── studio_module_segments ──────────────────────────────────
+          .on(
+            "postgres_changes",
+            {
               event: "INSERT",
               schema: "public",
               table: "studio_module_segments",
@@ -175,6 +330,44 @@ export const transcriptStudioRealtimeMiddleware: Middleware =
                 moduleSegmentsAppended({
                   sessionId: sid,
                   segments: [rowToModuleSegment(row)],
+                }),
+              );
+            },
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "UPDATE",
+              schema: "public",
+              table: "studio_module_segments",
+              filter: `session_id=eq.${sid}`,
+            },
+            (payload) => {
+              const row = payload.new as ModuleSegmentRow | undefined;
+              if (!row) return;
+              storeApi.dispatch(
+                moduleSegmentUpdated({
+                  sessionId: sid,
+                  segment: rowToModuleSegment(row),
+                }),
+              );
+            },
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "DELETE",
+              schema: "public",
+              table: "studio_module_segments",
+              filter: `session_id=eq.${sid}`,
+            },
+            (payload) => {
+              const old = payload.old as { id?: string } | undefined;
+              if (!old?.id) return;
+              storeApi.dispatch(
+                moduleSegmentRemoved({
+                  sessionId: sid,
+                  segmentId: old.id,
                 }),
               );
             },

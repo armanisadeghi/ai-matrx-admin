@@ -16,23 +16,52 @@ export function FileBubble({ message }: FileBubbleProps) {
   const fileSize = message.media?.fileSize ?? 0;
 
   return (
-    <div className={cn("flex w-full px-2", isOwn ? "justify-end" : "justify-start")}>
+    <div
+      className={cn(
+        "flex w-full px-2",
+        isOwn ? "justify-end" : "justify-start",
+      )}
+    >
       <div
         className={cn(
-          "relative max-w-[420px] rounded-lg p-2 pb-5 shadow-[0_1px_0.5px_rgba(0,0,0,0.13)]",
-          isOwn ? "bg-[#005c4b]" : "bg-[#202c33]",
+          "relative max-w-[420px] rounded-lg p-2 pb-5 shadow-sm",
+          isOwn ? "bg-emerald-100 dark:bg-emerald-800/80" : "bg-card",
         )}
       >
-        <div className="flex items-center gap-3 rounded-md bg-black/15 px-3 py-2.5">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#0b141a] text-[#aebac1]">
+        <div
+          className={cn(
+            "flex items-center gap-3 rounded-md px-3 py-2.5",
+            isOwn ? "bg-black/10 dark:bg-black/25" : "bg-muted",
+          )}
+        >
+          <div
+            className={cn(
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-foreground",
+              isOwn ? "bg-emerald-200/80 dark:bg-emerald-900/60" : "bg-muted",
+            )}
+          >
             <FileText className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-[14px] text-[#e9edef]">
+            <div
+              className={cn(
+                "truncate text-[14px]",
+                isOwn
+                  ? "text-emerald-950 dark:text-emerald-50"
+                  : "text-foreground",
+              )}
+            >
               {fileName}
             </div>
             {fileSize > 0 ? (
-              <div className="text-[12px] text-[#8696a0]">
+              <div
+                className={cn(
+                  "text-[12px]",
+                  isOwn
+                    ? "text-emerald-900/70 dark:text-emerald-100/70"
+                    : "text-muted-foreground",
+                )}
+              >
                 {formatFileSize(fileSize)}
               </div>
             ) : null}
@@ -40,7 +69,7 @@ export function FileBubble({ message }: FileBubbleProps) {
           <button
             type="button"
             aria-label="Download"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-[#aebac1] hover:bg-black/25"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-black/10"
           >
             <Download className="h-4 w-4" />
           </button>
@@ -48,7 +77,9 @@ export function FileBubble({ message }: FileBubbleProps) {
         <div
           className={cn(
             "pointer-events-none absolute bottom-1 right-2 flex items-center gap-1 text-[11px] leading-none",
-            isOwn ? "text-[#aebac1]" : "text-[#8696a0]",
+            isOwn
+              ? "text-emerald-900/70 dark:text-emerald-100/70"
+              : "text-muted-foreground",
           )}
         >
           <span>{formatBubbleTime(message.createdAt)}</span>

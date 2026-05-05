@@ -14,11 +14,18 @@ export function ImageBubble({ message }: ImageBubbleProps) {
   const src = message.media?.thumbnailUrl ?? message.media?.url;
 
   return (
-    <div className={cn("flex w-full px-2", isOwn ? "justify-end" : "justify-start")}>
+    <div
+      className={cn(
+        "flex w-full px-2",
+        isOwn ? "justify-end" : "justify-start",
+      )}
+    >
       <div
         className={cn(
-          "relative max-w-[60%] overflow-hidden rounded-lg p-1 shadow-[0_1px_0.5px_rgba(0,0,0,0.13)]",
-          isOwn ? "bg-[#005c4b]" : "bg-[#202c33]",
+          "relative max-w-[60%] overflow-hidden rounded-lg p-1 shadow-sm",
+          isOwn
+            ? "bg-emerald-100 dark:bg-emerald-800/80"
+            : "bg-card",
         )}
       >
         <div className="overflow-hidden rounded-md">
@@ -30,22 +37,24 @@ export function ImageBubble({ message }: ImageBubbleProps) {
               className="block h-auto w-full"
             />
           ) : (
-            <div className="flex h-48 w-72 items-center justify-center bg-[#0b141a] text-[12px] text-[#8696a0]">
+            <div className="flex h-48 w-72 items-center justify-center bg-muted text-[12px] text-muted-foreground">
               Image unavailable
             </div>
           )}
         </div>
         {message.content ? (
-          <div className="px-2 pb-1 pt-2 pr-16 text-[14.2px] leading-[19px] text-[#e9edef]">
+          <div
+            className={cn(
+              "px-2 pb-1 pt-2 pr-16 text-[14.2px] leading-[19px]",
+              isOwn
+                ? "text-emerald-950 dark:text-emerald-50"
+                : "text-foreground",
+            )}
+          >
             {message.content}
           </div>
         ) : null}
-        <div
-          className={cn(
-            "absolute bottom-2 right-3 flex items-center gap-1 rounded-full bg-black/40 px-1.5 py-0.5 text-[11px] leading-none text-white",
-            message.content ? "" : "drop-shadow",
-          )}
-        >
+        <div className="absolute bottom-2 right-3 flex items-center gap-1 rounded-full bg-black/40 px-1.5 py-0.5 text-[11px] leading-none text-white">
           <span>{formatBubbleTime(message.createdAt)}</span>
           {isOwn ? <MessageStatusTicks status={message.status} /> : null}
         </div>

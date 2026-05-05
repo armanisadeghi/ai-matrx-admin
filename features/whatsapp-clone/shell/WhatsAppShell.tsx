@@ -14,6 +14,7 @@ import { useWhatsAppConversations } from "../hooks/useWhatsAppConversations";
 import { ModalProvider, useWAModals } from "../modals/ModalContext";
 import { SettingsModal } from "../modals/settings/SettingsModal";
 import { MediaModal } from "../modals/media/MediaModal";
+import { NewConversationDialog } from "@/features/messaging/components/NewConversationDialog";
 
 interface WhatsAppShellProps {
   userName?: string;
@@ -22,39 +23,54 @@ interface WhatsAppShellProps {
 
 function ShellInner({ userName, userAvatarUrl }: WhatsAppShellProps) {
   const [activeRail, setActiveRail] = useState<RailKey>("chats");
+  const [newChatOpen, setNewChatOpen] = useState(false);
   const { conversations, selectedId, select } = useWhatsAppConversations();
-  const { open, openSettings, close } = useWAModals();
+  const { open, openSettings, openMedia, close } = useWAModals();
   const selected = conversations.find((c) => c.id === selectedId) ?? null;
-  const unreadChats = conversations.reduce((s, c) => s + (c.unreadCount || 0), 0);
+  const unreadChats = conversations.reduce(
+    (s, c) => s + (c.unreadCount || 0),
+    0,
+  );
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden bg-[#0b141a]">
+    <div className="flex h-full w-full flex-col overflow-hidden bg-card text-foreground">
       <TitleBar />
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         <IconRail
           active={activeRail}
           onSelect={setActiveRail}
           onSettings={openSettings}
+          onOpenMedia={openMedia}
           unreadChats={unreadChats}
           userName={userName}
           userAvatarUrl={userAvatarUrl}
         />
-        <ResizablePanelGroup orientation="horizontal" className="flex-1">
+        <ResizablePanelGroup
+          orientation="horizontal"
+          id="wa-shell-split"
+          className="flex-1"
+        >
           <ResizablePanel
-            defaultSize={32}
-            minSize={24}
-            maxSize={45}
-            id="list"
+            id="wa-list"
             order={1}
+            defaultSize="32%"
+            minSize="22%"
+            maxSize="50%"
           >
             <ConversationListPane
               conversations={conversations}
               selectedId={selectedId}
               onSelect={select}
+              onNewChat={() => setNewChatOpen(true)}
             />
           </ResizablePanel>
           <PaneDivider />
-          <ResizablePanel defaultSize={68} minSize={40} id="chat" order={2}>
+          <ResizablePanel
+            id="wa-chat"
+            order={2}
+            defaultSize="68%"
+            minSize="40%"
+          >
             <ChatViewPane conversation={selected} />
           </ResizablePanel>
         </ResizablePanelGroup>
@@ -68,7 +84,15 @@ function ShellInner({ userName, userAvatarUrl }: WhatsAppShellProps) {
       />
       <MediaModal
         open={open === "media"}
-        onOpenChange={(o) => (o ? null : close())}
+        onOpenChange={(o) => (o ? openMedia() : close())}
+      />
+      <NewConversationDialog
+        open={newChatOpen}
+        onOpenChange={setNewChatOpen}
+        onConversationCreated={(id) => {
+          setNewChatOpen(false);
+          select(id);
+        }}
       />
     </div>
   );
