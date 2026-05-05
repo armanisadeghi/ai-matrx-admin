@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import Image from 'next/image';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Download, Copy, Wand2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ImageRecord, ImageViewMode } from '../../types';
 
@@ -11,6 +11,55 @@ interface ImageManagerGridProps {
   viewMode: ImageViewMode;
   selectedId: string | null;
   onSelect: (id: string) => void;
+  onDownload: (img: ImageRecord) => void;
+  onCopyUrl: (img: ImageRecord) => void;
+  onOpenInStudio: (img: ImageRecord) => void;
+}
+
+function ImageOverlay({
+  img,
+  onDownload,
+  onCopyUrl,
+  onOpenInStudio,
+}: {
+  img: ImageRecord;
+  onDownload: (img: ImageRecord) => void;
+  onCopyUrl: (img: ImageRecord) => void;
+  onOpenInStudio: (img: ImageRecord) => void;
+}) {
+  return (
+    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-2">
+      {/* top-right: action icons */}
+      <div className="flex items-center justify-end gap-1">
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onOpenInStudio(img); }}
+          className="rounded-md bg-white/15 hover:bg-white/30 p-1.5 backdrop-blur-sm transition-colors"
+          title="Edit in Studio"
+        >
+          <Wand2 className="w-3.5 h-3.5 text-white" />
+        </button>
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onCopyUrl(img); }}
+          className="rounded-md bg-white/15 hover:bg-white/30 p-1.5 backdrop-blur-sm transition-colors"
+          title="Copy URL"
+        >
+          <Copy className="w-3.5 h-3.5 text-white" />
+        </button>
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onDownload(img); }}
+          className="rounded-md bg-white/15 hover:bg-white/30 p-1.5 backdrop-blur-sm transition-colors"
+          title="Download"
+        >
+          <Download className="w-3.5 h-3.5 text-white" />
+        </button>
+      </div>
+      {/* bottom: filename */}
+      <p className="text-white text-xs truncate leading-none opacity-90">{img.name}</p>
+    </div>
+  );
 }
 
 export function ImageManagerGrid({
@@ -19,19 +68,14 @@ export function ImageManagerGrid({
   viewMode,
   selectedId,
   onSelect,
+  onDownload,
+  onCopyUrl,
+  onOpenInStudio,
 }: ImageManagerGridProps) {
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
-  if (images.length === 0) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-8">
-        <p className="text-sm text-muted-foreground">No images found.</p>
       </div>
     );
   }
@@ -46,7 +90,7 @@ export function ImageManagerGrid({
               type="button"
               onClick={() => onSelect(img.id)}
               className={cn(
-                'block w-full mb-2 rounded-md overflow-hidden border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'relative block w-full mb-2 rounded-lg overflow-hidden border group transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 selectedId === img.id
                   ? 'border-primary ring-1 ring-primary'
                   : 'border-transparent hover:border-border',
@@ -60,6 +104,12 @@ export function ImageManagerGrid({
                 unoptimized
                 className="w-full h-auto object-cover"
               />
+              <ImageOverlay
+                img={img}
+                onDownload={onDownload}
+                onCopyUrl={onCopyUrl}
+                onOpenInStudio={onOpenInStudio}
+              />
             </button>
           ))}
         </div>
@@ -67,7 +117,6 @@ export function ImageManagerGrid({
     );
   }
 
-  // grid mode
   return (
     <div className="flex-1 overflow-y-auto p-3">
       <div
@@ -80,7 +129,7 @@ export function ImageManagerGrid({
             type="button"
             onClick={() => onSelect(img.id)}
             className={cn(
-              'relative aspect-square rounded-md overflow-hidden border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              'relative aspect-square rounded-lg overflow-hidden border group transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               selectedId === img.id
                 ? 'border-primary ring-1 ring-primary'
                 : 'border-transparent hover:border-border',
@@ -93,6 +142,12 @@ export function ImageManagerGrid({
               height={200}
               unoptimized
               className="w-full h-full object-cover"
+            />
+            <ImageOverlay
+              img={img}
+              onDownload={onDownload}
+              onCopyUrl={onCopyUrl}
+              onOpenInStudio={onOpenInStudio}
             />
           </button>
         ))}

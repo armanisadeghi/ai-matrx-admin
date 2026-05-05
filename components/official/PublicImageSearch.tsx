@@ -70,6 +70,8 @@ export interface PublicImageSearchProps {
   className?: string;
   /** Additional styles for the input */
   inputClassName?: string;
+  /** Additional class names for the input wrapper div (overrides max-w-[180px]) */
+  inputContainerClassName?: string;
   /** Additional styles for the search button */
   buttonClassName?: string;
   /** Whether the component is disabled */
@@ -102,6 +104,7 @@ export function PublicImageSearch({
   compact = false,
   showPreview = false,
   previewSize = 40,
+  inputContainerClassName,
 }: PublicImageSearchProps) {
   // State for the component
   const [inputValue, setInputValue] = useState(initialValue);
@@ -471,7 +474,7 @@ export function PublicImageSearch({
         )}
 
         <div className="flex items-center justify-center gap-1 p-2 pt-0">
-          <div className="relative max-w-[180px]">
+          <div className={cn("relative max-w-[180px]", inputContainerClassName)}>
             <Input
               value={inputValue}
               onChange={handleInputChange}

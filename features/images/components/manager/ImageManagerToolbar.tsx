@@ -20,7 +20,7 @@ export function ImageManagerToolbar({
   imageCount,
 }: ImageManagerToolbarProps) {
   return (
-    <div className="flex items-center gap-2 px-3 py-2 border-b border-border shrink-0">
+    <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-card shrink-0">
       <span className="text-xs text-muted-foreground flex-1">
         {imageCount} {imageCount === 1 ? 'image' : 'images'}
       </span>
