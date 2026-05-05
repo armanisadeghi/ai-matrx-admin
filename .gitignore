@@ -74,6 +74,8 @@ public/cache/
 .env.test
 .env.production
 .env*
+!.env.example
+!.dead
 .env-backups/
  .history*
  .history/

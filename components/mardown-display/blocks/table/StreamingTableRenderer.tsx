@@ -304,7 +304,7 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
           const cleanHeader = header
             .replace(/\*\*([^*]+)\*\*/g, "$1")
             .replace(/\*([^*]+)\*/g, "$1")
-            .replace(/_([^_]+)_/g, "$1")
+            .replace(/(?<![A-Za-z0-9])_([^_\n]+?)_(?![A-Za-z0-9])/g, "$1")
             .replace(/`([^`]+)`/g, "$1")
             .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1|$2")
             .trim();
@@ -356,7 +356,7 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
         const processedBefore = beforeText
           .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
           .replace(/\*([^*]+)\*/g, "<em>$1</em>")
-          .replace(/_([^_]+)_/g, "<em>$1</em>");
+          .replace(/(?<![A-Za-z0-9])_([^_\n]+?)_(?![A-Za-z0-9])/g, "<em>$1</em>");
         parts.push(processedBefore);
       }
 
@@ -376,7 +376,7 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
       const processedRemaining = remainingText
         .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
         .replace(/\*([^*]+)\*/g, "<em>$1</em>")
-        .replace(/_([^_]+)_/g, "<em>$1</em>");
+        .replace(/(?<![A-Za-z0-9])_([^_\n]+?)_(?![A-Za-z0-9])/g, "<em>$1</em>");
       parts.push(processedRemaining);
     }
 
@@ -385,7 +385,7 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
       return text
         .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
         .replace(/\*([^*]+)\*/g, "<em>$1</em>")
-        .replace(/_([^_]+)_/g, "<em>$1</em>");
+        .replace(/(?<![A-Za-z0-9])_([^_\n]+?)_(?![A-Za-z0-9])/g, "<em>$1</em>");
     }
 
     return parts.join("");

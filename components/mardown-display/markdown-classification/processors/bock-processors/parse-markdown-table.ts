@@ -182,7 +182,7 @@ export const parseMarkdownTable = (
             return text
                 .replace(/\*\*([^*]+)\*\*/g, "$1")
                 .replace(/\*([^*]+)\*/g, "$1")
-                .replace(/_([^_]+)_/g, "$1")
+                .replace(/(?<![A-Za-z0-9])_([^_\n]+?)_(?![A-Za-z0-9])/g, "$1")
                 .replace(/`([^`]+)`/g, "$1")
                 // Keep links as "text|url" format for JSON data
                 .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1|$2")
@@ -291,7 +291,7 @@ export const parseMarkdownTables = (
                 return text
                     .replace(/\*\*([^*]+)\*\*/g, "$1")
                     .replace(/\*([^*]+)\*/g, "$1")
-                    .replace(/_([^_]+)_/g, "$1")
+                    .replace(/(?<![A-Za-z0-9])_([^_\n]+?)_(?![A-Za-z0-9])/g, "$1")
                     .replace(/`([^`]+)`/g, "$1")
                     // Keep links as "text|url" format for JSON data
                     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1|$2")

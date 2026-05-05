@@ -22,6 +22,10 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin, selectUser } from "@/lib/redux/slices/userSlice";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import {
+  attemptChunkReload,
+  isChunkLoadError,
+} from "@/components/errors/chunk-load-recovery";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -374,10 +378,31 @@ export function ErrorBoundaryView({
   const isAdmin = useAppSelector(selectIsAdmin);
   const router = useRouter();
   const [resetting, setResetting] = useState(false);
+  const isStaleChunk = isChunkLoadError(error);
 
   useEffect(() => {
     console.error(`[ErrorBoundary${context ? ` — ${context}` : ""}]`, error);
-  }, [error, context]);
+    // Stale-tab recovery — see chunk-load-recovery.ts for the why.
+    if (isStaleChunk) {
+      attemptChunkReload(error);
+    }
+  }, [error, context, isStaleChunk]);
+
+  if (isStaleChunk) {
+    return (
+      <div className="h-full flex items-center justify-center py-12 px-4">
+        <div className="text-center">
+          <RefreshCw className="h-6 w-6 mx-auto mb-3 text-muted-foreground animate-spin" />
+          <h2 className="text-base font-semibold mb-1">
+            Updating to the latest version…
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            A new build was deployed. Reloading this tab.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const handleReset = () => {
     setResetting(true);

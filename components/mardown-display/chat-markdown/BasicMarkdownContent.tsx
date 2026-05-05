@@ -159,39 +159,26 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
   const preprocessContent = (rawContent: string): string => {
     let processed = rawContent;
 
-    // ── DISABLED 2026-04-04 ────────────────────────────────────────────────────
-    // WHAT IT WAS:
-    //   processed = processed.replace(/<(\/?[\w][\w-]*)([^>]*?)>/g, "&lt;$1$2&gt;");
+    // Pre-escape XML/HTML-style angle-bracket tokens.
     //
-    // WHAT IT DID:
-    //   Pre-escaped every <Tag> and </Tag> pattern to HTML entities before
-    //   handing the string to react-markdown.
+    // Without this, CommonMark treats `<tag>` at the start of a line as the
+    // start of an HTML block (spec types 6 and 7). The block extends until the
+    // next blank line, and the parser emits the entire region as a single text
+    // node with embedded raw newlines — which collapse visually because they
+    // never reach `remark-breaks`. The result: multi-line bare XML like
+    //   <tools>
+    //     <tool name="db_insert">...</tool>
+    //     <tool name="db_query">...</tool>
+    //   </tools>
+    // renders as one wrapped paragraph instead of preserving its structure.
     //
-    // ORIGINAL INTENT:
-    //   Prevent angle-bracket tokens from being interpreted as raw HTML blocks
-    //   by the markdown parser, which could eat surrounding newlines and destroy
-    //   document structure.
-    //
-    // WHY IT WAS WRONG:
-    //   react-markdown does NOT execute arbitrary HTML unless the rehype-raw
-    //   plugin is explicitly added — and we do not use rehype-raw here. Without
-    //   it, react-markdown already treats unknown tags (e.g. <Admin>, <Resource>)
-    //   as literal text, so no pre-escaping is needed.
-    //
-    //   The pre-escaping turned <Admin> into &lt;Admin&gt; *before* the parser
-    //   saw it, so the parser faithfully output the literal characters
-    //   "&lt;Admin&gt;" on screen instead of "<Admin>".
-    //
-    // SYMPTOM:
-    //   Any angle-bracket token in AI-generated text — e.g. component names like
-    //   <Admin>, <Resource>, or type annotations like <T> — was rendered as the
-    //   escaped HTML entity string rather than the intended character sequence.
-    //
-    // FIX:
-    //   Line commented out. react-markdown handles this safely on its own.
-    //   Re-enable ONLY if you observe actual raw-HTML injection issues AND
-    //   confirm rehype-raw has been added to the rehypePlugins array.
-    // ──────────────────────────────────────────────────────────────────────────
+    // Escaping `<` and `>` to entities prevents HTML-block detection, so the
+    // content stays as ordinary paragraph text. `remark-breaks` then turns each
+    // single newline into a <br>, preserving the visual structure. CommonMark
+    // decodes `&lt;` and `&gt;` back to `<` and `>` in text, so inline
+    // references like <Admin> or <Resource> still render as the literal
+    // characters on screen.
+    processed = processed.replace(/<(\/?[\w][\w-]*)([^>]*?)>/g, "&lt;$1$2&gt;");
 
     // Replace leading spaces on each line with non-breaking spaces so HTML
     // doesn't collapse them — this preserves indentation visually.
