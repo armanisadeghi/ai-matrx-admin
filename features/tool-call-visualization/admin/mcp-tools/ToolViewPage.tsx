@@ -26,6 +26,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { formatText } from "@/utils/text/text-case-converter";
 import { mapIcon } from "@/utils/icons/icon-mapper";
 import { ToolTestSamplesViewer } from "@/features/tool-call-visualization/admin/ToolTestSamplesViewer";
+import { RegistryTab } from "@/features/tool-registry/tools-admin/components/RegistryTab";
+import { Network } from "lucide-react";
 import type { Database, Json } from "@/types/database.types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -375,6 +377,10 @@ export function ToolViewPage({ tool }: Props) {
                 <Info className="h-3.5 w-3.5" />
                 Overview
               </TabsTrigger>
+              <TabsTrigger value="registry" className="text-xs gap-1.5">
+                <Network className="h-3.5 w-3.5" />
+                Registry
+              </TabsTrigger>
               <TabsTrigger value="parameters" className="text-xs gap-1.5">
                 <Code className="h-3.5 w-3.5" />
                 Parameters
@@ -410,6 +416,14 @@ export function ToolViewPage({ tool }: Props) {
           <div className="flex-1 overflow-y-auto">
             <TabsContent value="overview" className="p-6 m-0 h-full">
               <OverviewTab tool={tool} />
+            </TabsContent>
+
+            <TabsContent value="registry" className="p-6 m-0 h-full">
+              <RegistryTab
+                toolId={tool.id}
+                toolName={tool.name}
+                initialGating={tool.gating}
+              />
             </TabsContent>
 
             <TabsContent value="parameters" className="p-6 m-0 h-full">
