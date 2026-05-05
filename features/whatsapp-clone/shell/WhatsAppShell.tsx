@@ -39,11 +39,7 @@ function ShellInner({ userName, userAvatarUrl }: WhatsAppShellProps) {
           userName={userName}
           userAvatarUrl={userAvatarUrl}
         />
-        <ResizablePanelGroup
-          orientation="horizontal"
-          className="flex-1"
-          autoSaveId="whatsapp-clone-main-split"
-        >
+        <ResizablePanelGroup orientation="horizontal" className="flex-1">
           <ResizablePanel
             defaultSize={32}
             minSize={24}

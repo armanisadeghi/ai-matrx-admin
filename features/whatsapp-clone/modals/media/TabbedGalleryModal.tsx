@@ -76,7 +76,7 @@ export function TabbedGalleryModal({
                   className={cn(
                     "rounded-md px-4 py-1 text-[13px] font-medium transition-colors",
                     tab.id === activeId
-                      ? "bg-[#0b141a] text-[#e9edef] shadow"
+                      ? "bg-[#2a3942] text-white shadow"
                       : "text-[#aebac1] hover:text-white",
                   )}
                 >
