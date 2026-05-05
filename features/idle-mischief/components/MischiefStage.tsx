@@ -17,6 +17,7 @@ import type { MischiefActId } from "../types";
 import {
   selectMischiefManualTrigger,
   selectMischiefSettings,
+  selectMischiefStatus,
   setCurrentAct,
   setStatus,
 } from "../state/idleMischiefSlice";
@@ -34,6 +35,7 @@ export function MischiefStage() {
   const reducedMotion = useReducedMotion();
   const settings = useAppSelector(selectMischiefSettings);
   const manualTrigger = useAppSelector(selectMischiefManualTrigger);
+  const status = useAppSelector(selectMischiefStatus);
 
   // Mischief is hard-disabled when:
   //   - reduced-motion is requested at the OS level
@@ -160,6 +162,16 @@ export function MischiefStage() {
     startAct(sched.id, sched.duration);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [manualTrigger.nonce, manualTrigger.actId, disabled]);
+
+  // ── External snap-back request (dev panel "Snap back now") ────────────────
+  useEffect(() => {
+    if (status !== "snapping-back") return;
+    if (!runningRef.current) return;
+    stopCurrent("snapping-back");
+    const t = window.setTimeout(() => dispatch(setStatus("idle")), SNAPBACK_DURATION_MS);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
 
   // ── Cleanup on unmount ────────────────────────────────────────────────────
   useEffect(() => {

@@ -12,6 +12,8 @@ import {
   XCircle,
   ExternalLink,
   Plus,
+  Plug,
+  PlugZap,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,11 +39,15 @@ import {
   listServerTools,
   countConnectedUsers,
   refreshServer,
+  testMcpServer,
   computeFreshness,
+  computeTestFreshness,
   formatRelativeAge,
   type McpServerRow,
   type McpConfigRow,
   type SyncFreshness,
+  type TestFreshness,
+  type McpTestResult,
 } from "@/features/tool-registry/mcp-admin/services/mcpAdmin.service";
 import { AddMcpServerDialog } from "@/features/tool-registry/mcp-admin/components/AddMcpServerDialog";
 
@@ -220,7 +226,10 @@ function ServerDetail({
   onRefreshed: () => void;
 }) {
   const [refreshing, setRefreshing] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [latestTest, setLatestTest] = useState<McpTestResult | null>(null);
   const fresh = computeFreshness(server);
+  const testFresh = computeTestFreshness(server);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -232,6 +241,26 @@ function ServerDetail({
       toast.error(e instanceof Error ? e.message : "Refresh failed");
     } finally {
       setRefreshing(false);
+    }
+  };
+
+  const onTest = async () => {
+    setTesting(true);
+    setLatestTest(null);
+    try {
+      const result = await testMcpServer(server.id);
+      setLatestTest(result);
+      if (result.ok) {
+        toast.success(`${server.slug} reachable (${result.statusCode}, ${result.latencyMs}ms)`);
+      } else {
+        toast.error(`${server.slug} unhealthy: ${result.error ?? result.message}`);
+      }
+      // Refresh the list so the persisted test result chip updates everywhere
+      onRefreshed();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Test failed");
+    } finally {
+      setTesting(false);
     }
   };
 
@@ -248,6 +277,7 @@ function ServerDetail({
                 <Badge className="text-[10px]">official</Badge>
               )}
               <FreshnessBadge fresh={fresh} />
+              <TestFreshnessBadge testFresh={testFresh} />
             </div>
             <p className="text-sm mt-1">{server.name} <span className="text-muted-foreground">· {server.vendor}</span></p>
             {server.description && (
@@ -266,6 +296,17 @@ function ServerDetail({
             <Button
               size="sm"
               variant="outline"
+              onClick={() => void onTest()}
+              disabled={testing}
+              className="h-8 gap-1.5 text-xs"
+              title="Probe the endpoint URL — does the server respond?"
+            >
+              {testing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <PlugZap className="h-3.5 w-3.5" />}
+              Test connection
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
               onClick={() => void onRefresh()}
               disabled={refreshing}
               className="h-8 gap-1.5 text-xs"
@@ -280,6 +321,7 @@ function ServerDetail({
             <strong>Sync error:</strong> {fresh.lastError}
           </div>
         )}
+        {latestTest && <TestResultPanel result={latestTest} />}
       </header>
 
       <Tabs defaultValue="tools" className="flex flex-col">

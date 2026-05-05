@@ -100,6 +100,70 @@ export async function refreshServer(serverId: string): Promise<void> {
   }
 }
 
+export interface McpTestResult {
+  ok: boolean;
+  reachable: boolean;
+  statusCode: number | null;
+  latencyMs: number | null;
+  error: string | null;
+  transport: string;
+  endpointTested: string | null;
+  message: string;
+}
+
+/**
+ * Probe an MCP server's endpoint URL from the Next.js server runtime.
+ * Persists the outcome to tl_mcp_server.last_test_* so the freshness UI
+ * can read it without re-running the test. See
+ * `app/api/admin/mcp/[serverId]/test/route.ts` for the test semantics
+ * (any HTTP response = reachable; only 5xx / network errors = unhealthy).
+ */
+export async function testMcpServer(serverId: string): Promise<McpTestResult> {
+  const res = await fetch(`/api/admin/mcp/${serverId}/test`, { method: "POST" });
+  if (!res.ok) {
+    let detail = "";
+    try {
+      detail = (await res.json()).error ?? "";
+    } catch {
+      /* ignore */
+    }
+    throw new Error(detail || `Test failed (${res.status})`);
+  }
+  return res.json() as Promise<McpTestResult>;
+}
+
+export interface TestFreshness {
+  state: "untested" | "ok" | "errored";
+  ageSec: number | null;
+  ok: boolean | null;
+  statusCode: number | null;
+  latencyMs: number | null;
+  error: string | null;
+}
+
+export function computeTestFreshness(server: McpServerRow): TestFreshness {
+  if (!server.last_tested_at) {
+    return {
+      state: "untested",
+      ageSec: null,
+      ok: null,
+      statusCode: server.last_test_status_code ?? null,
+      latencyMs: server.last_test_latency_ms ?? null,
+      error: server.last_test_error ?? null,
+    };
+  }
+  const ageMs = Date.now() - new Date(server.last_tested_at).getTime();
+  const ageSec = Math.floor(ageMs / 1000);
+  return {
+    state: server.last_test_ok ? "ok" : "errored",
+    ageSec,
+    ok: server.last_test_ok,
+    statusCode: server.last_test_status_code ?? null,
+    latencyMs: server.last_test_latency_ms ?? null,
+    error: server.last_test_error ?? null,
+  };
+}
+
 export interface ProvisionMcpServerInput {
   slug: string;
   name: string;

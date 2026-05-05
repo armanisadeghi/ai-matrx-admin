@@ -15931,6 +15931,11 @@ export type Database = {
           is_official: boolean
           last_sync_error: string | null
           last_synced_at: string | null
+          last_test_error: string | null
+          last_test_latency_ms: number | null
+          last_test_ok: boolean | null
+          last_test_status_code: number | null
+          last_tested_at: string | null
           metadata: Json
           name: string
           oauth_client_id: string | null
@@ -15961,6 +15966,11 @@ export type Database = {
           is_official?: boolean
           last_sync_error?: string | null
           last_synced_at?: string | null
+          last_test_error?: string | null
+          last_test_latency_ms?: number | null
+          last_test_ok?: boolean | null
+          last_test_status_code?: number | null
+          last_tested_at?: string | null
           metadata?: Json
           name: string
           oauth_client_id?: string | null
@@ -15991,6 +16001,11 @@ export type Database = {
           is_official?: boolean
           last_sync_error?: string | null
           last_synced_at?: string | null
+          last_test_error?: string | null
+          last_test_latency_ms?: number | null
+          last_test_ok?: boolean | null
+          last_test_status_code?: number | null
+          last_tested_at?: string | null
           metadata?: Json
           name?: string
           oauth_client_id?: string | null
