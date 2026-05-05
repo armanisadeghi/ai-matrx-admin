@@ -3,20 +3,15 @@
 import React, { useState } from "react";
 import {
   CloudUpload,
-  Download,
   Eye,
-  FileDown,
   FolderInput,
   Gauge,
-  Loader2,
   Paintbrush,
-  Zap,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import type { ImageFit, ImagePosition, OutputFormat } from "@/features/images/studio-types";
-import { formatBytes } from "@/features/images/utils/format-bytes";
 import { CropControls } from "./CropControls";
 
 const FORMATS: Array<{
@@ -62,36 +57,12 @@ interface ExportPanelProps {
   onBackgroundChange: (c: string) => void;
   onFitChange: (f: ImageFit) => void;
   onPositionChange: (p: ImagePosition) => void;
-
-  isProcessing: boolean;
   isSaving: boolean;
-  canGenerate: boolean;
-  canDownload: boolean;
   canSave: boolean;
-
-  filesCount: number;
-  selectedPresetCount: number;
-  totalVariantCount: number;
-  generatedVariantCount: number;
-  totalOutputBytes: number;
-  selectedVariantCount: number;
-
-  onGenerate: () => void;
-  onDownloadAll: () => void;
-  onDownloadSelected: () => void;
-  /**
-   * Save all generated variants to the user's library. `makePublic`
-   * controls visibility — when true, files become public and the
-   * response carries permanent CDN URLs safe to share. When false
-   * (default), they're private and require auth to view.
-   */
   onSaveAll: (folder: string, makePublic: boolean) => void;
   onOpenPreview?: () => void;
   canOpenPreview?: boolean;
   isPreviewOpen?: boolean;
-  onDescribeAll?: () => void;
-  isDescribing?: boolean;
-  describedFileCount?: number;
 }
 
 export function ExportPanel({
@@ -105,30 +76,12 @@ export function ExportPanel({
   onBackgroundChange,
   onFitChange,
   onPositionChange,
-
-  isProcessing,
   isSaving,
-  canGenerate,
-  canDownload,
   canSave,
-
-  filesCount,
-  selectedPresetCount,
-  totalVariantCount,
-  generatedVariantCount,
-  totalOutputBytes,
-  selectedVariantCount,
-
-  onGenerate,
-  onDownloadAll,
-  onDownloadSelected,
   onSaveAll,
   onOpenPreview,
   canOpenPreview = false,
   isPreviewOpen = false,
-  onDescribeAll,
-  isDescribing = false,
-  describedFileCount = 0,
 }: ExportPanelProps) {
   const [folder, setFolder] = useState("image-studio");
   const [makePublic, setMakePublic] = useState(false);
@@ -138,12 +91,12 @@ export function ExportPanel({
       <div className="p-3 border-b border-border">
         <h3 className="text-sm font-semibold flex items-center gap-1.5">
           <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
-          Output controls
+          Output settings
         </h3>
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-5">
-        {/* Crop & fit — placed FIRST because it's the most common gotcha */}
+        {/* Crop & fit */}
         <CropControls
           fit={fit}
           position={position}
@@ -173,9 +126,7 @@ export function ExportPanel({
             }
           >
             <Eye className="h-3.5 w-3.5" />
-            {isPreviewOpen
-              ? "Preview open — focus it"
-              : "Open live crop preview"}
+            {isPreviewOpen ? "Preview open — focus it" : "Open live crop preview"}
           </button>
         )}
 
@@ -266,122 +217,22 @@ export function ExportPanel({
           </p>
         </div>
 
-        {/* Summary stats */}
-        <div className="rounded-xl border border-border bg-muted/30 p-3 space-y-1.5 text-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Source files</span>
-            <span className="font-mono tabular-nums">{filesCount}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Selected presets</span>
-            <span className="font-mono tabular-nums">
-              {selectedPresetCount}
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Total variants</span>
-            <span className="font-mono tabular-nums">
-              {generatedVariantCount}
-              {totalVariantCount > 0 && ` / ${totalVariantCount}`}
-            </span>
-          </div>
-          <div className="flex items-center justify-between pt-1 border-t border-border">
-            <span className="text-muted-foreground">Output size</span>
-            <span className="font-mono tabular-nums flex items-center gap-1">
-              {totalOutputBytes > 0 && <Zap className="h-3 w-3 text-success" />}
-              {formatBytes(totalOutputBytes)}
-            </span>
-          </div>
-        </div>
-      </div>
+        <div className="h-px bg-border" />
 
-      {/* Actions ────────────────────────────────────── */}
-      <div className="p-3 border-t border-border space-y-2 bg-card/80">
-        <button
-          type="button"
-          onClick={onGenerate}
-          disabled={!canGenerate || isProcessing}
-          className={cn(
-            "w-full h-10 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all",
-            canGenerate && !isProcessing
-              ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
-              : "bg-muted text-muted-foreground cursor-not-allowed",
-          )}
-        >
-          <Zap className={cn("h-4 w-4", isProcessing && "animate-pulse")} />
-          {isProcessing ? "Generating…" : "Generate all variants"}
-        </button>
-
-        {onDescribeAll && (
-          <button
-            type="button"
-            onClick={onDescribeAll}
-            disabled={filesCount === 0 || isDescribing}
-            className={cn(
-              "w-full h-9 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-colors",
-              filesCount > 0 && !isDescribing
-                ? "border border-primary/40 bg-primary/5 text-primary hover:bg-primary/10"
-                : "bg-muted text-muted-foreground border border-border cursor-not-allowed",
-            )}
-            title={
-              filesCount === 0
-                ? "Drop an image first"
-                : "Run the describe agent on every file — generates filename, alt text, caption, SEO copy, and dominant colours per file"
-            }
-          >
-            {isDescribing ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Zap className="h-3.5 w-3.5" />
-            )}
-            {isDescribing
-              ? "Describing with AI…"
-              : describedFileCount > 0 && describedFileCount === filesCount
-                ? "Re-describe all with AI"
-                : describedFileCount > 0
-                  ? `Describe remaining (${filesCount - describedFileCount})`
-                  : "Describe all with AI"}
-          </button>
-        )}
-
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={onDownloadSelected}
-            disabled={selectedVariantCount === 0}
-            className="h-9 rounded-md border border-border text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-muted/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            title="Download only the selected variants as a ZIP"
-          >
-            <FileDown className="h-3.5 w-3.5" />
-            Selected ({selectedVariantCount})
-          </button>
-          <button
-            type="button"
-            onClick={onDownloadAll}
-            disabled={!canDownload}
-            className="h-9 rounded-md border border-border text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-muted/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            title="Download every variant across all files as a ZIP"
-          >
-            <Download className="h-3.5 w-3.5" />
-            All ({generatedVariantCount})
-          </button>
-        </div>
-
-        <div className="pt-1.5 border-t border-border">
-          <label className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground flex items-center gap-1.5 mb-1">
+        {/* Save to library */}
+        <div className="space-y-2">
+          <label className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground flex items-center gap-1.5">
             <FolderInput className="h-3 w-3" />
             Save to library — folder
           </label>
-          <div className="flex gap-1.5">
-            <input
-              type="text"
-              value={folder}
-              onChange={(e) => setFolder(e.target.value)}
-              className="flex-1 h-8 rounded-md border border-border bg-background px-2 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
-              placeholder="image-studio"
-            />
-          </div>
-          <label className="mt-1.5 flex items-start gap-2 text-xs cursor-pointer select-none">
+          <input
+            type="text"
+            value={folder}
+            onChange={(e) => setFolder(e.target.value)}
+            className="w-full h-8 rounded-md border border-border bg-background px-2 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="image-studio"
+          />
+          <label className="flex items-start gap-2 text-xs cursor-pointer select-none">
             <Checkbox
               checked={makePublic}
               onCheckedChange={(v) => setMakePublic(v === true)}
@@ -390,8 +241,7 @@ export function ExportPanel({
             <span className="min-w-0 leading-snug">
               <span className="font-medium">Make publicly viewable</span>
               <span className="block text-[10px] text-muted-foreground">
-                Returns permanent CDN URLs anyone can load — safe to share.
-                Leave unchecked to keep variants private to your account.
+                Returns permanent CDN URLs anyone can load.
               </span>
             </span>
           </label>
@@ -400,7 +250,7 @@ export function ExportPanel({
             onClick={() => onSaveAll(folder, makePublic)}
             disabled={!canSave || isSaving}
             className={cn(
-              "mt-1.5 w-full h-9 rounded-md text-xs font-medium flex items-center justify-center gap-1.5 transition-colors",
+              "w-full h-9 rounded-md text-xs font-medium flex items-center justify-center gap-1.5 transition-colors",
               canSave && !isSaving
                 ? "bg-success/10 border border-success/40 text-success hover:bg-success/20"
                 : "bg-muted text-muted-foreground border border-border cursor-not-allowed",
@@ -410,11 +260,11 @@ export function ExportPanel({
             {isSaving
               ? "Saving…"
               : makePublic
-                ? "Save all to library (public)"
-                : "Save all to library (private)"}
+                ? "Save all (public)"
+                : "Save all (private)"}
           </button>
-          <p className="text-[10px] text-muted-foreground mt-1 leading-snug">
-            Uploads every generated variant to your cloud-files library under{" "}
+          <p className="text-[10px] text-muted-foreground leading-snug">
+            Uploads every generated variant under{" "}
             <code className="font-mono">
               Images/Generated/{folder || "image-studio"}
             </code>

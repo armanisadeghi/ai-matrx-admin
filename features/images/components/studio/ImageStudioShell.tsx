@@ -1,24 +1,13 @@
 "use client";
 
-/**
- * ImageStudioShell
- *
- * The full interactive studio. Split into three columns:
- *   • Left   — PresetCatalog (search, bundles, categories)
- *   • Center — Drop zone + file cards with per-variant previews
- *   • Right  — ExportPanel (format, quality, generate/download/save actions)
- *
- * The whole thing is a client component; route wrappers render this inside a
- * server shell so the static header and grid structure are SSR-rendered for
- * zero layout shift.
- */
-
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { Layers, PanelLeft, PanelRight, Edit3, X, Zap, Wand2 } from "lucide-react";
 import { PresetCatalog } from "./PresetCatalog";
 import { StudioDropZone } from "./StudioDropZone";
 import { StudioFileCard } from "./StudioFileCard";
 import { ExportPanel } from "./ExportPanel";
+import { StudioActionBar } from "./StudioActionBar";
 import { CropPreviewWindow } from "./CropPreviewWindow";
 import { InitialCropDialog } from "./InitialCropDialog";
 import { useImageStudio } from "@/features/images/hooks/useImageStudio";
@@ -27,47 +16,25 @@ import {
   type BundleEntry,
 } from "@/features/images/utils/download-bundle";
 import { slugifyFilename } from "@/features/images/utils/slugify-filename";
+import { cn } from "@/lib/utils";
 import type { ProcessedVariant } from "@/features/images/studio-types";
-import { Zap, Wand2, Edit3, X } from "lucide-react";
 
 interface ImageStudioShellProps {
-  /** Optional default folder for Save-to-library. */
   defaultFolder?: string;
 }
 
 export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
   const studio = useImageStudio({ defaultFolder });
 
-  // Track bundle-action selection — a set of variant filenames currently
-  // ticked across all files. Filenames are unique because they include
-  // the preset id + the file's filename base.
-  const [selectedFilenames, setSelectedFilenames] = useState<Set<string>>(
-    new Set(),
-  );
-
-  // ── Crop preview window state ─────────────────────────────────────────
+  const [selectedFilenames, setSelectedFilenames] = useState<Set<string>>(new Set());
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewFileId, setPreviewFileId] = useState<string | null>(null);
   const [previewPresetId, setPreviewPresetId] = useState<string | null>(null);
-
-  // ── Initial-crop queue ────────────────────────────────────────────────
-  // Every freshly-dropped/pasted file lands here first so the user can
-  // optionally crop it before the rest of the studio sees it. When the
-  // queue is empty the dialog stays closed.
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
-
-  // ── Rename-warning gate ──────────────────────────────────────────────
-  // Each file's filenameBase becomes the per-source subfolder AND the
-  // slug for every variant it produces. Generating 30 variants under an
-  // ugly auto-derived name like "img-7234" is a chore to clean up later,
-  // so we surface a banner that asks the user to either (a) rename the
-  // root, (b) describe with AI to get a name, or (c) acknowledge and
-  // generate anyway. Acknowledgement is per-Generate-click — adding a
-  // file or AI-describing one resets it.
   const [renameAcknowledged, setRenameAcknowledged] = useState(false);
-  // Each file card registers a `focusRename` action here on mount; the
-  // shell calls it to enter rename mode and focus the input from afar
-  // (e.g. when the user clicks "Rename now" in the auto-name banner).
+  const [leftOpen, setLeftOpen] = useState(true);
+  const [rightOpen, setRightOpen] = useState(true);
+
   const renameActionsRef = useRef(new Map<string, () => void>());
   const registerRenameAction = useCallback(
     (fileId: string, action: (() => void) | null) => {
@@ -77,9 +44,6 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
     [],
   );
 
-  // Reset the ack whenever the file set grows or any file is described.
-  // (Removing a file or finishing a describe = enough has changed that
-  // the banner deserves a fresh look.)
   useEffect(() => {
     setRenameAcknowledged(false);
   }, [studio.files.length, studio.describingFileIds]);
@@ -102,16 +66,15 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
     setPendingFiles([]);
   }, []);
 
-  // Auto-pick sensible defaults so the window has something to show.
   useEffect(() => {
     if (!previewFileId && studio.files[0]) {
       setPreviewFileId(studio.files[0].id);
     }
   }, [previewFileId, studio.files]);
+
   useEffect(() => {
     if (
-      (!previewPresetId ||
-        !studio.selectedPresetIds.includes(previewPresetId)) &&
+      (!previewPresetId || !studio.selectedPresetIds.includes(previewPresetId)) &&
       studio.selectedPresetIds[0]
     ) {
       setPreviewPresetId(studio.selectedPresetIds[0]);
@@ -126,6 +89,7 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
     },
     [],
   );
+
   const toggleVariantSelect = useCallback((filename: string) => {
     setSelectedFilenames((prev) => {
       const next = new Set(prev);
@@ -135,7 +99,6 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
     });
   }, []);
 
-  // Pluck (fileId, variant) pairs for bundle actions.
   const allGeneratedVariants = useMemo(() => {
     const pairs: Array<{
       fileId: string;
@@ -207,10 +170,6 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
     [studio],
   );
 
-  // A file is "auto-named" when its current filenameBase matches the
-  // slug of its original upload name AND the AI describe agent hasn't
-  // overwritten it. These are the names the user almost always wants
-  // to set BEFORE 30 variants get generated under them.
   const autoNamedFileIds = useMemo(() => {
     const ids: string[] = [];
     for (const f of studio.files) {
@@ -229,9 +188,6 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
   }, [autoNamedFileIds]);
 
   const handleGenerate = useCallback(async () => {
-    // First click while auto-named files exist surfaces the banner —
-    // don't generate yet. The user can rename, describe with AI, or
-    // click Generate again to proceed.
     if (autoNamedFileIds.length > 0 && !renameAcknowledged) {
       setRenameAcknowledged(true);
       focusFirstAutoNamed();
@@ -262,184 +218,217 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
   }, [studio]);
 
   return (
-    <div className="flex h-full min-h-0">
-      {/* LEFT — Preset Catalog ─────────────────────────── */}
-      <div className="hidden md:flex flex-col w-72 lg:w-80 xl:w-96 border-r border-border bg-card/30 min-h-0">
-        <PresetCatalog
-          selectedIds={studio.selectedPresetIds}
-          onToggle={(id) => {
-            studio.togglePreset(id);
-            // Focus the preview on whichever preset the user just picked.
-            if (!studio.selectedPresetIds.includes(id)) {
-              setPreviewPresetId(id);
-            }
-          }}
-          onApplyBundle={(ids) => {
-            studio.applyBundle(ids);
-            if (ids[0]) setPreviewPresetId(ids[0]);
-          }}
-          onDeselectAll={studio.deselectAllPresets}
-        />
-      </div>
-
-      {/* CENTER — Work area ─────────────────────────────── */}
-      <div className="flex-1 min-w-0 flex flex-col min-h-0 overflow-y-auto">
-        <div className="p-4 md:p-5 space-y-4">
-          {studio.files.length === 0 ? (
-            <StudioDropZone onFilesAdded={queueForCrop} />
-          ) : (
-            <>
-              <StudioDropZone onFilesAdded={queueForCrop} compact />
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">
-                  <span className="font-medium text-foreground">
-                    {studio.files.length}
-                  </span>{" "}
-                  {studio.files.length === 1 ? "file" : "files"} ·
-                  <span className="font-medium text-foreground ml-1">
-                    {studio.selectedPresetIds.length}
-                  </span>{" "}
-                  selected presets
-                </p>
-                <button
-                  type="button"
-                  onClick={studio.clearAll}
-                  className="text-xs text-muted-foreground hover:text-destructive underline"
-                >
-                  Remove all
-                </button>
-              </div>
-              {/* Auto-name banner — surfaces when one or more files
-                  still carry an auto-derived filenameBase. The slug
-                  becomes the per-source subfolder AND every variant's
-                  filename, so renaming up front saves a 30-file rename
-                  later. */}
-              {autoNamedFileIds.length > 0 && (
-                <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 dark:bg-amber-500/5 p-3 flex items-start gap-3">
-                  <div className="h-8 w-8 shrink-0 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                    <Edit3 className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
-                      {autoNamedFileIds.length === 1
-                        ? "1 file still has an auto-generated name"
-                        : `${autoNamedFileIds.length} files still have auto-generated names`}
-                    </p>
-                    <p className="text-xs text-amber-800/80 dark:text-amber-300/80 leading-snug mt-0.5">
-                      Rename now and your variants will inherit a clean,
-                      shareable slug. Otherwise every preset will be saved
-                      under the auto name.
-                    </p>
-                    <div className="flex flex-wrap items-center gap-2 mt-2">
-                      <button
-                        type="button"
-                        onClick={focusFirstAutoNamed}
-                        className="inline-flex items-center gap-1 rounded-md bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 text-xs font-medium"
-                      >
-                        <Edit3 className="h-3 w-3" />
-                        Rename now
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleDescribeAll}
-                        className="inline-flex items-center gap-1 rounded-md border border-amber-500/40 hover:bg-amber-500/10 text-amber-800 dark:text-amber-300 px-2.5 py-1 text-xs font-medium"
-                      >
-                        <Wand2 className="h-3 w-3" />
-                        Use AI to name
-                      </button>
-                      {renameAcknowledged && (
-                        <span className="inline-flex items-center gap-1 text-[11px] text-amber-700 dark:text-amber-400">
-                          <Zap className="h-3 w-3" />
-                          Click Generate again to use the auto names
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setRenameAcknowledged(true)}
-                    className="h-6 w-6 rounded-md hover:bg-amber-500/15 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0"
-                    title="Dismiss for this Generate"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              )}
-              <div className="flex flex-col gap-3">
-                {studio.files.map((f) => (
-                  <StudioFileCard
-                    key={f.id}
-                    file={f}
-                    selectedPresetIds={studio.selectedPresetIds}
-                    selectedVariantFilenames={selectedFilenames}
-                    isPreviewActive={previewFileId === f.id && previewOpen}
-                    needsRename={autoNamedFileIds.includes(f.id)}
-                    registerRenameAction={registerRenameAction}
-                    onToggleVariantSelect={toggleVariantSelect}
-                    onRemove={() => studio.removeFile(f.id)}
-                    onRename={(base) => studio.setFilenameBase(f.id, base)}
-                    onPreviewRequested={() => openPreview({ fileId: f.id })}
-                    isDescribing={studio.describingFileIds.has(f.id)}
-                    onDescribe={() => studio.describeFile(f.id)}
-                    onMetadataPatch={(patch) =>
-                      studio.updateImageMetadata(f.id, patch)
-                    }
-                    onMetadataClear={() => studio.clearImageMetadata(f.id)}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-          {studio.error && (
-            <div className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-              {studio.error}
-            </div>
-          )}
+    <div className="flex flex-col h-full min-h-0">
+      {/* Page header */}
+      <div className="shrink-0 flex items-center gap-3 px-5 py-3 border-b border-border bg-card">
+        <div className="rounded-md bg-muted p-1.5 border border-border">
+          <Layers className="w-4 h-4 text-muted-foreground" />
+        </div>
+        <div>
+          <h1 className="text-sm font-semibold text-foreground leading-none">Image Studio</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Batch resize and export across preset dimensions
+          </p>
+        </div>
+        {/* Panel toggles */}
+        <div className="ml-auto flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setLeftOpen((v) => !v)}
+            className={cn(
+              "h-7 w-7 rounded-md flex items-center justify-center transition-colors",
+              leftOpen
+                ? "bg-muted text-foreground"
+                : "text-muted-foreground hover:bg-muted/60",
+            )}
+            title={leftOpen ? "Hide preset catalog" : "Show preset catalog"}
+          >
+            <PanelLeft className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setRightOpen((v) => !v)}
+            className={cn(
+              "h-7 w-7 rounded-md flex items-center justify-center transition-colors",
+              rightOpen
+                ? "bg-muted text-foreground"
+                : "text-muted-foreground hover:bg-muted/60",
+            )}
+            title={rightOpen ? "Hide output settings" : "Show output settings"}
+          >
+            <PanelRight className="h-3.5 w-3.5" />
+          </button>
         </div>
       </div>
 
-      {/* RIGHT — Export panel ───────────────────────────── */}
-      <div className="hidden lg:flex flex-col w-80 xl:w-96 min-h-0">
-        <ExportPanel
-          format={studio.format}
-          quality={studio.quality}
-          backgroundColor={studio.backgroundColor}
-          fit={studio.fit}
-          position={studio.position}
-          onFormatChange={studio.setFormat}
-          onQualityChange={studio.setQuality}
-          onBackgroundChange={studio.setBackgroundColor}
-          onFitChange={studio.setFit}
-          onPositionChange={studio.setPosition}
-          isProcessing={studio.isProcessing}
-          isSaving={studio.isSaving}
-          canGenerate={
-            studio.files.length > 0 && studio.selectedPresetIds.length > 0
-          }
-          canDownload={studio.generatedVariantCount > 0}
-          canSave={studio.generatedVariantCount > 0}
-          filesCount={studio.files.length}
-          selectedPresetCount={studio.selectedPresetIds.length}
-          totalVariantCount={studio.totalVariantCount}
-          generatedVariantCount={studio.generatedVariantCount}
-          totalOutputBytes={studio.totalOutputBytes}
-          selectedVariantCount={selectedFilenames.size}
-          onGenerate={handleGenerate}
-          onDownloadAll={handleDownloadAll}
-          onDownloadSelected={handleDownloadSelected}
-          onSaveAll={handleSaveAll}
-          onOpenPreview={() => openPreview()}
-          canOpenPreview={studio.files.length > 0}
-          isPreviewOpen={previewOpen}
-          onDescribeAll={handleDescribeAll}
-          isDescribing={studio.isDescribing}
-          describedFileCount={
-            studio.files.filter((f) => f.imageMetadata).length
-          }
-        />
+      {/* 3-column work area */}
+      <div className="flex-1 min-h-0 flex overflow-hidden">
+        {/* LEFT — Preset Catalog */}
+        {leftOpen && (
+          <div className="hidden md:flex flex-col w-72 lg:w-80 xl:w-96 border-r border-border bg-card/30 min-h-0">
+            <PresetCatalog
+              selectedIds={studio.selectedPresetIds}
+              onToggle={(id) => {
+                studio.togglePreset(id);
+                if (!studio.selectedPresetIds.includes(id)) {
+                  setPreviewPresetId(id);
+                }
+              }}
+              onApplyBundle={(ids) => {
+                studio.applyBundle(ids);
+                if (ids[0]) setPreviewPresetId(ids[0]);
+              }}
+              onDeselectAll={studio.deselectAllPresets}
+            />
+          </div>
+        )}
+
+        {/* CENTER — Work area */}
+        <div className="flex-1 min-w-0 flex flex-col min-h-0 overflow-y-auto">
+          <div className="p-4 md:p-5 space-y-3">
+            {studio.files.length === 0 ? (
+              <StudioDropZone onFilesAdded={queueForCrop} />
+            ) : (
+              <>
+                <StudioDropZone onFilesAdded={queueForCrop} compact />
+
+                {/* Slim rename banner */}
+                {autoNamedFileIds.length > 0 && (
+                  <div className="flex items-center gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 dark:bg-amber-500/5 px-3 py-1.5 text-xs">
+                    <Edit3 className="h-3 w-3 text-amber-600 dark:text-amber-400 shrink-0" />
+                    <span className="flex-1 min-w-0 text-amber-900 dark:text-amber-200">
+                      {autoNamedFileIds.length === 1
+                        ? "1 file has an auto-generated name"
+                        : `${autoNamedFileIds.length} files have auto-generated names`}
+                      {" — rename for clean variant slugs"}
+                    </span>
+                    {renameAcknowledged && (
+                      <span className="flex items-center gap-1 text-amber-700 dark:text-amber-400 shrink-0">
+                        <Zap className="h-3 w-3" />
+                        Click Generate to proceed
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={focusFirstAutoNamed}
+                      className="text-amber-700 dark:text-amber-300 font-medium hover:underline shrink-0"
+                    >
+                      Rename
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDescribeAll}
+                      className="flex items-center gap-1 text-amber-700 dark:text-amber-300 font-medium hover:underline shrink-0"
+                    >
+                      <Wand2 className="h-3 w-3" />
+                      AI name
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRenameAcknowledged(true)}
+                      className="h-5 w-5 rounded flex items-center justify-center text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 shrink-0"
+                      title="Dismiss"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>
+                    <span className="font-medium text-foreground">{studio.files.length}</span>{" "}
+                    {studio.files.length === 1 ? "file" : "files"} ·{" "}
+                    <span className="font-medium text-foreground">{studio.selectedPresetIds.length}</span>{" "}
+                    selected presets
+                  </span>
+                  <button
+                    type="button"
+                    onClick={studio.clearAll}
+                    className="hover:text-destructive underline transition-colors"
+                  >
+                    Remove all
+                  </button>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  {studio.files.map((f) => (
+                    <StudioFileCard
+                      key={f.id}
+                      file={f}
+                      selectedPresetIds={studio.selectedPresetIds}
+                      selectedVariantFilenames={selectedFilenames}
+                      isPreviewActive={previewFileId === f.id && previewOpen}
+                      needsRename={autoNamedFileIds.includes(f.id)}
+                      registerRenameAction={registerRenameAction}
+                      onToggleVariantSelect={toggleVariantSelect}
+                      onRemove={() => studio.removeFile(f.id)}
+                      onRename={(base) => studio.setFilenameBase(f.id, base)}
+                      onPreviewRequested={() => openPreview({ fileId: f.id })}
+                      isDescribing={studio.describingFileIds.has(f.id)}
+                      onDescribe={() => studio.describeFile(f.id)}
+                      onMetadataPatch={(patch) =>
+                        studio.updateImageMetadata(f.id, patch)
+                      }
+                      onMetadataClear={() => studio.clearImageMetadata(f.id)}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+
+            {studio.error && (
+              <div className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+                {studio.error}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT — Export settings */}
+        {rightOpen && (
+          <div className="hidden lg:flex flex-col w-80 xl:w-96 min-h-0">
+            <ExportPanel
+              format={studio.format}
+              quality={studio.quality}
+              backgroundColor={studio.backgroundColor}
+              fit={studio.fit}
+              position={studio.position}
+              onFormatChange={studio.setFormat}
+              onQualityChange={studio.setQuality}
+              onBackgroundChange={studio.setBackgroundColor}
+              onFitChange={studio.setFit}
+              onPositionChange={studio.setPosition}
+              isSaving={studio.isSaving}
+              canSave={studio.generatedVariantCount > 0}
+              onSaveAll={handleSaveAll}
+              onOpenPreview={() => openPreview()}
+              canOpenPreview={studio.files.length > 0}
+              isPreviewOpen={previewOpen}
+            />
+          </div>
+        )}
       </div>
 
-      {/* Live crop preview — floating WindowPanel */}
+      {/* Bottom action bar */}
+      <StudioActionBar
+        filesCount={studio.files.length}
+        selectedPresetCount={studio.selectedPresetIds.length}
+        totalVariantCount={studio.totalVariantCount}
+        generatedVariantCount={studio.generatedVariantCount}
+        totalOutputBytes={studio.totalOutputBytes}
+        selectedVariantCount={selectedFilenames.size}
+        isProcessing={studio.isProcessing}
+        canGenerate={studio.files.length > 0 && studio.selectedPresetIds.length > 0}
+        canDownload={studio.generatedVariantCount > 0}
+        onGenerate={handleGenerate}
+        onDownloadAll={handleDownloadAll}
+        onDownloadSelected={handleDownloadSelected}
+        onDescribeAll={handleDescribeAll}
+        isDescribing={studio.isDescribing}
+        describedFileCount={studio.files.filter((f) => f.imageMetadata).length}
+      />
+
+      {/* Live crop preview — floating */}
       {previewOpen && (
         <CropPreviewWindow
           files={studio.files}
@@ -456,7 +445,6 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
         />
       )}
 
-      {/* Initial freeform crop, one image at a time */}
       <InitialCropDialog
         files={pendingFiles}
         onComplete={handleCropQueueComplete}
