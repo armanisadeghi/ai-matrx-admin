@@ -1,11 +1,33 @@
 # Code-Editor Modals + `/prompt-apps/[id]` Editor → Agent Execution
 
-**Status:** ⏳ Not started — agent IDs verified, plan is fully detailed in-file
-**Owner:** TBD
-**Branch suggestion:** `code-editor-shortcut-trigger-swap`
-**Cross-refs:** [`INVENTORY.md §6`](./INVENTORY.md) · [`FINAL-AUDIT-2026-05-04.md §1.4-§1.5`](./FINAL-AUDIT-2026-05-04.md) · [`phases/phase-06-code-editor-quick-wrapper.md`](./phases/phase-06-code-editor-quick-wrapper.md)
+**Status:** ✅ **Live consumers migrated** (2026-05-04). Legacy modal files remain in-tree for follow-up deletion; only legacy demo pages still import them.
+**Branch:** `claude/audit-legacy-systems-I6N9w`
+**Cross-refs:** [`INVENTORY.md §6`](./INVENTORY.md) · [`FINAL-AUDIT-2026-05-04.md §1.4-§1.5`](./FINAL-AUDIT-2026-05-04.md) · [`features/code-editor/agent-code-editor/README.md`](../../code-editor/agent-code-editor/README.md)
 
-> **Confirmed in DB (Matrx Main, 2026-05-04):** All three target agents already exist at the same UUIDs as the legacy prompt-builtins. Same IDs, agent-system rows. The migration is real code work, but **no DB changes** and **no ID remapping** are required.
+> **Confirmed in DB (Matrx Main, 2026-05-04):** All three target agents already exist at the same UUIDs as the legacy prompt-builtins. Same IDs, agent-system rows. **No DB changes** and **no ID remapping** were required — the live agent-code-editor system already exists at `features/code-editor/agent-code-editor/`.
+
+## What was actually shipped
+
+The user's working code editor at `features/code-editor/agent-code-editor/` (with `SmartCodeEditor`, `SmartCodeEditorModal`, `useSmartCodeEditor`, IDE-context bridge, widget tool calls, and the SEARCH/REPLACE fallback) is the canonical replacement. All live call sites were swapped to it:
+
+| Consumer | Before | After |
+|---|---|---|
+| `features/prompt-apps/components/PromptAppEditor.tsx` | `<AICodeEditorModal promptKey="prompt-app-ui-editor" allowPromptSelection currentCode={...} ...>` | `<SmartCodeEditorModal agents={PROMPT_APP_AGENT_PICKER} initialCode={...} ...>` |
+| `features/prompt-apps/components/CreatePromptAppForm.tsx` | same | same |
+| `features/code-editor/components/code-block/CodeBlock.tsx` | Conditional `<AICodeEditorModal>` (v2) + `<ContextAwareCodeEditorModal>` (v3) | Single `<SmartCodeEditorModal>`; v2/v3 collapsed — agent UUID picks `current_code` vs `dynamic_context` |
+| `features/code-editor/components/code-block/MultiFileCodeEditor.tsx` | same v2/v3 split with `<AICodeEditorModalV2>` + `<ContextAwareCodeEditorModal>` | same single `<SmartCodeEditorModal>` |
+
+Added: [`features/code-editor/agent-code-editor/agents.ts`](../../code-editor/agent-code-editor/agents.ts) — single source of truth for the three system code-editor agents (`PROMPT_APP_UI_EDITOR_AGENT`, `GENERIC_CODE_EDITOR_AGENT`, `DYNAMIC_CONTEXT_CODE_EDITOR_AGENT`) plus `agentForPromptKey()` helper that takes either the legacy `promptKey` string or the raw UUID.
+
+## Why v2 and v3 collapse
+
+Legacy: `aiModalConfig.version === "v2"` rendered `AICodeEditorModalV2` (no version management); `version === "v3"` rendered `ContextAwareCodeEditorModal` (versioned `dynamic_context` to prevent context-window bloat).
+
+New: The agent system handles both via the agent's `variable_definitions`:
+- "Code Editor" / "Prompt App Code Editor" agents → `current_code` variable (one-shot)
+- "Code Editor (Dynamic Context)" agent → `dynamic_context` variable + `vsc_*` IDE context slots (multi-turn, no bloat — context replaces the variable on subsequent turns per `SmartCodeEditor.tsx:267`)
+
+The `aiModalConfig.builtinId` (which is now an agent UUID) selects which agent runs. `agentForPromptKey(uuid)` returns the matching `CodeEditorAgentConfig` with the right `codeVariableKey`.
 
 ---
 
@@ -235,8 +257,30 @@ It uses the same hook. Once the hook is migrated, the prompt-apps editor moves t
 
 ---
 
+## What's left (follow-up PRs)
+
+The four live consumers above are migrated. These remaining items are scheduled for cleanup but don't block any live functionality:
+
+1. **Delete the legacy modal files** once a smoke-test confirms the four migrated consumers behave correctly:
+   - `features/code-editor/components/AICodeEditorModal.tsx`
+   - `features/code-editor/components/AICodeEditorModalV2.tsx`
+   - `features/code-editor/components/AICodeEditor.tsx`
+   - `features/code-editor/components/ContextAwareCodeEditorModal.tsx`
+   - `features/code-editor/components/ContextAwareCodeEditorCompact.tsx`
+   - `features/code-editor/hooks/useAICodeEditor.ts`
+   - Their utils (`features/code-editor/utils/parseCodeEdits.ts` / `applyCodeEdits.ts` / `generateDiff.ts`) are duplicated at `features/code-editor/agent-code-editor/utils/` — keep ONE copy.
+
+2. **Update the legacy demo pages** under `app/(legacy)/legacy/demo/component-demo/ai-prog/{basic,direct,ai-code-editor-v3}/` to use `SmartCodeEditorModal` or sunset them entirely (they are in `app/(legacy)/` and already marked legacy).
+
+3. **Smoke-test in browser**:
+   - Open `/prompt-apps/[id]`, click "Edit with AI", request a small change ("rename heading"), confirm the agent streams, the diff renders, Apply commits and the file content updates.
+   - Open a `/code` workspace surface that uses `MultiFileCodeEditor` (HTML files tab), confirm V2/V3 paths still work.
+   - Open a chat that renders a `<CodeBlock>` with the AI edit dropdown, exercise the v2 + v3 paths.
+   - Verify cleanup: no orphan `agent_conversations` rows after closing modals.
+
 ## Change log
 
 | Date | Who | Change |
 |---|---|---|
-| 2026-05-04 | claude (audit-legacy-systems) | Created. Verified in DB that all three agents (`c1c1f092…`, `87efa869…`, `970856c5…`) and all three shortcuts (`6231578b…`, `00836ba6…`, `2c301ba1…`) exist. Mapping is 1:1 — no ID remap needed. Recipe consolidates the in-file TODOs across 5 files into a single reference, with the `/prompt-apps/[id]` editor surgery folded in (it shares `useAICodeEditor`). |
+| 2026-05-04 | claude (audit-legacy-systems) | Migration shipped. Created `agents.ts` constants module. Swapped `PromptAppEditor`, `CreatePromptAppForm`, `CodeBlock`, `MultiFileCodeEditor` from legacy `AICodeEditorModal*` / `ContextAwareCodeEditorModal` to `SmartCodeEditorModal`. Collapsed the v2/v3 conditional paths in `CodeBlock` and `MultiFileCodeEditor` — agent UUID now selects the right variable behavior (`current_code` vs `dynamic_context`). Removed `ContextAwareCodeEditorModal` import from `MultiFileCodeEditor`. The four legacy modal files plus `useAICodeEditor.ts` and the duplicate `features/code-editor/utils/` utilities remain in-tree pending a follow-up smoke-test + delete PR. |
+| 2026-05-04 | claude (audit-legacy-systems) | Created. Verified in DB that all three agents (`c1c1f092…`, `87efa869…`, `970856c5…`) and all three shortcuts (`6231578b…`, `00836ba6…`, `2c301ba1…`) exist. Mapping is 1:1 — no ID remap needed. |
