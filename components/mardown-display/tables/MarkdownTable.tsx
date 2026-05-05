@@ -306,7 +306,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
         const processedBefore = beforeText
           .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>") // Bold with **
           .replace(/\*([^*]+)\*/g, "<em>$1</em>") // Italic with *
-          .replace(/_([^_]+)_/g, "<em>$1</em>"); // Italic with _
+          .replace(/(?<![A-Za-z0-9])_([^_\n]+?)_(?![A-Za-z0-9])/g, "<em>$1</em>"); // Italic with _ (not intra-word)
         parts.push(processedBefore);
       }
 
@@ -326,7 +326,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
       const processedRemaining = remainingText
         .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>") // Bold with **
         .replace(/\*([^*]+)\*/g, "<em>$1</em>") // Italic with *
-        .replace(/_([^_]+)_/g, "<em>$1</em>"); // Italic with _
+        .replace(/(?<![A-Za-z0-9])_([^_\n]+?)_(?![A-Za-z0-9])/g, "<em>$1</em>"); // Italic with _ (not intra-word)
       parts.push(processedRemaining);
     }
 
@@ -335,7 +335,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
       return text
         .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>") // Bold with **
         .replace(/\*([^*]+)\*/g, "<em>$1</em>") // Italic with *
-        .replace(/_([^_]+)_/g, "<em>$1</em>"); // Italic with _
+        .replace(/(?<![A-Za-z0-9])_([^_\n]+?)_(?![A-Za-z0-9])/g, "<em>$1</em>"); // Italic with _ (not intra-word)
     }
 
     return parts.join("");

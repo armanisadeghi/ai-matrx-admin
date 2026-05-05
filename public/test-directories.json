@@ -20,10 +20,6 @@
     "name": "audio-recorder-test"
   },
   {
-    "path": "/tests/backup",
-    "name": "backup"
-  },
-  {
     "path": "/tests/camera-test",
     "name": "camera-test"
   },
@@ -46,10 +42,6 @@
   {
     "path": "/tests/full-screen-demo",
     "name": "full-screen-demo"
-  },
-  {
-    "path": "/tests/glass-effect",
-    "name": "glass-effect"
   },
   {
     "path": "/tests/google-apis",
