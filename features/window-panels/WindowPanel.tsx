@@ -1004,6 +1004,7 @@ export function WindowPanel({
   const el = (
     <div
       ref={fitContent ? fitContentRef : undefined}
+      data-mischief-window={id}
       className={cn(
         "fixed flex flex-col",
         "rounded-xl bg-card/95 backdrop-blur-md border border-border shadow-xl",

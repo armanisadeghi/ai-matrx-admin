@@ -46,6 +46,7 @@ import overlaySlice from "./slices/overlaySlice";
 import overlayDataReducer from "./slices/overlayDataSlice";
 import voicePadReducer from "./slices/voicePadSlice";
 import windowManagerReducer from "./slices/windowManagerSlice";
+import idleMischiefReducer from "@/features/idle-mischief/state/idleMischiefSlice";
 import dbFunctionNodeSlice from "./workflows/db-function-node/dbFunctionNodeSlice";
 import workflowSlice from "./workflow/slice";
 import workflowNodeSlice from "./workflow-nodes/slice";
@@ -177,6 +178,7 @@ export const slimReducerMap = {
   overlayData: overlayDataReducer,
   voicePad: voicePadReducer,
   windowManager: windowManagerReducer,
+  idleMischief: idleMischiefReducer,
   urlSync: urlSyncReducer,
 
   // Canvas and Artifacts system ----------
