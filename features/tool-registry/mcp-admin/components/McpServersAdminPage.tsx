@@ -537,3 +537,77 @@ function EmptyHint({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+function TestFreshnessBadge({ testFresh }: { testFresh: TestFreshness }) {
+  if (testFresh.state === "untested") {
+    return (
+      <span
+        className="inline-flex items-center gap-1 rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
+        title="No connection test on record. Click 'Test connection' to probe the endpoint."
+      >
+        <Plug className="h-3 w-3" />
+        untested
+      </span>
+    );
+  }
+  if (testFresh.state === "ok") {
+    return (
+      <span
+        className={`inline-flex items-center gap-1 rounded border border-success/30 bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success`}
+        title={`Endpoint reachable as of ${formatRelativeAge(testFresh.ageSec)} — HTTP ${testFresh.statusCode}, ${testFresh.latencyMs}ms`}
+      >
+        <PlugZap className="h-3 w-3" />
+        reachable {testFresh.latencyMs !== null ? `${testFresh.latencyMs}ms` : ""}
+      </span>
+    );
+  }
+  return (
+    <span
+      className="inline-flex items-center gap-1 rounded border border-destructive/30 bg-destructive/10 px-1.5 py-0.5 text-[10px] font-medium text-destructive"
+      title={
+        testFresh.error
+          ? `${formatRelativeAge(testFresh.ageSec)}: ${testFresh.error}`
+          : `Last test failed (${formatRelativeAge(testFresh.ageSec)})`
+      }
+    >
+      <XCircle className="h-3 w-3" />
+      unreachable
+    </span>
+  );
+}
+
+function TestResultPanel({ result }: { result: McpTestResult }) {
+  const tone = result.ok
+    ? "border-success/30 bg-success/5 text-success"
+    : "border-destructive/40 bg-destructive/5 text-destructive";
+  const Icon = result.ok ? CheckCircle2 : XCircle;
+  return (
+    <div className={`rounded-md border ${tone} px-3 py-2 space-y-1`}>
+      <div className="flex items-center gap-2 text-xs font-medium">
+        <Icon className="h-3.5 w-3.5" />
+        {result.ok ? "Reachable" : "Unhealthy"}
+        {result.statusCode !== null && (
+          <Badge variant="outline" className="text-[10px] font-mono">
+            HTTP {result.statusCode}
+          </Badge>
+        )}
+        {result.latencyMs !== null && (
+          <Badge variant="outline" className="text-[10px] font-mono">
+            {result.latencyMs}ms
+          </Badge>
+        )}
+        {result.endpointTested && (
+          <code className="ml-auto text-[10px] text-muted-foreground truncate max-w-[280px]">
+            {result.endpointTested}
+          </code>
+        )}
+      </div>
+      <p className="text-[11px] leading-relaxed">{result.message}</p>
+      {result.error && (
+        <p className="text-[11px] font-mono">
+          <strong>error:</strong> {result.error}
+        </p>
+      )}
+    </div>
+  );
+}
