@@ -1,0 +1,127 @@
+"use client";
+
+import { useState, type ReactNode } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/styles/themes/utils";
+import type { GalleryTab, ModalShellFooter } from "../../types";
+
+interface TabbedGalleryModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  subtitle?: string;
+  tabs: GalleryTab[];
+  initialTabId?: string;
+  toolbarSlot?: ReactNode;
+  footer?: ModalShellFooter;
+  className?: string;
+}
+
+export function TabbedGalleryModal({
+  open,
+  onOpenChange,
+  title,
+  subtitle,
+  tabs,
+  initialTabId,
+  toolbarSlot,
+  footer,
+  className,
+}: TabbedGalleryModalProps) {
+  const [activeId, setActiveId] = useState<string>(
+    initialTabId ?? tabs[0]?.id ?? "",
+  );
+  const active = tabs.find((t) => t.id === activeId) ?? tabs[0];
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        className={cn(
+          "max-w-none gap-0 border-[#2a3942] bg-[#111b21] p-0",
+          "h-[700px] w-[920px] overflow-hidden rounded-xl shadow-2xl",
+          className,
+        )}
+        style={{
+          backdropFilter: "none",
+          border: "1px solid rgba(255,255,255,0.08)",
+        }}
+      >
+        <VisuallyHidden.Root>
+          <DialogTitle>{title}</DialogTitle>
+        </VisuallyHidden.Root>
+
+        <header className="flex items-center justify-between border-b border-[#222d34] bg-[#111b21] px-5 py-3">
+          <div className="min-w-0">
+            <h1 className="text-[22px] font-semibold text-[#e9edef]">
+              {title}
+            </h1>
+            {subtitle ? (
+              <div className="text-[12.5px] text-[#8696a0]">{subtitle}</div>
+            ) : null}
+          </div>
+          <div className="flex items-center gap-2">
+            <div role="tablist" className="flex items-center rounded-lg bg-[#202c33] p-1">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  role="tab"
+                  aria-selected={tab.id === activeId}
+                  onClick={() => setActiveId(tab.id)}
+                  className={cn(
+                    "rounded-md px-4 py-1 text-[13px] font-medium transition-colors",
+                    tab.id === activeId
+                      ? "bg-[#0b141a] text-[#e9edef] shadow"
+                      : "text-[#aebac1] hover:text-white",
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            {toolbarSlot ? <div className="ml-1">{toolbarSlot}</div> : null}
+          </div>
+        </header>
+
+        <ScrollArea className="flex-1">
+          <div className="py-3">
+            {active
+              ? typeof active.content === "function"
+                ? active.content()
+                : active.content
+              : null}
+          </div>
+        </ScrollArea>
+
+        <footer className="flex h-14 shrink-0 items-center justify-between border-t border-[#222d34] bg-[#111b21] px-5">
+          <div className="text-[13px] text-[#8696a0]">
+            {countLabel(active)}
+          </div>
+          {footer ? (
+            <button
+              type="button"
+              onClick={() => {
+                footer.onPrimary?.();
+                onOpenChange(false);
+              }}
+              className="rounded-md bg-[#25d366] px-4 py-1.5 text-[13px] font-medium text-[#0b141a] hover:bg-[#1fb556]"
+            >
+              {footer.primaryLabel}
+            </button>
+          ) : null}
+        </footer>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function countLabel(tab?: GalleryTab): string {
+  if (!tab) return "";
+  if (typeof tab.count === "number") return `${tab.count} ${tab.label}`;
+  return "";
+}
