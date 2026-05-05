@@ -17215,6 +17215,111 @@ export type Database = {
         }
         Relationships: []
       }
+      user_form_profile: {
+        Row: {
+          billing_city: string | null
+          billing_country: string | null
+          billing_line1: string | null
+          billing_line2: string | null
+          billing_postal_code: string | null
+          billing_region: string | null
+          billing_same_as_shipping: boolean
+          company_name: string | null
+          created_at: string
+          custom_fields: Json
+          date_of_birth: string | null
+          emails: Json
+          emergency_contacts: Json
+          images: Json
+          job_title: string | null
+          legal_first_name: string | null
+          legal_last_name: string | null
+          legal_middle_name: string | null
+          name_suffix: string | null
+          phones: Json
+          preferred_name: string | null
+          pronouns: string | null
+          shipping_city: string | null
+          shipping_country: string | null
+          shipping_line1: string | null
+          shipping_line2: string | null
+          shipping_postal_code: string | null
+          shipping_region: string | null
+          social_handles: Json
+          updated_at: string
+          user_id: string
+          website_url: string | null
+        }
+        Insert: {
+          billing_city?: string | null
+          billing_country?: string | null
+          billing_line1?: string | null
+          billing_line2?: string | null
+          billing_postal_code?: string | null
+          billing_region?: string | null
+          billing_same_as_shipping?: boolean
+          company_name?: string | null
+          created_at?: string
+          custom_fields?: Json
+          date_of_birth?: string | null
+          emails?: Json
+          emergency_contacts?: Json
+          images?: Json
+          job_title?: string | null
+          legal_first_name?: string | null
+          legal_last_name?: string | null
+          legal_middle_name?: string | null
+          name_suffix?: string | null
+          phones?: Json
+          preferred_name?: string | null
+          pronouns?: string | null
+          shipping_city?: string | null
+          shipping_country?: string | null
+          shipping_line1?: string | null
+          shipping_line2?: string | null
+          shipping_postal_code?: string | null
+          shipping_region?: string | null
+          social_handles?: Json
+          updated_at?: string
+          user_id: string
+          website_url?: string | null
+        }
+        Update: {
+          billing_city?: string | null
+          billing_country?: string | null
+          billing_line1?: string | null
+          billing_line2?: string | null
+          billing_postal_code?: string | null
+          billing_region?: string | null
+          billing_same_as_shipping?: boolean
+          company_name?: string | null
+          created_at?: string
+          custom_fields?: Json
+          date_of_birth?: string | null
+          emails?: Json
+          emergency_contacts?: Json
+          images?: Json
+          job_title?: string | null
+          legal_first_name?: string | null
+          legal_last_name?: string | null
+          legal_middle_name?: string | null
+          name_suffix?: string | null
+          phones?: Json
+          preferred_name?: string | null
+          pronouns?: string | null
+          shipping_city?: string | null
+          shipping_country?: string | null
+          shipping_line1?: string | null
+          shipping_line2?: string | null
+          shipping_postal_code?: string | null
+          shipping_region?: string | null
+          social_handles?: Json
+          updated_at?: string
+          user_id?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       user_preferences: {
         Row: {
           created_at: string
@@ -17231,6 +17336,45 @@ export type Database = {
         Update: {
           created_at?: string
           preferences?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_sensitive_items: {
+        Row: {
+          created_at: string
+          id: string
+          is_primary: boolean
+          kind: string
+          label: string | null
+          metadata: Json
+          preview: string | null
+          secret_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          kind: string
+          label?: string | null
+          metadata?: Json
+          preview?: string | null
+          secret_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          kind?: string
+          label?: string | null
+          metadata?: Json
+          preview?: string | null
+          secret_id?: string
           updated_at?: string
           user_id?: string
         }
@@ -20659,6 +20803,16 @@ export type Database = {
         }
         Returns: string
       }
+      create_bundle_with_lister: {
+        Args: {
+          p_bundle_name: string
+          p_description?: string
+          p_is_system?: boolean
+          p_members?: Json
+          p_metadata?: Json
+        }
+        Returns: Json
+      }
       create_component_group: {
         Args: {
           p_description?: string
@@ -21194,6 +21348,7 @@ export type Database = {
       }
       delete_scope: { Args: { p_scope_id: string }; Returns: Json }
       delete_scope_type: { Args: { p_type_id: string }; Returns: Json }
+      delete_sensitive_item: { Args: { p_item_id: string }; Returns: boolean }
       delete_unused_message_templates: {
         Args: never
         Returns: {
@@ -22850,6 +23005,7 @@ export type Database = {
         Args: { p_org_id: string; p_type_id?: string }
         Returns: Json
       }
+      get_sensitive_item_value: { Args: { p_item_id: string }; Returns: string }
       get_ssr_agent_shell_data: { Args: { p_user_id: string }; Returns: Json }
       get_ssr_shell_data: { Args: { p_user_id: string }; Returns: Json }
       get_storage_object: {
@@ -23001,6 +23157,7 @@ export type Database = {
           view_count: number
         }[]
       }
+      get_user_form_context: { Args: { p_user_id: string }; Returns: Json }
       get_user_full_context: { Args: { p_user_id?: string }; Returns: Json }
       get_user_hierarchy: { Args: never; Returns: Json }
       get_user_list_with_items: { Args: { p_list_id: string }; Returns: Json }
@@ -23640,6 +23797,18 @@ export type Database = {
           p_scope_ids: string[]
         }
         Returns: Json
+      }
+      set_sensitive_item: {
+        Args: {
+          p_full_value: string
+          p_is_primary?: boolean
+          p_item_id?: string
+          p_kind: string
+          p_label: string
+          p_metadata?: Json
+          p_preview?: string
+        }
+        Returns: string
       }
       share_resource_with_org: {
         Args: {
@@ -24292,6 +24461,14 @@ export type Database = {
           p_ourput_params?: Json
         }
         Returns: undefined
+      }
+      user_form_profile_append_to_array: {
+        Args: { p_column: string; p_item: Json; p_user_id: string }
+        Returns: Json
+      }
+      user_form_profile_set_custom_field: {
+        Args: { p_key: string; p_user_id: string; p_value: Json }
+        Returns: Json
       }
       validate_slugs: {
         Args: { slug_array: string[] }

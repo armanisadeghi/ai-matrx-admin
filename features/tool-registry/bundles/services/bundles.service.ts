@@ -122,3 +122,44 @@ export async function searchToolsForBundle(query: string): Promise<
   if (error) throw error;
   return data ?? [];
 }
+
+export interface CreateBundleResult {
+  bundle_id: string;
+  bundle_name: string;
+  lister_tool_id: string;
+  lister_name: string;
+  members_inserted: number;
+  members_provided: number;
+}
+
+export interface CreateBundleMemberInput {
+  tool_id: string;
+  alias?: string;
+  sort_order?: number;
+}
+
+/**
+ * Atomic backend RPC: creates the bundle, auto-creates its lister tool
+ * (named `bundle:list_<name>`, function_path = matrx_ai bundle_lister), and
+ * inserts member rows in one transaction.
+ *
+ * Personal bundles require an authenticated user; system bundles do not
+ * (admin-only path uses service_role).
+ */
+export async function createBundleWithLister(args: {
+  name: string;
+  description?: string;
+  isSystem?: boolean;
+  metadata?: Record<string, unknown>;
+  members?: CreateBundleMemberInput[];
+}): Promise<CreateBundleResult> {
+  const { data, error } = await sb().rpc("create_bundle_with_lister", {
+    p_bundle_name: args.name,
+    p_description: args.description ?? "",
+    p_is_system: args.isSystem ?? false,
+    p_metadata: (args.metadata ?? {}) as never,
+    p_members: (args.members ?? []) as never,
+  });
+  if (error) throw error;
+  return data as unknown as CreateBundleResult;
+}

@@ -41,6 +41,7 @@ import {
   addBundleMember,
   removeBundleMember,
   searchToolsForBundle,
+  createBundleWithLister,
   type BundleRow,
   type BundleMemberWithTool,
 } from "@/features/tool-registry/bundles/services/bundles.service";
@@ -54,6 +55,7 @@ export function BundlesAdminPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
 
   const loadList = async () => {
     setLoading(true);
@@ -100,6 +102,15 @@ export function BundlesAdminPage() {
         >
           <RefreshCw className="h-3.5 w-3.5" />
           Refresh
+        </Button>
+        <Button
+          size="sm"
+          onClick={() => setCreating(true)}
+          className="h-7 gap-1.5 text-xs"
+          title="Create a new bundle (auto-creates its lister tool)"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          New bundle
         </Button>
       </div>
       <div className="flex-1 grid grid-cols-1 md:grid-cols-[340px_1fr] gap-0 min-h-0">
@@ -194,7 +205,134 @@ export function BundlesAdminPage() {
           )}
         </div>
       </div>
+      {creating && (
+        <NewBundleDialog
+          existingNames={new Set(bundles.map((b) => b.name))}
+          onClose={() => setCreating(false)}
+          onCreated={(newId) => {
+            setCreating(false);
+            void loadList().then(() => setSelectedId(newId));
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+// ─── New bundle dialog ───────────────────────────────────────────────────────
+
+function NewBundleDialog({
+  existingNames,
+  onClose,
+  onCreated,
+}: {
+  existingNames: Set<string>;
+  onClose: () => void;
+  onCreated: (bundleId: string) => void;
+}) {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [isSystem, setIsSystem] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const NAME_RE = /^[a-z0-9][a-z0-9_-]*$/;
+  const nameValid = NAME_RE.test(name);
+  const nameClash = existingNames.has(name);
+  const listerName = name ? `bundle:list_${name}` : "bundle:list_<name>";
+
+  const submit = async () => {
+    if (!nameValid || nameClash) return;
+    setBusy(true);
+    try {
+      const result = await createBundleWithLister({
+        name,
+        description,
+        isSystem,
+      });
+      toast.success(`Bundle ${result.bundle_name} created (+ lister ${result.lister_name})`);
+      onCreated(result.bundle_id);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Create failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && !busy && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>New bundle</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs">Bundle name (globally unique)</Label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value.toLowerCase())}
+              placeholder="e.g. browser-tools, search-pack, my-favorites"
+              className="font-mono text-sm h-9"
+              style={{ fontSize: "16px" }}
+              disabled={busy}
+              autoFocus
+            />
+            {!nameValid && name.length > 0 && (
+              <p className="text-[11px] text-destructive">
+                Lowercase letters / digits / hyphens / underscores. Must start with a letter or digit.
+              </p>
+            )}
+            {nameClash && (
+              <p className="text-[11px] text-destructive">
+                <code className="font-mono">{name}</code> already exists.
+              </p>
+            )}
+            {nameValid && !nameClash && (
+              <p className="text-[11px] text-muted-foreground">
+                Lister will be auto-created as{" "}
+                <code className="bg-muted px-1 py-0.5 rounded font-mono">{listerName}</code>
+              </p>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Description</Label>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              placeholder="What does this bundle group together? Shown to admins and in the picker."
+              style={{ fontSize: "16px" }}
+              disabled={busy}
+            />
+          </div>
+          <div className="flex items-start gap-3 rounded-md border border-border bg-muted/30 p-3">
+            <Switch
+              checked={isSystem}
+              onCheckedChange={setIsSystem}
+              disabled={busy}
+            />
+            <div className="space-y-0.5">
+              <Label className="text-xs">System bundle</Label>
+              <p className="text-[11px] text-muted-foreground">
+                {isSystem
+                  ? "Visible to all users; not tied to a creator. Use for vendor / company-wide bundles."
+                  : "Personal bundle owned by you. Only you (and explicit shares) see it."}
+              </p>
+            </div>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Members can be added after creation from the bundle's detail panel.
+          </p>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose} disabled={busy}>
+            Cancel
+          </Button>
+          <Button onClick={() => void submit()} disabled={busy || !nameValid || nameClash}>
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Create bundle"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
