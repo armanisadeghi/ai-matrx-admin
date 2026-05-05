@@ -56,6 +56,36 @@ export type Database = {
           },
         ]
       }
+      admin_audit_log: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          after: Json | null
+          before: Json | null
+          created_at: string
+          id: string
+          target_user_id: string
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          after?: Json | null
+          before?: Json | null
+          created_at?: string
+          id?: string
+          target_user_id: string
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          after?: Json | null
+          before?: Json | null
+          created_at?: string
+          id?: string
+          target_user_id?: string
+        }
+        Relationships: []
+      }
       admin_email_logs: {
         Row: {
           created_at: string | null
@@ -19386,6 +19416,7 @@ export type Database = {
       }
     }
     Functions: {
+      _count_super_admins: { Args: never; Returns: number }
       accept_organization_invitation: {
         Args: { accepting_user_id: string; invitation_token: string }
         Returns: string
@@ -19944,6 +19975,15 @@ export type Database = {
           ourput_params: Json
         }[]
       }
+      admin_find_user_by_email: {
+        Args: { p_email: string }
+        Returns: {
+          admin_level: Database["public"]["Enums"]["admin_level"]
+          email: string
+          is_admin: boolean
+          user_id: string
+        }[]
+      }
       admin_get_columns: {
         Args: { p_table_name: string }
         Returns: {
@@ -19955,6 +19995,33 @@ export type Database = {
           name: string
         }[]
       }
+      admin_list: {
+        Args: never
+        Returns: {
+          admin_created_at: string
+          email: string
+          last_sign_in_at: string
+          level: Database["public"]["Enums"]["admin_level"]
+          metadata: Json
+          permissions: Json
+          user_created_at: string
+          user_id: string
+        }[]
+      }
+      admin_list_audit: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: {
+          action: string
+          actor_email: string
+          actor_user_id: string
+          after: Json
+          before: Json
+          created_at: string
+          id: string
+          target_email: string
+          target_user_id: string
+        }[]
+      }
       admin_list_tables: {
         Args: never
         Returns: {
@@ -19963,6 +20030,27 @@ export type Database = {
           table_name: string
           table_schema: string
         }[]
+      }
+      admin_promote: {
+        Args: {
+          target_level?: Database["public"]["Enums"]["admin_level"]
+          target_metadata?: Json
+          target_permissions?: Json
+          target_user_id: string
+        }
+        Returns: {
+          created_at: string | null
+          level: Database["public"]["Enums"]["admin_level"]
+          metadata: Json
+          permissions: Json
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "admins"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       admin_reply_user_review:
         | {
@@ -19982,6 +20070,43 @@ export type Database = {
             }
             Returns: Json
           }
+      admin_revoke: {
+        Args: { target_user_id: string }
+        Returns: {
+          created_at: string | null
+          level: Database["public"]["Enums"]["admin_level"]
+          metadata: Json
+          permissions: Json
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "admins"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update: {
+        Args: {
+          target_level?: Database["public"]["Enums"]["admin_level"]
+          target_metadata?: Json
+          target_permissions?: Json
+          target_user_id: string
+        }
+        Returns: {
+          created_at: string | null
+          level: Database["public"]["Enums"]["admin_level"]
+          metadata: Json
+          permissions: Json
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "admins"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       agx_accept_version: {
         Args: { p_reference_id: string; p_reference_type: string }
         Returns: Json
