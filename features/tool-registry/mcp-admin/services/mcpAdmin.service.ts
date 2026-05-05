@@ -59,6 +59,104 @@ export async function setServerStatus(
   if (error) throw error;
 }
 
+// ─── tl_mcp_config CRUD ──────────────────────────────────────────────────────
+
+export type McpConfigUpsert = Database["public"]["Tables"]["tl_mcp_config"]["Insert"];
+
+export async function createServerConfig(args: {
+  serverId: string;
+  label: string;
+  configType: string;
+  command: string;
+  argsArr: string[];
+  envSchema?: Database["public"]["Tables"]["tl_mcp_config"]["Insert"]["env_schema"];
+  isDefault?: boolean;
+  npmPackage?: string | null;
+  pipPackage?: string | null;
+  minNodeVersion?: string | null;
+  requiresDocker?: boolean;
+  notes?: string | null;
+}): Promise<McpConfigRow> {
+  // If this row is being set default, unset the others on the same server first.
+  if (args.isDefault) {
+    const { error: clearErr } = await sb()
+      .from("tl_mcp_config")
+      .update({ is_default: false })
+      .eq("server_id", args.serverId);
+    if (clearErr) throw clearErr;
+  }
+  const { data, error } = await sb()
+    .from("tl_mcp_config")
+    .insert({
+      server_id: args.serverId,
+      label: args.label,
+      config_type: args.configType,
+      command: args.command,
+      args: args.argsArr,
+      env_schema: (args.envSchema ?? []) as never,
+      is_default: args.isDefault ?? false,
+      npm_package: args.npmPackage ?? null,
+      pip_package: args.pipPackage ?? null,
+      min_node_version: args.minNodeVersion ?? null,
+      requires_docker: args.requiresDocker ?? false,
+      notes: args.notes ?? null,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateServerConfig(
+  configId: string,
+  patch: Partial<{
+    label: string;
+    config_type: string;
+    command: string;
+    args: string[];
+    env_schema: Database["public"]["Tables"]["tl_mcp_config"]["Update"]["env_schema"];
+    is_default: boolean;
+    npm_package: string | null;
+    pip_package: string | null;
+    min_node_version: string | null;
+    requires_docker: boolean;
+    notes: string | null;
+  }>,
+): Promise<void> {
+  // If we're setting default, clear the others on the same server first.
+  if (patch.is_default) {
+    const { data: row, error: lookupErr } = await sb()
+      .from("tl_mcp_config")
+      .select("server_id")
+      .eq("id", configId)
+      .single();
+    if (lookupErr) throw lookupErr;
+    const { error: clearErr } = await sb()
+      .from("tl_mcp_config")
+      .update({ is_default: false })
+      .eq("server_id", row.server_id)
+      .neq("id", configId);
+    if (clearErr) throw clearErr;
+  }
+  const { error } = await sb().from("tl_mcp_config").update(patch).eq("id", configId);
+  if (error) throw error;
+}
+
+export async function deleteServerConfig(configId: string): Promise<void> {
+  const { error } = await sb().from("tl_mcp_config").delete().eq("id", configId);
+  if (error) throw error;
+}
+
+/** Count of user connections referencing a specific config (used in the delete confirm). */
+export async function countConfigUserConnections(configId: string): Promise<number> {
+  const { count, error } = await sb()
+    .from("tl_mcp_user_conn")
+    .select("id", { count: "exact", head: true })
+    .eq("config_id", configId);
+  if (error) throw error;
+  return count ?? 0;
+}
+
 export interface SyncFreshness {
   state: "fresh" | "stale" | "errored" | "never";
   ageSec: number | null;

@@ -15,7 +15,7 @@ import {
     selectShowCreatorDebug,
     selectShowSystemMessage,
     selectShowTemplateMessages,
-    selectIsAdminUser,
+    selectIsSuperAdminUser,
 } from "@/lib/redux/prompt-execution/selectors";
 import {
     setCreatorDebug,
@@ -38,7 +38,7 @@ export function CreatorOptionsModal({
 }: CreatorOptionsModalProps) {
     const dispatch = useAppDispatch();
 
-    const isAdmin = useAppSelector(selectIsAdminUser);
+    const isAdmin = useAppSelector(selectIsSuperAdminUser);
     const isDebugMode = useAppSelector(selectIsDebugMode);
     const showCreatorDebug = useAppSelector(state => selectShowCreatorDebug(state, runId));
     const showSystemMessage = useAppSelector(state => selectShowSystemMessage(state, runId));

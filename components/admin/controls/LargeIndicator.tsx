@@ -23,7 +23,7 @@ import {
   selectRouteContext,
   selectConsoleErrors,
 } from "@/lib/redux/slices/adminDebugSlice";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { selectUser } from "@/lib/redux/slices/userSlice";
 import {
   selectActiveServer,
@@ -67,7 +67,7 @@ const LargeIndicator: React.FC<LargeIndicatorProps> = ({
   const [copied, setCopied] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
 
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const reduxUser = useAppSelector(selectUser);
   const activeServer = useAppSelector(selectActiveServer);
   const resolvedUrl = useAppSelector(selectResolvedBaseUrl);

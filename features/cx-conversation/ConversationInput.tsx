@@ -70,7 +70,7 @@ import {
   selectModelOptions,
   fetchAvailableModels,
 } from "@/features/ai-models/redux/modelRegistrySlice";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { selectActiveChatAgent } from "./_legacy-stubs";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 import { ResourceChips } from "@/features/prompts/components/resource-display/ResourceChips";
@@ -244,7 +244,7 @@ export function ConversationInput({
   const selectedAgent = useAppSelector(selectActiveChatAgent);
 
   // ── Admin / debug ──────────────────────────────────────────────────────────
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const isGlobalDebugMode = useAppSelector(selectIsDebugMode);
   const showDebugInfo = useAppSelector((s) =>
     selectShowDebugInfo(s, sessionId),

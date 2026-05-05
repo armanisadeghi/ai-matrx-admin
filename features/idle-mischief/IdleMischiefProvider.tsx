@@ -6,12 +6,23 @@
 
 "use client";
 
+// Provider for the idle-mischief subsystem.
+//
+// What lives here:
+//   - <MischiefStage /> — the orchestrator (renders no DOM; runs the
+//     idle-detection loop + manual-trigger queue + snap-back lifecycle).
+//   - Cmd+Shift+M / Ctrl+Shift+M global shortcut (dev/debug only) for
+//     a quick "play tremor" trigger without opening the admin indicator.
+//
+// The user-facing dev controls (act buttons, speed slider, loop toggle,
+// snap-back) live inside the admin indicator's MediumIndicator. See
+// `components/MischiefControls.tsx`.
+
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 import { triggerAct } from "./state/idleMischiefSlice";
 import { MischiefStage } from "./components/MischiefStage";
-import { MischiefDevButton } from "./components/MischiefDevButton";
 
 export function IdleMischiefProvider() {
   const dispatch = useAppDispatch();
@@ -30,10 +41,5 @@ export function IdleMischiefProvider() {
     return () => window.removeEventListener("keydown", onKey);
   }, [isDev, isDebugMode, dispatch]);
 
-  return (
-    <>
-      <MischiefStage />
-      <MischiefDevButton />
-    </>
-  );
+  return <MischiefStage />;
 }

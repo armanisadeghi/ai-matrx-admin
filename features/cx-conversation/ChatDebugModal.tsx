@@ -23,7 +23,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import {
   toggleDebugMode,
   selectIsDebugMode,
@@ -51,7 +51,7 @@ export function ChatDebugModal({
 }: ChatDebugModalProps) {
   const dispatch = useAppDispatch();
 
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const isGlobalDebugMode = useAppSelector(selectIsDebugMode);
   const showDebugInfo = useAppSelector((s) =>
     selectShowDebugInfo(s, sessionId),

@@ -11,7 +11,7 @@
  */
 
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import { Copy, Loader2, Stars, Trash2 } from "lucide-react";
+import { Copy, Files, Loader2, Stars, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -200,6 +200,38 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
     }
   }, [editedResponse, ai.accumulatedText]);
 
+  const handleCopyTranscript = useCallback(async () => {
+    const text = transcriptDisplay.trim();
+    if (!text) {
+      toast.info("Nothing to copy");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success("Transcript copied");
+    } catch {
+      toast.error("Failed to copy");
+    }
+  }, [transcriptDisplay]);
+
+  const handleCopyJoined = useCallback(async () => {
+    const transcript = transcriptDisplay.trim();
+    const response = (editedResponse ?? ai.accumulatedText).trim();
+    if (!transcript && !response) {
+      toast.info("Nothing to copy");
+      return;
+    }
+    const parts: string[] = [];
+    if (transcript) parts.push(transcript);
+    if (response) parts.push(response);
+    try {
+      await navigator.clipboard.writeText(parts.join("\n\n---\n\n"));
+      toast.success("Both copied to clipboard");
+    } catch {
+      toast.error("Failed to copy");
+    }
+  }, [transcriptDisplay, editedResponse, ai.accumulatedText]);
+
   const responseValue = editedResponse ?? ai.accumulatedText;
   const isBusyEarly =
     ai.phase === "launching" ||
@@ -342,14 +374,22 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
             </span>
             <div className="flex items-center gap-1">
               {transcriptDisplay.trim().length > 0 && (
-                <ContentActionBar
-                  content={transcriptDisplay}
-                  title="Voice Pad Transcript"
-                  instanceKey={`voice-pad-ai-transcript-${instanceId}`}
-                  hideSpeaker
-                  hidePencil
-                  hideCopy
-                />
+                <>
+                  <ContentActionBar
+                    content={transcriptDisplay}
+                    title="Voice Pad Transcript"
+                    instanceKey={`voice-pad-ai-transcript-${instanceId}`}
+                    hideSpeaker
+                    hidePencil
+                    hideCopy
+                  />
+                  <ActionFeedbackButton
+                    icon={<Copy />}
+                    tooltip="Copy transcript"
+                    onClick={handleCopyTranscript}
+                    className="text-muted-foreground"
+                  />
+                </>
               )}
               <ActionFeedbackButton
                 icon={<Trash2 />}
@@ -387,7 +427,7 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
               {isBusyEarly && (
                 <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
               )}
-              {ai.phase === "complete" && responseValue.trim().length > 0 ? (
+              {ai.phase === "complete" && responseValue.trim().length > 0 && (
                 <ContentActionBar
                   content={responseValue}
                   title={`AI-cleaned: ${selectedAgent.name}`}
@@ -399,15 +439,21 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
                   instanceKey={`voice-pad-ai-response-${instanceId}`}
                   hideSpeaker
                   hidePencil
-                />
-              ) : (
-                <ActionFeedbackButton
-                  icon={<Copy />}
-                  tooltip="Copy response"
-                  onClick={handleCopyResponse}
-                  className="text-muted-foreground"
+                  hideCopy
                 />
               )}
+              <ActionFeedbackButton
+                icon={<Copy />}
+                tooltip="Copy AI response"
+                onClick={handleCopyResponse}
+                className="text-muted-foreground"
+              />
+              <ActionFeedbackButton
+                icon={<Files />}
+                tooltip="Copy transcript + AI response"
+                onClick={handleCopyJoined}
+                className="text-muted-foreground"
+              />
             </div>
           </div>
           <textarea

@@ -19,7 +19,7 @@ import {
   selectAgentOutputSchema,
   selectAgentChangeNote,
 } from "@/features/agents/redux/agent-definition/selectors";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -193,7 +193,7 @@ export function AgentViewContent({ agentId }: { agentId: string }) {
   const changeNote = useAppSelector((state) =>
     selectAgentChangeNote(state, agentId),
   );
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
 
   const handleCopy = async (key: string, text: string, message: string) => {
     try {

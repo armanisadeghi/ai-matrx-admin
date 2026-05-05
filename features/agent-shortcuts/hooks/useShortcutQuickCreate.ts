@@ -19,7 +19,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 import { DEFAULT_AGENT_EXECUTION_CONFIG } from "@/features/agents/types/agent-execution-config.types";
@@ -99,7 +99,7 @@ export function useShortcutQuickCreate({
 }: UseShortcutQuickCreateArgs) {
   const dispatch = useAppDispatch();
   const { toast } = useToast();
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const agent = useAppSelector((s) => selectAgentById(s, agentId));
 
   useEffect(() => {

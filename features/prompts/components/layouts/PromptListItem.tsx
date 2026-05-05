@@ -21,7 +21,7 @@ import { FaBars } from "react-icons/fa";
 import { cn } from "@/lib/utils";
 import type { RootState } from "@/lib/redux/store";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { ShareModal } from "@/features/sharing";
 import { CreatePromptAppModal } from "@/features/prompt-apps/components/CreatePromptAppModal";
 import { ConvertToBuiltinModal } from "@/features/prompts/components/layouts/ConvertToBuiltinModal";
@@ -69,7 +69,7 @@ export function PromptListItem({
   isAnyNavigating,
 }: PromptListItemProps) {
   const isSystemAdmin = useAppSelector((state: RootState) =>
-    selectIsAdmin(state),
+    selectIsSuperAdmin(state),
   );
   const basePath = usePromptsBasePath();
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);

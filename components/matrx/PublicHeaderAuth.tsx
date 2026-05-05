@@ -6,7 +6,7 @@ import { LayoutDashboard, LogIn } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { selectUser, selectDisplayName, selectProfilePhoto, selectIsAdmin } from '@/lib/redux/slices/userSlice';
+import { selectUser, selectDisplayName, selectProfilePhoto, selectIsSuperAdmin } from '@/lib/redux/slices/userSlice';
 import { cn } from '@/lib/utils';
 
 // Lazy load AdminMenu - only loads when user is admin
@@ -27,7 +27,7 @@ export function PublicHeaderAuth() {
   const user = useSelector(selectUser);
   const displayName = useSelector(selectDisplayName);
   const profilePhoto = useSelector(selectProfilePhoto);
-  const isAdmin = useSelector(selectIsAdmin);
+  const isAdmin = useSelector(selectIsSuperAdmin);
   const router = useRouter();
 
   // Avoid hydration mismatch: AuthSyncWrapper populates the user slice after

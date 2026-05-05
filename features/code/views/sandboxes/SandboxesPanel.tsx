@@ -64,7 +64,7 @@ import {
   setActiveSandboxProxyUrl,
   setActiveView,
 } from "../../redux/codeWorkspaceSlice";
-import { selectIsAdmin } from "@/lib/redux/selectors/userSelectors";
+import { selectIsSuperAdmin } from "@/lib/redux/selectors/userSelectors";
 import { clearFsChangesBucket } from "../../redux/fsChangesSlice";
 import {
   setActiveTab as setBottomActiveTab,
@@ -91,7 +91,7 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
   const dispatch = useAppDispatch();
   const activeId = useAppSelector(selectActiveSandboxId);
   const activeProxyUrl = useAppSelector(selectActiveSandboxProxyUrl);
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const { setFilesystem, setProcess } = useCodeWorkspace();
 
   const [instances, setInstances] = useState<SandboxInstance[] | null>(null);

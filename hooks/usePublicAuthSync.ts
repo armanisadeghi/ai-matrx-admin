@@ -7,6 +7,7 @@ import { useAppDispatch } from '@/lib/redux/hooks';
 import { setUser, setFingerprintId } from '@/lib/redux/slices/userSlice';
 import { createClient } from '@/utils/supabase/client';
 import { getFingerprint } from '@/lib/services/fingerprint-service';
+import type { AdminLevel } from '@/utils/supabase/userSessionData';
 
 /**
  * Syncs authentication state to Redux for ALL public routes.
@@ -63,17 +64,19 @@ export function usePublicAuthSync() {
                     // We already have the session from the local check above
                     const session = localSession;
                     
-                    // Check admin status
+                    // Check admin status + level
                     let isAdmin = false;
+                    let adminLevel: AdminLevel | null = null;
                     try {
                         const { data: adminData } = await supabase
                             .from('admins')
-                            .select('user_id')
+                            .select('user_id, level')
                             .eq('user_id', user.id)
                             .maybeSingle();
                         isAdmin = !!adminData;
+                        adminLevel = (adminData as { level?: AdminLevel } | null)?.level ?? null;
                     } catch {
-                        // Admin check failed, default to false
+                        // Admin check failed, default to non-admin
                     }
 
                     // Dispatch to Redux with access token (authReady set automatically)
@@ -108,6 +111,7 @@ export function usePublicAuthSync() {
                             name: i.identity_data?.name || null,
                         })) || [],
                         isAdmin,
+                        adminLevel,
                         accessToken: session?.access_token || null,
                         tokenExpiresAt: session?.expires_at || null,
                     }));

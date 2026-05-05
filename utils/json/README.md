@@ -7,13 +7,39 @@ Centralized JSON extraction, repair, and streaming for all AI Matrx products. Re
 ## Architecture
 
 ```
-Layer 0  json-structural.ts       Character-level: balanced braces, fenced blocks
-Layer 1  extract-json.ts          Core extractor: extractAllJson / extractFirstJson
-Layer 2  json-utils.ts            Repair, formatting, flexible parse
-Layer 3  streaming-json-tracker.ts  Stateful streaming wrapper (chunk-by-chunk)
-Hook     hooks/use-streaming-json.ts  React hook for standalone components
-Redux    active-requests.slice.ts     Integrated into process-stream for LLM responses
+Layer 0  json-structural.ts          Character-level: balanced braces, fenced blocks
+Layer 1  extract-json.ts             Core extractor: extractAllJson / extractFirstJson
+Layer 2  json-utils.ts               Repair, formatting, flexible parse
+Layer 3  streaming-json-tracker.ts   Stateful streaming wrapper (chunk-by-chunk)
+Layer 4  scan-text.ts                High-level façade: scanText / TextScanner
+Hook     hooks/use-streaming-json.ts React hook for standalone components
+Redux    active-requests.slice.ts    Integrated into process-stream for LLM responses
 ```
+
+---
+
+## Quick Start (default — when in doubt, use this)
+
+```ts
+import { scanText, TextScanner } from "@/utils/json/scan-text";
+
+// Have the full text in hand?
+const { text, data } = scanText(aiResponse);
+//   text  → the input verbatim (never trimmed, never had fences stripped)
+//   data  → ScannedJson[] with { value, isComplete, type, source, ... }
+
+// Streaming chunks?
+const scanner = new TextScanner();
+for await (const chunk of stream) {
+  const { text, data } = scanner.append(chunk);
+  // data[0]?.isComplete === false until the JSON closes.
+  // data[0]?.value is auto-closed during streaming so you always have
+  // something to render.
+}
+const { data } = scanner.finalize(); // optional final pass
+```
+
+`scanText` / `TextScanner` accept JSON in any form — fenced (```` ```json...``` ````), bare (`{...}` / `[...]`), or whole-string. Detection is order-preserving and you can have many JSON values in one input. Non-JSON prose is returned untouched in `text`.
 
 ---
 
@@ -126,10 +152,18 @@ const final = tracker.finalize();
 
 | Option | Default | Effect |
 |--------|---------|--------|
-| `isStreaming` | `false` | When `true`, only scans fenced blocks and auto-closes incomplete JSON |
-| `allowFuzzy` | `false` | Enables bare-block detection, inline scanning, and whole-string fallback |
+| `isStreaming` | `false` | When `true`, runs the streaming auto-closer so trailing partial JSON still parses (used by `StreamingJsonTracker` and `TextScanner`) |
+| `allowFuzzy` | `false` | Enables bare-block detection (raw `{...}`/`[...]`), inline scanning, and whole-string fallback. Defaulted to `true` by the higher-level `scanText` façade |
 | `repairEnabled` | `true` | Fix trailing commas, Python `True`/`False`/`None` |
 | `maxResults` | `Infinity` | Cap the number of extracted values |
+
+### ScanOptions Reference (high-level façade)
+
+| Option | Default | Effect |
+|--------|---------|--------|
+| `allowBare` | `true` | Detect bare JSON in addition to fenced blocks. Set to `false` to restrict to fenced output |
+| `repairEnabled` | `true` | Same as above |
+| `maxResults` | `Infinity` | Same as above |
 
 ---
 

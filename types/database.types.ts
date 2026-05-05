@@ -1,12 +1,10 @@
-// Original generated type (replaced by patch-db-types.sh):
-// export type Json =
-//   | string
-//   | number
-//   | boolean
-//   | null
-//   | { [key: string]: Json | undefined }
-//   | Json[]
-export type Json = unknown
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
@@ -91,14 +89,23 @@ export type Database = {
       admins: {
         Row: {
           created_at: string | null
+          level: Database["public"]["Enums"]["admin_level"]
+          metadata: Json
+          permissions: Json
           user_id: string
         }
         Insert: {
           created_at?: string | null
+          level?: Database["public"]["Enums"]["admin_level"]
+          metadata?: Json
+          permissions?: Json
           user_id: string
         }
         Update: {
           created_at?: string | null
+          level?: Database["public"]["Enums"]["admin_level"]
+          metadata?: Json
+          permissions?: Json
           user_id?: string
         }
         Relationships: []
@@ -19041,8 +19048,19 @@ export type Database = {
       }
       current_user_is_admin: {
         Row: {
+          admin_level: Database["public"]["Enums"]["admin_level"] | null
           is_admin: boolean | null
           user_id: string | null
+        }
+        Insert: {
+          admin_level?: Database["public"]["Enums"]["admin_level"] | null
+          is_admin?: never
+          user_id?: string | null
+        }
+        Update: {
+          admin_level?: Database["public"]["Enums"]["admin_level"] | null
+          is_admin?: never
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -22122,6 +22140,13 @@ export type Database = {
       }
       generate_invitation_code: { Args: never; Returns: string }
       generate_invitation_token: { Args: never; Returns: string }
+      get_admin_status: {
+        Args: never
+        Returns: {
+          admin_level: Database["public"]["Enums"]["admin_level"]
+          is_admin: boolean
+        }[]
+      }
       get_aga_public_data: {
         Args: { p_app_id?: string; p_slug?: string }
         Returns: {
@@ -23367,6 +23392,7 @@ export type Database = {
         Args: { p_resource_id: string; p_resource_type: string }
         Returns: boolean
       }
+      is_super_admin: { Args: never; Returns: boolean }
       list_entities_by_scopes: {
         Args: {
           p_entity_type?: string
@@ -24516,6 +24542,7 @@ export type Database = {
       }
     }
     Enums: {
+      admin_level: "developer" | "senior_admin" | "super_admin"
       app_type: "recipe" | "workflow" | "other"
       artifact_status: "draft" | "published" | "archived" | "failed"
       artifact_type:
@@ -25242,6 +25269,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      admin_level: ["developer", "senior_admin", "super_admin"],
       app_type: ["recipe", "workflow", "other"],
       artifact_status: ["draft", "published", "archived", "failed"],
       artifact_type: [

@@ -23,7 +23,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 import { ShareModal } from "@/features/sharing/components/ShareModal";
 import { AgentActionModal } from "./AgentActionModal";
@@ -80,7 +80,7 @@ export function AgentCard({
   const isOwner = record?.isOwner ?? true;
 
   const isSystemAdmin = useAppSelector((state: RootState) =>
-    selectIsAdmin(state),
+    selectIsSuperAdmin(state),
   );
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);

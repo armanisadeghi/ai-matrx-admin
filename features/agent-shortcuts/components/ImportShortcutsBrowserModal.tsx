@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { useAgentShortcutCrud } from "../hooks/useAgentShortcutCrud";
 import type { AdminNonGlobalShortcutRow } from "@/features/agents/redux/agent-shortcuts/thunks";
 
@@ -63,7 +63,7 @@ export function ImportShortcutsBrowserModal({
   onSelect,
 }: ImportShortcutsBrowserModalProps) {
   const isMobile = useIsMobile();
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const crud = useAgentShortcutCrud({ scope: "global" });
 
   const [rows, setRows] = useState<AdminNonGlobalShortcutRow[]>([]);

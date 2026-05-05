@@ -17,6 +17,7 @@
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { IdentityData, AppMetadata } from "@/utils/userDataMapper";
+import type { AdminLevel } from "@/utils/supabase/userSessionData";
 
 export interface UserAuthState {
   id: string | null;
@@ -27,6 +28,8 @@ export interface UserAuthState {
   appMetadata: AppMetadata;
   identities: IdentityData[];
   isAdmin: boolean;
+  /** Admin tier — null for non-admins. Highest-bar gates check === 'super_admin'. */
+  adminLevel: AdminLevel | null;
   accessToken: string | null;
   /** Unix timestamp (seconds) when the access token expires. */
   tokenExpiresAt: number | null;
@@ -46,6 +49,7 @@ const initialState: UserAuthState = {
   },
   identities: [],
   isAdmin: false,
+  adminLevel: null,
   accessToken: null,
   tokenExpiresAt: null,
   authReady: false,

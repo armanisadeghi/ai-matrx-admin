@@ -1,4 +1,6 @@
 // File: utils/userDataMapper.ts
+import type { AdminLevel } from "@/utils/supabase/userSessionData";
+
 export interface AppMetadata {
   provider: string | null;
   providers: string[];
@@ -36,6 +38,7 @@ export interface UserData {
   userMetadata: UserMetadata;
   identities: IdentityData[];
   isAdmin: boolean;
+  adminLevel: AdminLevel | null;
   accessToken: string | null;
   tokenExpiresAt: number | null;
 }
@@ -46,12 +49,14 @@ export interface UserData {
  * @param user - Supabase user object
  * @param accessToken - Optional access token
  * @param isAdmin - Optional admin status (if not provided, defaults to false)
+ * @param adminLevel - Optional admin level (developer / senior_admin / super_admin), null if not an admin
  * @returns Mapped UserData object
  */
 export function mapUserData(
   user: any,
   accessToken?: any,
   isAdmin?: boolean,
+  adminLevel?: AdminLevel | null,
 ): UserData {
   const userId = user?.id || null;
   return {
@@ -86,6 +91,7 @@ export function mapUserData(
         name: identity?.identity_data?.name || null,
       })) || [],
     isAdmin: isAdmin ?? false,
+    adminLevel: adminLevel ?? null,
     accessToken: accessToken || null,
     tokenExpiresAt: null,
   };

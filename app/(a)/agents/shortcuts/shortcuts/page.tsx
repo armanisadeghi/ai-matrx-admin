@@ -12,14 +12,14 @@ import type {
   AgentShortcutRecord,
 } from "@/features/agents/redux/agent-shortcuts/types";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 
 const SCOPE = "user" as const;
 
 export default function UserShortcutsPage() {
   const router = useRouter();
   const [, startTransition] = useTransition();
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
 
   const { categories } = useAgentShortcuts({ scope: SCOPE });
 

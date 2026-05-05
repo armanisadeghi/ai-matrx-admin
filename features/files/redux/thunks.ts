@@ -147,9 +147,41 @@ export const loadUserFileTree = createAsyncThunk<
 
   const rows = parseCloudTreeRows(data);
 
+  // Defensive ownership filter — DO NOT REMOVE without coordinating with the
+  // Python team. The 5-arg overload of `cld_get_user_file_tree` has a bug in
+  // its WHERE clause for files:
+  //
+  //   WHERE (...)
+  //     AND (
+  //         f.owner_id = p_user_id
+  //         OR f.visibility = 'public'        -- <-- leaks ALL public files
+  //         OR cld_get_effective_permission(f.id, p_user_id) IS NOT NULL
+  //     )
+  //
+  // That `OR f.visibility = 'public'` makes EVERY public file in the system
+  // appear in EVERY user's tree. A `visibility = 'public'` flag is supposed
+  // to mean "anyone with the link can read" — it's NOT supposed to mean
+  // "show in every user's My Files". Folders correctly scope to
+  // `d.owner_id = p_user_id` in the same function; files do not.
+  //
+  // Until the Python team patches the RPC, we filter on the client: keep a
+  // file row only if the user owns it OR has been explicitly granted a
+  // permission (`effective_permission` is non-null when the row was returned
+  // because of `cld_get_effective_permission`). Public-but-not-granted rows
+  // are dropped — those should only surface via direct share links, not the
+  // user's tree.
+  //
+  // Tracked in for_python/REQUESTS.md (item 0a).
+  const ownedOrSharedRows = rows.filter((row) => {
+    if (row.kind === "folder") return true; // already owner-scoped server-side
+    if (row.owner_id === userId) return true;
+    if (row.effective_permission != null) return true;
+    return false;
+  });
+
   const files: Partial<CloudFile>[] = [];
   const folders: Partial<CloudFolder>[] = [];
-  for (const row of rows) {
+  for (const row of ownedOrSharedRows) {
     if (row.kind === "file") {
       files.push({
         id: row.id,
@@ -788,7 +820,8 @@ export const uploadFiles = createAsyncThunk<
     }
     const dot = originalName.lastIndexOf(".");
     const isHidden = originalName.startsWith(".");
-    const stem = dot > 0 && !isHidden ? originalName.slice(0, dot) : originalName;
+    const stem =
+      dot > 0 && !isHidden ? originalName.slice(0, dot) : originalName;
     const ext = dot > 0 && !isHidden ? originalName.slice(dot) : "";
     for (let i = 1; i < 1000; i++) {
       const candidate = `${stem} (${i})${ext}`;
@@ -1060,7 +1093,7 @@ export const moveFile = createAsyncThunk<void, MoveFileArg, ThunkApi>(
       const targetFolder =
         newParentFolderId === null
           ? null
-          : getState().cloudFiles.foldersById[newParentFolderId] ?? null;
+          : (getState().cloudFiles.foldersById[newParentFolderId] ?? null);
       const targetPrefix = targetFolder ? `${targetFolder.folderPath}/` : "";
       const newPath = `${targetPrefix}${record.fileName}`;
 
@@ -1478,12 +1511,11 @@ export const bulkDeleteFiles = createAsyncThunk<
       { file_ids: arg.fileIds, hard_delete: arg.hardDelete },
       { requestId },
     );
-    const result: BulkResponse =
-      data ?? {
-        results: arg.fileIds.map((id) => ({ id, ok: true, error: null })),
-        succeeded: arg.fileIds.length,
-        failed: 0,
-      };
+    const result: BulkResponse = data ?? {
+      results: arg.fileIds.map((id) => ({ id, ok: true, error: null })),
+      succeeded: arg.fileIds.length,
+      failed: 0,
+    };
 
     // Roll back any items the backend reports as failed.
     for (const r of result.results) {

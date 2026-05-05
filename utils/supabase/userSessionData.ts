@@ -1,5 +1,12 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 
+export type AdminLevel = "developer" | "senior_admin" | "super_admin";
+
+export interface AdminStatus {
+  isAdmin: boolean;
+  level: AdminLevel | null;
+}
+
 export interface UserSessionData {
   isAdmin: boolean;
   preferences: any;
@@ -13,29 +20,57 @@ interface UserSessionDataResponse {
 }
 
 /**
- * Checks if a user is an admin by querying the admins table.
- * Use this for simple admin verification in API routes.
+ * Single source of truth for admin status. Queries the admins table once and
+ * returns both the boolean (any admin) and the level enum.
  *
- * @param supabase - Supabase client instance
- * @param userId - User ID to check
- * @returns true if user is an admin, false otherwise
+ * The day this ships every existing admin row defaults to `super_admin`.
  */
-export async function checkIsUserAdmin(
+export async function getAdminStatus(
   supabase: SupabaseClient,
   userId: string,
-): Promise<boolean> {
+): Promise<AdminStatus> {
   const { data, error } = await supabase
     .from("admins")
-    .select("user_id")
+    .select("user_id, level")
     .eq("user_id", userId)
     .maybeSingle();
 
   if (error) {
     console.error("Error checking admin status:", error);
-    return false;
+    return { isAdmin: false, level: null };
   }
 
-  return !!data;
+  const level = (data as { level?: AdminLevel } | null)?.level ?? null;
+  return { isAdmin: !!data, level };
+}
+
+/**
+ * Highest-bar check. The new default for every gate in the app — server
+ * routes, layout guards, and (via the matching selector) UI gates.
+ */
+export async function checkIsSuperAdmin(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<boolean> {
+  const { level } = await getAdminStatus(supabase, userId);
+  return level === "super_admin";
+}
+
+/**
+ * Returns true for ANY admin level. Kept for the future "selectively lower
+ * the bar" use case — call sites that want to allow developer / senior_admin
+ * in addition to super_admin.
+ *
+ * Most existing call sites switched to `checkIsSuperAdmin` when admin levels
+ * shipped; new code should default to `checkIsSuperAdmin` and only use this
+ * when the bar has been deliberately lowered for that surface.
+ */
+export async function checkIsUserAdmin(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<boolean> {
+  const { isAdmin } = await getAdminStatus(supabase, userId);
+  return isAdmin;
 }
 
 /**

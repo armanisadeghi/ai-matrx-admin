@@ -24,6 +24,8 @@ export {
   selectUser,
   selectUserId,
   selectIsAdmin,
+  selectIsSuperAdmin,
+  selectAdminLevel,
   selectAccessToken,
   selectFingerprintId,
   selectAuthReady,

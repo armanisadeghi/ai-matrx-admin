@@ -27,7 +27,7 @@ import {
   selectWindow,
 } from "@/lib/redux/slices/windowManagerSlice";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import {
   selectIsMemoryEnabledForConversation,
   selectMemoryCounters,
@@ -85,7 +85,7 @@ function ActionsTab({
   onOpenRunSettingsWindow: () => void;
 }) {
   const dispatch = useAppDispatch();
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const isMemoryEnabled = useAppSelector(
     selectIsMemoryEnabledForConversation(conversationId),
   );

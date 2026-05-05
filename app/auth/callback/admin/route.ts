@@ -10,7 +10,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { exchangeCodeForTokens, fetchUserInfo } from "@/lib/auth/aimatrx-oauth";
 import { createAdminClient } from "@/utils/supabase/adminClient";
-import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
+import { checkIsSuperAdmin } from "@/utils/supabase/userSessionData";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -155,7 +155,7 @@ export async function GET(request: NextRequest) {
     // -----------------------------------------------------------------------
     // 6. Admin check — revoke session and reject if not in admins table
     // -----------------------------------------------------------------------
-    const isAdmin = await checkIsUserAdmin(adminClient, sessionData.user.id);
+    const isAdmin = await checkIsSuperAdmin(adminClient, sessionData.user.id);
 
     if (!isAdmin) {
       // Revoke the session we just created — do not delete the user record

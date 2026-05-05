@@ -22,7 +22,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { RootState } from "@/lib/redux/store";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { ShareModal } from "@/features/sharing";
 import { PromptActionModal } from "./PromptActionModal";
 import { PromptMetadataModal } from "./PromptMetadataModal";
@@ -73,7 +73,7 @@ export function PromptCard({
   isAnyNavigating,
 }: PromptCardProps) {
   const isSystemAdmin = useAppSelector((state: RootState) =>
-    selectIsAdmin(state),
+    selectIsSuperAdmin(state),
   );
   const effectiveIsAdmin = isAdminProp ?? isSystemAdmin;
   const basePath = usePromptsBasePath();

@@ -87,7 +87,7 @@ import {
   toggleDebugMode,
   showPromptDebugIndicator,
 } from "@/lib/redux/slices/adminDebugSlice";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import {
   selectIsOverlayOpen,
   toggleOverlay,
@@ -234,7 +234,7 @@ export function UnifiedContextMenu({
 
   // Admin features
   const dispatch = useAppDispatch();
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const isDebugMode = useAppSelector(selectIsDebugMode);
   const isAdminIndicatorOpen = useAppSelector((state) =>
     selectIsOverlayOpen(state, "adminIndicator"),

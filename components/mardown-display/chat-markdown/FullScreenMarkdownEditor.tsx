@@ -30,7 +30,7 @@ import TuiEditorContent, {
 import { MatrxSplit } from "@/components/matrx/MatrxSplit";
 import SuspenseLoader from "@/components/loaders/SuspenseLoader";
 import { LazyEntityGate } from "@/providers/packs/LazyEntityGate";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   AlertTriangle,
@@ -1013,7 +1013,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
   onChangeRef.current = onChange;
 
   const mode = useAppSelector((s) => s.theme.mode);
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const isMobile = useIsMobile();
   const route =
     typeof window !== "undefined" ? window.location.href : "unknown";

@@ -19,7 +19,7 @@ import {
   selectIsSnapshot,
   selectReuseConversationId,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { DEFAULT_BUILDER_ADVANCED_SETTINGS } from "@/features/agents/types/instance.types";
 import { SystemInstructionModal } from "../builder/message-builders/system-instructions/SystemInstructionModal";
 import { NumberStepper } from "@/components/official-candidate/NumberStepper";
@@ -71,7 +71,7 @@ export function RunSettingsEditor({ conversationId }: RunSettingsEditorProps) {
   const reuseConversationId = useAppSelector(
     selectReuseConversationId(conversationId),
   );
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const isBlockMode = useAppSelector(selectIsBlockMode);
   const isSnapshot = useAppSelector(selectIsSnapshot);
   const isMemoryEnabledForThisConversation = useAppSelector(

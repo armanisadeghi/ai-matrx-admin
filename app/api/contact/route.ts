@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
+import { checkIsSuperAdmin } from "@/utils/supabase/userSessionData";
 import { sendEmail } from "@/lib/email/client";
 import { emailTemplates } from "@/lib/email/client";
 import { getContactRatelimiter } from "@/lib/rate-limit/client";
@@ -132,17 +133,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Check if user is admin (using admins table)
+    // Highest-bar gate: Super Admin only.
     const adminSupabase = createAdminClient();
-    const { data: adminData } = await adminSupabase
-      .from("admins")
-      .select("user_id")
-      .eq("user_id", user.id)
-      .single();
+    const isSuperAdmin = await checkIsSuperAdmin(adminSupabase, user.id);
 
-    if (!adminData) {
+    if (!isSuperAdmin) {
       return NextResponse.json(
-        { success: false, msg: "Forbidden - Admin access required" },
+        { success: false, msg: "Forbidden - Super Admin access required" },
         { status: 403 }
       );
     }

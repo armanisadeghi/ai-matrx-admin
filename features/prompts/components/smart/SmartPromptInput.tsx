@@ -52,7 +52,7 @@ import {
   selectShowVariables,
   selectUserVariables,
   selectIsCreator,
-  selectIsAdminUser,
+  selectIsSuperAdminUser,
   selectShowCreatorDebug,
 } from "@/lib/redux/prompt-execution/selectors";
 import {
@@ -131,7 +131,7 @@ export function SmartPromptInput({
   const isCreator = useAppSelector((state) =>
     runId ? selectIsCreator(state, runId) : false,
   );
-  const isAdmin = useAppSelector(selectIsAdminUser);
+  const isAdmin = useAppSelector(selectIsSuperAdminUser);
   const showCreatorDebug = useAppSelector((state) =>
     runId ? selectShowCreatorDebug(state, runId) : false,
   );

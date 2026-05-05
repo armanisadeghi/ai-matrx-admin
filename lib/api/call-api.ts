@@ -65,7 +65,7 @@ import {
   selectFingerprintId,
   selectAuthReady,
   selectIsAuthenticated,
-  selectIsAdmin,
+  selectIsSuperAdmin,
 } from "@/lib/redux/slices/userSlice";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import {
@@ -362,7 +362,7 @@ export interface ApiCallResult<T = unknown> {
 function resolveAuth(state: RootState): ResolvedAuth {
   const accessToken = selectAccessToken(state);
   const fingerprintId = selectFingerprintId(state);
-  const isAdmin = selectIsAdmin(state);
+  const isAdmin = selectIsSuperAdmin(state);
   const isAuthenticated = selectIsAuthenticated(state);
 
   const headers: Record<string, string> = {

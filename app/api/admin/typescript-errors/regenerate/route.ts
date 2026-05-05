@@ -3,7 +3,7 @@ import * as ts from 'typescript';
 import * as fs from 'fs';
 import * as path from 'path';
 import { createClient } from '@/utils/supabase/server';
-import { requireAdmin } from '@/utils/auth/adminUtils';
+import { requireSuperAdmin } from '@/utils/auth/adminUtils';
 
 interface TypeScriptError {
   file: string | null;
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
   try {
     // Check authentication and admin status
     try {
-      await requireAdmin(); // Throws if not authenticated or not admin
+      await requireSuperAdmin(); // Throws if not authenticated or not admin
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Access denied';
       const status = message.includes('Unauthorized') ? 401 : 403;

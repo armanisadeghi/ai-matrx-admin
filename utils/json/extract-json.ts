@@ -175,21 +175,51 @@ function attemptStreamingClose(
 /**
  * Generate candidate strings by closing the partial JSON in different ways.
  * Handles: unclosed strings, dangling keys (no value), trailing commas, etc.
+ *
+ * Returned in best-effort priority order — the parser tries them in turn
+ * and keeps the first one that round-trips through `JSON.parse`.
  */
 function buildStreamingCloseCandidates(text: string): string[] {
   const candidates: string[] = [];
 
   const inString = isInsideString(text);
 
-  // Strategy 1: close string + add null for dangling key + close structures
+  // Strategy 1: ends mid-string. Close the string first, then either let
+  // it stand as the value of the current key or treat it as a dangling key
+  // and add a placeholder value.
   if (inString) {
-    const withQuote = text + '"';
-    const closingA = computeClosingSequence(withQuote);
-    candidates.push(withQuote + ": null" + closingA);
-    candidates.push(withQuote + closingA);
+    const closedString = text + '"';
+    const closingForString = computeClosingSequence(closedString);
+
+    // The closed string IS the value (most common case mid-stream).
+    candidates.push(closedString + closingForString);
+
+    // The closed string was actually a key with no value yet → add `: null`.
+    candidates.push(closedString + ": null" + closingForString);
+    candidates.push(closedString + ': ""' + closingForString);
   }
 
-  // Strategy 2: truncate at last valid comma/colon boundary + close
+  // Strategy 2: ends with a dangling key+colon (`"foo":` and nothing after).
+  // Inject a neutral placeholder value so the structure parses. We try the
+  // empty-string form first because the user-stated convention is to use
+  // `""` as the placeholder; `null` is the fallback when that fails.
+  if (!inString && /:\s*$/.test(text)) {
+    const closingD = computeClosingSequence(text);
+    candidates.push(text + ' ""' + closingD);
+    candidates.push(text + " null" + closingD);
+  }
+
+  // Strategy 3: ends with a dangling comma inside an object/array. Drop
+  // the trailing comma and close. (Repair also handles trailing commas,
+  // but emitting an explicitly truncated candidate avoids depending on
+  // repair being enabled.)
+  if (!inString && /,\s*$/.test(text)) {
+    const truncated = text.replace(/,\s*$/, "");
+    const closingE = computeClosingSequence(truncated);
+    candidates.push(truncated + closingE);
+  }
+
+  // Strategy 4: truncate at last clean boundary (`,`, `}`, `]`) and close.
   const lastClean = findLastCleanBreak(text);
   if (lastClean > 0 && lastClean < text.length) {
     const truncated = text.slice(0, lastClean);
@@ -197,13 +227,16 @@ function buildStreamingCloseCandidates(text: string): string[] {
     candidates.push(truncated + closingB);
   }
 
-  // Strategy 3: raw close (whatever we have + closing chars)
+  // Strategy 5: raw close (whatever we have + just the closing chars). Last
+  // resort — frequently produces invalid JSON when the input ends mid-value,
+  // but useful when the input ends right after a complete value.
   const closingC = computeClosingSequence(text);
   if (closingC) {
     candidates.push(text + closingC);
   }
 
-  // Strategy 4: if not in string, try as-is
+  // Strategy 6: if not in a string and no open structures, try as-is
+  // (e.g. the input is already a complete value with trailing whitespace).
   if (!inString && !computeClosingSequence(text)) {
     candidates.push(text);
   }
@@ -290,28 +323,49 @@ function extractFromBareBlocks(
   for (const candidate of candidates) {
     if (results.length >= opts.maxResults) break;
 
-    if (!candidate.isComplete) continue;
+    if (candidate.isComplete) {
+      const raw = text.slice(candidate.startIndex, candidate.endIndex + 1);
+      const parsed = opts.repairEnabled
+        ? tryRepairAndParse(raw)
+        : (() => {
+            const v = tryParse(raw);
+            return v !== undefined ? { value: v, repaired: false } : undefined;
+          })();
+
+      if (parsed !== undefined) {
+        results.push({
+          value: parsed.value,
+          type: classifyValue(parsed.value),
+          source: "bare-block",
+          startIndex: candidate.startIndex,
+          endIndex: candidate.endIndex + 1,
+          isComplete: true,
+          repairApplied: parsed.repaired,
+          warnings: parsed.repaired
+            ? ["Repair applied to bare JSON block"]
+            : ["JSON found without code fence markers"],
+        });
+      }
+      continue;
+    }
+
+    // Incomplete candidate — only attempt streaming auto-close in streaming
+    // mode. In non-streaming mode the JSON should be balanced; an unbalanced
+    // candidate is almost always prose with a stray `{` or `[`.
+    if (!opts.isStreaming) continue;
 
     const raw = text.slice(candidate.startIndex, candidate.endIndex + 1);
-    const parsed = opts.repairEnabled
-      ? tryRepairAndParse(raw)
-      : (() => {
-          const v = tryParse(raw);
-          return v !== undefined ? { value: v, repaired: false } : undefined;
-        })();
-
-    if (parsed !== undefined) {
+    const attempted = attemptStreamingClose(raw, opts.repairEnabled);
+    if (attempted) {
       results.push({
-        value: parsed.value,
-        type: classifyValue(parsed.value),
+        value: attempted.value,
+        type: classifyValue(attempted.value),
         source: "bare-block",
         startIndex: candidate.startIndex,
         endIndex: candidate.endIndex + 1,
-        isComplete: true,
-        repairApplied: parsed.repaired,
-        warnings: parsed.repaired
-          ? ["Repair applied to bare JSON block"]
-          : ["JSON found without code fence markers"],
+        isComplete: false,
+        repairApplied: attempted.repaired,
+        warnings: ["Incomplete bare JSON — auto-closed for streaming preview"],
       });
     }
   }
@@ -374,7 +428,8 @@ const DEFAULTS: Required<ExtractionOptions> = {
  * Strategy order depends on mode:
  *
  * **Streaming (`isStreaming: true`)**:
- *   1. Fenced blocks only (with auto-close for incomplete blocks)
+ *   1. Fenced blocks (with auto-close for incomplete blocks)
+ *   2. If `allowFuzzy` (or no fenced results): bare blocks (with auto-close)
  *
  * **Non-streaming (`isStreaming: false`)**:
  *   1. Fenced blocks (complete only)
@@ -399,11 +454,11 @@ export function extractAllJson(
     return fencedResults.slice(0, opts.maxResults);
   }
 
-  if (opts.isStreaming) {
-    return fencedResults;
-  }
-
-  // Strategy 2: Bare blocks (non-streaming, when fuzzy allowed OR no fenced results)
+  // Strategy 2: Bare blocks. Runs in both streaming and non-streaming when
+  // fuzzy is allowed, OR when nothing was caught in fences (so plain bare
+  // JSON like `{ "x": 1 }` without a fence still gets picked up). In
+  // streaming mode `extractFromBareBlocks` will auto-close the trailing
+  // candidate so the consumer sees a live preview.
   const remaining = opts.maxResults - fencedResults.length;
   let bareResults: ExtractedJson[] = [];
 
@@ -417,6 +472,10 @@ export function extractAllJson(
   const combined = [...fencedResults, ...bareResults];
   if (combined.length >= opts.maxResults) {
     return combined.slice(0, opts.maxResults);
+  }
+
+  if (opts.isStreaming) {
+    return combined;
   }
 
   // Strategy 3: Whole-string (non-streaming, fuzzy, still no results)

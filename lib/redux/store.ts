@@ -57,6 +57,7 @@ function splitUserData(user: UserData): {
       appMetadata: user.appMetadata,
       identities: user.identities,
       isAdmin: user.isAdmin,
+      adminLevel: user.adminLevel,
       accessToken: user.accessToken,
       tokenExpiresAt: null,
       authReady: user.id !== null,

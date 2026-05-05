@@ -1,9 +1,16 @@
 // features/idle-mischief/components/MischiefStage.tsx
 //
-// The orchestrator. Watches idle time, schedules acts, handles manual
-// triggers from the dev panel, and fires snap-back the instant the user
-// returns. Renders nothing visible itself — all the visible mischief is
-// portal-mounted by individual acts.
+// The orchestrator. Renders no DOM.
+//
+// Responsibilities:
+//   1. Watch user idle time and fire the next-up act when its threshold is hit.
+//   2. While ANY act is running, attach a high-priority capture-phase listener
+//      that fires snap-back on the FIRST mouse/keyboard/scroll/touch event.
+//      This bypasses the idle-seconds counter entirely — no race conditions,
+//      no "missed transition" bugs.
+//   3. Honor manual triggers from the dev panel.
+//   4. On natural act completion, advance the playhead.
+//   5. On snap-back, fully restore via restoreAll().
 
 "use client";
 
@@ -21,13 +28,29 @@ import {
   setCurrentAct,
   setStatus,
 } from "../state/idleMischiefSlice";
+import { restoreAll } from "../utils/snapshot";
 
 interface RunningAct {
   id: MischiefActId;
-  cleanup: () => void;
-  endsAt: number;
-  timer: number;
+  /** Cleanup that the act itself returned. */
+  actCleanup: () => void;
+  /** Detach the snap-back activity listeners. */
+  detachActivity: () => void;
+  /** Cancel the natural-end timer. */
+  cancelTimer: () => void;
 }
+
+/**
+ * Activity event names. Capture-phase + passive — fastest possible response
+ * to "user is back". `pointermove` covers mouse and touch in one event.
+ */
+const ACTIVITY_EVENTS: (keyof WindowEventMap)[] = [
+  "pointermove",
+  "pointerdown",
+  "keydown",
+  "wheel",
+  "touchstart",
+];
 
 export function MischiefStage() {
   const dispatch = useAppDispatch();
@@ -37,10 +60,6 @@ export function MischiefStage() {
   const manualTrigger = useAppSelector(selectMischiefManualTrigger);
   const status = useAppSelector(selectMischiefStatus);
 
-  // Mischief is hard-disabled when:
-  //   - reduced-motion is requested at the OS level
-  //   - settings.enabled is false
-  //   - NEXT_PUBLIC_DISABLE_MISCHIEF is set (e2e / Playwright)
   const disabled =
     reducedMotion ||
     !settings.enabled ||
@@ -49,95 +68,133 @@ export function MischiefStage() {
   const runningRef = useRef<RunningAct | null>(null);
   const playheadRef = useRef<number>(0);
   const lastIdleSecondsRef = useRef<number>(0);
-  /** While Date.now() is below this value, an idle→0 activity transition
-   *  is suppressed. Set by the manual-trigger path so the click that spawns
-   *  an act doesn't immediately count as the user returning. */
-  const ignoreUntilRef = useRef<number>(0);
 
-  // ── Stop helper (also clears Redux state) ─────────────────────────────────
-  const stopCurrent = (markStatus: "idle" | "snapping-back" = "idle") => {
+  // ── Hard snap-back: cancel everything, run restoreAll, return to idle ─────
+  const hardSnapBack = (markStatus: "idle" | "snapping-back" = "snapping-back") => {
     const running = runningRef.current;
-    if (!running) {
-      dispatch(setStatus(markStatus));
-      dispatch(setCurrentAct(null));
-      return;
+    if (running) {
+      running.cancelTimer();
+      running.detachActivity();
+      try {
+        running.actCleanup();
+      } catch {}
+      runningRef.current = null;
     }
-    clearTimeout(running.timer);
-    try {
-      running.cleanup();
-    } catch {}
-    runningRef.current = null;
+    // Belt-and-suspenders: even if no running act tracked, sweep the registry.
+    restoreAll();
     dispatch(setCurrentAct(null));
     dispatch(setStatus(markStatus));
+    if (markStatus === "snapping-back") {
+      window.setTimeout(
+        () => dispatch(setStatus("idle")),
+        SNAPBACK_DURATION_MS,
+      );
+    }
   };
 
-  // ── Start an act by id ────────────────────────────────────────────────────
+  // ── Start an act ──────────────────────────────────────────────────────────
   const startAct = (id: MischiefActId, durationMs: number) => {
-    // If something is already running, snap it back first
+    // If something is already running, snap it back FIRST (synchronous).
     if (runningRef.current) {
-      stopCurrent("snapping-back");
+      hardSnapBack("snapping-back");
     }
+
     const player = ACT_PLAYERS[id];
     if (!player) return;
-    const cleanup = player();
-    const adjustedDur = Math.max(400, durationMs / Math.max(0.25, settings.speed));
-    const timer = window.setTimeout(() => {
-      // Natural end-of-act
+
+    let actCleanup: () => void = () => {};
+    try {
+      actCleanup = player();
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn("[mischief] act threw on start:", id, err);
+      restoreAll();
+      return;
+    }
+
+    const adjustedDur = Math.max(
+      400,
+      durationMs / Math.max(0.25, settings.speed),
+    );
+
+    // Natural-end timer
+    let timerId: number | null = window.setTimeout(() => {
+      timerId = null;
+      // Natural completion: also detach activity listeners + run cleanup.
+      detachActivity();
       try {
-        cleanup();
+        actCleanup();
       } catch {}
+      restoreAll();
       runningRef.current = null;
       dispatch(setCurrentAct(null));
       dispatch(setStatus("idle"));
     }, adjustedDur);
+    const cancelTimer = () => {
+      if (timerId !== null) {
+        clearTimeout(timerId);
+        timerId = null;
+      }
+    };
+
+    // Activity listener — attached AFTER a 350ms grace window so the click
+    // that spawned the act doesn't immediately snap it back. Capture-phase
+    // so we beat any other listener on the page.
+    let activityArmed = false;
+    const onActivity = () => {
+      if (!activityArmed) return;
+      // First trigger wins: detach and snap back.
+      hardSnapBack("snapping-back");
+    };
+    const detachActivity = () => {
+      activityArmed = false;
+      for (const evt of ACTIVITY_EVENTS) {
+        window.removeEventListener(evt, onActivity, true);
+      }
+    };
+    const armActivity = window.setTimeout(() => {
+      activityArmed = true;
+      for (const evt of ACTIVITY_EVENTS) {
+        window.addEventListener(evt, onActivity, {
+          passive: true,
+          capture: true,
+        });
+      }
+    }, 350);
+    const wrappedDetach = () => {
+      clearTimeout(armActivity);
+      detachActivity();
+    };
 
     runningRef.current = {
       id,
-      cleanup,
-      endsAt: Date.now() + adjustedDur,
-      timer,
+      actCleanup,
+      detachActivity: wrappedDetach,
+      cancelTimer,
     };
     dispatch(setCurrentAct(id));
     dispatch(setStatus("playing"));
   };
 
   // ── Idle-driven scheduler ─────────────────────────────────────────────────
-  // Each tick: compare idleSeconds * speed to the next act's threshold.
   useEffect(() => {
     if (disabled) return;
-
     const prev = lastIdleSecondsRef.current;
     lastIdleSecondsRef.current = idleSeconds;
 
-    // Activity returned → snap back everything (unless we just manually
-    // triggered an act and are still inside the grace window).
-    const insideGrace = Date.now() < ignoreUntilRef.current;
+    // idle reset → done by the activity listener while running. If a reset
+    // happens with no act running, just reset the playhead and return.
     if (idleSeconds === 0 && prev > 0) {
-      if (insideGrace) {
-        // Eat this single transition; subsequent activity will still snap back.
-        return;
-      }
-      if (runningRef.current) {
-        stopCurrent("snapping-back");
-        // Briefly mark snapping-back, then idle
-        window.setTimeout(() => dispatch(setStatus("idle")), SNAPBACK_DURATION_MS);
-      } else {
-        dispatch(setStatus("idle"));
-      }
-      playheadRef.current = 0;
+      if (!runningRef.current) playheadRef.current = 0;
       return;
     }
 
-    // Already playing → wait for it to end
     if (runningRef.current) return;
 
-    // Find next act whose threshold has been reached
     const effective = idleSeconds * settings.speed;
     const nextIdx = playheadRef.current;
     if (nextIdx >= ACT_QUEUE.length) {
-      if (settings.loop) {
-        playheadRef.current = 0;
-      }
+      if (settings.loop) playheadRef.current = 0;
       return;
     }
     const next = ACT_QUEUE[nextIdx];
@@ -152,10 +209,6 @@ export function MischiefStage() {
   useEffect(() => {
     if (manualTrigger.nonce === 0 || !manualTrigger.actId) return;
     if (disabled) return;
-    // Open a 200ms "grace window": the click event itself fires bumpActivity
-    // which would otherwise look like "user returned" and snap-back the act
-    // we're about to start. Suppress just that one transition.
-    ignoreUntilRef.current = Date.now() + 200;
     bumpActivity();
     const sched = ACT_QUEUE.find((s) => s.id === manualTrigger.actId);
     if (!sched) return;
@@ -166,10 +219,12 @@ export function MischiefStage() {
   // ── External snap-back request (dev panel "Snap back now") ────────────────
   useEffect(() => {
     if (status !== "snapping-back") return;
-    if (!runningRef.current) return;
-    stopCurrent("snapping-back");
-    const t = window.setTimeout(() => dispatch(setStatus("idle")), SNAPBACK_DURATION_MS);
-    return () => clearTimeout(t);
+    if (!runningRef.current) {
+      restoreAll();
+      window.setTimeout(() => dispatch(setStatus("idle")), SNAPBACK_DURATION_MS);
+      return;
+    }
+    hardSnapBack("snapping-back");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
 
@@ -177,12 +232,13 @@ export function MischiefStage() {
   useEffect(() => {
     return () => {
       if (runningRef.current) {
-        clearTimeout(runningRef.current.timer);
+        runningRef.current.cancelTimer();
+        runningRef.current.detachActivity();
         try {
-          runningRef.current.cleanup();
+          runningRef.current.actCleanup();
         } catch {}
-        runningRef.current = null;
       }
+      restoreAll();
     };
   }, []);
 

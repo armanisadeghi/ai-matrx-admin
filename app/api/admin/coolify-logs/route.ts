@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
+import { checkIsSuperAdmin } from "@/utils/supabase/userSessionData";
 
 const COOLIFY_API_URL =
   process.env.COOLIFY_API_URL ?? "https://coolify.app.matrxserver.com/api/v1";
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const isAdmin = await checkIsUserAdmin(supabase, user.id);
+  const isAdmin = await checkIsSuperAdmin(supabase, user.id);
   if (!isAdmin) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }

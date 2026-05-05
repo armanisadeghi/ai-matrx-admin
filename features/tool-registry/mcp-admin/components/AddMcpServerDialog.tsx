@@ -174,9 +174,9 @@ export function AddMcpServerDialog({ existingSlugs, onClose, onCreated }: Props)
               .
             </p>
             <div className="rounded-md border border-border bg-card divide-y divide-border text-xs">
-              <ResultRow label="MCP server" value={result.server_slug} subtle={result.server_id} href={`/admin/mcp-servers#${result.server_slug}`} />
+              <ResultRow label="MCP server" value={result.server_slug} subtle={result.server_id} href={`/administration/mcp-servers#${result.server_slug}`} />
               <ResultRow label="Executor kind" value={result.executor_kind} />
-              <ResultRow label="System bundle" value={result.bundle_name} subtle={result.bundle_id} href={`/admin/bundles`} />
+              <ResultRow label="System bundle" value={result.bundle_name} subtle={result.bundle_id} href={`/administration/bundles`} />
               <ResultRow label="Lister tool" value={result.lister_name} subtle={result.lister_tool_id} href={`/administration/mcp-tools/${result.lister_tool_id}`} />
             </div>
             <p className="text-[11px] text-muted-foreground">

@@ -44,7 +44,7 @@ import {
 } from "../../socket-io/slices/socketTasksSlice";
 
 import { brokerActions } from "../../brokerSlice/slice";
-import { selectAccessToken, selectIsAdmin } from "../../slices/userSlice";
+import { selectAccessToken, selectIsSuperAdmin } from "../../slices/userSlice";
 import { selectResolvedBaseUrl } from "../../slices/apiConfigSlice";
 
 interface ExecuteMessageFastAPIPayload {
@@ -84,7 +84,7 @@ export const executeMessageFastAPI = createAsyncThunk<
     const conversationId = providedConversationId || uuidv4();
     const state = getState();
     const accessToken = selectAccessToken(state);
-    const isAdmin = selectIsAdmin(state);
+    const isAdmin = selectIsSuperAdmin(state);
     const BACKEND_URL =
       selectResolvedBaseUrl(state as any) ?? BACKEND_URLS.production;
 

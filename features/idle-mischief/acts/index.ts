@@ -10,6 +10,9 @@ import { playWalkingSidebar } from "./Act04WalkingSidebar";
 import { playSnow } from "./Act05Snow";
 import { playTowerCollapse } from "./Act06TowerCollapse";
 import { playCarnival } from "./Act07Carnival";
+import { playAvalanche } from "./Act08Avalanche";
+import { playRollCall } from "./Act09RollCall";
+import { playLiquify } from "./Act10Liquify";
 
 export const ACT_PLAYERS: Record<MischiefActId, () => () => void> = {
   tremor: playTremor,
@@ -19,4 +22,7 @@ export const ACT_PLAYERS: Record<MischiefActId, () => () => void> = {
   snow: playSnow,
   "tower-collapse": playTowerCollapse,
   carnival: playCarnival,
+  avalanche: playAvalanche,
+  "roll-call": playRollCall,
+  liquify: playLiquify,
 };

@@ -465,7 +465,7 @@ export const selectShowVariables = createSelector(
 
 // ========== CREATOR DEBUG SELECTORS ==========
 
-import { selectUser, selectIsAdmin } from '../slices/userSlice';
+import { selectUser, selectIsSuperAdmin } from '../slices/userSlice';
 
 // ========== CREATOR DEBUG SELECTORS ==========
 
@@ -495,9 +495,12 @@ export const selectIsCreator = createSelector(
 );
 
 /**
- * Check if user is admin
+ * Check if user is a Super Admin (highest-bar default).
+ * Renamed from `selectIsAdminUser` when admin levels shipped — both consumers
+ * (SmartPromptInput, CreatorOptionsModal) updated in the same change.
  */
-export const selectIsAdminUser = (state: RootState) => selectIsAdmin(state);
+export const selectIsSuperAdminUser = (state: RootState) =>
+  selectIsSuperAdmin(state);
 
 
 /**

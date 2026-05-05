@@ -1,6 +1,6 @@
 # Image Management System
 
-This system provides a comprehensive solution for managing and selecting images across the application. It includes components for displaying, selecting, and managing images from different sources.
+This system provides a full-screen image picker plus a small set of helper components for displaying, selecting, and persisting images across the application. As of the cloud-files rebuild it is a first-class consumer of the `features/files` system — every upload lands in the user's cloud account, and "My Images" / "My Files" / "Image Studio" all surface live cloud-files data.
 
 ## Core Components
 
@@ -9,32 +9,32 @@ This system provides a comprehensive solution for managing and selecting images 
 - `SelectedImagesProvider`: Manages the state of selected images across the application.
 - `SelectedImagesWrapper`: A convenience wrapper component to wrap parts of the application that need access to the selected images state.
 
-> **Note:** The `SelectedImagesProvider` is already included in the app's global providers, so you can directly use the `useSelectedImages` hook anywhere in the application without additional setup.
+> **Note:** The `SelectedImagesProvider` is already included in the app's global providers (`app/Providers.tsx`), so you can use the `useSelectedImages` hook anywhere without additional setup.
 
 ### User Interface Components
 
-- `ImageManager`: The main full-screen component for browsing and selecting images from different sources. It includes tabs for:
-  - Public images (Unsplash)
-  - User images
-  - Cloud storage (placeholder for future integration)
+- `ImageManager`: The main full-screen image picker. Tabs:
+  - **Public Images** — Unsplash search (unchanged).
+  - **My Images** — live, searchable image-MIME view of the user's cloud files. Has a Recents (last 30 days) chip and merges any legacy `userImages` URLs as a "Provided" section.
+  - **My Files** — full cloud-files browser (folders + files). Selectability is gated by `allowFileTypes` (default `["image"]`).
+  - **Upload** — single consolidated upload surface. Drag-and-drop, paste-from-clipboard, OS file picker — all flow through the cloud-files `useFileUpload` hook with live progress, duplicate detection, and a folder selector.
+  - **Image Studio** — embeds `<EmbeddedImageStudio>` for crop + preset variants. Saved variants get permanent CDN URLs and are auto-added to the selection.
+  - **AI Generate** — placeholder for the upcoming agent-driven image generation surface.
 
-- `ImagePreviewRow`: A responsive row component for displaying selected image previews in various sizes.
-
-- `SelectableImageCard`: A wrapper component that adds selection functionality to any image component.
+- `ImagePreviewRow`: Responsive row component for displaying selected image previews.
+- `SelectableImageCard`: Wrapper that adds selection state to any image component.
 
 ## How to Use
 
 ### Basic Usage
 
-Since the provider is globally available, you can directly use the hooks and components:
-
 ```tsx
-import { useSelectedImages } from '@/components/image/context/SelectedImagesProvider';
-import { ImagePreviewRow } from '@/components/image/shared/ImagePreviewRow';
+import { useSelectedImages } from "@/components/image/context/SelectedImagesProvider";
+import { ImagePreviewRow } from "@/components/image/shared/ImagePreviewRow";
 
 function MyComponent() {
   const { selectedImages, clearImages } = useSelectedImages();
-  
+
   return (
     <div>
       <p>Selected Images: {selectedImages.length}</p>
@@ -48,86 +48,119 @@ function MyComponent() {
 ### Using the Image Manager
 
 ```tsx
-import { useState } from 'react';
-import { ImageManager } from '@/components/image/ImageManager';
-import { useSelectedImages } from '@/components/image/context/SelectedImagesProvider';
+import { useState } from "react";
+import { ImageManager } from "@/components/image/ImageManager";
 
 function MyComponent() {
   const [isOpen, setIsOpen] = useState(false);
-  const { selectedImages } = useSelectedImages();
-  
   return (
-    <div>
-      <button onClick={() => setIsOpen(true)}>Open Image Manager</button>
-      
-      <div>
-        Selected images: {selectedImages.length}
-      </div>
-      
-      <ImageManager 
-        isOpen={isOpen} 
-        onClose={() => setIsOpen(false)} 
-        initialSelectionMode="multiple" 
+    <>
+      <button onClick={() => setIsOpen(true)}>Pick image</button>
+      <ImageManager
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        initialSelectionMode="multiple"
+        defaultUploadFolderPath="Images/Uploads"
+        allowFileTypes={["image"]}
       />
-    </div>
+    </>
   );
 }
 ```
 
-### For Local State Management (when global state isn't desired)
+### Cloud-files props (all optional)
 
-If you need isolated image selection state for a specific part of your application, you can use the wrapper component:
+| Prop | Default | Description |
+| --- | --- | --- |
+| `allowFileTypes` | `["image"]` | Which file kinds are selectable from "My Files". Pass `["image", "video"]`, `["any"]`, etc. |
+| `defaultUploadFolderPath` | `"Images/Uploads"` | Logical slash-delimited path for new uploads. Auto-created if missing. |
+| `defaultUploadFolderId` | `null` | Pre-resolved folder id (skips path resolution). |
+| `defaultVisibility` | `"private"` | Visibility for new uploads. The Image Studio overrides to `"public"`. |
+| `showImageStudioTab` | `true` | Hide the Image Studio tab when irrelevant. |
+| `showAIGenerateTab` | `true` | Hide the AI Generate placeholder tab. |
+| `imageStudioProps` | — | Override any `<EmbeddedImageStudio>` prop (presets, primary, root segment, etc.). |
+
+### Legacy props — still supported
+
+The following props are mapped onto the cloud-files folder system so existing callers keep working:
+
+| Legacy prop | Mapped to |
+| --- | --- |
+| `saveTo: "public"` | `defaultUploadFolderPath="Images/Uploads/Public"`, visibility `"public"` |
+| `saveTo: "private"` | `defaultUploadFolderPath="Images/Uploads/Private"`, visibility `"private"` |
+| `bucket` + `path` | `defaultUploadFolderPath="${bucket}/${path}"` |
+| `userImages` | Rendered as a "Provided" section above the cloud results in "My Images" |
+| Tab IDs (`user-images`, `upload-images`, `paste-images`, `quick-upload`, `cloud-images`, `image-generation`) | Aliased to their replacements (`my-images`, `upload`, `my-files`, `ai-generate`) for both `initialTab` and `visibleTabs`. |
+
+### For Local State Management
+
+If you need isolated image selection state for a specific part of your application, use the wrapper component:
 
 ```tsx
-import { SelectedImagesWrapper } from '@/components/image/context/SelectedImagesWrapper';
+import { SelectedImagesWrapper } from "@/components/image/context/SelectedImagesWrapper";
 
 function MyPageWithLocalState() {
   return (
     <SelectedImagesWrapper>
-      {/* Components here will use an isolated image selection state */}
       <MyComponent />
     </SelectedImagesWrapper>
   );
 }
 ```
 
+## Tab IDs
+
+| Tab | ID |
+| --- | --- |
+| Public Images | `public-search` |
+| My Images | `my-images` |
+| My Files | `my-files` |
+| Upload | `upload` |
+| Image Studio | `image-studio` |
+| AI Generate | `ai-generate` |
+
 ## Size Variants
 
-The `ImagePreviewRow` component supports 5 size variants:
-
-- `xs`: Extra small (icon size)
-- `s`: Small
-- `m`: Medium (default)
-- `lg`: Large
-- `xl`: Extra large
-
-## Example
-
-An example implementation is available at `/examples/image-manager`.
+The `ImagePreviewRow` component supports 5 size variants: `xs`, `s`, `m`, `lg`, `xl`.
 
 ## Selection Modes
 
-The system supports three selection modes:
-
 - `single`: Only one image can be selected at a time
 - `multiple`: Multiple images can be selected
-- `none`: Selection is disabled
+- `none`: Browse mode — selection state is hidden, clicks fall through to the host's `onClick` handler (used by `SelectableImageCard`). The `/image-manager` route uses this for "browse" semantics.
 
-Selection mode can be set through the `setSelectionMode` function from the `useSelectedImages` hook.
+Set via `setSelectionMode` from `useSelectedImages`.
+
+> Some current cloud tabs (`CloudImagesTab`, `CloudFilesTab`) still hardcode toggle-on-click and don't honor `none` yet — this is on the roadmap. See the route's section-mode notes in `app/(a)/image-manager/_components/ImageManagerPageShell.tsx`.
 
 ## Image Data Structure
 
-Each image in the system is represented as an `ImageSource` object with the following structure:
+Each image is represented as an `ImageSource`:
 
 ```typescript
 interface ImageSource {
-  type: 'public' | 'temporary' | 'local' | 'bucket';
+  type: "public" | "temporary" | "local" | "bucket" | "cloud-file";
   url: string;
   id: string;
   metadata?: {
     description?: string;
     title?: string;
+    fileId?: string; // present when type === "cloud-file"
+    mimeType?: string;
+    fileSize?: number;
+    urlExpiresAt?: number | null; // null = permanent CDN URL
     [key: string]: any;
   };
 }
-``` 
+```
+
+For cloud files, the URL is pre-resolved at selection time:
+
+- `publicUrl` (CDN) → permanent URL, `urlExpiresAt: null`.
+- Private files → 1-hour signed URL via `getSignedUrl`. Refresh by re-resolving with `metadata.fileId`.
+
+The resolver lives at `components/image/cloud/resolveCloudFileUrl.ts`.
+
+## Deprecated Files
+
+- `components/image/ImageManagerContent.tsx` — older v1 implementation. Not wired into the cloud-files rebuild. Prefer `ImageManager` from `ImageManager.tsx`.

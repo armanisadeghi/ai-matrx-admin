@@ -2,7 +2,7 @@
 // No metadata export — child routes (e.g. /administration/*) set their own titles and favicons.
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
+import { checkIsSuperAdmin } from "@/utils/supabase/userSessionData";
 import { headers } from "next/headers";
 
 // Admin pages require authentication and cannot be statically generated
@@ -28,10 +28,11 @@ export default async function AdminAuthLayout({
     return redirect(`/login?redirectTo=${encodeURIComponent(fullPath)}`);
   }
 
-  // Check admin status from database
-  const isAdmin = await checkIsUserAdmin(supabase, user.id);
+  // Highest-bar gate: only Super Admin can enter the admin route tree by
+  // default. Selective lowering happens per-page if/when needed.
+  const isSuperAdmin = await checkIsSuperAdmin(supabase, user.id);
 
-  if (!isAdmin) {
+  if (!isSuperAdmin) {
     return redirect("/dashboard");
   }
 

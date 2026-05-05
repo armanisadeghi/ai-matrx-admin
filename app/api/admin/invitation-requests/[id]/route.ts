@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { createClient } from "@/utils/supabase/server";
+import { checkIsSuperAdmin } from "@/utils/supabase/userSessionData";
 import { sendInvitationRequestApprovalEmail, sendInvitationRequestRejectionEmail } from "@/features/invitations/emailService";
 
 /**
@@ -25,17 +26,13 @@ export async function PATCH(
       );
     }
 
-    // Check if user is admin (using admins table)
+    // Highest-bar gate: Super Admin only.
     const adminSupabase = createAdminClient();
-    const { data: adminData } = await adminSupabase
-      .from("admins")
-      .select("user_id")
-      .eq("user_id", authUser.id)
-      .single();
+    const isSuperAdmin = await checkIsSuperAdmin(adminSupabase, authUser.id);
 
-    if (!adminData) {
+    if (!isSuperAdmin) {
       return NextResponse.json(
-        { success: false, msg: "Forbidden - Admin access required" },
+        { success: false, msg: "Forbidden - Super Admin access required" },
         { status: 403 }
       );
     }
@@ -208,17 +205,13 @@ export async function GET(
       );
     }
 
-    // Check if user is admin (using admins table)
+    // Highest-bar gate: Super Admin only.
     const adminSupabase = createAdminClient();
-    const { data: adminData } = await adminSupabase
-      .from("admins")
-      .select("user_id")
-      .eq("user_id", authUser.id)
-      .single();
+    const isSuperAdmin = await checkIsSuperAdmin(adminSupabase, authUser.id);
 
-    if (!adminData) {
+    if (!isSuperAdmin) {
       return NextResponse.json(
-        { success: false, msg: "Forbidden - Admin access required" },
+        { success: false, msg: "Forbidden - Super Admin access required" },
         { status: 403 }
       );
     }

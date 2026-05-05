@@ -9,7 +9,7 @@
 > the BE. Items move from `Open` → `Resolved` when the corresponding
 > work ships and we've verified it on our side.
 >
-> Last updated: 2026-04-26.
+> Last updated: 2026-05-05.
 
 ---
 
@@ -70,6 +70,91 @@ that doesn't know about the ambiguity.
 
 **Blocker?** No (FE workaround is in place) — but **was** blocking
 every browser file-manager view until the workaround landed.
+
+---
+
+### 0a. 🔴 `cld_get_user_file_tree` leaks every `visibility = 'public'` file across users
+
+**Priority:** **High — privacy / correctness issue. Every user
+currently sees every public file in the entire system inside their
+own `/files` view (Photos especially — public images from other users
+appear in the user's Photos grid).**
+
+**Reported by:** Arman, 2026-05-05. Repro: image
+`9e4850f8-a591-4a8e-a721-d51002c771ca` (`cover.jpg`, owner
+`f0146c96-e02e-420b-a99f-92774da0566c`, `visibility='public'`)
+appeared in a different user's Photos page.
+
+**Root cause:** The 5-arg overload of `cld_get_user_file_tree`
+(`p_user_id`, `p_limit`, `p_offset`, `p_include_folders`,
+`p_include_deleted`) has a `WHERE` clause for the file leg that
+treats `visibility = 'public'` as "include this file in this user's
+tree":
+
+```sql
+-- public.cld_get_user_file_tree(uuid, int, int, bool, bool)
+SELECT 'file'::text AS kind, f.id, f.owner_id, ...
+FROM cld_files f
+WHERE (p_include_deleted OR f.deleted_at IS NULL)
+  AND (
+      f.owner_id = p_user_id
+      OR f.visibility = 'public'                                 -- ← BUG
+      OR cld_get_effective_permission(f.id, p_user_id) IS NOT NULL
+  )
+```
+
+`visibility = 'public'` is the **share-link policy** ("anyone with the
+URL can read") — it is NOT supposed to scope membership in a user's
+tree. Concretely: a podcast cover image, an Open Graph image, or any
+file someone made public via a share link should be readable by URL
+but should **not** show up in another user's Photos / All Files /
+Recents views.
+
+The folder leg of the same function correctly uses
+`AND d.owner_id = p_user_id` (no public-OR clause), which is why
+folders are scoped correctly and only files leak.
+
+The legacy 1-arg overload `cld_get_user_file_tree(p_user_id uuid)`
+has the same bug. It should be dropped per item 0 above; the same
+fix should be applied if that overload is kept around.
+
+**Ask:** Drop the `OR f.visibility = 'public'` clause. The file leg
+should match the folder leg's intent — owner OR explicit grant only:
+
+```sql
+WHERE (p_include_deleted OR f.deleted_at IS NULL)
+  AND (
+      f.owner_id = p_user_id
+      OR cld_get_effective_permission(f.id, p_user_id) IS NOT NULL
+  )
+```
+
+If you intentionally want public-but-shared-with-me files to appear
+in the tree, that's a separate predicate — e.g. an INNER JOIN against
+`cld_share_links` filtered to links the current user redeemed — and
+should NOT be implemented by the global `visibility = 'public'`
+flag.
+
+A migration that swaps both overloads in one transaction is fine. As
+soon as it lands and we verify the cross-user repro doesn't return
+foreign rows, we'll remove the FE defensive filter (see workaround
+below) and you can take this item to 🟢.
+
+**Blocker?** No (FE defensive filter shipped) — **but it is a
+privacy issue in production until your fix lands**, because anyone
+with raw `supabase.rpc("cld_get_user_file_tree", ...)` access (i.e.
+any authed user) gets back the full list of every public file's
+metadata (owner_id, file_path, file_name, mime_type, created_at,
+file_size). The FE filter only cleans up the FE display; the wire
+response still contains foreign rows. Treat the SQL fix as the real
+remediation.
+
+**Current FE workaround:** [redux/thunks.ts](../redux/thunks.ts)
+`loadUserFileTree` filters the parsed RPC rows client-side: a `file`
+row is kept only when `owner_id === userId` OR `effective_permission
+!== null`. Folders pass through (already correctly scoped server-side).
+Realtime middleware was already correctly scoped via
+`filter: owner_id=eq.${userId}` so live updates were never affected.
 
 ---
 

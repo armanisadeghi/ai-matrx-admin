@@ -20,7 +20,7 @@ import {
   useAppDispatch,
   useAppSelector,
 } from "@/lib/redux/hooks";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import {
   selectAgentById,
   selectLiveAgents,
@@ -83,7 +83,7 @@ function CreateAppWindowBody({
   const dispatch = useAppDispatch();
   const router = useRouter();
 
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const presetAgent = useAppSelector((state) =>
     agentId ? selectAgentById(state, agentId) : null,
   );

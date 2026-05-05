@@ -22,7 +22,7 @@ import {
 import { QuickActionsMenu } from "@/features/quick-actions/components/QuickActionsMenu";
 import FeedbackButton from "@/features/feedback/FeedbackButton";
 import type { RootState } from "@/lib/redux/store";
-import { selectIsAdmin, selectUser } from "@/lib/redux/selectors/userSelectors";
+import { selectIsSuperAdmin, selectUser } from "@/lib/redux/selectors/userSelectors";
 import Image from "next/image";
 import { useVoicePadAdvanced } from "@/components/official-candidate/voice-pad/hooks/useVoicePad";
 
@@ -67,7 +67,7 @@ export default function DesktopLayout({
 
   // Get user data from Redux
   const user = useAppSelector(selectUser);
-  const isAdminUser = useAppSelector(selectIsAdmin) ?? false;
+  const isAdminUser = useAppSelector(selectIsSuperAdmin) ?? false;
   const displayName =
     user.userMetadata?.name ||
     user.userMetadata?.fullName ||

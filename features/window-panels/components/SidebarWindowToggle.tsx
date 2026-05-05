@@ -31,7 +31,7 @@ import {
   type WindowState,
   arrangeActiveWindows,
 } from "@/lib/redux/slices/windowManagerSlice";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { LayoutIconButton } from "@/features/window-panels/components/LayoutIcon";
 import {
   MenuDivider,
@@ -62,7 +62,7 @@ export default function SidebarWindowToggle() {
   const hidden = useAppSelector(selectWindowsHidden);
   const allMinimized = useAppSelector(selectAllMinimized);
   const windows = useAppSelector(selectAllWindows);
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const hasWindows = windows.length > 0;
 
   const [open, setOpen] = useState(false);

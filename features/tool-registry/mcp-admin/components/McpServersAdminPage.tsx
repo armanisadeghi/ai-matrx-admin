@@ -18,6 +18,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Tabs,
   TabsContent,
@@ -32,6 +34,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "sonner";
 import {
   listServers,
@@ -43,6 +60,10 @@ import {
   computeFreshness,
   computeTestFreshness,
   formatRelativeAge,
+  createServerConfig,
+  updateServerConfig,
+  deleteServerConfig,
+  countConfigUserConnections,
   type McpServerRow,
   type McpConfigRow,
   type SyncFreshness,
@@ -407,44 +428,388 @@ function ConfigsTab({ serverId }: { serverId: string }) {
   const [configs, setConfigs] = useState<McpConfigRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editing, setEditing] = useState<McpConfigRow | null>(null);
+  const [creating, setCreating] = useState(false);
 
-  useEffect(() => {
+  const load = async () => {
     setLoading(true);
     setError(null);
-    void listServerConfigs(serverId)
-      .then(setConfigs)
-      .catch((e) => setError(e instanceof Error ? e.message : "Failed to load configs"))
-      .finally(() => setLoading(false));
+    try {
+      setConfigs(await listServerConfigs(serverId));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load configs");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void load();
   }, [serverId]);
 
-  if (loading) return <InlineLoading />;
-  if (error) return <ErrorBox msg={error} />;
-  if (configs.length === 0) {
-    return <EmptyHint>No connection configs defined.</EmptyHint>;
-  }
+  const onSetDefault = async (config: McpConfigRow) => {
+    try {
+      await updateServerConfig(config.id, { is_default: true });
+      await load();
+      toast.success(`${config.label} set as default`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Update failed");
+    }
+  };
+
+  const onDelete = async (config: McpConfigRow) => {
+    const refCount = await countConfigUserConnections(config.id).catch(() => 0);
+    const ok = await confirm({
+      title: `Delete config "${config.label}"?`,
+      description:
+        refCount > 0
+          ? `${refCount} user connection${refCount === 1 ? "" : "s"} reference this config. They'll be set to NULL config_id (still valid via the server's default config).`
+          : "No user connections reference this config. Safe to delete.",
+      confirmLabel: "Delete",
+      variant: "destructive",
+    });
+    if (!ok) return;
+    try {
+      await deleteServerConfig(config.id);
+      await load();
+      toast.success(`Config ${config.label} deleted`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Delete failed");
+    }
+  };
 
   return (
-    <div className="space-y-2">
-      {configs.map((c) => (
-        <div key={c.id} className="rounded-md border border-border bg-card p-3 space-y-2">
-          <div className="flex items-center gap-2">
-            <code className="font-mono text-xs">{c.label}</code>
-            <Badge variant="outline" className="text-[10px]">{c.config_type}</Badge>
-            {c.is_default && <Badge className="text-[10px]">default</Badge>}
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] text-muted-foreground">
+          Transport variants for this server. The default config is used when a user connects without specifying one. stdio configs need a command + args; HTTP/SSE configs typically just store the endpoint via the server row.
+        </p>
+        <Button size="sm" onClick={() => setCreating(true)} className="h-7 gap-1.5 text-xs flex-shrink-0">
+          <Plus className="h-3.5 w-3.5" />
+          Add config
+        </Button>
+      </div>
+      {loading && <InlineLoading />}
+      {error && <ErrorBox msg={error} />}
+      {!loading && configs.length === 0 && (
+        <EmptyHint>No connection configs defined yet — click "Add config" to create one.</EmptyHint>
+      )}
+      <div className="space-y-2">
+        {configs.map((c) => (
+          <div key={c.id} className="rounded-md border border-border bg-card p-3 space-y-2">
+            <div className="flex items-start gap-2">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <code className="font-mono text-xs">{c.label}</code>
+                  <Badge variant="outline" className="text-[10px]">{c.config_type}</Badge>
+                  {c.is_default && <Badge className="text-[10px]">default</Badge>}
+                  {c.requires_docker && <Badge variant="secondary" className="text-[10px]">Docker</Badge>}
+                </div>
+                {c.notes && <p className="text-[11px] text-muted-foreground mt-0.5">{c.notes}</p>}
+              </div>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {!c.is_default && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => void onSetDefault(c)}
+                    className="h-7 text-xs px-2"
+                    title="Make this the default config for new user connections"
+                  >
+                    Set default
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setEditing(c)}
+                  className="h-7 text-xs px-2"
+                >
+                  Edit
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => void onDelete(c)}
+                  className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                  aria-label="Delete config"
+                >
+                  <XCircle className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+            <div className="text-[11px] font-mono text-muted-foreground space-y-0.5">
+              <div>command: <code className="bg-muted px-1 rounded">{c.command || <em>—</em>}</code></div>
+              {c.args.length > 0 && (
+                <div>args: <code className="bg-muted px-1 rounded">{c.args.join(" ")}</code></div>
+              )}
+              {c.npm_package && <div>npm: <code className="bg-muted px-1 rounded">{c.npm_package}</code></div>}
+              {c.pip_package && <div>pip: <code className="bg-muted px-1 rounded">{c.pip_package}</code></div>}
+              {c.min_node_version && <div>min Node: {c.min_node_version}</div>}
+            </div>
           </div>
-          {c.notes && <p className="text-[11px] text-muted-foreground">{c.notes}</p>}
-          <div className="text-[11px] font-mono text-muted-foreground">
-            <div>command: <code className="bg-muted px-1 rounded">{c.command}</code></div>
-            {c.args.length > 0 && (
-              <div>args: <code className="bg-muted px-1 rounded">{c.args.join(" ")}</code></div>
-            )}
-            {c.npm_package && <div>npm: {c.npm_package}</div>}
-            {c.pip_package && <div>pip: {c.pip_package}</div>}
-            {c.requires_docker && <div>requires Docker</div>}
+        ))}
+      </div>
+      {(editing || creating) && (
+        <ConfigDialog
+          serverId={serverId}
+          config={editing}
+          onClose={() => {
+            setEditing(null);
+            setCreating(false);
+          }}
+          onSaved={() => {
+            setEditing(null);
+            setCreating(false);
+            void load();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function ConfigDialog({
+  serverId,
+  config,
+  onClose,
+  onSaved,
+}: {
+  serverId: string;
+  config: McpConfigRow | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const isEdit = !!config;
+  const [label, setLabel] = useState(config?.label ?? "");
+  const [configType, setConfigType] = useState(config?.config_type ?? "stdio");
+  const [command, setCommand] = useState(config?.command ?? "");
+  const [argsText, setArgsText] = useState((config?.args ?? []).join(" "));
+  const [envSchemaJson, setEnvSchemaJson] = useState(
+    JSON.stringify(config?.env_schema ?? [], null, 2),
+  );
+  const [isDefault, setIsDefault] = useState(config?.is_default ?? false);
+  const [npmPackage, setNpmPackage] = useState(config?.npm_package ?? "");
+  const [pipPackage, setPipPackage] = useState(config?.pip_package ?? "");
+  const [minNode, setMinNode] = useState(config?.min_node_version ?? "");
+  const [requiresDocker, setRequiresDocker] = useState(config?.requires_docker ?? false);
+  const [notes, setNotes] = useState(config?.notes ?? "");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async () => {
+    if (!label.trim()) {
+      toast.error("Label is required");
+      return;
+    }
+    let envSchema: unknown;
+    try {
+      envSchema = JSON.parse(envSchemaJson || "[]");
+    } catch (e) {
+      toast.error(e instanceof Error ? `Invalid env_schema JSON: ${e.message}` : "Invalid JSON");
+      return;
+    }
+    const argsArr = argsText
+      .split(/\s+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    setBusy(true);
+    try {
+      if (isEdit && config) {
+        await updateServerConfig(config.id, {
+          label: label.trim(),
+          config_type: configType,
+          command: command.trim(),
+          args: argsArr,
+          env_schema: envSchema as never,
+          is_default: isDefault,
+          npm_package: npmPackage.trim() || null,
+          pip_package: pipPackage.trim() || null,
+          min_node_version: minNode.trim() || null,
+          requires_docker: requiresDocker,
+          notes: notes.trim() || null,
+        });
+      } else {
+        await createServerConfig({
+          serverId,
+          label: label.trim(),
+          configType,
+          command: command.trim(),
+          argsArr,
+          envSchema: envSchema as never,
+          isDefault,
+          npmPackage: npmPackage.trim() || null,
+          pipPackage: pipPackage.trim() || null,
+          minNodeVersion: minNode.trim() || null,
+          requiresDocker,
+          notes: notes.trim() || null,
+        });
+      }
+      toast.success(`Config "${label}" ${isEdit ? "saved" : "created"}`);
+      onSaved();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Save failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && !busy && onClose()}>
+      <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{isEdit ? `Edit config "${config.label}"` : "New config"}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">Label (unique within server)</Label>
+              <Input
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+                placeholder="e.g. stdio-default, http-prod"
+                className="font-mono text-sm h-9"
+                style={{ fontSize: "16px" }}
+                disabled={busy}
+                autoFocus
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Config type</Label>
+              <Select value={configType} onValueChange={setConfigType} disabled={busy}>
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="stdio">stdio</SelectItem>
+                  <SelectItem value="http">http</SelectItem>
+                  <SelectItem value="sse">sse</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">Command</Label>
+              <Input
+                value={command}
+                onChange={(e) => setCommand(e.target.value)}
+                placeholder="e.g. npx"
+                className="font-mono text-sm h-9"
+                style={{ fontSize: "16px" }}
+                disabled={busy}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Args (whitespace-separated)</Label>
+              <Input
+                value={argsText}
+                onChange={(e) => setArgsText(e.target.value)}
+                placeholder="e.g. -y @scope/mcp-server"
+                className="font-mono text-sm h-9"
+                style={{ fontSize: "16px" }}
+                disabled={busy}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">npm package</Label>
+              <Input
+                value={npmPackage}
+                onChange={(e) => setNpmPackage(e.target.value)}
+                placeholder="@vendor/mcp-server"
+                className="font-mono text-sm h-9"
+                style={{ fontSize: "16px" }}
+                disabled={busy}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">pip package</Label>
+              <Input
+                value={pipPackage}
+                onChange={(e) => setPipPackage(e.target.value)}
+                placeholder="vendor-mcp-server"
+                className="font-mono text-sm h-9"
+                style={{ fontSize: "16px" }}
+                disabled={busy}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">Minimum Node version</Label>
+              <Input
+                value={minNode}
+                onChange={(e) => setMinNode(e.target.value)}
+                placeholder="e.g. 20"
+                className="text-sm h-9"
+                style={{ fontSize: "16px" }}
+                disabled={busy}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Flags</Label>
+              <div className="flex items-center gap-3 h-9">
+                <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isDefault}
+                    onChange={(e) => setIsDefault(e.target.checked)}
+                    className="accent-primary"
+                    disabled={busy}
+                  />
+                  Default
+                </label>
+                <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={requiresDocker}
+                    onChange={(e) => setRequiresDocker(e.target.checked)}
+                    className="accent-primary"
+                    disabled={busy}
+                  />
+                  Requires Docker
+                </label>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Env schema (JSON array of {`{ key, label, required, secret }`})</Label>
+            <Textarea
+              value={envSchemaJson}
+              onChange={(e) => setEnvSchemaJson(e.target.value)}
+              rows={5}
+              className="font-mono text-xs"
+              style={{ fontSize: "13px" }}
+              disabled={busy}
+            />
+            <p className="text-[11px] text-muted-foreground">
+              Drives the per-user setup form when a user connects with this config. Leave as <code>[]</code> if no env vars needed.
+            </p>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Notes (admin-only)</Label>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={2}
+              placeholder="Anything future-you should know about this config"
+              style={{ fontSize: "16px" }}
+              disabled={busy}
+            />
           </div>
         </div>
-      ))}
-    </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose} disabled={busy}>
+            Cancel
+          </Button>
+          <Button onClick={() => void submit()} disabled={busy || !label.trim()}>
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : isEdit ? "Save" : "Create"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

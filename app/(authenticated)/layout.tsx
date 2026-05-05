@@ -7,7 +7,10 @@ import {
   appSidebarLinks,
   adminSidebarLinks,
 } from "@/constants/navigation-links";
-import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
+import {
+  getAdminStatus,
+  type AdminLevel,
+} from "@/utils/supabase/userSessionData";
 import { getEmptyGlobalCache } from "@/utils/schema/schema-processing/emptyGlobalCache";
 import type { InitialReduxState } from "@/types/reduxTypes";
 import NavigationLoader from "@/components/loaders/NavigationLoader";
@@ -50,16 +53,17 @@ export default async function AuthenticatedLayout({
     {
       data: { session },
     },
-    isAdmin,
+    adminStatus,
   ] = await Promise.all([
     supabase.auth.getSession(),
-    checkIsUserAdmin(supabase, user.id).catch((err) => {
-      console.error("checkIsUserAdmin failed, defaulting to false:", err);
-      return false;
+    getAdminStatus(supabase, user.id).catch((err) => {
+      console.error("getAdminStatus failed, defaulting to non-admin:", err);
+      return { isAdmin: false, level: null as AdminLevel | null };
     }),
   ]);
+  const { isAdmin, level: adminLevel } = adminStatus;
   const accessToken = session?.access_token;
-  const userData = mapUserData(user, accessToken, isAdmin);
+  const userData = mapUserData(user, accessToken, isAdmin, adminLevel);
 
   const layoutProps = {
     primaryLinks: appSidebarLinks,

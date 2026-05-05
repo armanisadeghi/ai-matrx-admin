@@ -140,24 +140,88 @@ export async function* ingestFileStream(
         const line = buffer.slice(0, nl).trim();
         buffer = buffer.slice(nl + 1);
         if (line.length > 0) {
-          try {
-            const evt = JSON.parse(line) as IngestStreamEvent;
-            yield evt;
-          } catch {
-            /* ignore malformed line — keep streaming */
-          }
+          const translated = parseLine(line);
+          if (translated) yield translated;
         }
         nl = buffer.indexOf("\n");
       }
     }
     if (buffer.trim().length > 0) {
-      try {
-        yield JSON.parse(buffer) as IngestStreamEvent;
-      } catch {
-        /* ignore */
-      }
+      const translated = parseLine(buffer);
+      if (translated) yield translated;
     }
   } finally {
     reader.releaseLock();
   }
+}
+
+// ---------------------------------------------------------------------------
+// Wire-format adapter
+//
+// The backend (matrx-connect StreamEmitter) writes generic envelopes:
+//   {"event": "data",       "data": {"kind": "rag.ingest.progress", ...}}
+//   {"event": "data",       "data": {"kind": "rag.ingest.result",   "error": "..."}}
+//   {"event": "phase",      "data": {"phase": "..."}}
+//   {"event": "completion", "data": {...}}
+//   {"event": "error",      "data": {...}}
+//
+// The hook + UI think in three FE-namespaced events: progress / complete
+// / error. This adapter inspects `data.kind` and produces the shape the
+// hook consumes. Returns null for envelopes we don't care about (phase
+// markers, etc.) — the loop just skips those.
+// ---------------------------------------------------------------------------
+function parseLine(line: string): IngestStreamEvent | null {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(line);
+  } catch {
+    return null;
+  }
+  if (!raw || typeof raw !== "object") return null;
+  const env = raw as { event?: string; data?: unknown };
+
+  // Stream-level error (matrx-connect ERROR event) — maps directly.
+  if (env.event === "error") {
+    const d = (env.data ?? {}) as { message?: string; error_type?: string };
+    return {
+      event: "rag.ingest.error",
+      data: { message: d.message ?? d.error_type ?? "Ingest failed" },
+    };
+  }
+
+  // Everything else is namespaced inside `data.kind`.
+  const data = (env.data ?? {}) as { kind?: string } & Record<string, unknown>;
+  const kind = data.kind;
+
+  if (kind === "rag.ingest.progress") {
+    return {
+      event: "rag.ingest.progress",
+      data: {
+        stage: (data.stage as IngestProgress["stage"]) ?? "fetch",
+        current: (data.current as number) ?? 0,
+        total: (data.total as number) ?? 0,
+        message: (data.message as string) ?? undefined,
+      },
+    };
+  }
+
+  if (kind === "rag.ingest.result") {
+    // The backend emits a single result event. Dispatch to either
+    // "complete" (success) or "error" depending on the error field.
+    const result = data as unknown as IngestResponse;
+    if (result.error) {
+      return {
+        event: "rag.ingest.error",
+        data: { message: result.error },
+      };
+    }
+    return {
+      event: "rag.ingest.complete",
+      data: result,
+    };
+  }
+
+  // Phase / heartbeat / completion / chunk / unknown — the UI doesn't
+  // consume these directly. Returning null lets the stream loop continue.
+  return null;
 }

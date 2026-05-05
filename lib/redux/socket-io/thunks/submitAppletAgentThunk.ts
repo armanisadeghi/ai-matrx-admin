@@ -46,7 +46,7 @@ import {
   setTaskError,
 } from "../slices/socketTasksSlice";
 
-import { selectAccessToken, selectIsAdmin } from "../../slices/userSlice";
+import { selectAccessToken, selectIsSuperAdmin } from "../../slices/userSlice";
 import { selectResolvedBaseUrl } from "../../slices/apiConfigSlice";
 
 export interface SubmitAppletAgentPayload {
@@ -79,7 +79,7 @@ export const submitAppletAgentThunk = createAsyncThunk<
   ) => {
     const state = getState();
     const accessToken = selectAccessToken(state);
-    const isAdmin = selectIsAdmin(state);
+    const isAdmin = selectIsSuperAdmin(state);
     const BACKEND_URL =
       selectResolvedBaseUrl(state as any) ?? BACKEND_URLS.production;
 

@@ -39,7 +39,7 @@ import {
   selectIsExecuting,
   selectShouldShowVariables,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import {
@@ -83,7 +83,7 @@ export function SingleRowActionButtons({
   const shouldShowVariables = useAppSelector(
     selectShouldShowVariables(conversationId),
   );
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const isDebugMode = useAppSelector(selectIsDebugMode);
 
   const handleSend = useCallback(() => {

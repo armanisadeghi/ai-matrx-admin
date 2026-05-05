@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
-import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
+import { checkIsSuperAdmin } from "@/utils/supabase/userSessionData";
 
 /**
  * GET /api/admin/agent-builtins/by-source?source_agent_id=<id>
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const isAdmin = await checkIsUserAdmin(supabase, user.id);
+    const isAdmin = await checkIsSuperAdmin(supabase, user.id);
     if (!isAdmin) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

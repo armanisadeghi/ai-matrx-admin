@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { Providers } from "@/app/Providers";
 import { mapUserData } from "@/utils/userDataMapper";
-import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
+import { getAdminStatus } from "@/utils/supabase/userSessionData";
 import { getEmptyGlobalCache } from "@/utils/schema/schema-processing/emptyGlobalCache";
 import type { InitialReduxState } from "@/types/reduxTypes";
 // Phase 4 PR 4.C: removed `setGlobalUserIdAndToken` import — `lib/globalState.ts`
@@ -65,14 +65,15 @@ export default async function SSRLayout({
       {
         data: { session },
       },
-      isAdmin,
+      adminStatus,
     ] = await Promise.all([
       supabase.auth.getSession(),
-      checkIsUserAdmin(supabase, user.id),
+      getAdminStatus(supabase, user.id),
     ]);
 
+    const { isAdmin, level: adminLevel } = adminStatus;
     const accessToken = session?.access_token;
-    userData = mapUserData(user, accessToken, isAdmin);
+    userData = mapUserData(user, accessToken, isAdmin, adminLevel);
 
     initialReduxState = {
       user: userData,

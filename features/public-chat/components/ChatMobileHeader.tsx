@@ -27,7 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { selectUser, selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectUser, selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import type { AgentConfig } from "../context/DEPRECATED-ChatContext";
 import { useChatContext } from "../context/DEPRECATED-ChatContext";
 
@@ -66,7 +66,7 @@ export function ChatMobileHeader({
   const dispatch = useAppDispatch();
   const setTheme = (t: "light" | "dark") => dispatch(setMode(t));
   const user = useSelector(selectUser);
-  const isAdmin = useSelector(selectIsAdmin);
+  const isAdmin = useSelector(selectIsSuperAdmin);
   const isAuthenticated = !!user?.id;
   const [mounted, setMounted] = useState(false);
   const { state, setUseLocalhost, setUseBlockMode } = useChatContext();

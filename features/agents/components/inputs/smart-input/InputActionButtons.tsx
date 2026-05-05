@@ -44,7 +44,7 @@ import {
   selectAutoClearWithConversationHistory,
   selectShouldShowAutoClearToggle,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import {
@@ -132,7 +132,7 @@ export function InputActionButtons({
   const shouldShowAutoClearToggle = useAppSelector(
     selectShouldShowAutoClearToggle(conversationId),
   );
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const isDebugMode = useAppSelector(selectIsDebugMode);
 
   const isSendDisabled = disableSend;

@@ -22,7 +22,10 @@
 import dynamic from "next/dynamic";
 import { useIdleReady, useIdleTask } from "@/utils/idle-scheduler";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectUser } from "@/lib/redux/selectors/userSelectors";
+import {
+  selectUser,
+  selectIsSuperAdmin,
+} from "@/lib/redux/selectors/userSelectors";
 import { PersistentDOMConnector } from "@/providers/persistance/PersistentDOMConnector";
 import UnifiedOverlayController from "@/features/window-panels/UnifiedOverlayController";
 import LegacyPromptOverlaysController from "@/features/prompts/components/results-display/LegacyPromptOverlaysController";
@@ -68,6 +71,7 @@ const SYSTEM_BROKERS = [
 export default function DeferredSingletons() {
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
+  const isSuperAdmin = useAppSelector(selectIsSuperAdmin);
 
   // Broker registration + initial values. The broker slice (and its
   // reducer barrel) is part of the root reducer's compile unit anyway,
@@ -109,10 +113,12 @@ export default function DeferredSingletons() {
         value: profileImage,
       }),
     );
+    // Reflects the highest-bar (Super Admin) since admin levels shipped.
+    // Broker name preserved for back-compat with downstream gates.
     dispatch(
       brokerActions.setValue({
         brokerId: "GLOBAL_USER_IS_ADMIN",
-        value: user.isAdmin,
+        value: isSuperAdmin,
       }),
     );
   });

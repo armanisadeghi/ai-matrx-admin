@@ -16,7 +16,10 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { mapUserData, type UserData } from "@/utils/userDataMapper";
-import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
+import {
+  getAdminStatus,
+  type AdminLevel,
+} from "@/utils/supabase/userSessionData";
 // Phase 4 PR 4.C: removed `setGlobalUserIdAndToken` import — `lib/globalState.ts`
 // is deleted in this PR. Callers receive userData and inject it into the
 // Redux preloaded state; `lib/sync/identity::attachStore` then makes it
@@ -26,6 +29,7 @@ export interface AuthedLayoutData {
   userData: UserData;
   accessToken: string | undefined;
   isAdmin: boolean;
+  adminLevel: AdminLevel | null;
   isMobile: boolean;
 }
 
@@ -47,17 +51,18 @@ export async function loadAuthedLayoutData(): Promise<AuthedLayoutData> {
     {
       data: { session },
     },
-    isAdmin,
+    adminStatus,
   ] = await Promise.all([
     supabase.auth.getSession(),
-    checkIsUserAdmin(supabase, user.id).catch((err) => {
-      console.error("checkIsUserAdmin failed, defaulting to false:", err);
-      return false;
+    getAdminStatus(supabase, user.id).catch((err) => {
+      console.error("getAdminStatus failed, defaulting to non-admin:", err);
+      return { isAdmin: false, level: null as AdminLevel | null };
     }),
   ]);
 
+  const { isAdmin, level: adminLevel } = adminStatus;
   const accessToken = session?.access_token;
-  const userData = mapUserData(user, accessToken, isAdmin);
+  const userData = mapUserData(user, accessToken, isAdmin, adminLevel);
 
-  return { userData, accessToken, isAdmin, isMobile };
+  return { userData, accessToken, isAdmin, adminLevel, isMobile };
 }

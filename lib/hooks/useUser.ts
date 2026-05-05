@@ -2,7 +2,7 @@
 
 import { useAppSelector } from '@/lib/redux/hooks';
 import * as userSelectors from '@/lib/redux/selectors/userSelectors';
-import { selectIsAdmin } from '@/lib/redux/slices/userSlice';
+import { selectIsSuperAdmin } from '@/lib/redux/slices/userSlice';
 
 /**
  * useUser Hook
@@ -34,7 +34,7 @@ export function useUser() {
     const fullUserData = useAppSelector(userSelectors.selectFullUserData);
     
     // Admin status from Redux (set during app initialization)
-    const isAdmin = useAppSelector(selectIsAdmin);
+    const isAdmin = useAppSelector(selectIsSuperAdmin);
 
     // Helper function to check if the user is authenticated
     const isAuthenticated = !!userId;

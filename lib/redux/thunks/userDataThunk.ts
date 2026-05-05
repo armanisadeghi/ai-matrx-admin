@@ -26,6 +26,7 @@ const AUTH_KEYS = [
   "appMetadata",
   "identities",
   "isAdmin",
+  "adminLevel",
   "accessToken",
   "tokenExpiresAt",
 ] as const satisfies readonly (keyof UserAuthState)[];

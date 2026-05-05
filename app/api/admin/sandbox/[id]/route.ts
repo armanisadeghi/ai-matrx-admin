@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
-import { checkIsUserAdmin } from '@/utils/supabase/userSessionData'
+import { checkIsSuperAdmin } from '@/utils/supabase/userSessionData'
 
 const ORCHESTRATOR_URL = process.env.MATRX_ORCHESTRATOR_URL || 'http://54.144.86.132:8000'
 const ORCHESTRATOR_API_KEY = process.env.MATRX_ORCHESTRATOR_API_KEY || ''
@@ -23,7 +23,7 @@ async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>) {
         return { user: null, error: NextResponse.json({ error: 'User not authenticated' }, { status: 401 }) }
     }
 
-    const isAdmin = await checkIsUserAdmin(supabase, user.id)
+    const isAdmin = await checkIsSuperAdmin(supabase, user.id)
     if (!isAdmin) {
         return { user: null, error: NextResponse.json({ error: 'Admin access required' }, { status: 403 }) }
     }

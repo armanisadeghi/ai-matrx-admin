@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
+import { checkIsSuperAdmin } from "@/utils/supabase/userSessionData";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
 
   // Step 3 — check admins table
   const adminClient = createAdminClient();
-  const isAdmin = await checkIsUserAdmin(adminClient, userId);
+  const isAdmin = await checkIsSuperAdmin(adminClient, userId);
 
   if (!isAdmin) {
     return denied("Access is restricted to administrators only.");

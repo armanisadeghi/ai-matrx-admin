@@ -9,7 +9,7 @@ import {
     selectFingerprintId,
     selectAuthReady,
     selectIsAuthenticated,
-    selectIsAdmin,
+    selectIsSuperAdmin,
     setFingerprintId,
 } from '@/lib/redux/slices/userSlice';
 import { getFingerprint } from '@/lib/services/fingerprint-service';
@@ -43,7 +43,7 @@ export function useApiAuth() {
     const fingerprintId = useSelector(selectFingerprintId);
     const authReady = useSelector(selectAuthReady);
     const isAuthenticated = useSelector(selectIsAuthenticated);
-    const isAdmin = useSelector(selectIsAdmin);
+    const isAdmin = useSelector(selectIsSuperAdmin);
 
     // Live refs so async loops always read current Redux state, not stale closures
     const accessTokenRef = useRef(accessToken);

@@ -68,7 +68,7 @@ import {
 import dynamic from "next/dynamic";
 import { getIconComponent } from "@/components/official/icons/IconResolver";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import {
   selectIsDebugMode,
   toggleDebugMode,
@@ -300,7 +300,7 @@ export function NoteContextMenuHeavy({
 }: NoteContextMenuContentProps) {
   const bridgeRef = useNoteContextMenuBridge();
   const dispatch = useAppDispatch();
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const isDebugMode = useAppSelector(selectIsDebugMode);
   const { canUndo, canRedo, undo, redo, undoHint, redoHint } = useNoteUndoRedo({
     noteId,

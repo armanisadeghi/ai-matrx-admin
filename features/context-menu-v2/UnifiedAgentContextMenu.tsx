@@ -16,7 +16,7 @@ import {
   selectIsDebugMode,
   toggleDebugMode,
 } from "@/lib/redux/slices/adminDebugSlice";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import {
   selectIsOverlayOpen,
   toggleOverlay,
@@ -245,7 +245,7 @@ export function UnifiedAgentContextMenu({
     openVoicePad,
   } = useQuickActions();
 
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const isDebugMode = useAppSelector(selectIsDebugMode);
   const isAdminIndicatorOpen = useAppSelector((state) =>
     selectIsOverlayOpen(state, "adminIndicator"),

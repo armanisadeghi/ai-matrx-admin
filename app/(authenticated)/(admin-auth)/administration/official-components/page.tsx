@@ -2,7 +2,8 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   componentList,
   ComponentEntry,
@@ -17,7 +18,6 @@ import Link from "next/link";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -33,55 +33,61 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { PlaceholdersVanishingSearchInput } from "@/components/matrx/search-input/PlaceholdersVanishingSearchInput";
 
-export default function OfficialComponentsPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<
-    ComponentCategory | "all"
-  >("all");
-  const [filteredComponents, setFilteredComponents] =
-    useState<ComponentEntry[]>(componentList);
+// Inner component that uses useSearchParams — must be wrapped in <Suspense>
+function OfficialComponentsContent() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // URL params are the live source of truth — no useState copy
+  const searchQuery = searchParams.get("q") ?? "";
+  const selectedCategory =
+    (searchParams.get("category") as ComponentCategory | "all") ?? "all";
+
+  // Expanded groups is purely UI state, not serialized into the URL
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
-    {},
+    () => {
+      const initial: Record<string, boolean> = {};
+      Object.keys(categoryGroups).forEach((g) => {
+        initial[g] = true;
+      });
+      return initial;
+    },
   );
 
-  // Initialize expanded groups
-  useEffect(() => {
-    const initialExpanded: Record<string, boolean> = {};
-    Object.keys(categoryGroups).forEach((group) => {
-      initialExpanded[group] = true; // Start with all groups expanded
-    });
-    setExpandedGroups(initialExpanded);
+  // Update URL — router.replace keeps back-nav stack clean
+  const updateUrl = useCallback(
+    (q: string, category: ComponentCategory | "all") => {
+      const params = new URLSearchParams();
+      if (q) params.set("q", q);
+      if (category !== "all") params.set("category", category);
+      const qs = params.toString();
+      router.replace(`${pathname}${qs ? `?${qs}` : ""}`);
+    },
+    [router, pathname],
+  );
+
+  const handleSearchChange = useCallback(
+    (value: string) => updateUrl(value, selectedCategory),
+    [selectedCategory, updateUrl],
+  );
+
+  const handleCategoryChange = useCallback(
+    (category: ComponentCategory | "all") => updateUrl(searchQuery, category),
+    [searchQuery, updateUrl],
+  );
+
+  const toggleGroup = useCallback((group: string) => {
+    setExpandedGroups((prev) => ({ ...prev, [group]: !prev[group] }));
   }, []);
 
-  // Toggle a group's expanded state
-  const toggleGroup = (group: string) => {
-    setExpandedGroups((prev) => ({
-      ...prev,
-      [group]: !prev[group],
-    }));
-  };
+  // Derive filtered list directly from URL params — no stale state
+  const filteredComponents: ComponentEntry[] = searchQuery
+    ? searchComponents(searchQuery)
+    : selectedCategory !== "all"
+      ? componentList.filter((c) => c.categories.includes(selectedCategory))
+      : componentList;
 
-  // Apply filtering when search query or selected category changes
-  useEffect(() => {
-    // If searching, search ALL components (ignore category filter)
-    if (searchQuery) {
-      const results = searchComponents(searchQuery);
-      setFilteredComponents(results);
-      return;
-    }
-
-    // If not searching, apply category filter
-    if (selectedCategory !== "all") {
-      const results = componentList.filter((component) =>
-        component.categories.includes(selectedCategory),
-      );
-      setFilteredComponents(results);
-    } else {
-      setFilteredComponents(componentList);
-    }
-  }, [searchQuery, selectedCategory]);
-
-  // Get organized categories
   const categoriesByGroup = getCategoriesByGroup();
 
   return (
@@ -89,7 +95,8 @@ export default function OfficialComponentsPage() {
       <header className="px-2 py-1 shrink-0">
         <PlaceholdersVanishingSearchInput
           columnNames={["name", "description", "tags"]}
-          onSearchChange={setSearchQuery}
+          onSearchChange={handleSearchChange}
+          initialValue={searchQuery}
         />
       </header>
 
@@ -122,7 +129,7 @@ export default function OfficialComponentsPage() {
                 <div className="px-2 pb-4">
                   {/* All components option */}
                   <button
-                    onClick={() => setSelectedCategory("all")}
+                    onClick={() => handleCategoryChange("all")}
                     className={cn(
                       "flex items-center justify-between w-full px-3 py-2 text-sm rounded-md transition-colors mb-1",
                       selectedCategory === "all"
@@ -160,7 +167,7 @@ export default function OfficialComponentsPage() {
                               {categories.map(({ category, count }) => (
                                 <button
                                   key={category}
-                                  onClick={() => setSelectedCategory(category)}
+                                  onClick={() => handleCategoryChange(category)}
                                   className={cn(
                                     "flex items-center justify-between w-full px-3 py-2 text-sm rounded-md transition-colors",
                                     selectedCategory === category
@@ -221,12 +228,10 @@ export default function OfficialComponentsPage() {
                       <Card className="h-full hover:bg-accent/50 transition-colors cursor-pointer">
                         <CardHeader className="pb-2">
                           <CardTitle className="text-base font-medium flex items-center gap-2">
-                            {/* Show primary category icon */}
                             {categoryIcons[component.categories[0]]}
                             {component.name}
                           </CardTitle>
                           <div className="flex flex-wrap gap-1 pt-1">
-                            {/* Show category badges */}
                             {component.categories.map((cat) => (
                               <Badge
                                 key={cat}
@@ -273,7 +278,7 @@ export default function OfficialComponentsPage() {
                     No components found
                   </h3>
                   <p className="text-gray-500 dark:text-gray-400">
-                    Try adjusting your search or filter to find what you're
+                    Try adjusting your search or filter to find what you&apos;re
                     looking for.
                   </p>
                 </div>
@@ -283,5 +288,18 @@ export default function OfficialComponentsPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+// Suspense boundary required by Next.js App Router for useSearchParams()
+export default function OfficialComponentsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col h-[calc(100dvh-2.5rem)] w-full animate-pulse bg-muted/20 rounded-md" />
+      }
+    >
+      <OfficialComponentsContent />
+    </Suspense>
   );
 }

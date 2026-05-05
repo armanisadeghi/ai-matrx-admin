@@ -6,7 +6,7 @@ import AdminIndicator from "./AdminIndicator";
 import { AdminDebugContextCollector } from "@/components/admin/debug/AdminDebugContextCollector";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import dynamic from "next/dynamic";
 
 const StreamProfilerOverlay = dynamic(
@@ -18,7 +18,7 @@ const StreamProfilerOverlay = dynamic(
 );
 
 const AdminIndicatorWrapper = () => {
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const isOverlayOpen = useAppSelector((state) =>
     selectIsOverlayOpen(state, "adminIndicator"),
   );

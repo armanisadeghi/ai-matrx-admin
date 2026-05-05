@@ -516,7 +516,7 @@ function BundlesSection({ toolId }: { toolId: string }) {
                 <TableRow key={`${member.bundle_id}-${member.tool_id}`}>
                   <TableCell className="text-xs">
                     <a
-                      href={`/admin/bundles/${bundle.id}`}
+                      href={`/administration/bundles?b=${bundle.id}`}
                       className="font-mono text-foreground hover:text-primary hover:underline"
                     >
                       {bundle.name}

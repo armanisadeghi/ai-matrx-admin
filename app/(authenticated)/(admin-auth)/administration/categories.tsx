@@ -354,15 +354,47 @@ export const adminCategories = [
     ],
   },
   {
-    name: "MCP Tools",
+    name: "Tool Registry",
     icon: <IconTestPipe className="w-6 h-6" />,
     iconColor: "text-pink-600",
     features: [
       {
         title: "MCP Tools",
-        description: "Manage MCP tools",
+        description:
+          "Per-tool admin: identity, parameters, executors, surfaces, bundles, gating, UI components, test samples, incidents. Bulk activate / deactivate / delete across the 380-row catalog.",
         icon: <IconTestPipe />,
         link: "/administration/mcp-tools",
+      },
+      {
+        title: "MCP Servers",
+        description:
+          "Provision new servers (one-click 4-row insert: server + executor kind + system bundle + lister tool). Per-server tabs for tools / configs / connected users / metadata. Test connection probes the endpoint and persists health.",
+        icon: <IconServer />,
+        link: "/administration/mcp-servers",
+        isNew: true,
+      },
+      {
+        title: "Bundles",
+        description:
+          "System and personal tool bundles. Create with auto-lister (one click), edit metadata, manage member aliases, search-and-add tools across the catalog.",
+        icon: <IconBox />,
+        link: "/administration/bundles",
+        isNew: true,
+      },
+      {
+        title: "UI Surfaces",
+        description:
+          "100+ surfaces grouped by client and tier (Pages / Specialized / Overlays / Editor variants / Debug). Bulk activate / deactivate, inline description edit, FK-aware delete, rename via FK CASCADE, candidate-inventory bulk-add.",
+        icon: <Layout />,
+        link: "/administration/surfaces",
+        isNew: true,
+      },
+      {
+        title: "Lookups",
+        description:
+          "CRUD for tool-registry lookup tables: ui_client, ui_surface (basic), tl_executor_kind, tl_gate. Foundation tables every other registry feature reads.",
+        icon: <IconAdjustmentsBolt />,
+        link: "/administration/lookups",
         isNew: true,
       },
     ],

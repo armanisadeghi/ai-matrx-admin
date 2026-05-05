@@ -1,72 +1,94 @@
 # Idle Mischief — When No One Is Watching
 
-> Inspired by *Toy Story*: when the user looks away, the UI elements come alive. The moment they return — everything snaps back, perfectly composed.
+> Inspired by *Toy Story*: when the user looks away, the UI elements come alive. The moment they return — everything snaps back, perfectly composed, as if nothing ever happened.
 
 ## Status
-- **Phase:** v0.1 — initial implementation, dev-gated.
-- **Mount:** `IdleMischiefProvider` is mounted globally inside `app/Providers.tsx`. Renders the orchestrator (no DOM) plus a Wand2 dev trigger that's only visible in `NODE_ENV=development` or when admin debug-mode is on.
-- **Visibility on prod for real users:** none. The dev button is gated; the orchestrator does nothing visible until a queued act fires, and acts are disabled if `prefers-reduced-motion: reduce` or `NEXT_PUBLIC_DISABLE_MISCHIEF=1` is set.
+- **Phase:** v0.2 — bulletproof state foundation, 10 acts, dev-gated.
+- **Mount:** `IdleMischiefProvider` is mounted globally inside `app/Providers.tsx`. Renders the orchestrator (no DOM). All visible mischief comes from imperative animation portals.
+- **Visibility on prod for real users:** none. Acts are disabled if `prefers-reduced-motion: reduce` or `NEXT_PUBLIC_DISABLE_MISCHIEF=1` is set, or if `settings.enabled` is false. The dev controls live in the admin indicator and only render for admins.
 
 ## Why this exists
 AI Matrx is becoming an *ambient* AI — present in sidebars, floating windows, bubble overlays, mid-page panels. Personality, not just polish, makes ambient interfaces feel alive. This feature gives the UI a quiet, secret life that emerges only when no one's watching, and disappears the instant attention returns.
 
 ## Architecture
 
-Three-layer system, all under `features/idle-mischief/`:
+Three layers, all under `features/idle-mischief/`:
 
-1. **Detection** — `hooks/useIdleDetection.ts` listens to mouse/keyboard/scroll/touch and tracks idle seconds. `visibilitychange` pauses (does not reset) the clock.
-2. **Acts** — `acts/Act01Tremor.ts` … `acts/Act07Carnival.ts`. Each act is an imperative function: `() => () => void`. Call to play; the returned function is its cleanup. Acts use `motion`'s `animate()` API directly on real DOM elements found via `utils/targets.ts`.
-3. **Restoration** — `utils/snapBack.ts` keeps a `WeakMap` of original transforms/opacities so the orchestrator can roll real DOM back to baseline in one frame. Portal-mounted overlays (eyes, snowflakes, walking legs) just unmount.
+### 1. Snapshot/restore foundation (`utils/snapshot.ts`) — THE critical piece
 
-The orchestrator (`components/MischiefStage.tsx`) is the only stateful piece. It:
+Before *any* act touches a real DOM element, it MUST call `snapshot(el)`. The snapshot stores a complete, verbatim picture of the element at that moment:
+- the entire `style` attribute string (NOT per-property tracking — the whole thing)
+- `className`
+- bounding rect (for portals/clones/position math)
+- parent + nextSibling (so re-parenting is reversible)
 
-- Watches `idleSeconds × settings.speed` against `ACT_QUEUE` thresholds (8s → 14s → 22s → 32s → 45s → 60s → 90s).
-- Plays one act at a time. When the act ends naturally, advances the playhead.
-- On any user activity (idleSeconds drops to 0), fires snap-back of the running act.
-- On `triggerAct(id)` from Redux, plays that specific act immediately (manual override path used by the dev panel and Cmd+Shift+M shortcut).
+`restoreElement(el)` puts every byte back. `restoreAll()` does the same for every snapshotted element + every registered portal node + every registered cleanup callback in one atomic operation.
 
-### The 7 Acts
+This is non-negotiable: per-property tracking ("save transform, save opacity") was the source of every "settles in a different spot" bug in v0.1. Don't go back to that.
+
+### 2. Activity-driven snap-back (`components/MischiefStage.tsx`)
+
+While ANY act is running, the orchestrator attaches a **capture-phase, passive** listener for `pointermove`, `pointerdown`, `keydown`, `wheel`, `touchstart` on `window`. The FIRST event fires `restoreAll()` and resets state to `idle`. No reliance on the idle-seconds counter, no race conditions with the activity that spawned the act (the listener arms after a 350ms grace window).
+
+If you ever see "things stay crooked after I move the mouse," check the snapshot/portal registries first via `getSnapshotStats()`.
+
+### 3. Acts (`acts/Act*.ts`)
+
+Each act is an imperative function: `() => () => void`. Call to play; the returned function is the natural cleanup. Acts use `motion`'s `animate()` API on real DOM elements (snapshotted first) or on portal-mounted clones (registered first via `registerPortal`).
+
+### The 10 Acts
+
+Order in `ACT_QUEUE` matters — it's the play sequence as idle time grows. Snap-back instantly resets the playhead.
 
 | # | Act | Threshold | Effect |
 |---|---|---:|---|
-| 1 | Tremor | 8s | Tiny ~1px jitter on a single random visible button (1.4s) |
-| 2 | Wiggle | 14s | Up to 6 visible buttons gently float and bob (4s) |
-| 3 | Eyes | 22s | Two sidebar icons morph into a pair of cartoon eyes that blink and track the cursor (5s) |
-| 4 | Walking Sidebar | 32s | The sidebar grows SVG legs and walks a sine-wave path across the viewport, then rubber-bands home (5.5s) |
-| 5 | Snow | 45s | 70 snowflakes fall from the top of the viewport (6s) |
-| 6 | Tower Collapse | 60s | All open WindowPanels topple like blocks, then bounce back into place (3.5s) |
-| 7 | Carnival | 90s | Wiggle + Eyes + Snow simultaneously (6.5s) |
+| 1 | **Tremor** | 8s | Tiny ~1px jitter on a single random visible button (1.4s). The first taste. |
+| 2 | **Roll Call** | 14s | Every visible button bounces in sequence — like soldiers calling out "Here!" — a wave traveling across the screen (4.5s). |
+| 3 | **Wiggle** | 20s | 6 visible buttons gently float and rock in place (4s). |
+| 4 | **Eyes** | 28s | A pair of large cartoon eyes appears at the **top-center of the viewport** (NOT inside the sidebar — they were invisible there). They track the cursor, blink twice, drift gently (6s). |
+| 5 | **Liquify** | 38s | Up to 12 buttons turn to jelly — fluid skew + scale wobble. Distinct from Wiggle: this is a non-rigid distortion (4.5s). |
+| 6 | **Walking Sidebar** | 48s | A `position: fixed` clone of the sidebar (escapes parent overflow:hidden) grows SVG legs and walks across the viewport. Original sidebar fades to opacity 0 during the walk (5.5s). |
+| 7 | **Avalanche** | 60s | Every small icon (sidebar nav, header buttons) detaches as a fixed-position clone, falls with gravity easing, scatters horizontally, and piles up at the bottom of the screen with random tilts. Originals fade out (4.5s). |
+| 8 | **Snow** | 75s | 90 snowflakes fall from the top of the viewport (6s). |
+| 9 | **Tower Collapse** | 90s | All open WindowPanels topple like a stack of blocks, then bounce back (3.5s). |
+| 10 | **Carnival** | 110s | Snow + Eyes + Liquify + Roll Call simultaneously (7s). |
 
 ## How acts target real UI
 
-- **Windows** → `WindowPanel.tsx` carries `data-mischief-window={id}` on its root. `findWindowEls()` queries that attribute.
-- **Sidebar** → `Sidebar.tsx` carries `data-mischief-sidebar=""` on the root `<aside>`. `findSidebar()` queries that attribute (with a fallback to `aside.shell-sidebar`).
-- **Buttons / icons** → discovered live via `findButtons()` / `findSidebarIcons()` filtered to in-viewport, visible elements. No data attributes needed.
+- **Windows** → `WindowPanel.tsx` root has `data-mischief-window={id}`. `findWindowEls()`.
+- **Sidebar** → `Sidebar.tsx` root has `data-mischief-sidebar=""`. `findSidebar()` + `isSidebarOpen()`.
+- **Buttons** → discovered live via `findButtons()` (random sample) or `findButtonsInOrder()` (sequence-preserving for Roll Call).
+- **Icons** → `findIconLikeElements()` — small, square-ish visible buttons/anchors (under 80×80, aspect ratio between 0.5 and 2).
 
 ## Dev controls
 
-- **Wand2 button** (bottom-right, dev only): single-click → start Act 1. Shift-click → open dev panel.
-- **Dev panel**: jump to any act, change speed (0.25x–4x), toggle loop, hard "snap back now."
-- **Keyboard shortcut**: `Cmd+Shift+M` (Mac) / `Ctrl+Shift+M` — same as single-click on the button.
+The control surface lives **inside the existing Admin Indicator**, in the **MediumIndicator** panel — alongside the other dev tools. There is no separate floating button; open the admin indicator from the sidebar and ensure it's at medium size.
+
+- **MischiefControls section** — collapsible row in [components/admin/controls/MediumIndicator.tsx](components/admin/controls/MediumIndicator.tsx), rendered by [components/MischiefControls.tsx](components/MischiefControls.tsx). Click the header to expand. Inside:
+  - **Play row** — 10 icon buttons, one per act, in the queue's playback order. Tooltip shows the idle threshold.
+  - **Snap-back button** — `RotateCcw` icon at the right of the play row. Stops whatever's running and runs `restoreAll()`.
+  - **Speed slider** — 0.25x – 4x, scales both idle thresholds and act durations.
+  - **Toggles** — Enabled (master kill), Loop (replay queue forever).
+  - **Status badge** — header shows current act name with a pulsing dot while playing.
+- **Keyboard shortcut** — `Cmd+Shift+M` / `Ctrl+Shift+M` plays Tremor.
 
 ## Disable paths
 - OS reduced-motion preference → fully disabled.
-- `settings.enabled = false` (set via dev panel) → fully disabled.
-- `NEXT_PUBLIC_DISABLE_MISCHIEF=1` env var → fully disabled (intended for Playwright/CI).
+- `settings.enabled = false` → fully disabled.
+- `NEXT_PUBLIC_DISABLE_MISCHIEF=1` → fully disabled (Playwright/CI).
 
 ## Files
 
-- `IdleMischiefProvider.tsx` — global mount; wires keyboard shortcut and renders stage + dev button
+- `IdleMischiefProvider.tsx` — global mount; wires keyboard shortcut and renders the orchestrator
 - `state/idleMischiefSlice.ts` — RTK slice (status, currentAct, manualTrigger nonce, settings)
 - `hooks/useIdleDetection.ts` — activity listeners + idle tick
 - `hooks/useReducedMotion.ts` — `prefers-reduced-motion` watcher
-- `components/MischiefStage.tsx` — orchestrator
-- `components/MischiefDevButton.tsx` — Wand2 trigger
-- `components/MischiefDevPanel.tsx` — full dev panel
-- `acts/Act01Tremor.ts` … `acts/Act07Carnival.ts` — choreography
+- `components/MischiefStage.tsx` — orchestrator (renders no DOM)
+- `components/MischiefControls.tsx` — control panel embedded in MediumIndicator
+- `acts/Act01Tremor.ts` … `acts/Act10Liquify.ts` — choreography (10 acts)
 - `acts/index.ts` — id → player map
+- `utils/snapshot.ts` — snapshot/restore foundation, portal registry, cleanup registry
 - `utils/targets.ts` — DOM target discovery
-- `utils/snapBack.ts` — original-state remembering + cleanup registry
 - `utils/throttle.ts` — leading-edge throttle for activity events
 - `constants.ts` — schedule, durations, throttle interval
 - `types.ts` — shared types
@@ -74,8 +96,11 @@ The orchestrator (`components/MischiefStage.tsx`) is the only stateful piece. It
 ## Edits to existing files
 - `app/Providers.tsx` → mounts `<IdleMischiefProvider />`
 - `lib/redux/rootReducer.ts` → registers `idleMischief` slice
+- `components/admin/controls/MediumIndicator.tsx` → renders `<MischiefControls />` after the Debug Modules row
 - `features/window-panels/WindowPanel.tsx` → adds `data-mischief-window={id}` (no behavior change)
 - `features/shell/components/sidebar/Sidebar.tsx` → adds `data-mischief-sidebar=""` (no behavior change)
 
 ## Change Log
-- 2026-05-05: Initial implementation. 7 acts, dev panel, keyboard shortcut, reduced-motion gate.
+- 2026-05-05: Initial implementation. 7 acts, keyboard shortcut, reduced-motion gate.
+- 2026-05-05: Removed standalone floating Wand2 button; consolidated all dev controls into a collapsible section inside the Admin Indicator's MediumIndicator panel.
+- 2026-05-05: **v0.2 — bulletproof foundation rewrite.** Replaced per-property tracking (`rememberTransform`/`rememberOpacity`) with a verbatim-style-attribute snapshot system in `utils/snapshot.ts`. Added portal registry + cleanup registry so `restoreAll()` is one atomic sweep. Snap-back is now driven by a capture-phase activity listener attached for the duration of each act, not by the idle-seconds counter — no more "settles in a different spot" or "stays crooked." Walking Sidebar now uses a `position: fixed` clone so it actually escapes parent overflow. Eyes now mount at top-center of the viewport (the sidebar is usually collapsed and they were invisible there). Added 3 new acts: **Avalanche** (icons fall and pile), **Roll Call** (wave of bounces), **Liquify** (jelly distortion). Carnival now mixes Snow + Eyes + Liquify + Roll Call.

@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/tooltip";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
 // Phase 4 PR 4.C: getGlobalIsAdmin import was unused; deleted alongside
-// the rest of lib/globalState.ts. Use selectIsAdmin if needed.
+// the rest of lib/globalState.ts. Use selectIsSuperAdmin if needed.
 import {
   DropdownMenu,
   DropdownMenuContent,

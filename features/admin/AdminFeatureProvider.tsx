@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 
 const AdminNavInjector = dynamic(
@@ -37,7 +37,7 @@ const DevPerfOverlay =
     : () => null;
 
 export default function AdminFeatureProvider() {
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const isDebugMode = useAppSelector(selectIsDebugMode);
 
   if (!isAdmin) return null;

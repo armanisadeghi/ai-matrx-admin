@@ -201,8 +201,8 @@ export const primaryNavItems: ShellNavItem[] = [
         iconName: "Search",
       },
       {
-        label: "Documents",
-        href: "/rag/documents",
+        label: "Library",
+        href: "/rag/library",
         iconName: "FileText",
       },
     ],

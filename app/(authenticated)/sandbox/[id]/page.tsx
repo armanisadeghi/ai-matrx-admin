@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { SshAccessPanel } from "@/components/sandbox/ssh-access-panel";
 import { SandboxDiagnosticsPanel } from "@/features/code/views/sandboxes/SandboxDiagnosticsPanel";
 import { useTimeRemaining } from "@/hooks/sandbox/use-time-remaining";
@@ -61,7 +61,7 @@ export default function SandboxDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
 
   const [instance, setInstance] = useState<SandboxInstance | null>(null);
   const [loading, setLoading] = useState(true);

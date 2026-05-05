@@ -15,7 +15,7 @@
 import { Fragment, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { getStaticEntryByOverlayId } from "@/features/window-panels/registry/windowRegistryMetadata";
 import {
@@ -52,7 +52,7 @@ export default function ToolsGrid({
   const dispatch = useAppDispatch();
   const store = useAppStore();
   const router = useRouter();
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
 
   // Build the tile-click handler once. Each tile's own click closure binds
   // only the tile reference; all side-effects resolve from registry + ctx.

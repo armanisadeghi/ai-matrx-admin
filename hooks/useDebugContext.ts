@@ -27,11 +27,11 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { updateDebugData, clearDebugNamespace, selectIsDebugMode } from '@/lib/redux/slices/adminDebugSlice';
-import { selectIsAdmin } from '@/lib/redux/slices/userSlice';
+import { selectIsSuperAdmin } from '@/lib/redux/slices/userSlice';
 
 export function useDebugContext(namespace: string) {
     const dispatch = useAppDispatch();
-    const isAdmin = useAppSelector(selectIsAdmin);
+    const isAdmin = useAppSelector(selectIsSuperAdmin);
     const isDebugMode = useAppSelector(selectIsDebugMode);
     const namespaceRef = useRef(namespace);
 

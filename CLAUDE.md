@@ -110,6 +110,16 @@ MCP server and REST endpoint for cross-project issue tracking. Agents submit bug
 - Every property gets a dedicated selector
 - If an action/selector doesn't exist, ask before creating one
 
+### Admin levels (highest bar by default)
+
+The `admins` table has a `level` enum: `developer | senior_admin | super_admin`. New admin rows default to `super_admin`.
+
+- **Default gate everywhere:** `selectIsSuperAdmin` (client) / `checkIsSuperAdmin` / `requireSuperAdmin` (server). Use these unless a specific surface has been deliberately lowered.
+- **Selective lowering:** read `selectAdminLevel` directly and gate on the tier you actually want — e.g. `level === 'developer' || level === 'super_admin'`.
+- **Any-admin (legacy):** `selectIsAdmin` / `checkIsUserAdmin` are kept for the rare "allow all admin levels" case.
+- **State:** `state.userAuth.adminLevel: 'developer' | 'senior_admin' | 'super_admin' | null`. Hydrated once per session boot from the SSR layout chain (`getAdminStatus` → `mapUserData` → `splitUserData`). Don't refetch.
+- **Permissions/metadata JSONB columns** on `admins` are reserved for future per-feature use. They are NOT loaded into Redux at boot — features that need them load on demand.
+
 ---
 
 ## Prompt Apps System [LEGACY]

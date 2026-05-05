@@ -16,6 +16,7 @@ import type { RootState } from "@/lib/redux/store";
 import { createSelector } from "reselect";
 import type { UserAuthState } from "@/lib/redux/slices/userAuthSlice";
 import type { UserProfileState } from "@/lib/redux/slices/userProfileSlice";
+import type { AdminLevel } from "@/utils/supabase/userSessionData";
 
 // ── Slice selectors ──────────────────────────────────────────────────────
 
@@ -54,8 +55,25 @@ export const selectUserEmailConfirmedAt = (state: RootState): string | null =>
 export const selectUserLastSignInAt = (state: RootState): string | null =>
   state.userAuth.lastSignInAt;
 
+/**
+ * True if the user has any admin row at all. Use only when a feature has
+ * deliberately lowered the bar to allow developer / senior_admin in
+ * addition to super_admin. Default gates should use `selectIsSuperAdmin`.
+ */
 export const selectIsAdmin = (state: RootState): boolean =>
   state.userAuth.isAdmin;
+
+/** The admin tier enum, or null for non-admins. */
+export const selectAdminLevel = (state: RootState): AdminLevel | null =>
+  state.userAuth.adminLevel;
+
+/**
+ * Highest-bar selector. The new default for every UI gate. Future selective
+ * lowering reads `selectAdminLevel` directly to gate on a specific tier.
+ */
+export const selectIsSuperAdmin = (state: RootState): boolean =>
+  state.userAuth.adminLevel === "super_admin";
+
 export const selectAccessToken = (state: RootState): string | null =>
   state.userAuth.accessToken;
 export const selectAuthReady = (state: RootState): boolean =>
@@ -154,12 +172,18 @@ export const selectProfilePhoto = (state: RootState): string | null =>
 
 /**
  * Returns a memoized context object with `user` (legacy shape),
- * `isAuthenticated`, and `isAdmin`. Only use when you genuinely need all
- * three together — prefer individual primitive selectors otherwise.
+ * `isAuthenticated`, `isAdmin` (any level), and `isSuperAdmin` (highest bar).
+ * Only use when you genuinely need them together — prefer individual
+ * primitive selectors otherwise.
  */
 export const selectUserContext = createSelector(
-  [selectUser, selectIsAuthenticated, selectIsAdmin],
-  (user, isAuthenticated, isAdmin) => ({ user, isAuthenticated, isAdmin }),
+  [selectUser, selectIsAuthenticated, selectIsAdmin, selectIsSuperAdmin],
+  (user, isAuthenticated, isAdmin, isSuperAdmin) => ({
+    user,
+    isAuthenticated,
+    isAdmin,
+    isSuperAdmin,
+  }),
 );
 
 // ── Auth token (kept for back-compat with the legacy file's placeholder) ─

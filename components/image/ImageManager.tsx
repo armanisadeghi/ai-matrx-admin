@@ -1,409 +1,372 @@
 "use client";
 
-import React, { useState } from "react";
+/**
+ * components/image/ImageManager.tsx
+ *
+ * Full-screen image picker. As of the cloud-files rebuild, every tab
+ * is wired into the user's cloud storage (`features/files`) — uploads
+ * land in the user's account, "My Images" / "My Files" surface the
+ * live cloud tree, and the embedded Image Studio writes its variants
+ * to permanent CDN URLs.
+ *
+ * Public surface stays backwards compatible. The legacy
+ * `userImages` / `saveTo` / `bucket` / `path` props still work and
+ * are mapped onto the new cloud props.
+ */
+
+import React, { useEffect, useMemo, useState } from "react";
+import { Sparkles } from "lucide-react";
 import FullScreenOverlay from "@/components/official/FullScreenOverlay";
-import { TabDefinition } from "@/components/official/FullScreenOverlay";
-import { ImagePreviewRow } from "@/components/image/shared/ImagePreviewRow";
+import type { TabDefinition } from "@/components/official/FullScreenOverlay";
 import { Button } from "@/components/ui/button";
-import { CloudUpload, User, Clipboard } from "lucide-react";
-import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
-import { usePasteImageUpload } from "@/components/ui/file-upload/usePasteImageUpload";
-import { ImageGrid } from "@/components/image/shared/ImageGrid";
-import { useSelectedImages } from "@/components/image/context/SelectedImagesProvider";
+import { ImagePreviewRow } from "@/components/image/shared/ImagePreviewRow";
 import { ResponsiveGallery } from "@/components/image/ResponsiveGallery";
+import { useSelectedImages } from "@/components/image/context/SelectedImagesProvider";
+import { CloudImagesTab } from "@/components/image/cloud/CloudImagesTab";
+import {
+  CloudFilesTab,
+  type AllowedFileKind,
+} from "@/components/image/cloud/CloudFilesTab";
+import { CloudUploadTab } from "@/components/image/cloud/CloudUploadTab";
+import { ImageStudioTab } from "@/components/image/cloud/ImageStudioTab";
+import type { EmbeddedImageStudioProps } from "@/features/image-studio/components/EmbeddedImageStudio";
+import type { Visibility } from "@/features/files/types";
 
 export interface ImageManagerProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onSave?: () => void;
-    initialSelectionMode?: "single" | "multiple" | "none";
-    initialTab?: string;
-    initialSearchTerm?: string; // Initial search term for public image search
-    userImages?: string[]; // Make userImages optional but don't provide defaults
-    enforceSelectionMode?: boolean; // Whether to lock the selection mode so users can't change it
-    visibleTabs?: string[]; // Array of tab IDs to display, if empty or undefined, all tabs will be shown
-    saveTo?: "public" | "private"; // Where to save uploaded images (convenience method)
-    bucket?: string; // Custom storage bucket to use for uploads
-    path?: string; // Custom path within the bucket for uploads
+  isOpen: boolean;
+  onClose: () => void;
+  onSave?: () => void;
+  initialSelectionMode?: "single" | "multiple" | "none";
+  initialTab?: string;
+  /** Initial query for the Public Images Unsplash search. */
+  initialSearchTerm?: string;
+  /** Legacy: user-supplied URLs rendered inside "My Images" as a "Provided" row. */
+  userImages?: string[];
+  /** Lock the selection mode toggle in the footer. */
+  enforceSelectionMode?: boolean;
+  /** Filter the visible tab set; empty/undefined shows all. */
+  visibleTabs?: string[];
+
+  // ─── Legacy upload props (mapped onto defaultUploadFolderPath) ───
+  saveTo?: "public" | "private";
+  bucket?: string;
+  path?: string;
+
+  // ─── New cloud-files props (all optional) ───
+  /** Which file kinds appear / are selectable in the "My Files" tab. Default `["image"]`. */
+  allowFileTypes?: AllowedFileKind[];
+  /** Logical folder path for new uploads. Default: `"Images/Uploads"`. */
+  defaultUploadFolderPath?: string;
+  /** Pre-resolved upload-destination folder id. */
+  defaultUploadFolderId?: string | null;
+  /** Visibility for new uploads. Default `"private"` (Image Studio uses public). */
+  defaultVisibility?: Visibility;
+  /** Show the Image Studio tab. Default `true`. */
+  showImageStudioTab?: boolean;
+  /** Show the AI Generate placeholder tab. Default `true`. */
+  showAIGenerateTab?: boolean;
+  /** Override props for the embedded `<EmbeddedImageStudio>`. */
+  imageStudioProps?: Partial<EmbeddedImageStudioProps>;
+}
+
+const TAB_PUBLIC = "public-search";
+const TAB_MY_IMAGES = "my-images";
+const TAB_MY_FILES = "my-files";
+const TAB_UPLOAD = "upload";
+const TAB_IMAGE_STUDIO = "image-studio";
+const TAB_AI_GENERATE = "ai-generate";
+
+/**
+ * Legacy tab IDs (pre cloud-files rebuild) mapped to their replacements,
+ * so callers passing the old strings via `initialTab` / `visibleTabs`
+ * continue to land on a sensible tab.
+ */
+const LEGACY_TAB_ALIASES: Record<string, string> = {
+  "user-images": TAB_MY_IMAGES,
+  "upload-images": TAB_UPLOAD,
+  "paste-images": TAB_UPLOAD,
+  "quick-upload": TAB_UPLOAD,
+  "cloud-images": TAB_MY_FILES,
+  "image-generation": TAB_AI_GENERATE,
+};
+
+function aliasTabId(id: string): string {
+  return LEGACY_TAB_ALIASES[id] ?? id;
+}
+
+/**
+ * Map the legacy `saveTo` / `bucket` / `path` props onto a cloud-files
+ * folder path. This keeps every existing caller working without code
+ * changes — the path scheme matches what `useFileUploadWithStorage`
+ * mapped to internally.
+ */
+function legacyPropsToFolderPath(
+  saveTo: "public" | "private" | undefined,
+  bucket: string | undefined,
+  path: string | undefined,
+  explicitPath: string | undefined,
+): string | undefined {
+  if (explicitPath) return explicitPath;
+  if (bucket) return path ? `${bucket}/${path}` : bucket;
+  if (saveTo === "public") return "Images/Uploads/Public";
+  if (saveTo === "private") return "Images/Uploads/Private";
+  return undefined; // fall through to CloudUploadTab default
 }
 
 export function ImageManagerContent({
-    isOpen,
-    onClose,
-    onSave,
-    initialSelectionMode = "multiple",
-    initialTab = "public-search",
-    initialSearchTerm,
-    userImages = [], // Default to empty array but don't hardcode sample images
-    enforceSelectionMode = false,
-    visibleTabs,
-    saveTo = "public", // Default to public uploads
-    bucket, // No default - will use the one from the hook
-    path, // No default - will use the one from the hook
-}: Omit<ImageManagerProps, "initialTab"> & { initialTab?: string; initialSearchTerm?: string; userImages?: string[] }) {
-    const { selectedImages, selectionMode, setSelectionMode, clearImages, addImage } = useSelectedImages();
-    const [activeTab, setActiveTab] = useState(initialTab);
-    const [isUploading, setIsUploading] = useState(false);
-    const pasteAreaRef = React.useRef<HTMLDivElement>(null);
+  isOpen,
+  onClose,
+  onSave,
+  initialSelectionMode = "multiple",
+  initialTab = TAB_PUBLIC,
+  initialSearchTerm,
+  userImages,
+  enforceSelectionMode = false,
+  visibleTabs,
+  saveTo,
+  bucket,
+  path,
+  allowFileTypes = ["image"],
+  defaultUploadFolderPath,
+  defaultUploadFolderId,
+  defaultVisibility = "private",
+  showImageStudioTab = true,
+  showAIGenerateTab = true,
+  imageStudioProps,
+}: ImageManagerProps) {
+  const { selectedImages, selectionMode, setSelectionMode, clearImages } =
+    useSelectedImages();
 
-    // Set selection mode only once on initial render
-    React.useEffect(() => {
-        setSelectionMode(initialSelectionMode);
-        // No dependencies - only run once on mount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-    
-    // Clean up selections when the dialog closes to prevent state leaks
-    React.useEffect(() => {
-        if (!isOpen) {
-            // Clean up when closing if no save occurred
-            return () => {
-                // Don't clear immediately to allow parent to access the selection
-                setTimeout(() => {
-                    clearImages();
-                }, 100);
-            };
-        }
-    }, [isOpen, clearImages]);
+  const [activeTab, setActiveTab] = useState(() => aliasTabId(initialTab));
 
-    // Handle file uploads
-    const handleUploadComplete = (results: { url: string; type: string; details?: any }[]) => {
-        // Add uploaded images to selected images
-        results.forEach((result) => {
-            if (result.type === "image") {
-                // Check if we can add this image based on selection mode
-                if (selectionMode === "single" && selectedImages.length >= 1) {
-                    // In single mode, replace the existing image
-                    clearImages();
-                }
-                
-                addImage({
-                    type: "public",
-                    url: result.url,
-                    id: result.details?.localId || result.url,
-                    metadata: {
-                        description: result.details?.filename || "Uploaded image",
-                        title: result.details?.filename || "Uploaded image",
-                    },
-                });
-            }
-        });
-    };
+  const aliasedVisibleTabs = useMemo(() => {
+    if (!visibleTabs || visibleTabs.length === 0) return undefined;
+    // De-dupe after aliasing — paste-images + upload-images both map to "upload".
+    return Array.from(new Set(visibleTabs.map(aliasTabId)));
+  }, [visibleTabs]);
 
-    // Setup paste image upload - only pass either saveTo OR bucket/path, not both
-    const pasteUploadProps = saveTo ? 
-        { saveTo: saveTo as "public" | "private" } : 
-        (bucket ? { bucket, path } : { saveTo: "public" as "public" | "private" });
-    
-    const { isProcessing } = usePasteImageUpload({
-        ...pasteUploadProps,
-        targetRef: pasteAreaRef,
-        onImagePasted: (result) => {
-            // Check if we can add this image based on selection mode
-            if (selectionMode === "single" && selectedImages.length >= 1) {
-                // In single mode, replace the existing image
-                clearImages();
-            }
-            
-            addImage({
-                type: "public",
-                url: result.url,
-                id: result.url,
-                metadata: {
-                    description: "Pasted image",
-                    title: "Pasted image",
-                },
-            });
-        },
-    });
+  // Set selection mode once on mount — same behaviour as the legacy
+  // component to avoid surprising existing callers.
+  useEffect(() => {
+    setSelectionMode(initialSelectionMode);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    const handleSave = () => {
-        if (onSave) {
-            onSave();
-        }
-        onClose();
-    };
-
-    const handleCancel = () => {
+  // Defer-clear on close so the parent has time to read the selection.
+  useEffect(() => {
+    if (!isOpen) {
+      const timer = setTimeout(() => {
         clearImages();
-        onClose();
-    };
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, clearImages]);
 
-    // Define all available tabs
-    const allTabs: TabDefinition[] = [
-        {
-            id: "public-search",
-            label: "Public Images",
-            content: (
-                <div className="h-full flex flex-col">
-                    <div className="flex-1 p-4 overflow-auto">
-                        <ResponsiveGallery 
-                          type="unsplash" 
-                          initialSearchTerm={initialSearchTerm}
-                        />
-                    </div>
-                </div>
-            ),
-        },
-        {
-            id: "user-images",
-            label: "Your Images",
-            content: (
-                <div className="h-full flex flex-col">
-                    <div className="flex-1 p-4 overflow-auto">
-                        {userImages.length > 0 ? (
-                            <ImageGrid
-                                images={userImages.map((url, index) => ({
-                                    type: "public",
-                                    url,
-                                    id: `user-image-${index}`,
-                                    metadata: {
-                                        description: `User image ${index + 1}`,
-                                        title: `Image ${index + 1}`,
-                                    },
-                                }))}
-                                columns={3}
-                                gap="md"
-                                aspectRatio="1:1"
-                                selectable={true}
-                            />
-                        ) : (
-                            <div className="flex items-center justify-center h-full p-8 text-gray-500 dark:text-gray-400">
-                                <div className="text-center">
-                                    <div className="mx-auto w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-                                        <User className="h-8 w-8 text-gray-400 dark:text-gray-600" />
-                                    </div>
-                                    <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">No images available</h3>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md">
-                                        You don't have any images yet. Upload some images or use the Public Images tab to find images.
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            ),
-        },
-        {
-            id: "upload-images",
-            label: "Upload",
-            content: (
-                <div className="h-full flex flex-col">
-                    <div className="flex-1 p-4 overflow-auto">
-                        <div className="max-w-2xl mx-auto">
-                            <h3 className="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">Upload Images</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                                Upload images from your device. Selected images will appear in the preview below.
-                            </p>
+  const resolvedUploadPath = useMemo(
+    () =>
+      legacyPropsToFolderPath(saveTo, bucket, path, defaultUploadFolderPath),
+    [saveTo, bucket, path, defaultUploadFolderPath],
+  );
 
-                            <FileUploadWithStorage
-                                {...(saveTo ? { saveTo } : (bucket ? { bucket, path } : { saveTo: "public" }))}
-                                multiple={true}
-                                onUploadComplete={handleUploadComplete}
-                                onUploadStatusChange={setIsUploading}
-                            />
+  const effectiveDefaultVisibility = useMemo<Visibility>(() => {
+    if (defaultVisibility) return defaultVisibility;
+    // Legacy: saveTo === "public" implies public visibility.
+    if (saveTo === "public") return "public";
+    return "private";
+  }, [defaultVisibility, saveTo]);
 
-                            {selectedImages.length > 0 && (
-                                <div className="mt-8">
-                                    <h4 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Selected Images</h4>
-                                    <ImagePreviewRow size="m" showRemoveButton={true} />
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            ),
-        },
-        {
-            id: "paste-images",
-            label: "Paste",
-            content: (
-                <div className="h-full flex flex-col" ref={pasteAreaRef}>
-                    <div className="flex-1 p-4 overflow-auto">
-                        <div className="max-w-2xl mx-auto">
-                            <h3 className="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">Paste Images</h3>
+  const acceptMimes = useMemo(() => {
+    if (allowFileTypes.includes("any")) return undefined;
+    const set = new Set<string>();
+    if (allowFileTypes.includes("image")) set.add("image/*");
+    if (allowFileTypes.includes("video")) set.add("video/*");
+    if (allowFileTypes.includes("audio")) set.add("audio/*");
+    if (allowFileTypes.includes("pdf")) set.add("application/pdf");
+    if (allowFileTypes.includes("document")) {
+      set.add("text/*");
+      set.add("application/pdf");
+    }
+    return Array.from(set);
+  }, [allowFileTypes]);
 
-                            <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 text-center bg-gray-50 dark:bg-gray-800">
-                                <Clipboard className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" />
-                                <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Paste Image from Clipboard</h4>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    Copy an image and press{" "}
-                                    <kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded text-xs">Ctrl</kbd> +{" "}
-                                    <kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded text-xs">V</kbd> to paste it here.
-                                </p>
+  const handleSave = () => {
+    onSave?.();
+    onClose();
+  };
 
-                                {isProcessing && (
-                                    <div className="mt-4 flex justify-center">
-                                        <div className="flex items-center gap-2">
-                                            <svg
-                                                className="animate-spin h-5 w-5 text-blue-500"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <circle
-                                                    className="opacity-25"
-                                                    cx="12"
-                                                    cy="12"
-                                                    r="10"
-                                                    stroke="currentColor"
-                                                    strokeWidth="4"
-                                                ></circle>
-                                                <path
-                                                    className="opacity-75"
-                                                    fill="currentColor"
-                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                                ></path>
-                                            </svg>
-                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                Processing image...
-                                            </span>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+  const handleCancel = () => {
+    clearImages();
+    onClose();
+  };
 
-                            {selectedImages.length > 0 && (
-                                <div className="mt-8">
-                                    <h4 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Selected Images</h4>
-                                    <ImagePreviewRow size="m" showRemoveButton={true} />
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            ),
-        },
-        {
-            id: "quick-upload",
-            label: "Quick Upload",
-            content: (
-                <div className="h-full flex flex-col">
-                    <div className="flex-1 p-4 overflow-auto">
-                        <div className="max-w-2xl mx-auto">
-                            <h3 className="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">Quick Upload</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                                Use this compact uploader for quick image uploads.
-                            </p>
-
-                            <FileUploadWithStorage
-                                {...(saveTo ? { saveTo } : (bucket ? { bucket, path } : { saveTo: "public" }))}
-                                multiple={true}
-                                useMiniUploader={true}
-                                onUploadComplete={handleUploadComplete}
-                                onUploadStatusChange={setIsUploading}
-                            />
-
-                            {selectedImages.length > 0 && (
-                                <div className="mt-8">
-                                    <h4 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Selected Images</h4>
-                                    <ImagePreviewRow size="m" showRemoveButton={true} />
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            ),
-        },
-        {
-            id: "cloud-images",
-            label: "Cloud Storage",
-            content: (
-                <div className="h-full flex items-center justify-center">
-                    <div className="text-center p-8 max-w-md">
-                        <CloudUpload className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" />
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Cloud Storage</h3>
-                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                            Cloud storage integration coming soon. This will allow you to access images from your Supabase storage.
-                        </p>
-                    </div>
-                </div>
-            ),
-        },
-        {
-          id: "image-generation",
-          label: "Image Generation",
-          content: (
-              <div className="h-full flex items-center justify-center">
-                  <div className="text-center p-8 max-w-md">
-                      <CloudUpload className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Image Generation</h3>
-                      <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                          Image generation coming soon. This will allow you to generate images from text.
-                      </p>
-                  </div>
-              </div>
-          ),
+  const allTabs: TabDefinition[] = useMemo(() => {
+    const tabs: TabDefinition[] = [
+      {
+        id: TAB_PUBLIC,
+        label: "Public Images",
+        content: (
+          <div className="h-full flex flex-col">
+            <div className="flex-1 p-4 overflow-auto">
+              <ResponsiveGallery
+                type="unsplash"
+                initialSearchTerm={initialSearchTerm}
+              />
+            </div>
+          </div>
+        ),
+      },
+      {
+        id: TAB_MY_IMAGES,
+        label: "My Images",
+        content: (
+          <CloudImagesTab
+            providedUrls={
+              userImages && userImages.length > 0 ? userImages : undefined
+            }
+          />
+        ),
+      },
+      {
+        id: TAB_MY_FILES,
+        label: "My Files",
+        content: <CloudFilesTab allowFileTypes={allowFileTypes} />,
+      },
+      {
+        id: TAB_UPLOAD,
+        label: "Upload",
+        content: (
+          <CloudUploadTab
+            defaultUploadFolderPath={resolvedUploadPath}
+            defaultUploadFolderId={defaultUploadFolderId}
+            visibility={effectiveDefaultVisibility}
+            accept={acceptMimes}
+          />
+        ),
       },
     ];
 
-    // Filter tabs based on visibleTabs prop
-    const tabs = visibleTabs && visibleTabs.length > 0
-        ? allTabs.filter(tab => visibleTabs.includes(tab.id))
-        : allTabs;
+    if (showImageStudioTab && initialSelectionMode !== "none") {
+      tabs.push({
+        id: TAB_IMAGE_STUDIO,
+        label: "Image Studio",
+        content: <ImageStudioTab imageStudioProps={imageStudioProps} />,
+      });
+    }
 
-    // If the initially active tab is not in the visible tabs, default to the first visible tab
-    React.useEffect(() => {
-        if (visibleTabs && visibleTabs.length > 0 && !visibleTabs.includes(activeTab)) {
-            setActiveTab(visibleTabs[0]);
-        }
-    }, [visibleTabs, activeTab]);
+    if (showAIGenerateTab) {
+      tabs.push({
+        id: TAB_AI_GENERATE,
+        label: "AI Generate",
+        content: <AIGeneratePlaceholder />,
+      });
+    }
 
-    return (
-        <FullScreenOverlay
-            isOpen={isOpen}
-            onClose={onClose}
-            title="Image Manager"
-            description="Select and manage images"
-            tabs={tabs}
-            initialTab={activeTab}
-            onTabChange={setActiveTab}
-            showSaveButton={true}
-            onSave={handleSave}
-            saveButtonLabel={isUploading ? "Uploading..." : "Use Selected Images"}
-            saveButtonDisabled={isUploading}
-            showCancelButton={true}
-            onCancel={handleCancel}
-            cancelButtonLabel="Cancel"
-            footerContent={
-                <div className="flex items-center mr-auto">
-                    <div className="mr-4 flex items-center">
-                        {!enforceSelectionMode && (
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    variant={selectionMode === "single" ? "default" : "outline"}
-                                    size="sm"
-                                    onClick={() => setSelectionMode("single")}
-                                    className="mr-2"
-                                    disabled={isUploading}
-                                >
-                                    Single
-                                </Button>
-                                <Button
-                                    variant={selectionMode === "multiple" ? "default" : "outline"}
-                                    size="sm"
-                                    onClick={() => setSelectionMode("multiple")}
-                                    disabled={isUploading}
-                                >
-                                    Multiple
-                                </Button>
-                            </div>
-                        )}
-                        
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {selectedImages.length} image{selectedImages.length !== 1 ? "s" : ""} selected
-                        </div>
-                    </div>
+    return tabs;
+  }, [
+    initialSearchTerm,
+    userImages,
+    allowFileTypes,
+    resolvedUploadPath,
+    defaultUploadFolderId,
+    effectiveDefaultVisibility,
+    acceptMimes,
+    showImageStudioTab,
+    initialSelectionMode,
+    imageStudioProps,
+    showAIGenerateTab,
+  ]);
 
-                    <div className="w-64">
-                        <ImagePreviewRow size="s" />
-                    </div>
-                </div>
-            }
-        />
-    );
+  const tabs = useMemo(
+    () =>
+      aliasedVisibleTabs && aliasedVisibleTabs.length > 0
+        ? allTabs.filter((tab) => aliasedVisibleTabs.includes(tab.id))
+        : allTabs,
+    [allTabs, aliasedVisibleTabs],
+  );
+
+  // If the active tab is filtered out, fall back to the first visible.
+  useEffect(() => {
+    if (!aliasedVisibleTabs || aliasedVisibleTabs.length === 0) return;
+    if (!aliasedVisibleTabs.includes(activeTab)) {
+      setActiveTab(aliasedVisibleTabs[0]);
+    }
+  }, [aliasedVisibleTabs, activeTab]);
+
+  return (
+    <FullScreenOverlay
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Image Manager"
+      description="Browse, upload, and create images — everything saves to your cloud."
+      tabs={tabs}
+      initialTab={activeTab}
+      onTabChange={setActiveTab}
+      showSaveButton={true}
+      onSave={handleSave}
+      saveButtonLabel="Use Selected"
+      showCancelButton={true}
+      onCancel={handleCancel}
+      cancelButtonLabel="Cancel"
+      footerContent={
+        <div className="flex items-center mr-auto gap-4">
+          {!enforceSelectionMode ? (
+            <div className="flex items-center gap-2">
+              <Button
+                variant={selectionMode === "single" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectionMode("single")}
+              >
+                Single
+              </Button>
+              <Button
+                variant={selectionMode === "multiple" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectionMode("multiple")}
+              >
+                Multiple
+              </Button>
+            </div>
+          ) : null}
+
+          <div className="text-sm text-muted-foreground">
+            {selectedImages.length} image
+            {selectedImages.length !== 1 ? "s" : ""} selected
+          </div>
+
+          <div className="w-64">
+            <ImagePreviewRow size="s" />
+          </div>
+        </div>
+      }
+    />
+  );
 }
 
 export function ImageManager(props: ImageManagerProps) {
-    return <ImageManagerContent {...props} />;
+  return <ImageManagerContent {...props} />;
+}
+
+// ---------------------------------------------------------------------------
+// AI Generate placeholder — a clean "coming soon" hero. The real surface
+// will mount an agent shortcut here.
+// ---------------------------------------------------------------------------
+
+function AIGeneratePlaceholder() {
+  return (
+    <div className="h-full flex items-center justify-center p-8">
+      <div className="text-center max-w-md">
+        <div className="mx-auto h-14 w-14 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-4">
+          <Sparkles className="h-7 w-7" />
+        </div>
+        <h3 className="text-lg font-semibold text-foreground">
+          AI Image Generation
+        </h3>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Generate images directly from a description — coming soon. We're
+          wiring an agent here so you can describe an image in plain English and
+          have it appear in your cloud, ready to use.
+        </p>
+      </div>
+    </div>
+  );
 }

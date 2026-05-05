@@ -6,11 +6,11 @@ import {
   selectActiveServer,
   switchServer,
 } from "@/lib/redux/slices/apiConfigSlice";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 
 export default function SidebarEnvToggle() {
   const dispatch = useAppDispatch();
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const activeServer = useAppSelector(selectActiveServer);
 
   if (!isAdmin) return null;

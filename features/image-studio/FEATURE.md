@@ -1,18 +1,24 @@
 # Image Studio — FEATURE.md
 
-Drop one image in, get 60+ platform-perfect sizes out.
+Four modes, one feature: **Convert** (resize to platform presets), **Edit** (full-featured editor with filters/text/shapes/AI assists), **Annotate** (screenshot markup), **Avatar** (dedicated circular crop), and **Generate** (text → image). Plus the historical landing/library/presets/from-base64 surfaces.
+
+> **AI integrations.** Every AI assist surface in the modes (suggest edits, smart crop, redact PII, suggest annotations, generate from prompt, BG remove, upscale, inpaint, …) is enumerated in `features/image-studio/AI-AGENTS.md`. That doc is the source of truth for both the LLM agent shortcuts (Section A) and the deterministic Python endpoints (Section B). When an AI feature is wired but the underlying agent/endpoint isn't implemented yet, the UI surfaces a "ships next wave" toast — never a generic error.
 
 ## Routes
 
 | Route | Type | Purpose |
 |---|---|---|
 | `/image-studio` | Landing (pure Server Component) | Hero, stat row, feature grid, preset legend, workflow steps, CTAs. Zero client JS. |
-| `/image-studio/convert` | Interactive tool | Multi-file drop zone + preset catalog + per-variant tile grid + export panel. Main UX. |
+| `/image-studio/convert` | Interactive tool | Multi-file drop zone + preset catalog + per-variant tile grid + export panel. The original Image Studio UX. |
+| `/image-studio/edit` | Interactive tool | Full-featured editor (Filerobot 5.0). Crop, rotate, resize, filters, fine-tune (brightness/contrast/HSV/warmth/blur/threshold/posterize/pixelate/noise), shapes (rect/ellipse/polygon/line/arrow), text, freehand pen, watermark. Layered AI toolbar adds Suggest edits, Remove BG, Upscale 2×/4×, AI edit by prompt. |
+| `/image-studio/annotate` | Interactive tool | Screenshot markup (marker.js 2). Arrows, callouts, boxes, freehand, text, frames, blur/redact regions. AI toolbar: Suggest annotations, Redact PII, Detect faces. |
+| `/image-studio/avatar` | Interactive tool | Dedicated circular-crop UX (react-easy-crop with `cropShape="round"`). 1:1 lock, zoom + rotation, Smart Crop button (face-detect Python endpoint). Outputs canonical 512² PNG into `Images/Avatars/`. |
+| `/image-studio/generate` | Interactive tool | Text → image via the Python `/images/generate` endpoint. Prompt + size + count + style. Result tiles deep-link into Edit / Annotate / Avatar. |
 | `/image-studio/presets` | Cached catalog | Browsable reference for every preset (pure server-rendered). |
 | `/image-studio/library` | Per-user Supabase data | Variants the user has saved — grouped by session, public URLs. |
 | `/image-studio/from-base64` | Interactive tool | Paste a base64 string (raw or `data:` URL) → preview + metadata + save to cloud as a hosted asset with a permanent share URL. Pure browser decode (no API hop), uploads via the cloud-files share-link primitive. |
 
-All five live under `app/(a)/image-studio/` and follow the `(a)` route rules — static shell, Suspense boundaries, dimension-matched skeletons.
+All routes live under `app/(a)/image-studio/` and follow the `(a)` route rules — static shell, Suspense boundaries, dimension-matched skeletons. Edit / Annotate / Avatar / Generate use a shared `_shared/ModeImagePicker` landing when no source is provided via `?url=` or `?cloudFileId=`.
 
 ## Architecture
 
@@ -42,14 +48,31 @@ app/(a)/image-studio/
 
 features/image-studio/
 ├── FEATURE.md
+├── AI-AGENTS.md                   full catalog of AI agents + Python endpoints
 ├── index.ts                       barrel
 ├── presets.ts                     catalog (60+ presets, 10 categories, 6 bundles)
 ├── types.ts                       types shared with API
+├── api/
+│   └── python.ts                  typed REST clients for /images/* Python endpoints
+│                                  (generate, edit, inpaint, bg-remove, upscale,
+│                                  variants, face-detect, style-transfer)
 ├── hooks/
 │   ├── useImageStudio.ts          central client state for /convert
 │   └── useBase64Decoder.ts        base64 paste → blob → cloud share URL
+├── modes/
+│   ├── shared/
+│   │   ├── types.ts               ImageSource, ModeShellProps, SaveResult
+│   │   ├── use-image-source.ts    File | URL | cloudFileId → loadable URL
+│   │   └── save-edited-image.ts   blob → cloud-files via useUploadAndShare
+│   ├── edit/
+│   │   ├── EditModeShell.tsx      Filerobot 5.0 editor + AI assist toolbar
+│   │   └── EditAiToolbar.tsx      Suggest edits / Remove BG / Upscale / AI edit
+│   ├── annotate/
+│   │   └── AnnotateModeShell.tsx  marker.js 2 + AI assist toolbar
+│   └── avatar/
+│       └── AvatarModeShell.tsx    react-easy-crop circular crop + Smart Crop
 ├── components/
-│   ├── ImageStudioShell.tsx       3-column interactive shell
+│   ├── ImageStudioShell.tsx       3-column interactive shell (Convert mode)
 │   ├── StudioDropZone.tsx         drag-drop + paste
 │   ├── StudioFileCard.tsx         per-file row with variant grid
 │   ├── StudioVariantTile.tsx      single variant tile (+ pending/error)
@@ -58,12 +81,17 @@ features/image-studio/
 │   ├── StudioLandingHero.tsx      landing page Server Component
 │   ├── Base64DecoderShell.tsx     /from-base64 interactive body
 │   └── LibraryGrid.tsx            library page display
+├── constants/
+│   └── describe.ts                describe-agent constants (preview size, folder)
 ├── server/
 │   └── library.ts                 server-only Supabase lister (react cache())
 └── utils/
     ├── download-bundle.ts         JSZip client-side zipper
     ├── decode-base64.ts           pure-browser base64 → Blob + magic-byte MIME sniff
+    ├── build-describe-preview.ts  downscale source → small WebP for the agent
     ├── format-bytes.ts
+    ├── crop-file.ts               server-equivalent client-side crop helper
+    ├── compute-crop.ts            crop area geometry calculations
     └── slugify-filename.ts
 
 app/api/images/studio/
@@ -125,12 +153,77 @@ Every preset declares: `id`, `name`, `usage` (where it's used), `width`, `height
 - Library uses `react.cache()` + `server-only` for per-request memoisation of the Supabase list query.
 - Every route has a dimension-matched `loading.tsx`.
 
+## Modes architecture
+
+The four interactive modes (Edit, Annotate, Avatar, Generate) share a single
+shape so any one of them can be mounted from a route OR a modal dialog
+(e.g. Notes "edit this image" → Edit mode in a modal):
+
+```ts
+interface ModeShellProps {
+  source: ImageSource | null;       // File | URL | cloudFileId
+  defaultFolder?: string;           // where saves land in Cloud Files
+  presentation?: "page" | "modal";
+  onSave?: (result: SaveResult) => void;
+  onCancel?: () => void;
+}
+```
+
+`useImageSource` resolves the three source kinds to a single browser-loadable
+URL (with object-URL lifecycle for `File` sources). `saveEditedImage` wraps
+canvas/dataURL output as a `File` and pushes it through the standard
+`useUploadAndShare` upload pipeline — so every mode produces a `cloud_file_id`
++ persistent share URL on save, no special storage code per mode.
+
+### Edit mode (Filerobot 5.0.1)
+
+`react-filerobot-image-editor` gives us crop, rotate, flip, resize, fine-tune
+(brightness/contrast/HSV/warmth/blur/threshold/posterize/pixelate/noise),
+filters, freehand pen, shapes (rect/ellipse/polygon/line/arrow), text,
+watermark. Filerobot runs entirely in the browser via Konva — the route
+`dynamic`-imports the shell with `ssr:false`. The editor reaches for
+`window`/`document` on first paint, so SSR mounting is forbidden.
+
+Sibling **AI assist toolbar** (above Filerobot's native UI) hosts:
+- ✨ Suggest edits — `image-suggest-edits` agent (next wave)
+- Remove BG — `bg-remove` Python endpoint
+- Upscale 2× / 4× — `upscale` Python endpoint
+- AI edit by prompt — `image-edit` Python endpoint (text instruction → image)
+
+When an AI op returns a new `cloud_file_id`, the editor force-remounts on
+the result so the user can keep editing the AI output.
+
+### Annotate mode (marker.js 2)
+
+`markerjs2` is class-based and imperative — we mount it onto an `<img>` ref
+inside an effect, listen for the `render` event, and pipe the resulting
+dataUrl through `saveEditedImage`. The original image isn't modified; the
+output bakes the annotations on top.
+
+AI assist (next wave): Suggest annotations, Redact PII, Detect faces.
+
+### Avatar mode (react-easy-crop)
+
+`cropShape="round"`, 1:1 lock, zoom + rotation. **Smart Crop** button calls
+the `face-detect` Python endpoint and re-centers/zooms to fit detected faces.
+Output is always a 512² PNG written into `Images/Avatars/` so downstream
+`/api/images/upload?preset=avatar` can produce 400/128/48 variants.
+
+### Generate mode
+
+Text → image via the Python `/images/generate` endpoint. Result tiles deep-
+link into Edit / Annotate / Avatar via `?cloudFileId=` query params, so the
+flow is generate → keep editing without an upload round-trip.
+
 ## How to extend
 
 - **Add a new preset**: add an entry to the right array in `features/image-studio/presets.ts`. That's it — the catalog, convert tool, and reference page all read from the same source.
 - **Add a new format**: extend `OutputFormat` in `presets.ts`, add a `case` in `encode()` in the process route, add a badge row in `ExportPanel.tsx`.
 - **Add a one-click bundle**: append to `RECOMMENDED_BUNDLES`.
-- **Agent-generated filenames / alt text**: the `StudioSourceFile.filenameBase` is already editable per file. Wire an agent up to set that field + add a future `altText` field alongside it.
+- **Add a new AI agent**: add the row in the DB, register in `features/agents/constants/system-shortcuts.ts` (key: `image-<name>-01`, feature: `image-studio`), then call `useShortcutTrigger` from the relevant mode toolbar — see `useImageStudio.ts:describeFile` for the canonical pattern. The full registry of planned agents is in `AI-AGENTS.md`.
+- **Add a new Python endpoint**: append a typed client to `features/image-studio/api/python.ts` following the existing pattern (typed body, `postJson`, response shape with `cloud_file_id`). The Python team's contract is documented at the top of that file.
+- **Add a new mode**: create `features/image-studio/modes/<name>/<Name>ModeShell.tsx` implementing `ModeShellProps`, then add the route `app/(a)/image-studio/<name>/page.tsx` mirroring an existing one.
+- **Mount a mode in a modal** (e.g. "edit this image" from Notes): import the mode shell directly and pass `presentation="modal"` plus your own `onSave`/`onCancel`. No new wiring needed — the shells are presentation-agnostic.
 
 ## From Base64 (paste → cloud asset)
 
@@ -149,12 +242,21 @@ Every preset declares: `id`, `name`, `usage` (where it's used), `width`, `height
 
 ## Known follow-ups
 
-- Cropping / reframing before output (we have `ImageCropper` in `components/official/image-cropper/` that could plug into a per-variant override step).
 - Folder picker UI (currently a text input — a future iteration can reuse `FileUploadWindow`'s FolderPicker).
-- Agent integration for naming + meta — state is already structured to accept per-file/per-variant string fields.
 - Deleting items from the library (the save API writes — the library page currently only reads).
+- Wire AI-AGENTS.md Section A shortcuts to the toolbars (Suggest edits, Smart crop, Suggest annotations, Redact PII, Suggest filters). Each is a one-DB-row + one-button change once the shortcut row exists. Section B Python endpoints already have typed clients and UI buttons ready.
+- Notes integration: image blocks that open Edit mode in a modal, plus `prompt-from-article` / `caption-context` / `suggest-image-spots` agents (see AI-AGENTS.md).
 
 ## Change Log
 
+- **2026-05-05** — Added Edit, Annotate, Avatar, and Generate modes:
+  - `/image-studio/edit` — full-featured Filerobot 5.0 editor with sibling AI-assist toolbar (Suggest edits, Remove BG, Upscale 2×/4×, AI edit by prompt).
+  - `/image-studio/annotate` — marker.js 2 screenshot markup with AI assist (Suggest annotations, Redact PII, Detect faces).
+  - `/image-studio/avatar` — dedicated circular crop with Smart Crop (face-detect-driven).
+  - `/image-studio/generate` — text → image via Python `/images/generate`; result tiles deep-link into the other modes.
+  - New shared modes architecture under `features/image-studio/modes/` — `ModeShellProps` lets every mode mount as a page or as a modal dialog.
+  - Typed Python image-ops client at `features/image-studio/api/python.ts` (generate, edit, inpaint, bg-remove, upscale, variants, face-detect, style-transfer). Falls back to friendly "ships next wave" UI when endpoints aren't yet implemented.
+  - New `AI-AGENTS.md` enumerates every AI integration across all modes (LLM agents + Python endpoints), with prompts/variables/return shapes ready for the agent author and Python team.
+  - Dependencies: `react-filerobot-image-editor 5.0.1`, `markerjs2 2.32.7`, `react-konva`, `konva`, `styled-components` (Filerobot peers).
 - **2026-05-01** — Added `/image-studio/from-base64`: paste a base64 string (raw or `data:` URL) → preview the decoded image → save it as a cloud-hosted asset with a permanent share URL. Pure-browser decode + magic-byte MIME sniff; uploads through the existing `useUploadAndShare` primitive. Landing hero, `/convert` nav, and stat row updated.
 - **2026-04-23** — Initial release: landing + convert + presets + library routes; 60+ presets across 10 categories; multi-file processing; ZIP bundle download; Save to library.

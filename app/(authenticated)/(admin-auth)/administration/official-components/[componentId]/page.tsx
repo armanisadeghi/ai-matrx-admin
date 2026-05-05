@@ -77,11 +77,7 @@ export default function ComponentDetailPage({
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <ChevronLeftTapButton
-                  onClick={() =>
-                    router.push("/administration/official-components")
-                  }
-                />
+                <ChevronLeftTapButton onClick={() => router.back()} />
                 <span className="shrink-0">
                   {categoryIcons[component.categories[0]]}
                 </span>

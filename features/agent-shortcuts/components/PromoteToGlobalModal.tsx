@@ -38,7 +38,7 @@ import {
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { fetchCategoriesForScope } from "@/features/agents/redux/agent-shortcut-categories/thunks";
 import { selectGlobalCategories } from "@/features/agents/redux/agent-shortcut-categories/selectors";
 import { getPlacementTypeMeta, PLACEMENT_TYPES } from "../constants";
@@ -63,7 +63,7 @@ export function PromoteToGlobalModal({
 }: PromoteToGlobalModalProps) {
   const isMobile = useIsMobile();
   const dispatch = useAppDispatch();
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const globalCategories = useAppSelector(selectGlobalCategories);
 
   const crud = useAgentShortcutCrud({ scope: "global" });

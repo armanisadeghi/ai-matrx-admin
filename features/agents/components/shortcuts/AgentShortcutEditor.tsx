@@ -24,7 +24,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAgentShortcuts } from "@/features/agent-shortcuts/hooks/useAgentShortcuts";
 import { ShortcutForm } from "@/features/agent-shortcuts/components/ShortcutForm";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 import { selectShortcutById } from "@/features/agents/redux/agent-shortcuts/selectors";
 import type { AgentShortcut } from "@/features/agents/redux/agent-shortcuts/types";
@@ -51,7 +51,7 @@ export function AgentShortcutEditor({
   const [isPending, startTransition] = useTransition();
 
   const isCreate = shortcutId === "new";
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
   const agent = useAppSelector((state) => selectAgentById(state, agentId));
 
   // When an admin creates a shortcut for a builtin/system agent, it belongs
