@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Loader2,
   Server,
@@ -66,7 +66,7 @@ export function McpServersAdminPage() {
     void load();
   }, []);
 
-  const filtered = useMemo(() => {
+  const filtered = (() => {
     if (!search.trim()) return servers;
     const q = search.trim().toLowerCase();
     return servers.filter(
@@ -75,7 +75,7 @@ export function McpServersAdminPage() {
         s.name.toLowerCase().includes(q) ||
         s.vendor.toLowerCase().includes(q),
     );
-  }, [servers, search]);
+  })();
 
   const selected = servers.find((s) => s.slug === selectedSlug) ?? null;
 

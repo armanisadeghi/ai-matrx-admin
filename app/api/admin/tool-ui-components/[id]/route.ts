@@ -42,7 +42,7 @@ export async function PUT(
 
         // Only allow updating specific fields
         const allowedFields = [
-            "tool_id", "tool_name", "display_name", "results_label",
+            "tool_id", "tool_name", "surface_name", "display_name", "results_label",
             "inline_code", "overlay_code", "utility_code",
             "header_extras_code", "header_subtitle_code",
             "keep_expanded_on_stream", "allowed_imports", "language",

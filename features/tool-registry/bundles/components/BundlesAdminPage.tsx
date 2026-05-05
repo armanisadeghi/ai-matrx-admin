@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Loader2,
   Package,
@@ -71,7 +71,7 @@ export function BundlesAdminPage() {
     void loadList();
   }, [filter]);
 
-  const filtered = useMemo(() => {
+  const filtered = (() => {
     if (!search.trim()) return bundles;
     const q = search.trim().toLowerCase();
     return bundles.filter(
@@ -79,7 +79,7 @@ export function BundlesAdminPage() {
         b.name.toLowerCase().includes(q) ||
         (b.description ?? "").toLowerCase().includes(q),
     );
-  }, [bundles, search]);
+  })();
 
   const selected = bundles.find((b) => b.id === selectedId) ?? null;
 
