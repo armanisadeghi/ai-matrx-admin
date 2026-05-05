@@ -1230,6 +1230,48 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     ephemeral: true,
     instanceMode: "multi",
   },
+
+  // ── WhatsApp Demo ─────────────────────────────────────────────────────────
+  {
+    slug: "whatsapp-shell-window",
+    overlayId: "whatsappShellWindow",
+    kind: "window",
+    label: "WhatsApp",
+    defaultData: {
+      userName: null as string | null,
+      userAvatarUrl: null as string | null,
+    },
+    ephemeral: true,
+    mobilePresentation: "fullscreen",
+    instanceMode: "singleton",
+  },
+  {
+    slug: "whatsapp-settings-window",
+    overlayId: "whatsappSettings",
+    kind: "window",
+    label: "WhatsApp Settings",
+    defaultData: {
+      userName: null as string | null,
+      userAvatarUrl: null as string | null,
+      initialNavId: "account",
+    },
+    ephemeral: true,
+    mobilePresentation: "drawer",
+    mobileSidebarAs: "drawer",
+    instanceMode: "singleton",
+  },
+  {
+    slug: "whatsapp-media-window",
+    overlayId: "whatsappMedia",
+    kind: "window",
+    label: "WhatsApp Media",
+    defaultData: {
+      initialTabId: "media",
+    },
+    ephemeral: true,
+    mobilePresentation: "drawer",
+    instanceMode: "singleton",
+  },
 ];
 
 // ─── Lookup maps ──────────────────────────────────────────────────────────────
