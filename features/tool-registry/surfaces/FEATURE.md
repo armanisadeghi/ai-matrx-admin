@@ -100,8 +100,27 @@ to gating against them without admin work, but not activated by default.
   needed since `is_active` already exists). The confirm message warns when
   the surface has tool or agent references.
 
+## v2.1 — full enrichment (2026-05-05 second pass)
+
+After the user-requested "go all in" pass, the page picks up:
+
+- **Per-surface detail drawer** ([SurfaceDetailDrawer.tsx](./components/SurfaceDetailDrawer.tsx)) opens on row name click or chevron. Shows:
+  - Identity edit (active toggle, description edit, **rename**)
+  - "Tools on this surface" — joined `tl_def_surface ⋈ tl_def`, click-through to the tool admin
+  - "Agents visible here" — joined `agx_agent_surface ⋈ agx_agent`
+  - "Custom tool UI components" — `tl_ui` rows scoped to this surface
+- **Rename support** with FK cascade. Backend migration `ui_surface_fk_cascade_on_update` adds `ON UPDATE CASCADE` to the three FKs (`tl_def_surface.surface_name`, `agx_agent_surface.surface_name`, `tl_ui.surface_name`), so renames are a single atomic UPDATE that auto-propagates to all dependent rows.
+- **Bulk delete** in the bulk action bar. The confirm aggregates tool/agent reference counts across all selected rows and warns explicitly that DELETE is non-cascading (FK behavior on delete is `NO ACTION`).
+- **"Add from candidates" dialog** ([SurfaceCandidatesDialog.tsx](./components/SurfaceCandidatesDialog.tsx)) — a curated catalog ([data/surface-candidates.ts](./data/surface-candidates.ts)) of ~70 plausible-but-unseeded surfaces (window-panel overlays, second-tier admin pages, agent embedding widgets, etc.) discovered via codebase inventory. Filter by client / kind / search, multi-select, optionally force-active on insert, bulk insert in a single round-trip.
+- **"New client" dialog** inline (NewClientDialog at the bottom of the page file). Avoids round-tripping to `/admin/lookups` to add a `ui_client`.
+- **Keyboard shortcuts**: `/` focuses the search input; `Esc` closes the open drawer / dialog / clears selection (in that priority order).
+- The candidate-count badge on the "Candidates" button shows how many catalog rows aren't yet seeded — naturally trends to 0 over time.
+
 ## Change Log
 
 - **2026-05-05** — v2 page shipped at `/admin/surfaces`. Backend seed
   expanded to 102 surfaces. Banner added to `/admin/lookups` UI Surfaces
   tab pointing at v2.
+- **2026-05-05 (later)** — v2.1: drawer, rename via FK cascade, bulk
+  delete, candidate inventory dialog, inline client creation, keyboard
+  shortcuts.

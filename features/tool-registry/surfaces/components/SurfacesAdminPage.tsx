@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Loader2,
   Layers,
@@ -15,6 +15,9 @@ import {
   Square,
   Edit2,
   Check,
+  Sparkles,
+  ChevronRight,
+  UserPlus,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,11 +52,16 @@ import {
   createSurface,
   updateSurface,
   bulkSetSurfacesActive,
+  bulkDeleteSurfaces,
+  createUiClient,
   deleteSurface,
   tierFor,
   SURFACE_TIERS,
   type SurfaceWithStats,
 } from "@/features/tool-registry/surfaces/services/surfaces.service";
+import { SurfaceDetailDrawer } from "@/features/tool-registry/surfaces/components/SurfaceDetailDrawer";
+import { SurfaceCandidatesDialog } from "@/features/tool-registry/surfaces/components/SurfaceCandidatesDialog";
+import { SURFACE_CANDIDATES } from "@/features/tool-registry/surfaces/data/surface-candidates";
 
 type StatusFilter = "active" | "inactive" | "all";
 type ClientFilterValue = string; // a client name OR "__all__"
@@ -70,6 +78,10 @@ export function SurfacesAdminPage() {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [creating, setCreating] = useState(false);
+  const [candidatesOpen, setCandidatesOpen] = useState(false);
+  const [newClientOpen, setNewClientOpen] = useState(false);
+  const [openDrawerSurface, setOpenDrawerSurface] = useState<SurfaceWithStats | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     setLoading(true);
@@ -88,6 +100,35 @@ export function SurfacesAdminPage() {
   useEffect(() => {
     void load();
   }, []);
+
+  // Keyboard: "/" focuses search, Escape clears selection or closes overlays.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const inEditable =
+        e.target instanceof HTMLElement &&
+        (e.target.tagName === "INPUT" ||
+          e.target.tagName === "TEXTAREA" ||
+          e.target.isContentEditable);
+      if (e.key === "/" && !inEditable) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      } else if (e.key === "Escape" && !inEditable) {
+        if (openDrawerSurface) setOpenDrawerSurface(null);
+        else if (candidatesOpen) setCandidatesOpen(false);
+        else if (newClientOpen) setNewClientOpen(false);
+        else if (selected.size > 0) setSelected(new Set());
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [openDrawerSurface, candidatesOpen, newClientOpen, selected.size]);
+
+  // If the open drawer's surface gets reloaded, refresh its row reference so
+  // counts/description in the header stay in sync.
+  const drawerSurface =
+    openDrawerSurface && surfaces.find((s) => s.name === openDrawerSurface.name)
+      ? (surfaces.find((s) => s.name === openDrawerSurface.name) as SurfaceWithStats)
+      : openDrawerSurface;
 
   // Apply client + status + search filters
   const visible = surfaces.filter((s) => {
@@ -148,6 +189,36 @@ export function SurfacesAdminPage() {
     }
   };
 
+  const onBulkDelete = async () => {
+    const targets = Array.from(selected);
+    if (targets.length === 0) return;
+    const targetRows = surfaces.filter((s) => selected.has(s.name));
+    const totalTools = targetRows.reduce((sum, r) => sum + r.toolCount, 0);
+    const totalAgents = targetRows.reduce((sum, r) => sum + r.agentCount, 0);
+    const ok = await confirm({
+      title: `Delete ${targets.length} surface${targets.length === 1 ? "" : "s"}?`,
+      description:
+        totalTools + totalAgents > 0
+          ? `Across the selected rows, ${totalTools} tool reference${totalTools === 1 ? "" : "s"} and ${totalAgents} agent reference${totalAgents === 1 ? "" : "s"} exist. The DELETE will FAIL for any surface that's referenced (FKs do NOT cascade on delete). Use Deactivate instead unless you've already cleaned up those references.`
+          : "No tool or agent references — safe to delete.",
+      confirmLabel: "Delete",
+      variant: "destructive",
+    });
+    if (!ok) return;
+    try {
+      await bulkDeleteSurfaces(targets);
+      await load();
+      setSelected(new Set());
+      toast.success(`${targets.length} surface${targets.length === 1 ? "" : "s"} deleted`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Bulk delete failed");
+    }
+  };
+
+  const candidatesAvailable = SURFACE_CANDIDATES.filter(
+    (c) => !surfaces.some((s) => s.name === c.name),
+  ).length;
+
   // Aggregate counts shown in the header chips
   const totalActive = surfaces.filter((s) => s.is_active).length;
   const totalUnused = surfaces.filter((s) => s.toolCount === 0 && s.agentCount === 0).length;
@@ -175,6 +246,32 @@ export function SurfacesAdminPage() {
         >
           <RefreshCw className="h-3.5 w-3.5" />
           Refresh
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setNewClientOpen(true)}
+          className="h-7 gap-1.5 text-xs"
+          title="Create a new ui_client"
+        >
+          <UserPlus className="h-3.5 w-3.5" />
+          New client
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setCandidatesOpen(true)}
+          disabled={candidatesAvailable === 0}
+          className="h-7 gap-1.5 text-xs"
+          title="Add surfaces from the curated candidate inventory"
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          Candidates
+          {candidatesAvailable > 0 && (
+            <Badge variant="default" className="ml-1 text-[10px] px-1 h-4">
+              {candidatesAvailable}
+            </Badge>
+          )}
         </Button>
         <Button size="sm" onClick={() => setCreating(true)} className="h-7 gap-1.5">
           <Plus className="h-3.5 w-3.5" />
@@ -210,9 +307,10 @@ export function SurfacesAdminPage() {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
+            ref={searchInputRef}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name or description…"
+            placeholder="Search by name or description…  ( /  to focus)"
             className="pl-7 h-8 text-xs"
             style={{ fontSize: "16px" }}
           />
@@ -237,6 +335,14 @@ export function SurfacesAdminPage() {
             </Button>
             <Button size="sm" variant="ghost" onClick={() => void onBulkSetActive(false)} className="h-6 text-xs gap-1">
               <ToggleLeft className="h-3.5 w-3.5" /> Deactivate
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => void onBulkDelete()}
+              className="h-6 text-xs gap-1 text-muted-foreground hover:text-destructive"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Delete
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())} className="h-6 text-xs">
               Clear
@@ -302,6 +408,7 @@ export function SurfacesAdminPage() {
                     selected={selected.has(row.name)}
                     onToggleSelect={() => toggleSelect(row.name)}
                     onChanged={() => void load()}
+                    onOpenDetail={() => setOpenDrawerSurface(row)}
                   />
                 ))}
               </div>
@@ -321,6 +428,33 @@ export function SurfacesAdminPage() {
           }}
         />
       )}
+      {candidatesOpen && (
+        <SurfaceCandidatesDialog
+          existingNames={new Set(surfaces.map((s) => s.name))}
+          onClose={() => setCandidatesOpen(false)}
+          onAdded={() => {
+            setCandidatesOpen(false);
+            void load();
+          }}
+        />
+      )}
+      {newClientOpen && (
+        <NewClientDialog
+          existingNames={new Set(clients.map((c) => c.name))}
+          onClose={() => setNewClientOpen(false)}
+          onCreated={() => {
+            setNewClientOpen(false);
+            void load();
+          }}
+        />
+      )}
+      {drawerSurface && (
+        <SurfaceDetailDrawer
+          surface={drawerSurface}
+          onClose={() => setOpenDrawerSurface(null)}
+          onChanged={() => void load()}
+        />
+      )}
     </div>
   );
 }
@@ -330,11 +464,13 @@ function SurfaceRow({
   selected,
   onToggleSelect,
   onChanged,
+  onOpenDetail,
 }: {
   row: SurfaceWithStats;
   selected: boolean;
   onToggleSelect: () => void;
   onChanged: () => void;
+  onOpenDetail: () => void;
 }) {
   const [editingDesc, setEditingDesc] = useState(false);
   const [desc, setDesc] = useState(row.description ?? "");
@@ -397,7 +533,7 @@ function SurfaceRow({
   };
 
   return (
-    <div className={`px-3 py-2 grid grid-cols-[24px_1fr_140px_140px_120px_28px] items-start gap-3 ${row.is_active ? "" : "opacity-50"}`}>
+    <div className={`px-3 py-2 grid grid-cols-[24px_1fr_140px_140px_120px_28px_28px] items-start gap-3 ${row.is_active ? "" : "opacity-50"}`}>
       <button
         onClick={onToggleSelect}
         className="mt-1 text-muted-foreground hover:text-foreground"
@@ -407,7 +543,13 @@ function SurfaceRow({
       </button>
       <div className="min-w-0 space-y-1">
         <div className="flex items-center gap-2 flex-wrap">
-          <code className="font-mono text-xs text-foreground">{row.name}</code>
+          <button
+            onClick={onOpenDetail}
+            className="font-mono text-xs text-foreground hover:text-primary hover:underline text-left"
+            title="Open details"
+          >
+            {row.name}
+          </button>
           <span className="text-[10px] text-muted-foreground tabular-nums">
             sort {row.sort_order}
           </span>
@@ -499,7 +641,112 @@ function SurfaceRow({
       >
         <Trash2 className="h-3.5 w-3.5" />
       </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onOpenDetail}
+        className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+        aria-label="Open surface detail drawer"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </Button>
     </div>
+  );
+}
+
+function NewClientDialog({
+  existingNames,
+  onClose,
+  onCreated,
+}: {
+  existingNames: Set<string>;
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [sortOrder, setSortOrder] = useState(100);
+  const [busy, setBusy] = useState(false);
+
+  const NAME_RE = /^[a-z][a-z0-9-]*$/;
+  const nameValid = NAME_RE.test(name);
+  const nameClash = existingNames.has(name);
+
+  const submit = async () => {
+    if (!nameValid || nameClash) return;
+    setBusy(true);
+    try {
+      await createUiClient({ name, description: description || null, sortOrder });
+      toast.success(`Client ${name} created`);
+      onCreated();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Create failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && !busy && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>New UI client</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs">Name (PK)</Label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value.toLowerCase())}
+              placeholder="e.g. matrx-mobile"
+              className="font-mono text-sm"
+              style={{ fontSize: "16px" }}
+              disabled={busy}
+              autoFocus
+            />
+            {!nameValid && name.length > 0 && (
+              <p className="text-[11px] text-destructive">
+                Lowercase letters, digits, hyphens. Must start with a letter.
+              </p>
+            )}
+            {nameClash && (
+              <p className="text-[11px] text-destructive">
+                Client <code className="font-mono">{name}</code> already exists.
+              </p>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Description</Label>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={2}
+              placeholder="Short description shown to admins"
+              style={{ fontSize: "16px" }}
+              disabled={busy}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Sort order (in client tabs)</Label>
+            <Input
+              type="number"
+              value={sortOrder}
+              onChange={(e) => setSortOrder(Number(e.target.value) || 0)}
+              style={{ fontSize: "16px" }}
+              disabled={busy}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose} disabled={busy}>
+            Cancel
+          </Button>
+          <Button onClick={() => void submit()} disabled={busy || !nameValid || nameClash}>
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Create client"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

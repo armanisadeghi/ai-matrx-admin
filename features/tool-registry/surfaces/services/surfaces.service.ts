@@ -80,6 +80,93 @@ export async function listClientNames(): Promise<{ name: string; description: st
   return data ?? [];
 }
 
+export async function createUiClient(args: {
+  name: string;
+  description: string | null;
+  sortOrder?: number;
+}): Promise<void> {
+  const { error } = await sb().from("ui_client").insert({
+    name: args.name,
+    description: args.description,
+    sort_order: args.sortOrder ?? 100,
+    is_active: true,
+  });
+  if (error) throw error;
+}
+
+export async function bulkCreateSurfaces(rows: UiSurfaceUpsert[]): Promise<void> {
+  if (rows.length === 0) return;
+  const { error } = await sb().from("ui_surface").insert(rows);
+  if (error) throw error;
+}
+
+export async function bulkDeleteSurfaces(names: string[]): Promise<void> {
+  if (names.length === 0) return;
+  const { error } = await sb().from("ui_surface").delete().in("name", names);
+  if (error) throw error;
+}
+
+/**
+ * Renames a surface in place. Backed by ON UPDATE CASCADE on the three FK
+ * targets (tl_def_surface, agx_agent_surface, tl_ui), so any references
+ * follow automatically. Single UPDATE statement.
+ */
+export async function renameSurface(oldName: string, newName: string): Promise<void> {
+  const { error } = await sb()
+    .from("ui_surface")
+    .update({ name: newName })
+    .eq("name", oldName);
+  if (error) throw error;
+}
+
+export interface SurfaceUsage {
+  /** Tools whose tl_def_surface row points at this surface. */
+  tools: { id: string; name: string; description: string; is_active: boolean | null }[];
+  /** Agents whose agx_agent_surface row points at this surface. */
+  agents: { id: string; name: string }[];
+  /** tl_ui rows scoped to this surface (per-tool UI customizations). */
+  uiComponents: { id: string; tool_name: string; display_name: string; is_active: boolean }[];
+}
+
+export async function getSurfaceUsage(surfaceName: string): Promise<SurfaceUsage> {
+  const c = sb();
+  const [toolsRes, agentsRes, uiRes] = await Promise.all([
+    c
+      .from("tl_def_surface")
+      .select("tool:tl_def(id, name, description, is_active)")
+      .eq("surface_name", surfaceName),
+    c
+      .from("agx_agent_surface")
+      .select("agent:agx_agent(id, name)")
+      .eq("surface_name", surfaceName),
+    c
+      .from("tl_ui")
+      .select("id, tool_name, display_name, is_active")
+      .eq("surface_name", surfaceName)
+      .order("tool_name", { ascending: true }),
+  ]);
+  if (toolsRes.error) throw toolsRes.error;
+  if (agentsRes.error) throw agentsRes.error;
+  if (uiRes.error) throw uiRes.error;
+
+  type ToolJoin = {
+    tool: { id: string; name: string; description: string; is_active: boolean | null } | null;
+  };
+  type AgentJoin = { agent: { id: string; name: string } | null };
+
+  return {
+    tools: ((toolsRes.data ?? []) as ToolJoin[])
+      .map((r) => r.tool)
+      .filter((t): t is NonNullable<ToolJoin["tool"]> => t !== null)
+      .sort((a, b) => a.name.localeCompare(b.name)),
+    agents: ((agentsRes.data ?? []) as AgentJoin[])
+      .map((r) => r.agent)
+      .filter((a): a is NonNullable<AgentJoin["agent"]> => a !== null)
+      .sort((a, b) => a.name.localeCompare(b.name)),
+    uiComponents: uiRes.data ?? [],
+  };
+}
+
 export interface SurfaceTier {
   /** Range start, inclusive. */
   min: number;
