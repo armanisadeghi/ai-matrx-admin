@@ -23434,6 +23434,26 @@ export type Database = {
         Args: { p_entity_id: string; p_entity_type: string; p_version: number }
         Returns: Json
       }
+      provision_mcp_server: {
+        Args: {
+          p_auth_strategy: Database["public"]["Enums"]["mcp_auth_strategy"]
+          p_category: Database["public"]["Enums"]["mcp_server_category"]
+          p_color?: string
+          p_description?: string
+          p_docs_url?: string
+          p_endpoint_url?: string
+          p_icon_url?: string
+          p_is_official?: boolean
+          p_name: string
+          p_oauth_scopes?: string[]
+          p_slug: string
+          p_status?: Database["public"]["Enums"]["mcp_server_status"]
+          p_transport: Database["public"]["Enums"]["mcp_transport"]
+          p_vendor: string
+          p_website_url?: string
+        }
+        Returns: Json
+      }
       purge_old_versions: {
         Args: {
           p_entity_id: string

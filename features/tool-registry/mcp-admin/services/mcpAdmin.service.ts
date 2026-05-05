@@ -99,3 +99,66 @@ export async function refreshServer(serverId: string): Promise<void> {
     throw new Error(detail || `Refresh failed (${res.status})`);
   }
 }
+
+export interface ProvisionMcpServerInput {
+  slug: string;
+  name: string;
+  vendor: string;
+  category: Database["public"]["Enums"]["mcp_server_category"];
+  transport: Database["public"]["Enums"]["mcp_transport"];
+  authStrategy: Database["public"]["Enums"]["mcp_auth_strategy"];
+  endpointUrl?: string;
+  description?: string;
+  iconUrl?: string;
+  color?: string;
+  docsUrl?: string;
+  websiteUrl?: string;
+  status?: Database["public"]["Enums"]["mcp_server_status"];
+  isOfficial?: boolean;
+  oauthScopes?: string[];
+}
+
+export interface ProvisionMcpServerResult {
+  server_id: string;
+  server_slug: string;
+  executor_kind: string;
+  bundle_id: string;
+  bundle_name: string;
+  lister_tool_id: string;
+  lister_name: string;
+  next_step: string;
+}
+
+/**
+ * Atomic 5-step MCP provisioning. Inserts:
+ *   1. tl_mcp_server row
+ *   2. paired tl_executor_kind row named `mcp.<slug>`
+ *   3. lister tool in tl_def named `bundle:list_<slug>`
+ *   4. system bundle in tl_bundle named <slug>, lister linked
+ *
+ * Returns IDs of all created rows + the recommended next step
+ * (POST /api/mcp/servers/<id>/refresh to fetch the catalog).
+ */
+export async function provisionMcpServer(
+  input: ProvisionMcpServerInput,
+): Promise<ProvisionMcpServerResult> {
+  const { data, error } = await sb().rpc("provision_mcp_server", {
+    p_slug: input.slug,
+    p_name: input.name,
+    p_vendor: input.vendor,
+    p_category: input.category,
+    p_transport: input.transport,
+    p_auth_strategy: input.authStrategy,
+    p_endpoint_url: input.endpointUrl ?? undefined,
+    p_description: input.description ?? undefined,
+    p_icon_url: input.iconUrl ?? undefined,
+    p_color: input.color ?? undefined,
+    p_docs_url: input.docsUrl ?? undefined,
+    p_website_url: input.websiteUrl ?? undefined,
+    p_status: input.status ?? undefined,
+    p_is_official: input.isOfficial ?? undefined,
+    p_oauth_scopes: input.oauthScopes ?? undefined,
+  });
+  if (error) throw error;
+  return data as unknown as ProvisionMcpServerResult;
+}

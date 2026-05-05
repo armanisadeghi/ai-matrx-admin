@@ -11,6 +11,7 @@ import {
   Clock,
   XCircle,
   ExternalLink,
+  Plus,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ import {
   type McpConfigRow,
   type SyncFreshness,
 } from "@/features/tool-registry/mcp-admin/services/mcpAdmin.service";
+import { AddMcpServerDialog } from "@/features/tool-registry/mcp-admin/components/AddMcpServerDialog";
 
 export function McpServersAdminPage() {
   const [servers, setServers] = useState<McpServerRow[]>([]);
@@ -49,6 +51,7 @@ export function McpServersAdminPage() {
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -96,6 +99,15 @@ export function McpServersAdminPage() {
         >
           <RefreshCw className="h-3.5 w-3.5" />
           Refresh list
+        </Button>
+        <Button
+          size="sm"
+          onClick={() => setAdding(true)}
+          className="h-7 gap-1.5 text-xs"
+          title="Provision a new MCP server (server + executor kind + system bundle + lister tool, atomically)"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Add server
         </Button>
       </div>
       <div className="flex-1 grid grid-cols-1 md:grid-cols-[360px_1fr] min-h-0">
@@ -161,6 +173,16 @@ export function McpServersAdminPage() {
           )}
         </div>
       </div>
+      {adding && (
+        <AddMcpServerDialog
+          existingSlugs={new Set(servers.map((s) => s.slug))}
+          onClose={() => setAdding(false)}
+          onCreated={(slug) => {
+            setAdding(false);
+            void load().then(() => setSelectedSlug(slug));
+          }}
+        />
+      )}
     </div>
   );
 }
