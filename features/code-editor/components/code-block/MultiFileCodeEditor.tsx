@@ -12,8 +12,8 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
-import { AICodeEditorModalV2 } from "@/features/code-editor/components/AICodeEditorModalV2";
-import { ContextAwareCodeEditorModal } from "@/features/code-editor/components/ContextAwareCodeEditorModal";
+import { SmartCodeEditorModal } from "@/features/code-editor/agent-code-editor/components/SmartCodeEditorModal";
+import { agentForPromptKey } from "@/features/code-editor/agent-code-editor/agents";
 import {
   mapLanguageForMonaco,
   getMonacoFileExtension,
@@ -573,34 +573,24 @@ export default function MultiFileCodeEditor({
         )}
       </div>
 
-      {/* AI Code Editor Modal V2 */}
-      {aiModalConfig?.version === "v2" && (
-        <AICodeEditorModalV2
-          open={true}
-          onOpenChange={handleCloseAIModal}
-          currentCode={code}
-          language={monacoLanguage}
-          builtinId={aiModalConfig.builtinId}
-          onCodeChange={handleAICodeChange}
-          title={aiModalConfig.title}
-          allowPromptSelection={false}
-        />
-      )}
-
-      {/* AI Code Editor Modal V3 (Context-Aware) */}
-      {aiModalConfig?.version === "v3" && (
-        <ContextAwareCodeEditorModal
-          open={true}
-          onOpenChange={handleCloseAIModal}
-          code={code}
-          language={monacoLanguage}
-          builtinId={aiModalConfig.builtinId}
-          onCodeChange={(newCode: string, version: number) =>
-            handleAICodeChange(newCode, version)
-          }
-          title={aiModalConfig.title}
-        />
-      )}
+      {/* AI Code Editor Modal — agent-system. v2 (current_code) and v3
+          (dynamic_context) collapse to the same SmartCodeEditorModal; the
+          agent UUID selects which variable receives the code. */}
+      {aiModalConfig && (() => {
+        const agent = agentForPromptKey(aiModalConfig.builtinId);
+        return (
+          <SmartCodeEditorModal
+            open={true}
+            onOpenChange={handleCloseAIModal}
+            agents={[agent]}
+            defaultPickerAgentId={agent.id}
+            initialCode={code}
+            language={monacoLanguage}
+            onCodeChange={handleAICodeChange}
+            title={aiModalConfig.title}
+          />
+        );
+      })()}
     </div>
   );
 }

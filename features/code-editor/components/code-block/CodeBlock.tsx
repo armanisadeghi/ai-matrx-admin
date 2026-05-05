@@ -17,8 +17,8 @@ import {
   vscDarkPlus,
   vs,
 } from "react-syntax-highlighter/dist/cjs/styles/prism";
-import { AICodeEditorModal } from "@/features/code-editor/components/AICodeEditorModal";
-import { ContextAwareCodeEditorModal } from "@/features/code-editor/components/ContextAwareCodeEditorModal";
+import { SmartCodeEditorModal } from "@/features/code-editor/agent-code-editor/components/SmartCodeEditorModal";
+import { agentForPromptKey } from "@/features/code-editor/agent-code-editor/agents";
 import {
   mapLanguageForPrism,
   mapLanguageForMonaco,
@@ -507,36 +507,26 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
           )}
         </div>
 
-        {/* AI Code Editor Modal V2 - Non-Context Aware (using AICodeEditorModal) */}
-        {aiModalConfig?.version === "v2" && (
-          <AICodeEditorModal
-            open={true}
-            onOpenChange={(open) => {
-              if (!open) handleCloseAIModal();
-            }}
-            currentCode={code}
-            language={monacoLanguage}
-            builtinId={aiModalConfig.builtinId}
-            onCodeChange={(newCode) => handleAICodeChange(newCode)}
-            title={aiModalConfig.title}
-            allowPromptSelection={false}
-          />
-        )}
-
-        {/* AI Code Editor Modal V3 (Context-Aware) - KEEP THIS! IT WORKS! */}
-        {aiModalConfig?.version === "v3" && (
-          <ContextAwareCodeEditorModal
-            open={true}
-            onOpenChange={handleCloseAIModal}
-            code={code}
-            language={monacoLanguage}
-            builtinId={aiModalConfig.builtinId}
-            onCodeChange={(newCode: string, version: number) =>
-              handleAICodeChange(newCode, version)
-            }
-            title={aiModalConfig.title}
-          />
-        )}
+        {/* AI Code Editor Modal — agent-system. v2 (current_code) and v3
+            (dynamic_context) collapse to the same SmartCodeEditorModal; the
+            agent UUID selects which variable receives the code. */}
+        {aiModalConfig && (() => {
+          const agent = agentForPromptKey(aiModalConfig.builtinId);
+          return (
+            <SmartCodeEditorModal
+              open={true}
+              onOpenChange={(open) => {
+                if (!open) handleCloseAIModal();
+              }}
+              agents={[agent]}
+              defaultPickerAgentId={agent.id}
+              initialCode={code}
+              language={monacoLanguage}
+              onCodeChange={(newCode) => handleAICodeChange(newCode)}
+              title={aiModalConfig.title}
+            />
+          );
+        })()}
       </div>
     </>
   );

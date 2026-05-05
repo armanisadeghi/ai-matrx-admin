@@ -1071,6 +1071,15 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     ephemeral: true,
   },
   {
+    slug: "quick-chat-window",
+    overlayId: "quickChatWindow",
+    kind: "window",
+    label: "Quick Chat",
+    defaultData: {},
+    mobilePresentation: "fullscreen",
+    ephemeral: true,
+  },
+  {
     slug: "quick-data-sheet",
     overlayId: "quickData",
     kind: "sheet",

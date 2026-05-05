@@ -27,7 +27,8 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
-import { AICodeEditorModal } from "@/features/code-editor/components/AICodeEditorModal";
+import { SmartCodeEditorModal } from "@/features/code-editor/agent-code-editor/components/SmartCodeEditorModal";
+import { PROMPT_APP_AGENT_PICKER } from "@/features/code-editor/agent-code-editor/agents";
 import { getDefaultImportsForNewApps } from "../utils/allowed-imports";
 import getSamplePromptAppCode from "../sample-app-code";
 import { requireUserId } from "@/utils/auth/getUserId";
@@ -628,16 +629,16 @@ export function CreatePromptAppForm({
           </Button>
         </div>
 
-        {/* AI Code Editor Modal */}
-        <AICodeEditorModal
+        {/* AI Code Editor Modal — agent-system replacement of legacy AICodeEditorModal */}
+        <SmartCodeEditorModal
           open={showAIEditor}
           onOpenChange={setShowAIEditor}
-          currentCode={componentCode}
+          agents={PROMPT_APP_AGENT_PICKER}
+          defaultPickerAgentId={PROMPT_APP_AGENT_PICKER[0].id}
+          initialCode={componentCode}
           language="tsx"
-          promptKey="prompt-app-ui-editor"
           onCodeChange={(newCode) => setComponentCode(newCode)}
           title="AI Code Editor"
-          allowPromptSelection={true}
         />
       </form>
     </div>

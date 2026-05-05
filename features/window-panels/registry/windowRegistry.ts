@@ -599,6 +599,12 @@ const DYNAMIC: Record<string, DynamicAddition> = {
         (m) => ({ default: m.QuickChatSheet }),
       ),
   },
+  quickChatWindow: {
+    componentImport: () =>
+      import("@/features/quick-actions/components/QuickChatSheet").then(
+        (m) => ({ default: m.QuickChatSheet }),
+      ),
+  },
   quickData: {
     componentImport: () =>
       import("@/features/quick-actions/components/QuickDataSheet").then(
