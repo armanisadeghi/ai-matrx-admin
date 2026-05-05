@@ -12,7 +12,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.4"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -580,6 +580,143 @@ export type Database = {
           },
         ]
       }
+      agenda_run: {
+        Row: {
+          claim_expires_at: string | null
+          claim_token: string | null
+          claimed_at: string | null
+          conversation_id: string | null
+          created_at: string
+          due_at: string
+          error_message: string | null
+          finished_at: string | null
+          id: string
+          result_metadata: Json | null
+          result_summary: string | null
+          started_at: string | null
+          status: string
+          surface: string | null
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          claim_expires_at?: string | null
+          claim_token?: string | null
+          claimed_at?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          due_at: string
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          result_metadata?: Json | null
+          result_summary?: string | null
+          started_at?: string | null
+          status?: string
+          surface?: string | null
+          task_id: string
+          user_id?: string
+        }
+        Update: {
+          claim_expires_at?: string | null
+          claim_token?: string | null
+          claimed_at?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          due_at?: string
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          result_metadata?: Json | null
+          result_summary?: string | null
+          started_at?: string | null
+          status?: string
+          surface?: string | null
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agenda_run_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "agenda_task"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agenda_task: {
+        Row: {
+          agent_id: string | null
+          auth_mode: string
+          created_at: string
+          description: string | null
+          enabled: boolean
+          expires_at: string | null
+          id: string
+          last_run_at: string | null
+          max_concurrent: number
+          max_runtime_seconds: number
+          next_due_at: string | null
+          persistent_conversation_id: string | null
+          prompt: string
+          surfaces: string[]
+          tags: string[]
+          title: string
+          trigger_config: Json
+          trigger_type: string
+          updated_at: string
+          user_id: string
+          variables: Json
+        }
+        Insert: {
+          agent_id?: string | null
+          auth_mode?: string
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          expires_at?: string | null
+          id?: string
+          last_run_at?: string | null
+          max_concurrent?: number
+          max_runtime_seconds?: number
+          next_due_at?: string | null
+          persistent_conversation_id?: string | null
+          prompt: string
+          surfaces?: string[]
+          tags?: string[]
+          title: string
+          trigger_config?: Json
+          trigger_type: string
+          updated_at?: string
+          user_id?: string
+          variables?: Json
+        }
+        Update: {
+          agent_id?: string | null
+          auth_mode?: string
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          expires_at?: string | null
+          id?: string
+          last_run_at?: string | null
+          max_concurrent?: number
+          max_runtime_seconds?: number
+          next_due_at?: string | null
+          persistent_conversation_id?: string | null
+          prompt?: string
+          surfaces?: string[]
+          tags?: string[]
+          title?: string
+          trigger_config?: Json
+          trigger_type?: string
+          updated_at?: string
+          user_id?: string
+          variables?: Json
+        }
+        Relationships: []
+      }
       agx_agent: {
         Row: {
           agent_type: string
@@ -721,6 +858,39 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "ctx_tasks"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      agx_agent_surface: {
+        Row: {
+          agent_id: string
+          created_at: string
+          surface_name: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          surface_name: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          surface_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agx_agent_surface_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agx_agent"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agx_agent_surface_surface_name_fkey"
+            columns: ["surface_name"]
+            isOneToOne: false
+            referencedRelation: "ui_surface"
+            referencedColumns: ["name"]
           },
         ]
       }
@@ -6413,7 +6583,7 @@ export type Database = {
         }
         Relationships: []
       }
-      cx_tool_call: {
+      cx_tl_call: {
         Row: {
           arguments: Json
           call_id: string
@@ -6449,6 +6619,7 @@ export type Database = {
           status: string
           success: boolean
           tool_name: string
+          tool_name_as_called: string | null
           tool_type: string
           total_tokens: number | null
           user_id: string
@@ -6489,6 +6660,7 @@ export type Database = {
           status?: string
           success?: boolean
           tool_name: string
+          tool_name_as_called?: string | null
           tool_type?: string
           total_tokens?: number | null
           user_id: string
@@ -6529,6 +6701,7 @@ export type Database = {
           status?: string
           success?: boolean
           tool_name?: string
+          tool_name_as_called?: string | null
           tool_type?: string
           total_tokens?: number | null
           user_id?: string
@@ -6560,7 +6733,7 @@ export type Database = {
             foreignKeyName: "fk_cx_tool_call_parent"
             columns: ["parent_call_id"]
             isOneToOne: false
-            referencedRelation: "cx_tool_call"
+            referencedRelation: "cx_tl_call"
             referencedColumns: ["id"]
           },
         ]
@@ -8146,296 +8319,6 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
-      }
-      mcp_registry: {
-        Row: {
-          auth_type: string
-          created_at: string
-          db_type: string
-          deployed_at: string | null
-          description: string | null
-          endpoint_url: string | null
-          id: string
-          is_separate_repo: boolean | null
-          language: string
-          metadata: Json | null
-          name: string
-          repo_url: string | null
-          slug: string
-          status: string
-          tier: string
-          updated_at: string
-        }
-        Insert: {
-          auth_type?: string
-          created_at?: string
-          db_type?: string
-          deployed_at?: string | null
-          description?: string | null
-          endpoint_url?: string | null
-          id?: string
-          is_separate_repo?: boolean | null
-          language: string
-          metadata?: Json | null
-          name: string
-          repo_url?: string | null
-          slug: string
-          status?: string
-          tier: string
-          updated_at?: string
-        }
-        Update: {
-          auth_type?: string
-          created_at?: string
-          db_type?: string
-          deployed_at?: string | null
-          description?: string | null
-          endpoint_url?: string | null
-          id?: string
-          is_separate_repo?: boolean | null
-          language?: string
-          metadata?: Json | null
-          name?: string
-          repo_url?: string | null
-          slug?: string
-          status?: string
-          tier?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      mcp_server_configs: {
-        Row: {
-          args: string[]
-          command: string
-          config_type: string
-          created_at: string
-          env_schema: Json
-          id: string
-          is_default: boolean
-          label: string
-          min_node_version: string | null
-          notes: string | null
-          npm_package: string | null
-          pip_package: string | null
-          requires_docker: boolean
-          server_id: string
-          updated_at: string
-        }
-        Insert: {
-          args?: string[]
-          command: string
-          config_type?: string
-          created_at?: string
-          env_schema?: Json
-          id?: string
-          is_default?: boolean
-          label: string
-          min_node_version?: string | null
-          notes?: string | null
-          npm_package?: string | null
-          pip_package?: string | null
-          requires_docker?: boolean
-          server_id: string
-          updated_at?: string
-        }
-        Update: {
-          args?: string[]
-          command?: string
-          config_type?: string
-          created_at?: string
-          env_schema?: Json
-          id?: string
-          is_default?: boolean
-          label?: string
-          min_node_version?: string | null
-          notes?: string | null
-          npm_package?: string | null
-          pip_package?: string | null
-          requires_docker?: boolean
-          server_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mcp_server_configs_server_id_fkey"
-            columns: ["server_id"]
-            isOneToOne: false
-            referencedRelation: "mcp_servers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      mcp_servers: {
-        Row: {
-          auth_strategy: Database["public"]["Enums"]["mcp_auth_strategy"]
-          category: Database["public"]["Enums"]["mcp_server_category"]
-          color: string | null
-          created_at: string
-          description: string | null
-          docs_url: string | null
-          endpoint_url: string | null
-          has_local: boolean
-          has_remote: boolean
-          icon_url: string | null
-          id: string
-          is_featured: boolean
-          is_official: boolean
-          metadata: Json
-          name: string
-          oauth_client_id: string | null
-          oauth_scopes: string[] | null
-          slug: string
-          sort_order: number
-          status: Database["public"]["Enums"]["mcp_server_status"]
-          supports_mcp_apps: boolean
-          transport: Database["public"]["Enums"]["mcp_transport"]
-          updated_at: string
-          vendor: string
-          website_url: string | null
-        }
-        Insert: {
-          auth_strategy?: Database["public"]["Enums"]["mcp_auth_strategy"]
-          category?: Database["public"]["Enums"]["mcp_server_category"]
-          color?: string | null
-          created_at?: string
-          description?: string | null
-          docs_url?: string | null
-          endpoint_url?: string | null
-          has_local?: boolean
-          has_remote?: boolean
-          icon_url?: string | null
-          id?: string
-          is_featured?: boolean
-          is_official?: boolean
-          metadata?: Json
-          name: string
-          oauth_client_id?: string | null
-          oauth_scopes?: string[] | null
-          slug: string
-          sort_order?: number
-          status?: Database["public"]["Enums"]["mcp_server_status"]
-          supports_mcp_apps?: boolean
-          transport?: Database["public"]["Enums"]["mcp_transport"]
-          updated_at?: string
-          vendor: string
-          website_url?: string | null
-        }
-        Update: {
-          auth_strategy?: Database["public"]["Enums"]["mcp_auth_strategy"]
-          category?: Database["public"]["Enums"]["mcp_server_category"]
-          color?: string | null
-          created_at?: string
-          description?: string | null
-          docs_url?: string | null
-          endpoint_url?: string | null
-          has_local?: boolean
-          has_remote?: boolean
-          icon_url?: string | null
-          id?: string
-          is_featured?: boolean
-          is_official?: boolean
-          metadata?: Json
-          name?: string
-          oauth_client_id?: string | null
-          oauth_scopes?: string[] | null
-          slug?: string
-          sort_order?: number
-          status?: Database["public"]["Enums"]["mcp_server_status"]
-          supports_mcp_apps?: boolean
-          transport?: Database["public"]["Enums"]["mcp_transport"]
-          updated_at?: string
-          vendor?: string
-          website_url?: string | null
-        }
-        Relationships: []
-      }
-      mcp_user_connections: {
-        Row: {
-          access_token_encrypted: string | null
-          config_id: string | null
-          connected_at: string | null
-          created_at: string
-          credentials_encrypted: string | null
-          endpoint_url_override: string | null
-          error_count: number
-          id: string
-          last_error: string | null
-          last_used_at: string | null
-          metadata: Json
-          oauth_client_id: string | null
-          oauth_scopes_granted: string[] | null
-          oauth_token_endpoint: string | null
-          refresh_token_encrypted: string | null
-          server_id: string
-          status: Database["public"]["Enums"]["mcp_connection_status"]
-          token_expires_at: string | null
-          transport_used: Database["public"]["Enums"]["mcp_transport"]
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          access_token_encrypted?: string | null
-          config_id?: string | null
-          connected_at?: string | null
-          created_at?: string
-          credentials_encrypted?: string | null
-          endpoint_url_override?: string | null
-          error_count?: number
-          id?: string
-          last_error?: string | null
-          last_used_at?: string | null
-          metadata?: Json
-          oauth_client_id?: string | null
-          oauth_scopes_granted?: string[] | null
-          oauth_token_endpoint?: string | null
-          refresh_token_encrypted?: string | null
-          server_id: string
-          status?: Database["public"]["Enums"]["mcp_connection_status"]
-          token_expires_at?: string | null
-          transport_used?: Database["public"]["Enums"]["mcp_transport"]
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          access_token_encrypted?: string | null
-          config_id?: string | null
-          connected_at?: string | null
-          created_at?: string
-          credentials_encrypted?: string | null
-          endpoint_url_override?: string | null
-          error_count?: number
-          id?: string
-          last_error?: string | null
-          last_used_at?: string | null
-          metadata?: Json
-          oauth_client_id?: string | null
-          oauth_scopes_granted?: string[] | null
-          oauth_token_endpoint?: string | null
-          refresh_token_encrypted?: string | null
-          server_id?: string
-          status?: Database["public"]["Enums"]["mcp_connection_status"]
-          token_expires_at?: string | null
-          transport_used?: Database["public"]["Enums"]["mcp_transport"]
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mcp_user_connections_config_id_fkey"
-            columns: ["config_id"]
-            isOneToOne: false
-            referencedRelation: "mcp_server_configs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "mcp_user_connections_server_id_fkey"
-            columns: ["server_id"]
-            isOneToOne: false
-            referencedRelation: "mcp_servers"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       message: {
         Row: {
@@ -15574,7 +15457,658 @@ export type Database = {
           },
         ]
       }
-      tool_test_samples: {
+      tl_bundle: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          is_active: boolean
+          is_system: boolean
+          lister_tool_id: string | null
+          metadata: Json
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          lister_tool_id?: string | null
+          metadata?: Json
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          lister_tool_id?: string | null
+          metadata?: Json
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tl_bundle_lister_tool_id_fkey"
+            columns: ["lister_tool_id"]
+            isOneToOne: false
+            referencedRelation: "tl_def"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tl_bundle_member: {
+        Row: {
+          bundle_id: string
+          created_at: string
+          local_alias: string
+          sort_order: number
+          tool_id: string
+        }
+        Insert: {
+          bundle_id: string
+          created_at?: string
+          local_alias: string
+          sort_order?: number
+          tool_id: string
+        }
+        Update: {
+          bundle_id?: string
+          created_at?: string
+          local_alias?: string
+          sort_order?: number
+          tool_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tl_bundle_member_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "tl_bundle"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tl_bundle_member_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tl_def"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tl_def: {
+        Row: {
+          admin_only: boolean
+          annotations: Json | null
+          category: string | null
+          created_at: string | null
+          deactivated_at: string | null
+          dedupe_exempt: boolean
+          description: string
+          function_path: string
+          gating: Json
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          max_client_wait_seconds: number | null
+          name: string
+          output_schema: Json | null
+          parameters: Json
+          privileged: boolean
+          semver: string | null
+          source_app: string
+          tags: string[] | null
+          tier: string | null
+          tool_group: string
+          updated_at: string | null
+          version: number
+        }
+        Insert: {
+          admin_only?: boolean
+          annotations?: Json | null
+          category?: string | null
+          created_at?: string | null
+          deactivated_at?: string | null
+          dedupe_exempt?: boolean
+          description: string
+          function_path: string
+          gating?: Json
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_client_wait_seconds?: number | null
+          name: string
+          output_schema?: Json | null
+          parameters: Json
+          privileged?: boolean
+          semver?: string | null
+          source_app?: string
+          tags?: string[] | null
+          tier?: string | null
+          tool_group?: string
+          updated_at?: string | null
+          version?: number
+        }
+        Update: {
+          admin_only?: boolean
+          annotations?: Json | null
+          category?: string | null
+          created_at?: string | null
+          deactivated_at?: string | null
+          dedupe_exempt?: boolean
+          description?: string
+          function_path?: string
+          gating?: Json
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_client_wait_seconds?: number | null
+          name?: string
+          output_schema?: Json | null
+          parameters?: Json
+          privileged?: boolean
+          semver?: string | null
+          source_app?: string
+          tags?: string[] | null
+          tier?: string | null
+          tool_group?: string
+          updated_at?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
+      tl_def_surface: {
+        Row: {
+          created_at: string
+          surface_name: string
+          tool_id: string
+        }
+        Insert: {
+          created_at?: string
+          surface_name: string
+          tool_id: string
+        }
+        Update: {
+          created_at?: string
+          surface_name?: string
+          tool_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tl_def_surface_surface_name_fkey"
+            columns: ["surface_name"]
+            isOneToOne: false
+            referencedRelation: "ui_surface"
+            referencedColumns: ["name"]
+          },
+          {
+            foreignKeyName: "tl_def_surface_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tl_def"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tl_def_version: {
+        Row: {
+          annotations: Json | null
+          category: string | null
+          change_note: string | null
+          changed_at: string
+          description: string | null
+          function_path: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string | null
+          output_schema: Json | null
+          parameters: Json | null
+          semver: string | null
+          source_app: string | null
+          tags: string[] | null
+          tool_id: string
+          version_number: number
+        }
+        Insert: {
+          annotations?: Json | null
+          category?: string | null
+          change_note?: string | null
+          changed_at?: string
+          description?: string | null
+          function_path?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string | null
+          output_schema?: Json | null
+          parameters?: Json | null
+          semver?: string | null
+          source_app?: string | null
+          tags?: string[] | null
+          tool_id: string
+          version_number: number
+        }
+        Update: {
+          annotations?: Json | null
+          category?: string | null
+          change_note?: string | null
+          changed_at?: string
+          description?: string | null
+          function_path?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string | null
+          output_schema?: Json | null
+          parameters?: Json | null
+          semver?: string | null
+          source_app?: string | null
+          tags?: string[] | null
+          tool_id?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_versions_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tl_def"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tl_executor: {
+        Row: {
+          auto_load: boolean
+          created_at: string
+          delegated: boolean
+          function_path: string | null
+          id: string
+          is_active: boolean
+          priority: number
+          source_app: string | null
+          surface: string
+          tool_id: string
+          updated_at: string
+        }
+        Insert: {
+          auto_load?: boolean
+          created_at?: string
+          delegated?: boolean
+          function_path?: string | null
+          id?: string
+          is_active?: boolean
+          priority?: number
+          source_app?: string | null
+          surface: string
+          tool_id: string
+          updated_at?: string
+        }
+        Update: {
+          auto_load?: boolean
+          created_at?: string
+          delegated?: boolean
+          function_path?: string | null
+          id?: string
+          is_active?: boolean
+          priority?: number
+          source_app?: string | null
+          surface?: string
+          tool_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_handlers_surface_fkey"
+            columns: ["surface"]
+            isOneToOne: false
+            referencedRelation: "tl_executor_kind"
+            referencedColumns: ["name"]
+          },
+          {
+            foreignKeyName: "tool_handlers_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tl_def"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tl_executor_kind: {
+        Row: {
+          config: Json
+          created_at: string
+          description: string
+          is_active: boolean
+          is_client_side: boolean
+          name: string
+          payload_schema: Json
+          payload_validator_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          description?: string
+          is_active?: boolean
+          is_client_side: boolean
+          name: string
+          payload_schema?: Json
+          payload_validator_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          description?: string
+          is_active?: boolean
+          is_client_side?: boolean
+          name?: string
+          payload_schema?: Json
+          payload_validator_path?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tl_gate: {
+        Row: {
+          applies_to: string[]
+          arg_schema: Json
+          created_at: string
+          description: string
+          function_path: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          applies_to?: string[]
+          arg_schema?: Json
+          created_at?: string
+          description?: string
+          function_path: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          applies_to?: string[]
+          arg_schema?: Json
+          created_at?: string
+          description?: string
+          function_path?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tl_mcp_config: {
+        Row: {
+          args: string[]
+          command: string
+          config_type: string
+          created_at: string
+          env_schema: Json
+          id: string
+          is_default: boolean
+          label: string
+          min_node_version: string | null
+          notes: string | null
+          npm_package: string | null
+          pip_package: string | null
+          requires_docker: boolean
+          server_id: string
+          updated_at: string
+        }
+        Insert: {
+          args?: string[]
+          command: string
+          config_type?: string
+          created_at?: string
+          env_schema?: Json
+          id?: string
+          is_default?: boolean
+          label: string
+          min_node_version?: string | null
+          notes?: string | null
+          npm_package?: string | null
+          pip_package?: string | null
+          requires_docker?: boolean
+          server_id: string
+          updated_at?: string
+        }
+        Update: {
+          args?: string[]
+          command?: string
+          config_type?: string
+          created_at?: string
+          env_schema?: Json
+          id?: string
+          is_default?: boolean
+          label?: string
+          min_node_version?: string | null
+          notes?: string | null
+          npm_package?: string | null
+          pip_package?: string | null
+          requires_docker?: boolean
+          server_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mcp_server_configs_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "tl_mcp_server"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tl_mcp_server: {
+        Row: {
+          auth_strategy: Database["public"]["Enums"]["mcp_auth_strategy"]
+          category: Database["public"]["Enums"]["mcp_server_category"]
+          color: string | null
+          created_at: string
+          description: string | null
+          discovery_ttl_seconds: number
+          docs_url: string | null
+          endpoint_url: string | null
+          has_local: boolean
+          has_remote: boolean
+          icon_url: string | null
+          id: string
+          is_featured: boolean
+          is_official: boolean
+          last_sync_error: string | null
+          last_synced_at: string | null
+          last_test_error: string | null
+          last_test_latency_ms: number | null
+          last_test_ok: boolean | null
+          last_test_status_code: number | null
+          last_tested_at: string | null
+          metadata: Json
+          name: string
+          oauth_client_id: string | null
+          oauth_scopes: string[] | null
+          slug: string
+          sort_order: number
+          status: Database["public"]["Enums"]["mcp_server_status"]
+          supports_mcp_apps: boolean
+          transport: Database["public"]["Enums"]["mcp_transport"]
+          updated_at: string
+          vendor: string
+          website_url: string | null
+        }
+        Insert: {
+          auth_strategy?: Database["public"]["Enums"]["mcp_auth_strategy"]
+          category?: Database["public"]["Enums"]["mcp_server_category"]
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          discovery_ttl_seconds?: number
+          docs_url?: string | null
+          endpoint_url?: string | null
+          has_local?: boolean
+          has_remote?: boolean
+          icon_url?: string | null
+          id?: string
+          is_featured?: boolean
+          is_official?: boolean
+          last_sync_error?: string | null
+          last_synced_at?: string | null
+          last_test_error?: string | null
+          last_test_latency_ms?: number | null
+          last_test_ok?: boolean | null
+          last_test_status_code?: number | null
+          last_tested_at?: string | null
+          metadata?: Json
+          name: string
+          oauth_client_id?: string | null
+          oauth_scopes?: string[] | null
+          slug: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["mcp_server_status"]
+          supports_mcp_apps?: boolean
+          transport?: Database["public"]["Enums"]["mcp_transport"]
+          updated_at?: string
+          vendor: string
+          website_url?: string | null
+        }
+        Update: {
+          auth_strategy?: Database["public"]["Enums"]["mcp_auth_strategy"]
+          category?: Database["public"]["Enums"]["mcp_server_category"]
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          discovery_ttl_seconds?: number
+          docs_url?: string | null
+          endpoint_url?: string | null
+          has_local?: boolean
+          has_remote?: boolean
+          icon_url?: string | null
+          id?: string
+          is_featured?: boolean
+          is_official?: boolean
+          last_sync_error?: string | null
+          last_synced_at?: string | null
+          last_test_error?: string | null
+          last_test_latency_ms?: number | null
+          last_test_ok?: boolean | null
+          last_test_status_code?: number | null
+          last_tested_at?: string | null
+          metadata?: Json
+          name?: string
+          oauth_client_id?: string | null
+          oauth_scopes?: string[] | null
+          slug?: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["mcp_server_status"]
+          supports_mcp_apps?: boolean
+          transport?: Database["public"]["Enums"]["mcp_transport"]
+          updated_at?: string
+          vendor?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      tl_mcp_user_conn: {
+        Row: {
+          access_token_encrypted: string | null
+          config_id: string | null
+          connected_at: string | null
+          created_at: string
+          credentials_encrypted: string | null
+          endpoint_url_override: string | null
+          error_count: number
+          id: string
+          last_error: string | null
+          last_used_at: string | null
+          metadata: Json
+          oauth_client_id: string | null
+          oauth_scopes_granted: string[] | null
+          oauth_token_endpoint: string | null
+          refresh_token_encrypted: string | null
+          server_id: string
+          status: Database["public"]["Enums"]["mcp_connection_status"]
+          token_expires_at: string | null
+          transport_used: Database["public"]["Enums"]["mcp_transport"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token_encrypted?: string | null
+          config_id?: string | null
+          connected_at?: string | null
+          created_at?: string
+          credentials_encrypted?: string | null
+          endpoint_url_override?: string | null
+          error_count?: number
+          id?: string
+          last_error?: string | null
+          last_used_at?: string | null
+          metadata?: Json
+          oauth_client_id?: string | null
+          oauth_scopes_granted?: string[] | null
+          oauth_token_endpoint?: string | null
+          refresh_token_encrypted?: string | null
+          server_id: string
+          status?: Database["public"]["Enums"]["mcp_connection_status"]
+          token_expires_at?: string | null
+          transport_used?: Database["public"]["Enums"]["mcp_transport"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token_encrypted?: string | null
+          config_id?: string | null
+          connected_at?: string | null
+          created_at?: string
+          credentials_encrypted?: string | null
+          endpoint_url_override?: string | null
+          error_count?: number
+          id?: string
+          last_error?: string | null
+          last_used_at?: string | null
+          metadata?: Json
+          oauth_client_id?: string | null
+          oauth_scopes_granted?: string[] | null
+          oauth_token_endpoint?: string | null
+          refresh_token_encrypted?: string | null
+          server_id?: string
+          status?: Database["public"]["Enums"]["mcp_connection_status"]
+          token_expires_at?: string | null
+          transport_used?: Database["public"]["Enums"]["mcp_transport"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mcp_user_connections_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: false
+            referencedRelation: "tl_mcp_config"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mcp_user_connections_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "tl_mcp_server"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tl_test_sample: {
         Row: {
           admin_comments: string | null
           arguments: Json
@@ -15622,12 +16156,167 @@ export type Database = {
             foreignKeyName: "tool_test_samples_tool_id_fkey"
             columns: ["tool_id"]
             isOneToOne: false
-            referencedRelation: "tools"
+            referencedRelation: "tl_def"
             referencedColumns: ["id"]
           },
         ]
       }
-      tool_ui_component_versions: {
+      tl_ui: {
+        Row: {
+          allowed_imports: string[]
+          contract_version: number
+          created_at: string
+          created_by: string | null
+          display_name: string
+          header_extras_code: string | null
+          header_subtitle_code: string | null
+          id: string
+          inline_code: string
+          is_active: boolean
+          keep_expanded_on_stream: boolean
+          language: string
+          notes: string | null
+          overlay_code: string | null
+          results_label: string | null
+          semver: string
+          surface_name: string
+          tool_id: string | null
+          tool_name: string
+          updated_at: string
+          utility_code: string | null
+          version: number
+        }
+        Insert: {
+          allowed_imports?: string[]
+          contract_version?: number
+          created_at?: string
+          created_by?: string | null
+          display_name: string
+          header_extras_code?: string | null
+          header_subtitle_code?: string | null
+          id?: string
+          inline_code: string
+          is_active?: boolean
+          keep_expanded_on_stream?: boolean
+          language?: string
+          notes?: string | null
+          overlay_code?: string | null
+          results_label?: string | null
+          semver?: string
+          surface_name: string
+          tool_id?: string | null
+          tool_name: string
+          updated_at?: string
+          utility_code?: string | null
+          version?: number
+        }
+        Update: {
+          allowed_imports?: string[]
+          contract_version?: number
+          created_at?: string
+          created_by?: string | null
+          display_name?: string
+          header_extras_code?: string | null
+          header_subtitle_code?: string | null
+          id?: string
+          inline_code?: string
+          is_active?: boolean
+          keep_expanded_on_stream?: boolean
+          language?: string
+          notes?: string | null
+          overlay_code?: string | null
+          results_label?: string | null
+          semver?: string
+          surface_name?: string
+          tool_id?: string | null
+          tool_name?: string
+          updated_at?: string
+          utility_code?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_ui_components_surface_name_fkey"
+            columns: ["surface_name"]
+            isOneToOne: false
+            referencedRelation: "ui_surface"
+            referencedColumns: ["name"]
+          },
+          {
+            foreignKeyName: "tool_ui_components_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tl_def"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tl_ui_incident: {
+        Row: {
+          browser_info: string | null
+          component_id: string | null
+          component_type: string
+          component_version: string | null
+          created_at: string
+          error_message: string
+          error_stack: string | null
+          error_type: string
+          id: string
+          resolution_notes: string | null
+          resolved: boolean
+          resolved_at: string | null
+          resolved_by: string | null
+          session_id: string | null
+          tool_name: string
+          tool_update_snapshot: Json | null
+        }
+        Insert: {
+          browser_info?: string | null
+          component_id?: string | null
+          component_type: string
+          component_version?: string | null
+          created_at?: string
+          error_message: string
+          error_stack?: string | null
+          error_type: string
+          id?: string
+          resolution_notes?: string | null
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          session_id?: string | null
+          tool_name: string
+          tool_update_snapshot?: Json | null
+        }
+        Update: {
+          browser_info?: string | null
+          component_id?: string | null
+          component_type?: string
+          component_version?: string | null
+          created_at?: string
+          error_message?: string
+          error_stack?: string | null
+          error_type?: string
+          id?: string
+          resolution_notes?: string | null
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          session_id?: string | null
+          tool_name?: string
+          tool_update_snapshot?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_ui_incidents_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "tl_ui"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tl_ui_version: {
         Row: {
           allowed_imports: string[] | null
           change_note: string | null
@@ -15699,283 +16388,10 @@ export type Database = {
             foreignKeyName: "tool_ui_component_versions_component_id_fkey"
             columns: ["component_id"]
             isOneToOne: false
-            referencedRelation: "tool_ui_components"
+            referencedRelation: "tl_ui"
             referencedColumns: ["id"]
           },
         ]
-      }
-      tool_ui_components: {
-        Row: {
-          allowed_imports: string[]
-          contract_version: number
-          created_at: string
-          created_by: string | null
-          display_name: string
-          header_extras_code: string | null
-          header_subtitle_code: string | null
-          id: string
-          inline_code: string
-          is_active: boolean
-          keep_expanded_on_stream: boolean
-          language: string
-          notes: string | null
-          overlay_code: string | null
-          results_label: string | null
-          semver: string
-          tool_id: string | null
-          tool_name: string
-          updated_at: string
-          utility_code: string | null
-          version: number
-        }
-        Insert: {
-          allowed_imports?: string[]
-          contract_version?: number
-          created_at?: string
-          created_by?: string | null
-          display_name: string
-          header_extras_code?: string | null
-          header_subtitle_code?: string | null
-          id?: string
-          inline_code: string
-          is_active?: boolean
-          keep_expanded_on_stream?: boolean
-          language?: string
-          notes?: string | null
-          overlay_code?: string | null
-          results_label?: string | null
-          semver?: string
-          tool_id?: string | null
-          tool_name: string
-          updated_at?: string
-          utility_code?: string | null
-          version?: number
-        }
-        Update: {
-          allowed_imports?: string[]
-          contract_version?: number
-          created_at?: string
-          created_by?: string | null
-          display_name?: string
-          header_extras_code?: string | null
-          header_subtitle_code?: string | null
-          id?: string
-          inline_code?: string
-          is_active?: boolean
-          keep_expanded_on_stream?: boolean
-          language?: string
-          notes?: string | null
-          overlay_code?: string | null
-          results_label?: string | null
-          semver?: string
-          tool_id?: string | null
-          tool_name?: string
-          updated_at?: string
-          utility_code?: string | null
-          version?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tool_ui_components_tool_id_fkey"
-            columns: ["tool_id"]
-            isOneToOne: false
-            referencedRelation: "tools"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tool_ui_incidents: {
-        Row: {
-          browser_info: string | null
-          component_id: string | null
-          component_type: string
-          component_version: string | null
-          created_at: string
-          error_message: string
-          error_stack: string | null
-          error_type: string
-          id: string
-          resolution_notes: string | null
-          resolved: boolean
-          resolved_at: string | null
-          resolved_by: string | null
-          session_id: string | null
-          tool_name: string
-          tool_update_snapshot: Json | null
-        }
-        Insert: {
-          browser_info?: string | null
-          component_id?: string | null
-          component_type: string
-          component_version?: string | null
-          created_at?: string
-          error_message: string
-          error_stack?: string | null
-          error_type: string
-          id?: string
-          resolution_notes?: string | null
-          resolved?: boolean
-          resolved_at?: string | null
-          resolved_by?: string | null
-          session_id?: string | null
-          tool_name: string
-          tool_update_snapshot?: Json | null
-        }
-        Update: {
-          browser_info?: string | null
-          component_id?: string | null
-          component_type?: string
-          component_version?: string | null
-          created_at?: string
-          error_message?: string
-          error_stack?: string | null
-          error_type?: string
-          id?: string
-          resolution_notes?: string | null
-          resolved?: boolean
-          resolved_at?: string | null
-          resolved_by?: string | null
-          session_id?: string | null
-          tool_name?: string
-          tool_update_snapshot?: Json | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tool_ui_incidents_component_id_fkey"
-            columns: ["component_id"]
-            isOneToOne: false
-            referencedRelation: "tool_ui_components"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tool_versions: {
-        Row: {
-          annotations: Json | null
-          category: string | null
-          change_note: string | null
-          changed_at: string
-          description: string | null
-          function_path: string | null
-          icon: string | null
-          id: string
-          is_active: boolean | null
-          name: string | null
-          output_schema: Json | null
-          parameters: Json | null
-          semver: string | null
-          source_app: string | null
-          tags: string[] | null
-          tool_id: string
-          version_number: number
-        }
-        Insert: {
-          annotations?: Json | null
-          category?: string | null
-          change_note?: string | null
-          changed_at?: string
-          description?: string | null
-          function_path?: string | null
-          icon?: string | null
-          id?: string
-          is_active?: boolean | null
-          name?: string | null
-          output_schema?: Json | null
-          parameters?: Json | null
-          semver?: string | null
-          source_app?: string | null
-          tags?: string[] | null
-          tool_id: string
-          version_number: number
-        }
-        Update: {
-          annotations?: Json | null
-          category?: string | null
-          change_note?: string | null
-          changed_at?: string
-          description?: string | null
-          function_path?: string | null
-          icon?: string | null
-          id?: string
-          is_active?: boolean | null
-          name?: string | null
-          output_schema?: Json | null
-          parameters?: Json | null
-          semver?: string | null
-          source_app?: string | null
-          tags?: string[] | null
-          tool_id?: string
-          version_number?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tool_versions_tool_id_fkey"
-            columns: ["tool_id"]
-            isOneToOne: false
-            referencedRelation: "tools"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tools: {
-        Row: {
-          annotations: Json | null
-          category: string | null
-          created_at: string | null
-          description: string
-          function_path: string
-          icon: string | null
-          id: string
-          is_active: boolean | null
-          max_client_wait_seconds: number | null
-          name: string
-          output_schema: Json | null
-          parameters: Json
-          semver: string | null
-          source_app: string
-          tags: string[] | null
-          updated_at: string | null
-          version: number
-        }
-        Insert: {
-          annotations?: Json | null
-          category?: string | null
-          created_at?: string | null
-          description: string
-          function_path: string
-          icon?: string | null
-          id?: string
-          is_active?: boolean | null
-          max_client_wait_seconds?: number | null
-          name: string
-          output_schema?: Json | null
-          parameters: Json
-          semver?: string | null
-          source_app?: string
-          tags?: string[] | null
-          updated_at?: string | null
-          version?: number
-        }
-        Update: {
-          annotations?: Json | null
-          category?: string | null
-          created_at?: string | null
-          description?: string
-          function_path?: string
-          icon?: string | null
-          id?: string
-          is_active?: boolean | null
-          max_client_wait_seconds?: number | null
-          name?: string
-          output_schema?: Json | null
-          parameters?: Json
-          semver?: string | null
-          source_app?: string
-          tags?: string[] | null
-          updated_at?: string | null
-          version?: number
-        }
-        Relationships: []
       }
       transcripts: {
         Row: {
@@ -16335,6 +16751,71 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      ui_client: {
+        Row: {
+          created_at: string
+          description: string
+          is_active: boolean
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ui_surface: {
+        Row: {
+          client_name: string
+          created_at: string
+          description: string
+          is_active: boolean
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          client_name: string
+          created_at?: string
+          description?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          client_name?: string
+          created_at?: string
+          description?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ui_surface_client_name_fkey"
+            columns: ["client_name"]
+            isOneToOne: false
+            referencedRelation: "ui_client"
+            referencedColumns: ["name"]
+          },
+        ]
       }
       user_achievements: {
         Row: {
@@ -16749,6 +17230,111 @@ export type Database = {
         }
         Relationships: []
       }
+      user_form_profile: {
+        Row: {
+          billing_city: string | null
+          billing_country: string | null
+          billing_line1: string | null
+          billing_line2: string | null
+          billing_postal_code: string | null
+          billing_region: string | null
+          billing_same_as_shipping: boolean
+          company_name: string | null
+          created_at: string
+          custom_fields: Json
+          date_of_birth: string | null
+          emails: Json
+          emergency_contacts: Json
+          images: Json
+          job_title: string | null
+          legal_first_name: string | null
+          legal_last_name: string | null
+          legal_middle_name: string | null
+          name_suffix: string | null
+          phones: Json
+          preferred_name: string | null
+          pronouns: string | null
+          shipping_city: string | null
+          shipping_country: string | null
+          shipping_line1: string | null
+          shipping_line2: string | null
+          shipping_postal_code: string | null
+          shipping_region: string | null
+          social_handles: Json
+          updated_at: string
+          user_id: string
+          website_url: string | null
+        }
+        Insert: {
+          billing_city?: string | null
+          billing_country?: string | null
+          billing_line1?: string | null
+          billing_line2?: string | null
+          billing_postal_code?: string | null
+          billing_region?: string | null
+          billing_same_as_shipping?: boolean
+          company_name?: string | null
+          created_at?: string
+          custom_fields?: Json
+          date_of_birth?: string | null
+          emails?: Json
+          emergency_contacts?: Json
+          images?: Json
+          job_title?: string | null
+          legal_first_name?: string | null
+          legal_last_name?: string | null
+          legal_middle_name?: string | null
+          name_suffix?: string | null
+          phones?: Json
+          preferred_name?: string | null
+          pronouns?: string | null
+          shipping_city?: string | null
+          shipping_country?: string | null
+          shipping_line1?: string | null
+          shipping_line2?: string | null
+          shipping_postal_code?: string | null
+          shipping_region?: string | null
+          social_handles?: Json
+          updated_at?: string
+          user_id: string
+          website_url?: string | null
+        }
+        Update: {
+          billing_city?: string | null
+          billing_country?: string | null
+          billing_line1?: string | null
+          billing_line2?: string | null
+          billing_postal_code?: string | null
+          billing_region?: string | null
+          billing_same_as_shipping?: boolean
+          company_name?: string | null
+          created_at?: string
+          custom_fields?: Json
+          date_of_birth?: string | null
+          emails?: Json
+          emergency_contacts?: Json
+          images?: Json
+          job_title?: string | null
+          legal_first_name?: string | null
+          legal_last_name?: string | null
+          legal_middle_name?: string | null
+          name_suffix?: string | null
+          phones?: Json
+          preferred_name?: string | null
+          pronouns?: string | null
+          shipping_city?: string | null
+          shipping_country?: string | null
+          shipping_line1?: string | null
+          shipping_line2?: string | null
+          shipping_postal_code?: string | null
+          shipping_region?: string | null
+          social_handles?: Json
+          updated_at?: string
+          user_id?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       user_preferences: {
         Row: {
           created_at: string
@@ -16765,6 +17351,45 @@ export type Database = {
         Update: {
           created_at?: string
           preferences?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_sensitive_items: {
+        Row: {
+          created_at: string
+          id: string
+          is_primary: boolean
+          kind: string
+          label: string | null
+          metadata: Json
+          preview: string | null
+          secret_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          kind: string
+          label?: string | null
+          metadata?: Json
+          preview?: string | null
+          secret_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          kind?: string
+          label?: string | null
+          metadata?: Json
+          preview?: string | null
+          secret_id?: string
           updated_at?: string
           user_id?: string
         }
@@ -20193,6 +20818,16 @@ export type Database = {
         }
         Returns: string
       }
+      create_bundle_with_lister: {
+        Args: {
+          p_bundle_name: string
+          p_description?: string
+          p_is_system?: boolean
+          p_members?: Json
+          p_metadata?: Json
+        }
+        Returns: Json
+      }
       create_component_group: {
         Args: {
           p_description?: string
@@ -20728,6 +21363,7 @@ export type Database = {
       }
       delete_scope: { Args: { p_scope_id: string }; Returns: Json }
       delete_scope_type: { Args: { p_type_id: string }; Returns: Json }
+      delete_sensitive_item: { Args: { p_item_id: string }; Returns: boolean }
       delete_unused_message_templates: {
         Args: never
         Returns: {
@@ -22384,6 +23020,7 @@ export type Database = {
         Args: { p_org_id: string; p_type_id?: string }
         Returns: Json
       }
+      get_sensitive_item_value: { Args: { p_item_id: string }; Returns: string }
       get_ssr_agent_shell_data: { Args: { p_user_id: string }; Returns: Json }
       get_ssr_shell_data: { Args: { p_user_id: string }; Returns: Json }
       get_storage_object: {
@@ -22535,6 +23172,7 @@ export type Database = {
           view_count: number
         }[]
       }
+      get_user_form_context: { Args: { p_user_id: string }; Returns: Json }
       get_user_full_context: { Args: { p_user_id?: string }; Returns: Json }
       get_user_hierarchy: { Args: never; Returns: Json }
       get_user_list_with_items: { Args: { p_list_id: string }; Returns: Json }
@@ -22809,6 +23447,26 @@ export type Database = {
       }
       promote_version: {
         Args: { p_entity_id: string; p_entity_type: string; p_version: number }
+        Returns: Json
+      }
+      provision_mcp_server: {
+        Args: {
+          p_auth_strategy: Database["public"]["Enums"]["mcp_auth_strategy"]
+          p_category: Database["public"]["Enums"]["mcp_server_category"]
+          p_color?: string
+          p_description?: string
+          p_docs_url?: string
+          p_endpoint_url?: string
+          p_icon_url?: string
+          p_is_official?: boolean
+          p_name: string
+          p_oauth_scopes?: string[]
+          p_slug: string
+          p_status?: Database["public"]["Enums"]["mcp_server_status"]
+          p_transport: Database["public"]["Enums"]["mcp_transport"]
+          p_vendor: string
+          p_website_url?: string
+        }
         Returns: Json
       }
       purge_old_versions: {
@@ -23174,6 +23832,18 @@ export type Database = {
           p_scope_ids: string[]
         }
         Returns: Json
+      }
+      set_sensitive_item: {
+        Args: {
+          p_full_value: string
+          p_is_primary?: boolean
+          p_item_id?: string
+          p_kind: string
+          p_label: string
+          p_metadata?: Json
+          p_preview?: string
+        }
+        Returns: string
       }
       share_resource_with_org: {
         Args: {
@@ -23826,6 +24496,14 @@ export type Database = {
           p_ourput_params?: Json
         }
         Returns: undefined
+      }
+      user_form_profile_append_to_array: {
+        Args: { p_column: string; p_item: Json; p_user_id: string }
+        Returns: Json
+      }
+      user_form_profile_set_custom_field: {
+        Args: { p_key: string; p_user_id: string; p_value: Json }
+        Returns: Json
       }
       validate_slugs: {
         Args: { slug_array: string[] }

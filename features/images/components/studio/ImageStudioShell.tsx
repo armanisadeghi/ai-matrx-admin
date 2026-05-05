@@ -32,8 +32,8 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
   const [previewPresetId, setPreviewPresetId] = useState<string | null>(null);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [renameAcknowledged, setRenameAcknowledged] = useState(false);
-  const [leftOpen, setLeftOpen] = useState(true);
-  const [rightOpen, setRightOpen] = useState(true);
+  const [leftOpen, setLeftOpen] = useState(false);
+  const [rightOpen, setRightOpen] = useState(false);
 
   const renameActionsRef = useRef(new Map<string, () => void>());
   const registerRenameAction = useCallback(
@@ -261,27 +261,42 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
         </div>
       </div>
 
-      {/* 3-column work area */}
-      <div className="flex-1 min-h-0 flex overflow-hidden">
-        {/* LEFT — Preset Catalog */}
-        {leftOpen && (
-          <div className="hidden md:flex flex-col w-72 lg:w-80 xl:w-96 border-r border-border bg-card/30 min-h-0">
-            <PresetCatalog
-              selectedIds={studio.selectedPresetIds}
-              onToggle={(id) => {
-                studio.togglePreset(id);
-                if (!studio.selectedPresetIds.includes(id)) {
-                  setPreviewPresetId(id);
-                }
-              }}
-              onApplyBundle={(ids) => {
-                studio.applyBundle(ids);
-                if (ids[0]) setPreviewPresetId(ids[0]);
-              }}
-              onDeselectAll={studio.deselectAllPresets}
-            />
-          </div>
-        )}
+      {/* Work area — panels are overlays */}
+      <div className="flex-1 min-h-0 flex overflow-hidden relative">
+
+        {/* Backdrop — dims canvas when a panel is open */}
+        <div
+          className={cn(
+            "absolute inset-0 bg-black/50 z-10 cursor-pointer transition-opacity duration-200",
+            leftOpen || rightOpen ? "opacity-100" : "opacity-0 pointer-events-none",
+          )}
+          onClick={() => { setLeftOpen(false); setRightOpen(false); }}
+        />
+
+        {/* LEFT — Preset Catalog (overlay) */}
+        <div
+          className={cn(
+            "absolute inset-y-0 left-0 z-20 flex flex-col w-80 xl:w-96 min-h-0",
+            "border-r border-border bg-card rounded-r-lg shadow-[6px_0_32px_rgba(0,0,0,0.55)]",
+            "transition-transform duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]",
+            !leftOpen && "-translate-x-full",
+          )}
+        >
+          <PresetCatalog
+            selectedIds={studio.selectedPresetIds}
+            onToggle={(id) => {
+              studio.togglePreset(id);
+              if (!studio.selectedPresetIds.includes(id)) {
+                setPreviewPresetId(id);
+              }
+            }}
+            onApplyBundle={(ids) => {
+              studio.applyBundle(ids);
+              if (ids[0]) setPreviewPresetId(ids[0]);
+            }}
+            onDeselectAll={studio.deselectAllPresets}
+          />
+        </div>
 
         {/* CENTER — Work area */}
         <div className="flex-1 min-w-0 flex flex-col min-h-0 overflow-y-auto">
@@ -384,32 +399,37 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
           </div>
         </div>
 
-        {/* RIGHT — Export settings */}
-        {rightOpen && (
-          <div className="hidden lg:flex flex-col w-80 xl:w-96 min-h-0">
-            <ExportPanel
-              format={studio.format}
-              quality={studio.quality}
-              backgroundColor={studio.backgroundColor}
-              fit={studio.fit}
-              position={studio.position}
-              onFormatChange={studio.setFormat}
-              onQualityChange={studio.setQuality}
-              onBackgroundChange={studio.setBackgroundColor}
-              onFitChange={studio.setFit}
-              onPositionChange={studio.setPosition}
-              isSaving={studio.isSaving}
-              canSave={studio.generatedVariantCount > 0}
-              onSaveAll={handleSaveAll}
-              onOpenPreview={() => openPreview()}
-              canOpenPreview={studio.files.length > 0}
-              isPreviewOpen={previewOpen}
-            />
-          </div>
-        )}
+        {/* RIGHT — Export settings (overlay) */}
+        <div
+          className={cn(
+            "absolute inset-y-0 right-0 z-20 flex flex-col w-80 xl:w-96 min-h-0",
+            "border-l border-border bg-card rounded-l-lg shadow-[-6px_0_32px_rgba(0,0,0,0.55)]",
+            "transition-transform duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]",
+            !rightOpen && "translate-x-full",
+          )}
+        >
+          <ExportPanel
+            format={studio.format}
+            quality={studio.quality}
+            backgroundColor={studio.backgroundColor}
+            fit={studio.fit}
+            position={studio.position}
+            onFormatChange={studio.setFormat}
+            onQualityChange={studio.setQuality}
+            onBackgroundChange={studio.setBackgroundColor}
+            onFitChange={studio.setFit}
+            onPositionChange={studio.setPosition}
+            isSaving={studio.isSaving}
+            canSave={studio.generatedVariantCount > 0}
+            onSaveAll={handleSaveAll}
+            onOpenPreview={() => openPreview()}
+            canOpenPreview={studio.files.length > 0}
+            isPreviewOpen={previewOpen}
+          />
+        </div>
       </div>
 
-      {/* Bottom action bar */}
+      {/* Bottom action bar — Magnific-style toolbar pill */}
       <StudioActionBar
         filesCount={studio.files.length}
         selectedPresetCount={studio.selectedPresetIds.length}
@@ -426,6 +446,10 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
         onDescribeAll={handleDescribeAll}
         isDescribing={studio.isDescribing}
         describedFileCount={studio.files.filter((f) => f.imageMetadata).length}
+        leftPanelOpen={leftOpen}
+        rightPanelOpen={rightOpen}
+        onToggleLeftPanel={() => setLeftOpen((v) => !v)}
+        onToggleRightPanel={() => setRightOpen((v) => !v)}
       />
 
       {/* Live crop preview — floating */}

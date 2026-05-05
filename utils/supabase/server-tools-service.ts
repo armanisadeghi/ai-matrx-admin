@@ -15,7 +15,7 @@ export class ServerToolsService {
     try {
       const supabase = getScriptSupabaseClient();
       const { data, error } = await supabase
-        .from('tools')
+        .from('tl_def')
         .select('*')
         .eq('is_active', true)
         .order('category', { ascending: true })
@@ -40,7 +40,7 @@ export class ServerToolsService {
     try {
       const supabase = getScriptSupabaseClient();
       const { data, error } = await supabase
-        .from('tools')
+        .from('tl_def')
         .select('*')
         .eq('is_active', true)
         .eq('category', category)
@@ -67,7 +67,7 @@ export class ServerToolsService {
     try {
       const supabase = getScriptSupabaseClient();
       const { data, error } = await supabase
-        .from('tools')
+        .from('tl_def')
         .select('*')
         .eq('is_active', true)
         .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
@@ -95,7 +95,7 @@ export class ServerToolsService {
     try {
       const supabase = getScriptSupabaseClient();
       const { data, error } = await supabase
-        .from('tools')
+        .from('tl_def')
         .select('*')
         .in('name', toolIdentifiers)  // Query by 'name' field which contains the tool identifiers
         .eq('is_active', true);

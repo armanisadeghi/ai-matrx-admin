@@ -14,27 +14,21 @@ export function MessageStatusTicks({
   const cls = cn("h-3.5 w-3.5 shrink-0", className);
   switch (status) {
     case "sending":
-      return <Clock className={cn(cls, "text-[#8696a0]")} aria-label="Sending" />;
+      return <Clock className={cn(cls, "opacity-70")} aria-label="Sending" />;
     case "sent":
-      return <Check className={cn(cls, "text-[#8696a0]")} aria-label="Sent" />;
+      return <Check className={cn(cls, "opacity-70")} aria-label="Sent" />;
     case "delivered":
       return (
-        <CheckCheck
-          className={cn(cls, "text-[#8696a0]")}
-          aria-label="Delivered"
-        />
+        <CheckCheck className={cn(cls, "opacity-70")} aria-label="Delivered" />
       );
     case "read":
       return (
-        <CheckCheck
-          className={cn(cls, "text-[#53bdeb]")}
-          aria-label="Read"
-        />
+        <CheckCheck className={cn(cls, "text-sky-500")} aria-label="Read" />
       );
     case "failed":
       return (
         <AlertCircle
-          className={cn(cls, "text-[#f15c6d]")}
+          className={cn(cls, "text-rose-500")}
           aria-label="Failed"
         />
       );

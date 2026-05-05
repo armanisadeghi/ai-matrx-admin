@@ -1,10 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
-
-const DOODLE_SVG = encodeURIComponent(`
-<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420'>
-  <g fill='none' stroke='#1f2c34' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round' opacity='0.9'>
+const DOODLE_PATHS = `
     <circle cx='80' cy='90' r='14'/>
     <path d='M180 60 q22 -18 44 0 q-22 18 -44 0z'/>
     <path d='M310 75 l-8 12 8 12 8 -12z'/>
@@ -26,26 +22,45 @@ const DOODLE_SVG = encodeURIComponent(`
     <path d='M380 240 q-10 -10 -20 0 q10 10 20 0z'/>
     <path d='M70 140 l4 8 8 -4'/>
     <path d='M200 110 l-6 -10 12 0z'/>
+`;
+
+const DOODLE_DARK = encodeURIComponent(`
+<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420'>
+  <g fill='none' stroke='rgb(255,255,255)' stroke-opacity='0.045' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'>
+    ${DOODLE_PATHS}
   </g>
 </svg>
 `);
 
-interface DoodleBackgroundProps {
-  children: ReactNode;
-}
+const DOODLE_LIGHT = encodeURIComponent(`
+<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420'>
+  <g fill='none' stroke='rgb(0,0,0)' stroke-opacity='0.06' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'>
+    ${DOODLE_PATHS}
+  </g>
+</svg>
+`);
 
-export function DoodleBackground({ children }: DoodleBackgroundProps) {
+export function DoodleBackdrop() {
   return (
-    <div
-      className="relative h-full w-full"
-      style={{
-        backgroundColor: "#0b141a",
-        backgroundImage: `url("data:image/svg+xml;utf8,${DOODLE_SVG}")`,
-        backgroundRepeat: "repeat",
-        backgroundSize: "420px 420px",
-      }}
-    >
-      {children}
-    </div>
+    <>
+      <div
+        className="absolute inset-0 bg-background dark:hidden"
+        style={{
+          backgroundImage: `url("data:image/svg+xml;utf8,${DOODLE_LIGHT}")`,
+          backgroundRepeat: "repeat",
+          backgroundSize: "420px 420px",
+        }}
+        aria-hidden
+      />
+      <div
+        className="absolute inset-0 hidden bg-background dark:block"
+        style={{
+          backgroundImage: `url("data:image/svg+xml;utf8,${DOODLE_DARK}")`,
+          backgroundRepeat: "repeat",
+          backgroundSize: "420px 420px",
+        }}
+        aria-hidden
+      />
+    </>
   );
 }

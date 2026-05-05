@@ -7,7 +7,9 @@ interface PageProps {
 
 export default async function WhatsAppDemoPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const initialMode = params.mock === "0" ? "live" : "mock";
+  // Default to LIVE data — demo wires to features/messaging + features/files.
+  // Add ?mock=1 to view with curated demo data instead.
+  const initialMode = params.mock === "1" ? "mock" : "live";
 
   const supabase = await createClient();
   const {

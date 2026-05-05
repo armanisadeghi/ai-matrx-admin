@@ -88,6 +88,8 @@ export interface WAMediaItem {
   durationSec?: number;
   conversationName?: string;
   createdAt: string;
+  /** Cloud file id — when set, the tile fetches a signed URL for display. */
+  cloudFileId?: string;
 }
 
 export interface WALinkItem {

@@ -9,6 +9,7 @@ import {
   type WADataMode,
 } from "@/features/whatsapp-clone/hooks/WhatsAppDataModeProvider";
 import { WhatsAppShell } from "@/features/whatsapp-clone/shell/WhatsAppShell";
+import { MessagingInitializer } from "@/features/messaging/components/MessagingInitializer";
 
 interface WhatsAppDemoClientProps {
   initialMode: WADataMode;
@@ -34,26 +35,33 @@ export function WhatsAppDemoClient({
   };
 
   return (
-    <div
-      className="relative h-dvh w-full"
-      style={{
-        background: "linear-gradient(135deg,#161b22 0%,#0b141a 60%,#161b22 100%)",
-      }}
-    >
-      <div className="mx-auto h-full max-w-[1480px]">
-        <WhatsAppDataModeProvider initialMode={mode} key={mode}>
-          <WhatsAppShell userName={userName} userAvatarUrl={userAvatarUrl} />
-        </WhatsAppDataModeProvider>
+    <div className="relative h-[calc(100dvh-var(--header-height,2.5rem))] w-full overflow-hidden bg-textured">
+      <div className="absolute inset-0 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div
+          className={cn(
+            "relative h-full w-full max-w-[1480px]",
+            "overflow-hidden rounded-xl border border-border bg-card/98",
+            "shadow-2xl backdrop-blur-md",
+          )}
+        >
+          <WhatsAppDataModeProvider initialMode={mode} key={mode}>
+            {mode === "live" ? <MessagingInitializer /> : null}
+            <WhatsAppShell
+              userName={userName}
+              userAvatarUrl={userAvatarUrl}
+            />
+          </WhatsAppDataModeProvider>
+        </div>
       </div>
 
       <button
         type="button"
         onClick={flip}
         className={cn(
-          "fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full px-3 py-2 text-[12px] font-medium shadow-lg transition-colors",
+          "absolute bottom-4 right-4 z-50 flex items-center gap-2 rounded-full px-3 py-2 text-[12px] font-medium shadow-lg transition-colors",
           mode === "mock"
-            ? "bg-[#202c33] text-[#aebac1] hover:bg-[#2a3942]"
-            : "bg-[#25d366] text-[#0b141a] hover:bg-[#1fb556]",
+            ? "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
+            : "bg-emerald-500 text-white hover:bg-emerald-600",
         )}
         aria-label={`Switch to ${mode === "mock" ? "live" : "mock"} data`}
       >

@@ -191,7 +191,7 @@ export async function getCxToolCalls(
 ): Promise<CxToolCall[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("cx_tool_call")
+    .from("cx_tl_call")
     .select("*")
     .eq("conversation_id", conversationId)
     .is("deleted_at", null)

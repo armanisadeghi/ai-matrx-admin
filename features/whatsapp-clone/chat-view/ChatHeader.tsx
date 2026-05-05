@@ -23,7 +23,7 @@ export function ChatHeader({
   onOpenContactInfo,
 }: ChatHeaderProps) {
   return (
-    <div className="flex h-[60px] shrink-0 items-center bg-[#202c33] px-4">
+    <div className="flex h-[60px] shrink-0 items-center border-b border-border bg-muted px-4">
       <button
         type="button"
         onClick={onOpenContactInfo}
@@ -36,7 +36,7 @@ export function ChatHeader({
           size="md"
         />
         <div className="flex min-w-0 flex-col">
-          <span className="truncate text-[15px] font-medium leading-tight text-[#e9edef]">
+          <span className="truncate text-[15px] font-medium leading-tight text-foreground">
             {conversation.name}
           </span>
           <span className="truncate text-[12px] leading-tight">

@@ -1,9 +1,45 @@
 "use client";
 
 import React from "react";
-import { Download, FileDown, Loader2, Zap } from "lucide-react";
+import { Download, FileDown, LayoutGrid, Loader2, Settings, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatBytes } from "@/features/images/utils/format-bytes";
+
+interface ToolBtnProps {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  active?: boolean;
+  disabled?: boolean;
+  loading?: boolean;
+  onClick?: () => void;
+  title?: string;
+}
+
+function ToolBtn({ icon: Icon, label, active, disabled, loading, onClick, title }: ToolBtnProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      className={cn(
+        "w-10 h-9 rounded-lg flex flex-col items-center justify-center gap-px transition-colors shrink-0",
+        active
+          ? "bg-accent text-foreground"
+          : disabled
+            ? "text-muted-foreground/40 cursor-not-allowed"
+            : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
+      )}
+    >
+      {loading ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <Icon className="h-4 w-4" />
+      )}
+      <span className="text-[9px] leading-none truncate max-w-full px-0.5">{label}</span>
+    </button>
+  );
+}
 
 interface StudioActionBarProps {
   filesCount: number;
@@ -21,6 +57,10 @@ interface StudioActionBarProps {
   onDescribeAll?: () => void;
   isDescribing?: boolean;
   describedFileCount?: number;
+  leftPanelOpen: boolean;
+  rightPanelOpen: boolean;
+  onToggleLeftPanel: () => void;
+  onToggleRightPanel: () => void;
 }
 
 export function StudioActionBar({
@@ -39,19 +79,33 @@ export function StudioActionBar({
   onDescribeAll,
   isDescribing = false,
   describedFileCount = 0,
+  leftPanelOpen,
+  rightPanelOpen,
+  onToggleLeftPanel,
+  onToggleRightPanel,
 }: StudioActionBarProps) {
+  const aiDescribeLabel =
+    isDescribing
+      ? "…"
+      : describedFileCount > 0 && describedFileCount === filesCount
+        ? "Re-desc"
+        : "Describe";
+
+  const dlSelLabel = selectedVariantCount > 0 ? `Sel (${selectedVariantCount})` : "Selected";
+  const dlAllLabel = generatedVariantCount > 0 ? `All (${generatedVariantCount})` : "All";
+
   return (
-    <div className="shrink-0 border-t border-border bg-card/95 px-4 h-12 flex items-center gap-3">
-      {/* Live stats */}
-      <div className="flex items-center gap-2 text-xs text-muted-foreground flex-1 min-w-0 overflow-hidden">
-        <span className="tabular-nums shrink-0">
+    <div className="shrink-0 h-[52px] border-t border-border bg-background/95 backdrop-blur-sm flex items-center justify-center px-4 relative">
+      {/* Stats — floats left */}
+      <div className="absolute left-4 hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground">
+        <span>
           <span className="font-medium text-foreground">{filesCount}</span>{" "}
           {filesCount === 1 ? "file" : "files"}
         </span>
         {selectedPresetCount > 0 && (
           <>
             <span className="text-border">·</span>
-            <span className="tabular-nums shrink-0">
+            <span>
               <span className="font-medium text-foreground">{selectedPresetCount}</span>{" "}
               {selectedPresetCount === 1 ? "preset" : "presets"}
             </span>
@@ -60,86 +114,80 @@ export function StudioActionBar({
         {generatedVariantCount > 0 && (
           <>
             <span className="text-border">·</span>
-            <span className="tabular-nums shrink-0">
+            <span>
               <span className="font-medium text-foreground">{generatedVariantCount}</span>
               {totalVariantCount > 0 && `/${totalVariantCount}`} variants
             </span>
             <span className="text-border">·</span>
-            <span className="font-medium text-success shrink-0">
-              {formatBytes(totalOutputBytes)}
-            </span>
+            <span className="font-medium text-success">{formatBytes(totalOutputBytes)}</span>
           </>
         )}
       </div>
 
-      {/* AI Describe */}
-      {onDescribeAll && (
+      {/* Tool group pill — centered */}
+      <div className="flex items-center gap-0.5 bg-muted border border-border rounded-[10px] p-1">
+        <ToolBtn
+          icon={LayoutGrid}
+          label="Presets"
+          active={leftPanelOpen}
+          onClick={onToggleLeftPanel}
+          title="Preset catalog"
+        />
+        <ToolBtn
+          icon={Settings}
+          label="Settings"
+          active={rightPanelOpen}
+          onClick={onToggleRightPanel}
+          title="Output settings"
+        />
+
+        <div className="w-px h-5 bg-border mx-0.5 shrink-0" />
+
+        {onDescribeAll && (
+          <ToolBtn
+            icon={Zap}
+            label={aiDescribeLabel}
+            disabled={filesCount === 0}
+            loading={isDescribing}
+            onClick={onDescribeAll}
+            title="AI-describe all files — generates smart filename, alt text, and SEO copy"
+          />
+        )}
+
+        <ToolBtn
+          icon={FileDown}
+          label={dlSelLabel}
+          disabled={selectedVariantCount === 0}
+          onClick={onDownloadSelected}
+          title="Download selected variants as ZIP"
+        />
+
+        <ToolBtn
+          icon={Download}
+          label={dlAllLabel}
+          disabled={!canDownload}
+          onClick={onDownloadAll}
+          title="Download all variants as ZIP"
+        />
+
+        <div className="w-px h-5 bg-border mx-0.5 shrink-0" />
+
+        {/* Generate — primary pill with glow */}
         <button
           type="button"
-          onClick={onDescribeAll}
-          disabled={filesCount === 0 || isDescribing}
+          onClick={onGenerate}
+          disabled={!canGenerate || isProcessing}
           className={cn(
-            "h-7 px-2.5 rounded-md border text-xs font-medium flex items-center gap-1.5 transition-colors shrink-0",
-            filesCount > 0 && !isDescribing
-              ? "border-border text-foreground hover:bg-muted/60"
-              : "border-border/50 text-muted-foreground opacity-40 cursor-not-allowed",
+            "h-9 px-4 rounded-lg flex items-center gap-1.5 text-xs font-semibold transition-all shrink-0",
+            canGenerate && !isProcessing
+              ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_16px_rgba(99,102,241,0.35)]"
+              : "bg-muted text-muted-foreground cursor-not-allowed",
           )}
-          title="AI-describe all files — generates smart filename, alt text, and SEO copy"
         >
-          {isDescribing ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
-          ) : (
-            <Zap className="h-3 w-3" />
-          )}
-          {isDescribing
-            ? "Describing…"
-            : describedFileCount > 0 && describedFileCount === filesCount
-              ? "Re-describe"
-              : describedFileCount > 0
-                ? `Describe (${filesCount - describedFileCount} left)`
-                : "AI Describe"}
+          <Zap className={cn("h-3.5 w-3.5", isProcessing && "animate-pulse")} />
+          {isProcessing ? "Generating…" : "Generate"}
         </button>
-      )}
-
-      {/* Download selected */}
-      <button
-        type="button"
-        onClick={onDownloadSelected}
-        disabled={selectedVariantCount === 0}
-        className="h-7 px-2.5 rounded-md border border-border text-xs font-medium flex items-center gap-1.5 hover:bg-muted/60 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
-        title="Download only the selected variants as a ZIP"
-      >
-        <FileDown className="h-3.5 w-3.5" />
-        Selected{selectedVariantCount > 0 ? ` (${selectedVariantCount})` : ""}
-      </button>
-
-      {/* Download all */}
-      <button
-        type="button"
-        onClick={onDownloadAll}
-        disabled={!canDownload}
-        className="h-7 px-2.5 rounded-md border border-border text-xs font-medium flex items-center gap-1.5 hover:bg-muted/60 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
-        title="Download every generated variant as a ZIP"
-      >
-        <Download className="h-3.5 w-3.5" />
-        All{generatedVariantCount > 0 ? ` (${generatedVariantCount})` : ""}
-      </button>
-
-      {/* Generate — primary CTA */}
-      <button
-        type="button"
-        onClick={onGenerate}
-        disabled={!canGenerate || isProcessing}
-        className={cn(
-          "h-8 px-4 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all shrink-0",
-          canGenerate && !isProcessing
-            ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
-            : "bg-muted text-muted-foreground cursor-not-allowed",
-        )}
-      >
-        <Zap className={cn("h-3.5 w-3.5", isProcessing && "animate-pulse")} />
-        {isProcessing ? "Generating…" : "Generate"}
-      </button>
+      </div>
     </div>
   );
 }

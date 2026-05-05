@@ -9,7 +9,7 @@
  * chunks on the timeline.
  */
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -20,7 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { rawSegmentsAppended } from "../../redux/slice";
 import { insertRawSegment } from "../../service/studioService";
 import type { RawSegment } from "../../types";
@@ -58,19 +58,24 @@ export function PasteRawContentDialog({
   onOpenChange,
 }: PasteRawContentDialogProps) {
   const dispatch = useAppDispatch();
+  // We pull live state via `store.getState()` inside the loop instead of
+  // useSelector, because we need the freshest snapshot AFTER each await —
+  // recording chunks can land between iterations and we must place each
+  // pasted segment strictly after them to avoid tStart/chunkIndex collisions.
+  const store = useAppStore();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
 
-  // Subscribe to ids + byId separately (stable references); derive the
-  // next-chunk + next-tStart via useMemo so we never return a fresh object
-  // from the selector itself (which would warn under react-redux).
-  const ids = useAppSelector(
-    (state) => state.transcriptStudio.rawIdsBySession[sessionId],
-  );
-  const byId = useAppSelector(
-    (state) => state.transcriptStudio.rawById[sessionId],
-  );
-  const { nextChunkIndex, nextTStart } = useMemo(() => {
+  /**
+   * Read the current max chunkIndex + max tEnd for this session from the
+   * live store. Returns `{ nextChunkIndex, nextTStart }` such that the next
+   * insert is guaranteed not to collide with any segment that has already
+   * landed (live recording, prior paste, realtime echo).
+   */
+  const readTail = (): { nextChunkIndex: number; nextTStart: number } => {
+    const state = store.getState();
+    const ids = state.transcriptStudio.rawIdsBySession[sessionId];
+    const byId = state.transcriptStudio.rawById[sessionId];
     if (!ids || !byId || ids.length === 0) {
       return { nextChunkIndex: 0, nextTStart: 0 };
     }
@@ -83,7 +88,7 @@ export function PasteRawContentDialog({
       if (seg.tEnd > maxTEnd) maxTEnd = seg.tEnd;
     }
     return { nextChunkIndex: maxChunk + 1, nextTStart: maxTEnd };
-  }, [ids, byId]);
+  };
 
   const reset = () => {
     setText("");
@@ -103,23 +108,25 @@ export function PasteRawContentDialog({
       return;
     }
     setBusy(true);
-    let chunkIndex = nextChunkIndex;
-    let tCursor = nextTStart;
     const inserted: RawSegment[] = [];
     try {
       for (const para of paragraphs) {
+        // Re-read the tail BEFORE each insert. This guarantees that even if
+        // a live recording chunk landed via realtime mid-paste, the pasted
+        // segment's chunkIndex + tStart sit strictly past it, preserving
+        // both the slice's chunkIndex tiebreaker invariant AND the user's
+        // mental "imported segments go to the end of the timeline" model.
+        const tail = readTail();
         const dur = estimateDurationSec(para);
         const seg = await insertRawSegment({
           sessionId,
-          chunkIndex,
-          tStart: tCursor,
-          tEnd: tCursor + dur,
+          chunkIndex: tail.nextChunkIndex,
+          tStart: tail.nextTStart,
+          tEnd: tail.nextTStart + dur,
           text: para,
           source: "imported",
         });
         inserted.push(seg);
-        chunkIndex += 1;
-        tCursor += dur;
       }
       dispatch(rawSegmentsAppended({ sessionId, segments: inserted }));
       toast.success(

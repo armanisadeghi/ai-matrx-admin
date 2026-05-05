@@ -10,7 +10,7 @@ export async function GET(
         const supabase = await createClient();
 
         const { data, error } = await supabase
-            .from("tool_ui_components")
+            .from("tl_ui")
             .select("*")
             .eq("id", id)
             .single();
@@ -42,7 +42,7 @@ export async function PUT(
 
         // Only allow updating specific fields
         const allowedFields = [
-            "tool_id", "tool_name", "display_name", "results_label",
+            "tool_id", "tool_name", "surface_name", "display_name", "results_label",
             "inline_code", "overlay_code", "utility_code",
             "header_extras_code", "header_subtitle_code",
             "keep_expanded_on_stream", "allowed_imports", "language",
@@ -64,7 +64,7 @@ export async function PUT(
         }
 
         const { data, error } = await supabase
-            .from("tool_ui_components")
+            .from("tl_ui")
             .update(updateData)
             .eq("id", id)
             .select()
@@ -95,7 +95,7 @@ export async function DELETE(
         const supabase = await createClient();
 
         const { error } = await supabase
-            .from("tool_ui_components")
+            .from("tl_ui")
             .delete()
             .eq("id", id);
 

@@ -3,6 +3,7 @@
 import {
   Archive,
   CircleDot,
+  Images,
   MessageCircle,
   PhoneIncoming,
   Settings,
@@ -22,12 +23,14 @@ export type RailKey =
   | "ai"
   | "archive"
   | "starred"
+  | "media"
   | "settings";
 
 interface IconRailProps {
   active: RailKey;
   onSelect: (key: RailKey) => void;
   onSettings: () => void;
+  onOpenMedia: () => void;
   unreadChats?: number;
   hasMissedCalls?: boolean;
   userName?: string;
@@ -53,20 +56,20 @@ const SECONDARY_ITEMS: Array<{
 }> = [
   { key: "archive", icon: Archive, label: "Archived" },
   { key: "starred", icon: Star, label: "Starred messages" },
-  { key: "ai", icon: Sparkles, label: "Meta AI" },
 ];
 
 export function IconRail({
   active,
   onSelect,
   onSettings,
+  onOpenMedia,
   unreadChats,
   hasMissedCalls,
   userName = "You",
   userAvatarUrl,
 }: IconRailProps) {
   return (
-    <div className="flex h-full w-[58px] flex-col items-center gap-1 bg-[#161b22] py-2">
+    <div className="flex h-full w-[58px] shrink-0 flex-col items-center gap-1 border-r border-border bg-card py-2">
       <div className="flex flex-col items-center gap-1">
         {TOP_ITEMS.map((item) => (
           <IconRailButton
@@ -81,7 +84,7 @@ export function IconRail({
         ))}
       </div>
 
-      <div className="mx-auto my-2 h-px w-7 bg-[#222e35]" />
+      <div className="mx-auto my-2 h-px w-7 bg-border" />
 
       <div className="flex flex-col items-center gap-1">
         {SECONDARY_ITEMS.map((item) => (
@@ -99,6 +102,11 @@ export function IconRail({
 
       <div className="flex flex-col items-center gap-2 pb-1">
         <IconRailButton
+          icon={Images}
+          label="Media, links and docs"
+          onClick={onOpenMedia}
+        />
+        <IconRailButton
           icon={Settings}
           label="Settings"
           onClick={onSettings}
@@ -107,7 +115,7 @@ export function IconRail({
           type="button"
           aria-label="Profile"
           title={userName}
-          className="rounded-full ring-0 transition hover:ring-2 hover:ring-[#2a3942]"
+          className="rounded-full transition hover:ring-2 hover:ring-accent"
         >
           <WAAvatar
             name={userName}

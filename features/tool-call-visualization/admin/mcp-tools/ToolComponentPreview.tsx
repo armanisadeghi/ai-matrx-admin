@@ -157,6 +157,7 @@ function buildToolLifecycleEntry(
     {
       callId,
       toolName,
+      displayName: toolName,
       status,
       arguments: args,
       startedAt,
@@ -270,7 +271,7 @@ export function ToolComponentPreview({
     setLoadingSamples(true);
     try {
       const { data, error } = await supabase
-        .from("tool_test_samples")
+        .from("tl_test_sample")
         .select("*")
         .or(`tool_name.eq.${tool.name},tool_id.eq.${tool.id}`)
         .order("created_at", { ascending: false });

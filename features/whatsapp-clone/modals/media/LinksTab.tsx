@@ -64,7 +64,7 @@ export function LinksTab({ items }: LinksTabProps) {
 
   if (items.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center text-[14px] text-[#8696a0]">
+      <div className="flex h-full items-center justify-center text-[14px] text-muted-foreground">
         No links shared yet.
       </div>
     );
@@ -72,7 +72,7 @@ export function LinksTab({ items }: LinksTabProps) {
 
   return (
     <div className="flex flex-col">
-      <div className="grid grid-cols-[minmax(0,1fr)_240px_220px_56px] items-center gap-3 border-b border-[#222d34] px-5 py-3 text-[12.5px] font-medium uppercase tracking-wide text-[#8696a0]">
+      <div className="grid grid-cols-[minmax(0,1fr)_240px_220px_56px] items-center gap-3 border-b border-border px-5 py-3 text-[12.5px] font-medium uppercase tracking-wide text-muted-foreground">
         <span>Link</span>
         <span>Message</span>
         <span>Sent By</span>
@@ -83,17 +83,17 @@ export function LinksTab({ items }: LinksTabProps) {
         <section key={g.id}>
           {g.label ? (
             <header className="px-5 pb-2 pt-5">
-              <h3 className="text-[18px] font-semibold text-[#e9edef]">
+              <h3 className="text-[18px] font-semibold text-foreground">
                 {g.label}
               </h3>
               {g.rangeLabel ? (
-                <div className="text-[12.5px] text-[#8696a0]">
+                <div className="text-[12.5px] text-muted-foreground">
                   {g.rangeLabel}
                 </div>
               ) : null}
             </header>
           ) : null}
-          <ul className="divide-y divide-[#222d34]">
+          <ul className="divide-y divide-border">
             {g.items.map((item) => (
               <LinkRow key={item.id} item={item} />
             ))}
@@ -106,14 +106,14 @@ export function LinksTab({ items }: LinksTabProps) {
 
 function LinkRow({ item }: { item: WALinkItem }) {
   return (
-    <li className="grid grid-cols-[minmax(0,1fr)_240px_220px_56px] items-center gap-3 px-5 py-3 hover:bg-[#202c33]">
+    <li className="grid grid-cols-[minmax(0,1fr)_240px_220px_56px] items-center gap-3 px-5 py-3 hover:bg-accent/40">
       <a
         href={item.url}
         target="_blank"
         rel="noreferrer noopener"
         className="flex min-w-0 items-center gap-3"
       >
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[#202c33]">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted">
           {item.previewImageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -122,28 +122,28 @@ function LinkRow({ item }: { item: WALinkItem }) {
               className="h-full w-full object-cover"
             />
           ) : (
-            <LinkIcon className="h-4 w-4 text-[#aebac1]" />
+            <LinkIcon className="h-4 w-4 text-muted-foreground" />
           )}
         </div>
         <div className="min-w-0">
-          <div className="truncate text-[14px] font-medium text-[#e9edef]">
+          <div className="truncate text-[14px] font-medium text-foreground">
             {item.title}
           </div>
-          <div className="truncate text-[12.5px] text-[#8696a0]">
+          <div className="truncate text-[12.5px] text-muted-foreground">
             {item.hostname}
           </div>
         </div>
       </a>
-      <div className="line-clamp-2 text-[13px] text-[#aebac1]">
+      <div className="line-clamp-2 text-[13px] text-muted-foreground">
         {item.message}
       </div>
       <div className="flex items-center gap-2">
         <WAAvatar name={item.senderName} src={item.senderAvatarUrl} size="sm" />
         <div className="min-w-0">
-          <div className="truncate text-[13px] text-[#e9edef]">
+          <div className="truncate text-[13px] text-foreground">
             {item.senderName}
           </div>
-          <div className="truncate text-[12px] text-[#8696a0]">
+          <div className="truncate text-[12px] text-muted-foreground">
             {formatLinkTime(item.createdAt)}
           </div>
         </div>
@@ -153,7 +153,7 @@ function LinkRow({ item }: { item: WALinkItem }) {
           href={item.url}
           target="_blank"
           rel="noreferrer noopener"
-          className="flex h-8 w-8 items-center justify-center rounded-full text-[#aebac1] hover:bg-[#2a3942]"
+          className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
           aria-label="Open link"
         >
           <ArrowUpRight className="h-4 w-4" />
@@ -161,7 +161,7 @@ function LinkRow({ item }: { item: WALinkItem }) {
         <button
           type="button"
           aria-label="More"
-          className="flex h-8 w-8 items-center justify-center rounded-full text-[#aebac1] hover:bg-[#2a3942]"
+          className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
         >
           <MoreHorizontal className="h-4 w-4" />
         </button>

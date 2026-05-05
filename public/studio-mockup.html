@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Image Studio — Layout Mockup v2</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #09090f;
+    --card: #111118;
+    --muted: #18181f;
+    --muted2: #1f1f2a;
+    --border: #27273a;
+    --fg: #e4e4f0;
+    --fg-muted: #64647a;
+    --fg-subtle: #35354a;
+    --primary: #6366f1;
+    --primary-hover: #4f52d9;
+    --primary-glow: rgba(99,102,241,0.35);
+    --success: #22c55e;
+    --amber: #f59e0b;
+    --amber-bg: rgba(245,158,11,0.07);
+    --amber-border: rgba(245,158,11,0.22);
+    --header-h: 46px;
+    --toolbar-h: 52px;
+    --filmstrip-h: 80px;
+    --panel-w: 288px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+    background: #050508;
+    color: var(--fg);
+    font-size: 13px;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── State switcher ── */
+  .switcher {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 12px;
+    background: #07070e;
+    border-bottom: 1px solid #18182a;
+    font-size: 11px;
+    color: var(--fg-muted);
+    flex-shrink: 0;
+  }
+  .switcher-label { margin-right: 2px; font-weight: 600; }
+  .state-btn {
+    padding: 3px 10px;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    background: var(--muted);
+    color: var(--fg-muted);
+    cursor: pointer;
+    font-size: 11px;
+    transition: all .12s;
+  }
+  .state-btn:hover { border-color: var(--primary); color: var(--fg); }
+  .state-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+  /* ── Shell ── */
+  .shell { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+
+  /* ── Header ── */
+  .header {
+    height: var(--header-h);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 18px;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+    flex-shrink: 0;
+  }
+  .header-icon {
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    background: var(--muted);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--fg-muted);
+    font-size: 13px;
+  }
+  .header-title { font-weight: 600; font-size: 13px; line-height: 1; }
+  .header-sub { font-size: 11px; color: var(--fg-muted); margin-top: 2px; }
+  .header-spacer { flex: 1; }
+  .toggle-btn {
+    width: 27px; height: 27px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--fg-muted);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .12s;
+  }
+  .toggle-btn:hover { background: var(--muted); color: var(--fg); border-color: var(--border); }
+  .toggle-btn.active { background: var(--muted); color: var(--fg); border-color: var(--border); }
+
+  /* ── Work area ── */
+  .work-area {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── Overlay panels ── */
+  .panel {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: var(--panel-w);
+    background: var(--card);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    z-index: 20;
+    transition: transform .2s cubic-bezier(.4,0,.2,1);
+  }
+  .panel-left {
+    left: 0; border-left: none;
+    border-radius: 0 8px 8px 0;
+    box-shadow: 6px 0 32px rgba(0,0,0,.55);
+  }
+  .panel-left.hidden { transform: translateX(calc(-100% - 6px)); }
+  .panel-right {
+    right: 0; border-right: none;
+    border-radius: 8px 0 0 8px;
+    box-shadow: -6px 0 32px rgba(0,0,0,.55);
+  }
+  .panel-right.hidden { transform: translateX(calc(100% + 6px)); }
+
+  .panel-header {
+    height: 38px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--fg-muted);
+    flex-shrink: 0;
+  }
+  .panel-close {
+    width: 20px; height: 20px;
+    border-radius: 4px; border: none;
+    background: transparent; color: var(--fg-muted);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; line-height: 1;
+    transition: all .1s;
+  }
+  .panel-close:hover { background: var(--muted2); color: var(--fg); }
+  .panel-body { flex: 1; overflow-y: auto; padding: 10px; }
+
+  /* Preset list */
+  .preset-search {
+    width: 100%; height: 30px;
+    border-radius: 6px; border: 1px solid var(--border);
+    background: var(--muted); color: var(--fg);
+    padding: 0 10px; font-size: 12px; margin-bottom: 10px;
+  }
+  .preset-search::placeholder { color: var(--fg-muted); }
+  .preset-group-label {
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em;
+    color: var(--fg-subtle); padding: 10px 2px 5px;
+  }
+  .preset-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 5px;
+    cursor: pointer; transition: background .1s; margin-bottom: 1px;
+  }
+  .preset-item:hover { background: var(--muted); }
+  .preset-item.selected { background: rgba(99,102,241,.1); }
+  .preset-check {
+    width: 13px; height: 13px; border-radius: 3px;
+    border: 1px solid var(--border); background: var(--muted);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8px;
+  }
+  .preset-item.selected .preset-check { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .preset-name { font-size: 12px; flex: 1; color: var(--fg); }
+  .preset-size { font-size: 10px; color: var(--fg-muted); font-family: monospace; }
+
+  /* Settings */
+  .settings-section { margin-bottom: 16px; }
+  .settings-label {
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em;
+    color: var(--fg-muted); margin-bottom: 7px; display: block;
+  }
+  .format-grid { display: grid; gap: 4px; }
+  .format-btn {
+    padding: 5px 2px; border-radius: 5px;
+    border: 1px solid var(--border); background: var(--muted);
+    color: var(--fg-muted); cursor: pointer;
+    font-size: 11px; text-align: center; transition: all .1s;
+  }
+  .format-btn.active { border-color: var(--primary); background: rgba(99,102,241,.1); color: var(--primary); }
+  .mock-slider {
+    flex: 1; height: 3px; border-radius: 2px; background: var(--border); position: relative;
+  }
+  .mock-slider-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--primary); border-radius: 2px; width: 82%; }
+  .mock-slider-thumb {
+    position: absolute; top: 50%; transform: translate(-50%,-50%);
+    width: 11px; height: 11px; border-radius: 50%;
+    background: var(--primary); left: 82%;
+    box-shadow: 0 0 0 2px rgba(99,102,241,.3);
+  }
+
+  /* ── Canvas area ── */
+  .canvas-area {
+    flex: 1; display: flex; flex-direction: column;
+    min-height: 0; overflow: hidden; background: var(--bg); position: relative;
+  }
+
+  /* Empty */
+  .empty-canvas {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px;
+  }
+  .drop-zone {
+    width: 420px; min-height: 240px;
+    border: 2px dashed var(--border); border-radius: 12px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px;
+    cursor: pointer; background: rgba(255,255,255,.01);
+    transition: all .15s;
+  }
+  .drop-zone:hover { border-color: var(--primary); background: rgba(99,102,241,.03); }
+  .drop-icon {
+    width: 46px; height: 46px; border-radius: 10px;
+    background: var(--muted); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+  }
+  .drop-title { font-size: 14px; font-weight: 600; }
+  .drop-sub { font-size: 12px; color: var(--fg-muted); text-align: center; line-height: 1.5; }
+  .drop-btn {
+    padding: 7px 16px; border-radius: 6px;
+    background: var(--primary); color: #fff; border: none;
+    font-size: 12px; font-weight: 500; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* Hero */
+  .hero-canvas {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 16px; min-height: 0; overflow: hidden;
+  }
+  .hero-img-wrap {
+    border-radius: 10px; overflow: hidden;
+    box-shadow: 0 8px 48px rgba(0,0,0,.65);
+    max-width: 100%; max-height: 100%;
+  }
+  .hero-img-placeholder {
+    width: 400px; height: 280px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 8px;
+    background: linear-gradient(135deg, #13131f 0%, #1a1226 50%, #111a20 100%);
+    color: var(--fg-muted); font-size: 13px;
+  }
+  .hero-filename { margin-top: 8px; font-size: 11px; color: var(--fg-muted); font-family: monospace; }
+
+  /* Preset chips */
+  .preset-chips {
+    display: flex; gap: 5px; flex-wrap: wrap;
+    justify-content: center; padding: 6px 16px; max-width: 680px;
+  }
+  .preset-chip {
+    padding: 3px 9px; border-radius: 20px;
+    border: 1px solid var(--border); background: var(--muted);
+    font-size: 11px; color: var(--fg-muted);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .preset-chip.active { border-color: var(--primary); background: rgba(99,102,241,.1); color: var(--primary); }
+  .chip-x { cursor: pointer; opacity: .5; font-size: 9px; }
+
+  /* Variants */
+  .variant-section { padding: 0 16px 12px; max-width: 680px; width: 100%; margin: 0 auto; }
+  .variant-label {
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .07em;
+    color: var(--fg-subtle); margin-bottom: 8px;
+  }
+  .variant-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+    gap: 6px;
+  }
+  .variant-card {
+    border-radius: 6px; border: 1px solid var(--border);
+    background: var(--muted); overflow: hidden; cursor: pointer;
+    transition: border-color .12s;
+  }
+  .variant-card:hover { border-color: var(--fg-subtle); }
+  .variant-card.selected { border-color: var(--primary); }
+  .variant-thumb {
+    width: 100%; aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: var(--fg-subtle);
+  }
+  .variant-info {
+    padding: 3px 5px; font-size: 9px;
+    color: var(--fg-muted); font-family: monospace;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Compact add strip */
+  .compact-add {
+    height: 32px;
+    border: 1.5px dashed var(--border); border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 5px; font-size: 11px; color: var(--fg-muted);
+    cursor: pointer; transition: all .12s;
+    margin: 8px 14px 0; flex-shrink: 0;
+  }
+  .compact-add:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* Amber banner */
+  .amber-banner {
+    margin: 7px 14px 0;
+    padding: 5px 10px; border-radius: 6px;
+    border: 1px solid var(--amber-border); background: var(--amber-bg);
+    display: flex; align-items: center; gap: 7px;
+    font-size: 11px; color: #d97706; flex-shrink: 0;
+  }
+  .amber-link { font-weight: 600; cursor: pointer; text-decoration: underline; }
+  .amber-x { margin-left: auto; cursor: pointer; opacity: .5; font-size: 11px; }
+
+  /* Filmstrip */
+  .filmstrip {
+    flex-shrink: 0; height: var(--filmstrip-h);
+    border-top: 1px solid var(--border);
+    background: var(--card);
+    display: flex; align-items: center;
+    gap: 7px; padding: 0 12px; overflow-x: auto;
+  }
+  .filmstrip-item {
+    flex-shrink: 0; width: 54px; height: 54px;
+    border-radius: 6px; border: 2px solid var(--border);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; transition: border-color .12s;
+    background: linear-gradient(135deg, #16162a, #22143a);
+  }
+  .filmstrip-item.active { border-color: var(--primary); }
+  .filmstrip-item:hover:not(.active) { border-color: var(--fg-subtle); }
+  .filmstrip-add {
+    flex-shrink: 0; width: 36px; height: 36px;
+    border-radius: 6px; border: 1.5px dashed var(--border);
+    background: transparent; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: var(--fg-subtle); transition: all .12s;
+  }
+  .filmstrip-add:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* ── BOTTOM TOOLBAR ── Magnific-style ── */
+  .toolbar {
+    flex-shrink: 0;
+    height: var(--toolbar-h);
+    background: rgba(10,10,18,.96);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 16px;
+    position: relative;
+  }
+
+  /* Stats pill — floats left inside toolbar */
+  .toolbar-stats {
+    position: absolute;
+    left: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--fg-muted);
+  }
+  .toolbar-stats strong { color: var(--fg); font-weight: 600; }
+  .toolbar-stats .dot { color: var(--fg-subtle); }
+  .toolbar-stats .sz { color: var(--success); font-weight: 600; }
+
+  /* Tool group — center */
+  .tool-group {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    background: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+  }
+  .tool-sep {
+    width: 1px; height: 20px;
+    background: var(--border);
+    margin: 0 2px;
+  }
+
+  /* Individual tool button */
+  .tool-btn {
+    width: 36px; height: 36px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: var(--fg-muted);
+    cursor: pointer;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    font-size: 10px;
+    transition: all .12s;
+    position: relative;
+  }
+  .tool-btn:hover { background: var(--muted2); color: var(--fg); }
+  .tool-btn.active { background: var(--muted2); color: var(--fg); }
+  .tool-btn svg { width: 16px; height: 16px; }
+  .tool-btn span { font-size: 9px; line-height: 1; }
+
+  /* Generate button — distinct primary pill */
+  .tool-btn-generate {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 8px;
+    border: none;
+    background: var(--primary);
+    color: #fff;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600;
+    transition: background .12s;
+    box-shadow: 0 0 16px var(--primary-glow);
+    white-space: nowrap;
+  }
+  .tool-btn-generate:hover { background: var(--primary-hover); }
+  .tool-btn-generate:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
+  .tool-btn-generate svg { width: 14px; height: 14px; }
+
+  /* Backdrop */
+  .panel-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 15; cursor: pointer;
+    transition: opacity .2s;
+  }
+  .panel-backdrop.hidden { opacity: 0; pointer-events: none; }
+
+  /* Utilities */
+  .hidden { display: none !important; }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--fg-subtle); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- State switcher -->
+<div class="switcher">
+  <span class="switcher-label">State:</span>
+  <button class="state-btn active" onclick="setState('empty', this)">1. Empty</button>
+  <button class="state-btn" onclick="setState('loaded', this)">2. Image loaded</button>
+  <button class="state-btn" onclick="setState('presets-open', this)">3. Picking presets</button>
+  <button class="state-btn" onclick="setState('settings-open', this)">4. Output settings</button>
+  <button class="state-btn" onclick="setState('generated', this)">5. After generate</button>
+  <button class="state-btn" onclick="setState('multi', this)">6. Multiple files</button>
+</div>
+
+<div class="shell">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-icon">⧉</div>
+    <div>
+      <div class="header-title">Image Studio</div>
+      <div class="header-sub">Batch resize and export across preset dimensions</div>
+    </div>
+    <div class="header-spacer"></div>
+    <!-- Panel toggles -->
+    <button class="toggle-btn" id="btn-left" onclick="togglePanel('left')" title="Preset catalog">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+    </button>
+    <button class="toggle-btn" id="btn-right" onclick="togglePanel('right')" title="Output settings">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+    </button>
+  </div>
+
+  <!-- Work area -->
+  <div class="work-area" id="work-area">
+
+    <div class="panel-backdrop hidden" id="backdrop" onclick="closePanels()"></div>
+
+    <!-- LEFT panel — Preset Catalog -->
+    <div class="panel panel-left hidden" id="panel-left">
+      <div class="panel-header">
+        Preset Catalog
+        <button class="panel-close" onclick="togglePanel('left')">✕</button>
+      </div>
+      <div class="panel-body">
+        <input class="preset-search" placeholder="Search 80+ presets…" />
+        <div class="preset-group-label">📦 Bundles</div>
+        <div class="preset-item selected" onclick="togglePreset(this)">
+          <div class="preset-check">✓</div><span class="preset-name">Complete Format Set</span>
+        </div>
+        <div class="preset-item" onclick="togglePreset(this)">
+          <div class="preset-check"></div><span class="preset-name">Full Avatar Set</span>
+        </div>
+        <div class="preset-item" onclick="togglePreset(this)">
+          <div class="preset-check"></div><span class="preset-name">Social Media Pack</span>
+        </div>
+        <div class="preset-group-label">🖼 Social Media</div>
+        <div class="preset-item selected" onclick="togglePreset(this)">
+          <div class="preset-check">✓</div><span class="preset-name">Facebook Page Cover</span><span class="preset-size">820×312</span>
+        </div>
+        <div class="preset-item" onclick="togglePreset(this)">
+          <div class="preset-check"></div><span class="preset-name">Facebook Event Cover</span><span class="preset-size">1920×1005</span>
+        </div>
+        <div class="preset-item selected" onclick="togglePreset(this)">
+          <div class="preset-check">✓</div><span class="preset-name">Instagram Post</span><span class="preset-size">1080×1080</span>
+        </div>
+        <div class="preset-item" onclick="togglePreset(this)">
+          <div class="preset-check"></div><span class="preset-name">Twitter Header</span><span class="preset-size">1500×500</span>
+        </div>
+        <div class="preset-group-label">🏷 Branding</div>
+        <div class="preset-item" onclick="togglePreset(this)">
+          <div class="preset-check"></div><span class="preset-name">OG Image</span><span class="preset-size">1200×630</span>
+        </div>
+        <div class="preset-item" onclick="togglePreset(this)">
+          <div class="preset-check"></div><span class="preset-name">Favicon Set</span><span class="preset-size">16–512px</span>
+        </div>
+        <div class="preset-group-label">👤 Avatars</div>
+        <div class="preset-item" onclick="togglePreset(this)">
+          <div class="preset-check"></div><span class="preset-name">Avatar Large</span><span class="preset-size">256×256</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT panel — Output Settings -->
+    <div class="panel panel-right hidden" id="panel-right">
+      <div class="panel-header">
+        Output Settings
+        <button class="panel-close" onclick="togglePanel('right')">✕</button>
+      </div>
+      <div class="panel-body">
+        <div class="settings-section">
+          <span class="settings-label">Crop &amp; Fit</span>
+          <div class="format-grid" style="grid-template-columns:repeat(3,1fr)">
+            <div class="format-btn active">Cover</div>
+            <div class="format-btn">Contain</div>
+            <div class="format-btn">Fill</div>
+          </div>
+        </div>
+        <div class="settings-section">
+          <span class="settings-label">Default Format</span>
+          <div class="format-grid" style="grid-template-columns:repeat(4,1fr)">
+            <div class="format-btn active">WebP</div>
+            <div class="format-btn">AVIF</div>
+            <div class="format-btn">JPEG</div>
+            <div class="format-btn">PNG</div>
+          </div>
+          <div style="font-size:10px;color:var(--fg-muted);margin-top:5px">~30% smaller than JPEG, alpha supported</div>
+        </div>
+        <div class="settings-section">
+          <div style="display:flex;justify-content:space-between;margin-bottom:7px">
+            <span class="settings-label" style="margin:0">Quality</span>
+            <span style="font-family:monospace;font-size:11px;color:var(--fg)">82%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="mock-slider" style="flex:1">
+              <div class="mock-slider-fill"></div>
+              <div class="mock-slider-thumb"></div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--fg-muted);margin-top:4px">
+            <span>Smaller</span><span>Better</span>
+          </div>
+        </div>
+        <div class="settings-section">
+          <span class="settings-label">Transparent Fill</span>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div style="width:30px;height:30px;border-radius:5px;border:1px solid var(--border);background:#fff"></div>
+            <input style="flex:1;height:30px;border-radius:5px;border:1px solid var(--border);background:var(--muted);color:var(--fg);padding:0 8px;font-family:monospace;font-size:11px" value="#ffffff"/>
+          </div>
+        </div>
+        <div style="height:1px;background:var(--border);margin:8px 0"></div>
+        <div class="settings-section">
+          <span class="settings-label">Save to Library</span>
+          <input style="width:100%;height:28px;border-radius:5px;border:1px solid var(--border);background:var(--muted);color:var(--fg);padding:0 8px;font-family:monospace;font-size:11px;margin-bottom:7px" value="image-studio"/>
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;font-size:11px;color:var(--fg-muted)">
+            <div style="width:13px;height:13px;border-radius:3px;border:1px solid var(--border);background:var(--muted)"></div>
+            Make publicly viewable
+          </div>
+          <button style="width:100%;height:30px;border-radius:6px;border:1px solid rgba(34,197,94,.28);background:rgba(34,197,94,.07);color:var(--success);font-size:11px;font-weight:600;cursor:pointer">
+            ☁ Save all (private)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CENTER canvas -->
+    <div class="canvas-area" id="canvas-area">
+
+      <!-- 1. Empty state -->
+      <div id="state-empty" class="empty-canvas">
+        <div class="drop-zone">
+          <div class="drop-icon">🖼</div>
+          <div>
+            <div class="drop-title">Drop images to begin</div>
+            <div class="drop-sub" style="margin-top:4px">Drag &amp; drop, paste from clipboard, or click to browse<br/><span style="font-size:11px;color:var(--fg-subtle)">JPG, PNG, WebP, AVIF — up to 25 MB</span></div>
+          </div>
+          <button class="drop-btn">↑ Choose images</button>
+        </div>
+        <div style="font-size:11px;color:var(--fg-subtle)">← Open preset catalog to pre-select dimensions</div>
+      </div>
+
+      <!-- 2+3+4. Loaded (also used for panel-open states) -->
+      <div id="state-loaded" class="hidden" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto">
+        <div class="compact-add">+ Add more images</div>
+        <div class="amber-banner">
+          ✏ <span><strong>portrait-kelvin</strong> has an auto-generated name — rename for clean slugs</span>
+          <span class="amber-link">Rename</span>
+          <span class="amber-link">AI name</span>
+          <span class="amber-x">✕</span>
+        </div>
+        <div class="hero-canvas">
+          <div class="hero-img-wrap">
+            <div class="hero-img-placeholder">
+              <div style="font-size:40px">🏔</div>
+              <div style="font-size:13px;color:var(--fg-muted)">portrait-kelvin.jpg</div>
+              <div style="font-size:11px;color:var(--fg-subtle)">2400 × 3200 px · 2.1 MB</div>
+            </div>
+          </div>
+          <div class="hero-filename">portrait-kelvin.jpg</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;padding:0 16px 10px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--fg-subtle);margin-bottom:6px;width:100%;max-width:660px">3 presets selected</div>
+          <div class="preset-chips">
+            <div class="preset-chip active">✓ Facebook Page Cover <span class="chip-x">✕</span></div>
+            <div class="preset-chip active">✓ Instagram Post <span class="chip-x">✕</span></div>
+            <div class="preset-chip active">✓ Complete Format Set <span class="chip-x">✕</span></div>
+            <div class="preset-chip" style="border-style:dashed;cursor:pointer" onclick="togglePanel('left')">+ Add preset</div>
+          </div>
+          <div style="font-size:11px;color:var(--fg-subtle);margin-top:6px">Hit <strong style="color:var(--fg-muted)">Generate ⚡</strong> below when ready</div>
+        </div>
+      </div>
+
+      <!-- 5. After generate -->
+      <div id="state-generated" class="hidden" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto">
+        <div class="compact-add">+ Add more images</div>
+        <div class="hero-canvas" style="padding-bottom:6px">
+          <div class="hero-img-wrap">
+            <div class="hero-img-placeholder">
+              <div style="font-size:40px">🏔</div>
+              <div style="font-size:13px;color:var(--fg-muted)">portrait-kelvin.jpg</div>
+              <div style="font-size:11px;color:var(--fg-subtle)">source · 2400 × 3200 px</div>
+            </div>
+          </div>
+        </div>
+        <div class="variant-section">
+          <div class="variant-label">12 variants — click to select for download</div>
+          <div class="variant-grid">
+            <div class="variant-card"><div class="variant-thumb" style="aspect-ratio:820/312;background:linear-gradient(135deg,#1a1830,#2a1540)"><span style="font-size:9px">820×312</span></div><div class="variant-info">fb-cover.webp</div></div>
+            <div class="variant-card selected"><div class="variant-thumb" style="background:linear-gradient(135deg,#181a30,#151840)"><span style="font-size:9px">1080×1080</span></div><div class="variant-info">ig-post.webp ✓</div></div>
+            <div class="variant-card"><div class="variant-thumb" style="aspect-ratio:2/1;background:linear-gradient(135deg,#1a2030,#102040)"><span style="font-size:9px">1200×630</span></div><div class="variant-info">og-image.webp</div></div>
+            <div class="variant-card"><div class="variant-thumb" style="background:linear-gradient(135deg,#201830,#301840)"><span style="font-size:9px">256×256</span></div><div class="variant-info">avatar-lg.webp</div></div>
+            <div class="variant-card"><div class="variant-thumb" style="background:linear-gradient(135deg,#181a30,#201530)"><span style="font-size:9px">64×64</span></div><div class="variant-info">avatar-sm.webp</div></div>
+            <div class="variant-card"><div class="variant-thumb" style="background:linear-gradient(135deg,#1a1830,#121830)"><span style="font-size:9px">32×32</span></div><div class="variant-info">favicon.png</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Multiple files -->
+      <div id="state-multi" class="hidden" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto">
+        <div class="hero-canvas" style="padding-bottom:6px">
+          <div class="hero-img-wrap">
+            <div class="hero-img-placeholder">
+              <div style="font-size:40px">🏔</div>
+              <div style="font-size:13px;color:var(--fg-muted)">portrait-kelvin.jpg</div>
+              <div style="font-size:11px;color:var(--fg-subtle)">2 of 3 — click filmstrip to switch</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;padding:0 16px 8px">
+          <div class="preset-chips">
+            <div class="preset-chip active">✓ Facebook Page Cover</div>
+            <div class="preset-chip active">✓ Instagram Post</div>
+            <div class="preset-chip" style="border-style:dashed;cursor:pointer">+ Add preset</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filmstrip (multi-file) -->
+      <div class="filmstrip hidden" id="filmstrip">
+        <div class="filmstrip-item" onclick="setActive(this)">🌅</div>
+        <div class="filmstrip-item active" onclick="setActive(this)">🏔</div>
+        <div class="filmstrip-item" onclick="setActive(this)">🌆</div>
+        <div class="filmstrip-add">+</div>
+      </div>
+
+    </div><!-- /canvas-area -->
+  </div><!-- /work-area -->
+
+  <!-- ── BOTTOM TOOLBAR — Magnific style ── -->
+  <div class="toolbar">
+
+    <!-- Stats — floats left -->
+    <div class="toolbar-stats" id="toolbar-stats">
+      <strong id="stat-text">0 files</strong>
+    </div>
+
+    <!-- Tool group — centered pill -->
+    <div class="tool-group">
+
+      <!-- Presets shortcut -->
+      <button class="tool-btn" id="tb-presets" onclick="togglePanel('left')" title="Preset catalog">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Presets</span>
+      </button>
+
+      <!-- Settings shortcut -->
+      <button class="tool-btn" id="tb-settings" onclick="togglePanel('right')" title="Output settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Settings</span>
+      </button>
+
+      <div class="tool-sep"></div>
+
+      <!-- AI Describe -->
+      <button class="tool-btn" id="tb-describe" title="AI Describe all files">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        <span>AI Describe</span>
+      </button>
+
+      <!-- Download selected -->
+      <button class="tool-btn" id="tb-dl-sel" title="Download selected">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span id="tb-dl-sel-label">Selected</span>
+      </button>
+
+      <!-- Download all -->
+      <button class="tool-btn" id="tb-dl-all" title="Download all variants">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><line x1="3" y1="10" x2="21" y2="10" stroke-dasharray="2 2"/></svg>
+        <span id="tb-dl-all-label">All</span>
+      </button>
+
+      <div class="tool-sep"></div>
+
+      <!-- Generate — primary -->
+      <button class="tool-btn-generate" id="tb-generate" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        <span id="tb-generate-label">Generate</span>
+      </button>
+
+    </div><!-- /tool-group -->
+  </div><!-- /toolbar -->
+
+</div><!-- /shell -->
+
+<script>
+  const cfg = {
+    empty: {
+      show: 'state-empty', filmstrip: false,
+      stats: '0 files',
+      descEnabled: false, dlEnabled: false, genEnabled: false,
+      genLabel: 'Generate',
+    },
+    loaded: {
+      show: 'state-loaded', filmstrip: false,
+      stats: '1 file · 3 presets',
+      descEnabled: true, dlEnabled: false, genEnabled: true,
+      genLabel: 'Generate',
+    },
+    'presets-open': {
+      show: 'state-loaded', filmstrip: false,
+      stats: '1 file · 3 presets',
+      descEnabled: true, dlEnabled: false, genEnabled: true,
+      genLabel: 'Generate', openPanel: 'left',
+    },
+    'settings-open': {
+      show: 'state-loaded', filmstrip: false,
+      stats: '1 file · 3 presets',
+      descEnabled: true, dlEnabled: false, genEnabled: true,
+      genLabel: 'Generate', openPanel: 'right',
+    },
+    generated: {
+      show: 'state-generated', filmstrip: false,
+      stats: '1 file · 3 presets · 12 variants · 1.4 MB',
+      descEnabled: true, dlEnabled: true, genEnabled: true,
+      genLabel: 'Re-generate',
+    },
+    multi: {
+      show: 'state-multi', filmstrip: true,
+      stats: '3 files · 2 presets',
+      descEnabled: true, dlEnabled: false, genEnabled: true,
+      genLabel: 'Generate all',
+    },
+  };
+
+  const allStates = ['state-empty','state-loaded','state-generated','state-multi'];
+
+  function setState(key, btn) {
+    const s = cfg[key]; if (!s) return;
+    document.querySelectorAll('.state-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    allStates.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (id === s.show) { el.classList.remove('hidden'); }
+      else { el.classList.add('hidden'); }
+    });
+    const fs = document.getElementById('filmstrip');
+    s.filmstrip ? fs.classList.remove('hidden') : fs.classList.add('hidden');
+    document.getElementById('stat-text').textContent = s.stats;
+    document.getElementById('tb-describe').style.opacity = s.descEnabled ? '1' : '.35';
+    document.getElementById('tb-describe').style.cursor = s.descEnabled ? 'pointer' : 'not-allowed';
+    document.getElementById('tb-dl-sel').style.opacity = s.dlEnabled ? '1' : '.35';
+    document.getElementById('tb-dl-sel').style.cursor = s.dlEnabled ? 'pointer' : 'not-allowed';
+    document.getElementById('tb-dl-all').style.opacity = s.dlEnabled ? '1' : '.35';
+    document.getElementById('tb-dl-all').style.cursor = s.dlEnabled ? 'pointer' : 'not-allowed';
+    const genBtn = document.getElementById('tb-generate');
+    genBtn.disabled = !s.genEnabled;
+    document.getElementById('tb-generate-label').textContent = s.genLabel;
+    closePanels();
+    if (s.openPanel) setTimeout(() => openPanel(s.openPanel), 60);
+  }
+
+  function openPanel(side) {
+    document.getElementById('panel-' + side).classList.remove('hidden');
+    document.getElementById('btn-' + side).classList.add('active');
+    document.getElementById('backdrop').classList.remove('hidden');
+    // highlight toolbar shortcut
+    const map = { left: 'tb-presets', right: 'tb-settings' };
+    if (map[side]) document.getElementById(map[side]).classList.add('active');
+  }
+  function closePanels() {
+    ['left','right'].forEach(side => {
+      document.getElementById('panel-' + side).classList.add('hidden');
+      document.getElementById('btn-' + side).classList.remove('active');
+    });
+    document.getElementById('backdrop').classList.add('hidden');
+    document.getElementById('tb-presets').classList.remove('active');
+    document.getElementById('tb-settings').classList.remove('active');
+  }
+  function togglePanel(side) {
+    const panel = document.getElementById('panel-' + side);
+    panel.classList.contains('hidden') ? (closePanels(), openPanel(side)) : closePanels();
+  }
+  function togglePreset(el) {
+    el.classList.toggle('selected');
+    el.querySelector('.preset-check').textContent = el.classList.contains('selected') ? '✓' : '';
+  }
+  function setActive(el) {
+    document.querySelectorAll('.filmstrip-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }
+</script>
+</body>
+</html>

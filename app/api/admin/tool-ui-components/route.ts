@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
         const activeOnly = searchParams.get("active_only");
 
         let query = supabase
-            .from("tool_ui_components")
+            .from("tl_ui")
             .select("*")
             .order("tool_name", { ascending: true });
 
@@ -54,6 +54,8 @@ export async function POST(request: NextRequest) {
         const componentData = {
             tool_id: body.tool_id || null,
             tool_name: body.tool_name,
+            // Phase-0 default; real surface picker arrives in Phase 2.
+            surface_name: body.surface_name || "matrx-admin/tool-registry",
             display_name: body.display_name,
             results_label: body.results_label || null,
             inline_code: body.inline_code,
@@ -75,7 +77,7 @@ export async function POST(request: NextRequest) {
         };
 
         const { data, error } = await supabase
-            .from("tool_ui_components")
+            .from("tl_ui")
             .insert([componentData])
             .select()
             .single();

@@ -65,6 +65,7 @@ function buildLifecycleEntry(
   return {
     callId,
     toolName,
+    displayName: toolName,
     status,
     arguments: args,
     startedAt,

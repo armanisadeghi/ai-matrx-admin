@@ -31,7 +31,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
   // Fetch server info from catalog
   const { data: server, error: serverError } = await supabase
-    .from("mcp_servers")
+    .from("tl_mcp_server")
     .select("endpoint_url, auth_strategy, name, slug, transport")
     .eq("id", serverId)
     .single();

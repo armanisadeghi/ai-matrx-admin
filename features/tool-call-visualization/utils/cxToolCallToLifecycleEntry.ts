@@ -46,6 +46,7 @@ export function cxToolCallToLifecycleEntry(
   const entry: ToolLifecycleEntry = {
     callId: record.callId,
     toolName: record.toolName,
+    displayName: record.toolNameAsCalled ?? record.toolName,
     status: deriveStatus(record),
     arguments:
       record.arguments &&

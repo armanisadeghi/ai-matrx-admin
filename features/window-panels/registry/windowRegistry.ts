@@ -599,6 +599,12 @@ const DYNAMIC: Record<string, DynamicAddition> = {
         (m) => ({ default: m.QuickChatSheet }),
       ),
   },
+  quickChatWindow: {
+    componentImport: () =>
+      import("@/features/quick-actions/components/QuickChatSheet").then(
+        (m) => ({ default: m.QuickChatSheet }),
+      ),
+  },
   quickData: {
     componentImport: () =>
       import("@/features/quick-actions/components/QuickDataSheet").then(
@@ -696,6 +702,26 @@ const DYNAMIC: Record<string, DynamicAddition> = {
     componentImport: () =>
       import("@/features/agents/components/agent-widgets/chat-assistant/AgentChatAssistant").then(
         (m) => ({ default: m.AgentChatAssistant }),
+      ),
+  },
+
+  // ── WhatsApp Demo ───────────────────────────────────────────────────────────
+  whatsappShellWindow: {
+    componentImport: () =>
+      import("@/features/whatsapp-clone/windows/WhatsAppShellWindow").then(
+        (m) => ({ default: m.WhatsAppShellWindow }),
+      ),
+  },
+  whatsappSettings: {
+    componentImport: () =>
+      import("@/features/whatsapp-clone/windows/WhatsAppSettingsWindow").then(
+        (m) => ({ default: m.WhatsAppSettingsWindow }),
+      ),
+  },
+  whatsappMedia: {
+    componentImport: () =>
+      import("@/features/whatsapp-clone/windows/WhatsAppMediaWindow").then(
+        (m) => ({ default: m.WhatsAppMediaWindow }),
       ),
   },
 };

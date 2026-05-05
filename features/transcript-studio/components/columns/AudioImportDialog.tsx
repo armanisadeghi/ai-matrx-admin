@@ -16,7 +16,7 @@
  * set to `"imported"` for audit/UX filtering.
  */
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   CloudUpload,
   FileAudio,
@@ -34,7 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { saveAudioToStorage, getAudioUrl } from "@/features/transcripts/service/audioStorageService";
@@ -75,6 +75,11 @@ export function AudioImportDialog({
 }: AudioImportDialogProps) {
   const dispatch = useAppDispatch();
   const userId = useAppSelector(selectUserId);
+  // Read tail-time straight from the store at submit time so concurrent
+  // recording chunks (which can land via realtime mid-import) don't collide
+  // with the imported segments on tStart or chunkIndex. See
+  // PasteRawContentDialog for the same pattern + rationale.
+  const store = useAppStore();
   const [mode, setMode] = useState<Mode>("file");
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState("");
@@ -83,15 +88,10 @@ export function AudioImportDialog({
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Find the next chunk index + tail time to shift imported segments past
-  // anything already in the session.
-  const ids = useAppSelector(
-    (state) => state.transcriptStudio.rawIdsBySession[sessionId],
-  );
-  const byId = useAppSelector(
-    (state) => state.transcriptStudio.rawById[sessionId],
-  );
-  const { nextChunkIndex, tailTime } = useMemo(() => {
+  const readTail = useCallback((): { nextChunkIndex: number; tailTime: number } => {
+    const state = store.getState();
+    const ids = state.transcriptStudio.rawIdsBySession[sessionId];
+    const byId = state.transcriptStudio.rawById[sessionId];
     if (!ids || !byId || ids.length === 0) {
       return { nextChunkIndex: 0, tailTime: 0 };
     }
@@ -104,7 +104,7 @@ export function AudioImportDialog({
       if (seg.tEnd > maxTEnd) maxTEnd = seg.tEnd;
     }
     return { nextChunkIndex: maxChunk + 1, tailTime: maxTEnd };
-  }, [ids, byId]);
+  }, [sessionId, store]);
 
   const reset = useCallback(() => {
     setFile(null);
@@ -142,7 +142,11 @@ export function AudioImportDialog({
         cleaned.push(...synth);
       }
 
-      let chunkIndex = nextChunkIndex;
+      // Snapshot tail ONCE at the start so all whisper segments stay in their
+      // relative time order (whisper's t_start values are 0-based per-import,
+      // we shift them to live after the session tail). chunkIndex per
+      // iteration re-reads from store to dodge live recording collisions.
+      const { tailTime } = readTail();
       const inserted: RawSegment[] = [];
       for (const seg of cleaned) {
         const baseStart = typeof seg.start === "number" ? seg.start : 0;
@@ -150,21 +154,21 @@ export function AudioImportDialog({
           typeof seg.end === "number" && seg.end > baseStart
             ? seg.end
             : baseStart + 1;
+        const { nextChunkIndex } = readTail();
         const persisted = await insertRawSegment({
           sessionId,
-          chunkIndex,
+          chunkIndex: nextChunkIndex,
           tStart: tailTime + baseStart,
           tEnd: tailTime + baseEnd,
           text: seg.text.trim(),
           source: "imported",
         });
         inserted.push(persisted);
-        chunkIndex += 1;
       }
       dispatch(rawSegmentsAppended({ sessionId, segments: inserted }));
       return inserted.length;
     },
-    [dispatch, sessionId, nextChunkIndex, tailTime],
+    [dispatch, sessionId, readTail],
   );
 
   const transcribeStorageUrl = useCallback(

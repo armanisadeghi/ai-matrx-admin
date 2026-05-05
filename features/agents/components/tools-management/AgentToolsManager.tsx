@@ -1293,7 +1293,7 @@ function OrphanedToolsBanner({
     setLookupStatus("loading");
     const supabase = createClient();
     supabase
-      .from("tools")
+      .from("tl_def")
       .select("*")
       .in("id", orphanedTools)
       .then(({ data, error }) => {

@@ -52,7 +52,8 @@ const fallbackPalette = [
 
 function colorFor(name: string): string {
   let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) | 0;
+  for (let i = 0; i < name.length; i++)
+    hash = (hash * 31 + name.charCodeAt(i)) | 0;
   return fallbackPalette[Math.abs(hash) % fallbackPalette.length];
 }
 
@@ -64,7 +65,6 @@ export function WAAvatar({
   showPresenceDot = false,
   className,
 }: WAAvatarProps) {
-  const ring = "ring-[#0b141a]";
   return (
     <div className={cn("relative inline-block", className)}>
       <Avatar className={cn(sizeClasses[size])}>
@@ -76,9 +76,8 @@ export function WAAvatar({
       {showPresenceDot && online ? (
         <span
           className={cn(
-            "absolute bottom-0 right-0 block rounded-full bg-emerald-500",
+            "absolute bottom-0 right-0 block rounded-full bg-emerald-500 ring-card",
             dotSizeClasses[size],
-            ring,
           )}
           aria-hidden
         />

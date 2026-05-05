@@ -1,11 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/styles/themes/utils";
@@ -43,30 +39,33 @@ export function TabbedGalleryModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          "max-w-none gap-0 border-[#2a3942] bg-[#111b21] p-0",
-          "h-[700px] w-[920px] overflow-hidden rounded-xl shadow-2xl",
+          "max-w-none gap-0 border-border bg-card p-0",
+          "h-[700px] w-[920px] overflow-hidden rounded-xl text-foreground shadow-2xl",
           className,
         )}
-        style={{
-          backdropFilter: "none",
-          border: "1px solid rgba(255,255,255,0.08)",
-        }}
+        style={{ backdropFilter: "none" }}
       >
         <VisuallyHidden.Root>
           <DialogTitle>{title}</DialogTitle>
         </VisuallyHidden.Root>
 
-        <header className="flex items-center justify-between border-b border-[#222d34] bg-[#111b21] px-5 py-3">
+        <div className="flex h-full flex-col">
+        <header className="flex shrink-0 items-center justify-between border-b border-border bg-card px-5 py-3">
           <div className="min-w-0">
-            <h1 className="text-[22px] font-semibold text-[#e9edef]">
+            <h1 className="text-[22px] font-semibold text-foreground">
               {title}
             </h1>
             {subtitle ? (
-              <div className="text-[12.5px] text-[#8696a0]">{subtitle}</div>
+              <div className="text-[12.5px] text-muted-foreground">
+                {subtitle}
+              </div>
             ) : null}
           </div>
           <div className="flex items-center gap-2">
-            <div role="tablist" className="flex items-center rounded-lg bg-[#202c33] p-1">
+            <div
+              role="tablist"
+              className="flex items-center rounded-lg bg-muted p-1"
+            >
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
@@ -76,8 +75,8 @@ export function TabbedGalleryModal({
                   className={cn(
                     "rounded-md px-4 py-1 text-[13px] font-medium transition-colors",
                     tab.id === activeId
-                      ? "bg-[#2a3942] text-white shadow"
-                      : "text-[#aebac1] hover:text-white",
+                      ? "bg-card text-foreground shadow"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {tab.label}
@@ -88,18 +87,20 @@ export function TabbedGalleryModal({
           </div>
         </header>
 
-        <ScrollArea className="flex-1">
-          <div className="py-3">
-            {active
-              ? typeof active.content === "function"
-                ? active.content()
-                : active.content
-              : null}
-          </div>
-        </ScrollArea>
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <ScrollArea className="h-full w-full">
+            <div className="bg-background py-3">
+              {active
+                ? typeof active.content === "function"
+                  ? active.content()
+                  : active.content
+                : null}
+            </div>
+          </ScrollArea>
+        </div>
 
-        <footer className="flex h-14 shrink-0 items-center justify-between border-t border-[#222d34] bg-[#111b21] px-5">
-          <div className="text-[13px] text-[#8696a0]">
+        <footer className="flex h-14 shrink-0 items-center justify-between border-t border-border bg-card px-5">
+          <div className="text-[13px] text-muted-foreground">
             {countLabel(active)}
           </div>
           {footer ? (
@@ -109,12 +110,13 @@ export function TabbedGalleryModal({
                 footer.onPrimary?.();
                 onOpenChange(false);
               }}
-              className="rounded-md bg-[#25d366] px-4 py-1.5 text-[13px] font-medium text-[#0b141a] hover:bg-[#1fb556]"
+              className="rounded-md bg-emerald-500 px-4 py-1.5 text-[13px] font-medium text-white hover:bg-emerald-600"
             >
               {footer.primaryLabel}
             </button>
           ) : null}
         </footer>
+        </div>
       </DialogContent>
     </Dialog>
   );

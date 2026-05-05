@@ -27,7 +27,7 @@ async function fetchComponentRow(
   toolName: string,
 ): Promise<ToolUiComponentRow | null> {
   const { data, error } = await supabase
-    .from("tool_ui_components")
+    .from("tl_ui")
     .select("*")
     .eq("tool_name", toolName)
     .eq("is_active", true)

@@ -536,6 +536,7 @@ function buildPreviewEntry(
     {
       callId,
       toolName,
+      displayName: toolName,
       status,
       arguments: args,
       startedAt: new Date().toISOString(),
@@ -670,13 +671,13 @@ export function ToolUiComponentGenerator({
       try {
         const [samplesResult, dbResult] = await Promise.all([
           supabase
-            .from("tool_test_samples")
+            .from("tl_test_sample")
             .select("*")
             .or(`tool_name.eq.${toolName},tool_id.eq.${toolId}`)
             .order("created_at", { ascending: false })
             .limit(10),
           supabase
-            .from("cx_tool_call")
+            .from("cx_tl_call")
             .select(
               "id, tool_name, call_id, status, arguments, output, output_type, duration_ms, started_at, completed_at",
             )

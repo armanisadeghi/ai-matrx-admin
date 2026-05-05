@@ -2,7 +2,7 @@
 
 import { ChatHeader } from "./ChatHeader";
 import { ChatViewEmpty } from "./ChatViewEmpty";
-import { DoodleBackground } from "./DoodleBackground";
+import { DoodleBackdrop } from "./DoodleBackground";
 import { MessageList } from "./MessageList";
 import { MessageInputBar } from "./MessageInputBar";
 import { useWhatsAppChat } from "../hooks/useWhatsAppChat";
@@ -24,7 +24,7 @@ export function ChatViewPane({ conversation }: ChatViewPaneProps) {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <ChatHeader
         conversation={conversation}
         onOpenMedia={openMedia}
@@ -33,17 +33,20 @@ export function ChatViewPane({ conversation }: ChatViewPaneProps) {
         onSearch={() => {}}
         onOpenContactInfo={openMedia}
       />
-      <div className="relative flex flex-1 flex-col overflow-hidden">
-        <DoodleBackground>
-          <div className="absolute inset-0 flex flex-col">
-            <MessageList
-              messages={messages}
-              participants={conversation.participants}
-            />
-          </div>
-        </DoodleBackground>
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+        <DoodleBackdrop />
+        <div className="absolute inset-0">
+          <MessageList
+            messages={messages}
+            participants={conversation.participants}
+          />
+        </div>
       </div>
-      <MessageInputBar onSend={sendMessage} disabled={isSending} />
+      <MessageInputBar
+        conversationId={conversation.id}
+        onSend={sendMessage}
+        disabled={isSending}
+      />
     </div>
   );
 }

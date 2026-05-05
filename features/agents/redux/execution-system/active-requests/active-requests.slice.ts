@@ -412,6 +412,9 @@ const activeRequestsSlice = createSlice({
         request.toolLifecycle[callId] = {
           callId,
           toolName,
+          // Streamed events carry the canonical name; as-called is backfilled
+          // when the conversation is reloaded from cx_tl_call.tool_name_as_called.
+          displayName: toolName,
           status,
           arguments: args ?? {},
           startedAt: now,

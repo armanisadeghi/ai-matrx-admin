@@ -6,19 +6,29 @@ interface PresenceLabelProps {
   typingText?: string;
 }
 
-export function PresenceLabel({ online, lastSeenAt, typingText }: PresenceLabelProps) {
+export function PresenceLabel({
+  online,
+  lastSeenAt,
+  typingText,
+}: PresenceLabelProps) {
   if (typingText) {
-    return <span className="text-[#25d366]">{typingText}</span>;
+    return (
+      <span className="text-emerald-600 dark:text-emerald-400">
+        {typingText}
+      </span>
+    );
   }
   if (online) {
-    return <span className="text-[#a8b3ba]">online</span>;
+    return <span className="text-muted-foreground">online</span>;
   }
   if (lastSeenAt) {
     try {
       const rel = formatDistanceToNowStrict(new Date(lastSeenAt), {
         addSuffix: true,
       });
-      return <span className="text-[#a8b3ba]">last seen {rel}</span>;
+      return (
+        <span className="text-muted-foreground">last seen {rel}</span>
+      );
     } catch {
       return null;
     }

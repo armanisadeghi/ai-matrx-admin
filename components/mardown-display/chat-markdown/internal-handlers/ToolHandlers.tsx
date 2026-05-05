@@ -97,6 +97,7 @@ export const DbToolCard: React.FC<DbToolCardProps> = ({
     return {
       callId: segment.callId,
       toolName: segment.toolName,
+      displayName: segment.toolName,
       status: segment.isError ? "error" : "completed",
       arguments: segment.arguments ?? {},
       startedAt: now,

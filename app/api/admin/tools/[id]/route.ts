@@ -12,7 +12,7 @@ export async function GET(
     const supabase = await createClient();
 
     const { data, error } = await supabase
-      .from('tools')
+      .from('tl_def')
       .select('*')
       .eq('id', id)
       .single();
@@ -84,7 +84,7 @@ export async function PUT(
     if (updateData.icon === '') updateData.icon = null;
 
     const { data, error } = await supabase
-      .from('tools')
+      .from('tl_def')
       .update(updateData)
       .eq('id', id)
       .select()
@@ -130,7 +130,7 @@ export async function DELETE(
     const supabase = await createClient();
 
     const { error } = await supabase
-      .from('tools')
+      .from('tl_def')
       .delete()
       .eq('id', id);
 

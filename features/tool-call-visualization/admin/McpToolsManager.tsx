@@ -16,6 +16,8 @@ import {
     X,
     Tag,
     TestTube2,
+    ListChecks,
+    ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +35,15 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { useTools } from "@/hooks/useTools";
 import { supabase } from "@/utils/supabase/client";
 import { mapIcon } from "@/utils/icons/icon-mapper";
@@ -125,11 +136,11 @@ export function McpToolsManager() {
         async function fetchCounts() {
             const [samplesRes, uiRes] = await Promise.all([
                 supabase
-                    .from("tool_test_samples")
+                    .from("tl_test_sample")
                     .select("tool_name")
                     .in("tool_name", toolNames),
                 supabase
-                    .from("tool_ui_components")
+                    .from("tl_ui")
                     .select("tool_name")
                     .in("tool_name", toolNames),
             ]);
@@ -248,6 +259,104 @@ export function McpToolsManager() {
         setDeleteConfirmation({ isOpen: true, toolId, toolName });
     };
 
+    const [bulkBusy, setBulkBusy] = useState(false);
+    const [bulkScope, setBulkScope] = useState<"visible" | "selected">("visible");
+    const [selectedToolIds, setSelectedToolIds] = useState<Set<string>>(new Set());
+
+    const targetIds = bulkScope === "selected" && selectedToolIds.size > 0
+        ? filteredTools.filter(t => selectedToolIds.has(t.id)).map(t => t.id)
+        : filteredTools.map(t => t.id);
+
+    const handleBulkSetActive = async (active: boolean) => {
+        if (targetIds.length === 0) return;
+        const inactiveCount = filteredTools.filter(t => targetIds.includes(t.id) && !t.is_active).length;
+        const activeCount = targetIds.length - inactiveCount;
+        const willChange = active ? inactiveCount : activeCount;
+        const noun = `${targetIds.length} tool${targetIds.length === 1 ? "" : "s"}`;
+        const ok = await confirm({
+            title: `${active ? "Activate" : "Deactivate"} ${noun}?`,
+            description: willChange === targetIds.length
+                ? `${noun} will change state.`
+                : `${willChange} of ${targetIds.length} will change; the rest are already ${active ? "active" : "inactive"}.`,
+            confirmLabel: active ? "Activate" : "Deactivate",
+            variant: active ? "default" : "destructive",
+        });
+        if (!ok) return;
+        setBulkBusy(true);
+        try {
+            const { error: updErr } = await supabase
+                .from("tl_def")
+                .update({ is_active: active })
+                .in("id", targetIds);
+            if (updErr) throw updErr;
+            toast({ title: `${noun} ${active ? "activated" : "deactivated"}` });
+            await refetch();
+            setSelectedToolIds(new Set());
+        } catch (err) {
+            toast({
+                title: "Bulk update failed",
+                description: err instanceof Error ? err.message : "Unknown error",
+                variant: "destructive",
+            });
+        } finally {
+            setBulkBusy(false);
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (targetIds.length === 0) return;
+        const noun = `${targetIds.length} tool${targetIds.length === 1 ? "" : "s"}`;
+        // Count cx_tl_call rows that would be orphaned
+        const targetNames = filteredTools.filter(t => targetIds.includes(t.id)).map(t => t.name);
+        const { count: refCount } = await supabase
+            .from("cx_tl_call")
+            .select("id", { count: "exact", head: true })
+            .in("tool_name", targetNames);
+        const ok = await confirm({
+            title: `Delete ${noun}?`,
+            description: `${refCount ?? 0} historical cx_tl_call rows reference these tool names. Deleting cascades through tl_executor, tl_def_surface, tl_bundle_member, tl_def_version, and tl_ui — but cx_tl_call.tool_name has no FK and will be orphaned. Prefer Deactivate unless you really mean it.`,
+            confirmLabel: "Delete forever",
+            variant: "destructive",
+        });
+        if (!ok) return;
+        setBulkBusy(true);
+        try {
+            const { error: delErr } = await supabase.from("tl_def").delete().in("id", targetIds);
+            if (delErr) throw delErr;
+            toast({ title: `${noun} deleted` });
+            await refetch();
+            setSelectedToolIds(new Set());
+        } catch (err) {
+            toast({
+                title: "Bulk delete failed",
+                description: err instanceof Error ? err.message : "Unknown error",
+                variant: "destructive",
+            });
+        } finally {
+            setBulkBusy(false);
+        }
+    };
+
+    const toggleToolSelection = (id: string) => {
+        setSelectedToolIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    };
+
+    const toggleSelectAllVisible = () => {
+        const visibleIds = filteredTools.map(t => t.id);
+        const allSelected = visibleIds.every(id => selectedToolIds.has(id));
+        setSelectedToolIds(prev => {
+            const next = new Set(prev);
+            if (allSelected) visibleIds.forEach(id => next.delete(id));
+            else visibleIds.forEach(id => next.add(id));
+            return next;
+        });
+    };
+
     const confirmDelete = async () => {
         if (!deleteConfirmation.toolId) return;
         try {
@@ -316,6 +425,102 @@ export function McpToolsManager() {
                         <Settings className="h-3.5 w-3.5" />
                         <span className="hidden sm:inline">Refresh</span>
                     </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={bulkBusy || filteredTools.length === 0}
+                                className="h-8 gap-1.5"
+                                title={
+                                    bulkScope === "selected" && selectedToolIds.size > 0
+                                        ? `Acts on ${targetIds.length} selected tool${targetIds.length === 1 ? "" : "s"}`
+                                        : `Acts on all ${filteredTools.length} visible tool${filteredTools.length === 1 ? "" : "s"}`
+                                }
+                            >
+                                {bulkBusy ? (
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                    <ListChecks className="h-3.5 w-3.5" />
+                                )}
+                                <span className="hidden sm:inline">Bulk</span>
+                                <Badge variant="secondary" className="h-4 px-1 text-[10px] tabular-nums">
+                                    {targetIds.length}
+                                </Badge>
+                                <ChevronDown className="h-3 w-3 opacity-60" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-[260px]">
+                            <DropdownMenuLabel className="text-[11px] text-muted-foreground font-normal">
+                                Scope
+                            </DropdownMenuLabel>
+                            <DropdownMenuItem
+                                onClick={() => setBulkScope("visible")}
+                                className={`text-xs gap-2 ${bulkScope === "visible" ? "font-medium" : ""}`}
+                            >
+                                <span className="flex-1">All visible</span>
+                                <Badge variant="outline" className="text-[10px]">
+                                    {filteredTools.length}
+                                </Badge>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => setBulkScope("selected")}
+                                disabled={selectedToolIds.size === 0}
+                                className={`text-xs gap-2 ${bulkScope === "selected" ? "font-medium" : ""}`}
+                            >
+                                <span className="flex-1">Selected only</span>
+                                <Badge variant="outline" className="text-[10px]">
+                                    {selectedToolIds.size}
+                                </Badge>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuLabel className="text-[11px] text-muted-foreground font-normal">
+                                Selection
+                            </DropdownMenuLabel>
+                            <DropdownMenuItem
+                                onClick={toggleSelectAllVisible}
+                                className="text-xs"
+                            >
+                                {filteredTools.every(t => selectedToolIds.has(t.id)) && filteredTools.length > 0
+                                    ? "Deselect all visible"
+                                    : "Select all visible"}
+                            </DropdownMenuItem>
+                            {selectedToolIds.size > 0 && (
+                                <DropdownMenuItem
+                                    onClick={() => setSelectedToolIds(new Set())}
+                                    className="text-xs"
+                                >
+                                    Clear selection ({selectedToolIds.size})
+                                </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuLabel className="text-[11px] text-muted-foreground font-normal">
+                                Actions on {targetIds.length} tool{targetIds.length === 1 ? "" : "s"}
+                            </DropdownMenuLabel>
+                            <DropdownMenuItem
+                                onClick={() => void handleBulkSetActive(true)}
+                                disabled={bulkBusy || targetIds.length === 0}
+                                className="text-xs"
+                            >
+                                Activate
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => void handleBulkSetActive(false)}
+                                disabled={bulkBusy || targetIds.length === 0}
+                                className="text-xs"
+                            >
+                                Deactivate
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => void handleBulkDelete()}
+                                disabled={bulkBusy || targetIds.length === 0}
+                                className="text-xs text-destructive focus:text-destructive"
+                            >
+                                Delete permanently…
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                     <Button size="sm" onClick={() => navigateTo("/administration/mcp-tools/new")} disabled={isPending} className="h-8 gap-1.5">
                         <Plus className="h-3.5 w-3.5" />
                         Add Tool
@@ -425,21 +630,40 @@ export function McpToolsManager() {
                         <p className="text-sm">{searchQuery || activeFilterCount > 0 ? "No tools match your filters" : "No tools in the system"}</p>
                     </div>
                 ) : (
-                    filteredTools.map(tool => (
-                        <ToolListItem
-                            key={tool.id}
-                            tool={tool}
-                            counts={toolCounts[tool.name] ?? { sampleCount: 0, uiComponentCount: 0 }}
-                            isPending={isPending}
-                            onSelect={() => navigateTo(`/administration/mcp-tools/${tool.id}`)}
-                            onEdit={(e) => { e.stopPropagation(); navigateTo(`/administration/mcp-tools/${tool.id}/edit`); }}
-                            onDelete={(e) => { e.stopPropagation(); handleDeleteTool(tool.id, tool.name); }}
-                            onToggleActive={(isActive) => handleToggleActive(tool.id, isActive)}
-                            onGenerateUi={(e) => { e.stopPropagation(); navigateTo(`/administration/mcp-tools/${tool.id}/ui`); }}
-                            onViewSamples={(e) => { e.stopPropagation(); navigateTo(`/administration/mcp-tools/${tool.id}`); }}
-                            onViewIncidents={(e) => { e.stopPropagation(); navigateTo(`/administration/mcp-tools/${tool.id}/incidents`); }}
-                        />
-                    ))
+                    filteredTools.map(tool => {
+                        const isSelected = selectedToolIds.has(tool.id);
+                        return (
+                            <div key={tool.id} className="flex items-start gap-2">
+                                <label
+                                    className="mt-3 flex-shrink-0 cursor-pointer p-1 -m-1 rounded hover:bg-muted/40"
+                                    title={isSelected ? "Deselect" : "Select"}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={isSelected}
+                                        onChange={() => toggleToolSelection(tool.id)}
+                                        className="accent-primary cursor-pointer"
+                                        aria-label={`Select ${tool.name}`}
+                                    />
+                                </label>
+                                <div className="flex-1 min-w-0">
+                                    <ToolListItem
+                                        tool={tool}
+                                        counts={toolCounts[tool.name] ?? { sampleCount: 0, uiComponentCount: 0 }}
+                                        isPending={isPending}
+                                        onSelect={() => navigateTo(`/administration/mcp-tools/${tool.id}`)}
+                                        onEdit={(e) => { e.stopPropagation(); navigateTo(`/administration/mcp-tools/${tool.id}/edit`); }}
+                                        onDelete={(e) => { e.stopPropagation(); handleDeleteTool(tool.id, tool.name); }}
+                                        onToggleActive={(isActive) => handleToggleActive(tool.id, isActive)}
+                                        onGenerateUi={(e) => { e.stopPropagation(); navigateTo(`/administration/mcp-tools/${tool.id}/ui`); }}
+                                        onViewSamples={(e) => { e.stopPropagation(); navigateTo(`/administration/mcp-tools/${tool.id}`); }}
+                                        onViewIncidents={(e) => { e.stopPropagation(); navigateTo(`/administration/mcp-tools/${tool.id}/incidents`); }}
+                                    />
+                                </div>
+                            </div>
+                        );
+                    })
                 )}
             </div>
 

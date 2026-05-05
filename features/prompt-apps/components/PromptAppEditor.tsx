@@ -46,7 +46,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/lib/toast-service";
-import { AICodeEditorModal } from "@/features/code-editor/components/AICodeEditorModal";
+import { SmartCodeEditorModal } from "@/features/code-editor/agent-code-editor/components/SmartCodeEditorModal";
+import { PROMPT_APP_AGENT_PICKER } from "@/features/code-editor/agent-code-editor/agents";
 import type { PromptApp } from "../types/promptAppTypes";
 import { cn } from "@/lib/utils";
 import { PromptAppHeader } from "@/components/layout/new-layout/PageSpecificHeader";
@@ -1266,16 +1267,16 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
         />
       )}
 
-      {/* AI Code Editor Modal */}
-      <AICodeEditorModal
+      {/* AI Code Editor Modal — agent-system replacement of legacy AICodeEditorModal */}
+      <SmartCodeEditorModal
         open={showAIEditor}
         onOpenChange={setShowAIEditor}
-        currentCode={editComponentCode}
+        agents={PROMPT_APP_AGENT_PICKER}
+        defaultPickerAgentId={PROMPT_APP_AGENT_PICKER[0].id}
+        initialCode={editComponentCode}
         language={app.component_language || "tsx"}
-        promptKey="prompt-app-ui-editor"
         onCodeChange={(newCode) => setEditComponentCode(newCode)}
         title="AI Code Editor"
-        allowPromptSelection={true}
       />
 
       {/* Delete Confirmation Dialog */}

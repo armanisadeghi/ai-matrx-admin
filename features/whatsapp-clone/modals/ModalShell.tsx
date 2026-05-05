@@ -1,11 +1,7 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search } from "lucide-react";
@@ -62,9 +58,7 @@ export function ModalShell({
     const id = initialNavId ?? navItems[0]?.id;
     if (!id) return [];
     const found = findItem(navItems, id);
-    return found
-      ? [{ id, parents: found.trail, current: found.item }]
-      : [];
+    return found ? [{ id, parents: found.trail, current: found.item }] : [];
   });
   const [search, setSearch] = useState("");
 
@@ -111,19 +105,22 @@ export function ModalShell({
     if (item.onSelect) item.onSelect();
     setStack((prev) => [
       ...prev,
-      { id: item.id, parents: [...(top?.parents ?? []), top?.current ?? item], current: item },
+      {
+        id: item.id,
+        parents: [...(top?.parents ?? []), top?.current ?? item],
+        current: item,
+      },
     ]);
   };
 
   const showBack = stack.length > 1;
   const goBack = () => setStack((prev) => prev.slice(0, -1));
 
-  const panelNode =
-    top?.current.panel
-      ? typeof top.current.panel === "function"
-        ? top.current.panel(navContext)
-        : top.current.panel
-      : top?.current.children
+  const panelNode = top?.current.panel
+    ? typeof top.current.panel === "function"
+      ? top.current.panel(navContext)
+      : top.current.panel
+    : top?.current.children
       ? (
           <ModalNavList
             items={top.current.children}
@@ -139,31 +136,27 @@ export function ModalShell({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          "max-w-none gap-0 border-[#2a3942] bg-transparent p-0",
-          "h-[640px] w-[920px] overflow-hidden rounded-xl shadow-2xl",
+          "max-w-none gap-0 border-border bg-card p-0",
+          "h-[640px] w-[920px] overflow-hidden rounded-xl text-foreground shadow-2xl",
           className,
         )}
-        style={{
-          backdropFilter: "none",
-          border: "1px solid rgba(255,255,255,0.08)",
-        }}
+        style={{ backdropFilter: "none" }}
       >
         <VisuallyHidden.Root>
           <DialogTitle>{title}</DialogTitle>
         </VisuallyHidden.Root>
 
         <div className="flex h-full">
-          {/* Left nav */}
-          <aside className="flex w-[300px] shrink-0 flex-col border-r border-[#0b141a] bg-[#111b21]">
+          <aside className="flex w-[300px] shrink-0 flex-col border-r border-border bg-card">
             <div className="px-5 pb-3 pt-5">
-              <h1 className="text-[20px] font-semibold text-[#e9edef]">
+              <h1 className="text-[20px] font-semibold text-foreground">
                 {title}
               </h1>
             </div>
             <div className="px-3 pb-3">
-              <div className="relative flex h-9 items-center rounded-lg bg-[#202c33]">
+              <div className="relative flex h-9 items-center rounded-lg bg-muted">
                 <Search
-                  className="ml-3.5 h-4 w-4 text-[#8696a0]"
+                  className="ml-3.5 h-4 w-4 text-muted-foreground"
                   aria-hidden
                 />
                 <input
@@ -171,7 +164,7 @@ export function ModalShell({
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder={searchPlaceholder}
                   aria-label="Search"
-                  className="flex-1 bg-transparent px-3 text-[14px] text-[#e9edef] placeholder:text-[#8696a0] focus:outline-none"
+                  className="flex-1 bg-transparent px-3 text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none"
                 />
               </div>
             </div>
@@ -188,7 +181,6 @@ export function ModalShell({
             </ScrollArea>
           </aside>
 
-          {/* Right content */}
           <section className="relative flex min-w-0 flex-1 flex-col">
             {top ? (
               <ModalContentFrame
@@ -200,14 +192,14 @@ export function ModalShell({
               </ModalContentFrame>
             ) : null}
             {footer ? (
-              <div className="flex h-14 shrink-0 items-center justify-end border-t border-[#0b141a] bg-[#111b21] px-4">
+              <div className="flex h-14 shrink-0 items-center justify-end border-t border-border bg-card px-4">
                 <button
                   type="button"
                   onClick={() => {
                     footer.onPrimary?.();
                     onOpenChange(false);
                   }}
-                  className="rounded-md bg-[#2a3942] px-4 py-1.5 text-[13px] text-[#e9edef] hover:bg-[#374248]"
+                  className="rounded-md bg-muted px-4 py-1.5 text-[13px] text-foreground hover:bg-accent"
                 >
                   {footer.primaryLabel}
                 </button>

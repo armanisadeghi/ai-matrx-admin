@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Play } from "lucide-react";
+import { useSignedUrl } from "@/features/files/hooks/useSignedUrl";
+import { useInfiniteWindow } from "@/features/files/hooks/useInfiniteWindow";
 import {
   formatDuration,
   formatRangeHeader,
@@ -27,8 +29,8 @@ function groupMedia(items: WAMediaItem[]): MediaGroup[] {
 
   const recentCutoff = new Date(NOW.getTime() - 14 * dayMs);
   const recent = items.filter((i) => new Date(i.createdAt) >= recentCutoff);
-
   const older = items.filter((i) => new Date(i.createdAt) < recentCutoff);
+
   const byMonth = new Map<string, WAMediaItem[]>();
   for (const item of older) {
     const key = item.createdAt.slice(0, 7);
@@ -70,13 +72,33 @@ function groupMedia(items: WAMediaItem[]): MediaGroup[] {
   return groups;
 }
 
+const PAGE = 60;
+
 export function MediaTab({ items }: MediaTabProps) {
-  const groups = useMemo(() => groupMedia(items), [items]);
+  const sorted = useMemo(
+    () =>
+      [...items].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)),
+    [items],
+  );
+
+  const { visibleCount, hasMore, sentinelRef } = useInfiniteWindow({
+    total: sorted.length,
+    initial: PAGE,
+    pageSize: PAGE,
+    resetKey: items.length,
+  });
+
+  const visible = useMemo(
+    () => sorted.slice(0, visibleCount),
+    [sorted, visibleCount],
+  );
+
+  const groups = useMemo(() => groupMedia(visible), [visible]);
 
   if (items.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center text-[14px] text-[#8696a0]">
-        No media yet.
+      <div className="flex h-full items-center justify-center px-6 py-20 text-center text-[14px] text-muted-foreground">
+        No media in your library yet.
       </div>
     );
   }
@@ -86,11 +108,13 @@ export function MediaTab({ items }: MediaTabProps) {
       {groups.map((g) => (
         <section key={g.id}>
           <header className="pb-2">
-            <h3 className="text-[20px] font-semibold text-[#e9edef]">
+            <h3 className="text-[20px] font-semibold text-foreground">
               {g.label}
             </h3>
             {g.rangeLabel ? (
-              <div className="text-[12.5px] text-[#8696a0]">{g.rangeLabel}</div>
+              <div className="text-[12.5px] text-muted-foreground">
+                {g.rangeLabel}
+              </div>
             ) : null}
           </header>
           <div className="grid grid-cols-5 gap-1">
@@ -100,22 +124,72 @@ export function MediaTab({ items }: MediaTabProps) {
           </div>
         </section>
       ))}
+      {hasMore ? (
+        <div
+          ref={sentinelRef}
+          className="flex h-12 items-center justify-center text-[12.5px] text-muted-foreground"
+        >
+          Loading more…
+        </div>
+      ) : (
+        <div className="py-2 text-center text-[12px] text-muted-foreground">
+          {sorted.length} item{sorted.length === 1 ? "" : "s"}
+        </div>
+      )}
     </div>
   );
 }
 
 function MediaTile({ item }: { item: WAMediaItem }) {
+  const tileRef = useRef<HTMLButtonElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Only fire image / signed-URL requests when the tile actually scrolls
+  // near the viewport. Without this, mounting 60 windowed tiles fires
+  // 60 simultaneous requests; the first ~15-20 succeed and the rest
+  // queue or stall. With it, requests follow the user's scroll.
+  useEffect(() => {
+    if (isVisible) return;
+    const el = tileRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            io.disconnect();
+            break;
+          }
+        }
+      },
+      { rootMargin: "200px 0px", threshold: 0 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [isVisible]);
+
+  const inlineUrl = item.thumbnailUrl || item.url;
+  const needsSigned = isVisible && !inlineUrl && !!item.cloudFileId;
+  const { url: signedUrl } = useSignedUrl(
+    needsSigned ? item.cloudFileId! : null,
+    { expiresIn: 3600 },
+  );
+  const renderUrl = inlineUrl || signedUrl || "";
+
   return (
     <button
+      ref={tileRef}
       type="button"
-      className="group relative aspect-square overflow-hidden rounded-md bg-[#0b141a]"
-      title={item.conversationName}
+      className="group relative aspect-square overflow-hidden rounded-md bg-muted"
+      title={item.conversationName ?? item.caption ?? ""}
     >
-      {item.thumbnailUrl ? (
+      {isVisible && renderUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={item.thumbnailUrl}
+          src={renderUrl}
           alt={item.caption ?? item.conversationName ?? "Media"}
+          loading="lazy"
+          decoding="async"
           className="h-full w-full object-cover"
         />
       ) : null}

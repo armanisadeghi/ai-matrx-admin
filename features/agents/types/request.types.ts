@@ -119,7 +119,20 @@ export type ToolLifecycleStatus =
 
 export interface ToolLifecycleEntry {
   callId: string;
+  /**
+   * Canonical tool name (e.g. "matrx-extend:take_screenshot"). This is what
+   * renderers and registries are keyed by — never use `displayName` for
+   * lookup. Persisted from `cx_tl_call.tool_name`.
+   */
   toolName: string;
+  /**
+   * What the AI actually called the tool (e.g. "forms:fill_form" if loaded via
+   * a bundle alias). Falls back to canonical when the source row pre-dates the
+   * `tool_name_as_called` column or the value isn't available. UI surfaces
+   * should prefer `displayName` for the primary label and show `toolName` in a
+   * tooltip / detail when the two differ.
+   */
+  displayName: string;
   status: ToolLifecycleStatus;
   arguments: Record<string, unknown>;
   startedAt: string;

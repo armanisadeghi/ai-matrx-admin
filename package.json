@@ -1,6 +1,6 @@
 {
   "name": "app-matrx",
-  "version": "0.3.336",
+  "version": "0.3.338",
   "private": true,
   "scripts": {
     "dev": "set NODE_OPTIONS=--dns-result-order=ipv4first && next dev",
@@ -151,6 +151,7 @@
     "date-fns": "^4.1.0",
     "dexie": "^4.4.2",
     "embla-carousel-react": "latest",
+    "emoji-picker-react": "^4.19.1",
     "format-duration": "^3.0.2",
     "groq-sdk": "latest",
     "html-to-image": "^1.11.13",

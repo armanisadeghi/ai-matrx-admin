@@ -79,7 +79,7 @@ export async function fetchMcpServerConfigs(
   serverId: string,
 ): Promise<McpServerConfigEntry[]> {
   const { data, error } = await supabase
-    .from("mcp_server_configs")
+    .from("tl_mcp_config")
     .select("*")
     .eq("server_id", serverId)
     .order("is_default", { ascending: false });

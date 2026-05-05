@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
   }
 
   const { data: server, error: serverError } = await supabase
-    .from("mcp_servers")
+    .from("tl_mcp_server")
     .select("endpoint_url, slug, auth_strategy, name, oauth_client_id, oauth_scopes")
     .eq("id", serverId)
     .single();

@@ -31,10 +31,9 @@ export async function fetchOverviewKpis(filters: CxFilters): Promise<CxOverviewK
   const timeWhere = buildTimeframeCondition(filters, "ur.created_at");
   const userWhere = filters.user_id ? `AND ur.user_id = '${filters.user_id}'` : "";
 
-  // Aggregate KPIs from user_requests
-  const { data: kpiData } = await supabase.rpc("cx_dashboard_kpis" as any, {}).select();
-
-  // Fallback: direct SQL approach via multiple queries
+  // KPIs are aggregated from direct queries below — the prior
+  // `cx_dashboard_kpis` RPC was removed in the post-0023 schema and its
+  // result was never consumed by the rest of this function.
   const { data: urStats } = await supabase
     .from("cx_user_request")
     .select("id, total_input_tokens, total_output_tokens, total_cached_tokens, total_tokens, total_cost, total_duration_ms, status, finish_reason, error, created_at, completed_at, iterations, total_tool_calls")
@@ -51,7 +50,7 @@ export async function fetchOverviewKpis(filters: CxFilters): Promise<CxOverviewK
     .is("deleted_at", null);
 
   const { data: toolStats } = await supabase
-    .from("cx_tool_call")
+    .from("cx_tl_call")
     .select("id, is_error")
     .is("deleted_at", null);
 
@@ -68,7 +67,7 @@ export async function fetchOverviewKpis(filters: CxFilters): Promise<CxOverviewK
 
   // Tool usage
   const { data: toolUsage } = await supabase
-    .from("cx_tool_call")
+    .from("cx_tl_call")
     .select("tool_name, duration_ms, is_error, cost_usd")
     .is("deleted_at", null);
 
@@ -319,7 +318,7 @@ export async function fetchUserRequestDetail(id: string) {
       .is("deleted_at", null)
       .order("iteration", { ascending: true }),
     supabase
-      .from("cx_tool_call")
+      .from("cx_tl_call")
       .select("*")
       .eq("user_request_id", id)
       .is("deleted_at", null)
@@ -399,7 +398,7 @@ export async function fetchErrors(filters: CxFilters) {
 
   // Tool calls with errors
   const { data: errorToolCalls } = await supabase
-    .from("cx_tool_call")
+    .from("cx_tl_call")
     .select("*")
     .is("deleted_at", null)
     .or("is_error.eq.true,success.eq.false")
