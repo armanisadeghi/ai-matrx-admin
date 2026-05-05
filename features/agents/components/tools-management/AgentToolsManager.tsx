@@ -110,8 +110,6 @@ type ToolsTab = "server" | "custom" | "client" | "mcp";
 const ALL_CATEGORY = "__all__";
 const ENABLED_CATEGORY = "__enabled__";
 
-
-
 // Deterministic color palette for category icons — muted, professional tones
 // that work in both light and dark mode.
 const CATEGORY_COLORS: Record<
@@ -680,6 +678,41 @@ function ServerToolsTab({
     return toolsList?.items || [];
   }, [isEnabledTab, metadata, activeSet, toolsList, debouncedSearch]);
 
+  const allVisibleSelected =
+    visibleTools.length > 0 &&
+    visibleTools.every((t: any) => activeSet.has(t.id));
+  const someVisibleSelected = visibleTools.some((t: any) =>
+    activeSet.has(t.id),
+  );
+
+  const selectAllVisible = useCallback(() => {
+    const current = Array.isArray(selectedTools)
+      ? (selectedTools as string[])
+      : [];
+    const visibleIds = visibleTools.map((t: any) => t.id as string);
+    const next = Array.from(new Set([...current, ...visibleIds]));
+    dispatch(
+      setAgentTools({
+        id: agentId,
+        tools: next as unknown as typeof selectedTools,
+      }),
+    );
+  }, [agentId, selectedTools, visibleTools, dispatch]);
+
+  const deselectAllVisible = useCallback(() => {
+    const current = Array.isArray(selectedTools)
+      ? (selectedTools as string[])
+      : [];
+    const visibleIdSet = new Set(visibleTools.map((t: any) => t.id as string));
+    const next = current.filter((id) => !visibleIdSet.has(id));
+    dispatch(
+      setAgentTools({
+        id: agentId,
+        tools: next as unknown as typeof selectedTools,
+      }),
+    );
+  }, [agentId, selectedTools, visibleTools, dispatch]);
+
   const categories = metadata?.categories || [];
   const totalCount = metadata?.total_count || 0;
 
@@ -953,6 +986,45 @@ function ServerToolsTab({
             <span className="text-[11px] text-muted-foreground tabular-nums">
               {isEnabledTab ? visibleTools.length : toolsList?.total || 0} tools
             </span>
+            {/* Select all / Deselect all for visible tools */}
+            {visibleTools.length > 0 && !isEnabledTab && (
+              <div className="flex items-center gap-0.5">
+                {allVisibleSelected ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-1.5 text-[10px] text-muted-foreground hover:text-destructive"
+                    onClick={deselectAllVisible}
+                    title="Deselect all visible tools"
+                  >
+                    None
+                  </Button>
+                ) : (
+                  <>
+                    {someVisibleSelected && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-1.5 text-[10px] text-muted-foreground hover:text-destructive"
+                        onClick={deselectAllVisible}
+                        title="Deselect all visible tools"
+                      >
+                        None
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
+                      onClick={selectAllVisible}
+                      title="Select all visible tools"
+                    >
+                      Select all
+                    </Button>
+                  </>
+                )}
+              </div>
+            )}
             {isEnabledTab && enabledCount > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -1205,9 +1277,10 @@ function OrphanedToolsBanner({
   >("idle");
 
   // Stable string key so we re-fetch only when the actual ID set changes.
-  const idsKey = useMemo(() => [...orphanedTools].sort().join(","), [
-    orphanedTools,
-  ]);
+  const idsKey = useMemo(
+    () => [...orphanedTools].sort().join(","),
+    [orphanedTools],
+  );
 
   useEffect(() => {
     if (orphanedTools.length === 0) {
@@ -2248,31 +2321,30 @@ function McpToolsTab({ agentId }: { agentId: string }) {
           { get: (e) => e.name, weight: "title" },
           { get: (e) => e.vendor, weight: "subtitle" },
           { get: (e) => e.description, weight: "body" },
-        ])
-          .map((entry) => (
-            <McpAgentServerCard
-              key={entry.serverId}
-              entry={entry}
-              expanded={expandedServer === entry.serverId}
-              connectingServerId={connectingServerId}
-              onExpand={() =>
-                setExpandedServer(
-                  expandedServer === entry.serverId ? null : entry.serverId,
-                )
+        ]).map((entry) => (
+          <McpAgentServerCard
+            key={entry.serverId}
+            entry={entry}
+            expanded={expandedServer === entry.serverId}
+            connectingServerId={connectingServerId}
+            onExpand={() =>
+              setExpandedServer(
+                expandedServer === entry.serverId ? null : entry.serverId,
+              )
+            }
+            onRemove={() => removeFromAgent(entry.serverId)}
+            onConnect={(entry) => {
+              if (entry.authStrategy === "oauth_discovery") {
+                window.open(
+                  `/api/mcp/oauth/start?server_id=${entry.serverId}&return_url=${encodeURIComponent(window.location.href)}`,
+                  "_blank",
+                  "width=600,height=700",
+                );
               }
-              onRemove={() => removeFromAgent(entry.serverId)}
-              onConnect={(entry) => {
-                if (entry.authStrategy === "oauth_discovery") {
-                  window.open(
-                    `/api/mcp/oauth/start?server_id=${entry.serverId}&return_url=${encodeURIComponent(window.location.href)}`,
-                    "_blank",
-                    "width=600,height=700",
-                  );
-                }
-              }}
-              onDisconnect={(serverId) => dispatch(disconnectServer(serverId))}
-            />
-          ))}
+            }}
+            onDisconnect={(serverId) => dispatch(disconnectServer(serverId))}
+          />
+        ))}
       </div>
 
       {/* Unresolved servers (agent references UUIDs not in catalog) */}
@@ -3452,25 +3524,26 @@ function ToolCard({
 
   return (
     <div
-      className={`rounded-lg text-left transition-all border ${
+      className={`rounded-lg text-left transition-all border cursor-pointer select-none ${
         active
           ? `${colors.bg} ${colors.border}`
           : "border-transparent hover:bg-muted/40 hover:border-border"
       }`}
+      onClick={() => onToggle(tool.id)}
     >
       <div className="flex items-start gap-3 w-full px-3 py-2.5">
-        {/* Checkbox */}
-        <button onClick={() => onToggle(tool.id)} className="mt-0.5 shrink-0">
+        {/* Checkbox indicator */}
+        <div className="mt-0.5 shrink-0">
           <div
             className={`flex items-center justify-center w-4 h-4 rounded border-[1.5px] transition-all ${
               active
                 ? `${colors.dot} border-transparent text-white`
-                : "border-border hover:border-primary/50"
+                : "border-border group-hover:border-primary/50"
             }`}
           >
             {active && <Check className="w-2.5 h-2.5 stroke-[3]" />}
           </div>
-        </button>
+        </div>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
@@ -3520,10 +3593,13 @@ function ToolCard({
           )}
         </div>
 
-        {/* Expand button */}
+        {/* Expand button — stop propagation so it doesn't toggle the tool */}
         {hasDetails && (
           <button
-            onClick={onExpand}
+            onClick={(e) => {
+              e.stopPropagation();
+              onExpand();
+            }}
             className={`mt-0.5 transition-colors shrink-0 ${
               expanded
                 ? `${colors.text}`

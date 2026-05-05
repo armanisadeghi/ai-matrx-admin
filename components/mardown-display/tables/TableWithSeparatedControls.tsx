@@ -443,7 +443,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
         let html = text
             .replace(/\*\*([^*]+)\*\*/g, "$1")
             .replace(/\*([^*]+)\*/g, "$1")
-            .replace(/_([^_]+)_/g, "$1");
+            .replace(/(?<![A-Za-z0-9])_([^_\n]+?)_(?![A-Za-z0-9])/g, "$1");
         html = html.replace(/([^<]+)<\/strong><\/em>/g, "$1");
         return html;
     }, []);

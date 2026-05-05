@@ -10,6 +10,7 @@ import { viewport } from "./config/viewport";
 import { inter, montserrat, openSans, roboto } from "@/styles/themes/fonts";
 import { SyncBootScript } from "@/lib/sync/components/SyncBootScript";
 import { syncPolicies } from "@/lib/sync/registry";
+import { ChunkRecoveryBootScript } from "@/components/errors/ChunkRecoveryBootScript";
 
 export { metadata, viewport };
 
@@ -49,6 +50,12 @@ export default async function RootLayout({ children }: RootLayoutProps) {
       suppressHydrationWarning
     >
       <head>
+        {/* Pre-hydration chunk-error recovery. Must come BEFORE any chunked
+                    script so we can catch ChunkLoadError from the very first
+                    chunk fetch — at that moment React boundaries don't exist
+                    yet, so this is the only hook available. After React boots,
+                    global-error.tsx and ErrorBoundaryView take over. */}
+        <ChunkRecoveryBootScript />
         {/* Prevent autofill/password manager interference */}
         <meta name="autofill-off" content="true" />
         <meta name="password-manager-off" content="true" />

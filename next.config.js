@@ -13,6 +13,14 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    // Vercel Skew Protection: when enabled in the Vercel project settings,
+    // Vercel injects NEXT_DEPLOYMENT_ID at build time. Setting `deploymentId`
+    // makes Next.js append `?dpl=<id>` to every chunk fetch, and Vercel routes
+    // those requests to the matching deployment — so old browser tabs after a
+    // deploy still load their original chunks instead of 404ing on hashes that
+    // no longer exist. Without this, ChunkLoadError crashes stale tabs.
+    deploymentId: process.env.NEXT_DEPLOYMENT_ID,
+
     // Build performance optimizations
     productionBrowserSourceMaps: false,
     devIndicators: false,  // disables the indicator entirely
@@ -218,6 +226,10 @@ const nextConfig = {
         return config;
     },
     env: {
+        // Expose deployment ID to the client for diagnostics — lets the global
+        // error logger include "this tab is on deployment X" so we can correlate
+        // errors with stale-tab vs. genuinely-broken builds.
+        NEXT_PUBLIC_DEPLOYMENT_ID: process.env.NEXT_DEPLOYMENT_ID,
         GROQ_API_KEY: process.env.GROQ_API_KEY,
         OPENAI_API_KEY: process.env.OPENAI_API_KEY,
         ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
