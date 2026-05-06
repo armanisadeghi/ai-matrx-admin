@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function ImageManagerPage() {
+export default function ImagesPage() {
   redirect("/images/manager");
 }
