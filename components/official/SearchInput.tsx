@@ -47,6 +47,7 @@ export function SearchInput({
   const currentValue = isControlled ? value : internalValue;
   const searchValue = currentValue.trim();
   const didMountRef = useRef(false);
+  const onSearchRef = useRef(onSearch);
 
   useEffect(() => {
     if (!autoFocus) return;
@@ -54,16 +55,20 @@ export function SearchInput({
   }, [autoFocus]);
 
   useEffect(() => {
-    if (!onSearch) return;
+    onSearchRef.current = onSearch;
+  }, [onSearch]);
+
+  useEffect(() => {
+    if (!onSearchRef.current) return;
     if (!didMountRef.current) {
       didMountRef.current = true;
       return;
     }
     const timer = window.setTimeout(() => {
-      onSearch(currentValue);
+      onSearchRef.current?.(currentValue);
     }, debounceTime);
     return () => window.clearTimeout(timer);
-  }, [currentValue, debounceTime, onSearch]);
+  }, [currentValue, debounceTime]);
 
   const setNextValue = (nextValue: string) => {
     if (!isControlled) setInternalValue(nextValue);
