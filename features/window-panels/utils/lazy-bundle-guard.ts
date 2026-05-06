@@ -96,16 +96,19 @@ export function assertLazyLoaded(moduleId: string): void {
             `See features/window-panels/FEATURE.md → "Bundle invariant". ` +
             `(Reported once per session per moduleId.)`;
 
-        if (process.env.NODE_ENV === "development") {
-            console.error(
-                "%c[WINDOW-PANELS BUNDLE LEAK]",
-                "background:#b91c1c;color:white;padding:6px 10px;font-size:13px;font-weight:bold;border-radius:3px;",
-                "\n" + message,
-            );
+        // Loud everywhere — prod and dev. If this fires in production a
+        // customer is paying for it, and we want to know about it just as
+        // much as a developer would. The only behavioural difference: we
+        // skip the verbose stack trace in prod since most customers'
+        // browsers compress it to a useless minified blob.
+        console.error(
+            "%c[WINDOW-PANELS BUNDLE LEAK]",
+            "background:#b91c1c;color:white;padding:6px 10px;font-size:13px;font-weight:bold;border-radius:3px;",
+            "\n" + message,
+        );
+        if (process.env.NODE_ENV !== "production") {
             // eslint-disable-next-line no-console
             console.trace("eager import stack:");
-        } else {
-            console.error("[WINDOW-PANELS BUNDLE LEAK] " + message);
         }
     });
 }

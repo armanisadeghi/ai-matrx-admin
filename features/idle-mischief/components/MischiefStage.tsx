@@ -16,7 +16,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { useIdleDetection } from "../hooks/useIdleDetection";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { ACT_QUEUE, SNAPBACK_DURATION_MS } from "../constants";
@@ -33,6 +33,14 @@ import {
   showStarted,
 } from "../state/idleMischiefSlice";
 import { restoreAll, type RestoreStats } from "../utils/snapshot";
+import { isUserBusy, whyUserIsBusy } from "../utils/isUserBusy";
+
+interface RecordingsLike {
+  isRecording?: boolean;
+  isTranscribing?: boolean;
+}
+const selectRecordingsBusy = (s: { recordings?: RecordingsLike }) =>
+  Boolean(s.recordings?.isRecording || s.recordings?.isTranscribing);
 
 interface RunningAct {
   id: MischiefActId;
@@ -41,21 +49,37 @@ interface RunningAct {
   cancelTimer: () => void;
 }
 
+/**
+ * Snap-back triggers — same broad definition as `useIdleDetection.ts`. When
+ * any of these fire while an act is playing, the act is dismissed and the
+ * page is restored. Capture-phase + passive so we beat any other listener
+ * and never block the event flow.
+ */
 const ACTIVITY_EVENTS: (keyof WindowEventMap)[] = [
   "pointermove",
   "pointerdown",
-  "keydown",
   "wheel",
   "touchstart",
+  "touchmove",
+  "keydown",
+  "input",
+  "compositionstart",
+  "compositionupdate",
+  "focusin",
+  "paste",
+  "cut",
+  "copy",
 ];
 
 export function MischiefStage() {
   const dispatch = useAppDispatch();
+  const store = useAppStore();
   const { idleSeconds, bumpActivity } = useIdleDetection();
   const reducedMotion = useReducedMotion();
   const settings = useAppSelector(selectMischiefSettings);
   const manualTrigger = useAppSelector(selectMischiefManualTrigger);
   const status = useAppSelector(selectMischiefStatus);
+  const recordingsBusy = useAppSelector(selectRecordingsBusy);
 
   const disabled =
     reducedMotion ||
@@ -143,6 +167,15 @@ export function MischiefStage() {
 
   // ── Start an act ──────────────────────────────────────────────────────────
   const startAct = (id: MischiefActId, durationMs: number) => {
+    // Last-chance busy check: even if the scheduler decided to fire, the
+    // user may have started typing / dictating / recording a microsecond
+    // before this call. Re-check synchronously and abort if so.
+    const busyReason = whyUserIsBusy(store.getState());
+    if (busyReason) {
+      log("info", `⊘ skipped "${id}" — ${busyReason}`);
+      return;
+    }
+
     if (runningRef.current) {
       hardSnapBack("snapping-back", "preempted");
     }
@@ -318,6 +351,18 @@ export function MischiefStage() {
     startAct(sched.id, sched.duration);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [manualTrigger.nonce, manualTrigger.actId, disabled]);
+
+  // ── Recording / transcribing → instant snap-back ──────────────────────────
+  // If audio recording starts (or transcription starts) WHILE an act is
+  // playing, we abort. The user is dictating / waiting on a transcript and
+  // any animation noise on the page is unwelcome.
+  useEffect(() => {
+    if (!recordingsBusy) return;
+    if (!runningRef.current) return;
+    log("warn", "↺ recording/transcribing detected — snapping back");
+    hardSnapBack("snapping-back", "recording-active");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recordingsBusy]);
 
   // ── External snap-back request (dev panel "Snap back now") ────────────────
   useEffect(() => {

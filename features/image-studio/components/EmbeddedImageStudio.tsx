@@ -59,9 +59,21 @@ import { getPresetById } from "../presets";
 import { slugifyFilename } from "../utils/slugify-filename";
 import { formatBytes, formatDimensions } from "../utils/format-bytes";
 import type { ImagePosition, StudioSourceFile } from "../types";
+import dynamic from "next/dynamic";
 import { StudioDropZone } from "./StudioDropZone";
-import { InitialCropWindow } from "./InitialCropWindow";
 import { useFilePicker } from "@/features/files/components/pickers/FilePicker";
+
+// InitialCropWindow renders <WindowPanel> as styling chrome — keep it
+// out of EmbeddedImageStudio's static graph so the parent's chunk
+// doesn't pull the whole window-panels system. See ImageStudioShell.tsx
+// for the same rationale; this is the second consumer.
+const InitialCropWindow = dynamic(
+  () =>
+    import("./InitialCropWindow").then((m) => ({
+      default: m.InitialCropWindow,
+    })),
+  { ssr: false, loading: () => null },
+);
 import { useAppStore } from "@/lib/redux/hooks";
 import { getSignedUrl } from "@/features/files/api/files";
 

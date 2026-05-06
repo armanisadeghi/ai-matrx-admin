@@ -1,12 +1,26 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { ArrowDown } from "lucide-react";
 import { AgentConversationDisplay } from "../messages-display/AgentConversationDisplay";
-import { CreatorRunPanel } from "../run-controls/CreatorRunPanel";
 import { SmartAgentInput } from "../inputs/smart-input/SmartAgentInput";
 
 import { cn } from "@/lib/utils";
+
+// CreatorRunPanel renders a <WindowPanel> as styling chrome (admin-gated
+// tab panel). Without `dynamic()` it would pull WindowPanel and the entire
+// window-panels chunk into every route that statically imports
+// AgentConversationColumn (chat, agent run, agent builder), tripping the
+// lazy-bundle-guard. Loading: null because the panel is collapsed by
+// default and the user toggles it open — first paint without it is fine.
+const CreatorRunPanel = dynamic(
+  () =>
+    import("../run-controls/CreatorRunPanel").then((m) => ({
+      default: m.CreatorRunPanel,
+    })),
+  { ssr: false, loading: () => null },
+);
 
 interface SmartInputForwardProps {
   sendButtonVariant?: "default" | "blue";

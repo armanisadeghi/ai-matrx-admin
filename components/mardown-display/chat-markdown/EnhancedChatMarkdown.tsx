@@ -18,10 +18,7 @@ import {
 import { selectMessageInterleavedContent } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import type { RenderBlockPayload } from "@/types/python-generated/stream-events";
 import { useAppSelector } from "@/lib/redux/hooks";
-import {
-  InlineToolCard,
-  DbToolCard,
-} from "./internal-handlers/ToolHandlers";
+import { InlineToolCard, DbToolCard } from "./internal-handlers/ToolHandlers";
 import { PlainTextFallback } from "./internal-handlers/PlainTextFallback";
 import { SafeBlockRenderer } from "./internal-handlers/SafeBlockRenderer";
 import { MarkdownErrorBoundary } from "./internal-handlers/MarkdownErrorBoundary";
@@ -515,7 +512,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
                 if (slot.kind === "tool") {
                   return (
                     <InlineToolCard
-                      key={`tool-${slot.callId}`}
+                      key={`tool-${slot.seq}-${slot.callId}`}
                       requestId={requestId}
                       callId={slot.callId}
                       conversationId={conversationId ?? ""}
@@ -525,7 +522,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
                 if (slot.kind === "status") {
                   return (
                     <InlineStatusIndicator
-                      key={`status-${i}`}
+                      key={`status-${slot.seq}`}
                       label={slot.label}
                     />
                   );
@@ -537,7 +534,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
                   if (segment.type === "db_tool") {
                     return (
                       <DbToolCard
-                        key={`db-tool-${segment.callId}`}
+                        key={`db-tool-${segIdx}-${segment.callId}`}
                         segment={segment}
                         conversationId={conversationId ?? ""}
                       />
