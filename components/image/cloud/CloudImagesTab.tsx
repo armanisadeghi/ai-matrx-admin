@@ -22,7 +22,6 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  Search,
   ImageOff,
   Loader2,
   Check,
@@ -34,7 +33,7 @@ import {
   List as ListIcon,
   type LucideIcon,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/official/SearchInput";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -217,33 +216,40 @@ export function CloudImagesTab({ providedUrls }: CloudImagesTabProps) {
   };
 
   const isLoading = treeStatus === "loading" || treeStatus === "idle";
+  const imageCountLabel = `${imageFiles.length} image${imageFiles.length !== 1 ? "s" : ""}`;
 
   return (
     <TooltipProvider delayDuration={300}>
       <div className="h-full flex flex-col">
-        <div className="border-b border-border px-4 py-3 flex items-center gap-2 flex-wrap">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search your images..."
-              className="pl-8 text-base"
-              style={{ fontSize: "16px" }}
-            />
-          </div>
-          <Button
-            type="button"
-            variant={showRecentsOnly ? "default" : "outline"}
-            size="sm"
-            onClick={() => setShowRecentsOnly((v) => !v)}
-          >
-            <Clock className="h-3.5 w-3.5 mr-1.5" />
-            Recents
-          </Button>
-          <ViewModeToggle value={viewMode} onChange={setViewMode} />
-          <div className="text-xs text-muted-foreground hidden sm:block">
-            {imageFiles.length} image{imageFiles.length !== 1 ? "s" : ""}
+        <div className="border-b border-border px-4 py-2.5 pr-14 flex items-center gap-3 flex-wrap">
+          <SearchInput
+            value={query}
+            onValueChange={setQuery}
+            placeholder="Search your images..."
+            className="min-w-[260px] flex-1"
+            inputClassName="h-9 bg-background text-base"
+            showClearButton={true}
+            autoFocus={false}
+          />
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            <Button
+              type="button"
+              variant={showRecentsOnly ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowRecentsOnly((v) => !v)}
+              className="h-9"
+            >
+              <Clock className="h-3.5 w-3.5 mr-1.5" />
+              Recents
+            </Button>
+            <ViewModeToggle value={viewMode} onChange={setViewMode} />
+            <div
+              className="hidden h-9 items-center rounded-md border border-border/80 bg-card/70 px-2.5 text-xs font-medium text-muted-foreground shadow-sm sm:flex"
+              aria-label={`${imageCountLabel} loaded`}
+              aria-live="polite"
+            >
+              {imageCountLabel}
+            </div>
           </div>
         </div>
 
@@ -332,7 +338,7 @@ function ViewModeToggle({
 }) {
   return (
     <div
-      className="inline-flex rounded-md border border-border bg-card overflow-hidden"
+      className="inline-flex h-9 rounded-md border border-border bg-card overflow-hidden"
       role="group"
       aria-label="View mode"
     >
@@ -348,7 +354,7 @@ function ViewModeToggle({
                 aria-pressed={active}
                 aria-label={opt.label}
                 className={cn(
-                  "h-8 w-8 flex items-center justify-center transition-colors border-r border-border last:border-r-0",
+                  "h-9 w-8 flex items-center justify-center transition-colors border-r border-border last:border-r-0",
                   active
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-accent hover:text-foreground",
