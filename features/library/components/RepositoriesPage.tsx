@@ -77,7 +77,9 @@ export function RepositoriesPage() {
       .then(({ data }) => {
         if (cancelled || !data) return;
         setRepos(Array.isArray(data.repositories) ? data.repositories : []);
-        setUnattached(typeof data.unattached_files === "number" ? data.unattached_files : 0);
+        setUnattached(
+          typeof data.unattached_files === "number" ? data.unattached_files : 0,
+        );
       })
       .catch((err) => {
         if (!cancelled) setError(err?.message ?? "Failed to load repositories");
@@ -126,9 +128,9 @@ export function RepositoriesPage() {
               Repositories
             </h1>
             <p className="text-sm text-muted-foreground">
-              Code repositories you can index for RAG. Each repo's files
-              become chunks and embeddings, retrievable by any agent
-              scoped to a data store containing them.
+              Code repositories you can index for RAG. Each repo's files become
+              chunks and embeddings, retrievable by any agent scoped to a data
+              store containing them.
             </p>
           </div>
           <Button
@@ -189,7 +191,7 @@ export function RepositoriesPage() {
                     <TableCell>
                       <div className="font-medium">{r.name}</div>
                       {r.git_url && (
-                        <div className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                        <div className="text-xs text-muted-foreground break-all flex items-center gap-1">
                           <ExternalLink className="h-3 w-3" />
                           {r.git_url}
                         </div>
@@ -275,10 +277,10 @@ function EmptyState() {
       <Code2 className="h-12 w-12 text-muted-foreground/50 mb-3" />
       <h3 className="text-lg font-medium">No repositories yet</h3>
       <p className="text-sm text-muted-foreground max-w-md mt-1">
-        Repositories live in <code>public.code_repositories</code>. Once
-        you create one and bind code files to it (via
-        <code> code_files.metadata.repository_id</code>), it will appear
-        here ready to index.
+        Repositories live in <code>public.code_repositories</code>. Once you
+        create one and bind code files to it (via
+        <code> code_files.metadata.repository_id</code>), it will appear here
+        ready to index.
       </p>
       <p className="text-xs text-muted-foreground max-w-md mt-3">
         Don't have repos yet but have orphan code files?{" "}

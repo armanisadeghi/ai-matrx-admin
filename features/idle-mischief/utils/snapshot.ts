@@ -166,8 +166,16 @@ export function registerCleanup(fn: () => void): () => void {
  * step 1-3 missed anything (race, exception, registry corruption), the
  * sweep catches it.
  */
-export function restoreAll(): void {
-  let stats = {
+export interface RestoreStats {
+  cleanups: number;
+  portals: number;
+  snapshots: number;
+  sweptClones: number;
+  sweptOriginals: number;
+}
+
+export function restoreAll(): RestoreStats {
+  const stats: RestoreStats = {
     cleanups: 0,
     portals: 0,
     snapshots: 0,
@@ -242,6 +250,8 @@ export function restoreAll(): void {
     (window as unknown as Record<string, unknown>).__mischiefLastRestore =
       stats;
   }
+
+  return stats;
 }
 
 /** For debug: how many elements + portals are currently tracked. */

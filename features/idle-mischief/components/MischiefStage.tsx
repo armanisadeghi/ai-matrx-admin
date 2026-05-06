@@ -6,11 +6,12 @@
 //   1. Watch user idle time and fire the next-up act when its threshold is hit.
 //   2. While ANY act is running, attach a high-priority capture-phase listener
 //      that fires snap-back on the FIRST mouse/keyboard/scroll/touch event.
-//      This bypasses the idle-seconds counter entirely — no race conditions,
-//      no "missed transition" bugs.
 //   3. Honor manual triggers from the dev panel.
 //   4. On natural act completion, advance the playhead.
 //   5. On snap-back, fully restore via restoreAll().
+//   6. Push a structured log entry to Redux on every meaningful event so the
+//      diagnostics popover (admin-only) can show what's happening in real time.
+//      Errors are caught and logged here — never silently swallowed.
 
 "use client";
 
@@ -22,28 +23,24 @@ import { ACT_QUEUE, SNAPBACK_DURATION_MS } from "../constants";
 import { ACT_PLAYERS } from "../acts";
 import type { MischiefActId } from "../types";
 import {
+  pushLog,
   selectMischiefManualTrigger,
   selectMischiefSettings,
   selectMischiefStatus,
   setCurrentAct,
+  setRestoreStats,
   setStatus,
+  showStarted,
 } from "../state/idleMischiefSlice";
-import { restoreAll } from "../utils/snapshot";
+import { restoreAll, type RestoreStats } from "../utils/snapshot";
 
 interface RunningAct {
   id: MischiefActId;
-  /** Cleanup that the act itself returned. */
   actCleanup: () => void;
-  /** Detach the snap-back activity listeners. */
   detachActivity: () => void;
-  /** Cancel the natural-end timer. */
   cancelTimer: () => void;
 }
 
-/**
- * Activity event names. Capture-phase + passive — fastest possible response
- * to "user is back". `pointermove` covers mouse and touch in one event.
- */
 const ACTIVITY_EVENTS: (keyof WindowEventMap)[] = [
   "pointermove",
   "pointerdown",
@@ -69,19 +66,71 @@ export function MischiefStage() {
   const playheadRef = useRef<number>(0);
   const lastIdleSecondsRef = useRef<number>(0);
 
+  // Logging helper — wraps dispatch with a try/catch so a logging failure
+  // can never break the animation lifecycle.
+  const log = (level: "info" | "warn" | "error", message: string) => {
+    try {
+      dispatch(pushLog({ level, message }));
+    } catch {}
+  };
+
+  // Persist + log restore stats so the popover can show them.
+  const recordRestoreStats = (stats: RestoreStats, source: string) => {
+    try {
+      dispatch(
+        setRestoreStats({
+          ...stats,
+          ts: Date.now(),
+        }),
+      );
+    } catch {}
+    if (stats.sweptClones > 0 || stats.sweptOriginals > 0) {
+      log(
+        "warn",
+        `[${source}] sweep caught stragglers — clones:${stats.sweptClones} originals:${stats.sweptOriginals}`,
+      );
+    }
+  };
+
   // ── Hard snap-back: cancel everything, run restoreAll, return to idle ─────
-  const hardSnapBack = (markStatus: "idle" | "snapping-back" = "snapping-back") => {
+  const hardSnapBack = (
+    markStatus: "idle" | "snapping-back" = "snapping-back",
+    source = "snap-back",
+  ) => {
     const running = runningRef.current;
     if (running) {
+      log("info", `↺ ${source}: stopping ${running.id}`);
       running.cancelTimer();
       running.detachActivity();
       try {
         running.actCleanup();
-      } catch {}
+      } catch (err) {
+        log(
+          "error",
+          `actCleanup threw for "${running.id}": ${
+            err instanceof Error ? err.message : String(err)
+          }`,
+        );
+      }
       runningRef.current = null;
     }
-    // Belt-and-suspenders: even if no running act tracked, sweep the registry.
-    restoreAll();
+    let stats: RestoreStats;
+    try {
+      stats = restoreAll();
+    } catch (err) {
+      log(
+        "error",
+        `restoreAll threw: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      stats = {
+        cleanups: 0,
+        portals: 0,
+        snapshots: 0,
+        sweptClones: 0,
+        sweptOriginals: 0,
+      };
+    }
+    recordRestoreStats(stats, source);
     dispatch(setCurrentAct(null));
     dispatch(setStatus(markStatus));
     if (markStatus === "snapping-back") {
@@ -94,41 +143,77 @@ export function MischiefStage() {
 
   // ── Start an act ──────────────────────────────────────────────────────────
   const startAct = (id: MischiefActId, durationMs: number) => {
-    // If something is already running, snap it back FIRST (synchronous).
     if (runningRef.current) {
-      hardSnapBack("snapping-back");
+      hardSnapBack("snapping-back", "preempted");
     }
 
     const player = ACT_PLAYERS[id];
-    if (!player) return;
+    if (!player) {
+      log("error", `no player registered for "${id}"`);
+      return;
+    }
 
     let actCleanup: () => void = () => {};
     try {
       actCleanup = player();
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.warn("[mischief] act threw on start:", id, err);
-      restoreAll();
+      log(
+        "error",
+        `act "${id}" threw on start: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      );
+      try {
+        const stats = restoreAll();
+        recordRestoreStats(stats, "after-throw");
+      } catch {}
       return;
     }
+
+    log("info", `▶ ${id} started`);
+    dispatch(showStarted());
 
     const adjustedDur = Math.max(
       400,
       durationMs / Math.max(0.25, settings.speed),
     );
 
-    // Natural-end timer
     let timerId: number | null = window.setTimeout(() => {
       timerId = null;
-      // Natural completion: also detach activity listeners + run cleanup.
       detachActivity();
       try {
         actCleanup();
-      } catch {}
-      restoreAll();
+      } catch (err) {
+        log(
+          "error",
+          `actCleanup threw for "${id}": ${
+            err instanceof Error ? err.message : String(err)
+          }`,
+        );
+      }
+      let stats: RestoreStats;
+      try {
+        stats = restoreAll();
+      } catch (err) {
+        log(
+          "error",
+          `restoreAll threw on natural-end: ${
+            err instanceof Error ? err.message : String(err)
+          }`,
+        );
+        stats = {
+          cleanups: 0,
+          portals: 0,
+          snapshots: 0,
+          sweptClones: 0,
+          sweptOriginals: 0,
+        };
+      }
+      recordRestoreStats(stats, "natural-end");
       runningRef.current = null;
       dispatch(setCurrentAct(null));
       dispatch(setStatus("idle"));
+      log("info", `✓ ${id} ended (natural)`);
     }, adjustedDur);
     const cancelTimer = () => {
       if (timerId !== null) {
@@ -137,18 +222,6 @@ export function MischiefStage() {
       }
     };
 
-    // Activity listener — capture-phase so we beat any other listener.
-    //
-    // Lifecycle:
-    //   1. Arm after a 300ms grace window (the click/keypress that spawned
-    //      this act fires its event during the grace; we ignore it).
-    //   2. On the FIRST armed event: hardSnapBack().
-    //   3. KEEP LISTENING for 900ms after that first event. Every event
-    //      during that window re-runs restoreAll() — a defensive sweep that
-    //      catches any straggler animation queued by motion's tick scheduler
-    //      after our initial cancel pass. restoreAll() is idempotent, so
-    //      repeated calls are safe and free.
-    //   4. After 900ms, detach.
     let activityArmed = false;
     let firstFireAt = 0;
     let postFireDetach: number | null = null;
@@ -157,14 +230,15 @@ export function MischiefStage() {
       const now = Date.now();
       if (firstFireAt === 0) {
         firstFireAt = now;
-        hardSnapBack("snapping-back");
-        // Schedule final detach 900ms from now.
+        hardSnapBack("snapping-back", "user-activity");
         postFireDetach = window.setTimeout(() => {
           detachActivity();
         }, 900);
       } else {
-        // Subsequent events during the 900ms post-fire window: re-sweep.
-        restoreAll();
+        try {
+          const stats = restoreAll();
+          recordRestoreStats(stats, "post-fire-sweep");
+        } catch {}
       }
     };
     const detachActivity = () => {
@@ -207,8 +281,6 @@ export function MischiefStage() {
     const prev = lastIdleSecondsRef.current;
     lastIdleSecondsRef.current = idleSeconds;
 
-    // idle reset → done by the activity listener while running. If a reset
-    // happens with no act running, just reset the playhead and return.
     if (idleSeconds === 0 && prev > 0) {
       if (!runningRef.current) playheadRef.current = 0;
       return;
@@ -233,10 +305,16 @@ export function MischiefStage() {
   // ── Manual trigger from dev panel ─────────────────────────────────────────
   useEffect(() => {
     if (manualTrigger.nonce === 0 || !manualTrigger.actId) return;
-    if (disabled) return;
+    if (disabled) {
+      log("warn", `manual trigger of "${manualTrigger.actId}" — disabled`);
+      return;
+    }
     bumpActivity();
     const sched = ACT_QUEUE.find((s) => s.id === manualTrigger.actId);
-    if (!sched) return;
+    if (!sched) {
+      log("error", `manual trigger: no schedule for "${manualTrigger.actId}"`);
+      return;
+    }
     startAct(sched.id, sched.duration);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [manualTrigger.nonce, manualTrigger.actId, disabled]);
@@ -245,11 +323,14 @@ export function MischiefStage() {
   useEffect(() => {
     if (status !== "snapping-back") return;
     if (!runningRef.current) {
-      restoreAll();
+      try {
+        const stats = restoreAll();
+        recordRestoreStats(stats, "external-no-running");
+      } catch {}
       window.setTimeout(() => dispatch(setStatus("idle")), SNAPBACK_DURATION_MS);
       return;
     }
-    hardSnapBack("snapping-back");
+    hardSnapBack("snapping-back", "external-request");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
 
@@ -263,13 +344,13 @@ export function MischiefStage() {
           runningRef.current.actCleanup();
         } catch {}
       }
-      restoreAll();
+      try {
+        restoreAll();
+      } catch {}
     };
   }, []);
 
   // ── Devtools emergency hatch ─────────────────────────────────────────────
-  // If anything ever gets stuck, run `__mischiefForceReset()` from the console
-  // to nuke every animation, every portal, and every snapshot. Always safe.
   useEffect(() => {
     if (typeof window === "undefined") return;
     (window as unknown as Record<string, unknown>).__mischiefForceReset = () => {
@@ -281,9 +362,13 @@ export function MischiefStage() {
         } catch {}
         runningRef.current = null;
       }
-      restoreAll();
+      try {
+        const stats = restoreAll();
+        recordRestoreStats(stats, "force-reset");
+      } catch {}
       dispatch(setCurrentAct(null));
       dispatch(setStatus("idle"));
+      log("info", "force-reset complete");
     };
     return () => {
       delete (window as unknown as Record<string, unknown>).__mischiefForceReset;

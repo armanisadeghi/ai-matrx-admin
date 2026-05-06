@@ -1,5 +1,8 @@
 "use client";
 
+import { assertLazyLoaded } from "./utils/lazy-bundle-guard";
+assertLazyLoaded("features/window-panels/OverlaySurface.tsx");
+
 /**
  * OverlaySurface — renders one registry entry.
  *

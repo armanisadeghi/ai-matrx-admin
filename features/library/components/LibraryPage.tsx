@@ -74,9 +74,7 @@ export function LibraryPage() {
   // For deep links: opening `/rag/library?doc_id=<uuid>` still works
   // because of the snapshot below. Re-syncing on click is intentionally
   // skipped — keep it lean for the demo.
-  const initialDocIdRef = useRef<string | null>(
-    search?.get("doc_id") ?? null,
-  );
+  const initialDocIdRef = useRef<string | null>(search?.get("doc_id") ?? null);
 
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -109,9 +107,7 @@ export function LibraryPage() {
       setBulkConfirmStatus(null);
       setRefreshKey((n) => n + 1);
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Bulk delete failed",
-      );
+      toast.error(err instanceof Error ? err.message : "Bulk delete failed");
     } finally {
       setBulkRunning(false);
     }
@@ -299,11 +295,14 @@ export function LibraryPage() {
                   className="cursor-pointer hover:bg-accent/50"
                 >
                   <TableCell className="max-w-md">
-                    <div className="font-medium truncate">{d.name}</div>
+                    <div className="font-medium break-words">{d.name}</div>
                     <div className="text-xs text-muted-foreground flex items-center gap-2">
                       <span>{d.sourceKind}</span>
                       {d.derivationKind !== "initial_extract" && (
-                        <Badge variant="outline" className="text-[10px] px-1 py-0">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] px-1 py-0"
+                        >
                           {d.derivationKind}
                         </Badge>
                       )}
@@ -314,9 +313,13 @@ export function LibraryPage() {
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
                     {d.pagesPersisted}
-                    {d.totalPages != null && d.totalPages !== d.pagesPersisted && (
-                      <span className="text-muted-foreground"> / {d.totalPages}</span>
-                    )}
+                    {d.totalPages != null &&
+                      d.totalPages !== d.pagesPersisted && (
+                        <span className="text-muted-foreground">
+                          {" "}
+                          / {d.totalPages}
+                        </span>
+                      )}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
                     {d.chunks.toLocaleString()}
@@ -331,7 +334,10 @@ export function LibraryPage() {
                     >
                       {d.embeddingsOai.toLocaleString()}
                       {d.chunks > 0 && d.embeddingsOai !== d.chunks && (
-                        <span className="text-muted-foreground"> / {d.chunks}</span>
+                        <span className="text-muted-foreground">
+                          {" "}
+                          / {d.chunks}
+                        </span>
                       )}
                     </span>
                   </TableCell>
@@ -412,22 +418,20 @@ export function LibraryPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              Delete all {bulkConfirmStatus} documents?
-            </DialogTitle>
+            <DialogTitle>Delete all {bulkConfirmStatus} documents?</DialogTitle>
             <DialogDescription>
               {bulkConfirmStatus === "pending" && (
                 <>
                   This will delete every document of yours where ingestion
-                  failed before any pages were persisted. The original files
-                  in cloud storage are <strong>not</strong> touched — only
-                  the failed processing rows.
+                  failed before any pages were persisted. The original files in
+                  cloud storage are <strong>not</strong> touched — only the
+                  failed processing rows.
                 </>
               )}
               {bulkConfirmStatus === "extracted" && (
                 <>
-                  This will delete every document where pages were extracted
-                  but chunking never ran. Re-process to rebuild.
+                  This will delete every document where pages were extracted but
+                  chunking never ran. Re-process to rebuild.
                 </>
               )}
               {bulkConfirmStatus === "embedding" && (
@@ -478,10 +482,10 @@ function RollupCard({
     tone === "success"
       ? "border-green-500/30 bg-green-500/5"
       : tone === "warning"
-      ? "border-yellow-500/30 bg-yellow-500/5"
-      : tone === "error"
-      ? "border-red-500/30 bg-red-500/5"
-      : "bg-muted/30";
+        ? "border-yellow-500/30 bg-yellow-500/5"
+        : tone === "error"
+          ? "border-red-500/30 bg-red-500/5"
+          : "bg-muted/30";
   return (
     <div className={`rounded-md border p-2 flex flex-col gap-0.5 ${toneClass}`}>
       <span className="flex items-center gap-1 text-muted-foreground">
@@ -489,7 +493,11 @@ function RollupCard({
         {label}
       </span>
       <span className="font-semibold text-sm">
-        {loading ? <Skeleton className="h-4 w-10" /> : (value ?? 0).toLocaleString()}
+        {loading ? (
+          <Skeleton className="h-4 w-10" />
+        ) : (
+          (value ?? 0).toLocaleString()
+        )}
       </span>
     </div>
   );

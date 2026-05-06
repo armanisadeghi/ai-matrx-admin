@@ -5,17 +5,17 @@
  *
  * Three tabs:
  *   - Overview  — counts, lineage, data-store bindings, copy-id buttons
- *   - Pages     — first ~25 pages with cleaned + raw preview side-by-side
- *   - Chunks    — sample chunks with embedding presence + content preview
+ *   - Pages     — first ~25 pages with cleaned + raw text side-by-side
+ *   - Chunks    — sample chunks with embedding presence + full chunk text
  *
  * Goals:
  *   - Make it impossible to "lose" a document — everything we have on
  *     it is visible from this sheet.
- *   - Cheap roundtrip: server returns previews truncated at ~400 chars;
- *     full-text rendering happens in the 4-pane viewer.
+ *   - Summary payload may include short previews; this sheet loads full
+ *     page/chunk bodies from `/rag/library/.../page|chunks` endpoints.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -49,9 +49,10 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
-import { del, patchJson, postJson } from "@/features/files/api/client";
+import { del, getJson, patchJson, postJson } from "@/features/files/api/client";
 import { StatusBadge } from "./StatusBadge";
 import { useLibraryDoc } from "../hooks/useLibrary";
+import type { LibraryChunkPreview } from "../types";
 
 export interface LibraryDocDetailSheetProps {
   processedDocumentId: string | null;
@@ -91,9 +92,7 @@ export function LibraryDocDetailSheet({
       reload();
       onMutated?.();
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Rename failed",
-      );
+      toast.error(err instanceof Error ? err.message : "Rename failed");
     } finally {
       setRenaming(false);
     }
@@ -131,9 +130,7 @@ export function LibraryDocDetailSheet({
       onMutated?.();
       onClose();
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Delete failed",
-      );
+      toast.error(err instanceof Error ? err.message : "Delete failed");
     } finally {
       setDeleting(false);
     }
@@ -157,9 +154,7 @@ export function LibraryDocDetailSheet({
       );
       onMutated?.();
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Re-process failed",
-      );
+      toast.error(err instanceof Error ? err.message : "Re-process failed");
     } finally {
       setReprocessing(false);
     }
@@ -191,7 +186,9 @@ export function LibraryDocDetailSheet({
           <div className="p-6">
             <SheetHeader>
               <SheetTitle>Error</SheetTitle>
-              <SheetDescription className="text-destructive">{error}</SheetDescription>
+              <SheetDescription className="text-destructive">
+                {error}
+              </SheetDescription>
             </SheetHeader>
           </div>
         ) : (
@@ -199,7 +196,7 @@ export function LibraryDocDetailSheet({
             <SheetHeader className="p-6 pb-3 border-b">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <SheetTitle className="truncate">{doc.name}</SheetTitle>
+                  <SheetTitle className="break-words">{doc.name}</SheetTitle>
                   <SheetDescription className="flex items-center gap-2 mt-1.5">
                     <StatusBadge status={doc.status} />
                     <span className="text-xs text-muted-foreground">
@@ -328,17 +325,20 @@ export function LibraryDocDetailSheet({
                   icon={<Database className="h-3 w-3" />}
                   label="Data stores"
                   value={String(doc.dataStores.length)}
-                  highlight={
-                    doc.dataStores.length === 0 ? "warning" : "ok"
-                  }
+                  highlight={doc.dataStores.length === 0 ? "warning" : "ok"}
                 />
               </div>
             </SheetHeader>
 
-            <Tabs defaultValue="overview" className="flex-1 flex flex-col min-h-0">
+            <Tabs
+              defaultValue="overview"
+              className="flex-1 flex flex-col min-h-0"
+            >
               <TabsList className="mx-6 mt-3 self-start">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="pages">Pages ({doc.pagesPersisted})</TabsTrigger>
+                <TabsTrigger value="pages">
+                  Pages ({doc.pagesPersisted})
+                </TabsTrigger>
                 <TabsTrigger value="chunks">Chunks ({doc.chunks})</TabsTrigger>
               </TabsList>
 
@@ -349,20 +349,36 @@ export function LibraryDocDetailSheet({
                 <ScrollArea className="h-full">
                   <div className="space-y-4 pr-3">
                     <Section title="Identity">
-                      <KV k="Document ID" v={<code className="text-xs">{doc.id}</code>} />
-                      <KV k="Source" v={<span>{doc.sourceKind} · <code className="text-xs">{doc.sourceId}</code></span>} />
+                      <KV
+                        k="Document ID"
+                        v={<code className="text-xs">{doc.id}</code>}
+                      />
+                      <KV
+                        k="Source"
+                        v={
+                          <span>
+                            {doc.sourceKind} ·{" "}
+                            <code className="text-xs">{doc.sourceId}</code>
+                          </span>
+                        }
+                      />
                       <KV k="MIME" v={doc.mimeType ?? "—"} />
                       <KV
                         k="Storage URI"
                         v={
                           doc.storageUri ? (
-                            <code className="text-xs break-all">{doc.storageUri}</code>
+                            <code className="text-xs break-all">
+                              {doc.storageUri}
+                            </code>
                           ) : (
                             "—"
                           )
                         }
                       />
-                      <KV k="Has structured JSON" v={doc.hasStructuredJson ? "yes" : "no"} />
+                      <KV
+                        k="Has structured JSON"
+                        v={doc.hasStructuredJson ? "yes" : "no"}
+                      />
                     </Section>
 
                     <Section title="Lineage">
@@ -371,7 +387,9 @@ export function LibraryDocDetailSheet({
                         k="Parent"
                         v={
                           doc.parentProcessedId ? (
-                            <code className="text-xs">{doc.parentProcessedId}</code>
+                            <code className="text-xs">
+                              {doc.parentProcessedId}
+                            </code>
                           ) : (
                             "(none — initial extract)"
                           )
@@ -437,7 +455,9 @@ export function LibraryDocDetailSheet({
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <Badge variant="outline">Page {p.pageNumber}</Badge>
                             {p.extractionMethod && (
-                              <Badge variant="outline">{p.extractionMethod}</Badge>
+                              <Badge variant="outline">
+                                {p.extractionMethod}
+                              </Badge>
                             )}
                             {p.usedOcr && <Badge variant="warning">OCR</Badge>}
                             {p.sectionKind && (
@@ -452,23 +472,23 @@ export function LibraryDocDetailSheet({
                             </span>
                           </div>
                           {p.sectionTitle && (
-                            <p className="text-sm font-medium">{p.sectionTitle}</p>
+                            <p className="text-sm font-medium">
+                              {p.sectionTitle}
+                            </p>
                           )}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                            <PreviewBlock
-                              label="Cleaned"
-                              text={p.cleanedPreview}
-                            />
-                            <PreviewBlock label="Raw" text={p.rawPreview} />
-                          </div>
+                          <SheetFullPagePreviews
+                            documentId={doc.id}
+                            pageIndex={p.pageIndex}
+                            fallbackCleaned={p.cleanedPreview}
+                            fallbackRaw={p.rawPreview}
+                          />
                         </div>
                       ))
                     )}
                     {doc.pagesPersisted > doc.pages.length && (
                       <p className="text-xs text-muted-foreground italic">
-                        Showing first {doc.pages.length} of{" "}
-                        {doc.pagesPersisted} pages. Open the 4-pane viewer for
-                        the rest.
+                        Showing first {doc.pages.length} of {doc.pagesPersisted}{" "}
+                        pages. Open the 4-pane viewer for the rest.
                       </p>
                     )}
                   </div>
@@ -487,46 +507,10 @@ export function LibraryDocDetailSheet({
                         not run, or it failed.
                       </p>
                     ) : (
-                      doc.sampleChunks.map((c) => (
-                        <div
-                          key={c.id}
-                          className="border rounded-md p-3 space-y-2 bg-card"
-                        >
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Badge variant="outline">
-                              #{c.chunkIndex ?? "?"}
-                            </Badge>
-                            {c.chunkKind && (
-                              <Badge variant="outline">{c.chunkKind}</Badge>
-                            )}
-                            {c.tokenCount && (
-                              <Badge variant="outline">
-                                {c.tokenCount.toLocaleString()} tok
-                              </Badge>
-                            )}
-                            {c.pageNumbers && c.pageNumbers.length > 0 && (
-                              <Badge variant="outline">
-                                pp.{" "}
-                                {c.pageNumbers.length === 1
-                                  ? c.pageNumbers[0]
-                                  : `${c.pageNumbers[0]}–${c.pageNumbers[c.pageNumbers.length - 1]}`}
-                              </Badge>
-                            )}
-                            <span className="ml-auto flex gap-1">
-                              {c.hasOaiEmbedding && (
-                                <Badge variant="success">OAI</Badge>
-                              )}
-                              {c.hasVoyageEmbedding && (
-                                <Badge variant="success">Voyage</Badge>
-                              )}
-                              {!c.hasOaiEmbedding && !c.hasVoyageEmbedding && (
-                                <Badge variant="error">no embedding</Badge>
-                              )}
-                            </span>
-                          </div>
-                          <PreviewBlock label="" text={c.contentPreview} />
-                        </div>
-                      ))
+                      <SheetChunksPanel
+                        documentId={doc.id}
+                        fallbackSamples={doc.sampleChunks}
+                      />
                     )}
                     {doc.chunks > doc.sampleChunks.length && (
                       <p className="text-xs text-muted-foreground italic">
@@ -565,7 +549,10 @@ export function LibraryDocDetailSheet({
             <Button variant="outline" onClick={() => setRenameOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleRename} disabled={renaming || !renameValue.trim()}>
+            <Button
+              onClick={handleRename}
+              disabled={renaming || !renameValue.trim()}
+            >
               {renaming ? "Saving…" : "Save"}
             </Button>
           </DialogFooter>
@@ -587,10 +574,12 @@ export function LibraryDocDetailSheet({
                   Removes <strong>{doc.name}</strong>:
                   <ul className="list-disc ml-5 mt-2 space-y-0.5 text-xs">
                     <li>{doc.pagesPersisted} extracted pages</li>
-                    <li>{doc.chunks} chunks · {doc.embeddingsOai} embeddings</li>
                     <li>
-                      The source file in cloud storage (soft-deleted; the
-                      binary is removed by the cleanup job)
+                      {doc.chunks} chunks · {doc.embeddingsOai} embeddings
+                    </li>
+                    <li>
+                      The source file in cloud storage (soft-deleted; the binary
+                      is removed by the cleanup job)
                     </li>
                     <li>All data-store bindings pointing to this file</li>
                   </ul>
@@ -601,8 +590,8 @@ export function LibraryDocDetailSheet({
               )}
               {doc && confirmDeleteMode === "processing" && (
                 <>
-                  Removes <strong>{doc.pagesPersisted}</strong> extracted
-                  pages and <strong>{doc.chunks}</strong> chunks for{" "}
+                  Removes <strong>{doc.pagesPersisted}</strong> extracted pages
+                  and <strong>{doc.chunks}</strong> chunks for{" "}
                   <strong>{doc.name}</strong>. The original file is{" "}
                   <strong>kept</strong> — re-process anytime to rebuild.
                 </>
@@ -610,15 +599,22 @@ export function LibraryDocDetailSheet({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmDeleteOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setConfirmDeleteOpen(false)}
+            >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleting}
+            >
               {deleting
                 ? "Deleting…"
                 : confirmDeleteMode === "file"
-                ? "Delete file"
-                : "Delete processing"}
+                  ? "Delete file"
+                  : "Delete processing"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -656,7 +652,13 @@ function CountChip({
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <section className="space-y-2">
       <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -676,6 +678,270 @@ function KV({ k, v }: { k: string; v: React.ReactNode }) {
   );
 }
 
+interface ApiFullPage {
+  cleaned_text: string;
+  raw_text: string;
+}
+
+interface ApiChunkRow {
+  id: string;
+  chunk_index: number | null;
+  chunk_kind: string | null;
+  token_count: number | null;
+  page_numbers: number[] | null;
+  content_text: string;
+  has_oai_embedding: boolean;
+  has_voyage_embedding: boolean;
+}
+
+interface ApiChunksResponse {
+  chunks: ApiChunkRow[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+/** Loads full page bodies (detail list payload is preview-only). */
+function SheetFullPagePreviews({
+  documentId,
+  pageIndex,
+  fallbackCleaned,
+  fallbackRaw,
+}: {
+  documentId: string;
+  pageIndex: number;
+  fallbackCleaned: string;
+  fallbackRaw: string;
+}) {
+  const [cleaned, setCleaned] = useState<string>("");
+  const [raw, setRaw] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    setCleaned("");
+    setRaw("");
+    getJson<ApiFullPage>(`/rag/library/${documentId}/page/${pageIndex}`)
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        setCleaned(data.cleaned_text);
+        setRaw(data.raw_text);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(
+            err instanceof Error ? err.message : "Failed to load page text",
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [documentId, pageIndex]);
+
+  if (error) {
+    return (
+      <div className="space-y-2 text-xs">
+        <p className="text-xs text-amber-700 dark:text-amber-400">
+          {error}. Showing summary preview only — open Preview for guaranteed
+          full text.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <PreviewBlock label="Cleaned" text={fallbackCleaned} />
+          <PreviewBlock label="Raw" text={fallbackRaw} />
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <p className="text-muted-foreground italic text-xs">
+        Loading full page text…
+      </p>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+      <PreviewBlock label="Cleaned" text={cleaned} />
+      <PreviewBlock label="Raw" text={raw} />
+    </div>
+  );
+}
+
+/** Loads full chunk bodies for the sample set (detail payload is preview-only). */
+function SheetChunksPanel({
+  documentId,
+  fallbackSamples,
+}: {
+  documentId: string;
+  fallbackSamples: LibraryChunkPreview[];
+}) {
+  const [rows, setRows] = useState<ApiChunkRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (fallbackSamples.length === 0) return;
+    let cancelled = false;
+    setLoading(true);
+    setFetchError(null);
+    setRows([]);
+    const limit = Math.min(Math.max(fallbackSamples.length, 1), 500);
+    const params = new URLSearchParams();
+    params.set("limit", String(limit));
+    params.set("offset", "0");
+
+    getJson<ApiChunksResponse>(
+      `/rag/library/${documentId}/chunks?${params.toString()}`,
+    )
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        setRows(Array.isArray(data.chunks) ? data.chunks : []);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setFetchError(
+            err instanceof Error ? err.message : "Failed to load chunks",
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [documentId, fallbackSamples.length]);
+
+  if (fallbackSamples.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        No chunks yet — extraction completed but chunking has not run, or it
+        failed.
+      </p>
+    );
+  }
+
+  if (loading) {
+    return (
+      <p className="text-sm text-muted-foreground italic">
+        Loading full chunk text…
+      </p>
+    );
+  }
+
+  const useApi = rows.length > 0 && !fetchError;
+
+  const listForRender: Array<
+    | { source: "api"; row: ApiChunkRow }
+    | { source: "fallback"; row: LibraryChunkPreview }
+  > = useApi
+    ? rows.map((row) => ({ source: "api", row }))
+    : fallbackSamples.map((row) => ({ source: "fallback", row }));
+
+  return (
+    <>
+      {fetchError && (
+        <p className="text-xs text-amber-700 dark:text-amber-400 mb-3">
+          {fetchError}. Showing abbreviated previews from document summary —
+          open <span className="font-medium">Preview</span> for full chunks.
+        </p>
+      )}
+      <div className="space-y-3">
+        {listForRender.map((entry) =>
+          entry.source === "api" ? (
+            <div
+              key={entry.row.id}
+              className="border rounded-md p-3 space-y-2 bg-card"
+            >
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <Badge variant="outline">#{entry.row.chunk_index ?? "?"}</Badge>
+                {entry.row.chunk_kind && (
+                  <Badge variant="outline">{entry.row.chunk_kind}</Badge>
+                )}
+                {entry.row.token_count != null && (
+                  <Badge variant="outline">
+                    {entry.row.token_count.toLocaleString()} tok
+                  </Badge>
+                )}
+                {entry.row.page_numbers &&
+                  entry.row.page_numbers.length > 0 && (
+                    <Badge variant="outline">
+                      pp.{" "}
+                      {entry.row.page_numbers.length === 1
+                        ? entry.row.page_numbers[0]
+                        : `${entry.row.page_numbers[0]}–${entry.row.page_numbers[entry.row.page_numbers.length - 1]}`}
+                    </Badge>
+                  )}
+                <span className="ml-auto flex gap-1">
+                  {entry.row.has_oai_embedding && (
+                    <Badge variant="success">OAI</Badge>
+                  )}
+                  {entry.row.has_voyage_embedding && (
+                    <Badge variant="success">Voyage</Badge>
+                  )}
+                  {!entry.row.has_oai_embedding &&
+                    !entry.row.has_voyage_embedding && (
+                      <Badge variant="error">no embedding</Badge>
+                    )}
+                </span>
+              </div>
+              <PreviewBlock label="" text={entry.row.content_text} />
+            </div>
+          ) : (
+            <div
+              key={entry.row.id}
+              className="border rounded-md p-3 space-y-2 bg-card"
+            >
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <Badge variant="outline">#{entry.row.chunkIndex ?? "?"}</Badge>
+                {entry.row.chunkKind && (
+                  <Badge variant="outline">{entry.row.chunkKind}</Badge>
+                )}
+                {entry.row.tokenCount != null && (
+                  <Badge variant="outline">
+                    {entry.row.tokenCount.toLocaleString()} tok
+                  </Badge>
+                )}
+                {entry.row.pageNumbers && entry.row.pageNumbers.length > 0 && (
+                  <Badge variant="outline">
+                    pp.{" "}
+                    {entry.row.pageNumbers.length === 1
+                      ? entry.row.pageNumbers[0]
+                      : `${entry.row.pageNumbers[0]}–${entry.row.pageNumbers[entry.row.pageNumbers.length - 1]}`}
+                  </Badge>
+                )}
+                <span className="ml-auto flex gap-1">
+                  {entry.row.hasOaiEmbedding && (
+                    <Badge variant="success">OAI</Badge>
+                  )}
+                  {entry.row.hasVoyageEmbedding && (
+                    <Badge variant="success">Voyage</Badge>
+                  )}
+                  {!entry.row.hasOaiEmbedding &&
+                    !entry.row.hasVoyageEmbedding && (
+                      <Badge variant="error">no embedding</Badge>
+                    )}
+                </span>
+              </div>
+              <PreviewBlock label="" text={entry.row.contentPreview} />
+            </div>
+          ),
+        )}
+      </div>
+    </>
+  );
+}
+
 function PreviewBlock({ label, text }: { label: string; text: string }) {
   return (
     <div className="space-y-1">
@@ -684,7 +950,7 @@ function PreviewBlock({ label, text }: { label: string; text: string }) {
           {label}
         </span>
       )}
-      <pre className="whitespace-pre-wrap break-words font-mono text-xs leading-relaxed bg-muted/30 rounded p-2 max-h-48 overflow-auto">
+      <pre className="whitespace-pre-wrap break-words font-mono text-xs leading-relaxed bg-muted/30 rounded p-2 overflow-x-auto">
         {text || <span className="italic text-muted-foreground">(empty)</span>}
       </pre>
     </div>

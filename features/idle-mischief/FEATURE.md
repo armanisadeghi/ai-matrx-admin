@@ -3,9 +3,9 @@
 > Inspired by *Toy Story*: when the user looks away, the UI elements come alive. The moment they return — everything snaps back, perfectly composed, as if nothing ever happened.
 
 ## Status
-- **Phase:** v0.2 — bulletproof state foundation, 10 acts, dev-gated.
-- **Mount:** `IdleMischiefProvider` is mounted globally inside `app/Providers.tsx`. Renders the orchestrator (no DOM). All visible mischief comes from imperative animation portals.
-- **Visibility on prod for real users:** none. Acts are disabled if `prefers-reduced-motion: reduce` or `NEXT_PUBLIC_DISABLE_MISCHIEF=1` is set, or if `settings.enabled` is false. The dev controls live in the admin indicator and only render for admins.
+- **Phase:** v0.3 — clone-everything architecture, admin-gated provider, draggable diagnostic popover, 10 acts.
+- **Mount:** `IdleMischiefProvider` is mounted globally inside `app/Providers.tsx`. **For non-admins it returns `null` synchronously — no hooks fire, no listeners attach, no Redux dispatches, no DOM mutations.** Mischief code cannot affect a non-admin user.
+- **Visibility on prod for real users:** none. Even for admins, acts are disabled if `prefers-reduced-motion: reduce` or `NEXT_PUBLIC_DISABLE_MISCHIEF=1` is set, or if `settings.enabled` is false.
 
 ## Why this exists
 AI Matrx is becoming an *ambient* AI — present in sidebars, floating windows, bubble overlays, mid-page panels. Personality, not just polish, makes ambient interfaces feel alive. This feature gives the UI a quiet, secret life that emerges only when no one's watching, and disappears the instant attention returns.
@@ -67,6 +67,17 @@ Order in `ACT_QUEUE` matters — it's the play sequence as idle time grows. Snap
 - **Buttons** → discovered live via `findButtons()` (random sample) or `findButtonsInOrder()` (sequence-preserving for Roll Call).
 - **Icons** → `findIconLikeElements()` — small, square-ish visible buttons/anchors (under 80×80, aspect ratio between 0.5 and 2).
 
+## Diagnostic popover
+
+A draggable diagnostic popover is mounted alongside the orchestrator (admin-only). It is **hidden by default** and only appears when an act fires. Once visible, it stays visible **during** the show, **after** the show ends, and across subsequent shows — until the admin clicks the close button. Closing dismisses it; the next time an act fires, it reappears.
+
+The popover surfaces:
+- Current status (idle / playing / snapping back) and current act name
+- The most recent snap-back stats: `cleanups`, `portals`, `snapshots`, `swept-c`, `swept-o`. The latter two are amber when non-zero — they indicate the sledgehammer sweep caught a straggler the registry path missed (worth investigating).
+- A live log of events: act start/end, snap-back trigger source, errors thrown by acts (caught and logged — never silently swallowed), sweep findings.
+
+Drag the header to move. Click `X` to dismiss. Click the trash icon to clear the log.
+
 ## Dev controls
 
 The control surface lives **inside the existing Admin Indicator**, in the **MediumIndicator** panel — alongside the other dev tools. There is no separate floating button; open the admin indicator from the sidebar and ensure it's at medium size.
@@ -86,15 +97,17 @@ The control surface lives **inside the existing Admin Indicator**, in the **Medi
 
 ## Files
 
-- `IdleMischiefProvider.tsx` — global mount; wires keyboard shortcut and renders the orchestrator
-- `state/idleMischiefSlice.ts` — RTK slice (status, currentAct, manualTrigger nonce, settings)
-- `hooks/useIdleDetection.ts` — activity listeners + idle tick
+- `IdleMischiefProvider.tsx` — admin-gated global mount; renders the orchestrator + diagnostics popover
+- `state/idleMischiefSlice.ts` — RTK slice (status, currentAct, manualTrigger nonce, settings, log, restore stats, popoverDismissed)
+- `hooks/useIdleDetection.ts` — activity listeners + idle tick (only mounted for admins)
 - `hooks/useReducedMotion.ts` — `prefers-reduced-motion` watcher
-- `components/MischiefStage.tsx` — orchestrator (renders no DOM)
+- `components/MischiefStage.tsx` — orchestrator (renders no DOM); pushes structured log entries to Redux on every event
+- `components/MischiefDiagnostics.tsx` — draggable diagnostic popover (admin-only)
 - `components/MischiefControls.tsx` — control panel embedded in MediumIndicator
 - `acts/Act01Tremor.ts` … `acts/Act10Liquify.ts` — choreography (10 acts)
 - `acts/index.ts` — id → player map
-- `utils/snapshot.ts` — snapshot/restore foundation, portal registry, cleanup registry
+- `utils/snapshot.ts` — snapshot/restore foundation, portal registry, cleanup registry, sledgehammer sweep
+- `utils/cloning.ts` — `cloneAndHide()` — the only acceptable way to operate on a real element
 - `utils/targets.ts` — DOM target discovery
 - `utils/throttle.ts` — leading-edge throttle for activity events
 - `constants.ts` — schedule, durations, throttle interval
@@ -111,4 +124,5 @@ The control surface lives **inside the existing Admin Indicator**, in the **Medi
 - 2026-05-05: Initial implementation. 7 acts, keyboard shortcut, reduced-motion gate.
 - 2026-05-05: Removed standalone floating Wand2 button; consolidated all dev controls into a collapsible section inside the Admin Indicator's MediumIndicator panel.
 - 2026-05-05: v0.2 — verbatim-style-attribute snapshot system, 10 acts, capture-phase activity listener, fixed-position clone for walking sidebar, eyes mount at top-center.
-- 2026-05-05: **v0.3 — clone-everything architecture.** The previous "snapshot real element + animate it directly" approach had a fundamental WAAPI race: motion's `controls.stop()` commits the mid-animation transform to inline style before cancelling, and we couldn't reliably restore in all cases. Plus the document-wide `getAnimations().cancel()` was killing legitimate page CSS transitions and leaving the page in a worse state than the mischief itself. Both problems are now eliminated by `utils/cloning.ts::cloneAndHide()`: every act animates a fixed-position clone on `document.body`; the real element only ever has `visibility: hidden` set on it (reverted byte-for-byte by the snapshot). All 10 acts refactored. The "stays crooked after snap-back" class of bug is now architecturally impossible — the real element was never touched, so there is nothing to clean up on it beyond a one-line inline-style revert.
+- 2026-05-05: **v0.3 — clone-everything architecture.** The previous "snapshot real element + animate it directly" approach had a fundamental WAAPI race: motion's `controls.stop()` commits the mid-animation transform to inline style before cancelling, and we couldn't reliably restore in all cases. Plus the document-wide `getAnimations().cancel()` was killing legitimate page CSS transitions and leaving the page in a worse state than the mischief itself. Both problems are now eliminated by `utils/cloning.ts::cloneAndHide()`: every act animates a fixed-position clone on `document.body`; the real element only ever has `visibility: hidden` set on it (reverted byte-for-byte by the snapshot). All 10 acts refactored. Sledgehammer attribute sweep added: every clone carries `data-mischief-clone` and every hidden original carries `data-mischief-original`, so `restoreAll()` can find + clean up any straggler even if the in-memory registries somehow miss it.
+- 2026-05-06: **v0.3.1 — admin gate + diagnostics popover.** The provider now hard-gates behind `selectIsSuperAdmin` and returns `null` for non-admins synchronously — no hooks fire, no listeners attach, no Redux dispatches, no DOM mutations. Mischief code is provably unable to affect non-admin users. Added a draggable diagnostic popover (`components/MischiefDiagnostics.tsx`) that surfaces real-time status, snap-back stats (including `swept-c` / `swept-o` counters that go amber when the sweep catches a straggler), and a structured event log. Hidden by default; auto-shows when an act fires; stays visible until the admin closes it; reappears on the next show. Errors thrown by acts are now caught and logged to the popover instead of being silently swallowed.

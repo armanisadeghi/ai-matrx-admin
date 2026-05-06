@@ -122,6 +122,27 @@ The `admins` table has a `level` enum: `developer | senior_admin | super_admin`.
 
 ---
 
+## Protected resources — single path of resistance (MANDATORY for agents)
+
+Some tables can only be modified by Super Admins, and the codebase is hostile territory — any contributor with commit access can edit a TS check or curl the API with their own JWT. The defense is **at the database**, not in TypeScript: RLS deny-writes + `SECURITY DEFINER` RPCs gated by `is_super_admin()` + audit-log trigger. Every protected resource exposes ONE choke point (a single RPC family) and ONE thing to monitor (the audit log).
+
+**Currently protected:** `public.admins`, `public.admin_audit_log`. Worked example lives at [`migrations/admin_management_rls_and_rpcs.sql`](./migrations/admin_management_rls_and_rpcs.sql), [`app/api/admin/admins/`](./app/api/admin/admins/), and [`app/(authenticated)/(admin-auth)/administration/admins/`](./app/(authenticated)/(admin-auth)/administration/admins/).
+
+**Before you do any of these, read [`.claude/skills/protected-resources/SKILL.md`](./.claude/skills/protected-resources/SKILL.md) (or invoke the `protected-resources` skill):**
+- Add a new RLS policy or `SECURITY DEFINER` RPC.
+- Touch any of the admin RPCs (`admin_promote`, `admin_update`, `admin_revoke`, `admin_list`, `admin_list_audit`, `admin_find_user_by_email`, `is_super_admin`, `get_admin_status`).
+- Write `.from('admins')` or `.from('admin_audit_log')` (don't — there's a reason RLS will block it).
+- Use `createAdminClient()` for a user-initiated write to a sensitive table.
+- Lock down a new table the user has flagged as sensitive (billing, feature flags, secrets, etc.).
+
+**Two non-negotiable rules:**
+1. **One mutation path per protected table.** A new "convenient" `.from()` write or admin-client shortcut breaks the whole monitoring story. Wrap it in an RPC instead.
+2. **Don't disable RLS or skip the `is_super_admin()` check inside the RPC** "temporarily." There is no temporarily.
+
+If you find yourself writing a new admin gate primitive (a new boolean selector, a new server helper), stop — `selectIsSuperAdmin` / `requireSuperAdmin` / `is_super_admin()` / `selectAdminLevel` cover everything. Compose, don't duplicate.
+
+---
+
 ## Prompt Apps System [LEGACY]
 
 Being replaced by **agent-apps**. See `features/agents/migration/phases/phase-08-agent-apps-public.md` and `features/agent-apps/FEATURE.md`. Do not extend — build in agent-apps.

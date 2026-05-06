@@ -77,14 +77,16 @@ export function QuickSearchDialog({
       const { data } = await postJson<
         ApiResponse,
         { query: string; limit: number }
-      >(
-        `/rag/library/${processedDocumentId}/test-search`,
-        { query: query.trim(), limit: 15 },
-      );
+      >(`/rag/library/${processedDocumentId}/test-search`, {
+        query: query.trim(),
+        limit: 15,
+      });
       setHits(Array.isArray(data?.hits) ? data.hits : []);
-      setTotal(typeof data?.total_chunks_in_doc === "number"
-        ? data.total_chunks_in_doc
-        : 0);
+      setTotal(
+        typeof data?.total_chunks_in_doc === "number"
+          ? data.total_chunks_in_doc
+          : 0,
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Search failed");
     } finally {
@@ -98,12 +100,13 @@ export function QuickSearchDialog({
         <DialogHeader className="p-4 border-b">
           <DialogTitle className="flex items-center gap-2">
             <SearchIcon className="h-4 w-4" />
-            Search inside <span className="truncate">{documentName ?? "document"}</span>
+            Search inside{" "}
+            <span className="break-words">{documentName ?? "document"}</span>
           </DialogTitle>
           <DialogDescription>
             Lexical search over this document's chunks
-            {total > 0 ? ` (${total} chunks)` : ""}. Same scoring an agent
-            would use when retrieving from this doc.
+            {total > 0 ? ` (${total} chunks)` : ""}. Same scoring an agent would
+            use when retrieving from this doc.
           </DialogDescription>
         </DialogHeader>
 
@@ -118,11 +121,7 @@ export function QuickSearchDialog({
             }}
           />
           <Button onClick={run} disabled={!query.trim() || loading}>
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              "Search"
-            )}
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
           </Button>
         </div>
 
@@ -135,8 +134,8 @@ export function QuickSearchDialog({
             )}
             {!loading && hits === null && !error && (
               <p className="text-sm text-muted-foreground text-center py-8">
-                Type a query above and hit Search to see what an agent
-                would retrieve from this document.
+                Type a query above and hit Search to see what an agent would
+                retrieve from this document.
               </p>
             )}
             {hits && hits.length === 0 && (

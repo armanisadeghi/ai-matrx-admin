@@ -4,6 +4,7 @@
 
 import React from "react";
 import {
+  Aperture,
   SquareFunction,
   Palette,
   Table,
@@ -253,15 +254,15 @@ export const allNavigationLinks: NavigationLink[] = [
     label: "Images",
     href: "/images",
     icon: (
-      <Wand2 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      <Aperture className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),
     section: "primary",
     profileMenu: true,
     dashboard: true,
     description:
       "Browse, generate, edit, annotate, convert — every image tool in one place.",
-    color: "fuchsia",
-    favicon: { color: "#c026d3", letter: "Im" }, // Fuchsia — "Im" for Images
+    color: "pink",
+    favicon: { color: "#ec4899", letter: "Im" }, // Pink — "Im" for Images
   },
   {
     label: "Webscraper",

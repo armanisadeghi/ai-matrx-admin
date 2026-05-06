@@ -17,6 +17,9 @@
  * component's async chunk.
  */
 
+import { assertLazyLoaded } from "../utils/lazy-bundle-guard";
+assertLazyLoaded("features/window-panels/registry/windowRegistry.ts");
+
 import {
   ALL_WINDOW_STATIC_METADATA,
   getStaticEntryByOverlayId,

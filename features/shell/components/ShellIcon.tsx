@@ -2,6 +2,7 @@
 // Maps icon name strings to Lucide React components without requiring JSX in data files
 
 import {
+  Aperture,
   BookOpen,
   LayoutDashboard,
   MessageCircle,
@@ -39,6 +40,7 @@ import {
 } from "lucide-react";
 
 const iconMap: Record<string, React.ComponentType<LucideProps>> = {
+  Aperture,
   BookOpen,
   LayoutDashboard,
   MessageCircle,

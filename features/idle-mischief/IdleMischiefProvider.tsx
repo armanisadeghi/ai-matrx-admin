@@ -1,45 +1,67 @@
-// features/idle-mischief/IdleMischiefProvider.tsx
-//
-// Single mount point for the idle-mischief subsystem. Drop into the global
-// provider tree. Renders the orchestrator (no DOM) and the dev button
-// (gated). Acts portal themselves into document.body when they fire.
-
 "use client";
 
 // Provider for the idle-mischief subsystem.
 //
-// What lives here:
-//   - <MischiefStage /> — the orchestrator (renders no DOM; runs the
-//     idle-detection loop + manual-trigger queue + snap-back lifecycle).
-//   - Cmd+Shift+M / Ctrl+Shift+M global shortcut (dev/debug only) for
-//     a quick "play tremor" trigger without opening the admin indicator.
+// CRITICAL: this provider gates the ENTIRE subsystem behind
+// `selectIsSuperAdmin`. For non-admins it returns null synchronously, before
+// any hook runs:
+//   - useIdleDetection's window event listeners + setInterval are NEVER
+//     attached
+//   - the orchestrator's capture-phase activity listeners are NEVER attached
+//   - no Redux dispatches fire for non-admins
+//   - no DOM mutations, no clones, no portals
 //
-// The user-facing dev controls (act buttons, speed slider, loop toggle,
-// snap-back) live inside the admin indicator's MediumIndicator. See
+// This is the safety guarantee that mischief code can NEVER affect a
+// non-admin user's experience under any circumstances.
+//
+// What lives here for admins:
+//   - <MischiefStage />        — the orchestrator
+//   - <MischiefDiagnostics />  — the draggable diagnostic popover
+//   - Cmd+Shift+M / Ctrl+Shift+M global shortcut for "play tremor"
+//
+// User-facing dev controls (act buttons, speed slider, loop toggle, snap-back)
+// live inside the admin indicator's MediumIndicator. See
 // `components/MischiefControls.tsx`.
 
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { triggerAct } from "./state/idleMischiefSlice";
 import { MischiefStage } from "./components/MischiefStage";
+import { MischiefDiagnostics } from "./components/MischiefDiagnostics";
 
 export function IdleMischiefProvider() {
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
+
+  // Hard gate — non-admins get NOTHING from this subsystem. Hook order is
+  // preserved by always running this hook above the gate.
+  if (!isAdmin) return null;
+
+  return <AdminMischief />;
+}
+
+function AdminMischief() {
   const dispatch = useAppDispatch();
-  const isDebugMode = useAppSelector(selectIsDebugMode);
-  const isDev = process.env.NODE_ENV === "development";
 
   useEffect(() => {
-    if (!isDev && !isDebugMode) return;
     const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "m") {
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        e.shiftKey &&
+        e.key.toLowerCase() === "m"
+      ) {
         e.preventDefault();
         dispatch(triggerAct("tremor"));
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [isDev, isDebugMode, dispatch]);
+  }, [dispatch]);
 
-  return <MischiefStage />;
+  return (
+    <>
+      <MischiefStage />
+      <MischiefDiagnostics />
+    </>
+  );
 }

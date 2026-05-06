@@ -99,7 +99,11 @@ export interface LibraryPreviewPageProps {
 }
 
 export function LibraryPreviewPage({ documentId }: LibraryPreviewPageProps) {
-  const { doc, loading: docLoading, error: docError } = useLibraryDoc(documentId);
+  const {
+    doc,
+    loading: docLoading,
+    error: docError,
+  } = useLibraryDoc(documentId);
   const [activePageIndex, setActivePageIndex] = useState(0);
 
   return (
@@ -117,7 +121,7 @@ export function LibraryPreviewPage({ documentId }: LibraryPreviewPageProps) {
             <Skeleton className="h-5 w-64" />
           ) : (
             <div className="flex items-center gap-2 min-w-0">
-              <h1 className="text-sm font-semibold truncate">{doc.name}</h1>
+              <h1 className="text-sm font-semibold break-words">{doc.name}</h1>
               <StatusBadge status={(doc.status as DocStatus) ?? "unknown"} />
               <span className="text-xs text-muted-foreground whitespace-nowrap">
                 {doc.pagesPersisted} pages · {doc.chunks} chunks ·{" "}
@@ -179,7 +183,12 @@ function PagesNav({
   totalPages: number;
   activePageIndex: number;
   onSelect: (idx: number) => void;
-  seedPages: { pageIndex: number; pageNumber: number; sectionKind: string | null; sectionTitle: string | null }[];
+  seedPages: {
+    pageIndex: number;
+    pageNumber: number;
+    sectionKind: string | null;
+    sectionTitle: string | null;
+  }[];
 }) {
   // Use the seedPages summary from the detail endpoint as the page index.
   // For docs with > 25 pages we still let users jump by number via the
@@ -231,7 +240,7 @@ function PagesNav({
                   )}
                 </div>
                 {p.sectionTitle && (
-                  <div className="text-xs text-muted-foreground truncate mt-0.5">
+                  <div className="text-xs text-muted-foreground break-words mt-0.5">
                     {p.sectionTitle}
                   </div>
                 )}
@@ -345,11 +354,9 @@ function PageContent({
             {page.section_kind}
           </Badge>
         )}
-        {page?.used_ocr && (
-          <Badge variant="warning">OCR</Badge>
-        )}
+        {page?.used_ocr && <Badge variant="warning">OCR</Badge>}
         {page?.section_title && (
-          <span className="text-xs text-muted-foreground truncate">
+          <span className="text-xs text-muted-foreground min-w-0 flex-1 break-words">
             {page.section_title}
           </span>
         )}
@@ -435,10 +442,7 @@ function RightRail({
         </div>
 
         <TabsContent value="chunks" className="flex-1 min-h-0 m-0">
-          <ChunksOnPage
-            documentId={documentId}
-            pageNumber={activePageNumber}
-          />
+          <ChunksOnPage documentId={documentId} pageNumber={activePageNumber} />
         </TabsContent>
         <TabsContent value="search" className="flex-1 min-h-0 m-0">
           <TestSearchPanel documentId={documentId} />
@@ -495,9 +499,7 @@ function ChunksOnPage({
             Loading chunks…
           </div>
         )}
-        {error && (
-          <p className="text-sm text-destructive">{error}</p>
-        )}
+        {error && <p className="text-sm text-destructive">{error}</p>}
         {!loading && !error && chunks.length === 0 && (
           <p className="text-sm text-muted-foreground italic">
             No chunks for page {pageNumber}.
@@ -548,7 +550,7 @@ function ChunkCard({ chunk }: { chunk: ApiChunkRow }) {
           </Badge>
         )}
       </div>
-      <pre className="whitespace-pre-wrap break-words text-xs leading-relaxed font-sans max-h-40 overflow-auto">
+      <pre className="whitespace-pre-wrap break-words text-xs leading-relaxed font-sans overflow-x-auto">
         {chunk.content_text}
       </pre>
     </div>
@@ -571,18 +573,18 @@ function TestSearchPanel({ documentId }: { documentId: string }) {
       const { data } = await postJson<
         ApiTestSearchResponse,
         { query: string; limit: number }
-      >(
-        `/rag/library/${documentId}/test-search`,
-        { query: query.trim(), limit: 10 },
-      );
+      >(`/rag/library/${documentId}/test-search`, {
+        query: query.trim(),
+        limit: 10,
+      });
       setHits(Array.isArray(data?.hits) ? data.hits : []);
-      setTotal(typeof data?.total_chunks_in_doc === "number"
-        ? data.total_chunks_in_doc
-        : 0);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Search failed",
+      setTotal(
+        typeof data?.total_chunks_in_doc === "number"
+          ? data.total_chunks_in_doc
+          : 0,
       );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Search failed");
     } finally {
       setLoading(false);
     }
@@ -653,7 +655,7 @@ function TestSearchPanel({ documentId }: { documentId: string }) {
                   </Badge>
                 )}
               </div>
-              <pre className="whitespace-pre-wrap break-words text-xs leading-relaxed font-sans max-h-32 overflow-auto">
+              <pre className="whitespace-pre-wrap break-words text-xs leading-relaxed font-sans overflow-x-auto">
                 {h.content_text}
               </pre>
             </div>

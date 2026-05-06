@@ -116,6 +116,15 @@ export const primaryNavItems: ShellNavItem[] = [
     description: "Browse and manage your files and documents",
     color: "blue",
   },
+  {
+    label: "Images",
+    href: "/images",
+    iconName: "Aperture",
+    section: "primary",
+    description:
+      "Browse, generate, edit, annotate, convert — every image tool in one place",
+    color: "pink",
+  },
 
   {
     label: "Transcripts",

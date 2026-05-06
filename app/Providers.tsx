@@ -13,6 +13,13 @@
 // never import from a barrel `index.ts`. If a widget below is heavy,
 // open the widget's own file and lazy-load its heavy children there.
 
+// Side-effect import: schedules the bundle-leak guard's boot-end macrotask
+// during the boot bundle. Window-panel core files (WindowPanel, OverlaySurface,
+// windowRegistry) call `assertLazyLoaded()` at module top — they fire a loud
+// dev-only error if parsed eagerly. Without this import, a lazy chunk loading
+// the guard fresh would false-positive itself. See lazy-bundle-guard.ts header.
+import "@/features/window-panels/utils/lazy-bundle-guard";
+
 import React from "react";
 import StoreProvider from "@/providers/StoreProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
