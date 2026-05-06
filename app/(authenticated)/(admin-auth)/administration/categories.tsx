@@ -576,6 +576,14 @@ export const adminCategories = [
         icon: <IconClipboard />,
         link: "/administration/utils/text-cleaner",
       },
+      {
+        title: "Window Panels Smoke Test",
+        description:
+          "Probe every registered overlay (109 entries) — lazy-import + initial mount with defaultData. Surfaces components that crash on mount, fail to chunk-load, or render nothing because of prop/data mismatch. Run before every release.",
+        icon: <Layout />,
+        link: "/administration/window-panels-smoketest",
+        isNew: true,
+      },
     ],
   },
   // {
