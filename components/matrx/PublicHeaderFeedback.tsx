@@ -26,23 +26,22 @@ export function PublicHeaderFeedback() {
 
   return (
     <Suspense fallback={<FeedbackButtonPlaceholder />}>
-      <FeedbackButton className="text-foreground hover:bg-accent rounded-full transition-colors" />
+      <FeedbackButton variant="transparent" />
     </Suspense>
   );
 }
 
 /**
- * Placeholder that matches the size of the feedback button
- * Prevents layout shift while the real button loads
+ * Placeholder sized to the BugTapButton's 44×44 outer tap target.
+ * Prevents layout shift while the lazy-loaded button hydrates.
  */
 function FeedbackButtonPlaceholder() {
   return (
-    <button
-      className="p-2 rounded-full opacity-50 cursor-default"
+    <span
+      className="flex h-11 w-11 items-center justify-center opacity-30"
       aria-hidden="true"
-      disabled
     >
       <Bug className="w-4 h-4" />
-    </button>
+    </span>
   );
 }

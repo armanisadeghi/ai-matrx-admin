@@ -24,6 +24,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
 import type { MicVariant } from "@/features/audio/components/MicrophoneIconButton";
 import { selectUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
+import { selectUserVariableValues } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
 import { setUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.slice";
 
 interface AgentMicrophoneButtonProps {
@@ -43,9 +44,7 @@ export function AgentMicrophoneButton({
 
   const inputText = useAppSelector(selectUserInputText(conversationId));
   const currentUserValues = useAppSelector(
-    (state) =>
-      state.instanceVariableValues.byConversationId[conversationId]
-        ?.userValues ?? {},
+    selectUserVariableValues(conversationId),
   );
 
   const handleTranscriptionComplete = useCallback(

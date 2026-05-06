@@ -11,7 +11,7 @@ import {
 
 type Variant = "glass" | "transparent" | "solid" | "group";
 
-interface TapButtonProps {
+export interface TapButtonProps {
   variant?: Variant;
   onClick?: () => void;
   as?: "button" | "label";

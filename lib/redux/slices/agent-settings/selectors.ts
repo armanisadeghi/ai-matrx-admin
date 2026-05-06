@@ -17,6 +17,7 @@ import type {
   AgentSettings,
   AgentSettingsEntry,
   AgentVariable,
+  AvailableTool,
   ConflictItem,
   NormalizedControls,
   PendingModelSwitch,
@@ -36,6 +37,8 @@ const EMPTY_SETTINGS: Partial<AgentSettings> = {};
 const EMPTY_VARIABLES: AgentVariable[] = [];
 const EMPTY_OVERRIDES: Record<string, string> = {};
 const EMPTY_FIELDS: string[] = [];
+const EMPTY_AGENT_SETTINGS_ENTRIES: Record<string, AgentSettingsEntry> = {};
+const EMPTY_AVAILABLE_TOOLS: AvailableTool[] = [];
 
 // ── Entry Selectors ────────────────────────────────────────────────────────────
 
@@ -305,8 +308,9 @@ export const selectHasOverrides = (
   state: RootState,
   agentId: string,
 ): boolean =>
-  Object.keys(state.agentSettings?.entries[agentId]?.overrides ?? {}).length >
-  0;
+  Object.keys(
+    state.agentSettings?.entries[agentId]?.overrides ?? EMPTY_SETTINGS,
+  ).length > 0;
 
 /**
  * Names of all fields that are currently overridden from defaults.
@@ -420,7 +424,8 @@ export const selectActiveAgentId = (state: RootState): string | null =>
 export const selectActiveEffectiveSettings = createSelector(
   [
     (state: RootState) => state.agentSettings?.activeAgentId ?? null,
-    (state: RootState) => state.agentSettings?.entries ?? {},
+    (state: RootState) =>
+      state.agentSettings?.entries ?? EMPTY_AGENT_SETTINGS_ENTRIES,
   ],
   (activeAgentId, entries): Partial<AgentSettings> => {
     if (!activeAgentId) return EMPTY_SETTINGS;
@@ -433,7 +438,8 @@ export const selectActiveEffectiveSettings = createSelector(
 export const selectActiveModelId = createSelector(
   [
     (state: RootState) => state.agentSettings?.activeAgentId ?? null,
-    (state: RootState) => state.agentSettings?.entries ?? {},
+    (state: RootState) =>
+      state.agentSettings?.entries ?? EMPTY_AGENT_SETTINGS_ENTRIES,
   ],
   (activeAgentId, entries): string | null => {
     if (!activeAgentId) return null;
@@ -446,17 +452,20 @@ export const selectActiveModelId = createSelector(
 // ── All Entries (for testing/debugging) ───────────────────────────────────────
 
 export const selectAllEntries = (state: RootState) =>
-  state.agentSettings?.entries ?? {};
+  state.agentSettings?.entries ?? EMPTY_AGENT_SETTINGS_ENTRIES;
 
 export const selectAllAgentIds = createSelector(
-  [(state: RootState) => state.agentSettings?.entries ?? {}],
+  [
+    (state: RootState) =>
+      state.agentSettings?.entries ?? EMPTY_AGENT_SETTINGS_ENTRIES,
+  ],
   (entries): string[] => Object.keys(entries),
 );
 
 // ── Available Tools ────────────────────────────────────────────────────────────
 
 export const selectAvailableTools = (state: RootState) =>
-  state.agentSettings?.availableTools ?? [];
+  state.agentSettings?.availableTools ?? EMPTY_AVAILABLE_TOOLS;
 
 export const selectIsLoadingTools = (state: RootState) =>
   state.agentSettings?.isLoadingTools ?? false;

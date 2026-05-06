@@ -5,6 +5,9 @@ import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
 import { EntityKeys } from "@/types/entityTypes";
 
+// Stable fallback — inline `?? {}` creates a new reference every recomputation.
+const EMPTY_LAST_FETCHED: Record<string, string> = {};
+
 // First, create a base selector for the entity domain
 const selectEntityDomain = (state: RootState) => state.entities;
 
@@ -48,7 +51,8 @@ export const makeEntitySelectors = () => {
   const getLastFetched = createSelector(
     [selectEntityDomain, (_: RootState, entityKey: EntityKeys) => entityKey],
     // @ts-ignore - COMPLEX: EntityState structure doesn't match expected properties - requires state structure refactor
-    (entities, entityKey) => entities[entityKey]?.lastFetched ?? {},
+    (entities, entityKey) =>
+      entities[entityKey]?.lastFetched ?? EMPTY_LAST_FETCHED,
   );
 
   return {

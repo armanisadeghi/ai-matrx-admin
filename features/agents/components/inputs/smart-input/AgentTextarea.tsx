@@ -44,6 +44,7 @@ import {
   smartExecute,
   cancelExecution,
 } from "@/features/agents/redux/execution-system/thunks/smart-execute.thunk";
+import { selectUserVariableValues } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
 
 // ── Props ────────────────────────────────────────────────────────────────────
 
@@ -84,11 +85,9 @@ export function AgentTextarea({
   const submitOnEnter = useAppSelector(selectSubmitOnEnter(conversationId));
   const isExecuting = useAppSelector(selectIsExecuting(conversationId));
 
-  // Variable values for undo snapshot co-capture
+  // Variable values for undo snapshot co-capture (stable EMPTY_RECORD when unset)
   const currentUserValues = useAppSelector(
-    (state) =>
-      state.instanceVariableValues.byConversationId[conversationId]
-        ?.userValues ?? {},
+    selectUserVariableValues(conversationId),
   );
 
   // Undo/redo — intercepts Cmd+Z / Ctrl+Z

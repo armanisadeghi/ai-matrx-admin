@@ -161,12 +161,15 @@ export function ChatMobileHeader({
         {isAuthenticated && mounted && (
           <Suspense
             fallback={
-              <button className="p-1.5 opacity-30" disabled aria-hidden>
+              <span
+                className="flex h-11 w-11 items-center justify-center opacity-30"
+                aria-hidden="true"
+              >
                 <Bug className="h-4 w-4" />
-              </button>
+              </span>
             }
           >
-            <FeedbackButton className="text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-md transition-colors [&_svg]:h-4 [&_svg]:w-4 p-1.5" />
+            <FeedbackButton variant="transparent" />
           </Suspense>
         )}
 
