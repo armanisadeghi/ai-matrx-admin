@@ -36,7 +36,7 @@ import { useToastManager } from "@/hooks/useToastManager";
 import { THEMES } from "../themes";
 import SaveTableModal from "./SaveTableModal";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openQuickDataWindow } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { TableEditToolbar } from "./editing/TableEditToolbar";
 import { RowActionsMenu } from "./editing/RowActionsMenu";
 import { ColumnActionsMenu } from "./editing/ColumnActionsMenu";
@@ -679,7 +679,12 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
 
   const handleViewSavedTable = () => {
     if (!savedTableInfo) return;
-    dispatch(openQuickDataWindow({ tableId: savedTableInfo.table_id }));
+    dispatch(
+      openOverlay({
+        overlayId: "quickDataWindow",
+        data: { selectedTable: savedTableInfo.table_id },
+      }),
+    );
   };
 
   const renderTableActionButton = () => {

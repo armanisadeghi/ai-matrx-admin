@@ -18,11 +18,8 @@ import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { getStaticEntryByOverlayId } from "@/features/window-panels/registry/windowRegistryMetadata";
-import {
-  MenuDivider,
-  MenuGridItem,
-  MenuSection,
-} from "./menuPrimitives";
+import type { OverlayId } from "@/features/window-panels/registry/overlay-ids";
+import { MenuDivider, MenuGridItem, MenuSection } from "./menuPrimitives";
 import {
   TOOLS_CATEGORIES,
   TOOLS_GRID_TILES,
@@ -90,7 +87,11 @@ export default function ToolsGrid({
 
           dispatch(
             openOverlay({
-              overlayId: entry.overlayId,
+              // entry comes from the registry; cast is safe because
+              // check-registry verifies every entry's overlayId is in
+              // OVERLAY_IDS. The metadata field is `string` only to avoid
+              // a circular import with overlay-ids.ts.
+              overlayId: entry.overlayId as OverlayId,
               ...(instanceId ? { instanceId } : {}),
               ...(data ? { data } : {}),
             }),

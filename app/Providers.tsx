@@ -40,6 +40,17 @@ import { RequestRecoveryProvider } from "@/features/request-recovery/providers/R
 import { RecoveryWindow } from "@/features/request-recovery/components/RecoveryWindow";
 import { RecoveryNudge } from "@/features/request-recovery/components/RecoveryNudge";
 import DeferredSingletons from "./DeferredSingletons";
+// WindowPersistenceManager provides the React context that WindowPanel
+// reads via `useWindowPersistence()` — without this mounted, every
+// `saveWindow`/`closeWindow` call resolves to the no-op default and
+// persistence silently disappears. This is also what runs the one-time
+// hydration of `window_sessions` on session boot, the one-shot slug
+// migrations, and the idle GC sweep. Keep this OUTSIDE DeferredSingletons
+// so the context is available to UnifiedOverlayController's children
+// and so hydration begins as soon as the user is authenticated rather
+// than waiting on idle. Imports only metadata + service helpers — none
+// of the heavy window-panel core files are pulled into this graph.
+import { WindowPersistenceManager } from "@/features/window-panels/WindowPersistenceManager";
 import GlobalTaskShortcut from "@/features/tasks/widgets/GlobalTaskShortcut";
 import CreateTaskFromSourceDialog from "@/features/tasks/widgets/CreateTaskFromSourceDialog";
 import { CloudFilesPickerHost } from "@/features/files/components/pickers/CloudFilesPickerHost";
@@ -78,6 +89,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
   return (
     <ReactQueryProvider>
       <StoreProvider initialState={initialReduxState}>
+        <WindowPersistenceManager>
         <PersistentComponentProvider>
           <ContextMenuProvider>
             <ToastProvider>
@@ -140,6 +152,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
             </ToastProvider>
           </ContextMenuProvider>
         </PersistentComponentProvider>
+        </WindowPersistenceManager>
       </StoreProvider>
     </ReactQueryProvider>
   );

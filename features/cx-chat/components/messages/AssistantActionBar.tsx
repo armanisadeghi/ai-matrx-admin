@@ -28,8 +28,7 @@ import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils"
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { messageActionsActions } from "@/features/agents/redux/execution-system/message-actions/message-actions.slice";
 import {
-  openFullScreenEditor,
-  openContentHistory,
+  openOverlay,
   closeOverlay,
 } from "@/lib/redux/slices/overlaySlice";
 import { chatConversationsActions } from "../../_legacy-stubs";
@@ -132,35 +131,52 @@ export function AssistantActionBar({
   };
 
   const handleEdit = () => {
+    const editInstanceId = `cx-assistant-edit-${messageId}`;
     dispatch(
-      openFullScreenEditor({
-        content,
-        instanceId: `cx-assistant-edit-${messageId}`,
-        onSave: (newContent: string) => {
-          if (sessionId && messageId) {
+      openOverlay({
+        overlayId: "fullScreenEditor",
+        instanceId: editInstanceId,
+        data: {
+          content,
+          mode: "free",
+          conversationId: undefined,
+          messageId,
+          onSave: (newContent: string) => {
+            if (sessionId && messageId) {
+              dispatch(
+                chatConversationsActions.updateMessage({
+                  sessionId,
+                  messageId,
+                  updates: { content: newContent },
+                }),
+              );
+            }
             dispatch(
-              chatConversationsActions.updateMessage({
-                sessionId,
-                messageId,
-                updates: { content: newContent },
+              closeOverlay({
+                overlayId: "fullScreenEditor",
+                instanceId: editInstanceId,
               }),
             );
-          }
-          dispatch(
-            closeOverlay({
-              overlayId: "fullScreenEditor",
-              instanceId: `cx-assistant-edit-${messageId}`,
-            }),
-          );
+          },
+          tabs: ["write", "matrx_split", "markdown", "wysiwyg", "preview"],
+          initialTab: "matrx_split",
+          analysisData: undefined,
+          title: undefined,
+          showSaveButton: true,
+          showCopyButton: true,
         },
-        messageId,
       }),
     );
   };
 
   const handleShowHistory = () => {
     if (!sessionId || !messageId) return;
-    dispatch(openContentHistory({ sessionId, messageId }));
+    dispatch(
+      openOverlay({
+        overlayId: "contentHistory",
+        data: { sessionId, messageId },
+      }),
+    );
   };
 
   return (

@@ -27,7 +27,7 @@ import type { PublicResource } from "../types/content";
 import type { PromptVariable } from "@/features/prompts/types/core";
 import { MessageCircle, Share2, List, Layers } from "lucide-react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openShareModal } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 
 // ============================================================================
 // TYPES
@@ -532,11 +532,14 @@ export function ChatContainer({ className = "" }: ChatContainerProps) {
                 <button
                   onClick={() =>
                     dispatch(
-                      openShareModal({
-                        resourceType: "cx_conversation",
-                        resourceId: shareConversationId!,
-                        resourceName: conversationTitle,
-                        isOwner: true,
+                      openOverlay({
+                        overlayId: "shareModal",
+                        data: {
+                          resourceType: "cx_conversation",
+                          resourceId: shareConversationId!,
+                          resourceName: conversationTitle,
+                          isOwner: true,
+                        },
                       }),
                     )
                   }

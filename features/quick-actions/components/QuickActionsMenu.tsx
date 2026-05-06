@@ -4,7 +4,6 @@
 import React from "react";
 import {
   StickyNote,
-  Zap,
   LayoutGrid,
   CheckSquare,
   MessageSquare,
@@ -12,7 +11,6 @@ import {
   FolderOpen,
   Star,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,19 +19,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { ZapTapButton } from "@/components/icons/tap-buttons";
 import { useQuickActions } from "../hooks/useQuickActions";
 
-interface QuickActionsMenuProps {
-  className?: string;
-}
-
-export function QuickActionsMenu({ className }: QuickActionsMenuProps) {
+export function QuickActionsMenu() {
   const {
     openQuickNotes,
     openQuickTasks,
@@ -46,22 +35,9 @@ export function QuickActionsMenu({ className }: QuickActionsMenuProps) {
 
   return (
     <DropdownMenu>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`p-2 rounded-full ${className}`}
-              >
-                <Zap className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
-          <TooltipContent>Quick Actions</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <DropdownMenuTrigger asChild>
+        <ZapTapButton ariaLabel="Quick actions" tooltip="Quick Actions" />
+      </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>Quick Access</DropdownMenuLabel>

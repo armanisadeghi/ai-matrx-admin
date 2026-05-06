@@ -17,6 +17,12 @@
  * NOT auto-generated — pruning judgment matters.
  */
 
+// `chrome-extension` is the matrx-extend Chrome extension's surface identifier.
+// Once the extension's Phase 2 bridge ships (Supabase Broadcast channel
+// `matrx-extension-bridge:<userId>`), this client_name becomes a real surface.
+// Until then, no SURFACE_CANDIDATES entry declares it. See:
+//   - docs/MATRX_EXTEND_CONNECTION.md (this repo)
+//   - matrx-extend's docs/CROSS_REPO_INTEGRATION.md
 export interface SurfaceCandidate {
   /** Canonical `<client>/<local>` name. */
   name: string;

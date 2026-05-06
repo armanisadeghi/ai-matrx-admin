@@ -1040,27 +1040,27 @@
 }
 
 @layer utilities {
-  /* Glass utilities live in the "Shell Glass + Tactile Utilities" block
-     further down in this file. The four canonical variants are:
-       .shell-glass         — base (cards, panels, popovers, glass pills)
-       .shell-glass-dock    — heavier shadow for floating chrome (dock, FAB)
-       .shell-glass-sheet   — right-edge border only (slide-in side sheets)
-       .shell-glass-card    — no backdrop-filter (in-page content surfaces)
-     Tokens (--shell-glass-*) live in @layer base :root / .dark above.
-     Modal/overlay variants (.shell-glass-overlay, .shell-glass-modal)
-     live OUTSIDE @layer further down for Radix !important cascade.
+  /* Glass utilities live in the Shell Glass and Tactile Utilities block
+     further down in this file. The four canonical variants are
+     shell-glass, shell-glass-dock, shell-glass-sheet, and shell-glass-card.
+     Their tokens are declared in the :root and .dark blocks above. The
+     four base variants live OUTSIDE @layer further down. That placement
+     is load-bearing because Tailwind background, border, and shadow
+     utilities sit inside @layer utilities and would otherwise shadow the
+     glass declarations on elements that combine glass with Tailwind
+     classes. Modal and overlay variants (shell-glass-overlay and
+     shell-glass-modal) also live OUTSIDE @layer with !important for the
+     Radix cascade.
 
-     The legacy mx-glass-* family (mx-glass, mx-glass-subtle, mx-glass-strong,
-     mx-glass-pill, mx-glass-input, mx-glass-header, mx-glass-footer,
-     mx-glass-sheet, mx-glass-drawer, mx-glass-vibrancy{,-dock}, mx-glass-nano,
-     mx-glass-micro, mx-glass-scrim, mx-glass-displaced) was deleted in the
-     glass-consolidation Tier 3 migration — see git log for the codemod.
-     The matching --glass-bg{-nano,-micro,-subtle,-hover,-strong}, --glass-border{-subtle},
-     --glass-shadow{-lg} tokens are kept because some JSX components still
-     reference them via inline `style={{ background: "var(--glass-bg-subtle)" }}`
-     (AgentsGrid, PromptsGrid, ResearchFilterBar, BottomSheet). Migrate
-     those inline-style consumers to shell-glass-* classes to fully retire
-     the old tokens. */
+     The legacy mx-glass family was deleted in the glass-consolidation
+     Tier 3 migration — see git log for the codemod. The matching
+     --glass-bg, --glass-bg-nano, --glass-bg-micro, --glass-bg-subtle,
+     --glass-bg-hover, --glass-bg-strong, --glass-border,
+     --glass-border-subtle, --glass-shadow, and --glass-shadow-lg tokens
+     are kept because some JSX components still reference them via
+     inline style attributes (AgentsGrid, PromptsGrid, ResearchFilterBar,
+     BottomSheet). Migrate those inline-style consumers to shell-glass
+     classes to fully retire the old tokens. */
 
   /* Textured background utilities — opt-in.
      -----------------------------------------------------------------------
@@ -1588,85 +1588,95 @@
 
 /* =============================================================================
    Shell Glass + Tactile Utilities — single source of truth.
-   Token declarations (--shell-glass-*) live in @layer base :root / .dark above.
-   These utilities are inside @layer utilities so they're composable with
-   Tailwind's cn() system and available in EVERY layout, not just (a)/(ssr).
+   Token declarations live in the .dark and :root blocks above.
+
+   These utilities are INTENTIONALLY unlayered (no @layer wrapper). In the
+   original styles/shell.css (which loaded only in (a) and (ssr) routes)
+   these rules sat at the top level of the file — and that placement was
+   load-bearing for the visual effect. Cascade Layers spec says unlayered
+   rules ALWAYS beat any @layer rule regardless of source order or selector
+   specificity. So when an element carries both a Tailwind utility and a
+   glass class, the shell-glass declarations need to win against Tailwind
+   background, border, and shadow utilities — which all sit inside @layer
+   utilities. Wrapping these rules in @layer utilities made them lose to
+   Tailwind utilities on the same element, which visibly thinned and
+   lightened the glass everywhere. Keep these unlayered.
+
    The four glass variants are the entire public API:
-     .shell-glass         — base (cards, panels, popovers, glass pills)
-     .shell-glass-dock    — heavier shadow for floating chrome (dock, FAB)
-     .shell-glass-sheet   — right-edge border only (slide-in side sheets)
-     .shell-glass-card    — no backdrop-filter (avoids stacking-context bugs
-                              in Chromium that break shell chrome blur). For
-                              in-page content surfaces only.
-   For Radix Dialog/Drawer/Sheet overlays, see .shell-glass-overlay /
-   .shell-glass-modal further up — those live OUTSIDE @layer with !important.
+     shell-glass         — base (cards, panels, popovers, glass pills)
+     shell-glass-dock    — heavier shadow for floating chrome (dock, FAB)
+     shell-glass-sheet   — right-edge border only (slide-in side sheets)
+     shell-glass-card    — no backdrop-filter (avoids stacking-context bugs
+                              in Chromium that break shell chrome blur).
+                              For in-page content surfaces only.
+   For Radix Dialog, Drawer, and Sheet overlays, see shell-glass-overlay
+   and shell-glass-modal further up — those also live OUTSIDE @layer with
+   !important to defeat Radix's inline styles.
    ============================================================================= */
 
-@layer utilities {
-  /* Core glass — backdrop-filter clipped at the element boundary */
-  .shell-glass {
-    background: var(--shell-glass-bg);
-    backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
-    -webkit-backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
-    border: var(--shell-glass-border-width) solid var(--shell-glass-border);
-    box-shadow: var(--shell-glass-shadow);
-  }
-  .shell-glass:hover { background: var(--shell-glass-bg-hover); }
-  .shell-glass:active { background: var(--shell-glass-bg-active); }
-
-  /* Dock variant — heavier shadow, no border change */
-  .shell-glass-dock {
-    background: var(--shell-glass-bg);
-    backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
-    -webkit-backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
-    border: var(--shell-glass-border-width) solid var(--shell-glass-border);
-    box-shadow: var(--shell-glass-shadow-lg);
-  }
-  .shell-glass-dock:hover { background: var(--shell-glass-bg-hover); }
-  .shell-glass-dock:active { background: var(--shell-glass-bg-active); }
-
-  /* Sheet variant — left border only (for side panels) */
-  .shell-glass-sheet {
-    background: var(--shell-glass-bg);
-    backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
-    -webkit-backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
-    border: none;
-    border-right: var(--shell-glass-border-width) solid var(--shell-glass-border);
-    box-shadow: var(--shell-glass-shadow);
-  }
-
-  /* Card variant — NO backdrop-filter (avoids stacking-context issues) */
-  .shell-glass-card {
-    background: var(--shell-glass-card-bg);
-    border: var(--shell-glass-border-width) solid var(--shell-glass-border);
-    box-shadow: var(--shell-glass-shadow);
-  }
-
-  /* Tactile — iOS-grade spring scale on hover/active */
-  .shell-tactile {
-    transition:
-      transform var(--shell-duration-fast) var(--shell-ease-spring),
-      background var(--shell-duration-fast) var(--shell-ease-smooth);
-  }
-  .shell-tactile:hover  { transform: scale(1.05); }
-  .shell-tactile:active { transform: scale(0.95); }
-
-  /* Subtle tactile — for nav items (less dramatic) */
-  .shell-tactile-subtle {
-    transition:
-      transform var(--shell-duration-fast) var(--shell-ease-spring),
-      background var(--shell-duration-fast) var(--shell-ease-smooth);
-  }
-  .shell-tactile-subtle:hover  { transform: scale(1.02); }
-  .shell-tactile-subtle:active { transform: scale(0.98); }
-
-  /* Active route pill */
-  .shell-active-pill {
-    background: var(--shell-pill-bg);
-    border: 1px solid var(--shell-pill-border);
-    view-transition-name: shell-active-pill;
-  }
-  .shell-active-pill svg,
-  .shell-active-pill .shell-nav-icon { color: var(--shell-pill-text); }
-  .shell-active-pill .shell-nav-label { color: var(--shell-pill-text); font-weight: 600; }
+/* Core glass — backdrop-filter clipped at the element boundary */
+.shell-glass {
+  background: var(--shell-glass-bg);
+  backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
+  -webkit-backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
+  border: var(--shell-glass-border-width) solid var(--shell-glass-border);
+  box-shadow: var(--shell-glass-shadow);
 }
+.shell-glass:hover { background: var(--shell-glass-bg-hover); }
+.shell-glass:active { background: var(--shell-glass-bg-active); }
+
+/* Dock variant — heavier shadow, no border change */
+.shell-glass-dock {
+  background: var(--shell-glass-bg);
+  backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
+  -webkit-backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
+  border: var(--shell-glass-border-width) solid var(--shell-glass-border);
+  box-shadow: var(--shell-glass-shadow-lg);
+}
+.shell-glass-dock:hover { background: var(--shell-glass-bg-hover); }
+.shell-glass-dock:active { background: var(--shell-glass-bg-active); }
+
+/* Sheet variant — left border only (for side panels) */
+.shell-glass-sheet {
+  background: var(--shell-glass-bg);
+  backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
+  -webkit-backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
+  border: none;
+  border-right: var(--shell-glass-border-width) solid var(--shell-glass-border);
+  box-shadow: var(--shell-glass-shadow);
+}
+
+/* Card variant — NO backdrop-filter (avoids stacking-context issues) */
+.shell-glass-card {
+  background: var(--shell-glass-card-bg);
+  border: var(--shell-glass-border-width) solid var(--shell-glass-border);
+  box-shadow: var(--shell-glass-shadow);
+}
+
+/* Tactile — iOS-grade spring scale on hover/active */
+.shell-tactile {
+  transition:
+    transform var(--shell-duration-fast) var(--shell-ease-spring),
+    background var(--shell-duration-fast) var(--shell-ease-smooth);
+}
+.shell-tactile:hover  { transform: scale(1.05); }
+.shell-tactile:active { transform: scale(0.95); }
+
+/* Subtle tactile — for nav items (less dramatic) */
+.shell-tactile-subtle {
+  transition:
+    transform var(--shell-duration-fast) var(--shell-ease-spring),
+    background var(--shell-duration-fast) var(--shell-ease-smooth);
+}
+.shell-tactile-subtle:hover  { transform: scale(1.02); }
+.shell-tactile-subtle:active { transform: scale(0.98); }
+
+/* Active route pill */
+.shell-active-pill {
+  background: var(--shell-pill-bg);
+  border: 1px solid var(--shell-pill-border);
+  view-transition-name: shell-active-pill;
+}
+.shell-active-pill svg,
+.shell-active-pill .shell-nav-icon { color: var(--shell-pill-text); }
+.shell-active-pill .shell-nav-label { color: var(--shell-pill-text); font-weight: 600; }

@@ -41,7 +41,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openCodeEditorWindow } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import type { CodeFile } from "../redux/code-files.types";
 import { useQuickSaveCode } from "./useQuickSaveCode";
 
@@ -156,10 +156,13 @@ export function QuickSaveCodeCore({
         router.push(`/code-files/${savedFile.id}`);
       } else if (action === "openWindow") {
         dispatch(
-          openCodeEditorWindow({
-            fileIds: [savedFile.id],
-            activeFileId: savedFile.id,
-            title: savedFile.name,
+          openOverlay({
+            overlayId: "codeEditorWindow",
+            data: {
+              fileIds: [savedFile.id],
+              activeFileId: savedFile.id,
+              title: savedFile.name,
+            },
           }),
         );
       }

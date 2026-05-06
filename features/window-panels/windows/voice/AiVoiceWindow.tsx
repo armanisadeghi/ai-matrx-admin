@@ -7,6 +7,7 @@ import {
   WindowPanel,
   type WindowPanelProps,
 } from "@/features/window-panels/WindowPanel";
+import type { OverlayId } from "@/features/window-panels/registry/overlay-ids";
 import AiVoiceFloatingWorkspace from "@/features/audio/voice/AiVoiceFloatingWorkspace";
 
 export interface AiVoiceWindowProps extends Omit<
@@ -26,7 +27,10 @@ export function AiVoiceWindow({
   const dispatch = useAppDispatch();
 
   const onClose = useCallback(() => {
-    dispatch(closeOverlay({ overlayId: id, instanceId }));
+    // `id` comes from WindowPanelProps where it's typed as a generic string
+    // (a React-id fallback). At this seat it always points at a registered
+    // overlay, so casting to OverlayId is sound.
+    dispatch(closeOverlay({ overlayId: id as OverlayId, instanceId }));
   }, [dispatch, id, instanceId]);
 
   return (

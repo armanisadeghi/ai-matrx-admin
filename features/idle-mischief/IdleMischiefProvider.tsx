@@ -26,16 +26,23 @@
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 import { triggerAct } from "./state/idleMischiefSlice";
 import { MischiefStage } from "./components/MischiefStage";
 import { MischiefDiagnostics } from "./components/MischiefDiagnostics";
 
 export function IdleMischiefProvider() {
-  const isAdmin = useAppSelector(selectIsSuperAdmin);
+  const isSuperAdmin = useAppSelector(selectIsSuperAdmin);
+  const isDebugMode = useAppSelector(selectIsDebugMode);
 
   // Hard gate — non-admins get NOTHING from this subsystem. Hook order is
   // preserved by always running this hook above the gate.
-  if (!isAdmin) return null;
+  if (!isSuperAdmin) return null;
+  // Additional gate — even for super-admins, the entire mischief subsystem
+  // only mounts when debug mode is on. This means the orchestrator's idle
+  // detection, listeners, intervals, and Redux subscriptions are all
+  // off-by-default. Toggle debug mode in the admin indicator to enable.
+  if (!isDebugMode) return null;
 
   return <AdminMischief />;
 }

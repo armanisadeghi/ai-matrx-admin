@@ -37,7 +37,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
 import {
   closeOverlay,
-  openFullScreenEditor,
+  openOverlay,
 } from "@/lib/redux/slices/overlaySlice";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -135,34 +135,44 @@ export function ContentActionBar({
   const handleOpenEditor = useCallback(() => {
     const editorInstanceId = `content-editor-${resolvedInstanceKey}`;
     dispatch(
-      openFullScreenEditor({
-        content,
-        mode: "free",
+      openOverlay({
+        overlayId: "fullScreenEditor",
         instanceId: editorInstanceId,
-        title,
-        analysisData:
-          (metadata as Record<string, unknown> | undefined) ?? undefined,
-        showSaveButton: !!onSave,
-        onSave: onSave
-          ? async (newContent: string) => {
-              try {
-                await onSave(newContent);
-              } catch (err) {
-                // eslint-disable-next-line no-console
-                console.error("[ContentActionBar] onSave failed", err);
-                toast.error(
-                  err instanceof Error ? err.message : "Failed to save changes",
+        data: {
+          content,
+          mode: "free",
+          conversationId: undefined,
+          messageId: undefined,
+          onSave: onSave
+            ? async (newContent: string) => {
+                try {
+                  await onSave(newContent);
+                } catch (err) {
+                  // eslint-disable-next-line no-console
+                  console.error("[ContentActionBar] onSave failed", err);
+                  toast.error(
+                    err instanceof Error
+                      ? err.message
+                      : "Failed to save changes",
+                  );
+                  return;
+                }
+                dispatch(
+                  closeOverlay({
+                    overlayId: "fullScreenEditor",
+                    instanceId: editorInstanceId,
+                  }),
                 );
-                return;
               }
-              dispatch(
-                closeOverlay({
-                  overlayId: "fullScreenEditor",
-                  instanceId: editorInstanceId,
-                }),
-              );
-            }
-          : undefined,
+            : undefined,
+          tabs: ["write", "matrx_split", "markdown", "wysiwyg", "preview"],
+          initialTab: "matrx_split",
+          analysisData:
+            (metadata as Record<string, unknown> | undefined) ?? undefined,
+          title,
+          showSaveButton: !!onSave,
+          showCopyButton: true,
+        },
       }),
     );
   }, [content, title, metadata, onSave, dispatch, resolvedInstanceKey]);

@@ -36,7 +36,7 @@ import { useToastManager } from "@/hooks/useToastManager";
 import { THEMES } from "../../themes";
 import SaveTableModal from "../../tables/SaveTableModal";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openQuickDataWindow } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { TableEditToolbar } from "../../tables/editing/TableEditToolbar";
 import { RowActionsMenu } from "../../tables/editing/RowActionsMenu";
 import { ColumnActionsMenu } from "../../tables/editing/ColumnActionsMenu";
@@ -718,7 +718,12 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
 
   const handleViewSavedTable = () => {
     if (!savedTableInfo) return;
-    dispatch(openQuickDataWindow({ tableId: savedTableInfo.table_id }));
+    dispatch(
+      openOverlay({
+        overlayId: "quickDataWindow",
+        data: { selectedTable: savedTableInfo.table_id },
+      }),
+    );
   };
 
   const renderTableActionButton = () => {

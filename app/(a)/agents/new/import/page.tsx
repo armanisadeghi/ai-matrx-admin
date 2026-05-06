@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openAgentImportWindow } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { Loader2 } from "lucide-react";
 
 export default function ImportAgentPage() {
@@ -11,7 +11,7 @@ export default function ImportAgentPage() {
   const router = useRouter();
 
   useEffect(() => {
-    dispatch(openAgentImportWindow());
+    dispatch(openOverlay({ overlayId: "agentImportWindow", data: {} }));
     router.replace("/agents/new");
   }, [dispatch, router]);
 

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Plus } from "lucide-react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openSaveToNotes } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 
 interface QuickCaptureButtonProps {
   defaultContent?: string;
@@ -38,10 +38,14 @@ export function QuickCaptureButton({
 
   const handleClick = () => {
     dispatch(
-      openSaveToNotes({
-        content: defaultContent,
-        defaultFolder,
+      openOverlay({
+        overlayId: "saveToNotes",
         instanceId: crypto.randomUUID(),
+        data: {
+          initialContent: defaultContent,
+          defaultFolder,
+          initialEditorMode: undefined,
+        },
       }),
     );
   };

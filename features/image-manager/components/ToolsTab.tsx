@@ -38,6 +38,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import type { OverlayId } from "@/features/window-panels/registry/overlay-ids";
 import { openImageViewer } from "@/features/window-panels/windows/image/ImageViewerWindow";
 import { useSelectedImages } from "@/components/image/context/SelectedImagesProvider";
 import { useScreenshot } from "@/hooks/useScreenshot";
@@ -62,7 +63,7 @@ interface ToolDescriptor {
 
 type ToolAction =
   | { kind: "expand"; label: string }
-  | { kind: "openOverlay"; label: string; overlayId: string }
+  | { kind: "openOverlay"; label: string; overlayId: OverlayId }
   | { kind: "openLink"; label: string; href: string; external?: boolean }
   | { kind: "callback"; label: string; run: () => void | Promise<void> };
 

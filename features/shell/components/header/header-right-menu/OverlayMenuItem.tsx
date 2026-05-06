@@ -4,11 +4,12 @@ import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { cn } from "@/lib/utils";
+import type { OverlayId } from "@/features/window-panels/registry/overlay-ids";
 import { getMenuIcon, type MenuIconKey } from "./menuIconRegistry";
 import { MENU_ITEM_CLASS } from "./menuItemClass";
 
 interface OverlayMenuItemProps {
-  overlayId: string;
+  overlayId: OverlayId;
   icon: MenuIconKey;
   label: string;
   className?: string;

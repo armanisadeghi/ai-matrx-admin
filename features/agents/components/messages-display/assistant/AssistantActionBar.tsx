@@ -29,7 +29,7 @@ import {
 import { StreamingSpeakerButton } from "@/features/tts/components/StreamingSpeakerButton";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { openFullScreenEditor } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { toast } from "sonner";
 import {
   selectMessageById,
@@ -229,13 +229,22 @@ export function AssistantActionBar({
   // editMessage on save — no closure stored in Redux, no freeze.
   const handleEdit = () => {
     dispatch(
-      openFullScreenEditor({
-        content,
-        mode: "assistant-message",
-        conversationId,
-        messageId,
-        analysisData: metadata ?? undefined,
+      openOverlay({
+        overlayId: "fullScreenEditor",
         instanceId: `assistant-edit-${messageId}`,
+        data: {
+          content,
+          mode: "assistant-message",
+          conversationId,
+          messageId,
+          onSave: undefined,
+          tabs: ["write", "matrx_split", "markdown", "wysiwyg", "preview"],
+          initialTab: "matrx_split",
+          analysisData: metadata ?? undefined,
+          title: undefined,
+          showSaveButton: true,
+          showCopyButton: true,
+        },
       }),
     );
   };

@@ -28,7 +28,7 @@ import AdvancedMenu, { MenuItem } from "@/components/official/AdvancedMenu";
 import { NotesAPI } from "@/features/notes/service/notesApi";
 import { useCartesiaSpeaker } from "@/features/tts/hooks/useCartesiaSpeaker";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openSaveToNotes } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { toast } from "sonner";
 import { useQuickActions } from "@/features/quick-actions/hooks/useQuickActions";
 
@@ -84,10 +84,14 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({
 
   const handleSaveToNotes = () => {
     dispatch(
-      openSaveToNotes({
-        content,
-        defaultFolder: "Scratch",
+      openOverlay({
+        overlayId: "saveToNotes",
         instanceId: crypto.randomUUID(),
+        data: {
+          initialContent: content,
+          defaultFolder: "Scratch",
+          initialEditorMode: undefined,
+        },
       }),
     );
     onClose();

@@ -92,7 +92,7 @@ export function PublicImagesSection({
     <div className="h-full overflow-auto">
       <section className="px-4 pt-3">
         <header className="mb-3 flex flex-wrap items-center gap-2 pr-8">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4 pr-10">
             <GalleryVertical className="h-3.5 w-3.5 text-amber-500" />
             <h3 className="text-xs uppercase tracking-wide text-muted-foreground">
               Curated Covers

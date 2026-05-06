@@ -22,6 +22,7 @@ import { SmartAgentInput } from "../../inputs/smart-input/SmartAgentInput";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { PaperPlaneIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/ButtonMine";
+import type { OverlayId } from "@/features/window-panels/registry/overlay-ids";
 
 // ─── WindowPanel body — used by AgentGateWindow ───────────────────────────────
 
@@ -33,7 +34,7 @@ export function AgentGateBody({
 }: {
   conversationId: string;
   windowInstanceId: string;
-  downstreamOverlayId?: string;
+  downstreamOverlayId?: OverlayId;
   onClose: () => void;
 }) {
   const dispatch = useAppDispatch();

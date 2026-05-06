@@ -56,6 +56,7 @@ import {
 } from "@/lib/redux/slices/windowManagerSlice";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getStaticEntryByOverlayId } from "./registry/windowRegistryMetadata";
+import type { OverlayId } from "./registry/overlay-ids";
 import MobileDrawerSurface from "./mobile/MobileDrawerSurface";
 import MobileCardSurface from "./mobile/MobileCardSurface";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
@@ -64,7 +65,6 @@ import { useWindowPersistence } from "./WindowPersistenceManager";
 import { Save } from "lucide-react";
 import { DebugStrip } from "./WindowPanel/DebugStrip";
 import { MobileWindowHeader } from "./WindowPanel/MobileHeader";
-import { SnapButton } from "./WindowPanel/SnapButton";
 import { DeprecationBanner } from "./WindowPanel/DeprecationBanner";
 import {
   detectPopoutCapability,
@@ -183,7 +183,7 @@ export interface WindowPanelProps extends UseWindowPanelOptions {
    * to save state on explicit user action ("Save Window State") and piggyback
    * saves triggered by child content via onPiggybackSave.
    */
-  overlayId?: string;
+  overlayId?: OverlayId;
   /**
    * Called by WindowPanel before a save so the child component can return
    * its current content state to include in the window_sessions `data` column.
@@ -292,9 +292,7 @@ export function WindowPanel({
   //  - desktop only (mobile path is fully separate)
   //  - browser must support some form of popout
   const onTriggerPopout =
-    !isMobile && popoutCapability !== "none"
-      ? handleDragOutPopout
-      : undefined;
+    !isMobile && popoutCapability !== "none" ? handleDragOutPopout : undefined;
 
   // Pass title and our pre-computed id+trigger into the hook
   const {
@@ -962,12 +960,7 @@ export function WindowPanel({
             onDock={handleDockBack}
           />
           {isDebugMode && <DebugStrip rect={rect} zIndex={zIndex} />}
-          <div
-            className={cn(
-              "flex-1 overflow-auto min-h-0",
-              bodyClassName,
-            )}
-          >
+          <div className={cn("flex-1 overflow-auto min-h-0", bodyClassName)}>
             {bodyContent}
           </div>
           {footerBar}
@@ -1067,9 +1060,7 @@ export function WindowPanel({
       {/* Drag-out ghost label — overlays the body during the candidate dwell.
           Pointer-events:none so it doesn't interfere with the in-progress drag. */}
       {isPopoutCandidate && (
-        <div
-          className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none"
-        >
+        <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
           <div className="px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium shadow-lg">
             Release to pop out
           </div>

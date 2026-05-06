@@ -30,7 +30,7 @@ import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils"
 import { SpeakerButton } from "@/features/tts/components/SpeakerButton";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
-  openFullScreenEditor,
+  openOverlay,
   closeOverlay,
 } from "@/lib/redux/slices/overlaySlice";
 import type { Json } from "@/types/database.types";
@@ -145,36 +145,46 @@ export function UserActionBar({
     // Plain edit — overwrite the stored content, no fork, no resubmit.
     const instanceId = `user-edit-${messageId}`;
     dispatch(
-      openFullScreenEditor({
-        content,
+      openOverlay({
+        overlayId: "fullScreenEditor",
         instanceId,
-        messageId,
-        analysisData: metadata ?? undefined,
-        onSave: async (newContent: string) => {
-          try {
-            const { editMessage } =
-              await import("@/features/agents/redux/execution-system/message-crud/edit-message.thunk");
-            const nextContent = [
-              { type: "text", text: newContent },
-            ] as unknown as Json;
-            await dispatch(
-              editMessage({
-                conversationId,
-                messageId,
-                newContent: nextContent,
-              }),
-            ).unwrap();
-            toast.success("Message saved");
-          } catch (err) {
-            const { logPayload, message } = serializeSaveError(err);
-            // eslint-disable-next-line no-console
-            console.error(
-              "[UserActionBar] edit save failed",
-              JSON.stringify(logPayload, null, 2),
-            );
-            toast.error(message);
-          }
-          dispatch(closeOverlay({ overlayId: "fullScreenEditor", instanceId }));
+        data: {
+          content,
+          mode: "free",
+          conversationId: undefined,
+          messageId,
+          onSave: async (newContent: string) => {
+            try {
+              const { editMessage } =
+                await import("@/features/agents/redux/execution-system/message-crud/edit-message.thunk");
+              const nextContent = [
+                { type: "text", text: newContent },
+              ] as unknown as Json;
+              await dispatch(
+                editMessage({
+                  conversationId,
+                  messageId,
+                  newContent: nextContent,
+                }),
+              ).unwrap();
+              toast.success("Message saved");
+            } catch (err) {
+              const { logPayload, message } = serializeSaveError(err);
+              // eslint-disable-next-line no-console
+              console.error(
+                "[UserActionBar] edit save failed",
+                JSON.stringify(logPayload, null, 2),
+              );
+              toast.error(message);
+            }
+            dispatch(closeOverlay({ overlayId: "fullScreenEditor", instanceId }));
+          },
+          tabs: ["write", "matrx_split", "markdown", "wysiwyg", "preview"],
+          initialTab: "matrx_split",
+          analysisData: metadata ?? undefined,
+          title: undefined,
+          showSaveButton: true,
+          showCopyButton: true,
         },
       }),
     );
@@ -187,15 +197,25 @@ export function UserActionBar({
     // response come in.
     const instanceId = `user-edit-resubmit-${messageId}`;
     dispatch(
-      openFullScreenEditor({
-        content,
+      openOverlay({
+        overlayId: "fullScreenEditor",
         instanceId,
-        messageId,
-        analysisData: metadata ?? undefined,
-        onSave: (newContent: string) => {
-          setPendingResubmitContent(newContent);
-          setResubmitDialogOpen(true);
-          dispatch(closeOverlay({ overlayId: "fullScreenEditor", instanceId }));
+        data: {
+          content,
+          mode: "free",
+          conversationId: undefined,
+          messageId,
+          onSave: (newContent: string) => {
+            setPendingResubmitContent(newContent);
+            setResubmitDialogOpen(true);
+            dispatch(closeOverlay({ overlayId: "fullScreenEditor", instanceId }));
+          },
+          tabs: ["write", "matrx_split", "markdown", "wysiwyg", "preview"],
+          initialTab: "matrx_split",
+          analysisData: metadata ?? undefined,
+          title: undefined,
+          showSaveButton: true,
+          showCopyButton: true,
         },
       }),
     );

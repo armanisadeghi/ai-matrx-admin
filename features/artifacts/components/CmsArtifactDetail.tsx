@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { openHtmlPreview } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { LucideIcon } from "lucide-react";
 
 const STATUS_VARIANT: Record<
@@ -102,11 +102,18 @@ export function CmsArtifactDetail({ artifactId }: CmsArtifactDetailProps) {
     if (!artifact) return;
     if (artifact.artifactType === "html_page") {
       dispatch(
-        openHtmlPreview({
-          content: "",
-          messageId: artifact.messageId,
-          conversationId: artifact.conversationId,
-          title: artifact.title ?? "HTML Page Editor",
+        openOverlay({
+          overlayId: "htmlPreview",
+          data: {
+            content: "",
+            messageId: artifact.messageId,
+            conversationId: artifact.conversationId,
+            title: artifact.title ?? "HTML Page Editor",
+            description: "Edit markdown, preview HTML, and publish your content",
+            onSave: undefined,
+            showSaveButton: false,
+            isAgentSystem: false,
+          },
         }),
       );
     }

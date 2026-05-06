@@ -25,7 +25,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openHtmlPreview } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { Button } from "@/components/ui/button";
 import MarkdownStream from "@/components/MarkdownStream";
 import type { ChatMessage } from "../context/DEPRECATED-ChatContext";
@@ -450,7 +450,21 @@ function AssistantMessage({
   };
 
   const handleShowHtmlPreview = (_html?: string, _title?: string) => {
-    dispatch(openHtmlPreview({ content: message.content }));
+    dispatch(
+      openOverlay({
+        overlayId: "htmlPreview",
+        data: {
+          content: message.content,
+          messageId: undefined,
+          conversationId: undefined,
+          title: "HTML Preview & Publishing",
+          description: "Edit markdown, preview HTML, and publish your content",
+          onSave: undefined,
+          showSaveButton: false,
+          isAgentSystem: false,
+        },
+      }),
+    );
   };
 
   // Check if this is an error message

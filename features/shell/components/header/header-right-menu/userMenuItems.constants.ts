@@ -1,7 +1,8 @@
+import type { OverlayId } from "@/features/window-panels/registry/overlay-ids";
 import type { MenuIconKey } from "./menuIconRegistry";
 
 export interface OverlayMenuItemConfig {
-  overlayId: string;
+  overlayId: OverlayId;
   icon: MenuIconKey;
   label: string;
   className?: string;

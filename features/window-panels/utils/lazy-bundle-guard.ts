@@ -78,6 +78,24 @@ if (typeof window === "undefined") {
 export function assertLazyLoaded(moduleId: string): void {
     if (typeof window === "undefined") return;
 
+    // Capture the stack RIGHT NOW, synchronously, while the eager-import
+    // chain is still live. The function is called from each window-panel
+    // module's top-level, so the stack at this exact instant includes:
+    //   1. assertLazyLoaded (this function)
+    //   2. <moduleId>.tsx top-level (the asserter)
+    //   3. The module that statically imported <moduleId> (the leaker!)
+    //   4. ...all the way up to the route entry / boot bundle root
+    //
+    // Deferring the capture to the microtask below would lose this chain
+    // because by then we're in a fresh microtask context with only
+    // queueMicrotask in the stack. Slicing leading frames here trims the
+    // assertLazyLoaded + Error frames so the first useful line is the
+    // asserting module's entry point.
+    const callSiteStack = (new Error("call site").stack ?? "")
+        .split("\n")
+        .filter((line) => !/lazy-bundle-guard\.|at Error\s*$|^Error/i.test(line))
+        .join("\n");
+
     queueMicrotask(() => {
         if (!bootInProgress) return;
 
@@ -98,17 +116,17 @@ export function assertLazyLoaded(moduleId: string): void {
 
         // Loud everywhere — prod and dev. If this fires in production a
         // customer is paying for it, and we want to know about it just as
-        // much as a developer would. The only behavioural difference: we
-        // skip the verbose stack trace in prod since most customers'
-        // browsers compress it to a useless minified blob.
+        // much as a developer would. The captured stack is printed right
+        // alongside the message so the eager-importer is identifiable in
+        // a single screenful instead of buried in a console.trace.
         console.error(
             "%c[WINDOW-PANELS BUNDLE LEAK]",
             "background:#b91c1c;color:white;padding:6px 10px;font-size:13px;font-weight:bold;border-radius:3px;",
-            "\n" + message,
+            "\n" + message +
+                (callSiteStack
+                    ? "\n\nEager-import chain (top frame is the file that statically imported it):\n" +
+                      callSiteStack
+                    : ""),
         );
-        if (process.env.NODE_ENV !== "production") {
-            // eslint-disable-next-line no-console
-            console.trace("eager import stack:");
-        }
     });
 }

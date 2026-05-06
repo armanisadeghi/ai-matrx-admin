@@ -17,7 +17,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Menu, Mic, Bug, Shield } from "lucide-react";
+import { Mic, Bug, Shield } from "lucide-react";
 
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -33,6 +33,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { MenuTapButton } from "@/components/icons/tap-buttons";
 import { useVoicePadAdvanced } from "@/components/official-candidate/voice-pad/hooks/useVoicePad";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
 
@@ -145,30 +146,22 @@ export default function DesktopLayout({
       <header className="fixed top-0 left-0 right-0 z-50 h-10 overflow-visible shell-glass">
         <div className="flex items-center justify-between h-full pl-1 pr-2 overflow-visible">
           {/* Left side - Menu toggle and page-specific content */}
-          <div className="flex items-center gap-4 flex-1 min-w-0">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={toggleSidebar}
-                  className="p-1.5 rounded-full shell-glass transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 flex-shrink-0"
-                >
-                  <Menu className="w-4 h-4 text-foreground transition-all duration-200 ease-in-out" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent
-                side="right"
-                className="shell-glass text-foreground"
-              >
-                {isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-              </TooltipContent>
-            </Tooltip>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <MenuTapButton
+              onClick={toggleSidebar}
+              ariaLabel={
+                isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+              }
+              tooltipSide="right"
+            />
 
             {/* Page-specific controls will be inserted here */}
             <div id="page-specific-header-content" className="flex-1 min-w-0" />
           </div>
-          {/* Right side - Actions */}
-          <div className="flex items-center gap-0.5 overflow-visible">
-            <QuickActionsMenu className="shell-glass text-foreground transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
+          {/* Right side - Actions. No `gap-*` here — every child is a 44×44
+              tap target with its own invisible spacing built in. */}
+          <div className="flex items-center overflow-visible">
+            <QuickActionsMenu />
             <FeedbackButton />
             <MessageIcon />
             <NotificationDropdown

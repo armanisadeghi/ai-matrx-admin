@@ -24,7 +24,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openShareModal } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { supabase } from "@/utils/supabase/client";
 import { useChatPersistence } from "../../hooks/useChatPersistence";
 import { sidebarEvents } from "../../events/sidebarEvents";
@@ -296,11 +296,14 @@ function ConversationItem({
                   onClick={(e) => {
                     e.stopPropagation();
                     dispatch(
-                      openShareModal({
-                        resourceType: "cx_conversation",
-                        resourceId: item.id,
-                        resourceName: item.title || "Untitled Chat",
-                        isOwner: true,
+                      openOverlay({
+                        overlayId: "shareModal",
+                        data: {
+                          resourceType: "cx_conversation",
+                          resourceId: item.id,
+                          resourceName: item.title || "Untitled Chat",
+                          isOwner: true,
+                        },
                       }),
                     );
                   }}

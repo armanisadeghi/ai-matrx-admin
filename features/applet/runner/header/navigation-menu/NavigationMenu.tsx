@@ -17,7 +17,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import type { RootState } from "@/lib/redux/store";
-import { openFeedbackDialog } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { brokerSelectors } from "@/lib/redux/brokerSlice";
 import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { selectResponseTextByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
@@ -92,7 +92,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
   };
 
   const handleFeedbackClick = () => {
-    dispatch(openFeedbackDialog());
+    dispatch(openOverlay({ overlayId: "feedbackDialog", data: null }));
   };
 
   // Get current task information from redux state (only for applet-specific animations)

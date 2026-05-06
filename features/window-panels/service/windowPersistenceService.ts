@@ -9,6 +9,7 @@
  */
 
 import { supabase } from "@/utils/supabase/client";
+import type { Json } from "@/types/database.types";
 import type { PanelState, WindowSessionRow } from "../registry/windowRegistryTypes";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -41,13 +42,18 @@ export async function saveWindowSession(
 ): Promise<string> {
   const { sessionId, userId, windowType, label, panelState, data } = params;
 
+  // Both panel_state and data are JSONB columns in Supabase; the generated
+  // schema types them as `Json` (a recursive primitive/object/array union).
+  // Our caller-side payload uses the looser PanelState / Record<string,
+  // unknown> shapes for ergonomics, so we cast at the boundary. Safe at
+  // runtime because the values are JSON-serializable plain objects.
   const row = {
     ...(sessionId ? { id: sessionId } : {}),
     user_id: userId,
     window_type: windowType,
     label,
-    panel_state: panelState as unknown as Record<string, unknown>,
-    data,
+    panel_state: panelState as unknown as Json,
+    data: data as unknown as Json,
   };
 
   const { data: result, error } = await supabase

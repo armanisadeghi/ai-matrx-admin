@@ -3,7 +3,7 @@
 import { useEffect, type MutableRefObject } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { setContextEntry } from "@/features/agents/redux/execution-system/instance-context/instance-context.slice";
-import { openAgentRunWindow } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import type { StandaloneCodeEditor } from "../editor/MonacoEditor";
 import type { EditorFile } from "../types";
 import { editorSelectionKey, editorTabKey } from "./editorContextEntries";
@@ -190,8 +190,12 @@ export function useEditorContextMenuActions({
           // agent. We just pre-load the agent so the user lands one click
           // away from typing.
           dispatch(
-            openAgentRunWindow({
-              agentId: defaultAgentId ?? null,
+            openOverlay({
+              overlayId: "agentRunWindow",
+              data: {
+                agentId: defaultAgentId ?? null,
+                selectedConversationId: null,
+              },
             }),
           );
           notify?.({

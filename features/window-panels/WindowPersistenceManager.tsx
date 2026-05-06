@@ -42,6 +42,7 @@ import {
   getStaticEntryBySlug,
   type PanelState,
 } from "./registry/windowRegistryMetadata";
+import type { OverlayId } from "./registry/overlay-ids";
 import type { WindowEntry } from "@/lib/redux/slices/windowManagerSlice";
 import { clampRectToCurrentViewport } from "./utils/rectClamp";
 import {
@@ -278,10 +279,12 @@ export function WindowPersistenceManager({
           // Track the session id keyed by overlayId (used by WindowPanel)
           sessionMapRef.current.set(regEntry.overlayId, session.id);
 
-          // Re-open the overlay in Redux so OverlayController mounts the component
+          // Re-open the overlay in Redux so OverlayController mounts the
+          // component. regEntry.overlayId is sourced from the registry, so
+          // the cast to OverlayId is sound (verified by check-registry).
           dispatch(
             openOverlay({
-              overlayId: regEntry.overlayId,
+              overlayId: regEntry.overlayId as OverlayId,
               data: (session.data ?? {}) as Record<string, unknown>,
             }),
           );
