@@ -11,7 +11,15 @@
  */
 
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import { Copy, Files, Loader2, Stars, Trash2 } from "lucide-react";
+import {
+  Copy,
+  Files,
+  Loader2,
+  Maximize2,
+  Minimize2,
+  Stars,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -56,6 +64,7 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
   );
   const [userContext, setUserContext] = useState("");
   const [editedResponse, setEditedResponse] = useState<string | null>(null);
+  const [isCompact, setIsCompact] = useState(false);
 
   const ai = useAiPostProcess();
 
@@ -84,6 +93,11 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
   agentIdRef.current = agentId;
   contextRef.current = userContext;
 
+  // Copy-safe refs — always hold the latest rendered values so clipboard
+  // handlers work correctly regardless of display mode (including compact/floating).
+  const responseRef = useRef<string>("");
+  const transcriptDisplayRef = useRef<string>("");
+
   const windowId = `voice-pad-ai-${instanceId}`;
   const micId = `voice-pad-ai-mic-${instanceId}`;
 
@@ -102,6 +116,7 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
       ? baseText + "\n\n" + liveTranscript
       : liveTranscript
     : baseText;
+  transcriptDisplayRef.current = transcriptDisplay;
 
   // Invariant: what we send to the AI MUST equal what the user sees in the
   // transcript textarea. `baseText` is derived from Redux (draftText ?? entries)
@@ -187,38 +202,38 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
   }, [ai, selectedAgent, userContext]);
 
   const handleCopyResponse = useCallback(async () => {
-    const text = editedResponse ?? ai.accumulatedText;
-    if (!text.trim()) {
-      toast.info("Nothing to copy");
+    const text = responseRef.current.trim();
+    if (!text) {
+      toast.info("Nothing to copy yet");
       return;
     }
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(responseRef.current);
       toast.success("Copied to clipboard");
     } catch {
-      toast.error("Failed to copy");
+      toast.error("Copy failed — try selecting the text and copying manually");
     }
-  }, [editedResponse, ai.accumulatedText]);
+  }, []);
 
   const handleCopyTranscript = useCallback(async () => {
-    const text = transcriptDisplay.trim();
+    const text = transcriptDisplayRef.current.trim();
     if (!text) {
-      toast.info("Nothing to copy");
+      toast.info("Nothing to copy yet");
       return;
     }
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(transcriptDisplayRef.current);
       toast.success("Transcript copied");
     } catch {
-      toast.error("Failed to copy");
+      toast.error("Copy failed — try selecting the text and copying manually");
     }
-  }, [transcriptDisplay]);
+  }, []);
 
   const handleCopyJoined = useCallback(async () => {
-    const transcript = transcriptDisplay.trim();
-    const response = (editedResponse ?? ai.accumulatedText).trim();
+    const transcript = transcriptDisplayRef.current.trim();
+    const response = responseRef.current.trim();
     if (!transcript && !response) {
-      toast.info("Nothing to copy");
+      toast.info("Nothing to copy yet");
       return;
     }
     const parts: string[] = [];
@@ -228,23 +243,26 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
       await navigator.clipboard.writeText(parts.join("\n\n---\n\n"));
       toast.success("Both copied to clipboard");
     } catch {
-      toast.error("Failed to copy");
+      toast.error("Copy failed — try selecting the text and copying manually");
     }
-  }, [transcriptDisplay, editedResponse, ai.accumulatedText]);
+  }, []);
+
+  const handleToggleCompact = useCallback(() => setIsCompact((v) => !v), []);
 
   const responseValue = editedResponse ?? ai.accumulatedText;
+  responseRef.current = responseValue;
   const isBusyEarly =
     ai.phase === "launching" ||
     ai.phase === "pending" ||
     ai.phase === "connecting";
   const responsePlaceholder =
     ai.phase === "idle"
-      ? "AI response appears here once transcription is processed..."
+      ? "Your cleaned transcript will appear here after recording..."
       : isBusyEarly && ai.accumulatedText.length === 0
-        ? "Launching agent..."
+        ? "Analyzing your transcript..."
         : ai.phase === "error"
-          ? (ai.error ?? "Something went wrong.")
-          : "Waiting for response...";
+          ? (ai.error ?? "Something went wrong. Please try again.")
+          : "Preparing your response...";
 
   const sidebar = (
     <div className="flex h-full min-h-0 flex-col bg-background">
@@ -317,17 +335,14 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
         >
           {ai.isBusy ? (
             <>
-              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Processing...
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Analyzing...
             </>
           ) : (
             <>
-              <Stars className="h-3.5 w-3.5" /> Process
+              <Stars className="h-3.5 w-3.5" /> Clean Up
             </>
           )}
         </button>
-        <div className="text-[10px] text-muted-foreground/70 text-center">
-          Phase: <span className="font-mono">{ai.phase}</span>
-        </div>
       </div>
     </div>
   );
@@ -345,13 +360,12 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
       onClose={handleClose}
       urlSyncKey="voice-ai"
       urlSyncId={instanceId}
-      sidebar={sidebar}
-      sidebarDefaultSize={260}
-      sidebarMinSize={220}
-      defaultSidebarOpen={true}
+      sidebar={isCompact ? undefined : sidebar}
+      sidebarDefaultSize={isCompact ? undefined : 260}
+      sidebarMinSize={isCompact ? undefined : 220}
+      defaultSidebarOpen={!isCompact}
       actionsRight={
         <>
-          <Stars className="h-3.5 w-3.5 text-primary/80" />
           <MicrophoneIconButton
             id={micId}
             onTranscriptionComplete={handleTranscriptionComplete}
@@ -359,115 +373,207 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
             variant="icon-only"
             size="xs"
           />
+          <ActionFeedbackButton
+            icon={isCompact ? <Maximize2 /> : <Minimize2 />}
+            tooltip={
+              isCompact
+                ? "Expand to full view"
+                : "Compact — shrink to a floating widget"
+            }
+            onClick={handleToggleCompact}
+            className="text-muted-foreground"
+          />
         </>
       }
     >
-      <div className="flex h-full min-h-0 flex-col bg-background">
-        {/* Top half: transcript */}
-        <div className="flex min-h-0 flex-1 flex-col">
-          <div className="flex shrink-0 items-center justify-between px-3 py-1.5 border-b border-border/40">
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Transcript{" "}
-              <span className="text-muted-foreground/60">
-                ({entries.length})
+      {isCompact ? (
+        /* ── Compact floating widget ─────────────────────────────────────── */
+        <div className="flex h-full flex-col items-center justify-center gap-3 bg-background px-4 py-4">
+          {/* Status row */}
+          <div className="flex items-center gap-2 text-[11px]">
+            {ai.isBusy ? (
+              <span className="flex items-center gap-1.5 text-muted-foreground">
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                Analyzing your transcript…
               </span>
-            </span>
-            <div className="flex items-center gap-1">
-              {transcriptDisplay.trim().length > 0 && (
-                <>
+            ) : ai.phase === "complete" && responseValue.trim() ? (
+              <span className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
+                <div className="h-2 w-2 rounded-full bg-green-500" />
+                Response ready
+              </span>
+            ) : (
+              <span className="text-muted-foreground/70">
+                {entries.length > 0
+                  ? `${entries.length} recording${entries.length !== 1 ? "s" : ""}`
+                  : "Ready to record"}
+              </span>
+            )}
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-1">
+            <ActionFeedbackButton
+              icon={<Copy />}
+              tooltip="Copy original transcript"
+              onClick={handleCopyTranscript}
+              className="text-muted-foreground"
+            />
+            <ActionFeedbackButton
+              icon={<Stars />}
+              tooltip="Copy AI response"
+              onClick={handleCopyResponse}
+              className="text-primary/70"
+            />
+            <ActionFeedbackButton
+              icon={<Files />}
+              tooltip="Copy transcript + AI response"
+              onClick={handleCopyJoined}
+              className="text-muted-foreground"
+            />
+            {entries.length > 0 && (
+              <ActionFeedbackButton
+                icon={<Trash2 />}
+                tooltip="Clear everything and start over"
+                onClick={handleClearAll}
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              />
+            )}
+          </div>
+
+          {/* Re-process button */}
+          <button
+            type="button"
+            onClick={handleProcess}
+            disabled={ai.isBusy || !transcriptDisplay.trim()}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-md border px-3 py-1 text-[11px] font-medium transition-colors",
+              ai.isBusy || !transcriptDisplay.trim()
+                ? "border-transparent bg-muted text-muted-foreground cursor-not-allowed"
+                : "border-primary/30 bg-primary/10 text-primary hover:bg-primary/20",
+            )}
+          >
+            {ai.isBusy ? (
+              <>
+                <Loader2 className="h-3 w-3 animate-spin" /> Analyzing…
+              </>
+            ) : (
+              <>
+                <Stars className="h-3 w-3" /> Clean Up
+              </>
+            )}
+          </button>
+        </div>
+      ) : (
+        /* ── Full layout ─────────────────────────────────────────────────── */
+        <div className="flex h-full min-h-0 flex-col bg-background">
+          {/* Top half: transcript */}
+          <div className="flex min-h-0 flex-1 flex-col">
+            <div className="flex shrink-0 items-center justify-between px-3 py-1.5 border-b border-border/40">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Transcript{" "}
+                <span className="text-muted-foreground/60">
+                  ({entries.length})
+                </span>
+              </span>
+              <div className="flex items-center gap-1">
+                {transcriptDisplay.trim().length > 0 && (
+                  <>
+                    <ContentActionBar
+                      content={transcriptDisplay}
+                      title="Voice Pad Transcript"
+                      instanceKey={`voice-pad-ai-transcript-${instanceId}`}
+                      hideSpeaker
+                      hidePencil
+                      hideCopy
+                    />
+                    <ActionFeedbackButton
+                      icon={<Copy />}
+                      tooltip="Copy transcript"
+                      onClick={handleCopyTranscript}
+                      className="text-muted-foreground"
+                    />
+                  </>
+                )}
+                <ActionFeedbackButton
+                  icon={<Trash2 />}
+                  tooltip="Clear transcript"
+                  onClick={handleClearAll}
+                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                />
+              </div>
+            </div>
+            <textarea
+              value={transcriptDisplay}
+              onChange={(e) => handleDraftChange(e.target.value)}
+              placeholder="Tap the mic in the header to record. Transcribed text appears here and is processed automatically..."
+              className={cn(
+                "flex-1 min-h-0 w-full resize-none border-0 bg-background px-3 py-2 text-sm leading-snug",
+                "focus:outline-none focus:ring-0",
+              )}
+            />
+          </div>
+
+          {/* Divider */}
+          <div className="h-px shrink-0 bg-border/60" />
+
+          {/* Bottom half: AI response */}
+          <div className="flex min-h-0 flex-1 flex-col">
+            <div className="flex shrink-0 items-center justify-between px-3 py-1.5 border-b border-border/40">
+              <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <Stars className="h-3 w-3 text-primary/80" />
+                AI Response
+                {ai.phase === "complete" && responseValue.trim() && (
+                  <span className="normal-case font-normal text-green-600 dark:text-green-400">
+                    · Ready
+                  </span>
+                )}
+              </span>
+              <div className="flex items-center gap-1">
+                {isBusyEarly && (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                )}
+                {ai.phase === "complete" && responseValue.trim().length > 0 && (
                   <ContentActionBar
-                    content={transcriptDisplay}
-                    title="Voice Pad Transcript"
-                    instanceKey={`voice-pad-ai-transcript-${instanceId}`}
+                    content={responseValue}
+                    title={`AI-cleaned: ${selectedAgent.name}`}
+                    metadata={{
+                      agent_id: selectedAgent.id,
+                      agent_name: selectedAgent.name,
+                      source: "voice-pad-ai",
+                    }}
+                    instanceKey={`voice-pad-ai-response-${instanceId}`}
                     hideSpeaker
                     hidePencil
                     hideCopy
                   />
-                  <ActionFeedbackButton
-                    icon={<Copy />}
-                    tooltip="Copy transcript"
-                    onClick={handleCopyTranscript}
-                    className="text-muted-foreground"
-                  />
-                </>
-              )}
-              <ActionFeedbackButton
-                icon={<Trash2 />}
-                tooltip="Clear transcript"
-                onClick={handleClearAll}
-                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-              />
-            </div>
-          </div>
-          <textarea
-            value={transcriptDisplay}
-            onChange={(e) => handleDraftChange(e.target.value)}
-            placeholder="Tap the mic in the header to record. Transcribed text appears here and is processed automatically..."
-            className={cn(
-              "flex-1 min-h-0 w-full resize-none border-0 bg-background px-3 py-2 text-sm leading-snug",
-              "focus:outline-none focus:ring-0",
-            )}
-          />
-        </div>
-
-        {/* Divider */}
-        <div className="h-px shrink-0 bg-border/60" />
-
-        {/* Bottom half: AI response */}
-        <div className="flex min-h-0 flex-1 flex-col">
-          <div className="flex shrink-0 items-center justify-between px-3 py-1.5 border-b border-border/40">
-            <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-              <Stars className="h-3 w-3 text-primary/80" />
-              AI Response
-              <span className="font-mono text-[9px] text-muted-foreground/70">
-                ({ai.phase})
-              </span>
-            </span>
-            <div className="flex items-center gap-1">
-              {isBusyEarly && (
-                <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-              )}
-              {ai.phase === "complete" && responseValue.trim().length > 0 && (
-                <ContentActionBar
-                  content={responseValue}
-                  title={`AI-cleaned: ${selectedAgent.name}`}
-                  metadata={{
-                    agent_id: selectedAgent.id,
-                    agent_name: selectedAgent.name,
-                    source: "voice-pad-ai",
-                  }}
-                  instanceKey={`voice-pad-ai-response-${instanceId}`}
-                  hideSpeaker
-                  hidePencil
-                  hideCopy
+                )}
+                <ActionFeedbackButton
+                  icon={<Copy />}
+                  tooltip="Copy AI response"
+                  onClick={handleCopyResponse}
+                  className="text-muted-foreground"
                 />
-              )}
-              <ActionFeedbackButton
-                icon={<Copy />}
-                tooltip="Copy AI response"
-                onClick={handleCopyResponse}
-                className="text-muted-foreground"
-              />
-              <ActionFeedbackButton
-                icon={<Files />}
-                tooltip="Copy transcript + AI response"
-                onClick={handleCopyJoined}
-                className="text-muted-foreground"
-              />
+                <ActionFeedbackButton
+                  icon={<Files />}
+                  tooltip="Copy transcript + AI response"
+                  onClick={handleCopyJoined}
+                  className="text-muted-foreground"
+                />
+              </div>
             </div>
+            <textarea
+              value={responseValue}
+              onChange={(e) => setEditedResponse(e.target.value)}
+              placeholder={responsePlaceholder}
+              className={cn(
+                "flex-1 min-h-0 w-full resize-none border-0 bg-background px-3 py-2 text-sm leading-snug",
+                "focus:outline-none focus:ring-0",
+                ai.phase === "error" && "text-destructive",
+              )}
+            />
           </div>
-          <textarea
-            value={responseValue}
-            onChange={(e) => setEditedResponse(e.target.value)}
-            placeholder={responsePlaceholder}
-            className={cn(
-              "flex-1 min-h-0 w-full resize-none border-0 bg-background px-3 py-2 text-sm leading-snug",
-              "focus:outline-none focus:ring-0",
-              ai.phase === "error" && "text-destructive",
-            )}
-          />
         </div>
-      </div>
+      )}
     </WindowPanel>
   );
 }

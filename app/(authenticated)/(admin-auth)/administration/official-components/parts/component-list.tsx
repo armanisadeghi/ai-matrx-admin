@@ -360,6 +360,69 @@ export const componentList: ComponentEntry[] = [
     ],
   },
   {
+    id: "image-manager-route",
+    name: "Image Manager Route",
+    path: "app/(a)/image-manager/page.tsx",
+    description:
+      "Full-page hub at /image-manager. Same registry as the modal but adds Browse mode, a Tools group, and a sidebar layout.",
+    categories: ["media", "navigation", "layout"],
+    tags: ["image", "hub", "route", "manager", "browse", "tabs", "sidebar"],
+  },
+  {
+    id: "branded-upload-tab",
+    name: "Branded Upload",
+    path: "features/image-manager/components/BrandedUploadTab.tsx",
+    description:
+      "Wraps ImageAssetUploader with preset chips (social/cover/avatar/logo/favicon/square). Generates Sharp variants and adds them to the SelectedImagesProvider.",
+    categories: ["media", "inputs"],
+    tags: ["image", "upload", "variants", "branded", "sharp", "preset"],
+  },
+  {
+    id: "studio-library-tab",
+    name: "Studio Library",
+    path: "features/image-manager/components/StudioLibraryTab.tsx",
+    description:
+      "Read-only embed of the Image Studio's generated-images folder, keyed by the resolved cloud-files folder id.",
+    categories: ["media", "data-display"],
+    tags: ["image", "studio", "library", "gallery", "cloud-files"],
+  },
+  {
+    id: "profile-photo-tab",
+    name: "Profile Photo",
+    path: "features/image-manager/components/ProfilePhotoTab.tsx",
+    description:
+      "Avatar uploader that calls supabase.auth.updateUser({ data: { avatar_url, picture } }).",
+    categories: ["media", "inputs"],
+    tags: ["image", "avatar", "profile", "upload", "supabase"],
+  },
+  {
+    id: "image-manager-tools-tab",
+    name: "Image Manager Tools",
+    path: "features/image-manager/components/ToolsTab.tsx",
+    description:
+      "Secondary tools landing for the Image Manager hub. Card grid hosting Crop, Lightbox, Floating Gallery, Screenshot, Presets reference, Photos view, Compact picker, Favicons.",
+    categories: ["media", "interactive", "containers"],
+    tags: ["image", "tools", "crop", "lightbox", "screenshot", "gallery"],
+  },
+  {
+    id: "public-images-section",
+    name: "Public Images Section",
+    path: "features/image-manager/components/PublicImagesSection.tsx",
+    description:
+      "Curated covers strip + Unsplash search gallery. Honors Browse vs Selection mode.",
+    categories: ["media", "selectors"],
+    tags: ["image", "unsplash", "covers", "public", "search"],
+  },
+  {
+    id: "cloud-file-metadata-sheet",
+    name: "Cloud File Metadata Sheet",
+    path: "features/image-manager/components/CloudFileMetadataSheet.tsx",
+    description:
+      "Read-only side sheet displaying detailed metadata for a CloudFileRecord.",
+    categories: ["media", "data-display", "modals"],
+    tags: ["cloud-files", "metadata", "drawer", "sheet"],
+  },
+  {
     id: "image-preview-row",
     name: "Image Preview Row",
     path: "components/image/shared/ImagePreviewRow.tsx",

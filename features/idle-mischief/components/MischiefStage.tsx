@@ -137,17 +137,42 @@ export function MischiefStage() {
       }
     };
 
-    // Activity listener — attached AFTER a 350ms grace window so the click
-    // that spawned the act doesn't immediately snap it back. Capture-phase
-    // so we beat any other listener on the page.
+    // Activity listener — capture-phase so we beat any other listener.
+    //
+    // Lifecycle:
+    //   1. Arm after a 300ms grace window (the click/keypress that spawned
+    //      this act fires its event during the grace; we ignore it).
+    //   2. On the FIRST armed event: hardSnapBack().
+    //   3. KEEP LISTENING for 900ms after that first event. Every event
+    //      during that window re-runs restoreAll() — a defensive sweep that
+    //      catches any straggler animation queued by motion's tick scheduler
+    //      after our initial cancel pass. restoreAll() is idempotent, so
+    //      repeated calls are safe and free.
+    //   4. After 900ms, detach.
     let activityArmed = false;
+    let firstFireAt = 0;
+    let postFireDetach: number | null = null;
     const onActivity = () => {
       if (!activityArmed) return;
-      // First trigger wins: detach and snap back.
-      hardSnapBack("snapping-back");
+      const now = Date.now();
+      if (firstFireAt === 0) {
+        firstFireAt = now;
+        hardSnapBack("snapping-back");
+        // Schedule final detach 900ms from now.
+        postFireDetach = window.setTimeout(() => {
+          detachActivity();
+        }, 900);
+      } else {
+        // Subsequent events during the 900ms post-fire window: re-sweep.
+        restoreAll();
+      }
     };
     const detachActivity = () => {
       activityArmed = false;
+      if (postFireDetach !== null) {
+        clearTimeout(postFireDetach);
+        postFireDetach = null;
+      }
       for (const evt of ACTIVITY_EVENTS) {
         window.removeEventListener(evt, onActivity, true);
       }
@@ -160,7 +185,7 @@ export function MischiefStage() {
           capture: true,
         });
       }
-    }, 350);
+    }, 300);
     const wrappedDetach = () => {
       clearTimeout(armActivity);
       detachActivity();
@@ -240,6 +265,30 @@ export function MischiefStage() {
       }
       restoreAll();
     };
+  }, []);
+
+  // ── Devtools emergency hatch ─────────────────────────────────────────────
+  // If anything ever gets stuck, run `__mischiefForceReset()` from the console
+  // to nuke every animation, every portal, and every snapshot. Always safe.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    (window as unknown as Record<string, unknown>).__mischiefForceReset = () => {
+      if (runningRef.current) {
+        runningRef.current.cancelTimer();
+        runningRef.current.detachActivity();
+        try {
+          runningRef.current.actCleanup();
+        } catch {}
+        runningRef.current = null;
+      }
+      restoreAll();
+      dispatch(setCurrentAct(null));
+      dispatch(setStatus("idle"));
+    };
+    return () => {
+      delete (window as unknown as Record<string, unknown>).__mischiefForceReset;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return null;

@@ -445,7 +445,121 @@ Tracked items that were explicitly NOT in the latest release:
 Newest entries first. Each entry corresponds to one bundle in the
 plan we're working through against `for_python/REQUESTS.md`.
 
-### 2026-05-05 — Bundle B (partial): realtime publication + request_id metadata + S3 CORS doc 🔵 (awaiting apply / infra)
+### 2026-05-05 — Bundle D: Range download streaming + thumbnail pipeline 🟢 (SQL applied; code in tree)
+
+Closes FE requests **4** (Range download / streaming) and **1**
+(server-side thumbnail generation). The two changes ride together
+because the upload response shape and the download response shape
+both grow new fields the FE will key off.
+
+**D1 — Range download / streaming on `GET /files/{file_id}/download`:**
+- [`aidream/api/routers/files.py`](../../../aidream/aidream/api/routers/files.py) — endpoint refactored from a buffered `Response(content=…)` into a `StreamingResponse` that pulls bytes directly from S3.
+- New `_parse_range_header()` parser handles `bytes=N-M`, `bytes=N-`, `bytes=-N`, multi-range (first only), and unsatisfiable specs.
+- Wire behaviour:
+  - **No `Range:` header** → 200 with `Content-Length`, `Accept-Ranges: bytes`, streamed in 256 KiB chunks.
+  - **Valid `Range: bytes=N-M`** → 206 Partial Content with `Content-Range: bytes N-M/total`.
+  - **Range past EOF** → 416 Range Not Satisfiable with `Content-Range: bytes */total`.
+  - **Public + CDN configured + no version pin** → still 302 to CDN (CDN handles range natively).
+- Version-pinned reads (`?version=N`) stay on the buffered path for now — version storage is managed by `VersionManager` and not directly S3-addressable in every backend. Versions are typically tiny + cold; ranged version reads is a follow-up.
+- `_DOWNLOAD_HEADERS` now always carries `Accept-Ranges: bytes`.
+
+**D2 — Thumbnail pipeline:**
+- New SQL migration: [`db/migrations/0033_cld_files_thumbnail.sql`](../../../aidream/db/migrations/0033_cld_files_thumbnail.sql) (applied) — adds `thumbnail_storage_uri` + `thumbnail_url` columns to `cld_files`.
+- New service: [`aidream/services/cloud_files/thumbnails.py`](../../../aidream/aidream/services/cloud_files/thumbnails.py) — `generate_thumbnail_for_file(fm, file_id)` entry point. Pillow + pypdfium2 dependencies were already installed.
+- Coverage in v1:
+  - **`image/*`** → Pillow resize 256px longest side, JPEG q=80, ~10–30 KB.
+  - **`application/pdf`** → pypdfium2 first-page render, then Pillow resize.
+  - **`video/*`** — deferred (FE has client-side first-frame thumbnails shipped 2026-04-26).
+  - **`audio/*`** — deferred (mutagen integration is the follow-up).
+- Hooked fire-and-forget into both upload paths in `files.py`:
+  - Multipart `POST /files/upload` after the usage-delta call.
+  - Presigned `POST /files/finalize-upload` after the usage-delta call.
+- Failures log + leave the columns NULL; the FE falls back to its category icon.
+- Thumbnails land at `s3://<bucket>/<owner_id>/.thumbnails/<file_id>.jpg` with a 30-day cache header. Once written, the resulting `cld_files` UPDATE event rides the existing realtime publication, so the grid view swaps the icon for the rendered thumb without polling.
+
+**Wire shape changes:**
+- `FileRecord` adds an optional top-level `thumbnail_url: string | null` field. Populated on response: CDN URL for public files, NULL for private files (the FE can ask for a fresh signed URL via the existing `GET /files/{id}/url` flow when it actually needs to render the thumbnail bytes).
+
+**Verification on the FE side:**
+- Range: open a >10 MB MP4 in `<video>`, scrub mid-file → DevTools network panel shows a 206 with `Content-Range`. The same pattern works for any `fetch(url, {headers: {Range: 'bytes=0-1023'}})` against the download endpoint.
+- Thumbnails (image): upload a JPEG → confirm `thumbnail_url` populates within ~5s on the realtime UPDATE event for that row. Drop the `thumbnailStrategy: 'category-icon'` for image entries that already had `backend-thumb` plumbing.
+- Thumbnails (PDF): upload a PDF → same. PDFs that previously rendered as a colored square with the PDF icon now show their first page.
+
+---
+
+### 2026-05-05 — Bundle C: RAG ↔ files integration endpoints 🟢 (deployed in tree)
+
+Closes FE requests **14a**, **14b**, **14c**.
+
+**New endpoints in `aidream/api/routers/files.py`:**
+
+#### `GET /files/{file_id}/document`
+Returns the latest processed_documents row anchored to this cld_files.id.
+ACL: same as `GET /files/{file_id}` (owner OR explicit grant).
+
+```ts
+// 200
+{
+  processed_document_id: string,
+  derivation_kind: string | null,
+  total_pages: number | null,
+  chunk_count: number,            // count from rag.kg_chunks
+  has_clean_content: boolean,
+  updated_at: string | null,      // ISO 8601
+}
+// 404
+{ error: "no_processed_document", code: "no_processed_document",
+  message: "File '{id}' has not been processed for RAG." }
+```
+
+#### `POST /files/{file_id}/ingest` and `POST /files/{file_id}/ingest/stream`
+Convenience wrapper around `/rag/ingest`. Body:
+```ts
+{ force?: boolean, field_id?: string }
+```
+Implicitly injects `source_kind: "cld_file"`, `source_id: file_id`.
+ACL: requires `write` on the file (so a read-only grantee can't trigger
+re-ingestion against another user's file). The `/stream` variant uses
+the same `create_streaming_response` infra as `/rag/ingest/stream` and
+emits the same `rag.ingest.progress` and `rag.ingest.result` events.
+
+Response (non-streaming) matches `IngestResponse`:
+```ts
+{
+  source_kind: string,
+  source_id: string,
+  field_id: string | null,
+  chunks_written: number,
+  embeddings_written: number,
+  skipped_unchanged: boolean,
+  embedding_model: string,
+  error: string | null,
+}
+```
+
+#### `GET /files/{file_id}/lineage-summary`
+Light lineage chip for the PreviewPane. Single `cld_files` query.
+
+```ts
+{
+  parent_file_id: string | null,
+  derivation_kind: string | null,
+  derivation_metadata: Record<string, unknown>,
+  has_descendants: boolean,
+  descendant_count: number,
+}
+```
+
+**New shared service module:** [`aidream/services/rag/processed_doc_lookup.py`](../../../aidream/aidream/services/rag/processed_doc_lookup.py) — three helpers (`find_processed_document_by_cld_file`, `count_chunks_for_processed_document`, `get_lineage_summary_for_cld_file`). Both `files.py` and `document.py` (the existing `/api/document/by-cld-file/{id}`) call this so the cld_file → processed_documents query has a single owner.
+
+**Verification on the FE side:**
+- After uploading + ingesting a PDF, `GET /files/{id}/document` returns a populated row; before ingestion, it 404s with `code: "no_processed_document"`. The FE can use the 404 as a clean signal to show "Reprocess" instead of the per-file "tried lookup" cache the README workaround describes.
+- `GET /files/{id}/lineage-summary` returns `descendant_count` of 0 for a fresh upload and >0 for any file that has had `/pdf/extract-pages` etc. run against it.
+- `POST /files/{id}/ingest/stream` streams the same events as `/rag/ingest/stream` — drop the workaround that calls `/rag/ingest` directly.
+
+---
+
+### 2026-05-05 — Bundle B (partial): realtime publication + request_id metadata + S3 CORS doc 🟢 (SQL applied; CORS infra pending)
 
 Closes (post-apply) FE requests **2** (S3 CORS), **8** (cld_share_links
 realtime), **9** (X-Request-Id in realtime echoes), and **14e**
@@ -485,7 +599,7 @@ realtime), **9** (X-Request-Id in realtime echoes), and **14e**
 
 ---
 
-### 2026-05-05 — Bundle A: `cld_get_user_file_tree` privacy + correctness fix 🔵→🟢 (awaiting apply)
+### 2026-05-05 — Bundle A: `cld_get_user_file_tree` privacy + correctness fix 🟢 APPLIED + verified
 
 Closes FE requests **0** and **0a**.
 

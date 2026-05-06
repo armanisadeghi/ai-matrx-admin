@@ -67,7 +67,7 @@ Selection state is shared with the rest of the app via `SelectedImagesProvider` 
 - **Image Studio (multi-variant generator)** → entire `features/image-studio/**` + `app/(a)/image-studio/**`. Routes: `/image-studio` (landing), `/image-studio/convert` (main tool), `/image-studio/presets` (catalog), `/image-studio/library` (saved variants), `/image-studio/from-base64`. 60+ presets across 10 categories + 6 one-click bundles. **Already wired (via tab) — KEEP route + ABSORB into hub navigation.**
 - **`EmbeddedImageStudio`** → `features/image-studio/components/EmbeddedImageStudio.tsx` — drop-in form input that auto-uploads every requested preset to `Images/Generated/<rootSegment>/<filenameBase>/`. **KEEP — already used by the tab.**
 - **`ImageCropper`** (official) → `components/official/image-cropper/ImageCropper.tsx`, `cropImage.js`, plus wrappers `ImageCropperWithSelect.tsx`, `EasyImageCropper.tsx` — `react-easy-crop`-based dialog with aspect ratio options. **LINK-FROM — surface as "Crop" sub-tool.**
-- **`InitialCropDialog`** → `features/image-studio/components/InitialCropDialog.tsx` — pre-variant crop step inside `EmbeddedImageStudio`. **KEEP.**
+- **`InitialCropWindow`** → `features/image-studio/components/InitialCropWindow.tsx` — pre-variant crop step inside `EmbeddedImageStudio` (floating WindowPanel form). The older `InitialCropDialog.tsx` modal wrapper was orphaned and removed 2026-05; `InitialCropWindow` is the only initial-crop wrapper now. **KEEP.**
 - **`CropPreview` / `CropPreviewWindow` / `CropControls` / `MiniFocalPointPicker`** → `features/image-studio/components/*`. **KEEP.**
 - **`MetadataPanel`** → `features/image-studio/components/MetadataPanel.tsx` — per-source metadata (filename base, alt text, etc.) inside the studio. **KEEP.**
 - **`PresetCatalog`** → `features/image-studio/components/PresetCatalog.tsx` (catalog of 60+ presets). **KEEP.**
@@ -284,3 +284,38 @@ Demo files for each live under `app/(authenticated)/(admin-auth)/administration/
 - **`ImageBlock` zoom/share/copy duplicates** of `ImageOutputBlock` — two markdown image renderers with overlapping features. Worth unifying.
 - **Camera capture (`components/matrx/camera/**`)** — present but not surfaced; verify if any feature still uses it before recommending removal.
 - **`features/image-studio` `index.ts`** is a barrel re-export — flagged by the project's no-barrel rule for gradual replacement.
+
+---
+
+## 8. Execution status (2026-05-05 — Image Manager Hub plan landed)
+
+| Surface | Plan action | Status |
+|---|---|---|
+| Single section registry (`buildImageManagerSections`) | NEW | ✅ Shipped — `features/image-manager/registry/sections.ts` |
+| 3-way selection toggle (Browse/Single/Multi) + persistence | NEW | ✅ Shipped — route shell + `localStorage` |
+| `<BrowseImageProvider>` + `useBrowseAction()` | NEW | ✅ Shipped — `features/image-manager/browse/` |
+| `CloudImagesTab` Browse-mode click | RETROFIT | ✅ Shipped |
+| `CloudFilesTab` Browse-mode click + Photos link | RETROFIT | ✅ Shipped |
+| Mobile drawer for sidebar | NEW | ✅ Shipped — `useIsMobile()` |
+| Curated covers in Public Images | ABSORB | ✅ Shipped — `PublicImagesSection` |
+| Per-tile metadata side drawer | NEW | ✅ Shipped — `CloudFileMetadataSheet` |
+| Paste-base64 sub-tool inside Upload | ABSORB | ✅ Shipped — collapsible inside `CloudUploadTab` |
+| Branded Upload tab | NEW | ✅ Shipped — `BrandedUploadTab` |
+| Studio Library tab | NEW | ✅ Shipped — `StudioLibraryTab` (read-only) |
+| AI Generate placeholder + Set defaults link | POLISH | ✅ Shipped — deep-links to `ai.imageGeneration` settings |
+| Profile Photo tab | NEW | ✅ Shipped — `ProfilePhotoTab` (Supabase auth update) |
+| Tools group (Crop / Lightbox / Floating Gallery / Screenshot / Presets / Photos / Compact picker / Favicons) | NEW | ✅ Shipped — `ToolsTab` |
+| `PublicImageSearch` → `/api/unsplash` | CONSOLIDATE | ✅ Shipped — server proxy only |
+| `useUnsplashGallery` → `/api/unsplash` | CONSOLIDATE | ✅ Shipped — via `unsplashClient` shim |
+| `NEXT_PUBLIC_UNSPLASH_ACCESS_KEY` removed from `.env.example` | CONSOLIDATE | ✅ Done |
+| `app/api/proxy-image/` deleted | CONSOLIDATE | ✅ Done — zero callers, replaced by `/api/image-proxy` |
+| `components/image/ImageManagerContent.tsx` deleted | CLEANUP | ✅ Done — alias preserved on `ImageManager` for back-compat |
+| `CLEANUP-CANDIDATES.md` produced | NEW | ✅ Awaiting Arman's sign-off |
+| `ImageBlock` vs `ImageOutputBlock` dedup | DEFER | ⏸ Deferred (tracked in `CLEANUP-CANDIDATES.md`) |
+| `features/image-manager/FEATURE.md` | NEW | ✅ Shipped |
+| Tier 2 entries in `AGENTS.md` / `CLAUDE.md` | DOCS | ✅ Shipped |
+| `components/image/README.md` banner pointing to FEATURE.md | DOCS | ✅ Shipped |
+| `features/files/FEATURE.md` change-log entry | DOCS | ✅ Shipped |
+| `features/image-studio/FEATURE.md` change-log entry | DOCS | ✅ Shipped |
+| Official-components catalog entries (route + new tabs) | DOCS | ✅ Shipped |
+

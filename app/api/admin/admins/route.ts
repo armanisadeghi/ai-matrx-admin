@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { requireSuperAdmin } from "@/utils/auth/adminUtils";
-import type { Database } from "@/types/database.types";
+import type { Database, Json } from "@/types/database.types";
 
 type AdminLevel = Database["public"]["Enums"]["admin_level"];
 
@@ -49,8 +49,8 @@ export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => null)) as {
     userId?: string;
     level?: AdminLevel;
-    permissions?: Record<string, unknown>;
-    metadata?: Record<string, unknown>;
+    permissions?: Json;
+    metadata?: Json;
   } | null;
 
   if (!body?.userId) {

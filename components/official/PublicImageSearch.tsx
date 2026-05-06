@@ -1,40 +1,78 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { createApi } from 'unsplash-js';
-import { AnimatePresence, motion } from 'motion/react';
-import { Loader2, Search, X, Check, Grid3X3, Grid, ImagePlus, Image as ImageIcon } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { cn } from '@/lib/utils';
-import IconButton from '@/components/official/IconButton';
-import { Badge } from '@/components/ui/badge';
+import React, { useState, useRef, useCallback, useEffect } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import {
+  Loader2,
+  Search,
+  X,
+  Check,
+  Grid3X3,
+  Grid,
+  ImagePlus,
+  Image as ImageIcon,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { cn } from "@/lib/utils";
+import IconButton from "@/components/official/IconButton";
+import { Badge } from "@/components/ui/badge";
 
-// Initialize Unsplash API with error handling
-const unsplashApi = (() => {
+/**
+ * Search Unsplash via our own server route (`app/api/unsplash/route.ts`).
+ * Avoids exposing `NEXT_PUBLIC_UNSPLASH_ACCESS_KEY` on the client and keeps
+ * a single rate-limit pool keyed by the server-only `UNSPLASH_ACCESS_KEY`.
+ */
+async function searchUnsplashPhotos(
+  query: string,
+  page: number,
+  perPage: number,
+): Promise<{ ok: true; results: Photo[] } | { ok: false; error: string }> {
   try {
-    if (!process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY) {
-      console.warn('Unsplash API key not found. Please add NEXT_PUBLIC_UNSPLASH_ACCESS_KEY to your environment variables.');
-      return null;
-    }
-    
-    const accessKey = process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY.trim();
-    if (!accessKey) {
-      console.warn('Unsplash API key is empty. Please provide a valid key in NEXT_PUBLIC_UNSPLASH_ACCESS_KEY.');
-      return null;
-    }
-    
-    return createApi({
-      accessKey
+    const params = new URLSearchParams({
+      action: "searchPhotos",
+      query,
+      page: String(page),
+      perPage: String(perPage),
     });
-  } catch (error) {
-    console.error('Failed to initialize Unsplash API:', error);
-    return null;
+    const res = await fetch(`/api/unsplash?${params.toString()}`, {
+      method: "GET",
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      return { ok: false, error: `Unsplash request failed (${res.status})` };
+    }
+    const payload: unknown = await res.json();
+    if (
+      payload &&
+      typeof payload === "object" &&
+      "type" in payload &&
+      (payload as { type?: string }).type === "success" &&
+      "response" in payload
+    ) {
+      const response = (payload as { response?: { results?: Photo[] } })
+        .response;
+      return { ok: true, results: response?.results ?? [] };
+    }
+    return {
+      ok: false,
+      error: "Unsplash returned an unexpected payload shape.",
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
   }
-})();
+}
 
 // Photo interface
 interface Photo {
@@ -84,17 +122,17 @@ export interface PublicImageSearchProps {
 
 /**
  * PublicImageSearch component
- * 
+ *
  * A reusable component for searching and selecting Unsplash images.
  * The component provides an input field for direct URL entry and a search button
  * that opens a modal with Unsplash image search functionality.
  */
 export function PublicImageSearch({
-  initialValue = '',
-  initialSearch = 'ai',
+  initialValue = "",
+  initialSearch = "ai",
   multiSelect = false,
   onSelect,
-  placeholder = 'Enter image URL or search for images',
+  placeholder = "Enter image URL or search for images",
   className,
   inputClassName,
   buttonClassName,
@@ -112,9 +150,9 @@ export function PublicImageSearch({
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [viewMode, setViewMode] = useState<'grid' | 'natural'>('grid');
+  const [viewMode, setViewMode] = useState<"grid" | "natural">("grid");
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
-  const [previewImageUrl, setPreviewImageUrl] = useState('');
+  const [previewImageUrl, setPreviewImageUrl] = useState("");
 
   // Refs and hooks
   const { toast } = useToast();
@@ -123,85 +161,68 @@ export function PublicImageSearch({
 
   // Check if we have an image
   const hasImage = inputValue.trim().length > 0;
-  
-  // For multi-select, create an array of URLs from the comma-separated string
-  const selectedUrls = multiSelect && inputValue 
-    ? inputValue.split(',').map(url => url.trim()).filter(url => url)
-    : [];
 
-  // Search photos function
-  const searchPhotos = useCallback(async (query: string, pageNum: number) => {
-    if (!query.trim()) return;
-    
-    if (!unsplashApi) {
-      toast({
-        title: 'API Configuration Error',
-        description: 'Unsplash API is not properly configured. Please check your environment variables.',
-        variant: 'destructive',
-      });
-      setLoading(false);
-      return;
-    }
-    
-    setLoading(true);
-    try {
-      const result = await unsplashApi.search.getPhotos({
-        query,
-        page: pageNum,
-        perPage: 15,
-      });
-      
-      if (result.type === 'success') {
-        if (pageNum === 1) {
-          setPhotos(result.response.results);
+  // For multi-select, create an array of URLs from the comma-separated string
+  const selectedUrls =
+    multiSelect && inputValue
+      ? inputValue
+          .split(",")
+          .map((url) => url.trim())
+          .filter((url) => url)
+      : [];
+
+  // Search photos via our server route — never call Unsplash directly from the client.
+  const searchPhotos = useCallback(
+    async (query: string, pageNum: number) => {
+      if (!query.trim()) return;
+
+      setLoading(true);
+      try {
+        const result = await searchUnsplashPhotos(query, pageNum, 15);
+        if (result.ok) {
+          if (pageNum === 1) {
+            setPhotos(result.results);
+          } else {
+            setPhotos((prev) => [...prev, ...result.results]);
+          }
+          setHasMore(result.results.length > 0);
         } else {
-          setPhotos(prev => [...prev, ...result.response.results]);
+          console.error("Unsplash search failed:", result.error);
+          toast({
+            title: "Search failed",
+            description:
+              result.error ?? "Unable to fetch images. Please try again.",
+            variant: "destructive",
+          });
         }
-        setHasMore(result.response.results.length > 0);
-      } else {
-        console.error('Search failed:', result.errors);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error occurred";
+        console.error("Error searching photos:", errorMessage);
         toast({
-          title: 'Search failed',
-          description: 'Unable to fetch images. Please try again.',
-          variant: 'destructive',
+          title: "Search Error",
+          description: "Failed to search for images. Please try again later.",
+          variant: "destructive",
         });
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      // More robust error handling
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      console.error('Error searching photos:', errorMessage);
-      toast({
-        title: 'Search Error',
-        description: 'Failed to search for images. Please check your API key and try again later.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [toast]);
+    },
+    [toast],
+  );
 
   // Handle search query change
   const handleSearch = (query: string) => {
     // Don't search if query is empty
     if (!query.trim()) {
       toast({
-        title: 'Empty Search',
-        description: 'Please enter a search term',
-        variant: 'default',
+        title: "Empty Search",
+        description: "Please enter a search term",
+        variant: "default",
       });
       return;
     }
-    
-    // Don't search if API is not initialized
-    if (!unsplashApi) {
-      toast({
-        title: 'API Not Available',
-        description: 'Image search API is not properly configured.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
+
     setSearchQuery(query);
     setPage(1);
     setPhotos([]);
@@ -211,7 +232,7 @@ export function PublicImageSearch({
   // Load more photos when scrolling
   const loadMore = useCallback(() => {
     if (!loading && hasMore && searchQuery) {
-      setPage(prevPage => prevPage + 1);
+      setPage((prevPage) => prevPage + 1);
       searchPhotos(searchQuery, page + 1);
     }
   }, [loading, hasMore, searchQuery, page, searchPhotos]);
@@ -228,16 +249,16 @@ export function PublicImageSearch({
       });
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore, loadMore]
+    [loading, hasMore, loadMore],
   );
 
   // Handle photo selection
   const handlePhotoSelect = (photo: Photo) => {
     if (multiSelect) {
-      setSelectedPhotos(prev => {
-        const isSelected = prev.some(p => p.id === photo.id);
+      setSelectedPhotos((prev) => {
+        const isSelected = prev.some((p) => p.id === photo.id);
         if (isSelected) {
-          return prev.filter(p => p.id !== photo.id);
+          return prev.filter((p) => p.id !== photo.id);
         } else {
           return [...prev, photo];
         }
@@ -254,13 +275,15 @@ export function PublicImageSearch({
   // Apply selection and close dialog
   const applySelection = () => {
     if (selectedPhotos.length > 0) {
-      const urls = selectedPhotos.map(photo => photo.urls.full || photo.urls.regular);
+      const urls = selectedPhotos.map(
+        (photo) => photo.urls.full || photo.urls.regular,
+      );
       if (urls.length === 1) {
         setInputValue(urls[0]);
         onSelect(urls[0]);
       } else {
         // For multiple selection, join URLs with commas
-        const joinedUrls = urls.join(',');
+        const joinedUrls = urls.join(",");
         setInputValue(joinedUrls);
         onSelect(urls);
       }
@@ -277,8 +300,11 @@ export function PublicImageSearch({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
     // Call onSelect with the new value to keep parent components updated
-    if (multiSelect && e.target.value.includes(',')) {
-      const urls = e.target.value.split(',').map(url => url.trim()).filter(url => url);
+    if (multiSelect && e.target.value.includes(",")) {
+      const urls = e.target.value
+        .split(",")
+        .map((url) => url.trim())
+        .filter((url) => url);
       onSelect(urls);
     } else {
       onSelect(e.target.value);
@@ -287,8 +313,8 @@ export function PublicImageSearch({
 
   // Clear input
   const handleClearInput = () => {
-    setInputValue('');
-    onSelect(multiSelect ? [] : '');
+    setInputValue("");
+    onSelect(multiSelect ? [] : "");
   };
 
   // Open preview dialog
@@ -302,18 +328,20 @@ export function PublicImageSearch({
     if (event) {
       event.stopPropagation();
     }
-    
+
     // Update selectedPhotos state
-    setSelectedPhotos(prev => prev.filter(photo => {
-      const photoUrl = photo.urls.full || photo.urls.regular;
-      return photoUrl !== urlToRemove;
-    }));
-    
+    setSelectedPhotos((prev) =>
+      prev.filter((photo) => {
+        const photoUrl = photo.urls.full || photo.urls.regular;
+        return photoUrl !== urlToRemove;
+      }),
+    );
+
     // Update input value
-    const updatedUrls = selectedUrls.filter(url => url !== urlToRemove);
-    const joinedUrls = updatedUrls.join(',');
+    const updatedUrls = selectedUrls.filter((url) => url !== urlToRemove);
+    const joinedUrls = updatedUrls.join(",");
     setInputValue(joinedUrls);
-    
+
     // Call onSelect with updated URLs
     onSelect(updatedUrls);
   };
@@ -350,16 +378,20 @@ export function PublicImageSearch({
             icon={hasImage ? ImageIcon : ImagePlus}
             onClick={() => setIsDialogOpen(true)}
             variant={hasImage ? "default" : "outline"}
-            tooltip={hasImage 
-              ? (multiSelect && selectedUrls.length > 1 
-                ? `${selectedUrls.length} images selected` 
-                : "Image selected") 
-              : "Search for images"
+            tooltip={
+              hasImage
+                ? multiSelect && selectedUrls.length > 1
+                  ? `${selectedUrls.length} images selected`
+                  : "Image selected"
+                : "Search for images"
             }
-            className={cn(buttonClassName, hasImage && "bg-primary text-primary-foreground")}
+            className={cn(
+              buttonClassName,
+              hasImage && "bg-primary text-primary-foreground",
+            )}
             disabled={disabled}
           />
-          
+
           {/* Success indicators */}
           {hasImage && (
             <motion.div
@@ -401,11 +433,11 @@ export function PublicImageSearch({
             />
           )}
         </AnimatePresence>
-        
-        <ImagePreviewDialog 
-          isOpen={previewDialogOpen} 
-          setIsOpen={setPreviewDialogOpen} 
-          imageUrl={previewImageUrl} 
+
+        <ImagePreviewDialog
+          isOpen={previewDialogOpen}
+          setIsOpen={setPreviewDialogOpen}
+          imageUrl={previewImageUrl}
         />
       </div>
     );
@@ -414,51 +446,55 @@ export function PublicImageSearch({
   // Standard mode with input and optional preview
   return (
     <div className={cn("relative w-full", className)}>
-      <div className={cn(
-        "flex flex-col gap-2 rounded-lg",
-        (showPreview && hasImage) && "border border-dashed border-border"
-      )}>
+      <div
+        className={cn(
+          "flex flex-col gap-2 rounded-lg",
+          showPreview && hasImage && "border border-dashed border-border",
+        )}
+      >
         {/* Preview thumbnail if enabled and we have an image */}
         {showPreview && hasImage && !multiSelect && (
           <div className="w-full flex justify-center p-2">
-            <div 
+            <div
               className="rounded-md overflow-hidden cursor-pointer bg-muted relative w-[150px] h-[100px]"
               onClick={() => handlePreviewClick(inputValue)}
             >
-              <img 
-                src={inputValue} 
-                alt="Preview" 
+              <img
+                src={inputValue}
+                alt="Preview"
                 className="absolute inset-0 h-full w-full object-contain"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMyA4QzMgOC41NTIyOCAzLjQ0NzcyIDkgNCA5SDIwQzIwLjU1MjMgOSAyMSA4LjU1MjI4IDIxIDhDMjEgNy40NDc3MiAyMC41NTIzIDcgMjAgN0g0QzMuNDQ3NzIgNyAzIDcuNDQ3NzIgMyA4WiIgZmlsbD0iY3VycmVudENvbG9yIi8+PHBhdGggZD0iTTMgMTZDMyAxNi41NTIzIDMuNDQ3NzIgMTcgNCAxN0gyMEMyMC41NTIzIDE3IDIxIDE2LjU1MjMgMjEgMTZDMjEgMTUuNDQ3NyAyMC41NTIzIDE1IDIwIDE1SDRDMy40NDc3MiAxNSAzIDE1LjQ0NzcgMyAxNloiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjwvc3ZnPg==';
+                  (e.target as HTMLImageElement).src =
+                    "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMyA4QzMgOC41NTIyOCAzLjQ0NzcyIDkgNCA5SDIwQzIwLjU1MjMgOSAyMSA4LjU1MjI4IDIxIDhDMjEgNy40NDc3MiAyMC41NTIzIDcgMjAgN0g0QzMuNDQ3NzIgNyAzIDcuNDQ3NzIgMyA4WiIgZmlsbD0iY3VycmVudENvbG9yIi8+PHBhdGggZD0iTTMgMTZDMyAxNi41NTIzIDMuNDQ3NzIgMTcgNCAxN0gyMEMyMC41NTIzIDE3IDIxIDE2LjU1MjMgMjEgMTZDMjEgMTUuNDQ3NyAyMC41NTIzIDE1IDIwIDE1SDRDMy40NDc3MiAxNSAzIDE1LjQ0NzcgMyAxNloiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjwvc3ZnPg==";
                 }}
               />
             </div>
           </div>
         )}
-        
+
         {/* Multiple image preview badges */}
         {showPreview && multiSelect && selectedUrls.length > 0 && (
           <div className="w-full p-2">
             <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-muted">
               {selectedUrls.map((url, index) => (
-                <div 
+                <div
                   key={index}
                   className="h-14 w-20 shrink-0 rounded-md overflow-hidden cursor-pointer border border-border bg-muted relative group"
                   onClick={() => handlePreviewClick(url)}
                 >
-                  <img 
-                    src={url} 
+                  <img
+                    src={url}
                     alt={`Preview ${index + 1}`}
                     className="absolute inset-0 h-full w-full object-contain"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMyA4QzMgOC41NTIyOCAzLjQ0NzcyIDkgNCA5SDIwQzIwLjU1MjMgOSAyMSA4LjU1MjI4IDIxIDhDMjEgNy40NDc3MiAyMC41NTIzIDcgMjAgN0g0QzMuNDQ3NzIgNyAzIDcuNDQ3NzIgMyA4WiIgZmlsbD0iY3VycmVudENvbG9yIi8+PHBhdGggZD0iTTMgMTZDMyAxNi41NTIzIDMuNDQ3NzIgMTcgNCAxN0gyMEMyMC41NTIzIDE3IDIxIDE2LjU1MjMgMjEgMTZDMjEgMTUuNDQ3NyAyMC41NTIzIDE1IDIwIDE1SDRDMy40NDc3MiAxNSAzIDE1LjQ0NzcgMyAxNloiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjwvc3ZnPg==';
+                      (e.target as HTMLImageElement).src =
+                        "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMyA4QzMgOC41NTIyOCAzLjQ0NzcyIDkgNCA5SDIwQzIwLjU1MjMgOSAyMSA4LjU1MjI4IDIxIDhDMjEgNy40NDc3MiAyMC41NTIzIDcgMjAgN0g0QzMuNDQ3NzIgNyAzIDcuNDQ3NzIgMyA4WiIgZmlsbD0iY3VycmVudENvbG9yIi8+PHBhdGggZD0iTTMgMTZDMyAxNi41NTIzIDMuNDQ3NzIgMTcgNCAxN0gyMEMyMC41NTIzIDE3IDIxIDE2LjU1MjMgMjEgMTZDMjEgMTUuNDQ3NyAyMC41NTIzIDE1IDIwIDE1SDRDMy40NDc3MiAxNSAzIDE1LjQ0NzcgMyAxNloiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjwvc3ZnPg==";
                     }}
                   />
                   <div className="absolute top-0 right-0 bg-black/50 text-white text-xs px-1 rounded-bl">
                     {index + 1}
                   </div>
-                  <button 
+                  <button
                     className="absolute top-1 right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={(e) => handleRemoveImage(url, e)}
                   >
@@ -476,10 +512,7 @@ export function PublicImageSearch({
               value={inputValue}
               onChange={handleInputChange}
               placeholder={placeholder}
-              className={cn(
-                "pr-7 h-8 text-xs w-full",
-                inputClassName
-              )}
+              className={cn("pr-7 h-8 text-xs w-full", inputClassName)}
               disabled={disabled}
             />
             {inputValue && (
@@ -526,11 +559,11 @@ export function PublicImageSearch({
           />
         )}
       </AnimatePresence>
-      
-      <ImagePreviewDialog 
-        isOpen={previewDialogOpen} 
-        setIsOpen={setPreviewDialogOpen} 
-        imageUrl={previewImageUrl} 
+
+      <ImagePreviewDialog
+        isOpen={previewDialogOpen}
+        setIsOpen={setPreviewDialogOpen}
+        imageUrl={previewImageUrl}
       />
     </div>
   );
@@ -543,8 +576,8 @@ interface SearchDialogProps {
   photos: Photo[];
   selectedPhotos: Photo[];
   loading: boolean;
-  viewMode: 'grid' | 'natural';
-  setViewMode: React.Dispatch<React.SetStateAction<'grid' | 'natural'>>;
+  viewMode: "grid" | "natural";
+  setViewMode: React.Dispatch<React.SetStateAction<"grid" | "natural">>;
   handleSearch: (query: string) => void;
   handlePhotoSelect: (photo: Photo) => void;
   lastPhotoElementRef: (node: HTMLDivElement | null) => void;
@@ -570,7 +603,7 @@ function SearchDialog({
   multiSelect,
   resetSelection,
   applySelection,
-  setIsDialogOpen
+  setIsDialogOpen,
 }: SearchDialogProps) {
   return (
     <Dialog open={true} onOpenChange={setIsDialogOpen}>
@@ -578,7 +611,7 @@ function SearchDialog({
         <DialogHeader className="px-4 py-2 border-b border-border">
           <DialogTitle>Search Public Images</DialogTitle>
         </DialogHeader>
-        
+
         <div className="flex flex-col h-full overflow-hidden">
           {/* Search and view mode controls */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-b border-border">
@@ -587,7 +620,9 @@ function SearchDialog({
                 ref={searchInputRef}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && handleSearch(searchQuery)
+                }
                 placeholder="Search for images..."
                 className="pr-10"
               />
@@ -599,11 +634,13 @@ function SearchDialog({
                 <Search className="h-4 w-4" />
               </button>
             </div>
-            
-            <ToggleGroup 
-              type="single" 
-              value={viewMode} 
-              onValueChange={(value) => value && setViewMode(value as 'grid' | 'natural')}
+
+            <ToggleGroup
+              type="single"
+              value={viewMode}
+              onValueChange={(value) =>
+                value && setViewMode(value as "grid" | "natural")
+              }
               className="mt-2 sm:mt-0"
             >
               <ToggleGroupItem value="grid" aria-label="Grid view">
@@ -616,47 +653,63 @@ function SearchDialog({
               </ToggleGroupItem>
             </ToggleGroup>
           </div>
-          
+
           {/* Image gallery */}
           <div className="flex-1 overflow-y-auto p-4">
             {photos.length === 0 && !loading ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-8">
                 <ImagePlus className="h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" />
-                <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">No images found</h3>
+                <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">
+                  No images found
+                </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mt-2">
-                  {searchQuery ? 'Try a different search term' : 'Start by searching for images above'}
+                  {searchQuery
+                    ? "Try a different search term"
+                    : "Start by searching for images above"}
                 </p>
               </div>
             ) : (
-              <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ${viewMode === 'natural' ? 'items-start' : ''}`}>
+              <div
+                className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ${viewMode === "natural" ? "items-start" : ""}`}
+              >
                 {photos.map((photo, index) => (
                   <div
                     key={photo.id}
-                    ref={index === photos.length - 1 ? lastPhotoElementRef : undefined}
+                    ref={
+                      index === photos.length - 1
+                        ? lastPhotoElementRef
+                        : undefined
+                    }
                     onClick={() => handlePhotoSelect(photo)}
                     className={cn(
                       "relative cursor-pointer rounded-lg overflow-hidden group border-2 border-transparent",
-                      selectedPhotos.some(p => p.id === photo.id) && 
+                      selectedPhotos.some((p) => p.id === photo.id) &&
                         "border-primary ring-2 ring-primary/20",
-                      "hover:border-primary/70 hover:ring-2 hover:ring-primary/10 transition-all"
+                      "hover:border-primary/70 hover:ring-2 hover:ring-primary/10 transition-all",
                     )}
                   >
                     <img
                       src={photo.urls.regular}
-                      alt={photo.alt_description || photo.description || `Photo by ${photo.user.name}`}
+                      alt={
+                        photo.alt_description ||
+                        photo.description ||
+                        `Photo by ${photo.user.name}`
+                      }
                       className={cn(
                         "w-full object-cover",
-                        viewMode === 'grid' ? "h-48" : "max-h-[300px]"
+                        viewMode === "grid" ? "h-48" : "max-h-[300px]",
                       )}
                     />
-                    
+
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <p className="text-white text-sm font-medium text-center p-2 line-clamp-2">
-                        {photo.alt_description || photo.description || `Photo by ${photo.user.name}`}
+                        {photo.alt_description ||
+                          photo.description ||
+                          `Photo by ${photo.user.name}`}
                       </p>
                     </div>
-                    
-                    {selectedPhotos.some(p => p.id === photo.id) && (
+
+                    {selectedPhotos.some((p) => p.id === photo.id) && (
                       <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1">
                         <Check className="h-4 w-4" />
                       </div>
@@ -665,20 +718,21 @@ function SearchDialog({
                 ))}
               </div>
             )}
-            
+
             {loading && (
               <div className="flex justify-center items-center h-24">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             )}
           </div>
-          
+
           {/* Action buttons */}
           {multiSelect && (
             <div className="p-4 border-t border-border flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {selectedPhotos.length} image{selectedPhotos.length !== 1 ? 's' : ''} selected
+                  {selectedPhotos.length} image
+                  {selectedPhotos.length !== 1 ? "s" : ""} selected
                 </span>
                 {selectedPhotos.length > 0 && (
                   <Button variant="ghost" size="sm" onClick={resetSelection}>
@@ -687,11 +741,14 @@ function SearchDialog({
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDialogOpen(false)}
+                >
                   Cancel
                 </Button>
-                <Button 
-                  onClick={applySelection} 
+                <Button
+                  onClick={applySelection}
                   disabled={selectedPhotos.length === 0}
                 >
                   Apply
@@ -712,9 +769,13 @@ interface ImagePreviewDialogProps {
   imageUrl: string;
 }
 
-function ImagePreviewDialog({ isOpen, setIsOpen, imageUrl }: ImagePreviewDialogProps) {
+function ImagePreviewDialog({
+  isOpen,
+  setIsOpen,
+  imageUrl,
+}: ImagePreviewDialogProps) {
   if (!imageUrl) return null;
-  
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="max-w-5xl w-full max-h-[90vh] flex flex-col p-4">
@@ -722,10 +783,10 @@ function ImagePreviewDialog({ isOpen, setIsOpen, imageUrl }: ImagePreviewDialogP
           <DialogTitle className="sr-only">Image Preview</DialogTitle>
         </DialogHeader>
         <div className="flex-1 overflow-hidden flex items-center justify-center">
-          <img 
-            src={imageUrl} 
-            alt="Preview" 
-            className="max-w-full max-h-[70vh] object-contain" 
+          <img
+            src={imageUrl}
+            alt="Preview"
+            className="max-w-full max-h-[70vh] object-contain"
           />
         </div>
         <div className="mt-4 flex justify-end">
@@ -734,4 +795,4 @@ function ImagePreviewDialog({ isOpen, setIsOpen, imageUrl }: ImagePreviewDialogP
       </DialogContent>
     </Dialog>
   );
-} 
+}

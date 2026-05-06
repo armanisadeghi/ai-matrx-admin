@@ -534,6 +534,22 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     instanceMode: "multi",
   },
 
+  // ── Crop Studio ───────────────────────────────────────────────────────────
+  {
+    slug: "crop-studio-window",
+    overlayId: "cropStudioWindow",
+    kind: "window",
+    label: "Crop Studio",
+    defaultData: {
+      folderId: null as string | null,
+      defaultFolderPath: "Images/Crops",
+      aspect: null as number | null,
+    },
+    mobilePresentation: "fullscreen",
+    mobileSidebarAs: "drawer",
+    urlSync: { key: "crop_studio" },
+  },
+
   // ── Image Uploader ────────────────────────────────────────────────────────
   {
     slug: "image-uploader-window",

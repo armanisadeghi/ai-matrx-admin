@@ -166,16 +166,14 @@ export function ImageManagerPageShell() {
                 className="overflow-y-auto py-1"
                 aria-label="Image Manager sections"
               >
-                {sections.map((section) =>
-                  renderNavItem(
-                    section,
-                    section.id === activeId,
-                    () => {
-                      setActiveId(section.id);
-                      setMobileNavOpen(false);
-                    },
-                    /* dense */ false,
-                  ),
+                {renderSectionGroups(
+                  sections,
+                  activeId,
+                  (id) => {
+                    setActiveId(id);
+                    setMobileNavOpen(false);
+                  },
+                  /* dense */ false,
                 )}
               </nav>
 
@@ -209,13 +207,11 @@ export function ImageManagerPageShell() {
             className="flex-1 overflow-y-auto py-1"
             aria-label="Image Manager sections"
           >
-            {sections.map((section) =>
-              renderNavItem(
-                section,
-                section.id === activeId,
-                () => setActiveId(section.id),
-                /* dense */ true,
-              ),
+            {renderSectionGroups(
+              sections,
+              activeId,
+              (id) => setActiveId(id),
+              /* dense */ true,
             )}
           </nav>
 
@@ -254,6 +250,51 @@ export function ImageManagerPageShell() {
         </main>
       </div>
     </BrowseImageProvider>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Group renderer — splits the section list into "primary" and "tools" so the
+// secondary tools group is visually offset by a hairline divider + label,
+// without any group breaking when only one group exists.
+// ---------------------------------------------------------------------------
+
+function renderSectionGroups(
+  sections: SectionDefinition[],
+  activeId: string,
+  onSelect: (id: string) => void,
+  dense: boolean,
+) {
+  const primary = sections.filter((s) => s.group === "primary");
+  const tools = sections.filter((s) => s.group === "tools");
+  return (
+    <>
+      {primary.map((section) =>
+        renderNavItem(
+          section,
+          section.id === activeId,
+          () => onSelect(section.id),
+          dense,
+        ),
+      )}
+      {tools.length > 0 ? (
+        <div
+          className={cn(
+            "mt-2 mb-1 border-t border-border",
+            dense ? "mx-2.5 pt-1.5" : "mx-3 pt-2",
+          )}
+          aria-hidden
+        />
+      ) : null}
+      {tools.map((section) =>
+        renderNavItem(
+          section,
+          section.id === activeId,
+          () => onSelect(section.id),
+          dense,
+        ),
+      )}
+    </>
   );
 }
 
@@ -314,7 +355,10 @@ function SelectionModeStrip({
 }) {
   return (
     <div
-      className={cn("border-t border-border px-2.5 py-2 space-y-1.5", className)}
+      className={cn(
+        "border-t border-border px-2.5 py-2 space-y-1.5",
+        className,
+      )}
     >
       <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
         Mode

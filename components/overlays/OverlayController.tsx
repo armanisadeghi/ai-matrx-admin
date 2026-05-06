@@ -196,6 +196,11 @@ const ImageUploaderWindow = dynamic(
   { ssr: false },
 );
 
+const CropStudioWindow = dynamic(
+  () => import("@/features/image-studio/components/CropStudioWindow"),
+  { ssr: false },
+);
+
 // Legacy FilePreviewWindow + FileUploadWindow removed in Phase 11 —
 // cloud-files window handles both inline.
 
@@ -768,7 +773,7 @@ export const OverlayController: React.FC = () => {
   const isQuickUtilitiesOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "quickUtilities"),
   );
-// Phase 8: both `userPreferences` (legacy modal) and `userPreferencesWindow`
+  // Phase 8: both `userPreferences` (legacy modal) and `userPreferencesWindow`
   // overlay ids are observed directly by `SettingsShellOverlay`, so this
   // controller no longer needs selectors for them.
   const isAnnouncementsOpen = useAppSelector((s) =>
@@ -935,6 +940,13 @@ export const OverlayController: React.FC = () => {
 
   const isPdfExtractorWindowOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "pdfExtractorWindow"),
+  );
+
+  const isCropStudioWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "cropStudioWindow"),
+  );
+  const cropStudioWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "cropStudioWindow"),
   );
 
   const isCanvasViewerWindowOpen = useAppSelector((s) =>
@@ -1540,6 +1552,14 @@ export const OverlayController: React.FC = () => {
         />
       )}
 
+      {isCropStudioWindowOpen && (
+        <CropStudioWindow
+          isOpen={true}
+          onClose={() => close("cropStudioWindow")}
+          {...((cropStudioWindowData ?? {}) as Record<string, unknown>)}
+        />
+      )}
+
       {isCanvasViewerWindowOpen && (
         <CanvasViewerWindow
           isOpen={true}
@@ -2011,9 +2031,8 @@ export const OverlayController: React.FC = () => {
 
               try {
                 if (mode === "assistant-message" && cid && mid) {
-                  const { editMessage } = await import(
-                    "@/features/agents/redux/execution-system/message-crud/edit-message.thunk"
-                  );
+                  const { editMessage } =
+                    await import("@/features/agents/redux/execution-system/message-crud/edit-message.thunk");
                   const nextContent = [
                     { type: "text", text: newContent },
                   ] as unknown as import("@/types/database.types").Json;

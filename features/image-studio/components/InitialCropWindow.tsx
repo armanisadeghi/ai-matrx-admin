@@ -3,10 +3,11 @@
 /**
  * InitialCropWindow
  * ─────────────────────────────────────────────────────────────────────────
- * Floating WindowPanel wrapper around InitialCropPanel. Functionally
- * identical to InitialCropDialog (same props, same callbacks, same
- * cropping logic) but rendered inside a draggable / resizable /
- * pop-out-able window instead of a modal.
+ * Floating WindowPanel wrapper around InitialCropPanel. Rendered inside
+ * a draggable / resizable / pop-out-able window — the canonical
+ * pre-variant crop step for the Image Studio. (An older `InitialCropDialog`
+ * modal wrapper existed in earlier revisions and was deleted in 2026-05;
+ * this Window form is the only initial-crop wrapper now.)
  *
  * Use this when:
  *   • The crop step needs to coexist with another working surface (e.g.
@@ -14,7 +15,7 @@
  *   • The user should be able to move the cropper out of the way
  *     without dismissing it.
  *
- * Like the dialog, the parent controls the queue: render with a
+ * The parent controls the queue: render with a
  * non-empty `files` array to show the window, listen for
  * `onComplete(results)` once the queue finishes, and `onCancel()` if
  * the user closes the window mid-queue.

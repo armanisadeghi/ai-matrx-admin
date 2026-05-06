@@ -74,7 +74,7 @@ export default function SidebarWindowToggle() {
   const [layoutPrimary, setLayoutPrimary] = useState<"horizontal" | "vertical">(
     "vertical",
   );
-  const [pos, setPos] = useState({ x: 0, bottom: 0 });
+  const [pos, setPos] = useState({ x: 0, bottom: 0, maxHeight: 0 });
   const [mounted, setMounted] = useState(false);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -84,15 +84,32 @@ export default function SidebarWindowToggle() {
     setMounted(true);
   }, []);
 
+  // Measure trigger position + available headroom (from the menu's bottom
+  // anchor up to 8px below the top of the viewport). This caps the menu so
+  // it can't grow past the top of the screen — content scrolls instead.
+  const measure = useCallback(() => {
+    if (!triggerRef.current) return;
+    const r = triggerRef.current.getBoundingClientRect();
+    setPos({
+      x: r.right + 8,
+      bottom: window.innerHeight - r.bottom,
+      maxHeight: Math.max(0, r.bottom - 8),
+    });
+  }, []);
+
   // Measure trigger and open/close
   const handleToggle = useCallback(() => {
-    if (triggerRef.current) {
-      const r = triggerRef.current.getBoundingClientRect();
-      // Place menu to the right of the button, growing upward from the button's bottom edge
-      setPos({ x: r.right + 8, bottom: window.innerHeight - r.bottom });
-    }
+    measure();
     setOpen((v) => !v);
-  }, []);
+  }, [measure]);
+
+  // Re-measure on viewport resize while menu is open so the cap stays accurate.
+  useEffect(() => {
+    if (!open) return;
+    const onResize = () => measure();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [open, measure]);
 
   // Close on outside click
   useEffect(() => {
@@ -164,11 +181,16 @@ export default function SidebarWindowToggle() {
             role="menu"
             className={cn(
               "fixed z-[10000] flex flex-col",
-              "w-[350px] min-h-[380px] rounded-xl overflow-hidden",
+              "w-[350px] rounded-xl overflow-hidden",
               "bg-card/97 backdrop-blur-xl border border-blue-300 dark:border-blue-700 shadow-2xl",
               "py-1 text-sm",
             )}
-            style={{ left: pos.x, bottom: pos.bottom }}
+            style={{
+              left: pos.x,
+              bottom: pos.bottom,
+              maxHeight: pos.maxHeight,
+              minHeight: Math.min(380, pos.maxHeight),
+            }}
           >
             {/* ── Tabs Header ──────────────────────────────────────────────── */}
             <div className="flex items-center px-2 py-1 mb-1 border-b border-border/50 gap-1 overflow-x-auto">
@@ -253,8 +275,8 @@ export default function SidebarWindowToggle() {
                     <MenuSection label="Windows" />
                     <div className="max-h-60 overflow-y-auto">
                       {windows.map((win) => {
-                        const isDeprecated =
-                          !!getStaticEntryBySlug(win.id)?.deprecated;
+                        const isDeprecated = !!getStaticEntryBySlug(win.id)
+                          ?.deprecated;
                         return (
                           <button
                             key={win.id}

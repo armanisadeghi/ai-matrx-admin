@@ -322,6 +322,12 @@ const DYNAMIC: Record<string, DynamicAddition> = {
       ),
   },
 
+  // ── Crop Studio ───────────────────────────────────────────────────────────
+  cropStudioWindow: {
+    componentImport: () =>
+      import("@/features/image-studio/components/CropStudioWindow"),
+  },
+
   // ── Image Uploader ────────────────────────────────────────────────────────
   imageUploaderWindow: {
     componentImport: () =>
@@ -349,9 +355,9 @@ const DYNAMIC: Record<string, DynamicAddition> = {
   },
   transcriptStudioWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/transcript-studio/TranscriptStudioWindow"
-      ).then((m) => ({ default: m.TranscriptStudioWindow })),
+      import("@/features/window-panels/windows/transcript-studio/TranscriptStudioWindow").then(
+        (m) => ({ default: m.TranscriptStudioWindow }),
+      ),
   },
 
   // ── AI Results ────────────────────────────────────────────────────────────

@@ -8,7 +8,7 @@
  * Cloudflare CDN URLs.
  *
  * Pipeline:
- *   1. Drop / paste / pick a file       → InitialCropDialog opens
+ *   1. Drop / paste / pick a file       → InitialCropWindow opens
  *   2. User crops (or skips)            → file is queued in a private studio
  *   3. User confirms the filename       → Sharp generates every preset
  *   4. Variants auto-upload as PUBLIC   → cloud-files returns CDN URLs

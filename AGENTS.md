@@ -157,6 +157,7 @@ Every Tier 1 / Tier 2 feature has a `FEATURE.md` inside its feature directory. T
 | Data ingestion (scraper, PDF, research, transcripts) | `features/scraper/FEATURE.md` |
 | Agent feedback API / MCP server | `app/api/mcp/FEATURE.md` |
 | Audio pipeline (TTS, audio, podcasts) | `features/audio/FEATURE.md` |
+| Image Manager hub (route + modal, single registry) | `features/image-manager/FEATURE.md` |
 
 ### Non-negotiable: keep feature docs live
 

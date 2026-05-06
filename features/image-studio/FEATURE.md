@@ -249,6 +249,7 @@ flow is generate → keep editing without an upload round-trip.
 
 ## Change Log
 
+- **2026-05-05** — Image Manager Hub absorbed several Studio surfaces into `/image-manager` tabs: the studio crop+variants view embeds via `<EmbeddedImageStudio hideTitle>`, the `Base64DecoderShell` is wrapped as a "Paste base64" sub-tool inside the Upload tab, and the generated-images library at `Images/Generated/...` is exposed as a read-only Studio Library tab. The standalone routes (`/image-studio/from-base64`, `/image-studio/library`, `/image-studio/presets`) remain canonical for direct linking and deep workflows. See [`features/image-manager/FEATURE.md`](../image-manager/FEATURE.md).
 - **2026-05-05** — Added Edit, Annotate, Avatar, and Generate modes:
   - `/image-studio/edit` — full-featured Filerobot 5.0 editor with sibling AI-assist toolbar (Suggest edits, Remove BG, Upscale 2×/4×, AI edit by prompt).
   - `/image-studio/annotate` — marker.js 2 screenshot markup with AI assist (Suggest annotations, Redact PII, Detect faces).

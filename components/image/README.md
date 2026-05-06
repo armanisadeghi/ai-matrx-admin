@@ -1,6 +1,8 @@
 # Image Management System
 
-This system provides a full-screen image picker plus a small set of helper components for displaying, selecting, and persisting images across the application. As of the cloud-files rebuild it is a first-class consumer of the `features/files` system — every upload lands in the user's cloud account, and "My Images" / "My Files" / "Image Studio" all surface live cloud-files data.
+> **Canonical hub doc:** [`features/image-manager/FEATURE.md`](../../features/image-manager/FEATURE.md). The components in this directory power both the modal `<ImageManager>` and the full-page `/image-manager` route. For overall architecture, registry layout, selection modes, and how to add a new tab, read the FEATURE doc first.
+
+This system provides a full-screen image picker plus a small set of helper components for displaying, selecting, and persisting images across the application. As of the cloud-files rebuild it is a first-class consumer of the `features/files` system — every upload lands in the user's cloud account, and "Your Cloud" / "All Files" / "Image Studio" all surface live cloud-files data.
 
 ## Core Components
 
@@ -163,4 +165,4 @@ The resolver lives at `components/image/cloud/resolveCloudFileUrl.ts`.
 
 ## Deprecated Files
 
-- `components/image/ImageManagerContent.tsx` — older v1 implementation. Not wired into the cloud-files rebuild. Prefer `ImageManager` from `ImageManager.tsx`.
+- `components/image/ImageManager.tsx` — the current modal entry point. The pre-cloud-files `ImageManagerContent.tsx` legacy file was removed in the Image Manager Hub plan; an `ImageManagerContent` alias is still re-exported from `ImageManager.tsx` for backwards-compat but is marked `@deprecated`.

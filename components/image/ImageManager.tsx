@@ -28,10 +28,13 @@ import { useSelectedImages } from "@/components/image/context/SelectedImagesProv
 import type { AllowedFileKind } from "@/components/image/cloud/CloudFilesTab";
 import type { EmbeddedImageStudioProps } from "@/features/image-studio/components/EmbeddedImageStudio";
 import type { Visibility } from "@/features/files/types";
-import {
-  buildImageManagerSections,
-  SECTION_IDS,
-} from "@/features/image-manager/registry/sections";
+import { buildImageManagerSections } from "@/features/image-manager/registry/sections";
+// Imported from the leaf `ids` module (not `sections.ts`) to avoid a circular
+// dependency: the section registry imports tab components, some of which
+// transitively import `<ImageManager>` via `<SingleImageSelect>`. Pulling
+// `SECTION_IDS` from `sections.ts` here causes a "Cannot access X before
+// initialization" runtime error under Turbopack.
+import { SECTION_IDS } from "@/features/image-manager/registry/ids";
 import { BrowseImageProvider } from "@/features/image-manager/browse/BrowseImageProvider";
 
 export interface ImageManagerProps {

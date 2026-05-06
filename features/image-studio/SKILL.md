@@ -63,7 +63,7 @@ import { EmbeddedImageStudio } from "@/features/image-studio/components/Embedded
 ### What the user sees
 
 1. **Drop zone** (or "Replace" button if `initialUrl` was set).
-2. **InitialCropDialog** opens automatically with aspect-ratio chips, panning, and resize handles.
+2. **InitialCropWindow** opens automatically (a floating WindowPanel) with aspect-ratio chips, panning, and resize handles.
 3. **Source preview + filename input** — the user can rename the slug; the slug becomes the per-source subfolder AND every variant's filename.
 4. **"Generate & save"** button — one click runs Sharp + cloud upload.
 5. **Variant grid** — every requested preset shows preview, dimensions, file size, compression %, and a permanent CDN URL with a Copy button.
@@ -208,7 +208,7 @@ setUrl(s); // ← signed URL expires, breaks shares
 - [`components/EmbeddedImageStudio.tsx`](components/EmbeddedImageStudio.tsx) — the component itself.
 - [`hooks/useImageStudio.ts`](hooks/useImageStudio.ts) — the underlying state machine.
 - [`presets.ts`](presets.ts) — the preset catalog (add new presets here, never inline).
-- [`components/InitialCropDialog.tsx`](components/InitialCropDialog.tsx) — the crop step.
+- [`components/InitialCropWindow.tsx`](components/InitialCropWindow.tsx) — the crop step (floating window; the older Dialog wrapper was removed in 2026-05).
 - [`../files/SKILL.md`](../files/SKILL.md) — the cloud-files contract this component honors.
 
 ## Change log

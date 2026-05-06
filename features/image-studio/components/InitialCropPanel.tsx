@@ -9,9 +9,9 @@
  * and exposes it as a controller hook plus a few sub-components that the
  * outer chrome (Dialog or WindowPanel) composes into a final UI.
  *
- * This file replaces the body that used to live inside
- * InitialCropDialog.tsx; the Dialog and Window wrappers are now thin
- * shells around the pieces exported from here.
+ * The InitialCropWindow shell is the only consumer that wraps these
+ * pieces today. (An older `InitialCropDialog.tsx` modal wrapper was
+ * removed 2026-05 — its contents had already migrated here.)
  *
  * Behavior model (carried over verbatim from the original dialog):
  *   • The image is rendered once at its natural aspect, scaled to fit
@@ -47,7 +47,7 @@ import { cropFileToFile } from "../utils/crop-file";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
-interface CropRect {
+export interface CropRect {
   /** All values are in natural source-image pixel coordinates. */
   x: number;
   y: number;
@@ -55,10 +55,10 @@ interface CropRect {
   h: number;
 }
 
-type Handle = "tl" | "tr" | "bl" | "br" | "l" | "r" | "t" | "b" | "pan";
+export type Handle = "tl" | "tr" | "bl" | "br" | "l" | "r" | "t" | "b" | "pan";
 type ResizeHandle = Exclude<Handle, "pan">;
 
-interface DragState {
+export interface DragState {
   handle: Handle;
   startClientX: number;
   startClientY: number;
@@ -70,7 +70,7 @@ interface AspectChoice {
   value: number | undefined;
 }
 
-const ASPECT_CHOICES: AspectChoice[] = [
+export const ASPECT_CHOICES: AspectChoice[] = [
   { label: "Free", value: undefined },
   { label: "1:1", value: 1 },
   { label: "4:3", value: 4 / 3 },
@@ -94,7 +94,7 @@ const HANDLE_EDGES: Record<
   b: { b: true },
 };
 
-const MIN_NATURAL = 4;
+export const MIN_NATURAL = 4;
 
 // ── Pure helpers ────────────────────────────────────────────────────────────
 
@@ -102,7 +102,7 @@ function clamp(v: number, lo: number, hi: number) {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function fitAspectInImage(
+export function fitAspectInImage(
   aspect: number,
   imgW: number,
   imgH: number,
@@ -120,7 +120,7 @@ function fitAspectInImage(
   return { x: (imgW - w) / 2, y: (imgH - h) / 2, w, h };
 }
 
-function clampRectInImage(
+export function clampRectInImage(
   rect: CropRect,
   aspect: number | undefined,
   imgW: number,
@@ -151,7 +151,7 @@ function clampRectInImage(
   return { x, y, w, h };
 }
 
-function applyDragToRect(
+export function applyDragToRect(
   state: DragState,
   deltaX: number,
   deltaY: number,
@@ -219,6 +219,56 @@ function applyDragToRect(
   return { x: left, y: top, w: right - left, h: bottom - top };
 }
 
+// ── Shared display types ────────────────────────────────────────────────────
+
+export interface ImageDisplay {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  scale: number;
+}
+
+export interface RectDisplay {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * Minimal contract that <InitialCropViewport> needs. Both the queue
+ * controller (useInitialCropController) and the tabbed studio controller
+ * (useCropStudioController) implement this so they can share the same
+ * viewport JSX.
+ */
+export interface CropViewportPort {
+  imageUrl: string | null;
+  naturalSize: { w: number; h: number } | null;
+  cropRect: CropRect | null;
+  imageDisplay: ImageDisplay | null;
+  rectDisplay: RectDisplay | null;
+  setContainerRef: (el: HTMLDivElement | null) => void;
+  handleImageLoad: (e: React.SyntheticEvent<HTMLImageElement>) => void;
+  beginDrag: (handle: Handle) => (e: React.PointerEvent) => void;
+  pointerHandlers: {
+    onPointerMove: (e: React.PointerEvent) => void;
+    onPointerUp: (e: React.PointerEvent) => void;
+    onPointerCancel: (e: React.PointerEvent) => void;
+  };
+}
+
+/**
+ * Minimal contract that <InitialCropAspectBar> needs. Both controllers
+ * implement this.
+ */
+export interface CropAspectPort {
+  aspect: number | undefined;
+  setAspect: (next: number | undefined) => void;
+  resetCrop: () => void;
+  naturalSize: { w: number; h: number } | null;
+}
+
 // ── Controller hook ─────────────────────────────────────────────────────────
 
 export interface InitialCropControllerOptions {
@@ -230,7 +280,8 @@ export interface InitialCropControllerOptions {
   onCancel: () => void;
 }
 
-export interface InitialCropController {
+export interface InitialCropController
+  extends CropViewportPort, CropAspectPort {
   open: boolean;
   index: number;
   totalFiles: number;
@@ -238,39 +289,6 @@ export interface InitialCropController {
   isProcessing: boolean;
   cropIsModified: boolean;
   hasCrop: boolean;
-
-  // Aspect / reset
-  aspect: number | undefined;
-  setAspect: (next: number | undefined) => void;
-  resetCrop: () => void;
-
-  // Image+rect display geometry — all consumers share the same memoized values
-  imageUrl: string | null;
-  naturalSize: { w: number; h: number } | null;
-  cropRect: CropRect | null;
-  imageDisplay: {
-    x: number;
-    y: number;
-    w: number;
-    h: number;
-    scale: number;
-  } | null;
-  rectDisplay: {
-    left: number;
-    top: number;
-    width: number;
-    height: number;
-  } | null;
-
-  // Refs / event handlers
-  setContainerRef: (el: HTMLDivElement | null) => void;
-  handleImageLoad: (e: React.SyntheticEvent<HTMLImageElement>) => void;
-  beginDrag: (handle: Handle) => (e: React.PointerEvent) => void;
-  pointerHandlers: {
-    onPointerMove: (e: React.PointerEvent) => void;
-    onPointerUp: (e: React.PointerEvent) => void;
-    onPointerCancel: (e: React.PointerEvent) => void;
-  };
 
   // Actions
   applyCurrent: () => Promise<void>;
@@ -569,7 +587,7 @@ export function useInitialCropController({
 // ── Sub-components ──────────────────────────────────────────────────────────
 
 interface InitialCropViewportProps {
-  controller: InitialCropController;
+  controller: CropViewportPort;
   /** Tailwind classes for the viewport container — wrappers control sizing. */
   className?: string;
 }
@@ -577,7 +595,11 @@ interface InitialCropViewportProps {
 /**
  * The black viewport that holds the static image, the dim layers, and the
  * draggable crop rectangle with all its handles. Wrappers decide its
- * height — `h-[60vh]` for the dialog, `flex-1 min-h-0` for the window.
+ * height — `flex-1 min-h-0` for the floating window form.
+ *
+ * Accepts any object that implements `CropViewportPort`, so the same JSX
+ * is shared by the queue-mode controller (`InitialCropWindow`) and the
+ * tabbed studio controller (`CropStudioWindow`).
  */
 export function InitialCropViewport({
   controller,
@@ -766,7 +788,7 @@ export function InitialCropViewport({
 }
 
 interface InitialCropAspectBarProps {
-  controller: InitialCropController;
+  controller: CropAspectPort;
   className?: string;
 }
 

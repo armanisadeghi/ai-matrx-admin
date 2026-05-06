@@ -13,14 +13,20 @@
  * zero layout shift.
  */
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { toast } from "sonner";
 import { PresetCatalog } from "./PresetCatalog";
 import { StudioDropZone } from "./StudioDropZone";
 import { StudioFileCard } from "./StudioFileCard";
 import { ExportPanel } from "./ExportPanel";
 import { CropPreviewWindow } from "./CropPreviewWindow";
-import { InitialCropDialog } from "./InitialCropDialog";
+import { InitialCropWindow } from "./InitialCropWindow";
 import { useImageStudio } from "../hooks/useImageStudio";
 import {
   downloadVariantsAsZip,
@@ -200,7 +206,9 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
       });
       if (!studio.error) {
         toast.success(
-          makePublic ? "Saved to your library (public)" : "Saved to your library",
+          makePublic
+            ? "Saved to your library (public)"
+            : "Saved to your library",
         );
       }
     },
@@ -327,8 +335,8 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
                     </p>
                     <p className="text-xs text-amber-800/80 dark:text-amber-300/80 leading-snug mt-0.5">
                       Rename now and your variants will inherit a clean,
-                      shareable slug. Otherwise every preset will be saved
-                      under the auto name.
+                      shareable slug. Otherwise every preset will be saved under
+                      the auto name.
                     </p>
                     <div className="flex flex-wrap items-center gap-2 mt-2">
                       <button
@@ -457,7 +465,7 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
       )}
 
       {/* Initial freeform crop, one image at a time */}
-      <InitialCropDialog
+      <InitialCropWindow
         files={pendingFiles}
         onComplete={handleCropQueueComplete}
         onCancel={handleCropQueueCancel}

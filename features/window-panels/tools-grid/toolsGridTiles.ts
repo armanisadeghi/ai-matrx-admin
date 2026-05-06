@@ -38,6 +38,7 @@ import {
   CheckSquare,
   Clapperboard,
   Cpu,
+  Crop,
   Database,
   DoorOpen,
   FileCode2,
@@ -536,6 +537,13 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
     icon: Wand2,
     category: "files-web",
     onActivate: ({ router }) => router.push("/image-studio"),
+  },
+  {
+    id: "tile.crop-studio",
+    label: "Crop Studio",
+    icon: Crop,
+    category: "files-web",
+    overlayId: "cropStudioWindow",
   },
   {
     id: "tile.scraper",

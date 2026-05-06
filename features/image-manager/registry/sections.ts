@@ -25,6 +25,7 @@ import {
   Upload,
   User,
   Wand2,
+  Wrench,
 } from "lucide-react";
 
 import { CloudImagesTab } from "@/components/image/cloud/CloudImagesTab";
@@ -37,23 +38,20 @@ import { AIGenerateHero } from "../components/AIGenerateHero";
 import { PublicImagesSection } from "../components/PublicImagesSection";
 import { BrandedUploadTab } from "../components/BrandedUploadTab";
 import { StudioLibraryTab } from "../components/StudioLibraryTab";
+import { ProfilePhotoTab } from "../components/ProfilePhotoTab";
+import { ToolsTab } from "../components/ToolsTab";
 
 // ---------------------------------------------------------------------------
-// Stable section ids — exported so callers can deep-link without typos.
+// Stable section ids live in `./ids.ts` (a leaf module with zero imports) so
+// `ImageManager.tsx` — which is transitively imported by some tab components
+// here — can read them without forming a circular dependency. Re-exported
+// from this module for backwards-compat with existing callers.
 // ---------------------------------------------------------------------------
 
-export const SECTION_IDS = {
-  publicSearch: "public-search",
-  myImages: "my-images",
-  myFiles: "my-files",
-  upload: "upload",
-  brandedUpload: "branded-upload",
-  imageStudio: "image-studio",
-  studioLibrary: "studio-library",
-  aiGenerate: "ai-generate",
-} as const;
+export { SECTION_IDS } from "./ids";
+export type { SectionId } from "./ids";
 
-export type SectionId = (typeof SECTION_IDS)[keyof typeof SECTION_IDS];
+import { SECTION_IDS } from "./ids";
 
 // ---------------------------------------------------------------------------
 // Builder
@@ -177,10 +175,33 @@ export function buildImageManagerSections(
     });
   }
 
-  // Phase 3 tool sections are appended later in this same builder. Until
-  // those land, we expose nothing under "tools" so the modal/route render
-  // an unchanged primary list.
-  const tools: SectionDefinition[] = [];
+  // Profile photo lives in primary because it's a high-intent action,
+  // even if visited rarely. Both the route and the modal show it.
+  primary.push({
+    id: SECTION_IDS.profilePhoto,
+    label: "Profile Photo",
+    icon: User,
+    iconColor: "text-cyan-500",
+    group: "primary",
+    hint: "Upload an avatar — saves directly to your profile.",
+    render: () => React.createElement(ProfilePhotoTab),
+  });
+
+  // Secondary "tools" group — single landing tile that hosts every minor
+  // image utility. Keeps the sidebar tight while still giving each utility
+  // a discoverable home. Hidden from the modal historically (it surfaces
+  // only the primary tabs), shown in the route shell.
+  const tools: SectionDefinition[] = [
+    {
+      id: SECTION_IDS.tools,
+      label: "Tools",
+      icon: Wrench,
+      iconColor: "text-zinc-500",
+      group: "tools",
+      hint: "Crop, Lightbox, Floating Gallery, Screenshot, and more.",
+      render: () => React.createElement(ToolsTab),
+    },
+  ];
 
   return [...primary, ...(ctx.showTools !== false ? tools : [])];
 }
