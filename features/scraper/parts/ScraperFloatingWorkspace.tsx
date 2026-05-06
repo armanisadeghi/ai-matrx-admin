@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * @registry-status: sub-component
+ * Body of `scraperWindow`. The registered window component
+ * (features/window-panels/windows/ScraperWindow.tsx) is a thin shell that
+ * delegates straight here. Do NOT add a separate registry entry for this
+ * file — it's covered by `scraperWindow`.
+ */
+
 import React, { useCallback, useState } from "react";
 import {
   Zap,

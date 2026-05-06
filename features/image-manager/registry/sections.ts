@@ -142,7 +142,7 @@ export function buildImageManagerSections(
 
   if (showImageStudio) {
     // The full three-column shell — same component that powers
-    // /image-studio/convert. Embedded so users never have to leave the hub.
+    // /images/convert. Embedded so users never have to leave the hub.
     primary.push({
       id: SECTION_IDS.studioFull,
       label: "Image Studio",

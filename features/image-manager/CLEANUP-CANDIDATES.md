@@ -12,41 +12,24 @@ The plan's principle: every absorbed feature already has a home in the new hub. 
 - Items marked **🟡 NEEDS REFACTOR** are still imported but only by other code that's also slated for removal, or by trivial seams (a single re-export, a discriminated-union member). Each item explains the small change needed alongside deletion.
 - Items marked **🔴 BLOCKER** still have legitimate callers and would need real refactor work. The plan does **not** propose deleting these.
 
-## 1. `components/advanced-image-editor/` 🟢 SAFE
+## 1. `components/advanced-image-editor/` ✅ DELETED (2026-05-05)
 
-Entire tree. Fabric.js-based image editor that's been broken under Turbopack since the migration. Internal imports only — no consumer outside the directory.
+Entire tree. Fabric.js-based image editor that was broken under Turbopack since the migration. Internal imports only — no consumer outside the directory. Dropped together with `vendors/fabric.js` and `app/vendor/fabric.js` in the fabric.js purge (item 9).
 
-```bash
-# Verification:
-rg "from ['\"][^'\"]*advanced-image-editor" --type tsx --type ts -g '!components/advanced-image-editor/**'
-# → no matches
-```
+## 2-5. `app/(authenticated)/image-editing/**` ✅ DELETED (2026-05-05)
 
-**Recommendation**: drop the entire `components/advanced-image-editor/` directory.
+The entire `image-editing/` route folder was dropped — all four pages (`page.tsx`, `gallery/page.tsx`, `public-image-search/{page,layout}.tsx`, `simple-crop/page.tsx`) plus the directory itself.
 
-## 2. `app/(authenticated)/image-editing/page.tsx` 🟢 SAFE
+User decision: deleted as a single batch after confirming each page was either a placeholder or a legacy demo with no live consumers. Type-check confirmed nothing else in the tree referenced these routes.
 
-Disabled placeholder route — no UI affordance leads here, no internal links. Dead navigation entry only.
+**Knock-on effects still pending owner sign-off:**
 
-**Recommendation**: delete the page.
-
-## 3. `app/(authenticated)/image-editing/gallery/page.tsx` 🟡 NEEDS REFACTOR
-
-Legacy `ParallaxScroll` demo. Imports `ParallaxScrollAdvanced` from `components/matrx/parallax-scroll/ParalaxStoreAdvanced`.
-
-**Coupled with**: `components/matrx/parallax-scroll/` (item 6). Delete both together.
-
-## 4. `app/(authenticated)/image-editing/public-image-search/page.tsx` 🟢 SAFE
-
-Standalone demo of the legacy `PublicImageSearch` modal. The route exists only as a demo target — `PublicImageSearch` itself stays (now refactored to use the server `/api/unsplash` route).
-
-**Recommendation**: delete `page.tsx` + `layout.tsx` in this folder.
-
-## 5. `app/(authenticated)/image-editing/simple-crop/page.tsx` 🟢 SAFE
-
-`EasyImageCropper` demo. The Crop functionality is preserved as a tile in the new "Tools" group of the Image Manager. Demo route is redundant.
-
-**Recommendation**: delete the page.
+- `components/matrx/parallax-scroll/` is now orphaned (item 6) — its only consumer was `image-editing/gallery`.
+- Live menu/nav entries still link to `/image-editing/public-image-search` — they will 404 until cleaned:
+  - `constants/navigation-links.tsx` (the "Image Search" entry, surfaced by `<MatrxFloatingMenu>` and `<NavigationMenu>` on every authenticated route).
+  - `constants/favicon-route-data.ts` (the "Im" favicon entry).
+  - `components/layout/MatrixFloatingMenu.tsx` (deprecated component, console-warns on render — no live mount, but still has a hard-coded link to the dead route).
+- `features/image-manager/components/ToolsTab.tsx` **Beta** group still renders four cards pointing to the deleted routes — owner explicitly requested it be left in place for now.
 
 ## 6. `components/matrx/parallax-scroll/` 🟢 SAFE (after #3)
 
@@ -82,11 +65,15 @@ Both consumers are easy to fix:
 
 **Recommendation**: delete `types/imageEditorTypes.ts` together with the two-line refactor above.
 
-## 9. `vendors/fabric.js` 🟢 SAFE (after #1)
+## 9. `vendors/fabric.js` + `app/vendor/fabric.js` ✅ DELETED (2026-05-05)
 
-Vendored fabric.js. No imports outside `components/advanced-image-editor/`. Once item 1 is gone, this is orphaned.
+Vendored fabric.js. Two copies existed (`vendors/fabric.js` ~1.0 MB and an orphaned duplicate at `app/vendor/fabric.js` ~1.2 MB). Both removed alongside `components/advanced-image-editor/` (item 1). The empty `vendors/` and `app/vendor/` directories were also removed.
 
-**Recommendation**: delete the vendored copy in the same change as item 1.
+Companion cleanups in the same change:
+
+- `utils/next-config/webpackConfig.js` — dropped the `vendors/fabric.js` `script-loader` rule.
+- `next.config.js` — removed the duplicate client-side `jsdom` externalization that was specifically scaffolded for fabric.js (the `webpackConfig.js` block already handles it for any other transitive consumer).
+- `package.json` — removed `@types/fabric` from `devDependencies`; `pnpm install` re-pinned the lockfile.
 
 ## 10. `app/api/proxy-image/` ✅ ALREADY DELETED
 
@@ -113,16 +100,17 @@ Owner: TBD. Trigger: next time someone touches markdown image rendering.
 - **`components/official/PasteImageHandler.tsx`** — building block used by multiple uppers; not in scope.
 - **`features/canvas/social/preset-covers.ts`** — actively used by the Curated Covers chip in Public Images.
 
-## Deletion checklist (when approved)
+## Deletion checklist
 
-If you approve the green-flagged items above, the safe deletion order is:
+Approved deletion order:
 
-1. ✅ `app/api/proxy-image/` — already done.
-2. `app/(authenticated)/image-editing/` (entire route folder, items 2 + 3 + 4 + 5).
-3. `components/matrx/parallax-scroll/` (item 6 — only after step 2).
-4. `components/advanced-image-editor/` (item 1).
-5. `vendors/fabric.js` (item 9 — only after step 4).
-6. `types/imageEditorTypes.ts` + the moduleSchema/types-index two-liner (item 8).
+1. ✅ `app/api/proxy-image/` — done (Phase 4.2 of Hub plan).
+2. ✅ `components/advanced-image-editor/` (item 1) — done 2026-05-05.
+3. ✅ `vendors/fabric.js` + `app/vendor/fabric.js` (item 9) — done 2026-05-05. Companion build-config cleanup applied to `webpackConfig.js`, `next.config.js`, `package.json`.
+4. ✅ `app/(authenticated)/image-editing/` (entire route folder, items 2 + 3 + 4 + 5) — done 2026-05-05.
+5. ⏳ `components/matrx/parallax-scroll/` (item 6) — pending; orphaned now that item 4 has landed.
+6. ⏳ `types/imageEditorTypes.ts` + the moduleSchema/types-index three-liner (item 8) — pending.
+7. ⏳ Nav/menu/favicon refs (`MatrixFloatingMenu.tsx`, `constants/navigation-links.tsx`, `constants/favicon-route-data.ts`) — pending; live menu links now hit a 404 because item 4 landed without these. Owner explicitly opted to keep `ToolsTab.tsx` **Beta** subgroup in place for now (it links to the same dead routes but is gated behind the Tools tab).
 
 After every step:
 
@@ -131,7 +119,3 @@ pnpm tsc --noEmit
 ```
 
 If type-check passes after each batch, ship the deletion. If anything turns up, **stop** and either fix the consumer or restore the file.
-
----
-
-**Approval requested.** Comment on this file or reply with which items to drop. The plan defaults to "do nothing" until that approval lands.

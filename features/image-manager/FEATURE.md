@@ -2,23 +2,36 @@
 
 **Status:** `active`
 **Tier:** `2`
-**Last updated:** `2026-05-05`
+**Last updated:** `2026-05-06`
 
 ---
 
 ## Purpose
 
-`image-manager` is the canonical hub for every image-related affordance in the app — public stock search, the user's cloud library, branded variant uploads, the Image Studio surface, the Studio Library, profile-photo updates, AI generation (placeholder), and a Tools group hosting niche utilities (crop, lightbox, screenshot, etc.). Both the legacy modal `<ImageManager>` and the dedicated `/image-manager` route render off the same registry, so adding a tab is a one-line change.
+`image-manager` provides the **shared tab components** for every image-related affordance in the app — public stock search, the user's cloud library, branded variant uploads, the Studio Library, profile-photo updates, AI generation (placeholder), and a Tools group hosting niche utilities (crop, lightbox, screenshot, etc.). These components are consumed by two surfaces: the unified `/images/*` route tree (real Next.js routes, one per tab) and the legacy modal `<ImageManager>` (used as a picker by callers elsewhere in the app).
+
+> **Migration note (2026-05-06):** The dedicated `/image-manager` route was removed. Every tab is now a flat sibling under `/images/*` — see `app/(a)/images/_components/imagesRoutes.ts`. The components in `features/image-manager/components/` are unchanged; only the route shell that hosted them moved.
 
 ---
 
 ## Entry points
 
-**Routes**
-- `app/(a)/image-manager/page.tsx` — full-page hub. Layout under `app/(a)/image-manager/layout.tsx`; client shell at `app/(a)/image-manager/_components/ImageManagerPageShell.tsx`.
+**Routes (under `/images/*`)**
+- `/images/public-search` → `<PublicImagesSection>`
+- `/images/my-cloud` → `<CloudImagesTab>`
+- `/images/all-files` → `<CloudFilesTab>`
+- `/images/upload` → `<CloudUploadTab>`
+- `/images/branded` → `<BrandedUploadTab>`
+- `/images/tools` → `<ToolsTab>`
+- `/images/studio-light` → `<ImageStudioTab>`
+- `/images/studio-library` → `<StudioLibraryTab>`
+- `/images/ai-generate` → `<AIGenerateHero>`
+- `/images/profile-photo` → `<ProfilePhotoTab>`
+
+Layout/sidebar shell: `app/(a)/images/layout.tsx` + `app/(a)/images/_components/ImagesSidebar.tsx`. Active route is detected via `usePathname()` — no fake routes, no client-state tab switching.
 
 **Modal**
-- `<ImageManager>` from `components/image/ImageManager.tsx` — fullscreen overlay used by callers that need a picker. Consumes the same registry but filters out the secondary "Tools" group; never enters Browse mode.
+- `<ImageManager>` from `components/image/ImageManager.tsx` — fullscreen overlay used by callers that need a picker. Consumes the same `buildImageManagerSections` registry; never enters Browse mode. Independent of the route shell — deleting the route had no impact on the modal.
 
 **Hooks**
 - `useBrowseAction()` from `features/image-manager/browse/BrowseImageProvider.tsx` — hook every Browse-aware tab calls. Wraps `openImageViewer()` from `features/window-panels/windows/image/ImageViewerWindow.tsx`.
@@ -184,6 +197,8 @@ The Image Manager Hub plan landed across Phases 1–7 (May 2026). Pending owner-
 
 ## Change log
 
+- `2026-05-05` — **Legacy `/image-editing/*` routes deleted** (CLEANUP-CANDIDATES.md items 2-5). Dropped the entire `app/(authenticated)/image-editing/` directory (4 pages + 1 layout): the disabled placeholder, the parallax-scroll gallery demo, the standalone public-image-search demo, and the simple-crop demo. `pnpm tsc --noEmit` clean. Knock-on cleanups not yet applied (per owner): `components/matrx/parallax-scroll/` is now orphaned, and the live "Image Search" entry in `constants/navigation-links.tsx` (plus `favicon-route-data.ts` and the deprecated `MatrixFloatingMenu.tsx`) still link to `/image-editing/public-image-search` and will 404 from `<MatrxFloatingMenu>`/`<NavigationMenu>` until pruned. The `ToolsTab.tsx` **Beta** subgroup also still links to the deleted routes — owner asked to leave the Tools tab untouched.
+- `2026-05-05` — **Fabric.js purge** (CLEANUP-CANDIDATES.md items 1 + 9). Deleted `components/advanced-image-editor/` (17 files), `vendors/fabric.js` (~1.0 MB), and the orphaned duplicate `app/vendor/fabric.js` (~1.2 MB), plus their now-empty parent directories. Companion build-config cleanup: dropped the `vendors/fabric.js` `script-loader` rule from `utils/next-config/webpackConfig.js`, removed the duplicate fabric-specific `jsdom` client externalization block from `next.config.js` (the remaining block in `webpackConfig.js` still covers other transitive consumers), and removed `@types/fabric` from `package.json` devDependencies. `pnpm install` re-pinned the lockfile. The `/image-editing/*` legacy demo routes and the `ToolsTab` Beta group still reference `/image-editing` placeholder URLs — pending in items 2-7 of the cleanup checklist.
 - `2026-05-05` — **Your Cloud** view-mode toggle (Cozy / Compact / List) plus localStorage persistence under `image-manager:cloud-images-view`. Same UX feel as Public Images — Cozy is the previous default (5-col grid), Compact bumps to 9-col with smaller tiles, List is a table-style row view with thumbnail + filename + size + relative timestamp + mime. Also fixed a Browse-mode bug: clicking a tile previously kicked off `Promise.all(imageFiles.map(resolveCloudFileUrl))` (a signed-URL request per visible image, on every single click) AND pushed each `ResolvedCloudUrl` *object* into the viewer's `images: string[]` contract — so `<ImageViewerWindow>` rendered `<img src="[object Object]">`. Browse now resolves only the clicked file's URL and opens the viewer with one image.
 - `2026-05-05` — Round 2: collapsible sidebar (slim icon-only rail; the blue ImageIcon doubles as the expand affordance), persisted to `localStorage` under `image-manager:sidebar-collapsed`. Renamed the embedded studio tab to **Studio Light** and added a new **Image Studio** tab (`FullImageStudioTab`, id `studio-full`) that lazy-loads the full `<ImageStudioShell>` in-page. Tightened the **Crop Studio** tool card copy to call out one-or-many file support and renamed it to "Crop Studio (one or many)". Added a **Beta** subgroup inside `ToolsTab` linking the four cleanup-candidate `image-editing/*` routes (legacy editor, parallax gallery, public-image-search demo, easy cropper demo) so they remain reachable for verification before deletion. New `SECTION_IDS.studioFull = "studio-full"`.
 - `2026-05-05` — `SECTION_IDS` extracted into a leaf `registry/ids.ts` module to break a Turbopack TDZ cycle (`ImageManager` → `sections.ts` → `ToolsTab` → `ImageCropperWithSelect` → `SingleImageSelect` → `ImageManager`). `sections.ts` re-exports for back-compat. Drive-by: deleted orphaned `features/image-studio/components/InitialCropDialog.tsx` (zero importers — `InitialCropWindow` is the canonical wrapper).

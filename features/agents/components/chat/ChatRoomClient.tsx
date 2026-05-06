@@ -21,7 +21,6 @@ import {
 } from "@/features/agents/redux/surfaces/surfaces.slice";
 import { AgentConversationColumn } from "@/features/agents/components/shared/AgentConversationColumn";
 import { ChatPageShell } from "./ChatPageShell";
-import { ChatAgentPicker } from "./ChatAgentPicker";
 
 interface ChatRoomClientProps {
   agentId: string;
@@ -167,13 +166,9 @@ export function ChatRoomClient({
     return (
       <ChatPageShell
         activeConversationId={conversationIdProp}
-        headerSlot={
-          <ChatAgentPicker
-            currentAgentId={agentId}
-            label={agentName || agent?.name || "Loading..."}
-            onSelect={handlePickAgent}
-          />
-        }
+        activeAgentId={agentId}
+        activeAgentName={agentName || agent?.name || "Loading..."}
+        onAgentSelect={handlePickAgent}
       >
         <div className="flex items-center justify-center h-full gap-3 text-muted-foreground">
           <Loader2 className="w-5 h-5 animate-spin text-primary" />
@@ -186,13 +181,9 @@ export function ChatRoomClient({
   return (
     <ChatPageShell
       activeConversationId={resolvedCid}
-      headerSlot={
-        <ChatAgentPicker
-          currentAgentId={agentId}
-          label={agentName || agent?.name || "Choose an agent"}
-          onSelect={handlePickAgent}
-        />
-      }
+      activeAgentId={agentId}
+      activeAgentName={agentName || agent?.name}
+      onAgentSelect={handlePickAgent}
     >
       <div className="flex-1 min-h-0 overflow-hidden flex justify-center">
         <AgentConversationColumn

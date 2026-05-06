@@ -1,6 +1,7 @@
 "use client";
 
 /**
+ * @registry-status: inline-window
  * CreatorRunPanel — Creator Run Panel
  *
  * A collapsible, always-visible tabbed panel between conversation and input.
@@ -9,6 +10,12 @@
  *
  * Tabs:
  *   Actions | Run Settings | System Prompt | Last Request | Session | Client
+ *
+ * Rendered inline by AgentConversationColumn — uses <WindowPanel> as styling
+ * chrome for two embedded sub-panels but is NOT mounted via the unified
+ * registry/controller. Its props are driven by the parent column, not Redux.
+ * Do NOT add a registry entry without first converting it to the callback-bus
+ * pattern (see ImageUploaderWindow for the model).
  */
 
 import { useState, useCallback, useRef } from "react";

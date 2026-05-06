@@ -2,10 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { History, MessagesSquare, Plus } from "lucide-react";
+import { PanelLeft, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerContent,
@@ -13,55 +12,30 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { ConversationHistorySidebar } from "@/features/agents/components/conversation-history/ConversationHistorySidebar";
+import { AgentListDropdown } from "@/features/agents/components/agent-listings/AgentListDropdown";
 import type { ConversationListItem } from "@/features/agents/redux/conversation-list/conversation-list.types";
 
 interface ChatPageShellProps {
+  /** Currently active conversation (highlights the row in history). */
   activeConversationId?: string;
-  /** Content rendered in the page header (typically the agent picker). */
-  headerSlot?: React.ReactNode;
+  /** Currently active agent — drives the picker label. */
+  activeAgentId?: string;
+  /** Initial picker label before agent data hydrates (SSR-safe). */
+  activeAgentName?: string;
+  /** Picker trigger label fallback when no agent is selected. */
+  pickerPlaceholder?: string;
+  /** Called when the user selects an agent from the dropdown. */
+  onAgentSelect?: (agentId: string) => void;
+  /**
+   * Called when the user clicks the "+ new chat" icon. Defaults to
+   * `router.push('/chat/new')` when omitted, so most consumers don't
+   * need to pass anything.
+   */
+  onNewChat?: () => void;
   children: React.ReactNode;
 }
 
 const CHAT_HISTORY_SCOPE = "chat-route";
-
-interface ChatHistoryPanelProps {
-  activeConversationId?: string;
-  onOpenConversation: (conv: ConversationListItem) => void;
-  onNewChat: () => void;
-}
-
-function ChatHistoryPanel({
-  activeConversationId,
-  onOpenConversation,
-  onNewChat,
-}: ChatHistoryPanelProps) {
-  return (
-    <div className="flex h-full min-h-0 flex-col bg-card">
-      <div className="shrink-0 flex items-center justify-between px-3 py-2 border-b border-border">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-          Conversations
-        </span>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-7 px-2 text-xs gap-1"
-          onClick={onNewChat}
-        >
-          <Plus className="w-3.5 h-3.5" />
-          New
-        </Button>
-      </div>
-      <div className="flex-1 min-h-0">
-        <ConversationHistorySidebar
-          scopeId={CHAT_HISTORY_SCOPE}
-          agentIds={[]}
-          activeConversationId={activeConversationId ?? null}
-          onOpenConversation={onOpenConversation}
-        />
-      </div>
-    </div>
-  );
-}
 
 // Hardcoded bindings for Phase 7 — wiring into the Phase 1 shortcut table
 // is tracked as a follow-up once user-scope shortcuts expose a generic
@@ -70,16 +44,25 @@ const KEYBINDINGS = {
   newChat: { key: "k", meta: true },
   focusInput: { key: "/", meta: false },
   openAgentPicker: { key: "j", meta: true },
+  toggleHistory: { key: "b", meta: true },
 } as const;
 
 export function ChatPageShell({
   activeConversationId,
-  headerSlot,
+  activeAgentId,
+  activeAgentName,
+  pickerPlaceholder = "Choose an agent",
+  onAgentSelect,
+  onNewChat,
   children,
 }: ChatPageShellProps) {
   const router = useRouter();
   const isMobile = useIsMobile();
-  const [historyOpen, setHistoryOpen] = useState(false);
+  // Desktop sidebar collapse state. Defaults expanded so the user lands
+  // with their conversation history visible on first paint.
+  const [historyExpanded, setHistoryExpanded] = useState(true);
+  // Mobile drawer is a separate, transient overlay.
+  const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false);
 
   const focusInput = useCallback(() => {
     const el = document.querySelector<HTMLTextAreaElement>(
@@ -94,12 +77,30 @@ export function ChatPageShell({
   }, []);
 
   const openAgentPicker = useCallback(() => {
-    const host = document.querySelector<HTMLElement>(
-      "[data-chat-agent-picker-trigger]",
-    );
-    const btn = host?.querySelector<HTMLButtonElement>("button");
-    btn?.click();
-  }, []);
+    // If the picker is hidden behind a collapsed sidebar (or off-screen on
+    // mobile), surface it first and let React paint before we synth-click.
+    if (!isMobile && !historyExpanded) setHistoryExpanded(true);
+    if (isMobile && !historyDrawerOpen) setHistoryDrawerOpen(true);
+    requestAnimationFrame(() => {
+      const host = document.querySelector<HTMLElement>(
+        "[data-chat-agent-picker-trigger]",
+      );
+      const btn = host?.querySelector<HTMLButtonElement>("button");
+      btn?.click();
+    });
+  }, [isMobile, historyExpanded, historyDrawerOpen]);
+
+  const handleNewChat = useCallback(() => {
+    if (onNewChat) onNewChat();
+    else router.push("/chat/new");
+  }, [onNewChat, router]);
+
+  const openConversation = useCallback(
+    (conv: ConversationListItem) => {
+      router.push(`/chat/${conv.conversationId}`);
+    },
+    [router],
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -114,7 +115,7 @@ export function ChatPageShell({
         e.key.toLowerCase() === KEYBINDINGS.newChat.key
       ) {
         e.preventDefault();
-        router.push("/chat/new");
+        handleNewChat();
         return;
       }
       if (
@@ -125,6 +126,15 @@ export function ChatPageShell({
         openAgentPicker();
         return;
       }
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        e.key.toLowerCase() === KEYBINDINGS.toggleHistory.key
+      ) {
+        e.preventDefault();
+        if (isMobile) setHistoryDrawerOpen((v) => !v);
+        else setHistoryExpanded((v) => !v);
+        return;
+      }
       if (!inTypableElement && e.key === KEYBINDINGS.focusInput.key) {
         e.preventDefault();
         focusInput();
@@ -132,59 +142,161 @@ export function ChatPageShell({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [router, focusInput, openAgentPicker]);
+  }, [focusInput, handleNewChat, isMobile, openAgentPicker]);
 
-  const openConversation = useCallback(
-    (conv: ConversationListItem) => {
-      router.push(`/chat/${conv.conversationId}`);
-    },
-    [router],
+  const pickerLabel = activeAgentName?.trim() || pickerPlaceholder;
+
+  // ── Desktop sidebar top row: [toggle] [agent picker] [+ new chat] ──────
+  const desktopTopRow = (
+    <div className="flex h-9 shrink-0 items-center gap-1 border-b border-border pl-1.5 pr-1">
+      <button
+        type="button"
+        onClick={() => setHistoryExpanded(false)}
+        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+        aria-label="Hide sidebar"
+        title="Hide sidebar (⌘B)"
+      >
+        <PanelLeft className="h-4 w-4" />
+      </button>
+      <div
+        data-chat-agent-picker-trigger
+        className="flex min-w-0 flex-1 items-center"
+      >
+        <AgentListDropdown
+          key={activeAgentId ?? "no-agent"}
+          onSelect={onAgentSelect}
+          label={pickerLabel}
+          compact
+          noBorder
+          className="w-full justify-between bg-transparent"
+        />
+      </div>
+      <button
+        type="button"
+        onClick={handleNewChat}
+        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+        aria-label="New chat"
+        title="New chat (⌘K)"
+      >
+        <Plus className="h-4 w-4" />
+      </button>
+    </div>
   );
 
-  const newChat = useCallback(() => {
-    router.push("/chat/new");
-  }, [router]);
+  // ── Mobile drawer top row: [toggle] [agent picker] [+ new chat] ────────
+  const mobileTopRow = (
+    <div className="flex h-10 shrink-0 items-center gap-1 border-b border-border pl-1.5 pr-1">
+      <button
+        type="button"
+        onClick={() => setHistoryDrawerOpen(false)}
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+        aria-label="Hide history"
+        title="Hide history"
+      >
+        <PanelLeft className="h-4 w-4" />
+      </button>
+      <div
+        data-chat-agent-picker-trigger
+        className="flex min-w-0 flex-1 items-center"
+      >
+        <AgentListDropdown
+          key={`mobile-${activeAgentId ?? "no-agent"}`}
+          onSelect={(id) => {
+            onAgentSelect?.(id);
+            setHistoryDrawerOpen(false);
+          }}
+          label={pickerLabel}
+          noBorder
+          className="w-full justify-between bg-transparent"
+        />
+      </div>
+      <button
+        type="button"
+        onClick={() => {
+          setHistoryDrawerOpen(false);
+          handleNewChat();
+        }}
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+        aria-label="New chat"
+        title="New chat"
+      >
+        <Plus className="h-4 w-4" />
+      </button>
+    </div>
+  );
 
   return (
     <div className="h-full flex overflow-hidden bg-textured">
-      {!isMobile && (
+      {!isMobile && historyExpanded && (
         <aside
-          className="hidden lg:flex w-64 shrink-0 border-r border-border flex-col"
+          className="hidden lg:flex w-64 shrink-0 border-r border-border flex-col overflow-hidden bg-card"
           aria-label="Chat history"
         >
-          <ChatHistoryPanel
-            activeConversationId={activeConversationId}
+          <ConversationHistorySidebar
+            scopeId={CHAT_HISTORY_SCOPE}
+            agentIds={[]}
+            activeConversationId={activeConversationId ?? null}
             onOpenConversation={openConversation}
-            onNewChat={newChat}
+            headerSlot={desktopTopRow}
           />
         </aside>
       )}
 
-      <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
-        <header
-          className={cn(
-            "shrink-0 flex items-center justify-between gap-2 px-3 sm:px-4",
-            "h-12 border-b border-border bg-card/60 backdrop-blur-sm",
-          )}
-        >
-          <div className="flex items-center gap-2 min-w-0">
-            <MessagesSquare className="w-4 h-4 text-muted-foreground shrink-0" />
-            <div data-chat-agent-picker-trigger>{headerSlot}</div>
-          </div>
-          <div className="flex items-center gap-1">
-            {isMobile && (
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-8 px-2 text-xs gap-1"
-                onClick={() => setHistoryOpen(true)}
-              >
-                <History className="w-3.5 h-3.5" />
-                History
-              </Button>
+      <div className="flex-1 min-w-0 flex flex-col overflow-hidden relative">
+        {/* Floating sidebar toggle when desktop history is hidden — sits at
+            the same top-left position as the in-sidebar toggle so it appears
+            visually anchored across both states. */}
+        {!isMobile && !historyExpanded && (
+          <button
+            type="button"
+            onClick={() => setHistoryExpanded(true)}
+            className="absolute top-1.5 left-1.5 z-30 hidden lg:flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card/80 text-muted-foreground shadow-sm backdrop-blur-sm hover:bg-accent hover:text-foreground"
+            aria-label="Show sidebar"
+            title="Show sidebar (⌘B)"
+          >
+            <PanelLeft className="h-4 w-4" />
+          </button>
+        )}
+
+        {isMobile && (
+          <header
+            className={cn(
+              "shrink-0 flex items-center justify-between gap-1 px-1.5",
+              "h-10 border-b border-border bg-card/60 backdrop-blur-sm",
             )}
-          </div>
-        </header>
+          >
+            <button
+              type="button"
+              onClick={() => setHistoryDrawerOpen(true)}
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+              aria-label="Show history"
+              title="Show history"
+            >
+              <PanelLeft className="h-4 w-4" />
+            </button>
+            <div
+              data-chat-agent-picker-trigger
+              className="flex min-w-0 flex-1 items-center justify-center"
+            >
+              <AgentListDropdown
+                key={`mobile-header-${activeAgentId ?? "no-agent"}`}
+                onSelect={onAgentSelect}
+                label={pickerLabel}
+                noBorder
+                className="w-full justify-center bg-transparent"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleNewChat}
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+              aria-label="New chat"
+              title="New chat"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </header>
+        )}
 
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
           {children}
@@ -192,24 +304,21 @@ export function ChatPageShell({
       </div>
 
       {isMobile && (
-        <Drawer open={historyOpen} onOpenChange={setHistoryOpen}>
+        <Drawer open={historyDrawerOpen} onOpenChange={setHistoryDrawerOpen}>
           <DrawerContent className="max-h-[85dvh]">
-            <DrawerHeader className="pb-1">
-              <DrawerTitle className="text-sm">
-                Conversation history
-              </DrawerTitle>
+            <DrawerHeader className="sr-only">
+              <DrawerTitle>Conversation history</DrawerTitle>
             </DrawerHeader>
             <div className="flex-1 min-h-0 overflow-hidden pb-safe">
-              <ChatHistoryPanel
-                activeConversationId={activeConversationId}
+              <ConversationHistorySidebar
+                scopeId={CHAT_HISTORY_SCOPE}
+                agentIds={[]}
+                activeConversationId={activeConversationId ?? null}
                 onOpenConversation={(conv) => {
-                  setHistoryOpen(false);
+                  setHistoryDrawerOpen(false);
                   router.push(`/chat/${conv.conversationId}`);
                 }}
-                onNewChat={() => {
-                  setHistoryOpen(false);
-                  router.push("/chat/new");
-                }}
+                headerSlot={mobileTopRow}
               />
             </div>
           </DrawerContent>

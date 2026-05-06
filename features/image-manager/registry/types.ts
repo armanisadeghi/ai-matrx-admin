@@ -3,10 +3,10 @@
  *
  * Shared section-registry types for the Image Manager hub.
  *
- * The hub has two consumers — the legacy modal (`<ImageManager>`) and the
- * new full-page route (`/image-manager`). Both consume the same
- * `SectionDefinition[]` produced by `buildImageManagerSections(ctx)` so
- * adding a new tab is a single-line entry.
+ * The registry has one consumer in this app: the legacy modal
+ * (`<ImageManager>`) used as a picker. The unified `/images/*` route tree
+ * does NOT use this registry — each route there imports its tab component
+ * directly. Adding a tab to the modal is still a single-line entry.
  */
 
 import type { ReactNode } from "react";

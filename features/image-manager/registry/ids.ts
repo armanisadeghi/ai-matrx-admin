@@ -27,8 +27,8 @@ export const SECTION_IDS = {
   imageStudio: "image-studio",
   /**
    * "Image Studio" — the full three-column shell (`<ImageStudioShell>`) that
-   * powers `/image-studio/convert`, embedded in-page so users never leave
-   * the hub.
+   * powers `/images/convert`, embedded in-page so users never leave
+   * the modal.
    */
   studioFull: "studio-full",
   studioLibrary: "studio-library",

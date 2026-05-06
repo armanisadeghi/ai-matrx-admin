@@ -61,7 +61,7 @@ export function StudioLandingHero() {
 
           <div className="flex flex-wrap gap-3 mt-6">
             <Link
-              href="/image-studio/convert"
+              href="/images/convert"
               className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-5 py-2.5 text-sm font-medium shadow-sm hover:bg-primary/90 transition-colors"
             >
               <Upload className="h-4 w-4" />
@@ -69,21 +69,21 @@ export function StudioLandingHero() {
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              href="/image-studio/presets"
+              href="/images/presets"
               className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-medium hover:bg-muted/50 transition-colors"
             >
               <Layers className="h-4 w-4" />
               Browse all {presetCount} presets
             </Link>
             <Link
-              href="/image-studio/from-base64"
+              href="/images/from-base64"
               className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-medium hover:bg-muted/50 transition-colors"
             >
               <Braces className="h-4 w-4" />
               Paste base64
             </Link>
             <Link
-              href="/image-studio/library"
+              href="/images/library"
               className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-medium hover:bg-muted/50 transition-colors"
             >
               <CloudUpload className="h-4 w-4" />
@@ -141,7 +141,7 @@ export function StudioLandingHero() {
             icon={<Braces className="h-5 w-5" />}
             title="Paste base64 → cloud URL"
             body="Got a base64 blob from an API or notebook? Paste it in, preview the decoded image, and turn it into a hosted asset with a permanent share URL."
-            href="/image-studio/from-base64"
+            href="/images/from-base64"
           />
         </div>
       </section>
@@ -157,7 +157,7 @@ export function StudioLandingHero() {
               <p className="text-sm text-muted-foreground mt-1 max-w-xl">
                 Every size that ships in the studio, grouped by purpose. Click{" "}
                 <Link
-                  href="/image-studio/presets"
+                  href="/images/presets"
                   className="underline text-primary"
                 >
                   Browse all presets
@@ -166,7 +166,7 @@ export function StudioLandingHero() {
               </p>
             </div>
             <Link
-              href="/image-studio/convert"
+              href="/images/convert"
               className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
             >
               Start converting <ArrowRight className="h-3.5 w-3.5" />

@@ -183,7 +183,7 @@ export function ToolsTab() {
       action: {
         kind: "openLink",
         label: "Open catalog",
-        href: "/image-studio/presets",
+        href: "/images/presets",
         external: true,
       },
     },
@@ -531,7 +531,7 @@ function InlineCropTool() {
           Crop result added to your selection. To persist it, switch to the
           Upload tab and drop the data URL — or wire this tool to{" "}
           <Link
-            href="/image-studio/from-base64"
+            href="/images/from-base64"
             className="text-primary hover:underline"
             target="_blank"
           >

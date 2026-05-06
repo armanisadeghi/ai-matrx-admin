@@ -322,6 +322,14 @@ const DYNAMIC: Record<string, DynamicAddition> = {
       ),
   },
 
+  // ── Curated Icon Picker ───────────────────────────────────────────────────
+  curatedIconPickerWindow: {
+    componentImport: () =>
+      import(
+        "@/features/window-panels/windows/icons/CuratedIconPickerWindow"
+      ).then((m) => ({ default: m.CuratedIconPickerWindow })),
+  },
+
   // ── Crop Studio ───────────────────────────────────────────────────────────
   cropStudioWindow: {
     componentImport: () =>

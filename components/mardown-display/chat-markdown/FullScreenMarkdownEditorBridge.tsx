@@ -13,7 +13,7 @@
  * which felt like a hard freeze).
  *
  * This bridge mirrors the legacy glue code that used to live inline in
- * `components/overlays/OverlayController.tsx` (now orphaned — only
+ * `components/overlays/OverlayController.tsx` (deleted 2026-05-06 — only
  * `UnifiedOverlayController` is mounted in `app/DeferredSingletons.tsx` and
  * `app/(public)/PublicProviders.tsx`). It:
  *

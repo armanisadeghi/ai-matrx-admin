@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * @registry-status: sub-component
+ * Exports `AgentGateBody`, the body of `agentGateWindow`. Consumed by the
+ * registered shell at features/window-panels/windows/agents/AgentGateWindow.tsx.
+ * Do NOT register separately — covered by `agentGateWindow`.
+ */
+
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeftFromLine, ArrowRight, ArrowUp, X } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";

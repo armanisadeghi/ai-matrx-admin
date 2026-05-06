@@ -164,14 +164,6 @@ const nextConfig = {
         // First apply your existing webpack config
         config = configureWebpack(config, { isServer });
 
-        // Externalize jsdom from client bundles (used by fabric.js)
-        if (!isServer) {
-            config.externals = config.externals || [];
-            config.externals.push({
-                jsdom: 'commonjs jsdom',
-            });
-        }
-
         // Optimize webpack for production builds - MINIMAL SAFE CONFIG
         if (!dev) {
             config.output.hashFunction = 'xxhash64';

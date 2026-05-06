@@ -3,16 +3,16 @@
 /**
  * features/image-manager/components/FullImageStudioTab.tsx
  *
- * Tab body for the "Image Studio" entry in `/image-manager`. Embeds the
- * full three-column `<ImageStudioShell>` (the same component that powers
- * `/image-studio/convert`) so users get the complete preset-catalog +
- * file-card grid + export-panel workflow without leaving the hub.
+ * Tab body for the "Image Studio" entry in the legacy ImageManager modal.
+ * Embeds the full three-column `<ImageStudioShell>` (same component that
+ * powers `/images/convert`) so users get the complete preset-catalog +
+ * file-card grid + export-panel workflow without leaving the modal.
  *
  * Why dynamic-import with `ssr: false`:
  *   `<ImageStudioShell>` mounts `react-dropzone`, `FileReader`, and
  *   `URL.createObjectURL`. Server-rendering it produces a hydration
  *   mismatch — the convert route handles this the same way (see
- *   `app/(a)/image-studio/convert/ImageStudioShellClient.tsx`).
+ *   `app/(a)/images/convert/ImageStudioShellClient.tsx`).
  */
 
 import dynamic from "next/dynamic";

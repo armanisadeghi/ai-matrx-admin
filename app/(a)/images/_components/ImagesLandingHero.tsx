@@ -1,0 +1,254 @@
+import Link from "next/link";
+import {
+  ArrowRight,
+  Atom,
+  Braces,
+  Cloud,
+  FileImage,
+  FolderTree,
+  ImageIcon,
+  Layers,
+  Library,
+  Pencil,
+  Sparkles,
+  Stamp,
+  Upload,
+  User,
+  UserCircle,
+  Wand,
+  Wand2,
+  Wrench,
+  type LucideIcon,
+} from "lucide-react";
+
+interface Tile {
+  href: string;
+  label: string;
+  description: string;
+  Icon: LucideIcon;
+  accent: string;
+}
+
+const MANAGER_TILES: Tile[] = [
+  {
+    href: "/images/public-search",
+    label: "Public Search",
+    description: "Curated covers and Unsplash search.",
+    Icon: ImageIcon,
+    accent: "text-sky-500",
+  },
+  {
+    href: "/images/my-cloud",
+    label: "My Cloud",
+    description: "Your image library, in sync everywhere.",
+    Icon: Cloud,
+    accent: "text-violet-500",
+  },
+  {
+    href: "/images/all-files",
+    label: "All Files",
+    description: "Full cloud-files browser, folders and all.",
+    Icon: FolderTree,
+    accent: "text-amber-500",
+  },
+  {
+    href: "/images/upload",
+    label: "Upload",
+    description: "Drag, drop, paste — saves to your cloud.",
+    Icon: Upload,
+    accent: "text-emerald-500",
+  },
+  {
+    href: "/images/branded",
+    label: "Branded",
+    description: "Cover, OG, thumb, favicon variants in one go.",
+    Icon: Stamp,
+    accent: "text-orange-500",
+  },
+  {
+    href: "/images/tools",
+    label: "Tools",
+    description: "Crop, lightbox, gallery, screenshot, and more.",
+    Icon: Wrench,
+    accent: "text-zinc-500",
+  },
+];
+
+const STUDIO_TILES: Tile[] = [
+  {
+    href: "/images/studio-light",
+    label: "Studio Light",
+    description: "Compact crop + variant flow.",
+    Icon: Wand2,
+    accent: "text-fuchsia-400",
+  },
+  {
+    href: "/images/studio-library",
+    label: "Studio Library",
+    description: "Every Studio save, in one place.",
+    Icon: Library,
+    accent: "text-pink-500",
+  },
+  {
+    href: "/images/ai-generate",
+    label: "AI Generate",
+    description: "Describe an image and generate it.",
+    Icon: Sparkles,
+    accent: "text-rose-500",
+  },
+  {
+    href: "/images/profile-photo",
+    label: "Profile Photo",
+    description: "Upload an avatar, saves to your profile.",
+    Icon: User,
+    accent: "text-cyan-500",
+  },
+  {
+    href: "/images/generate",
+    label: "Generate",
+    description: "Text → image, sized any way you want.",
+    Icon: Wand2,
+    accent: "text-violet-400",
+  },
+  {
+    href: "/images/edit",
+    label: "Edit",
+    description: "Crop, filters, shapes, text, AI assists.",
+    Icon: Wand,
+    accent: "text-amber-400",
+  },
+  {
+    href: "/images/annotate",
+    label: "Annotate",
+    description: "Mark up screenshots and images.",
+    Icon: Pencil,
+    accent: "text-blue-500",
+  },
+  {
+    href: "/images/avatar",
+    label: "Avatar",
+    description: "Generate avatars from any portrait.",
+    Icon: UserCircle,
+    accent: "text-teal-500",
+  },
+  {
+    href: "/images/convert",
+    label: "Convert",
+    description: "60+ platform-perfect sizes from one image.",
+    Icon: FileImage,
+    accent: "text-indigo-500",
+  },
+  {
+    href: "/images/from-base64",
+    label: "Base64",
+    description: "Paste base64, get a hosted image URL.",
+    Icon: Braces,
+    accent: "text-lime-500",
+  },
+  {
+    href: "/images/presets",
+    label: "Presets",
+    description: "The full preset reference.",
+    Icon: Layers,
+    accent: "text-purple-500",
+  },
+  {
+    href: "/images/library",
+    label: "Library",
+    description: "Cloud Files, filtered for studio output.",
+    Icon: Library,
+    accent: "text-pink-400",
+  },
+];
+
+export function ImagesLandingHero() {
+  return (
+    <div className="h-full overflow-y-auto">
+      <section className="relative overflow-hidden border-b border-border">
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent"
+        />
+        <div className="relative container mx-auto px-4 sm:px-6 md:px-10 py-10 md:py-14 max-w-[1400px]">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-primary mb-3">
+            <ImageIcon className="h-3.5 w-3.5" />
+            <span className="uppercase tracking-wider">Images</span>
+          </div>
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tight max-w-3xl">
+            Every image tool, one home.
+          </h1>
+          <p className="text-base md:text-lg text-muted-foreground mt-3 max-w-2xl leading-relaxed">
+            Browse, upload, generate, edit, annotate, convert — pick a tool from
+            the sidebar or jump straight in below.
+          </p>
+          <div className="flex flex-wrap gap-3 mt-6">
+            <Link
+              href="/images/manager"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-5 py-2.5 text-sm font-medium shadow-sm hover:bg-primary/90 transition-colors"
+            >
+              <ImageIcon className="h-4 w-4" />
+              Open Manager
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href="/images/studio"
+              className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-medium hover:bg-muted/50 transition-colors"
+            >
+              <Atom className="h-4 w-4" />
+              Open Studio
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <TileSection title="Manager" landing="/images/manager" tiles={MANAGER_TILES} />
+      <TileSection title="Studio" landing="/images/studio" tiles={STUDIO_TILES} />
+    </div>
+  );
+}
+
+function TileSection({
+  title,
+  landing,
+  tiles,
+}: {
+  title: string;
+  landing: string;
+  tiles: Tile[];
+}) {
+  return (
+    <section className="container mx-auto px-4 sm:px-6 md:px-10 py-8 md:py-10 max-w-[1400px]">
+      <div className="flex items-baseline justify-between gap-4 mb-4">
+        <h2 className="text-xl md:text-2xl font-semibold tracking-tight">
+          {title}
+        </h2>
+        <Link
+          href={landing}
+          className="text-sm font-medium text-primary hover:underline inline-flex items-center gap-1"
+        >
+          {title} home <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        {tiles.map(({ href, label, description, Icon, accent }) => (
+          <Link
+            key={href}
+            href={href}
+            className="group rounded-xl border border-border bg-card p-4 hover:border-primary/40 transition-colors flex flex-col gap-2"
+          >
+            <div className="h-9 w-9 rounded-lg bg-muted/60 flex items-center justify-center">
+              <Icon className={`h-4 w-4 ${accent}`} />
+            </div>
+            <div className="flex items-center gap-1.5">
+              <h3 className="font-semibold text-sm tracking-tight">{label}</h3>
+              <ArrowRight className="h-3 w-3 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {description}
+            </p>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}

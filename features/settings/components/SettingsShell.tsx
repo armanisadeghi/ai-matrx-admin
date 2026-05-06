@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * @registry-status: sub-component
+ * Body of `userPreferencesWindow`. Mounted by the registered shell at
+ * features/settings/components/SettingsShellOverlay.tsx, and also used
+ * standalone by the dev-only /settings-shell-demo page. Do NOT register
+ * separately — covered by `userPreferencesWindow`.
+ */
+
 import { useState, useMemo } from "react";
 import { Check, Loader2, Settings as SettingsIcon } from "lucide-react";
 import { useSelector } from "react-redux";

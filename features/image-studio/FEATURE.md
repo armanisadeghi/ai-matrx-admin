@@ -6,64 +6,45 @@ Four modes, one feature: **Convert** (resize to platform presets), **Edit** (ful
 
 ## Routes
 
+> **Migration note (2026-05-06):** Routes moved from `/image-studio/*` to flat siblings under `/images/*`. The `(tools)` route group and the in-route `<ImageStudioHeader>` are gone — chrome is now a single shared sidebar at `app/(a)/images/_components/ImagesSidebar.tsx` driven by `usePathname()`. Tool internals (`page.tsx` + `<Tool>ShellClient.tsx` + dynamic mode shell) are unchanged.
+
 | Route | Type | Purpose |
 |---|---|---|
-| `/image-studio` | Landing (pure Server Component) | Hero, stat row, feature grid, preset legend, workflow steps, CTAs. Zero client JS. |
-| `/image-studio/convert` | Interactive tool | Multi-file drop zone + preset catalog + per-variant tile grid + export panel. The original Image Studio UX. |
-| `/image-studio/edit` | Interactive tool | Full-featured editor (Filerobot 5.0). Crop, rotate, resize, filters, fine-tune (brightness/contrast/HSV/warmth/blur/threshold/posterize/pixelate/noise), shapes (rect/ellipse/polygon/line/arrow), text, freehand pen, watermark. Layered AI toolbar adds Suggest edits, Remove BG, Upscale 2×/4×, AI edit by prompt. |
-| `/image-studio/annotate` | Interactive tool | Screenshot markup (marker.js 2). Arrows, callouts, boxes, freehand, text, frames, blur/redact regions. AI toolbar: Suggest annotations, Redact PII, Detect faces. |
-| `/image-studio/avatar` | Interactive tool | Dedicated circular-crop UX (react-easy-crop with `cropShape="round"`). 1:1 lock, zoom + rotation, Smart Crop button (face-detect Python endpoint). Outputs canonical 512² PNG into `Images/Avatars/`. |
-| `/image-studio/generate` | Interactive tool | Text → image via the Python `/images/generate` endpoint. Prompt + size + count + style. Result tiles deep-link into Edit / Annotate / Avatar. |
-| `/image-studio/presets` | Cached catalog | Browsable reference for every preset (pure server-rendered). |
-| `/image-studio/library` | Per-user Supabase data | Variants the user has saved — grouped by session, public URLs. |
-| `/image-studio/from-base64` | Interactive tool | Paste a base64 string (raw or `data:` URL) → preview + metadata + save to cloud as a hosted asset with a permanent share URL. Pure browser decode (no API hop), uploads via the cloud-files share-link primitive. |
+| `/images/studio` | Landing (pure Server Component) | Hero, stat row, feature grid, preset legend, workflow steps, CTAs. Zero client JS. |
+| `/images/convert` | Interactive tool | Multi-file drop zone + preset catalog + per-variant tile grid + export panel. The original Image Studio UX. |
+| `/images/edit` | Interactive tool | Full-featured editor (Filerobot 5.0). Crop, rotate, resize, filters, fine-tune, shapes, text, freehand pen, watermark. Layered AI toolbar adds Suggest edits, Remove BG, Upscale 2×/4×, AI edit by prompt. |
+| `/images/annotate` | Interactive tool | Screenshot markup (marker.js 2). Arrows, callouts, boxes, freehand, text, frames, blur/redact regions. AI toolbar: Suggest annotations, Redact PII, Detect faces. |
+| `/images/avatar` | Interactive tool | Dedicated circular-crop UX (react-easy-crop with `cropShape="round"`). 1:1 lock, zoom + rotation, Smart Crop button. Outputs canonical 512² PNG into `Images/Avatars/`. |
+| `/images/generate` | Interactive tool | Text → image via the Python `/images/generate` endpoint. Prompt + size + count + style. Result tiles deep-link into Edit / Annotate / Avatar. |
+| `/images/presets` | Cached catalog | Browsable reference for every preset (pure server-rendered). |
+| `/images/library` | Per-user Supabase data | Variants the user has saved — grouped by session, public URLs. |
+| `/images/from-base64` | Interactive tool | Paste a base64 string (raw or `data:` URL) → preview + metadata + save to cloud. Pure browser decode (no API hop), uploads via the cloud-files share-link primitive. |
 
-All routes live under `app/(a)/image-studio/` and follow the `(a)` route rules — static shell, Suspense boundaries, dimension-matched skeletons. Edit / Annotate / Avatar use a shared `(tools)/_shared/ModeImagePicker` landing when no source is provided via `?url=` or `?cloudFileId=`.
-
-The 6 full-screen tools (`edit`, `avatar`, `annotate`, `convert`, `from-base64`, `generate`) live inside a `(tools)` route group whose layout owns the shared chrome — a route-aware `<ImageStudioHeader>` portaled into the global shell header, plus the `pt-10` content slot that clears the transparent header overlay. Tool pages render only their inner shell. The `(tools)` layout also exposes a flex row that's ready for a future `<ImageStudioSidebar>`. Landing / library / presets stay outside the group because their page-level layout is scrollable content with their own in-page chrome.
+Edit / Annotate / Avatar use a shared `app/(a)/images/_shared/ModeImagePicker` landing when no source is provided via `?url=` or `?cloudFileId=`. Each tool fills the layout's main column directly — height is fully owned by `app/(a)/images/layout.tsx`.
 
 ## Architecture
 
+Routes live as flat siblings under `app/(a)/images/` alongside the manager-group routes. The full route shell (`layout.tsx`, sidebar, registry, hub landing) is owned by `app/(a)/images/` — see `features/image-manager/FEATURE.md` for the manager-group siblings and `app/(a)/images/_components/imagesRoutes.ts` for the full registry.
+
 ```
-app/(a)/image-studio/
-├── layout.tsx              metadata + shell-hide-dock
-├── page.tsx                landing (Server Component)
-├── loading.tsx
-├── error.tsx
-├── (tools)/                route group — shared full-screen-tool shell
-│   ├── layout.tsx          mounts <ImageStudioHeader/> + pt-10 + future-sidebar slot
-│   ├── _shared/
-│   │   └── ModeImagePicker.tsx
-│   ├── edit/
-│   │   ├── page.tsx        just <EditShellClient/>
-│   │   └── EditShellClient.tsx
-│   ├── avatar/
-│   │   ├── page.tsx
-│   │   └── AvatarShellClient.tsx
-│   ├── annotate/
-│   │   ├── page.tsx
-│   │   └── AnnotateShellClient.tsx
-│   ├── convert/
-│   │   ├── layout.tsx      sub-route metadata
-│   │   ├── page.tsx        just <ImageStudioShellClient/>
-│   │   ├── loading.tsx
-│   │   └── ImageStudioShellClient.tsx
-│   ├── from-base64/
-│   │   ├── layout.tsx      sub-route metadata
-│   │   ├── page.tsx        just <FromBase64ShellClient/>
-│   │   ├── loading.tsx
-│   │   └── FromBase64ShellClient.tsx
-│   └── generate/
-│       ├── page.tsx
-│       └── GenerateShellClient.tsx
-├── presets/
-│   ├── layout.tsx
-│   ├── page.tsx            Server Component — static catalog render (own in-page header)
-│   └── loading.tsx
-└── library/
-    ├── layout.tsx
-    ├── page.tsx            Server Component + Suspense-fetched user data (own in-page header)
-    └── loading.tsx
+app/(a)/images/                    (route shell — see image-manager FEATURE.md)
+├── layout.tsx                     CloudFilesRealtimeProvider + BrowseImageProvider + sidebar
+├── _components/
+│   ├── imagesRoutes.ts            registry — { path, label, Icon, group }
+│   ├── ImagesSidebar.tsx          shared sidebar, active item via usePathname()
+│   ├── ImagesLandingHero.tsx
+│   └── ManagerLandingHero.tsx
+├── _shared/
+│   └── ModeImagePicker.tsx        shared image input — used by edit/annotate/avatar
+├── studio/page.tsx                renders <StudioLandingHero/>
+├── edit/{page.tsx, EditShellClient.tsx}
+├── annotate/{page.tsx, AnnotateShellClient.tsx}
+├── avatar/{page.tsx, AvatarShellClient.tsx}
+├── convert/{layout.tsx, page.tsx, loading.tsx, ImageStudioShellClient.tsx}
+├── from-base64/{layout.tsx, page.tsx, loading.tsx, FromBase64ShellClient.tsx}
+├── generate/{page.tsx, GenerateShellClient.tsx}
+├── presets/{layout.tsx, page.tsx, loading.tsx}
+└── library/{layout.tsx, page.tsx}
 
 features/image-studio/
 ├── FEATURE.md
@@ -91,11 +72,6 @@ features/image-studio/
 │   └── avatar/
 │       └── AvatarModeShell.tsx    react-easy-crop circular crop + Smart Crop
 ├── components/
-│   ├── header/
-│   │   ├── imageStudioRoutes.ts          single source of truth — { path, label, Icon, isTool }
-│   │   ├── ImageStudioHeader.tsx         server shell — wraps <PageHeader>, splits desktop/mobile via CSS
-│   │   ├── ImageStudioHeaderDesktop.tsx  client island — back + title + nav (lg+)
-│   │   └── ImageStudioHeaderMobile.tsx   client island — back + tappable title → bottom-sheet route picker
 │   ├── ImageStudioShell.tsx       3-column interactive shell (Convert mode)
 │   ├── StudioDropZone.tsx         drag-drop + paste
 │   ├── StudioFileCard.tsx         per-file row with variant grid

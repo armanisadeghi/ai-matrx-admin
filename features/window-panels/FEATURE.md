@@ -38,7 +38,7 @@ Adding a new overlay is a **2-file change**: register it + write the component. 
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│  UnifiedOverlayController (behind NEXT_PUBLIC_OVERLAYS_V2 flag)     │
+│  UnifiedOverlayController (single mount in DeferredSingletons)      │
 │    ALL_WINDOW_REGISTRY_ENTRIES.map(entry =>                         │
 │      <OverlaySurface overlayId={entry.overlayId} />)                │
 └───────────────────────────────┬─────────────────────────────────────┘
@@ -356,7 +356,7 @@ Enforced by:
 |---|---|
 | 0 — Baselines + bundle-size gate | ✅ shipped |
 | 1 — Registry schema expansion (59 entries) | ✅ shipped |
-| 2 — UnifiedOverlayController + absorbed non-window overlays (33 new entries) | ✅ shipped (behind `NEXT_PUBLIC_OVERLAYS_V2=1` flag; legacy deletion pending user smoke test) |
+| 2 — UnifiedOverlayController + absorbed non-window overlays (33 new entries) | ✅ shipped (legacy `components/overlays/OverlayController.tsx` deleted 2026-05-06; flag retired) |
 | 3 — Auto-derived Tools grid + lazy SidebarWindowToggle | ✅ shipped |
 | 4 — State cleanup: drift-free initial state, instance GC, LS sidecar retired | ✅ shipped |
 | 5 — Mobile presentation layer (drawer/card surfaces, rect clamp) | ✅ shipped |
@@ -384,7 +384,7 @@ Enforced by:
    - `clampRectToViewport` edge cases.
    - `overlaySlice` instance GC round-trips.
    - Mobile routing decisions (drawer vs card vs fullscreen).
-4. **Legacy `OverlayController.tsx` (2,586 lines) deletion.** Gated on user smoke test with `NEXT_PUBLIC_OVERLAYS_V2=1`.
+4. ~~**Legacy `OverlayController.tsx` (2,586 lines) deletion.** Gated on user smoke test with `NEXT_PUBLIC_OVERLAYS_V2=1`.~~ Done 2026-05-06.
 5. **`windowManagerSlice` split** (geometry / state / tray / zIndex). Deferred to Phase 13 unless profiling flags tray-op cost.
 6. **Responsive tray slot math.** `WindowTray.tsx` pulls desktop chip width from the centralized constants, but `windowManagerSlice`'s slot placement math still uses desktop dimensions. Safe mid-session reshuffle is a Phase 13 item.
 7. **Redux DevTools namespace.** Slices are flat (`overlays/*`, `windowManager/*`). Migrating to `windowPanels/overlays/*` would be cosmetic but breaks downstream action-type string matches.
@@ -520,6 +520,7 @@ A re-entry into the viewport resets the dwell timer — a glance outside doesn't
 
 ## Change log
 
+- **2026-05-06** — **Pre-launch audit & cleanup.** Registered `curatedIconPickerWindow` (was lazy-imported ad-hoc by `IconInputWithValidation`, bypassing the registry — converted to the callbackManager pattern under `windows/icons/`). Repaired `pnpm check:registry` (parser was broken since the `.map()` refactor; reported 0 entries / 73 false errors). New script also detects orphan windows by grepping for `<WindowPanel>` importers and requires either registry registration or an `@registry-status: sub-component | inline-window` marker. Added markers to 7 legitimate sub-component / inline-window files (`ScraperFloatingWorkspace`, `PdfExtractorWorkspace`, `AgentGateInput`, `CreatorRunPanel`, `CropPreviewWindow`, `InitialCropWindow`, `SettingsShell`). Filled 3 missing URL hydrators (`file_preview`, `crop_studio`, `messages`). Added one-shot `window_sessions` slug migration (`quick-ai-results` → `quick-chat-history`) in `WindowPersistenceManager`. Deleted legacy `components/overlays/OverlayController.tsx` (orphan dead code, 85 KB, 2,586 LOC). Added dev-only `/admin/window-panels-smoketest` page that probes every registered overlay's lazy import + initial mount.
 - **2026-05-04** — Added `messagesWindow` (sidebar list + chat thread, singleton, `urlSync: messages`) and `singleMessageWindow` (single `ChatThread`, multi-instance keyed by `conversationId`). Both reuse `ConversationList` + `ChatThread` from `features/messaging/`. Avatar dropdown's "Direct Messages" `LinkMenuItem` replaced with a new `MessagesMenuItem` that opens `messagesWindow` and shows the unread badge. Messaging islands (`LazyMessagingInitializer`, `MessagingSideSheet`) moved from `(a)`-only `DeferredIslands` to app-wide `DeferredSingletons` so messaging works on every authenticated route. `LazyMessagingInitializer` now mounts as soon as a user is authenticated (was gated on `isOpen || isAvailable`) so the dropdown badge is accurate from first paint.
 - **2026-04-29** — `quickDataWindow` (Data Tables) now accepts a `selectedTable` data prop and forwards it to `QuickDataSheet` as `initialTableId`, pre-selecting that table on mount. `openQuickDataWindow({ tableId })` helper added in `overlaySlice`; `quick_data` URL hydrator extended to honour `?panels=quick_data:<tableId>`. `MarkdownTable` and `StreamingTableRenderer` now open this window after a successful save instead of showing a giant `ViewTableModal` over the page.
 - **2026-04-26** — **Pop-out windows (Document Picture-in-Picture) shipped.** See `## Pop-out windows` section above. Any `kind: "window"` entry can now be popped out into a frameless always-on-top floating window via menu click or drag-out gesture. 39 new unit tests; zero TypeScript errors; zero per-window opt-in required.

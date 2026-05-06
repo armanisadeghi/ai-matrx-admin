@@ -41,7 +41,7 @@ export const faviconRouteData: FaviconRouteEntry[] = [
     href: "/image-editing/public-image-search",
     favicon: { color: "#0d9488", letter: "Im" },
   },
-  { href: "/image-studio", favicon: { color: "#c026d3", letter: "Is" } },
+  { href: "/images", favicon: { color: "#c026d3", letter: "Im" } },
   { href: "/scraper", favicon: { color: "#3730a3", letter: "Ws" } },
   { href: "/sandbox", favicon: { color: "#c2410c", letter: "Sb" } },
   { href: "/messages", favicon: { color: "#db2777", letter: "Mg" } },

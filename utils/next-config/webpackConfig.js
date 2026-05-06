@@ -99,10 +99,5 @@ exports.configureWebpack = (config, { isServer }) => {
         })
     );
 
-    config.module.rules.push({
-        test: /vendors\/fabric\.js$/,
-        use: ['script-loader'],
-    });
-
     return config;
 };

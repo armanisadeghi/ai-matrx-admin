@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useId } from "react";
-import dynamic from "next/dynamic";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,20 +16,14 @@ import IconResolver, {
 } from "@/components/official/icons/IconResolver";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { useOpenCuratedIconPickerWindow } from "@/features/window-panels/windows/icons/useOpenCuratedIconPickerWindow";
+import type { CuratedIconPickerHandle } from "@/features/window-panels/windows/icons/useOpenCuratedIconPickerWindow";
 import { cn } from "@/lib/utils";
 import {
   collectLucideIconNameCandidates,
   extractLucideJsxIconName,
 } from "@/utils/icons/lucide-name-normalize";
 import { LUCIDE_ICONS_GALLERY_URL } from "@/utils/icons/lucide-gallery-url";
-
-const CuratedIconPickerWindowLazy = dynamic(
-  () =>
-    import("@/features/window-panels/windows/CuratedIconPickerWindow").then(
-      (m) => ({ default: m.CuratedIconPickerWindow }),
-    ),
-  { ssr: false },
-);
 
 export interface IconInputWithValidationProps {
   value: string;
@@ -69,14 +62,35 @@ export default function IconInputWithValidation({
   showCuratedIconGallery = true,
 }: IconInputWithValidationProps) {
   const dispatch = useAppDispatch();
-  const galleryInstanceId = useId().replace(/:/g, "");
-  const [galleryOpen, setGalleryOpen] = useState(false);
+  const openIconPicker = useOpenCuratedIconPickerWindow();
+  const pickerHandleRef = useRef<CuratedIconPickerHandle | null>(null);
   const [validationState, setValidationState] =
     useState<ValidationState>("idle");
   const [validatedIconName, setValidatedIconName] = useState<string | null>(
     null,
   );
   const [lastValidatedValue, setLastValidatedValue] = useState<string>("");
+
+  useEffect(() => {
+    return () => {
+      pickerHandleRef.current?.close();
+      pickerHandleRef.current = null;
+    };
+  }, []);
+
+  const openCuratedGallery = useCallback(() => {
+    if (pickerHandleRef.current) {
+      pickerHandleRef.current.close();
+    }
+    pickerHandleRef.current = openIconPicker({
+      onPicked: (e) => {
+        onChange(e.iconId);
+      },
+      onWindowClose: () => {
+        pickerHandleRef.current = null;
+      },
+    });
+  }, [openIconPicker, onChange]);
 
   const validateIcon = useCallback(
     async (iconName: string) => {
@@ -237,7 +251,7 @@ export default function IconInputWithValidation({
             <button
               type="button"
               disabled={disabled}
-              onClick={() => setGalleryOpen(true)}
+              onClick={openCuratedGallery}
               className={cn(
                 "inline-flex items-center gap-1 text-primary underline-offset-2 hover:underline disabled:pointer-events-none disabled:opacity-50",
               )}
@@ -247,18 +261,6 @@ export default function IconInputWithValidation({
             </button>
           ) : null}
         </p>
-      ) : null}
-
-      {showCuratedIconGallery ? (
-        <CuratedIconPickerWindowLazy
-          isOpen={galleryOpen}
-          onClose={() => setGalleryOpen(false)}
-          windowInstanceId={galleryInstanceId}
-          onSelectIcon={(iconId) => {
-            onChange(iconId);
-            setGalleryOpen(false);
-          }}
-        />
       ) : null}
 
       {validationState === "invalid" && (

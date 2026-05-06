@@ -179,6 +179,38 @@ export function initUrlHydration() {
     );
   });
 
+  // File Preview Window — `?panels=file_preview:<fileId>` deep-links to a file.
+  registerPanelHydrator("file_preview", (dispatch, id) => {
+    dispatch(
+      openOverlay({
+        overlayId: "filePreviewWindow",
+        data: id ? { fileId: id } : null,
+      }),
+    );
+  });
+
+  // Crop Studio Window — `?panels=crop_studio` opens the studio.
+  // Optional `?panels=crop_studio:<folderId>` pre-selects a destination folder.
+  registerPanelHydrator("crop_studio", (dispatch, id) => {
+    dispatch(
+      openOverlay({
+        overlayId: "cropStudioWindow",
+        data: id ? { folderId: id } : null,
+      }),
+    );
+  });
+
+  // Messages Window — `?panels=messages` opens the messaging window.
+  // Optional `?panels=messages:<conversationId>` deep-links to a conversation.
+  registerPanelHydrator("messages", (dispatch, id) => {
+    dispatch(
+      openOverlay({
+        overlayId: "messagesWindow",
+        data: id ? { activeConversationId: id } : null,
+      }),
+    );
+  });
+
   // ── Dev-only integrity check ─────────────────────────────────────────────
   // Every registry entry that declares `urlSync.key` must have a hydrator
   // registered above. Drift here is silent: `?panels=<key>` would just

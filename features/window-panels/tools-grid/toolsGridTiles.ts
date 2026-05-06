@@ -533,10 +533,10 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
   {
     // Route-navigation tile — escapes the overlay model entirely.
     id: "tile.image-studio",
-    label: "Image Studio",
+    label: "Images",
     icon: Wand2,
     category: "files-web",
-    onActivate: ({ router }) => router.push("/image-studio"),
+    onActivate: ({ router }) => router.push("/images"),
   },
   {
     id: "tile.crop-studio",

@@ -360,13 +360,13 @@ export const componentList: ComponentEntry[] = [
     ],
   },
   {
-    id: "image-manager-route",
-    name: "Image Manager Route",
-    path: "app/(a)/image-manager/page.tsx",
+    id: "images-route",
+    name: "Images Route",
+    path: "app/(a)/images/page.tsx",
     description:
-      "Full-page hub at /image-manager. Same registry as the modal but adds Browse mode, a Tools group, and a sidebar layout.",
+      "Unified images hub at /images. One sidebar drives every image tool — Manager (browse, upload, branded) and Studio (generate, edit, annotate, avatar, convert). Real Next.js routing for every section.",
     categories: ["media", "navigation", "layout"],
-    tags: ["image", "hub", "route", "manager", "browse", "tabs", "sidebar"],
+    tags: ["image", "hub", "route", "manager", "studio", "sidebar"],
   },
   {
     id: "branded-upload-tab",

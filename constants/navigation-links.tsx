@@ -250,8 +250,8 @@ export const allNavigationLinks: NavigationLink[] = [
     favicon: { color: "#0d9488", letter: "Im" }, // Teal-600 — "Im" distinct from "I" alone
   },
   {
-    label: "Image Studio",
-    href: "/image-studio",
+    label: "Images",
+    href: "/images",
     icon: (
       <Wand2 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),
@@ -259,9 +259,9 @@ export const allNavigationLinks: NavigationLink[] = [
     profileMenu: true,
     dashboard: true,
     description:
-      "Drop one image, get 60+ platform-perfect sizes — favicons, OG, social, avatars, logos, print.",
+      "Browse, generate, edit, annotate, convert — every image tool in one place.",
     color: "fuchsia",
-    favicon: { color: "#c026d3", letter: "Is" }, // Fuchsia — "Is" for Image Studio
+    favicon: { color: "#c026d3", letter: "Im" }, // Fuchsia — "Im" for Images
   },
   {
     label: "Webscraper",

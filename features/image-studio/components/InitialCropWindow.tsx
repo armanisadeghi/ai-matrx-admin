@@ -1,6 +1,7 @@
 "use client";
 
 /**
+ * @registry-status: inline-window
  * InitialCropWindow
  * ─────────────────────────────────────────────────────────────────────────
  * Floating WindowPanel wrapper around InitialCropPanel. Rendered inside

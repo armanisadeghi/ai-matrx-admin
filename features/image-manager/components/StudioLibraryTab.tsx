@@ -69,11 +69,11 @@ export function StudioLibraryTab() {
           <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
         ) : null}
         <Link
-          href="/image-studio/library"
+          href="/images/library"
           target="_blank"
           rel="noreferrer"
           className="inline-flex items-center gap-1 px-2 h-6 rounded-md text-[11px] font-medium hover:bg-accent hover:text-foreground transition-colors"
-          title="Open the full Image Studio library page in a new tab"
+          title="Open the full Images library page in a new tab"
         >
           Library
           <ExternalLink className="h-3 w-3 opacity-60" />

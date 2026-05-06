@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * @registry-status: sub-component
+ * Body of `pdfExtractorWindow`. Exported as `PdfExtractorFloatingWorkspace`
+ * and consumed by the registered shell at
+ * features/window-panels/windows/PdfExtractorWindow.tsx. Do NOT register
+ * separately — covered by `pdfExtractorWindow`.
+ */
+
 import React, { useCallback, useState, useMemo } from "react";
 import {
   Upload,

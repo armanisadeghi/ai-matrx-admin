@@ -534,6 +534,20 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     instanceMode: "multi",
   },
 
+  // ── Curated Icon Picker ───────────────────────────────────────────────────
+  // Floating gallery for picking from the curated icon set. Open via
+  // `useOpenCuratedIconPickerWindow()` and listen for the `picked` event.
+  {
+    slug: "curated-icon-picker-window",
+    overlayId: "curatedIconPickerWindow",
+    kind: "window",
+    label: "Icon Picker",
+    defaultData: { callbackGroupId: null as string | null },
+    mobilePresentation: "drawer",
+    instanceMode: "multi",
+    ephemeral: true,
+  },
+
   // ── Crop Studio ───────────────────────────────────────────────────────────
   {
     slug: "crop-studio-window",
@@ -631,12 +645,16 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     urlSync: { key: "studio" },
   },
 
-  // ── AI Results ────────────────────────────────────────────────────────────
+  // ── Chat History ──────────────────────────────────────────────────────────
   // Cross-agent conversation history. Sidebar groups by date (default) or by
   // agent, with search + agent multi-select filter. Replaces the legacy
   // "quick-ai-results" sheet that pointed at the deprecated prompts system.
-  // The slug + overlayId are kept stable so the user menu, Tools-grid tile,
-  // and `useQuickActions` callers continue to work without changes.
+  //
+  // 2026-05-05 RENAME: previously slug "quick-ai-results" / overlayId
+  // "quickAIResults" / file AIResultsWindow.tsx. Existing window_sessions
+  // rows are migrated automatically by WindowPersistenceManager
+  // (SLUG_MIGRATIONS map). New code MUST use "quick-chat-history" /
+  // "quickChatHistory".
   {
     slug: "quick-chat-history",
     overlayId: "quickChatHistory",

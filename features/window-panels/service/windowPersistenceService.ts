@@ -125,3 +125,31 @@ export async function deleteAllWindowSessions(userId: string): Promise<void> {
     );
   }
 }
+
+/**
+ * One-time slug migration. Rewrites any rows whose `window_type` matches
+ * `fromSlug` to `toSlug` for the given user. Called by
+ * WindowPersistenceManager on hydration to repair `window_sessions` rows
+ * stranded by registry renames (e.g. quick-ai-results → quick-chat-history).
+ * Returns the number of rows updated.
+ */
+export async function migrateWindowSessionSlug(
+  userId: string,
+  fromSlug: string,
+  toSlug: string,
+): Promise<number> {
+  const { data, error } = await supabase
+    .from("window_sessions")
+    .update({ window_type: toSlug })
+    .eq("user_id", userId)
+    .eq("window_type", fromSlug)
+    .select("id");
+
+  if (error) {
+    throw new Error(
+      `windowPersistenceService.migrateWindowSessionSlug failed: ${error.message}`,
+    );
+  }
+
+  return data?.length ?? 0;
+}

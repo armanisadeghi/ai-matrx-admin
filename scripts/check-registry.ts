@@ -8,25 +8,39 @@
  *   pnpm check:registry
  *
  * Validates:
- *   1. Every entry has required fields (slug, overlayId, kind, componentImport, label, defaultData).
+ *   1. Every entry has required fields (slug, overlayId, kind, componentImport, label).
  *   2. kind: "window" entries have mobilePresentation.
  *   3. slug and overlayId are each unique.
  *   4. Every urlSync.key has a matching registerPanelHydrator call in initUrlHydration.ts.
  *   5. Every toolsGridTiles tile references a registered overlayId (or has onActivate).
  *   6. Every componentImport path resolves to a real file.
+ *   7. Every overlayId in STATIC_REGISTRY has a matching DYNAMIC entry (componentImport).
+ *   8. No orphan windows: every *.tsx that imports `<WindowPanel>` is either
+ *      (a) referenced by a registry componentImport, (b) marked
+ *      `@registry-status: sub-component | inline-window`, or (c) under a
+ *      demo/test/excluded path.
  *
  * Exit codes:
  *   0  all checks pass
  *   1  at least one check failed
  *   2  file read / parse error
  */
-import { existsSync, readFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import {
+  existsSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+} from "node:fs";
+import { join, resolve, relative, sep } from "node:path";
 
 const REPO_ROOT = resolve(__dirname, "..");
 const REGISTRY_PATH = join(
   REPO_ROOT,
   "features/window-panels/registry/windowRegistry.ts",
+);
+const REGISTRY_METADATA_PATH = join(
+  REPO_ROOT,
+  "features/window-panels/registry/windowRegistryMetadata.ts",
 );
 const INIT_URL_HYDRATION_PATH = join(
   REPO_ROOT,
@@ -36,6 +50,29 @@ const TOOLS_GRID_TILES_PATH = join(
   REPO_ROOT,
   "features/window-panels/tools-grid/toolsGridTiles.ts",
 );
+
+// Roots scanned for orphan-window detection.
+const ORPHAN_SCAN_ROOTS = ["features", "components", "app"].map((d) =>
+  join(REPO_ROOT, d),
+);
+
+// Paths excluded from orphan checking (demos, tests, worktrees, etc.).
+const ORPHAN_EXCLUDE_PATTERNS: RegExp[] = [
+  /node_modules/,
+  /\/\.claude\//,
+  /\/\.next\//,
+  /\/__tests__\//,
+  /\.test\.tsx?$/,
+  /\.stories\.tsx?$/,
+  /\/ssr\/demos\//,
+  /\/registry\/tray-previews\.tsx$/,
+  // The shell file itself, plus the popout / mobile surfaces that re-import it.
+  /\/window-panels\/WindowPanel(?:\/|\.tsx$)/,
+  /\/window-panels\/popout\//,
+  /\/window-panels\/mobile\//,
+  // Legacy file (orphan dead code, deletion handled separately).
+  /\/components\/overlays\/OverlayController\.tsx$/,
+];
 
 interface RegistryEntry {
   slug?: string;
@@ -62,11 +99,10 @@ function readFile(path: string): string {
 }
 
 /**
- * Parse the REGISTRY array from windowRegistry.ts. The file uses a
- * predictable shape — each entry is a `{ ... }` block inside the REGISTRY
- * const. We scan line-by-line looking for known keys.
+ * Parse the STATIC_REGISTRY array from windowRegistryMetadata.ts. Each entry
+ * is a `{ ... }` literal. Walks the file and extracts known fields.
  */
-function parseRegistry(src: string): RegistryEntry[] {
+function parseStaticRegistry(src: string): RegistryEntry[] {
   const entries: RegistryEntry[] = [];
   const lines = src.split("\n");
   let inArray = false;
@@ -78,17 +114,15 @@ function parseRegistry(src: string): RegistryEntry[] {
     const line = lines[i];
 
     if (!inArray) {
-      if (/const REGISTRY: WindowRegistryEntry\[\] = \[/.test(line)) {
+      if (/const STATIC_REGISTRY: WindowStaticMetadata\[\] = \[/.test(line)) {
         inArray = true;
       }
       continue;
     }
 
-    // Track brace depth to know when we're inside an entry object.
     const opens = (line.match(/\{/g) || []).length;
     const closes = (line.match(/\}/g) || []).length;
 
-    // Entry starts with "  {" at depth 0 -> 1
     if (depth === 0 && /^\s*\{\s*$/.test(line)) {
       current = { lineStart: i + 1 };
       buffer = [];
@@ -99,8 +133,6 @@ function parseRegistry(src: string): RegistryEntry[] {
     depth += opens - closes;
     if (depth < 0) depth = 0;
 
-    // Entry closed — scan the accumulated buffer with multi-line-friendly
-    // regexes, then reset.
     if (
       current &&
       depth === 0 &&
@@ -119,20 +151,78 @@ function parseRegistry(src: string): RegistryEntry[] {
       if (mobile) current.mobilePresentation = mobile[1];
       const urlKey = /urlSync:\s*\{\s*key:\s*"([^"]+)"/.exec(text);
       if (urlKey) current.urlSyncKey = urlKey[1];
-      // Multi-line-tolerant: `import(\n "path" \n)` is common.
-      const ci = /import\(\s*"([^"]+)"/.exec(text);
-      if (ci) current.componentPath = ci[1];
 
       if (current.slug || current.overlayId) entries.push(current);
       current = null;
       buffer = [];
     }
 
-    // Array closed.
     if (inArray && /^\];\s*$/.test(line)) break;
   }
 
   return entries;
+}
+
+/**
+ * Parse the DYNAMIC map from windowRegistry.ts and return a Map of
+ * `overlayId → importSpecifier`. Tolerant of multi-line `import("path")` and
+ * `.then((m) => ({ default: m.X }))` forms.
+ */
+function parseDynamicComponentImports(src: string): Map<string, string> {
+  const map = new Map<string, string>();
+  const lines = src.split("\n");
+  let inMap = false;
+  let depth = 0;
+  let currentKey: string | null = null;
+  let buffer: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (!inMap) {
+      if (/const DYNAMIC:\s*Record<string,\s*DynamicAddition>\s*=\s*\{/.test(line)) {
+        inMap = true;
+      }
+      continue;
+    }
+
+    const opens = (line.match(/\{/g) || []).length;
+    const closes = (line.match(/\}/g) || []).length;
+
+    // Top-level keys appear at depth 1 (we're inside the outer DYNAMIC = {).
+    // A new entry starts when we're at depth 1 and a line matches `<id>: {`.
+    if (depth === 0 && currentKey === null) {
+      const keyMatch = /^\s*([A-Za-z_$][A-Za-z0-9_$]*):\s*\{/.exec(line);
+      if (keyMatch) {
+        currentKey = keyMatch[1];
+        buffer = [];
+      }
+    }
+
+    if (currentKey !== null) buffer.push(line);
+
+    depth += opens - closes;
+    if (depth < 0) depth = 0;
+
+    // Entry closed when depth returns to 0 after we entered.
+    if (
+      currentKey !== null &&
+      depth === 0 &&
+      /^\s*\},?\s*$/.test(line)
+    ) {
+      const text = buffer.join("\n");
+      const ci = /import\(\s*"([^"]+)"/.exec(text);
+      if (ci) map.set(currentKey, ci[1]);
+      currentKey = null;
+      buffer = [];
+    }
+
+    // Map closed.
+    if (inMap && depth === 0 && currentKey === null && /^\};\s*$/.test(line))
+      break;
+  }
+
+  return map;
 }
 
 /** Extract every `registerPanelHydrator("key", ...)` key from initUrlHydration.ts. */
@@ -144,7 +234,7 @@ function parseHydratorKeys(src: string): Set<string> {
   return keys;
 }
 
-/** Extract every `overlayId: "..."` in toolsGridTiles.ts (excluding onActivate-only tiles). */
+/** Extract every `overlayId: "..."` in toolsGridTiles.ts. */
 function parseToolsGridOverlayIds(src: string): Set<string> {
   const ids = new Set<string>();
   const rx = /overlayId:\s*"([^"]+)"/g;
@@ -159,7 +249,6 @@ interface Failure {
 }
 
 function resolveComponentPath(importSpecifier: string): string {
-  // Strip @/ alias + try .tsx, .ts, /index.tsx.
   const cleaned = importSpecifier.replace(/^@\//, "");
   const abs = join(REPO_ROOT, cleaned);
   for (const suffix of [".tsx", ".ts", "/index.tsx", "/index.ts", ""]) {
@@ -168,14 +257,90 @@ function resolveComponentPath(importSpecifier: string): string {
   return "";
 }
 
+/**
+ * Walk a directory tree and collect every *.tsx file path. Skips excluded
+ * patterns.
+ */
+function walkTsx(root: string, out: string[]): void {
+  let entries: string[];
+  try {
+    entries = readdirSync(root);
+  } catch {
+    return;
+  }
+  for (const name of entries) {
+    const full = join(root, name);
+    if (ORPHAN_EXCLUDE_PATTERNS.some((rx) => rx.test(full))) continue;
+    let stat;
+    try {
+      stat = statSync(full);
+    } catch {
+      continue;
+    }
+    if (stat.isDirectory()) {
+      walkTsx(full, out);
+    } else if (stat.isFile() && full.endsWith(".tsx")) {
+      out.push(full);
+    }
+  }
+}
+
+/**
+ * Find every *.tsx file that imports `<WindowPanel>` from the canonical path.
+ * Returns absolute paths.
+ */
+function findWindowPanelImporters(): string[] {
+  const candidates: string[] = [];
+  for (const root of ORPHAN_SCAN_ROOTS) walkTsx(root, candidates);
+
+  const importers: string[] = [];
+  const importRx =
+    /from\s+["']@\/features\/window-panels\/WindowPanel(?:["']|\/[^"']*["'])/;
+
+  for (const file of candidates) {
+    let src: string;
+    try {
+      src = readFileSync(file, "utf8");
+    } catch {
+      continue;
+    }
+    if (importRx.test(src)) importers.push(file);
+  }
+  return importers;
+}
+
+/** Read first ~30 lines of the file looking for an `@registry-status:` marker. */
+function readRegistryStatusMarker(file: string): string | null {
+  let src: string;
+  try {
+    src = readFileSync(file, "utf8").slice(0, 4000);
+  } catch {
+    return null;
+  }
+  const m = /@registry-status:\s*([a-z-]+)/.exec(src);
+  return m ? m[1] : null;
+}
+
+function toRel(abs: string): string {
+  return relative(REPO_ROOT, abs).split(sep).join("/");
+}
+
 function main(): void {
+  const metadataSrc = readFile(REGISTRY_METADATA_PATH);
   const registrySrc = readFile(REGISTRY_PATH);
   const hydrationSrc = readFile(INIT_URL_HYDRATION_PATH);
   const toolsGridSrc = existsSync(TOOLS_GRID_TILES_PATH)
     ? readFile(TOOLS_GRID_TILES_PATH)
     : "";
 
-  const entries = parseRegistry(registrySrc);
+  const entries = parseStaticRegistry(metadataSrc);
+  const dynamicImports = parseDynamicComponentImports(registrySrc);
+  for (const e of entries) {
+    if (e.overlayId && dynamicImports.has(e.overlayId)) {
+      e.componentPath = dynamicImports.get(e.overlayId);
+    }
+  }
+
   const hydratorKeys = parseHydratorKeys(hydrationSrc);
   const gridOverlayIds = toolsGridSrc
     ? parseToolsGridOverlayIds(toolsGridSrc)
@@ -185,9 +350,10 @@ function main(): void {
   const seenSlugs = new Set<string>();
   const seenOverlayIds = new Set<string>();
   const registeredOverlayIds = new Set<string>();
+  const registeredImportPaths = new Set<string>();
 
   for (const e of entries) {
-    const loc = `line ${e.lineStart}`;
+    const loc = `metadata line ${e.lineStart}`;
     if (!e.slug) failures.push({ level: "error", msg: `${loc}: entry missing slug` });
     if (!e.overlayId)
       failures.push({ level: "error", msg: `${loc}: entry missing overlayId` });
@@ -196,7 +362,7 @@ function main(): void {
     if (!e.componentPath)
       failures.push({
         level: "error",
-        msg: `${loc}: entry missing componentImport`,
+        msg: `${loc}: overlayId "${e.overlayId}" has no componentImport in DYNAMIC map (windowRegistry.ts)`,
       });
 
     if (e.slug) {
@@ -234,6 +400,8 @@ function main(): void {
           level: "error",
           msg: `${loc}: componentImport "${e.componentPath}" does not resolve to a file`,
         });
+      } else {
+        registeredImportPaths.add(resolved);
       }
     }
 
@@ -241,6 +409,16 @@ function main(): void {
       failures.push({
         level: "error",
         msg: `${loc}: urlSync.key "${e.urlSyncKey}" (${e.overlayId}) has no hydrator in initUrlHydration.ts`,
+      });
+    }
+  }
+
+  // DYNAMIC map keys without a matching STATIC_REGISTRY entry → drift.
+  for (const dynKey of dynamicImports.keys()) {
+    if (!seenOverlayIds.has(dynKey)) {
+      failures.push({
+        level: "error",
+        msg: `windowRegistry.ts DYNAMIC map: "${dynKey}" has no matching STATIC_REGISTRY entry in windowRegistryMetadata.ts`,
       });
     }
   }
@@ -255,16 +433,38 @@ function main(): void {
     }
   }
 
+  // ─── Orphan-window detection ────────────────────────────────────────────────
+  // Every *.tsx that imports <WindowPanel> must be either:
+  //   (a) the target of a registry componentImport, or
+  //   (b) marked with `@registry-status: sub-component | inline-window`, or
+  //   (c) excluded by ORPHAN_EXCLUDE_PATTERNS (demos, tests, etc.).
+  const importers = findWindowPanelImporters();
+  let orphanCount = 0;
+  for (const file of importers) {
+    if (registeredImportPaths.has(file)) continue;
+    const marker = readRegistryStatusMarker(file);
+    if (marker === "sub-component" || marker === "inline-window") continue;
+    failures.push({
+      level: "error",
+      msg: `orphan window: ${toRel(
+        file,
+      )} imports <WindowPanel> but is not registered and lacks a @registry-status marker`,
+    });
+    orphanCount++;
+  }
+
   const errors = failures.filter((f) => f.level === "error");
   const warns = failures.filter((f) => f.level === "warn");
 
   process.stdout.write(
     `Window Panels registry integrity check\n` +
-      `  entries:              ${entries.length}\n` +
-      `  url-sync hydrators:   ${hydratorKeys.size}\n` +
-      `  tools-grid tiles (w/ overlayId): ${gridOverlayIds.size}\n` +
-      `  errors:               ${errors.length}\n` +
-      `  warnings:             ${warns.length}\n\n`,
+      `  entries:                          ${entries.length}\n` +
+      `  url-sync hydrators:               ${hydratorKeys.size}\n` +
+      `  tools-grid tiles (w/ overlayId):  ${gridOverlayIds.size}\n` +
+      `  WindowPanel importers scanned:    ${importers.length}\n` +
+      `  orphan windows:                   ${orphanCount}\n` +
+      `  errors:                           ${errors.length}\n` +
+      `  warnings:                         ${warns.length}\n\n`,
   );
 
   if (warns.length > 0) {

@@ -33,6 +33,7 @@ import {
 import { restoreWindowState } from "@/lib/redux/slices/windowManagerSlice";
 import {
   loadWindowSessions,
+  migrateWindowSessionSlug,
   saveWindowSession,
   deleteWindowSession,
 } from "./service/windowPersistenceService";
@@ -216,8 +217,53 @@ export function WindowPersistenceManager({
 
     let cancelled = false;
 
+    /**
+     * One-shot slug migrations. Each row maps an old slug to its new slug
+     * after a registry rename. Gated by a localStorage key per user-agnostic
+     * migration so it runs once per browser. Failures are swallowed — the
+     * row simply stays stranded and the user can manually re-open the
+     * window from the sidebar. Add new entries here and rev `MIGRATION_KEY`
+     * if a future rename needs to reach already-migrated browsers.
+     *
+     * Delete entries here once telemetry shows zero stranded rows.
+     */
+    const SLUG_MIGRATIONS: Array<{ from: string; to: string }> = [
+      // 2026-05-05 — quickAIResults → quickChatHistory rename (commit e62188b04)
+      { from: "quick-ai-results", to: "quick-chat-history" },
+    ];
+    const MIGRATION_KEY = "window-panels-slug-migrations:2026-05-06";
+
+    async function runSlugMigrations() {
+      if (!userId) return;
+      try {
+        if (localStorage.getItem(MIGRATION_KEY) === "1") return;
+      } catch {
+        // localStorage unavailable — run anyway, idempotent.
+      }
+      try {
+        await Promise.all(
+          SLUG_MIGRATIONS.map((m) =>
+            migrateWindowSessionSlug(userId, m.from, m.to),
+          ),
+        );
+        try {
+          localStorage.setItem(MIGRATION_KEY, "1");
+        } catch {
+          // Best-effort; if LS is unavailable the migration is harmlessly
+          // re-run on next mount.
+        }
+      } catch (err) {
+        console.warn(
+          "WindowPersistenceManager: slug migration failed (continuing)",
+          err,
+        );
+      }
+    }
+
     async function hydrate() {
       try {
+        await runSlugMigrations();
+        if (cancelled) return;
         const sessions = await loadWindowSessions(userId!);
         if (cancelled) return;
 

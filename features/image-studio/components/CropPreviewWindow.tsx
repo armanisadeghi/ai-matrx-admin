@@ -1,6 +1,7 @@
 "use client";
 
 /**
+ * @registry-status: inline-window
  * CropPreviewWindow
  *
  * Floating preview panel. Shows the active source image and the selected
@@ -9,7 +10,9 @@
  * presets from inside the window.
  *
  * Rendered inline by `ImageStudioShell` — not registered in windowRegistry
- * because its state is driven by the shell's props, not Redux.
+ * because its state is driven by the shell's props, not Redux. Do NOT
+ * convert to a registered overlay without first wrapping its callback API
+ * in a callback-bus group (see ImageUploaderWindow).
  */
 
 import React, { useCallback, useEffect, useMemo } from "react";

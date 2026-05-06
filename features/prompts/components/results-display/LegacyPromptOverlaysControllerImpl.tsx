@@ -14,11 +14,13 @@
  *     `promptRunnerSlice` and have bespoke selectors. Forcing them
  *     through the registry would mean migrating an entire slice —
  *     wasteful given imminent deletion.
- *   - The original 2,569-line
- *     `components/overlays/OverlayController.tsx` hosted these alongside
- *     ~92 other overlays. Having them all in one file ballooned the
- *     build cost. Excising them into this 7-import file preserves the
- *     build-time win measured on 2026-04-28 (~22min → ~9min on Vercel).
+ *   - The original 2,569-line `components/overlays/OverlayController.tsx`
+ *     hosted these alongside ~92 other overlays. Having them all in one
+ *     file ballooned the build cost. Excising them into this 7-import
+ *     file preserved the build-time win measured on 2026-04-28
+ *     (~22min → ~9min on Vercel). The original file was deleted on
+ *     2026-05-06 once all consumers had been migrated to
+ *     `UnifiedOverlayController`.
  *
  * Lazy-loading:
  *   - Each overlay uses `dynamic({ ssr: false })`.
