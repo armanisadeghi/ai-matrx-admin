@@ -122,6 +122,31 @@ export function createStorageSyncSaga(config: StorageSyncConfig) {
 
   function* initializeStorage() {
     try {
+      // Phase 5 follow-up: one-shot cleanup of legacy keys this saga used
+      // to write but that we no longer use. The notes slice in particular
+      // was hitting the ~5MB localStorage quota on power users
+      // (`Storage sync failed for notes: QuotaExceededError`). Now that
+      // notes is sourced from Supabase via autoSaveMiddleware, the saga's
+      // `slices` config is empty and these keys will never be written
+      // again — but pre-existing keys in user storage are dead bytes
+      // taking up quota. Clear them on the first boot after this lands.
+      // After ~1 release cycle, this block can be deleted entirely.
+      if (typeof window !== "undefined") {
+        const LEGACY_KEYS = [
+          `${storagePrefix}/notes/state`,
+          `${storagePrefix}/tags/state`,
+        ];
+        for (const key of LEGACY_KEYS) {
+          try {
+            if (window.localStorage.getItem(key) !== null) {
+              window.localStorage.removeItem(key);
+            }
+          } catch {
+            // localStorage unavailable — ignore.
+          }
+        }
+      }
+
       for (const slice of slices) {
         const storedState = yield call(
           [storageManager, storageManager.getItem],

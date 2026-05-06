@@ -13,7 +13,7 @@ export function UserProfileHeader({ userData }: UserProfileHeaderProps) {
   return (
     <label htmlFor="shell-user-menu" className="block">
       <Link
-        href="/ssr/settings"
+        href="/settings"
         className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[var(--shell-glass-bg-hover)] transition-colors"
       >
         {userData.userMetadata.avatarUrl ? (
