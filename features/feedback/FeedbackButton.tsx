@@ -7,7 +7,7 @@ import {
   type TapButtonProps,
 } from "@/components/icons/tap-buttons";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { openFeedbackDialog } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 
 // The "NEW!" highlight (PartyPopper, X, bouncing tooltip, dismiss + view-count
 // logic) lives in a separate chunk. Most users have already exhausted the 5
@@ -41,7 +41,7 @@ export default function FeedbackButton({
 
   const handleClick = useCallback(() => {
     if (shouldShowHighlight) setDismissTick((n) => n + 1);
-    dispatch(openFeedbackDialog());
+    dispatch(openOverlay({ overlayId: "feedbackDialog" }));
   }, [dispatch, shouldShowHighlight]);
 
   return (

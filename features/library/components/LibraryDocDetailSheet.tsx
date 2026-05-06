@@ -51,6 +51,7 @@ import {
 import { toast } from "sonner";
 import { del, getJson, patchJson, postJson } from "@/features/files/api/client";
 import { StatusBadge } from "./StatusBadge";
+import { StageStatusPills } from "./StageStatusPills";
 import { useLibraryDoc } from "../hooks/useLibrary";
 import type { LibraryChunkPreview } from "../types";
 
@@ -331,16 +332,81 @@ export function LibraryDocDetailSheet({
             </SheetHeader>
 
             <Tabs
-              defaultValue="overview"
+              defaultValue="stages"
               className="flex-1 flex flex-col min-h-0"
             >
               <TabsList className="mx-6 mt-3 self-start">
+                <TabsTrigger value="stages">Stages</TabsTrigger>
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="pages">
                   Pages ({doc.pagesPersisted})
                 </TabsTrigger>
                 <TabsTrigger value="chunks">Chunks ({doc.chunks})</TabsTrigger>
               </TabsList>
+
+              <TabsContent
+                value="stages"
+                className="flex-1 min-h-0 mt-2 px-6 pb-6"
+              >
+                <ScrollArea className="h-full">
+                  <div className="space-y-4 pr-3">
+                    <div>
+                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                        Pipeline state
+                      </h3>
+                      <p className="text-xs text-muted-foreground mb-3">
+                        Each pill is a stable stage. Click any pill to run
+                        (or re-run) the action that produces it. Progress
+                        and heartbeats stream live.
+                      </p>
+                      <StageStatusPills
+                        processedDocumentId={doc.id}
+                        onMutated={() => {
+                          reload();
+                          onMutated?.();
+                        }}
+                      />
+                    </div>
+
+                    <div className="rounded-md border bg-muted/20 p-3 text-xs space-y-2">
+                      <div className="font-medium text-foreground">How it flows</div>
+                      <ol className="ml-5 list-decimal space-y-1 text-muted-foreground">
+                        <li>
+                          <strong className="text-foreground">Cloud File</strong>{" "}
+                          — your uploaded binary lives in S3
+                          (<code>cld_files</code>).
+                        </li>
+                        <li>
+                          <strong className="text-foreground">Raw Text</strong>{" "}
+                          — pages are extracted from the binary
+                          (<em>Extract</em> action).
+                        </li>
+                        <li>
+                          <strong className="text-foreground">Clean Text</strong>{" "}
+                          — each page is LLM-cleaned + section-classified
+                          (<em>Clean</em> action).
+                        </li>
+                        <li>
+                          <strong className="text-foreground">Chunks</strong>{" "}
+                          — pages are split into retrievable, page-aware
+                          pieces (<em>Chunk</em> action).
+                        </li>
+                        <li>
+                          <strong className="text-foreground">Vectors</strong>{" "}
+                          — each chunk gets an embedding for similarity
+                          search (<em>Embed</em> action).
+                        </li>
+                        <li>
+                          <strong className="text-foreground">In Stores</strong>{" "}
+                          — a data-store binding is what makes content
+                          discoverable to an agent (manage from the
+                          Data Stores page).
+                        </li>
+                      </ol>
+                    </div>
+                  </div>
+                </ScrollArea>
+              </TabsContent>
 
               <TabsContent
                 value="overview"
