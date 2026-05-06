@@ -40,6 +40,7 @@ import { overlaySchemaRegistry } from "../overlaySchemaRegistry";
 import { setOverlayData, selectOverlayData } from "../slices/overlayDataSlice";
 import { openOverlay, DEFAULT_INSTANCE_ID } from "../slices/overlaySlice";
 import type { RootState } from "../store";
+import type { OverlayId } from "@/features/window-panels/registry/overlay-ids";
 
 // ============================================================================
 // TYPES
@@ -47,7 +48,7 @@ import type { RootState } from "../store";
 
 export interface OpenOverlayInstancePayload {
   /** The overlayId key from overlaySlice initialState (e.g. 'htmlPreview'). */
-  overlayId: string;
+  overlayId: OverlayId;
   /**
    * Caller-supplied UUID for an isolated instance.
    * Omit (or pass undefined) to use the singleton 'default' instance.

@@ -41,15 +41,6 @@ import { buildContentBlocksForSave } from "@/features/cx-chat/utils/buildContent
 import {
   openOverlay,
   closeOverlay,
-  openFullScreenEditor,
-  openHtmlPreview,
-  openSaveToNotes,
-  openEmailDialog,
-  openAuthGate,
-  openContentHistory,
-  openFeedbackDialog,
-  openAnnouncements,
-  openUserPreferences,
 } from "@/lib/redux/slices/overlaySlice";
 import type { MenuItem } from "@/components/official/AdvancedMenu";
 import type { AppDispatch } from "@/lib/redux/store";
@@ -113,7 +104,10 @@ function requireAuth(
       /* ignore */
     }
     ctx.dispatch(
-      openAuthGate({ featureName, featureDescription: description }),
+      openOverlay({
+        overlayId: "authGate",
+        data: { featureName, featureDescription: description },
+      }),
     );
     return false;
   }
@@ -153,25 +147,35 @@ export function getMessageActions(ctx: MessageActionContext): MenuItem[] {
       action: () => {
         const instanceId = `cx-edit-content-${messageId}`;
         dispatch(
-          openFullScreenEditor({
-            content,
+          openOverlay({
+            overlayId: "fullScreenEditor",
             instanceId,
-            onSave: (newContent: string) => {
-              if (sessionId && messageId) {
+            data: {
+              content,
+              mode: "free",
+              conversationId: undefined,
+              messageId: messageId ?? undefined,
+              onSave: (newContent: string) => {
+                if (sessionId && messageId) {
+                  dispatch(
+                    chatConversationsActions.updateMessage({
+                      sessionId,
+                      messageId,
+                      updates: { content: newContent },
+                    }),
+                  );
+                }
                 dispatch(
-                  chatConversationsActions.updateMessage({
-                    sessionId,
-                    messageId,
-                    updates: { content: newContent },
-                  }),
+                  closeOverlay({ overlayId: "fullScreenEditor", instanceId }),
                 );
-              }
-              dispatch(
-                closeOverlay({ overlayId: "fullScreenEditor", instanceId }),
-              );
+              },
+              tabs: ["write", "matrx_split", "markdown", "wysiwyg", "preview"],
+              initialTab: "matrx_split",
+              analysisData: metadata as Record<string, unknown> | undefined,
+              title: undefined,
+              showSaveButton: true,
+              showCopyButton: true,
             },
-            messageId: messageId ?? undefined,
-            analysisData: metadata as Record<string, unknown> | undefined,
           }),
         );
         onClose();
@@ -228,9 +232,12 @@ export function getMessageActions(ctx: MessageActionContext): MenuItem[] {
       label: "View edit history",
       action: () => {
         dispatch(
-          openContentHistory({
-            sessionId: sessionId!,
-            messageId: messageId!,
+          openOverlay({
+            overlayId: "contentHistory",
+            data: {
+              sessionId: sessionId!,
+              messageId: messageId!,
+            },
           }),
         );
         onClose();
@@ -404,23 +411,29 @@ export function getMessageActions(ctx: MessageActionContext): MenuItem[] {
       action: () => {
         const instanceId = `cx-html-preview-${messageId ?? "default"}`;
         dispatch(
-          openHtmlPreview({
-            content,
-            messageId: messageId ?? undefined,
-            conversationId: conversationId ?? undefined,
+          openOverlay({
+            overlayId: "htmlPreview",
             instanceId,
-            showSaveButton: Boolean(sessionId && messageId),
-            onSave: (newContent: string) => {
-              if (sessionId && messageId) {
-                dispatch(
-                  chatConversationsActions.updateMessage({
-                    sessionId,
-                    messageId,
-                    updates: { content: newContent },
-                  }),
-                );
-              }
-              dispatch(closeOverlay({ overlayId: "htmlPreview", instanceId }));
+            data: {
+              content,
+              messageId: messageId ?? undefined,
+              conversationId: conversationId ?? undefined,
+              title: "HTML Preview & Publishing",
+              description: "Edit markdown, preview HTML, and publish your content",
+              onSave: (newContent: string) => {
+                if (sessionId && messageId) {
+                  dispatch(
+                    chatConversationsActions.updateMessage({
+                      sessionId,
+                      messageId,
+                      updates: { content: newContent },
+                    }),
+                  );
+                }
+                dispatch(closeOverlay({ overlayId: "htmlPreview", instanceId }));
+              },
+              showSaveButton: Boolean(sessionId && messageId),
+              isAgentSystem: false,
             },
           }),
         );
@@ -466,9 +479,12 @@ export function getMessageActions(ctx: MessageActionContext): MenuItem[] {
         if (!isAuthenticated) {
           // Unauthenticated: open email dialog to collect address
           dispatch(
-            openEmailDialog({
-              content,
-              metadata: metadata,
+            openOverlay({
+              overlayId: "emailDialog",
+              data: {
+                content,
+                metadata: metadata ?? null,
+              },
             }),
           );
           return;
@@ -565,11 +581,16 @@ export function getMessageActions(ctx: MessageActionContext): MenuItem[] {
         )
           return;
         dispatch(
-          openSaveToNotes({
-            content,
+          openOverlay({
+            overlayId: "saveToNotes",
             instanceId: messageId
               ? `save-notes-${messageId}`
               : `save-notes-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            data: {
+              initialContent: content,
+              defaultFolder: undefined,
+              initialEditorMode: undefined,
+            },
           }),
         );
       },
@@ -636,7 +657,7 @@ export function getMessageActions(ctx: MessageActionContext): MenuItem[] {
       iconColor: "text-orange-500 dark:text-orange-400",
       label: "Submit feedback",
       action: () => {
-        dispatch(openFeedbackDialog());
+        dispatch(openOverlay({ overlayId: "feedbackDialog", data: null }));
         onClose();
       },
       category: "App",
@@ -648,7 +669,7 @@ export function getMessageActions(ctx: MessageActionContext): MenuItem[] {
       iconColor: "text-purple-500 dark:text-purple-400",
       label: "Announcements",
       action: () => {
-        dispatch(openAnnouncements());
+        dispatch(openOverlay({ overlayId: "announcements" }));
         onClose();
       },
       category: "App",
@@ -660,7 +681,7 @@ export function getMessageActions(ctx: MessageActionContext): MenuItem[] {
       iconColor: "text-slate-500 dark:text-slate-400",
       label: "Preferences",
       action: () => {
-        dispatch(openUserPreferences());
+        dispatch(openOverlay({ overlayId: "userPreferences", data: null }));
         onClose();
       },
       category: "App",
@@ -701,9 +722,14 @@ export function resumePendingAuthAction(
         .catch(() => toast.error("Failed to save to Scratch"));
     } else if (action === "save-notes") {
       dispatch(
-        openSaveToNotes({
-          content: savedContent,
+        openOverlay({
+          overlayId: "saveToNotes",
           instanceId: `save-notes-resume-${Date.now()}`,
+          data: {
+            initialContent: savedContent,
+            defaultFolder: undefined,
+            initialEditorMode: undefined,
+          },
         }),
       );
     } else if (action === "add-to-tasks") {

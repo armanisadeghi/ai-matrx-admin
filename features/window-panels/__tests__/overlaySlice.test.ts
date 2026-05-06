@@ -12,6 +12,16 @@ import reducer, {
   pruneStaleInstances,
   DEFAULT_INSTANCE_ID,
 } from "@/lib/redux/slices/overlaySlice";
+import type { OverlayId } from "@/features/window-panels/registry/overlay-ids";
+
+// Test fixtures use synthetic ids ("x", "multi", "other", "singleton") to
+// validate reducer behavior independently of the real registry. Cast them
+// through the OverlayId type so the type narrowing in the public action
+// signatures doesn't reject the tests.
+const xId = "x" as unknown as OverlayId;
+const multiId = "multi" as unknown as OverlayId;
+const otherId = "other" as unknown as OverlayId;
+const singletonId = "singleton" as unknown as OverlayId;
 
 // Reducer is the default export; slice exports actions.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -42,8 +52,8 @@ describe("overlaySlice", () => {
     });
 
     it("supports multiple instances of the same overlay", () => {
-      let s = run(emptyState(), openOverlay({ overlayId: "x", instanceId: "i1" }));
-      s = run(s, openOverlay({ overlayId: "x", instanceId: "i2" }));
+      let s = run(emptyState(), openOverlay({ overlayId: xId, instanceId: "i1" }));
+      s = run(s, openOverlay({ overlayId: xId, instanceId: "i2" }));
       expect(Object.keys(s.overlays.x).sort()).toEqual(["i1", "i2"]);
     });
   });
@@ -72,7 +82,10 @@ describe("overlaySlice", () => {
     it("no-op for unknown overlay/instance", () => {
       const s = run(
         emptyState(),
-        closeOverlay({ overlayId: "nope", instanceId: "z" }),
+        closeOverlay({
+          overlayId: "nope" as unknown as OverlayId,
+          instanceId: "z",
+        }),
       );
       expect(s).toEqual(emptyState());
     });
@@ -80,9 +93,9 @@ describe("overlaySlice", () => {
 
   describe("closeAllOverlays", () => {
     it("closes singletons, deletes multi-instance entries", () => {
-      let s = run(emptyState(), openOverlay({ overlayId: "singleton" }));
-      s = run(s, openOverlay({ overlayId: "multi", instanceId: "m1" }));
-      s = run(s, openOverlay({ overlayId: "multi", instanceId: "m2" }));
+      let s = run(emptyState(), openOverlay({ overlayId: singletonId }));
+      s = run(s, openOverlay({ overlayId: multiId, instanceId: "m1" }));
+      s = run(s, openOverlay({ overlayId: multiId, instanceId: "m2" }));
       s = run(s, closeAllOverlays());
       expect(s.overlays.singleton[DEFAULT_INSTANCE_ID].isOpen).toBe(false);
       expect(s.overlays.multi).toBeUndefined();
@@ -104,19 +117,19 @@ describe("overlaySlice", () => {
     it("closes + removes multi-instance when open", () => {
       let s = run(
         emptyState(),
-        openOverlay({ overlayId: "x", instanceId: "y" }),
+        openOverlay({ overlayId: xId, instanceId: "y" }),
       );
-      s = run(s, toggleOverlay({ overlayId: "x", instanceId: "y" }));
+      s = run(s, toggleOverlay({ overlayId: xId, instanceId: "y" }));
       expect(s.overlays.x).toBeUndefined();
     });
   });
 
   describe("closeAllInstancesOfOverlay", () => {
     it("removes every instance of a given overlay", () => {
-      let s = run(emptyState(), openOverlay({ overlayId: "x", instanceId: "a" }));
-      s = run(s, openOverlay({ overlayId: "x", instanceId: "b" }));
-      s = run(s, openOverlay({ overlayId: "other" }));
-      s = run(s, closeAllInstancesOfOverlay({ overlayId: "x" }));
+      let s = run(emptyState(), openOverlay({ overlayId: xId, instanceId: "a" }));
+      s = run(s, openOverlay({ overlayId: xId, instanceId: "b" }));
+      s = run(s, openOverlay({ overlayId: otherId }));
+      s = run(s, closeAllInstancesOfOverlay({ overlayId: xId }));
       expect(s.overlays.x).toBeUndefined();
       // Untouched overlay still there
       expect(s.overlays.other).toBeDefined();
@@ -126,9 +139,9 @@ describe("overlaySlice", () => {
   describe("pruneStaleInstances", () => {
     it("removes closed multi-instance entries older than threshold", () => {
       // Open two instances, close one
-      let s = run(emptyState(), openOverlay({ overlayId: "x", instanceId: "a" }));
-      s = run(s, openOverlay({ overlayId: "x", instanceId: "b" }));
-      s = run(s, closeOverlay({ overlayId: "x", instanceId: "a" }));
+      let s = run(emptyState(), openOverlay({ overlayId: xId, instanceId: "a" }));
+      s = run(s, openOverlay({ overlayId: xId, instanceId: "b" }));
+      s = run(s, closeOverlay({ overlayId: xId, instanceId: "a" }));
       // "a" was deleted immediately by closeOverlay — so that's already GC'd.
       // Simulate a legacy stale entry: manually insert a closed multi-instance
       // entry with an old timestamp.
@@ -171,7 +184,7 @@ describe("overlaySlice", () => {
     });
 
     it("keeps closed instances younger than threshold", () => {
-      let s = run(emptyState(), openOverlay({ overlayId: "x", instanceId: "recent" }));
+      let s = run(emptyState(), openOverlay({ overlayId: xId, instanceId: "recent" }));
       // Mark closed but recent
       s = {
         overlays: {

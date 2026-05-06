@@ -33,7 +33,7 @@ import { cn } from "@/styles/themes/utils";
 import LanguageDisplay from "@/features/code-editor/components/code-block/LanguageDisplay";
 import IconButton from "@/components/official/IconButton";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openSaveToCode } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { extensionForLanguage } from "@/features/code-files/actions/languageOptions";
 import {
   useSaveAndOpenInCodeEditor,
@@ -282,9 +282,14 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
     e.stopPropagation();
     if (!code?.trim()) return;
     dispatch(
-      openSaveToCode({
-        content: code,
-        language,
+      openOverlay({
+        overlayId: "saveToCode",
+        data: {
+          initialContent: code,
+          initialLanguage: language ?? "plaintext",
+          suggestedName: undefined,
+          defaultFolderId: null,
+        },
       }),
     );
   };

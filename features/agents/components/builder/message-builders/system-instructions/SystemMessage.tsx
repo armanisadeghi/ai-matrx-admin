@@ -43,7 +43,7 @@ import {
 import { selectAgentSystemMessage } from "@/features/agents/redux/agent-definition/selectors";
 import { setAgentMessages } from "@/features/agents/redux/agent-definition/slice";
 import { useAgentUndoRedo } from "@/features/agents/hooks/useAgentUndoRedo";
-import { openUndoHistory } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { Terminal } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -101,7 +101,12 @@ export function SystemMessage({
   );
 
   const handleViewHistory = useCallback(() => {
-    dispatch(openUndoHistory({ agentId }));
+    dispatch(
+      openOverlay({
+        overlayId: "undoHistory",
+        data: { agentId },
+      }),
+    );
   }, [dispatch, agentId]);
 
   // console.log("[AGENT SYSTEM MESSAGE] messages", messages);

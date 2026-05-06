@@ -23,7 +23,7 @@ import {
 } from "@/utils/user-table-utls/table-utils";
 import { sanitizeFieldName } from "@/utils/user-table-utls/field-name-sanitizer";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openQuickDataWindow } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 
 // Public response shape — kept stable so parents (`SavedTableInfo` in
 // MarkdownTable / StreamingTableRenderer) and downstream consumers continue
@@ -197,7 +197,12 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
       // table pre-selected with the full table sidebar so the user can keep
       // working in the rest of the app while reviewing/editing it. This
       // replaces the old in-modal `UserTableViewer` result stage.
-      dispatch(openQuickDataWindow({ tableId: response.table_id }));
+      dispatch(
+        openOverlay({
+          overlayId: "quickDataWindow",
+          data: { selectedTable: response.table_id },
+        }),
+      );
 
       toast.success(`Table "${response.table_name}" saved`);
       onSaveComplete?.(response);

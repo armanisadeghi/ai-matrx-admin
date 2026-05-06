@@ -3,7 +3,7 @@
 import React, { lazy, Suspense, useState, useCallback } from "react";
 import { Mic } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { closeOverlay, openSaveToNotes } from "@/lib/redux/slices/overlaySlice";
+import { closeOverlay, openOverlay } from "@/lib/redux/slices/overlaySlice";
 import {
   selectVoicePadEntries,
   selectVoicePadDraftText,
@@ -94,10 +94,13 @@ export default function VoicePadAdvanced({ instanceId }: VoicePadAdvancedProps) 
     const currentText = draftText !== null ? draftText : allText;
     if (currentText.trim()) {
       dispatch(
-        openSaveToNotes({
-          content: currentText,
-          defaultFolder: "transcripts",
+        openOverlay({
+          overlayId: "saveToNotes",
           instanceId: crypto.randomUUID(),
+          data: {
+            initialContent: currentText,
+            defaultFolder: "transcripts",
+          },
         }),
       );
     }

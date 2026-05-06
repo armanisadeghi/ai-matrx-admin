@@ -7,8 +7,8 @@
  * agent app backed by the currently active agent. Replaces the previous
  * coming-soon placeholder — the overlay id (`agentCreateAppWindow`) and
  * registry slug (`agent-create-app-window`) are preserved so existing
- * dispatchers (`openAgentCreateAppWindow`) and persisted sessions keep
- * working.
+ * dispatchers (`openOverlay({ overlayId: "agentCreateAppWindow", ... })`) and
+ * persisted sessions keep working.
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";

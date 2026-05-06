@@ -10,7 +10,7 @@
  * (via `_streamRequestId`) instead of the latest request on the conversation.
  *
  * Opened from the message action menu (`messageActionRegistry`) via
- * `openMessageAnalysisWindow({ conversationId, requestId?, messageId? })`.
+ * `openOverlay({ overlayId: "messageAnalysisWindow", data: { conversationId, requestId?, messageId? } })`.
  */
 
 import React, { useCallback, useState } from "react";

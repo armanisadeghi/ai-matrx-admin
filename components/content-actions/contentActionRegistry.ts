@@ -34,15 +34,7 @@ import { setPendingSource } from "@/features/tasks/redux/taskUiSlice";
 import { toast } from "sonner";
 import {
   closeOverlay,
-  openFullScreenEditor,
-  openHtmlPreview,
-  openSaveToNotes,
-  openSaveToCode,
-  openEmailDialog,
-  openAuthGate,
-  openFeedbackDialog,
-  openAnnouncements,
-  openUserPreferences,
+  openOverlay,
 } from "@/lib/redux/slices/overlaySlice";
 import type { MenuItem } from "@/components/official/AdvancedMenu";
 import type { AppDispatch } from "@/lib/redux/store";
@@ -117,7 +109,10 @@ function requireAuth(
       /* ignore */
     }
     ctx.dispatch(
-      openAuthGate({ featureName, featureDescription: description }),
+      openOverlay({
+        overlayId: "authGate",
+        data: { featureName, featureDescription: description },
+      }),
     );
     return false;
   }
@@ -189,31 +184,39 @@ function viewItem(ctx: ContentActionContext): MenuItem {
       const instanceId =
         instanceKey ?? `content-editor-${Date.now().toString(36)}`;
       dispatch(
-        openFullScreenEditor({
-          content,
-          mode: "free",
+        openOverlay({
+          overlayId: "fullScreenEditor",
           instanceId,
-          title: title,
-          analysisData: metadata as Record<string, unknown> | undefined,
-          showSaveButton: !!onSave,
-          onSave: onSave
-            ? async (newContent: string) => {
-                try {
-                  await onSave(newContent);
-                } catch (err) {
-                  // eslint-disable-next-line no-console
-                  console.error("[ContentActionBar] onSave failed", err);
-                  toast.error(getErrorMessage(err, "Save failed"));
-                  return;
+          data: {
+            content,
+            mode: "free",
+            conversationId: undefined,
+            messageId: undefined,
+            onSave: onSave
+              ? async (newContent: string) => {
+                  try {
+                    await onSave(newContent);
+                  } catch (err) {
+                    // eslint-disable-next-line no-console
+                    console.error("[ContentActionBar] onSave failed", err);
+                    toast.error(getErrorMessage(err, "Save failed"));
+                    return;
+                  }
+                  dispatch(
+                    closeOverlay({
+                      overlayId: "fullScreenEditor",
+                      instanceId,
+                    }),
+                  );
                 }
-                dispatch(
-                  closeOverlay({
-                    overlayId: "fullScreenEditor",
-                    instanceId,
-                  }),
-                );
-              }
-            : undefined,
+              : undefined,
+            tabs: ["write", "matrx_split", "markdown", "wysiwyg", "preview"],
+            initialTab: "matrx_split",
+            analysisData: metadata as Record<string, unknown> | undefined,
+            title: title,
+            showSaveButton: !!onSave,
+            showCopyButton: true,
+          },
         }),
       );
       onClose();
@@ -306,11 +309,22 @@ function exportItems(ctx: ContentActionContext): MenuItem[] {
           ? `html-preview-${instanceKey}`
           : `html-preview-${Date.now().toString(36)}`;
         dispatch(
-          openHtmlPreview({
-            content,
-            title: title ? `HTML preview · ${title}` : undefined,
+          openOverlay({
+            overlayId: "htmlPreview",
             instanceId,
-            showSaveButton: false,
+            data: {
+              content,
+              messageId: undefined,
+              conversationId: undefined,
+              title: title
+                ? `HTML preview · ${title}`
+                : "HTML Preview & Publishing",
+              description:
+                "Edit markdown, preview HTML, and publish your content",
+              onSave: undefined,
+              showSaveButton: false,
+              isAgentSystem: false,
+            },
           }),
         );
         onClose();
@@ -356,9 +370,12 @@ function exportItems(ctx: ContentActionContext): MenuItem[] {
       action: async () => {
         if (!isAuthenticated) {
           dispatch(
-            openEmailDialog({
-              content,
-              metadata: metadata ?? undefined,
+            openOverlay({
+              overlayId: "emailDialog",
+              data: {
+                content,
+                metadata: metadata ?? null,
+              },
             }),
           );
           return;
@@ -443,11 +460,16 @@ function saveItems(ctx: ContentActionContext): MenuItem[] {
         )
           return;
         dispatch(
-          openSaveToNotes({
-            content,
+          openOverlay({
+            overlayId: "saveToNotes",
             instanceId: ctx.instanceKey
               ? `save-notes-${ctx.instanceKey}`
               : `save-notes-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            data: {
+              initialContent: content,
+              defaultFolder: undefined,
+              initialEditorMode: undefined,
+            },
           }),
         );
       },
@@ -501,9 +523,14 @@ function saveItems(ctx: ContentActionContext): MenuItem[] {
           return;
         const { code, language } = extractFirstCodeBlock(content);
         dispatch(
-          openSaveToCode({
-            content: code.trim() ? code : content,
-            language,
+          openOverlay({
+            overlayId: "saveToCode",
+            data: {
+              initialContent: code.trim() ? code : content,
+              initialLanguage: language ?? "plaintext",
+              suggestedName: undefined,
+              defaultFolderId: null,
+            },
           }),
         );
       },
@@ -595,7 +622,7 @@ function appItems(ctx: ContentActionContext): MenuItem[] {
       iconColor: "text-orange-500 dark:text-orange-400",
       label: "Submit feedback",
       action: () => {
-        dispatch(openFeedbackDialog());
+        dispatch(openOverlay({ overlayId: "feedbackDialog", data: null }));
         onClose();
       },
       category: "App",
@@ -607,7 +634,7 @@ function appItems(ctx: ContentActionContext): MenuItem[] {
       iconColor: "text-purple-500 dark:text-purple-400",
       label: "Announcements",
       action: () => {
-        dispatch(openAnnouncements());
+        dispatch(openOverlay({ overlayId: "announcements" }));
         onClose();
       },
       category: "App",
@@ -619,7 +646,7 @@ function appItems(ctx: ContentActionContext): MenuItem[] {
       iconColor: "text-slate-500 dark:text-slate-400",
       label: "Preferences",
       action: () => {
-        dispatch(openUserPreferences());
+        dispatch(openOverlay({ overlayId: "userPreferences", data: null }));
         onClose();
       },
       category: "App",
@@ -696,18 +723,28 @@ export function resumePendingContentAuthAction(
         .catch(() => toast.error("Failed to save to Scratch"));
     } else if (action === "save-notes") {
       dispatch(
-        openSaveToNotes({
-          content: savedContent,
+        openOverlay({
+          overlayId: "saveToNotes",
           instanceId: `save-notes-resume-${Date.now()}`,
+          data: {
+            initialContent: savedContent,
+            defaultFolder: undefined,
+            initialEditorMode: undefined,
+          },
         }),
       );
     } else if (action === "save-to-code") {
       const { code, language } = extractFirstCodeBlock(savedContent);
       dispatch(
-        openSaveToCode({
-          content: code.trim() ? code : savedContent,
-          language,
+        openOverlay({
+          overlayId: "saveToCode",
           instanceId: `save-code-resume-${Date.now()}`,
+          data: {
+            initialContent: code.trim() ? code : savedContent,
+            initialLanguage: language ?? "plaintext",
+            suggestedName: undefined,
+            defaultFolderId: null,
+          },
         }),
       );
     } else if (action === "save-code-scratch") {

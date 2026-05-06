@@ -33,7 +33,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { openSaveToNotes } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 // Legacy openFilePreview removed in Phase 11 — we just open the source URL
 // in a new tab now (signed / share URLs are browser-loadable directly).
 import { useAppDispatch } from "@/lib/redux/hooks";
@@ -140,19 +140,22 @@ export function PdfExtractorFloatingWorkspace({
     const text = doc?.content;
     if (!text) return;
     dispatch(
-      openSaveToNotes({
-        content: text,
-        defaultFolder: "Scratch",
+      openOverlay({
+        overlayId: "saveToNotes",
         // Per-doc instance so two concurrent extractions don't overwrite
         // each other's draft via the shared singleton "default" slot.
         instanceId: doc?.id
           ? `save-notes-pdf-${doc.id}`
           : `save-notes-pdf-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        // Large extractions can stall the markdown preview pane on open.
-        // Force the plain editor for big payloads — users can still toggle
-        // back to split/preview from the toolbar once it's mounted.
-        initialEditorMode:
-          text.length > PLAIN_SAVE_THRESHOLD ? "plain" : undefined,
+        data: {
+          initialContent: text,
+          defaultFolder: "Scratch",
+          // Large extractions can stall the markdown preview pane on open.
+          // Force the plain editor for big payloads — users can still toggle
+          // back to split/preview from the toolbar once it's mounted.
+          initialEditorMode:
+            text.length > PLAIN_SAVE_THRESHOLD ? "plain" : undefined,
+        },
       }),
     );
   }, [dispatch, activeTab]);

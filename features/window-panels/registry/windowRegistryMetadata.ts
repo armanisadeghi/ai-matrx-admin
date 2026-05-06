@@ -1027,6 +1027,20 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     ephemeral: true,
   },
   {
+    // Floating admin indicator chip (size cycler + drag handle). Toggled
+    // from sidebar/menu items via dispatch(toggleOverlay({ overlayId:
+    // "adminIndicator" })). Registered as a widget so the unified renderer
+    // owns the mount instead of the bespoke AdminIndicatorWrapper. The
+    // component itself self-gates on selectIsSuperAdmin — non-admins never
+    // download the chunk because nothing in their UI dispatches the toggle.
+    slug: "admin-indicator",
+    overlayId: "adminIndicator",
+    kind: "widget",
+    label: "Admin Indicator",
+    defaultData: {},
+    ephemeral: true,
+  },
+  {
     slug: "html-preview",
     overlayId: "htmlPreview",
     kind: "widget",

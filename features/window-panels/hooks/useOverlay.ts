@@ -20,12 +20,13 @@ import {
   selectOverlayData,
   toggleOverlay,
 } from "@/lib/redux/slices/overlaySlice";
+import type { OverlayId } from "@/features/window-panels/registry/overlay-ids";
 
 const DEFAULT_INSTANCE_ID = "default";
 
 /** True when the given overlay instance is open. */
 export function useOverlayOpen(
-  overlayId: string,
+  overlayId: OverlayId,
   instanceId: string = DEFAULT_INSTANCE_ID,
 ): boolean {
   return useAppSelector((s) => selectIsOverlayOpen(s, overlayId, instanceId));
@@ -33,7 +34,7 @@ export function useOverlayOpen(
 
 /** Data payload for the given overlay instance (null when closed / no data). */
 export function useOverlayData<T = unknown>(
-  overlayId: string,
+  overlayId: OverlayId,
   instanceId: string = DEFAULT_INSTANCE_ID,
 ): T | null {
   return useAppSelector((s) =>
@@ -48,7 +49,7 @@ export function useOverlayData<T = unknown>(
  * in effect deps / memo keys.
  */
 export function useOverlayInstances<T = unknown>(
-  overlayId: string,
+  overlayId: OverlayId,
 ): Array<{ instanceId: string; data: T | null }> {
   return useAppSelector((s) => selectOpenInstances(s, overlayId)) as Array<{
     instanceId: string;
@@ -65,16 +66,16 @@ export function useOverlayActions() {
   return useMemo(
     () => ({
       open: (
-        overlayId: string,
+        overlayId: OverlayId,
         opts: {
           instanceId?: string;
           data?: Record<string, unknown>;
         } = {},
       ) => dispatch(openOverlay({ overlayId, ...opts })),
-      close: (overlayId: string, instanceId: string = DEFAULT_INSTANCE_ID) =>
+      close: (overlayId: OverlayId, instanceId: string = DEFAULT_INSTANCE_ID) =>
         dispatch(closeOverlay({ overlayId, instanceId })),
       toggle: (
-        overlayId: string,
+        overlayId: OverlayId,
         opts: {
           instanceId?: string;
           data?: Record<string, unknown>;
@@ -90,7 +91,7 @@ export function useOverlayActions() {
  * it can be passed as a stable `onClose` prop to a lazy-loaded component.
  */
 export function useCloseOverlay(
-  overlayId: string,
+  overlayId: OverlayId,
   instanceId: string = DEFAULT_INSTANCE_ID,
 ): () => void {
   const dispatch = useAppDispatch();

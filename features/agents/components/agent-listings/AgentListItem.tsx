@@ -37,7 +37,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { openAgentContentWindow } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 
 interface AgentListItemProps {
   id: string;
@@ -118,7 +118,16 @@ export function AgentListItem({
   const handleEditDetails = (e?: React.MouseEvent) => {
     e?.stopPropagation();
     setIsMenuOpen(false);
-    dispatch(openAgentContentWindow({ agentId: id, initialTab: "overview" }));
+    dispatch(
+      openOverlay({
+        overlayId: "agentAdvancedEditorWindow",
+        data: {
+          initialAgentId: id,
+          initialTab: "overview",
+          tabs: null,
+        },
+      }),
+    );
   };
 
   const handleSneakPeek = (e?: React.MouseEvent) => {

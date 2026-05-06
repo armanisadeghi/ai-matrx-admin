@@ -3,10 +3,7 @@ import React, { useState, useRef } from "react";
 import { Edit, MoreHorizontal, Copy, Check } from "lucide-react";
 import MarkdownStream from "@/components/MarkdownStream";
 import { escapeEmbeddedCodeFences } from "@/features/prompts/utils/escape-code-fences";
-import {
-  openFullScreenEditor,
-  openHtmlPreview,
-} from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import MessageOptionsMenu from "@/features/chat/components/response/assistant-message/MessageOptionsMenu";
 import { PromptErrorMessage } from "../PromptErrorMessage";
 import { Button } from "@/components/ui/button";
@@ -49,14 +46,23 @@ export function PromptSystemMessage({
 
   const handleEditClick = () => {
     dispatch(
-      openFullScreenEditor({
-        content,
-        onSave: onContentChange
-          ? (newContent: string) => onContentChange(messageIndex, newContent)
-          : undefined,
-        tabs: ["write", "markdown", "wysiwyg", "preview"],
-        initialTab: "write",
-        showSaveButton: !!onContentChange,
+      openOverlay({
+        overlayId: "fullScreenEditor",
+        data: {
+          content,
+          mode: "free",
+          conversationId: undefined,
+          messageId: undefined,
+          onSave: onContentChange
+            ? (newContent: string) => onContentChange(messageIndex, newContent)
+            : undefined,
+          tabs: ["write", "markdown", "wysiwyg", "preview"],
+          initialTab: "write",
+          analysisData: undefined,
+          title: undefined,
+          showSaveButton: !!onContentChange,
+          showCopyButton: true,
+        },
       }),
     );
   };
@@ -76,7 +82,21 @@ export function PromptSystemMessage({
   };
 
   const handleShowHtmlPreview = () => {
-    dispatch(openHtmlPreview({ content }));
+    dispatch(
+      openOverlay({
+        overlayId: "htmlPreview",
+        data: {
+          content,
+          messageId: undefined,
+          conversationId: undefined,
+          title: "HTML Preview & Publishing",
+          description: "Edit markdown, preview HTML, and publish your content",
+          onSave: undefined,
+          showSaveButton: false,
+          isAgentSystem: false,
+        },
+      }),
+    );
   };
 
   // Check if this is an error message

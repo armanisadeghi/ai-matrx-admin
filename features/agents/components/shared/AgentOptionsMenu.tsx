@@ -1,21 +1,7 @@
 "use client";
 
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import {
-  openAgentSettingsWindow,
-  openAgentRunHistoryWindow,
-  openAgentImportWindow,
-  openAgentContentWindow,
-  openAgentRunWindow,
-  openAgentOptimizerWindow,
-  openAgentInterfaceVariationsWindow,
-  openAgentCreateAppWindow,
-  openAgentDataStorageWindow,
-  openAgentFindUsagesWindow,
-  openAgentConvertSystemWindow,
-  openAgentAdminShortcutWindow,
-  openAgentAdminFindUsagesWindow,
-} from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { duplicateAgent } from "@/features/agents/redux/agent-definition/thunks";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 
@@ -209,40 +195,87 @@ export function AgentOptionsMenu({
 
   const handleDesktopItemClick = async (label: string) => {
     if (label === "Edit Agent Info") {
-      dispatch(openAgentSettingsWindow({ agentId }));
+      dispatch(
+        openOverlay({
+          overlayId: "agentSettingsWindow",
+          data: { initialAgentId: agentId },
+        }),
+      );
       setOpen(false);
     } else if (label === "View Run History") {
-      dispatch(openAgentRunHistoryWindow({ agentId }));
+      dispatch(
+        openOverlay({
+          overlayId: "agentRunHistoryWindow",
+          data: { agentId: agentId ?? null },
+        }),
+      );
       setOpen(false);
     } else if (label === "Advanced Settings View") {
-      dispatch(openAgentContentWindow({ agentId }));
+      dispatch(
+        openOverlay({
+          overlayId: "agentAdvancedEditorWindow",
+          data: {
+            initialAgentId: agentId ?? null,
+            initialTab: undefined,
+            tabs: null,
+          },
+        }),
+      );
       setOpen(false);
     } else if (label === "Open Run Modal") {
-      dispatch(openAgentRunWindow({ agentId }));
+      dispatch(
+        openOverlay({
+          overlayId: "agentRunWindow",
+          data: {
+            agentId: agentId ?? null,
+            selectedConversationId: null,
+          },
+        }),
+      );
       setOpen(false);
     } else if (label === "Matrx Agent Optimizer") {
-      dispatch(openAgentOptimizerWindow({ agentId }));
+      dispatch(
+        openOverlay({
+          overlayId: "agentOptimizerWindow",
+          data: { agentId: agentId ?? null },
+        }),
+      );
       setOpen(false);
     } else if (label === "Find Usages") {
-      dispatch(openAgentFindUsagesWindow({ agentId }));
+      dispatch(
+        openOverlay({
+          overlayId: "agentFindUsagesWindow",
+          data: { agentId: agentId ?? null },
+        }),
+      );
       setOpen(false);
     } else if (label === "Create App") {
-      dispatch(openAgentCreateAppWindow({ agentId }));
+      dispatch(
+        openOverlay({
+          overlayId: "agentCreateAppWindow",
+          data: { agentId: agentId ?? null },
+        }),
+      );
       setOpen(false);
     } else if (label === "Add Data Storage Support") {
-      dispatch(openAgentDataStorageWindow({ agentId }));
+      dispatch(
+        openOverlay({
+          overlayId: "agentDataStorageWindow",
+          data: { agentId: agentId ?? null },
+        }),
+      );
       setOpen(false);
     } else if (label === "Convert/Update System Agent") {
-      dispatch(openAgentConvertSystemWindow({ agentId }));
+      dispatch(openOverlay({ overlayId: "agentConvertSystemWindow", data: { agentId: agentId ?? null } }));
       setOpen(false);
     } else if (label === "Create Shortcut") {
-      dispatch(openAgentAdminShortcutWindow({ agentId }));
+      dispatch(openOverlay({ overlayId: "agentAdminShortcutWindow", data: { agentId: agentId ?? null } }));
       setOpen(false);
     } else if (label === "Find Usages (Admin)") {
-      dispatch(openAgentAdminFindUsagesWindow({ agentId }));
+      dispatch(openOverlay({ overlayId: "agentAdminFindUsagesWindow", data: { agentId: agentId ?? null } }));
       setOpen(false);
     } else if (label === "Import Agent") {
-      dispatch(openAgentImportWindow());
+      dispatch(openOverlay({ overlayId: "agentImportWindow", data: {} }));
       setOpen(false);
     } else if (label === "Duplicate") {
       setIsDuplicating(true);
@@ -273,7 +306,12 @@ export function AgentOptionsMenu({
   };
 
   const handleInterfaceVariationClick = () => {
-    dispatch(openAgentInterfaceVariationsWindow({ agentId }));
+    dispatch(
+      openOverlay({
+        overlayId: "agentInterfaceVariationsWindow",
+        data: { agentId: agentId ?? null },
+      }),
+    );
     setOpen(false);
   };
 
@@ -474,40 +512,87 @@ function MobileMenuContent({
 
   const handleItem = async (label: string) => {
     if (label === "Edit Agent Info") {
-      dispatch(openAgentSettingsWindow({ agentId }));
+      dispatch(
+        openOverlay({
+          overlayId: "agentSettingsWindow",
+          data: { initialAgentId: agentId },
+        }),
+      );
       onClose();
     } else if (label === "View Run History") {
-      dispatch(openAgentRunHistoryWindow({ agentId }));
+      dispatch(
+        openOverlay({
+          overlayId: "agentRunHistoryWindow",
+          data: { agentId: agentId ?? null },
+        }),
+      );
       onClose();
     } else if (label === "Advanced Settings View") {
-      dispatch(openAgentContentWindow({ agentId }));
+      dispatch(
+        openOverlay({
+          overlayId: "agentAdvancedEditorWindow",
+          data: {
+            initialAgentId: agentId ?? null,
+            initialTab: undefined,
+            tabs: null,
+          },
+        }),
+      );
       onClose();
     } else if (label === "Open Run Modal") {
-      dispatch(openAgentRunWindow({ agentId }));
+      dispatch(
+        openOverlay({
+          overlayId: "agentRunWindow",
+          data: {
+            agentId: agentId ?? null,
+            selectedConversationId: null,
+          },
+        }),
+      );
       onClose();
     } else if (label === "Matrx Agent Optimizer") {
-      dispatch(openAgentOptimizerWindow({ agentId }));
+      dispatch(
+        openOverlay({
+          overlayId: "agentOptimizerWindow",
+          data: { agentId: agentId ?? null },
+        }),
+      );
       onClose();
     } else if (label === "Find Usages") {
-      dispatch(openAgentFindUsagesWindow({ agentId }));
+      dispatch(
+        openOverlay({
+          overlayId: "agentFindUsagesWindow",
+          data: { agentId: agentId ?? null },
+        }),
+      );
       onClose();
     } else if (label === "Create App") {
-      dispatch(openAgentCreateAppWindow({ agentId }));
+      dispatch(
+        openOverlay({
+          overlayId: "agentCreateAppWindow",
+          data: { agentId: agentId ?? null },
+        }),
+      );
       onClose();
     } else if (label === "Add Data Storage Support") {
-      dispatch(openAgentDataStorageWindow({ agentId }));
+      dispatch(
+        openOverlay({
+          overlayId: "agentDataStorageWindow",
+          data: { agentId: agentId ?? null },
+        }),
+      );
       onClose();
     } else if (label === "Convert/Update System Agent") {
-      dispatch(openAgentConvertSystemWindow({ agentId }));
+      dispatch(openOverlay({ overlayId: "agentConvertSystemWindow", data: { agentId: agentId ?? null } }));
       onClose();
     } else if (label === "Create Shortcut") {
-      dispatch(openAgentAdminShortcutWindow({ agentId }));
+      dispatch(openOverlay({ overlayId: "agentAdminShortcutWindow", data: { agentId: agentId ?? null } }));
       onClose();
     } else if (label === "Find Usages (Admin)") {
-      dispatch(openAgentAdminFindUsagesWindow({ agentId }));
+      dispatch(openOverlay({ overlayId: "agentAdminFindUsagesWindow", data: { agentId: agentId ?? null } }));
       onClose();
     } else if (label === "Import Agent") {
-      dispatch(openAgentImportWindow());
+      dispatch(openOverlay({ overlayId: "agentImportWindow", data: {} }));
       onClose();
     } else if (label === "Duplicate") {
       setIsBusy(true);
@@ -539,7 +624,12 @@ function MobileMenuContent({
   };
 
   const handleVariationClick = () => {
-    dispatch(openAgentInterfaceVariationsWindow({ agentId }));
+    dispatch(
+      openOverlay({
+        overlayId: "agentInterfaceVariationsWindow",
+        data: { agentId: agentId ?? null },
+      }),
+    );
     onClose();
   };
 

@@ -328,9 +328,9 @@ const DYNAMIC: Record<string, DynamicAddition> = {
   // ── Curated Icon Picker ───────────────────────────────────────────────────
   curatedIconPickerWindow: {
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/icons/CuratedIconPickerWindow"
-      ).then((m) => ({ default: m.CuratedIconPickerWindow })),
+      import("@/features/window-panels/windows/icons/CuratedIconPickerWindow").then(
+        (m) => ({ default: m.CuratedIconPickerWindow }),
+      ),
   },
 
   // ── Crop Studio ───────────────────────────────────────────────────────────
@@ -561,6 +561,9 @@ const DYNAMIC: Record<string, DynamicAddition> = {
   adminStateAnalyzer: {
     componentImport: () =>
       import("@/components/admin/state-analyzer/StateViewerOverlay"),
+  },
+  adminIndicator: {
+    componentImport: () => import("@/components/admin/controls/AdminIndicator"),
   },
   htmlPreview: {
     componentImport: () =>

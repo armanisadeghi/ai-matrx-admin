@@ -34,7 +34,7 @@ import { toast } from "sonner";
 import { useSelector } from "react-redux";
 import { selectUser } from "@/lib/redux/slices/userSlice";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openSaveToNotes } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 
 // Key used to store pending actions across the auth redirect
 const PENDING_ACTION_KEY = "matrx_pending_post_auth_action";
@@ -110,10 +110,14 @@ const PublicMessageOptionsMenu: React.FC<PublicMessageOptionsMenuProps> = ({
           .catch(() => toast.error("Failed to save to Scratch"));
       } else if (action === "save-notes") {
         dispatch(
-          openSaveToNotes({
-            content: savedContent,
-            defaultFolder: "Scratch",
+          openOverlay({
+            overlayId: "saveToNotes",
             instanceId: crypto.randomUUID(),
+            data: {
+              initialContent: savedContent,
+              defaultFolder: "Scratch",
+              initialEditorMode: undefined,
+            },
           }),
         );
       }
@@ -402,10 +406,14 @@ const PublicMessageOptionsMenu: React.FC<PublicMessageOptionsMenuProps> = ({
   const handleSaveToNotes = () => {
     if (isAuthenticated) {
       dispatch(
-        openSaveToNotes({
-          content,
-          defaultFolder: "Scratch",
+        openOverlay({
+          overlayId: "saveToNotes",
           instanceId: crypto.randomUUID(),
+          data: {
+            initialContent: content,
+            defaultFolder: "Scratch",
+            initialEditorMode: undefined,
+          },
         }),
       );
       onClose();

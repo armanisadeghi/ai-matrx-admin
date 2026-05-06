@@ -26,18 +26,16 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { setMode } from "@/styles/themes/themeSlice";
-import type { RootState } from "@/lib/redux/store";
-import { openFeedbackDialog } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { brokerSelectors } from "@/lib/redux/brokerSlice";
 import { Notification } from "@/types/notification.types";
 import { useQuickActions } from "@/features/quick-actions/hooks/useQuickActions";
+
 export function MobileUnifiedMenu() {
   const dispatch = useAppDispatch();
-  const router = useRouter();
   const theme = useAppSelector((s) => s.theme.mode);
   const setTheme = (t: "light" | "dark") => dispatch(setMode(t));
   const user = useAppSelector(selectUser);
@@ -71,7 +69,7 @@ export function MobileUnifiedMenu() {
   };
 
   const handleFeedbackClick = () => {
-    dispatch(openFeedbackDialog());
+    dispatch(openOverlay({ overlayId: "feedbackDialog", data: null }));
   };
 
   return (

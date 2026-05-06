@@ -90,8 +90,8 @@ export function PublicImagesSection({
 
   return (
     <div className="h-full overflow-auto">
-      <section className="px-4 pt-4">
-        <header className="flex items-center gap-2 mb-2">
+      <section className="px-4 pt-3">
+        <header className="flex items-center gap-2 mb-4 pr-10">
           <Sparkles className="h-3.5 w-3.5 text-amber-500" />
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground">
             Curated Covers

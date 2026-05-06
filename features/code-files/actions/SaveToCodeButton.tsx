@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openSaveToCode } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 
 export interface SaveToCodeButtonProps {
   content: string;
@@ -49,11 +49,14 @@ export function SaveToCodeButton({
   const handleClick = () => {
     if (!content?.trim()) return;
     dispatch(
-      openSaveToCode({
-        content,
-        language,
-        suggestedName,
-        defaultFolderId,
+      openOverlay({
+        overlayId: "saveToCode",
+        data: {
+          initialContent: content,
+          initialLanguage: language ?? "plaintext",
+          suggestedName,
+          defaultFolderId: defaultFolderId ?? null,
+        },
       }),
     );
   };

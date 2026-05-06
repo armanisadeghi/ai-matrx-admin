@@ -39,10 +39,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import {
-  openAgentContentWindow,
-  openOverlay,
-} from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 
 interface AgentCardProps {
   id: string;
@@ -142,7 +139,16 @@ export function AgentCard({
   const handleEditDetails = (e?: React.MouseEvent) => {
     e?.stopPropagation();
     setIsActionModalOpen(false);
-    dispatch(openAgentContentWindow({ agentId: id, initialTab: "overview" }));
+    dispatch(
+      openOverlay({
+        overlayId: "agentAdvancedEditorWindow",
+        data: {
+          initialAgentId: id,
+          initialTab: "overview",
+          tabs: null,
+        },
+      }),
+    );
   };
 
   const handleShareClickInline = (e: React.MouseEvent) => {

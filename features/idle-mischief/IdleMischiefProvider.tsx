@@ -31,11 +31,13 @@ import { MischiefStage } from "./components/MischiefStage";
 import { MischiefDiagnostics } from "./components/MischiefDiagnostics";
 
 export function IdleMischiefProvider() {
-  const isAdmin = useAppSelector(selectIsSuperAdmin);
+  const isSuperAdmin = useAppSelector(selectIsSuperAdmin);
+
+  console.log("isSuperAdmin", isSuperAdmin);
 
   // Hard gate — non-admins get NOTHING from this subsystem. Hook order is
   // preserved by always running this hook above the gate.
-  if (!isAdmin) return null;
+  if (!isSuperAdmin) return null;
 
   return <AdminMischief />;
 }

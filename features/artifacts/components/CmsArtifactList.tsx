@@ -59,7 +59,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAppDispatch as useDispatch } from "@/lib/redux/hooks";
-import { openHtmlPreview } from "@/lib/redux/slices/overlaySlice";
 
 // ── Icon map ──────────────────────────────────────────────────────────────────
 

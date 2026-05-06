@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import type { OverlayId } from "@/features/window-panels/registry/overlay-ids";
 import { AgentComingSoonContent } from "@/features/agents/components/coming-soon/AgentComingSoonContent";
 
 // ── Shared wrapper ──────────────────────────────────────────────────────────
@@ -18,7 +19,7 @@ interface PlaceholderWindowShellProps {
   onClose: () => void;
   agentId?: string | null;
   slug: string;
-  overlayId: string;
+  overlayId: OverlayId;
   title: string;
   icon: LucideIcon;
   description: string;

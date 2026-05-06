@@ -3,7 +3,7 @@
 import React, { useCallback, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
-  openFullScreenEditor,
+  openOverlay,
   closeOverlay,
   selectIsOverlayOpen,
   selectOpenInstances,
@@ -39,7 +39,7 @@ This is **instance A**. It has its own isolated state.
 - Multiple can coexist
 
 \`\`\`ts
-dispatch(openFullScreenEditor({ content: '...', instanceId: myUuid }));
+dispatch(openOverlay({ overlayId: 'fullScreenEditor', instanceId: myUuid, data: { content: '...' } }));
 \`\`\`
 `,
   },
@@ -56,7 +56,7 @@ Each instance has its own \`instanceId\`:
 
 \`\`\`ts
 // Singleton (default behavior, unchanged)
-dispatch(openFullScreenEditor({ content }));
+dispatch(openOverlay({ overlayId: 'fullScreenEditor', data: { content } }));
 
 // Instanced (multiple independent copies)
 const id = crypto.randomUUID();
@@ -129,11 +129,21 @@ export function OverlayInstancesDemo() {
   const openSingleton = useCallback(() => {
     if (isSingletonOpen) return; // already open — don't reset it
     dispatch(
-      openFullScreenEditor({
-        content: `# Singleton Editor\n\nThis is the classic singleton behavior.\nOnly one copy exists at a time.\n\nEdit this content, save it, close it, and reopen — your edits persist.`,
-        title: "Singleton Editor",
-        showSaveButton: true,
-        showCopyButton: true,
+      openOverlay({
+        overlayId: "fullScreenEditor",
+        data: {
+          content: `# Singleton Editor\n\nThis is the classic singleton behavior.\nOnly one copy exists at a time.\n\nEdit this content, save it, close it, and reopen — your edits persist.`,
+          mode: "free",
+          conversationId: undefined,
+          messageId: undefined,
+          onSave: undefined,
+          tabs: ["write", "matrx_split", "markdown", "wysiwyg", "preview"],
+          initialTab: "matrx_split",
+          analysisData: undefined,
+          title: "Singleton Editor",
+          showSaveButton: true,
+          showCopyButton: true,
+        },
       }),
     );
   }, [dispatch, isSingletonOpen]);

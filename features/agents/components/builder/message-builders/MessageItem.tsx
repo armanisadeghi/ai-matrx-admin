@@ -45,7 +45,7 @@ import {
 } from "@/features/agents/components/builder/message-builders/AddBlockButton";
 import type { AgentDefinitionMessage } from "@/features/agents/types/agent-message-types";
 import { useAgentUndoRedo } from "@/features/agents/hooks/useAgentUndoRedo";
-import { openUndoHistory } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 
 /** Extract text from a TextBlock. */
 function extractTextFromBlock(block: Record<string, unknown>): string {
@@ -104,7 +104,12 @@ export function MessageItem({
   );
 
   const handleViewHistory = useCallback(() => {
-    dispatch(openUndoHistory({ agentId }));
+    dispatch(
+      openOverlay({
+        overlayId: "undoHistory",
+        data: { agentId },
+      }),
+    );
   }, [dispatch, agentId]);
 
   const hasVariableSupport =

@@ -50,6 +50,10 @@ const TOOLS_GRID_TILES_PATH = join(
   REPO_ROOT,
   "features/window-panels/tools-grid/toolsGridTiles.ts",
 );
+const OVERLAY_IDS_PATH = join(
+  REPO_ROOT,
+  "features/window-panels/registry/overlay-ids.ts",
+);
 
 // Roots scanned for orphan-window detection.
 const ORPHAN_SCAN_ROOTS = ["features", "components", "app"].map((d) =>
@@ -421,6 +425,42 @@ function main(): void {
         msg: `windowRegistry.ts DYNAMIC map: "${dynKey}" has no matching STATIC_REGISTRY entry in windowRegistryMetadata.ts`,
       });
     }
+  }
+
+  // overlay-ids.ts OVERLAY_IDS tuple must match STATIC_REGISTRY exactly.
+  // The tuple powers the OverlayId compile-time string-literal union; if it
+  // drifts from the registry, callers can dispatch overlayIds that don't
+  // exist (or fail to dispatch ones that do).
+  if (existsSync(OVERLAY_IDS_PATH)) {
+    const overlayIdsSrc = readFile(OVERLAY_IDS_PATH);
+    const tupleRx = /^\s+"([a-zA-Z][a-zA-Z0-9]*)",?\s*$/gm;
+    const declaredIds = new Set<string>();
+    let m: RegExpExecArray | null;
+    while ((m = tupleRx.exec(overlayIdsSrc)) !== null) {
+      declaredIds.add(m[1]);
+    }
+
+    for (const registered of registeredOverlayIds) {
+      if (!declaredIds.has(registered)) {
+        failures.push({
+          level: "error",
+          msg: `overlay-ids.ts OVERLAY_IDS tuple is missing "${registered}" — add it to keep the OverlayId type union in sync with the registry.`,
+        });
+      }
+    }
+    for (const declared of declaredIds) {
+      if (!registeredOverlayIds.has(declared)) {
+        failures.push({
+          level: "error",
+          msg: `overlay-ids.ts OVERLAY_IDS tuple has stale entry "${declared}" — no matching STATIC_REGISTRY entry. Remove it or register the overlay.`,
+        });
+      }
+    }
+  } else {
+    failures.push({
+      level: "error",
+      msg: `expected overlay-ids.ts at ${OVERLAY_IDS_PATH} — this file declares the OverlayId compile-time union and must exist.`,
+    });
   }
 
   // Tools-grid tiles must reference a known overlayId.

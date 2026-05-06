@@ -3,6 +3,8 @@ import React, { useState, useRef, useEffect } from "react";
 import SmallIndicator from "./SmallIndicator";
 import MediumIndicator from "./MediumIndicator";
 import LargeIndicator from "./LargeIndicator";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 
 type IndicatorSize = "small" | "medium" | "large";
 
@@ -11,7 +13,26 @@ interface Position {
   y: number;
 }
 
-const AdminIndicator: React.FC = () => {
+/**
+ * Floating admin chip — registered as `overlayId: "adminIndicator"` in
+ * the window-panels registry. The unified renderer mounts this component
+ * with `{ isOpen, onClose, ...defaultData }`. We accept the props for
+ * contract conformance but the chip ignores `onClose` — closing happens
+ * via `dispatch(toggleOverlay({ overlayId: "adminIndicator" }))` from
+ * the sidebar / user menu.
+ *
+ * Self-gates on super-admin so a stray Redux dispatch by a non-admin
+ * (e.g. via persisted state) cannot leak the chip into a normal user's UI.
+ */
+interface AdminIndicatorProps {
+  isOpen?: boolean;
+  // Accepted for OverlaySurface contract; intentionally unused — the chip
+  // is closed via the same toggleOverlay action used to open it.
+  onClose?: () => void;
+}
+
+const AdminIndicator: React.FC<AdminIndicatorProps> = () => {
+  const isSuperAdmin = useAppSelector(selectIsSuperAdmin);
   const [size, setSize] = useState<IndicatorSize>("small");
   const [position, setPosition] = useState<Position>({ x: 50, y: 5 });
   const [isDragging, setIsDragging] = useState(false);
@@ -126,6 +147,8 @@ const AdminIndicator: React.FC = () => {
         );
     }
   };
+
+  if (!isSuperAdmin) return null;
 
   return <>{renderIndicator()}</>;
 };

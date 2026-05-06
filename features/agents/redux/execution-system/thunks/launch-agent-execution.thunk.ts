@@ -41,10 +41,8 @@ import { setUserInputText } from "../instance-user-input/instance-user-input.sli
 import { setDisplayMode as setDisplayModeAction } from "../instance-ui-state/instance-ui-state.slice";
 import { selectRequest } from "../active-requests/active-requests.selectors";
 import { setInstanceStatus } from "../conversations/conversations.slice";
-import {
-  openOverlay,
-  openAgentGateWindow,
-} from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import type { OverlayId } from "@/features/window-panels/registry/overlay-ids";
 
 export interface LaunchResult {
   /** The conversation id — client-generated, honored by the server end-to-end. */
@@ -70,7 +68,9 @@ function isInteractive(resultDisplayMode: ResultDisplayMode): boolean {
   return INTERACTIVE_MODES.has(resultDisplayMode);
 }
 
-const DISPLAY_MODE_TO_OVERLAY_ID: Partial<Record<ResultDisplayMode, string>> = {
+const DISPLAY_MODE_TO_OVERLAY_ID: Partial<
+  Record<ResultDisplayMode, OverlayId>
+> = {
   "modal-full": "agentFullModal",
   "modal-compact": "agentCompactModal",
   "chat-bubble": "agentChatBubble",
@@ -446,10 +446,13 @@ export const launchAgentExecution = createAsyncThunk<
   if (effectiveShowPreExecutionGate) {
     const downstreamOverlayId = DISPLAY_MODE_TO_OVERLAY_ID[resolvedDisplayMode];
     dispatch(
-      openAgentGateWindow({
-        conversationId,
-        gateWindowId: `gate-${conversationId}`,
-        downstreamOverlayId,
+      openOverlay({
+        overlayId: "agentGateWindow",
+        instanceId: `gate-${conversationId}`,
+        data: {
+          conversationId,
+          downstreamOverlayId,
+        },
       }),
     );
     return { conversationId };

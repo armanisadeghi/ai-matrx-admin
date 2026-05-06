@@ -55,17 +55,6 @@ import { toast } from "sonner";
 import {
   openOverlay,
   closeOverlay,
-  openFullScreenEditor,
-  openHtmlPreview,
-  openSaveToNotes,
-  openSaveToCode,
-  openEmailDialog,
-  openAuthGate,
-  openFeedbackDialog,
-  openAnnouncements,
-  openUserPreferences,
-  openStreamDebug,
-  openMessageAnalysisWindow,
 } from "@/lib/redux/slices/overlaySlice";
 import type { MenuItem } from "@/components/official/AdvancedMenu";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
@@ -193,7 +182,10 @@ function requireAuth(
       /* ignore */
     }
     ctx.dispatch(
-      openAuthGate({ featureName, featureDescription: description }),
+      openOverlay({
+        overlayId: "authGate",
+        data: { featureName, featureDescription: description },
+      }),
     );
     return false;
   }
@@ -309,31 +301,36 @@ function exportItems(ctx: MessageActionContext): MenuItem[] {
       action: () => {
         const instanceId = `html-preview-${messageId ?? "default"}`;
         dispatch(
-          openHtmlPreview({
-            content,
-            messageId: messageId ?? undefined,
-            conversationId: conversationId ?? undefined,
+          openOverlay({
+            overlayId: "htmlPreview",
             instanceId,
-            showSaveButton: Boolean(conversationId && messageId),
-            isAgentSystem: true,
-            onSave: async (newContent: string) => {
-              if (conversationId && messageId) {
-                try {
-                  const { editMessage } =
-                    await import("@/features/agents/redux/execution-system/message-crud/edit-message.thunk");
-                  await dispatch(
-                    editMessage({
-                      conversationId,
-                      messageId,
-                      newContent: wrapTextAsContent(newContent),
-                    }),
-                  ).unwrap();
-                } catch (err) {
-                  // eslint-disable-next-line no-console
-                  console.error("[html-preview] save failed", err);
+            data: {
+              content,
+              messageId: messageId ?? undefined,
+              conversationId: conversationId ?? undefined,
+              title: "HTML Preview & Publishing",
+              description: "Edit markdown, preview HTML, and publish your content",
+              onSave: async (newContent: string) => {
+                if (conversationId && messageId) {
+                  try {
+                    const { editMessage } =
+                      await import("@/features/agents/redux/execution-system/message-crud/edit-message.thunk");
+                    await dispatch(
+                      editMessage({
+                        conversationId,
+                        messageId,
+                        newContent: wrapTextAsContent(newContent),
+                      }),
+                    ).unwrap();
+                  } catch (err) {
+                    // eslint-disable-next-line no-console
+                    console.error("[html-preview] save failed", err);
+                  }
                 }
-              }
-              dispatch(closeOverlay({ overlayId: "htmlPreview", instanceId }));
+                dispatch(closeOverlay({ overlayId: "htmlPreview", instanceId }));
+              },
+              showSaveButton: Boolean(conversationId && messageId),
+              isAgentSystem: true,
             },
           }),
         );
@@ -378,9 +375,12 @@ function exportItems(ctx: MessageActionContext): MenuItem[] {
       action: async () => {
         if (!isAuthenticated) {
           dispatch(
-            openEmailDialog({
-              content,
-              metadata,
+            openOverlay({
+              overlayId: "emailDialog",
+              data: {
+                content,
+                metadata: metadata ?? null,
+              },
             }),
           );
           return;
@@ -490,7 +490,17 @@ function saveItems(ctx: MessageActionContext): MenuItem[] {
           )
         )
           return;
-        dispatch(openSaveToNotes({ content, instanceId: saveNotesInstanceId }));
+        dispatch(
+          openOverlay({
+            overlayId: "saveToNotes",
+            instanceId: saveNotesInstanceId,
+            data: {
+              initialContent: content,
+              defaultFolder: undefined,
+              initialEditorMode: undefined,
+            },
+          }),
+        );
       },
       category: "Actions",
       showToast: false,
@@ -548,10 +558,15 @@ function saveItems(ctx: MessageActionContext): MenuItem[] {
           return;
         const { code, language } = extractFirstCodeBlock(content);
         dispatch(
-          openSaveToCode({
-            content: code.trim() ? code : content,
-            language,
+          openOverlay({
+            overlayId: "saveToCode",
             instanceId: saveCodeInstanceId,
+            data: {
+              initialContent: code.trim() ? code : content,
+              initialLanguage: language ?? "plaintext",
+              suggestedName: undefined,
+              defaultFolderId: null,
+            },
           }),
         );
       },
@@ -652,7 +667,7 @@ function appItems(ctx: MessageActionContext): MenuItem[] {
       iconColor: "text-orange-500 dark:text-orange-400",
       label: "Submit feedback",
       action: () => {
-        dispatch(openFeedbackDialog());
+        dispatch(openOverlay({ overlayId: "feedbackDialog", data: null }));
         onClose();
       },
       category: "App",
@@ -664,7 +679,7 @@ function appItems(ctx: MessageActionContext): MenuItem[] {
       iconColor: "text-purple-500 dark:text-purple-400",
       label: "Announcements",
       action: () => {
-        dispatch(openAnnouncements());
+        dispatch(openOverlay({ overlayId: "announcements" }));
         onClose();
       },
       category: "App",
@@ -676,7 +691,7 @@ function appItems(ctx: MessageActionContext): MenuItem[] {
       iconColor: "text-slate-500 dark:text-slate-400",
       label: "Preferences",
       action: () => {
-        dispatch(openUserPreferences());
+        dispatch(openOverlay({ overlayId: "userPreferences", data: null }));
         onClose();
       },
       category: "App",
@@ -708,43 +723,53 @@ function editContentItem(ctx: MessageActionContext): MenuItem {
     action: () => {
       const instanceId = `edit-content-${messageId}`;
       dispatch(
-        openFullScreenEditor({
-          content,
+        openOverlay({
+          overlayId: "fullScreenEditor",
           instanceId,
-          onSave: async (newContent: string) => {
-            if (!conversationId || !messageId) {
-              toast.error("Can't save — missing conversation/message id");
+          data: {
+            content,
+            mode: "free",
+            conversationId: undefined,
+            messageId: messageId ?? undefined,
+            onSave: async (newContent: string) => {
+              if (!conversationId || !messageId) {
+                toast.error("Can't save — missing conversation/message id");
+                dispatch(
+                  closeOverlay({ overlayId: "fullScreenEditor", instanceId }),
+                );
+                return;
+              }
+              try {
+                const { editMessage } =
+                  await import("@/features/agents/redux/execution-system/message-crud/edit-message.thunk");
+                await dispatch(
+                  editMessage({
+                    conversationId,
+                    messageId,
+                    newContent: wrapTextAsContent(newContent),
+                  }),
+                ).unwrap();
+                toast.success("Changes saved");
+              } catch (err) {
+                const serialized = serializeError(err);
+                // eslint-disable-next-line no-console
+                console.error(
+                  "[edit-content] save failed",
+                  JSON.stringify(serialized, null, 2),
+                );
+                toast.error(getErrorMessage(err, "Failed to save changes"));
+              }
               dispatch(
                 closeOverlay({ overlayId: "fullScreenEditor", instanceId }),
               );
-              return;
-            }
-            try {
-              const { editMessage } =
-                await import("@/features/agents/redux/execution-system/message-crud/edit-message.thunk");
-              await dispatch(
-                editMessage({
-                  conversationId,
-                  messageId,
-                  newContent: wrapTextAsContent(newContent),
-                }),
-              ).unwrap();
-              toast.success("Changes saved");
-            } catch (err) {
-              const serialized = serializeError(err);
-              // eslint-disable-next-line no-console
-              console.error(
-                "[edit-content] save failed",
-                JSON.stringify(serialized, null, 2),
-              );
-              toast.error(getErrorMessage(err, "Failed to save changes"));
-            }
-            dispatch(
-              closeOverlay({ overlayId: "fullScreenEditor", instanceId }),
-            );
+            },
+            tabs: ["write", "matrx_split", "markdown", "wysiwyg", "preview"],
+            initialTab: "matrx_split",
+            analysisData: metadata as Record<string, unknown> | undefined,
+            title: undefined,
+            showSaveButton: true,
+            showCopyButton: true,
           },
-          messageId: messageId ?? undefined,
-          analysisData: metadata as Record<string, unknown> | undefined,
         }),
       );
       onClose();
@@ -780,61 +805,71 @@ function editAndResubmitItem(ctx: MessageActionContext): MenuItem {
       }
       const instanceId = `edit-resubmit-${messageId}`;
       dispatch(
-        openFullScreenEditor({
-          content,
+        openOverlay({
+          overlayId: "fullScreenEditor",
           instanceId,
-          onSave: async (newContent: string) => {
-            try {
-              const { forkConversation } =
-                await import("@/features/agents/redux/execution-system/message-crud/fork-conversation.thunk");
-              const { editMessage } =
-                await import("@/features/agents/redux/execution-system/message-crud/edit-message.thunk");
-              // Read position from state right before firing. Fork at
-              // (position - 1) so the user's new message becomes the next
-              // turn on the branch, replacing whatever originally came after.
-              const positionThunk = (_: unknown, getState: () => RootState) => {
-                const entry =
-                  getState().messages.byConversationId[conversationId];
-                const msg = entry?.byId?.[messageId];
-                const position = msg?.position ?? 0;
-                const forkPosition = Math.max(0, position - 1);
-                return dispatch(
-                  forkConversation({
+          data: {
+            content,
+            mode: "free",
+            conversationId: undefined,
+            messageId: messageId ?? undefined,
+            onSave: async (newContent: string) => {
+              try {
+                const { forkConversation } =
+                  await import("@/features/agents/redux/execution-system/message-crud/fork-conversation.thunk");
+                const { editMessage } =
+                  await import("@/features/agents/redux/execution-system/message-crud/edit-message.thunk");
+                // Read position from state right before firing. Fork at
+                // (position - 1) so the user's new message becomes the next
+                // turn on the branch, replacing whatever originally came after.
+                const positionThunk = (_: unknown, getState: () => RootState) => {
+                  const entry =
+                    getState().messages.byConversationId[conversationId];
+                  const msg = entry?.byId?.[messageId];
+                  const position = msg?.position ?? 0;
+                  const forkPosition = Math.max(0, position - 1);
+                  return dispatch(
+                    forkConversation({
+                      conversationId,
+                      atPosition: forkPosition,
+                    }),
+                  ).unwrap();
+                };
+                await dispatch(positionThunk as never);
+
+                // Persist the edit onto the user's message on the fork head.
+                // After this, the user is viewing the forked conversation with
+                // their edited question in place; they can hit Send from the
+                // input bar to launch the new turn.
+                await dispatch(
+                  editMessage({
                     conversationId,
-                    atPosition: forkPosition,
+                    messageId,
+                    newContent: wrapTextAsContent(newContent),
                   }),
                 ).unwrap();
-              };
-              await dispatch(positionThunk as never);
-
-              // Persist the edit onto the user's message on the fork head.
-              // After this, the user is viewing the forked conversation with
-              // their edited question in place; they can hit Send from the
-              // input bar to launch the new turn.
-              await dispatch(
-                editMessage({
-                  conversationId,
-                  messageId,
-                  newContent: wrapTextAsContent(newContent),
-                }),
-              ).unwrap();
-              toast.success("Forked — edit saved on the new branch");
-            } catch (err) {
-              const serialized = serializeError(err);
-              // eslint-disable-next-line no-console
-              console.error(
-                "[edit-resubmit] failed",
-                JSON.stringify(serialized, null, 2),
-              );
-              toast.error(getErrorMessage(err, "Failed to edit & resubmit"));
-            } finally {
-              dispatch(
-                closeOverlay({ overlayId: "fullScreenEditor", instanceId }),
-              );
-            }
+                toast.success("Forked — edit saved on the new branch");
+              } catch (err) {
+                const serialized = serializeError(err);
+                // eslint-disable-next-line no-console
+                console.error(
+                  "[edit-resubmit] failed",
+                  JSON.stringify(serialized, null, 2),
+                );
+                toast.error(getErrorMessage(err, "Failed to edit & resubmit"));
+              } finally {
+                dispatch(
+                  closeOverlay({ overlayId: "fullScreenEditor", instanceId }),
+                );
+              }
+            },
+            tabs: ["write", "matrx_split", "markdown", "wysiwyg", "preview"],
+            initialTab: "matrx_split",
+            analysisData: metadata as Record<string, unknown> | undefined,
+            title: undefined,
+            showSaveButton: true,
+            showCopyButton: true,
           },
-          messageId: messageId ?? undefined,
-          analysisData: metadata as Record<string, unknown> | undefined,
         }),
       );
       onClose();
@@ -961,10 +996,13 @@ function creatorItems(ctx: MessageActionContext): MenuItem[] {
       label: "Analyze response",
       action: () => {
         dispatch(
-          openMessageAnalysisWindow({
-            conversationId,
-            requestId: streamRequestId,
-            messageId,
+          openOverlay({
+            overlayId: "messageAnalysisWindow",
+            data: {
+              conversationId,
+              requestId: streamRequestId ?? null,
+              messageId: messageId ?? null,
+            },
           }),
         );
         onClose();
@@ -979,9 +1017,12 @@ function creatorItems(ctx: MessageActionContext): MenuItem[] {
       label: "Debug stream",
       action: () => {
         dispatch(
-          openStreamDebug({
-            conversationId,
-            requestId: streamRequestId ?? undefined,
+          openOverlay({
+            overlayId: "streamDebug",
+            data: {
+              conversationId,
+              requestId: streamRequestId ?? null,
+            },
           }),
         );
         onClose();
@@ -1144,18 +1185,28 @@ export function resumePendingAuthAction(
         .catch(() => toast.error("Failed to save to Scratch"));
     } else if (action === "save-notes") {
       dispatch(
-        openSaveToNotes({
-          content: savedContent,
+        openOverlay({
+          overlayId: "saveToNotes",
           instanceId: `save-notes-resume-${Date.now()}`,
+          data: {
+            initialContent: savedContent,
+            defaultFolder: undefined,
+            initialEditorMode: undefined,
+          },
         }),
       );
     } else if (action === "save-to-code") {
       const { code, language } = extractFirstCodeBlock(savedContent);
       dispatch(
-        openSaveToCode({
-          content: code.trim() ? code : savedContent,
-          language,
+        openOverlay({
+          overlayId: "saveToCode",
           instanceId: `save-code-resume-${Date.now()}`,
+          data: {
+            initialContent: code.trim() ? code : savedContent,
+            initialLanguage: language ?? "plaintext",
+            suggestedName: undefined,
+            defaultFolderId: null,
+          },
         }),
       );
     } else if (action === "save-code-scratch") {

@@ -120,8 +120,8 @@ export function SettingsShell({
       height="78vh"
       minWidth={640}
       minHeight={480}
-      overlayId="settings"
-      urlSyncKey="settings"
+      overlayId="userPreferencesWindow"
+      urlSyncKey="userPreferencesWindow"
       onClose={onClose}
       sidebar={
         <SettingsTree

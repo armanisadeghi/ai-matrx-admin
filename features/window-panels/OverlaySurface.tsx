@@ -35,6 +35,7 @@ import {
   useOverlayInstances,
   useOverlayOpen,
 } from "@/features/window-panels/hooks/useOverlay";
+import type { OverlayId } from "@/features/window-panels/registry/overlay-ids";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyComponent = ComponentType<any>;
@@ -53,7 +54,10 @@ function getLazyComponent(entry: WindowRegistryEntry): AnyComponent {
 }
 
 interface SurfaceProps {
-  overlayId: string;
+  // Always sourced from `ALL_WINDOW_REGISTRY_ENTRIES.overlayId`, so it's
+  // guaranteed to exist in OVERLAY_IDS. Typed strictly so the downstream
+  // hook calls (useOverlayOpen, useCloseOverlay, etc.) stay narrow.
+  overlayId: OverlayId;
 }
 
 function SingletonSurface({ overlayId }: SurfaceProps) {
@@ -111,7 +115,7 @@ function InstanceChild({
   defaults,
   data,
 }: {
-  overlayId: string;
+  overlayId: OverlayId;
   instanceId: string;
   Component: AnyComponent;
   defaults: Record<string, unknown>;

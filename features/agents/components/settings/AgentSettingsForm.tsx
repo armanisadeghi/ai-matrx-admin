@@ -6,7 +6,7 @@ import {
   selectAllAgentsArray,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { saveAgentField } from "@/features/agents/redux/agent-definition/thunks";
-import { openAgentContentWindow } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -371,9 +371,13 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
               className="flex flex-col items-center justify-center bg-card/40 backdrop-blur-sm border border-border/60 rounded-xl py-6 transition-all hover:bg-card/70 hover:border-primary/50 hover:shadow-md cursor-pointer group relative overflow-hidden"
               onClick={() =>
                 dispatch(
-                  openAgentContentWindow({
-                    agentId: agent.id,
-                    initialTab: "messages",
+                  openOverlay({
+                    overlayId: "agentAdvancedEditorWindow",
+                    data: {
+                      initialAgentId: agent.id,
+                      initialTab: "messages",
+                      tabs: null,
+                    },
                   }),
                 )
               }
@@ -391,9 +395,13 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
               className="flex flex-col items-center justify-center bg-card/40 backdrop-blur-sm border border-border/60 rounded-xl py-6 transition-all hover:bg-card/70 hover:border-primary/50 hover:shadow-md cursor-pointer group relative overflow-hidden"
               onClick={() =>
                 dispatch(
-                  openAgentContentWindow({
-                    agentId: agent.id,
-                    initialTab: "variables",
+                  openOverlay({
+                    overlayId: "agentAdvancedEditorWindow",
+                    data: {
+                      initialAgentId: agent.id,
+                      initialTab: "variables",
+                      tabs: null,
+                    },
                   }),
                 )
               }
@@ -411,9 +419,13 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
               className="flex flex-col items-center justify-center bg-card/40 backdrop-blur-sm border border-border/60 rounded-xl py-6 transition-all hover:bg-card/70 hover:border-primary/50 hover:shadow-md cursor-pointer group relative overflow-hidden"
               onClick={() =>
                 dispatch(
-                  openAgentContentWindow({
-                    agentId: agent.id,
-                    initialTab: "tools",
+                  openOverlay({
+                    overlayId: "agentAdvancedEditorWindow",
+                    data: {
+                      initialAgentId: agent.id,
+                      initialTab: "tools",
+                      tabs: null,
+                    },
                   }),
                 )
               }

@@ -18,6 +18,7 @@ import {
   assertRegistryIntegrity,
 } from "@/features/window-panels/registry/windowRegistry";
 import { OverlaySurface } from "./OverlaySurface";
+import type { OverlayId } from "@/features/window-panels/registry/overlay-ids";
 
 let _integrityChecked = false;
 
@@ -42,7 +43,13 @@ export default function UnifiedOverlayControllerImpl() {
   return (
     <>
       {ALL_WINDOW_REGISTRY_ENTRIES.map((entry) => (
-        <OverlaySurface key={entry.overlayId} overlayId={entry.overlayId} />
+        // entry.overlayId is `string` on WindowStaticMetadata for cycle-
+        // avoidance, but every value in ALL_WINDOW_REGISTRY_ENTRIES is
+        // verified by check-registry to exist in OVERLAY_IDS. Safe cast.
+        <OverlaySurface
+          key={entry.overlayId}
+          overlayId={entry.overlayId as OverlayId}
+        />
       ))}
     </>
   );

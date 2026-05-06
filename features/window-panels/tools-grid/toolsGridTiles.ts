@@ -85,6 +85,7 @@ import {
 import type { AppDispatch, RootState } from "@/lib/redux/store";
 import { selectActiveAgentId } from "@/lib/redux/slices/agent-settings/selectors";
 import { selectOwnedAgentIds } from "@/lib/redux/slices/agentCacheSlice";
+import type { OverlayId } from "@/features/window-panels/registry/overlay-ids";
 
 /**
  * Grid-tab buckets. "admin" is gated on `isAdmin`; the rest show for every
@@ -157,7 +158,7 @@ export interface ToolsGridTile {
    * EITHER declarative (overlayId + optional seedData + instanceStrategy) —
    * covers ~95% of tiles.
    */
-  overlayId?: string;
+  overlayId?: OverlayId;
   /**
    * Instance strategy for multi-instance overlays.
    *   "singleton-default" — use instanceId "default" (shared / pinned tile).
