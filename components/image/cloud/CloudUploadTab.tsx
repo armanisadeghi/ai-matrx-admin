@@ -21,7 +21,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { CheckCircle2, FolderOpen } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Code2,
+  FolderOpen,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import {
@@ -40,6 +46,7 @@ import {
   resolveCloudFileUrl,
 } from "@/components/image/cloud/resolveCloudFileUrl";
 import type { Visibility } from "@/features/files/types";
+import { Base64DecoderShell } from "@/features/image-studio/components/Base64DecoderShell";
 import { toast } from "sonner";
 import { extractErrorMessage } from "@/utils/errors";
 
@@ -84,6 +91,7 @@ export function CloudUploadTab({
   const [resolving, setResolving] = useState(false);
   const [resolveError, setResolveError] = useState<string | null>(null);
   const [recentlyUploaded, setRecentlyUploaded] = useState<string[]>([]);
+  const [base64Open, setBase64Open] = useState(false);
 
   const folderRecord = folderId ? (foldersById[folderId] ?? null) : null;
   const folderLabel = folderRecord ? folderRecord.folderName : targetPath;
@@ -237,6 +245,31 @@ export function CloudUploadTab({
             <span>{recentlyUploaded.length} uploaded — added to selection</span>
           </div>
         ) : null}
+
+        <div className="rounded-lg border border-border bg-card/40 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setBase64Open((v) => !v)}
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium hover:bg-accent/50 transition-colors"
+            aria-expanded={base64Open}
+          >
+            {base64Open ? (
+              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+            )}
+            <Code2 className="h-3.5 w-3.5 text-amber-500" />
+            <span>Paste base64 instead</span>
+            <span className="ml-auto text-[11px] font-normal text-muted-foreground">
+              data:image/… or raw base64
+            </span>
+          </button>
+          {base64Open ? (
+            <div className="border-t border-border bg-background">
+              <Base64DecoderShell defaultFolder="from-base64" />
+            </div>
+          ) : null}
+        </div>
       </div>
     </div>
   );

@@ -442,6 +442,14 @@ export const adminCategories = [
         icon: <Send />,
         link: "/administration/email",
       },
+      {
+        title: "Admins & Levels",
+        description:
+          "Promote, demote, and revoke admin access. Super Admin only — guarded at the database, not just the UI.",
+        icon: <IconUsers />,
+        link: "/administration/admins",
+        isNew: true,
+      },
     ],
   },
 

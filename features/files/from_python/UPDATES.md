@@ -8,7 +8,7 @@
 > any release notes / breaking changes / runtime expectations the
 > backend team wants the frontend team to internalize.
 >
-> Last updated: 2026-04-26.
+> Last updated: 2026-05-05.
 
 ---
 
@@ -437,3 +437,79 @@ Tracked items that were explicitly NOT in the latest release:
   asked — see [for_python/REQUESTS.md](../for_python/REQUESTS.md)).
 - ⚪ S3 bucket CORS so direct `fetch(signed_url)` works without the
   FastAPI proxy round-trip (FE has asked).
+
+---
+
+## 9. Recent ships (changelog)
+
+Newest entries first. Each entry corresponds to one bundle in the
+plan we're working through against `for_python/REQUESTS.md`.
+
+### 2026-05-05 — Bundle B (partial): realtime publication + request_id metadata + S3 CORS doc 🔵 (awaiting apply / infra)
+
+Closes (post-apply) FE requests **2** (S3 CORS), **8** (cld_share_links
+realtime), **9** (X-Request-Id in realtime echoes), and **14e**
+(processed_documents realtime). The `cld_events` dispatcher worker
+(Item 10) is staged separately and lands in a follow-up.
+
+**B1 — Realtime publication extensions:**
+- New SQL migration: [`db/migrations/0032_realtime_publication_extensions.sql`](../../../aidream/db/migrations/0032_realtime_publication_extensions.sql)
+- Apply script: [`db/migrations/_apply_0032.py`](../../../aidream/db/migrations/_apply_0032.py)
+- Adds `cld_share_links`, `cld_file_permissions`, and `processed_documents` to the `supabase_realtime` publication, all with `REPLICA IDENTITY FULL` so UPDATE events carry the full prior row.
+- Recommended FE filters:
+  - `cld_share_links` — `owner_id=eq.<userId>` for own-link state.
+  - `cld_file_permissions` — `subject_user_id=eq.<userId>` for incoming-share grants.
+  - `processed_documents` — `source_kind=eq.cld_file` (then match `source_id` against the file_ids the FE is watching).
+
+**B2 — `X-Request-Id` propagation into row metadata:**
+- [`aidream/api/routers/files.py`](../../../aidream/aidream/api/routers/files.py) — new `_stamp_request_id(meta)` helper near the top, called at every metadata write site:
+  - upload (multipart) at the parsed_metadata stamp step.
+  - presigned upload finalize at the `upsert_file_async` call.
+  - file PATCH (both merge + replace branches).
+  - file copy.
+  - folder POST + PATCH.
+- After this lands, every realtime row event for `cld_files` / `cld_folders` will carry `metadata.request_id` matching the originating request's `X-Request-Id` header, letting the FE drop the 2s timestamp-fuzzy dedup fallback.
+- No schema change needed — the existing `metadata` jsonb on every cld_* table holds it.
+
+**B4 — S3 bucket CORS:**
+- Canonical policy committed at [`docs/cloud_files_s3_cors.json`](../../../aidream/docs/cloud_files_s3_cors.json) and described in [`docs/cloud_files_s3_cors.md`](../../../aidream/docs/cloud_files_s3_cors.md).
+- Apply via `aws s3api put-bucket-cors --bucket "$AWS_S3_USER_FILES_BUCKET" --cors-configuration file://docs/cloud_files_s3_cors.json` per environment.
+- Adds the production `app.aimatrx.com` and Vercel preview origins, plus localhost dev ports (3000/3100/3101/5173). Methods GET/HEAD only. Exposes `Content-Range` + `Accept-Ranges` so the upcoming Bundle D range-download path works directly against S3.
+
+**B3 — `cld_events` dispatcher worker (Item 10): NOT in this bundle.** Tracked separately; lands in a follow-up. The table + emit stub already exist, so the FE can already query `cld_events` directly if needed.
+
+**Verification on the FE side after apply:**
+- Realtime: subscribe to `cld_share_links` from supabase-js, create a share link from another tab → confirm event arrives.
+- Echo dedup: write a file from tab A, watch the realtime payload on tab B — confirm `metadata.request_id` matches tab A's `X-Request-Id`. Drop the timestamp-fuzzy fallback once verified.
+- CORS: `curl -I -X OPTIONS -H 'Origin: https://app.aimatrx.com' -H 'Access-Control-Request-Method: GET' "$SIGNED_URL"` returns 200 + ACAO. Switch fetch-based previewers off the `useFileBlob` proxy.
+
+---
+
+### 2026-05-05 — Bundle A: `cld_get_user_file_tree` privacy + correctness fix 🔵→🟢 (awaiting apply)
+
+Closes FE requests **0** and **0a**.
+
+**What landed in the tree:**
+- New SQL migration: [`db/migrations/0031_cld_files_tree_overload_fix.sql`](../../../aidream/db/migrations/0031_cld_files_tree_overload_fix.sql)
+- Apply script: [`db/migrations/_apply_0031.py`](../../../aidream/db/migrations/_apply_0031.py)
+
+**What it does, in one transaction:**
+1. **`DROP FUNCTION public.cld_get_user_file_tree(uuid) CASCADE;`** — removes the legacy 1-arg overload that was causing `42725 function ... is not unique` errors when the FE called it with only `p_user_id`. After this lands, calls with only `p_user_id` will return `42883 function does not exist` rather than `42725 ambiguous` — same outcome (FE workaround already passes the 5-arg form), but unambiguous.
+2. **`CREATE OR REPLACE FUNCTION public.cld_get_user_file_tree(uuid, int, int, boolean, boolean)`** — body identical to the 5-arg in `packages/matrx-utils/.../sql/003_security_correctness_quotas.sql:29` **except** the file leg's `WHERE` no longer contains `OR f.visibility = 'public'`. The file leg now matches the folder leg's intent: owner OR explicit grant only. Public files (share-link policy) remain readable by URL but no longer appear in foreign users' trees.
+3. **GRANTs re-issued** (idempotent): `REVOKE FROM PUBLIC, anon` + `GRANT TO authenticated, service_role`.
+
+**Apply status:** File is in the tree. The Python team needs to run `python db/migrations/_apply_0031.py` against each Supabase project (staging then prod) to ship the change. The apply script self-verifies post-execution that:
+- exactly one overload remains, and
+- the function body no longer contains `f.visibility = 'public'`.
+
+**Verification on the FE side after apply:**
+- Repro from 2026-05-05: confirm file `9e4850f8-a591-4a8e-a721-d51002c771ca` (owner `f0146c96-…`, `visibility='public'`) no longer appears in another user's `/files/tree` response.
+- Once verified, you can drop the defensive client-side filter in [`redux/thunks.ts::loadUserFileTree`](../redux/thunks.ts) — the wire response will be correct.
+- Both items 0 and 0a in `REQUESTS.md` move from 🔴 to 🟢.
+
+**Note on source-of-truth:** The new function body lives in
+`db/migrations/0031_cld_files_tree_overload_fix.sql` going forward.
+The older 5-arg in
+`packages/matrx-utils/.../sql/003_security_correctness_quotas.sql`
+is a historical record — do not edit it. Any future change to the
+tree RPC ships as a new numbered migration in `db/migrations/`.

@@ -25,7 +25,10 @@ import {
   Lock,
   Loader2,
   Search,
+  ImageIcon,
+  ExternalLink,
 } from "lucide-react";
+import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -62,6 +65,7 @@ import {
   buildCloudImageSource,
   resolveCloudFileUrl,
 } from "@/components/image/cloud/resolveCloudFileUrl";
+import { useBrowseAction } from "@/features/image-manager/browse/BrowseImageProvider";
 import { toast } from "sonner";
 
 export type AllowedFileKind =
@@ -104,6 +108,7 @@ export function CloudFilesTab({
 
   const { isSelected, toggleImage, addImage, clearImages, selectionMode } =
     useSelectedImages();
+  const browse = useBrowseAction();
 
   // Hydrate the tree if it hasn't loaded yet (e.g., modal opened on a
   // route that doesn't mount the realtime provider).
@@ -163,7 +168,44 @@ export function CloudFilesTab({
     return { folderRows: folders, fileRows: files };
   }, [sorted, foldersById, filesById, query]);
 
-  const handleToggle = async (file: CloudFileRecord) => {
+  const handleRowClick = async (file: CloudFileRecord) => {
+    // Browse mode: open image rows in the floating viewer; non-image rows
+    // we leave alone (clicking does nothing — the file is read-only here).
+    if (selectionMode === "none") {
+      const mime = resolveMime(file.mimeType, file.fileName);
+      if (!isImageMime(mime)) return;
+      try {
+        setResolvingId(file.id);
+        const imageRows = fileRows.filter((f) =>
+          isImageMime(resolveMime(f.mimeType, f.fileName)),
+        );
+        const resolved = await Promise.all(
+          imageRows.map((f) =>
+            resolveCloudFileUrl(store, f.id).catch(() => null),
+          ),
+        );
+        const urls: string[] = [];
+        const alts: string[] = [];
+        let initialIndex = 0;
+        for (let i = 0; i < imageRows.length; i += 1) {
+          const url = resolved[i];
+          if (!url) continue;
+          if (imageRows[i].id === file.id) initialIndex = urls.length;
+          urls.push(url);
+          alts.push(imageRows[i].fileName);
+        }
+        if (urls.length === 0) {
+          toast.error("Couldn't load that image");
+          return;
+        }
+        browse({ images: urls, alts, initialIndex, title: file.fileName });
+      } finally {
+        setResolvingId(null);
+      }
+      return;
+    }
+
+    // Selection modes (single / multiple)
     if (!isSelectable(file)) return;
     const sourceId = `cloud:${file.id}`;
     if (isSelected(sourceId)) {
@@ -201,6 +243,17 @@ export function CloudFilesTab({
           onNavigate={setCurrentFolderId}
         />
         <div className="flex-1" />
+        <Link
+          href="/files/photos"
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1 px-2 h-8 rounded-md text-xs font-medium text-muted-foreground border border-border hover:bg-accent hover:text-foreground transition-colors"
+          title="Open the Photos-only view in a new tab"
+        >
+          <ImageIcon className="h-3.5 w-3.5" />
+          Photos
+          <ExternalLink className="h-3 w-3 opacity-60" />
+        </Link>
         <div className="relative w-48">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -273,23 +326,32 @@ export function CloudFilesTab({
               const resolving = resolvingId === file.id;
               const mime = resolveMime(file.mimeType, file.fileName);
               const showThumb = isImageMime(mime) || isVideoMime(mime);
+              const isBrowse = selectionMode === "none";
+              const browseClickable = isBrowse && isImageMime(mime);
+              const rowDisabled = isBrowse
+                ? !browseClickable || resolving
+                : !selectable || resolving;
+              const titleText = isBrowse
+                ? browseClickable
+                  ? `Open ${file.fileName}`
+                  : file.fileName
+                : !selectable
+                  ? "This file type isn't selectable here"
+                  : file.fileName;
               return (
                 <li key={file.id}>
                   <button
                     type="button"
-                    onClick={() => handleToggle(file)}
-                    disabled={!selectable || resolving}
-                    title={
-                      !selectable
-                        ? "This file type isn't selectable here"
-                        : file.fileName
-                    }
+                    onClick={() => handleRowClick(file)}
+                    disabled={rowDisabled}
+                    title={titleText}
                     className={cn(
                       "flex w-full items-center gap-3 px-4 py-2 text-left transition-colors",
-                      selectable && !resolving && "hover:bg-accent/60",
-                      !selectable && "opacity-60 cursor-not-allowed",
+                      !rowDisabled && "hover:bg-accent/60",
+                      isBrowse && !browseClickable && "opacity-70 cursor-default",
+                      !isBrowse && !selectable && "opacity-60 cursor-not-allowed",
                       resolving && "opacity-60 cursor-wait",
-                      selected && "bg-accent",
+                      !isBrowse && selected && "bg-accent",
                     )}
                   >
                     <div className="h-9 w-9 flex-shrink-0 rounded overflow-hidden bg-muted/40">
@@ -319,13 +381,13 @@ export function CloudFilesTab({
                         className="mt-0.5"
                       />
                     </div>
-                    {!selectable ? (
+                    {!isBrowse && !selectable ? (
                       <Lock
                         className="h-3.5 w-3.5 text-muted-foreground"
                         aria-hidden="true"
                       />
                     ) : null}
-                    {selected ? (
+                    {!isBrowse && selected ? (
                       <div className="h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
                         <Check className="h-3 w-3" />
                       </div>

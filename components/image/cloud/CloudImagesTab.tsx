@@ -14,7 +14,15 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { Search, ImageOff, Loader2, Check, Clock, Cloud } from "lucide-react";
+import {
+  Search,
+  ImageOff,
+  Loader2,
+  Check,
+  Clock,
+  Cloud,
+  Info,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -37,6 +45,8 @@ import {
   resolveCloudFileUrl,
 } from "@/components/image/cloud/resolveCloudFileUrl";
 import { ImageGrid } from "@/components/image/shared/ImageGrid";
+import { useBrowseAction } from "@/features/image-manager/browse/BrowseImageProvider";
+import { CloudFileMetadataSheet } from "@/features/image-manager/components/CloudFileMetadataSheet";
 import { toast } from "sonner";
 
 const RECENTS_WINDOW_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
@@ -58,10 +68,14 @@ export function CloudImagesTab({ providedUrls }: CloudImagesTabProps) {
   const allFiles = useAppSelector(selectAllFilesArray);
   const { isSelected, toggleImage, selectionMode, addImage, clearImages } =
     useSelectedImages();
+  const browse = useBrowseAction();
 
   const [query, setQuery] = useState("");
   const [showRecentsOnly, setShowRecentsOnly] = useState(false);
   const [resolvingId, setResolvingId] = useState<string | null>(null);
+  const [metadataFile, setMetadataFile] = useState<CloudFileRecord | null>(
+    null,
+  );
 
   // Hydrate the tree the first time the tab opens. The realtime provider
   // also fires this when mounted at the layout level, but inside a modal
@@ -99,10 +113,40 @@ export function CloudImagesTab({ providedUrls }: CloudImagesTabProps) {
       });
   }, [allFiles, query, showRecentsOnly]);
 
-  const handleToggleCloudFile = async (file: CloudFileRecord) => {
+  const handleTileClick = async (file: CloudFileRecord) => {
+    // ─── Browse mode: open the floating viewer with all visible images ──
+    if (selectionMode === "none") {
+      try {
+        setResolvingId(file.id);
+        const resolved = await Promise.all(
+          imageFiles.map((f) =>
+            resolveCloudFileUrl(store, f.id).catch(() => null),
+          ),
+        );
+        const urls: string[] = [];
+        const alts: string[] = [];
+        let initialIndex = 0;
+        for (let i = 0; i < imageFiles.length; i += 1) {
+          const url = resolved[i];
+          if (!url) continue;
+          if (imageFiles[i].id === file.id) initialIndex = urls.length;
+          urls.push(url);
+          alts.push(imageFiles[i].fileName);
+        }
+        if (urls.length === 0) {
+          toast.error("Couldn't load that image");
+          return;
+        }
+        browse({ images: urls, alts, initialIndex, title: file.fileName });
+      } finally {
+        setResolvingId(null);
+      }
+      return;
+    }
+
+    // ─── Selection modes (single / multiple) ────────────────────────────
     const sourceId = `cloud:${file.id}`;
     if (isSelected(sourceId)) {
-      // Just toggle off — no resolution needed.
       toggleImage({
         type: "cloud-file",
         url: file.publicUrl ?? "",
@@ -112,7 +156,6 @@ export function CloudImagesTab({ providedUrls }: CloudImagesTabProps) {
     }
     try {
       setResolvingId(file.id);
-      // In single mode, replace any existing selection.
       if (selectionMode === "single") {
         clearImages();
       }
@@ -200,28 +243,36 @@ export function CloudImagesTab({ providedUrls }: CloudImagesTabProps) {
                 const sourceId = `cloud:${file.id}`;
                 const selected = isSelected(sourceId);
                 const resolving = resolvingId === file.id;
+                const isBrowse = selectionMode === "none";
                 return (
                   <button
                     key={file.id}
                     type="button"
-                    onClick={() => handleToggleCloudFile(file)}
+                    onClick={() => handleTileClick(file)}
                     disabled={resolving}
                     className={cn(
                       "group relative aspect-square overflow-hidden rounded-md border-2 transition-all bg-muted/40",
                       "hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/40",
-                      selected
+                      !isBrowse && selected
                         ? "border-primary ring-2 ring-primary/30"
                         : "border-transparent",
                       resolving && "opacity-60 cursor-wait",
                     )}
                     title={file.fileName}
+                    aria-label={
+                      isBrowse
+                        ? `Open ${file.fileName}`
+                        : selected
+                          ? `Deselect ${file.fileName}`
+                          : `Select ${file.fileName}`
+                    }
                   >
                     <MediaThumbnail
                       file={file}
                       iconSize={48}
                       className="absolute inset-0"
                     />
-                    {selected ? (
+                    {!isBrowse && selected ? (
                       <div className="absolute top-1.5 right-1.5 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md">
                         <Check className="h-3 w-3" />
                       </div>
@@ -231,6 +282,27 @@ export function CloudImagesTab({ providedUrls }: CloudImagesTabProps) {
                         <Loader2 className="h-5 w-5 animate-spin text-primary" />
                       </div>
                     ) : null}
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        event.preventDefault();
+                        setMetadataFile(file);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.stopPropagation();
+                          event.preventDefault();
+                          setMetadataFile(file);
+                        }
+                      }}
+                      title="File details"
+                      aria-label={`Details for ${file.fileName}`}
+                      className="absolute top-1.5 left-1.5 h-5 w-5 rounded-full bg-background/80 text-foreground flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity cursor-pointer hover:bg-background"
+                    >
+                      <Info className="h-3 w-3" />
+                    </span>
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent text-white text-[11px] px-2 py-1 truncate opacity-0 group-hover:opacity-100 transition-opacity">
                       {file.fileName}
                     </div>
@@ -241,6 +313,13 @@ export function CloudImagesTab({ providedUrls }: CloudImagesTabProps) {
           )}
         </section>
       </div>
+
+      <CloudFileMetadataSheet
+        file={metadataFile}
+        onOpenChange={(open) => {
+          if (!open) setMetadataFile(null);
+        }}
+      />
     </div>
   );
 }

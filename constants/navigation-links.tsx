@@ -433,6 +433,16 @@ export const allNavigationLinks: NavigationLink[] = [
     // favicon intentionally omitted — system override applies
   },
   {
+    label: "Admins & Levels",
+    href: "/administration/admins",
+    icon: (
+      <ShieldEllipsis className="text-rose-500 dark:text-rose-600 h-5 w-5 flex-shrink-0" />
+    ),
+    section: "admin",
+    category: "primary",
+    // favicon intentionally omitted — system override applies
+  },
+  {
     label: "Old Dashboard",
     href: "/admin",
     icon: (

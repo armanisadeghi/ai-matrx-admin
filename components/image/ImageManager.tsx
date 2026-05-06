@@ -3,34 +3,36 @@
 /**
  * components/image/ImageManager.tsx
  *
- * Full-screen image picker. As of the cloud-files rebuild, every tab
- * is wired into the user's cloud storage (`features/files`) — uploads
- * land in the user's account, "My Images" / "My Files" surface the
- * live cloud tree, and the embedded Image Studio writes its variants
- * to permanent CDN URLs.
+ * Full-screen image picker modal. As of the cloud-files rebuild, every
+ * tab is wired into the user's cloud storage (`features/files`) — uploads
+ * land in the user's account, "Your Cloud" / "All Files" surface the live
+ * cloud tree, and the embedded Image Studio writes its variants to
+ * permanent CDN URLs.
+ *
+ * Tab definitions are sourced from the shared registry
+ * (`features/image-manager/registry/sections.ts`) so the modal and the
+ * `/image-manager` route stay in sync. To add a new tab, edit the
+ * registry — not this file.
  *
  * Public surface stays backwards compatible. The legacy
- * `userImages` / `saveTo` / `bucket` / `path` props still work and
- * are mapped onto the new cloud props.
+ * `userImages` / `saveTo` / `bucket` / `path` props still work and are
+ * mapped onto the new cloud props when building the section context.
  */
 
 import React, { useEffect, useMemo, useState } from "react";
-import { Sparkles } from "lucide-react";
 import FullScreenOverlay from "@/components/official/FullScreenOverlay";
 import type { TabDefinition } from "@/components/official/FullScreenOverlay";
 import { Button } from "@/components/ui/button";
 import { ImagePreviewRow } from "@/components/image/shared/ImagePreviewRow";
-import { ResponsiveGallery } from "@/components/image/ResponsiveGallery";
 import { useSelectedImages } from "@/components/image/context/SelectedImagesProvider";
-import { CloudImagesTab } from "@/components/image/cloud/CloudImagesTab";
-import {
-  CloudFilesTab,
-  type AllowedFileKind,
-} from "@/components/image/cloud/CloudFilesTab";
-import { CloudUploadTab } from "@/components/image/cloud/CloudUploadTab";
-import { ImageStudioTab } from "@/components/image/cloud/ImageStudioTab";
+import type { AllowedFileKind } from "@/components/image/cloud/CloudFilesTab";
 import type { EmbeddedImageStudioProps } from "@/features/image-studio/components/EmbeddedImageStudio";
 import type { Visibility } from "@/features/files/types";
+import {
+  buildImageManagerSections,
+  SECTION_IDS,
+} from "@/features/image-manager/registry/sections";
+import { BrowseImageProvider } from "@/features/image-manager/browse/BrowseImageProvider";
 
 export interface ImageManagerProps {
   isOpen: boolean;
@@ -40,7 +42,7 @@ export interface ImageManagerProps {
   initialTab?: string;
   /** Initial query for the Public Images Unsplash search. */
   initialSearchTerm?: string;
-  /** Legacy: user-supplied URLs rendered inside "My Images" as a "Provided" row. */
+  /** Legacy: user-supplied URLs rendered inside "Your Cloud" as a "Provided" row. */
   userImages?: string[];
   /** Lock the selection mode toggle in the footer. */
   enforceSelectionMode?: boolean;
@@ -53,7 +55,7 @@ export interface ImageManagerProps {
   path?: string;
 
   // ─── New cloud-files props (all optional) ───
-  /** Which file kinds appear / are selectable in the "My Files" tab. Default `["image"]`. */
+  /** Which file kinds appear / are selectable in the "All Files" tab. Default `["image"]`. */
   allowFileTypes?: AllowedFileKind[];
   /** Logical folder path for new uploads. Default: `"Images/Uploads"`. */
   defaultUploadFolderPath?: string;
@@ -69,25 +71,18 @@ export interface ImageManagerProps {
   imageStudioProps?: Partial<EmbeddedImageStudioProps>;
 }
 
-const TAB_PUBLIC = "public-search";
-const TAB_MY_IMAGES = "my-images";
-const TAB_MY_FILES = "my-files";
-const TAB_UPLOAD = "upload";
-const TAB_IMAGE_STUDIO = "image-studio";
-const TAB_AI_GENERATE = "ai-generate";
-
 /**
  * Legacy tab IDs (pre cloud-files rebuild) mapped to their replacements,
  * so callers passing the old strings via `initialTab` / `visibleTabs`
  * continue to land on a sensible tab.
  */
 const LEGACY_TAB_ALIASES: Record<string, string> = {
-  "user-images": TAB_MY_IMAGES,
-  "upload-images": TAB_UPLOAD,
-  "paste-images": TAB_UPLOAD,
-  "quick-upload": TAB_UPLOAD,
-  "cloud-images": TAB_MY_FILES,
-  "image-generation": TAB_AI_GENERATE,
+  "user-images": SECTION_IDS.myImages,
+  "upload-images": SECTION_IDS.upload,
+  "paste-images": SECTION_IDS.upload,
+  "quick-upload": SECTION_IDS.upload,
+  "cloud-images": SECTION_IDS.myFiles,
+  "image-generation": SECTION_IDS.aiGenerate,
 };
 
 function aliasTabId(id: string): string {
@@ -110,30 +105,32 @@ function legacyPropsToFolderPath(
   if (bucket) return path ? `${bucket}/${path}` : bucket;
   if (saveTo === "public") return "Images/Uploads/Public";
   if (saveTo === "private") return "Images/Uploads/Private";
-  return undefined; // fall through to CloudUploadTab default
+  return undefined;
 }
 
-export function ImageManagerContent({
-  isOpen,
-  onClose,
-  onSave,
-  initialSelectionMode = "multiple",
-  initialTab = TAB_PUBLIC,
-  initialSearchTerm,
-  userImages,
-  enforceSelectionMode = false,
-  visibleTabs,
-  saveTo,
-  bucket,
-  path,
-  allowFileTypes = ["image"],
-  defaultUploadFolderPath,
-  defaultUploadFolderId,
-  defaultVisibility = "private",
-  showImageStudioTab = true,
-  showAIGenerateTab = true,
-  imageStudioProps,
-}: ImageManagerProps) {
+export function ImageManager(props: ImageManagerProps) {
+  const {
+    isOpen,
+    onClose,
+    onSave,
+    initialSelectionMode = "multiple",
+    initialTab = SECTION_IDS.publicSearch,
+    initialSearchTerm,
+    userImages,
+    enforceSelectionMode = false,
+    visibleTabs,
+    saveTo,
+    bucket,
+    path,
+    allowFileTypes = ["image"],
+    defaultUploadFolderPath,
+    defaultUploadFolderId,
+    defaultVisibility = "private",
+    showImageStudioTab = true,
+    showAIGenerateTab = true,
+    imageStudioProps,
+  } = props;
+
   const { selectedImages, selectionMode, setSelectionMode, clearImages } =
     useSelectedImages();
 
@@ -141,7 +138,6 @@ export function ImageManagerContent({
 
   const aliasedVisibleTabs = useMemo(() => {
     if (!visibleTabs || visibleTabs.length === 0) return undefined;
-    // De-dupe after aliasing — paste-images + upload-images both map to "upload".
     return Array.from(new Set(visibleTabs.map(aliasTabId)));
   }, [visibleTabs]);
 
@@ -170,7 +166,6 @@ export function ImageManagerContent({
 
   const effectiveDefaultVisibility = useMemo<Visibility>(() => {
     if (defaultVisibility) return defaultVisibility;
-    // Legacy: saveTo === "public" implies public visibility.
     if (saveTo === "public") return "public";
     return "private";
   }, [defaultVisibility, saveTo]);
@@ -189,92 +184,48 @@ export function ImageManagerContent({
     return Array.from(set);
   }, [allowFileTypes]);
 
-  const handleSave = () => {
-    onSave?.();
-    onClose();
-  };
+  const sections = useMemo(
+    () =>
+      buildImageManagerSections({
+        variant: "modal",
+        initialSearchTerm,
+        userImages,
+        allowFileTypes,
+        defaultUploadFolderPath: resolvedUploadPath,
+        defaultUploadFolderId,
+        defaultVisibility: effectiveDefaultVisibility,
+        acceptMimes,
+        imageStudioProps,
+        showImageStudio: showImageStudioTab,
+        showAIGenerate: showAIGenerateTab,
+        // Modal historically does not surface the secondary tools group.
+        showTools: false,
+        selectionMode: initialSelectionMode,
+      }),
+    [
+      initialSearchTerm,
+      userImages,
+      allowFileTypes,
+      resolvedUploadPath,
+      defaultUploadFolderId,
+      effectiveDefaultVisibility,
+      acceptMimes,
+      imageStudioProps,
+      showImageStudioTab,
+      showAIGenerateTab,
+      initialSelectionMode,
+    ],
+  );
 
-  const handleCancel = () => {
-    clearImages();
-    onClose();
-  };
-
-  const allTabs: TabDefinition[] = useMemo(() => {
-    const tabs: TabDefinition[] = [
-      {
-        id: TAB_PUBLIC,
-        label: "Public Images",
-        content: (
-          <div className="h-full flex flex-col">
-            <div className="flex-1 p-4 overflow-auto">
-              <ResponsiveGallery
-                type="unsplash"
-                initialSearchTerm={initialSearchTerm}
-              />
-            </div>
-          </div>
-        ),
-      },
-      {
-        id: TAB_MY_IMAGES,
-        label: "My Images",
-        content: (
-          <CloudImagesTab
-            providedUrls={
-              userImages && userImages.length > 0 ? userImages : undefined
-            }
-          />
-        ),
-      },
-      {
-        id: TAB_MY_FILES,
-        label: "My Files",
-        content: <CloudFilesTab allowFileTypes={allowFileTypes} />,
-      },
-      {
-        id: TAB_UPLOAD,
-        label: "Upload",
-        content: (
-          <CloudUploadTab
-            defaultUploadFolderPath={resolvedUploadPath}
-            defaultUploadFolderId={defaultUploadFolderId}
-            visibility={effectiveDefaultVisibility}
-            accept={acceptMimes}
-          />
-        ),
-      },
-    ];
-
-    if (showImageStudioTab && initialSelectionMode !== "none") {
-      tabs.push({
-        id: TAB_IMAGE_STUDIO,
-        label: "Image Studio",
-        content: <ImageStudioTab imageStudioProps={imageStudioProps} />,
-      });
-    }
-
-    if (showAIGenerateTab) {
-      tabs.push({
-        id: TAB_AI_GENERATE,
-        label: "AI Generate",
-        content: <AIGeneratePlaceholder />,
-      });
-    }
-
-    return tabs;
-  }, [
-    initialSearchTerm,
-    userImages,
-    allowFileTypes,
-    resolvedUploadPath,
-    defaultUploadFolderId,
-    effectiveDefaultVisibility,
-    acceptMimes,
-    showImageStudioTab,
-    initialSelectionMode,
-    imageStudioProps,
-    showAIGenerateTab,
-  ]);
+  const allTabs: TabDefinition[] = useMemo(
+    () =>
+      sections.map((section) => ({
+        id: section.id,
+        label: section.label,
+        content: <SectionRenderer key={section.id} render={section.render} />,
+      })),
+    [sections],
+  );
 
   const tabs = useMemo(
     () =>
@@ -292,81 +243,89 @@ export function ImageManagerContent({
     }
   }, [aliasedVisibleTabs, activeTab]);
 
+  const handleSave = () => {
+    onSave?.();
+    onClose();
+  };
+
+  const handleCancel = () => {
+    clearImages();
+    onClose();
+  };
+
   return (
-    <FullScreenOverlay
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Image Manager"
-      description="Browse, upload, and create images — everything saves to your cloud."
-      tabs={tabs}
-      initialTab={activeTab}
-      onTabChange={setActiveTab}
-      showSaveButton={true}
-      onSave={handleSave}
-      saveButtonLabel="Use Selected"
-      showCancelButton={true}
-      onCancel={handleCancel}
-      cancelButtonLabel="Cancel"
-      footerContent={
-        <div className="flex items-center mr-auto gap-4">
-          {!enforceSelectionMode ? (
-            <div className="flex items-center gap-2">
-              <Button
-                variant={selectionMode === "single" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectionMode("single")}
-              >
-                Single
-              </Button>
-              <Button
-                variant={selectionMode === "multiple" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectionMode("multiple")}
-              >
-                Multiple
-              </Button>
+    <BrowseImageProvider>
+      <FullScreenOverlay
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Image Manager"
+        description="Browse, upload, and create images — everything saves to your cloud."
+        tabs={tabs}
+        initialTab={activeTab}
+        onTabChange={setActiveTab}
+        showSaveButton={true}
+        onSave={handleSave}
+        saveButtonLabel="Use Selected"
+        showCancelButton={true}
+        onCancel={handleCancel}
+        cancelButtonLabel="Cancel"
+        footerContent={
+          <div className="flex items-center mr-auto gap-4">
+            {!enforceSelectionMode ? (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={selectionMode === "none" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectionMode("none")}
+                  title="Browse mode — click an image to open the viewer."
+                >
+                  Browse
+                </Button>
+                <Button
+                  variant={selectionMode === "single" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectionMode("single")}
+                >
+                  Single
+                </Button>
+                <Button
+                  variant={selectionMode === "multiple" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectionMode("multiple")}
+                >
+                  Multiple
+                </Button>
+              </div>
+            ) : null}
+
+            <div className="text-sm text-muted-foreground">
+              {selectedImages.length} image
+              {selectedImages.length !== 1 ? "s" : ""} selected
             </div>
-          ) : null}
 
-          <div className="text-sm text-muted-foreground">
-            {selectedImages.length} image
-            {selectedImages.length !== 1 ? "s" : ""} selected
+            <div className="w-64">
+              <ImagePreviewRow size="s" />
+            </div>
           </div>
-
-          <div className="w-64">
-            <ImagePreviewRow size="s" />
-          </div>
-        </div>
-      }
-    />
+        }
+      />
+    </BrowseImageProvider>
   );
 }
 
-export function ImageManager(props: ImageManagerProps) {
-  return <ImageManagerContent {...props} />;
+/**
+ * Tiny wrapper so each section's `render` runs as its own component —
+ * lets the section render hooks safely.
+ */
+function SectionRenderer({ render }: { render: () => React.ReactNode }) {
+  return <>{render()}</>;
 }
 
-// ---------------------------------------------------------------------------
-// AI Generate placeholder — a clean "coming soon" hero. The real surface
-// will mount an agent shortcut here.
-// ---------------------------------------------------------------------------
-
-function AIGeneratePlaceholder() {
-  return (
-    <div className="h-full flex items-center justify-center p-8">
-      <div className="text-center max-w-md">
-        <div className="mx-auto h-14 w-14 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-4">
-          <Sparkles className="h-7 w-7" />
-        </div>
-        <h3 className="text-lg font-semibold text-foreground">
-          AI Image Generation
-        </h3>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Generate images directly from a description — coming soon. We're
-          wiring an agent here so you can describe an image in plain English and
-          have it appear in your cloud, ready to use.
-        </p>
-      </div>
-    </div>
-  );
-}
+/**
+ * @deprecated The internal `ImageManagerContent` export was used by some
+ * callers in the early cloud-files rebuild. It is now an alias for
+ * `<ImageManager>` — there's no separate content/host split anymore.
+ * This export will be removed in Phase 4.3 of the Image Manager Hub
+ * plan; new callers should import `ImageManager` directly.
+ */
+export const ImageManagerContent = ImageManager;

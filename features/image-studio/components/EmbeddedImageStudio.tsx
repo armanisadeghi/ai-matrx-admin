@@ -60,7 +60,7 @@ import { slugifyFilename } from "../utils/slugify-filename";
 import { formatBytes, formatDimensions } from "../utils/format-bytes";
 import type { ImagePosition, StudioSourceFile } from "../types";
 import { StudioDropZone } from "./StudioDropZone";
-import { InitialCropDialog } from "./InitialCropDialog";
+import { InitialCropWindow } from "./InitialCropWindow";
 import { useFilePicker } from "@/features/files/components/pickers/FilePicker";
 import { useAppStore } from "@/lib/redux/hooks";
 import { getSignedUrl } from "@/features/files/api/files";
@@ -502,11 +502,11 @@ export function EmbeddedImageStudio({
           onOpenLibrary={handlePickFromLibrary}
           disabled={disabled}
         />
-        <InitialCropDialog
-          files={pendingFiles}
-          onComplete={handleCropComplete}
-          onCancel={handleCropCancel}
-        />
+                <InitialCropWindow
+                    files={pendingFiles}
+                    onComplete={handleCropComplete}
+                    onCancel={handleCropCancel}
+                />
         {filePicker.element}
       </Wrapper>
     );
