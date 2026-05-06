@@ -445,6 +445,171 @@ Tracked items that were explicitly NOT in the latest release:
 Newest entries first. Each entry corresponds to one bundle in the
 plan we're working through against `for_python/REQUESTS.md`.
 
+### 2026-05-05 — Bundle E3: Virtual Filesystem Adapter surface 🟢 (code in tree)
+
+Closes the duplicate-numbered "Item 1." in REQUESTS.md (Virtual
+Filesystem Adapter — server-side parity).
+
+**New module** `aidream/api/virtual/`:
+- [`contract.py`](../../../aidream/aidream/api/virtual/contract.py) — Pydantic mirror of `features/files/virtual-sources/types.ts`. Same field names, snake_case at the wire boundary. `VirtualNode`, `VirtualNodeField`, `VirtualContent`, `VirtualVersion`, `VirtualCapabilities`, `VirtualAdapterDescriptor`, plus the request bodies (`WriteArgs`, `RenameArgs`, `MoveArgs`, `CreateArgs`, `ResolvePathArgs`).
+- [`dispatcher.py`](../../../aidream/aidream/api/virtual/dispatcher.py) — adapter registry + path resolver. `resolve_path("/Notes/Daily/2026-05-05.md")` walks segment-by-segment via each adapter's `resolve_name_to_id`, supports `row#field_id` syntax for multi-field rows.
+- [`router.py`](../../../aidream/aidream/api/virtual/router.py) — full HTTP surface (mounted under `/virtual`).
+
+**Endpoints** (mounted at root, dispatched to adapters by `source_id`):
+| Method | Path |
+|---|---|
+| `GET` | `/virtual` (list adapters) |
+| `POST` | `/virtual/resolve` (path → ids) |
+| `GET` | `/virtual/{adapter_id}/list` |
+| `GET` | `/virtual/{adapter_id}/{vid}/content` |
+| `POST` | `/virtual/{adapter_id}/{vid}/save` |
+| `POST` | `/virtual/{adapter_id}/{vid}/rename` |
+| `POST` | `/virtual/{adapter_id}/{vid}/move` |
+| `DELETE` | `/virtual/{adapter_id}/{vid}` |
+| `POST` | `/virtual/{adapter_id}/create` |
+| `GET` | `/virtual/{adapter_id}/{vid}/versions` |
+| `POST` | `/virtual/{adapter_id}/{vid}/versions/{n}/restore` |
+
+**Six built-in adapters registered:**
+| `source_id` | Label | Capabilities |
+|---|---|---|
+| `my_files` | My Files | list/read/write/rename/delete/move/folders/binary/versions — wraps existing `cld_files` + S3 |
+| `notes` | Notes | list/read/write/rename/delete/folders + create — wraps `notes` + `note_folders` |
+| `code_files` | Code Snippets | list/read/write/rename/delete/folders + create — wraps `code_files` + `code_file_folders` |
+| `aga_apps` | Agent Apps | list/read/write/rename/delete (flat) — wraps `aga_apps`, single `component_code` field |
+| `prompt_apps` | Prompt Apps | list/read/write/rename/delete (flat) — wraps `prompt_apps`, single `component_code` field |
+| `tool_ui_components` | Tool UIs | list/read/write (flat, multi-field) — wraps `tl_ui`, 5 editable code columns |
+
+**ACL:** every adapter receives the JWT-resolved `user_id` and applies its own row-level scope (owner-OR-explicit-grant for cloud_files, `user_id`-eq for the user-owned adapters, `is_active`-eq for the platform-asset tool_ui_components). RLS on the underlying tables is the second line of defence.
+
+**Optimistic concurrency:** the wire standardizes on `expected_updated_at` (TIMESTAMPTZ string) per the FE TS contract. Adapters whose backing table tracks `version: int` (Notes) translate internally — the server bumps `version` on write and returns the new `updated_at` so subsequent writes can pin to it.
+
+**AI agent fs_* tools** in [`aidream/api/ai_tools/fs.py`](../../../aidream/aidream/api/ai_tools/fs.py):
+- `fs_list(path)` — root listing returns the 6 adapter labels; deep paths dispatch to `adapter.list`.
+- `fs_read(path)` — `path = "/My Files/foo.txt"` returns the same bytes as `GET /files/{id}/content`. `path = "/Tool UIs/cloud_browser_screenshot#inline_code.tsx"` reads a single multi-field column.
+- `fs_write(path, content)`, `fs_rename(path, new_name)`, `fs_delete(path, hard?)`, `fs_move(src, dst_parent)`, `fs_create(parent, name, kind, content?)` — all in-process, no HTTP loop, no JWT re-auth.
+
+The seven tools share a single dispatch helper (`_resolve_path_to_adapter`) so the path → (adapter_id, virtual_id, field_id) tuple is computed once per call. Cross-adapter `fs_move` is intentionally rejected in v1 — that becomes adapter-pair-specific copy-then-delete logic in a follow-up.
+
+**Verification matrix (manual smoke):**
+- `GET /virtual` → 6 entries with stable shapes.
+- `POST /virtual/resolve` with `{ "path": "/My Files/foo.txt" }` → returns `{adapter_id: "my_files", virtual_id: <uuid>}`.
+- `fs_read("/Notes/MyNote")` from an agent → returns the markdown content of MyNote.
+- Cross-user attempt: `fs_read("/Notes/<user-B-note-id>")` from user A's JWT → 403, never 404, never leaks the row.
+
+**Known follow-ups (NOT shipped this run):**
+- TUS-uploaded binary content via `fs_read` returns UTF-8-decoded bytes — strict-binary support needs a `binary: true` arg → base64 response shape. The cloud_files adapter already opts into `capabilities.binary = true` so the FE can route binary previews via the existing `GET /files/{id}/url` flow until then.
+- Notes adapter does not yet expose `list_versions` / `restore_version` even though `note_versions` exists.
+- `fs_move` cross-adapter is a 400; the dispatcher could route copy-then-delete in a follow-up.
+
+---
+
+### 2026-05-05 — Bundle E2: TUS resumable uploads 🟢 (SQL applied; code in tree)
+
+Closes FE request **3** (Resumable / TUS uploads for files larger than 100 MB).
+
+**New SQL migration** [`db/migrations/0036_cld_uploads_inflight.sql`](../../../aidream/db/migrations/0036_cld_uploads_inflight.sql) (applied):
+- `cld_uploads_inflight` registry table mapping a TUS upload-id to the underlying S3 multipart upload-id, current Upload-Offset, accumulated parts list, status (`in_progress|completed|aborted`), expiration, and idempotency key.
+- Unique index on `(owner_id, idempotency_key)` for in-progress rows so retries reuse the same multipart upload.
+- RLS so owners can read their own in-flight uploads (the FE can show a "resume your upload?" prompt).
+
+**New router** [`aidream/api/routers/files_tus.py`](../../../aidream/aidream/api/routers/files_tus.py) — TUS Core 1.0.0 + Creation + Termination + Creation-with-Upload extensions, mounted at `/files/upload/tus`.
+
+**Endpoints:**
+| Method | Path | Behavior |
+|---|---|---|
+| `OPTIONS` | `/files/upload/tus` | Capabilities: `Tus-Version: 1.0.0`, `Tus-Max-Size: 5368709120` (5 GB), `Tus-Extension: creation,termination,creation-with-upload` |
+| `POST` | `/files/upload/tus` | Creation. Headers: `Upload-Length` (required), `Upload-Metadata` (filepath, mimetype, visibility...). Returns 201 with `Location: /files/upload/tus/{id}`. Quota pre-flight runs here. |
+| `HEAD` | `/files/upload/tus/{id}` | Returns current `Upload-Offset` so the client can resume. |
+| `PATCH` | `/files/upload/tus/{id}` | Append bytes. `Content-Type: application/offset+octet-stream`, `Upload-Offset` header. Each PATCH = one S3 part. On final PATCH, completes multipart + creates `cld_files` row + dispatches thumbnail. |
+| `DELETE` | `/files/upload/tus/{id}` | Aborts the multipart + marks row `aborted`. |
+
+**Behaviour notes:**
+- **Each PATCH is one S3 part.** Clients must send chunks ≥ 5 MiB except the last (S3 multipart minimum). All major TUS client SDKs (uppy, tus-js-client) honour this automatically.
+- **Idempotency:** `X-Idempotency-Key` on POST routes the client to an existing in-progress upload with the same key (same owner). Lets the FE retry POSTs without leaking multipart uploads.
+- **Quota:** checked at create time against `Upload-Length`; checked again at completion against actual finalized size.
+- **Re-key native:** TUS uploads land at the canonical `<owner>/<file_id>` key (Item 6) directly — no rekey backfill needed for TUS-uploaded files.
+- **Thumbnails:** automatically dispatched fire-and-forget on completion (same pipeline as multipart `POST /files/upload`).
+- **Hard cap:** 5 GB. The buffered path's bypass header still works for the rare >5 GB internal use case.
+
+**Error codes:** standard TUS responses (412 version mismatch, 415 unsupported media type, 409 offset mismatch, 413 size exceeded, 404 unknown upload-id) plus our `cloud_files` codes for quota refusals.
+
+**FE integration:** `tus-js-client` "just works" pointed at `<API>/files/upload/tus` with `Authorization: Bearer <jwt>`. Set `chunkSize` to ≥5 MiB. Pass `metadata: { filepath, mimetype, visibility }`.
+
+---
+
+### 2026-05-05 — Bundle E1: Storage re-key by file_id (foundation) 🟢 (SQL applied; backfill on demand)
+
+Closes (foundationally) FE request **6** (Storage re-keying by `file_id`).
+
+**New SQL migration** [`db/migrations/0035_cld_files_canonical_storage_uri.sql`](../../../aidream/db/migrations/0035_cld_files_canonical_storage_uri.sql) (applied) adds:
+- `canonical_storage_uri TEXT` — `<backend>://<bucket>/<owner_id>/<file_id>` shape.
+- `uq_cld_files_canonical_storage_uri` unique partial index (NULLs allowed).
+
+**On apply:** 1,347 existing rows have `canonical_storage_uri = NULL` and need backfill.
+
+**Backfill script:** [`aidream/services/cloud_files/rekey_backfill.py`](../../../aidream/aidream/services/cloud_files/rekey_backfill.py). Idempotent + resumable.
+- For each null-canonical row: S3 server-side `copy_object` from legacy `<owner>/<file_path>` to canonical `<owner>/<file_id>`, then UPDATE the row.
+- Skips rows already at canonical, rows whose legacy key 404s (flagged in `metadata._rekey_legacy_missing` for ops follow-up), and rows without an S3 backend.
+- Bounded parallelism (8 concurrent S3 ops). Default batch 200.
+- CLI: `python -m aidream.services.cloud_files.rekey_backfill [--owner UUID] [--limit N]`.
+
+**Read-path change:** New helper `_effective_storage_uri(record)` in `files.py` prefers `canonical_storage_uri` when set, else falls back to `storage_uri`. Wired into:
+- `GET /files/{id}/download` — both the buffered fallback and the range-streaming path.
+- `GET /files/{id}/url` — signed URL generation.
+- `POST /files/{id}/copy` — read of source bytes.
+- `GET /share/{token}` (resolve + download) — signed URL.
+- `aidream/services/cloud_files/thumbnails.py` — source bytes for thumbnail render.
+
+**Rename / bulk-move ops were already storage-key stable.** `POST /files/{id}/rename` and the bulk-move endpoints only update `file_path` / `parent_folder_id` — no S3 copy. The re-key column protects against future drift if anyone re-introduces path-baked storage URIs.
+
+**FileRecord wire shape:** `storage_uri` field on the response stays pointed at the legacy URI (so existing FE comparisons keep working). The canonical URI is server-side internal until the legacy column is dropped in a follow-up migration.
+
+**Next steps for Python team (NOT shipped this run):**
+1. Run `python -m aidream.services.cloud_files.rekey_backfill` against staging — verify zero `metadata._rekey_legacy_missing` markers.
+2. Run against prod (idempotent — safe to repeat).
+3. Wait 7 days bake time, confirm read paths never need legacy fallback.
+4. Drop legacy `storage_uri` column in migration 0036 (planned).
+
+---
+
+### 2026-05-05 — Bundle B3: cld_events dispatcher + webhook outbox 🟢 (SQL applied; code in tree)
+
+Closes FE request **10** (Webhooks/SSE for events beyond Supabase Realtime).
+
+**New SQL migration** [`db/migrations/0034_cld_events_dispatcher.sql`](../../../aidream/db/migrations/0034_cld_events_dispatcher.sql) (applied) adds:
+- `cld_events.processed_at` — dispatcher cursor + a partial index `idx_cld_events_unprocessed` on the unprocessed hot path.
+- `cld_webhooks` — owner-scoped subscriber registry: `target_url`, `secret`, optional `event_types[]` and `resource_types[]` filters, RLS so owners only see their own rows.
+- `cld_webhook_deliveries` — per-attempt log: `webhook_id`, `event_id`, `attempt`, `status` (`pending|delivered|failed|abandoned`), `http_status`, `latency_ms`, `error_message`, `next_attempt_at` for backoff.
+
+**New service module** [`aidream/services/cloud_files/event_dispatcher.py`](../../../aidream/aidream/services/cloud_files/event_dispatcher.py):
+- Polls `cld_events WHERE processed_at IS NULL` on a configurable interval (default 5 s, batch 100).
+- Fans each unmatched event out to active subscribed webhooks (filtered by `event_types` + `resource_types`).
+- POSTs the JSON payload with `X-Cld-Signature: sha256=<hmac>` (HMAC-SHA256 over the body using the webhook secret), plus `X-Cld-Event`, `X-Cld-Event-Id`, `X-Cld-Webhook-Id`, `X-Cld-Attempt` headers.
+- Records every attempt in `cld_webhook_deliveries` with HTTP status + latency. Failures schedule retries with exponential backoff (30s → 2m → 10m → 1h → 6h → 24h) up to 6 attempts before status flips to `abandoned`.
+- After `max_consecutive_failures` (default 50) the dispatcher auto-disables the subscription so a permanently-broken receiver does not accumulate retries forever.
+
+**Lifespan integration** in [`aidream/api/app.py`](../../../aidream/aidream/api/app.py): opt-in via `AIDREAM_CLD_EVENT_DISPATCHER=1`. The prod FastAPI process sets the env var; dev / worker / sandbox instances leave it unset so they don't fight for the outbox.
+
+**Subscriber webhook payload shape:**
+```json
+{
+  "event_id": "uuid",
+  "occurred_at": "2026-05-05T...Z",
+  "event_type": "file.uploaded",
+  "resource_type": "file",
+  "resource_id": "uuid|null",
+  "actor_id": "uuid|null",
+  "actor_type": "user|guest|system|service",
+  "request_id": "string|null",
+  "payload": {...}
+}
+```
+
+**Subscriber registration (FE / admin UI follow-up):** REST endpoints to manage `cld_webhooks` rows are not yet wired — for now subscriptions are registered by direct SQL or via the Supabase admin. The schema is in place so a `/files/webhooks/*` REST surface can land in a follow-up bundle without further DB changes.
+
+---
+
 ### 2026-05-05 — Bundle D: Range download streaming + thumbnail pipeline 🟢 (SQL applied; code in tree)
 
 Closes FE requests **4** (Range download / streaming) and **1**

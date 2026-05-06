@@ -205,6 +205,11 @@ export const primaryNavItems: ShellNavItem[] = [
         href: "/rag/library",
         iconName: "FileText",
       },
+      {
+        label: "Repositories",
+        href: "/rag/repositories",
+        iconName: "Code2",
+      },
     ],
   },
 ];

@@ -147,6 +147,14 @@ function mapSummary(d: ApiSummaryDoc): LibraryDocSummary {
 }
 
 function mapDetail(d: ApiDocDetail): LibraryDocDetail {
+  // Defensive across the board — any of the array fields can come back
+  // missing if the upstream Pydantic model rejects something silently
+  // (e.g. an old row missing a column). We never want a partial response
+  // to crash the detail sheet — surfacing whatever we have is more useful
+  // than a white screen.
+  const pages = Array.isArray(d?.pages) ? d.pages : [];
+  const sampleChunks = Array.isArray(d?.sample_chunks) ? d.sample_chunks : [];
+  const dataStores = Array.isArray(d?.data_stores) ? d.data_stores : [];
   return {
     id: d.id,
     name: d.name,
@@ -165,7 +173,7 @@ function mapDetail(d: ApiDocDetail): LibraryDocDetail {
     status: d.status,
     createdAt: d.created_at,
     updatedAt: d.updated_at,
-    pages: d.pages.map((p) => ({
+    pages: pages.map((p) => ({
       pageIndex: p.page_index,
       pageNumber: p.page_number,
       rawCharCount: p.raw_char_count,
@@ -179,7 +187,7 @@ function mapDetail(d: ApiDocDetail): LibraryDocDetail {
       rawPreview: p.raw_preview,
       hasImage: p.has_image,
     })),
-    sampleChunks: d.sample_chunks.map((c) => ({
+    sampleChunks: sampleChunks.map((c) => ({
       id: c.id,
       chunkIndex: c.chunk_index,
       chunkKind: c.chunk_kind,
@@ -189,7 +197,7 @@ function mapDetail(d: ApiDocDetail): LibraryDocDetail {
       hasVoyageEmbedding: c.has_voyage_embedding,
       contentPreview: c.content_preview,
     })),
-    dataStores: d.data_stores.map((s) => ({
+    dataStores: dataStores.map((s) => ({
       dataStoreId: s.data_store_id,
       name: s.name,
       kind: s.kind,
@@ -248,10 +256,15 @@ export function useLibrary(opts: UseLibraryOptions = {}) {
     if (status) params.set("status_filter", status);
 
     getJson<ApiListResponse>(`/rag/library?${params.toString()}`)
-      .then((r) => {
+      .then(({ data }) => {
         if (cancelled) return;
-        setDocs(r.documents.map(mapSummary));
-        setTotal(r.total);
+        // Defensive: server *should* always return {documents, total},
+        // but if for any reason the shape is off (proxy 404 page,
+        // upstream fallback, etc.), we fail soft instead of crashing
+        // the whole page with a `.map of undefined`.
+        const list = Array.isArray(data?.documents) ? data.documents : [];
+        setDocs(list.map(mapSummary));
+        setTotal(typeof data?.total === "number" ? data.total : list.length);
       })
       .catch((err) => {
         if (cancelled) return;
@@ -282,8 +295,8 @@ export function useLibrarySummary(refreshKey = 0) {
     setError(null);
 
     getJson<ApiSummaryTotals>("/rag/library/summary/totals")
-      .then((r) => {
-        if (!cancelled) setSummary(mapSummaryTotals(r));
+      .then(({ data }) => {
+        if (!cancelled && data) setSummary(mapSummaryTotals(data));
       })
       .catch((err) => {
         if (!cancelled) setError(err?.message ?? "Failed to load summary");
@@ -316,8 +329,8 @@ export function useLibraryDoc(processedDocumentId: string | null) {
     setError(null);
 
     getJson<ApiDocDetail>(`/rag/library/${processedDocumentId}`)
-      .then((r) => {
-        if (!cancelled) setDoc(mapDetail(r));
+      .then(({ data }) => {
+        if (!cancelled && data) setDoc(mapDetail(data));
       })
       .catch((err) => {
         if (!cancelled) setError(err?.message ?? "Failed to load document");

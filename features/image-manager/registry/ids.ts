@@ -19,7 +19,18 @@ export const SECTION_IDS = {
   myFiles: "my-files",
   upload: "upload",
   brandedUpload: "branded-upload",
+  /**
+   * "Studio Light" — the embedded studio (`<EmbeddedImageStudio>`) tuned for
+   * the picker workflow. The id stays `image-studio` so any persisted
+   * `localStorage` state from before the rename keeps working.
+   */
   imageStudio: "image-studio",
+  /**
+   * "Image Studio" — the full three-column shell (`<ImageStudioShell>`) that
+   * powers `/image-studio/convert`, embedded in-page so users never leave
+   * the hub.
+   */
+  studioFull: "studio-full",
   studioLibrary: "studio-library",
   profilePhoto: "profile-photo",
   aiGenerate: "ai-generate",

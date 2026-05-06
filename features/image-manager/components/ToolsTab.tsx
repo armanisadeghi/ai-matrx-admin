@@ -18,15 +18,19 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import {
+  AlertTriangle,
   Camera,
   Crop as CropIcon,
   CloudUpload,
   ExternalLink,
   Eye,
+  FlaskConical,
   Image as ImageIcon,
   Layers,
   MousePointer,
+  Search,
   Smile,
+  Squircle,
   type LucideIcon,
   X,
 } from "lucide-react";
@@ -50,6 +54,10 @@ interface ToolDescriptor {
   action: ToolAction;
   /** When provided, expanding the tool reveals an inline body inside this tab. */
   expand?: () => React.ReactNode;
+  /** Visual lift for items in the Beta group — adds a small "BETA" pill. */
+  beta?: boolean;
+  /** When set, surfaces a subtle warning banner under the description. */
+  warning?: string;
 }
 
 type ToolAction =
@@ -92,7 +100,7 @@ export function ToolsTab() {
       }
       // Open immediately in the floating viewer for review.
       openImageViewer(dispatch, {
-        images: [result.dataUrl],
+        images: [result.fullSize],
         title: "Screenshot",
       });
       toast.success("Screenshot ready — opened in the viewer");
@@ -115,14 +123,14 @@ export function ToolsTab() {
     },
     {
       id: "crop-studio",
-      label: "Crop Studio",
+      label: "Crop Studio (one or many)",
       icon: CloudUpload,
       iconColor: "text-indigo-500",
       description:
-        "Drop one or many images, give each its own tab, then crop them individually or apply one rectangle to all. Saves the cropped output to the cloud folder you pick.",
+        'Drop a single image or a whole batch. Each becomes its own tab; crop them individually, or set the rectangle once and click "Apply to all" to copy it — proportional to each image\'s natural size — across the batch. Saves directly to the cloud folder you pick.',
       action: {
         kind: "openOverlay",
-        label: "Open Studio",
+        label: "Open Crop Studio",
         overlayId: "cropStudioWindow",
       },
     },
@@ -223,12 +231,82 @@ export function ToolsTab() {
     },
   ];
 
+  // ─── Beta — legacy / candidate-for-removal surfaces ─────────────────────
+  // Items here are tracked in `features/image-manager/CLEANUP-CANDIDATES.md`.
+  // They live in this group so we can verify nothing essential was missed
+  // before deleting them. If something here turns out to be essential, lift
+  // it into the main tools array (or a primary section) and remove it from
+  // CLEANUP-CANDIDATES.md.
+  const betaTools: ToolDescriptor[] = [
+    {
+      id: "legacy-image-editor",
+      label: "Legacy image editor",
+      icon: AlertTriangle,
+      iconColor: "text-amber-500",
+      beta: true,
+      description:
+        "Fabric.js-based editor — `components/advanced-image-editor/`. Currently broken under Turbopack (jsdom dep). The placeholder route confirms the disable.",
+      warning: "Disabled while we finish the Next.js 16 / Turbopack migration.",
+      action: {
+        kind: "openLink",
+        label: "Open placeholder",
+        href: "/image-editing",
+        external: true,
+      },
+    },
+    {
+      id: "legacy-parallax-gallery",
+      label: "Parallax gallery (legacy)",
+      icon: Layers,
+      iconColor: "text-zinc-500",
+      beta: true,
+      description:
+        "Original `<ParallaxScrollAdvanced>` demo from `components/matrx/parallax-scroll/`. Sole consumer is this route — slated for deletion alongside the parallax-scroll component.",
+      action: {
+        kind: "openLink",
+        label: "Open gallery",
+        href: "/image-editing/gallery",
+        external: true,
+      },
+    },
+    {
+      id: "legacy-public-image-search",
+      label: "Public image search (standalone)",
+      icon: Search,
+      iconColor: "text-zinc-500",
+      beta: true,
+      description:
+        "Standalone demo of the legacy `<PublicImageSearch>` modal. The component itself stays (now proxied via `/api/unsplash`); only the demo page is redundant — Public Images already covers this in-hub.",
+      action: {
+        kind: "openLink",
+        label: "Open demo",
+        href: "/image-editing/public-image-search",
+        external: true,
+      },
+    },
+    {
+      id: "legacy-easy-cropper",
+      label: "Easy cropper (legacy)",
+      icon: Squircle,
+      iconColor: "text-zinc-500",
+      beta: true,
+      description:
+        "`<EasyImageCropper>` demo. Replaced in-hub by the Crop tile (single image) and the Crop Studio overlay (one or many). Kept here to compare before deletion.",
+      action: {
+        kind: "openLink",
+        label: "Open demo",
+        href: "/image-editing/simple-crop",
+        external: true,
+      },
+    },
+  ];
+
   const expanded = expandedId
     ? (tools.find((t) => t.id === expandedId) ?? null)
     : null;
 
   return (
-    <div className="h-full overflow-auto p-4 space-y-4">
+    <div className="h-full overflow-auto p-4 space-y-5">
       {expanded?.expand ? (
         <section className="rounded-lg border border-primary/30 bg-card overflow-hidden">
           <header className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border bg-primary/5">
@@ -251,36 +329,92 @@ export function ToolsTab() {
         </section>
       ) : null}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {tools.map((tool) => (
-          <ToolCard
-            key={tool.id}
-            tool={tool}
-            isExpanded={expandedId === tool.id}
-            onAction={() => {
-              switch (tool.action.kind) {
-                case "expand":
-                  setExpandedId((id) => (id === tool.id ? null : tool.id));
-                  break;
-                case "openOverlay":
-                  dispatch(
-                    openOverlay({
-                      overlayId: tool.action.overlayId,
-                      instanceId: "default",
-                    }),
-                  );
-                  break;
-                case "callback":
-                  void tool.action.run();
-                  break;
-                case "openLink":
-                  // External links handled by the <Link> in the card itself.
-                  break;
-              }
-            }}
-          />
-        ))}
+      <ToolGrid
+        tools={tools}
+        expandedId={expandedId}
+        onAction={(tool) => handleToolAction(tool)}
+      />
+
+      <ToolGroupHeader
+        label="Beta"
+        description="Legacy and candidate-for-removal surfaces. Verify nothing essential is here before they're deleted from the tree."
+      />
+      <ToolGrid
+        tools={betaTools}
+        expandedId={expandedId}
+        onAction={(tool) => handleToolAction(tool)}
+      />
+    </div>
+  );
+
+  function handleToolAction(tool: ToolDescriptor) {
+    switch (tool.action.kind) {
+      case "expand":
+        setExpandedId((id) => (id === tool.id ? null : tool.id));
+        break;
+      case "openOverlay":
+        dispatch(
+          openOverlay({
+            overlayId: tool.action.overlayId,
+            instanceId: "default",
+          }),
+        );
+        break;
+      case "callback":
+        void tool.action.run();
+        break;
+      case "openLink":
+        // External links handled by the <Link> in the card itself.
+        break;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Group helpers — header label and a generic grid renderer.
+// ---------------------------------------------------------------------------
+
+function ToolGroupHeader({
+  label,
+  description,
+}: {
+  label: string;
+  description: string;
+}) {
+  return (
+    <div className="border-t border-border pt-4 space-y-1">
+      <div className="flex items-center gap-2">
+        <FlaskConical className="h-3.5 w-3.5 text-amber-500" />
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {label}
+        </h3>
       </div>
+      <p className="text-[11px] text-muted-foreground/80 leading-snug">
+        {description}
+      </p>
+    </div>
+  );
+}
+
+function ToolGrid({
+  tools,
+  expandedId,
+  onAction,
+}: {
+  tools: ToolDescriptor[];
+  expandedId: string | null;
+  onAction: (tool: ToolDescriptor) => void;
+}) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      {tools.map((tool) => (
+        <ToolCard
+          key={tool.id}
+          tool={tool}
+          isExpanded={expandedId === tool.id}
+          onAction={() => onAction(tool)}
+        />
+      ))}
     </div>
   );
 }
@@ -300,16 +434,38 @@ function ToolCard({
 }) {
   const Icon = tool.icon;
   return (
-    <div className="rounded-lg border border-border bg-card p-3 flex flex-col gap-2">
+    <div
+      className={cn(
+        "rounded-lg border bg-card p-3 flex flex-col gap-2",
+        tool.beta
+          ? "border-amber-500/30 bg-amber-50/30 dark:bg-amber-950/10"
+          : "border-border",
+      )}
+    >
       <div className="flex items-start gap-2">
         <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center flex-shrink-0">
           <Icon className={cn("h-4 w-4", tool.iconColor)} />
         </div>
-        <div className="min-w-0">
-          <h4 className="text-sm font-semibold leading-tight">{tool.label}</h4>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <h4 className="text-sm font-semibold leading-tight">
+              {tool.label}
+            </h4>
+            {tool.beta ? (
+              <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 leading-none">
+                Beta
+              </span>
+            ) : null}
+          </div>
           <p className="text-xs text-muted-foreground mt-0.5 leading-snug">
             {tool.description}
           </p>
+          {tool.warning ? (
+            <p className="mt-1.5 inline-flex items-start gap-1 text-[11px] text-amber-700 dark:text-amber-400 leading-snug">
+              <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+              <span>{tool.warning}</span>
+            </p>
+          ) : null}
         </div>
       </div>
 

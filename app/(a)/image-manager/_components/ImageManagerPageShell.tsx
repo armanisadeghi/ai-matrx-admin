@@ -23,11 +23,18 @@ import {
   MousePointer2,
   Eye,
   CopyCheck,
+  PanelLeftClose,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ImagePreviewRow } from "@/components/image/shared/ImagePreviewRow";
 import { useSelectedImages } from "@/components/image/context/SelectedImagesProvider";
@@ -40,6 +47,7 @@ import type { SectionDefinition } from "@/features/image-manager/registry/types"
 
 const STORAGE_KEY_SECTION = "image-manager:active-section";
 const STORAGE_KEY_MODE = "image-manager:selection-mode";
+const STORAGE_KEY_COLLAPSED = "image-manager:sidebar-collapsed";
 const DEFAULT_SECTION_ID: string = SECTION_IDS.myImages;
 
 type SelectionMode = "single" | "multiple" | "none";
@@ -58,6 +66,7 @@ export function ImageManagerPageShell() {
 
   const [activeId, setActiveId] = useState<string>(DEFAULT_SECTION_ID);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const isMobile = useIsMobile();
 
   const { selectedImages, selectionMode, setSelectionMode, clearImages } =
@@ -110,6 +119,29 @@ export function ImageManagerPageShell() {
       /* ignore */
     }
   }, [selectionMode]);
+
+  // ─── Persist sidebar collapsed state ────────────────────────────────
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const stored = window.localStorage.getItem(STORAGE_KEY_COLLAPSED);
+      if (stored === "1") setSidebarCollapsed(true);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        STORAGE_KEY_COLLAPSED,
+        sidebarCollapsed ? "1" : "0",
+      );
+    } catch {
+      /* ignore */
+    }
+  }, [sidebarCollapsed]);
 
   const activeSection = useMemo<SectionDefinition>(
     () => sections.find((s) => s.id === activeId) ?? sections[0],
@@ -194,62 +226,133 @@ export function ImageManagerPageShell() {
   // ─── Desktop ────────────────────────────────────────────────────────
   return (
     <BrowseImageProvider>
-      <div className="h-[calc(100dvh-var(--header-height))] flex overflow-hidden bg-textured">
-        <aside className="w-44 flex-shrink-0 border-r border-border bg-card/40 flex flex-col">
-          <div className="px-3 py-2.5 border-b border-border">
-            <h1 className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <ImageIcon className="h-4 w-4 text-primary" />
-              Image Manager
-            </h1>
-          </div>
-
-          <nav
-            className="flex-1 overflow-y-auto py-1"
-            aria-label="Image Manager sections"
-          >
-            {renderSectionGroups(
-              sections,
-              activeId,
-              (id) => setActiveId(id),
-              /* dense */ true,
+      <TooltipProvider delayDuration={300}>
+        <div className="h-[calc(100dvh-var(--header-height))] flex overflow-hidden bg-textured">
+          <aside
+            className={cn(
+              "flex-shrink-0 border-r border-border bg-card/40 flex flex-col transition-[width] duration-200",
+              sidebarCollapsed ? "w-11" : "w-44",
             )}
-          </nav>
-
-          <SelectionModeStrip
-            selectionCount={selectedImages.length}
-            selectionMode={selectionMode}
-            onChangeMode={setSelectionMode}
-            onClearSelection={clearImages}
-          />
-        </aside>
-
-        <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
-          <header className="border-b border-border bg-card/40 px-5 py-2.5 flex items-center gap-2 flex-shrink-0">
-            <activeSection.icon
-              className={cn("h-4 w-4 flex-shrink-0", activeSection.iconColor)}
+          >
+            <SidebarHeader
+              collapsed={sidebarCollapsed}
+              onToggle={() => setSidebarCollapsed((c) => !c)}
             />
-            <h2 className="text-sm font-semibold text-foreground truncate">
-              {activeSection.label}
-            </h2>
-          </header>
 
-          <div className="flex-1 min-h-0 overflow-hidden">
-            {activeSection.render()}
-          </div>
+            <nav
+              className="flex-1 overflow-y-auto py-1"
+              aria-label="Image Manager sections"
+            >
+              {renderSectionGroups(
+                sections,
+                activeId,
+                (id) => setActiveId(id),
+                /* dense */ true,
+                /* collapsed */ sidebarCollapsed,
+              )}
+            </nav>
 
-          {selectedImages.length > 0 ? (
-            <footer className="border-t border-border bg-card/40 px-4 py-2 flex items-center gap-3 flex-shrink-0">
-              <span className="text-xs text-muted-foreground flex-shrink-0">
-                {selectedImages.length} selected
-              </span>
-              <div className="flex-1 min-w-0">
-                <ImagePreviewRow size="s" showRemoveButton />
-              </div>
-            </footer>
-          ) : null}
-        </main>
-      </div>
+            <SelectionModeStrip
+              selectionCount={selectedImages.length}
+              selectionMode={selectionMode}
+              onChangeMode={setSelectionMode}
+              onClearSelection={clearImages}
+              collapsed={sidebarCollapsed}
+            />
+          </aside>
+
+          <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
+            <header className="border-b border-border bg-card/40 px-5 py-2.5 flex items-center gap-2 flex-shrink-0">
+              <activeSection.icon
+                className={cn("h-4 w-4 flex-shrink-0", activeSection.iconColor)}
+              />
+              <h2 className="text-sm font-semibold text-foreground truncate">
+                {activeSection.label}
+              </h2>
+            </header>
+
+            <div className="flex-1 min-h-0 overflow-hidden">
+              {activeSection.render()}
+            </div>
+
+            {selectedImages.length > 0 ? (
+              <footer className="border-t border-border bg-card/40 px-4 py-2 flex items-center gap-3 flex-shrink-0">
+                <span className="text-xs text-muted-foreground flex-shrink-0">
+                  {selectedImages.length} selected
+                </span>
+                <div className="flex-1 min-w-0">
+                  <ImagePreviewRow size="s" showRemoveButton />
+                </div>
+              </footer>
+            ) : null}
+          </main>
+        </div>
+      </TooltipProvider>
     </BrowseImageProvider>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Sidebar header
+//
+// Expanded:   blue ImageIcon + "Image Manager" + collapse button on the right.
+// Collapsed: a single button — the blue ImageIcon — that re-expands the
+//            sidebar. Same visual anchor, different role: when the sidebar
+//            is closed, the icon is the "open it back up" affordance.
+// ---------------------------------------------------------------------------
+
+function SidebarHeader({
+  collapsed,
+  onToggle,
+}: {
+  collapsed: boolean;
+  onToggle: () => void;
+}) {
+  if (collapsed) {
+    return (
+      <div className="px-1 py-1.5 border-b border-border flex items-center justify-center">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={onToggle}
+              aria-label="Expand sidebar"
+              aria-expanded={false}
+              className="h-7 w-7 rounded-md flex items-center justify-center hover:bg-primary/10 transition-colors"
+            >
+              <ImageIcon className="h-4 w-4 text-primary" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right" sideOffset={6}>
+            Expand sidebar
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    );
+  }
+  return (
+    <div className="px-3 py-2.5 border-b border-border flex items-center justify-between gap-2">
+      <h1 className="text-sm font-semibold text-foreground flex items-center gap-2 min-w-0">
+        <ImageIcon className="h-4 w-4 text-primary flex-shrink-0" />
+        <span className="truncate">Image Manager</span>
+      </h1>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-label="Collapse sidebar"
+            aria-expanded={true}
+            className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:bg-accent hover:text-foreground transition-colors flex-shrink-0"
+          >
+            <PanelLeftClose className="h-3.5 w-3.5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="right" sideOffset={6}>
+          Collapse sidebar
+        </TooltipContent>
+      </Tooltip>
+    </div>
   );
 }
 
@@ -264,6 +367,7 @@ function renderSectionGroups(
   activeId: string,
   onSelect: (id: string) => void,
   dense: boolean,
+  collapsed = false,
 ) {
   const primary = sections.filter((s) => s.group === "primary");
   const tools = sections.filter((s) => s.group === "tools");
@@ -275,13 +379,14 @@ function renderSectionGroups(
           section.id === activeId,
           () => onSelect(section.id),
           dense,
+          collapsed,
         ),
       )}
       {tools.length > 0 ? (
         <div
           className={cn(
             "mt-2 mb-1 border-t border-border",
-            dense ? "mx-2.5 pt-1.5" : "mx-3 pt-2",
+            collapsed ? "mx-1.5 pt-1.5" : dense ? "mx-2.5 pt-1.5" : "mx-3 pt-2",
           )}
           aria-hidden
         />
@@ -292,6 +397,7 @@ function renderSectionGroups(
           section.id === activeId,
           () => onSelect(section.id),
           dense,
+          collapsed,
         ),
       )}
     </>
@@ -300,6 +406,10 @@ function renderSectionGroups(
 
 // ---------------------------------------------------------------------------
 // Sidebar nav item — shared between desktop sidebar and mobile drawer.
+//
+// `collapsed=true` renders an icon-only square with a tooltip showing the
+// section label. The mobile Drawer never collapses, so it always passes
+// `collapsed=false`.
 // ---------------------------------------------------------------------------
 
 function renderNavItem(
@@ -307,8 +417,41 @@ function renderNavItem(
   isActive: boolean,
   onClick: () => void,
   dense: boolean,
+  collapsed: boolean,
 ) {
   const Icon: LucideIcon = section.icon;
+
+  if (collapsed) {
+    return (
+      <Tooltip key={section.id}>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={onClick}
+            aria-current={isActive ? "page" : undefined}
+            aria-label={section.label}
+            className={cn(
+              "mx-1 my-0.5 h-8 w-8 rounded-md flex items-center justify-center transition-colors",
+              isActive
+                ? "bg-primary/15 text-primary"
+                : "text-foreground hover:bg-accent/60",
+            )}
+          >
+            <Icon
+              className={cn(
+                "h-4 w-4",
+                isActive ? "text-primary" : section.iconColor,
+              )}
+            />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="right" sideOffset={6}>
+          {section.label}
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
   return (
     <button
       key={section.id}
@@ -346,13 +489,62 @@ function SelectionModeStrip({
   onChangeMode,
   onClearSelection,
   className,
+  collapsed = false,
 }: {
   selectionCount: number;
   selectionMode: SelectionMode;
   onChangeMode: (mode: SelectionMode) => void;
   onClearSelection: () => void;
   className?: string;
+  collapsed?: boolean;
 }) {
+  if (collapsed) {
+    return (
+      <div
+        className={cn(
+          "border-t border-border py-1.5 px-1 flex flex-col items-center gap-1",
+          className,
+        )}
+      >
+        <ModeButtonCompact
+          icon={Eye}
+          label="Browse"
+          active={selectionMode === "none"}
+          onClick={() => onChangeMode("none")}
+        />
+        <ModeButtonCompact
+          icon={MousePointer2}
+          label="Single"
+          active={selectionMode === "single"}
+          onClick={() => onChangeMode("single")}
+        />
+        <ModeButtonCompact
+          icon={CopyCheck}
+          label="Multi"
+          active={selectionMode === "multiple"}
+          onClick={() => onChangeMode("multiple")}
+        />
+        {selectionCount > 0 ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={onClearSelection}
+                aria-label={`Clear ${selectionCount} selected`}
+                className="h-5 w-5 mt-0.5 rounded-full bg-muted text-[9px] font-semibold text-foreground hover:bg-destructive/20 hover:text-destructive transition-colors flex items-center justify-center"
+              >
+                {selectionCount > 9 ? "9+" : selectionCount}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={6}>
+              {selectionCount} selected — click to clear
+            </TooltipContent>
+          </Tooltip>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -428,5 +620,41 @@ function ModeButton({
       <Icon className="h-3 w-3" />
       <span className="leading-none">{label}</span>
     </button>
+  );
+}
+
+function ModeButtonCompact({
+  icon: Icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon: LucideIcon;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          onClick={onClick}
+          aria-pressed={active}
+          aria-label={label}
+          className={cn(
+            "h-7 w-7 rounded transition-colors flex items-center justify-center",
+            active
+              ? "bg-primary text-primary-foreground"
+              : "bg-card border border-border text-foreground hover:bg-accent",
+          )}
+        >
+          <Icon className="h-3.5 w-3.5" />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="right" sideOffset={6}>
+        {label}
+      </TooltipContent>
+    </Tooltip>
   );
 }

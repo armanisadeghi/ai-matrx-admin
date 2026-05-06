@@ -34,7 +34,18 @@ import {
   Search,
   Sparkles,
   AlertTriangle,
+  Trash2,
 } from "lucide-react";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { postJson } from "@/features/files/api/client";
 import { useLibrary, useLibrarySummary } from "../hooks/useLibrary";
 import type { DocStatus } from "../types";
 import { StatusBadge } from "./StatusBadge";
@@ -71,6 +82,35 @@ export function LibraryPage() {
     initialDocIdRef.current,
   );
   const [refreshKey, setRefreshKey] = useState(0);
+  const [bulkConfirmStatus, setBulkConfirmStatus] = useState<DocStatus | null>(
+    null,
+  );
+  const [bulkRunning, setBulkRunning] = useState(false);
+
+  const handleBulkDelete = async (status: DocStatus) => {
+    setBulkRunning(true);
+    try {
+      const { data } = await postJson<
+        {
+          deleted_documents: number;
+          deleted_pages: number;
+          deleted_chunks: number;
+        },
+        { status: string }
+      >("/rag/library/bulk-delete", { status });
+      toast.success(
+        `Deleted ${data?.deleted_documents ?? 0} ${status} documents (${data?.deleted_pages ?? 0} pages, ${data?.deleted_chunks ?? 0} chunks)`,
+      );
+      setBulkConfirmStatus(null);
+      setRefreshKey((n) => n + 1);
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Bulk delete failed",
+      );
+    } finally {
+      setBulkRunning(false);
+    }
+  };
 
   // Debounce search input
   useEffect(() => {
@@ -196,6 +236,23 @@ export function LibraryPage() {
               </Button>
             ))}
           </div>
+
+          {/* Bulk-clean shortcut — only meaningful when there's actually
+              something to clean. Operates on the server-derived status,
+              NOT on the visible-table filter, so it works even if the
+              user hasn't filtered to Pending. */}
+          {(summary?.documentsPending ?? 0) > 0 && (
+            <Button
+              size="sm"
+              variant="destructive"
+              className="ml-auto"
+              onClick={() => setBulkConfirmStatus("pending")}
+              disabled={bulkRunning}
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Clear {summary?.documentsPending ?? 0} pending
+            </Button>
+          )}
         </div>
       </header>
 
@@ -298,7 +355,63 @@ export function LibraryPage() {
       <LibraryDocDetailSheet
         processedDocumentId={selectedDocId}
         onClose={() => setSelectedDocId(null)}
+        onMutated={() => setRefreshKey((n) => n + 1)}
       />
+
+      {/* Bulk-delete confirm dialog */}
+      <Dialog
+        open={bulkConfirmStatus !== null}
+        onOpenChange={(o) => {
+          if (!o) setBulkConfirmStatus(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Delete all {bulkConfirmStatus} documents?
+            </DialogTitle>
+            <DialogDescription>
+              {bulkConfirmStatus === "pending" && (
+                <>
+                  This will delete every document of yours where ingestion
+                  failed before any pages were persisted. The original files
+                  in cloud storage are <strong>not</strong> touched — only
+                  the failed processing rows.
+                </>
+              )}
+              {bulkConfirmStatus === "extracted" && (
+                <>
+                  This will delete every document where pages were extracted
+                  but chunking never ran. Re-process to rebuild.
+                </>
+              )}
+              {bulkConfirmStatus === "embedding" && (
+                <>
+                  This will delete every document where embeddings are still
+                  partially missing. Re-process to rebuild.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setBulkConfirmStatus(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (bulkConfirmStatus) handleBulkDelete(bulkConfirmStatus);
+              }}
+              disabled={bulkRunning}
+            >
+              {bulkRunning ? "Deleting…" : "Delete all"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

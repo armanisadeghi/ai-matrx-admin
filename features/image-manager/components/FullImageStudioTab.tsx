@@ -1,0 +1,67 @@
+"use client";
+
+/**
+ * features/image-manager/components/FullImageStudioTab.tsx
+ *
+ * Tab body for the "Image Studio" entry in `/image-manager`. Embeds the
+ * full three-column `<ImageStudioShell>` (the same component that powers
+ * `/image-studio/convert`) so users get the complete preset-catalog +
+ * file-card grid + export-panel workflow without leaving the hub.
+ *
+ * Why dynamic-import with `ssr: false`:
+ *   `<ImageStudioShell>` mounts `react-dropzone`, `FileReader`, and
+ *   `URL.createObjectURL`. Server-rendering it produces a hydration
+ *   mismatch — the convert route handles this the same way (see
+ *   `app/(a)/image-studio/convert/ImageStudioShellClient.tsx`).
+ */
+
+import dynamic from "next/dynamic";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const ImageStudioShell = dynamic(
+  () =>
+    import("@/features/image-studio/components/ImageStudioShell").then((m) => ({
+      default: m.ImageStudioShell,
+    })),
+  {
+    ssr: false,
+    loading: () => <FullStudioSkeleton />,
+  },
+);
+
+const DEFAULT_FOLDER = "image-studio";
+
+export function FullImageStudioTab() {
+  return (
+    <div className="h-full min-h-0 flex flex-col">
+      <ImageStudioShell defaultFolder={DEFAULT_FOLDER} />
+    </div>
+  );
+}
+
+function FullStudioSkeleton() {
+  return (
+    <div className="flex h-full min-h-0">
+      <div className="hidden md:flex flex-col w-72 lg:w-80 xl:w-96 border-r border-border bg-card/30 min-h-0 p-3 gap-2">
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-4 w-24" />
+        <div className="space-y-1 pt-2">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-full rounded-md" />
+          ))}
+        </div>
+      </div>
+      <div className="flex-1 min-w-0 flex flex-col min-h-0 overflow-y-auto p-4 md:p-5 space-y-4">
+        <Skeleton className="h-[260px] w-full rounded-2xl" />
+      </div>
+      <div className="hidden lg:flex flex-col w-80 xl:w-96 min-h-0 border-l border-border p-3 gap-3">
+        <Skeleton className="h-8 w-32" />
+        <Skeleton className="h-14 w-full" />
+        <Skeleton className="h-14 w-full" />
+        <Skeleton className="h-14 w-full" />
+        <Skeleton className="h-10 w-full mt-auto" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    </div>
+  );
+}

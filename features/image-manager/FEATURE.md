@@ -106,22 +106,17 @@ Primary group:
 3. **All Files** (`CloudFilesTab`) — full cloud-files browser. Includes a "Photos" link to `/files/photos` for the deeper file-management view.
 4. **Upload** (`CloudUploadTab`) — drag/drop/paste/picker. Includes a collapsible "Paste base64 instead" sub-tool (`Base64DecoderShell`).
 5. **Branded Upload** (`BrandedUploadTab`) — wraps `<ImageAssetUploader>`. Presets: `social | cover | avatar | logo | favicon | square`. Generated variants are auto-pushed to `SelectedImagesProvider`.
-6. **Image Studio** (`ImageStudioTab`) — embeds `<EmbeddedImageStudio hideTitle>`.
-7. **Studio Library** (`StudioLibraryTab`) — read-only embed of the `Images/Generated/...` cloud folder. Resolves the folder ID via `ensureFolderPath`, then keys a `<CloudFilesTab>` to it.
-8. **AI Generate** (`AIGenerateHero`) — placeholder. "Set defaults" button deep-links to the `ai.imageGeneration` settings tab.
-9. **Profile Photo** (`ProfilePhotoTab`) — wraps `<ImageAssetUploader preset="avatar">`, calls `supabase.auth.updateUser({ data: { avatar_url, picture } })` on completion.
+6. **Image Studio** (`FullImageStudioTab`, id `studio-full`) — embeds the full three-column `<ImageStudioShell>` (the same component that powers `/image-studio/convert`). Lazy-loaded with `dynamic(... ssr: false)`. Users get the complete preset-catalog → file-card grid → export-panel pipeline without leaving the hub.
+7. **Studio Light** (`ImageStudioTab`, id `image-studio`) — embeds the picker-tuned `<EmbeddedImageStudio hideTitle>`. Returns variant URLs straight to `SelectedImagesProvider`, which the full shell does not — picker callers still want this.
+8. **Studio Library** (`StudioLibraryTab`) — read-only embed of the `Images/Generated/...` cloud folder. Resolves the folder ID via `ensureFolderPath`, then keys a `<CloudFilesTab>` to it.
+9. **AI Generate** (`AIGenerateHero`) — placeholder. "Set defaults" button deep-links to the `ai.imageGeneration` settings tab.
+10. **Profile Photo** (`ProfilePhotoTab`) — wraps `<ImageAssetUploader preset="avatar">`, calls `supabase.auth.updateUser({ data: { avatar_url, picture } })` on completion.
 
 Tools group (route only):
 
-10. **Tools** (`ToolsTab`) — single landing tile with a card grid:
-   - Crop (`ImageCropperWithSelect` — inline expand)
-   - Lightbox (`openImageViewer` over the current selection)
-   - Floating Gallery (overlay `galleryWindow`)
-   - Screenshot (`useScreenshot` → opens result in viewer)
-   - Presets reference (link to `/image-studio/presets`)
-   - Photos view (link to `/files/photos`)
-   - Compact picker (link to admin official-components)
-   - Favicons explainer (link to admin official-components)
+11. **Tools** (`ToolsTab`) — landing card grid:
+    - **Active tools**: Crop (inline expand), Crop Studio (one-or-many overlay → `cropStudioWindow`), Lightbox (`openImageViewer`), Floating Gallery (`galleryWindow`), Screenshot (`useScreenshot`), Presets reference, Photos view, Compact picker, Favicons explainer.
+    - **Beta** subgroup: legacy / candidate-for-removal surfaces tracked in `CLEANUP-CANDIDATES.md` — Legacy Image Editor, Legacy Parallax Gallery, Legacy Public Image Search, Legacy Easy Cropper. Kept reachable so we can verify nothing essential was missed before deletion.
 
 Adding a new tile is a `ToolDescriptor` append — see `ToolsTab.tsx`.
 
@@ -189,4 +184,6 @@ The Image Manager Hub plan landed across Phases 1–7 (May 2026). Pending owner-
 
 ## Change log
 
+- `2026-05-05` — Round 2: collapsible sidebar (slim icon-only rail; the blue ImageIcon doubles as the expand affordance), persisted to `localStorage` under `image-manager:sidebar-collapsed`. Renamed the embedded studio tab to **Studio Light** and added a new **Image Studio** tab (`FullImageStudioTab`, id `studio-full`) that lazy-loads the full `<ImageStudioShell>` in-page. Tightened the **Crop Studio** tool card copy to call out one-or-many file support and renamed it to "Crop Studio (one or many)". Added a **Beta** subgroup inside `ToolsTab` linking the four cleanup-candidate `image-editing/*` routes (legacy editor, parallax gallery, public-image-search demo, easy cropper demo) so they remain reachable for verification before deletion. New `SECTION_IDS.studioFull = "studio-full"`.
+- `2026-05-05` — `SECTION_IDS` extracted into a leaf `registry/ids.ts` module to break a Turbopack TDZ cycle (`ImageManager` → `sections.ts` → `ToolsTab` → `ImageCropperWithSelect` → `SingleImageSelect` → `ImageManager`). `sections.ts` re-exports for back-compat. Drive-by: deleted orphaned `features/image-studio/components/InitialCropDialog.tsx` (zero importers — `InitialCropWindow` is the canonical wrapper).
 - `2026-05-05` — Hub plan completed: section registry, 3-way selection mode (Browse/Single/Multi), `BrowseImageProvider`, Curated Covers, metadata sheet, Photos link, base64 paste, Branded Upload, Studio Library, Profile Photo tabs, Tools group, Unsplash server proxy, `proxy-image` deleted, `ImageManagerContent.tsx` deleted, cleanup candidates listed.

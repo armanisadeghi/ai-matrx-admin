@@ -110,14 +110,14 @@ function CropStudioWindowInner({
       onClose={onClose}
       overlayId="cropStudioWindow"
       onCollectData={collectData}
-      minWidth={720}
-      minHeight={520}
-      width={1120}
-      height={720}
+      minWidth={620}
+      minHeight={420}
+      width={720}
+      height={520}
       position="center"
       sidebar={<CropStudioSidebar controller={controller} />}
-      sidebarDefaultSize={280}
-      sidebarMinSize={240}
+      sidebarDefaultSize={160}
+      sidebarMinSize={100}
       sidebarClassName="bg-muted/10 border-r"
       bodyClassName="flex flex-col min-h-0"
       footerLeft={<FooterDestination controller={controller} />}

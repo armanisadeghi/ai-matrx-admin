@@ -16,6 +16,7 @@
 
 import React from "react";
 import {
+  Atom,
   Cloud,
   FolderTree,
   ImageIcon,
@@ -40,6 +41,7 @@ import { BrandedUploadTab } from "../components/BrandedUploadTab";
 import { StudioLibraryTab } from "../components/StudioLibraryTab";
 import { ProfilePhotoTab } from "../components/ProfilePhotoTab";
 import { ToolsTab } from "../components/ToolsTab";
+import { FullImageStudioTab } from "../components/FullImageStudioTab";
 
 // ---------------------------------------------------------------------------
 // Stable section ids live in `./ids.ts` (a leaf module with zero imports) so
@@ -139,13 +141,27 @@ export function buildImageManagerSections(
   ];
 
   if (showImageStudio) {
+    // The full three-column shell — same component that powers
+    // /image-studio/convert. Embedded so users never have to leave the hub.
     primary.push({
-      id: SECTION_IDS.imageStudio,
+      id: SECTION_IDS.studioFull,
       label: "Image Studio",
-      icon: Wand2,
+      icon: Atom,
       iconColor: "text-fuchsia-500",
       group: "primary",
-      hint: "Crop and generate platform-ready variants.",
+      hint: "Full preset catalog + multi-file conversion shell.",
+      render: () => React.createElement(FullImageStudioTab),
+    });
+    // The lighter, picker-tuned studio (`<EmbeddedImageStudio>`). Kept
+    // because it returns directly to `SelectedImagesProvider`, which the
+    // full shell does not — callers using the hub as a picker still want it.
+    primary.push({
+      id: SECTION_IDS.imageStudio,
+      label: "Studio Light",
+      icon: Wand2,
+      iconColor: "text-fuchsia-400",
+      group: "primary",
+      hint: "Compact crop + variant flow, returns straight to your selection.",
       render: () =>
         React.createElement(ImageStudioTab, {
           imageStudioProps: ctx.imageStudioProps,

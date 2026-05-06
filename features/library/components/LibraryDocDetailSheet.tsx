@@ -23,27 +23,128 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ExternalLink, Copy, Check, Database, FileText, Layers } from "lucide-react";
+import {
+  ExternalLink,
+  Copy,
+  Check,
+  Database,
+  FileText,
+  Layers,
+  Trash2,
+  Pencil,
+  RefreshCw,
+} from "lucide-react";
 import { toast } from "sonner";
+import { del, patchJson, postJson } from "@/features/files/api/client";
 import { StatusBadge } from "./StatusBadge";
 import { useLibraryDoc } from "../hooks/useLibrary";
 
 export interface LibraryDocDetailSheetProps {
   processedDocumentId: string | null;
   onClose: () => void;
+  /** Called after the user mutates the doc (delete / rename) so the
+   *  parent table can refetch. Optional — sheet still works without it. */
+  onMutated?: () => void;
 }
 
 export function LibraryDocDetailSheet({
   processedDocumentId,
   onClose,
+  onMutated,
 }: LibraryDocDetailSheetProps) {
-  const { doc, loading, error } = useLibraryDoc(processedDocumentId);
+  const { doc, loading, error, reload } = useLibraryDoc(processedDocumentId);
   const [copiedId, setCopiedId] = useState(false);
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
+  const [renaming, setRenaming] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [reprocessing, setReprocessing] = useState(false);
+
+  const handleRename = async () => {
+    if (!doc || !renameValue.trim() || renameValue === doc.name) {
+      setRenameOpen(false);
+      return;
+    }
+    setRenaming(true);
+    try {
+      await patchJson(`/rag/library/${doc.id}`, { name: renameValue.trim() });
+      toast.success("Document renamed");
+      setRenameOpen(false);
+      reload();
+      onMutated?.();
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Rename failed",
+      );
+    } finally {
+      setRenaming(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!doc) return;
+    setDeleting(true);
+    try {
+      const { data } = await del<{
+        deleted_documents: number;
+        deleted_pages: number;
+        deleted_chunks: number;
+      }>(`/rag/library/${doc.id}`);
+      toast.success(
+        `Deleted: ${data?.deleted_pages ?? 0} pages, ${data?.deleted_chunks ?? 0} chunks`,
+      );
+      setConfirmDeleteOpen(false);
+      onMutated?.();
+      onClose();
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Delete failed",
+      );
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleReprocess = async () => {
+    if (!doc) return;
+    setReprocessing(true);
+    try {
+      // Fire-and-forget — the response is a stream. We don't consume it
+      // here; the user can watch progress on the backend logs or come
+      // back to the library to see the new row appear.
+      const resp = await fetch(`/rag/library/${doc.id}/reprocess`, {
+        method: "POST",
+      });
+      if (!resp.ok) {
+        throw new Error(`HTTP ${resp.status}`);
+      }
+      toast.success(
+        "Re-processing started. A new entry will appear in the library when complete.",
+      );
+      onMutated?.();
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Re-process failed",
+      );
+    } finally {
+      setReprocessing(false);
+    }
+  };
 
   const open = Boolean(processedDocumentId);
 
@@ -111,16 +212,53 @@ export function LibraryDocDetailSheet({
                     variant="outline"
                     onClick={() => {
                       window.open(
-                        `/rag/viewer/${doc.id}`,
+                        `/rag/library/${doc.id}/preview`,
                         "_blank",
                         "noopener,noreferrer",
                       );
                     }}
                   >
                     <ExternalLink className="h-3.5 w-3.5 mr-1" />
-                    4-pane viewer
+                    Preview
                   </Button>
                 </div>
+              </div>
+
+              {/* Action row */}
+              <div className="flex flex-wrap gap-2 mt-3">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setRenameValue(doc.name);
+                    setRenameOpen(true);
+                  }}
+                >
+                  <Pencil className="h-3.5 w-3.5 mr-1" />
+                  Rename
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleReprocess}
+                  disabled={reprocessing}
+                >
+                  <RefreshCw
+                    className={
+                      "h-3.5 w-3.5 mr-1 " + (reprocessing ? "animate-spin" : "")
+                    }
+                  />
+                  {reprocessing ? "Re-processing…" : "Re-process"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="ml-auto"
+                  onClick={() => setConfirmDeleteOpen(true)}
+                >
+                  <Trash2 className="h-3.5 w-3.5 mr-1" />
+                  Delete
+                </Button>
               </div>
 
               {/* Counts strip */}
@@ -367,6 +505,66 @@ export function LibraryDocDetailSheet({
           </>
         )}
       </SheetContent>
+
+      {/* Rename dialog */}
+      <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename document</DialogTitle>
+            <DialogDescription>
+              The name is the display label only — chunks, embeddings, and
+              data-store bindings are unchanged.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            value={renameValue}
+            onChange={(e) => setRenameValue(e.target.value)}
+            placeholder="New name"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleRename();
+            }}
+            autoFocus
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleRename} disabled={renaming || !renameValue.trim()}>
+              {renaming ? "Saving…" : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirm dialog */}
+      <Dialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete document?</DialogTitle>
+            <DialogDescription>
+              {doc ? (
+                <>
+                  This deletes the processed document <strong>{doc.name}</strong>{" "}
+                  along with its {doc.pagesPersisted} extracted pages and{" "}
+                  {doc.chunks} chunks. The original file is{" "}
+                  <strong>not</strong> deleted — only the processed
+                  artifacts. Re-process to rebuild.
+                </>
+              ) : (
+                "This action cannot be undone."
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+              {deleting ? "Deleting…" : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Sheet>
   );
 }
