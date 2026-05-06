@@ -288,6 +288,7 @@ export function CreateOrgModal({
               onComplete={(result) => setLogoUrl(result?.primary_url ?? "")}
               folder="organizations/logos"
               disabled={isSubmitting}
+              enableViewerAction
               label="Organization logo"
             />
           </div>
