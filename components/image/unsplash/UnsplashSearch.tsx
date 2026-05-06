@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { SearchBar } from '@/components/image/shared/SearchBar';
+import { SearchInput } from '@/components/official/SearchInput';
 import { SortOrder, ImageOrientation, PremiumFilter } from '@/hooks/images/useUnsplashGallery';
 import { 
   Select,
@@ -10,7 +10,13 @@ import {
   SelectTrigger,
   SelectValue 
 } from '@/components/ui/select';
-import { Grid, Grid3X3 } from 'lucide-react';
+import {
+  BadgeCheck,
+  Grid,
+  Grid3X3,
+  RectangleHorizontal,
+  SlidersHorizontal,
+} from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 
@@ -111,78 +117,94 @@ export function UnsplashSearch({
   };
 
   return (
-    <div className={cn("w-full", className)}>
-      <div className="flex flex-wrap items-center gap-2">
-        <SearchBar
-          onSearch={handleSearchChange}
-          loading={loading}
-          placeholder="Search Unsplash..."
-          defaultValue={query}
-          className="w-[260px]"
-          debounceTime={300}
-          showClearButton={true}
-          autoFocus={false}
-        />
+    <div className={cn("flex w-full flex-wrap items-center gap-2", className)}>
+      <SearchInput
+        value={query}
+        onValueChange={setQuery}
+        onSearch={handleSearchChange}
+        loading={loading}
+        placeholder="Search Unsplash..."
+        className="w-full sm:w-[280px]"
+        inputClassName="h-9 bg-background/80"
+        debounceTime={300}
+        showClearButton={true}
+        autoFocus={false}
+      />
         
-        {/* Sort Order as Select */}
-        <Select value={sortOrder} onValueChange={handleSortChange}>
-          <SelectTrigger className="w-[120px] h-9">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            {sortOrderOptions.map((option) => (
+      {/* Sort Order as Select */}
+      <Select value={sortOrder} onValueChange={handleSortChange}>
+        <SelectTrigger className="h-9 w-[126px] bg-background/80">
+          <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+          <SelectValue placeholder="Sort by" />
+        </SelectTrigger>
+        <SelectContent>
+          {sortOrderOptions.map((option) => (
+            <SelectItem key={option} value={option}>
+              {option.charAt(0).toUpperCase() + option.slice(1)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+        
+      {/* Orientation as Select */}
+      <Select value={orientation || 'any'} onValueChange={handleOrientationChange}>
+        <SelectTrigger className="h-9 w-[124px] bg-background/80">
+          <RectangleHorizontal className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+          <SelectValue placeholder="Orientation" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="any">Any</SelectItem>
+          {orientationOptions.map((option) => (
+            option && (
               <SelectItem key={option} value={option}>
                 {option.charAt(0).toUpperCase() + option.slice(1)}
               </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+            )
+          ))}
+        </SelectContent>
+      </Select>
         
-        {/* Orientation as Select */}
-        <Select value={orientation || 'any'} onValueChange={handleOrientationChange}>
-          <SelectTrigger className="w-[120px] h-9">
-            <SelectValue placeholder="Orientation" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="any">Any</SelectItem>
-            {orientationOptions.map((option) => (
-              option && (
-                <SelectItem key={option} value={option}>
-                  {option.charAt(0).toUpperCase() + option.slice(1)}
-                </SelectItem>
-              )
-            ))}
-          </SelectContent>
-        </Select>
+      {/* Premium Filter as Select */}
+      <Select value={premiumFilter} onValueChange={handlePremiumChange}>
+        <SelectTrigger className="h-9 w-[118px] bg-background/80">
+          <BadgeCheck className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+          <SelectValue placeholder="Premium" />
+        </SelectTrigger>
+        <SelectContent>
+          {premiumFilterOptions.map((option) => (
+            <SelectItem key={option} value={option}>
+              {option === 'none' ? 'Free' : option.charAt(0).toUpperCase() + option.slice(1)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
         
-        {/* Premium Filter as Select */}
-        <Select value={premiumFilter} onValueChange={handlePremiumChange}>
-          <SelectTrigger className="w-[120px] h-9">
-            <SelectValue placeholder="Premium" />
-          </SelectTrigger>
-          <SelectContent>
-            {premiumFilterOptions.map((option) => (
-              <SelectItem key={option} value={option}>
-                {option === 'none' ? 'Free' : option.charAt(0).toUpperCase() + option.slice(1)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        
-        {/* View Mode Toggle */}
-        {onViewModeChange && (
-          <ToggleGroup type="single" value={viewMode} onValueChange={handleViewModeChange} className="h-9">
-            <ToggleGroupItem value="grid" aria-label="Grid view" className="px-3">
-              <Grid3X3 className="h-4 w-4" />
-              <span className="hidden sm:inline">Grid</span>
-            </ToggleGroupItem>
-            <ToggleGroupItem value="natural" aria-label="Natural view" className="px-3">
-              <Grid className="h-4 w-4" />
-              <span className="hidden sm:inline">Natural</span>
-            </ToggleGroupItem>
-          </ToggleGroup>
-        )}
-      </div>
+      {/* View Mode Toggle */}
+      {onViewModeChange && (
+        <ToggleGroup
+          type="single"
+          value={viewMode}
+          onValueChange={handleViewModeChange}
+          className="h-9 rounded-md border border-border bg-background/80 p-0.5"
+        >
+          <ToggleGroupItem
+            value="grid"
+            aria-label="Grid view"
+            title="Grid view"
+            className="h-7 w-8 px-0 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+          >
+            <Grid3X3 className="h-4 w-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="natural"
+            aria-label="Natural view"
+            title="Natural view"
+            className="h-7 w-8 px-0 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+          >
+            <Grid className="h-4 w-4" />
+          </ToggleGroupItem>
+        </ToggleGroup>
+      )}
     </div>
   );
 } 
