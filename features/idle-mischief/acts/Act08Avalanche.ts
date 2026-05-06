@@ -4,14 +4,12 @@
 // header buttons, toolbar icons) detaches, falls to the bottom of the
 // viewport, scatters horizontally, and piles up with a tilt.
 //
-// Implementation pattern: clone each icon as `position: fixed` over its
-// original rect, hide the original via opacity:0, then animate the clones
-// downward with gravity easing. On snap-back, every clone unmounts and
-// every original is restored to its snapshot.
+// Clone-based: real elements are only `visibility: hidden`-ed; the
+// falling shapes are clones.
 
 import { animate } from "motion";
 import { findIconLikeElements } from "../utils/targets";
-import { registerPortal, snapshot } from "../utils/snapshot";
+import { cloneAndHide } from "../utils/cloning";
 
 /** Cubic-bezier that approximates gravity (slow start, fast end). */
 const GRAVITY_EASE: [number, number, number, number] = [0.4, 0.0, 0.7, 1.0];
@@ -25,48 +23,24 @@ export function playAvalanche(): () => void {
   const W = window.innerWidth || 800;
   const H = window.innerHeight || 600;
 
-  // Build a clone per target. Hide original.
   const clones: HTMLElement[] = [];
-  for (const el of targets) {
-    snapshot(el);
-    const r = el.getBoundingClientRect();
-    if (r.width === 0 || r.height === 0) continue;
-
-    const clone = el.cloneNode(true) as HTMLElement;
-    // Strip ids to avoid duplicates
-    if (clone.id) clone.removeAttribute("id");
-    clone.querySelectorAll("[id]").forEach((n) => (n as HTMLElement).removeAttribute("id"));
-    clone.style.cssText = `
-      position: fixed;
-      left: ${r.left}px;
-      top: ${r.top}px;
-      width: ${r.width}px;
-      height: ${r.height}px;
-      margin: 0;
-      z-index: 2147483640;
-      pointer-events: none;
-      will-change: transform;
-      box-shadow: 0 4px 14px rgba(0,0,0,.35);
-      border-radius: 6px;`;
-    document.body.appendChild(clone);
-    registerPortal(clone);
-
-    el.style.opacity = "0";
+  for (const original of targets) {
+    const clone = cloneAndHide(original);
+    // Avalanche-specific shadow so falling icons look detached.
+    clone.style.boxShadow = "0 4px 14px rgba(0,0,0,.35)";
+    clone.style.borderRadius = clone.style.borderRadius || "6px";
     clones.push(clone);
   }
 
   if (clones.length === 0) return () => {};
 
-  // Animate each clone into a pile spread along the bottom.
   const pileBaseY = H - 40;
   const handles: ReturnType<typeof animate>[] = [];
+  const settleTimers: number[] = [];
 
-  clones.forEach((clone, i) => {
+  clones.forEach((clone) => {
     const r = clone.getBoundingClientRect();
-    // Spread targets across most of the viewport width
     const spreadCenter = r.left + r.width / 2;
-    // Bias: items already to the left land more to the left, but with
-    // a healthy random nudge.
     const targetX =
       Math.max(20, Math.min(W - 60, spreadCenter)) +
       (Math.random() - 0.5) * 240;
@@ -82,8 +56,6 @@ export function playAvalanche(): () => void {
       animate(
         clone,
         {
-          // Phase 1: hover briefly. Phase 2: gravity to the floor with a
-          // tiny bounce.
           x: [0, dx * 0.05, dx, dx],
           y: [0, -8, dy + 16, dy],
           rotate: [0, (Math.random() - 0.5) * 12, finalRot, finalRot * 0.92],
@@ -96,9 +68,9 @@ export function playAvalanche(): () => void {
       ),
     );
 
-    // Tiny jitter once landed
-    const settleDelay = fallDelay + fallDur;
-    const settleHandle = window.setTimeout(() => {
+    // Tiny settle wobble after landing
+    const settleAt = (fallDelay + fallDur) * 1000;
+    const tid = window.setTimeout(() => {
       handles.push(
         animate(
           clone,
@@ -113,16 +85,12 @@ export function playAvalanche(): () => void {
           { duration: 0.4, ease: "easeOut" },
         ),
       );
-    }, settleDelay * 1000);
-    // Track timer indirectly — if snap-back happens before it fires,
-    // the cleanup below clears it.
-    handles.push({
-      stop: () => clearTimeout(settleHandle),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
+    }, settleAt);
+    settleTimers.push(tid);
   });
 
   return () => {
+    for (const t of settleTimers) clearTimeout(t);
     for (const h of handles) {
       try {
         h.stop();

@@ -7,25 +7,29 @@
 // No "settled in a different spot."
 //
 // How we achieve that:
-//   1. snapshot(el)    — store the entire `style` attribute string verbatim,
-//                        plus className/parent/nextSibling/rect. NEVER per
-//                        property. Idempotent — first call wins.
+//   1. snapshot(el)         — store the entire `style` attribute string
+//                             verbatim, plus className/parent/nextSibling/
+//                             rect. NEVER per property. Idempotent — first
+//                             call wins.
 //   2. registerPortal(node) — track clones/overlays so they get unmounted.
-//   3. registerCleanup(fn) — non-DOM cleanup (RAF handles, listeners).
-//   4. restoreAll()    — atomic sweep:
-//                          a) cancel EVERY Web Animations API animation in
-//                             the document (motion v12 writes there, NOT
-//                             to inline style)
-//                          b) run cleanup callbacks
-//                          c) unmount portal nodes
-//                          d) restore each element's snapshot byte-for-byte
-//                          e) schedule ONE follow-up `cancel-only` pass at
-//                             the next animation frame, for stragglers
-//                             that began during the same tick we cancelled
+//   3. registerCleanup(fn)  — non-DOM cleanup (RAF handles, listeners).
+//   4. restoreAll()         — atomic sweep:
+//                                a) run cleanup callbacks (which call
+//                                   controls.stop() on motion handles)
+//                                b) unmount portal nodes
+//                                c) restore each element's snapshot
+//                                   byte-for-byte; per-element subtree
+//                                   animation cancel as a belt
 //
-// Why the follow-up pass: motion's animate() may queue an animation in
-// the same microtask as our cancel; without a second pass on the next
-// frame, that animation runs for one tick and leaves a sub-pixel offset.
+// What we DELIBERATELY do NOT do:
+//   - We do NOT cancel `document.getAnimations()` globally. That kills
+//     legitimate page animations (CSS hover transitions, focus indicators,
+//     third-party libraries) and leaves the page in a worse state than the
+//     mischief itself.
+//   - We do NOT animate real elements directly. Acts MUST use cloneAndHide()
+//     for any visible animation; the real element only ever has
+//     `visibility: hidden` set on it (and that's reverted byte-for-byte
+//     by the snapshot restore). See utils/cloning.ts.
 
 const elementSnapshots = new Map<HTMLElement, ElementSnapshot>();
 const portalNodes = new Set<HTMLElement>();
@@ -67,9 +71,9 @@ export function snapshot(el: HTMLElement): ElementSnapshot {
 }
 
 /**
- * Cancel every WAAPI animation on `el` and its descendants. This is the
- * step that makes "stuck transforms" impossible — without it, restoring
- * inline styles is invisible to a running compositor-layer animation.
+ * Cancel WAAPI animations on `el` and its descendants. Surgical — only
+ * touches the element we're about to restore, so legitimate page animations
+ * elsewhere are untouched.
  */
 function cancelAnimationsOn(el: HTMLElement): void {
   try {
@@ -82,30 +86,15 @@ function cancelAnimationsOn(el: HTMLElement): void {
 }
 
 /**
- * Cancel every WAAPI animation in the entire document. The blast-radius
- * version. Used in restoreAll() to nuke anything we missed.
- */
-function cancelAllDocumentAnimations(): void {
-  try {
-    document.getAnimations().forEach((a) => {
-      try {
-        a.cancel();
-      } catch {}
-    });
-  } catch {}
-}
-
-/**
- * Restore a single element to its snapshotted state. Cancels animations
- * on it FIRST, then puts every byte back, then deletes the snapshot.
+ * Restore a single element to its snapshotted state. Cancels any
+ * animations on the element + its subtree FIRST, then puts every byte
+ * back, then deletes the snapshot.
  */
 export function restoreElement(el: HTMLElement) {
   const snap = elementSnapshots.get(el);
   if (!snap) return;
 
-  // 0. Kill any WAAPI animation on this element + subtree. Without this,
-  //    inline-style restore is invisible — the compositor keeps painting
-  //    the animated transform.
+  // 0. Kill any WAAPI animation on this element + subtree.
   cancelAnimationsOn(el);
 
   // 1. Restore inline style verbatim.
@@ -128,6 +117,9 @@ export function restoreElement(el: HTMLElement) {
       // Parent may be gone (route change, etc.) — best effort.
     }
   }
+
+  // 4. Clean up the mischief marker (cloning.ts adds it on hidden originals).
+  el.removeAttribute("data-mischief-original");
 
   elementSnapshots.delete(el);
 }
@@ -159,54 +151,97 @@ export function registerCleanup(fn: () => void): () => void {
  * THE atomic snap-back operation. Idempotent. Synchronous.
  *
  * Order matters:
- *   1. Cancel EVERY animation in the document (kills compositor-layer
- *      animations that don't appear in inline style).
- *   2. Run registered cleanup callbacks (cancels listeners, RAFs, etc.).
- *   3. Unmount portal nodes (snowflakes, eyes, walking-sidebar clone).
- *   4. Restore each snapshotted element byte-for-byte.
- *   5. Schedule a follow-up cancel pass on the next animation frame —
- *      catches motion animations that were queued in the same task as our
- *      cancel (sub-pixel jitter killer).
+ *   1. Run registered cleanup callbacks (cancels listeners, RAFs, motion
+ *      `controls.stop()`).
+ *   2. Unmount portal nodes (clones, overlays, particles). Removing a
+ *      detached element drops any animations that were running on it.
+ *   3. Restore each snapshotted element byte-for-byte (and cancel its
+ *      subtree animations as a belt).
+ *   4. Sledgehammer sweep — scan the document for ANY element tagged
+ *      with `data-mischief-clone` (orphan clones) or `data-mischief-original`
+ *      (originals whose snapshot somehow didn't restore). Clean them up
+ *      no matter what.
+ *
+ * Step 4 makes snap-back GUARANTEED idempotent at the document level. If
+ * step 1-3 missed anything (race, exception, registry corruption), the
+ * sweep catches it.
  */
 export function restoreAll(): void {
-  // 1. Nuclear option — kill every animation in the document.
-  cancelAllDocumentAnimations();
+  let stats = {
+    cleanups: 0,
+    portals: 0,
+    snapshots: 0,
+    sweptClones: 0,
+    sweptOriginals: 0,
+  };
 
-  // 2. Cleanup callbacks (animation controls' .stop(), RAFs, listeners).
+  // 1. Cleanup callbacks (motion controls, RAFs, listeners).
   for (const fn of Array.from(cleanupCallbacks)) {
     try {
       fn();
+      stats.cleanups++;
     } catch {}
   }
   cleanupCallbacks.clear();
 
-  // 3. Unmount portals.
+  // 2. Unmount portals.
   for (const node of Array.from(portalNodes)) {
     try {
-      if (node.parentNode) node.parentNode.removeChild(node);
+      if (node.parentNode) {
+        node.parentNode.removeChild(node);
+        stats.portals++;
+      }
     } catch {}
   }
   portalNodes.clear();
 
-  // 4. Restore every snapshotted element.
+  // 3. Restore every snapshotted element.
   for (const el of Array.from(elementSnapshots.keys())) {
     try {
       restoreElement(el);
+      stats.snapshots++;
     } catch {}
   }
   elementSnapshots.clear();
 
-  // 5. Follow-up pass: motion may queue an animation in the same task as
-  //    our cancel call. Re-cancel on next animation frame + at 120ms to
-  //    catch anything that slipped through.
-  if (typeof requestAnimationFrame !== "undefined") {
-    requestAnimationFrame(() => {
-      cancelAllDocumentAnimations();
-    });
+  // 4. SLEDGEHAMMER — scan the entire document for orphan clones / hidden
+  //    originals. This is the safety net for any case where the registry
+  //    path failed: a thrown exception during cloneAndHide that left the
+  //    DOM modified but snapshot uncaptured, a route change that orphaned
+  //    a node, etc. Tagged attributes mean we can find them no matter what.
+  if (typeof document !== "undefined") {
+    // 4a. Remove every clone in the document.
+    document.querySelectorAll<HTMLElement>("[data-mischief-clone]").forEach(
+      (clone) => {
+        try {
+          if (clone.parentNode) {
+            clone.parentNode.removeChild(clone);
+            stats.sweptClones++;
+          }
+        } catch {}
+      },
+    );
+    // 4b. Force-revert visibility on every tagged original. We blow away
+    //     the visibility/pointer-events styles directly. setProperty with
+    //     empty string removes the property; if neither was inline-set,
+    //     this is a no-op.
+    document
+      .querySelectorAll<HTMLElement>("[data-mischief-original]")
+      .forEach((el) => {
+        try {
+          el.style.visibility = "";
+          el.style.pointerEvents = "";
+          el.removeAttribute("data-mischief-original");
+          stats.sweptOriginals++;
+        } catch {}
+      });
   }
-  setTimeout(() => {
-    cancelAllDocumentAnimations();
-  }, 120);
+
+  // Surface stats for devtools-driven debugging.
+  if (typeof window !== "undefined") {
+    (window as unknown as Record<string, unknown>).__mischiefLastRestore =
+      stats;
+  }
 }
 
 /** For debug: how many elements + portals are currently tracked. */

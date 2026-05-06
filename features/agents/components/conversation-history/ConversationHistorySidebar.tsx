@@ -34,7 +34,6 @@ import {
   ChevronDown,
   ChevronRight,
   Loader2,
-  MessageCircle,
   Search,
   Star,
   StarOff,
@@ -48,6 +47,7 @@ import {
   makeSelectGroupedByAgent,
   makeSelectGroupedByDate,
 } from "@/features/agents/redux/conversation-history/selectors";
+import { selectIsStreaming } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import {
   setScopeAgentIds,
   setScopeGrouping,
@@ -98,13 +98,25 @@ export interface ConversationHistorySidebarProps {
   showGroupingToggle?: boolean;
 
   className?: string;
+  /**
+   * Extra classes for the built-in search input. Defaults blend with the
+   * project's semantic tokens (`bg-background` / `border-border` / etc.).
+   * Pass overrides here when a host surface (e.g. the /code workspace)
+   * needs a different look.
+   */
+  searchInputClassName?: string;
+  /**
+   * Extra classes for each collapsible section's sticky header. Defaults
+   * use `bg-card` so the sticky background blends with a card-style
+   * sidebar; consumers rendering on a different surface can override.
+   */
+  sectionHeaderClassName?: string;
 }
 
-// ── Layout constants (match features/code/styles/tokens where possible) ──────
+// ── Layout constants ─────────────────────────────────────────────────────────
 
-const ROW_BG = "hover:bg-neutral-200/70 dark:hover:bg-neutral-800/60";
-const ACTIVE_ROW_BG =
-  "bg-neutral-200 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-50";
+const ROW_BG = "hover:bg-accent/60";
+const ACTIVE_ROW_BG = "bg-accent text-accent-foreground";
 
 export const ConversationHistorySidebar: React.FC<
   ConversationHistorySidebarProps
@@ -123,6 +135,8 @@ export const ConversationHistorySidebar: React.FC<
   showSearch = true,
   showGroupingToggle = true,
   className,
+  searchInputClassName,
+  sectionHeaderClassName,
 }) => {
   const dispatch = useAppDispatch();
 
@@ -216,12 +230,12 @@ export const ConversationHistorySidebar: React.FC<
 
       {/* ── Controls row: search + grouping toggle + actions ─────────────── */}
       {(showSearch || showGroupingToggle || headerActions) && (
-        <div className="flex shrink-0 items-center gap-1 border-b border-neutral-200 px-2 py-1 dark:border-neutral-800">
+        <div className="flex shrink-0 items-center gap-1 border-b border-border px-2 py-1">
           {showSearch && (
             <div className="relative flex min-w-0 flex-1 items-center">
               <Search
                 size={12}
-                className="absolute left-1.5 text-neutral-400"
+                className="absolute left-1.5 text-muted-foreground"
                 aria-hidden
               />
               <input
@@ -230,8 +244,8 @@ export const ConversationHistorySidebar: React.FC<
                 onChange={(e) => onSearchChange(e.target.value)}
                 placeholder="Search conversations"
                 className={cn(
-                  "h-6 w-full rounded-sm border border-neutral-200 bg-white pl-5 pr-1.5 text-[11px] text-neutral-700 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none",
-                  "dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:border-neutral-500",
+                  "h-6 w-full rounded-sm border border-border bg-background pl-5 pr-1.5 text-[11px] text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none",
+                  searchInputClassName,
                 )}
                 aria-label="Search conversations"
               />
@@ -247,11 +261,11 @@ export const ConversationHistorySidebar: React.FC<
       {/* ── Main list ────────────────────────────────────────────────────── */}
       <div className="min-h-0 flex-1 overflow-y-auto">
         {error && (
-          <div className="px-3 py-3 text-[11px] text-red-500">{error}</div>
+          <div className="px-3 py-3 text-[11px] text-destructive">{error}</div>
         )}
 
         {status === "loading" && count === 0 && (
-          <div className="flex items-center gap-2 px-3 py-3 text-[11px] text-neutral-500">
+          <div className="flex items-center gap-2 px-3 py-3 text-[11px] text-muted-foreground">
             <Loader2 size={12} className="animate-spin" />
             Loading conversations…
           </div>
@@ -266,6 +280,7 @@ export const ConversationHistorySidebar: React.FC<
             count={favorites.length}
             icon={<Star size={11} className="text-amber-500" />}
             defaultOpen
+            headerClassName={sectionHeaderClassName}
           >
             {favorites.map((conv) => (
               <Row
@@ -289,6 +304,7 @@ export const ConversationHistorySidebar: React.FC<
               count={bucket.items.length}
               icon={<CalendarDays size={11} />}
               defaultOpen
+              headerClassName={sectionHeaderClassName}
             >
               {bucket.items.map((conv) => (
                 <Row
@@ -312,6 +328,7 @@ export const ConversationHistorySidebar: React.FC<
               count={bucket.items.length}
               icon={<Cpu size={11} />}
               defaultOpen
+              headerClassName={sectionHeaderClassName}
             >
               {bucket.items.map((conv) => (
                 <Row
@@ -334,8 +351,7 @@ export const ConversationHistorySidebar: React.FC<
               onClick={onLoadMore}
               disabled={status === "loading-more"}
               className={cn(
-                "flex h-6 w-full items-center justify-center rounded-sm border border-neutral-200 text-[11px] text-neutral-700 hover:bg-neutral-100 disabled:opacity-60",
-                "dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800",
+                "flex h-6 w-full items-center justify-center rounded-sm border border-border text-[11px] text-foreground hover:bg-accent/60 disabled:opacity-60",
               )}
             >
               {status === "loading-more" ? (
@@ -351,7 +367,7 @@ export const ConversationHistorySidebar: React.FC<
         )}
 
         {!hasMore && count > 0 && (
-          <div className="px-3 py-2 text-center text-[10px] text-neutral-400 dark:text-neutral-600">
+          <div className="px-3 py-2 text-center text-[10px] text-muted-foreground">
             {count} conversation{count === 1 ? "" : "s"}
           </div>
         )}
@@ -372,7 +388,7 @@ const GroupingToggle: React.FC<GroupingToggleProps> = ({ value, onChange }) => {
     <div
       role="tablist"
       aria-label="Group conversations by"
-      className="flex h-6 items-stretch rounded-sm border border-neutral-200 dark:border-neutral-700"
+      className="flex h-6 items-stretch rounded-sm border border-border"
     >
       <ToggleBtn
         active={value === "date"}
@@ -402,9 +418,8 @@ const ToggleBtn: React.FC<
     role="tab"
     aria-selected={active}
     className={cn(
-      "flex items-center justify-center px-1.5 text-neutral-600 first:rounded-l-sm last:rounded-r-sm hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800",
-      active &&
-        "bg-neutral-200 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-50",
+      "flex items-center justify-center px-1.5 text-muted-foreground first:rounded-l-sm last:rounded-r-sm hover:bg-accent/60",
+      active && "bg-accent text-accent-foreground",
       className,
     )}
     {...rest}
@@ -419,6 +434,7 @@ interface SectionProps {
   count: number;
   icon?: React.ReactNode;
   defaultOpen?: boolean;
+  headerClassName?: string;
   children: React.ReactNode;
 }
 
@@ -427,6 +443,7 @@ const Section: React.FC<SectionProps> = ({
   count,
   icon,
   defaultOpen = true,
+  headerClassName,
   children,
 }) => {
   const [open, setOpen] = useState(defaultOpen);
@@ -435,7 +452,10 @@ const Section: React.FC<SectionProps> = ({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="sticky top-0 z-[1] flex w-full items-center gap-1 bg-white px-2 py-1 text-left text-[10px] font-semibold uppercase tracking-wide text-neutral-500 hover:text-neutral-700 dark:bg-neutral-950 dark:text-neutral-400 dark:hover:text-neutral-200"
+        className={cn(
+          "sticky top-0 z-[1] flex w-full items-center gap-1 bg-card px-2 py-1 text-left text-[10px] font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground",
+          headerClassName,
+        )}
       >
         {open ? (
           <ChevronDown size={10} className="shrink-0" />
@@ -444,12 +464,40 @@ const Section: React.FC<SectionProps> = ({
         )}
         {icon}
         <span className="truncate">{label}</span>
-        <span className="ml-auto shrink-0 text-neutral-400 dark:text-neutral-500">
-          {count}
-        </span>
+        <span className="ml-auto shrink-0 text-muted-foreground">{count}</span>
       </button>
       {open && <div>{children}</div>}
     </div>
+  );
+};
+
+/**
+ * Tiny status dot rendered at the start of every conversation row.
+ *
+ * Idle: subtle muted dot (6px). Streaming: primary-colored dot with an
+ * `animate-ping` ring for the breathing/radar effect. Reads
+ * `selectIsStreaming(conversationId)` — true while the conversations slice
+ * has `status === "streaming"` for this conversation.
+ */
+const StreamingDot: React.FC<{ conversationId: string }> = ({
+  conversationId,
+}) => {
+  const isStreaming = useAppSelector(selectIsStreaming(conversationId));
+  return (
+    <span
+      className="relative flex h-2 w-2 shrink-0 items-center justify-center"
+      aria-hidden
+    >
+      {isStreaming && (
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
+      )}
+      <span
+        className={cn(
+          "relative inline-flex h-1.5 w-1.5 rounded-full transition-colors",
+          isStreaming ? "bg-primary" : "bg-muted-foreground/40",
+        )}
+      />
+    </span>
   );
 };
 
@@ -481,12 +529,9 @@ const Row: React.FC<RowProps> = ({
       )}
       onClick={() => onOpen?.(conv)}
     >
-      <MessageCircle
-        size={11}
-        className="shrink-0 text-neutral-400 dark:text-neutral-500"
-      />
+      <StreamingDot conversationId={conv.conversationId} />
       <span className="min-w-0 flex-1 truncate">{title}</span>
-      <span className="shrink-0 text-[10px] text-neutral-500 dark:text-neutral-400">
+      <span className="shrink-0 text-[10px] text-muted-foreground">
         {formatRelative(conv.updatedAt)}
       </span>
       {onToggleFavorite && (
@@ -506,7 +551,7 @@ const Row: React.FC<RowProps> = ({
           {isFavorite ? (
             <Star size={11} className="text-amber-500" fill="currentColor" />
           ) : (
-            <StarOff size={11} className="text-neutral-400" />
+            <StarOff size={11} className="text-muted-foreground" />
           )}
         </button>
       )}

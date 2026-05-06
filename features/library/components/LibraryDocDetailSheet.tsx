@@ -72,6 +72,9 @@ export function LibraryDocDetailSheet({
   const [renameValue, setRenameValue] = useState("");
   const [renaming, setRenaming] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [confirmDeleteMode, setConfirmDeleteMode] = useState<
+    "processing" | "file"
+  >("processing");
   const [deleting, setDeleting] = useState(false);
   const [reprocessing, setReprocessing] = useState(false);
 
@@ -100,14 +103,30 @@ export function LibraryDocDetailSheet({
     if (!doc) return;
     setDeleting(true);
     try {
-      const { data } = await del<{
-        deleted_documents: number;
-        deleted_pages: number;
-        deleted_chunks: number;
-      }>(`/rag/library/${doc.id}`);
-      toast.success(
-        `Deleted: ${data?.deleted_pages ?? 0} pages, ${data?.deleted_chunks ?? 0} chunks`,
-      );
+      if (confirmDeleteMode === "file") {
+        // Full delete — processing + source cld_files row.
+        const { data } = await del<{
+          deleted_documents: number;
+          deleted_pages: number;
+          deleted_chunks: number;
+          deleted_cld_file: boolean;
+        }>(`/rag/library/${doc.id}/full`);
+        toast.success(
+          data?.deleted_cld_file
+            ? `File deleted: ${data?.deleted_pages ?? 0} pages, ${data?.deleted_chunks ?? 0} chunks, source file moved to trash.`
+            : `Processing deleted: ${data?.deleted_pages ?? 0} pages, ${data?.deleted_chunks ?? 0} chunks. (Source file was not a cld_files row, so the binary stays.)`,
+        );
+      } else {
+        // Processing-only delete — keeps the source binary.
+        const { data } = await del<{
+          deleted_documents: number;
+          deleted_pages: number;
+          deleted_chunks: number;
+        }>(`/rag/library/${doc.id}`);
+        toast.success(
+          `Processing deleted: ${data?.deleted_pages ?? 0} pages, ${data?.deleted_chunks ?? 0} chunks. Source file intact — re-process to rebuild.`,
+        );
+      }
       setConfirmDeleteOpen(false);
       onMutated?.();
       onClose();
@@ -250,15 +269,32 @@ export function LibraryDocDetailSheet({
                   />
                   {reprocessing ? "Re-processing…" : "Re-process"}
                 </Button>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  className="ml-auto"
-                  onClick={() => setConfirmDeleteOpen(true)}
-                >
-                  <Trash2 className="h-3.5 w-3.5 mr-1" />
-                  Delete
-                </Button>
+                <div className="ml-auto flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    title="Remove processing artifacts (chunks, embeddings) but keep the source file. Re-process to rebuild."
+                    onClick={() => {
+                      setConfirmDeleteMode("processing");
+                      setConfirmDeleteOpen(true);
+                    }}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                    Delete processing
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    title="Delete this document AND remove the source file from cloud storage. Cannot be undone."
+                    onClick={() => {
+                      setConfirmDeleteMode("file");
+                      setConfirmDeleteOpen(true);
+                    }}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                    Delete file
+                  </Button>
+                </div>
               </div>
 
               {/* Counts strip */}
@@ -536,22 +572,40 @@ export function LibraryDocDetailSheet({
         </DialogContent>
       </Dialog>
 
-      {/* Delete confirm dialog */}
+      {/* Delete confirm dialog (two modes — processing-only vs full file) */}
       <Dialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete document?</DialogTitle>
+            <DialogTitle>
+              {confirmDeleteMode === "file"
+                ? "Delete this file entirely?"
+                : "Delete the processing only?"}
+            </DialogTitle>
             <DialogDescription>
-              {doc ? (
+              {doc && confirmDeleteMode === "file" && (
                 <>
-                  This deletes the processed document <strong>{doc.name}</strong>{" "}
-                  along with its {doc.pagesPersisted} extracted pages and{" "}
-                  {doc.chunks} chunks. The original file is{" "}
-                  <strong>not</strong> deleted — only the processed
-                  artifacts. Re-process to rebuild.
+                  Removes <strong>{doc.name}</strong>:
+                  <ul className="list-disc ml-5 mt-2 space-y-0.5 text-xs">
+                    <li>{doc.pagesPersisted} extracted pages</li>
+                    <li>{doc.chunks} chunks · {doc.embeddingsOai} embeddings</li>
+                    <li>
+                      The source file in cloud storage (soft-deleted; the
+                      binary is removed by the cleanup job)
+                    </li>
+                    <li>All data-store bindings pointing to this file</li>
+                  </ul>
+                  <p className="text-destructive mt-3 text-sm">
+                    This cannot be undone.
+                  </p>
                 </>
-              ) : (
-                "This action cannot be undone."
+              )}
+              {doc && confirmDeleteMode === "processing" && (
+                <>
+                  Removes <strong>{doc.pagesPersisted}</strong> extracted
+                  pages and <strong>{doc.chunks}</strong> chunks for{" "}
+                  <strong>{doc.name}</strong>. The original file is{" "}
+                  <strong>kept</strong> — re-process anytime to rebuild.
+                </>
               )}
             </DialogDescription>
           </DialogHeader>
@@ -560,7 +614,11 @@ export function LibraryDocDetailSheet({
               Cancel
             </Button>
             <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-              {deleting ? "Deleting…" : "Delete"}
+              {deleting
+                ? "Deleting…"
+                : confirmDeleteMode === "file"
+                ? "Delete file"
+                : "Delete processing"}
             </Button>
           </DialogFooter>
         </DialogContent>

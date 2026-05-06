@@ -638,10 +638,10 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
   // The slug + overlayId are kept stable so the user menu, Tools-grid tile,
   // and `useQuickActions` callers continue to work without changes.
   {
-    slug: "quick-ai-results",
-    overlayId: "quickAIResults",
+    slug: "quick-chat-history",
+    overlayId: "quickChatHistory",
     kind: "window",
-    label: "AI Results",
+    label: "Chat History",
     defaultData: { selectedConversationId: null, groupBy: "date" },
     mobilePresentation: "fullscreen",
   },

@@ -346,6 +346,112 @@ export function useDataStoreDetail(storeId: string | null) {
 }
 
 // ---------------------------------------------------------------------------
+// useDataStoreMembersRich — server-enriched member list with file name,
+// size, page count, chunk count, and a derived status badge so the user
+// can SEE what's in each store at a glance.
+// ---------------------------------------------------------------------------
+
+export interface RichMember {
+  sourceKind: string;
+  sourceId: string;
+  addedAt: string;
+  notes: string | null;
+  name: string;
+  mimeType: string | null;
+  fileSize: number | null;
+  processedDocumentId: string | null;
+  pages: number;
+  chunks: number;
+  embeddingsOai: number;
+  status:
+    | "ready"
+    | "embedding"
+    | "extracted"
+    | "pending"
+    | "no_processing"
+    | "unknown";
+}
+
+interface ApiRichMember {
+  source_kind: string;
+  source_id: string;
+  added_at: string;
+  notes: string | null;
+  name: string;
+  mime_type: string | null;
+  file_size: number | null;
+  processed_document_id: string | null;
+  pages: number;
+  chunks: number;
+  embeddings_oai: number;
+  status: string;
+}
+
+interface ApiRichMembersResponse {
+  data_store_id: string;
+  members: ApiRichMember[];
+}
+
+export function useDataStoreMembersRich(storeId: string | null) {
+  const [members, setMembers] = useState<RichMember[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [bumper, setBumper] = useState(0);
+
+  const refresh = useCallback(() => setBumper((b) => b + 1), []);
+
+  useEffect(() => {
+    if (!storeId) {
+      setMembers([]);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    (async () => {
+      try {
+        const { data } = await getJson<ApiRichMembersResponse>(
+          `/rag/data-stores/${encodeURIComponent(storeId)}/members-rich`,
+        );
+        if (cancelled) return;
+        const list = Array.isArray(data?.members) ? data.members : [];
+        setMembers(
+          list.map((m) => ({
+            sourceKind: m.source_kind,
+            sourceId: m.source_id,
+            addedAt: m.added_at,
+            notes: m.notes,
+            name: m.name ?? m.source_id,
+            mimeType: m.mime_type,
+            fileSize: m.file_size,
+            processedDocumentId: m.processed_document_id,
+            pages: typeof m.pages === "number" ? m.pages : 0,
+            chunks: typeof m.chunks === "number" ? m.chunks : 0,
+            embeddingsOai:
+              typeof m.embeddings_oai === "number" ? m.embeddings_oai : 0,
+            status:
+              (m.status as RichMember["status"]) ?? "unknown",
+          })),
+        );
+      } catch (e) {
+        if (!cancelled) {
+          setError(
+            e instanceof Error ? e.message : "Could not load members",
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [storeId, bumper]);
+
+  return { members, loading, error, refresh };
+}
+
+// ---------------------------------------------------------------------------
 // useDocumentDataStores — bind/unbind a single document to N stores.
 //
 // Used by DataStoreBindPanel inside the file workspace + the 4-pane

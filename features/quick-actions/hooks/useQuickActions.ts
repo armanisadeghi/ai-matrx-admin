@@ -63,9 +63,9 @@ export function useQuickActions() {
     [dispatch],
   );
 
-  const openQuickAIResults = useCallback(
+  const openQuickChatHistory = useCallback(
     (data?: any) => {
-      dispatch(openOverlay({ overlayId: "quickAIResults", data }));
+      dispatch(openOverlay({ overlayId: "quickChatHistory", data }));
     },
     [dispatch],
   );
@@ -81,7 +81,7 @@ export function useQuickActions() {
     openQuickData,
     openQuickFiles,
     openQuickUtilities,
-    openQuickAIResults,
+    openQuickChatHistory,
     openVoicePad,
   };
 }

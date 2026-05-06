@@ -18,7 +18,7 @@
  */
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   CloudUpload,
@@ -44,10 +44,12 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { CldFilePicker } from "@/features/data-stores/components/CldFilePicker";
+import { RichMemberTable } from "@/features/data-stores/components/RichMemberTable";
 import {
   useDataStoreDetail,
   useDataStores,
   type EnrichedMember,
+  useDataStoreMembersRich,
 } from "@/features/data-stores/hooks/useDataStores";
 import {
   DATA_STORE_KINDS,
@@ -306,6 +308,19 @@ function StoreDetailPanel({
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [dropPending, setDropPending] = useState(false);
+
+  // Rich members — server-enriched view of what's actually in the store
+  // (file name, size, processing status, page/chunk counts). Replaces
+  // the opaque kind/source_id list.
+  const richMembers = useDataStoreMembersRich(storeId);
+  // Keep the rich list in sync with the underlying detail.members count
+  // so adding via picker / drag-drop refreshes both panels.
+  useEffect(() => {
+    richMembers.refresh();
+    // We only want to fire when the membership count or store changes,
+    // not on every richMembers identity change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storeId, detail.members.length]);
 
   // ─── Bind + auto-ingest helpers ──────────────────────────────────
   // When a user adds a cld_file member to a data store, we ALSO
@@ -581,9 +596,18 @@ function StoreDetailPanel({
         )}
 
         {detail.members.length > 0 && (
-          <MemberTable
-            members={detail.members}
-            onRemove={(m) => detail.removeMember(m.sourceKind, m.sourceId)}
+          <RichMemberTable
+            members={richMembers.members}
+            loading={richMembers.loading}
+            error={richMembers.error}
+            onRefresh={() => {
+              richMembers.refresh();
+              detail.refresh();
+            }}
+            onRemove={async (sourceKind, sourceId) => {
+              await detail.removeMember(sourceKind, sourceId);
+              richMembers.refresh();
+            }}
           />
         )}
 

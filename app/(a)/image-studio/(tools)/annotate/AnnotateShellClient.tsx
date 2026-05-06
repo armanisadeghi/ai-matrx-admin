@@ -5,10 +5,10 @@ import { useMemo, useState } from "react";
 import type { ImageSource } from "@/features/image-studio/modes/shared/types";
 import { ModeImagePicker } from "../_shared/ModeImagePicker";
 
-const AvatarModeShell = dynamic(
+const AnnotateModeShell = dynamic(
   () =>
-    import("@/features/image-studio/modes/avatar/AvatarModeShell").then(
-      (m) => ({ default: m.AvatarModeShell }),
+    import("@/features/image-studio/modes/annotate/AnnotateModeShell").then(
+      (m) => ({ default: m.AnnotateModeShell }),
     ),
   { ssr: false },
 );
@@ -19,7 +19,7 @@ interface Props {
   folder?: string;
 }
 
-export default function AvatarShellClient({
+export default function AnnotateShellClient({
   urlParam,
   cloudFileId,
   folder,
@@ -32,20 +32,23 @@ export default function AvatarShellClient({
 
   const [source, setSource] = useState<ImageSource | null>(initial);
 
-  if (!source) {
-    return (
-      <ModeImagePicker
-        title="Pick a photo for your avatar"
-        onPick={(file) => setSource({ kind: "file", file })}
-      />
-    );
-  }
-
   return (
-    <AvatarModeShell
-      source={source}
-      defaultFolder={folder ?? "Images/Avatars"}
-      presentation="page"
-    />
+    <div
+      className="w-full flex flex-col min-h-0 bg-background"
+      style={{ height: "calc(100dvh - 5rem)" }}
+    >
+      {source ? (
+        <AnnotateModeShell
+          source={source}
+          defaultFolder={folder ?? "Images/Annotated"}
+          presentation="page"
+        />
+      ) : (
+        <ModeImagePicker
+          title="Pick a screenshot to annotate"
+          onPick={(file) => setSource({ kind: "file", file })}
+        />
+      )}
+    </div>
   );
 }

@@ -1,21 +1,21 @@
 // features/idle-mischief/acts/Act09RollCall.ts
 //
-// Every visible button bounces in sequence — like soldiers calling out
-// "Here!" one after another. A wave that travels across the screen.
+// Every visible button bounces in sequence — a wave of "Here!" travelling
+// across the screen. Clone-based.
 
 import { animate } from "motion";
 import { findButtonsInOrder } from "../utils/targets";
-import { snapshot } from "../utils/snapshot";
+import { cloneAndHide } from "../utils/cloning";
 
 export function playRollCall(): () => void {
   const targets = findButtonsInOrder(40);
   if (targets.length === 0) return () => {};
 
-  const handles = targets.map((el, i) => {
-    snapshot(el);
-    const stagger = i * 0.06; // 60ms between each
+  const handles = targets.map((original, i) => {
+    const clone = cloneAndHide(original);
+    const stagger = i * 0.06;
     return animate(
-      el,
+      clone,
       {
         scale: [1, 1.25, 0.92, 1.05, 1],
         y: [0, -12, 4, -3, 0],

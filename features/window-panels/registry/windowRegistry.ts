@@ -362,11 +362,11 @@ const DYNAMIC: Record<string, DynamicAddition> = {
 
   // ── AI Results ────────────────────────────────────────────────────────────
   // Cross-agent conversation history. Replaces the legacy
-  // QuickAIResultsSheet (prompts system) — slug + overlayId kept for
+  // QuickChatHistorySheet (prompts system) — slug + overlayId kept for
   // backward compatibility with the user menu and Tools-grid tile.
-  quickAIResults: {
+  quickChatHistory: {
     componentImport: () =>
-      import("@/features/window-panels/windows/agents/AIResultsWindow"),
+      import("@/features/window-panels/windows/agents/ChatHistoryWindow"),
   },
 
   // ── Stream Debug ──────────────────────────────────────────────────────────

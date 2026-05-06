@@ -30,8 +30,8 @@ Per user: "the single most important feature we'll ever build for our applicatio
 - `app/(a)/chat/new/page.tsx` — Suspense-wrapped `ChatNewClient` (uses `useSearchParams`).
 - `app/(a)/chat/[conversationId]/page.tsx` — server component that SSR-resolves `cx_conversation.initial_agent_id` and mounts `ChatRoomClient`.
 - `features/agents/components/chat/ChatAgentPicker.tsx` — 3-tab (own / system / community stub) agent picker. Desktop popover, mobile drawer.
-- `features/agents/components/chat/ChatPageShell.tsx` — shared page shell: desktop history sidebar + mobile history drawer + header slot + keyboard shortcuts.
-- `features/agents/components/chat/ChatHistorySidebar.tsx` — global conversation list backed by `fetchGlobalConversations`.
+- `features/agents/components/chat/ChatPageShell.tsx` — shared page shell: desktop history sidebar + mobile history drawer + header slot + keyboard shortcuts. History is rendered by the reusable `ConversationHistorySidebar` (scope `chat-route`, `agentIds: []` to show all the user's conversations).
+- ~~`features/agents/components/chat/ChatHistorySidebar.tsx`~~ — removed; replaced by `features/agents/components/conversation-history/ConversationHistorySidebar` (scoped, paginated, search + grouping).
 - `features/agents/components/chat/ChatRoomClient.tsx` — the single-conversation client shell (new or loaded).
 - `features/agents/components/chat/ChatNewClient.tsx` — agent picker landing for `/chat/new`.
 - `features/agents/components/chat/ChatLandingClient.tsx` — redirects to last conversation or `/chat/new`.
@@ -67,3 +67,4 @@ Per user: "the single most important feature we'll ever build for our applicatio
 | Date | Who | Change |
 |---|---|---|
 | 2026-04-21 | claude (phase-7) | Phase 7 code-complete (partially — community picker stubbed, keyboard shortcuts hardcoded). Added `app/(a)/chat/{layout,page,new/page,[conversationId]/page}.tsx` and `features/agents/components/chat/{ChatAgentPicker,ChatPageShell,ChatHistorySidebar,ChatRoomClient,ChatNewClient,ChatLandingClient}.tsx`. Extended `conversation-list.thunks.ts` with `fetchGlobalConversations` (reuses existing `setGlobalList*` reducers; no new slice). Reused `AgentConversationColumn`, `useAgentLauncher`, `createManualInstance`, `loadConversation`, `selectOwnedAgents`, `selectSystemAgents`. Mobile handling: drawer-swapped picker + history via `useIsMobile()`; `pb-safe` on drawer footers; 16px picker search input. |
+| 2026-05-05 | composer | Replaced the route-specific `ChatHistorySidebar` with the reusable `ConversationHistorySidebar` (scope `chat-route`). Desktop aside + mobile drawer now share a small `ChatHistoryPanel` wrapper that adds the "Conversations / + New" header. Deleted `features/agents/components/chat/ChatHistorySidebar.tsx`. Search and date/agent grouping are now built-in; favorites are not yet wired (no chat-scoped preferences field — follow-up if needed). |

@@ -59,7 +59,7 @@ export function MobileUnifiedMenu() {
     openQuickData,
     openQuickFiles,
     openQuickUtilities,
-    openQuickAIResults,
+    openQuickChatHistory,
     openVoicePad,
   } = useQuickActions();
 
@@ -171,9 +171,9 @@ export function MobileUnifiedMenu() {
             <span className="text-sm">Quick Files</span>
           </DropdownMenuItem>
 
-          <DropdownMenuItem onClick={() => openQuickAIResults()}>
+          <DropdownMenuItem onClick={() => openQuickChatHistory()}>
             <Rainbow className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
-            <span className="text-sm">AI Results</span>
+            <span className="text-sm">Chat History</span>
           </DropdownMenuItem>
 
           <DropdownMenuItem onClick={() => openQuickUtilities()}>

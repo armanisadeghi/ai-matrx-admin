@@ -12,29 +12,36 @@ AI Matrx is becoming an *ambient* AI — present in sidebars, floating windows, 
 
 ## Architecture
 
-Three layers, all under `features/idle-mischief/`:
+Four layers, all under `features/idle-mischief/`:
 
-### 1. Snapshot/restore foundation (`utils/snapshot.ts`) — THE critical piece
+### 1. The hard rule: never animate a real element
 
-Before *any* act touches a real DOM element, it MUST call `snapshot(el)`. The snapshot stores a complete, verbatim picture of the element at that moment:
-- the entire `style` attribute string (NOT per-property tracking — the whole thing)
-- `className`
-- bounding rect (for portals/clones/position math)
-- parent + nextSibling (so re-parenting is reversible)
+**Acts MUST NEVER call `motion.animate()` (or any animator) on a real DOM element.** This is the single most important invariant in the subsystem. Why:
 
-`restoreElement(el)` puts every byte back. `restoreAll()` does the same for every snapshotted element + every registered portal node + every registered cleanup callback in one atomic operation.
+- `motion` v12 uses the Web Animations API (WAAPI) under the hood.
+- WAAPI animations live on a separate compositor layer; they don't write to inline `style.transform` while running.
+- When the animation is stopped (`controls.stop()`), motion calls `commitStyles()` then `cancel()` — meaning the **mid-animation transform gets baked into inline style** before the animation is removed.
+- Even with surgical inline-style restoration, race conditions and edge cases (CSS transitions on the page that we shouldn't be cancelling, etc.) make "perfectly restore the real element" non-trivial.
 
-This is non-negotiable: per-property tracking ("save transform, save opacity") was the source of every "settles in a different spot" bug in v0.1. Don't go back to that.
+The bulletproof solution: clone the element, animate the clone, hide the original. On snap-back, the clone is unmounted and the original's inline style is byte-for-byte restored. Since the real element was never animated, there is nothing to "clean up" on it beyond reverting the `visibility: hidden` we set.
 
-### 2. Activity-driven snap-back (`components/MischiefStage.tsx`)
+`utils/cloning.ts` exposes `cloneAndHide(el)` which is the only acceptable way to operate on a real element. Every act that touches a real element goes through it.
 
-While ANY act is running, the orchestrator attaches a **capture-phase, passive** listener for `pointermove`, `pointerdown`, `keydown`, `wheel`, `touchstart` on `window`. The FIRST event fires `restoreAll()` and resets state to `idle`. No reliance on the idle-seconds counter, no race conditions with the activity that spawned the act (the listener arms after a 350ms grace window).
+### 2. Snapshot/restore foundation (`utils/snapshot.ts`)
 
-If you ever see "things stay crooked after I move the mouse," check the snapshot/portal registries first via `getSnapshotStats()`.
+For the rare cases where we DO mutate a real element (only `visibility: hidden` and `pointer-events: none`, applied by `cloneAndHide`), `snapshot(el)` captures the entire `style` attribute string verbatim, the className, parent, nextSibling, and rect. `restoreElement(el)` puts every byte back. `restoreAll()` does the same for every snapshotted element + registered portal + cleanup callback in one atomic operation.
 
-### 3. Acts (`acts/Act*.ts`)
+Crucial: we do NOT cancel `document.getAnimations()` globally. That kills legitimate page animations (CSS hover transitions, focus indicators, third-party libraries) and was making the page look worse than the mischief itself. Per-element subtree cancel is fine; document-wide is destructive.
 
-Each act is an imperative function: `() => () => void`. Call to play; the returned function is the natural cleanup. Acts use `motion`'s `animate()` API on real DOM elements (snapshotted first) or on portal-mounted clones (registered first via `registerPortal`).
+### 3. Activity-driven snap-back (`components/MischiefStage.tsx`)
+
+While ANY act is running, the orchestrator attaches a **capture-phase, passive** listener for `pointermove`, `pointerdown`, `keydown`, `wheel`, `touchstart` on `window`. The FIRST event fires `restoreAll()` and resets state to `idle`. The listener stays attached for an additional 900ms after the first event, re-running `restoreAll()` (idempotent) on every subsequent event — defensive sweep for any motion straggler. After 900ms, detach.
+
+If you ever see "things stay crooked after I move the mouse," run `__mischiefForceReset()` from devtools (the emergency hatch the orchestrator exposes) and report the act that left state behind.
+
+### 4. Acts (`acts/Act*.ts`)
+
+Each act is an imperative function: `() => () => void`. Call to play; the returned function is the natural cleanup. Acts use `motion`'s `animate()` API exclusively on **clones** (returned from `cloneAndHide()`) or on **portal nodes** (overlays, snowflakes, eyes — created from scratch and registered via `registerPortal()`). Real elements never receive an animation handle.
 
 ### The 10 Acts
 
@@ -103,4 +110,5 @@ The control surface lives **inside the existing Admin Indicator**, in the **Medi
 ## Change Log
 - 2026-05-05: Initial implementation. 7 acts, keyboard shortcut, reduced-motion gate.
 - 2026-05-05: Removed standalone floating Wand2 button; consolidated all dev controls into a collapsible section inside the Admin Indicator's MediumIndicator panel.
-- 2026-05-05: **v0.2 — bulletproof foundation rewrite.** Replaced per-property tracking (`rememberTransform`/`rememberOpacity`) with a verbatim-style-attribute snapshot system in `utils/snapshot.ts`. Added portal registry + cleanup registry so `restoreAll()` is one atomic sweep. Snap-back is now driven by a capture-phase activity listener attached for the duration of each act, not by the idle-seconds counter — no more "settles in a different spot" or "stays crooked." Walking Sidebar now uses a `position: fixed` clone so it actually escapes parent overflow. Eyes now mount at top-center of the viewport (the sidebar is usually collapsed and they were invisible there). Added 3 new acts: **Avalanche** (icons fall and pile), **Roll Call** (wave of bounces), **Liquify** (jelly distortion). Carnival now mixes Snow + Eyes + Liquify + Roll Call.
+- 2026-05-05: v0.2 — verbatim-style-attribute snapshot system, 10 acts, capture-phase activity listener, fixed-position clone for walking sidebar, eyes mount at top-center.
+- 2026-05-05: **v0.3 — clone-everything architecture.** The previous "snapshot real element + animate it directly" approach had a fundamental WAAPI race: motion's `controls.stop()` commits the mid-animation transform to inline style before cancelling, and we couldn't reliably restore in all cases. Plus the document-wide `getAnimations().cancel()` was killing legitimate page CSS transitions and leaving the page in a worse state than the mischief itself. Both problems are now eliminated by `utils/cloning.ts::cloneAndHide()`: every act animates a fixed-position clone on `document.body`; the real element only ever has `visibility: hidden` set on it (reverted byte-for-byte by the snapshot). All 10 acts refactored. The "stays crooked after snap-back" class of bug is now architecturally impossible — the real element was never touched, so there is nothing to clean up on it beyond a one-line inline-style revert.

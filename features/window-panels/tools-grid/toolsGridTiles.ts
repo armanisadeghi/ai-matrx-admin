@@ -416,10 +416,10 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
   },
   {
     id: "tile.ai-results",
-    label: "AI Results",
+    label: "Chat History",
     icon: Wand2,
     category: "agents",
-    overlayId: "quickAIResults",
+    overlayId: "quickChatHistory",
   },
   {
     id: "tile.agent-optimizer",

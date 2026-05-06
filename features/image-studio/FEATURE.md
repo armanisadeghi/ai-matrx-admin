@@ -18,7 +18,9 @@ Four modes, one feature: **Convert** (resize to platform presets), **Edit** (ful
 | `/image-studio/library` | Per-user Supabase data | Variants the user has saved — grouped by session, public URLs. |
 | `/image-studio/from-base64` | Interactive tool | Paste a base64 string (raw or `data:` URL) → preview + metadata + save to cloud as a hosted asset with a permanent share URL. Pure browser decode (no API hop), uploads via the cloud-files share-link primitive. |
 
-All routes live under `app/(a)/image-studio/` and follow the `(a)` route rules — static shell, Suspense boundaries, dimension-matched skeletons. Edit / Annotate / Avatar / Generate use a shared `_shared/ModeImagePicker` landing when no source is provided via `?url=` or `?cloudFileId=`.
+All routes live under `app/(a)/image-studio/` and follow the `(a)` route rules — static shell, Suspense boundaries, dimension-matched skeletons. Edit / Annotate / Avatar use a shared `(tools)/_shared/ModeImagePicker` landing when no source is provided via `?url=` or `?cloudFileId=`.
+
+The 6 full-screen tools (`edit`, `avatar`, `annotate`, `convert`, `from-base64`, `generate`) live inside a `(tools)` route group whose layout owns the shared chrome — a route-aware `<ImageStudioHeader>` portaled into the global shell header, plus the `pt-10` content slot that clears the transparent header overlay. Tool pages render only their inner shell. The `(tools)` layout also exposes a flex row that's ready for a future `<ImageStudioSidebar>`. Landing / library / presets stay outside the group because their page-level layout is scrollable content with their own in-page chrome.
 
 ## Architecture
 
@@ -28,22 +30,39 @@ app/(a)/image-studio/
 ├── page.tsx                landing (Server Component)
 ├── loading.tsx
 ├── error.tsx
-├── convert/
-│   ├── layout.tsx          sub-route metadata
-│   ├── page.tsx            Server shell + dynamic(ImageStudioShell, ssr:false)
-│   └── loading.tsx
+├── (tools)/                route group — shared full-screen-tool shell
+│   ├── layout.tsx          mounts <ImageStudioHeader/> + pt-10 + future-sidebar slot
+│   ├── _shared/
+│   │   └── ModeImagePicker.tsx
+│   ├── edit/
+│   │   ├── page.tsx        just <EditShellClient/>
+│   │   └── EditShellClient.tsx
+│   ├── avatar/
+│   │   ├── page.tsx
+│   │   └── AvatarShellClient.tsx
+│   ├── annotate/
+│   │   ├── page.tsx
+│   │   └── AnnotateShellClient.tsx
+│   ├── convert/
+│   │   ├── layout.tsx      sub-route metadata
+│   │   ├── page.tsx        just <ImageStudioShellClient/>
+│   │   ├── loading.tsx
+│   │   └── ImageStudioShellClient.tsx
+│   ├── from-base64/
+│   │   ├── layout.tsx      sub-route metadata
+│   │   ├── page.tsx        just <FromBase64ShellClient/>
+│   │   ├── loading.tsx
+│   │   └── FromBase64ShellClient.tsx
+│   └── generate/
+│       ├── page.tsx
+│       └── GenerateShellClient.tsx
 ├── presets/
 │   ├── layout.tsx
-│   ├── page.tsx            Server Component — static catalog render
+│   ├── page.tsx            Server Component — static catalog render (own in-page header)
 │   └── loading.tsx
-├── library/
-│   ├── layout.tsx
-│   ├── page.tsx            Server Component + Suspense-fetched user data
-│   └── loading.tsx
-└── from-base64/
-    ├── layout.tsx          sub-route metadata
-    ├── page.tsx            Server shell + dynamic(Base64DecoderShell, ssr:false)
-    ├── FromBase64ShellClient.tsx
+└── library/
+    ├── layout.tsx
+    ├── page.tsx            Server Component + Suspense-fetched user data (own in-page header)
     └── loading.tsx
 
 features/image-studio/
@@ -72,6 +91,11 @@ features/image-studio/
 │   └── avatar/
 │       └── AvatarModeShell.tsx    react-easy-crop circular crop + Smart Crop
 ├── components/
+│   ├── header/
+│   │   ├── imageStudioRoutes.ts          single source of truth — { path, label, Icon, isTool }
+│   │   ├── ImageStudioHeader.tsx         server shell — wraps <PageHeader>, splits desktop/mobile via CSS
+│   │   ├── ImageStudioHeaderDesktop.tsx  client island — back + title + nav (lg+)
+│   │   └── ImageStudioHeaderMobile.tsx   client island — back + tappable title → bottom-sheet route picker
 │   ├── ImageStudioShell.tsx       3-column interactive shell (Convert mode)
 │   ├── StudioDropZone.tsx         drag-drop + paste
 │   ├── StudioFileCard.tsx         per-file row with variant grid
@@ -249,6 +273,15 @@ flow is generate → keep editing without an upload round-trip.
 
 ## Change Log
 
+- **2026-05-05** — Refactored `ImageStudioHeader` to mirror the `AgentHeader` pattern: the top-level component is now a Server Component shell wrapped in `<PageHeader>` (single `children`) that splits desktop/mobile via CSS (`lg:hidden` / `hidden lg:flex`). Extracted two client islands:
+  - `ImageStudioHeaderDesktop.tsx` — existing back + title + nav (reads `usePathname()`).
+  - `ImageStudioHeaderMobile.tsx` — proper mobile UX: back chevron + tappable title pill that opens a `BottomSheet` listing every route with active checkmark. Replaces the previous "centered title with no way to switch routes" placeholder.
+  - Same external API (`<ImageStudioHeader />`) — no consumer changes; `(tools)/layout.tsx` is unaffected.
+- **2026-05-06** — Extracted the per-tool inline header into a single route-aware component and consolidated all six full-screen tools under a shared layout:
+  - New `features/image-studio/components/header/imageStudioRoutes.ts` is the single source of truth for every Studio sub-route (path, label, icon, `isTool` flag).
+  - New `features/image-studio/components/header/ImageStudioHeader.tsx` reads the current path via `usePathname()`, renders the page title from the registry, lists every other route in the nav (the active route is omitted), and portals into `#shell-header-center` via `<PageHeader>`. Desktop renders the full nav; mobile collapses to back-button + title.
+  - The 6 tools (`edit`, `avatar`, `annotate`, `convert`, `from-base64`, `generate`) plus their `_shared/ModeImagePicker` moved into a new `app/(a)/image-studio/(tools)/` route group. The `(tools)/layout.tsx` mounts `<ImageStudioHeader/>`, provides the `pt-10` content slot, and exposes a flex row that's ready for a future `<ImageStudioSidebar/>` next to `children`. Tool pages are now one-line shells — no local `<header>`, no outer `h-[calc(...)]` wrapper. Public URLs are unchanged (route group is parenthesised). Loading skeletons trimmed to inner-shell only.
+  - Landing / library / presets stay outside `(tools)` — their scrollable content layout doesn't fit the same mold and they keep their existing in-page chrome for now.
 - **2026-05-05** — Removed orphaned `components/InitialCropDialog.tsx` (zero importers — the floating-window form `InitialCropWindow` had been the canonical initial-crop wrapper for some time). Updated SKILL.md and `InitialCropPanel.tsx` doc comments to drop stale Dialog references.
 - **2026-05-05** — Image Manager Hub absorbed several Studio surfaces into `/image-manager` tabs: the studio crop+variants view embeds via `<EmbeddedImageStudio hideTitle>`, the `Base64DecoderShell` is wrapped as a "Paste base64" sub-tool inside the Upload tab, and the generated-images library at `Images/Generated/...` is exposed as a read-only Studio Library tab. The standalone routes (`/image-studio/from-base64`, `/image-studio/library`, `/image-studio/presets`) remain canonical for direct linking and deep workflows. See [`features/image-manager/FEATURE.md`](../image-manager/FEATURE.md).
 - **2026-05-05** — Added Edit, Annotate, Avatar, and Generate modes:

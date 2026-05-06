@@ -35,6 +35,8 @@ import {
   Sparkles,
   AlertTriangle,
   Trash2,
+  Search as SearchAction,
+  MoreHorizontal,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -50,6 +52,7 @@ import { useLibrary, useLibrarySummary } from "../hooks/useLibrary";
 import type { DocStatus } from "../types";
 import { StatusBadge } from "./StatusBadge";
 import { LibraryDocDetailSheet } from "./LibraryDocDetailSheet";
+import { QuickSearchDialog } from "./QuickSearchDialog";
 
 const STATUS_FILTERS: { value: DocStatus | "all"; label: string }[] = [
   { value: "all", label: "All" },
@@ -86,6 +89,8 @@ export function LibraryPage() {
     null,
   );
   const [bulkRunning, setBulkRunning] = useState(false);
+  const [searchDocId, setSearchDocId] = useState<string | null>(null);
+  const [searchDocName, setSearchDocName] = useState<string | null>(null);
 
   const handleBulkDelete = async (status: DocStatus) => {
     setBulkRunning(true);
@@ -283,6 +288,7 @@ export function LibraryPage() {
                 <TableHead className="text-right">Embeds</TableHead>
                 <TableHead className="text-right">Stores</TableHead>
                 <TableHead>Created</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -339,6 +345,33 @@ export function LibraryPage() {
                   <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                     {formatRelative(d.createdAt)}
                   </TableCell>
+                  <TableCell
+                    className="text-right"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        title="Search inside this document"
+                        disabled={d.chunks === 0}
+                        onClick={() => {
+                          setSearchDocId(d.id);
+                          setSearchDocName(d.name);
+                        }}
+                      >
+                        <SearchAction className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        title="Open detail panel"
+                        onClick={() => setSelectedDocId(d.id)}
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -356,6 +389,18 @@ export function LibraryPage() {
         processedDocumentId={selectedDocId}
         onClose={() => setSelectedDocId(null)}
         onMutated={() => setRefreshKey((n) => n + 1)}
+      />
+
+      <QuickSearchDialog
+        open={searchDocId !== null}
+        onOpenChange={(o) => {
+          if (!o) {
+            setSearchDocId(null);
+            setSearchDocName(null);
+          }
+        }}
+        processedDocumentId={searchDocId}
+        documentName={searchDocName}
       />
 
       {/* Bulk-delete confirm dialog */}

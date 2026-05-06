@@ -2,11 +2,14 @@
 //
 // All open WindowPanels topple over like a tower of blocks, then bounce
 // back. Caps at MAX_TOWER_WINDOWS so a packed session doesn't lag.
+//
+// Clone-based: each window gets cloned + hidden so the real WindowPanel
+// (with all its Redux-driven inline positioning) is never touched.
 
 import { animate } from "motion";
 import { findWindowEls } from "../utils/targets";
 import { MAX_TOWER_WINDOWS } from "../constants";
-import { snapshot } from "../utils/snapshot";
+import { cloneAndHide } from "../utils/cloning";
 
 export function playTowerCollapse(): () => void {
   const allWindows = findWindowEls();
@@ -15,14 +18,14 @@ export function playTowerCollapse(): () => void {
   const windows = allWindows.slice(0, MAX_TOWER_WINDOWS);
   const handles: ReturnType<typeof animate>[] = [];
 
-  windows.forEach((el, i) => {
-    snapshot(el);
+  windows.forEach((original, i) => {
+    const clone = cloneAndHide(original);
     const tilt = (i % 2 === 0 ? 1 : -1) * (10 + Math.random() * 8);
     const fall = 60 + Math.random() * 70;
     const delay = i * 0.08;
     handles.push(
       animate(
-        el,
+        clone,
         {
           rotate: [0, tilt, -tilt * 0.6, tilt * 0.3, 0],
           y: [0, fall, fall * 0.4, fall * 0.6, 0],

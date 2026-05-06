@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AIResultsWindow — cross-agent conversation history.
+ * ChatHistoryWindow — cross-agent conversation history.
  *
  * Same model as the per-agent History tab in `AgentContentHistoryPanel`, but
  * for the **entire user's conversations across every agent**. The sidebar
@@ -9,8 +9,8 @@
  * agent-multi-select filter. Selecting a conversation renders it read-only in
  * the main pane via `AgentConversationDisplay`.
  *
- * Replaces the legacy `quickAIResults` sheet that pointed at
- * `features/prompts/components/results-display/QuickAIResultsSheet.tsx`.
+ * Replaces the legacy `quickChatHistory` sheet that pointed at
+ * `features/prompts/components/results-display/QuickChatHistorySheet.tsx`.
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -345,7 +345,7 @@ interface SidebarProps {
   agentList: { id: string; name: string }[];
 }
 
-function AIResultsSidebar({
+function ChatHistorySidebar({
   conversations,
   status,
   error,
@@ -557,7 +557,7 @@ function AIResultsSidebar({
 
 // ── Window component ─────────────────────────────────────────────────────────
 
-interface AIResultsWindowProps {
+interface ChatHistoryWindowProps {
   isOpen: boolean;
   onClose: () => void;
   /** Initial conversation to focus (e.g. when launched from a deep-link). */
@@ -566,15 +566,15 @@ interface AIResultsWindowProps {
   initialGroupBy?: GroupBy;
 }
 
-export default function AIResultsWindow({
+export default function ChatHistoryWindow({
   isOpen,
   onClose,
   initialSelectedConversationId,
   initialGroupBy,
-}: AIResultsWindowProps) {
+}: ChatHistoryWindowProps) {
   if (!isOpen) return null;
   return (
-    <AIResultsWindowInner
+    <ChatHistoryWindowInner
       onClose={onClose}
       initialSelectedConversationId={initialSelectedConversationId ?? null}
       initialGroupBy={initialGroupBy ?? "date"}
@@ -582,7 +582,7 @@ export default function AIResultsWindow({
   );
 }
 
-function AIResultsWindowInner({
+function ChatHistoryWindowInner({
   onClose,
   initialSelectedConversationId,
   initialGroupBy,
@@ -698,13 +698,13 @@ function AIResultsWindowInner({
       height={640}
       minWidth={520}
       minHeight={360}
-      overlayId="quickAIResults"
+      overlayId="quickChatHistory"
       onCollectData={collectData}
       sidebarDefaultSize={280}
       sidebarMinSize={220}
       defaultSidebarOpen
       sidebar={
-        <AIResultsSidebar
+        <ChatHistorySidebar
           conversations={conversations}
           status={status}
           error={error}
@@ -734,8 +734,8 @@ function AIResultsWindowInner({
             <p className="text-sm font-medium">Select a conversation</p>
             <p className="text-xs opacity-60 mt-1">
               Pick any past run from the list to view it here. Switch between
-              grouping by <strong>date</strong> or <strong>agent</strong> in
-              the sidebar.
+              grouping by <strong>date</strong> or <strong>agent</strong> in the
+              sidebar.
             </p>
           </div>
         )}

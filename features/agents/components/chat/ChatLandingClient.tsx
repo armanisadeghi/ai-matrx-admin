@@ -25,7 +25,7 @@ export function ChatLandingClient() {
 
   useEffect(() => {
     if (status === "idle") {
-      dispatch(fetchGlobalConversations({ limit: 5 }));
+      dispatch(fetchGlobalConversations({ limit: 25 }));
     }
   }, [dispatch, status]);
 

@@ -41,7 +41,7 @@ const TasksBlock: React.FC<TasksBlockProps> = ({
   return (
     <ChatCollapsibleWrapper
       icon={<CheckSquare className="h-4 w-4 text-primary" />}
-      title="Task Checklist"
+      title="Tasks"
       controls={
         parsedItems.length > 0 ? (
           <Button

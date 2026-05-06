@@ -1,24 +1,23 @@
 // features/idle-mischief/acts/Act10Liquify.ts
 //
 // Buttons turn to jelly. A fluid skew + scale wobble that ripples across a
-// dozen visible elements. Distinct from Wiggle (which is just bobbing) —
-// this is a non-rigid distortion.
+// dozen visible elements. Clone-based.
 
 import { animate } from "motion";
 import { findButtons } from "../utils/targets";
-import { snapshot } from "../utils/snapshot";
+import { cloneAndHide } from "../utils/cloning";
 
 export function playLiquify(): () => void {
   const targets = findButtons(12);
   if (targets.length === 0) return () => {};
 
-  const handles = targets.map((el) => {
-    snapshot(el);
+  const handles = targets.map((original) => {
+    const clone = cloneAndHide(original);
     const phaseDelay = Math.random() * 0.6;
     const sxAmp = 4 + Math.random() * 4;
     const syAmp = 3 + Math.random() * 3;
     return animate(
-      el,
+      clone,
       {
         skewX: [0, sxAmp, -sxAmp, sxAmp / 2, 0],
         skewY: [0, -syAmp, syAmp, -syAmp / 2, 0],

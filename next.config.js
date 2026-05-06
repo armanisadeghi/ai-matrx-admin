@@ -62,6 +62,14 @@ const nextConfig = {
     // Turbopack configuration (Next.js 16 default bundler)
     turbopack: {},
     serverExternalPackages: ["canvas", "next-mdx-remote", "vscode-oniguruma", "websocket"],
+    // Force Next.js's transformer over packages that ship pre-compiled output
+    // using the classic JSX runtime (`import React from "react"` +
+    // `React.createElement(...)`). Without this, Turbopack/SWC's automatic JSX
+    // transform strips the React import, leaving bare `React.createElement`
+    // calls that throw `ReferenceError: React is not defined` in production.
+    // - react-filerobot-image-editor: Image Studio Edit mode (Filerobot 5.0).
+    // - @scaleflex/ui: Filerobot's underlying UI primitives (same pattern).
+    transpilePackages: ["react-filerobot-image-editor", "@scaleflex/ui"],
     typescript: {
         ignoreBuildErrors: true,
     },

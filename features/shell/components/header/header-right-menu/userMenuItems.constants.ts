@@ -13,7 +13,7 @@ export const QUICK_ACCESS_ITEMS: OverlayMenuItemConfig[] = [
   { overlayId: "quickChat", icon: "MessageSquare", label: "Quick Chat" },
   { overlayId: "quickData", icon: "Database", label: "Quick Data" },
   { overlayId: "cloudFilesWindow", icon: "FolderOpen", label: "Quick Files" },
-  { overlayId: "quickAIResults", icon: "Gem", label: "AI Results" },
+  { overlayId: "quickChatHistory", icon: "Gem", label: "Chat History" },
   { overlayId: "quickUtilities", icon: "LayoutGrid", label: "Utilities Hub" },
 ];
 

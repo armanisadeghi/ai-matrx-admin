@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { History, MessagesSquare } from "lucide-react";
+import { History, MessagesSquare, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
@@ -12,13 +12,55 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { ChatHistorySidebar } from "./ChatHistorySidebar";
+import { ConversationHistorySidebar } from "@/features/agents/components/conversation-history/ConversationHistorySidebar";
+import type { ConversationListItem } from "@/features/agents/redux/conversation-list/conversation-list.types";
 
 interface ChatPageShellProps {
   activeConversationId?: string;
   /** Content rendered in the page header (typically the agent picker). */
   headerSlot?: React.ReactNode;
   children: React.ReactNode;
+}
+
+const CHAT_HISTORY_SCOPE = "chat-route";
+
+interface ChatHistoryPanelProps {
+  activeConversationId?: string;
+  onOpenConversation: (conv: ConversationListItem) => void;
+  onNewChat: () => void;
+}
+
+function ChatHistoryPanel({
+  activeConversationId,
+  onOpenConversation,
+  onNewChat,
+}: ChatHistoryPanelProps) {
+  return (
+    <div className="flex h-full min-h-0 flex-col bg-card">
+      <div className="shrink-0 flex items-center justify-between px-3 py-2 border-b border-border">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          Conversations
+        </span>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-7 px-2 text-xs gap-1"
+          onClick={onNewChat}
+        >
+          <Plus className="w-3.5 h-3.5" />
+          New
+        </Button>
+      </div>
+      <div className="flex-1 min-h-0">
+        <ConversationHistorySidebar
+          scopeId={CHAT_HISTORY_SCOPE}
+          agentIds={[]}
+          activeConversationId={activeConversationId ?? null}
+          onOpenConversation={onOpenConversation}
+        />
+      </div>
+    </div>
+  );
 }
 
 // Hardcoded bindings for Phase 7 — wiring into the Phase 1 shortcut table
@@ -92,6 +134,17 @@ export function ChatPageShell({
     return () => window.removeEventListener("keydown", onKey);
   }, [router, focusInput, openAgentPicker]);
 
+  const openConversation = useCallback(
+    (conv: ConversationListItem) => {
+      router.push(`/chat/${conv.conversationId}`);
+    },
+    [router],
+  );
+
+  const newChat = useCallback(() => {
+    router.push("/chat/new");
+  }, [router]);
+
   return (
     <div className="h-full flex overflow-hidden bg-textured">
       {!isMobile && (
@@ -99,7 +152,11 @@ export function ChatPageShell({
           className="hidden lg:flex w-64 shrink-0 border-r border-border flex-col"
           aria-label="Chat history"
         >
-          <ChatHistorySidebar activeConversationId={activeConversationId} />
+          <ChatHistoryPanel
+            activeConversationId={activeConversationId}
+            onOpenConversation={openConversation}
+            onNewChat={newChat}
+          />
         </aside>
       )}
 
@@ -143,11 +200,11 @@ export function ChatPageShell({
               </DrawerTitle>
             </DrawerHeader>
             <div className="flex-1 min-h-0 overflow-hidden pb-safe">
-              <ChatHistorySidebar
+              <ChatHistoryPanel
                 activeConversationId={activeConversationId}
-                onSelect={(cid) => {
+                onOpenConversation={(conv) => {
                   setHistoryOpen(false);
-                  router.push(`/chat/${cid}`);
+                  router.push(`/chat/${conv.conversationId}`);
                 }}
                 onNewChat={() => {
                   setHistoryOpen(false);
