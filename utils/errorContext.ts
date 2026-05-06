@@ -7,6 +7,8 @@ export function cleanErrorStack(errorStack) {
         .filter(line => {
             return !(
                 line.includes('node_modules') ||
+                // Defensive: strip Chrome extension stack frames from error reports. Pre-dates
+                // the matrx-extend bridge; unrelated to it.
                 line.includes('chrome-extension') ||
                 line.includes('<anonymous>')
             );

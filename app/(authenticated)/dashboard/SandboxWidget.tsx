@@ -20,7 +20,7 @@ function getTimeRemainingMs(expiresAt: string | null): number {
 
 const THIRTY_MINUTES_MS = 30 * 60 * 1000;
 
-export function SandboxWidget() {
+export function useSandboxSummary(): SandboxSummary {
   const [summary, setSummary] = useState<SandboxSummary>({
     activeCount: 0,
     expiringSoonCount: 0,
@@ -32,7 +32,6 @@ export function SandboxWidget() {
     try {
       const resp = await fetch("/api/sandbox?limit=50");
       if (!resp.ok) {
-        // Silently handle errors — widget is non-critical
         setSummary((prev) => ({
           ...prev,
           loading: false,
@@ -65,11 +64,16 @@ export function SandboxWidget() {
 
   useEffect(() => {
     fetchSummary();
-    // Refresh every 60s
-    const interval = setInterval(fetchSummary, 60_000);
-    return () => clearInterval(interval);
-  }, []);
+  }, [fetchSummary]);
 
+  return summary;
+}
+
+interface SandboxWidgetProps {
+  summary: SandboxSummary;
+}
+
+export function SandboxWidget({ summary }: SandboxWidgetProps) {
   // Don't render if sandbox API isn't available (orchestrator not running)
   if (summary.error) return null;
 

@@ -33,7 +33,7 @@ import {
 } from "@/lib/redux/selectors/userSelectors";
 import { LatestAiModels } from "@/components/animated/ExpandableCards/ExpandableCardDemo";
 import { dashboardLinks } from "@/constants/navigation-links";
-import { SandboxWidget } from "./SandboxWidget";
+import { SandboxWidget, useSandboxSummary } from "./SandboxWidget";
 
 // ─── Enterprise iOS gradients ────────────────────────────────────────────────────
 // Vivid but professional — mid-range stops, not neon-flat, not near-black
@@ -97,6 +97,7 @@ const DashboardPage = () => {
   const { stats } = useUserStats();
   const user = useAppSelector(selectUser);
   const displayName = useAppSelector(selectActiveUserName);
+  const sandboxSummary = useSandboxSummary();
 
   const recentActivity = [
     {
@@ -369,7 +370,7 @@ const DashboardPage = () => {
               </div>
             </div>
 
-            <SandboxWidget />
+            <SandboxWidget summary={sandboxSummary} />
           </div>
         </div>
 
@@ -502,7 +503,7 @@ const DashboardPage = () => {
                   ))}
                 </div>
               </div>
-              <SandboxWidget />
+              <SandboxWidget summary={sandboxSummary} />
               <div className="mt-6">
                 <h2 className="text-md font-semibold mb-4">Stats</h2>
                 <div className="rounded-xl overflow-hidden bg-white dark:bg-zinc-800 shadow-md">

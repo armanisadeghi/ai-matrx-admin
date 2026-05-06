@@ -1,19 +1,56 @@
 /**
  * MessagingService - Singleton service for real-time direct messaging
- * 
+ *
  * Handles:
  * - Channel management (creation, subscription, cleanup)
  * - Dual subscription: broadcast (immediate) + postgres_changes (reliable)
  * - Typing indicators via Presence API
  * - Online presence tracking
  * - Message sending with broadcast
- * 
+ * - matrx-extend bridge channel (FRONTEND_RPC envelope; cross-machine
+ *   signaling between this app and the Chrome extension; see
+ *   docs/MATRX_EXTEND_CONNECTION.md)
+ *
  * Uses dm_ prefixed tables and auth.users.id UUIDs
  */
 
 import { createClient } from '@/utils/supabase/client';
 import type { RealtimeChannel, RealtimePresenceState } from '@supabase/supabase-js';
 import type { Message, MessageType } from '@/features/messaging/types';
+
+// ============================================
+// matrx-extend bridge — shared envelope
+// ============================================
+
+/**
+ * Direction-tagged envelope carried over the
+ * `matrx-extension-bridge:<userId>` Supabase Broadcast channel. Mirrors
+ * the same `FRONTEND_RPC` envelope used over `chrome.runtime.onMessageExternal`
+ * so handlers don't care which substrate delivered the message.
+ *
+ * Source of truth for the wire format:
+ * docs/MATRX_EXTEND_CONNECTION.md
+ */
+export type BridgeDirection = 'frontend->extension' | 'extension->frontend';
+
+export interface BridgeEnvelope<TPayload = unknown> {
+  direction: BridgeDirection;
+  action: string;
+  requestId: string;
+  payload: TPayload;
+  /** ms since epoch when the sender published. */
+  timestamp: number;
+}
+
+export type BridgeHandler = (envelope: BridgeEnvelope) => void;
+
+/** Fixed broadcast event name. The channel name itself is per-user. */
+export const BRIDGE_BROADCAST_EVENT = 'FRONTEND_RPC';
+
+/** Build the per-user bridge channel name. Single source of truth. */
+export function bridgeChannelName(userId: string): string {
+  return `matrx-extension-bridge:${userId}`;
+}
 
 // ============================================
 // Types
@@ -71,6 +108,10 @@ export class MessagingService {
   private messageHandlersAdded = new Set<string>();
   // Typing callback registry - allows updating callbacks without recreating channels
   private typingCallbacks = new Map<string, Map<string, TypingCallback>>();
+  // Bridge listener registry — multiple `useExtensionBridgeChannel()`
+  // callers share one Supabase channel. Stored per channel name; the
+  // handler attached to Supabase fans out to every listener.
+  private bridgeListeners = new Map<string, Set<BridgeHandler>>();
 
   constructor() {
     // Verify auth on init - only log errors
@@ -201,6 +242,7 @@ export class MessagingService {
     this.subscribeCallbacks.clear();
     this.channelRefCount.clear();
     this.messageHandlersAdded.clear();
+    this.bridgeListeners.clear();
   }
 
   // ============================================
@@ -584,6 +626,181 @@ export class MessagingService {
    */
   getActiveChannels(): string[] {
     return Array.from(this.subscribedChannels);
+  }
+
+  // ============================================
+  // matrx-extend Bridge Channel
+  // ============================================
+  //
+  // Per-user Supabase Broadcast channel used by the matrx-extend Chrome
+  // extension to coordinate with this app across machines. One channel
+  // per user (`matrx-extension-bridge:<userId>`); both directions ride
+  // on it via the `BridgeEnvelope.direction` field.
+  //
+  // Lifecycle is ref-counted via the same primitives used by message and
+  // presence channels (see `ensureChannelSubscribed`/`releaseChannel`):
+  // multiple `useExtensionBridgeChannel()` callers share one channel and
+  // tear it down only when the last subscriber unsubscribes.
+
+  /**
+   * Internal: get or create the bridge channel for `userId`.
+   * Bridge channels do NOT use presence — they only carry broadcasts.
+   */
+  private getOrCreateBridgeChannel(userId: string): RealtimeChannel {
+    const channelName = bridgeChannelName(userId);
+
+    const existing = this.channels.get(channelName);
+    if (existing) return existing;
+
+    const channel = this.supabase.channel(channelName);
+    this.channels.set(channelName, channel);
+    return channel;
+  }
+
+  /**
+   * Internal: ref-counted release for bridge channels. Mirrors
+   * `releaseChannel` but keyed off the bridge channel name. We can't
+   * reuse `releaseChannel` because it hard-codes the `conversation:`
+   * prefix.
+   */
+  private releaseBridgeChannel(userId: string): void {
+    const channelName = bridgeChannelName(userId);
+    const currentCount = this.channelRefCount.get(channelName) || 0;
+
+    if (currentCount <= 1) {
+      this.channelRefCount.delete(channelName);
+      const channel = this.channels.get(channelName);
+      if (channel) {
+        this.supabase.removeChannel(channel);
+        this.channels.delete(channelName);
+        this.subscribedChannels.delete(channelName);
+        this.subscribingChannels.delete(channelName);
+      }
+    } else {
+      this.channelRefCount.set(channelName, currentCount - 1);
+    }
+  }
+
+  /**
+   * Subscribe to inbound bridge envelopes for the given user.
+   *
+   * The handler receives EVERY envelope on the channel (both directions);
+   * callers that only want extension->frontend traffic should filter on
+   * `envelope.direction` themselves. We pass through unfiltered because
+   * the request/response correlation in `sendBridgeRequest` needs to see
+   * its own outbound + the matching inbound to resolve.
+   *
+   * @returns Unsubscribe function. Decrements ref count; the channel is
+   *          torn down only when the last subscriber leaves.
+   */
+  subscribeToBridge(userId: string, onMessage: BridgeHandler): () => void {
+    const channelName = bridgeChannelName(userId);
+    const channel = this.getOrCreateBridgeChannel(userId);
+    const handlersKey = `bridge:${userId}`;
+
+    // First subscriber on this channel attaches the handler to Supabase.
+    // Subsequent subscribers just bump the ref count and register their
+    // own callback in a per-channel listener set.
+    if (!this.bridgeListeners.has(channelName)) {
+      this.bridgeListeners.set(channelName, new Set());
+    }
+    this.bridgeListeners.get(channelName)!.add(onMessage);
+
+    if (!this.messageHandlersAdded.has(handlersKey)) {
+      this.messageHandlersAdded.add(handlersKey);
+
+      channel.on('broadcast', { event: BRIDGE_BROADCAST_EVENT }, (payload) => {
+        const envelope = payload?.payload as BridgeEnvelope | undefined;
+        if (!envelope || typeof envelope !== 'object') return;
+        const listeners = this.bridgeListeners.get(channelName);
+        if (!listeners) return;
+        listeners.forEach((handler) => {
+          try {
+            handler(envelope);
+          } catch (err) {
+            console.error('[Bridge] Handler threw:', err);
+          }
+        });
+      });
+    }
+
+    this.ensureChannelSubscribed(channelName, channel);
+
+    return () => {
+      const listeners = this.bridgeListeners.get(channelName);
+      if (listeners) {
+        listeners.delete(onMessage);
+        if (listeners.size === 0) {
+          this.bridgeListeners.delete(channelName);
+          this.messageHandlersAdded.delete(handlersKey);
+        }
+      }
+      this.releaseBridgeChannel(userId);
+    };
+  }
+
+  /**
+   * Publish a `frontend->extension` envelope. The channel must already
+   * be subscribed (call `subscribeToBridge` first, or use the React
+   * hook). Resolves once the broadcast is acknowledged by Supabase; does
+   * NOT wait for a reply from the extension — caller is responsible for
+   * matching `requestId` if a reply is expected.
+   */
+  async sendBridgeMessage(
+    userId: string,
+    action: string,
+    payload: unknown,
+    requestId?: string,
+  ): Promise<{ requestId: string }>;
+  async sendBridgeMessage(
+    userId: string,
+    envelope: Pick<BridgeEnvelope, 'action' | 'payload' | 'requestId'>,
+  ): Promise<{ requestId: string }>;
+  async sendBridgeMessage(
+    userId: string,
+    actionOrEnvelope:
+      | string
+      | Pick<BridgeEnvelope, 'action' | 'payload' | 'requestId'>,
+    payload?: unknown,
+    requestId?: string,
+  ): Promise<{ requestId: string }> {
+    const channelName = bridgeChannelName(userId);
+    const channel = this.channels.get(channelName);
+
+    if (!channel || !this.subscribedChannels.has(channelName)) {
+      throw new Error(
+        `[Bridge] Channel for user ${userId} is not subscribed. Call subscribeToBridge first.`,
+      );
+    }
+
+    const action =
+      typeof actionOrEnvelope === 'string'
+        ? actionOrEnvelope
+        : actionOrEnvelope.action;
+    const resolvedPayload =
+      typeof actionOrEnvelope === 'string'
+        ? payload
+        : actionOrEnvelope.payload;
+    const resolvedRequestId =
+      typeof actionOrEnvelope === 'string'
+        ? requestId ?? crypto.randomUUID()
+        : actionOrEnvelope.requestId;
+
+    const envelope: BridgeEnvelope = {
+      direction: 'frontend->extension',
+      action,
+      requestId: resolvedRequestId,
+      payload: resolvedPayload,
+      timestamp: Date.now(),
+    };
+
+    await channel.send({
+      type: 'broadcast',
+      event: BRIDGE_BROADCAST_EVENT,
+      payload: envelope,
+    });
+
+    return { requestId: resolvedRequestId };
   }
 
   /**
