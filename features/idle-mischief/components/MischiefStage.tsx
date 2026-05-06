@@ -39,7 +39,10 @@ interface RecordingsLike {
   isRecording?: boolean;
   isTranscribing?: boolean;
 }
-const selectRecordingsBusy = (s: { recordings?: RecordingsLike }) =>
+// Module-level stable reference; returns a primitive boolean which compares
+// by ===, so `useAppSelector` won't trigger re-renders unless the underlying
+// flag actually changes. No `createSelector` needed for a pure boolean read.
+const selectRecordingsBusy = (s: { recordings?: RecordingsLike }): boolean =>
   Boolean(s.recordings?.isRecording || s.recordings?.isTranscribing);
 
 interface RunningAct {
@@ -255,31 +258,24 @@ export function MischiefStage() {
       }
     };
 
+    // First user activity event → snap-back ONCE, then immediately detach
+    // every listener. We do NOT keep listening for 900ms and re-running
+    // restoreAll on every subsequent event (that was a re-render storm —
+    // pointermove fires dozens of times per second and each call did a
+    // full document sweep with querySelectorAll). Instead, a single hard
+    // snap-back is enough; the sledgehammer sweep inside restoreAll() is
+    // already idempotent and document-wide.
     let activityArmed = false;
-    let firstFireAt = 0;
-    let postFireDetach: number | null = null;
     const onActivity = () => {
       if (!activityArmed) return;
-      const now = Date.now();
-      if (firstFireAt === 0) {
-        firstFireAt = now;
-        hardSnapBack("snapping-back", "user-activity");
-        postFireDetach = window.setTimeout(() => {
-          detachActivity();
-        }, 900);
-      } else {
-        try {
-          const stats = restoreAll();
-          recordRestoreStats(stats, "post-fire-sweep");
-        } catch {}
-      }
+      activityArmed = false;
+      hardSnapBack("snapping-back", "user-activity");
+      // Detach asynchronously so we don't tear down the listener registry
+      // mid-event-dispatch (some browsers don't like that).
+      window.setTimeout(detachActivity, 0);
     };
     const detachActivity = () => {
       activityArmed = false;
-      if (postFireDetach !== null) {
-        clearTimeout(postFireDetach);
-        postFireDetach = null;
-      }
       for (const evt of ACTIVITY_EVENTS) {
         window.removeEventListener(evt, onActivity, true);
       }

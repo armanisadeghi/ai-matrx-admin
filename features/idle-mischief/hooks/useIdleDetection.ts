@@ -93,11 +93,17 @@ export function useIdleDetection(): IdleDetectionApi {
       resetIdle();
     }, ACTIVITY_THROTTLE_MS);
 
+    // Bubble phase + passive. We do NOT use capture phase here — capture
+    // listeners on `focusin`, `compositionstart`, `dragover`, `drop`, etc.
+    // could interfere with focus-trapping libraries (Radix, Headless UI),
+    // IME composition handling, and drag-drop zones if our handler ever
+    // takes meaningful time. Activity events still bubble up to window,
+    // so bubble-phase listening detects everything we need.
     for (const evt of WINDOW_ACTIVITY_EVENTS) {
-      window.addEventListener(evt, onActivity, { passive: true, capture: true });
+      window.addEventListener(evt, onActivity, { passive: true });
     }
     for (const evt of DOCUMENT_ACTIVITY_EVENTS) {
-      document.addEventListener(evt, onActivity, { passive: true, capture: true });
+      document.addEventListener(evt, onActivity, { passive: true });
     }
 
     const onVisibility = () => {
@@ -133,10 +139,10 @@ export function useIdleDetection(): IdleDetectionApi {
 
     return () => {
       for (const evt of WINDOW_ACTIVITY_EVENTS) {
-        window.removeEventListener(evt, onActivity, true);
+        window.removeEventListener(evt, onActivity);
       }
       for (const evt of DOCUMENT_ACTIVITY_EVENTS) {
-        document.removeEventListener(evt, onActivity, true);
+        document.removeEventListener(evt, onActivity);
       }
       document.removeEventListener("visibilitychange", onVisibility);
       clearInterval(tick);

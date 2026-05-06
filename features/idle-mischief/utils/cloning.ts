@@ -29,20 +29,62 @@ export const ORIGINAL_ATTR = "data-mischief-original";
  * with `data-mischief-original="1"` so a document-wide sweep can clean up
  * any stragglers if the registry path fails.
  */
+/**
+ * Attributes we strip from clones (root + descendants) so they don't get
+ * targeted by `querySelector` calls in unrelated features. If we left
+ * these on, code elsewhere doing `document.querySelector('[data-testid="x"]')`
+ * could hit our clone instead of the real element while mischief is running.
+ *
+ * `for` is stripped because cloned `<label for="some-id">` after we strip
+ * the id leaves a dangling reference.
+ */
+const CLONE_STRIP_ATTRS = [
+  "id",
+  "name",
+  "for",
+  "data-testid",
+  "data-test",
+  "data-test-id",
+  "data-cy",
+  "data-qa",
+];
+
 export function cloneAndHide(original: HTMLElement): HTMLElement {
   const r = original.getBoundingClientRect();
   const clone = original.cloneNode(true) as HTMLElement;
 
-  // Strip ids on the clone + descendants to avoid duplicates.
-  if (clone.id) clone.removeAttribute("id");
-  clone.querySelectorAll<HTMLElement>("[id]").forEach((n) =>
-    n.removeAttribute("id"),
-  );
-  // Strip name attributes — would otherwise let the clone participate in
-  // form submission.
-  clone.querySelectorAll<HTMLElement>("[name]").forEach((n) =>
-    n.removeAttribute("name"),
-  );
+  // Strip identifying / test-targeting attributes on the clone root + every
+  // descendant so other features' querySelector calls can't accidentally
+  // match the clone instead of the real element.
+  for (const attr of CLONE_STRIP_ATTRS) {
+    if (clone.hasAttribute(attr)) clone.removeAttribute(attr);
+    clone
+      .querySelectorAll<HTMLElement>(`[${attr}]`)
+      .forEach((n) => n.removeAttribute(attr));
+  }
+  // Strip aria-controls / aria-labelledby / aria-describedby — these are
+  // ID references that point at real elements which the clone now
+  // duplicates. AT may double-announce or get confused.
+  for (const attr of ["aria-controls", "aria-labelledby", "aria-describedby"]) {
+    if (clone.hasAttribute(attr)) clone.removeAttribute(attr);
+    clone
+      .querySelectorAll<HTMLElement>(`[${attr}]`)
+      .forEach((n) => n.removeAttribute(attr));
+  }
+  // Hide the clone from assistive tech entirely — it's a visual clone, not
+  // semantic content. Prevents screen readers from announcing duplicate
+  // sidebars / windows / buttons.
+  clone.setAttribute("aria-hidden", "true");
+  clone.setAttribute("inert", "");
+  // Disable anything inside the clone that could fire a network request,
+  // submit a form, or auto-play media.
+  clone.querySelectorAll<HTMLElement>("iframe, video, audio").forEach((n) => {
+    try {
+      // iframe src removal stops the embedded page from loading; video/audio
+      // stops auto-play.
+      n.removeAttribute("src");
+    } catch {}
+  });
 
   // Mark the clone so the sledgehammer sweep can find it.
   clone.setAttribute(CLONE_ATTR, "1");

@@ -1,18 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Bell, BellRing, Check, Trash2, Settings } from 'lucide-react';
+import { Bell, Check, Trash2, Settings } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { BellTapButton, BellRingTapButton } from '@/components/icons/tap-buttons';
 import { Notification, NotificationDropdownProps } from '@/types/notification.types';
 import NotificationItem from './NotificationItem';
 import { cn } from '@/lib/utils';
 
 interface NotificationDropdownComponentProps extends NotificationDropdownProps {
-    className?: string;
     isMobile?: boolean;
 }
 
@@ -22,7 +22,6 @@ export default function NotificationDropdown({
     onMarkAllAsRead,
     onClearAll,
     onNotificationClick,
-    className,
     isMobile = false
 }: NotificationDropdownComponentProps) {
     const [isOpen, setIsOpen] = useState(false);
@@ -56,33 +55,23 @@ export default function NotificationDropdown({
         </div>
     );
 
+    const TriggerIcon = unreadCount > 0 ? BellRingTapButton : BellTapButton;
+
     return (
         <Popover open={isOpen} onOpenChange={setIsOpen}>
-            <PopoverTrigger asChild>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className={cn(
-                        'relative p-2 rounded-full shell-glass transition-all duration-200 ease-in-out hover:scale-105 active:scale-95',
-                        className
-                    )}
-                >
-                    {unreadCount > 0 ? (
-                        <BellRing className="w-4 h-4 text-zinc-700 dark:text-zinc-300 transition-all duration-200 ease-in-out" />
-                    ) : (
-                        <Bell className="w-4 h-4 text-zinc-700 dark:text-zinc-300 transition-all duration-200 ease-in-out" />
-                    )}
-                    
-                    {unreadCount > 0 && (
-                        <Badge 
-                            variant="destructive" 
-                            className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs font-medium min-w-[20px] bg-red-500 hover:bg-red-500 dark:bg-red-600 dark:hover:bg-red-600"
-                        >
-                            {unreadCount > 99 ? '99+' : unreadCount}
-                        </Badge>
-                    )}
-                </Button>
-            </PopoverTrigger>
+            <div className="relative">
+                <PopoverTrigger asChild>
+                    <TriggerIcon ariaLabel="Notifications" />
+                </PopoverTrigger>
+                {unreadCount > 0 && (
+                    <Badge
+                        variant="destructive"
+                        className="pointer-events-none absolute top-0.5 right-0.5 h-4 min-w-[16px] px-1 flex items-center justify-center text-[10px] font-medium bg-red-500 hover:bg-red-500 dark:bg-red-600 dark:hover:bg-red-600"
+                    >
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                    </Badge>
+                )}
+            </div>
             
             <PopoverContent 
                 className={cn(

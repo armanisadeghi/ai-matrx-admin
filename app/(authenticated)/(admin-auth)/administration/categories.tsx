@@ -73,7 +73,6 @@ export const adminCategories = [
           "Overview with KPIs, cost trends, model usage, and aggregate metrics for the CX conversation system.",
         icon: <BarChart3 />,
         link: "/administration/cx-dashboard",
-        isNew: true,
       },
       {
         title: "Conversations",
@@ -81,7 +80,6 @@ export const adminCategories = [
           "Browse all conversations with filtering, search, message drill-down, and sub-agent chain tracking.",
         icon: <MessageSquare />,
         link: "/administration/cx-dashboard/conversations",
-        isNew: true,
       },
       {
         title: "User Requests",
@@ -89,7 +87,6 @@ export const adminCategories = [
           "Track every user request with token usage, cost, iterations, tool calls, and performance metrics.",
         icon: <Send />,
         link: "/administration/cx-dashboard/requests",
-        isNew: true,
       },
       {
         title: "Usage & Cost Analytics",
@@ -97,7 +94,6 @@ export const adminCategories = [
           "Cost analytics by model, provider, and day with charts and detailed breakdowns.",
         icon: <DollarSign />,
         link: "/administration/cx-dashboard/usage",
-        isNew: true,
       },
       {
         title: "Errors & Issues",
@@ -105,7 +101,6 @@ export const adminCategories = [
           "Track pending requests, max_tokens hits, tool call errors, and system failures.",
         icon: <AlertCircle />,
         link: "/administration/cx-dashboard/errors",
-        isNew: true,
       },
     ],
   },
@@ -120,7 +115,6 @@ export const adminCategories = [
           "Access all experimental, demo, and test routes organized by feature area for easy testing and development",
         icon: <Beaker />,
         link: "/administration/experimental-routes",
-        isNew: true,
       },
     ],
   },
@@ -135,7 +129,6 @@ export const adminCategories = [
           "Live health for the EC2 + self-hosted orchestrators backing /code: per-tier disk/memory/CPU pressure, container counts, latest deploy runs, and one-click trigger. Catches silent deploy failures early.",
         icon: <IconDashboard />,
         link: "/administration/sandbox-infra",
-        isNew: true,
       },
       {
         title: "Sandbox Management",
@@ -143,7 +136,6 @@ export const adminCategories = [
           "Monitor all sandbox instances, manage containers, and access running sandboxes via SSH",
         icon: <IconServer />,
         link: "/administration/sandbox",
-        isNew: true,
       },
       {
         title: "Server Logs",
@@ -151,7 +143,6 @@ export const adminCategories = [
           "Live log viewer for all Coolify-managed services. Filter by level, category, and module. Split-screen JSON inspector with deep-link URLs per server.",
         icon: <IconLogs />,
         link: "/administration/server-logs",
-        isNew: true,
       },
       {
         title: "Resilience Lab",
@@ -159,7 +150,6 @@ export const adminCategories = [
           "Synthetic failure scenarios for the request-recovery + netRequests system. Fires client-simulated and live Python /ai/mock-stream/{scenario} streams through the real resilientFetch + monitorStream stack.",
         icon: <IconBug />,
         link: "/administration/resilience-lab",
-        isNew: true,
       },
     ],
   },
@@ -189,7 +179,6 @@ export const adminCategories = [
           "Manage the full AI model registry — edit parameters, JSON controls, endpoints, deprecation flags, and pricing tiers.",
         icon: <Brain />,
         link: "/administration/ai-models",
-        isNew: true,
       },
       {
         title: "Data Audit",
@@ -197,7 +186,6 @@ export const adminCategories = [
           "Audit all models for missing or invalid data across pricing, API class, capabilities, and core fields. Fix issues inline with live pass/fail scoring.",
         icon: <AlertCircle />,
         link: "/administration/ai-models/audit",
-        isNew: true,
       },
       {
         title: "Deprecated Models",
@@ -205,7 +193,6 @@ export const adminCategories = [
           "Find deprecated models with active prompt/builtin references. Replace them individually with full settings review, or bulk-replace all at once.",
         icon: <AlertTriangle />,
         link: "/administration/ai-models/deprecated-audit",
-        isNew: true,
       },
       {
         title: "Provider Model Sync",
@@ -213,7 +200,6 @@ export const adminCategories = [
           "Fetch live model lists from Anthropic, OpenAI, Groq, and other providers. Compare against your database to find missing or extra models and keep everything in sync.",
         icon: <IconRefresh />,
         link: "/administration/ai-models/provider-sync",
-        isNew: true,
       },
     ],
   },
@@ -283,7 +269,6 @@ export const adminCategories = [
           "Manage AI prompt shortcuts with keyboard bindings, scope mappings, and prompt connections for context menus, buttons, and cards.",
         icon: <IconRobot />,
         link: "/administration/prompt-builtins",
-        isNew: true,
       },
       {
         title: "Shortcut Categories",
@@ -291,7 +276,6 @@ export const adminCategories = [
           "Manage prompt shortcut categories with placement types, hierarchy, icons, and colors for organizing AI actions.",
         icon: <IconAdjustmentsBolt />,
         link: "/administration/shortcut-categories",
-        isNew: true,
       },
     ],
   },
@@ -321,7 +305,6 @@ export const adminCategories = [
           "Manage prompt app categories, view errors, monitor analytics, moderate apps, and manage rate limits.",
         icon: <IconRobot />,
         link: "/administration/prompt-apps",
-        isNew: true,
       },
     ],
   },
@@ -425,7 +408,6 @@ export const adminCategories = [
           "View and manage user feedback, bug reports, and feature requests. Create and manage system announcements.",
         icon: <MessageSquare />,
         link: "/administration/feedback",
-        isNew: true,
       },
       {
         title: "Invitation Requests",
@@ -433,7 +415,6 @@ export const adminCategories = [
           "Review and manage access requests. Approve or reject applicants and send invitation codes via email.",
         icon: <IconUsers />,
         link: "/administration/invitation-requests",
-        isNew: true,
       },
       {
         title: "Email Users",
@@ -448,7 +429,6 @@ export const adminCategories = [
           "Promote, demote, and revoke admin access. Super Admin only — guarded at the database, not just the UI.",
         icon: <IconUsers />,
         link: "/administration/admins",
-        isNew: true,
       },
     ],
   },
@@ -464,7 +444,6 @@ export const adminCategories = [
           "Browse and test all official UI components with live demos, code examples, and documentation.",
         icon: <Layout />,
         link: "/administration/official-components",
-        isNew: true,
       },
     ],
   },
@@ -553,7 +532,6 @@ export const adminCategories = [
           "Browse and test all official UI components with live demos, code examples, and documentation.",
         icon: <Layout />,
         link: "/administration/official-components",
-        isNew: true,
       },
       {
         title: "Schema Manager",

@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import {
   TapTargetButton,
   TapTargetButtonTransparent,
@@ -42,30 +43,49 @@ export interface TapButtonProps {
 // ---------------------------------------------------------------------------
 // Variant resolver — maps a variant string to the correct wrapper component.
 // Runs at build/server time so there's zero client cost.
+//
+// IMPORTANT: `Wrap` MUST forward refs. The pre-composed `*TapButton` functions
+// below are plain function components (in React 19 ref is a regular prop) and
+// spread `{...props}` to `Wrap` — that spread carries ref through. `Wrap`
+// extracts ref and passes it explicitly to the underlying `forwardRef`
+// primitive. Without this, every `*TapButton` placed inside a Radix
+// `*Trigger asChild` (DropdownMenu, Popover, Tooltip, etc.) silently loses
+// the ref — the popper can't anchor and Radix's injected event handlers /
+// `data-state` / `aria-*` get dropped. See `features/files/FEATURE.md` for
+// the precedent that established this pattern in this codebase.
 // ---------------------------------------------------------------------------
 
-function Wrap({
-  variant = "glass",
-  children,
-  ...props
-}: TapButtonProps & { children: React.ReactNode }) {
+const Wrap = forwardRef<
+  HTMLButtonElement,
+  TapButtonProps & { children: React.ReactNode }
+>(function Wrap({ variant = "glass", children, ...props }, ref) {
   switch (variant) {
     case "transparent":
       return (
-        <TapTargetButtonTransparent {...props}>
+        <TapTargetButtonTransparent ref={ref} {...props}>
           {children}
         </TapTargetButtonTransparent>
       );
     case "solid":
-      return <TapTargetButtonSolid {...props}>{children}</TapTargetButtonSolid>;
+      return (
+        <TapTargetButtonSolid ref={ref} {...props}>
+          {children}
+        </TapTargetButtonSolid>
+      );
     case "group":
       return (
-        <TapTargetButtonForGroup {...props}>{children}</TapTargetButtonForGroup>
+        <TapTargetButtonForGroup ref={ref} {...props}>
+          {children}
+        </TapTargetButtonForGroup>
       );
     default:
-      return <TapTargetButton {...props}>{children}</TapTargetButton>;
+      return (
+        <TapTargetButton ref={ref} {...props}>
+          {children}
+        </TapTargetButton>
+      );
   }
-}
+});
 
 // ---------------------------------------------------------------------------
 // Pre-composed buttons — one import, one tag, zero configuration needed.
@@ -154,6 +174,27 @@ export function BellTapButton(props: TapButtonProps) {
     <Wrap ariaLabel="Notifications" {...props}>
       <path d="M10.268 21a2 2 0 0 0 3.464 0" />
       <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />
+    </Wrap>
+  );
+}
+
+// lucide: bell-ring v0.577.0 — animated cousin of bell, used for "has unread"
+export function BellRingTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="Notifications" {...props}>
+      <path d="M10.268 21a2 2 0 0 0 3.464 0" />
+      <path d="M22 8c0-2.3-.8-4.3-2-6" />
+      <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />
+      <path d="M4 2C2.8 3.7 2 5.7 2 8" />
+    </Wrap>
+  );
+}
+
+// lucide: zap v0.577.0 — lightning bolt, used as the Quick Actions trigger
+export function ZapTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="Quick actions" {...props}>
+      <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" />
     </Wrap>
   );
 }

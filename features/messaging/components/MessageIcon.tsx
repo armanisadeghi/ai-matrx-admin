@@ -4,69 +4,30 @@ import React from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   selectTotalUnreadCount,
-  selectMessagingIsOpen,
   toggleMessaging,
 } from "../redux/messagingSlice";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { MessageSquare } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { MessageTapButton } from "@/components/icons/tap-buttons";
 
-interface MessageIconProps {
-  className?: string;
-}
-
-export function MessageIcon({ className }: MessageIconProps) {
+export function MessageIcon() {
   const dispatch = useAppDispatch();
   const unreadCount = useAppSelector(selectTotalUnreadCount);
-  const isOpen = useAppSelector(selectMessagingIsOpen);
 
   const handleClick = () => {
     dispatch(toggleMessaging());
   };
 
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleClick}
-            className={cn(
-              "relative p-2 rounded-full shell-glass overflow-visible transition-all duration-200 ease-in-out hover:scale-105 active:scale-95",
-              isOpen && "shell-glass",
-              className
-            )}
-            aria-label={`Messages${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
-          >
-            <MessageSquare className="h-4 w-4" />
+  const ariaLabel = `Messages${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`;
 
-            {/* Unread Badge - positioned at top-right corner, slightly inset to avoid header clipping */}
-            {unreadCount > 0 && (
-              <Badge
-                className={cn(
-                  "absolute top-0.5 -right-1 h-4 min-w-[16px] px-1",
-                  "flex items-center justify-center text-[9px] font-semibold",
-                  "bg-primary hover:bg-primary border-0"
-                )}
-              >
-                {unreadCount > 99 ? "99+" : unreadCount}
-              </Badge>
-            )}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          Messages{unreadCount > 0 ? ` (${unreadCount} unread)` : ""}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+  return (
+    <div className="relative">
+      <MessageTapButton ariaLabel={ariaLabel} onClick={handleClick} />
+      {unreadCount > 0 && (
+        <Badge className="pointer-events-none absolute top-1 right-1 h-4 min-w-[16px] px-1 flex items-center justify-center text-[9px] font-semibold bg-primary hover:bg-primary border-0">
+          {unreadCount > 99 ? "99+" : unreadCount}
+        </Badge>
+      )}
+    </div>
   );
 }
 

@@ -349,3 +349,17 @@ const [busy, setBusy] = useState(false);
 ## Available Commands
 
 Run `/command-name` for specialized workflows. See `.claude/commands/` for: `/web-design`, `/nextjs-patterns`
+
+---
+
+## Cross-Repo Integration with matrx-extend
+
+The matrx-extend Chrome extension will coordinate with this app for cross-surface workflows (channel under construction). Integration map:
+- Connection details: [docs/MATRX_EXTEND_CONNECTION.md](./docs/MATRX_EXTEND_CONNECTION.md)
+- Skill for working on this connection: `.claude/skills/connect-matrx-extend/SKILL.md`
+- Master cross-repo doc (in matrx-extend): `/Users/armanisadeghi/code/matrx-extend/.claude/worktrees/exciting-moser-4b984f/docs/CROSS_REPO_INTEGRATION.md`
+- Task pipeline for cross-repo work: `.matrx/` (TASKS_FROM_USER → AGENT_TASKS → AGENT_INSTRUCTIONS).
+
+Pre-existing dead-references that look like extension scaffolding but ARE NOT real bridges (do not touch in unrelated PRs; the real bridge ships in Phase 2):
+- `features/tool-registry/surfaces/data/surface-candidates.ts:24` — `chrome-extension` in `client_name` type union, no surface declared
+- `utils/errorContext.ts:10` — defensive stack-frame filter

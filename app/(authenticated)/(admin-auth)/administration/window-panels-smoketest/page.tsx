@@ -45,14 +45,10 @@ import {
   openOverlay,
 } from "@/lib/redux/slices/overlaySlice";
 import { selectIsSuperAdmin } from "@/lib/redux/selectors/userSelectors";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+// NOTE: shadcn Table primitive is intentionally NOT used here. Its wrapper
+// div has its own `overflow-auto`, which captures scroll context and
+// prevents `position: sticky` on thead from pinning to <main>. We render
+// plain <table> elements with the same classes the primitive applies.
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -132,7 +128,7 @@ const ALL_COLUMNS: ColumnDef[] = [
     key: "slug",
     label: "slug",
     sortable: true,
-    defaultVisible: false,
+    defaultVisible: true,
     widthClass: "min-w-[200px]",
   },
   {
@@ -146,7 +142,7 @@ const ALL_COLUMNS: ColumnDef[] = [
     key: "mobileSidebarAs",
     label: "mobile sidebar",
     sortable: true,
-    defaultVisible: false,
+    defaultVisible: true,
     widthClass: "w-24",
   },
   {
@@ -546,15 +542,27 @@ export default function WindowPanelsRegistryPage() {
         </div>
       </header>
 
+      {/*
+       * Plain <table> instead of the shadcn Table primitive: that
+       * primitive wraps the table in `<div class="overflow-auto">` which
+       * captures the scroll context and makes `position: sticky` on the
+       * thead pin to that wrapper instead of to <main>. We want the
+       * thead to stay visible as the user scrolls the row list, so we
+       * inline the elements and let <main> own the single scroll
+       * container.
+       */}
       <main className="flex-1 overflow-auto">
-        <Table className="text-xs">
-          <TableHeader className="sticky top-0 z-10 bg-card">
-            <TableRow>
-              <TableHead className="w-6" />
+        <table className="w-full caption-bottom border-collapse text-xs">
+          <thead className="sticky top-0 z-20 bg-card shadow-[0_1px_0_0_var(--border)]">
+            <tr className="border-b">
+              <th className="h-10 w-6 px-1 text-left align-middle text-xs font-medium text-muted-foreground" />
               {visibleColumns.map((col) => (
-                <TableHead
+                <th
                   key={col.key}
-                  className={cn(col.widthClass, "px-2 text-xs")}
+                  className={cn(
+                    col.widthClass,
+                    "h-10 px-2 text-left align-middle text-xs font-medium text-muted-foreground",
+                  )}
                 >
                   {col.sortable ? (
                     <button
@@ -568,11 +576,11 @@ export default function WindowPanelsRegistryPage() {
                   ) : (
                     col.label
                   )}
-                </TableHead>
+                </th>
               ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+            </tr>
+          </thead>
+          <tbody>
             {rows.map((entry) => (
               <RegistryRow
                 key={entry.overlayId}
@@ -586,30 +594,58 @@ export default function WindowPanelsRegistryPage() {
                     id === entry.overlayId ? null : entry.overlayId,
                   )
                 }
+                onPreview={() => {
+                  // Click-to-render: open the overlay so the user can
+                  // see / interact with it. The app's
+                  // UnifiedOverlayController (mounted in
+                  // DeferredSingletons) renders it visibly. Multi-
+                  // instance overlays use a stable "preview"
+                  // instanceId so re-clicking the same row doesn't
+                  // accumulate instances.
+                  const instanceId =
+                    entry.instanceMode === "multi"
+                      ? "preview"
+                      : undefined;
+                  dispatch(
+                    openOverlay({
+                      overlayId: entry.overlayId as OverlayId,
+                      instanceId,
+                      data: { ...(entry.defaultData ?? {}) },
+                    }),
+                  );
+                }}
               />
             ))}
-          </TableBody>
-        </Table>
+          </tbody>
+        </table>
       </main>
 
-      {/* Hidden mount target — the surface mounts every overlay that's
-                opened during smoke-test inside an ErrorBoundary that flips
-                that overlay's status on render-time throw. */}
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden opacity-0">
-        {ALL_WINDOW_REGISTRY_ENTRIES.map((entry) => (
-          <ErrorBoundary
-            key={entry.overlayId}
-            onError={(err: Error) =>
-              setResult(entry.overlayId, {
-                status: "error",
-                message: `mount threw: ${err.message ?? String(err)}`,
-              })
-            }
-          >
-            <OverlaySurface overlayId={entry.overlayId as OverlayId} />
-          </ErrorBoundary>
-        ))}
-      </div>
+      {/*
+       * Hidden smoke-test mount target. Only rendered during an active
+       * probe run. Outside of probe runs, the app's
+       * UnifiedOverlayController (mounted globally in DeferredSingletons)
+       * is the only OverlaySurface that mounts overlays, so click-to-
+       * render shows the overlay exactly once. During a probe run, this
+       * extra mount captures any throw from a component's first mount via
+       * the surrounding ErrorBoundary.
+       */}
+      {probing !== null ? (
+        <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden opacity-0">
+          {ALL_WINDOW_REGISTRY_ENTRIES.map((entry) => (
+            <ErrorBoundary
+              key={entry.overlayId}
+              onError={(err: Error) =>
+                setResult(entry.overlayId, {
+                  status: "error",
+                  message: `mount threw: ${err.message ?? String(err)}`,
+                })
+              }
+            >
+              <OverlaySurface overlayId={entry.overlayId as OverlayId} />
+            </ErrorBoundary>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -623,6 +659,7 @@ function RegistryRow({
   visibleColumns,
   expanded,
   onToggleExpand,
+  onPreview,
 }: {
   entry: WindowRegistryEntry;
   result: ProbeResult | undefined;
@@ -630,6 +667,7 @@ function RegistryRow({
   visibleColumns: ColumnDef[];
   expanded: boolean;
   onToggleExpand: () => void;
+  onPreview: () => void;
 }) {
   const status = result?.status ?? "untested";
   const defaultDataKeys = Object.keys(entry.defaultData ?? {});
@@ -637,23 +675,43 @@ function RegistryRow({
 
   return (
     <>
-      <TableRow
+      {/*
+       * Row click → opens the overlay (preview). The chevron has its own
+       * button that toggles the inline-details row and stops the click
+       * from bubbling up to the row's preview handler.
+       */}
+      <tr
         className={cn(
-          "cursor-pointer",
+          "cursor-pointer border-b transition-colors hover:bg-muted/50",
           expanded && "bg-muted/40",
           status === "error" && "bg-red-500/5",
         )}
-        onClick={onToggleExpand}
+        onClick={onPreview}
+        title="Click to open this overlay"
       >
-        <TableCell className="w-6 px-1">
-          {expanded ? (
-            <ChevronDown className="h-3 w-3 text-muted-foreground" />
-          ) : (
-            <ChevronRight className="h-3 w-3 text-muted-foreground" />
-          )}
-        </TableCell>
+        <td className="w-6 px-1 align-middle">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleExpand();
+            }}
+            className="inline-flex h-5 w-5 items-center justify-center rounded hover:bg-muted"
+            title={expanded ? "Hide details" : "Show details"}
+            aria-label={expanded ? "Hide details" : "Show details"}
+          >
+            {expanded ? (
+              <ChevronDown className="h-3 w-3 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="h-3 w-3 text-muted-foreground" />
+            )}
+          </button>
+        </td>
         {visibleColumns.map((col) => (
-          <TableCell key={col.key} className={cn(col.widthClass, "px-2 py-1")}>
+          <td
+            key={col.key}
+            className={cn(col.widthClass, "px-2 py-1 align-middle")}
+          >
             {renderCell(
               col.key,
               entry,
@@ -662,14 +720,14 @@ function RegistryRow({
               defaultDataKeys,
               componentPath,
             )}
-          </TableCell>
+          </td>
         ))}
-      </TableRow>
+      </tr>
       {expanded ? (
-        <TableRow>
-          <TableCell
+        <tr>
+          <td
             colSpan={visibleColumns.length + 1}
-            className="bg-muted/20 p-0"
+            className="bg-muted/20 p-0 align-top"
           >
             <ExpandedDetails
               entry={entry}
@@ -677,8 +735,8 @@ function RegistryRow({
               hasTile={hasTile}
               componentPath={componentPath}
             />
-          </TableCell>
-        </TableRow>
+          </td>
+        </tr>
       ) : null}
     </>
   );
