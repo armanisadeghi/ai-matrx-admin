@@ -561,16 +561,6 @@ export function ImageAssetUploader({
                             <p className="text-muted-foreground text-xs truncate">{section.fileName ?? 'Previously uploaded'}</p>
                             {!disabled && <p className="text-xs text-muted-foreground mt-0.5">Click to replace</p>}
                         </div>
-                        {variants.og_image_url && preset === 'social' && (
-                            /* eslint-disable-next-line @next/next/no-img-element */
-                            <img
-                                src={variants.og_image_url}
-                                alt="OG preview"
-                                className="w-20 h-11 rounded object-cover border shrink-0"
-                                title="1200×630 OG image"
-                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                            />
-                        )}
                         {!disabled && (
                             <div className="shrink-0 flex items-center gap-1">
                                 {enableViewerAction && viewerPayload ? (
