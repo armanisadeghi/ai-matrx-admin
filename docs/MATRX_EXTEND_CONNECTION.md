@@ -70,6 +70,8 @@ Phase 2 lands:
 | [`app/api/mcp/[transport]/route.ts`](../app/api/mcp/[transport]/route.ts) | Reference dual-auth route (Bearer or `?token=`). |
 | [`app/api/extension/append-message/route.ts`](../app/api/extension/append-message/route.ts) | Headless conversation message-append endpoint — Phase 2 reference inbound route for the extension. |
 | [`hooks/useExtensionBridgeChannel.ts`](../hooks/useExtensionBridgeChannel.ts) | Page-side Broadcast subscriber for `matrx-extension-bridge:<userId>`. Receives FRONTEND_RPC events on cross-machine paths. |
+| [`lib/extension-bridge/openPanelHandler.ts`](../lib/extension-bridge/openPanelHandler.ts) | Translates inbound `openPanel` envelopes into `openOverlay({...})` Redux dispatches against the window-panels store. Validates the payload with `OpenPanelPayloadSchema` and rejects unknown overlayIds. |
+| [`lib/extension-bridge/ExtensionBridgeSubscriber.tsx`](../lib/extension-bridge/ExtensionBridgeSubscriber.tsx) | Top-level bridge subscriber, mounted in `app/Providers.tsx`. Filters `extension->frontend` envelopes for `action: "openPanel"`, calls the handler, and publishes the structured reply on the same Broadcast channel preserving `requestId`. |
 | `wxt.config.ts` (in matrx-extend, NOT this repo) | `externally_connectable.matches` whitelist. Listed here as a cross-repo reference because the whitelist must include this app's origins. |
 
 ### Recent change — `chrome-extension` is now a real surface candidate
@@ -176,6 +178,10 @@ Exports:
 - `KNOWN_FRONTEND_RPC_ACTIONS` — documentation-only list of the actions
   the matrx-extend SW currently understands. NOT enforced as an enum;
   the bridge is open-ended.
+- `OpenPanelPayloadSchema` / `OpenPanelPayload` — payload shape for the
+  `openPanel` action (`{ panelId, instanceId?, data? }`). Validated by
+  `lib/extension-bridge/openPanelHandler.ts` before dispatching the
+  Redux `openOverlay` action.
 
 `lib/supabase/messaging.ts` re-exports the bridge primitives so existing
 imports (`from '@/lib/supabase/messaging'`) keep working, but every new
@@ -261,6 +267,109 @@ export async function POST(req: NextRequest) {
   // append to conversation, return updated message ID
 }
 ```
+
+---
+
+## `openPanel` — opening a window-panels overlay from the extension
+
+The extension can surface any registered window-panels overlay through
+two complementary paths. They share zero code in this repo — pick the
+one whose tradeoffs match your use case.
+
+### Path A: deep-link via `?panels=<typeKey>:<instanceId>`
+
+URL hydration (parsed in
+[`features/window-panels/url-sync/UrlPanelManager.tsx`](../features/window-panels/url-sync/UrlPanelManager.tsx))
+will open the matching panel on page load. Fastest to integrate when
+the extension can navigate the active tab.
+
+```ts
+// Inside the extension's service worker / sidepanel:
+chrome.tabs.update(tabId, {
+  url: "https://aimatrx.com/?panels=notes:default",
+});
+```
+
+Best for: same-machine flows where the extension is already managing the
+active tab. Works without a signed-in Supabase session in the receiving
+tab as long as the route's auth gate allows hydration.
+
+### Path B: `openPanel` envelope (cross-machine via Broadcast)
+
+When the extension cannot navigate the user's tab — different device,
+or a tab the user is already working in — publish an `openPanel` envelope
+on `matrx-extension-bridge:<userId>`. The
+[`ExtensionBridgeSubscriber`](../lib/extension-bridge/ExtensionBridgeSubscriber.tsx)
+mounted in [`app/Providers.tsx`](../app/Providers.tsx) receives it and
+dispatches `openOverlay({...})` against the existing window-panels store.
+
+**Wire format:**
+
+```ts
+// Published by the extension over the Broadcast channel:
+{
+  direction: "extension->frontend",
+  action: "openPanel",
+  requestId: "<uuid>",
+  payload: {
+    panelId: "notes",            // overlayId (see overlay-ids.ts)
+    instanceId: "abc-123",        // optional; defaults to "default"
+    data: { /* opaque per-overlay */ },
+  },
+  timestamp: 1714000000000,
+}
+```
+
+**Reply (frontend → extension), preserves `requestId`:**
+
+```ts
+// Success
+{ ok: true, opened: true, panelId: "notes", instanceId: null }
+
+// Validation failure (Zod issues attached)
+{ ok: false, error: "invalid_payload", details: [...] }
+
+// panelId is not a registered overlayId
+{ ok: false, error: "unknown_panel", details: { panelId, hint } }
+```
+
+**Extension SW snippet** (publishing the envelope and awaiting the reply):
+
+```ts
+import { bridgeChannelName } from "@/lib/types/bridge-envelope";
+const requestId = crypto.randomUUID();
+const channel = supabase.channel(bridgeChannelName(userId));
+await channel.send({
+  type: "broadcast",
+  event: "FRONTEND_RPC",
+  payload: {
+    direction: "extension->frontend",
+    action: "openPanel",
+    requestId,
+    payload: { panelId: "notes" },
+    timestamp: Date.now(),
+  },
+});
+// Match incoming envelopes on requestId for the reply.
+```
+
+Best for: cross-machine flows (extension on laptop, app open on phone),
+or any case where you want a structured success/failure reply rather
+than a navigation side-effect.
+
+### Choosing between A and B
+
+| Concern | Path A — deep-link | Path B — `openPanel` envelope |
+|---|---|---|
+| Cross-machine | No (URL only loads on the tab you navigate) | Yes |
+| Reply / acknowledgement | None (rely on URL hydration) | Structured `{ ok, ... }` reply |
+| Validation failures | Silent console warning | Returned to caller |
+| Auth requirement | Tab must hydrate the route | User must be signed in (Broadcast is per-user) |
+| Latency | Page load + hydration | Single Broadcast hop (~tens of ms) |
+
+Both paths terminate in the same `openOverlay` Redux action; behavior
+of the registry, mobile presentation, persistence, and instance
+lifecycle is identical.
 
 ---
 

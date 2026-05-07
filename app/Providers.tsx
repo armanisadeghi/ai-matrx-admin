@@ -52,6 +52,15 @@ import DeferredSingletons from "./DeferredSingletons";
 // than waiting on idle. Imports only metadata + service helpers — none
 // of the heavy window-panel core files are pulled into this graph.
 import { WindowPersistenceManager } from "@/features/window-panels/WindowPersistenceManager";
+// ExtensionBridgeSubscriber bridges matrx-extend Chrome extension envelopes
+// (Broadcast channel `matrx-extension-bridge:<userId>`) into the
+// window-panels overlay system. When the extension publishes
+// `{ action: "openPanel", payload: { panelId, instanceId?, data? } }`,
+// this subscriber dispatches `openOverlay({...})` exactly like an
+// in-app caller would. Mounted at the provider root so it's always
+// active for signed-in users; short-circuits when no user is present.
+// See docs/MATRX_EXTEND_CONNECTION.md and lib/extension-bridge/.
+import { ExtensionBridgeSubscriber } from "@/lib/extension-bridge/ExtensionBridgeSubscriber";
 import GlobalTaskShortcut from "@/features/tasks/widgets/GlobalTaskShortcut";
 import CreateTaskFromSourceDialog from "@/features/tasks/widgets/CreateTaskFromSourceDialog";
 import { CloudFilesPickerHost } from "@/features/files/components/pickers/CloudFilesPickerHost";
@@ -109,6 +118,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                               <RecoveryWindow />
                               <RecoveryNudge />
                               <DeferredSingletons />
+                              <ExtensionBridgeSubscriber />
                               <GlobalTaskShortcut />
                               <CreateTaskFromSourceDialog />
                               {/* Cloud-files imperative pickers:

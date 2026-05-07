@@ -165,6 +165,36 @@ export const KNOWN_FRONTEND_RPC_ACTIONS = [
 export type KnownFrontendRpcAction = (typeof KNOWN_FRONTEND_RPC_ACTIONS)[number];
 
 // ---------------------------------------------------------------------------
+// Per-action payload shapes (documentation hints — the bridge envelope's
+// `payload` field is `unknown` so handlers narrow at the dispatch boundary)
+// ---------------------------------------------------------------------------
+
+/**
+ * Payload shape for the `openPanel` action. The matrx-extend extension
+ * publishes one of these envelopes when it wants this app to surface a
+ * specific window-panels overlay. The `panelId` MUST be a registered
+ * overlayId — see `features/window-panels/registry/overlay-ids.ts`.
+ *
+ * Consumed by `lib/extension-bridge/openPanelHandler.ts`, which validates
+ * with this schema before dispatching `openOverlay(...)`.
+ *
+ *   - `panelId`     — the overlayId (e.g. `"notes"`, `"feedbackDialog"`).
+ *   - `instanceId`  — optional; multi-instance overlays use this to keep
+ *                     each open instance isolated. Singleton overlays
+ *                     ignore it (defaults to `"default"` downstream).
+ *   - `data`        — opaque per-overlay payload, written into the
+ *                     overlay's instance data on open. Each overlay
+ *                     defines its own data shape.
+ */
+export const OpenPanelPayloadSchema = z.object({
+  panelId: z.string().min(1),
+  instanceId: z.string().min(1).optional(),
+  data: z.unknown().optional(),
+});
+
+export type OpenPanelPayload = z.infer<typeof OpenPanelPayloadSchema>;
+
+// ---------------------------------------------------------------------------
 // /api/extension/append-message — request / response schemas
 // ---------------------------------------------------------------------------
 
