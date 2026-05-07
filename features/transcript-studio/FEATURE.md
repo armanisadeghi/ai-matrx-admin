@@ -2,7 +2,7 @@
 
 **Status:** `scaffolded`
 **Tier:** `1`
-**Last updated:** `2026-05-03`
+**Last updated:** `2026-05-07`
 
 ---
 
@@ -15,7 +15,7 @@ A 4-column live transcription workspace. Users record audio, see raw transcript 
 ## Entry points
 
 **Routes**
-- `app/(authenticated)/transcript-studio/` — full-page workspace, sidebar + active session view.
+- `app/(a)/transcription/studio/` — full-page workspace, sidebar + active session view. Public URL: `/transcription/studio` (see `next.config.js` redirects from `/transcript-studio`).
 
 **Window panel**
 - `features/window-panels/windows/transcript-studio/TranscriptStudioWindow.tsx` — same `StudioView` inside a floating `WindowPanel` (`overlayId: "transcriptStudioWindow"`, slug: `"transcript-studio-window"`).
@@ -120,3 +120,4 @@ These are sibling features. The simple `features/transcripts/` view is shaped fo
     - **Paste content** (`+`): opens `PasteRawContentDialog`. Splits pasted text on blank-line breaks, synthesizes per-paragraph timestamps, inserts each as `studio_raw_segments` rows with `source = "imported"`.
     - **Import audio** (`FileAudio`): opens `AudioImportDialog` with three tabs: *Upload file* (drag-drop or browse → `saveAudioToStorage` → signed URL → `/api/audio/transcribe-url`), *From URL* (Supabase Storage URLs only for now), *Cloud Files* (opens the existing `cloudFilesWindow` overlay; user pastes the URL back into the URL tab). Each Whisper segment becomes one `studio_raw_segments` row with timestamps shifted past any existing tail.
   - `StudioLayout` rebuilt to render exactly one branch (mobile vs desktop) via `useIsMobile()` — fixes a duplicate portal target where `<ActiveSessionView>` was mounting twice.
+- **2026-05-07** — Route move: full-page studio lives at `/transcription/studio` under `app/(a)/transcription/studio/`. Permanent redirects from `/transcript-studio` in `next.config.js`. Updated in-app links (`PromoteToStudioButton`), metadata/favicon paths, and FEATURE entry points.

@@ -2,7 +2,7 @@
 
 **Status:** `active`
 **Tier:** `2`
-**Last updated:** `2026-04-22`
+**Last updated:** `2026-05-07`
 
 > This file lives in `features/scraper/` because scraper is the largest surface, but it is the **umbrella doc for four sibling ingestion pipelines**: `features/scraper/`, `features/pdf-extractor/`, `features/research/`, `features/transcripts/`. They share a single role: pull external data into Matrx and make it consumable by agents and other parts of the system.
 
@@ -102,7 +102,7 @@ They are grouped here because they share invariants (NDJSON streaming, Python-ba
 **Purpose:** database-backed audio/video transcript store. Upload audio, transcribe with Groq Whisper Large V3 Turbo, persist segments (timecoded + speaker-labeled), edit, organize, export.
 
 **Entry points**
-- Route: `app/(authenticated)/transcripts/`
+- Route: `app/(a)/transcription/processor/` — public URL `/transcription/processor` (legacy `/transcripts` → permanent redirect in `next.config.js`).
 - Service: `features/transcripts/service/transcriptsService.ts` (CRUD + storage-file deletion), `service/audioStorageService.ts` (Supabase Storage uploads).
 - Context: `features/transcripts/context/TranscriptsContext.tsx` — optimistic updates, real-time subscription, `createTranscript`, `updateTranscript`, `deleteTranscript`, `copyTranscript`, `refreshTranscripts`.
 - Hooks: `useSignedUrl` (auto-refreshing storage signed URLs).
@@ -178,6 +178,7 @@ The boundary is: **ingestion pipelines own persistence; agents read from those t
 
 ## Change log
 
+- `2026-05-07` — Documented transcript processor public URL `/transcription/processor` (studio at `/transcription/studio`; legacy `/transcripts` and `/transcript-studio` redirect in `next.config.js`).
 - `2026-04-22` — claude: initial combined doc for scraper + pdf-extractor + research + transcripts.
 
 ---

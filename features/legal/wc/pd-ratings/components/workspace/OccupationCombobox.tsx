@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronsUpDown, Briefcase, Loader2 } from "lucide-react";
+import { Briefcase, Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +18,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useOccupationalCodes } from "../../api/hooks";
+import { LookupError } from "./LookupError";
 
 interface OccupationOption {
   code: number;
@@ -41,7 +42,8 @@ export function OccupationCombobox({
   className,
 }: OccupationComboboxProps) {
   const [open, setOpen] = React.useState(false);
-  const { data, isLoading } = useOccupationalCodes();
+  const { data, isLoading, error, refetch, isFetching } =
+    useOccupationalCodes();
 
   const options = React.useMemo<OccupationOption[]>(() => {
     if (!data?.codes) return [];
@@ -69,6 +71,18 @@ export function OccupationCombobox({
     () => options.find((o) => o.code === value),
     [options, value],
   );
+
+  if (error) {
+    return (
+      <LookupError
+        error={error}
+        label="occupations"
+        onRetry={() => refetch()}
+        retrying={isFetching}
+        className={className}
+      />
+    );
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

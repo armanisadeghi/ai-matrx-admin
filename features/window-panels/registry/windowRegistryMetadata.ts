@@ -632,7 +632,7 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
 
   {
     // 4-column live transcription studio. Same `StudioView` as the route
-    // at /transcript-studio, but mounted inside a floating WindowPanel so
+    // at /transcription/studio, but mounted inside a floating WindowPanel so
     // users can record + watch agents work without leaving the page they're
     // on. Recording continues across navigation because the recorder lives
     // in the global provider.

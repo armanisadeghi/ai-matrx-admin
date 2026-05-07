@@ -172,7 +172,7 @@ export const primaryNavItems: ShellNavItem[] = [
   },
   {
     label: "Transcripts",
-    href: "/transcripts",
+    href: "/transcription/processor",
     iconName: "Mic",
     section: "primary",
     profileMenu: true,

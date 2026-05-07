@@ -162,7 +162,7 @@ INSERT INTO public.shareable_resource_registry (
   -- renamed the underlying tables (see aidream/db/migrations/0011_udt_rename_and_rpc_consolidation.sql).
   ('udt_datasets',       'udt_datasets',      'id', 'user_id', 'is_public', 'Dataset',       '/data/{id}',                 true,  'Renamed from user_tables in migration 0011_udt_rename_and_rpc_consolidation.'),
   ('udt_picklists',      'udt_picklists',     'id', 'user_id', 'is_public', 'List',          '/lists/{id}',                true,  'Renamed from user_lists in migration 0011_udt_rename_and_rpc_consolidation.'),
-  ('transcripts',        'transcripts',       'id', 'user_id', 'is_public', 'Transcript',    '/transcripts/{id}',          true,  null),
+  ('transcripts',        'transcripts',       'id', 'user_id', 'is_public', 'Transcript',    '/transcription/processor/{id}', true,  null),
   ('quiz_sessions',      'quiz_sessions',     'id', 'user_id', null,        'Quiz',          '/quizzes/{id}',              true,  null),
   ('sandbox_instances',  'sandbox_instances', 'id', 'user_id', null,        'Sandbox',       '/sandbox/{id}',              true,  null),
   ('user_files',         'user_files',        'id', 'user_id', null,        'File',          '/files/{id}',                true,  null),

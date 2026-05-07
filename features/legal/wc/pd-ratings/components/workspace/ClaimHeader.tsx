@@ -4,8 +4,8 @@ import * as React from "react";
 import { User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { DatePicker } from "@/components/ui/date-picker";
 import { Field, NumberField } from "../FormField";
+import { DateField } from "./DateField";
 import { OccupationCombobox } from "./OccupationCombobox";
 import { WeeklyEarningsField } from "./WeeklyEarningsField";
 import type { ClaimDraft } from "../../state/types";
@@ -80,12 +80,10 @@ export function ClaimHeader({ claim, onChange, className }: ClaimHeaderProps) {
 
         <div className="lg:col-span-4">
           <Field label="Date of injury">
-            <DatePicker
+            <DateField
               value={parseIso(claim.date_of_injury)}
               onChange={(d) => onChange({ date_of_injury: isoOrNull(d) })}
-              formatString="MM/dd/yyyy"
-              placeholder="mm/dd/yyyy"
-              className="h-11 w-full justify-start text-base"
+              fromYear={1950}
             />
           </Field>
         </div>
@@ -95,12 +93,11 @@ export function ClaimHeader({ claim, onChange, className }: ClaimHeaderProps) {
             label="Date of birth"
             hint="Optional — derives age from DOI when present."
           >
-            <DatePicker
+            <DateField
               value={parseIso(claim.date_of_birth)}
               onChange={(d) => onChange({ date_of_birth: isoOrNull(d) })}
-              formatString="MM/dd/yyyy"
-              placeholder="mm/dd/yyyy"
-              className="h-11 w-full justify-start text-base"
+              fromYear={1900}
+              toYear={new Date().getFullYear()}
             />
           </Field>
         </div>

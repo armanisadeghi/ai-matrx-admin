@@ -3,8 +3,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { StatelessRatingResponse } from "../api/types";
 import { useStatelessCalculate, WcRatingsError } from "../api/hooks";
-import { buildStatelessPayload, hashDraft } from "./buildStatelessPayload";
-import { evaluateDraftReadiness } from "./buildStatelessPayload";
+import {
+  buildStatelessPayload,
+  evaluateDraftReadiness,
+  hashDraft,
+} from "./buildStatelessPayload";
 import type { RatingDraft } from "./types";
 
 const DEBOUNCE_MS = 350;
@@ -18,6 +21,12 @@ export interface LiveRatingState {
 
 export function useLiveRating(draft: RatingDraft): LiveRatingState {
   const calculate = useStatelessCalculate();
+  const calculateRef = useRef(calculate);
+  calculateRef.current = calculate;
+
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
+
   const [state, setState] = useState<LiveRatingState>({
     result: null,
     status: "idle",
@@ -27,30 +36,34 @@ export function useLiveRating(draft: RatingDraft): LiveRatingState {
 
   const draftHash = useMemo(() => hashDraft(draft), [draft]);
   const readiness = useMemo(() => evaluateDraftReadiness(draft), [draft]);
+  const ready = readiness.ready;
+  const reason = readiness.reason;
 
   useEffect(() => {
-    if (!readiness.ready) {
+    if (!ready) {
       lastFiredHash.current = null;
-      setState({
-        result: null,
-        status: "incomplete",
-        reason: readiness.reason,
+      setState((prev) => {
+        if (prev.status === "incomplete" && prev.reason === reason) return prev;
+        return { result: null, status: "incomplete", reason };
       });
       return;
     }
 
     if (lastFiredHash.current === draftHash) return;
 
-    const payload = buildStatelessPayload(draft);
+    const payload = buildStatelessPayload(draftRef.current);
     if (!payload) return;
 
     const requestId = ++inFlightRequestId.current;
     lastFiredHash.current = draftHash;
-    setState((prev) => ({ ...prev, status: "calculating" }));
+    setState((prev) => {
+      if (prev.status === "calculating") return prev;
+      return { ...prev, status: "calculating" };
+    });
 
     const timer = setTimeout(async () => {
       try {
-        const result = await calculate.mutateAsync(payload);
+        const result = await calculateRef.current.mutateAsync(payload);
         if (requestId !== inFlightRequestId.current) return;
         setState({ result, status: "ready" });
       } catch (err) {
@@ -64,16 +77,12 @@ export function useLiveRating(draft: RatingDraft): LiveRatingState {
                   message: err instanceof Error ? err.message : String(err),
                 },
               });
-        setState({
-          result: null,
-          status: "error",
-          error: wcErr,
-        });
+        setState({ result: null, status: "error", error: wcErr });
       }
     }, DEBOUNCE_MS);
 
     return () => clearTimeout(timer);
-  }, [draftHash, readiness.ready, readiness.reason, draft, calculate]);
+  }, [draftHash, ready, reason]);
 
   return state;
 }

@@ -116,7 +116,7 @@
     "owner_column": "user_id",
     "is_public_column": "is_public",
     "display_label": "Transcript",
-    "url_path_template": "/transcripts/{id}",
+    "url_path_template": "/transcription/processor/{id}",
     "rls_uses_has_permission": true,
     "is_active": true
   },

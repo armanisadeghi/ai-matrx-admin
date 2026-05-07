@@ -93,6 +93,11 @@ const nextConfig = {
             // so old bookmarks, share links, and external references keep working.
             { source: '/cloud-files/:path*', destination: '/files/:path*', permanent: true },
             { source: '/cloud-files', destination: '/files', permanent: true },
+            // Transcription hub: legacy transcript URLs → app/(a)/transcription/*
+            { source: '/transcript-studio/:path*', destination: '/transcription/studio/:path*', permanent: true },
+            { source: '/transcript-studio', destination: '/transcription/studio', permanent: true },
+            { source: '/transcripts/:path*', destination: '/transcription/processor/:path*', permanent: true },
+            { source: '/transcripts', destination: '/transcription/processor', permanent: true },
             // Entity-isolation migration (Phase 2+): legacy entity-bound routes
             // moved under /legacy/* so they can boot through the entity-aware
             // store/providers without bloating slim chunks. Old URLs are 307'd

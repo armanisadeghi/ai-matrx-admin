@@ -152,7 +152,13 @@ export function LibraryPreviewPage({
       )}
 
       {!docError && (
-        <div className="flex-1 min-h-0 grid grid-cols-[220px_1fr_360px] divide-x">
+        // `minmax(0, 1fr)` (instead of bare `1fr`) is critical here:
+        // CSS Grid defaults the third track to `minmax(auto, 1fr)`,
+        // which lets the column grow past the available space when the
+        // page content has long unbroken text. With `minmax(0, 1fr)`
+        // the column hard-caps at the remaining viewport width and the
+        // inner `<pre>` wraps as expected.
+        <div className="flex-1 min-h-0 grid grid-cols-[220px_360px_minmax(0,1fr)] divide-x overflow-hidden">
           {/* Left: pages list */}
           <PagesNav
             documentId={documentId}
@@ -162,18 +168,21 @@ export function LibraryPreviewPage({
             seedPages={doc?.pages ?? []}
           />
 
-          {/* Middle: page text */}
+          {/* Middle: chunks + test-search — sits next to Pages so the user
+              sees the page-by-page chunk breakdown directly alongside the
+              page list, without the wide page-text panel in between. */}
+          <RightRail
+            documentId={documentId}
+            activePageNumber={activePageIndex + 1}
+          />
+
+          {/* Right: page text — gets the remaining 1fr and is the place to
+              read the cleaned / raw text of the active page. */}
           <PageContent
             documentId={documentId}
             pageIndex={activePageIndex}
             totalPages={doc?.pagesPersisted ?? 0}
             onPageChange={setActivePageIndex}
-          />
-
-          {/* Right: chunks + test-search */}
-          <RightRail
-            documentId={documentId}
-            activePageNumber={activePageIndex + 1}
           />
         </div>
       )}
@@ -327,8 +336,8 @@ function PageContent({
   }
 
   return (
-    <div className="flex flex-col min-h-0">
-      <div className="border-b px-3 py-2 flex items-center gap-2">
+    <div className="flex flex-col min-h-0 min-w-0">
+      <div className="border-b px-3 py-2 flex items-center gap-2 min-w-0">
         <Button
           size="sm"
           variant="ghost"
@@ -363,13 +372,25 @@ function PageContent({
         />
 
         {page?.section_kind && (
-          <Badge variant="info" className="ml-2">
+          <Badge variant="info" className="ml-2 shrink-0">
             {page.section_kind}
           </Badge>
         )}
-        {page?.used_ocr && <Badge variant="warning">OCR</Badge>}
+        {page?.used_ocr && (
+          <Badge variant="warning" className="shrink-0">
+            OCR
+          </Badge>
+        )}
+        {/* Section title: truncate to single line with full text on hover.
+            Previously this used `break-words`, which combined with a
+            squeezed flex container caused every character to break onto
+            its own line ("T / a / b / l / e..."). Truncate is the right
+            primitive here. */}
         {page?.section_title && (
-          <span className="text-xs text-muted-foreground min-w-0 flex-1 break-words">
+          <span
+            className="text-xs text-muted-foreground min-w-0 flex-1 truncate"
+            title={page.section_title}
+          >
             {page.section_title}
           </span>
         )}
@@ -377,7 +398,7 @@ function PageContent({
         <Tabs
           value={tab}
           onValueChange={(v) => setTab(v as "cleaned" | "raw")}
-          className="ml-auto"
+          className="ml-auto shrink-0"
         >
           <TabsList className="h-7">
             <TabsTrigger value="cleaned" className="h-6 text-xs">

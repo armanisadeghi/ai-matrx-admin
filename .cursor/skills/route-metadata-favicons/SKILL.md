@@ -80,7 +80,8 @@ All primary routes use 2-letter favicon codes. The pattern:
 | `/tasks` | `Tk` | `#16a34a` | Green |
 | `/projects` | `Pj` | `#4f46e5` | Indigo |
 | `/files` | `Fi` | `#0284c7` | Sky-700 |
-| `/transcripts` | `Tr` | `#9333ea` | Purple-600 |
+| `/transcription/processor` | `Tr` | `#9333ea` | Purple-600 |
+| `/transcription/studio` | `Ts` | `#9333ea` | Purple-600 |
 | `/data` | `Da` | `#0891b2` | Cyan-600 |
 | `/demo/voice/voice-manager` | `Vo` | `#ea580c` | Orange-600 |
 | `/image-editing` | `Im` | `#0d9488` | Teal-600 |

@@ -3,7 +3,7 @@
 /**
  * TranscriptStudioWindow — floating-window mount of the transcript studio.
  *
- * Wraps the SAME `<StudioView>` that the route at `/transcript-studio` uses.
+ * Wraps the SAME `<StudioView>` that the route at `/transcription/studio` uses.
  * The route renders with `containerVariant: "page"` (full-page layout); the
  * window renders with `containerVariant: "window"` so the studio's own
  * components can adjust spacing if needed.
@@ -35,8 +35,10 @@ import { selectActiveSessionId } from "@/features/transcript-studio/redux/select
 const OVERLAY_ID = "transcriptStudioWindow";
 const WINDOW_ID = "transcript-studio-window";
 
-export interface TranscriptStudioWindowProps
-  extends Omit<WindowPanelProps, "children" | "title"> {
+export interface TranscriptStudioWindowProps extends Omit<
+  WindowPanelProps,
+  "children" | "title"
+> {
   title?: string;
   /** Restored from window_sessions.data on mount. */
   activeSessionId?: string | null;

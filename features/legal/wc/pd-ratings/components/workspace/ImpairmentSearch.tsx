@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/popover";
 import { useImpairments } from "../../api/hooks";
 import type { WcImpairmentDefinitionRead } from "../../api/types";
+import { LookupError } from "./LookupError";
 
 interface ImpairmentSearchProps {
   value: string | null;
@@ -36,7 +37,7 @@ export function ImpairmentSearch({
   className,
 }: ImpairmentSearchProps) {
   const [open, setOpen] = React.useState(false);
-  const { data, isLoading } = useImpairments();
+  const { data, isLoading, error, refetch, isFetching } = useImpairments();
 
   const items = React.useMemo<WcImpairmentDefinitionRead[]>(() => {
     if (!data?.impairments) return [];
@@ -49,6 +50,18 @@ export function ImpairmentSearch({
     () => items.find((i) => i.id === value),
     [items, value],
   );
+
+  if (error) {
+    return (
+      <LookupError
+        error={error}
+        label="impairments"
+        onRetry={() => refetch()}
+        retrying={isFetching}
+        className={className}
+      />
+    );
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

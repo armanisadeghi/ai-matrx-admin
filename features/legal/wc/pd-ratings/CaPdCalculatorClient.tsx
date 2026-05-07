@@ -1,20 +1,36 @@
 "use client";
 
 import * as React from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck, RotateCcw } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsAuthenticated } from "@/lib/redux/slices/userSlice";
 import { ClaimHeader } from "./components/workspace/ClaimHeader";
 import { InjuriesList } from "./components/workspace/InjuriesList";
 import { ResultPanel } from "./components/workspace/ResultPanel";
+import { SaveCaseButton } from "./components/workspace/SaveCaseButton";
+import { UtilityTeasers } from "./components/workspace/UtilityTeasers";
 import { useRatingDraft } from "./state/useRatingDraft";
 import { useLiveRating } from "./state/useLiveRating";
+import { useSaveCase } from "./state/useSaveCase";
+import { evaluateDraftReadiness } from "./state/buildStatelessPayload";
 import type { RatingDraft } from "./state/types";
 
 interface CaPdCalculatorClientProps {
   initialDraft?: RatingDraft;
+  mode?: "draft" | "saved";
 }
 
-export function CaPdCalculatorClient({ initialDraft }: CaPdCalculatorClientProps) {
+export function CaPdCalculatorClient({
+  initialDraft,
+  mode = "draft",
+}: CaPdCalculatorClientProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const isAuthed = useAppSelector(selectIsAuthenticated);
+
   const {
     draft,
     hydrated,
@@ -23,14 +39,47 @@ export function CaPdCalculatorClient({ initialDraft }: CaPdCalculatorClientProps
     updateInjury,
     removeInjury,
     resetDraft,
-  } = useRatingDraft({ initialDraft });
+  } = useRatingDraft({ initialDraft, persist: mode === "draft" });
 
   const liveRating = useLiveRating(draft);
+  const { save, status: saveStatus } = useSaveCase();
 
   const hasContent =
     draft.claim.applicant_name !== "" ||
     draft.claim.occupational_code !== null ||
     draft.injuries.length > 0;
+
+  // Post-login auto-save trigger.
+  // After redirect from /login?redirectTo=...?save=1, kick off the save flow once auth is ready.
+  const autoSaveTriggered = React.useRef(false);
+  React.useEffect(() => {
+    if (autoSaveTriggered.current) return;
+    if (!hydrated) return;
+    if (mode !== "draft") return;
+    if (searchParams.get("save") !== "1") return;
+    if (!isAuthed) return;
+
+    const ready = evaluateDraftReadiness(draft);
+    if (!ready.ready) return;
+
+    autoSaveTriggered.current = true;
+    (async () => {
+      const result = await save(draft);
+      if (result) {
+        toast.success("Case saved", {
+          description: "Your case is bookmarked and the rating is persisted.",
+        });
+        router.replace(`/legal/ca-wc/pd-ratings-calculator/${result.claimId}`);
+      }
+    })();
+  }, [hydrated, isAuthed, mode, searchParams, draft, save, router]);
+
+  const handleSaved = React.useCallback(
+    (claimId: string) => {
+      router.push(`/legal/ca-wc/pd-ratings-calculator/${claimId}`);
+    },
+    [router],
+  );
 
   if (!hydrated) {
     return <WorkspaceSkeleton />;
@@ -40,8 +89,15 @@ export function CaPdCalculatorClient({ initialDraft }: CaPdCalculatorClientProps
     <div className="min-h-dvh bg-background">
       <Hero
         applicantName={draft.claim.applicant_name}
-        canReset={hasContent}
+        canReset={hasContent && mode === "draft"}
         onReset={resetDraft}
+        rightActions={
+          mode === "draft" ? (
+            <SaveCaseButton draft={draft} onSaved={handleSaved} />
+          ) : (
+            <SavedBadge status={saveStatus.kind} />
+          )
+        }
       />
 
       <main className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 pb-16">
@@ -63,6 +119,8 @@ export function CaPdCalculatorClient({ initialDraft }: CaPdCalculatorClientProps
             </div>
           </div>
         </div>
+
+        <UtilityTeasers />
       </main>
     </div>
   );
@@ -72,10 +130,12 @@ function Hero({
   applicantName,
   canReset,
   onReset,
+  rightActions,
 }: {
   applicantName: string;
   canReset: boolean;
   onReset: () => void;
+  rightActions?: React.ReactNode;
 }) {
   return (
     <header className="border-b border-border bg-gradient-to-b from-primary/5 via-background to-background">
@@ -100,21 +160,32 @@ function Hero({
             </p>
           </div>
 
-          {canReset && (
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={onReset}
-              className="gap-1.5 text-muted-foreground hover:text-foreground shrink-0"
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-              Reset
-            </Button>
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            {canReset && (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={onReset}
+                className="gap-1.5 text-muted-foreground hover:text-foreground"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                Reset
+              </Button>
+            )}
+            {rightActions}
+          </div>
         </div>
       </div>
     </header>
+  );
+}
+
+function SavedBadge({ status }: { status: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground">
+      Saved · {status === "saving" ? "syncing…" : "live"}
+    </span>
   );
 }
 

@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
-import { createPortal } from 'react-dom';
-import { CockpitControls } from '@/components/playground/types';
-import type { ModulePage } from '@/components/matrx/navigation/types';
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { createPortal } from "react-dom";
+import { CockpitControls } from "@/components/playground/types";
+import type { ModulePage } from "@/components/matrx/navigation/types";
 
 interface PageSpecificHeaderProps {
   children: React.ReactNode;
@@ -18,8 +18,8 @@ export function PageSpecificHeader({ children }: PageSpecificHeaderProps) {
     setMounted(true);
     // SSR shell header center takes priority, then authenticated layout header
     const element =
-      document.getElementById('shell-header-center') ||
-      document.getElementById('page-specific-header-content');
+      document.getElementById("shell-header-center") ||
+      document.getElementById("page-specific-header-content");
     setTargetElement(element);
   }, []);
 
@@ -28,7 +28,7 @@ export function PageSpecificHeader({ children }: PageSpecificHeaderProps) {
   }
 
   // Wrap with shell-header-inject when portaling into SSR shell for proper styling
-  if (targetElement.id === 'shell-header-center') {
+  if (targetElement.id === "shell-header-center") {
     return createPortal(
       <div className="shell-header-inject">{children}</div>,
       targetElement,
@@ -44,16 +44,19 @@ interface CockpitHeaderProps {
 
 export function CockpitHeader({ cockpitControls }: CockpitHeaderProps) {
   const pathname = usePathname();
-  const [PlaygroundHeaderAllInOne, setPlaygroundHeaderAllInOne] = useState<any>(null);
+  const [PlaygroundHeaderAllInOne, setPlaygroundHeaderAllInOne] =
+    useState<any>(null);
 
   useEffect(() => {
-    if (!pathname?.includes('/ai/cockpit')) return;
-    import('@/components/playground/header/PlaygroundHeaderAllInOne').then((module) => {
-      setPlaygroundHeaderAllInOne(() => module.default);
-    });
+    if (!pathname?.includes("/ai/cockpit")) return;
+    import("@/components/playground/header/PlaygroundHeaderAllInOne").then(
+      (module) => {
+        setPlaygroundHeaderAllInOne(() => module.default);
+      },
+    );
   }, [pathname]);
 
-  if (!pathname?.includes('/ai/cockpit') || !PlaygroundHeaderAllInOne) {
+  if (!pathname?.includes("/ai/cockpit") || !PlaygroundHeaderAllInOne) {
     return null;
   }
 
@@ -79,21 +82,25 @@ interface PromptHeaderProps {
   onAcceptFullPrompt?: (optimizedObject: any) => void;
   onAcceptAsCopy?: (optimizedObject: any) => void;
   // Mobile tab support
-  mobileActiveTab?: 'edit' | 'test';
-  onMobileTabChange?: (tab: 'edit' | 'test') => void;
+  mobileActiveTab?: "edit" | "test";
+  onMobileTabChange?: (tab: "edit" | "test") => void;
 }
 
 export function PromptHeader(props: PromptHeaderProps) {
   const pathname = usePathname();
-  const [PromptBuilderHeaderCompact, setPromptBuilderHeaderCompact] = useState<any>(null);
+  const [PromptBuilderHeaderCompact, setPromptBuilderHeaderCompact] =
+    useState<any>(null);
 
-  const isPromptRoute = pathname?.includes('/ai/prompts') || pathname?.includes('/ssr/prompts');
+  const isPromptRoute =
+    pathname?.includes("/ai/prompts") || pathname?.includes("/ssr/prompts");
 
   useEffect(() => {
     if (!isPromptRoute) return;
-    import('@/features/prompts/components/layouts/PromptBuilderHeaderCompact').then((module) => {
-      setPromptBuilderHeaderCompact(() => module.PromptBuilderHeaderCompact);
-    });
+    import("@/features/prompts/components/layouts/PromptBuilderHeaderCompact").then(
+      (module) => {
+        setPromptBuilderHeaderCompact(() => module.PromptBuilderHeaderCompact);
+      },
+    );
   }, [isPromptRoute]);
 
   if (!isPromptRoute || !PromptBuilderHeaderCompact) {
@@ -116,13 +123,15 @@ export function ChatHeader({ baseRoute = "/chat" }: ChatHeaderProps) {
   const [ChatHeaderCompact, setChatHeaderCompact] = useState<any>(null);
 
   useEffect(() => {
-    if (!pathname?.includes('/chat')) return;
-    import('@/features/chat/components/header/ChatHeaderCompact').then((module) => {
-      setChatHeaderCompact(() => module.ChatHeaderCompact);
-    });
+    if (!pathname?.includes("/chat")) return;
+    import("@/features/chat/components/header/ChatHeaderCompact").then(
+      (module) => {
+        setChatHeaderCompact(() => module.ChatHeaderCompact);
+      },
+    );
   }, [pathname]);
 
-  if (!pathname?.includes('/chat') || !ChatHeaderCompact) {
+  if (!pathname?.includes("/chat") || !ChatHeaderCompact) {
     return null;
   }
 
@@ -139,15 +148,19 @@ interface RecipeViewHeaderProps {
 
 export function RecipeViewHeader(props: RecipeViewHeaderProps) {
   const pathname = usePathname();
-  const [RecipeViewHeaderCompact, setRecipeViewHeaderCompact] = useState<any>(null);
+  const [RecipeViewHeaderCompact, setRecipeViewHeaderCompact] =
+    useState<any>(null);
 
-  const isRecipeView = !!pathname?.includes('/ai/recipes/') && !pathname?.includes('/edit');
+  const isRecipeView =
+    !!pathname?.includes("/ai/recipes/") && !pathname?.includes("/edit");
 
   useEffect(() => {
     if (!isRecipeView) return;
-    import('@/features/recipes/components/RecipeViewHeaderCompact').then((module) => {
-      setRecipeViewHeaderCompact(() => module.RecipeViewHeaderCompact);
-    });
+    import("@/features/recipes/components/RecipeViewHeaderCompact").then(
+      (module) => {
+        setRecipeViewHeaderCompact(() => module.RecipeViewHeaderCompact);
+      },
+    );
   }, [isRecipeView]);
 
   if (!isRecipeView || !RecipeViewHeaderCompact) {
@@ -172,15 +185,19 @@ interface RecipeEditHeaderProps {
 
 export function RecipeEditHeader(props: RecipeEditHeaderProps) {
   const pathname = usePathname();
-  const [RecipeEditHeaderCompact, setRecipeEditHeaderCompact] = useState<any>(null);
+  const [RecipeEditHeaderCompact, setRecipeEditHeaderCompact] =
+    useState<any>(null);
 
-  const isRecipeEdit = !!pathname?.includes('/ai/recipes/') && !!pathname?.includes('/edit');
+  const isRecipeEdit =
+    !!pathname?.includes("/ai/recipes/") && !!pathname?.includes("/edit");
 
   useEffect(() => {
     if (!isRecipeEdit) return;
-    import('@/features/recipes/components/RecipeEditHeaderCompact').then((module) => {
-      setRecipeEditHeaderCompact(() => module.RecipeEditHeaderCompact);
-    });
+    import("@/features/recipes/components/RecipeEditHeaderCompact").then(
+      (module) => {
+        setRecipeEditHeaderCompact(() => module.RecipeEditHeaderCompact);
+      },
+    );
   }, [isRecipeEdit]);
 
   if (!isRecipeEdit || !RecipeEditHeaderCompact) {
@@ -197,8 +214,8 @@ export function RecipeEditHeader(props: RecipeEditHeaderProps) {
 interface NotesHeaderProps {
   onCreateNote: () => void;
   onCreateFolder: () => void;
-  sortConfig: { field: string; order: 'asc' | 'desc' };
-  onSortChange: (field: string, order: 'asc' | 'desc') => void;
+  sortConfig: { field: string; order: "asc" | "desc" };
+  onSortChange: (field: string, order: "asc" | "desc") => void;
 }
 
 export function NotesHeader(props: NotesHeaderProps) {
@@ -206,13 +223,13 @@ export function NotesHeader(props: NotesHeaderProps) {
   const [NotesHeaderCompact, setNotesHeaderCompact] = useState<any>(null);
 
   useEffect(() => {
-    if (!pathname?.includes('/notes')) return;
-    import('@/features/notes/components/NotesHeaderCompact').then((module) => {
+    if (!pathname?.includes("/notes")) return;
+    import("@/features/notes/components/NotesHeaderCompact").then((module) => {
       setNotesHeaderCompact(() => module.NotesHeaderCompact);
     });
   }, [pathname]);
 
-  if (!pathname?.includes('/notes') || !NotesHeaderCompact) {
+  if (!pathname?.includes("/notes") || !NotesHeaderCompact) {
     return null;
   }
 
@@ -234,13 +251,15 @@ export function TranscriptsHeaderPortal(props: TranscriptsHeaderProps) {
   const [TranscriptsHeader, setTranscriptsHeader] = useState<any>(null);
 
   useEffect(() => {
-    if (!pathname?.includes('/transcripts')) return;
-    import('@/features/transcripts/components/TranscriptsHeader').then((module) => {
-      setTranscriptsHeader(() => module.TranscriptsHeader);
-    });
+    if (!pathname?.includes("/transcription/processor")) return;
+    import("@/features/transcripts/components/TranscriptsHeader").then(
+      (module) => {
+        setTranscriptsHeader(() => module.TranscriptsHeader);
+      },
+    );
   }, [pathname]);
 
-  if (!pathname?.includes('/transcripts') || !TranscriptsHeader) {
+  if (!pathname?.includes("/transcription/processor") || !TranscriptsHeader) {
     return null;
   }
 
@@ -266,11 +285,11 @@ export function AppletHeader(props: AppletHeaderProps) {
   const [AppletHeaderCompact, setAppletHeaderCompact] = useState<any>(null);
 
   useEffect(() => {
-    if (!pathname?.includes('/apps/custom/')) return;
+    if (!pathname?.includes("/apps/custom/")) return;
     // Applet header component not yet implemented
   }, [pathname]);
 
-  if (!pathname?.includes('/apps/custom/') || !AppletHeaderCompact) {
+  if (!pathname?.includes("/apps/custom/") || !AppletHeaderCompact) {
     return null;
   }
 
@@ -298,13 +317,15 @@ export function MessagesHeader(props: MessagesHeaderProps) {
   const [MessagesHeaderCompact, setMessagesHeaderCompact] = useState<any>(null);
 
   useEffect(() => {
-    if (!pathname?.includes('/messages')) return;
-    import('@/features/messaging/components/MessagesHeaderCompact').then((module) => {
-      setMessagesHeaderCompact(() => module.MessagesHeaderCompact);
-    });
+    if (!pathname?.includes("/messages")) return;
+    import("@/features/messaging/components/MessagesHeaderCompact").then(
+      (module) => {
+        setMessagesHeaderCompact(() => module.MessagesHeaderCompact);
+      },
+    );
   }, [pathname]);
 
-  if (!pathname?.includes('/messages') || !MessagesHeaderCompact) {
+  if (!pathname?.includes("/messages") || !MessagesHeaderCompact) {
     return null;
   }
 
@@ -316,19 +337,22 @@ export function MessagesHeader(props: MessagesHeaderProps) {
 }
 
 interface PromptAppHeaderProps {
-  mode: 'view' | 'edit' | 'run';
-  onModeChange: (mode: 'view' | 'edit' | 'run') => void;
+  mode: "view" | "edit" | "run";
+  onModeChange: (mode: "view" | "edit" | "run") => void;
   isSaving?: boolean;
   onAIEdit?: () => void;
 }
 
 export function PromptAppHeader(props: PromptAppHeaderProps) {
-  const [PromptAppHeaderCompact, setPromptAppHeaderCompact] = useState<any>(null);
+  const [PromptAppHeaderCompact, setPromptAppHeaderCompact] =
+    useState<any>(null);
 
   useEffect(() => {
-    import('@/features/prompt-apps/components/PromptAppHeaderCompact').then((module) => {
-      setPromptAppHeaderCompact(() => module.PromptAppHeaderCompact);
-    });
+    import("@/features/prompt-apps/components/PromptAppHeaderCompact").then(
+      (module) => {
+        setPromptAppHeaderCompact(() => module.PromptAppHeaderCompact);
+      },
+    );
   }, []);
 
   if (!PromptAppHeaderCompact) {
@@ -352,12 +376,15 @@ interface ModuleHeaderProps {
 
 export function ModuleHeader(props: ModuleHeaderProps) {
   // Dynamically import the component to avoid SSR issues
-  const [ResponsiveModuleHeaderContent, setResponsiveModuleHeaderContent] = useState<any>(null);
+  const [ResponsiveModuleHeaderContent, setResponsiveModuleHeaderContent] =
+    useState<any>(null);
 
   useEffect(() => {
-    import('@/components/matrx/navigation/ResponsiveModuleHeaderContent').then((module) => {
-      setResponsiveModuleHeaderContent(() => module.default);
-    });
+    import("@/components/matrx/navigation/ResponsiveModuleHeaderContent").then(
+      (module) => {
+        setResponsiveModuleHeaderContent(() => module.default);
+      },
+    );
   }, []);
 
   if (!ResponsiveModuleHeaderContent) {
