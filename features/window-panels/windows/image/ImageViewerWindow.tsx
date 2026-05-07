@@ -22,12 +22,20 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  FlipHorizontal,
+  FlipVertical,
   ZoomIn,
   ZoomOut,
   RotateCcw,
+  RotateCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WindowPanel } from "../../WindowPanel";
+import {
+  applyImageViewerTransformAction,
+  getImageViewerTransformStyle,
+  initialImageViewerTransform,
+} from "./imageViewerTransforms";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -66,6 +74,9 @@ export function ImageViewer({
   const index = activeIndex ?? internalIndex;
   const setIndex = onIndexChange ?? setInternalIndex;
   const [zoom, setZoom] = useState(1);
+  const [imageTransform, setImageTransform] = useState(
+    initialImageViewerTransform,
+  );
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragStart, setDragStart] = useState({ x: 0, y: 0, ox: 0, oy: 0 });
@@ -77,6 +88,7 @@ export function ImageViewer({
   useEffect(() => {
     setZoom(1);
     setOffset({ x: 0, y: 0 });
+    setImageTransform(initialImageViewerTransform);
   }, [index]);
 
   const prev = useCallback(
@@ -98,7 +110,35 @@ export function ImageViewer({
   const resetView = useCallback(() => {
     setZoom(1);
     setOffset({ x: 0, y: 0 });
+    setImageTransform(initialImageViewerTransform);
   }, []);
+  const rotateLeft = useCallback(() => {
+    setImageTransform((current) =>
+      applyImageViewerTransformAction(current, "rotateLeft"),
+    );
+  }, []);
+  const rotateRight = useCallback(() => {
+    setImageTransform((current) =>
+      applyImageViewerTransformAction(current, "rotateRight"),
+    );
+  }, []);
+  const flipHorizontal = useCallback(() => {
+    setImageTransform((current) =>
+      applyImageViewerTransformAction(current, "flipHorizontal"),
+    );
+  }, []);
+  const flipVertical = useCallback(() => {
+    setImageTransform((current) =>
+      applyImageViewerTransformAction(current, "flipVertical"),
+    );
+  }, []);
+  const isDefaultView =
+    zoom === 1 &&
+    offset.x === 0 &&
+    offset.y === 0 &&
+    imageTransform.rotation === 0 &&
+    !imageTransform.flipHorizontal &&
+    !imageTransform.flipVertical;
 
   // Keyboard navigation
   useEffect(() => {
@@ -168,7 +208,11 @@ export function ImageViewer({
           alt={alt}
           draggable={false}
           style={{
-            transform: `scale(${zoom}) translate(${offset.x / zoom}px, ${offset.y / zoom}px)`,
+            transform: getImageViewerTransformStyle({
+              zoom,
+              offset,
+              transform: imageTransform,
+            }),
             transition: dragging ? "none" : "transform 0.15s ease",
             maxWidth: "100%",
             maxHeight: "100%",
@@ -206,7 +250,7 @@ export function ImageViewer({
       </div>
 
       {/* Toolbar */}
-      <div className="shrink-0 flex items-center justify-between px-3 py-1.5 border-t border-border bg-muted/20">
+      <div className="relative shrink-0 flex items-center justify-between px-3 py-1.5 border-t border-border bg-muted/20">
         <div className="flex items-center gap-1">
           <ToolbarBtn
             onClick={zoomOut}
@@ -224,9 +268,24 @@ export function ImageViewer({
           <ToolbarBtn
             onClick={resetView}
             label="Reset view"
-            disabled={zoom === 1 && offset.x === 0 && offset.y === 0}
+            disabled={isDefaultView}
           >
             <RotateCcw className="w-3.5 h-3.5" />
+          </ToolbarBtn>
+        </div>
+
+        <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1">
+          <ToolbarBtn onClick={rotateLeft} label="Rotate left">
+            <RotateCcw className="w-3.5 h-3.5" />
+          </ToolbarBtn>
+          <ToolbarBtn onClick={rotateRight} label="Rotate right">
+            <RotateCw className="w-3.5 h-3.5" />
+          </ToolbarBtn>
+          <ToolbarBtn onClick={flipHorizontal} label="Flip horizontal">
+            <FlipHorizontal className="w-3.5 h-3.5" />
+          </ToolbarBtn>
+          <ToolbarBtn onClick={flipVertical} label="Flip vertical">
+            <FlipVertical className="w-3.5 h-3.5" />
           </ToolbarBtn>
         </div>
 
@@ -235,10 +294,11 @@ export function ImageViewer({
           download
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md border border-border bg-background hover:bg-accent text-foreground transition-colors"
+          aria-label="Download"
+          title="Download"
+          className="p-1.5 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
         >
-          <Download className="w-3 h-3" />
-          Download
+          <Download className="w-3.5 h-3.5" />
         </a>
       </div>
     </div>
