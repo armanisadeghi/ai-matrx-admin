@@ -15,7 +15,10 @@ import {
   FileStack,
   Bot,
   Eye,
-  ShieldCheck,
+  BookCheck,
+  Network,
+  Lock,
+  Quote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -24,27 +27,33 @@ const STATS = [
   { value: "100%", label: "AMA Guides aligned" },
   { value: "5", label: "Calculators in one shell" },
   { value: "Both", label: "Sides supported" },
-  { value: "Replay", label: "Every action audited" },
+  { value: "ZDR", label: "Zero data retention" },
 ];
 
 const CORE_CAPABILITIES = [
   {
-    icon: Search,
-    title: "Case-law & rules research with citations",
+    icon: Bot,
+    title: "Agentic, not just generative",
     description:
-      "Search the DWC, panel decisions, agency bulletins, the Labor Code, and the broader web in one place. Every claim in the resulting memo links back to the source it came from.",
+      "Multi-step WC workflows run end to end — AOE/COE memos, QME review, deposition prep, settlement modeling, ratings. Procured as a digital workforce, not a chat box.",
   },
   {
     icon: FileStack,
-    title: "Search every record in the file",
+    title: "Search every record, cited to the paragraph",
     description:
-      "Upload medical reports, QME reports, deposition transcripts, applications, and agency correspondence. Ask questions in plain English; every answer cites the document, page, and paragraph.",
+      "Upload medical reports, QME/AME reports, deposition transcripts, applications, and DWC correspondence. Ask in plain English; every answer pins back to the document, page, and paragraph.",
   },
   {
-    icon: Bot,
-    title: "Drafting assistants per document type",
+    icon: Search,
+    title: "Case-law & rules research with citations",
     description:
-      "AOE/COE memos, opening briefs, demand letters, settlement summaries, deposition outlines. Specialist assistants per task — not one all-purpose chat.",
+      "Search the Labor Code, panel decisions, agency bulletins, and the broader web in one place. Every claim in the resulting memo links back to the source it came from.",
+  },
+  {
+    icon: BookCheck,
+    title: "Your firm’s playbook, enforced",
+    description:
+      "Encode your firm’s standard apportionment positions, MMI thresholds, settlement bands, and deal-breakers. Drafts and reviews flag deviations from your playbook automatically — applicant or defense.",
   },
   {
     icon: Calculator,
@@ -54,15 +63,9 @@ const CORE_CAPABILITIES = [
   },
   {
     icon: Eye,
-    title: "Audit-ready trail on every action",
+    title: "Replayable on every action",
     description:
-      "Every model call, document read, calculation, and edit is traced and replayable. Hand the trajectory to opposing counsel, a judge, or compliance.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Determinism at the perimeter",
-    description:
-      "Math executes through validated formulas, not an LLM guess. Permissions, schemas, and audit trails are not surfaces the model can argue past.",
+      "Every model call, document read, calculation, and edit is traced and replayable. Hand the trajectory to opposing counsel, a WCAB judge, or compliance.",
   },
 ];
 
@@ -150,25 +153,46 @@ const STEPS = [
     number: "01",
     title: "Open or import a claim",
     description:
-      "Applicant info, date of injury, occupational code, weekly earnings.",
+      "Applicant info, date of injury, occupational code, weekly earnings — pulled from your DMS or entered fresh, with permissions preserved.",
   },
   {
     number: "02",
-    title: "Add records & impairments",
+    title: "Index records & impairments",
     description:
-      "Medical reports indexed, impairments mapped to AMA codes, side and apportionment captured.",
+      "Medical reports indexed, impairments mapped to AMA codes, side and apportionment captured. Cited back to the page and paragraph.",
   },
   {
     number: "03",
     title: "Calculate, draft, and review",
     description:
-      "Ratings, briefs, memos, and depositions — all grounded in the saved file, all replayable.",
+      "Ratings, briefs, memos, and depositions — all grounded in the saved file and your firm’s playbook, all replayable.",
   },
   {
     number: "04",
     title: "Iterate & explain",
     description:
-      "Adjust apportionment, swap impairments, regenerate. Every run is replayable end to end.",
+      "Adjust apportionment, swap impairments, regenerate. Hand the full trajectory to a partner, an adjuster, or the WCAB.",
+  },
+];
+
+const PROCUREMENT = [
+  {
+    icon: Network,
+    title: "Identity-aware, sits on your systems of record",
+    description:
+      "Plugs into your DMS, calendaring, and billing — document-level permissions preserved end to end. The intelligence layer on top of what you already trust.",
+  },
+  {
+    icon: Lock,
+    title: "Zero Data Retention + attorney-client privilege",
+    description:
+      "Privileged client data never trains the model. SOC 2 Type II and ISO 27001 are the baseline, not the upgrade.",
+  },
+  {
+    icon: Quote,
+    title: "Citation-rich, hallucination-resistant",
+    description:
+      "Every claim, draft, and rating pins back to a source — page, paragraph, panel decision, statute. Designed to refuse rather than fabricate.",
   },
 ];
 
@@ -197,10 +221,11 @@ export default function CaWcLanding() {
             </span>
           </h1>
           <p className="mt-6 mx-auto max-w-2xl text-[clamp(1rem,0.95rem+0.25vw,1.25rem)] text-muted-foreground leading-relaxed">
-            Research, document review, drafting, depositions, and ratings —
-            built for the way California Workers&rsquo; Comp firms actually
-            work, with the rigor required by the WCAB and the speed your
-            caseload demands. Both applicant and defense.
+            Research with citations. Records review pinned to the paragraph.
+            Drafting agents that enforce your firm&rsquo;s playbook.
+            Deterministic WC calculators. Procured as a digital workforce —
+            auditable, identity-aware, and built to live on top of the systems
+            of record your applicant or defense practice already runs on.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button
@@ -246,11 +271,12 @@ export default function CaWcLanding() {
       >
         <div className="text-center mb-12 sm:mb-16">
           <h2 className="text-[clamp(1.5rem,1.25rem+1.5vw,2.5rem)] font-bold tracking-tight">
-            What AI Matrx does for WC firms
+            From copilot to digital workforce — for WC firms
           </h2>
           <p className="mt-4 text-muted-foreground text-lg max-w-2xl mx-auto">
-            The same six capabilities under every claim — research, document
-            review, drafting, calculators, replayability, and determinism.
+            Six core capabilities under every claim — agentic execution
+            grounded in the file, your firm&rsquo;s playbook, and the
+            authoritative WC sources you already cite.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -405,6 +431,35 @@ export default function CaWcLanding() {
         </div>
       </section>
 
+      {/* Procurement audit */}
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-24">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-[clamp(1.5rem,1.25rem+1.5vw,2.5rem)] font-bold tracking-tight">
+            Built for the 2026 procurement audit
+          </h2>
+          <p className="mt-4 text-muted-foreground text-lg max-w-2xl mx-auto">
+            Same security and interoperability bar as the largest WC defense
+            panels and applicant practices already passing IT review.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+          {PROCUREMENT.map((item) => (
+            <div
+              key={item.title}
+              className="rounded-2xl border border-border bg-card p-6"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary mb-4">
+                <item.icon className="h-5 w-5" />
+              </div>
+              <h3 className="text-base font-semibold mb-2">{item.title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {item.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="border-t border-border bg-card/50">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 py-16 sm:py-24 text-center">
@@ -414,7 +469,7 @@ export default function CaWcLanding() {
           <p className="mt-4 text-muted-foreground text-lg mb-8">
             Research, drafting, depositions, and ratings — for applicant and
             defense firms alike. Built for California WC, replayable end to
-            end.
+            end, and built to clear your firm&rsquo;s procurement bar.
           </p>
           <Button size="lg" className="min-h-[44px] text-base px-10 gap-2">
             Get Started

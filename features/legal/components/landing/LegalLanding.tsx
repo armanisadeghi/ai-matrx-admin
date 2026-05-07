@@ -6,7 +6,11 @@ import {
   Bot,
   Calculator,
   Eye,
-  ShieldCheck,
+  BookCheck,
+  Network,
+  Lock,
+  Quote,
+  Workflow,
   ArrowRight,
   CheckCircle2,
   Sparkles,
@@ -16,40 +20,40 @@ import { cn } from "@/lib/utils";
 
 const CAPABILITIES = [
   {
-    icon: Search,
-    title: "Legal research that cites itself",
+    icon: Bot,
+    title: "Agentic, not just generative",
     description:
-      "Multi-source search, scraped, summarized, tagged, and turned into a structured memo — every claim links back to its source.",
+      "Multi-step legal workflows run end to end — redlines, compliance audits, drafting, depositions, calculations. Procured as a digital workforce, not a chat box.",
   },
   {
     icon: FileStack,
-    title: "Your case files, instantly searchable",
+    title: "Your case files, cited to the paragraph",
     description:
-      "Upload pleadings, depositions, medical records, contracts, exhibits. Ask questions in plain English; every answer cites the document, page, and paragraph it came from.",
+      "Upload pleadings, depositions, medical records, contracts, exhibits. Ask in plain English; every answer pins back to the document, page, and paragraph.",
   },
   {
-    icon: Bot,
-    title: "Drafting agents",
+    icon: Search,
+    title: "Research, grounded in authoritative sources",
     description:
-      "Brief skeletons, demand letters, rebuttal points, deposition outlines. Specialist agents per task, not one all-purpose chat.",
+      "Statutes, case law, regulatory filings, and the broader web — searched, synthesized, and turned into a structured memo. Every claim links back to the source it came from.",
+  },
+  {
+    icon: BookCheck,
+    title: "Your firm’s playbook, enforced",
+    description:
+      "Encode standard positions, fallback clauses, and deal-breakers. Drafts and reviews flag deviations against your firm’s positions — not generic best-practice.",
   },
   {
     icon: Calculator,
-    title: "Practice-area calculators",
+    title: "Deterministic calculators",
     description:
-      "Deterministic math sits at the edges — PD ratings, weeks, present value, life expectancy. Numbers an adjuster will not argue with.",
+      "Practice-area math executes through validated formulas — PD ratings, weeks, present value, life expectancy. Numbers an adjuster will not argue with.",
   },
   {
     icon: Eye,
-    title: "Replayable trajectories",
+    title: "Replayable on every action",
     description:
-      "Every model call, tool invocation, and document read is traced. Replay any answer step by step from any checkpoint.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Determinism where it counts",
-    description:
-      "Tools execute deterministically. Permissions, schemas, and audit trails are not surfaces the model can argue past.",
+      "Every model call, document read, calculation, and edit is traced and replayable. Hand the trajectory to opposing counsel, a partner, or compliance.",
   },
 ];
 
@@ -58,25 +62,25 @@ const STEPS = [
     number: "01",
     title: "Bring the file in",
     description:
-      "Upload pleadings, medical records, depositions, exhibits. Or paste a URL, a transcript, a base64 blob.",
+      "Upload pleadings, medical records, depositions, exhibits — or pull them straight from your DMS with permissions preserved.",
   },
   {
     number: "02",
     title: "Indexed per matter",
     description:
-      "Documents are organized into a private, per-matter knowledge base — searchable in seconds, with every answer pinned to its source.",
+      "Documents are organized into a private, per-matter knowledge base. Searchable in seconds, with every answer pinned to its source.",
   },
   {
     number: "03",
     title: "Run the workflow",
     description:
-      "Research, draft, calculate, summarize — pick the agent, set the inputs, get a deterministic answer.",
+      "Research, draft, calculate, summarize — pick the agent, set the inputs. Workflows execute end to end, not just suggest text.",
   },
   {
     number: "04",
     title: "Verify, then ship",
     description:
-      "Replay the trajectory, override anything, regenerate. Nothing leaves the harness without a human pass.",
+      "Replay the trajectory, override anything, regenerate. Nothing leaves the harness without an attorney pass.",
   },
 ];
 
@@ -149,6 +153,33 @@ const PRACTICE_AREAS: Array<{
   },
 ];
 
+const PROCUREMENT = [
+  {
+    icon: Network,
+    title: "Identity-aware, sits on your systems of record",
+    description:
+      "Plugs into your DMS, billing, and calendar with document-level permissions preserved end to end. The intelligence layer on top of what you already trust — not another silo to copy privileged content into.",
+  },
+  {
+    icon: Lock,
+    title: "Zero Data Retention",
+    description:
+      "Your client data never trains the model. Attorney-client privilege preserved by default. SOC 2 Type II and ISO 27001 are the baseline, not the upgrade.",
+  },
+  {
+    icon: Quote,
+    title: "Citation-rich, hallucination-resistant",
+    description:
+      "Every claim, draft, and answer pins back to a source — page, paragraph, statute, case. Designed to refuse rather than fabricate, with the explainability your procurement and ethics committees will ask for.",
+  },
+  {
+    icon: Workflow,
+    title: "Self-healing workflows",
+    description:
+      "When statutes update, panel decisions shift, or a connected system fails, workflows re-route around the change without a manual rebuild — so the practice keeps moving.",
+  },
+];
+
 export default function LegalLanding() {
   return (
     <div className="min-h-dvh">
@@ -174,10 +205,11 @@ export default function LegalLanding() {
             </span>
           </h1>
           <p className="mt-6 mx-auto max-w-2xl text-[clamp(1rem,0.95rem+0.25vw,1.25rem)] text-muted-foreground leading-relaxed">
-            Research that shows its work. Case files you can search and cite
-            in plain English. Drafting agents you can replay. Calculators that
-            do not drift. The frontier labs build the engines — we build the
-            vehicle that takes them into the firm.
+            Research with citations. Document review pinned to the paragraph.
+            Drafting agents that enforce your firm&rsquo;s playbook.
+            Deterministic calculators. Procured as a digital workforce —
+            auditable, identity-aware, and built to live on top of the systems
+            of record you already trust.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button
@@ -206,11 +238,12 @@ export default function LegalLanding() {
       >
         <div className="text-center mb-12 sm:mb-16">
           <h2 className="text-[clamp(1.5rem,1.25rem+1.5vw,2.5rem)] font-bold tracking-tight">
-            Boring infrastructure, sharper practice
+            From copilot to digital workforce
           </h2>
           <p className="mt-4 text-muted-foreground text-lg max-w-2xl mx-auto">
-            Memory that survives. Tools that execute deterministically. A
-            trajectory you can hand to opposing counsel.
+            Six core capabilities under every matter — agentic execution
+            grounded in your case file, your firm&rsquo;s playbook, and
+            authoritative legal sources.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -274,8 +307,9 @@ export default function LegalLanding() {
             Practice areas
           </h2>
           <p className="mt-4 text-muted-foreground text-lg max-w-2xl mx-auto">
-            Specialty surfaces shipping module by module. Bring your own when
-            yours is not on the list.
+            Specialty surfaces shipping module by module — each one tuned to
+            the documents, calculations, and checkpoints the practice actually
+            runs on.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -337,6 +371,38 @@ export default function LegalLanding() {
         </div>
       </section>
 
+      {/* Procurement audit */}
+      <section className="bg-card/50 border-y border-border">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-24">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-[clamp(1.5rem,1.25rem+1.5vw,2.5rem)] font-bold tracking-tight">
+              Built for the 2026 procurement audit
+            </h2>
+            <p className="mt-4 text-muted-foreground text-lg max-w-2xl mx-auto">
+              Security, interoperability, and defensibility — the gatekeeping
+              criteria your IT, compliance, and ethics committees are actually
+              applying this year.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            {PROCUREMENT.map((item) => (
+              <div
+                key={item.title}
+                className="rounded-2xl border border-border bg-card p-6 sm:p-7"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary mb-4">
+                  <item.icon className="h-5 w-5" />
+                </div>
+                <h3 className="text-base font-semibold mb-2">{item.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {item.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="border-t border-border bg-card/50">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 py-16 sm:py-24 text-center">
@@ -345,7 +411,8 @@ export default function LegalLanding() {
           </h2>
           <p className="mt-4 text-muted-foreground text-lg mb-8">
             Research, document review, drafting, and calculators — on a
-            harness designed for the rigor your work demands.
+            harness designed for the rigor your work demands and the
+            procurement bar your firm answers to.
           </p>
           <Button size="lg" className="min-h-[44px] text-base px-10 gap-2">
             Get Started
