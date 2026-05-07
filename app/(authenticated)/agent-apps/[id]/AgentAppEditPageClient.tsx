@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useAppStore } from "@/lib/redux/hooks";
 import { CodeWorkspaceRoute } from "@/features/code/host/CodeWorkspaceRoute";
 import { ChatPanelSlot } from "@/features/code/chat/ChatPanelSlot";
 import { useOpenSourceEntry } from "@/features/code/hooks/useOpenSourceEntry";
@@ -15,32 +16,35 @@ interface AgentAppEditPageClientProps {
 }
 
 export function AgentAppEditPageClient({ app }: AgentAppEditPageClientProps) {
+  const store = useAppStore();
   const openSourceEntry = useOpenSourceEntry();
   const openRenderPreview = useOpenRenderPreview();
   const bootstrappedRef = useRef(false);
   const basePath = `/agent-apps/${app.id}`;
 
-  // On first mount: open the agent-app's `component_code` as a Monaco
-  // tab, pop the live-preview tab next to it, and inject `?agentId=`
-  // so the chat panel auto-binds to the app's agent. Idempotent.
+  // First-mount bootstrap: open the source file + paired preview tab so a
+  // brand-new visit lands in a usable state. If the source tab is already
+  // open in the workspace (user navigated away and came back) we leave
+  // tab state untouched — the user's last selection wins.
+  //
+  // We deliberately do NOT inject `?agentId=` from `app.agent_id`. The
+  // chat panel is the user's coding agent; `app.agent_id` is the agent
+  // that runs *inside* the rendered app and shouldn't hijack the editor.
   useEffect(() => {
     if (bootstrappedRef.current) return;
     bootstrappedRef.current = true;
+
+    const sourceTabId = agaAppsAdapter.makeTabId(app.id);
+    if (store.getState().codeTabs?.byId?.[sourceTabId]) return;
+
     void openSourceEntry({ sourceId: agaAppsAdapter.sourceId, rowId: app.id })
       .then(() => {
-        openRenderPreview(agaAppsAdapter.makeTabId(app.id));
-        if (app.agent_id) {
-          const url = new URL(window.location.href);
-          if (!url.searchParams.get("agentId")) {
-            url.searchParams.set("agentId", app.agent_id);
-            window.history.replaceState({}, "", url.toString());
-          }
-        }
+        openRenderPreview(sourceTabId);
       })
       .catch((err) => {
         console.error("[agent-apps] failed to open code+preview tabs", err);
       });
-  }, [app.id, app.agent_id, openSourceEntry, openRenderPreview]);
+  }, [app.id, openSourceEntry, openRenderPreview, store]);
 
   return <CodeWorkspaceRoute rightSlot={<ChatPanelSlot basePath={basePath} />} />;
 }
