@@ -107,6 +107,8 @@ function progressToFrame(
     current: p.current,
     total: p.total,
     lastUpdate,
+    latestPreview:
+      (p.preview as ProcessingFrame["latestPreview"]) ?? null,
   };
 }
 

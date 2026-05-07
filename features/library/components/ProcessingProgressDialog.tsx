@@ -49,6 +49,36 @@ import { cn } from "@/lib/utils";
 
 export type ProcessingStageId = "extract" | "clean" | "chunk" | "embed";
 
+export type StagePreview =
+  | {
+      kind: "page_text";
+      label: string;
+      page_index?: number;
+      page_number: number;
+      text: string;
+      more?: boolean;
+    }
+  | {
+      kind: "page_clean";
+      label: string;
+      page_number: number;
+      raw_text: string;
+      cleaned_text: string;
+      section_kind: string | null;
+      section_title: string | null;
+    }
+  | {
+      kind: "chunks_sample";
+      label: string;
+      samples: Array<{
+        chunk_index: number | null;
+        chunk_kind: string | null;
+        token_count: number | null;
+        page_numbers: number[] | null;
+        content_text: string;
+      }>;
+    };
+
 export interface ProcessingFrame {
   /** Which stage is currently active. */
   activeStage: ProcessingStageId | null;
@@ -63,6 +93,10 @@ export interface ProcessingFrame {
   stageStates?: Partial<Record<ProcessingStageId, "pending" | "running" | "done" | "error">>;
   /** Last update wall-time (ms since epoch). Used to render "Xs since last update". */
   lastUpdate: number;
+  /** Most recent content sample emitted by a stage's done event. The dialog
+   *  renders this in a "Latest output" panel so the user actually sees
+   *  what the system produced — not just a counter. */
+  latestPreview?: StagePreview | null;
 }
 
 export interface ProcessingResultSummary {
@@ -70,6 +104,8 @@ export interface ProcessingResultSummary {
   byStage: Partial<Record<ProcessingStageId, string>>;
   /** Optional headline ("Indexed 1,843 chunks across 586 pages"). */
   headline?: string;
+  /** Document id to deep-link into when the user clicks "Open in Library". */
+  processedDocumentId?: string | null;
 }
 
 export interface ProcessingProgressDialogProps {
@@ -339,6 +375,108 @@ function Stepper({
 // Running view — what's playing in the middle while work is in flight
 // ---------------------------------------------------------------------------
 
+function StagePreviewPanel({ preview }: { preview: StagePreview }) {
+  if (preview.kind === "page_text") {
+    return (
+      <div className="rounded-xl border bg-card p-4 space-y-2">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-semibold">{preview.label}</h4>
+          <Badge variant="outline" className="text-[10px]">
+            page {preview.page_number}
+          </Badge>
+        </div>
+        <pre className="whitespace-pre-wrap break-words font-sans text-xs leading-relaxed text-foreground/90 max-h-72 overflow-auto bg-muted/30 rounded p-3">
+          {preview.text || <span className="italic text-muted-foreground">(empty page)</span>}
+        </pre>
+        {preview.more && (
+          <p className="text-[10px] text-muted-foreground italic">
+            Truncated for preview — full text in the library.
+          </p>
+        )}
+      </div>
+    );
+  }
+  if (preview.kind === "page_clean") {
+    return (
+      <div className="rounded-xl border bg-card p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-semibold">{preview.label}</h4>
+          <div className="flex items-center gap-1">
+            {preview.section_kind && (
+              <Badge variant="info" className="text-[10px]">
+                {preview.section_kind}
+              </Badge>
+            )}
+            <Badge variant="outline" className="text-[10px]">
+              page {preview.page_number}
+            </Badge>
+          </div>
+        </div>
+        {preview.section_title && (
+          <p className="text-sm font-medium">{preview.section_title}</p>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div className="space-y-1">
+            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Raw</div>
+            <pre className="whitespace-pre-wrap break-words font-sans text-xs leading-relaxed bg-muted/30 rounded p-3 max-h-56 overflow-auto">
+              {preview.raw_text || <span className="italic text-muted-foreground">(empty)</span>}
+            </pre>
+          </div>
+          <div className="space-y-1">
+            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Cleaned</div>
+            <pre className="whitespace-pre-wrap break-words font-sans text-xs leading-relaxed bg-green-500/5 border border-green-500/20 rounded p-3 max-h-56 overflow-auto">
+              {preview.cleaned_text || <span className="italic text-muted-foreground">(empty)</span>}
+            </pre>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  if (preview.kind === "chunks_sample") {
+    return (
+      <div className="rounded-xl border bg-card p-4 space-y-3">
+        <h4 className="text-sm font-semibold">{preview.label}</h4>
+        <div className="space-y-2">
+          {preview.samples.map((c, i) => (
+            <div
+              key={c.chunk_index ?? i}
+              className="rounded-md border bg-muted/20 p-3 space-y-1.5"
+            >
+              <div className="flex items-center gap-1 text-[10px] flex-wrap">
+                <Badge variant="outline" className="text-[10px]">
+                  #{c.chunk_index ?? i + 1}
+                </Badge>
+                {c.chunk_kind && (
+                  <Badge variant="outline" className="text-[10px]">
+                    {c.chunk_kind}
+                  </Badge>
+                )}
+                {c.token_count != null && (
+                  <Badge variant="outline" className="text-[10px]">
+                    {c.token_count.toLocaleString()} tok
+                  </Badge>
+                )}
+                {c.page_numbers && c.page_numbers.length > 0 && (
+                  <Badge variant="outline" className="text-[10px]">
+                    p.{c.page_numbers[0]}
+                    {c.page_numbers.length > 1
+                      ? `–${c.page_numbers[c.page_numbers.length - 1]}`
+                      : ""}
+                  </Badge>
+                )}
+              </div>
+              <pre className="whitespace-pre-wrap break-words font-sans text-xs leading-relaxed max-h-32 overflow-auto">
+                {c.content_text}
+              </pre>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
+
 function RunningView({
   frame,
   elapsedRef,
@@ -401,6 +539,18 @@ function RunningView({
           </div>
         </div>
       </div>
+
+      {/* Live "what we just got" preview — populated by stage done events
+          carrying a sample of the actual content (page text, before/after,
+          first chunks). The user explicitly asked to stop hiding this. */}
+      {frame?.latestPreview && (
+        <div className="space-y-2">
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Latest output
+          </div>
+          <StagePreviewPanel preview={frame.latestPreview} />
+        </div>
+      )}
     </div>
   );
 }
@@ -448,6 +598,17 @@ function ResultView({ result }: { result: ProcessingResultSummary }) {
               </p>
             )}
           </div>
+          {result.processedDocumentId && (
+            <a
+              href={`/rag/library/${result.processedDocumentId}/preview`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 shrink-0"
+            >
+              Open in Library
+              <Maximize2 className="h-3.5 w-3.5" />
+            </a>
+          )}
         </div>
 
         <div className="mt-5 grid gap-2 sm:grid-cols-2">

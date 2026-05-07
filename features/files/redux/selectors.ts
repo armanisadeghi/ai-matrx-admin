@@ -249,9 +249,20 @@ export const selectHasActiveColumnFilters = createSelector(
   [selectColumnFilters],
   (cf) =>
     cf.name.length > 0 ||
+    cf.type.length > 0 ||
+    cf.extension.length > 0 ||
+    cf.mime.length > 0 ||
+    cf.path.length > 0 ||
+    cf.owner.length > 0 ||
     cf.modified !== "any" ||
+    cf.created !== "any" ||
     cf.size !== "any" ||
     cf.access !== "any",
+);
+
+export const selectVisibleColumns = createSelector(
+  [selectUiSlice],
+  (ui) => ui.visibleColumns,
 );
 
 export const selectActiveFileId = createSelector(

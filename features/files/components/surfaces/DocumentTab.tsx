@@ -48,6 +48,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFileById } from "@/features/files/redux/selectors";
 import { DocumentViewer } from "@/features/documents/components/DocumentViewer";
 import { IngestProgressDialog } from "@/features/library/components/IngestProgressDialog";
+import { LibraryPreviewPage } from "@/features/library/components/LibraryPreviewPage";
 import { useFileDocument } from "@/features/files/hooks/useFileDocument";
 import {
   onFileDocumentProcessed,
@@ -217,11 +218,23 @@ export function DocumentTab({
         </div>
       </div>
       <div className="flex-1 min-h-0 overflow-hidden">
-        <DocumentViewer
-          documentId={docId}
-          initialPage={initialPage}
-          initialChunkId={initialChunkId}
-        />
+        {/* The legacy 4-pane DocumentViewer hits /api/document/* which has
+            its own bugs (returns 404 for many docs). We render the
+            LibraryPreviewPage in embedded mode here — same data, working
+            endpoints, gives the user real pages + raw + cleaned text +
+            chunks + per-doc lexical search.
+
+            The old DocumentViewer import is kept so the codebase still
+            type-checks if anything else references it; this surface
+            no longer renders it. */}
+        <LibraryPreviewPage documentId={docId} embedded />
+        {false && (
+          <DocumentViewer
+            documentId={docId}
+            initialPage={initialPage}
+            initialChunkId={initialChunkId}
+          />
+        )}
       </div>
     </div>
   );

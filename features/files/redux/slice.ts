@@ -28,19 +28,24 @@ import type {
   CloudUserGroup,
   CloudUserGroupMember,
   AccessFilter,
+  ColumnId,
   DetailsLevel,
   KindFilter,
   ModifiedFilter,
+  OwnerFilter,
   SelectionState,
   SizeFilter,
   SortBy,
   SortDirection,
   TreeChildren,
+  TypeFilter,
   UploadState,
   UploadStatus,
   ViewMode,
   Visibility,
+  VisibleColumns,
 } from "@/features/files/types";
+import { DEFAULT_VISIBLE_COLUMNS } from "@/features/files/types";
 
 // ---------------------------------------------------------------------------
 // Record factories
@@ -229,10 +234,17 @@ const initialState: CloudFilesState = {
     detailsLevel: "compact",
     columnFilters: {
       name: "",
+      type: [],
+      extension: "",
+      mime: "",
+      path: "",
+      owner: [],
       modified: "any",
+      created: "any",
       size: "any",
       access: "any",
     },
+    visibleColumns: { ...DEFAULT_VISIBLE_COLUMNS },
     activeFileId: null,
     activeFolderId: null,
     focusedId: null,
@@ -742,27 +754,87 @@ const slice = createSlice({
       state,
       action: PayloadAction<
         | { column: "name"; value: string }
+        | { column: "type"; value: TypeFilter }
+        | { column: "extension"; value: string }
+        | { column: "mime"; value: string }
+        | { column: "path"; value: string }
+        | { column: "owner"; value: OwnerFilter }
         | { column: "modified"; value: ModifiedFilter }
+        | { column: "created"; value: ModifiedFilter }
         | { column: "size"; value: SizeFilter }
         | { column: "access"; value: AccessFilter }
       >,
     ) {
       const next = action.payload;
-      if (next.column === "name") state.ui.columnFilters.name = next.value;
-      else if (next.column === "modified")
-        state.ui.columnFilters.modified = next.value;
-      else if (next.column === "size") state.ui.columnFilters.size = next.value;
-      else if (next.column === "access")
-        state.ui.columnFilters.access = next.value;
+      // One switch statement instead of an if-ladder makes it impossible to
+      // forget a column when adding a new one — TS exhaustiveness will warn.
+      switch (next.column) {
+        case "name":
+          state.ui.columnFilters.name = next.value;
+          break;
+        case "type":
+          state.ui.columnFilters.type = next.value;
+          break;
+        case "extension":
+          state.ui.columnFilters.extension = next.value;
+          break;
+        case "mime":
+          state.ui.columnFilters.mime = next.value;
+          break;
+        case "path":
+          state.ui.columnFilters.path = next.value;
+          break;
+        case "owner":
+          state.ui.columnFilters.owner = next.value;
+          break;
+        case "modified":
+          state.ui.columnFilters.modified = next.value;
+          break;
+        case "created":
+          state.ui.columnFilters.created = next.value;
+          break;
+        case "size":
+          state.ui.columnFilters.size = next.value;
+          break;
+        case "access":
+          state.ui.columnFilters.access = next.value;
+          break;
+      }
     },
 
     clearColumnFilters(state) {
       state.ui.columnFilters = {
         name: "",
+        type: [],
+        extension: "",
+        mime: "",
+        path: "",
+        owner: [],
         modified: "any",
+        created: "any",
         size: "any",
         access: "any",
       };
+    },
+
+    setColumnVisibility(
+      state,
+      action: PayloadAction<{ column: ColumnId; visible: boolean }>,
+    ) {
+      const { column, visible } = action.payload;
+      // `name` is the only column that's never hideable — it's the row
+      // anchor for selection, focus, drag handle, context menu, and the
+      // Activate button. Hiding it would leave the row empty and break
+      // every interaction. Silently ignore.
+      if (column === "name") {
+        state.ui.visibleColumns.name = true;
+        return;
+      }
+      state.ui.visibleColumns[column] = visible;
+    },
+
+    resetColumnVisibility(state) {
+      state.ui.visibleColumns = { ...DEFAULT_VISIBLE_COLUMNS };
     },
 
     setActiveFileId(state, action: PayloadAction<string | null>) {
@@ -933,6 +1005,8 @@ export const {
   setDetailsLevel,
   setColumnFilter,
   clearColumnFilters,
+  setColumnVisibility,
+  resetColumnVisibility,
   setActiveFileId,
   setActiveFolderId,
   setFocusedId,

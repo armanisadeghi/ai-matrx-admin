@@ -378,7 +378,22 @@ export interface TreeState {
 }
 
 export type ViewMode = "list" | "grid" | "columns";
-export type SortBy = "name" | "updated_at" | "size" | "type";
+/**
+ * Column sort keys. Mirror the file-table columns so users can sort by any
+ * column they're looking at. Folders always group ahead of files regardless
+ * of the active key (Box / Drive / Dropbox convention) — see `compareNodes`.
+ */
+export type SortBy =
+  | "name"
+  | "type"
+  | "extension"
+  | "mime"
+  | "path"
+  | "owner"
+  | "size"
+  | "version"
+  | "updated_at"
+  | "created_at";
 export type SortDirection = "asc" | "desc";
 /** Whether the file table shows files only, folders only, or both. */
 export type KindFilter = "all" | "files" | "folders";
@@ -391,16 +406,81 @@ export type ModifiedFilter = "any" | "today" | "week" | "month";
 export type SizeFilter = "any" | "small" | "medium" | "large" | "huge";
 /** Access (visibility) filter. */
 export type AccessFilter = "any" | "private" | "shared" | "public";
+/**
+ * Type filter — multi-select set of file categories (CODE, DOCUMENT, IMAGE,
+ * VIDEO, …). Empty array = "any type". Modeled as `string[]` (not the
+ * `FileCategory` enum from `utils/file-types.ts`) to keep the slice type
+ * import-cycle-free; the selectors / pickers cast at the boundary.
+ */
+export type TypeFilter = string[];
+/** Owner filter — multi-select set of owner user ids. Empty = "any owner". */
+export type OwnerFilter = string[];
 
 /** Per-column filters surfaced through the column-header dropdowns. */
 export interface ColumnFilters {
   /** Name "contains" — column-scoped text filter, distinct from the
    *  global search box. */
   name: string;
+  /** File category multi-select (Image / Video / Code / …). */
+  type: TypeFilter;
+  /** Extension "contains" — e.g. "pdf", "jp" matches jpg & jpeg. */
+  extension: string;
+  /** MIME "contains" — e.g. "image/" matches every image. */
+  mime: string;
+  /** Folder path "contains" — useful in tree-wide search results. */
+  path: string;
+  /** Owner user-id multi-select. */
+  owner: OwnerFilter;
   modified: ModifiedFilter;
+  /** Same preset semantics as `modified`, applied to `createdAt`. */
+  created: ModifiedFilter;
   size: SizeFilter;
   access: AccessFilter;
 }
+
+/**
+ * Stable ids for every optional / required column rendered in the file
+ * table. Hidden vs. visible columns are tracked in
+ * `UiState.visibleColumns` — a Box.com / Google-Drive-style "Choose
+ * columns" panel toggles each on/off. `name` and `access` are conceptually
+ * always present but are still included here so the type remains the
+ * single source of truth.
+ */
+export type ColumnId =
+  | "name"
+  | "type"
+  | "extension"
+  | "mime"
+  | "path"
+  | "owner"
+  | "size"
+  | "version"
+  | "updated_at"
+  | "created_at"
+  | "access";
+
+export type VisibleColumns = Record<ColumnId, boolean>;
+
+/**
+ * Default column set on first load. Tuned to match what users coming from
+ * Box.com / Google Drive expect to see by default — Type is shown
+ * because "what kind of file is this" is the second-most-important
+ * question after "what's its name", and the previous shipping default
+ * (just Name / Modified / Size / Access) silently hid that signal.
+ */
+export const DEFAULT_VISIBLE_COLUMNS: VisibleColumns = {
+  name: true,
+  type: true,
+  extension: false,
+  mime: false,
+  path: false,
+  owner: true,
+  size: true,
+  version: false,
+  updated_at: true,
+  created_at: false,
+  access: true,
+};
 
 export interface UiState {
   viewMode: ViewMode;
@@ -412,6 +492,8 @@ export interface UiState {
   detailsLevel: DetailsLevel;
   /** Per-column filter values driven by the column-header dropdowns. */
   columnFilters: ColumnFilters;
+  /** Which optional columns are mounted in the file table. */
+  visibleColumns: VisibleColumns;
   activeFileId: string | null;
   activeFolderId: string | null;
   /**

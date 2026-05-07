@@ -13,6 +13,7 @@ import type {
   TreeChildren,
   TreeState,
 } from "@/features/files/types";
+import { getFileTypeDetails } from "@/features/files/utils/file-types";
 
 // ---------------------------------------------------------------------------
 // Ancestry
@@ -69,20 +70,43 @@ export interface SortableNode {
   size: number | null;
   /** ISO-8601 timestamp. Parsed to a number once at sort time. */
   updatedAt: string;
+  /** ISO-8601 timestamp; folders + files both have one. */
+  createdAt: string;
+  /** Human-friendly type label — e.g. "PDF document", "TypeScript", "Folder". */
   type: string;
+  /** Lowercased extension without dot, or empty for folders / extensionless files. */
+  extension: string;
+  /** Resolved canonical MIME, or empty for folders. */
+  mime: string;
+  /** Folder logical path (`folder_path` for folders, `file_path` for files). */
+  path: string;
+  /** Owner user id. */
+  ownerId: string;
+  /** Current version number; folders use 0. */
+  version: number;
+}
+
+function extOf(filename: string): string {
+  const i = filename.lastIndexOf(".");
+  if (i <= 0 || i === filename.length - 1) return "";
+  return filename.slice(i + 1).toLowerCase();
 }
 
 export function fileToSortable(record: CloudFileRecord): SortableNode {
+  const details = getFileTypeDetails(record.fileName);
   return {
     id: record.id,
     name: record.fileName,
     kind: "file",
     size: record.fileSize, // keep null distinct from 0
     updatedAt: record.updatedAt,
-    type:
-      record.mimeType ??
-      record.fileName.split(".").pop()?.toLowerCase() ??
-      "",
+    createdAt: record.createdAt,
+    type: details.displayName,
+    extension: extOf(record.fileName),
+    mime: record.mimeType ?? details.mime,
+    path: record.filePath,
+    ownerId: record.ownerId,
+    version: record.currentVersion ?? 0,
   };
 }
 
@@ -96,7 +120,13 @@ export function folderToSortable(record: CloudFolderRecord): SortableNode {
     // this null is never compared against a file's size.
     size: null,
     updatedAt: record.updatedAt,
-    type: "folder",
+    createdAt: record.createdAt,
+    type: "Folder",
+    extension: "",
+    mime: "",
+    path: record.folderPath,
+    ownerId: record.ownerId,
+    version: 0,
   };
 }
 
@@ -154,10 +184,30 @@ export function compareNodes(
       );
     }
     case "updated_at":
-      return compareDates(a.updatedAt, b.updatedAt) ||
-        compareStrings(a.name, b.name);
+      return (
+        compareDates(a.updatedAt, b.updatedAt) || compareStrings(a.name, b.name)
+      );
+    case "created_at":
+      return (
+        compareDates(a.createdAt, b.createdAt) || compareStrings(a.name, b.name)
+      );
     case "type":
       return compareStrings(a.type, b.type) || compareStrings(a.name, b.name);
+    case "extension":
+      return (
+        compareStrings(a.extension, b.extension) ||
+        compareStrings(a.name, b.name)
+      );
+    case "mime":
+      return compareStrings(a.mime, b.mime) || compareStrings(a.name, b.name);
+    case "path":
+      return compareStrings(a.path, b.path) || compareStrings(a.name, b.name);
+    case "owner":
+      return (
+        compareStrings(a.ownerId, b.ownerId) || compareStrings(a.name, b.name)
+      );
+    case "version":
+      return a.version - b.version || compareStrings(a.name, b.name);
     default:
       return 0;
   }

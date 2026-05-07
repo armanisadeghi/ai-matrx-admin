@@ -87,6 +87,10 @@ export interface IngestProgress {
   current: number;
   total: number;
   message?: string;
+  /** Sample of actual content produced by this stage. Forwarded from the
+   *  backend's `extra.preview` so the FE dialog can show the user what
+   *  the system extracted/cleaned/chunked instead of just a counter. */
+  preview?: Record<string, unknown> | null;
 }
 
 /**
@@ -218,6 +222,12 @@ function parseLine(line: string): IngestStreamEvent | null {
       total = data.total as number;
       current = (data.current as number) ?? 0;
     }
+    // Forward the per-stage `preview` payload (page text, before/after,
+    // chunks sample) so the FE dialog can render real content.
+    const previewVal =
+      typeof data.preview === "object" && data.preview !== null
+        ? (data.preview as Record<string, unknown>)
+        : null;
     return {
       event: "rag.ingest.progress",
       data: {
@@ -225,6 +235,7 @@ function parseLine(line: string): IngestStreamEvent | null {
         current,
         total,
         message: (data.message as string) ?? undefined,
+        preview: previewVal,
       },
     };
   }

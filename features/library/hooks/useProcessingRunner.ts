@@ -107,7 +107,10 @@ export function useProcessingRunner(): UseProcessingRunner {
         error: null,
       });
 
-      const accumulated: ProcessingResultSummary = { byStage: {} };
+      const accumulated: ProcessingResultSummary = {
+        byStage: {},
+        processedDocumentId,
+      };
 
       try {
         for await (const ev of runStageStream(processedDocumentId, stage, {
@@ -123,6 +126,10 @@ export function useProcessingRunner(): UseProcessingRunner {
                 ev.data.total > 0
                   ? Math.min(1, ev.data.current / ev.data.total)
                   : null;
+              // Backend done events carry an `extra.preview` with sample
+              // content (page text, before/after, first chunks). Surface
+              // it on the frame so the dialog renders it live.
+              const extraPreview = (ev.data.extra as Record<string, unknown> | undefined)?.preview;
               setState((s) => ({
                 ...s,
                 frame: {
@@ -132,6 +139,9 @@ export function useProcessingRunner(): UseProcessingRunner {
                   current: ev.data.current,
                   total: ev.data.total,
                   lastUpdate: Date.now(),
+                  latestPreview:
+                    (extraPreview as ProcessingFrame["latestPreview"]) ??
+                    s.frame?.latestPreview ?? null,
                 },
               }));
               break;
@@ -206,6 +216,8 @@ export function useProcessingRunner(): UseProcessingRunner {
               ev.data.total > 0
                 ? Math.min(1, ev.data.current / ev.data.total)
                 : null;
+            const preview =
+              (ev.data.preview as ProcessingFrame["latestPreview"]) ?? null;
             setState((s) => ({
               ...s,
               frame: {
@@ -215,10 +227,32 @@ export function useProcessingRunner(): UseProcessingRunner {
                 current: ev.data.current,
                 total: ev.data.total,
                 lastUpdate: Date.now(),
+                latestPreview: preview ?? s.frame?.latestPreview ?? null,
               },
             }));
           } else if (ev.event === "rag.ingest.complete") {
             const r = ev.data;
+            // Legacy stream doesn't carry the processed_document_id in
+            // every shape — best-effort lookup so the "Open in Library"
+            // CTA can deep-link to /rag/library/{id}/preview.
+            let pdid: string | null = r.processed_document_id ?? null;
+            if (!pdid) {
+              try {
+                const lookup = await fetch(
+                  `/rag/library?source_kind=cld_file&search=&limit=5&offset=0`,
+                  { credentials: "include" },
+                );
+                if (lookup.ok) {
+                  const j = await lookup.json();
+                  const match = (j?.documents ?? []).find(
+                    (d: { source_id?: string }) => d.source_id === cldFileId,
+                  );
+                  if (match?.id) pdid = match.id as string;
+                }
+              } catch {
+                /* best-effort only */
+              }
+            }
             setState((s) => ({
               ...s,
               result: {
@@ -227,6 +261,7 @@ export function useProcessingRunner(): UseProcessingRunner {
                   embed: `${r.embeddings_written.toLocaleString()} embeddings written`,
                   chunk: `${r.chunks_written.toLocaleString()} chunks written`,
                 },
+                processedDocumentId: pdid,
               },
               error: r.error ?? null,
             }));

@@ -19,6 +19,18 @@
 //     inside that callback so its module is not in this file's static
 //     graph at all (`brokerActions`, `fetchFullContext` below).
 
+// Side-effect import: schedules the bundle-leak guard's boot-end macrotask
+// during the CLIENT boot bundle. This MUST live in a `"use client"` module
+// — the previous mount in `app/Providers.tsx` was server-only (Providers
+// is a Server Component, side-effect imports of non-`"use client"`
+// modules don't ship to the client bundle). Without this, the guard
+// module first evaluates inside the lazy window-panels chunk, in the
+// same synchronous turn as the registry/OverlaySurface modules — by the
+// time their assertion microtasks run, the guard's `setTimeout(0)`
+// hasn't fired yet, so `bootInProgress` is still true and we get false-
+// positive alarms on legitimate lazy loads.
+import "@/features/window-panels/utils/lazy-bundle-guard";
+
 import dynamic from "next/dynamic";
 import { useIdleReady, useIdleTask } from "@/utils/idle-scheduler";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";

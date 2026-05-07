@@ -96,9 +96,16 @@ interface ApiTestSearchResponse {
 
 export interface LibraryPreviewPageProps {
   documentId: string;
+  /** When true, drop the header chrome and use h-full instead of
+   *  h-[calc(100vh-3rem)] so the viewer can be embedded inside other
+   *  surfaces (e.g. the /files Document tab). */
+  embedded?: boolean;
 }
 
-export function LibraryPreviewPage({ documentId }: LibraryPreviewPageProps) {
+export function LibraryPreviewPage({
+  documentId,
+  embedded = false,
+}: LibraryPreviewPageProps) {
   const {
     doc,
     loading: docLoading,
@@ -107,30 +114,36 @@ export function LibraryPreviewPage({ documentId }: LibraryPreviewPageProps) {
   const [activePageIndex, setActivePageIndex] = useState(0);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-3rem)] bg-background">
-      {/* Header */}
-      <header className="border-b px-4 py-3 flex items-center gap-3">
-        <Link href="/rag/library">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Library
-          </Button>
-        </Link>
-        <div className="min-w-0 flex-1">
-          {docLoading || !doc ? (
-            <Skeleton className="h-5 w-64" />
-          ) : (
-            <div className="flex items-center gap-2 min-w-0">
-              <h1 className="text-sm font-semibold break-words">{doc.name}</h1>
-              <StatusBadge status={(doc.status as DocStatus) ?? "unknown"} />
-              <span className="text-xs text-muted-foreground whitespace-nowrap">
-                {doc.pagesPersisted} pages · {doc.chunks} chunks ·{" "}
-                {doc.embeddingsOai} embeds
-              </span>
-            </div>
-          )}
-        </div>
-      </header>
+    <div
+      className={
+        "flex flex-col bg-background " +
+        (embedded ? "h-full" : "h-[calc(100vh-3rem)]")
+      }
+    >
+      {!embedded && (
+        <header className="border-b px-4 py-3 flex items-center gap-3">
+          <Link href="/rag/library">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Library
+            </Button>
+          </Link>
+          <div className="min-w-0 flex-1">
+            {docLoading || !doc ? (
+              <Skeleton className="h-5 w-64" />
+            ) : (
+              <div className="flex items-center gap-2 min-w-0">
+                <h1 className="text-sm font-semibold break-words">{doc.name}</h1>
+                <StatusBadge status={(doc.status as DocStatus) ?? "unknown"} />
+                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                  {doc.pagesPersisted} pages · {doc.chunks} chunks ·{" "}
+                  {doc.embeddingsOai} embeds
+                </span>
+              </div>
+            )}
+          </div>
+        </header>
+      )}
 
       {docError && (
         <div className="m-4 p-3 border border-destructive/50 bg-destructive/5 rounded-md text-sm text-destructive">
