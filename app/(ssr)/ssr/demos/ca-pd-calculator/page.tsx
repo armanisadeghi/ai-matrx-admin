@@ -1,5 +1,5 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
-import { CaPdCalculatorClient } from "./CaPdCalculatorClient";
+import { CaPdCalculatorClient } from "@/features/legal/wc/pd-ratings/CaPdCalculatorClient";
 
 export const metadata = createRouteMetadata("/ssr/demos/ca-pd-calculator", {
   titlePrefix: "CA PD Calculator",

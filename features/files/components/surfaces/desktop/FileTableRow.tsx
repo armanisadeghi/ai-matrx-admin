@@ -4,8 +4,18 @@
  * One row inside the file table. Cells are rendered based on the
  * `visibleColumnIds` array passed from the parent — Box.com-/Drive-style
  * configurable columns. On hover, a row reveals the inline action toolbar
- * (Share / Copy link / Star / More). Double-click (or Enter on the name
- * button) activates: files open the preview, folders navigate into.
+ * (Share / Copy link / Star / More).
+ *
+ * Activation contract — Dropbox-web style:
+ *   - Single-click ANYWHERE on the row activates: files open the
+ *     preview, folders navigate into. The row carries `cursor-pointer`
+ *     so the affordance is obvious.
+ *   - Inline action buttons (checkbox, Share, Copy link, More, name
+ *     button for keyboard) MUST `e.stopPropagation()` on click so they
+ *     don't accidentally trigger row activation.
+ *   - dnd-kit's PointerSensor distance:6 ensures a press-and-hold-drag
+ *     past 6px is a drag (no click fires) while a release within 6px
+ *     fires the click as expected.
  *
  * Folders gracefully degrade to em-dash for file-only columns
  * (Extension, MIME, Size, Version) so the row stays aligned with no
@@ -148,7 +158,7 @@ function FileRow({
       <tr
         ref={mergeRef}
         className={cn(
-          "group border-b text-sm transition-colors",
+          "group cursor-pointer border-b text-sm transition-colors",
           isPreviewActive
             ? "bg-primary/10 border-l-2 border-l-primary"
             : isFocused
@@ -160,11 +170,11 @@ function FileRow({
         )}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        onDoubleClick={onActivate}
+        onClick={onActivate}
         {...attributes}
         {...listeners}
       >
-        <td className="w-6 px-3 py-2">
+        <td className="w-6 px-3 py-2" onClick={(e) => e.stopPropagation()}>
           <Checkbox
             checked={selected}
             onCheckedChange={onToggleSelected}
@@ -230,7 +240,10 @@ function FileCell({
               <span className="flex min-w-0 items-center gap-1">
                 <button
                   type="button"
-                  onClick={onActivate}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onActivate();
+                  }}
                   className="truncate text-left font-medium text-foreground hover:underline"
                 >
                   {file.fileName}
@@ -404,7 +417,7 @@ function FolderRow({
       <tr
         ref={setMergedRef}
         className={cn(
-          "group border-b text-sm transition-colors",
+          "group cursor-pointer border-b text-sm transition-colors",
           isFocused
             ? "bg-primary/15 ring-1 ring-inset ring-primary/40"
             : selected
@@ -415,11 +428,11 @@ function FolderRow({
         )}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        onDoubleClick={onActivate}
+        onClick={onActivate}
         {...attributes}
         {...listeners}
       >
-        <td className="w-8 px-3 py-2">
+        <td className="w-8 px-3 py-2" onClick={(e) => e.stopPropagation()}>
           <Checkbox
             checked={selected}
             onCheckedChange={onToggleSelected}
@@ -481,7 +494,10 @@ function FolderCell({
             <div className="flex min-w-0 flex-col">
               <button
                 type="button"
-                onClick={onActivate}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onActivate();
+                }}
                 className="truncate text-left font-medium text-foreground hover:underline"
               >
                 {folder.folderName}

@@ -1,10 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
+import { ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { useOverlayActions } from "@/features/window-panels/hooks/useOverlay";
 import { IconRail, type RailKey } from "./IconRail";
 import { PaneDivider } from "./PaneDivider";
@@ -70,7 +67,6 @@ export function WhatsAppShellInner({
         >
           <ResizablePanel
             id="wa-list"
-            order={1}
             defaultSize="32%"
             minSize="22%"
             maxSize="50%"
@@ -83,12 +79,7 @@ export function WhatsAppShellInner({
             />
           </ResizablePanel>
           <PaneDivider />
-          <ResizablePanel
-            id="wa-chat"
-            order={2}
-            defaultSize="68%"
-            minSize="40%"
-          >
+          <ResizablePanel id="wa-chat" defaultSize="68%" minSize="40%">
             <ChatViewPane conversation={selected} />
           </ResizablePanel>
         </ResizablePanelGroup>

@@ -66,6 +66,20 @@ export async function getTopicsForProjects(
   return (data ?? []) as ResearchTopic[];
 }
 
+/**
+ * Fetch every topic the caller can read. RLS is the only filter — no
+ * client-side narrowing. Used when no hierarchy filter is selected so that
+ * "All" really means "All".
+ */
+export async function getAllTopics(): Promise<ResearchTopic[]> {
+  const { data, error } = await supabase
+    .from("rs_topic")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as ResearchTopic[];
+}
+
 export async function getTopic(topicId: string): Promise<ResearchTopic | null> {
   const { data, error } = await supabase
     .from("rs_topic")

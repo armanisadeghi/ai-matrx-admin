@@ -21,6 +21,7 @@ import { useHierarchyFilter } from "@/components/hierarchy-filter/useHierarchyFi
 import { HierarchyPills } from "@/features/agent-context/components/hierarchy-selection/HierarchyPills";
 import { EMPTY_SELECTION } from "@/features/agent-context/components/hierarchy-selection/types";
 import {
+  useAllTopics,
   useTopicsForProject,
   useTopicsForProjects,
 } from "../../hooks/useResearchState";
@@ -31,14 +32,22 @@ import { supabase } from "@/utils/supabase/client";
 // ─── Data ────────────────────────────────────────────────────────────────────
 
 function useFilteredTopics(filter: ReturnType<typeof useHierarchyFilter>) {
-  const { selectedProjectId, filteredProjects } = filter;
-  const projectIds = filteredProjects.map((p) => p.id);
+  const { selectedOrgId, selectedProjectId, filteredProjects } = filter;
+  const orgScopedProjectIds = selectedOrgId
+    ? filteredProjects.map((p) => p.id)
+    : [];
 
+  // All three hooks run unconditionally so hook order is stable; we just
+  // gate them with `enabled` and pick the right result below.
   const singleProject = useTopicsForProject(selectedProjectId ?? undefined);
-  const allProjects = useTopicsForProjects(selectedProjectId ? [] : projectIds);
+  const orgScoped = useTopicsForProjects(
+    selectedProjectId ? [] : orgScopedProjectIds,
+  );
+  const all = useAllTopics(!selectedProjectId && !selectedOrgId);
 
   if (selectedProjectId) return singleProject;
-  return allProjects;
+  if (selectedOrgId) return orgScoped;
+  return all;
 }
 
 function formatRelativeDate(iso: string | null | undefined): string {
@@ -400,9 +409,11 @@ export default function TopicList() {
     );
   }, [topics, searchQuery]);
 
+  // Always map every known project so topics from outside the current
+  // hierarchy filter still render their project label.
   const projectNameMap = useMemo(
-    () => new Map((filter.filteredProjects ?? []).map((p) => [p.id, p.name])),
-    [filter.filteredProjects],
+    () => new Map((filter.data?.projects ?? []).map((p) => [p.id, p.name])),
+    [filter.data?.projects],
   );
 
   const handleNavigateToTopic = (topicId: string, e?: React.MouseEvent) => {
@@ -469,7 +480,7 @@ export default function TopicList() {
           <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
             <div className="min-w-0">
               <HierarchyPills
-                levels={["organization", "scope", "project"]}
+                levels={["organization", "scope", "project", "task"]}
                 value={{
                   ...EMPTY_SELECTION,
                   organizationId: filter.selectedOrgId,

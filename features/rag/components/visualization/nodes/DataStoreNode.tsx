@@ -22,8 +22,13 @@ export interface DataStoreNodeData extends Record<string, unknown> {
   active?: boolean;
   ingesting?: boolean;
   querying?: boolean;
-  /** Single centered top handle + slimmer body. Used for the in-tab embed. */
+  /** Slimmer body (smaller padding, smaller stacked discs). Independent of handle layout. */
   compact?: boolean;
+  /**
+   * Use a single centered top handle (id="in") instead of the dual
+   * read/write handles. For surfaces that only have one input flow.
+   */
+  singleTopHandle?: boolean;
   /** All work done — locks into a steady emerald-tinted "indexed" state. */
   done?: boolean;
 }
@@ -33,6 +38,7 @@ function DataStoreNodeImpl({ data }: NodeProps) {
   const isActive = d.active || d.ingesting || d.querying;
   const isDone = !!d.done && !isActive;
   const compact = !!d.compact;
+  const singleHandle = !!d.singleTopHandle;
 
   return (
     <motion.div
@@ -42,7 +48,7 @@ function DataStoreNodeImpl({ data }: NodeProps) {
       transition={{ type: "spring", stiffness: 220, damping: 24 }}
       className="relative"
     >
-      {compact ? (
+      {singleHandle ? (
         <Handle
           id="in"
           type="target"

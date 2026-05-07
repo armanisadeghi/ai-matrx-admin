@@ -57,7 +57,12 @@ import { Button } from "@/components/ui/button";
 import { Pause, Play, RotateCcw, Gauge } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-import { PipelineNode, type PipelineNodeData } from "./nodes/PipelineNode";
+import {
+  PipelineNode,
+  type PipelineNodeData,
+  type PipelineNodeVariant,
+} from "./nodes/PipelineNode";
+import type { LucideIcon } from "lucide-react";
 import { DataStoreNode, type DataStoreNodeData } from "./nodes/DataStoreNode";
 import { OutputNode, type OutputNodeData } from "./nodes/OutputNode";
 import { FlowEdge, type FlowEdgeData } from "./edges/FlowEdge";
@@ -224,11 +229,27 @@ function useFlowAnimation(playing: boolean, speed: number) {
 // Static graph definitions (positions + structure don't change; only data does)
 // ---------------------------------------------------------------------------
 
+/**
+ * Local mirror of the PipelineNodeData fields we want to specify in the
+ * static graph. Mirrors the shape WITHOUT the `Record<string, unknown>`
+ * index signature so spread/property access produces concrete types.
+ */
+interface PipelineSpecPipe {
+  variant: PipelineNodeVariant;
+  icon: LucideIcon;
+  title: string;
+  subtitle?: string;
+  hideSource?: boolean;
+  hideTarget?: boolean;
+  complete?: boolean;
+  compact?: boolean;
+}
+
 interface NodeSpec {
   id: string;
   type: "pipeline" | "dataStore" | "output";
   pos: { x: number; y: number };
-  pipeline?: Omit<PipelineNodeData, "active">;
+  pipeline?: PipelineSpecPipe;
 }
 
 const NODE_SPECS: NodeSpec[] = [
@@ -509,8 +530,16 @@ export function RagFlowVisualization({
   const nodes: Node[] = useMemo(() => {
     return NODE_SPECS.map((spec) => {
       if (spec.type === "pipeline" && spec.pipeline) {
+        const pipe = spec.pipeline;
         const data: PipelineNodeData = {
-          ...spec.pipeline,
+          variant: pipe.variant,
+          icon: pipe.icon,
+          title: pipe.title,
+          subtitle: pipe.subtitle,
+          hideSource: pipe.hideSource,
+          hideTarget: pipe.hideTarget,
+          compact: pipe.compact,
+          complete: pipe.complete,
           active: state.activeNodes.has(spec.id),
         };
         return {

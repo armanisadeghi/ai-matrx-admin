@@ -51,9 +51,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-import { PipelineNode, type PipelineNodeData } from "./nodes/PipelineNode";
+import {
+  PipelineNode,
+  type PipelineNodeData,
+  type PipelineNodeVariant,
+} from "./nodes/PipelineNode";
 import { DataStoreNode, type DataStoreNodeData } from "./nodes/DataStoreNode";
-import { FlowEdge, type FlowEdgeData } from "./edges/FlowEdge";
+import type { LucideIcon } from "lucide-react";
+import {
+  FlowEdge,
+  type FlowEdgeData,
+  type FlowEdgeLiveStats,
+} from "./edges/FlowEdge";
 import type { UseFileIngestState } from "@/features/rag/hooks/useFileIngest";
 import type { IngestProgress, IngestResponse } from "@/features/rag/api/ingest";
 
@@ -119,10 +128,23 @@ function legacyToCanonical(s: IngestProgress["stage"]): CanonicalStage {
 // Static graph definition
 // ---------------------------------------------------------------------------
 
+// Layout sizing.
+//
+// The pipeline column itself is narrow and vertical. The rich live-stats
+// card mounts to the RIGHT of every active edge (see `RICH_LABEL_OFFSET_X`
+// in FlowEdge), so we deliberately reserve a wide right gutter via the
+// `anchor-right` spacer node — that's what keeps fitView from squeezing
+// the whole canvas into just the column and clipping the side card.
 const COLUMN_X = 0;
-const NODE_DY = 80;
-const PIPELINE_NODE_W = 180; // matches `compact` PipelineNode min-w
-const STORE_NODE_W = 200; // matches `compact` DataStoreNode min-w
+const NODE_DY = 150;
+const PIPELINE_NODE_W = 200; // default PipelineNode min-w
+const STORE_NODE_W = 260; // default DataStoreNode min-w
+/** How far past the column the right gutter extends, in graph units.
+ *  Sized to accommodate the right card (FlowEdge SIDE_CARD_OFFSET_X 150
+ *  + card width 220 + a bit of glow margin). */
+const RIGHT_GUTTER_X = 500;
+/** Symmetric left gutter for the left descriptive card. */
+const LEFT_GUTTER_X = -300;
 
 const NODE_IDS = [
   "user-file",
@@ -134,10 +156,25 @@ const NODE_IDS = [
   "data-store",
 ] as const;
 
+/**
+ * Local mirror of the PipelineNodeData fields we want to specify in the
+ * static graph. Mirrors the shape WITHOUT the `Record<string, unknown>`
+ * index signature so spread/property access on it produces concrete
+ * types instead of `unknown`.
+ */
+interface PipelineSpecPipe {
+  variant: PipelineNodeVariant;
+  icon: LucideIcon;
+  title: string;
+  subtitle?: string;
+  hideSource?: boolean;
+  hideTarget?: boolean;
+}
+
 interface PipelineSpec {
   id: (typeof NODE_IDS)[number];
   pos: { x: number; y: number };
-  pipeline?: Omit<PipelineNodeData, "active" | "complete" | "compact">;
+  pipeline?: PipelineSpecPipe;
 }
 
 const NODE_SPECS: PipelineSpec[] = [
@@ -148,40 +185,66 @@ const NODE_SPECS: PipelineSpec[] = [
       variant: "write",
       icon: Upload,
       title: "User file",
+      subtitle: "PDF / DOCX / MD",
       hideTarget: true,
     },
   },
   {
     id: "cloud-file",
     pos: { x: COLUMN_X, y: NODE_DY },
-    pipeline: { variant: "write", icon: Cloud, title: "Cloud file" },
+    pipeline: {
+      variant: "write",
+      icon: Cloud,
+      title: "Cloud file",
+      subtitle: "stored object",
+    },
   },
   {
     id: "raw-text",
     pos: { x: COLUMN_X, y: NODE_DY * 2 },
-    pipeline: { variant: "write", icon: FileQuestion, title: "Raw text" },
+    pipeline: {
+      variant: "write",
+      icon: FileQuestion,
+      title: "Raw text",
+      subtitle: "messy extract",
+    },
   },
   {
     id: "clean-text",
     pos: { x: COLUMN_X, y: NODE_DY * 3 },
-    pipeline: { variant: "write", icon: FileText, title: "Clean text" },
+    pipeline: {
+      variant: "write",
+      icon: FileText,
+      title: "Clean text",
+      subtitle: "structured markdown",
+    },
   },
   {
     id: "chunks",
     pos: { x: COLUMN_X, y: NODE_DY * 4 },
-    pipeline: { variant: "write", icon: Layers, title: "Chunks" },
+    pipeline: {
+      variant: "write",
+      icon: Layers,
+      title: "Chunks",
+      subtitle: "semantic windows",
+    },
   },
   {
     id: "embeddings",
     pos: { x: COLUMN_X, y: NODE_DY * 5 },
-    pipeline: { variant: "write", icon: Sparkle, title: "Embeddings" },
+    pipeline: {
+      variant: "write",
+      icon: Sparkle,
+      title: "Embeddings",
+      subtitle: "1536-d vectors",
+    },
   },
   {
     id: "data-store",
-    // Center the (slightly wider) data store under the pipeline column.
+    // Center the (wider) data store under the pipeline column.
     pos: {
       x: COLUMN_X + (PIPELINE_NODE_W - STORE_NODE_W) / 2,
-      y: NODE_DY * 6 + 10,
+      y: NODE_DY * 6 + 20,
     },
   },
 ];
@@ -304,12 +367,16 @@ function deriveState(ingest: IngestHandle): VisualState {
     nodeStates[NODE_IDS[targetNodeIdx]] = "active";
   }
 
-  // Edges: any edge whose stage finished is complete; the active stage's
-  // edge is mid-flow; later stages stay pending.
+  // Edges: derive state from the position of the edge's TARGET node
+  // relative to the currently-active node. This naturally handles the
+  // upload edge (target = cloud-file) which is conceptually finished
+  // before the server starts streaming, and avoids two rich live-stat
+  // cards rendering simultaneously when multiple edges happen to share
+  // the same `activeStage` tag.
   for (const e of EDGE_SPECS) {
-    const eStageIdx = STAGE_ORDER.indexOf(e.activeStage);
-    if (eStageIdx < stageIdx) edgeStates[e.id] = "complete";
-    else if (eStageIdx === stageIdx) edgeStates[e.id] = "active";
+    const tgtIdx = NODE_IDS.indexOf(e.target);
+    if (tgtIdx < targetNodeIdx) edgeStates[e.id] = "complete";
+    else if (tgtIdx === targetNodeIdx) edgeStates[e.id] = "active";
     else edgeStates[e.id] = "pending";
   }
 
@@ -324,9 +391,18 @@ function deriveState(ingest: IngestHandle): VisualState {
 // Static type registries
 // ---------------------------------------------------------------------------
 
+/**
+ * Invisible 1x1 node used purely so fitView extends the visible viewport
+ * far enough horizontally for the off-edge live-stats cards to render.
+ */
+function SpacerNode() {
+  return <div style={{ width: 1, height: 1, opacity: 0 }} aria-hidden />;
+}
+
 const nodeTypes: NodeTypes = {
   pipeline: PipelineNode,
   dataStore: DataStoreNode,
+  spacer: SpacerNode,
 };
 
 const edgeTypes: EdgeTypes = {
@@ -346,10 +422,11 @@ export function IngestFlowAnimation({
   const visual = useMemo(() => deriveState(ingest), [ingest]);
 
   const nodes: Node[] = useMemo(() => {
-    return NODE_SPECS.map((spec) => {
+    const verticalCenter = (NODE_DY * 6 + 20) / 2;
+    const built: Node[] = NODE_SPECS.map((spec) => {
       if (spec.id === "data-store") {
         const data: DataStoreNodeData = {
-          compact: true,
+          singleTopHandle: true,
           ingesting: visual.storeState === "ingesting",
           done: visual.storeState === "done",
         };
@@ -363,12 +440,15 @@ export function IngestFlowAnimation({
         };
       }
       const nodeState = visual.nodeStates[spec.id];
+      // Non-data-store specs always carry `pipeline`; assert it for TS.
+      const pipe = spec.pipeline!;
       const data: PipelineNodeData = {
-        ...(spec.pipeline as Omit<
-          PipelineNodeData,
-          "active" | "complete" | "compact"
-        >),
-        compact: true,
+        variant: pipe.variant,
+        icon: pipe.icon,
+        title: pipe.title,
+        subtitle: pipe.subtitle,
+        hideSource: pipe.hideSource,
+        hideTarget: pipe.hideTarget,
         active: nodeState === "active",
         complete: nodeState === "complete",
       };
@@ -381,17 +461,59 @@ export function IngestFlowAnimation({
         selectable: false,
       };
     });
+
+    // Invisible left + right anchors so fitView reserves the side gutters
+    // where the rich live-stats card and any future left-side metrics will
+    // mount. Without these, fitView clips the gutters and the card vanishes.
+    built.push(
+      {
+        id: "anchor-left",
+        type: "spacer",
+        position: { x: LEFT_GUTTER_X, y: verticalCenter },
+        data: {},
+        draggable: false,
+        selectable: false,
+      },
+      {
+        id: "anchor-right",
+        type: "spacer",
+        position: { x: RIGHT_GUTTER_X, y: verticalCenter },
+        data: {},
+        draggable: false,
+        selectable: false,
+      },
+    );
+
+    return built;
   }, [visual]);
+
+  // Build the per-active-edge live stats once per render so we don't
+  // attach the same payload to edges that aren't currently active and
+  // don't re-trigger the rich-card re-render when they go inactive.
+  const activeStats: FlowEdgeLiveStats | null = useMemo(() => {
+    if (ingest.status !== "running" || !ingest.progress) return null;
+    const stage = legacyToCanonical(ingest.progress.stage);
+    return {
+      current: ingest.progress.current,
+      total: ingest.progress.total,
+      message: ingest.progress.message,
+      units: STAGE_UNITS[stage],
+      stageName: STAGE_GERUND[stage],
+    };
+  }, [ingest.status, ingest.progress]);
 
   const edges: Edge[] = useMemo(() => {
     return EDGE_SPECS.map((spec) => {
       const edgeState = visual.edgeStates[spec.id];
+      const isActive = edgeState === "active";
       const data: FlowEdgeData = {
         variant: "write",
         label: spec.label,
-        active: edgeState === "active",
+        active: isActive,
         complete: edgeState === "complete",
-        particleDuration: 1.1,
+        particleDuration: STAGE_PARTICLE_DUR[spec.activeStage],
+        dashDuration: STAGE_DASH_DUR[spec.activeStage],
+        liveStats: isActive && activeStats ? activeStats : undefined,
       };
       return {
         id: spec.id,
@@ -404,7 +526,7 @@ export function IngestFlowAnimation({
         selectable: false,
       };
     });
-  }, [visual]);
+  }, [visual, activeStats]);
 
   // ---- header / footer derived data --------------------------------------
 
@@ -635,6 +757,52 @@ const STAGE_LABELS: Record<CanonicalStage, string> = {
   chunk: "Chunk",
   embed: "Embed",
   store: "Index",
+};
+
+/**
+ * Counter units per stage. The streaming backend emits stage-specific
+ * counters (pages_done/total for extract & cleanup, chunks_done/total
+ * for the rest), so we surface the human label that matches the units
+ * actually flowing through the active edge.
+ */
+const STAGE_UNITS: Record<CanonicalStage, string> = {
+  extract: "pages",
+  clean: "pages",
+  chunk: "chunks",
+  embed: "embeddings",
+  store: "vectors",
+};
+
+/**
+ * Verb form shown on the left descriptive card ("CLEANING…").
+ */
+const STAGE_GERUND: Record<CanonicalStage, string> = {
+  extract: "Extracting",
+  clean: "Cleaning",
+  chunk: "Chunking",
+  embed: "Embedding",
+  store: "Indexing",
+};
+
+/**
+ * Per-stage edge animation pacing. Earlier stages stay snappy; later
+ * stages slow down so the user has time to read the rich numbers
+ * panel as it updates. Tuple is `[particleDuration, dashDuration]`
+ * in seconds — both feed straight into FlowEdge.
+ */
+const STAGE_PARTICLE_DUR: Record<CanonicalStage, number> = {
+  extract: 1.2,
+  clean: 1.6,
+  chunk: 1.8,
+  embed: 2.0,
+  store: 2.0,
+};
+const STAGE_DASH_DUR: Record<CanonicalStage, number> = {
+  extract: 0.9,
+  clean: 1.2,
+  chunk: 1.4,
+  embed: 1.6,
+  store: 1.6,
 };
 
 function computeOverallPercent(ingest: IngestHandle): number {
