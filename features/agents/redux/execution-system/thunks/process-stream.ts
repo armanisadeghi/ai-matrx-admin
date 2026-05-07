@@ -111,6 +111,7 @@ import {
 } from "../instance-user-input/instance-user-input.slice";
 import { clearAllResources } from "../instance-resources/instance-resources.slice";
 import { resetUserVariableValues } from "../instance-variable-values/instance-variable-values.slice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { setInstanceStatus } from "../conversations/conversations.slice";
 import { patchAgentConversationMetadata } from "@/features/agents/redux/conversation-list/conversation-list.slice";
 import { upsertAgentConversationFromExecutionAction } from "@/features/agents/redux/conversation-list/record-conversation-from-execution";
@@ -615,6 +616,13 @@ export async function processStream({
             },
           }),
         );
+
+        // Open the image peek notification overlay when an image arrives.
+        // The overlay loads lazily via the window registry — no bundle cost.
+        // ImageArrivalPeekHost self-closes when all cards are dismissed.
+        if (blockType === "image_output") {
+          dispatch(openOverlay({ overlayId: "imagePeekHost" }));
+        }
       }
 
       dispatch(

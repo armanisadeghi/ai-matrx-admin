@@ -26,17 +26,19 @@ export function AgentRunHeader({
   return (
     <div className="hidden lg:flex items-center justify-between w-full gap-2 shrink-0">
       <div className="flex items-center">
-        <Link href={backHref} aria-label="Back to Agents">
-          <ChevronLeftTapButton />
-        </Link>
-
-        {/* Agent selector — shows current agent, lets you switch */}
+        <ChevronLeftTapButton href={backHref} aria-label="Back to Agents" />
         <AgentSelectorIsland
           agentId={agentId}
           initialName={agentName}
           basePath={basePath}
+          showNewRunButton={true}
+          showBackButton={true}
+          showVersion={false}
+          showBuiltin={true}
         />
-        <AgentNewRunButton surfaceKey={surfaceKey} />
+        <div className="pl-2">
+          <AgentNewRunButton surfaceKey={surfaceKey} />
+        </div>
       </div>
       <div>
         <AgentModeController

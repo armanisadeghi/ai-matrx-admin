@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI MATRX — Animation Studies</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,900&family=JetBrains+Mono:wght@300;500;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0b;
+    --ink: #f5f3ee;
+    --accent: #ff3d00;
+    --accent-2: #00d4ff;
+    --muted: #6b6b6b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    overflow-x: hidden;
+  }
+  .stage {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-bottom: 1px solid #1a1a1a;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .label {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    z-index: 10;
+  }
+  .replay {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    z-index: 10;
+  }
+  .stage:hover .replay { color: var(--ink); }
+
+  /* ============ V1: BODONI BLOOM ============ */
+  #v1 .title {
+    font-family: 'Bodoni Moda', serif;
+    font-weight: 900;
+    font-size: clamp(60px, 14vw, 220px);
+    letter-spacing: -0.02em;
+    line-height: 0.9;
+    display: flex;
+    gap: 0.05em;
+  }
+  #v1 .letter {
+    display: inline-block;
+    opacity: 0;
+    position: relative;
+  }
+  #v1 .space { width: 0.4em; }
+  #v1 .underline {
+    position: absolute;
+    bottom: 14%;
+    left: 50%;
+    height: 2px;
+    width: 0;
+    background: var(--accent);
+    transform: translateX(-50%);
+  }
+  #v1 .sub {
+    position: absolute;
+    bottom: 8%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    letter-spacing: 0.5em;
+    color: var(--muted);
+    opacity: 0;
+  }
+
+  /* ============ V2: GLITCH MATRIX ============ */
+  #v2 { background: #050505; }
+  #v2 .glitch-wrap {
+    position: relative;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(60px, 14vw, 200px);
+    letter-spacing: -0.04em;
+  }
+  #v2 .glitch-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    mix-blend-mode: screen;
+  }
+  #v2 .base { color: var(--ink); position: relative; }
+  #v2 .layer-r { color: #ff003c; }
+  #v2 .layer-c { color: #00f0ff; }
+  #v2 .scan {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 3px,
+      rgba(255,255,255,0.03) 3px,
+      rgba(255,255,255,0.03) 4px
+    );
+    pointer-events: none;
+    opacity: 0;
+  }
+  #v2 .stream {
+    position: absolute;
+    top: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #00f0ff;
+    opacity: 0.3;
+    white-space: nowrap;
+    letter-spacing: 2px;
+  }
+
+  /* ============ V3: KINETIC SLAB ============ */
+  #v3 {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  #v3 .stack {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  #v3 .row {
+    overflow: hidden;
+    height: clamp(70px, 14vw, 200px);
+    position: relative;
+  }
+  #v3 .row span {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(70px, 14vw, 200px);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    display: block;
+    transform: translateY(100%);
+  }
+  #v3 .row.accent span { color: var(--accent); font-style: italic; }
+  #v3 .row .meta {
+    position: absolute;
+    right: 12px;
+    bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    opacity: 0;
+  }
+
+  /* ============ V4: SVG CONSTRUCT ============ */
+  #v4 svg { width: min(90vw, 1100px); height: auto; }
+  #v4 path, #v4 line {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  #v4 .grid line { stroke: #1a1a1a; stroke-width: 1; }
+  #v4 .ticker {
+    position: absolute;
+    bottom: 40px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 0.5em;
+    color: var(--accent-2);
+    text-transform: uppercase;
+    opacity: 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- VARIATION 1: BODONI BLOOM -->
+<section class="stage" id="v1">
+  <div class="label">01 / Bodoni Bloom</div>
+  <div class="replay">↻ Click to replay</div>
+  <div class="title" id="v1-title">
+    <span class="letter">A</span><span class="letter">I</span>
+    <span class="space"></span>
+    <span class="letter">M</span><span class="letter">A</span><span class="letter">T</span><span class="letter">R</span><span class="letter">X</span>
+    <span class="underline" id="v1-underline"></span>
+  </div>
+  <div class="sub" id="v1-sub">— intelligence, materialized —</div>
+</section>
+
+<!-- VARIATION 2: GLITCH MATRIX -->
+<section class="stage" id="v2">
+  <div class="label">02 / Signal Glitch</div>
+  <div class="replay">↻ Click to replay</div>
+  <div class="glitch-wrap" id="v2-wrap">
+    <div class="glitch-layer layer-r" id="v2-r">AI MATRX</div>
+    <div class="glitch-layer layer-c" id="v2-c">AI MATRX</div>
+    <div class="base" id="v2-base">AI MATRX</div>
+  </div>
+  <div class="scan" id="v2-scan"></div>
+</section>
+
+<!-- VARIATION 3: KINETIC SLAB -->
+<section class="stage" id="v3">
+  <div class="label">03 / Kinetic Slab</div>
+  <div class="replay">↻ Click to replay</div>
+  <div class="stack">
+    <div class="row"><span>AI</span></div>
+    <div class="row accent"><span>MATRX</span><span class="meta">v4.7</span></div>
+  </div>
+</section>
+
+<!-- VARIATION 4: SVG CONSTRUCT -->
+<section class="stage" id="v4">
+  <div class="label">04 / Vector Construct</div>
+  <div class="replay">↻ Click to replay</div>
+  <svg viewBox="0 0 1100 280" xmlns="http://www.w3.org/2000/svg">
+    <g class="grid" id="v4-grid"></g>
+    <g id="v4-letters" stroke="var(--ink)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <!-- A -->
+      <path d="M 40 220 L 95 60 L 150 220 M 60 170 L 130 170" />
+      <!-- I -->
+      <path d="M 195 60 L 195 220" />
+      <!-- M -->
+      <path d="M 320 220 L 320 60 L 380 160 L 440 60 L 440 220" />
+      <!-- A -->
+      <path d="M 480 220 L 535 60 L 590 220 M 500 170 L 570 170" />
+      <!-- T -->
+      <path d="M 625 60 L 745 60 M 685 60 L 685 220" />
+      <!-- R -->
+      <path d="M 780 220 L 780 60 L 850 60 Q 900 60 900 105 Q 900 150 850 150 L 780 150 L 900 220" />
+      <!-- X -->
+      <path d="M 940 60 L 1060 220 M 1060 60 L 940 220" />
+    </g>
+  </svg>
+  <div class="ticker" id="v4-ticker">— composing systems —</div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<script>
+// ============ V1: BODONI BLOOM ============
+function playV1() {
+  anime.remove('#v1 .letter');
+  anime.remove('#v1-underline');
+  anime.remove('#v1-sub');
+
+  anime.set('#v1 .letter', { opacity: 0, translateY: 60, rotateX: -90, filter: 'blur(20px)' });
+  anime.set('#v1-underline', { width: 0 });
+  anime.set('#v1-sub', { opacity: 0, translateY: 10 });
+
+  anime.timeline({ easing: 'easeOutExpo' })
+    .add({
+      targets: '#v1 .letter',
+      opacity: [0, 1],
+      translateY: [60, 0],
+      rotateX: [-90, 0],
+      filter: ['blur(20px)', 'blur(0px)'],
+      duration: 1400,
+      delay: anime.stagger(80, { start: 200 })
+    })
+    .add({
+      targets: '#v1-underline',
+      width: ['0%', '60%'],
+      duration: 800,
+      easing: 'easeInOutQuart'
+    }, '-=400')
+    .add({
+      targets: '#v1-sub',
+      opacity: [0, 1],
+      translateY: [10, 0],
+      duration: 600
+    }, '-=200');
+}
+
+// ============ V2: GLITCH MATRIX ============
+function playV2() {
+  anime.remove('#v2-base, #v2-r, #v2-c, #v2-scan, .stream');
+  document.querySelectorAll('#v2 .stream').forEach(s => s.remove());
+
+  anime.set('#v2-base', { opacity: 0, scale: 1.3 });
+  anime.set('#v2-r', { opacity: 0, translateX: 0 });
+  anime.set('#v2-c', { opacity: 0, translateX: 0 });
+  anime.set('#v2-scan', { opacity: 0 });
+
+  // Inject matrix-style streams
+  const stage = document.getElementById('v2');
+  const chars = '01アイマトリクスAI MATRX';
+  for (let i = 0; i < 8; i++) {
+    const s = document.createElement('div');
+    s.className = 'stream';
+    let str = '';
+    for (let j = 0; j < 30; j++) str += chars[Math.floor(Math.random() * chars.length)];
+    s.textContent = str;
+    s.style.left = (Math.random() * 100) + '%';
+    s.style.top = '-200px';
+    stage.appendChild(s);
+  }
+
+  anime({
+    targets: '#v2 .stream',
+    translateY: ['0px', '120vh'],
+    opacity: [{ value: 0.5, duration: 200 }, { value: 0, duration: 1800 }],
+    duration: 2400,
+    delay: anime.stagger(120),
+    easing: 'linear'
+  });
+
+  anime.timeline()
+    .add({
+      targets: '#v2-base',
+      opacity: [0, 1],
+      scale: [1.3, 1],
+      duration: 700,
+      easing: 'easeOutExpo',
+      delay: 400
+    })
+    .add({
+      targets: '#v2-r',
+      opacity: [0, 0.85],
+      translateX: [0, -8, 4, -3, 0],
+      duration: 700,
+      easing: 'steps(8)'
+    }, '-=400')
+    .add({
+      targets: '#v2-c',
+      opacity: [0, 0.85],
+      translateX: [0, 8, -4, 3, 0],
+      duration: 700,
+      easing: 'steps(8)'
+    }, '-=700')
+    .add({
+      targets: '#v2-scan',
+      opacity: [0, 1],
+      duration: 400
+    }, '-=200');
+
+  // Sustained micro-glitches
+  setTimeout(() => {
+    anime({
+      targets: '#v2-r',
+      translateX: () => anime.random(-6, 6),
+      translateY: () => anime.random(-2, 2),
+      duration: 80,
+      easing: 'steps(2)',
+      loop: 30,
+      direction: 'alternate'
+    });
+    anime({
+      targets: '#v2-c',
+      translateX: () => anime.random(-6, 6),
+      translateY: () => anime.random(-2, 2),
+      duration: 80,
+      easing: 'steps(2)',
+      loop: 30,
+      direction: 'alternate'
+    });
+  }, 1400);
+}
+
+// ============ V3: KINETIC SLAB ============
+function playV3() {
+  anime.remove('#v3 .row span, #v3 .meta');
+
+  anime.set('#v3 .row span', { translateY: '100%' });
+  anime.set('#v3 .meta', { opacity: 0, translateX: 20 });
+
+  anime.timeline({ easing: 'cubicBezier(0.86, 0, 0.07, 1)' })
+    .add({
+      targets: '#v3 .row span',
+      translateY: ['100%', '0%'],
+      duration: 900,
+      delay: anime.stagger(120, { start: 200 })
+    })
+    .add({
+      targets: '#v3 .meta',
+      opacity: [0, 1],
+      translateX: [20, 0],
+      duration: 500
+    }, '-=200');
+}
+
+// ============ V4: SVG CONSTRUCT ============
+function setupV4Grid() {
+  const grid = document.getElementById('v4-grid');
+  if (grid.children.length) return;
+  for (let x = 0; x <= 1100; x += 50) {
+    const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    l.setAttribute('x1', x); l.setAttribute('y1', 0);
+    l.setAttribute('x2', x); l.setAttribute('y2', 280);
+    grid.appendChild(l);
+  }
+  for (let y = 0; y <= 280; y += 50) {
+    const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    l.setAttribute('x1', 0); l.setAttribute('y1', y);
+    l.setAttribute('x2', 1100); l.setAttribute('y2', y);
+    grid.appendChild(l);
+  }
+}
+
+function playV4() {
+  setupV4Grid();
+  const paths = document.querySelectorAll('#v4-letters path');
+  const gridLines = document.querySelectorAll('#v4-grid line');
+
+  anime.remove(paths);
+  anime.remove(gridLines);
+  anime.remove('#v4-ticker');
+
+  paths.forEach(p => {
+    const len = p.getTotalLength();
+    p.style.strokeDasharray = len;
+    p.style.strokeDashoffset = len;
+  });
+
+  anime.set(gridLines, { opacity: 0 });
+  anime.set('#v4-ticker', { opacity: 0 });
+
+  anime.timeline()
+    .add({
+      targets: gridLines,
+      opacity: [0, 0.6],
+      duration: 800,
+      delay: anime.stagger(8),
+      easing: 'easeOutQuad'
+    })
+    .add({
+      targets: paths,
+      strokeDashoffset: [anime.setDashoffset, 0],
+      duration: 1600,
+      delay: anime.stagger(120),
+      easing: 'easeInOutCubic'
+    }, '-=400')
+    .add({
+      targets: gridLines,
+      opacity: [0.6, 0.15],
+      duration: 600
+    }, '-=600')
+    .add({
+      targets: '#v4-ticker',
+      opacity: [0, 1],
+      duration: 500
+    }, '-=200');
+}
+
+// Wire up replays + initial play
+document.getElementById('v1').addEventListener('click', playV1);
+document.getElementById('v2').addEventListener('click', playV2);
+document.getElementById('v3').addEventListener('click', playV3);
+document.getElementById('v4').addEventListener('click', playV4);
+
+// Auto-play each as it scrolls into view
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && !entry.target.dataset.played) {
+      entry.target.dataset.played = '1';
+      const id = entry.target.id;
+      if (id === 'v1') playV1();
+      if (id === 'v2') playV2();
+      if (id === 'v3') playV3();
+      if (id === 'v4') playV4();
+    }
+  });
+}, { threshold: 0.4 });
+
+document.querySelectorAll('.stage').forEach(s => io.observe(s));
+</script>
+</body>
+</html>

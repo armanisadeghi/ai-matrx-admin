@@ -565,6 +565,14 @@ const DYNAMIC: Record<string, DynamicAddition> = {
   adminIndicator: {
     componentImport: () => import("@/components/admin/controls/AdminIndicator"),
   },
+
+  // ── Image Peek Notifications ───────────────────────────────────────────────
+  imagePeekHost: {
+    componentImport: () =>
+      import("@/features/agents/components/notifications/ImageArrivalPeekHost").then(
+        (m) => ({ default: m.ImageArrivalPeekHost }),
+      ),
+  },
   htmlPreview: {
     componentImport: () =>
       import("@/features/cx-conversation/components/HtmlPreviewBridge").then(

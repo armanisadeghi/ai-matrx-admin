@@ -5,6 +5,7 @@ import { AgentModeController } from "./AgentModeController";
 import { AgentSaveStatus } from "./AgentSaveStatus";
 import { AgentOptionsMenu } from "./AgentOptionsMenu";
 import { AgentHeaderMobile } from "./AgentHeaderMobile";
+import { ChevronLeftTapButton } from "@/components/icons/tap-buttons";
 
 interface AgentHeaderProps {
   agentId: string;
@@ -46,14 +47,8 @@ export function AgentHeader({
 
       {/* ── Desktop layout (>= lg) ───────────────────────────────────────── */}
       <div className="hidden lg:flex items-center justify-between w-full gap-0 px-0">
-        <div className="flex items-center gap-1">
-          <Link
-            href={backHref}
-            className="flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
-            aria-label="Back to Agents"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Link>
+        <div className="flex items-center">
+          <ChevronLeftTapButton href={backHref} aria-label="Back to Agents" />
           <AgentSelectorIsland
             agentId={agentId}
             initialName={agentName}

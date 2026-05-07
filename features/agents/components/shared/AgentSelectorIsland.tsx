@@ -15,6 +15,10 @@ interface AgentSelectorIslandProps {
   agentId: string;
   /** SSR-provided name shown on first paint; replaced by Redux value once hydrated */
   initialName: string;
+  showVersion?: boolean;
+  showBuiltin?: boolean;
+  showNewRunButton?: boolean;
+  showBackButton?: boolean;
   /** Custom trigger element — replaces the default text button inside AgentListDropdown */
   triggerSlot?: React.ReactNode;
   /** Base path for routing. Defaults to `/agents`. Admin surfaces pass
@@ -26,6 +30,10 @@ interface AgentSelectorIslandProps {
 export function AgentSelectorIsland({
   agentId,
   initialName,
+  showVersion = true,
+  showBuiltin = true,
+  showNewRunButton = false,
+  showBackButton = false,
   triggerSlot,
   basePath = "/agents",
 }: AgentSelectorIslandProps) {
@@ -51,19 +59,19 @@ export function AgentSelectorIsland({
   };
 
   return (
-    <div className="flex items-center gap-2 min-w-0 shrink">
+    <div className="flex items-center gap-0 min-w-0 shrink">
       <AgentListDropdown
         onSelect={handleAgentSelect}
         label={displayName}
-        className="max-w-[120px] md:max-w-[180px] py-2 border border-red-500 rounded-full shell-glass"
         triggerSlot={triggerSlot}
+        noBorder
       />
-      {version != null && (
+      {showVersion && version != null && (
         <span className="text-[0.625rem] font-medium text-[var(--shell-nav-text)] tabular-nums shrink-0">
           v{version}
         </span>
       )}
-      {isBuiltin && (
+      {showBuiltin && isBuiltin && (
         <span
           className="text-[0.625rem] font-semibold uppercase tracking-wider leading-none px-1.5 py-0.5 rounded-full border border-destructive/40 bg-destructive/10 text-destructive shrink-0"
           title="System-owned agent — edits affect all users"

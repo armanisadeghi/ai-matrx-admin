@@ -19,6 +19,7 @@
 
 export const OVERLAY_IDS = [
   "adminIndicator",
+  "imagePeekHost",
   "adminStateAnalyzer",
   "adminStateAnalyzerWindow",
   "agentAdminFindUsagesWindow",

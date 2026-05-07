@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI MATRX — Vector Construct Studies</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0b;
+    --ink: #f5f3ee;
+    --accent: #ff3d00;
+    --cyan: #00d4ff;
+    --gold: #d4a574;
+    --muted: #6b6b6b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    overflow-x: hidden;
+  }
+  .stage {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-bottom: 1px solid #1a1a1a;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .label {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    z-index: 20;
+  }
+  .replay {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    z-index: 20;
+  }
+  .stage:hover .replay { color: var(--ink); }
+  svg { width: min(92vw, 1200px); height: auto; }
+
+  /* shared letter path styles - overridden per stage */
+  .letters path {
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ============ V1: BLUEPRINT (refined original) ============ */
+  #v1 .grid line { stroke: #1a1a1a; stroke-width: 1; }
+  #v1 .grid-major line { stroke: #2a2a2a; stroke-width: 1; }
+  #v1 .letters path { stroke: var(--ink); }
+  #v1 .crosshair line { stroke: var(--accent); stroke-width: 1; opacity: 0; }
+  #v1 .corner { stroke: var(--cyan); stroke-width: 1.5; fill: none; opacity: 0; }
+  #v1 .meta-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    fill: var(--muted);
+    letter-spacing: 2px;
+    opacity: 0;
+  }
+  #v1 .dim-line { stroke: var(--cyan); stroke-width: 1; opacity: 0; }
+  #v1 .dim-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    fill: var(--cyan);
+    letter-spacing: 1px;
+    opacity: 0;
+  }
+
+  /* ============ V2: NEON WIREFRAME ============ */
+  #v2 { background: radial-gradient(ellipse at center, #0a0515 0%, #02000a 70%); }
+  #v2 .letters path {
+    stroke: var(--cyan);
+    stroke-width: 2.5;
+    filter: drop-shadow(0 0 8px var(--cyan)) drop-shadow(0 0 20px rgba(0,212,255,0.5));
+  }
+  #v2 .ghost path {
+    fill: none;
+    stroke: rgba(255, 0, 200, 0.6);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 12px rgba(255, 0, 200, 0.7));
+  }
+  #v2 .pulse-ring {
+    fill: none;
+    stroke: var(--cyan);
+    stroke-width: 1;
+    opacity: 0;
+  }
+
+  /* ============ V3: ARCHITECT'S DRAFT ============ */
+  #v3 { background: #f5f3ee; }
+  #v3 .letters path { stroke: #1a1a1a; stroke-width: 2.5; }
+  #v3 .grid line { stroke: #d4cfc4; stroke-width: 0.5; }
+  #v3 .grid-major line { stroke: #b8b0a0; stroke-width: 0.8; }
+  #v3 .construction { stroke: #c44536; stroke-width: 0.8; opacity: 0; stroke-dasharray: 4 3; }
+  #v3 .annotation {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    fill: #c44536;
+    letter-spacing: 1px;
+    opacity: 0;
+  }
+  #v3 .stamp {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    fill: #1a1a1a;
+    letter-spacing: 3px;
+    opacity: 0;
+  }
+  #v3 .label { color: #888; }
+  #v3 .replay { color: #888; }
+  #v3:hover .replay { color: #1a1a1a; }
+  #v3 .border-rect { stroke: #1a1a1a; stroke-width: 1; fill: none; opacity: 0; }
+
+  /* ============ V4: CIRCUIT TRACE ============ */
+  #v4 { background: #050a08; }
+  #v4 .letters path {
+    stroke: #00ff88;
+    stroke-width: 2.5;
+    filter: drop-shadow(0 0 6px #00ff88);
+  }
+  #v4 .node {
+    fill: #00ff88;
+    filter: drop-shadow(0 0 4px #00ff88);
+    opacity: 0;
+  }
+  #v4 .trace {
+    stroke: #00ff88;
+    stroke-width: 1;
+    opacity: 0.3;
+    fill: none;
+  }
+  #v4 .pcb-grid line {
+    stroke: #0a3d2a;
+    stroke-width: 0.5;
+  }
+  #v4 .data-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    fill: #00ff88;
+    opacity: 0;
+    letter-spacing: 1px;
+  }
+
+  /* ============ V5: TYPOGRAPHIC CONSTRUCTION ============ */
+  #v5 { background: #fafaf7; }
+  #v5 .letters path { stroke: #0a0a0b; stroke-width: 4; }
+  #v5 .baseline { stroke: var(--accent); stroke-width: 1; opacity: 0; }
+  #v5 .x-height { stroke: var(--accent); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0; }
+  #v5 .cap-height { stroke: var(--accent); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0; }
+  #v5 .guide-text {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    fill: var(--accent);
+    letter-spacing: 1px;
+    opacity: 0;
+    text-transform: uppercase;
+  }
+  #v5 .point {
+    fill: var(--accent);
+    opacity: 0;
+  }
+  #v5 .label { color: #999; }
+  #v5 .replay { color: #999; }
+  #v5:hover .replay { color: #0a0a0b; }
+
+  /* ============ V6: GLASS & LIGHT ============ */
+  #v6 {
+    background: linear-gradient(135deg, #1a0a2e 0%, #0a0a0b 50%, #002030 100%);
+  }
+  #v6 .letters path {
+    stroke: url(#gradient-stroke);
+    stroke-width: 3;
+  }
+  #v6 .glow path {
+    fill: none;
+    stroke: rgba(212, 165, 116, 0.4);
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: blur(6px);
+  }
+  #v6 .particles circle { fill: var(--gold); opacity: 0; }
+  #v6 .frame {
+    fill: none;
+    stroke: rgba(212, 165, 116, 0.3);
+    stroke-width: 1;
+    opacity: 0;
+  }
+  #v6 .sub-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    fill: var(--gold);
+    letter-spacing: 4px;
+    opacity: 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ V1: BLUEPRINT ============ -->
+<section class="stage" id="v1">
+  <div class="label">01 / Blueprint Refined</div>
+  <div class="replay">↻ Click to replay</div>
+  <svg viewBox="0 0 1200 320" xmlns="http://www.w3.org/2000/svg">
+    <g class="grid" id="v1-grid"></g>
+    <g class="grid-major" id="v1-grid-major"></g>
+
+    <!-- Corner brackets -->
+    <g class="corners">
+      <path class="corner" d="M 20 20 L 20 50 M 20 20 L 50 20" />
+      <path class="corner" d="M 1180 20 L 1180 50 M 1180 20 L 1150 20" />
+      <path class="corner" d="M 20 300 L 20 270 M 20 300 L 50 300" />
+      <path class="corner" d="M 1180 300 L 1180 270 M 1180 300 L 1150 300" />
+    </g>
+
+    <!-- Crosshair through center -->
+    <g class="crosshair">
+      <line x1="0" y1="160" x2="1200" y2="160" />
+      <line x1="600" y1="0" x2="600" y2="320" />
+    </g>
+
+    <!-- Dimension lines -->
+    <g>
+      <line class="dim-line" x1="80" y1="265" x2="1120" y2="265" />
+      <line class="dim-line" x1="80" y1="260" x2="80" y2="270" />
+      <line class="dim-line" x1="1120" y1="260" x2="1120" y2="270" />
+      <text class="dim-text" x="600" y="280" text-anchor="middle">1040.00</text>
+    </g>
+
+    <!-- Letters -->
+    <g class="letters" id="v1-letters">
+      <path d="M 80 240 L 135 80 L 190 240 M 100 190 L 170 190" />
+      <path d="M 235 80 L 235 240" />
+      <path d="M 360 240 L 360 80 L 420 180 L 480 80 L 480 240" />
+      <path d="M 520 240 L 575 80 L 630 240 M 540 190 L 610 190" />
+      <path d="M 665 80 L 785 80 M 725 80 L 725 240" />
+      <path d="M 820 240 L 820 80 L 890 80 Q 940 80 940 125 Q 940 170 890 170 L 820 170 L 940 240" />
+      <path d="M 980 80 L 1100 240 M 1100 80 L 980 240" />
+    </g>
+
+    <!-- Meta text -->
+    <text class="meta-text" id="v1-meta-1" x="20" y="15">SHEET 01 / 04</text>
+    <text class="meta-text" id="v1-meta-2" x="1180" y="15" text-anchor="end">REV. 4.7</text>
+    <text class="meta-text" id="v1-meta-3" x="20" y="312">PROJ. AI-MATRX</text>
+    <text class="meta-text" id="v1-meta-4" x="1180" y="312" text-anchor="end">SCALE 1:1</text>
+  </svg>
+</section>
+
+<!-- ============ V2: NEON WIREFRAME ============ -->
+<section class="stage" id="v2">
+  <div class="label">02 / Neon Wireframe</div>
+  <div class="replay">↻ Click to replay</div>
+  <svg viewBox="0 0 1200 320" xmlns="http://www.w3.org/2000/svg">
+    <!-- Pulse rings -->
+    <g>
+      <circle class="pulse-ring" id="v2-ring1" cx="600" cy="160" r="50" />
+      <circle class="pulse-ring" id="v2-ring2" cx="600" cy="160" r="50" />
+    </g>
+
+    <!-- Ghost layer (offset, magenta) -->
+    <g class="ghost" id="v2-ghost">
+      <path d="M 80 240 L 135 80 L 190 240 M 100 190 L 170 190" />
+      <path d="M 235 80 L 235 240" />
+      <path d="M 360 240 L 360 80 L 420 180 L 480 80 L 480 240" />
+      <path d="M 520 240 L 575 80 L 630 240 M 540 190 L 610 190" />
+      <path d="M 665 80 L 785 80 M 725 80 L 725 240" />
+      <path d="M 820 240 L 820 80 L 890 80 Q 940 80 940 125 Q 940 170 890 170 L 820 170 L 940 240" />
+      <path d="M 980 80 L 1100 240 M 1100 80 L 980 240" />
+    </g>
+
+    <!-- Main letters -->
+    <g class="letters" id="v2-letters">
+      <path d="M 80 240 L 135 80 L 190 240 M 100 190 L 170 190" />
+      <path d="M 235 80 L 235 240" />
+      <path d="M 360 240 L 360 80 L 420 180 L 480 80 L 480 240" />
+      <path d="M 520 240 L 575 80 L 630 240 M 540 190 L 610 190" />
+      <path d="M 665 80 L 785 80 M 725 80 L 725 240" />
+      <path d="M 820 240 L 820 80 L 890 80 Q 940 80 940 125 Q 940 170 890 170 L 820 170 L 940 240" />
+      <path d="M 980 80 L 1100 240 M 1100 80 L 980 240" />
+    </g>
+  </svg>
+</section>
+
+<!-- ============ V3: ARCHITECT'S DRAFT ============ -->
+<section class="stage" id="v3">
+  <div class="label">03 / Architect's Draft</div>
+  <div class="replay">↻ Click to replay</div>
+  <svg viewBox="0 0 1200 320" xmlns="http://www.w3.org/2000/svg">
+    <rect class="border-rect" id="v3-border" x="15" y="15" width="1170" height="290" />
+
+    <g class="grid" id="v3-grid"></g>
+    <g class="grid-major" id="v3-grid-major"></g>
+
+    <!-- Construction lines (drawn first, then fade) -->
+    <g class="construction" id="v3-construction">
+      <line x1="80" y1="80" x2="1100" y2="80" />
+      <line x1="80" y1="240" x2="1100" y2="240" />
+      <line x1="80" y1="190" x2="1100" y2="190" />
+      <line x1="135" y1="60" x2="135" y2="260" />
+      <line x1="235" y1="60" x2="235" y2="260" />
+      <line x1="420" y1="60" x2="420" y2="260" />
+      <line x1="575" y1="60" x2="575" y2="260" />
+      <line x1="725" y1="60" x2="725" y2="260" />
+    </g>
+
+    <!-- Annotations -->
+    <text class="annotation" id="v3-anno-1" x="80" y="72">A — apex</text>
+    <text class="annotation" id="v3-anno-2" x="80" y="252">baseline</text>
+
+    <!-- Letters -->
+    <g class="letters" id="v3-letters">
+      <path d="M 80 240 L 135 80 L 190 240 M 100 190 L 170 190" />
+      <path d="M 235 80 L 235 240" />
+      <path d="M 360 240 L 360 80 L 420 180 L 480 80 L 480 240" />
+      <path d="M 520 240 L 575 80 L 630 240 M 540 190 L 610 190" />
+      <path d="M 665 80 L 785 80 M 725 80 L 725 240" />
+      <path d="M 820 240 L 820 80 L 890 80 Q 940 80 940 125 Q 940 170 890 170 L 820 170 L 940 240" />
+      <path d="M 980 80 L 1100 240 M 1100 80 L 980 240" />
+    </g>
+
+    <!-- Drafter's stamp -->
+    <text class="stamp" id="v3-stamp-1" x="20" y="305">DRAWN BY: AM</text>
+    <text class="stamp" id="v3-stamp-2" x="1180" y="305" text-anchor="end">NO. 047 / 100</text>
+  </svg>
+</section>
+
+<!-- ============ V4: CIRCUIT TRACE ============ -->
+<section class="stage" id="v4">
+  <div class="label">04 / Circuit Trace</div>
+  <div class="replay">↻ Click to replay</div>
+  <svg viewBox="0 0 1200 320" xmlns="http://www.w3.org/2000/svg">
+    <g class="pcb-grid" id="v4-grid"></g>
+
+    <!-- Background traces -->
+    <g class="trace-group" id="v4-traces">
+      <path class="trace" d="M 30 30 L 100 30 L 100 60" />
+      <path class="trace" d="M 1170 30 L 1100 30 L 1100 60" />
+      <path class="trace" d="M 30 290 L 100 290 L 100 260" />
+      <path class="trace" d="M 1170 290 L 1100 290 L 1100 260" />
+      <path class="trace" d="M 250 30 L 250 60 L 300 60" />
+      <path class="trace" d="M 950 30 L 950 60 L 900 60" />
+      <path class="trace" d="M 600 290 L 600 260 L 650 260" />
+    </g>
+
+    <!-- Letters -->
+    <g class="letters" id="v4-letters">
+      <path d="M 80 240 L 135 80 L 190 240 M 100 190 L 170 190" />
+      <path d="M 235 80 L 235 240" />
+      <path d="M 360 240 L 360 80 L 420 180 L 480 80 L 480 240" />
+      <path d="M 520 240 L 575 80 L 630 240 M 540 190 L 610 190" />
+      <path d="M 665 80 L 785 80 M 725 80 L 725 240" />
+      <path d="M 820 240 L 820 80 L 890 80 Q 940 80 940 125 Q 940 170 890 170 L 820 170 L 940 240" />
+      <path d="M 980 80 L 1100 240 M 1100 80 L 980 240" />
+    </g>
+
+    <!-- Solder nodes at letter junctions -->
+    <g id="v4-nodes">
+      <circle class="node" cx="80" cy="240" r="4" />
+      <circle class="node" cx="135" cy="80" r="4" />
+      <circle class="node" cx="190" cy="240" r="4" />
+      <circle class="node" cx="235" cy="80" r="4" />
+      <circle class="node" cx="235" cy="240" r="4" />
+      <circle class="node" cx="360" cy="240" r="4" />
+      <circle class="node" cx="360" cy="80" r="4" />
+      <circle class="node" cx="420" cy="180" r="4" />
+      <circle class="node" cx="480" cy="80" r="4" />
+      <circle class="node" cx="480" cy="240" r="4" />
+      <circle class="node" cx="520" cy="240" r="4" />
+      <circle class="node" cx="575" cy="80" r="4" />
+      <circle class="node" cx="630" cy="240" r="4" />
+      <circle class="node" cx="665" cy="80" r="4" />
+      <circle class="node" cx="785" cy="80" r="4" />
+      <circle class="node" cx="725" cy="240" r="4" />
+      <circle class="node" cx="820" cy="240" r="4" />
+      <circle class="node" cx="890" cy="80" r="4" />
+      <circle class="node" cx="940" cy="240" r="4" />
+      <circle class="node" cx="980" cy="80" r="4" />
+      <circle class="node" cx="1100" cy="240" r="4" />
+      <circle class="node" cx="1100" cy="80" r="4" />
+      <circle class="node" cx="980" cy="240" r="4" />
+    </g>
+
+    <text class="data-text" id="v4-data-1" x="30" y="20">SYS://INIT</text>
+    <text class="data-text" id="v4-data-2" x="1170" y="20" text-anchor="end">0xFF.A4.7C</text>
+    <text class="data-text" id="v4-data-3" x="30" y="310">STATUS: ONLINE</text>
+    <text class="data-text" id="v4-data-4" x="1170" y="310" text-anchor="end">v4.7.2026</text>
+  </svg>
+</section>
+
+<!-- ============ V5: TYPOGRAPHIC CONSTRUCTION ============ -->
+<section class="stage" id="v5">
+  <div class="label">05 / Type Specimen</div>
+  <div class="replay">↻ Click to replay</div>
+  <svg viewBox="0 0 1200 320" xmlns="http://www.w3.org/2000/svg">
+    <!-- Type metric guides -->
+    <line class="cap-height" id="v5-cap" x1="60" y1="80" x2="1140" y2="80" />
+    <line class="x-height" id="v5-xheight" x1="60" y1="160" x2="1140" y2="160" />
+    <line class="baseline" id="v5-baseline" x1="60" y1="240" x2="1140" y2="240" />
+
+    <!-- Annotation labels -->
+    <text class="guide-text" id="v5-guide-1" x="50" y="84" text-anchor="end">CAP</text>
+    <text class="guide-text" id="v5-guide-2" x="50" y="164" text-anchor="end">X</text>
+    <text class="guide-text" id="v5-guide-3" x="50" y="244" text-anchor="end">BASE</text>
+
+    <!-- Letters -->
+    <g class="letters" id="v5-letters">
+      <path d="M 80 240 L 135 80 L 190 240 M 100 190 L 170 190" />
+      <path d="M 235 80 L 235 240" />
+      <path d="M 360 240 L 360 80 L 420 180 L 480 80 L 480 240" />
+      <path d="M 520 240 L 575 80 L 630 240 M 540 190 L 610 190" />
+      <path d="M 665 80 L 785 80 M 725 80 L 725 240" />
+      <path d="M 820 240 L 820 80 L 890 80 Q 940 80 940 125 Q 940 170 890 170 L 820 170 L 940 240" />
+      <path d="M 980 80 L 1100 240 M 1100 80 L 980 240" />
+    </g>
+
+    <!-- Anchor points at terminals -->
+    <g id="v5-points">
+      <rect class="point" x="76" y="236" width="8" height="8" />
+      <rect class="point" x="131" y="76" width="8" height="8" />
+      <rect class="point" x="186" y="236" width="8" height="8" />
+      <rect class="point" x="231" y="76" width="8" height="8" />
+      <rect class="point" x="231" y="236" width="8" height="8" />
+      <rect class="point" x="356" y="236" width="8" height="8" />
+      <rect class="point" x="356" y="76" width="8" height="8" />
+      <rect class="point" x="476" y="76" width="8" height="8" />
+      <rect class="point" x="476" y="236" width="8" height="8" />
+      <rect class="point" x="516" y="236" width="8" height="8" />
+      <rect class="point" x="571" y="76" width="8" height="8" />
+      <rect class="point" x="626" y="236" width="8" height="8" />
+      <rect class="point" x="661" y="76" width="8" height="8" />
+      <rect class="point" x="781" y="76" width="8" height="8" />
+      <rect class="point" x="721" y="236" width="8" height="8" />
+      <rect class="point" x="816" y="236" width="8" height="8" />
+      <rect class="point" x="936" y="236" width="8" height="8" />
+      <rect class="point" x="976" y="76" width="8" height="8" />
+      <rect class="point" x="1096" y="236" width="8" height="8" />
+      <rect class="point" x="1096" y="76" width="8" height="8" />
+      <rect class="point" x="976" y="236" width="8" height="8" />
+    </g>
+
+    <text class="guide-text" id="v5-info" x="600" y="290" text-anchor="middle" style="font-size: 10px;">SET IN AI MATRX SANS / 160PT / TRACKING -20</text>
+  </svg>
+</section>
+
+<!-- ============ V6: GLASS & LIGHT ============ -->
+<section class="stage" id="v6">
+  <div class="label">06 / Glass & Light</div>
+  <div class="replay">↻ Click to replay</div>
+  <svg viewBox="0 0 1200 320" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="gradient-stroke" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#d4a574" />
+        <stop offset="50%" stop-color="#f5e6c8" />
+        <stop offset="100%" stop-color="#d4a574" />
+      </linearGradient>
+    </defs>
+
+    <!-- Frame -->
+    <rect class="frame" id="v6-frame" x="40" y="40" width="1120" height="240" />
+
+    <!-- Glow layer (behind) -->
+    <g class="glow" id="v6-glow">
+      <path d="M 80 240 L 135 80 L 190 240 M 100 190 L 170 190" />
+      <path d="M 235 80 L 235 240" />
+      <path d="M 360 240 L 360 80 L 420 180 L 480 80 L 480 240" />
+      <path d="M 520 240 L 575 80 L 630 240 M 540 190 L 610 190" />
+      <path d="M 665 80 L 785 80 M 725 80 L 725 240" />
+      <path d="M 820 240 L 820 80 L 890 80 Q 940 80 940 125 Q 940 170 890 170 L 820 170 L 940 240" />
+      <path d="M 980 80 L 1100 240 M 1100 80 L 980 240" />
+    </g>
+
+    <!-- Main strokes -->
+    <g class="letters" id="v6-letters">
+      <path d="M 80 240 L 135 80 L 190 240 M 100 190 L 170 190" />
+      <path d="M 235 80 L 235 240" />
+      <path d="M 360 240 L 360 80 L 420 180 L 480 80 L 480 240" />
+      <path d="M 520 240 L 575 80 L 630 240 M 540 190 L 610 190" />
+      <path d="M 665 80 L 785 80 M 725 80 L 725 240" />
+      <path d="M 820 240 L 820 80 L 890 80 Q 940 80 940 125 Q 940 170 890 170 L 820 170 L 940 240" />
+      <path d="M 980 80 L 1100 240 M 1100 80 L 980 240" />
+    </g>
+
+    <!-- Particles -->
+    <g class="particles" id="v6-particles"></g>
+
+    <text class="sub-text" id="v6-sub" x="600" y="305" text-anchor="middle">— I N T E L L I G E N C E   M A T E R I A L I Z E D —</text>
+  </svg>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<script>
+// Helper: build grid lines into an svg group
+function buildGrid(groupId, w, h, step, vbW, vbH) {
+  const g = document.getElementById(groupId);
+  if (g.children.length) return;
+  for (let x = 0; x <= vbW; x += step) {
+    const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    l.setAttribute('x1', x); l.setAttribute('y1', 0);
+    l.setAttribute('x2', x); l.setAttribute('y2', vbH);
+    g.appendChild(l);
+  }
+  for (let y = 0; y <= vbH; y += step) {
+    const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    l.setAttribute('x1', 0); l.setAttribute('y1', y);
+    l.setAttribute('x2', vbW); l.setAttribute('y2', y);
+    g.appendChild(l);
+  }
+}
+
+// Helper: prep paths for draw-on
+function prepPaths(selector) {
+  document.querySelectorAll(selector).forEach(p => {
+    const len = p.getTotalLength();
+    p.style.strokeDasharray = len;
+    p.style.strokeDashoffset = len;
+  });
+}
+
+// ============ V1: BLUEPRINT ============
+function playV1() {
+  buildGrid('v1-grid', 1200, 320, 25);
+  buildGrid('v1-grid-major', 1200, 320, 100);
+
+  const minorLines = document.querySelectorAll('#v1-grid line');
+  const majorLines = document.querySelectorAll('#v1-grid-major line');
+  const paths = document.querySelectorAll('#v1-letters path');
+
+  anime.remove(minorLines); anime.remove(majorLines); anime.remove(paths);
+  anime.remove('#v1 .corner, #v1 .crosshair line, #v1 .meta-text, #v1 .dim-line, #v1 .dim-text');
+
+  prepPaths('#v1-letters path');
+  anime.set(minorLines, { opacity: 0 });
+  anime.set(majorLines, { opacity: 0 });
+  anime.set('#v1 .corner', { opacity: 0, scale: 1.5 });
+
+  anime.timeline()
+    .add({
+      targets: minorLines,
+      opacity: [0, 0.4],
+      duration: 600,
+      delay: anime.stagger(4),
+      easing: 'easeOutQuad'
+    })
+    .add({
+      targets: majorLines,
+      opacity: [0, 0.7],
+      duration: 400
+    }, '-=400')
+    .add({
+      targets: '#v1 .corner',
+      opacity: [0, 1],
+      scale: [1.5, 1],
+      duration: 500,
+      delay: anime.stagger(80),
+      easing: 'easeOutBack'
+    }, '-=400')
+    .add({
+      targets: '#v1 .crosshair line',
+      opacity: [0, 0.3, 0.15],
+      duration: 600
+    }, '-=300')
+    .add({
+      targets: paths,
+      strokeDashoffset: [anime.setDashoffset, 0],
+      duration: 1400,
+      delay: anime.stagger(100),
+      easing: 'easeInOutCubic'
+    }, '-=200')
+    .add({
+      targets: minorLines,
+      opacity: [0.4, 0.15],
+      duration: 500
+    }, '-=800')
+    .add({
+      targets: '#v1 .dim-line',
+      opacity: [0, 0.6],
+      duration: 400
+    }, '-=200')
+    .add({
+      targets: '#v1 .dim-text, #v1 .meta-text',
+      opacity: [0, 1],
+      duration: 400,
+      delay: anime.stagger(60)
+    }, '-=200');
+}
+
+// ============ V2: NEON WIREFRAME ============
+function playV2() {
+  const paths = document.querySelectorAll('#v2-letters path');
+  const ghostPaths = document.querySelectorAll('#v2-ghost path');
+
+  anime.remove(paths); anime.remove(ghostPaths);
+  anime.remove('#v2-ring1, #v2-ring2');
+
+  prepPaths('#v2-letters path');
+  prepPaths('#v2-ghost path');
+  anime.set('#v2-ghost', { translateX: 6, translateY: 4 });
+  anime.set('#v2-ring1', { opacity: 0, r: 50 });
+  anime.set('#v2-ring2', { opacity: 0, r: 50 });
+
+  anime.timeline()
+    .add({
+      targets: '#v2-ring1',
+      r: [50, 700],
+      opacity: [0.6, 0],
+      duration: 1400,
+      easing: 'easeOutQuart'
+    })
+    .add({
+      targets: '#v2-ring2',
+      r: [50, 700],
+      opacity: [0.4, 0],
+      duration: 1400,
+      easing: 'easeOutQuart'
+    }, '-=1100')
+    .add({
+      targets: ghostPaths,
+      strokeDashoffset: [anime.setDashoffset, 0],
+      duration: 1600,
+      delay: anime.stagger(80),
+      easing: 'easeInOutQuart'
+    }, '-=1200')
+    .add({
+      targets: paths,
+      strokeDashoffset: [anime.setDashoffset, 0],
+      duration: 1600,
+      delay: anime.stagger(80),
+      easing: 'easeInOutQuart'
+    }, '-=1500')
+    .add({
+      targets: '#v2-ghost',
+      translateX: [6, 4, 7, 5, 6],
+      translateY: [4, 3, 5, 4, 4],
+      duration: 1200,
+      easing: 'easeInOutSine',
+      loop: true,
+      direction: 'alternate'
+    });
+}
+
+// ============ V3: ARCHITECT'S DRAFT ============
+function playV3() {
+  buildGrid('v3-grid', 1200, 320, 20);
+  buildGrid('v3-grid-major', 1200, 320, 80);
+
+  const minorLines = document.querySelectorAll('#v3-grid line');
+  const majorLines = document.querySelectorAll('#v3-grid-major line');
+  const paths = document.querySelectorAll('#v3-letters path');
+  const construction = document.querySelectorAll('#v3-construction line');
+
+  anime.remove(paths); anime.remove(construction);
+  anime.remove('#v3 .annotation, #v3 .stamp, #v3-border');
+  anime.remove(minorLines); anime.remove(majorLines);
+
+  prepPaths('#v3-letters path');
+  anime.set(minorLines, { opacity: 0 });
+  anime.set(majorLines, { opacity: 0 });
+  anime.set('#v3-border', { opacity: 0 });
+
+  anime.timeline()
+    .add({
+      targets: '#v3-border',
+      opacity: [0, 1],
+      duration: 400
+    })
+    .add({
+      targets: minorLines,
+      opacity: [0, 1],
+      duration: 600,
+      delay: anime.stagger(3)
+    }, '-=200')
+    .add({
+      targets: majorLines,
+      opacity: [0, 1],
+      duration: 400
+    }, '-=400')
+    .add({
+      targets: construction,
+      opacity: [0, 1],
+      duration: 400,
+      delay: anime.stagger(40)
+    })
+    .add({
+      targets: '#v3 .annotation',
+      opacity: [0, 1],
+      duration: 400,
+      delay: anime.stagger(100)
+    }, '-=200')
+    .add({
+      targets: paths,
+      strokeDashoffset: [anime.setDashoffset, 0],
+      duration: 1500,
+      delay: anime.stagger(110),
+      easing: 'easeInOutCubic'
+    }, '-=300')
+    .add({
+      targets: construction,
+      opacity: [1, 0.2],
+      duration: 600
+    }, '-=1000')
+    .add({
+      targets: '#v3 .annotation',
+      opacity: [1, 0.3],
+      duration: 600
+    }, '-=600')
+    .add({
+      targets: '#v3 .stamp',
+      opacity: [0, 1],
+      duration: 500,
+      delay: anime.stagger(80)
+    }, '-=200');
+}
+
+// ============ V4: CIRCUIT TRACE ============
+function playV4() {
+  buildGrid('v4-grid', 1200, 320, 20);
+
+  const gridLines = document.querySelectorAll('#v4-grid line');
+  const traces = document.querySelectorAll('#v4-traces .trace');
+  const paths = document.querySelectorAll('#v4-letters path');
+  const nodes = document.querySelectorAll('#v4-nodes .node');
+
+  anime.remove(gridLines); anime.remove(traces); anime.remove(paths); anime.remove(nodes);
+  anime.remove('#v4 .data-text');
+
+  prepPaths('#v4-letters path');
+  prepPaths('#v4-traces .trace');
+  anime.set(gridLines, { opacity: 0 });
+  anime.set(nodes, { opacity: 0, scale: 0 });
+
+  anime.timeline()
+    .add({
+      targets: gridLines,
+      opacity: [0, 1],
+      duration: 400,
+      delay: anime.stagger(2)
+    })
+    .add({
+      targets: traces,
+      strokeDashoffset: [anime.setDashoffset, 0],
+      duration: 800,
+      delay: anime.stagger(60),
+      easing: 'easeOutQuad'
+    }, '-=300')
+    .add({
+      targets: paths,
+      strokeDashoffset: [anime.setDashoffset, 0],
+      duration: 1400,
+      delay: anime.stagger(90),
+      easing: 'easeInOutQuart'
+    }, '-=400')
+    .add({
+      targets: nodes,
+      opacity: [0, 1],
+      scale: [0, 1.4, 1],
+      duration: 500,
+      delay: anime.stagger(20),
+      easing: 'easeOutBack'
+    }, '-=600')
+    .add({
+      targets: '#v4 .data-text',
+      opacity: [0, 1],
+      duration: 400,
+      delay: anime.stagger(80)
+    }, '-=300');
+
+  // Pulse loop on nodes
+  setTimeout(() => {
+    anime({
+      targets: nodes,
+      opacity: [1, 0.5, 1],
+      duration: 1800,
+      delay: anime.stagger(50, { from: 'random' }),
+      easing: 'easeInOutSine',
+      loop: true
+    });
+  }, 3500);
+}
+
+// ============ V5: TYPE SPECIMEN ============
+function playV5() {
+  const paths = document.querySelectorAll('#v5-letters path');
+  const points = document.querySelectorAll('#v5-points .point');
+
+  anime.remove(paths); anime.remove(points);
+  anime.remove('#v5-baseline, #v5-cap, #v5-xheight, #v5 .guide-text, #v5-info');
+
+  prepPaths('#v5-letters path');
+  anime.set(points, { opacity: 0, scale: 0 });
+
+  anime.timeline()
+    .add({
+      targets: '#v5-baseline',
+      opacity: [0, 1],
+      duration: 600,
+      easing: 'easeOutQuad'
+    })
+    .add({
+      targets: '#v5-cap',
+      opacity: [0, 0.8],
+      duration: 500
+    }, '-=300')
+    .add({
+      targets: '#v5-xheight',
+      opacity: [0, 0.6],
+      duration: 500
+    }, '-=400')
+    .add({
+      targets: '#v5 .guide-text',
+      opacity: [0, 1],
+      duration: 400,
+      delay: anime.stagger(80)
+    }, '-=300')
+    .add({
+      targets: paths,
+      strokeDashoffset: [anime.setDashoffset, 0],
+      duration: 1600,
+      delay: anime.stagger(120),
+      easing: 'easeInOutCubic'
+    }, '-=200')
+    .add({
+      targets: points,
+      opacity: [0, 1],
+      scale: [0, 1],
+      duration: 400,
+      delay: anime.stagger(15),
+      easing: 'easeOutBack'
+    }, '-=600')
+    .add({
+      targets: '#v5-info',
+      opacity: [0, 1],
+      duration: 600
+    }, '-=200');
+}
+
+// ============ V6: GLASS & LIGHT ============
+function playV6() {
+  // Build particles
+  const particles = document.getElementById('v6-particles');
+  particles.innerHTML = '';
+  const particleCount = 40;
+  for (let i = 0; i < particleCount; i++) {
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('cx', 100 + Math.random() * 1000);
+    c.setAttribute('cy', 80 + Math.random() * 160);
+    c.setAttribute('r', 0.5 + Math.random() * 1.5);
+    particles.appendChild(c);
+  }
+
+  const paths = document.querySelectorAll('#v6-letters path');
+  const glowPaths = document.querySelectorAll('#v6-glow path');
+  const particleEls = document.querySelectorAll('#v6-particles circle');
+
+  anime.remove(paths); anime.remove(glowPaths); anime.remove(particleEls);
+  anime.remove('#v6-frame, #v6-sub');
+
+  prepPaths('#v6-letters path');
+  prepPaths('#v6-glow path');
+  anime.set('#v6-frame', { opacity: 0 });
+  anime.set(particleEls, { opacity: 0 });
+
+  anime.timeline()
+    .add({
+      targets: '#v6-frame',
+      opacity: [0, 1],
+      duration: 800,
+      easing: 'easeOutQuad'
+    })
+    .add({
+      targets: glowPaths,
+      strokeDashoffset: [anime.setDashoffset, 0],
+      duration: 2000,
+      delay: anime.stagger(100),
+      easing: 'easeInOutQuart'
+    }, '-=400')
+    .add({
+      targets: paths,
+      strokeDashoffset: [anime.setDashoffset, 0],
+      duration: 2000,
+      delay: anime.stagger(100),
+      easing: 'easeInOutQuart'
+    }, '-=2000')
+    .add({
+      targets: particleEls,
+      opacity: [{ value: [0, 0.8], duration: 400 }, { value: 0.3, duration: 600 }],
+      translateY: () => anime.random(-30, 30),
+      translateX: () => anime.random(-20, 20),
+      duration: 1000,
+      delay: anime.stagger(20, { from: 'center' })
+    }, '-=1200')
+    .add({
+      targets: '#v6-sub',
+      opacity: [0, 1],
+      duration: 800
+    }, '-=400');
+
+  // Floating particles loop
+  setTimeout(() => {
+    anime({
+      targets: particleEls,
+      translateY: () => '+=' + anime.random(-15, 15),
+      translateX: () => '+=' + anime.random(-15, 15),
+      opacity: [0.3, 0.7, 0.3],
+      duration: () => anime.random(2000, 4000),
+      easing: 'easeInOutSine',
+      loop: true,
+      direction: 'alternate'
+    });
+  }, 3500);
+}
+
+// Wire it all up
+const handlers = { v1: playV1, v2: playV2, v3: playV3, v4: playV4, v5: playV5, v6: playV6 };
+Object.keys(handlers).forEach(id => {
+  document.getElementById(id).addEventListener('click', handlers[id]);
+});
+
+// Auto-play on scroll into view
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && !entry.target.dataset.played) {
+      entry.target.dataset.played = '1';
+      handlers[entry.target.id]?.();
+    }
+  });
+}, { threshold: 0.4 });
+
+document.querySelectorAll('.stage').forEach(s => io.observe(s));
+</script>
+</body>
+</html>

@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI MATRX — Industry Editions v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: #050505;
+    color: #f5f3ee;
+    font-family: 'JetBrains Mono', monospace;
+    overflow-x: hidden;
+  }
+  .stage {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-bottom: 1px solid #151515;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .label {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: #6b6b6b;
+    text-transform: uppercase;
+    z-index: 20;
+  }
+  .replay {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: #6b6b6b;
+    text-transform: uppercase;
+    z-index: 20;
+  }
+  .stage:hover .replay { color: #f5f3ee; }
+  svg { width: min(94vw, 1300px); height: auto; }
+
+  /* Lockup text: industry word above, MATRX below at fixed large size */
+  .industry-text {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-anchor: middle;
+  }
+  .matrx-text {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-anchor: middle;
+    font-size: 140px;
+  }
+
+  /* Two-pass rendering: stroke version draws on, then fill fades in */
+  .text-stroke {
+    fill: none;
+    stroke-width: 1.5;
+    paint-order: stroke;
+  }
+  .text-fill {
+    stroke: none;
+    opacity: 0;
+  }
+  .glow-text {
+    fill: none;
+    stroke-width: 6;
+    filter: blur(6px);
+    opacity: 0;
+  }
+
+  .frame {
+    fill: none;
+    stroke-width: 1;
+    opacity: 0;
+  }
+  .sub-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    opacity: 0;
+    text-transform: uppercase;
+    text-anchor: middle;
+  }
+  .ai-marker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.4em;
+    opacity: 0;
+    text-anchor: middle;
+  }
+  .motif {
+    fill: none;
+    stroke-width: 1.2;
+    opacity: 0;
+  }
+  .divider {
+    stroke-width: 1;
+    opacity: 0;
+  }
+
+  /* ============ LEGAL ============ */
+  #legal { background: linear-gradient(135deg, #0a0a14 0%, #050505 50%, #14100a 100%); }
+  #legal .frame { stroke: rgba(196, 162, 105, 0.3); }
+  #legal .sub-text { fill: #c4a269; }
+  #legal .ai-marker { fill: #c4a269; }
+  #legal .motif { stroke: rgba(196, 162, 105, 0.5); }
+  #legal .divider { stroke: rgba(196, 162, 105, 0.4); }
+  #legal .particles circle { fill: #c4a269; }
+
+  /* ============ MEDICAL ============ */
+  #medical { background: linear-gradient(135deg, #0a1418 0%, #050a0c 50%, #0a1820 100%); }
+  #medical .frame { stroke: rgba(120, 200, 220, 0.3); }
+  #medical .sub-text { fill: #78c8dc; }
+  #medical .ai-marker { fill: #78c8dc; }
+  #medical .motif { stroke: rgba(120, 200, 220, 0.6); }
+  #medical .divider { stroke: rgba(120, 200, 220, 0.4); }
+  #medical .particles circle { fill: #78c8dc; }
+
+  /* ============ FINANCE ============ */
+  #finance { background: linear-gradient(135deg, #0a140e 0%, #050a07 50%, #0c1810 100%); }
+  #finance .frame { stroke: rgba(110, 200, 140, 0.3); }
+  #finance .sub-text { fill: #6ec88c; }
+  #finance .ai-marker { fill: #6ec88c; }
+  #finance .motif { stroke: rgba(110, 200, 140, 0.5); }
+  #finance .divider { stroke: rgba(110, 200, 140, 0.4); }
+  #finance .particles circle { fill: #6ec88c; }
+
+  /* ============ E-COMMERCE ============ */
+  #ecommerce { background: linear-gradient(135deg, #18080a 0%, #0a0405 50%, #1a0a14 100%); }
+  #ecommerce .frame { stroke: rgba(220, 100, 130, 0.3); }
+  #ecommerce .sub-text { fill: #dc6482; }
+  #ecommerce .ai-marker { fill: #dc6482; }
+  #ecommerce .motif { stroke: rgba(220, 100, 130, 0.5); }
+  #ecommerce .divider { stroke: rgba(220, 100, 130, 0.4); }
+  #ecommerce .particles circle { fill: #dc6482; }
+
+  /* ============ MARKETING ============ */
+  #marketing { background: linear-gradient(135deg, #1a0a18 0%, #0a0508 50%, #14081c 100%); }
+  #marketing .frame { stroke: rgba(200, 130, 220, 0.3); }
+  #marketing .sub-text { fill: #c882dc; }
+  #marketing .ai-marker { fill: #c882dc; }
+  #marketing .motif { stroke: rgba(200, 130, 220, 0.5); }
+  #marketing .divider { stroke: rgba(200, 130, 220, 0.4); }
+  #marketing .particles circle { fill: #c882dc; }
+
+  /* ============ SEO ============ */
+  #seo { background: linear-gradient(135deg, #0c0a18 0%, #050410 50%, #08081c 100%); }
+  #seo .frame { stroke: rgba(130, 160, 240, 0.3); }
+  #seo .sub-text { fill: #82a0f0; }
+  #seo .ai-marker { fill: #82a0f0; }
+  #seo .motif { stroke: rgba(130, 160, 240, 0.5); }
+  #seo .divider { stroke: rgba(130, 160, 240, 0.4); }
+  #seo .particles circle { fill: #82a0f0; }
+
+  /* ============ EDUCATION ============ */
+  #education { background: linear-gradient(135deg, #18120a 0%, #0a0805 50%, #1c1408 100%); }
+  #education .frame { stroke: rgba(240, 180, 100, 0.3); }
+  #education .sub-text { fill: #f0b464; }
+  #education .ai-marker { fill: #f0b464; }
+  #education .motif { stroke: rgba(240, 180, 100, 0.5); }
+  #education .divider { stroke: rgba(240, 180, 100, 0.4); }
+  #education .particles circle { fill: #f0b464; }
+
+  /* ============ CODE ============ */
+  #code { background: linear-gradient(135deg, #0a1414 0%, #050a0a 50%, #0a1818 100%); }
+  #code .frame { stroke: rgba(100, 220, 200, 0.3); }
+  #code .sub-text { fill: #64dcc8; }
+  #code .ai-marker { fill: #64dcc8; }
+  #code .motif { stroke: rgba(100, 220, 200, 0.5); }
+  #code .divider { stroke: rgba(100, 220, 200, 0.4); }
+  #code .particles circle { fill: #64dcc8; }
+</style>
+</head>
+<body>
+
+<!-- Each section uses the same lockup pattern:
+     - "AI" marker at top (small, mono)
+     - Industry word (large, scales to fit)
+     - thin horizontal divider line
+     - "MATRX" (largest, fixed size, the brand anchor)
+     - tagline below
+     - frame around the whole composition
+     - industry-specific motif element
+     - drifting particles
+-->
+
+<!-- ============ LEGAL ============ -->
+<section class="stage" id="legal">
+  <div class="label">Legal Matrx</div>
+  <div class="replay">↻ Click to replay</div>
+  <svg viewBox="0 0 1200 480" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="grad-legal" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#8a7340" />
+        <stop offset="50%" stop-color="#f0d89a" />
+        <stop offset="100%" stop-color="#8a7340" />
+      </linearGradient>
+    </defs>
+
+    <rect class="frame" id="legal-frame" x="60" y="40" width="1080" height="380" />
+
+    <text class="ai-marker" id="legal-ai" x="600" y="100">— A I —</text>
+
+    <!-- Industry word: 90pt, fits comfortably -->
+    <text class="industry-text text-stroke glow-text" id="legal-industry-glow" x="600" y="200" font-size="90" stroke="rgba(196, 162, 105, 0.5)">LEGAL</text>
+    <text class="industry-text text-stroke" id="legal-industry-stroke" x="600" y="200" font-size="90" stroke="url(#grad-legal)">LEGAL</text>
+    <text class="industry-text text-fill" id="legal-industry-fill" x="600" y="200" font-size="90" fill="url(#grad-legal)">LEGAL</text>
+
+    <line class="divider" id="legal-divider" x1="450" y1="240" x2="750" y2="240" />
+
+    <!-- MATRX: 130pt, the anchor -->
+    <text class="matrx-text text-stroke glow-text" id="legal-matrx-glow" x="600" y="370" stroke="rgba(196, 162, 105, 0.5)">MATRX</text>
+    <text class="matrx-text text-stroke" id="legal-matrx-stroke" x="600" y="370" stroke="url(#grad-legal)">MATRX</text>
+    <text class="matrx-text text-fill" id="legal-matrx-fill" x="600" y="370" fill="url(#grad-legal)">MATRX</text>
+
+    <!-- Motif: scales of justice -->
+    <g class="motif" id="legal-motif">
+      <line x1="600" y1="430" x2="600" y2="455" />
+      <line x1="555" y1="430" x2="645" y2="430" />
+      <circle cx="568" cy="448" r="10" />
+      <circle cx="632" cy="448" r="10" />
+      <line x1="558" y1="448" x2="578" y2="448" />
+      <line x1="622" y1="448" x2="642" y2="448" />
+      <line x1="568" y1="430" x2="568" y2="438" />
+      <line x1="632" y1="430" x2="632" y2="438" />
+    </g>
+
+    <g class="particles" id="legal-particles"></g>
+    <text class="sub-text" id="legal-sub" x="600" y="465">READS EVERY PAGE · CITES EVERY SOURCE · NEVER MISSES A DEADLINE</text>
+  </svg>
+</section>
+
+<!-- ============ MEDICAL ============ -->
+<section class="stage" id="medical">
+  <div class="label">Medical Matrx</div>
+  <div class="replay">↻ Click to replay</div>
+  <svg viewBox="0 0 1200 480" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="grad-medical" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#3a8a9c" />
+        <stop offset="50%" stop-color="#c8e8f0" />
+        <stop offset="100%" stop-color="#3a8a9c" />
+      </linearGradient>
+    </defs>
+
+    <rect class="frame" id="medical-frame" x="60" y="40" width="1080" height="380" />
+    <text class="ai-marker" id="medical-ai" x="600" y="100">— A I —</text>
+
+    <text class="industry-text text-stroke glow-text" id="medical-industry-glow" x="600" y="200" font-size="80" stroke="rgba(120, 200, 220, 0.5)">MEDICAL</text>
+    <text class="industry-text text-stroke" id="medical-industry-stroke" x="600" y="200" font-size="80" stroke="url(#grad-medical)">MEDICAL</text>
+    <text class="industry-text text-fill" id="medical-industry-fill" x="600" y="200" font-size="80" fill="url(#grad-medical)">MEDICAL</text>
+
+    <line class="divider" id="medical-divider" x1="450" y1="240" x2="750" y2="240" />
+
+    <text class="matrx-text text-stroke glow-text" id="medical-matrx-glow" x="600" y="370" stroke="rgba(120, 200, 220, 0.5)">MATRX</text>
+    <text class="matrx-text text-stroke" id="medical-matrx-stroke" x="600" y="370" stroke="url(#grad-medical)">MATRX</text>
+    <text class="matrx-text text-fill" id="medical-matrx-fill" x="600" y="370" fill="url(#grad-medical)">MATRX</text>
+
+    <!-- ECG pulse motif -->
+    <g class="motif" id="medical-motif">
+      <path id="medical-pulse" d="M 480 445 L 540 445 L 555 425 L 575 470 L 595 410 L 610 455 L 625 445 L 720 445" stroke-width="1.5" />
+    </g>
+
+    <g class="particles" id="medical-particles"></g>
+    <text class="sub-text" id="medical-sub" x="600" y="465">SCRIBE · RESEARCHER · TRIAGE — HIPAA, NEVER ON THE PATIENT</text>
+  </svg>
+</section>
+
+<!-- ============ FINANCE ============ -->
+<section class="stage" id="finance">
+  <div class="label">Finance Matrx</div>
+  <div class="replay">↻ Click to replay</div>
+  <svg viewBox="0 0 1200 480" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="grad-finance" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#3a8a52" />
+        <stop offset="50%" stop-color="#d0f0d8" />
+        <stop offset="100%" stop-color="#3a8a52" />
+      </linearGradient>
+    </defs>
+
+    <rect class="frame" id="finance-frame" x="60" y="40" width="1080" height="380" />
+    <text class="ai-marker" id="finance-ai" x="600" y="100">— A I —</text>
+
+    <text class="industry-text text-stroke glow-text" id="finance-industry-glow" x="600" y="200" font-size="86" stroke="rgba(110, 200, 140, 0.5)">FINANCE</text>
+    <text class="industry-text text-stroke" id="finance-industry-stroke" x="600" y="200" font-size="86" stroke="url(#grad-finance)">FINANCE</text>
+    <text class="industry-text text-fill" id="finance-industry-fill" x="600" y="200" font-size="86" fill="url(#grad-finance)">FINANCE</text>
+
+    <line class="divider" id="finance-divider" x1="450" y1="240" x2="750" y2="240" />
+
+    <text class="matrx-text text-stroke glow-text" id="finance-matrx-glow" x="600" y="370" stroke="rgba(110, 200, 140, 0.5)">MATRX</text>
+    <text class="matrx-text text-stroke" id="finance-matrx-stroke" x="600" y="370" stroke="url(#grad-finance)">MATRX</text>
+    <text class="matrx-text text-fill" id="finance-matrx-fill" x="600" y="370" fill="url(#grad-finance)">MATRX</text>
+
+    <!-- Ascending bar chart motif -->
+    <g class="motif" id="finance-motif">
+      <line x1="500" y1="455" x2="700" y2="455" />
+      <rect x="510" y="442" width="6" height="13" />
+      <rect x="528" y="437" width="6" height="18" />
+      <rect x="546" y="430" width="6" height="25" />
+      <rect x="564" y="438" width="6" height="17" />
+      <rect x="582" y="425" width="6" height="30" />
+      <rect x="600" y="418" width="6" height="37" />
+      <rect x="618" y="422" width="6" height="33" />
+      <rect x="636" y="412" width="6" height="43" />
+      <rect x="654" y="405" width="6" height="50" />
+      <rect x="672" y="395" width="6" height="60" />
+    </g>
+
+    <g class="particles" id="finance-particles"></g>
+    <text class="sub-text" id="finance-sub" x="600" y="465">READ EVERY INVOICE · RECONCILE EVERY ACCOUNT · SHOW YOUR WORK</text>
+  </svg>
+</section>
+
+<!-- ============ E-COMMERCE ============ -->
+<section class="stage" id="ecommerce">
+  <div class="label">E-Commerce Matrx</div>
+  <div class="replay">↻ Click to replay</div>
+  <svg viewBox="0 0 1200 480" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="grad-ecommerce" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#9c4060" />
+        <stop offset="50%" stop-color="#f0c8d4" />
+        <stop offset="100%" stop-color="#9c4060" />
+      </linearGradient>
+    </defs>
+
+    <rect class="frame" id="ecommerce-frame" x="60" y="40" width="1080" height="380" />
+    <text class="ai-marker" id="ecommerce-ai" x="600" y="100">— A I —</text>
+
+    <!-- E-COMMERCE is long; size down to 64 -->
+    <text class="industry-text text-stroke glow-text" id="ecommerce-industry-glow" x="600" y="200" font-size="64" stroke="rgba(220, 100, 130, 0.5)">E-COMMERCE</text>
+    <text class="industry-text text-stroke" id="ecommerce-industry-stroke" x="600" y="200" font-size="64" stroke="url(#grad-ecommerce)">E-COMMERCE</text>
+    <text class="industry-text text-fill" id="ecommerce-industry-fill" x="600" y="200" font-size="64" fill="url(#grad-ecommerce)">E-COMMERCE</text>
+
+    <line class="divider" id="ecommerce-divider" x1="450" y1="240" x2="750" y2="240" />
+
+    <text class="matrx-text text-stroke glow-text" id="ecommerce-matrx-glow" x="600" y="370" stroke="rgba(220, 100, 130, 0.5)">MATRX</text>
+    <text class="matrx-text text-stroke" id="ecommerce-matrx-stroke" x="600" y="370" stroke="url(#grad-ecommerce)">MATRX</text>
+    <text class="matrx-text text-fill" id="ecommerce-matrx-fill" x="600" y="370" fill="url(#grad-ecommerce)">MATRX</text>
+
+    <!-- Tag + barcode motif -->
+    <g class="motif" id="ecommerce-motif">
+      <path d="M 500 415 L 540 415 L 580 440 L 580 465 L 500 465 Z" />
+      <circle cx="513" cy="427" r="3" />
+      <line x1="600" y1="420" x2="600" y2="465" />
+      <line x1="606" y1="420" x2="606" y2="465" />
+      <line x1="614" y1="420" x2="614" y2="465" />
+      <line x1="620" y1="420" x2="620" y2="465" />
+      <line x1="628" y1="420" x2="628" y2="465" />
+      <line x1="634" y1="420" x2="634" y2="465" />
+      <line x1="642" y1="420" x2="642" y2="465" />
+      <line x1="650" y1="420" x2="650" y2="465" />
+      <line x1="658" y1="420" x2="658" y2="465" />
+      <line x1="666" y1="420" x2="666" y2="465" />
+      <line x1="674" y1="420" x2="674" y2="465" />
+      <line x1="682" y1="420" x2="682" y2="465" />
+      <line x1="690" y1="420" x2="690" y2="465" />
+      <line x1="698" y1="420" x2="698" y2="465" />
+    </g>
+
+    <g class="particles" id="ecommerce-particles"></g>
+    <text class="sub-text" id="ecommerce-sub" x="600" y="475">MERCHANDISER · CS LEAD · COPYWRITER — RUNNING AT 2 AM</text>
+  </svg>
+</section>
+
+<!-- ============ MARKETING ============ -->
+<section class="stage" id="marketing">
+  <div class="label">Marketing Matrx</div>
+  <div class="replay">↻ Click to replay</div>
+  <svg viewBox="0 0 1200 480" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="grad-marketing" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#7a4090" />
+        <stop offset="50%" stop-color="#ecd0f0" />
+        <stop offset="100%" stop-color="#7a4090" />
+      </linearGradient>
+    </defs>
+
+    <rect class="frame" id="marketing-frame" x="60" y="40" width="1080" height="380" />
+    <text class="ai-marker" id="marketing-ai" x="600" y="100">— A I —</text>
+
+    <!-- MARKETING is 9 chars; 76 fits -->
+    <text class="industry-text text-stroke glow-text" id="marketing-industry-glow" x="600" y="200" font-size="76" stroke="rgba(200, 130, 220, 0.5)">MARKETING</text>
+    <text class="industry-text text-stroke" id="marketing-industry-stroke" x="600" y="200" font-size="76" stroke="url(#grad-marketing)">MARKETING</text>
+    <text class="industry-text text-fill" id="marketing-industry-fill" x="600" y="200" font-size="76" fill="url(#grad-marketing)">MARKETING</text>
+
+    <line class="divider" id="marketing-divider" x1="450" y1="240" x2="750" y2="240" />
+
+    <text class="matrx-text text-stroke glow-text" id="marketing-matrx-glow" x="600" y="370" stroke="rgba(200, 130, 220, 0.5)">MATRX</text>
+    <text class="matrx-text text-stroke" id="marketing-matrx-stroke" x="600" y="370" stroke="url(#grad-marketing)">MATRX</text>
+    <text class="matrx-text text-fill" id="marketing-matrx-fill" x="600" y="370" fill="url(#grad-marketing)">MATRX</text>
+
+    <!-- Signal waves motif -->
+    <g class="motif" id="marketing-motif">
+      <circle cx="600" cy="445" r="5" fill="rgba(200, 130, 220, 0.7)" stroke="none" />
+      <path d="M 575 445 Q 575 420 600 420 Q 625 420 625 445" />
+      <path d="M 555 445 Q 555 400 600 400 Q 645 400 645 445" />
+      <path d="M 535 445 Q 535 380 600 380 Q 665 380 665 445" />
+    </g>
+
+    <g class="particles" id="marketing-particles"></g>
+    <text class="sub-text" id="marketing-sub" x="600" y="465">RESEARCH-GRADE CONTENT — NOT ANOTHER ARTICLE SPINNER</text>
+  </svg>
+</section>
+
+<!-- ============ SEO ============ -->
+<section class="stage" id="seo">
+  <div class="label">SEO Matrx</div>
+  <div class="replay">↻ Click to replay</div>
+  <svg viewBox="0 0 1200 480" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="grad-seo" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#4060a8" />
+        <stop offset="50%" stop-color="#d0d8f8" />
+        <stop offset="100%" stop-color="#4060a8" />
+      </linearGradient>
+    </defs>
+
+    <rect class="frame" id="seo-frame" x="60" y="40" width="1080" height="380" />
+    <text class="ai-marker" id="seo-ai" x="600" y="100">— A I —</text>
+
+    <!-- SEO short; can go big at 110 -->
+    <text class="industry-text text-stroke glow-text" id="seo-industry-glow" x="600" y="200" font-size="110" stroke="rgba(130, 160, 240, 0.5)">SEO</text>
+    <text class="industry-text text-stroke" id="seo-industry-stroke" x="600" y="200" font-size="110" stroke="url(#grad-seo)">SEO</text>
+    <text class="industry-text text-fill" id="seo-industry-fill" x="600" y="200" font-size="110" fill="url(#grad-seo)">SEO</text>
+
+    <line class="divider" id="seo-divider" x1="450" y1="240" x2="750" y2="240" />
+
+    <text class="matrx-text text-stroke glow-text" id="seo-matrx-glow" x="600" y="370" stroke="rgba(130, 160, 240, 0.5)">MATRX</text>
+    <text class="matrx-text text-stroke" id="seo-matrx-stroke" x="600" y="370" stroke="url(#grad-seo)">MATRX</text>
+    <text class="matrx-text text-fill" id="seo-matrx-fill" x="600" y="370" fill="url(#grad-seo)">MATRX</text>
+
+    <!-- Magnifying glass + ranking lines -->
+    <g class="motif" id="seo-motif">
+      <circle cx="510" cy="440" r="14" />
+      <line x1="520" y1="450" x2="530" y2="460" />
+      <line x1="555" y1="432" x2="640" y2="432" />
+      <line x1="555" y1="445" x2="620" y2="445" />
+      <line x1="555" y1="458" x2="660" y2="458" />
+    </g>
+
+    <g class="particles" id="seo-particles"></g>
+    <text class="sub-text" id="seo-sub" x="600" y="465">EVERY KEYWORD · EVERY PAGE · LAST NIGHT'S DEVELOPMENTS</text>
+  </svg>
+</section>
+
+<!-- ============ EDUCATION ============ -->
+<section class="stage" id="education">
+  <div class="label">Education Matrx</div>
+  <div class="replay">↻ Click to replay</div>
+  <svg viewBox="0 0 1200 480" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="grad-education" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#a87038" />
+        <stop offset="50%" stop-color="#fae0b8" />
+        <stop offset="100%" stop-color="#a87038" />
+      </linearGradient>
+    </defs>
+
+    <rect class="frame" id="education-frame" x="60" y="40" width="1080" height="380" />
+    <text class="ai-marker" id="education-ai" x="600" y="100">— A I —</text>
+
+    <!-- EDUCATION 9 chars; 76 fits -->
+    <text class="industry-text text-stroke glow-text" id="education-industry-glow" x="600" y="200" font-size="76" stroke="rgba(240, 180, 100, 0.5)">EDUCATION</text>
+    <text class="industry-text text-stroke" id="education-industry-stroke" x="600" y="200" font-size="76" stroke="url(#grad-education)">EDUCATION</text>
+    <text class="industry-text text-fill" id="education-industry-fill" x="600" y="200" font-size="76" fill="url(#grad-education)">EDUCATION</text>
+
+    <line class="divider" id="education-divider" x1="450" y1="240" x2="750" y2="240" />
+
+    <text class="matrx-text text-stroke glow-text" id="education-matrx-glow" x="600" y="370" stroke="rgba(240, 180, 100, 0.5)">MATRX</text>
+    <text class="matrx-text text-stroke" id="education-matrx-stroke" x="600" y="370" stroke="url(#grad-education)">MATRX</text>
+    <text class="matrx-text text-fill" id="education-matrx-fill" x="600" y="370" fill="url(#grad-education)">MATRX</text>
+
+    <!-- Graduation cap motif -->
+    <g class="motif" id="education-motif">
+      <path d="M 555 440 L 600 425 L 645 440 L 600 455 Z" />
+      <path d="M 565 445 L 565 462 Q 600 472 635 462 L 635 445" />
+      <line x1="645" y1="440" x2="645" y2="465" />
+      <circle cx="648" cy="468" r="2.5" fill="rgba(240, 180, 100, 0.7)" stroke="none" />
+    </g>
+
+    <g class="particles" id="education-particles"></g>
+    <text class="sub-text" id="education-sub" x="600" y="465">GRADES EVERY ASSIGNMENT · DESIGNS EVERY SYLLABUS · INFINITELY PATIENT</text>
+  </svg>
+</section>
+
+<!-- ============ CODE ============ -->
+<section class="stage" id="code">
+  <div class="label">Code Matrx</div>
+  <div class="replay">↻ Click to replay</div>
+  <svg viewBox="0 0 1200 480" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="grad-code" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#308a78" />
+        <stop offset="50%" stop-color="#c0f0e4" />
+        <stop offset="100%" stop-color="#308a78" />
+      </linearGradient>
+    </defs>
+
+    <rect class="frame" id="code-frame" x="60" y="40" width="1080" height="380" />
+    <text class="ai-marker" id="code-ai" x="600" y="100">— A I —</text>
+
+    <text class="industry-text text-stroke glow-text" id="code-industry-glow" x="600" y="200" font-size="100" stroke="rgba(100, 220, 200, 0.5)">CODE</text>
+    <text class="industry-text text-stroke" id="code-industry-stroke" x="600" y="200" font-size="100" stroke="url(#grad-code)">CODE</text>
+    <text class="industry-text text-fill" id="code-industry-fill" x="600" y="200" font-size="100" fill="url(#grad-code)">CODE</text>
+
+    <line class="divider" id="code-divider" x1="450" y1="240" x2="750" y2="240" />
+
+    <text class="matrx-text text-stroke glow-text" id="code-matrx-glow" x="600" y="370" stroke="rgba(100, 220, 200, 0.5)">MATRX</text>
+    <text class="matrx-text text-stroke" id="code-matrx-stroke" x="600" y="370" stroke="url(#grad-code)">MATRX</text>
+    <text class="matrx-text text-fill" id="code-matrx-fill" x="600" y="370" fill="url(#grad-code)">MATRX</text>
+
+    <!-- Angle brackets motif -->
+    <g class="motif" id="code-motif">
+      <path d="M 555 425 L 525 445 L 555 465" stroke-width="2" />
+      <line x1="575" y1="425" x2="615" y2="465" stroke-width="2" />
+      <path d="M 635 425 L 665 445 L 635 465" stroke-width="2" />
+    </g>
+
+    <g class="particles" id="code-particles"></g>
+    <text class="sub-text" id="code-sub" x="600" y="465">SHIPS · REVIEWS · NEVER FORGETS THE ARCHITECTURE</text>
+  </svg>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<script>
+function prepText(el) {
+  // For SVG <text>, we can't use getTotalLength directly the way we do with paths.
+  // Instead we use the stroke-dasharray trick with a large value to simulate draw-on.
+  const length = 2000; // long enough to cover any text
+  el.style.strokeDasharray = length;
+  el.style.strokeDashoffset = length;
+}
+
+function buildParticles(containerId, count, bounds) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', bounds.x + Math.random() * bounds.w);
+    circle.setAttribute('cy', bounds.y + Math.random() * bounds.h);
+    circle.setAttribute('r', 0.5 + Math.random() * 1.5);
+    c.appendChild(circle);
+  }
+}
+
+function playStage(stageId) {
+  const stage = document.getElementById(stageId);
+  const frame = stage.querySelector('.frame');
+  const aiMarker = stage.querySelector('.ai-marker');
+  const divider = stage.querySelector('.divider');
+  const sub = stage.querySelector('.sub-text');
+
+  const industryStroke = document.getElementById(stageId + '-industry-stroke');
+  const industryFill = document.getElementById(stageId + '-industry-fill');
+  const industryGlow = document.getElementById(stageId + '-industry-glow');
+  const matrxStroke = document.getElementById(stageId + '-matrx-stroke');
+  const matrxFill = document.getElementById(stageId + '-matrx-fill');
+  const matrxGlow = document.getElementById(stageId + '-matrx-glow');
+
+  const motifEls = stage.querySelectorAll('.motif path, .motif line, .motif circle, .motif rect');
+
+  // Clean previous animations
+  anime.remove([frame, aiMarker, divider, sub, industryStroke, industryFill, industryGlow, matrxStroke, matrxFill, matrxGlow]);
+  anime.remove(motifEls);
+
+  // Build/reset particles
+  buildParticles(stageId + '-particles', 50, { x: 100, y: 80, w: 1000, h: 320 });
+  const particles = stage.querySelectorAll('#' + stageId + '-particles circle');
+
+  // Prep stroke draw-on for the four stroke-versions
+  prepText(industryStroke);
+  prepText(industryGlow);
+  prepText(matrxStroke);
+  prepText(matrxGlow);
+
+  // Initial states
+  anime.set(frame, { opacity: 0 });
+  anime.set(aiMarker, { opacity: 0 });
+  anime.set(divider, { opacity: 0, scaleX: 0 });
+  anime.set(sub, { opacity: 0 });
+  anime.set(industryFill, { opacity: 0 });
+  anime.set(industryGlow, { opacity: 0 });
+  anime.set(matrxFill, { opacity: 0 });
+  anime.set(matrxGlow, { opacity: 0 });
+  anime.set(particles, { opacity: 0 });
+  anime.set(motifEls, { opacity: 0 });
+
+  const tl = anime.timeline();
+
+  tl.add({
+    targets: frame,
+    opacity: [0, 1],
+    duration: 700,
+    easing: 'easeOutQuad'
+  })
+  .add({
+    targets: aiMarker,
+    opacity: [0, 0.7],
+    duration: 500
+  }, '-=300')
+  // Industry word: glow appears, then strokes draw on
+  .add({
+    targets: industryGlow,
+    opacity: [0, 0.6],
+    strokeDashoffset: [2000, 0],
+    duration: 1400,
+    easing: 'easeInOutQuart'
+  }, '-=200')
+  .add({
+    targets: industryStroke,
+    strokeDashoffset: [2000, 0],
+    duration: 1400,
+    easing: 'easeInOutQuart'
+  }, '-=1400')
+  .add({
+    targets: industryFill,
+    opacity: [0, 1],
+    duration: 600,
+    easing: 'easeOutQuad'
+  }, '-=400')
+  // Divider draws across
+  .add({
+    targets: divider,
+    opacity: [0, 1],
+    scaleX: [0, 1],
+    duration: 600,
+    easing: 'easeOutQuad'
+  }, '-=300')
+  // MATRX: glow + strokes + fill
+  .add({
+    targets: matrxGlow,
+    opacity: [0, 0.6],
+    strokeDashoffset: [2000, 0],
+    duration: 1800,
+    easing: 'easeInOutQuart'
+  }, '-=200')
+  .add({
+    targets: matrxStroke,
+    strokeDashoffset: [2000, 0],
+    duration: 1800,
+    easing: 'easeInOutQuart'
+  }, '-=1800')
+  .add({
+    targets: matrxFill,
+    opacity: [0, 1],
+    duration: 700,
+    easing: 'easeOutQuad'
+  }, '-=500')
+  // Particles drift in
+  .add({
+    targets: particles,
+    opacity: [{ value: [0, 0.7], duration: 400 }, { value: 0.3, duration: 600 }],
+    translateY: () => anime.random(-25, 25),
+    translateX: () => anime.random(-18, 18),
+    duration: 1000,
+    delay: anime.stagger(15, { from: 'center' })
+  }, '-=1200')
+  // Motif emerges
+  .add({
+    targets: motifEls,
+    opacity: [0, 0.7],
+    duration: 800,
+    delay: anime.stagger(40),
+    easing: 'easeOutQuad'
+  }, '-=600')
+  // Tagline
+  .add({
+    targets: sub,
+    opacity: [0, 1],
+    duration: 700
+  }, '-=400');
+
+  // Looping particles
+  setTimeout(() => {
+    anime({
+      targets: particles,
+      translateY: () => '+=' + anime.random(-12, 12),
+      translateX: () => '+=' + anime.random(-12, 12),
+      opacity: [0.3, 0.65, 0.3],
+      duration: () => anime.random(2200, 4500),
+      easing: 'easeInOutSine',
+      loop: true,
+      direction: 'alternate'
+    });
+  }, 4500);
+
+  // Set divider transform-origin so scaleX animates from center
+  if (divider) {
+    divider.style.transformOrigin = '600px 240px';
+    divider.style.transformBox = 'fill-box';
+  }
+
+  // Medical-specific pulse loop
+  if (stageId === 'medical') {
+    const pulse = document.getElementById('medical-pulse');
+    if (pulse) {
+      const len = pulse.getTotalLength();
+      setTimeout(() => {
+        pulse.style.strokeDasharray = '50 ' + (len - 50);
+        anime({
+          targets: pulse,
+          strokeDashoffset: [-len, 0],
+          duration: 2400,
+          easing: 'linear',
+          loop: true
+        });
+      }, 5000);
+    }
+  }
+}
+
+const stages = ['legal', 'medical', 'finance', 'ecommerce', 'marketing', 'seo', 'education', 'code'];
+
+stages.forEach(id => {
+  document.getElementById(id).addEventListener('click', () => playStage(id));
+});
+
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && !entry.target.dataset.played) {
+      entry.target.dataset.played = '1';
+      playStage(entry.target.id);
+    }
+  });
+}, { threshold: 0.35 });
+
+document.querySelectorAll('.stage').forEach(s => io.observe(s));
+</script>
+</body>
+</html>

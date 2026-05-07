@@ -30,7 +30,7 @@
  * DB-loaded turn:    messageId set, isStreamActive=false (no requestId).
  */
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import MarkdownStream from "@/components/MarkdownStream";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useDebugContext } from "@/hooks/useDebugContext";
@@ -38,7 +38,9 @@ import { selectErrorIsFatal } from "@/features/agents/redux/execution-system/act
 import {
   selectMessageById,
   extractFlatText,
+  extractContentBlocks,
 } from "@/features/agents/redux/execution-system/messages/messages.selectors";
+import { normalizeContentBlocks } from "@/features/agents/redux/execution-system/utils/normalize-content-blocks";
 import { AssistantError } from "../../run/AssistantError";
 import { AssistantActionBar } from "./AssistantActionBar";
 import { RetryConfirmDialog } from "@/features/agents/components/messages-display/message-options/RetryConfirmDialog";
@@ -92,6 +94,34 @@ export function AgentAssistantMessage({
 
   // Plain-text projection for action bar (copy / print / share).
   const flatText = extractFlatText(record);
+
+  // Non-text blocks (images, audio, data events) that need direct rendering.
+  // These bypass the markdown pipeline and go to BlockRenderer via the
+  // serverProcessedBlocks path in EnhancedChatMarkdown.
+  //
+  // Excluded: "text" (handled by flatText), "thinking" / "reasoning" (handled
+  // by the interleaved selector), "tool_call" / "tool_result" (handled by
+  // DbToolCard). Any remaining block type — media, image_output, search_results,
+  // etc. — is normalised into the canonical RenderBlockPayload shape.
+  //
+  // useMemo is intentional here: normalizeContentBlocks generates UUIDs for
+  // blockIds, so we must stabilise the output to avoid new IDs on every render.
+  const serverProcessedBlocks = useMemo(() => {
+    const EXCLUDED = new Set([
+      "text",
+      "thinking",
+      "reasoning",
+      "tool_call",
+      "tool_result",
+    ]);
+    const mediaBlocks = extractContentBlocks(record).filter(
+      (b) => !EXCLUDED.has((b as { type?: string }).type ?? ""),
+    );
+    if (mediaBlocks.length === 0) return undefined;
+    return normalizeContentBlocks(
+      mediaBlocks as Array<Record<string, unknown>>,
+    );
+  }, [record]);
 
   const canRetry = Boolean(messageId);
 
@@ -170,6 +200,7 @@ export function AgentAssistantMessage({
         isStreamActive={isStreamActive}
         hideCopyButton={true}
         allowFullScreenEditor={false}
+        serverProcessedBlocks={serverProcessedBlocks}
       />
       {messageId && (
         <MessageFilesStrip

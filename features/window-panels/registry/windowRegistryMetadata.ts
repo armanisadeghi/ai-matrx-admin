@@ -1041,6 +1041,20 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     ephemeral: true,
   },
   {
+    // Bottom-right toast stack that pops up whenever an AI image_output
+    // block arrives in any active stream.  Opened automatically by
+    // process-stream.ts (dispatch openOverlay) — no user action required.
+    // Self-closes when all peek cards are dismissed. Clicking a card opens
+    // the full ImageViewerWindow. Ephemeral so the stack never persists
+    // across page loads.
+    slug: "image-peek-host",
+    overlayId: "imagePeekHost",
+    kind: "widget",
+    label: "Image Peek Notifications",
+    defaultData: {},
+    ephemeral: true,
+  },
+  {
     slug: "html-preview",
     overlayId: "htmlPreview",
     kind: "widget",
