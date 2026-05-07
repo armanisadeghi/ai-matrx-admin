@@ -26,6 +26,7 @@ import type {
   CloudUserGroup,
   CloudUserGroupMember,
   PermissionLevel,
+  RagStatus,
   TreeChildren,
   UploadState,
 } from "@/features/files/types";
@@ -257,7 +258,8 @@ export const selectHasActiveColumnFilters = createSelector(
     cf.modified !== "any" ||
     cf.created !== "any" ||
     cf.size !== "any" ||
-    cf.access !== "any",
+    cf.access !== "any" ||
+    cf.rag.length > 0,
 );
 
 export const selectVisibleColumns = createSelector(
@@ -470,6 +472,36 @@ export const selectOverallUploadProgress = createSelector(
       percent: total > 0 ? Math.round((loaded / total) * 100) : 0,
     };
   },
+);
+
+// ---------------------------------------------------------------------------
+// RAG status (per-file indexing)
+// ---------------------------------------------------------------------------
+
+const selectRagStatusSlice = createSelector(
+  [selectSlice],
+  (slice) => slice.ragStatus,
+);
+
+/** Map of fileId → current RagStatus. Empty until the prefetch thunk runs. */
+export const selectRagStatuses = createSelector(
+  [selectRagStatusSlice],
+  (rag) => rag.byFileId,
+);
+
+export const selectRagStatusForFile = createSelector(
+  [selectRagStatuses, (_s: StateWithCloudFiles, fileId: string) => fileId],
+  (byId, fileId): RagStatus | undefined => byId[fileId],
+);
+
+export const selectIsRagFetching = createSelector(
+  [selectRagStatusSlice],
+  (rag): boolean => rag.isFetching,
+);
+
+export const selectRagLastFetchedAt = createSelector(
+  [selectRagStatusSlice],
+  (rag): number | null => rag.lastFetchedAt,
 );
 
 // ---------------------------------------------------------------------------

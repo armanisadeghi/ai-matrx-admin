@@ -33,6 +33,8 @@ import type {
   KindFilter,
   ModifiedFilter,
   OwnerFilter,
+  RagFilter,
+  RagStatus,
   SelectionState,
   SizeFilter,
   SortBy,
@@ -243,6 +245,7 @@ const initialState: CloudFilesState = {
       created: "any",
       size: "any",
       access: "any",
+      rag: [],
     },
     visibleColumns: { ...DEFAULT_VISIBLE_COLUMNS },
     activeFileId: null,
@@ -250,6 +253,11 @@ const initialState: CloudFilesState = {
     focusedId: null,
   },
   uploads: {},
+  ragStatus: {
+    byFileId: {},
+    isFetching: false,
+    lastFetchedAt: null,
+  },
   realtime: {
     status: "detached",
     userId: null,
@@ -763,6 +771,7 @@ const slice = createSlice({
         | { column: "created"; value: ModifiedFilter }
         | { column: "size"; value: SizeFilter }
         | { column: "access"; value: AccessFilter }
+        | { column: "rag"; value: RagFilter }
       >,
     ) {
       const next = action.payload;
@@ -799,6 +808,9 @@ const slice = createSlice({
         case "access":
           state.ui.columnFilters.access = next.value;
           break;
+        case "rag":
+          state.ui.columnFilters.rag = next.value;
+          break;
       }
     },
 
@@ -814,6 +826,7 @@ const slice = createSlice({
         created: "any",
         size: "any",
         access: "any",
+        rag: [],
       };
     },
 
@@ -950,6 +963,32 @@ const slice = createSlice({
       state.realtime.lastEventAt = Date.now();
     },
 
+    // ---- RAG status (per-file) ---------------------------------------------
+    setRagStatusForFile(
+      state,
+      action: PayloadAction<{ fileId: string; status: RagStatus }>,
+    ) {
+      const { fileId, status } = action.payload;
+      state.ragStatus.byFileId[fileId] = status;
+    },
+
+    setRagStatusBatch(
+      state,
+      action: PayloadAction<{ entries: Record<string, RagStatus> }>,
+    ) {
+      Object.assign(state.ragStatus.byFileId, action.payload.entries);
+      state.ragStatus.lastFetchedAt = Date.now();
+    },
+
+    setRagStatusFetching(state, action: PayloadAction<boolean>) {
+      state.ragStatus.isFetching = action.payload;
+    },
+
+    clearRagStatuses(state) {
+      state.ragStatus.byFileId = {};
+      state.ragStatus.lastFetchedAt = null;
+    },
+
     resetCloudFilesState() {
       return initialState;
     },
@@ -1016,6 +1055,11 @@ export const {
   updateUploadStatus,
   clearUpload,
   clearCompletedUploads,
+  // rag status
+  setRagStatusForFile,
+  setRagStatusBatch,
+  setRagStatusFetching,
+  clearRagStatuses,
   // realtime
   setRealtimeStatus,
   touchRealtime,

@@ -14,7 +14,7 @@
 
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Search as SearchIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -24,8 +24,10 @@ import {
   selectActiveFileId,
   selectColumnFilters,
   selectFocusedId,
+  selectIsRagFetching,
   selectKindFilter,
   selectAllFoldersMap,
+  selectRagStatuses,
   selectSelection,
   selectSort,
   selectVisibleColumns,
@@ -40,6 +42,7 @@ import {
   setSort,
   toggleSelection,
 } from "@/features/files/redux/slice";
+import { prefetchRagStatusesForFiles } from "@/features/files/redux/rag-thunks";
 import type {
   AccessFilter,
   CloudFilePermission,
@@ -47,6 +50,7 @@ import type {
   CloudFolderRecord,
   ColumnId,
   ModifiedFilter,
+  RagStatus,
   SizeFilter,
   SortBy,
   SortDirection,
@@ -71,6 +75,7 @@ import { ColumnSettings } from "./ColumnSettings";
 import { COLUMN_SPECS, visibleColumnIds } from "./columns";
 import { TypeFilterPicker } from "./TypeFilterPicker";
 import { OwnerFilterPicker, type OwnerOption } from "./OwnerFilterPicker";
+import { RagFilterPicker } from "./RagFilterPicker";
 
 export interface FileTableProps {
   folders: CloudFolderRecord[];
@@ -128,6 +133,8 @@ export function FileTable({
   const visibleColumns = useAppSelector(selectVisibleColumns);
   const currentUserId = useAppSelector(selectUserId);
   const foldersById = useAppSelector(selectAllFoldersMap);
+  const ragStatuses = useAppSelector(selectRagStatuses);
+  const isRagFetching = useAppSelector(selectIsRagFetching);
 
   const visibleIds = useMemo(
     () => visibleColumnIds(visibleColumns),
@@ -145,6 +152,7 @@ export function FileTable({
         kindFilter,
         columnFilters,
         permissionsByResourceId,
+        ragStatusByFileId: ragStatuses,
         sortBy,
         sortDir,
       }),
@@ -157,6 +165,7 @@ export function FileTable({
       kindFilter,
       columnFilters,
       permissionsByResourceId,
+      ragStatuses,
       sortBy,
       sortDir,
     ],
@@ -207,6 +216,41 @@ export function FileTable({
     }
     return out;
   }, [files, folders]);
+
+  // RAG status counts for the RAG column dropdown. We deliberately count
+  // against the FILE input set (not the rendered rows) so the breakdown
+  // reflects the universe the user could re-filter to. Files with no
+  // status yet are bucketed into `unknown` so the column always has a
+  // truthful "X files not yet checked" line in the picker.
+  const ragColumnVisible = !!visibleColumns.rag_status;
+  const ragFileIds = useMemo(() => files.map((f) => f.id), [files]);
+  const ragCounts = useMemo<Partial<Record<RagStatus, number>>>(() => {
+    const out: Partial<Record<RagStatus, number>> = {};
+    for (const id of ragFileIds) {
+      const st = ragStatuses[id] ?? "unknown";
+      out[st] = (out[st] ?? 0) + 1;
+    }
+    return out;
+  }, [ragFileIds, ragStatuses]);
+
+  // Auto-prefetch RAG status for every file in the current dataset
+  // whenever the column is visible. The thunk skips ids whose status is
+  // already known, so toggling other filters / scrolling does not refire
+  // the fetch — only newly-loaded files trigger work.
+  useEffect(() => {
+    if (!ragColumnVisible) return;
+    if (ragFileIds.length === 0) return;
+    void dispatch(
+      prefetchRagStatusesForFiles({ fileIds: ragFileIds, force: false }),
+    );
+  }, [ragColumnVisible, ragFileIds, dispatch]);
+
+  const refreshRagStatuses = useCallback(() => {
+    if (ragFileIds.length === 0) return;
+    void dispatch(
+      prefetchRagStatusesForFiles({ fileIds: ragFileIds, force: true }),
+    );
+  }, [ragFileIds, dispatch]);
 
   // Infinite scroll — slice the rows window. Resets to the top
   // whenever the user changes context (section / folder / filters /
@@ -363,6 +407,9 @@ export function FileTable({
                   onChangeFilter={(action) => dispatch(setColumnFilter(action))}
                   ownerOptions={ownerOptions}
                   typeCounts={typeCounts}
+                  ragCounts={ragCounts}
+                  isRagFetching={isRagFetching}
+                  onRefreshRag={refreshRagStatuses}
                 />
               ))}
               <th className="w-10 px-1 py-1 text-right">
@@ -478,6 +525,9 @@ interface FileTableHeaderCellProps {
   onChangeFilter: (action: Parameters<typeof setColumnFilter>[0]) => void;
   ownerOptions: OwnerOption[];
   typeCounts: Partial<Record<FileCategory, number>>;
+  ragCounts: Partial<Record<RagStatus, number>>;
+  isRagFetching: boolean;
+  onRefreshRag: () => void;
 }
 
 function FileTableHeaderCell({
@@ -489,11 +539,17 @@ function FileTableHeaderCell({
   onChangeFilter,
   ownerOptions,
   typeCounts,
+  ragCounts,
+  isRagFetching,
+  onRefreshRag,
 }: FileTableHeaderCellProps) {
   const spec = COLUMN_SPECS[id];
   const filter = columnFiltersFor(id, columnFilters, onChangeFilter, {
     ownerOptions,
     typeCounts,
+    ragCounts,
+    isRagFetching,
+    onRefreshRag,
   });
   return (
     <ColumnHeader
@@ -523,6 +579,9 @@ function columnFiltersFor(
   context: {
     ownerOptions: OwnerOption[];
     typeCounts: Partial<Record<FileCategory, number>>;
+    ragCounts: Partial<Record<RagStatus, number>>;
+    isRagFetching: boolean;
+    onRefreshRag: () => void;
   },
 ): ColumnFilterResolved {
   switch (id) {
@@ -661,6 +720,19 @@ function columnFiltersFor(
           <AccessFilterPicker
             value={filters.access}
             onChange={(value) => onChange({ column: "access", value })}
+          />
+        ),
+      };
+    case "rag_status":
+      return {
+        active: filters.rag.length > 0,
+        content: (
+          <RagFilterPicker
+            value={filters.rag}
+            onChange={(value) => onChange({ column: "rag", value })}
+            counts={context.ragCounts}
+            isFetching={context.isRagFetching}
+            onRefresh={context.onRefreshRag}
           />
         ),
       };

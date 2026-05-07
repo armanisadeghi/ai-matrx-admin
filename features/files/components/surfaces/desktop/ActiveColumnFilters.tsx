@@ -60,6 +60,20 @@ const CATEGORY_LABEL: Record<string, string> = {
   UNKNOWN: "Other",
 };
 
+const RAG_LABEL: Record<string, string> = {
+  indexed: "Indexed",
+  not_indexed: "Not indexed",
+  pending: "Checking…",
+  unknown: "Unknown",
+};
+
+function formatRagChip(value: readonly string[]): string {
+  if (value.length === 1) {
+    return `RAG: ${RAG_LABEL[value[0]] ?? value[0]}`;
+  }
+  return `RAG: ${value.length} statuses`;
+}
+
 function formatTypeChip(value: readonly string[]): string {
   if (value.length === 1) {
     return `Type: ${CATEGORY_LABEL[value[0]] ?? value[0]}`;
@@ -156,6 +170,13 @@ export function ActiveColumnFilters({ className }: ActiveColumnFiltersProps) {
       label: ACCESS_LABEL[filters.access] ?? filters.access,
       onClear: () =>
         dispatch(setColumnFilter({ column: "access", value: "any" })),
+    });
+  }
+  if (filters.rag.length > 0) {
+    chips.push({
+      key: "rag",
+      label: formatRagChip(filters.rag),
+      onClear: () => dispatch(setColumnFilter({ column: "rag", value: [] })),
     });
   }
 

@@ -416,6 +416,28 @@ export type TypeFilter = string[];
 /** Owner filter — multi-select set of owner user ids. Empty = "any owner". */
 export type OwnerFilter = string[];
 
+/**
+ * Per-file RAG indexing status.
+ *
+ *   - `indexed`     — backend has a `processed_documents` row for this file
+ *   - `not_indexed` — file exists but no doc row (`/files/{id}/document` 404)
+ *   - `pending`     — request is in flight
+ *   - `unknown`     — endpoint returned a transient error or hasn't been
+ *                     called yet for this file
+ *
+ * The pending state matters because the user toggles "Show RAG status"
+ * across hundreds of files at once — the column needs to show "Checking…"
+ * for the rows still in flight rather than flickering "Not indexed".
+ */
+export type RagStatus = "indexed" | "not_indexed" | "pending" | "unknown";
+
+/**
+ * RAG filter — multi-select of statuses. Empty array = "any status".
+ * Modeled as `string[]` (not `RagStatus[]`) to mirror `TypeFilter` /
+ * `OwnerFilter` and keep the slice type import-cycle-free.
+ */
+export type RagFilter = string[];
+
 /** Per-column filters surfaced through the column-header dropdowns. */
 export interface ColumnFilters {
   /** Name "contains" — column-scoped text filter, distinct from the
@@ -436,6 +458,13 @@ export interface ColumnFilters {
   created: ModifiedFilter;
   size: SizeFilter;
   access: AccessFilter;
+  /**
+   * RAG indexing status multi-select. Only meaningful when the user has
+   * fetched RAG statuses (via the RAG column toggle in column-settings or
+   * the column-header refresh button) — folders never pass this filter
+   * since RAG indexing is a file-only concept.
+   */
+  rag: RagFilter;
 }
 
 /**
@@ -457,7 +486,8 @@ export type ColumnId =
   | "version"
   | "updated_at"
   | "created_at"
-  | "access";
+  | "access"
+  | "rag_status";
 
 export type VisibleColumns = Record<ColumnId, boolean>;
 
@@ -467,6 +497,9 @@ export type VisibleColumns = Record<ColumnId, boolean>;
  * because "what kind of file is this" is the second-most-important
  * question after "what's its name", and the previous shipping default
  * (just Name / Modified / Size / Access) silently hid that signal.
+ *
+ * `rag_status` is OFF by default because populating it requires a per-file
+ * network probe that the user explicitly opts into.
  */
 export const DEFAULT_VISIBLE_COLUMNS: VisibleColumns = {
   name: true,
@@ -480,6 +513,7 @@ export const DEFAULT_VISIBLE_COLUMNS: VisibleColumns = {
   updated_at: true,
   created_at: false,
   access: true,
+  rag_status: false,
 };
 
 export interface UiState {
@@ -542,6 +576,20 @@ export interface UploadState {
 //
 // Registered under key `cloudFiles` in lib/redux/rootReducer.ts (Phase 2).
 
+/**
+ * Per-file RAG indexing status, hydrated lazily by the
+ * `prefetchRagStatusesForFiles` thunk. The thunk de-duplicates against
+ * `byFileId` so toggling the RAG column on/off doesn't re-fetch already
+ * known answers (use the column header's refresh action to force).
+ */
+export interface RagStatusState {
+  byFileId: Record<string, RagStatus>;
+  /** True while a batch fetch is in flight. */
+  isFetching: boolean;
+  /** ms timestamp of the most-recent successful batch (any source). */
+  lastFetchedAt: number | null;
+}
+
 export interface CloudFilesState {
   filesById: Record<string, CloudFileRecord>;
   foldersById: Record<string, CloudFolderRecord>;
@@ -555,6 +603,9 @@ export interface CloudFilesState {
   selection: SelectionState;
   ui: UiState;
   uploads: Record<string, UploadState>;
+
+  /** Per-file RAG indexing status, populated on demand. */
+  ragStatus: RagStatusState;
 
   /**
    * Realtime attachment status. Mirrors the supabase Channel lifecycle.

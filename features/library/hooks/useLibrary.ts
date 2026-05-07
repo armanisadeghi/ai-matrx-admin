@@ -230,8 +230,12 @@ export interface UseLibraryOptions {
   status?: DocStatus | null;
   limit?: number;
   offset?: number;
-  /** Bumping this triggers a refetch (e.g. after a re-process). */
+  /** Bumping this triggers an explicit refetch (e.g. after a re-process). */
   refreshKey?: number;
+  /** When set, poll every N ms while the document tab is visible. Pass 0
+   *  or omit to disable polling. The poll is paused when the tab is
+   *  hidden (Page Visibility API) and immediately fires once on resume. */
+  pollMs?: number;
 }
 
 export function useLibrary(opts: UseLibraryOptions = {}) {
@@ -241,48 +245,102 @@ export function useLibrary(opts: UseLibraryOptions = {}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { search, status, limit = 100, offset = 0, refreshKey = 0 } = opts;
+  const {
+    search,
+    status,
+    limit = 100,
+    offset = 0,
+    refreshKey = 0,
+    pollMs = 0,
+  } = opts;
 
   useEffect(() => {
     if (!userId) return;
     let cancelled = false;
-    setLoading(true);
-    setError(null);
+    let pollTimer: ReturnType<typeof setTimeout> | null = null;
 
     const params = new URLSearchParams();
     params.set("limit", String(limit));
     params.set("offset", String(offset));
     if (search) params.set("search", search);
     if (status) params.set("status_filter", status);
+    const url = `/rag/library?${params.toString()}`;
 
-    getJson<ApiListResponse>(`/rag/library?${params.toString()}`)
-      .then(({ data }) => {
+    let firstFetch = true;
+
+    const run = async () => {
+      // Don't show a loading flicker on poll ticks — only on the first fetch
+      // and on explicit refreshKey bumps.
+      if (firstFetch) setLoading(true);
+      setError(null);
+      try {
+        const { data } = await getJson<ApiListResponse>(url);
         if (cancelled) return;
-        // Defensive: server *should* always return {documents, total},
-        // but if for any reason the shape is off (proxy 404 page,
-        // upstream fallback, etc.), we fail soft instead of crashing
-        // the whole page with a `.map of undefined`.
         const list = Array.isArray(data?.documents) ? data.documents : [];
         setDocs(list.map(mapSummary));
         setTotal(typeof data?.total === "number" ? data.total : list.length);
-      })
-      .catch((err) => {
+      } catch (err) {
         if (cancelled) return;
-        setError(err?.message ?? "Failed to load library");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+        setError(
+          (err as { message?: string })?.message ?? "Failed to load library",
+        );
+      } finally {
+        if (!cancelled && firstFetch) setLoading(false);
+        firstFetch = false;
+      }
+      if (cancelled || pollMs <= 0) return;
+      // Skip scheduling the next tick when the tab is hidden — we re-arm on
+      // visibility change below.
+      if (typeof document !== "undefined" && document.hidden) return;
+      pollTimer = setTimeout(run, pollMs);
+    };
+
+    void run();
+
+    const onVis = () => {
+      if (
+        !cancelled &&
+        pollMs > 0 &&
+        typeof document !== "undefined" &&
+        !document.hidden
+      ) {
+        if (pollTimer) clearTimeout(pollTimer);
+        void run();
+      }
+    };
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", onVis);
+    }
 
     return () => {
       cancelled = true;
+      if (pollTimer) clearTimeout(pollTimer);
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", onVis);
+      }
     };
-  }, [userId, search, status, limit, offset, refreshKey]);
+  }, [userId, search, status, limit, offset, refreshKey, pollMs]);
 
   return { docs, total, loading, error };
 }
 
-export function useLibrarySummary(refreshKey = 0) {
+export interface UseLibrarySummaryOptions {
+  refreshKey?: number;
+  /** Poll cadence in ms while the tab is visible. 0 = no polling. */
+  pollMs?: number;
+}
+
+export function useLibrarySummary(
+  refreshKeyOrOpts: number | UseLibrarySummaryOptions = 0,
+) {
+  // Backwards-compatible: accept either a refresh-key number (legacy) or
+  // an options object with refreshKey + pollMs.
+  const opts: UseLibrarySummaryOptions =
+    typeof refreshKeyOrOpts === "number"
+      ? { refreshKey: refreshKeyOrOpts }
+      : refreshKeyOrOpts;
+  const { refreshKey = 0, pollMs = 0 } = opts;
+
   const userId = useAppSelector(selectUserId);
   const [summary, setSummary] = useState<LibrarySummary | null>(null);
   const [loading, setLoading] = useState(false);
@@ -291,24 +349,58 @@ export function useLibrarySummary(refreshKey = 0) {
   useEffect(() => {
     if (!userId) return;
     let cancelled = false;
-    setLoading(true);
-    setError(null);
+    let pollTimer: ReturnType<typeof setTimeout> | null = null;
+    let firstFetch = true;
 
-    getJson<ApiSummaryTotals>("/rag/library/summary/totals")
-      .then(({ data }) => {
+    const run = async () => {
+      if (firstFetch) setLoading(true);
+      setError(null);
+      try {
+        const { data } = await getJson<ApiSummaryTotals>(
+          "/rag/library/summary/totals",
+        );
         if (!cancelled && data) setSummary(mapSummaryTotals(data));
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err?.message ?? "Failed to load summary");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+      } catch (err) {
+        if (!cancelled) {
+          setError(
+            (err as { message?: string })?.message ??
+              "Failed to load summary",
+          );
+        }
+      } finally {
+        if (!cancelled && firstFetch) setLoading(false);
+        firstFetch = false;
+      }
+      if (cancelled || pollMs <= 0) return;
+      if (typeof document !== "undefined" && document.hidden) return;
+      pollTimer = setTimeout(run, pollMs);
+    };
+
+    void run();
+
+    const onVis = () => {
+      if (
+        !cancelled &&
+        pollMs > 0 &&
+        typeof document !== "undefined" &&
+        !document.hidden
+      ) {
+        if (pollTimer) clearTimeout(pollTimer);
+        void run();
+      }
+    };
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", onVis);
+    }
 
     return () => {
       cancelled = true;
+      if (pollTimer) clearTimeout(pollTimer);
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", onVis);
+      }
     };
-  }, [userId, refreshKey]);
+  }, [userId, refreshKey, pollMs]);
 
   return { summary, loading, error };
 }

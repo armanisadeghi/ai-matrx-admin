@@ -16,6 +16,8 @@ import type {
   ColumnFilters,
   ModifiedFilter,
   OwnerFilter,
+  RagFilter,
+  RagStatus,
   SizeFilter,
   SortBy,
   SortDirection,
@@ -77,6 +79,27 @@ function passesOwnerFilter(ownerId: string, filter: OwnerFilter): boolean {
   return filter.includes(ownerId);
 }
 
+/**
+ * Applies the RAG-status filter. When the user selects "Indexed" from the
+ * RAG column header but the prefetch hasn't reached this file yet, we
+ * treat the row as not matching — better to under-show than to flicker
+ * the wrong answer. A user clicking Refresh on the column header
+ * resolves the ambiguity.
+ *
+ * `unknown` (transient backend error / endpoint unavailable) is treated
+ * the same as "no answer yet": only matches when the user explicitly
+ * selects `unknown` in the filter.
+ */
+function passesRagFilter(
+  fileId: string,
+  filter: RagFilter,
+  byFileId: Record<string, RagStatus>,
+): boolean {
+  if (!filter || filter.length === 0) return true;
+  const status = byFileId[fileId] ?? "unknown";
+  return filter.includes(status);
+}
+
 function passesContains(haystack: string, needle: string): boolean {
   if (!needle) return true;
   return haystack.toLowerCase().includes(needle.toLowerCase());
@@ -103,6 +126,11 @@ export interface BuildRowsArg {
   /** Per-column filters from the column-header dropdowns. */
   columnFilters?: ColumnFilters;
   permissionsByResourceId: Record<string, CloudFilePermission[]>;
+  /**
+   * Per-file RAG status map (`fileId → RagStatus`). Required when the
+   * `rag` column filter is non-empty; otherwise unused.
+   */
+  ragStatusByFileId?: Record<string, RagStatus>;
   /**
    * Active column sort. The Recents filter overrides this with its own
    * `updatedAt desc` sort because that's what "recents" means; everything
@@ -132,6 +160,7 @@ export function buildRows({
   kindFilter = "all",
   columnFilters,
   permissionsByResourceId,
+  ragStatusByFileId,
   sortBy = "name",
   sortDir = "asc",
 }: BuildRowsArg): BuildRowsResult {
@@ -193,6 +222,16 @@ export function buildRows({
       ) {
         return false;
       }
+      if (columnFilters.rag.length > 0) {
+        if (
+          !passesRagFilter(
+            file.id,
+            columnFilters.rag,
+            ragStatusByFileId ?? {},
+          )
+        )
+          return false;
+      }
     }
     return true;
   };
@@ -224,6 +263,9 @@ export function buildRows({
         return false;
       if (columnFilters.extension) return false;
       if (columnFilters.mime) return false;
+      // RAG status is a file-only concept; any active rag filter implicitly
+      // excludes folders.
+      if (columnFilters.rag.length > 0) return false;
       if (!passesModifiedFilter(folder.updatedAt, columnFilters.modified))
         return false;
       if (!passesModifiedFilter(folder.createdAt, columnFilters.created))

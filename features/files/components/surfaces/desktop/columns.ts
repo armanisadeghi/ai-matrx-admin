@@ -79,12 +79,25 @@ export const COLUMN_SPECS: Record<ColumnId, ColumnSpec> = {
     descLabel: "Newest first",
   },
   access: { id: "access", label: "Access", sortKey: null },
+  rag_status: {
+    id: "rag_status",
+    label: "RAG",
+    // RAG status is a derived enum (Indexed / Not indexed / Checking),
+    // and the column is meaningless for folders — keep it filter-only
+    // so users don't accidentally interleave files by indexing state.
+    sortKey: null,
+    fileOnly: true,
+  },
 };
 
 /**
  * Stable left-to-right order for the file-table header. Always begins
  * with `name` (anchor column) and ends with `access` (the rightmost
  * status column). Hidden columns are skipped at render time.
+ *
+ * `rag_status` sits between `access` and the trailing column-settings
+ * gear — it's a side-band signal users opt into, not core file metadata,
+ * so it lives at the right edge.
  */
 export const COLUMN_ORDER: ReadonlyArray<ColumnId> = [
   "name",
@@ -98,6 +111,7 @@ export const COLUMN_ORDER: ReadonlyArray<ColumnId> = [
   "updated_at",
   "created_at",
   "access",
+  "rag_status",
 ];
 
 export function visibleColumnIds(

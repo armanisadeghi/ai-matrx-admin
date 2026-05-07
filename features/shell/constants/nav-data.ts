@@ -1,6 +1,28 @@
 // nav-data.ts — Pure data, no React/JSX imports
 // Single source of truth for primary + admin shell navigation (all layouts).
 
+/**
+ * Where an **admin** row is listed (primary nav ignores this).
+ * - `sidebar` — desktop secondary admin strip (when the admin indicator is visible)
+ * - `headerMenu` — profile / header dropdown → Admin section
+ * Omit on a row → both surfaces (default). Keeps one definition without deleting routes.
+ */
+export type AdminNavSurface = "sidebar" | "headerMenu";
+
+export const DEFAULT_ADMIN_SURFACES: AdminNavSurface[] = [
+  "sidebar",
+  "headerMenu",
+];
+
+export function adminItemOnSurface(
+  item: ShellNavItem,
+  surface: AdminNavSurface,
+): boolean {
+  if (item.section !== "admin") return false;
+  const surfaces = item.adminSurfaces ?? DEFAULT_ADMIN_SURFACES;
+  return surfaces.includes(surface);
+}
+
 export interface ShellNavChild {
   label: string;
   href: string;
@@ -23,6 +45,11 @@ export interface ShellNavItem {
   profileMenu?: boolean;
   /** Dashboard app grid tiles. */
   dashboard?: boolean;
+  /**
+   * Admin rows only: which UI surfaces show this link.
+   * Default when omitted: sidebar + header Admin menu.
+   */
+  adminSurfaces?: AdminNavSurface[];
 }
 
 // Primary navigation items — canonical app URLs shared by (a), (ssr), and (authenticated).
@@ -258,7 +285,10 @@ export const primaryNavItems: ShellNavItem[] = [
   },
 ];
 
-// Admin navigation items
+// Admin navigation — optional `adminSurfaces` per row (section === "admin" only):
+//   ["sidebar"]      → desktop secondary panel only
+//   ["headerMenu"]   → profile dropdown Admin block only
+//   both or omitted  → both (default)
 export const adminNavItems: ShellNavItem[] = [
   {
     label: "Admin Dashboard",
@@ -285,46 +315,6 @@ export const adminNavItems: ShellNavItem[] = [
     color: "red",
   },
   {
-    label: "Apps",
-    href: "/apps",
-    iconName: "Boxes",
-    section: "admin",
-    category: "Applets",
-    color: "emerald",
-  },
-  {
-    label: "App Builder",
-    href: "/apps/app-builder",
-    iconName: "Lightbulb",
-    section: "admin",
-    category: "Applets",
-    color: "amber",
-  },
-  {
-    label: "Applet demo",
-    href: "/apps/demo",
-    iconName: "LayoutPanelLeft",
-    section: "admin",
-    category: "Applets",
-    color: "rose",
-  },
-  {
-    label: "Dynamic Layout Demo",
-    href: "/apps/dynamic-layouts/options",
-    iconName: "Columns2",
-    section: "admin",
-    category: "Applets",
-    color: "green",
-  },
-  {
-    label: "All Layouts",
-    href: "/apps/all-layouts",
-    iconName: "LayoutPanelLeft",
-    section: "admin",
-    category: "Applets",
-    color: "blue",
-  },
-  {
     label: "App Builder Hub",
     href: "/apps/builder/hub",
     iconName: "Sparkles",
@@ -333,68 +323,12 @@ export const adminNavItems: ShellNavItem[] = [
     color: "indigo",
   },
   {
-    label: "Markdown Tests",
-    href: "/tests/markdown-tests",
-    iconName: "BookOpen",
-    section: "admin",
-    category: "Concepts",
-    color: "slate",
-  },
-  {
-    label: "Schema Manager",
-    href: "/legacy/administration/schema-manager",
-    iconName: "Database",
-    section: "admin",
-    category: "Concepts",
-    color: "cyan",
-  },
-  {
-    label: "Text Cleaner",
-    href: "/administration/utils/text-cleaner",
-    iconName: "Eraser",
-    section: "admin",
-    category: "Concepts",
-    color: "slate",
-  },
-  {
-    label: "All Form Tests",
-    href: "/tests/forms",
-    iconName: "FileInput",
-    section: "admin",
-    category: "Entities",
-    color: "slate",
-  },
-  {
-    label: "Selector Tests",
-    href: "/tests/selector-test",
-    iconName: "SquareMousePointer",
-    section: "admin",
-    category: "Redux",
-    color: "slate",
-  },
-  {
-    label: "InteliTable",
-    href: "/tests/matrx-table",
-    iconName: "Table",
-    section: "admin",
-    category: "Entities",
-    color: "slate",
-  },
-  {
     label: "Sandbox Admin",
-    href: "/admin/sandbox",
+    href: "/administration/sandbox",
     iconName: "Container",
     section: "admin",
     category: "Automation",
     color: "orange",
-  },
-  {
-    label: "Socket Admin",
-    href: "/admin/socketio",
-    iconName: "Radio",
-    section: "admin",
-    category: "Infrastructure",
-    color: "blue",
   },
 ];
 

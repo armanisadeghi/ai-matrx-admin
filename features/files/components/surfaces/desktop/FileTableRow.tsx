@@ -43,6 +43,7 @@ import { AccessBadge } from "./AccessBadge";
 import { SharedAvatarStack } from "./SharedAvatarStack";
 import { FileTypeBadge } from "./FileTypeBadge";
 import { OwnerCell } from "./OwnerCell";
+import { RagStatusCell } from "./RagStatusCell";
 
 export interface FileTableRowProps {
   kind: "file" | "folder";
@@ -339,6 +340,12 @@ function FileCell({
           </div>
         </td>
       );
+    case "rag_status":
+      return (
+        <td className="px-4 py-2 whitespace-nowrap">
+          <RagStatusCell fileId={file.id} />
+        </td>
+      );
   }
 }
 
@@ -506,6 +513,7 @@ function FolderCell({
     case "mime":
     case "size":
     case "version":
+    case "rag_status":
       return (
         <td className="px-4 py-2 text-xs text-muted-foreground/60 whitespace-nowrap">
           —
