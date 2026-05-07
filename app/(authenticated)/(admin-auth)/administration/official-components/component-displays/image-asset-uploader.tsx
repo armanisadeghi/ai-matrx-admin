@@ -68,6 +68,7 @@ import { useOpenImageUploaderWindow } from '@/features/window-panels/windows/ima
 <ImageAssetUploader
   preset="social"                    // "social" | "cover" | "avatar" | "logo" | "favicon" | "square"
   currentUrl={form.image_url}
+  pasteCaptureMode="asset"           // paste clipboard images into the Sharp variant pipeline
   enableViewerAction                 // preview opens the shared image window panel
   onComplete={(result) => {
     if (!result) return clear();
@@ -94,7 +95,7 @@ openUploader({
 // Features
 // - Server-side Sharp pipeline: all variants share one original, stay consistent
 // - 6 presets covering every common image shape (social, logo, favicon, …)
-// - Drag-drop, click, OR paste a public URL
+// - Drag-drop, click, clipboard paste, OR paste a public URL
 // - Cloud-files backed uploads with configurable visibility + folder
 // - Optional preview action opens uploaded variants in the shared image panel`;
 
@@ -145,6 +146,7 @@ openUploader({
             onComplete={setResult}
             currentUrl={result?.primary_url ?? null}
             currentVariants={result}
+            pasteCaptureMode="asset"
             enableViewerAction
             label={`${preset.charAt(0).toUpperCase()}${preset.slice(1)} image`}
           />
