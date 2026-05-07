@@ -50,5 +50,10 @@ export default function AgentAppIdLayout({
 }: {
   children: ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <>
+      <span className="shell-hide-dock" aria-hidden="true" />
+      {children}
+    </>
+  );
 }

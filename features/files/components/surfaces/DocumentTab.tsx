@@ -46,13 +46,15 @@ import {
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFileById } from "@/features/files/redux/selectors";
-import { DocumentViewer } from "@/features/documents/components/DocumentViewer";
+import { DocumentViewer } from "@/features/rag/components/documents/DocumentViewer";
+import { IngestProgressDialog } from "@/features/rag/components/library/IngestProgressDialog";
+import { LibraryPreviewPage } from "@/features/rag/components/library/LibraryPreviewPage";
 import { useFileDocument } from "@/features/files/hooks/useFileDocument";
 import {
   onFileDocumentProcessed,
   useFileIngest,
   type UseFileIngestState,
-} from "@/features/files/hooks/useFileIngest";
+} from "@/features/rag/hooks/useFileIngest";
 
 export interface DocumentTabProps {
   fileId: string;
@@ -107,17 +109,41 @@ export function DocumentTab({
     return <div className={cn("h-full w-full", className)} />;
   }
 
-  // While an ingest is in flight, every state should show the streaming
-  // progress card — even if the file is currently `found`. That way
-  // hitting "Reprocess" on an already-ingested file shows the same UI
-  // as a first-time ingestion.
-  if (ingest.status === "running") {
+  // While an ingest is in flight (or has just errored), render the
+  // ProcessingProgressDialog as the floating bottom-right widget by
+  // default — the file table the user came from stays visible behind
+  // it. The user can click the widget's expand button to see the full
+  // four-stage stepper + previews if they want detail. The placeholder
+  // under the widget tells them where to look in case they collapsed
+  // the preview pane while a run is in flight.
+  const ingestActive = ingest.status === "running" || ingest.status === "error";
+  if (ingestActive) {
     return (
-      <IngestProgressCard
-        fileName={file?.fileName ?? null}
-        ingest={ingest}
-        className={className}
-      />
+      <>
+        <IngestProgressDialog
+          open
+          fileName={file?.fileName ?? "this file"}
+          ingest={ingest}
+          defaultMinimized
+          onClose={() => {
+            ingest.reset();
+            refresh();
+          }}
+        />
+        <div
+          className={cn(
+            "flex h-full w-full items-center justify-center gap-2 text-sm text-muted-foreground",
+            className,
+          )}
+        >
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>
+            {ingest.status === "running"
+              ? "Processing — live progress in the corner."
+              : "Processing failed — see the corner widget for details."}
+          </span>
+        </div>
+      </>
     );
   }
 
@@ -161,8 +187,8 @@ export function DocumentTab({
     <div className={cn("flex h-full w-full flex-col", className)}>
       <div className="flex items-center justify-between border-b border-border bg-muted/20 px-3 py-1 text-xs shrink-0">
         <span className="text-muted-foreground">
-          {state.doc.derivation_kind} · {state.doc.total_pages ?? 0}{" "}
-          pages · {state.doc.chunk_count} chunks
+          {state.doc.derivation_kind} · {state.doc.total_pages ?? 0} pages ·{" "}
+          {state.doc.chunk_count} chunks
         </span>
         <div className="flex items-center gap-1">
           <button
@@ -193,11 +219,23 @@ export function DocumentTab({
         </div>
       </div>
       <div className="flex-1 min-h-0 overflow-hidden">
-        <DocumentViewer
-          documentId={docId}
-          initialPage={initialPage}
-          initialChunkId={initialChunkId}
-        />
+        {/* The legacy 4-pane DocumentViewer hits /api/document/* which has
+            its own bugs (returns 404 for many docs). We render the
+            LibraryPreviewPage in embedded mode here — same data, working
+            endpoints, gives the user real pages + raw + cleaned text +
+            chunks + per-doc lexical search.
+
+            The old DocumentViewer import is kept so the codebase still
+            type-checks if anything else references it; this surface
+            no longer renders it. */}
+        <LibraryPreviewPage documentId={docId} embedded />
+        {false && (
+          <DocumentViewer
+            documentId={docId}
+            initialPage={initialPage}
+            initialChunkId={initialChunkId}
+          />
+        )}
       </div>
     </div>
   );
@@ -368,9 +406,9 @@ function UnavailableCard({
         </h3>
         <p className="text-xs text-muted-foreground break-words">{reason}</p>
         <p className="text-[10px] text-muted-foreground/70">
-          The Python team is shipping `GET /files/&#123;id&#125;/document` (REQUESTS.md
-          item 14a). Until then, RAG features may not detect existing
-          processings.
+          The Python team is shipping `GET /files/&#123;id&#125;/document`
+          (REQUESTS.md item 14a). Until then, RAG features may not detect
+          existing processings.
         </p>
       </div>
       <button

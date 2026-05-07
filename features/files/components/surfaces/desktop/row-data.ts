@@ -15,15 +15,20 @@ import type {
   CloudFilePermission,
   ColumnFilters,
   ModifiedFilter,
+  OwnerFilter,
+  RagFilter,
+  RagStatus,
   SizeFilter,
   SortBy,
   SortDirection,
+  TypeFilter,
 } from "@/features/files/types";
 import {
   compareNodes,
   fileToSortable,
   folderToSortable,
 } from "@/features/files/redux/tree-utils";
+import { getFileTypeDetails } from "@/features/files/utils/file-types";
 import type { CloudFilesSection } from "./section";
 import type { FilterChipKey } from "./FilterChips";
 
@@ -59,12 +64,51 @@ function passesModifiedFilter(
   return now - updated <= 30 * day; // "month"
 }
 
-function passesAccessFilter(
-  visibility: string,
-  filter: AccessFilter,
-): boolean {
+function passesAccessFilter(visibility: string, filter: AccessFilter): boolean {
   if (filter === "any") return true;
   return visibility === filter;
+}
+
+function passesTypeFilter(category: string, filter: TypeFilter): boolean {
+  if (!filter || filter.length === 0) return true;
+  return filter.includes(category);
+}
+
+function passesOwnerFilter(ownerId: string, filter: OwnerFilter): boolean {
+  if (!filter || filter.length === 0) return true;
+  return filter.includes(ownerId);
+}
+
+/**
+ * Applies the RAG-status filter. When the user selects "Indexed" from the
+ * RAG column header but the prefetch hasn't reached this file yet, we
+ * treat the row as not matching — better to under-show than to flicker
+ * the wrong answer. A user clicking Refresh on the column header
+ * resolves the ambiguity.
+ *
+ * `unknown` (transient backend error / endpoint unavailable) is treated
+ * the same as "no answer yet": only matches when the user explicitly
+ * selects `unknown` in the filter.
+ */
+function passesRagFilter(
+  fileId: string,
+  filter: RagFilter,
+  byFileId: Record<string, RagStatus>,
+): boolean {
+  if (!filter || filter.length === 0) return true;
+  const status = byFileId[fileId] ?? "unknown";
+  return filter.includes(status);
+}
+
+function passesContains(haystack: string, needle: string): boolean {
+  if (!needle) return true;
+  return haystack.toLowerCase().includes(needle.toLowerCase());
+}
+
+function fileExtension(fileName: string): string {
+  const i = fileName.lastIndexOf(".");
+  if (i <= 0 || i === fileName.length - 1) return "";
+  return fileName.slice(i + 1).toLowerCase();
 }
 
 export type RowItem =
@@ -82,6 +126,11 @@ export interface BuildRowsArg {
   /** Per-column filters from the column-header dropdowns. */
   columnFilters?: ColumnFilters;
   permissionsByResourceId: Record<string, CloudFilePermission[]>;
+  /**
+   * Per-file RAG status map (`fileId → RagStatus`). Required when the
+   * `rag` column filter is non-empty; otherwise unused.
+   */
+  ragStatusByFileId?: Record<string, RagStatus>;
   /**
    * Active column sort. The Recents filter overrides this with its own
    * `updatedAt desc` sort because that's what "recents" means; everything
@@ -111,13 +160,13 @@ export function buildRows({
   kindFilter = "all",
   columnFilters,
   permissionsByResourceId,
+  ragStatusByFileId,
   sortBy = "name",
   sortDir = "asc",
 }: BuildRowsArg): BuildRowsResult {
   const q = searchQuery.trim().toLowerCase();
   const nameFilter = columnFilters?.name?.trim().toLowerCase() ?? "";
-  const matchesQuery = (name: string) =>
-    !q || name.toLowerCase().includes(q);
+  const matchesQuery = (name: string) => !q || name.toLowerCase().includes(q);
   const matchesNameFilter = (name: string) =>
     !nameFilter || name.toLowerCase().includes(nameFilter);
 
@@ -142,9 +191,47 @@ export function buildRows({
     if (columnFilters) {
       if (!passesModifiedFilter(file.updatedAt, columnFilters.modified))
         return false;
+      if (!passesModifiedFilter(file.createdAt, columnFilters.created))
+        return false;
       if (!passesSizeFilter(file.fileSize, columnFilters.size)) return false;
       if (!passesAccessFilter(file.visibility, columnFilters.access))
         return false;
+      if (columnFilters.type.length > 0) {
+        // Resolve once per row — the registry lookup is O(1) but skip when
+        // the filter is unset to keep the hot path tight on long lists.
+        const details = getFileTypeDetails(file.fileName);
+        if (!passesTypeFilter(details.category, columnFilters.type))
+          return false;
+      }
+      if (!passesOwnerFilter(file.ownerId, columnFilters.owner)) return false;
+      if (
+        columnFilters.extension &&
+        !passesContains(fileExtension(file.fileName), columnFilters.extension)
+      ) {
+        return false;
+      }
+      if (
+        columnFilters.mime &&
+        !passesContains(file.mimeType ?? "", columnFilters.mime)
+      ) {
+        return false;
+      }
+      if (
+        columnFilters.path &&
+        !passesContains(file.filePath, columnFilters.path)
+      ) {
+        return false;
+      }
+      if (columnFilters.rag.length > 0) {
+        if (
+          !passesRagFilter(
+            file.id,
+            columnFilters.rag,
+            ragStatusByFileId ?? {},
+          )
+        )
+          return false;
+      }
     }
     return true;
   };
@@ -165,12 +252,33 @@ export function buildRows({
     if (columnFilters) {
       // Folders don't have a `fileSize` to filter on — size filter when set
       // implicitly hides folders. Same for the access filter, which we DO
-      // apply to folders since they have a visibility.
+      // apply to folders since they have a visibility. Folders are
+      // implicitly hidden by any FILE-only filter (type / extension /
+      // mime) because folders aren't FileCategory members.
       if (columnFilters.size !== "any") return false;
+      if (
+        columnFilters.type.length > 0 &&
+        !columnFilters.type.includes("FOLDER")
+      )
+        return false;
+      if (columnFilters.extension) return false;
+      if (columnFilters.mime) return false;
+      // RAG status is a file-only concept; any active rag filter implicitly
+      // excludes folders.
+      if (columnFilters.rag.length > 0) return false;
       if (!passesModifiedFilter(folder.updatedAt, columnFilters.modified))
+        return false;
+      if (!passesModifiedFilter(folder.createdAt, columnFilters.created))
         return false;
       if (!passesAccessFilter(folder.visibility, columnFilters.access))
         return false;
+      if (!passesOwnerFilter(folder.ownerId, columnFilters.owner)) return false;
+      if (
+        columnFilters.path &&
+        !passesContains(folder.folderPath, columnFilters.path)
+      ) {
+        return false;
+      }
     }
     return true;
   };
@@ -203,8 +311,7 @@ export function buildRows({
   // ordering. Folders before files, numeric size, getTime-based dates,
   // null tie-breakers — all centralised there.
 
-  const effectiveSortBy: SortBy =
-    filter === "recents" ? "updated_at" : sortBy;
+  const effectiveSortBy: SortBy = filter === "recents" ? "updated_at" : sortBy;
   const effectiveSortDir: SortDirection =
     filter === "recents" ? "desc" : sortDir;
   const sign = effectiveSortDir === "asc" ? 1 : -1;

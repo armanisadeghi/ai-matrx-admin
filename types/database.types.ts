@@ -1,10 +1,12 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+// Original generated type (replaced by patch-db-types.sh):
+// export type Json =
+//   | string
+//   | number
+//   | boolean
+//   | null
+//   | { [key: string]: Json | undefined }
+//   | Json[]
+export type Json = unknown
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
@@ -3342,6 +3344,7 @@ export type Database = {
           ip_address: unknown
           occurred_at: string
           payload: Json
+          processed_at: string | null
           request_id: string | null
           resource_id: string | null
           resource_type: string | null
@@ -3354,6 +3357,7 @@ export type Database = {
           ip_address?: unknown
           occurred_at?: string
           payload?: Json
+          processed_at?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type?: string | null
@@ -3366,6 +3370,7 @@ export type Database = {
           ip_address?: unknown
           occurred_at?: string
           payload?: Json
+          processed_at?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type?: string | null
@@ -3460,6 +3465,7 @@ export type Database = {
       }
       cld_files: {
         Row: {
+          canonical_storage_uri: string | null
           checksum: string | null
           created_at: string
           current_version: number
@@ -3477,10 +3483,13 @@ export type Database = {
           parent_file_id: string | null
           parent_folder_id: string | null
           storage_uri: string
+          thumbnail_storage_uri: string | null
+          thumbnail_url: string | null
           updated_at: string
           visibility: string
         }
         Insert: {
+          canonical_storage_uri?: string | null
           checksum?: string | null
           created_at?: string
           current_version?: number
@@ -3498,10 +3507,13 @@ export type Database = {
           parent_file_id?: string | null
           parent_folder_id?: string | null
           storage_uri: string
+          thumbnail_storage_uri?: string | null
+          thumbnail_url?: string | null
           updated_at?: string
           visibility?: string
         }
         Update: {
+          canonical_storage_uri?: string | null
           checksum?: string | null
           created_at?: string
           current_version?: number
@@ -3519,6 +3531,8 @@ export type Database = {
           parent_file_id?: string | null
           parent_folder_id?: string | null
           storage_uri?: string
+          thumbnail_storage_uri?: string | null
+          thumbnail_url?: string | null
           updated_at?: string
           visibility?: string
         }
@@ -3682,6 +3696,72 @@ export type Database = {
         }
         Relationships: []
       }
+      cld_uploads_inflight: {
+        Row: {
+          bucket: string
+          created_at: string
+          expires_at: string
+          file_id: string
+          file_name: string
+          file_path: string
+          id: string
+          idempotency_key: string | null
+          key: string
+          metadata: Json
+          mime_type: string | null
+          multipart_upload_id: string
+          owner_id: string
+          parts: Json
+          status: string
+          updated_at: string
+          upload_length: number
+          upload_offset: number
+          visibility: string
+        }
+        Insert: {
+          bucket: string
+          created_at?: string
+          expires_at?: string
+          file_id: string
+          file_name: string
+          file_path: string
+          id?: string
+          idempotency_key?: string | null
+          key: string
+          metadata?: Json
+          mime_type?: string | null
+          multipart_upload_id: string
+          owner_id: string
+          parts?: Json
+          status?: string
+          updated_at?: string
+          upload_length: number
+          upload_offset?: number
+          visibility?: string
+        }
+        Update: {
+          bucket?: string
+          created_at?: string
+          expires_at?: string
+          file_id?: string
+          file_name?: string
+          file_path?: string
+          id?: string
+          idempotency_key?: string | null
+          key?: string
+          metadata?: Json
+          mime_type?: string | null
+          multipart_upload_id?: string
+          owner_id?: string
+          parts?: Json
+          status?: string
+          updated_at?: string
+          upload_length?: number
+          upload_offset?: number
+          visibility?: string
+        }
+        Relationships: []
+      }
       cld_user_account: {
         Row: {
           blocked_reason: string | null
@@ -3809,6 +3889,114 @@ export type Database = {
           files_count?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      cld_webhook_deliveries: {
+        Row: {
+          attempt: number
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          event_id: string
+          http_status: number | null
+          id: string
+          latency_ms: number | null
+          next_attempt_at: string | null
+          status: string
+          webhook_id: string
+        }
+        Insert: {
+          attempt?: number
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          event_id: string
+          http_status?: number | null
+          id?: string
+          latency_ms?: number | null
+          next_attempt_at?: string | null
+          status?: string
+          webhook_id: string
+        }
+        Update: {
+          attempt?: number
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          event_id?: string
+          http_status?: number | null
+          id?: string
+          latency_ms?: number | null
+          next_attempt_at?: string | null
+          status?: string
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cld_webhook_deliveries_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "cld_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cld_webhook_deliveries_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "cld_webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cld_webhooks: {
+        Row: {
+          consecutive_failures: number
+          created_at: string
+          description: string | null
+          event_types: string[] | null
+          id: string
+          is_active: boolean
+          last_attempt_at: string | null
+          last_success_at: string | null
+          max_consecutive_failures: number
+          owner_id: string
+          resource_types: string[] | null
+          secret: string
+          target_url: string
+          updated_at: string
+        }
+        Insert: {
+          consecutive_failures?: number
+          created_at?: string
+          description?: string | null
+          event_types?: string[] | null
+          id?: string
+          is_active?: boolean
+          last_attempt_at?: string | null
+          last_success_at?: string | null
+          max_consecutive_failures?: number
+          owner_id: string
+          resource_types?: string[] | null
+          secret: string
+          target_url: string
+          updated_at?: string
+        }
+        Update: {
+          consecutive_failures?: number
+          created_at?: string
+          description?: string | null
+          event_types?: string[] | null
+          id?: string
+          is_active?: boolean
+          last_attempt_at?: string | null
+          last_success_at?: string | null
+          max_consecutive_failures?: number
+          owner_id?: string
+          resource_types?: string[] | null
+          secret?: string
+          target_url?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -16065,17 +16253,23 @@ export type Database = {
           connected_at: string | null
           created_at: string
           credentials_encrypted: string | null
+          display_name: string
           endpoint_url_override: string | null
           error_count: number
           id: string
+          is_default: boolean
           last_error: string | null
           last_used_at: string | null
+          last_verified_at: string | null
+          last_verified_error: string | null
+          last_verified_status: string | null
           metadata: Json
           oauth_client_id: string | null
           oauth_scopes_granted: string[] | null
           oauth_token_endpoint: string | null
+          provider: string
           refresh_token_encrypted: string | null
-          server_id: string
+          server_id: string | null
           status: Database["public"]["Enums"]["mcp_connection_status"]
           token_expires_at: string | null
           transport_used: Database["public"]["Enums"]["mcp_transport"]
@@ -16088,17 +16282,23 @@ export type Database = {
           connected_at?: string | null
           created_at?: string
           credentials_encrypted?: string | null
+          display_name: string
           endpoint_url_override?: string | null
           error_count?: number
           id?: string
+          is_default?: boolean
           last_error?: string | null
           last_used_at?: string | null
+          last_verified_at?: string | null
+          last_verified_error?: string | null
+          last_verified_status?: string | null
           metadata?: Json
           oauth_client_id?: string | null
           oauth_scopes_granted?: string[] | null
           oauth_token_endpoint?: string | null
+          provider?: string
           refresh_token_encrypted?: string | null
-          server_id: string
+          server_id?: string | null
           status?: Database["public"]["Enums"]["mcp_connection_status"]
           token_expires_at?: string | null
           transport_used?: Database["public"]["Enums"]["mcp_transport"]
@@ -16111,17 +16311,23 @@ export type Database = {
           connected_at?: string | null
           created_at?: string
           credentials_encrypted?: string | null
+          display_name?: string
           endpoint_url_override?: string | null
           error_count?: number
           id?: string
+          is_default?: boolean
           last_error?: string | null
           last_used_at?: string | null
+          last_verified_at?: string | null
+          last_verified_error?: string | null
+          last_verified_status?: string | null
           metadata?: Json
           oauth_client_id?: string | null
           oauth_scopes_granted?: string[] | null
           oauth_token_endpoint?: string | null
+          provider?: string
           refresh_token_encrypted?: string | null
-          server_id?: string
+          server_id?: string | null
           status?: Database["public"]["Enums"]["mcp_connection_status"]
           token_expires_at?: string | null
           transport_used?: Database["public"]["Enums"]["mcp_transport"]
@@ -20736,18 +20942,16 @@ export type Database = {
         Args: { p_is_guest?: boolean; p_user_id: string }
         Returns: Json
       }
-      cld_get_user_file_tree:
-        | { Args: { p_user_id: string }; Returns: Json }
-        | {
-            Args: {
-              p_include_deleted?: boolean
-              p_include_folders?: boolean
-              p_limit?: number
-              p_offset?: number
-              p_user_id: string
-            }
-            Returns: Json
-          }
+      cld_get_user_file_tree: {
+        Args: {
+          p_include_deleted?: boolean
+          p_include_folders?: boolean
+          p_limit?: number
+          p_offset?: number
+          p_user_id: string
+        }
+        Returns: Json
+      }
       cld_get_user_limits: {
         Args: { p_is_guest?: boolean; p_user_id: string }
         Returns: Json

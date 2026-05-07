@@ -6,7 +6,15 @@
  * Exports:
  *   ImageViewer        — pure body component (images + toolbar). Embed anywhere.
  *   ImageViewerWindow  — ImageViewer inside a floating WindowPanel. Accepts onClose callback.
- *   openImageViewer    — Redux dispatch helper for the OverlayController-managed instance.
+ *
+ * The dispatcher helper used to live here too, but importing it from a
+ * route-level consumer would pull <WindowPanel> and the entire window-
+ * panels chunk graph along with it. It now lives in
+ * `./openImageViewer.ts` — a light file with no window-panel-system
+ * imports. Consumers should import the helper from there:
+ *
+ *   import { openImageViewer } from
+ *     "@/features/window-panels/windows/image/openImageViewer";
  */
 
 import React, { useState, useCallback, useEffect } from "react";
@@ -361,37 +369,12 @@ export function ImageViewerWindow({
   );
 }
 
-// ─── Redux dispatch helper ────────────────────────────────────────────────────
-// Used by OverlayController-managed instances. Callers that manage their own
-// open/close state can use <ImageViewerWindow> directly without Redux.
-
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import type { AppDispatch } from "@/lib/redux/store";
-
-export interface OpenImageViewerPayload {
-  images: string[];
-  initialIndex?: number;
-  alts?: string[];
-  title?: string;
-  /** Supply a stable id when you need multiple independent viewers open at once. */
-  instanceId?: string;
-}
-
-export function openImageViewer(
-  dispatch: AppDispatch,
-  payload: OpenImageViewerPayload,
-) {
-  const instanceId = payload.instanceId ?? "default";
-  dispatch(
-    openOverlay({
-      overlayId: "imageViewer",
-      instanceId,
-      data: {
-        images: payload.images,
-        initialIndex: payload.initialIndex ?? 0,
-        alts: payload.alts,
-        title: payload.title,
-      },
-    }),
-  );
-}
+// `openImageViewer` + its payload type live in `./openImageViewer.ts` —
+// a separate light file with no window-panel-system imports. Route-level
+// consumers should import the helper from there to avoid pulling
+// <WindowPanel> into their bundle. Back-compat re-export kept here so
+// any straggler import path still resolves.
+export {
+  openImageViewer,
+  type OpenImageViewerPayload,
+} from "./openImageViewer";

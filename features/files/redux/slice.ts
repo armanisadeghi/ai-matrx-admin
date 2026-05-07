@@ -28,19 +28,29 @@ import type {
   CloudUserGroup,
   CloudUserGroupMember,
   AccessFilter,
+  ChipFilter,
+  ColumnFilters,
+  ColumnId,
   DetailsLevel,
   KindFilter,
   ModifiedFilter,
+  OwnerFilter,
+  RagFilter,
+  RagStatus,
   SelectionState,
   SizeFilter,
   SortBy,
   SortDirection,
   TreeChildren,
+  TypeFilter,
+  UiState,
   UploadState,
   UploadStatus,
   ViewMode,
   Visibility,
+  VisibleColumns,
 } from "@/features/files/types";
+import { DEFAULT_VISIBLE_COLUMNS } from "@/features/files/types";
 
 // ---------------------------------------------------------------------------
 // Record factories
@@ -229,15 +239,30 @@ const initialState: CloudFilesState = {
     detailsLevel: "compact",
     columnFilters: {
       name: "",
+      type: [],
+      extension: "",
+      mime: "",
+      path: "",
+      owner: [],
       modified: "any",
+      created: "any",
       size: "any",
       access: "any",
+      rag: [],
     },
+    visibleColumns: { ...DEFAULT_VISIBLE_COLUMNS },
+    searchQuery: "",
+    chipFilter: null,
     activeFileId: null,
     activeFolderId: null,
     focusedId: null,
   },
   uploads: {},
+  ragStatus: {
+    byFileId: {},
+    isFetching: false,
+    lastFetchedAt: null,
+  },
   realtime: {
     status: "detached",
     userId: null,
@@ -742,27 +767,92 @@ const slice = createSlice({
       state,
       action: PayloadAction<
         | { column: "name"; value: string }
+        | { column: "type"; value: TypeFilter }
+        | { column: "extension"; value: string }
+        | { column: "mime"; value: string }
+        | { column: "path"; value: string }
+        | { column: "owner"; value: OwnerFilter }
         | { column: "modified"; value: ModifiedFilter }
+        | { column: "created"; value: ModifiedFilter }
         | { column: "size"; value: SizeFilter }
         | { column: "access"; value: AccessFilter }
+        | { column: "rag"; value: RagFilter }
       >,
     ) {
       const next = action.payload;
-      if (next.column === "name") state.ui.columnFilters.name = next.value;
-      else if (next.column === "modified")
-        state.ui.columnFilters.modified = next.value;
-      else if (next.column === "size") state.ui.columnFilters.size = next.value;
-      else if (next.column === "access")
-        state.ui.columnFilters.access = next.value;
+      // One switch statement instead of an if-ladder makes it impossible to
+      // forget a column when adding a new one — TS exhaustiveness will warn.
+      switch (next.column) {
+        case "name":
+          state.ui.columnFilters.name = next.value;
+          break;
+        case "type":
+          state.ui.columnFilters.type = next.value;
+          break;
+        case "extension":
+          state.ui.columnFilters.extension = next.value;
+          break;
+        case "mime":
+          state.ui.columnFilters.mime = next.value;
+          break;
+        case "path":
+          state.ui.columnFilters.path = next.value;
+          break;
+        case "owner":
+          state.ui.columnFilters.owner = next.value;
+          break;
+        case "modified":
+          state.ui.columnFilters.modified = next.value;
+          break;
+        case "created":
+          state.ui.columnFilters.created = next.value;
+          break;
+        case "size":
+          state.ui.columnFilters.size = next.value;
+          break;
+        case "access":
+          state.ui.columnFilters.access = next.value;
+          break;
+        case "rag":
+          state.ui.columnFilters.rag = next.value;
+          break;
+      }
     },
 
     clearColumnFilters(state) {
       state.ui.columnFilters = {
         name: "",
+        type: [],
+        extension: "",
+        mime: "",
+        path: "",
+        owner: [],
         modified: "any",
+        created: "any",
         size: "any",
         access: "any",
+        rag: [],
       };
+    },
+
+    setColumnVisibility(
+      state,
+      action: PayloadAction<{ column: ColumnId; visible: boolean }>,
+    ) {
+      const { column, visible } = action.payload;
+      // `name` is the only column that's never hideable — it's the row
+      // anchor for selection, focus, drag handle, context menu, and the
+      // Activate button. Hiding it would leave the row empty and break
+      // every interaction. Silently ignore.
+      if (column === "name") {
+        state.ui.visibleColumns.name = true;
+        return;
+      }
+      state.ui.visibleColumns[column] = visible;
+    },
+
+    resetColumnVisibility(state) {
+      state.ui.visibleColumns = { ...DEFAULT_VISIBLE_COLUMNS };
     },
 
     setActiveFileId(state, action: PayloadAction<string | null>) {
@@ -771,6 +861,75 @@ const slice = createSlice({
 
     setActiveFolderId(state, action: PayloadAction<string | null>) {
       state.ui.activeFolderId = action.payload;
+    },
+
+    /** Tree-wide search box value. Empty string clears the search. */
+    setSearchQuery(state, action: PayloadAction<string>) {
+      state.ui.searchQuery = action.payload;
+    },
+
+    /** Active sticky chip (Recents / Starred). Pass null to clear. */
+    setChipFilter(state, action: PayloadAction<ChipFilter | null>) {
+      state.ui.chipFilter = action.payload;
+    },
+
+    /**
+     * Apply many UI fields in one transaction. Used by the URL-sync layer
+     * to hydrate Redux from a `?...` query string on first paint without
+     * dispatching N separate actions (which would each spawn a re-render).
+     *
+     * Only fields present in the payload are written. Pass `columnFilters`
+     * with the FULL shape — partial column-filter merges are intentionally
+     * not supported here; the URL serializer always emits the full shape.
+     */
+    setUiBatch(state, action: PayloadAction<Partial<UiState>>) {
+      const next = action.payload;
+      if (next.viewMode !== undefined) state.ui.viewMode = next.viewMode;
+      if (next.sortBy !== undefined) state.ui.sortBy = next.sortBy;
+      if (next.sortDir !== undefined) state.ui.sortDir = next.sortDir;
+      if (next.kindFilter !== undefined) state.ui.kindFilter = next.kindFilter;
+      if (next.detailsLevel !== undefined) {
+        state.ui.detailsLevel = next.detailsLevel;
+      }
+      if (next.searchQuery !== undefined) {
+        state.ui.searchQuery = next.searchQuery;
+      }
+      if (next.chipFilter !== undefined) state.ui.chipFilter = next.chipFilter;
+      if (next.activeFileId !== undefined) {
+        state.ui.activeFileId = next.activeFileId;
+      }
+      if (next.activeFolderId !== undefined) {
+        state.ui.activeFolderId = next.activeFolderId;
+      }
+      if (next.columnFilters !== undefined) {
+        const cf = next.columnFilters as Partial<ColumnFilters>;
+        if (cf.name !== undefined) state.ui.columnFilters.name = cf.name;
+        if (cf.type !== undefined) state.ui.columnFilters.type = cf.type;
+        if (cf.extension !== undefined) {
+          state.ui.columnFilters.extension = cf.extension;
+        }
+        if (cf.mime !== undefined) state.ui.columnFilters.mime = cf.mime;
+        if (cf.path !== undefined) state.ui.columnFilters.path = cf.path;
+        if (cf.owner !== undefined) state.ui.columnFilters.owner = cf.owner;
+        if (cf.modified !== undefined) {
+          state.ui.columnFilters.modified = cf.modified;
+        }
+        if (cf.created !== undefined) {
+          state.ui.columnFilters.created = cf.created;
+        }
+        if (cf.size !== undefined) state.ui.columnFilters.size = cf.size;
+        if (cf.access !== undefined) state.ui.columnFilters.access = cf.access;
+        if (cf.rag !== undefined) state.ui.columnFilters.rag = cf.rag;
+      }
+      if (next.visibleColumns !== undefined) {
+        state.ui.visibleColumns = {
+          ...DEFAULT_VISIBLE_COLUMNS,
+          ...next.visibleColumns,
+          // `name` is the row anchor — never hideable. Keep this invariant
+          // even when callers (or a malicious URL) try to flip it.
+          name: true,
+        };
+      }
     },
 
     /**
@@ -878,6 +1037,32 @@ const slice = createSlice({
       state.realtime.lastEventAt = Date.now();
     },
 
+    // ---- RAG status (per-file) ---------------------------------------------
+    setRagStatusForFile(
+      state,
+      action: PayloadAction<{ fileId: string; status: RagStatus }>,
+    ) {
+      const { fileId, status } = action.payload;
+      state.ragStatus.byFileId[fileId] = status;
+    },
+
+    setRagStatusBatch(
+      state,
+      action: PayloadAction<{ entries: Record<string, RagStatus> }>,
+    ) {
+      Object.assign(state.ragStatus.byFileId, action.payload.entries);
+      state.ragStatus.lastFetchedAt = Date.now();
+    },
+
+    setRagStatusFetching(state, action: PayloadAction<boolean>) {
+      state.ragStatus.isFetching = action.payload;
+    },
+
+    clearRagStatuses(state) {
+      state.ragStatus.byFileId = {};
+      state.ragStatus.lastFetchedAt = null;
+    },
+
     resetCloudFilesState() {
       return initialState;
     },
@@ -933,8 +1118,13 @@ export const {
   setDetailsLevel,
   setColumnFilter,
   clearColumnFilters,
+  setColumnVisibility,
+  resetColumnVisibility,
   setActiveFileId,
   setActiveFolderId,
+  setSearchQuery,
+  setChipFilter,
+  setUiBatch,
   setFocusedId,
   // uploads
   trackUploadStart,
@@ -942,6 +1132,11 @@ export const {
   updateUploadStatus,
   clearUpload,
   clearCompletedUploads,
+  // rag status
+  setRagStatusForFile,
+  setRagStatusBatch,
+  setRagStatusFetching,
+  clearRagStatuses,
   // realtime
   setRealtimeStatus,
   touchRealtime,

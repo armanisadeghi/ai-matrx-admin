@@ -16,13 +16,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  ArrowDown,
-  ArrowUp,
-  ChevronDown,
-  Check,
-  Filter,
-} from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, Check, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -38,7 +32,10 @@ export type ColumnSortKey = SortBy;
 
 export interface ColumnHeaderProps {
   label: string;
-  sortKey: ColumnSortKey;
+  /** When null, the column is not sortable (e.g. Access) — clicking the
+   *  label opens the filter directly and the dropdown omits the sort
+   *  options. */
+  sortKey: ColumnSortKey | null;
   activeSortBy: SortBy;
   activeSortDir: SortDirection;
   onChangeSort: (next: { sortBy: SortBy; sortDir: SortDirection }) => void;
@@ -67,7 +64,7 @@ export function ColumnHeader({
   filterContent,
   hasActiveFilter,
 }: ColumnHeaderProps) {
-  const isSorted = activeSortBy === sortKey;
+  const isSorted = sortKey !== null && activeSortBy === sortKey;
   const [open, setOpen] = useState(false);
 
   return (
@@ -86,6 +83,12 @@ export function ColumnHeader({
             hasActiveFilter && "text-primary",
           )}
           onClick={() => {
+            if (sortKey === null) {
+              // Non-sortable column — open the dropdown so the filter is
+              // reachable without forcing the user to find the chevron.
+              setOpen((prev) => !prev);
+              return;
+            }
             if (isSorted) {
               onChangeSort({
                 sortBy: sortKey,
@@ -121,37 +124,41 @@ export function ColumnHeader({
               <ChevronDown className="h-3 w-3" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56">
-            <DropdownMenuLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">
-              Sort
-            </DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() =>
-                onChangeSort({ sortBy: sortKey, sortDir: "asc" })
-              }
-            >
-              {isSorted && activeSortDir === "asc" ? (
-                <Check className="mr-2 h-4 w-4" />
-              ) : (
-                <span className="mr-6" />
-              )}
-              {ascLabel}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                onChangeSort({ sortBy: sortKey, sortDir: "desc" })
-              }
-            >
-              {isSorted && activeSortDir === "desc" ? (
-                <Check className="mr-2 h-4 w-4" />
-              ) : (
-                <span className="mr-6" />
-              )}
-              {descLabel}
-            </DropdownMenuItem>
+          <DropdownMenuContent align="start" className="w-60">
+            {sortKey !== null ? (
+              <>
+                <DropdownMenuLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                  Sort
+                </DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={() =>
+                    onChangeSort({ sortBy: sortKey, sortDir: "asc" })
+                  }
+                >
+                  {isSorted && activeSortDir === "asc" ? (
+                    <Check className="mr-2 h-4 w-4" />
+                  ) : (
+                    <span className="mr-6" />
+                  )}
+                  {ascLabel}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    onChangeSort({ sortBy: sortKey, sortDir: "desc" })
+                  }
+                >
+                  {isSorted && activeSortDir === "desc" ? (
+                    <Check className="mr-2 h-4 w-4" />
+                  ) : (
+                    <span className="mr-6" />
+                  )}
+                  {descLabel}
+                </DropdownMenuItem>
+              </>
+            ) : null}
             {filterContent ? (
               <>
-                <DropdownMenuSeparator />
+                {sortKey !== null ? <DropdownMenuSeparator /> : null}
                 <DropdownMenuLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">
                   Filter
                 </DropdownMenuLabel>

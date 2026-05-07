@@ -6,7 +6,7 @@
  * what each user sees.
  */
 
-import { DataStoresPage } from "@/features/data-stores/components/DataStoresPage";
+import { DataStoresPage } from "@/features/rag/components/data-stores/DataStoresPage";
 
 export default function Page() {
   return <DataStoresPage />;

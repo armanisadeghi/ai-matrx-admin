@@ -19,9 +19,22 @@
 //     inside that callback so its module is not in this file's static
 //     graph at all (`brokerActions`, `fetchFullContext` below).
 
+// Side-effect import: schedules the bundle-leak guard's boot-end macrotask
+// during the CLIENT boot bundle. This MUST live in a `"use client"` module
+// — the previous mount in `app/Providers.tsx` was server-only (Providers
+// is a Server Component, side-effect imports of non-`"use client"`
+// modules don't ship to the client bundle). Without this, the guard
+// module first evaluates inside the lazy window-panels chunk, in the
+// same synchronous turn as the registry/OverlaySurface modules — by the
+// time their assertion microtasks run, the guard's `setTimeout(0)`
+// hasn't fired yet, so `bootInProgress` is still true and we get false-
+// positive alarms on legitimate lazy loads.
+import "@/features/window-panels/utils/lazy-bundle-guard";
+
 import dynamic from "next/dynamic";
 import { useIdleReady, useIdleTask } from "@/utils/idle-scheduler";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import type { OverlayState } from "@/lib/redux/slices/overlaySlice";
 import {
   selectUser,
   selectIsSuperAdmin,
@@ -38,6 +51,42 @@ const LazyMessagingIsland = dynamic(
   () => import("@/features/shell/islands/LazyMessagingIsland"),
   { ssr: false, loading: () => null },
 );
+
+// Selector that returns true if ANY overlay instance is currently open.
+// Used by OverlayControllerGate below to defer mounting
+// UnifiedOverlayController (and its 100+ lazy chunk graph) until the user
+// actually opens their first overlay. The selector reads only the slice's
+// state, so it doesn't trigger any window-panel module to be parsed.
+function selectAnyOverlayOpen(state: { overlays: OverlayState }): boolean {
+  const overlays = state.overlays?.overlays;
+  if (!overlays) return false;
+  for (const bucket of Object.values(overlays)) {
+    for (const inst of Object.values(bucket)) {
+      if (inst.isOpen) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Mounts UnifiedOverlayController only when at least one overlay is
+ * actually open. Combined with the React.lazy boundary inside the
+ * controller's thin shell, this means the registry chunk + every window
+ * component chunk stay out of the page entirely until the user opens
+ * their first overlay (a tile click, a programmatic dispatch, or URL
+ * hydration).
+ *
+ * Why we need both the gate AND React.lazy: `next/dynamic` would
+ * preload chunks via `loadableGenerated.modules` even before render. We
+ * use React.lazy in UnifiedOverlayController.tsx to avoid that, and this
+ * gate to avoid even initiating the lazy ref's read until something is
+ * actually open.
+ */
+function OverlayControllerGate() {
+  const hasAny = useAppSelector(selectAnyOverlayOpen);
+  if (!hasAny) return null;
+  return <UnifiedOverlayController />;
+}
 
 // ─── Static system broker descriptors (data only) ─────────────────────────
 
@@ -143,7 +192,7 @@ export default function DeferredSingletons() {
   return (
     <>
       <PersistentDOMConnector />
-      <UnifiedOverlayController />
+      <OverlayControllerGate />
       <LegacyPromptOverlaysController />
       <LazyMessagingIsland />
       <AudioRecoveryToast />

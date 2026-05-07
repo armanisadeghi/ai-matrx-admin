@@ -389,7 +389,7 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
                 onClick={handleCopyTranscript}
                 disabled={!transcriptDisplay.trim()}
                 disabledTooltip="Nothing to copy yet"
-                className="text-muted-foreground"
+                className="text-muted-foreground border border-red-500"
               />
               <ActionFeedbackButton
                 icon={<Trash2 />}

@@ -15,8 +15,7 @@ import {
   IconUser,
 } from "@tabler/icons-react";
 import { Logo } from "@/components/layout/MatrixLogo";
-// @ts-ignore - constants module exists but TypeScript may not resolve it correctly
-import { appSidebarLinks } from "@/constants";
+import { appSidebarLinks } from "@/features/shell/navigation/navigationLinks";
 import { Settings, User } from "lucide-react";
 import { useSelector } from "react-redux";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";

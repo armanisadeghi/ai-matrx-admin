@@ -443,7 +443,7 @@ context menu, document viewer deep-links.
 - AI tools `rag_list_data_stores`, `rag_get_data_store`, `rag_search_data_store` exist
   but there is **no public REST equivalent yet**.
 
-The FE side has read scaffolding in `features/documents/`:
+The FE side has read scaffolding in `features/rag/` (was `features/documents/` until the 2026-05-06 consolidation):
 - `types.ts` — full Pydantic mirror.
 - `api/document.ts` — typed client for every document endpoint.
 - `hooks/useDocument.ts` — `useDocument`, `useDocumentLineage`, `useDocumentPage`, `useDocumentChunks`.

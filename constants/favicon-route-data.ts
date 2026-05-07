@@ -1,12 +1,10 @@
 /**
  * Lightweight favicon route data — no icon imports, no JSX, server-safe.
  *
- * This is the single source of truth for route → favicon color/letter mapping.
- * `favicon-utils.ts` imports from here instead of `navigation-links.tsx` to
- * avoid pulling icon packages (react-icons, @tabler) into every layout's
- * server bundle.
- *
- * `navigation-links.tsx` imports from here too — so the data is never duplicated.
+ * Single source of truth for route → favicon color/letter mapping.
+ * `favicon-utils.ts` imports from here. Nav labels/hrefs/icons live in
+ * `features/shell/constants/nav-data.ts`; UI links with icons are built in
+ * `features/shell/navigation/navigationLinks.tsx`.
  */
 
 export interface FaviconConfig {
@@ -23,7 +21,6 @@ export interface FaviconRouteEntry {
 export const faviconRouteData: FaviconRouteEntry[] = [
   { href: "/dashboard", favicon: { color: "#0ea5e9", letter: "Db" } },
   { href: "/agents", favicon: { color: "#f43f5e", letter: "Ag" } },
-  { href: "/ai/prompts", favicon: { color: "#a855f7", letter: "Pb" } },
   { href: "/prompt-apps", favicon: { color: "#059669", letter: "Pa" } },
   { href: "/research", favicon: { color: "#7c3aed", letter: "Rs" } },
   { href: "/chat", favicon: { color: "#2563eb", letter: "Ch" } },
@@ -45,6 +42,13 @@ export const faviconRouteData: FaviconRouteEntry[] = [
   { href: "/scraper", favicon: { color: "#3730a3", letter: "Ws" } },
   { href: "/sandbox", favicon: { color: "#c2410c", letter: "Sb" } },
   { href: "/messages", favicon: { color: "#db2777", letter: "Mg" } },
+  { href: "/rag/data-stores", favicon: { color: "#b45309", letter: "Ds" } },
+  { href: "/rag/search", favicon: { color: "#ca8a04", letter: "Rq" } },
+  { href: "/rag/library", favicon: { color: "#a16207", letter: "Rl" } },
+  { href: "/rag/repositories", favicon: { color: "#854d0e", letter: "Rp" } },
+  { href: "/code", favicon: { color: "#4f46e5", letter: "Cd" } },
+  { href: "/workflows", favicon: { color: "#6d28d9", letter: "Wk" } },
+  { href: "/ssr/context", favicon: { color: "#0891b2", letter: "Cx" } },
   { href: "/settings", favicon: { color: "#475569", letter: "St" } },
   { href: "/ai/cockpit", favicon: { color: "#7c3aed", letter: "Ac" } },
   { href: "/ai/recipes", favicon: { color: "#c026d3", letter: "Rc" } },

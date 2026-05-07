@@ -1,9 +1,15 @@
 /**
- * features/files/components/surfaces/dropbox/FileTableRow.tsx
+ * features/files/components/surfaces/desktop/FileTableRow.tsx
  *
- * One row inside the Dropbox file table. On hover, reveals the inline action
- * toolbar (Share / Copy link / Star / More). Double-click (or Enter on the
- * name button) activates — files open the preview, folders navigate into.
+ * One row inside the file table. Cells are rendered based on the
+ * `visibleColumnIds` array passed from the parent — Box.com-/Drive-style
+ * configurable columns. On hover, a row reveals the inline action toolbar
+ * (Share / Copy link / Star / More). Double-click (or Enter on the name
+ * button) activates: files open the preview, folders navigate into.
+ *
+ * Folders gracefully degrade to em-dash for file-only columns
+ * (Extension, MIME, Size, Version) so the row stays aligned with no
+ * empty gaps.
  */
 
 "use client";
@@ -16,6 +22,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import type {
   CloudFileRecord,
   CloudFolderRecord,
+  ColumnId,
 } from "@/features/files/types";
 import {
   formatFileSize,
@@ -34,6 +41,9 @@ import { useFolderActions } from "@/features/files/components/core/FileActions/u
 import { FolderIconWithMembers } from "./FolderIconWithMembers";
 import { AccessBadge } from "./AccessBadge";
 import { SharedAvatarStack } from "./SharedAvatarStack";
+import { FileTypeBadge } from "./FileTypeBadge";
+import { OwnerCell } from "./OwnerCell";
+import { RagStatusCell } from "./RagStatusCell";
 
 export interface FileTableRowProps {
   kind: "file" | "folder";
@@ -47,6 +57,10 @@ export interface FileTableRowProps {
    * Set automatically after create/upload so the user can see the new item.
    */
   isFocused?: boolean;
+  /** Ordered list of columns to render after the leading checkbox cell. */
+  visibleColumnIds: ReadonlyArray<ColumnId>;
+  /** Authenticated user id — drives the "You" label in the Owner cell. */
+  currentUserId?: string | null;
   onToggleSelected: () => void;
   onActivate: () => void;
   onOpenShare: () => void;
@@ -68,6 +82,19 @@ export function FileTableRow(props: FileTableRowProps) {
   return null;
 }
 
+// Trailing cell for the Column-Settings gear column. Empty in body rows so
+// the gear stays anchored to the header. Width matches the header's gear
+// cell so the table grid stays aligned.
+function GearTrailingCell() {
+  return <td className="w-10 px-1 py-2" aria-hidden="true" />;
+}
+
+function extOf(filename: string): string {
+  const i = filename.lastIndexOf(".");
+  if (i <= 0 || i === filename.length - 1) return "";
+  return filename.slice(i + 1).toLowerCase();
+}
+
 interface FileRowProps extends FileTableRowProps {
   file: CloudFileRecord;
 }
@@ -77,6 +104,8 @@ function FileRow({
   selected,
   isPreviewActive,
   isFocused,
+  visibleColumnIds,
+  currentUserId,
   onToggleSelected,
   onActivate,
   onOpenShare,
@@ -93,7 +122,6 @@ function FileRow({
     void actions.copyShareUrl();
   }, [actions]);
 
-  // Scroll into view whenever this row gains focus.
   useEffect(() => {
     if (isFocused) {
       rowRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
@@ -103,8 +131,7 @@ function FileRow({
   // Files are draggable — they can be dropped onto folder rows to move.
   // The drag handle covers the whole row, but the activation distance on
   // the parent DndContext PointerSensor (6px) preserves single-click
-  // selection. Drag-listener `data` is what `FileTable.handleDragEnd`
-  // reads to know which file was moved where.
+  // selection.
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `file-${file.id}`,
     data: { type: "file", id: file.id },
@@ -144,6 +171,58 @@ function FileRow({
             aria-label={`Select ${file.fileName}`}
           />
         </td>
+        {visibleColumnIds.map((id) => (
+          <FileCell
+            key={id}
+            id={id}
+            file={file}
+            currentUserId={currentUserId}
+            isShared={isShared}
+            memberCount={memberCount}
+            granteeIds={granteeIds}
+            hovered={hovered}
+            onActivate={onActivate}
+            onShare={onOpenShare}
+            onCopyLink={handleCopyLink}
+            parentPath={parentPath ?? null}
+          />
+        ))}
+        <GearTrailingCell />
+      </tr>
+    </FileRowContextMenu>
+  );
+}
+
+interface FileCellProps {
+  id: ColumnId;
+  file: CloudFileRecord;
+  currentUserId?: string | null;
+  isShared: boolean;
+  memberCount: number;
+  granteeIds: string[];
+  hovered: boolean;
+  onActivate: () => void;
+  onShare: () => void;
+  onCopyLink: () => void;
+  parentPath: string | null;
+}
+
+function FileCell({
+  id,
+  file,
+  currentUserId,
+  isShared,
+  memberCount,
+  granteeIds,
+  hovered,
+  onActivate,
+  onShare,
+  onCopyLink,
+  parentPath,
+}: FileCellProps) {
+  switch (id) {
+    case "name":
+      return (
         <td className="px-2 py-2">
           <div className="flex items-center gap-2 min-w-0">
             <FileIcon fileName={file.fileName} size={20} />
@@ -169,18 +248,86 @@ function FileRow({
             </div>
             <RowActions
               visible={hovered}
-              onShare={onOpenShare}
-              onCopyLink={handleCopyLink}
+              onShare={onShare}
+              onCopyLink={onCopyLink}
               fileId={file.id}
             />
           </div>
         </td>
-        <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">
-          {formatRelativeTime(file.updatedAt)}
+      );
+    case "type":
+      return (
+        <td className="px-4 py-2 whitespace-nowrap">
+          <FileTypeBadge fileName={file.fileName} />
         </td>
-        <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">
+      );
+    case "extension":
+      return (
+        <td className="px-4 py-2 text-xs text-muted-foreground whitespace-nowrap">
+          {extOf(file.fileName) ? (
+            <span className="rounded-sm border border-border bg-muted/40 px-1.5 py-px text-[10px] font-semibold tracking-wide">
+              {extOf(file.fileName).toUpperCase()}
+            </span>
+          ) : (
+            <span className="text-muted-foreground/60">—</span>
+          )}
+        </td>
+      );
+    case "mime":
+      return (
+        <td
+          className="px-4 py-2 text-xs text-muted-foreground whitespace-nowrap"
+          title={file.mimeType ?? undefined}
+        >
+          <span className="truncate inline-block max-w-[14rem] align-middle">
+            {file.mimeType ?? "—"}
+          </span>
+        </td>
+      );
+    case "path":
+      return (
+        <td
+          className="px-4 py-2 text-xs text-muted-foreground"
+          title={file.filePath}
+        >
+          <span className="block truncate max-w-[18rem]">{file.filePath}</span>
+        </td>
+      );
+    case "owner":
+      return (
+        <td className="px-4 py-2 whitespace-nowrap">
+          <OwnerCell
+            ownerId={file.ownerId}
+            currentUserId={currentUserId ?? null}
+          />
+        </td>
+      );
+    case "size":
+      return (
+        <td className="px-4 py-2 text-xs text-muted-foreground whitespace-nowrap tabular-nums">
           {formatFileSize(file.fileSize)}
         </td>
+      );
+    case "version":
+      return (
+        <td className="px-4 py-2 text-xs text-muted-foreground whitespace-nowrap tabular-nums">
+          v{file.currentVersion}
+        </td>
+      );
+    case "updated_at":
+      return (
+        <td className="px-4 py-2 text-xs text-muted-foreground whitespace-nowrap">
+          {formatRelativeTime(file.updatedAt)}
+        </td>
+      );
+    case "created_at":
+      return (
+        <td className="px-4 py-2 text-xs text-muted-foreground whitespace-nowrap">
+          {formatRelativeTime(file.createdAt)}
+        </td>
+      );
+    case "access":
+      return (
         <td className="px-4 py-2 whitespace-nowrap">
           <div className="flex items-center gap-2">
             {isShared && granteeIds.length > 0 ? (
@@ -192,9 +339,14 @@ function FileRow({
             />
           </div>
         </td>
-      </tr>
-    </FileRowContextMenu>
-  );
+      );
+    case "rag_status":
+      return (
+        <td className="px-4 py-2 whitespace-nowrap">
+          <RagStatusCell fileId={file.id} />
+        </td>
+      );
+  }
 }
 
 interface FolderRowProps extends FileTableRowProps {
@@ -205,6 +357,8 @@ function FolderRow({
   folder,
   selected,
   isFocused,
+  visibleColumnIds,
+  currentUserId,
   onToggleSelected,
   onActivate,
   isShared,
@@ -216,7 +370,6 @@ function FolderRow({
   const [hovered, setHovered] = useState(false);
   const rowRef = useRef<HTMLTableRowElement>(null);
 
-  // Scroll into view whenever this row gains focus.
   useEffect(() => {
     if (isFocused) {
       rowRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
@@ -273,6 +426,55 @@ function FolderRow({
             aria-label={`Select ${folder.folderName}`}
           />
         </td>
+        {visibleColumnIds.map((id) => (
+          <FolderCell
+            key={id}
+            id={id}
+            folder={folder}
+            currentUserId={currentUserId}
+            isShared={isShared}
+            memberCount={memberCount}
+            granteeIds={granteeIds}
+            hovered={hovered}
+            onActivate={onActivate}
+            onShare={onOpenShare}
+            parentPath={parentPath ?? null}
+          />
+        ))}
+        <GearTrailingCell />
+      </tr>
+    </FolderRowContextMenu>
+  );
+}
+
+interface FolderCellProps {
+  id: ColumnId;
+  folder: CloudFolderRecord;
+  currentUserId?: string | null;
+  isShared: boolean;
+  memberCount: number;
+  granteeIds: string[];
+  hovered: boolean;
+  onActivate: () => void;
+  onShare: () => void;
+  parentPath: string | null;
+}
+
+function FolderCell({
+  id,
+  folder,
+  currentUserId,
+  isShared,
+  memberCount,
+  granteeIds,
+  hovered,
+  onActivate,
+  onShare,
+  parentPath,
+}: FolderCellProps) {
+  switch (id) {
+    case "name":
+      return (
         <td className="px-2 py-2">
           <div className="flex items-center gap-2 min-w-0">
             <FolderIconWithMembers isShared={isShared} size={18} />
@@ -295,13 +497,62 @@ function FolderRow({
             </div>
             <FolderRowActions
               visible={hovered}
-              onShare={onOpenShare}
+              onShare={onShare}
               folderId={folder.id}
             />
           </div>
         </td>
-        <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">—</td>
-        <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">—</td>
+      );
+    case "type":
+      return (
+        <td className="px-4 py-2 whitespace-nowrap">
+          <FileTypeBadge fileName={folder.folderName} isFolder />
+        </td>
+      );
+    case "extension":
+    case "mime":
+    case "size":
+    case "version":
+    case "rag_status":
+      return (
+        <td className="px-4 py-2 text-xs text-muted-foreground/60 whitespace-nowrap">
+          —
+        </td>
+      );
+    case "path":
+      return (
+        <td
+          className="px-4 py-2 text-xs text-muted-foreground"
+          title={folder.folderPath}
+        >
+          <span className="block truncate max-w-[18rem]">
+            {folder.folderPath}
+          </span>
+        </td>
+      );
+    case "owner":
+      return (
+        <td className="px-4 py-2 whitespace-nowrap">
+          <OwnerCell
+            ownerId={folder.ownerId}
+            currentUserId={currentUserId ?? null}
+          />
+        </td>
+      );
+    case "updated_at":
+      return (
+        <td className="px-4 py-2 text-xs text-muted-foreground whitespace-nowrap">
+          {formatRelativeTime(folder.updatedAt)}
+        </td>
+      );
+    case "created_at":
+      return (
+        <td className="px-4 py-2 text-xs text-muted-foreground whitespace-nowrap">
+          {formatRelativeTime(folder.createdAt)}
+        </td>
+      );
+    case "access":
+      return (
         <td className="px-4 py-2 whitespace-nowrap">
           <div className="flex items-center gap-2">
             {isShared && granteeIds.length > 0 ? (
@@ -313,9 +564,8 @@ function FolderRow({
             />
           </div>
         </td>
-      </tr>
-    </FolderRowContextMenu>
-  );
+      );
+  }
 }
 
 interface RowActionsProps {
@@ -434,7 +684,6 @@ interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
  * `<DropdownMenuTrigger asChild>`. Without ref forwarding Radix can't anchor
  * the menu and click-to-open silently fails on some renders. Without prop
  * spread, Radix's injected `onClick`/`aria-*`/`data-state` props get dropped.
- * Both bugs caused the "..." menu to "not always work".
  */
 const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
   function IconButton(

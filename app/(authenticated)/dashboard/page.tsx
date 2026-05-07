@@ -32,7 +32,7 @@ import {
   selectActiveUserName,
 } from "@/lib/redux/selectors/userSelectors";
 import { LatestAiModels } from "@/components/animated/ExpandableCards/ExpandableCardDemo";
-import { dashboardLinks } from "@/constants/navigation-links";
+import { dashboardLinks } from "@/features/shell/navigation/navigationLinks";
 import { SandboxWidget, useSandboxSummary } from "./SandboxWidget";
 
 // ─── Enterprise iOS gradients ────────────────────────────────────────────────────

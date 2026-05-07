@@ -74,6 +74,13 @@ export interface FilesystemSearchHit {
  *    Before / With updates / Modifications-Since for one (message,
  *    file) snapshot. Read-only; no save pipeline, no selection-as-
  *    context. Identified by `historyMessageFileId`.
+ *  - `"render-preview"`    → renders the live output of another open
+ *    editor tab through a previewer registered in
+ *    `features/code/preview/renderPreviewRegistry.ts`. The source tab
+ *    is identified by `renderSourceTabId`; the previewer is selected
+ *    by the source tab's library-source adapter prefix
+ *    (e.g. `aga-app:` → `AgentAppRenderPreview`). Read-only; no buffer,
+ *    no save pipeline. Closes automatically when its source tab closes.
  *
  * AI patch review is NOT a tab kind — when a normal `"editor"` tab has
  * pending AI patches, `EditorArea` swaps in `<TabDiffView>` (Cursor-style
@@ -83,7 +90,8 @@ export type EditorTabKind =
   | "editor"
   | "binary-preview"
   | "cloud-file-preview"
-  | "history-triple";
+  | "history-triple"
+  | "render-preview";
 
 /**
  * Tabs that don't have an editable text buffer (no Monaco, no AI patches,
@@ -94,7 +102,8 @@ export function isPreviewTab(kind?: EditorTabKind): boolean {
   return (
     kind === "binary-preview" ||
     kind === "cloud-file-preview" ||
-    kind === "history-triple"
+    kind === "history-triple" ||
+    kind === "render-preview"
   );
 }
 
@@ -158,6 +167,13 @@ export interface EditorFile {
   historyMessageId?: string;
   /** For `"history-triple"` tabs only — `${adapter}:${path}`. */
   historyFileIdentityKey?: string;
+  /**
+   * For `"render-preview"` tabs only — the id of the source editor tab
+   * whose live buffer this preview renders. When the source tab closes
+   * the preview tab is closed automatically. The previewer is resolved
+   * by passing the source tab id to the render-preview registry.
+   */
+  renderSourceTabId?: string;
   /**
    * Source of the most recent buffer mutation. Set by `updateTabContent`
    * with sensible defaults. The keyboard undo binding watches this so

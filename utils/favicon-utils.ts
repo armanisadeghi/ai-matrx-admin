@@ -143,7 +143,7 @@ export function getSystemRouteColor(pathname: string): string | undefined {
  * with a generic fallback letter. Callers should always pass an explicit letter
  * via createRouteMetadata({ letter: "GH" }) rather than relying on this fallback.
  *
- * For primary routes: returns the config from navigation-links.tsx.
+ * For primary routes: returns the config from `favicon-route-data` (via pathname match).
  */
 export function getFaviconConfigByPath(
   pathname: string,

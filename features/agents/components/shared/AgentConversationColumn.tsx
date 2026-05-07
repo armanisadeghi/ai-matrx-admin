@@ -9,11 +9,9 @@ import { SmartAgentInput } from "../inputs/smart-input/SmartAgentInput";
 import { cn } from "@/lib/utils";
 
 // CreatorRunPanel renders a <WindowPanel> as styling chrome (admin-gated
-// tab panel). Without `dynamic()` it would pull WindowPanel and the entire
-// window-panels chunk into every route that statically imports
-// AgentConversationColumn (chat, agent run, agent builder), tripping the
-// lazy-bundle-guard. Loading: null because the panel is collapsed by
-// default and the user toggles it open — first paint without it is fine.
+// tab panel). Without `dynamic()` it would pull WindowPanel and the
+// entire window-panels chunk into every route that statically imports
+// AgentConversationColumn (chat, agent run, agent builder).
 const CreatorRunPanel = dynamic(
   () =>
     import("../run-controls/CreatorRunPanel").then((m) => ({

@@ -109,16 +109,18 @@ export const ChatPanelSlot: React.FC<ChatPanelSlotProps> = ({
     router.replace(`${pathname}?${next.toString()}`);
   }, [agentId, pathname, router, searchParams]);
 
-  // Code workspace lives at `/code?agentId=X` — no nested `/run` segment.
+  // Code workspace lives at `${basePath}?agentId=X` — no nested `/run` segment.
   // Override the runner's default URL builder so fork / retry navigation
-  // stays inside the workspace and doesn't 404.
+  // stays inside whichever surface mounted this slot. `basePath` defaults
+  // to `/code` for the canonical workspace; embedded surfaces (e.g. the
+  // agent-apps editor) pass their own pathname so forks stay in-route.
   const buildConversationUrl = useMemo(() => {
     if (!agentId) return undefined;
     return (conversationId: string) =>
-      `/code?agentId=${encodeURIComponent(agentId)}&conversationId=${encodeURIComponent(
+      `${basePath}?agentId=${encodeURIComponent(agentId)}&conversationId=${encodeURIComponent(
         conversationId,
       )}`;
-  }, [agentId]);
+  }, [agentId, basePath]);
 
   return (
     <div className={`flex h-full min-h-0 flex-col ${className ?? ""}`}>

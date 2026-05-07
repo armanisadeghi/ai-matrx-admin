@@ -1,34 +1,50 @@
 "use client";
 
-import { useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { AgentAppEditor } from "@/features/agent-apps/components/AgentAppEditor";
-import type { AgentApp, UpdateAgentAppInput } from "@/features/agent-apps/types";
+import { useEffect, useRef } from "react";
+import { useAppStore } from "@/lib/redux/hooks";
+import { CodeWorkspaceRoute } from "@/features/code/host/CodeWorkspaceRoute";
+import { ChatPanelSlot } from "@/features/code/chat/ChatPanelSlot";
+import { useOpenSourceEntry } from "@/features/code/hooks/useOpenSourceEntry";
+import { useOpenRenderPreview } from "@/features/code/hooks/useOpenRenderPreview";
+import { agaAppsAdapter } from "@/features/code/library-sources/adapters/aga-apps";
+// Side-effect: register `aga-app:` previewer with the render-preview registry.
+import "@/features/agent-apps/code-preview/registerAgentAppRenderPreview";
+import type { AgentApp } from "@/features/agent-apps/types";
 
 interface AgentAppEditPageClientProps {
   app: AgentApp;
 }
 
 export function AgentAppEditPageClient({ app }: AgentAppEditPageClientProps) {
-  const router = useRouter();
+  const store = useAppStore();
+  const openSourceEntry = useOpenSourceEntry();
+  const openRenderPreview = useOpenRenderPreview();
+  const bootstrappedRef = useRef(false);
+  const basePath = `/agent-apps/${app.id}`;
 
-  const onSave = useCallback(
-    async (id: string, input: UpdateAgentAppInput) => {
-      const res = await fetch(`/api/agent-apps/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
+  // First-mount bootstrap: open the source file + paired preview tab so a
+  // brand-new visit lands in a usable state. If the source tab is already
+  // open in the workspace (user navigated away and came back) we leave
+  // tab state untouched — the user's last selection wins.
+  //
+  // We deliberately do NOT inject `?agentId=` from `app.agent_id`. The
+  // chat panel is the user's coding agent; `app.agent_id` is the agent
+  // that runs *inside* the rendered app and shouldn't hijack the editor.
+  useEffect(() => {
+    if (bootstrappedRef.current) return;
+    bootstrappedRef.current = true;
+
+    const sourceTabId = agaAppsAdapter.makeTabId(app.id);
+    if (store.getState().codeTabs?.byId?.[sourceTabId]) return;
+
+    void openSourceEntry({ sourceId: agaAppsAdapter.sourceId, rowId: app.id })
+      .then(() => {
+        openRenderPreview(sourceTabId);
+      })
+      .catch((err) => {
+        console.error("[agent-apps] failed to open code+preview tabs", err);
       });
+  }, [app.id, openSourceEntry, openRenderPreview, store]);
 
-      if (!res.ok) {
-        const body = await res.text().catch(() => "");
-        throw new Error(`Save failed (HTTP ${res.status}): ${body || "unknown"}`);
-      }
-
-      router.refresh();
-    },
-    [router],
-  );
-
-  return <AgentAppEditor app={app} onSave={onSave} />;
+  return <CodeWorkspaceRoute rightSlot={<ChatPanelSlot basePath={basePath} />} />;
 }

@@ -26,6 +26,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   DndContext,
   DragOverlay,
@@ -61,13 +62,20 @@ import {
   selectAllFilesMap,
   selectAllFoldersArray,
   selectAllFoldersMap,
+  selectChipFilter,
+  selectSearchQuery,
   selectTreeStatus,
   selectViewMode,
 } from "@/features/files/redux/selectors";
 import {
   setActiveFileId,
   setActiveFolderId,
+  setChipFilter,
+  setSearchQuery,
+  setUiBatch,
 } from "@/features/files/redux/slice";
+import type { ChipFilter, UiState } from "@/features/files/types";
+import { encodeFolderPathSegments } from "@/features/files/utils/url-state";
 import {
   moveFile as moveFileThunk,
   updateFolder as updateFolderThunk,
@@ -104,7 +112,7 @@ import { ContentHeader } from "./desktop/ContentHeader";
 import { EmptyState } from "./desktop/EmptyState";
 import { FileGrid } from "./desktop/FileGrid";
 import { FileTable } from "./desktop/FileTable";
-import type { FilterChipKey } from "./desktop/FilterChips";
+import { FilesUrlSync } from "./FilesUrlSync";
 import { IconRail } from "./desktop/IconRail";
 import { NavSidebar } from "./desktop/NavSidebar";
 import {
@@ -118,6 +126,13 @@ export interface PageShellProps {
   /** Initial selection (for deep-linked routes). */
   initialFolderId?: string | null;
   initialFileId?: string | null;
+  /**
+   * UI state hydrated from the URL `?…` query string by the server
+   * route. Applied once on mount via `useOneShotUiHydration` so the
+   * first paint matches the URL (no flicker of unfiltered rows). Pass
+   * `undefined` when the route doesn't have URL-encoded UI state.
+   */
+  initialUiPatch?: Partial<UiState>;
   /** Which section the current route represents. Defaults to "all". */
   section?: CloudFilesSection;
   /** Server-read cookie value so the sidebar mode matches the user's preference on first paint. */
@@ -146,6 +161,20 @@ export function PageShell(props: PageShellProps) {
   );
 }
 
+/**
+ * Sections that own a fixed pathname (`/files/recents`, `/files/photos`, …)
+ * and never rewrite it on folder activation. Drilling into a folder while
+ * inside one of these jumps the user back to the canonical `/files/<path>`
+ * surface so the folder's contents actually drive the page (handled by
+ * `NavSidebar`); the sync layer in PageShell only rewrites the path for
+ * the sections that own it.
+ */
+const FOLDER_PATH_SECTIONS: ReadonlyArray<CloudFilesSection> = [
+  "all",
+  "folders",
+  "folders-root",
+];
+
 // ---------------------------------------------------------------------------
 // Desktop
 // ---------------------------------------------------------------------------
@@ -166,12 +195,14 @@ const PREVIEW_MAX_PCT = 60;
 function PageShellDesktop({
   initialFolderId,
   initialFileId,
+  initialUiPatch,
   section = "all",
   sidebarDefaultPercent = 12,
   sidebarMinPercent = 6,
   className,
 }: PageShellProps) {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const activeFolderId = useAppSelector(selectActiveFolderId);
   const activeFileId = useAppSelector(selectActiveFileId);
   const viewMode = useAppSelector(selectViewMode);
@@ -184,11 +215,20 @@ function PageShellDesktop({
     (s) => s.cloudFiles.permissionsByResourceId,
   );
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filter, setFilter] = useState<FilterChipKey | null>(null);
+  // Search query and chip filter live in Redux so the URL-sync layer can
+  // round-trip them as `?q=…` and `?chip=…`. Direct setters are exposed
+  // to children that previously took `setState` props.
+  const searchQuery = useAppSelector(selectSearchQuery);
+  const chipFilter = useAppSelector(selectChipFilter);
+  const handleSearchChange = useCallback(
+    (next: string) => dispatch(setSearchQuery(next)),
+    [dispatch],
+  );
 
-  // One-time apply of initial selection.
+  // One-time apply of initial selection + URL-derived UI state. Both run
+  // BEFORE first paint so the rendered list matches the URL.
   useOneShotSelection(initialFolderId, initialFileId);
+  useOneShotUiHydration(initialUiPatch);
 
   // Mount one synthetic root folder per registered virtual source. Idempotent
   // — re-calling is a no-op since `attachVirtualRoot` checks for the existing
@@ -252,9 +292,7 @@ function PageShellDesktop({
       // same backing store. v1 ships with same-source-only moves; cross-source
       // ("import this Note as a real .md") will land in a follow-up.
       const activeRec =
-        active.type === "file"
-          ? filesById[active.id]
-          : foldersById[active.id];
+        active.type === "file" ? filesById[active.id] : foldersById[active.id];
       const overRec = foldersById[over.id];
       if (activeRec && overRec) {
         const a = activeRec.source;
@@ -327,8 +365,25 @@ function PageShellDesktop({
           }),
         );
       }
+      // Mirror the activation in the URL pathname so back/forward works
+      // for folder browsing and the URL is always shareable. Only sections
+      // that own a folder-path URL get rewritten (Recents/Photos/etc. live
+      // at fixed pathnames). Real folders only — virtual folders don't
+      // have a stable `folder_path` to round-trip against the catch-all
+      // route's Supabase lookup.
+      if (
+        folder &&
+        folder.source.kind === "real" &&
+        FOLDER_PATH_SECTIONS.includes(section)
+      ) {
+        const segments = encodeFolderPathSegments(folder.folderPath);
+        const target = segments ? `/files/${segments}` : "/files";
+        // `router.push` so the back button retraces folder history; the
+        // sync layer's `router.replace` updates only the query string.
+        router.push(target);
+      }
     },
-    [dispatch, foldersById],
+    [dispatch, foldersById, router, section],
   );
 
   const handleSelectFile = useCallback(
@@ -343,9 +398,12 @@ function PageShellDesktop({
     [dispatch],
   );
 
-  const handleFilterToggle = useCallback((key: FilterChipKey) => {
-    setFilter((prev) => (prev === key ? null : key));
-  }, []);
+  const handleFilterToggle = useCallback(
+    (key: ChipFilter) => {
+      dispatch(setChipFilter(chipFilter === key ? null : key));
+    },
+    [dispatch, chipFilter],
+  );
 
   const treeLoaded = treeStatus === "loaded";
   const isEmpty =
@@ -426,7 +484,8 @@ function PageShellDesktop({
   // Recents section implicitly applies the "recents" filter chip so the user
   // sees the most recently updated files without having to click anything.
   // Any explicit chip (e.g. "starred") still wins.
-  const effectiveFilter = filter ?? (section === "recents" ? "recents" : null);
+  const effectiveFilter =
+    chipFilter ?? (section === "recents" ? "recents" : null);
   const isSearching = searchQuery.trim().length > 0;
   const searchScopedFiles = useMemo(() => {
     if (!isSearching) return scopedFiles;
@@ -493,7 +552,7 @@ function PageShellDesktop({
               <TopBar
                 parentFolderId={activeFolderId}
                 searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
+                onSearchChange={handleSearchChange}
               />
 
               {section === "folders" ? (
@@ -506,7 +565,7 @@ function PageShellDesktop({
                   <ContentHeader
                     section={section}
                     activeFolderId={activeFolderId}
-                    activeFilter={filter}
+                    activeFilter={chipFilter}
                     onFilterToggle={handleFilterToggle}
                     showActions={
                       !showPlaceholder &&
@@ -651,6 +710,11 @@ function PageShellDesktop({
 
         <RenameHost />
         <CloudFileEditorHost />
+        {/* Render-less Redux → URL bridge. Sees every UI-state change
+         *  and writes it back to `?…` via `router.replace`. The reverse
+         *  direction (URL → Redux) happens once on mount via
+         *  `useOneShotUiHydration` from the server-parsed `initialUiPatch`. */}
+        <FilesUrlSync />
       </div>
 
       <DragOverlay dropAnimation={null}>
@@ -767,6 +831,29 @@ function useOneShotSelection(
     if (initialFileId !== undefined) {
       dispatch(setActiveFileId(initialFileId));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+}
+
+/**
+ * Apply a server-parsed `initialUiPatch` (sort, filters, view, etc.) to
+ * Redux exactly once on mount. Mirrors `useOneShotSelection` — the
+ * server route is the single source of truth for the URL → state
+ * transformation, and FilesUrlSync handles every subsequent change.
+ *
+ * No-op when `patch` is undefined or empty. Uses `setUiBatch` so all
+ * fields land in a single dispatch (one re-render, not N).
+ */
+function useOneShotUiHydration(patch: Partial<UiState> | undefined): void {
+  const dispatch = useAppDispatch();
+  const didRunRef = useRef(false);
+
+  useEffect(() => {
+    if (didRunRef.current) return;
+    didRunRef.current = true;
+    if (!patch) return;
+    if (Object.keys(patch).length === 0) return;
+    dispatch(setUiBatch(patch));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 }

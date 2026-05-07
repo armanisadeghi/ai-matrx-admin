@@ -11,7 +11,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
-import { ProcessForRagButton } from "@/features/files/components/core/RagActions/ProcessForRagButton";
+import { ProcessForRagButton } from "@/features/rag/components/ProcessForRagButton";
 import type { Note } from "../types";
 import { cn } from "@/lib/utils";
 

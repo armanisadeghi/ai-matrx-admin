@@ -378,7 +378,30 @@ export interface TreeState {
 }
 
 export type ViewMode = "list" | "grid" | "columns";
-export type SortBy = "name" | "updated_at" | "size" | "type";
+/**
+ * Sticky filter chips above the file table. Mirrors the `FilterChips`
+ * component's union — re-declared here (not imported) so the slice
+ * stays component-cycle-free. Keep in sync with
+ * `features/files/components/surfaces/desktop/FilterChips.tsx`.
+ */
+export type ChipFilter = "recents" | "starred";
+
+/**
+ * Column sort keys. Mirror the file-table columns so users can sort by any
+ * column they're looking at. Folders always group ahead of files regardless
+ * of the active key (Box / Drive / Dropbox convention) — see `compareNodes`.
+ */
+export type SortBy =
+  | "name"
+  | "type"
+  | "extension"
+  | "mime"
+  | "path"
+  | "owner"
+  | "size"
+  | "version"
+  | "updated_at"
+  | "created_at";
 export type SortDirection = "asc" | "desc";
 /** Whether the file table shows files only, folders only, or both. */
 export type KindFilter = "all" | "files" | "folders";
@@ -391,16 +414,115 @@ export type ModifiedFilter = "any" | "today" | "week" | "month";
 export type SizeFilter = "any" | "small" | "medium" | "large" | "huge";
 /** Access (visibility) filter. */
 export type AccessFilter = "any" | "private" | "shared" | "public";
+/**
+ * Type filter — multi-select set of file categories (CODE, DOCUMENT, IMAGE,
+ * VIDEO, …). Empty array = "any type". Modeled as `string[]` (not the
+ * `FileCategory` enum from `utils/file-types.ts`) to keep the slice type
+ * import-cycle-free; the selectors / pickers cast at the boundary.
+ */
+export type TypeFilter = string[];
+/** Owner filter — multi-select set of owner user ids. Empty = "any owner". */
+export type OwnerFilter = string[];
+
+/**
+ * Per-file RAG indexing status.
+ *
+ *   - `indexed`     — backend has a `processed_documents` row for this file
+ *   - `not_indexed` — file exists but no doc row (`/files/{id}/document` 404)
+ *   - `pending`     — request is in flight
+ *   - `unknown`     — endpoint returned a transient error or hasn't been
+ *                     called yet for this file
+ *
+ * The pending state matters because the user toggles "Show RAG status"
+ * across hundreds of files at once — the column needs to show "Checking…"
+ * for the rows still in flight rather than flickering "Not indexed".
+ */
+export type RagStatus = "indexed" | "not_indexed" | "pending" | "unknown";
+
+/**
+ * RAG filter — multi-select of statuses. Empty array = "any status".
+ * Modeled as `string[]` (not `RagStatus[]`) to mirror `TypeFilter` /
+ * `OwnerFilter` and keep the slice type import-cycle-free.
+ */
+export type RagFilter = string[];
 
 /** Per-column filters surfaced through the column-header dropdowns. */
 export interface ColumnFilters {
   /** Name "contains" — column-scoped text filter, distinct from the
    *  global search box. */
   name: string;
+  /** File category multi-select (Image / Video / Code / …). */
+  type: TypeFilter;
+  /** Extension "contains" — e.g. "pdf", "jp" matches jpg & jpeg. */
+  extension: string;
+  /** MIME "contains" — e.g. "image/" matches every image. */
+  mime: string;
+  /** Folder path "contains" — useful in tree-wide search results. */
+  path: string;
+  /** Owner user-id multi-select. */
+  owner: OwnerFilter;
   modified: ModifiedFilter;
+  /** Same preset semantics as `modified`, applied to `createdAt`. */
+  created: ModifiedFilter;
   size: SizeFilter;
   access: AccessFilter;
+  /**
+   * RAG indexing status multi-select. Only meaningful when the user has
+   * fetched RAG statuses (via the RAG column toggle in column-settings or
+   * the column-header refresh button) — folders never pass this filter
+   * since RAG indexing is a file-only concept.
+   */
+  rag: RagFilter;
 }
+
+/**
+ * Stable ids for every optional / required column rendered in the file
+ * table. Hidden vs. visible columns are tracked in
+ * `UiState.visibleColumns` — a Box.com / Google-Drive-style "Choose
+ * columns" panel toggles each on/off. `name` and `access` are conceptually
+ * always present but are still included here so the type remains the
+ * single source of truth.
+ */
+export type ColumnId =
+  | "name"
+  | "type"
+  | "extension"
+  | "mime"
+  | "path"
+  | "owner"
+  | "size"
+  | "version"
+  | "updated_at"
+  | "created_at"
+  | "access"
+  | "rag_status";
+
+export type VisibleColumns = Record<ColumnId, boolean>;
+
+/**
+ * Default column set on first load. Tuned to match what users coming from
+ * Box.com / Google Drive expect to see by default — Type is shown
+ * because "what kind of file is this" is the second-most-important
+ * question after "what's its name", and the previous shipping default
+ * (just Name / Modified / Size / Access) silently hid that signal.
+ *
+ * `rag_status` is OFF by default because populating it requires a per-file
+ * network probe that the user explicitly opts into.
+ */
+export const DEFAULT_VISIBLE_COLUMNS: VisibleColumns = {
+  name: true,
+  type: true,
+  extension: false,
+  mime: false,
+  path: false,
+  owner: true,
+  size: true,
+  version: false,
+  updated_at: true,
+  created_at: false,
+  access: true,
+  rag_status: false,
+};
 
 export interface UiState {
   viewMode: ViewMode;
@@ -412,6 +534,20 @@ export interface UiState {
   detailsLevel: DetailsLevel;
   /** Per-column filter values driven by the column-header dropdowns. */
   columnFilters: ColumnFilters;
+  /** Which optional columns are mounted in the file table. */
+  visibleColumns: VisibleColumns;
+  /**
+   * Tree-wide search box value. Lives in Redux (not local component state)
+   * so the URL-sync layer can reflect it as `?q=…` and so cross-component
+   * reads (e.g. clearing search from a chip) don't need callbacks.
+   */
+  searchQuery: string;
+  /**
+   * Sticky filter chip currently active (Recents / Starred). Independent
+   * of `kindFilter` — chips apply preset semantics on top of any column
+   * filters. `null` = no chip.
+   */
+  chipFilter: ChipFilter | null;
   activeFileId: string | null;
   activeFolderId: string | null;
   /**
@@ -460,6 +596,20 @@ export interface UploadState {
 //
 // Registered under key `cloudFiles` in lib/redux/rootReducer.ts (Phase 2).
 
+/**
+ * Per-file RAG indexing status, hydrated lazily by the
+ * `prefetchRagStatusesForFiles` thunk. The thunk de-duplicates against
+ * `byFileId` so toggling the RAG column on/off doesn't re-fetch already
+ * known answers (use the column header's refresh action to force).
+ */
+export interface RagStatusState {
+  byFileId: Record<string, RagStatus>;
+  /** True while a batch fetch is in flight. */
+  isFetching: boolean;
+  /** ms timestamp of the most-recent successful batch (any source). */
+  lastFetchedAt: number | null;
+}
+
 export interface CloudFilesState {
   filesById: Record<string, CloudFileRecord>;
   foldersById: Record<string, CloudFolderRecord>;
@@ -473,6 +623,9 @@ export interface CloudFilesState {
   selection: SelectionState;
   ui: UiState;
   uploads: Record<string, UploadState>;
+
+  /** Per-file RAG indexing status, populated on demand. */
+  ragStatus: RagStatusState;
 
   /**
    * Realtime attachment status. Mirrors the supabase Channel lifecycle.

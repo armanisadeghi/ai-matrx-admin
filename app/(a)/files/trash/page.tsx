@@ -8,8 +8,25 @@
 
 import { PageShell } from "@/features/files/components/surfaces/PageShell";
 import { readSidebarModeCookie } from "@/features/files/utils/server-cookies";
+import {
+  readFilesUiFromParams,
+  type ServerSearchParams,
+} from "@/features/files/utils/server-search-params";
 
-export default async function CloudFilesTrashPage() {
+interface PageProps {
+  searchParams?: Promise<ServerSearchParams>;
+}
+
+export default async function CloudFilesTrashPage({ searchParams }: PageProps) {
   const sidebarMode = await readSidebarModeCookie();
-  return <PageShell section="trash" initialSidebarMode={sidebarMode} />;
+  const sp = searchParams ? await searchParams : undefined;
+  const { initialUiPatch, initialFileId } = readFilesUiFromParams(sp);
+  return (
+    <PageShell
+      section="trash"
+      initialSidebarMode={sidebarMode}
+      initialUiPatch={initialUiPatch}
+      initialFileId={initialFileId}
+    />
+  );
 }

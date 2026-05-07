@@ -1,19 +1,25 @@
 "use client";
 //
-// DesktopLayout sits in the static dep graph of every authenticated route, so
-// it MUST stay a thin shell. Rules for this file:
-//   1. No eager imports of heavy children — code-split with `next/dynamic` so
-//      their chunks don't get pulled into the boot bundle for every page.
-//   2. Type-only imports use `import type`.
-//   3. No nested `TooltipProvider` — the global provider is mounted in
+// DesktopLayout sits in the static dep graph of every authenticated route.
+// Rules for this file:
+//   1. Type-only imports use `import type`.
+//   2. No nested `TooltipProvider` — the global provider is mounted in
 //      `app/Providers.tsx` (delayDuration=200). Rendering a second provider
 //      here just remounts every Tooltip on sidebar toggles.
-//   4. No `lazy()` for individual lucide icons — the package is already loaded
-//      eagerly for the always-rendered icons; lazy-wrapping a single icon
-//      adds Suspense overhead without bundle savings.
+//   3. No `lazy()` for individual lucide icons — the package is already
+//      loaded eagerly for the always-rendered icons; lazy-wrapping a single
+//      icon adds Suspense overhead without bundle savings.
+//
+// NOTE on `next/dynamic`: do NOT lazy-load the header children from here.
+// This component only mounts when ResponsiveLayout flips `isMobile` from
+// `true` → `false`, which is a synchronous state update on the client. If
+// multiple children suspend during that single render, React 19 collapses
+// the parent tree to nothing until the chunks resolve. The right way to
+// shrink this file's footprint is to convert it into a server-rendered
+// shell with each interactive piece pulled out as its own client island —
+// not to wrap children in `dynamic()` from inside this client component.
 //
 import React, { useState, useEffect } from "react";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -36,27 +42,13 @@ import {
 import { MenuTapButton } from "@/components/icons/tap-buttons";
 import { useVoicePadAdvanced } from "@/components/official-candidate/voice-pad/hooks/useVoicePad";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
+import { NavigationMenu } from "@/features/applet/runner/header/navigation-menu/NavigationMenu";
+import NotificationDropdown from "@/components/ui/notifications/NotificationDropdown";
+import { MessageIcon } from "@/features/messaging/components/MessageIcon";
+import { QuickActionsMenu } from "@/features/quick-actions/components/QuickActionsMenu";
+import FeedbackButton from "@/features/feedback/FeedbackButton";
 
 import type { Notification } from "@/types/notification.types";
-
-const NavigationMenu = dynamic(
-  () =>
-    import("@/features/applet/runner/header/navigation-menu/NavigationMenu"),
-);
-const NotificationDropdown = dynamic(
-  () => import("@/components/ui/notifications/NotificationDropdown"),
-);
-const MessageIcon = dynamic(
-  () => import("@/features/messaging/components/MessageIcon"),
-);
-const QuickActionsMenu = dynamic(() =>
-  import("@/features/quick-actions/components/QuickActionsMenu").then(
-    (mod) => ({ default: mod.QuickActionsMenu }),
-  ),
-);
-const FeedbackButton = dynamic(
-  () => import("@/features/feedback/FeedbackButton"),
-);
 
 interface SidebarLink {
   label: string;

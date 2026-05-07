@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Preparing your document</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0e14;
+    --bg-soft: #11161f;
+    --ink: #e8e6e1;
+    --ink-dim: #8a8a85;
+    --ink-faint: #3a3d44;
+    --accent: #d4a574;
+    --accent-glow: rgba(212, 165, 116, 0.4);
+    --line: #1f242e;
+    --success: #7fb069;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Fraunces', serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* subtle grain */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.015) 1px, transparent 0);
+    background-size: 3px 3px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 720px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+
+  .header h1 {
+    font-weight: 400;
+    font-size: 28px;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  .header h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .header p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-dim);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .stage {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    align-items: center;
+    gap: 32px;
+    padding: 20px 0;
+    opacity: 0.25;
+    transition: opacity 0.6s ease;
+    position: relative;
+  }
+
+  .stage.active { opacity: 1; }
+  .stage.done { opacity: 0.7; }
+
+  .stage-label {
+    text-align: right;
+    border-right: 1px solid var(--line);
+    padding-right: 24px;
+    transition: border-color 0.4s ease;
+  }
+
+  .stage.active .stage-label,
+  .stage.done .stage-label {
+    border-right-color: var(--accent);
+  }
+
+  .stage-name {
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+
+  .stage-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .stage-viz {
+    height: 56px;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .action {
+    margin-left: 180px;
+    padding-left: 32px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+
+  .action-line {
+    position: absolute;
+    left: 32px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--ink-faint);
+    overflow: hidden;
+  }
+
+  .action-line::after {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+    transition: top 0.4s ease;
+  }
+
+  .action.active .action-line::after {
+    animation: flow 1.8s ease-in-out infinite;
+  }
+
+  @keyframes flow {
+    0% { top: -100%; }
+    100% { top: 100%; }
+  }
+
+  .action-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+    text-transform: lowercase;
+    letter-spacing: 0.05em;
+    margin-left: 16px;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .action.active .action-label,
+  .action.done .action-label { opacity: 1; }
+  .action.done .action-label { color: var(--ink-faint); }
+
+  /* Stage visualizations */
+
+  /* Stage 1: User file - a document icon */
+  .viz-file {
+    width: 32px;
+    height: 40px;
+    border: 1px solid var(--ink-dim);
+    position: relative;
+    border-radius: 2px;
+  }
+  .viz-file::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 10px; height: 10px;
+    background: var(--bg);
+    border-left: 1px solid var(--ink-dim);
+    border-bottom: 1px solid var(--ink-dim);
+  }
+  .stage.active .viz-file,
+  .stage.done .viz-file {
+    border-color: var(--accent);
+  }
+  .stage.active .viz-file::before,
+  .stage.done .viz-file::before {
+    border-color: var(--accent);
+  }
+
+  /* Stage 2: Cloud file - file with cloud indicator */
+  .viz-cloud {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .viz-cloud-icon {
+    width: 32px; height: 40px;
+    border: 1px solid var(--ink-dim);
+    border-radius: 2px;
+    position: relative;
+  }
+  .viz-cloud-dots {
+    display: flex;
+    gap: 4px;
+  }
+  .viz-cloud-dots span {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--ink-dim);
+    transition: background 0.4s ease;
+  }
+  .stage.active .viz-cloud-icon,
+  .stage.done .viz-cloud-icon { border-color: var(--accent); }
+  .stage.active .viz-cloud-dots span,
+  .stage.done .viz-cloud-dots span { background: var(--accent); }
+
+  /* Stage 3: Raw text - jagged lines */
+  .viz-raw {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 140px;
+  }
+  .viz-raw span {
+    height: 2px;
+    background: var(--ink-faint);
+    transition: background 0.4s ease;
+  }
+  .viz-raw span:nth-child(1) { width: 80%; }
+  .viz-raw span:nth-child(2) { width: 60%; margin-left: 20%; }
+  .viz-raw span:nth-child(3) { width: 90%; }
+  .viz-raw span:nth-child(4) { width: 45%; margin-left: 10%; }
+  .viz-raw span:nth-child(5) { width: 70%; }
+  .stage.active .viz-raw span,
+  .stage.done .viz-raw span { background: var(--accent); }
+
+  /* Stage 4: Clean text - aligned lines */
+  .viz-clean {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 140px;
+  }
+  .viz-clean span {
+    height: 2px;
+    background: var(--ink-faint);
+    transition: background 0.4s ease, width 0.6s ease;
+  }
+  .viz-clean span:nth-child(1) { width: 100%; }
+  .viz-clean span:nth-child(2) { width: 100%; }
+  .viz-clean span:nth-child(3) { width: 100%; }
+  .viz-clean span:nth-child(4) { width: 100%; }
+  .viz-clean span:nth-child(5) { width: 65%; }
+  .stage.active .viz-clean span,
+  .stage.done .viz-clean span { background: var(--accent); }
+
+  /* Stage 5: Chunks - separated blocks */
+  .viz-chunks {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    width: 160px;
+  }
+  .viz-chunks span {
+    width: 30px; height: 16px;
+    background: var(--ink-faint);
+    border-radius: 1px;
+    transition: background 0.4s ease;
+  }
+  .stage.active .viz-chunks span,
+  .stage.done .viz-chunks span { background: var(--accent); }
+
+  /* Stage 6: Embeddings - dot field */
+  .viz-embed {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 3px;
+    width: 160px;
+  }
+  .viz-embed span {
+    aspect-ratio: 1;
+    background: var(--ink-faint);
+    border-radius: 50%;
+    transition: background 0.4s ease, transform 0.6s ease;
+  }
+  .stage.active .viz-embed span,
+  .stage.done .viz-embed span {
+    background: var(--accent);
+  }
+  .stage.active .viz-embed span {
+    animation: shimmer 2s ease-in-out infinite;
+  }
+  @keyframes shimmer {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .stage.active .viz-embed span:nth-child(3n) { animation-delay: 0.2s; }
+  .stage.active .viz-embed span:nth-child(5n) { animation-delay: 0.5s; }
+  .stage.active .viz-embed span:nth-child(7n) { animation-delay: 0.8s; }
+
+  /* Completion */
+  .footer {
+    margin-top: 48px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    min-height: 16px;
+  }
+
+  .footer.complete {
+    color: var(--success);
+  }
+
+  .pulse {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: pulse 1.4s ease-in-out infinite;
+    vertical-align: middle;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 12px var(--accent-glow); }
+  }
+
+  .footer.complete .pulse {
+    background: var(--success);
+    animation: none;
+    opacity: 1;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>Preparing your document for <em>retrieval</em></h1>
+    <p>This is what's happening behind the scenes</p>
+  </div>
+
+  <div class="pipeline" id="pipeline">
+
+    <div class="stage" data-stage="0">
+      <div class="stage-label">
+        <div class="stage-name">User file</div>
+        <div class="stage-meta">on your device</div>
+      </div>
+      <div class="stage-viz">
+        <div class="viz-file"></div>
+      </div>
+    </div>
+
+    <div class="action" data-action="0">
+      <div class="action-line"></div>
+      <span class="action-label">uploading</span>
+    </div>
+
+    <div class="stage" data-stage="1">
+      <div class="stage-label">
+        <div class="stage-name">Cloud file</div>
+        <div class="stage-meta">stored securely</div>
+      </div>
+      <div class="stage-viz">
+        <div class="viz-cloud">
+          <div class="viz-cloud-icon"></div>
+          <div class="viz-cloud-dots"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action" data-action="1">
+      <div class="action-line"></div>
+      <span class="action-label">extracting text</span>
+    </div>
+
+    <div class="stage" data-stage="2">
+      <div class="stage-label">
+        <div class="stage-name">Raw text</div>
+        <div class="stage-meta">page by page</div>
+      </div>
+      <div class="stage-viz">
+        <div class="viz-raw">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="action" data-action="2">
+      <div class="action-line"></div>
+      <span class="action-label">cleaning</span>
+    </div>
+
+    <div class="stage" data-stage="3">
+      <div class="stage-label">
+        <div class="stage-name">Clean text</div>
+        <div class="stage-meta">normalized</div>
+      </div>
+      <div class="stage-viz">
+        <div class="viz-clean">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="action" data-action="3">
+      <div class="action-line"></div>
+      <span class="action-label">chunking</span>
+    </div>
+
+    <div class="stage" data-stage="4">
+      <div class="stage-label">
+        <div class="stage-name">Chunks</div>
+        <div class="stage-meta">searchable pieces</div>
+      </div>
+      <div class="stage-viz">
+        <div class="viz-chunks">
+          <span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="action" data-action="4">
+      <div class="action-line"></div>
+      <span class="action-label">embedding</span>
+    </div>
+
+    <div class="stage" data-stage="5">
+      <div class="stage-label">
+        <div class="stage-name">Embeddings</div>
+        <div class="stage-meta">meaning, vectorized</div>
+      </div>
+      <div class="stage-viz">
+        <div class="viz-embed" id="embed-grid"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer" id="footer">
+    <span class="pulse"></span><span id="status">Working</span>
+  </div>
+</div>
+
+<script>
+  // Build embedding dots
+  const grid = document.getElementById('embed-grid');
+  for (let i = 0; i < 36; i++) {
+    grid.appendChild(document.createElement('span'));
+  }
+
+  const stages = document.querySelectorAll('.stage');
+  const actions = document.querySelectorAll('.action');
+  const status = document.getElementById('status');
+  const footer = document.getElementById('footer');
+
+  // Timing per phase (ms) — tuned to feel deliberate but not dragging
+  const stageDuration = 1400;
+  const actionDuration = 1600;
+
+  const statusMessages = [
+    'Uploading',
+    'Reading the document',
+    'Extracting text',
+    'Cleaning it up',
+    'Splitting into chunks',
+    'Computing embeddings'
+  ];
+
+  async function sleep(ms) {
+    return new Promise(r => setTimeout(r, ms));
+  }
+
+  async function runPipeline() {
+    while (true) {
+      // Reset
+      stages.forEach(s => s.classList.remove('active', 'done'));
+      actions.forEach(a => a.classList.remove('active', 'done'));
+      footer.classList.remove('complete');
+
+      for (let i = 0; i < stages.length; i++) {
+        // Activate stage
+        stages[i].classList.add('active');
+        if (statusMessages[i]) status.textContent = statusMessages[i];
+        await sleep(stageDuration);
+
+        // Mark stage done, activate action (if exists)
+        stages[i].classList.remove('active');
+        stages[i].classList.add('done');
+
+        if (actions[i]) {
+          actions[i].classList.add('active');
+          await sleep(actionDuration);
+          actions[i].classList.remove('active');
+          actions[i].classList.add('done');
+        }
+      }
+
+      // Complete
+      status.textContent = 'Ready to search';
+      footer.classList.add('complete');
+      await sleep(2400);
+
+      // Loop
+      await sleep(600);
+    }
+  }
+
+  runPipeline();
+</script>
+
+</body>
+</html>

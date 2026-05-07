@@ -29,11 +29,12 @@ import { ExportPanel } from "./ExportPanel";
 
 // Both crop windows render <WindowPanel> as styling chrome but are not
 // registered overlays — File[] blobs and (files: File[]) => void
-// callbacks can't survive Redux serialization. `dynamic()` keeps WindowPanel
-// out of the route's static graph (otherwise every route that lazy-loads
-// the image-studio bundle pulls in the whole window-panels chunk).
-// `loading: null` because both windows are conditionally rendered (only
-// when the user actively crops) — first paint without them is correct.
+// callbacks can't survive Redux serialization. `dynamic()` keeps
+// WindowPanel out of the route's static graph (otherwise every route
+// that lazy-loads the image-studio bundle pulls in the whole
+// window-panels chunk). `loading: null` because both windows are
+// conditionally rendered (only when the user actively crops) — first
+// paint without them is correct.
 const CropPreviewWindow = dynamic(
   () =>
     import("./CropPreviewWindow").then((m) => ({

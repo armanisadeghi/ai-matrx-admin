@@ -1,0 +1,260 @@
+<style>
+  /* ============================================================
+     TIMELINE (24s total loop)
+     ----------------------------------------------------------
+     0–8s    WRITE PATH builds: stages light up sequentially,
+             packets stream down right side, store fills.
+     8–10s   Write path dims to "loaded" gray; store glows full.
+     10–22s  READ PATH fires: user task → scan → agent → query →
+             store → top-K → agent completes. Store pulse on hit.
+     22–24s  Brief settle before loop restart.
+     ============================================================ */
+
+  /* WRITE PATH: stage activations (each lights for ~1.2s) */
+  @keyframes w-stage-1 { 0%, 100% { opacity: 0.35; } 2%, 8% { opacity: 1; } 33%, 100% { opacity: 0.4; } }
+  @keyframes w-stage-2 { 0%, 8% { opacity: 0.35; } 10%, 16% { opacity: 1; } 33%, 100% { opacity: 0.4; } }
+  @keyframes w-stage-3 { 0%, 16% { opacity: 0.35; } 18%, 24% { opacity: 1; } 33%, 100% { opacity: 0.4; } }
+  @keyframes w-stage-4 { 0%, 24% { opacity: 0.35; } 26%, 32% { opacity: 1; } 33%, 100% { opacity: 0.4; } }
+  @keyframes w-stage-5 { 0%, 28% { opacity: 0.35; } 30%, 35% { opacity: 1; } 38%, 100% { opacity: 0.4; } }
+  @keyframes w-stage-6 { 0%, 32% { opacity: 0.35; } 34%, 38% { opacity: 1; } 42%, 100% { opacity: 0.4; } }
+
+  /* WRITE PATH: packets traveling down the spine */
+  @keyframes w-pkt-1 { 0%, 4% { opacity: 0; offset-distance: 0%; } 6% { opacity: 1; } 14% { opacity: 1; offset-distance: 100%; } 16%, 100% { opacity: 0; offset-distance: 100%; } }
+  @keyframes w-pkt-2 { 0%, 12% { opacity: 0; offset-distance: 0%; } 14% { opacity: 1; } 22% { opacity: 1; offset-distance: 100%; } 24%, 100% { opacity: 0; offset-distance: 100%; } }
+  @keyframes w-pkt-3 { 0%, 20% { opacity: 0; offset-distance: 0%; } 22% { opacity: 1; } 30% { opacity: 1; offset-distance: 100%; } 32%, 100% { opacity: 0; offset-distance: 100%; } }
+  @keyframes w-pkt-4 { 0%, 28% { opacity: 0; offset-distance: 0%; } 30% { opacity: 1; } 36% { opacity: 1; offset-distance: 100%; } 38%, 100% { opacity: 0; offset-distance: 100%; } }
+  @keyframes w-pkt-5 { 0%, 33% { opacity: 0; offset-distance: 0%; } 35% { opacity: 1; } 40% { opacity: 1; offset-distance: 100%; } 42%, 100% { opacity: 0; offset-distance: 100%; } }
+
+  /* WRITE PATH: convergence into store from embeddings */
+  @keyframes w-converge { 0%, 38% { opacity: 0; offset-distance: 0%; } 40% { opacity: 1; } 44% { opacity: 1; offset-distance: 100%; } 46%, 100% { opacity: 0; offset-distance: 100%; } }
+
+  /* STORE fills + glows */
+  @keyframes store-fill { 0%, 5% { fill-opacity: 0.05; } 45% { fill-opacity: 0.45; } 100% { fill-opacity: 0.45; } }
+  @keyframes store-glow { 0%, 42% { stroke-width: 0.5; opacity: 0.7; } 46%, 100% { stroke-width: 1; opacity: 1; } }
+  @keyframes store-pulse { 0%, 75% { transform: scale(1); } 78% { transform: scale(1.04); } 82% { transform: scale(1); } 100% { transform: scale(1); } }
+
+  /* READ PATH: user task arrives */
+  @keyframes r-task { 0%, 42% { opacity: 0.2; } 44%, 100% { opacity: 1; } }
+  @keyframes r-stage-2 { 0%, 48% { opacity: 0.25; } 50%, 100% { opacity: 1; } }
+  @keyframes r-stage-3 { 0%, 54% { opacity: 0.25; } 56%, 100% { opacity: 1; } }
+  @keyframes r-stage-4 { 0%, 62% { opacity: 0.25; } 64%, 100% { opacity: 1; } }
+  @keyframes r-stage-5 { 0%, 68% { opacity: 0.25; } 70%, 100% { opacity: 1; } }
+  @keyframes r-stage-6 { 0%, 84% { opacity: 0.25; } 86%, 100% { opacity: 1; } }
+
+  /* READ PATH: packets — left side */
+  @keyframes r-pkt-1 { 0%, 44% { opacity: 0; offset-distance: 0%; } 46% { opacity: 1; } 50% { opacity: 1; offset-distance: 100%; } 52%, 100% { opacity: 0; offset-distance: 100%; } }
+  @keyframes r-pkt-2 { 0%, 50% { opacity: 0; offset-distance: 0%; } 52% { opacity: 1; } 56% { opacity: 1; offset-distance: 100%; } 58%, 100% { opacity: 0; offset-distance: 100%; } }
+  @keyframes r-pkt-3 { 0%, 56% { opacity: 0; offset-distance: 0%; } 58% { opacity: 1; } 64% { opacity: 1; offset-distance: 100%; } 66%, 100% { opacity: 0; offset-distance: 100%; } }
+  @keyframes r-pkt-4 { 0%, 64% { opacity: 0; offset-distance: 0%; } 66% { opacity: 1; } 70% { opacity: 1; offset-distance: 100%; } 72%, 100% { opacity: 0; offset-distance: 100%; } }
+
+  /* READ PATH: convergence into store from query */
+  @keyframes r-converge { 0%, 70% { opacity: 0; offset-distance: 0%; } 72% { opacity: 1; } 76% { opacity: 1; offset-distance: 100%; } 78%, 100% { opacity: 0; offset-distance: 100%; } }
+
+  /* RESULT path: store → final agent box */
+  @keyframes result-flow { 0%, 80% { opacity: 0; offset-distance: 0%; } 82% { opacity: 1; } 90% { opacity: 1; offset-distance: 100%; } 92%, 100% { opacity: 0; offset-distance: 100%; } }
+
+  /* Edge connectors: subtle dashed flow */
+  @keyframes flow-dash { to { stroke-dashoffset: -16; } }
+
+  /* Apply animations */
+  .ws-1 { animation: w-stage-1 24s ease-in-out infinite; }
+  .ws-2 { animation: w-stage-2 24s ease-in-out infinite; }
+  .ws-3 { animation: w-stage-3 24s ease-in-out infinite; }
+  .ws-4 { animation: w-stage-4 24s ease-in-out infinite; }
+  .ws-5 { animation: w-stage-5 24s ease-in-out infinite; }
+  .ws-6 { animation: w-stage-6 24s ease-in-out infinite; }
+
+  .wp-1 { animation: w-pkt-1 24s linear infinite; offset-path: path('M 540 96 L 540 162'); offset-rotate: 0deg; }
+  .wp-2 { animation: w-pkt-2 24s linear infinite; offset-path: path('M 540 198 L 540 264'); offset-rotate: 0deg; }
+  .wp-3 { animation: w-pkt-3 24s linear infinite; offset-path: path('M 540 300 L 540 366'); offset-rotate: 0deg; }
+  .wp-4 { animation: w-pkt-4 24s linear infinite; offset-path: path('M 540 402 L 540 468'); offset-rotate: 0deg; }
+  .wp-5 { animation: w-pkt-5 24s linear infinite; offset-path: path('M 540 504 L 540 568'); offset-rotate: 0deg; }
+  .wc { animation: w-converge 24s linear infinite; offset-path: path('M 540 598 Q 480 640 380 678'); offset-rotate: 0deg; }
+
+  .sf { animation: store-fill 24s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+  .sg { animation: store-glow 24s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+  .sp { animation: store-pulse 24s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+
+  .rt { animation: r-task 24s ease-in-out infinite; }
+  .rs-2 { animation: r-stage-2 24s ease-in-out infinite; }
+  .rs-3 { animation: r-stage-3 24s ease-in-out infinite; }
+  .rs-4 { animation: r-stage-4 24s ease-in-out infinite; }
+  .rs-5 { animation: r-stage-5 24s ease-in-out infinite; }
+  .rs-6 { animation: r-stage-6 24s ease-in-out infinite; }
+
+  .rp-1 { animation: r-pkt-1 24s linear infinite; offset-path: path('M 140 96 L 140 162'); offset-rotate: 0deg; }
+  .rp-2 { animation: r-pkt-2 24s linear infinite; offset-path: path('M 140 198 L 140 264'); offset-rotate: 0deg; }
+  .rp-3 { animation: r-pkt-3 24s linear infinite; offset-path: path('M 140 300 L 140 366'); offset-rotate: 0deg; }
+  .rp-4 { animation: r-pkt-4 24s linear infinite; offset-path: path('M 140 402 L 140 468'); offset-rotate: 0deg; }
+  .rc { animation: r-converge 24s linear infinite; offset-path: path('M 140 504 Q 220 600 300 678'); offset-rotate: 0deg; }
+  .rf { animation: result-flow 24s linear infinite; offset-path: path('M 340 730 L 340 790'); offset-rotate: 0deg; }
+
+  .flow { stroke-dasharray: 4 4; animation: flow-dash 1.5s linear infinite; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ws-1, .ws-2, .ws-3, .ws-4, .ws-5, .ws-6,
+    .wp-1, .wp-2, .wp-3, .wp-4, .wp-5, .wc,
+    .sf, .sg, .sp,
+    .rt, .rs-2, .rs-3, .rs-4, .rs-5, .rs-6,
+    .rp-1, .rp-2, .rp-3, .rp-4, .rc, .rf,
+    .flow { animation: none; }
+  }
+</style>
+<svg width="100%" viewBox="0 0 680 860" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>RAG read and write paths converging at the data store</title>
+  <desc>Two parallel pipelines run side by side. The write path on the right pre-loads documents into the data store; once filled, the read path on the left fires when an agent receives a task, queries the same store, and uses the top-K chunks to complete the task.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- =========================== HEADERS =========================== -->
+  <text class="ts" x="140" y="30" text-anchor="middle" dominant-baseline="central" fill="#D4537E" font-weight="500">READ PATH</text>
+  <text class="ts" x="140" y="48" text-anchor="middle" dominant-baseline="central">runtime · per task</text>
+  <line x1="60" y1="58" x2="220" y2="58" stroke="#D4537E" stroke-width="0.5" opacity="0.4"/>
+
+  <text class="ts" x="540" y="30" text-anchor="middle" dominant-baseline="central" fill="#185FA5" font-weight="500">WRITE PATH</text>
+  <text class="ts" x="540" y="48" text-anchor="middle" dominant-baseline="central">ingestion · pre-loaded</text>
+  <line x1="460" y1="58" x2="620" y2="58" stroke="#185FA5" stroke-width="0.5" opacity="0.4"/>
+
+  <!-- =========================== READ PATH (LEFT) =========================== -->
+
+  <!-- 1. User task -->
+  <g class="rt">
+    <rect class="c-pink" x="60" y="70" width="160" height="52" rx="8" stroke-width="0.5"/>
+    <text class="th" x="140" y="90" text-anchor="middle" dominant-baseline="central">User task</text>
+    <text class="ts" x="140" y="108" text-anchor="middle" dominant-baseline="central">"Summarize Q3 policy"</text>
+  </g>
+  <line x1="140" y1="122" x2="140" y2="166" stroke="#D4537E" stroke-width="1.5" class="flow" marker-end="url(#arrow)"/>
+  <text class="ts" x="158" y="144" dominant-baseline="central">scan keywords</text>
+  <circle cx="140" cy="142" r="4" fill="#D4537E" class="rp-1"/>
+
+  <!-- 2. RAG-likely? decision -->
+  <g class="rs-2">
+    <rect class="c-pink" x="60" y="172" width="160" height="52" rx="8" stroke-width="0.5"/>
+    <text class="th" x="140" y="192" text-anchor="middle" dominant-baseline="central">RAG-likely?</text>
+    <text class="ts" x="140" y="210" text-anchor="middle" dominant-baseline="central">Heuristic check</text>
+  </g>
+  <line x1="140" y1="224" x2="140" y2="268" stroke="#D4537E" stroke-width="1.5" class="flow" marker-end="url(#arrow)"/>
+  <text class="ts" x="158" y="246" dominant-baseline="central">inject tool</text>
+  <circle cx="140" cy="244" r="4" fill="#D4537E" class="rp-2"/>
+
+  <!-- 3. Agent system -->
+  <g class="rs-3">
+    <rect class="c-pink" x="60" y="274" width="160" height="52" rx="8" stroke-width="0.5"/>
+    <text class="th" x="140" y="294" text-anchor="middle" dominant-baseline="central">Agent system</text>
+    <text class="ts" x="140" y="312" text-anchor="middle" dominant-baseline="central">Tool-equipped</text>
+  </g>
+  <line x1="140" y1="326" x2="140" y2="370" stroke="#D4537E" stroke-width="1.5" class="flow" marker-end="url(#arrow)"/>
+  <text class="ts" x="158" y="348" dominant-baseline="central">call tool</text>
+  <circle cx="140" cy="346" r="4" fill="#D4537E" class="rp-3"/>
+
+  <!-- 4. Search query -->
+  <g class="rs-4">
+    <rect class="c-pink" x="60" y="376" width="160" height="52" rx="8" stroke-width="0.5"/>
+    <text class="th" x="140" y="396" text-anchor="middle" dominant-baseline="central">Search query</text>
+    <text class="ts" x="140" y="414" text-anchor="middle" dominant-baseline="central">Natural language</text>
+  </g>
+  <line x1="140" y1="428" x2="140" y2="472" stroke="#D4537E" stroke-width="1.5" class="flow" marker-end="url(#arrow)"/>
+  <text class="ts" x="158" y="450" dominant-baseline="central">embed query</text>
+  <circle cx="140" cy="448" r="4" fill="#D4537E" class="rp-4"/>
+
+  <!-- 5. Query embedding -->
+  <g class="rs-5">
+    <rect class="c-pink" x="60" y="478" width="160" height="52" rx="8" stroke-width="0.5"/>
+    <text class="th" x="140" y="498" text-anchor="middle" dominant-baseline="central">Query vector</text>
+    <text class="ts" x="140" y="516" text-anchor="middle" dominant-baseline="central">Same space as docs</text>
+  </g>
+
+  <!-- =========================== WRITE PATH (RIGHT) =========================== -->
+
+  <!-- 1. User file -->
+  <g class="ws-1">
+    <rect class="c-blue" x="460" y="70" width="160" height="52" rx="8" stroke-width="0.5"/>
+    <text class="th" x="540" y="90" text-anchor="middle" dominant-baseline="central">User file</text>
+    <text class="ts" x="540" y="108" text-anchor="middle" dominant-baseline="central">Source document</text>
+  </g>
+  <line x1="540" y1="122" x2="540" y2="166" stroke="#185FA5" stroke-width="1.5" class="flow" marker-end="url(#arrow)"/>
+  <text class="ts" x="558" y="144" dominant-baseline="central">upload</text>
+  <circle cx="540" cy="142" r="4" fill="#185FA5" class="wp-1"/>
+
+  <!-- 2. Cloud file -->
+  <g class="ws-2">
+    <rect class="c-blue" x="460" y="172" width="160" height="52" rx="8" stroke-width="0.5"/>
+    <text class="th" x="540" y="192" text-anchor="middle" dominant-baseline="central">Cloud file</text>
+    <text class="ts" x="540" y="210" text-anchor="middle" dominant-baseline="central">S3 + cld_files</text>
+  </g>
+  <line x1="540" y1="224" x2="540" y2="268" stroke="#185FA5" stroke-width="1.5" class="flow" marker-end="url(#arrow)"/>
+  <text class="ts" x="558" y="246" dominant-baseline="central">extract</text>
+  <circle cx="540" cy="244" r="4" fill="#185FA5" class="wp-2"/>
+
+  <!-- 3. Raw text -->
+  <g class="ws-3">
+    <rect class="c-amber" x="460" y="274" width="160" height="52" rx="8" stroke-width="0.5"/>
+    <text class="th" x="540" y="294" text-anchor="middle" dominant-baseline="central">Raw text</text>
+    <text class="ts" x="540" y="312" text-anchor="middle" dominant-baseline="central">Per-page, messy</text>
+  </g>
+  <line x1="540" y1="326" x2="540" y2="370" stroke="#185FA5" stroke-width="1.5" class="flow" marker-end="url(#arrow)"/>
+  <text class="ts" x="558" y="348" dominant-baseline="central">clean</text>
+  <circle cx="540" cy="346" r="4" fill="#185FA5" class="wp-3"/>
+
+  <!-- 4. Clean text -->
+  <g class="ws-4">
+    <rect class="c-teal" x="460" y="376" width="160" height="52" rx="8" stroke-width="0.5"/>
+    <text class="th" x="540" y="396" text-anchor="middle" dominant-baseline="central">Clean text</text>
+    <text class="ts" x="540" y="414" text-anchor="middle" dominant-baseline="central">Normalized</text>
+  </g>
+  <line x1="540" y1="428" x2="540" y2="472" stroke="#185FA5" stroke-width="1.5" class="flow" marker-end="url(#arrow)"/>
+  <text class="ts" x="558" y="450" dominant-baseline="central">chunk</text>
+  <circle cx="540" cy="448" r="4" fill="#185FA5" class="wp-4"/>
+
+  <!-- 5. Chunks -->
+  <g class="ws-5">
+    <rect class="c-purple" x="460" y="478" width="160" height="52" rx="8" stroke-width="0.5"/>
+    <text class="th" x="540" y="498" text-anchor="middle" dominant-baseline="central">Chunks</text>
+    <text class="ts" x="540" y="516" text-anchor="middle" dominant-baseline="central">Small pieces</text>
+  </g>
+  <line x1="540" y1="530" x2="540" y2="572" stroke="#185FA5" stroke-width="1.5" class="flow" marker-end="url(#arrow)"/>
+  <text class="ts" x="558" y="552" dominant-baseline="central">embed</text>
+  <circle cx="540" cy="550" r="4" fill="#185FA5" class="wp-5"/>
+
+  <!-- 6. Embeddings -->
+  <g class="ws-6">
+    <rect class="c-coral" x="460" y="578" width="160" height="52" rx="8" stroke-width="0.5"/>
+    <text class="th" x="540" y="598" text-anchor="middle" dominant-baseline="central">Embeddings</text>
+    <text class="ts" x="540" y="616" text-anchor="middle" dominant-baseline="central">Vectors</text>
+  </g>
+
+  <!-- =========================== CONVERGENCE LINES =========================== -->
+
+  <!-- Right-side: embeddings → store (curve) -->
+  <path d="M 540 630 Q 480 660 380 678" fill="none" stroke="#185FA5" stroke-width="1.5" opacity="0.55" class="flow"/>
+  <text class="ts" x="478" y="650" text-anchor="middle" dominant-baseline="central" fill="#185FA5">tagged by</text>
+  <circle r="5" fill="#185FA5" class="wc"/>
+
+  <!-- Left-side: query vector → store (curve) -->
+  <path d="M 140 530 Q 220 600 300 678" fill="none" stroke="#D4537E" stroke-width="1.5" opacity="0.55" class="flow"/>
+  <text class="ts" x="200" y="612" text-anchor="middle" dominant-baseline="central" fill="#D4537E">searches</text>
+  <circle r="5" fill="#D4537E" class="rc"/>
+
+  <!-- =========================== DATA STORE (CENTER) =========================== -->
+  <g class="sp">
+    <rect x="200" y="678" width="280" height="64" rx="10" fill="#97C459" class="sf" stroke="#3B6D11" stroke-width="0.5"/>
+    <rect x="200" y="678" width="280" height="64" rx="10" fill="none" stroke="#3B6D11" class="sg"/>
+    <text class="th" x="340" y="703" text-anchor="middle" dominant-baseline="central" fill="#173404" letter-spacing="2">DATA STORE</text>
+    <text class="ts" x="340" y="724" text-anchor="middle" dominant-baseline="central" fill="#27500A">Indexed vectors + tags</text>
+  </g>
+
+  <!-- =========================== RESULT PATH =========================== -->
+  <line x1="340" y1="742" x2="340" y2="788" stroke="#3B6D11" stroke-width="1.5" class="flow" marker-end="url(#arrow)"/>
+  <text class="ts" x="358" y="765" dominant-baseline="central">top-K chunks</text>
+  <circle r="5" fill="#3B6D11" class="rf"/>
+
+  <!-- Final: Agent completes task -->
+  <g>
+    <rect class="c-green" x="220" y="794" width="240" height="52" rx="8" stroke-width="0.5"/>
+    <text class="th" x="340" y="814" text-anchor="middle" dominant-baseline="central">Agent completes task</text>
+    <text class="ts" x="340" y="832" text-anchor="middle" dominant-baseline="central">Grounded answer</text>
+  </g>
+</svg>

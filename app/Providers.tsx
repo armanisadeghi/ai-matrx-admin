@@ -13,12 +13,13 @@
 // never import from a barrel `index.ts`. If a widget below is heavy,
 // open the widget's own file and lazy-load its heavy children there.
 
-// Side-effect import: schedules the bundle-leak guard's boot-end macrotask
-// during the boot bundle. Window-panel core files (WindowPanel, OverlaySurface,
-// windowRegistry) call `assertLazyLoaded()` at module top — they fire a loud
-// dev-only error if parsed eagerly. Without this import, a lazy chunk loading
-// the guard fresh would false-positive itself. See lazy-bundle-guard.ts header.
-import "@/features/window-panels/utils/lazy-bundle-guard";
+// NOTE: the bundle-leak guard's side-effect import was moved to
+// `app/DeferredSingletons.tsx` — that file has `"use client"`, which is
+// required for the guard's setTimeout to actually run on the client.
+// A side-effect import here (in a Server Component) would only execute
+// on the server and never schedule the boot-signal macrotask in the
+// browser, leading to false-positive alarms when the lazy window-panels
+// chunk first loads. See DeferredSingletons.tsx for the live import.
 
 import React from "react";
 import StoreProvider from "@/providers/StoreProvider";

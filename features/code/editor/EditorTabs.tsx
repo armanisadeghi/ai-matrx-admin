@@ -9,11 +9,13 @@ import {
   setActiveTab,
 } from "../redux/tabsSlice";
 import { EditorTab } from "./EditorTab";
+import { useOpenRenderPreview } from "../hooks/useOpenRenderPreview";
 
 export const EditorTabs: React.FC = () => {
   const dispatch = useAppDispatch();
   const { byId, order } = useAppSelector(selectCodeTabs);
   const activeId = useAppSelector(selectActiveTabId);
+  const openRenderPreview = useOpenRenderPreview();
 
   const handleSelect = useCallback(
     (id: string) => {
@@ -27,6 +29,13 @@ export const EditorTabs: React.FC = () => {
       dispatch(closeTab(id));
     },
     [dispatch],
+  );
+
+  const handleOpenPreview = useCallback(
+    (id: string) => {
+      openRenderPreview(id);
+    },
+    [openRenderPreview],
   );
 
   if (order.length === 0) {
@@ -61,6 +70,9 @@ export const EditorTabs: React.FC = () => {
             onSelect={handleSelect}
             onClose={handleClose}
             onMiddleClick={handleClose}
+            onOpenPreview={
+              tab.kind === "render-preview" ? undefined : handleOpenPreview
+            }
           />
         );
       })}

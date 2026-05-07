@@ -6,7 +6,7 @@ import { createCustomFaviconMetadata } from "@/utils/favicon-utils";
 const FLASHCARD_FAVICON_COLOR = "#b45309";
 
 /**
- * Metadata + favicon for `/flashcard/*` routes (no `navigation-links` entry).
+ * Metadata + favicon for `/flashcard/*` routes (no favicon-route-data entry).
  */
 export function createFlashcardRouteMetadata(
   composedTitle: string,

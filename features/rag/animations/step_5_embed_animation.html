@@ -1,0 +1,100 @@
+<style>
+  @keyframes chunk-enter-1 { 0%, 100% { opacity: 0; transform: translateX(0); } 8%, 18% { opacity: 1; transform: translateX(120px); } 22% { opacity: 0; transform: translateX(120px); } }
+  @keyframes chunk-enter-2 { 0%, 100% { opacity: 0; transform: translateX(0); } 28%, 38% { opacity: 1; transform: translateX(120px); } 42% { opacity: 0; transform: translateX(120px); } }
+  @keyframes chunk-enter-3 { 0%, 100% { opacity: 0; transform: translateX(0); } 48%, 58% { opacity: 1; transform: translateX(120px); } 62% { opacity: 0; transform: translateX(120px); } }
+  @keyframes chunk-enter-4 { 0%, 100% { opacity: 0; transform: translateX(0); } 68%, 78% { opacity: 1; transform: translateX(120px); } 82% { opacity: 0; transform: translateX(120px); } }
+  @keyframes encoder-pulse { 0%, 100% { opacity: 0.85; } 15%, 35%, 55%, 75% { opacity: 1; } }
+  @keyframes vec-emit-1 { 0%, 18% { opacity: 0; r: 0; } 22% { opacity: 1; r: 6; } 100% { opacity: 1; r: 6; } }
+  @keyframes vec-emit-2 { 0%, 38% { opacity: 0; r: 0; } 42% { opacity: 1; r: 6; } 100% { opacity: 1; r: 6; } }
+  @keyframes vec-emit-3 { 0%, 58% { opacity: 0; r: 0; } 62% { opacity: 1; r: 6; } 100% { opacity: 1; r: 6; } }
+  @keyframes vec-emit-4 { 0%, 78% { opacity: 0; r: 0; } 82% { opacity: 1; r: 6; } 100% { opacity: 1; r: 6; } }
+
+  .ce-1 { animation: chunk-enter-1 8s ease-in-out infinite; transform-box: fill-box; }
+  .ce-2 { animation: chunk-enter-2 8s ease-in-out infinite; transform-box: fill-box; }
+  .ce-3 { animation: chunk-enter-3 8s ease-in-out infinite; transform-box: fill-box; }
+  .ce-4 { animation: chunk-enter-4 8s ease-in-out infinite; transform-box: fill-box; }
+  .enc { animation: encoder-pulse 8s ease-in-out infinite; }
+  .v1 { animation: vec-emit-1 8s linear infinite; }
+  .v2 { animation: vec-emit-2 8s linear infinite; }
+  .v3 { animation: vec-emit-3 8s linear infinite; }
+  .v4 { animation: vec-emit-4 8s linear infinite; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ce-1, .ce-2, .ce-3, .ce-4, .enc, .v1, .v2, .v3, .v4 { animation: none; }
+  }
+</style>
+<svg width="100%" viewBox="0 0 680 380" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>Embed step animation</title>
+  <desc>Chunks of text feed into an encoder model and emerge as points in a vector space.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text class="th" x="340" y="40" text-anchor="middle" dominant-baseline="central">Step 5: Embed</text>
+  <text class="ts" x="340" y="60" text-anchor="middle" dominant-baseline="central">Chunks → vectors in semantic space</text>
+
+  <!-- Source: Chunks queue -->
+  <g class="c-purple">
+    <rect x="20" y="120" width="120" height="200" rx="10" stroke-width="0.5"/>
+    <text class="ts" x="80" y="140" text-anchor="middle" dominant-baseline="central">Chunks</text>
+  </g>
+
+  <!-- Animated chunks moving into encoder -->
+  <g class="ce-1">
+    <rect x="32" y="160" width="96" height="22" rx="3" fill="#7F77DD" opacity="0.3" stroke="#534AB7" stroke-width="0.5"/>
+    <text class="ts" x="80" y="172" text-anchor="middle" dominant-baseline="central" fill="#26215C">chunk_001</text>
+  </g>
+  <g class="ce-2">
+    <rect x="32" y="190" width="96" height="22" rx="3" fill="#7F77DD" opacity="0.3" stroke="#534AB7" stroke-width="0.5"/>
+    <text class="ts" x="80" y="202" text-anchor="middle" dominant-baseline="central" fill="#26215C">chunk_002</text>
+  </g>
+  <g class="ce-3">
+    <rect x="32" y="220" width="96" height="22" rx="3" fill="#7F77DD" opacity="0.3" stroke="#534AB7" stroke-width="0.5"/>
+    <text class="ts" x="80" y="232" text-anchor="middle" dominant-baseline="central" fill="#26215C">chunk_003</text>
+  </g>
+  <g class="ce-4">
+    <rect x="32" y="250" width="96" height="22" rx="3" fill="#7F77DD" opacity="0.3" stroke="#534AB7" stroke-width="0.5"/>
+    <text class="ts" x="80" y="262" text-anchor="middle" dominant-baseline="central" fill="#26215C">chunk_004</text>
+  </g>
+
+  <!-- Encoder model (middle) -->
+  <g class="enc">
+    <rect x="240" y="160" width="160" height="120" rx="8" fill="#3C3489" opacity="0.92"/>
+    <text class="th" x="320" y="190" text-anchor="middle" dominant-baseline="central" fill="#EEEDFE">Encoder</text>
+    <text class="ts" x="320" y="208" text-anchor="middle" dominant-baseline="central" fill="#CECBF6">Embedding model</text>
+    <!-- Layer slabs visualization -->
+    <line x1="260" y1="228" x2="380" y2="228" stroke="#AFA9EC" stroke-width="2" opacity="0.6"/>
+    <line x1="260" y1="240" x2="380" y2="240" stroke="#AFA9EC" stroke-width="2" opacity="0.6"/>
+    <line x1="260" y1="252" x2="380" y2="252" stroke="#AFA9EC" stroke-width="2" opacity="0.6"/>
+    <line x1="260" y1="264" x2="380" y2="264" stroke="#AFA9EC" stroke-width="2" opacity="0.6"/>
+  </g>
+
+  <!-- Connecting arrows -->
+  <line x1="146" y1="220" x2="234" y2="220" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="406" y1="220" x2="450" y2="220" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Destination: Vector space -->
+  <g class="c-coral">
+    <rect x="460" y="120" width="200" height="200" rx="10" stroke-width="0.5"/>
+    <text class="ts" x="560" y="140" text-anchor="middle" dominant-baseline="central">Vector space</text>
+  </g>
+
+  <!-- Subtle grid lines inside vector space -->
+  <line x1="478" y1="180" x2="642" y2="180" stroke="#993C1D" stroke-width="0.5" opacity="0.15" stroke-dasharray="2 3"/>
+  <line x1="478" y1="220" x2="642" y2="220" stroke="#993C1D" stroke-width="0.5" opacity="0.15" stroke-dasharray="2 3"/>
+  <line x1="478" y1="260" x2="642" y2="260" stroke="#993C1D" stroke-width="0.5" opacity="0.15" stroke-dasharray="2 3"/>
+  <line x1="510" y1="156" x2="510" y2="304" stroke="#993C1D" stroke-width="0.5" opacity="0.15" stroke-dasharray="2 3"/>
+  <line x1="560" y1="156" x2="560" y2="304" stroke="#993C1D" stroke-width="0.5" opacity="0.15" stroke-dasharray="2 3"/>
+  <line x1="610" y1="156" x2="610" y2="304" stroke="#993C1D" stroke-width="0.5" opacity="0.15" stroke-dasharray="2 3"/>
+
+  <!-- Vector points appearing -->
+  <circle cx="520" cy="180" r="6" fill="#D85A30" class="v1"/>
+  <circle cx="600" cy="200" r="6" fill="#D85A30" class="v2"/>
+  <circle cx="540" cy="270" r="6" fill="#D85A30" class="v3"/>
+  <circle cx="610" cy="250" r="6" fill="#D85A30" class="v4"/>
+
+  <text class="ts" x="560" y="304" text-anchor="middle" dominant-baseline="central">Similar chunks cluster together</text>
+</svg>

@@ -9,13 +9,13 @@
 
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
-import { LibraryPreviewPage } from "@/features/library/components/LibraryPreviewPage";
+import { LibraryPreviewPage } from "@/features/rag/components/library/LibraryPreviewPage";
 
 export default function Page() {
   const params = useParams();
   const documentId = useMemo(() => {
     const raw = params?.id;
-    return Array.isArray(raw) ? raw[0] : raw ?? null;
+    return Array.isArray(raw) ? raw[0] : (raw ?? null);
   }, [params]);
 
   if (!documentId) {

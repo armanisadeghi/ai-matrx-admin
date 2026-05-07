@@ -1,42 +1,45 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { FileText } from "lucide-react";
-import { NotesBetaWindow } from "@/features/window-panels/windows/notes/NotesBetaWindow";
+/**
+ * SidebarNotesToggle — opens / closes the Notes window from the shell
+ * sidebar. Lives in the boot bundle of every authenticated route (via
+ * Sidebar.tsx), so it MUST NOT statically import any window-panel
+ * component — that would pull the entire registry chunk graph into the
+ * boot bundle and trip the lazy-bundle-guard.
+ *
+ * The window itself (`notesBetaWindow`) is registered in
+ * `windowRegistry.ts` and rendered by `UnifiedOverlayController`. We
+ * just toggle the overlay's open/close state via Redux. Active state
+ * for the button comes from the same selector — no local useState.
+ */
 
-const NOTES_WINDOW_ID = "sidebar-notes-window";
+import { useCallback } from "react";
+import { FileText } from "lucide-react";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { toggleOverlay } from "@/lib/redux/slices/overlaySlice";
+import { useOverlayOpen } from "@/features/window-panels/hooks/useOverlay";
 
 export default function SidebarNotesToggle() {
-  const [open, setOpen] = useState(false);
+  const dispatch = useAppDispatch();
+  const isOpen = useOverlayOpen("notesBetaWindow");
 
-  const toggle = useCallback(() => setOpen((v) => !v), []);
+  const toggle = useCallback(() => {
+    dispatch(toggleOverlay({ overlayId: "notesBetaWindow" }));
+  }, [dispatch]);
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={toggle}
-        className={`shell-nav-item shell-tactile ${open ? "shell-nav-item-active" : ""}`}
-        aria-label="Toggle notes window"
-        title="Notes"
-      >
-        <span className="shell-nav-icon">
-          <FileText size={18} strokeWidth={1.75} />
-        </span>
-        <span className="shell-nav-label">Notes</span>
-      </button>
-
-      {open && (
-        <NotesBetaWindow
-          title="Notes"
-          id={NOTES_WINDOW_ID}
-          windowInstanceId="default"
-          width={520}
-          height={400}
-          initialRect={{ x: 80, y: 80 }}
-          onClose={() => setOpen(false)}
-        />
-      )}
-    </>
+    <button
+      type="button"
+      onClick={toggle}
+      className={`shell-nav-item shell-tactile ${isOpen ? "shell-nav-item-active" : ""}`}
+      aria-label="Toggle notes window"
+      aria-pressed={isOpen}
+      title="Notes"
+    >
+      <span className="shell-nav-icon">
+        <FileText size={18} strokeWidth={1.75} />
+      </span>
+      <span className="shell-nav-label">Notes</span>
+    </button>
   );
 }
