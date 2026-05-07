@@ -17,40 +17,24 @@
 import { createClient } from '@/utils/supabase/client';
 import type { RealtimeChannel, RealtimePresenceState } from '@supabase/supabase-js';
 import type { Message, MessageType } from '@/features/messaging/types';
+import {
+  BRIDGE_BROADCAST_EVENT,
+  bridgeChannelName,
+  type BridgeEnvelope,
+} from '@/lib/types/bridge-envelope';
 
-// ============================================
-// matrx-extend bridge — shared envelope
-// ============================================
-
-/**
- * Direction-tagged envelope carried over the
- * `matrx-extension-bridge:<userId>` Supabase Broadcast channel. Mirrors
- * the same `FRONTEND_RPC` envelope used over `chrome.runtime.onMessageExternal`
- * so handlers don't care which substrate delivered the message.
- *
- * Source of truth for the wire format:
- * docs/MATRX_EXTEND_CONNECTION.md
- */
-export type BridgeDirection = 'frontend->extension' | 'extension->frontend';
-
-export interface BridgeEnvelope<TPayload = unknown> {
-  direction: BridgeDirection;
-  action: string;
-  requestId: string;
-  payload: TPayload;
-  /** ms since epoch when the sender published. */
-  timestamp: number;
-}
+// Re-export the bridge envelope wire-format primitives so existing
+// `from '@/lib/supabase/messaging'` imports keep working. New consumers
+// should import directly from `@/lib/types/bridge-envelope`, the single
+// source of truth.
+export {
+  BRIDGE_BROADCAST_EVENT,
+  bridgeChannelName,
+  type BridgeEnvelope,
+} from '@/lib/types/bridge-envelope';
+export type { BridgeDirection } from '@/lib/types/bridge-envelope';
 
 export type BridgeHandler = (envelope: BridgeEnvelope) => void;
-
-/** Fixed broadcast event name. The channel name itself is per-user. */
-export const BRIDGE_BROADCAST_EVENT = 'FRONTEND_RPC';
-
-/** Build the per-user bridge channel name. Single source of truth. */
-export function bridgeChannelName(userId: string): string {
-  return `matrx-extension-bridge:${userId}`;
-}
 
 // ============================================
 // Types

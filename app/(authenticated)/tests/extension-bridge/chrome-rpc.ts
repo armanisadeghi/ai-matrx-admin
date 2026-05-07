@@ -6,11 +6,18 @@
 // All entry points are safe to call from any browser; missing API
 // degrades to a structured `{ ok: false, reason }` reply instead of a
 // thrown error.
+//
+// Wire-format envelope and reply shapes come from
+// `@/lib/types/bridge-envelope` — the single source of truth. This
+// module wraps them with debug/timing extras (`raw`, `latencyMs`) that
+// are specific to the demo harness.
 
-export interface ChromeRpcResult<T = unknown> {
-  ok: boolean;
-  result?: T;
-  error?: string;
+import type {
+  FrontendRpcEnvelope,
+  FrontendRpcResponse,
+} from "@/lib/types/bridge-envelope";
+
+export interface ChromeRpcResult<T = unknown> extends FrontendRpcResponse<T> {
   /** Raw envelope returned by the extension SW, for debugging. */
   raw?: unknown;
   /** Round-trip latency in milliseconds. */
@@ -56,8 +63,8 @@ export async function sendChromeRpc<T = unknown>(
       ? crypto.randomUUID()
       : `req_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
-  const envelope = {
-    channel: "FRONTEND_RPC" as const,
+  const envelope: FrontendRpcEnvelope = {
+    channel: "FRONTEND_RPC",
     action,
     payload,
     requestId,

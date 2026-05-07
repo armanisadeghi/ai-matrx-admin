@@ -146,6 +146,41 @@ The substrate-agnostic envelope means a handler doesn't care whether
 it arrived via `onMessageExternal` or Broadcast. Replies are published
 back over the same substrate and matched on `requestId`.
 
+### Wire formats — single source of truth
+
+[`lib/types/bridge-envelope.ts`](../lib/types/bridge-envelope.ts) is the
+canonical module for every wire-format type / constant on the
+matrx-frontend side of the bridge. Any new consumer (hook, API route,
+demo page, Redux thunk, future server-action) MUST import from there
+rather than re-defining the shapes locally.
+
+Exports:
+
+- `BRIDGE_CHANNEL_PREFIX` — `'matrx-extension-bridge'`.
+- `BRIDGE_BROADCAST_EVENT` — `'FRONTEND_RPC'` (the Supabase Broadcast
+  `event` field; matches the `channel` discriminator on the
+  `chrome.runtime.sendMessage` envelope).
+- `bridgeChannelName(userId)` — builds the per-user channel name.
+- `BridgeDirectionSchema` / `BridgeDirection` — `'frontend->extension'`
+  | `'extension->frontend'`.
+- `BridgeEnvelopeSchema` / `BridgeEnvelope<T>` — direction-tagged
+  Broadcast envelope (`{direction, action, requestId, payload, timestamp}`).
+- `FrontendRpcEnvelopeSchema` / `FrontendRpcEnvelope<T>` —
+  `chrome.runtime.sendMessage` envelope (`{channel, action, payload, requestId}`).
+- `FrontendRpcResponseSchema` / `FrontendRpcResponse<T>` — normalized
+  reply (`{ok, result?, error?, requestId?}`).
+- `AppendMessageRequestSchema` / `AppendMessageRequest` — body for
+  `POST /api/extension/append-message`.
+- `AppendMessageResponseSchema` / `AppendMessageResponse` — discriminated
+  union of success / error responses for the same route.
+- `KNOWN_FRONTEND_RPC_ACTIONS` — documentation-only list of the actions
+  the matrx-extend SW currently understands. NOT enforced as an enum;
+  the bridge is open-ended.
+
+`lib/supabase/messaging.ts` re-exports the bridge primitives so existing
+imports (`from '@/lib/supabase/messaging'`) keep working, but every new
+consumer should import directly from `@/lib/types/bridge-envelope`.
+
 ---
 
 ## Auth model

@@ -34,20 +34,26 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import {
   getMessagingService,
-  type BridgeEnvelope,
   type BridgeHandler,
 } from "@/lib/supabase/messaging";
+import {
+  bridgeChannelName,
+  type BridgeEnvelope,
+  type FrontendRpcResponse,
+} from "@/lib/types/bridge-envelope";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 
 /** Default round-trip timeout for `send`. Tuned per the extension SDK
  *  spec — extension SW must reply within 30s or the caller gives up. */
 const DEFAULT_REQUEST_TIMEOUT_MS = 30_000;
 
-export interface BridgeReply {
-  ok: boolean;
-  result?: unknown;
-  error?: string;
-}
+/**
+ * Reply shape returned by `send()`. Identical to {@link FrontendRpcResponse}
+ * — kept as a local alias so existing consumers of `BridgeReply` keep
+ * working. New callers should reference {@link FrontendRpcResponse}
+ * from `@/lib/types/bridge-envelope`.
+ */
+export type BridgeReply = FrontendRpcResponse;
 
 export interface BridgeSendResult {
   requestId: string;
@@ -181,7 +187,7 @@ export function useExtensionBridgeChannel(): UseExtensionBridgeChannelReturn {
       // service marks `subscribedChannels` internally; expose it
       // via the public `getActiveChannels` helper.
       const active = messagingService.getActiveChannels();
-      if (active.includes(`matrx-extension-bridge:${userId}`)) {
+      if (active.includes(bridgeChannelName(userId))) {
         setIsReady(true);
         clearInterval(pollHandle);
       } else if (Date.now() - start > 5_000) {

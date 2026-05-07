@@ -28,49 +28,14 @@ import {
 import type { CxMessageInsert } from "@/features/public-chat/types/cx-tables";
 import { createClient } from "@/utils/supabase/server";
 import { validateAgentApiKey } from "@/lib/services/agent-auth";
+import {
+  AppendMessageRequestSchema,
+  type AppendMessageRequest,
+} from "@/lib/types/bridge-envelope";
 
-// ---------------------------------------------------------------------------
-// Request schema
-// ---------------------------------------------------------------------------
-
-const ContentBlockSchema = z
-  .object({
-    type: z.string(),
-  })
-  .passthrough();
-
-/**
- * Accepts:
- *   - `content: string` — coerced into a single text block.
- *   - `content: object | object[]` — passed through verbatim into the
- *     jsonb `content` column. Caller is responsible for matching the
- *     CxContentBlock shape.
- */
-const ContentSchema = z.union([
-  z.string().min(1),
-  ContentBlockSchema,
-  z.array(ContentBlockSchema).min(1),
-]);
-
-const AppendMessageSchema = z.object({
-  conversationId: z.string().uuid(),
-  role: z.enum(["user", "assistant", "system", "tool", "output"]),
-  content: ContentSchema,
-  metadata: z.record(z.string(), z.unknown()).optional(),
-  /**
-   * Optional override for the source column on cx_message; defaults to
-   * `extension` so admin queries can see where the row came from.
-   */
-  source: z.string().min(1).max(64).optional(),
-  /**
-   * Optional agent_id stamping when the message represents an agent
-   * speaking (e.g. an extension-scheduled agenda run echoing into the
-   * thread). Optional because user-role appends usually don't need it.
-   */
-  agentId: z.string().uuid().optional(),
-});
-
-type AppendMessageInput = z.infer<typeof AppendMessageSchema>;
+// Request validation lives in `@/lib/types/bridge-envelope` so the
+// extension SW, the demo page, and this route all share one shape.
+type AppendMessageInput = AppendMessageRequest;
 
 // ---------------------------------------------------------------------------
 // Auth resolution — cookie first, Bearer fallback
@@ -167,7 +132,7 @@ export async function POST(request: NextRequest) {
   let parsed: AppendMessageInput;
   try {
     const raw = await request.json();
-    parsed = AppendMessageSchema.parse(raw);
+    parsed = AppendMessageRequestSchema.parse(raw);
   } catch (err) {
     if (err instanceof z.ZodError) {
       return NextResponse.json(
