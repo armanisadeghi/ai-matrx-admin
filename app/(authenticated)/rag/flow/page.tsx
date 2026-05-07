@@ -1,5 +1,4 @@
 "use client";
-
 /**
  * /rag/flow — Watch the RAG pipeline in motion.
  *
@@ -8,7 +7,6 @@
  * chunks emerging into the agent's response. Aimed at users who want
  * to understand "what is actually happening" without reading docs.
  */
-
 import Link from "next/link";
 import { ArrowLeft, Database, FileText, Search } from "lucide-react";
 import { RagFlowVisualization } from "@/features/rag/components/visualization/RagFlowVisualization";
@@ -40,9 +38,7 @@ export default function Page() {
             </div>
           </div>
         </header>
-
         <RagFlowVisualization />
-
         <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <PathCard
             tone="cyan"
@@ -106,14 +102,12 @@ function PathCard({
       : tone === "cyan"
         ? "border-cyan-500/25 bg-cyan-500/[0.03]"
         : "border-emerald-500/25 bg-emerald-500/[0.03]";
-
   const iconToneClass =
     tone === "violet"
       ? "bg-violet-500/10 text-violet-500 dark:text-violet-300"
       : tone === "cyan"
         ? "bg-cyan-500/10 text-cyan-500 dark:text-cyan-300"
         : "bg-emerald-500/10 text-emerald-500 dark:text-emerald-300";
-
   return (
     <div className={`rounded-xl border p-4 ${toneClass}`}>
       <div className="flex items-center gap-2 mb-3">

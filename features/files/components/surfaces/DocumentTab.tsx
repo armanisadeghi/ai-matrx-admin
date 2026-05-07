@@ -41,13 +41,12 @@ import {
   Loader2,
   RotateCw,
   Rainbow,
-  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFileById } from "@/features/files/redux/selectors";
 import { DocumentViewer } from "@/features/rag/components/documents/DocumentViewer";
-import { IngestProgressDialog } from "@/features/rag/components/library/IngestProgressDialog";
+import { IngestFlowAnimation } from "@/features/rag/components/visualization/IngestFlowAnimation";
 import { LibraryPreviewPage } from "@/features/rag/components/library/LibraryPreviewPage";
 import { useFileDocument } from "@/features/files/hooks/useFileDocument";
 import {
@@ -109,41 +108,26 @@ export function DocumentTab({
     return <div className={cn("h-full w-full", className)} />;
   }
 
-  // While an ingest is in flight (or has just errored), render the
-  // ProcessingProgressDialog as the floating bottom-right widget by
-  // default — the file table the user came from stays visible behind
-  // it. The user can click the widget's expand button to see the full
-  // four-stage stepper + previews if they want detail. The placeholder
-  // under the widget tells them where to look in case they collapsed
-  // the preview pane while a run is in flight.
-  const ingestActive = ingest.status === "running" || ingest.status === "error";
+  // While an ingest is in flight (or has just errored / completed), render
+  // the in-tab pipeline animation — the same beautiful viz the user sees on
+  // /rag/visualization, driven live by this file's progress. Replaces the
+  // old "live progress in the corner" placeholder, which was a horrible
+  // experience on a slow operation that the user is presumably watching.
+  const ingestActive =
+    ingest.status === "running" ||
+    ingest.status === "error" ||
+    ingest.status === "complete";
   if (ingestActive) {
     return (
-      <>
-        <IngestProgressDialog
-          open
-          fileName={file?.fileName ?? "this file"}
-          ingest={ingest}
-          defaultMinimized
-          onClose={() => {
-            ingest.reset();
-            refresh();
-          }}
-        />
-        <div
-          className={cn(
-            "flex h-full w-full items-center justify-center gap-2 text-sm text-muted-foreground",
-            className,
-          )}
-        >
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span>
-            {ingest.status === "running"
-              ? "Processing — live progress in the corner."
-              : "Processing failed — see the corner widget for details."}
-          </span>
-        </div>
-      </>
+      <IngestFlowAnimation
+        fileName={file?.fileName ?? "this file"}
+        ingest={ingest}
+        onClose={() => {
+          ingest.reset();
+          refresh();
+        }}
+        className={className}
+      />
     );
   }
 
@@ -304,74 +288,6 @@ function NotIngestedCard({
           </button>
         )}
       </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Streaming-progress card. Used while a run is in flight, regardless of
-// the lookup state.
-// ---------------------------------------------------------------------------
-
-function IngestProgressCard({
-  fileName,
-  ingest,
-  className,
-}: {
-  fileName: string | null;
-  ingest: UseFileIngestState & {
-    run: (opts?: { force?: boolean }) => Promise<void>;
-    runOnce: (opts?: { force?: boolean }) => Promise<void>;
-    cancel: () => void;
-    reset: () => void;
-  };
-  className?: string;
-}) {
-  const progressFrac =
-    ingest.progress && ingest.progress.total > 0
-      ? Math.min(1, ingest.progress.current / ingest.progress.total)
-      : 0;
-
-  return (
-    <div
-      className={cn(
-        "flex h-full w-full flex-col items-center justify-center gap-4 p-8 text-center",
-        className,
-      )}
-    >
-      <Loader2 className="h-6 w-6 animate-spin text-primary" />
-      <div className="space-y-1 max-w-md">
-        <h3 className="text-sm font-semibold">
-          {fileName ? `Processing ${fileName}…` : "Processing for RAG…"}
-        </h3>
-        <p className="text-xs text-muted-foreground capitalize">
-          {ingest.progress?.message ?? ingest.progress?.stage ?? "starting"}
-        </p>
-      </div>
-      <div className="w-64 max-w-full">
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full bg-primary transition-[width] duration-200"
-            style={{ width: `${progressFrac * 100}%` }}
-          />
-        </div>
-        <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
-          <span className="capitalize">
-            {ingest.progress?.stage ?? "starting"}
-          </span>
-          <span className="tabular-nums">
-            {ingest.progress?.current ?? 0} / {ingest.progress?.total ?? 0}
-          </span>
-        </div>
-      </div>
-      <button
-        type="button"
-        onClick={ingest.cancel}
-        className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:bg-accent"
-      >
-        <X className="h-3.5 w-3.5" />
-        Cancel
-      </button>
     </div>
   );
 }

@@ -26,7 +26,10 @@ export type FlowEdgeVariant = "read" | "write" | "store";
 export interface FlowEdgeData extends Record<string, unknown> {
   variant: FlowEdgeVariant;
   label?: string;
+  /** Currently flowing — animated dashes + traveling particle. Beats `complete`. */
   active?: boolean;
+  /** Already finished flowing — solid emerald, no animation, soft glow. */
+  complete?: boolean;
   /** Speed of the moving particle in seconds (default 1.4) */
   particleDuration?: number;
 }
@@ -67,6 +70,8 @@ function FlowEdgeImpl(props: EdgeProps) {
   const d = (data ?? { variant: "write" }) as FlowEdgeData;
   const colors = VARIANT_COLOR[d.variant];
   const isActive = !!d.active;
+  const isComplete = !isActive && !!d.complete;
+  const completeColors = VARIANT_COLOR.store; // emerald for finished work
 
   const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
@@ -87,9 +92,12 @@ function FlowEdgeImpl(props: EdgeProps) {
       <BaseEdge
         path={edgePath}
         style={{
-          stroke: colors.idle,
-          strokeWidth: 1.5,
+          stroke: isComplete ? completeColors.active : colors.idle,
+          strokeWidth: isComplete ? 2 : 1.5,
           fill: "none",
+          filter: isComplete
+            ? `drop-shadow(0 0 4px ${completeColors.active})`
+            : undefined,
         }}
       />
 
@@ -162,7 +170,9 @@ function FlowEdgeImpl(props: EdgeProps) {
                   : d.variant === "write"
                     ? "text-cyan-500 dark:text-cyan-300 border-cyan-400/60 shadow-[0_0_10px_-2px_rgb(34_211_238_/_0.6)]"
                     : "text-emerald-500 dark:text-emerald-300 border-emerald-400/60 shadow-[0_0_10px_-2px_rgb(52_211_153_/_0.6)]"
-                : "text-muted-foreground/80 border-border",
+                : isComplete
+                  ? "text-emerald-500/90 dark:text-emerald-300/90 border-emerald-400/40"
+                  : "text-muted-foreground/80 border-border",
             )}
           >
             {d.label}

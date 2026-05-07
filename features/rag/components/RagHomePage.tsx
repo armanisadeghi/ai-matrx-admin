@@ -23,7 +23,6 @@ import {
   Eye,
   AlertTriangle,
   CheckCircle2,
-  PlayCircle,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -36,23 +35,13 @@ export function RagHomePage() {
     <div className="flex-1 bg-background overflow-auto">
       <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
         {/* Header */}
-        <header className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-semibold tracking-tight">Knowledge</h1>
-            <p className="text-muted-foreground max-w-2xl">
-              Your processed documents, data stores, and retrieval surface.
-              Upload a document, bind it to a data store, and any agent scoped
-              to that store can search it.
-            </p>
-          </div>
-          <Link
-            href="/rag/flow"
-            className="group relative inline-flex items-center gap-2 overflow-hidden rounded-xl border border-violet-500/30 bg-gradient-to-r from-violet-500/10 via-fuchsia-500/10 to-cyan-500/10 px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-fuchsia-400/60 hover:shadow-[0_0_24px_-4px_rgb(217_70_239_/_0.5)]"
-          >
-            <PlayCircle className="h-4 w-4 text-fuchsia-500 dark:text-fuchsia-400" />
-            <span>Watch how it works</span>
-            <ArrowRight className="h-3.5 w-3.5 opacity-60 transition-transform group-hover:translate-x-0.5" />
-          </Link>
+        <header className="space-y-2">
+          <h1 className="text-3xl font-semibold tracking-tight">Knowledge</h1>
+          <p className="text-muted-foreground max-w-2xl">
+            Your processed documents, data stores, and retrieval surface. Upload
+            a document, bind it to a data store, and any agent scoped to that
+            store can search it.
+          </p>
         </header>
 
         {/* Live numbers */}

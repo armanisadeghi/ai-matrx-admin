@@ -16,6 +16,7 @@
 import { memo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { motion } from "motion/react";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 
@@ -26,7 +27,12 @@ export interface PipelineNodeData extends Record<string, unknown> {
   icon: LucideIcon;
   title: string;
   subtitle?: string;
+  /** True when the data is currently passing through this node. Visually beats `complete`. */
   active?: boolean;
+  /** True after the data has finished passing through. Shows a check icon + emerald tint. */
+  complete?: boolean;
+  /** Compact rendering — smaller padding, no subtitle, used for embedded/in-tab UIs. */
+  compact?: boolean;
   /** Hide the source handle (e.g. for the bottom-most node that connects to data store via custom edge) */
   hideSource?: boolean;
   hideTarget?: boolean;
@@ -63,19 +69,39 @@ function PipelineNodeImpl({ data }: NodeProps) {
   const Icon = d.icon;
   const variant = d.variant;
   const styles = VARIANT_STYLES[variant];
+  const compact = !!d.compact;
+
+  // active beats complete; complete beats idle
+  const stateMode: "active" | "complete" | "idle" = d.active
+    ? "active"
+    : d.complete
+      ? "complete"
+      : "idle";
+
+  const borderClass =
+    stateMode === "active"
+      ? styles.activeBorder
+      : stateMode === "complete"
+        ? "border-emerald-500/55"
+        : styles.idleBorder;
+
+  const glowClass =
+    stateMode === "active"
+      ? styles.glow
+      : stateMode === "complete"
+        ? "shadow-[0_0_14px_-6px_rgb(52_211_153_/_0.5)]"
+        : "";
 
   return (
     <motion.div
-      animate={{
-        scale: d.active ? 1.04 : 1,
-      }}
+      animate={{ scale: stateMode === "active" ? 1.04 : 1 }}
       transition={{ type: "spring", stiffness: 280, damping: 22 }}
       className={cn(
         "relative flex items-center gap-3 rounded-xl border bg-card/80 backdrop-blur",
-        "px-3.5 py-2.5 min-w-[200px]",
+        compact ? "px-2.5 py-2 min-w-[180px]" : "px-3.5 py-2.5 min-w-[200px]",
         "transition-[border-color,box-shadow] duration-300",
-        d.active ? styles.activeBorder : styles.idleBorder,
-        d.active && styles.glow,
+        borderClass,
+        glowClass,
       )}
     >
       {!d.hideTarget && (
@@ -89,17 +115,36 @@ function PipelineNodeImpl({ data }: NodeProps) {
 
       <div
         className={cn(
-          "flex h-9 w-9 items-center justify-center rounded-lg",
-          styles.iconBg,
-          styles.iconColor,
+          "relative flex items-center justify-center rounded-lg shrink-0",
+          compact ? "h-7 w-7" : "h-9 w-9",
+          stateMode === "complete"
+            ? "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400"
+            : `${styles.iconBg} ${styles.iconColor}`,
         )}
       >
-        <Icon className="h-4.5 w-4.5" strokeWidth={2} />
+        {stateMode === "complete" ? (
+          <Check
+            className={compact ? "h-3.5 w-3.5" : "h-4 w-4"}
+            strokeWidth={2.4}
+          />
+        ) : (
+          <Icon
+            className={compact ? "h-3.5 w-3.5" : "h-4.5 w-4.5"}
+            strokeWidth={2}
+          />
+        )}
       </div>
 
-      <div className="flex flex-col gap-0.5 leading-tight">
-        <span className="text-sm font-medium text-foreground">{d.title}</span>
-        {d.subtitle && (
+      <div className="flex min-w-0 flex-col gap-0.5 leading-tight">
+        <span
+          className={cn(
+            "font-medium text-foreground truncate",
+            compact ? "text-[12.5px]" : "text-sm",
+          )}
+        >
+          {d.title}
+        </span>
+        {d.subtitle && !compact && (
           <span className="text-[10.5px] text-muted-foreground tracking-wide uppercase">
             {d.subtitle}
           </span>
