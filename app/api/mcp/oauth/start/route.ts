@@ -93,8 +93,15 @@ export async function GET(req: NextRequest) {
     // OAuth app — DCR and CIMD won't work with them.
     if (server.oauth_client_id) {
       clientId = server.oauth_client_id;
+      // Look up client_secret from env — try multiple conventions
+      const slugUpper = server.slug.toUpperCase().replace(/-/g, "_");
+      clientSecret =
+        process.env[`MCP_SECRET_${slugUpper}`] ??
+        process.env[`${slugUpper}_CLIENT_SECRET`] ??
+        undefined;
       console.log(
-        `[MCP OAuth] Using pre-registered client_id from catalog: ${clientId}`,
+        `[MCP OAuth] Using pre-registered client_id from catalog: ${clientId}` +
+          (clientSecret ? " (secret found)" : " (no secret)"),
       );
     }
 
