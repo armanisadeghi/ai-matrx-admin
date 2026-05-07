@@ -1,0 +1,92 @@
+<style>
+  @keyframes index-row-1 { 0%, 100% { fill-opacity: 0.15; } 8%, 22% { fill-opacity: 0.55; } }
+  @keyframes index-row-2 { 0%, 100% { fill-opacity: 0.15; } 18%, 32% { fill-opacity: 0.55; } }
+  @keyframes index-row-3 { 0%, 100% { fill-opacity: 0.15; } 28%, 42% { fill-opacity: 0.55; } }
+  @keyframes index-row-4 { 0%, 100% { fill-opacity: 0.15; } 38%, 52% { fill-opacity: 0.55; } }
+  @keyframes query-send { 0%, 55% { opacity: 0; transform: translateX(0); } 60% { opacity: 1; transform: translateX(0); } 75% { opacity: 1; transform: translateX(180px); } 80%, 100% { opacity: 0; transform: translateX(180px); } }
+  @keyframes match-glow-1 { 0%, 75% { stroke-width: 0.5; opacity: 0.6; } 80%, 95% { stroke-width: 2; opacity: 1; } 100% { stroke-width: 0.5; opacity: 0.6; } }
+  @keyframes match-glow-2 { 0%, 78% { stroke-width: 0.5; opacity: 0.6; } 83%, 95% { stroke-width: 2; opacity: 1; } 100% { stroke-width: 0.5; opacity: 0.6; } }
+  @keyframes result-return { 0%, 88% { opacity: 0; transform: translateX(0); } 92% { opacity: 1; transform: translateX(0); } 98%, 100% { opacity: 1; transform: translateX(-180px); } }
+
+  .row-1 { animation: index-row-1 7s ease-in-out infinite; }
+  .row-2 { animation: index-row-2 7s ease-in-out infinite; }
+  .row-3 { animation: index-row-3 7s ease-in-out infinite; }
+  .row-4 { animation: index-row-4 7s ease-in-out infinite; }
+  .qs { animation: query-send 7s ease-in-out infinite; transform-box: fill-box; }
+  .mg-1 { animation: match-glow-1 7s ease-in-out infinite; }
+  .mg-2 { animation: match-glow-2 7s ease-in-out infinite; }
+  .rr { animation: result-return 7s ease-in-out infinite; transform-box: fill-box; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .row-1, .row-2, .row-3, .row-4, .qs, .mg-1, .mg-2, .rr { animation: none; }
+  }
+</style>
+<svg width="100%" viewBox="0 0 680 400" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>Store and query animation</title>
+  <desc>Embeddings are tagged and indexed in the data store; an agent sends a query, matches light up, and results return.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text class="th" x="340" y="40" text-anchor="middle" dominant-baseline="central">Step 6: Store and query</text>
+  <text class="ts" x="340" y="60" text-anchor="middle" dominant-baseline="central">Indexed vectors → searched by the agent</text>
+
+  <!-- Data store (center) -->
+  <g class="c-green">
+    <rect x="220" y="110" width="240" height="240" rx="10" stroke-width="0.5"/>
+    <text class="ts" x="340" y="130" text-anchor="middle" dominant-baseline="central">Data store</text>
+  </g>
+
+  <!-- Indexed rows: chunk + vector + tag -->
+  <!-- Row 1 -->
+  <rect x="232" y="146" width="216" height="32" rx="4" fill="#97C459" class="row-1" stroke="#3B6D11" stroke-width="0.5"/>
+  <text class="ts" x="244" y="162" dominant-baseline="central" fill="#173404">chunk_001</text>
+  <circle cx="320" cy="162" r="3" fill="#3B6D11"/>
+  <text class="ts" x="335" y="162" dominant-baseline="central" fill="#173404">[0.21, -0.4, …]</text>
+
+  <!-- Row 2 -->
+  <rect x="232" y="184" width="216" height="32" rx="4" fill="#97C459" class="row-2 mg-1" stroke="#3B6D11" stroke-width="0.5"/>
+  <text class="ts" x="244" y="200" dominant-baseline="central" fill="#173404">chunk_002</text>
+  <circle cx="320" cy="200" r="3" fill="#3B6D11"/>
+  <text class="ts" x="335" y="200" dominant-baseline="central" fill="#173404">[0.55, 0.12, …]</text>
+
+  <!-- Row 3 -->
+  <rect x="232" y="222" width="216" height="32" rx="4" fill="#97C459" class="row-3" stroke="#3B6D11" stroke-width="0.5"/>
+  <text class="ts" x="244" y="238" dominant-baseline="central" fill="#173404">chunk_003</text>
+  <circle cx="320" cy="238" r="3" fill="#3B6D11"/>
+  <text class="ts" x="335" y="238" dominant-baseline="central" fill="#173404">[-0.1, 0.33, …]</text>
+
+  <!-- Row 4 -->
+  <rect x="232" y="260" width="216" height="32" rx="4" fill="#97C459" class="row-4 mg-2" stroke="#3B6D11" stroke-width="0.5"/>
+  <text class="ts" x="244" y="276" dominant-baseline="central" fill="#173404">chunk_004</text>
+  <circle cx="320" cy="276" r="3" fill="#3B6D11"/>
+  <text class="ts" x="335" y="276" dominant-baseline="central" fill="#173404">[0.42, -0.2, …]</text>
+
+  <text class="ts" x="340" y="320" text-anchor="middle" dominant-baseline="central">Tagged and indexed</text>
+
+  <!-- Agent query (left) -->
+  <g class="c-pink">
+    <rect x="20" y="180" width="160" height="100" rx="10" stroke-width="0.5"/>
+    <text class="th" x="100" y="206" text-anchor="middle" dominant-baseline="central">Agent query</text>
+    <text class="ts" x="100" y="226" text-anchor="middle" dominant-baseline="central">"Find the policy on…"</text>
+  </g>
+
+  <!-- Query packet flying in -->
+  <g class="qs">
+    <rect x="40" y="246" width="60" height="20" rx="10" fill="#D4537E"/>
+    <text class="ts" x="70" y="256" text-anchor="middle" dominant-baseline="central" fill="#FBEAF0">query</text>
+  </g>
+
+  <!-- Connecting search arrow -->
+  <line x1="184" y1="230" x2="216" y2="230" stroke="#D4537E" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text class="ts" x="200" y="216" text-anchor="middle" dominant-baseline="central">searches</text>
+
+  <!-- Result returning to agent -->
+  <g class="rr">
+    <rect x="240" y="246" width="60" height="20" rx="10" fill="#1D9E75"/>
+    <text class="ts" x="270" y="256" text-anchor="middle" dominant-baseline="central" fill="#E1F5EE">match</text>
+  </g>
+</svg>

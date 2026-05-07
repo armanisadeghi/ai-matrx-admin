@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 import type { PdfDocument } from "../hooks/usePdfExtractor";
 import { LineageTreeView } from "../components/LineageTreeView";
 import { ManipulationPanel } from "../components/ManipulationPanel";
-import { DataStoreBindPanel } from "@/features/data-stores/components/DataStoreBindPanel";
+import { DataStoreBindPanel } from "@/features/rag/components/data-stores/DataStoreBindPanel";
 
 type SectionKey = "ai" | "stores" | "manipulate" | "lineage";
 
@@ -85,7 +85,9 @@ export function PdfStudioInspector({
 
       {/* Content */}
       <div className="flex-1 min-h-0 overflow-y-auto">
-        {section === "ai" && <AiActionsPanel doc={doc} onRunShortcut={onRunShortcut} />}
+        {section === "ai" && (
+          <AiActionsPanel doc={doc} onRunShortcut={onRunShortcut} />
+        )}
         {section === "stores" && (
           <DataStoreBindPanel
             processedDocumentId={doc.id}
@@ -162,7 +164,8 @@ function AiActionsPanel({
           Run an Agent
         </span>
         <span className="ml-auto text-[10px] text-muted-foreground">
-          {usingClean ? "AI-cleaned" : "Raw"} · {docText.length.toLocaleString()} chars
+          {usingClean ? "AI-cleaned" : "Raw"} ·{" "}
+          {docText.length.toLocaleString()} chars
         </span>
       </div>
 

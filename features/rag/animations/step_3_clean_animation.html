@@ -1,0 +1,94 @@
+<style>
+  @keyframes scrub-pass { 0% { transform: translateX(0); } 50% { transform: translateX(140px); } 100% { transform: translateX(0); } }
+  @keyframes artifact-fade-1 { 0%, 15% { opacity: 1; } 25%, 100% { opacity: 0; } }
+  @keyframes artifact-fade-2 { 0%, 30% { opacity: 1; } 40%, 100% { opacity: 0; } }
+  @keyframes artifact-fade-3 { 0%, 45% { opacity: 1; } 55%, 100% { opacity: 0; } }
+  @keyframes artifact-fade-4 { 0%, 60% { opacity: 1; } 70%, 100% { opacity: 0; } }
+  @keyframes clean-emerge { 0%, 30% { opacity: 0.2; } 70%, 100% { opacity: 1; } }
+  @keyframes line-straighten-1 { 0% { transform: translateX(0); } 100% { transform: translateX(0); } 60% { transform: translateX(-4px); } }
+
+  .scrubber { animation: scrub-pass 5s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+  .art-1 { animation: artifact-fade-1 5s ease-out infinite; }
+  .art-2 { animation: artifact-fade-2 5s ease-out infinite; }
+  .art-3 { animation: artifact-fade-3 5s ease-out infinite; }
+  .art-4 { animation: artifact-fade-4 5s ease-out infinite; }
+  .clean-anim { animation: clean-emerge 5s ease-in-out infinite; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scrubber, .art-1, .art-2, .art-3, .art-4, .clean-anim { animation: none; }
+  }
+</style>
+<svg width="100%" viewBox="0 0 680 360" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>Clean step animation</title>
+  <desc>A scrubber sweeps across raw text removing artifacts like headers, page numbers, and broken whitespace, leaving normalized clean text.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text class="th" x="340" y="40" text-anchor="middle" dominant-baseline="central">Step 3: Clean</text>
+  <text class="ts" x="340" y="60" text-anchor="middle" dominant-baseline="central">Raw text → normalized text</text>
+
+  <!-- Source: Raw text -->
+  <g class="c-amber">
+    <rect x="40" y="100" width="220" height="220" rx="10" stroke-width="0.5"/>
+    <text class="ts" x="150" y="120" text-anchor="middle" dominant-baseline="central">Raw text</text>
+  </g>
+
+  <!-- Messy artifacts on raw side -->
+  <g class="art-1">
+    <rect x="56" y="138" width="100" height="10" rx="2" fill="#993C1D" opacity="0.4"/>
+    <text class="ts" x="60" y="146" dominant-baseline="central" fill="#4A1B0C">Page 4 of 12</text>
+  </g>
+  <g class="art-2">
+    <line x1="56" y1="160" x2="244" y2="160" stroke="#993C1D" stroke-width="2.5" opacity="0.5"/>
+  </g>
+  <g class="art-3">
+    <text class="ts" x="60" y="184" dominant-baseline="central" fill="#4A1B0C">&lt;header&gt;\\n\\n  &lt;/header&gt;</text>
+  </g>
+  <g class="art-4">
+    <text class="ts" x="60" y="208" dominant-baseline="central" fill="#4A1B0C">©2024  •  CONFIDENTIAL</text>
+  </g>
+
+  <!-- Stable text lines (always present) -->
+  <line x1="56" y1="228" x2="240" y2="228" stroke="#5F5E5A" stroke-width="0.8"/>
+  <line x1="56" y1="240" x2="232" y2="240" stroke="#5F5E5A" stroke-width="0.8"/>
+  <line x1="56" y1="252" x2="244" y2="252" stroke="#5F5E5A" stroke-width="0.8"/>
+  <line x1="56" y1="264" x2="220" y2="264" stroke="#5F5E5A" stroke-width="0.8"/>
+  <line x1="56" y1="280" x2="244" y2="280" stroke="#5F5E5A" stroke-width="0.8"/>
+  <line x1="56" y1="292" x2="228" y2="292" stroke="#5F5E5A" stroke-width="0.8"/>
+  <line x1="56" y1="304" x2="208" y2="304" stroke="#5F5E5A" stroke-width="0.8"/>
+
+  <!-- Scrubber bar (animated sweep) -->
+  <g class="scrubber">
+    <rect x="50" y="130" width="6" height="190" rx="3" fill="#1D9E75" opacity="0.6"/>
+    <circle cx="53" cy="226" r="10" fill="#1D9E75" opacity="0.2"/>
+  </g>
+
+  <!-- Arrow to clean side -->
+  <line x1="266" y1="210" x2="316" y2="210" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text class="ts" x="291" y="196" text-anchor="middle" dominant-baseline="central">normalize</text>
+
+  <!-- Destination: Clean text -->
+  <g class="c-teal clean-anim">
+    <rect x="320" y="100" width="320" height="220" rx="10" stroke-width="0.5"/>
+    <text class="ts" x="480" y="120" text-anchor="middle" dominant-baseline="central">Clean text</text>
+
+    <!-- Tidy uniform lines -->
+    <line x1="340" y1="148" x2="624" y2="148" stroke="#085041" stroke-width="0.8"/>
+    <line x1="340" y1="160" x2="616" y2="160" stroke="#085041" stroke-width="0.8"/>
+    <line x1="340" y1="172" x2="624" y2="172" stroke="#085041" stroke-width="0.8"/>
+    <line x1="340" y1="184" x2="608" y2="184" stroke="#085041" stroke-width="0.8"/>
+    <line x1="340" y1="196" x2="624" y2="196" stroke="#085041" stroke-width="0.8"/>
+    <line x1="340" y1="208" x2="618" y2="208" stroke="#085041" stroke-width="0.8"/>
+    <line x1="340" y1="220" x2="624" y2="220" stroke="#085041" stroke-width="0.8"/>
+    <line x1="340" y1="232" x2="612" y2="232" stroke="#085041" stroke-width="0.8"/>
+    <line x1="340" y1="244" x2="624" y2="244" stroke="#085041" stroke-width="0.8"/>
+    <line x1="340" y1="256" x2="600" y2="256" stroke="#085041" stroke-width="0.8"/>
+    <line x1="340" y1="268" x2="624" y2="268" stroke="#085041" stroke-width="0.8"/>
+    <line x1="340" y1="280" x2="616" y2="280" stroke="#085041" stroke-width="0.8"/>
+    <text class="ts" x="480" y="304" text-anchor="middle" dominant-baseline="central">Normalized, deduped</text>
+  </g>
+</svg>

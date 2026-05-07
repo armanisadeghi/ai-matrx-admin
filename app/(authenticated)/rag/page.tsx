@@ -6,7 +6,7 @@
  * 404; this is the canonical entry point.
  */
 
-import { RagHomePage } from "@/features/library/components/RagHomePage";
+import { RagHomePage } from "@/features/rag/components/RagHomePage";
 
 export default function Page() {
   return <RagHomePage />;

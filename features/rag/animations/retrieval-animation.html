@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Searching your knowledge</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0e14;
+    --bg-soft: #11161f;
+    --ink: #e8e6e1;
+    --ink-dim: #8a8a85;
+    --ink-faint: #3a3d44;
+    --accent: #7ab5d4;
+    --accent-glow: rgba(122, 181, 212, 0.4);
+    --accent-warm: #d4a574;
+    --line: #1f242e;
+    --success: #7fb069;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Fraunces', serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.015) 1px, transparent 0);
+    background-size: 3px 3px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 720px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+
+  .header h1 {
+    font-weight: 400;
+    font-size: 28px;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  .header h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .header p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-dim);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .stage {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    align-items: center;
+    gap: 32px;
+    padding: 20px 0;
+    opacity: 0.25;
+    transition: opacity 0.6s ease;
+    position: relative;
+  }
+
+  .stage.active { opacity: 1; }
+  .stage.done { opacity: 0.7; }
+
+  .stage-label {
+    text-align: right;
+    border-right: 1px solid var(--line);
+    padding-right: 24px;
+    transition: border-color 0.4s ease;
+  }
+
+  .stage.active .stage-label,
+  .stage.done .stage-label {
+    border-right-color: var(--accent);
+  }
+
+  .stage-name {
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+
+  .stage-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .stage-viz {
+    height: 56px;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .action {
+    margin-left: 180px;
+    padding-left: 32px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+
+  .action-line {
+    position: absolute;
+    left: 32px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--ink-faint);
+    overflow: hidden;
+  }
+
+  .action-line::after {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+    transition: top 0.4s ease;
+  }
+
+  .action.active .action-line::after {
+    animation: flow 1.4s ease-in-out infinite;
+  }
+
+  @keyframes flow {
+    0% { top: -100%; }
+    100% { top: 100%; }
+  }
+
+  .action-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+    text-transform: lowercase;
+    letter-spacing: 0.05em;
+    margin-left: 16px;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .action.active .action-label,
+  .action.done .action-label { opacity: 1; }
+  .action.done .action-label { color: var(--ink-faint); }
+
+  /* Stage 1: User question - speech-bubble-ish lines */
+  .viz-question {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 180px;
+    padding: 10px 14px;
+    border: 1px solid var(--ink-dim);
+    border-radius: 12px 12px 12px 2px;
+    transition: border-color 0.4s ease;
+  }
+  .viz-question span {
+    height: 2px;
+    background: var(--ink-faint);
+    transition: background 0.4s ease;
+  }
+  .viz-question span:nth-child(1) { width: 90%; }
+  .viz-question span:nth-child(2) { width: 70%; }
+  .viz-question span:nth-child(3) { width: 80%; }
+  .stage.active .viz-question,
+  .stage.done .viz-question { border-color: var(--accent); }
+  .stage.active .viz-question span,
+  .stage.done .viz-question span { background: var(--accent); }
+
+  /* Stage 2: Keyword detection - words with one highlighted */
+  .viz-keywords {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    width: 200px;
+  }
+  .viz-keywords span {
+    height: 18px;
+    background: var(--ink-faint);
+    border-radius: 2px;
+    transition: background 0.4s ease, box-shadow 0.4s ease;
+  }
+  .viz-keywords span:nth-child(1) { width: 32px; }
+  .viz-keywords span:nth-child(2) { width: 48px; }
+  .viz-keywords span:nth-child(3) { width: 28px; }
+  .viz-keywords span:nth-child(4) { width: 56px; }
+  .viz-keywords span:nth-child(5) { width: 38px; }
+  .stage.active .viz-keywords span,
+  .stage.done .viz-keywords span { background: var(--ink-dim); }
+  .stage.active .viz-keywords span:nth-child(2),
+  .stage.done .viz-keywords span:nth-child(2),
+  .stage.active .viz-keywords span:nth-child(4),
+  .stage.done .viz-keywords span:nth-child(4) {
+    background: var(--accent);
+  }
+  .stage.active .viz-keywords span:nth-child(2),
+  .stage.active .viz-keywords span:nth-child(4) {
+    box-shadow: 0 0 12px var(--accent-glow);
+  }
+
+  /* Stage 3: Agent gets tools - small toolkit */
+  .viz-tools {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .viz-tools-agent {
+    width: 36px; height: 36px;
+    border: 1px solid var(--ink-dim);
+    border-radius: 50%;
+    position: relative;
+    transition: border-color 0.4s ease, box-shadow 0.4s ease;
+  }
+  .viz-tools-agent::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border: 1px solid var(--ink-dim);
+    border-radius: 50%;
+    transition: border-color 0.4s ease;
+  }
+  .viz-tools-icons {
+    display: flex;
+    gap: 4px;
+  }
+  .viz-tools-icons span {
+    width: 14px; height: 14px;
+    border: 1px solid var(--ink-faint);
+    border-radius: 2px;
+    transition: border-color 0.4s ease, background 0.4s ease;
+  }
+  .stage.active .viz-tools-agent,
+  .stage.done .viz-tools-agent {
+    border-color: var(--accent);
+  }
+  .stage.active .viz-tools-agent {
+    box-shadow: 0 0 16px var(--accent-glow);
+  }
+  .stage.active .viz-tools-agent::before,
+  .stage.done .viz-tools-agent::before {
+    border-color: var(--accent);
+  }
+  .stage.active .viz-tools-icons span,
+  .stage.done .viz-tools-icons span {
+    border-color: var(--accent);
+    background: rgba(122, 181, 212, 0.15);
+  }
+
+  /* Stage 4: Search through embeddings - dot field with target */
+  .viz-search {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 3px;
+    width: 200px;
+    position: relative;
+  }
+  .viz-search span {
+    aspect-ratio: 1;
+    background: var(--ink-faint);
+    border-radius: 50%;
+    transition: background 0.4s ease, transform 0.4s ease;
+  }
+  .stage.active .viz-search span,
+  .stage.done .viz-search span {
+    background: var(--ink-dim);
+  }
+  /* Highlight matches when active/done */
+  .stage.active .viz-search span:nth-child(7),
+  .stage.active .viz-search span:nth-child(15),
+  .stage.active .viz-search span:nth-child(22),
+  .stage.active .viz-search span:nth-child(31),
+  .stage.done .viz-search span:nth-child(7),
+  .stage.done .viz-search span:nth-child(15),
+  .stage.done .viz-search span:nth-child(22),
+  .stage.done .viz-search span:nth-child(31) {
+    background: var(--accent-warm);
+  }
+  .stage.active .viz-search span:nth-child(7),
+  .stage.active .viz-search span:nth-child(15),
+  .stage.active .viz-search span:nth-child(22),
+  .stage.active .viz-search span:nth-child(31) {
+    transform: scale(1.4);
+    animation: matchPulse 1.4s ease-in-out infinite;
+  }
+  @keyframes matchPulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(212, 165, 116, 0); }
+    50% { box-shadow: 0 0 8px rgba(212, 165, 116, 0.6); }
+  }
+
+  /* Stage 5: Top matches returned - small chunk blocks */
+  .viz-matches {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 200px;
+  }
+  .viz-matches-row {
+    height: 12px;
+    background: var(--ink-faint);
+    border-radius: 1px;
+    transition: background 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .viz-matches-row:nth-child(1) { width: 100%; }
+  .viz-matches-row:nth-child(2) { width: 88%; }
+  .viz-matches-row:nth-child(3) { width: 72%; }
+  .stage.active .viz-matches-row,
+  .stage.done .viz-matches-row {
+    background: var(--accent-warm);
+  }
+
+  /* Stage 6: Agent answers */
+  .viz-answer {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 200px;
+    padding: 10px 14px;
+    border: 1px solid var(--ink-dim);
+    border-radius: 12px 12px 2px 12px;
+    transition: border-color 0.4s ease, box-shadow 0.4s ease;
+  }
+  .viz-answer span {
+    height: 2px;
+    background: var(--ink-faint);
+    transition: background 0.4s ease;
+  }
+  .viz-answer span:nth-child(1) { width: 95%; }
+  .viz-answer span:nth-child(2) { width: 100%; }
+  .viz-answer span:nth-child(3) { width: 60%; }
+  .stage.active .viz-answer,
+  .stage.done .viz-answer {
+    border-color: var(--success);
+  }
+  .stage.active .viz-answer {
+    box-shadow: 0 0 16px rgba(127, 176, 105, 0.3);
+  }
+  .stage.active .viz-answer span,
+  .stage.done .viz-answer span { background: var(--success); }
+
+  /* Footer */
+  .footer {
+    margin-top: 48px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    min-height: 16px;
+  }
+
+  .footer.complete {
+    color: var(--success);
+  }
+
+  .pulse {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: pulse 1.4s ease-in-out infinite;
+    vertical-align: middle;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 12px var(--accent-glow); }
+  }
+
+  .footer.complete .pulse {
+    background: var(--success);
+    animation: none;
+    opacity: 1;
+    box-shadow: 0 0 12px rgba(127, 176, 105, 0.5);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>Finding the right <em>knowledge</em></h1>
+    <p>How your agent answers from your documents</p>
+  </div>
+
+  <div class="pipeline" id="pipeline">
+
+    <div class="stage" data-stage="0">
+      <div class="stage-label">
+        <div class="stage-name">Your question</div>
+        <div class="stage-meta">what you asked</div>
+      </div>
+      <div class="stage-viz">
+        <div class="viz-question">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="action" data-action="0">
+      <div class="action-line"></div>
+      <span class="action-label">scanning for keywords</span>
+    </div>
+
+    <div class="stage" data-stage="1">
+      <div class="stage-label">
+        <div class="stage-name">Relevant terms</div>
+        <div class="stage-meta">what to search for</div>
+      </div>
+      <div class="stage-viz">
+        <div class="viz-keywords">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="action" data-action="1">
+      <div class="action-line"></div>
+      <span class="action-label">equipping the agent</span>
+    </div>
+
+    <div class="stage" data-stage="2">
+      <div class="stage-label">
+        <div class="stage-name">Agent ready</div>
+        <div class="stage-meta">tools attached</div>
+      </div>
+      <div class="stage-viz">
+        <div class="viz-tools">
+          <div class="viz-tools-agent"></div>
+          <div class="viz-tools-icons">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action" data-action="2">
+      <div class="action-line"></div>
+      <span class="action-label">searching your knowledge</span>
+    </div>
+
+    <div class="stage" data-stage="3">
+      <div class="stage-label">
+        <div class="stage-name">Best matches</div>
+        <div class="stage-meta">closest in meaning</div>
+      </div>
+      <div class="stage-viz">
+        <div class="viz-search" id="search-grid"></div>
+      </div>
+    </div>
+
+    <div class="action" data-action="3">
+      <div class="action-line"></div>
+      <span class="action-label">retrieving passages</span>
+    </div>
+
+    <div class="stage" data-stage="4">
+      <div class="stage-label">
+        <div class="stage-name">Top results</div>
+        <div class="stage-meta">passed to the agent</div>
+      </div>
+      <div class="stage-viz">
+        <div class="viz-matches">
+          <div class="viz-matches-row"></div>
+          <div class="viz-matches-row"></div>
+          <div class="viz-matches-row"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action" data-action="4">
+      <div class="action-line"></div>
+      <span class="action-label">composing the answer</span>
+    </div>
+
+    <div class="stage" data-stage="5">
+      <div class="stage-label">
+        <div class="stage-name">Your answer</div>
+        <div class="stage-meta">grounded in your docs</div>
+      </div>
+      <div class="stage-viz">
+        <div class="viz-answer">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer" id="footer">
+    <span class="pulse"></span><span id="status">Reading your question</span>
+  </div>
+</div>
+
+<script>
+  // Build search dot field
+  const grid = document.getElementById('search-grid');
+  for (let i = 0; i < 36; i++) {
+    grid.appendChild(document.createElement('span'));
+  }
+
+  const stages = document.querySelectorAll('.stage');
+  const actions = document.querySelectorAll('.action');
+  const status = document.getElementById('status');
+  const footer = document.getElementById('footer');
+
+  const stageDuration = 1300;
+  const actionDuration = 1400;
+
+  const statusMessages = [
+    'Reading your question',
+    'Identifying what to look for',
+    'Preparing the agent',
+    'Searching through your knowledge',
+    'Pulling the best passages',
+    'Composing your answer'
+  ];
+
+  async function sleep(ms) {
+    return new Promise(r => setTimeout(r, ms));
+  }
+
+  async function runPipeline() {
+    while (true) {
+      stages.forEach(s => s.classList.remove('active', 'done'));
+      actions.forEach(a => a.classList.remove('active', 'done'));
+      footer.classList.remove('complete');
+
+      for (let i = 0; i < stages.length; i++) {
+        stages[i].classList.add('active');
+        if (statusMessages[i]) status.textContent = statusMessages[i];
+        await sleep(stageDuration);
+
+        stages[i].classList.remove('active');
+        stages[i].classList.add('done');
+
+        if (actions[i]) {
+          actions[i].classList.add('active');
+          await sleep(actionDuration);
+          actions[i].classList.remove('active');
+          actions[i].classList.add('done');
+        }
+      }
+
+      status.textContent = 'Answer delivered';
+      footer.classList.add('complete');
+      await sleep(2400);
+      await sleep(600);
+    }
+  }
+
+  runPipeline();
+</script>
+
+</body>
+</html>

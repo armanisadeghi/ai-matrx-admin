@@ -46,15 +46,15 @@ import {
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFileById } from "@/features/files/redux/selectors";
-import { DocumentViewer } from "@/features/documents/components/DocumentViewer";
-import { IngestProgressDialog } from "@/features/library/components/IngestProgressDialog";
-import { LibraryPreviewPage } from "@/features/library/components/LibraryPreviewPage";
+import { DocumentViewer } from "@/features/rag/components/documents/DocumentViewer";
+import { IngestProgressDialog } from "@/features/rag/components/library/IngestProgressDialog";
+import { LibraryPreviewPage } from "@/features/rag/components/library/LibraryPreviewPage";
 import { useFileDocument } from "@/features/files/hooks/useFileDocument";
 import {
   onFileDocumentProcessed,
   useFileIngest,
   type UseFileIngestState,
-} from "@/features/files/hooks/useFileIngest";
+} from "@/features/rag/hooks/useFileIngest";
 
 export interface DocumentTabProps {
   fileId: string;

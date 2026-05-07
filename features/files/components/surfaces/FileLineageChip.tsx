@@ -5,7 +5,7 @@
  * any file with a known parent (`parentFileId`) or a processed-document
  * row with binary/processing ancestors.
  *
- * Two layers, mirroring `features/documents/components/LineageBreadcrumbs`:
+ * Two layers, mirroring `features/rag/components/documents/LineageBreadcrumbs`:
  *   - Binary lineage (cld_files.parent_file_id) — "this PDF is a
  *     re-extract / page-range / OCR re-run of <bigger PDF>"
  *   - Processing lineage (processed_documents.parent_processed_id) —

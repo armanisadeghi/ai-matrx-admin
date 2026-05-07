@@ -145,6 +145,7 @@ Every Tier 1 / Tier 2 feature has a `FEATURE.md` inside its feature directory. T
 | Code editor | `features/code-editor/FEATURE.md` |
 | Window Panels (all overlays) | `features/window-panels/FEATURE.md` |
 | Settings system (preferences shell, primitives, `useSetting`) | `features/settings/FEATURE.md` + `.cursor/skills/settings-system/SKILL.md` |
+| RAG (library, data stores, document viewer, search, repositories, ingest/search clients, hooks) | `features/rag/FEATURE.md` |
 
 ### Tier 2 — secondary features
 

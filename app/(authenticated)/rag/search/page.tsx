@@ -3,7 +3,7 @@
  * Deep-link params: ?q=<query>&store_id=<uuid>
  */
 
-import { RagSearchPage } from "@/features/rag-search-ui/components/RagSearchPage";
+import { RagSearchPage } from "@/features/rag/components/search/RagSearchPage";
 
 export default function Page() {
   return <RagSearchPage />;

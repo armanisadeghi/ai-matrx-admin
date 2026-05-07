@@ -49,7 +49,7 @@ import {
 import { SyncedPdfTextView } from "./SyncedPdfTextView";
 import { LineageTreeView } from "./LineageTreeView";
 import { ManipulationPanel } from "./ManipulationPanel";
-import { DataStoreBindPanel } from "@/features/data-stores/components/DataStoreBindPanel";
+import { DataStoreBindPanel } from "@/features/rag/components/data-stores/DataStoreBindPanel";
 
 // ─── Sub-tab type for per-extraction view ────────────────────────────────────
 
@@ -607,9 +607,7 @@ function ExtractionTabContent({
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-2 h-full">
         <Loader2 className="w-6 h-6 text-primary/60 animate-spin" />
-        <p className="text-xs text-muted-foreground">
-          Loading {tab.filename}…
-        </p>
+        <p className="text-xs text-muted-foreground">Loading {tab.filename}…</p>
         <p className="text-[10px] text-muted-foreground/60">
           Fetching content from Supabase
         </p>
@@ -783,7 +781,8 @@ function AiActionsView({
           Run an Agent
         </span>
         <span className="ml-auto text-[10px] text-muted-foreground">
-          {usingClean ? "AI-cleaned" : "Raw"} · {charCount.toLocaleString()} chars
+          {usingClean ? "AI-cleaned" : "Raw"} · {charCount.toLocaleString()}{" "}
+          chars
         </span>
       </div>
 

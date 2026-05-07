@@ -2,7 +2,7 @@
 
 **Status:** ✅ Phase 11 complete. Legacy system deleted, cloud-files is the only file system in the app.
 **Owner:** Files migration team.
-**Last updated:** 2026-04-25.
+**Last updated:** 2026-05-06.
 
 This is the live architecture doc for the new file management system under `features/files/`. It supersedes the legacy Supabase-Storage-based system progressively over 12 phases ([migration/MASTER-PLAN.md](migration/MASTER-PLAN.md)).
 
@@ -314,6 +314,7 @@ See [migration/MASTER-PLAN.md](migration/MASTER-PLAN.md) for the phase-ordered p
 
 ## Change log
 
+- **2026-05-06** — RAG consolidation. Extracted every RAG-shaped surface from `features/files/` into the new top-level `features/rag/` feature. Moved out of this directory: `api/rag-ingest.ts` → `features/rag/api/ingest.ts`, `api/rag-search.ts` → `features/rag/api/search.ts`, `hooks/useFileIngest.ts` → `features/rag/hooks/useFileIngest.ts`, `hooks/useRagSearch.ts` → `features/rag/hooks/useRagSearch.ts`, `components/core/RagActions/ProcessForRagButton.tsx` → `features/rag/components/ProcessForRagButton.tsx`, `components/core/RagSearch/RagSearchHits.tsx` → `features/rag/components/search/RagSearchHits.tsx`. **Stayed in `features/files/`:** `redux/rag-thunks.ts`, `components/surfaces/desktop/RagStatusCell.tsx`, `components/surfaces/desktop/RagFilterPicker.tsx` — these are file-table chrome that read `cloudFiles.ragStatus` from this slice; moving them would split the slice across features. Also relocated the sister features `features/library/` → `features/rag/components/library/` (+ hooks/api/types extracted to `features/rag/{hooks,api,types}/`), `features/data-stores/` → `features/rag/components/data-stores/`, `features/documents/` → `features/rag/components/documents/`, and `features/rag-search-ui/` → `features/rag/components/search/`. All `DocumentTab.tsx` and `BulkActionsBar.tsx` imports updated; behaviour unchanged.
 - **2026-05-05** — Image Manager Hub absorbed `<ImageAssetUploader>` (Sharp variant pipeline) as a Branded Upload tab and embedded `CloudFilesTab` into a Studio Library tab. Cloud-files data is now consumed by both `<ImageManager>` (modal) and the new `/image-manager` route via `features/image-manager/registry/sections.ts`. No data-model changes — only consumers added. See [`features/image-manager/FEATURE.md`](../image-manager/FEATURE.md).
 - **2026-04-23** — Phase 0 kickoff. Created FEATURE.md, SKILL.md, PYTHON_TEAM_COMMS.md, migration/ scaffold. No runtime code yet.
 - **2026-04-23** — Phase 1 complete. Shipped [types.ts](types.ts) (domain, DB row, API, runtime, tree, upload, error types) and [api/](api/) (client.ts with JWT + X-Request-Id + multipart + XHR progress + public endpoints; files.ts, folders.ts, versions.ts, permissions.ts, share-links.ts, groups.ts). All typecheck clean. Logged two new items in PYTHON_TEAM_COMMS.md: table-naming discrepancy (`cloud_share_links` vs `cloud_file_share_links`, `cloud_user_groups` vs `cloud_file_groups`) and `cloud_get_user_file_tree` return shape.

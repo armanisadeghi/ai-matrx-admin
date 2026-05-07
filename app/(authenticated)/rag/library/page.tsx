@@ -5,7 +5,7 @@
  * counts and a status badge. The "where did my content go?" page.
  */
 
-import { LibraryPage } from "@/features/library/components/LibraryPage";
+import { LibraryPage } from "@/features/rag/components/library/LibraryPage";
 
 export default function Page() {
   return <LibraryPage />;

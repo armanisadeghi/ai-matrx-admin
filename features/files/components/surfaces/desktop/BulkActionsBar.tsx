@@ -61,7 +61,7 @@ import {
   updateFolder as updateFolderThunk,
 } from "@/features/files/redux/thunks";
 import { openFolderPicker } from "@/features/files/components/pickers/CloudFilesPickerHost";
-import { ingestFile } from "@/features/files/api/rag-ingest";
+import { ingestFile } from "@/features/rag/api/ingest";
 import { clearFileDocumentCache } from "@/features/files/api/document-lookup";
 import type { Visibility } from "@/features/files/types";
 
@@ -135,8 +135,8 @@ export function BulkActionsBar({ className }: { className?: string }) {
         const result = await dispatch(
           getSignedUrlThunk({ fileId: id, expiresIn: 3600 }),
         );
-        const url =
-          (result as { payload?: { url?: string } } | undefined)?.payload?.url;
+        const url = (result as { payload?: { url?: string } } | undefined)
+          ?.payload?.url;
         if (!url) return;
         const a = document.createElement("a");
         a.href = url;
@@ -149,7 +149,14 @@ export function BulkActionsBar({ className }: { className?: string }) {
     } finally {
       setBusyKind(null);
     }
-  }, [busyKind, dispatch, filesById, hasFiles, selectedFileIds, showFolderNote]);
+  }, [
+    busyKind,
+    dispatch,
+    filesById,
+    hasFiles,
+    selectedFileIds,
+    showFolderNote,
+  ]);
 
   const handleMove = useCallback(async () => {
     if (!hasAny || busyKind) return;
@@ -227,11 +234,15 @@ export function BulkActionsBar({ className }: { className?: string }) {
             updateFileMetadata({ fileId: id, patch: { visibility } }),
           ).unwrap();
         });
-        await runWithConcurrency(selectedFolderIds, MAX_PARALLEL, async (id) => {
-          await dispatch(
-            updateFolderThunk({ folderId: id, patch: { visibility } }),
-          ).unwrap();
-        });
+        await runWithConcurrency(
+          selectedFolderIds,
+          MAX_PARALLEL,
+          async (id) => {
+            await dispatch(
+              updateFolderThunk({ folderId: id, patch: { visibility } }),
+            ).unwrap();
+          },
+        );
       } finally {
         setBusyKind(null);
       }
@@ -296,8 +307,7 @@ export function BulkActionsBar({ className }: { className?: string }) {
         `Reprocessed ${succeeded} ${succeeded === 1 ? "file" : "files"} for RAG`,
       );
       if (failed > 0) parts.push(`${failed} failed`);
-      if (skippedVirtual > 0)
-        parts.push(`${skippedVirtual} virtual skipped`);
+      if (skippedVirtual > 0) parts.push(`${skippedVirtual} virtual skipped`);
       if (skippedKind > 0) parts.push(`${skippedKind} non-text skipped`);
       setTransientNote(parts.join(" · "));
       window.setTimeout(() => setTransientNote(null), 5000);
@@ -487,16 +497,19 @@ async function runWithConcurrency<T>(
   worker: (item: T) => Promise<void>,
 ): Promise<void> {
   let cursor = 0;
-  const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
-    while (cursor < items.length) {
-      const i = cursor++;
-      try {
-        await worker(items[i]);
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.warn("[BulkActionsBar] item failed:", err);
+  const runners = Array.from(
+    { length: Math.min(limit, items.length) },
+    async () => {
+      while (cursor < items.length) {
+        const i = cursor++;
+        try {
+          await worker(items[i]);
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.warn("[BulkActionsBar] item failed:", err);
+        }
       }
-    }
-  });
+    },
+  );
   await Promise.all(runners);
 }
