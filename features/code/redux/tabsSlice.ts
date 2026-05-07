@@ -64,6 +64,24 @@ const slice = createSlice({
         const next = state.order[idx] ?? state.order[idx - 1] ?? null;
         state.activeId = next;
       }
+      // Closing a source tab also closes any paired render-preview tab —
+      // a preview without its buffer is dead weight, and leaving it open
+      // means the user has to close two things to dismiss one feature.
+      const orphaned: string[] = [];
+      for (const tabId of state.order) {
+        const t = state.byId[tabId];
+        if (t?.kind === "render-preview" && t.renderSourceTabId === id) {
+          orphaned.push(tabId);
+        }
+      }
+      for (const tabId of orphaned) {
+        delete state.byId[tabId];
+        const oIdx = state.order.indexOf(tabId);
+        if (oIdx !== -1) state.order.splice(oIdx, 1);
+        if (state.activeId === tabId) {
+          state.activeId = state.order[oIdx] ?? state.order[oIdx - 1] ?? null;
+        }
+      }
     },
     setActiveTab(state, action: PayloadAction<string>) {
       if (state.byId[action.payload]) {

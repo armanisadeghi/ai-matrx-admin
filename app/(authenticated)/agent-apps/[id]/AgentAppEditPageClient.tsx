@@ -1,34 +1,46 @@
 "use client";
 
-import { useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { AgentAppEditor } from "@/features/agent-apps/components/AgentAppEditor";
-import type { AgentApp, UpdateAgentAppInput } from "@/features/agent-apps/types";
+import { useEffect, useRef } from "react";
+import { CodeWorkspaceRoute } from "@/features/code/host/CodeWorkspaceRoute";
+import { ChatPanelSlot } from "@/features/code/chat/ChatPanelSlot";
+import { useOpenSourceEntry } from "@/features/code/hooks/useOpenSourceEntry";
+import { useOpenRenderPreview } from "@/features/code/hooks/useOpenRenderPreview";
+import { agaAppsAdapter } from "@/features/code/library-sources/adapters/aga-apps";
+// Side-effect: register `aga-app:` previewer with the render-preview registry.
+import "@/features/agent-apps/code-preview/registerAgentAppRenderPreview";
+import type { AgentApp } from "@/features/agent-apps/types";
 
 interface AgentAppEditPageClientProps {
   app: AgentApp;
 }
 
 export function AgentAppEditPageClient({ app }: AgentAppEditPageClientProps) {
-  const router = useRouter();
+  const openSourceEntry = useOpenSourceEntry();
+  const openRenderPreview = useOpenRenderPreview();
+  const bootstrappedRef = useRef(false);
+  const basePath = `/agent-apps/${app.id}`;
 
-  const onSave = useCallback(
-    async (id: string, input: UpdateAgentAppInput) => {
-      const res = await fetch(`/api/agent-apps/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
+  // On first mount: open the agent-app's `component_code` as a Monaco
+  // tab, pop the live-preview tab next to it, and inject `?agentId=`
+  // so the chat panel auto-binds to the app's agent. Idempotent.
+  useEffect(() => {
+    if (bootstrappedRef.current) return;
+    bootstrappedRef.current = true;
+    void openSourceEntry({ sourceId: agaAppsAdapter.sourceId, rowId: app.id })
+      .then(() => {
+        openRenderPreview(agaAppsAdapter.makeTabId(app.id));
+        if (app.agent_id) {
+          const url = new URL(window.location.href);
+          if (!url.searchParams.get("agentId")) {
+            url.searchParams.set("agentId", app.agent_id);
+            window.history.replaceState({}, "", url.toString());
+          }
+        }
+      })
+      .catch((err) => {
+        console.error("[agent-apps] failed to open code+preview tabs", err);
       });
+  }, [app.id, app.agent_id, openSourceEntry, openRenderPreview]);
 
-      if (!res.ok) {
-        const body = await res.text().catch(() => "");
-        throw new Error(`Save failed (HTTP ${res.status}): ${body || "unknown"}`);
-      }
-
-      router.refresh();
-    },
-    [router],
-  );
-
-  return <AgentAppEditor app={app} onSave={onSave} />;
+  return <CodeWorkspaceRoute rightSlot={<ChatPanelSlot basePath={basePath} />} />;
 }

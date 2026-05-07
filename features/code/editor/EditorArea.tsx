@@ -34,6 +34,7 @@ import { BinaryFileViewer } from "./BinaryFileViewer";
 import { CloudFilePreviewer } from "./CloudFilePreviewer";
 import { TabDiffView } from "./TabDiffView";
 import { TripleDiffView } from "./TripleDiffView";
+import { RenderPreviewView } from "../preview/RenderPreviewView";
 import { selectPendingPatchCountForTab } from "../redux/codePatchesSlice";
 import { undoLastEditThunk } from "../redux/codeEditUndoRevert";
 
@@ -336,6 +337,8 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
             <BinaryFileViewer key={activeTab.id} tab={activeTab} />
           ) : activeTab.kind === "history-triple" ? (
             <TripleDiffView key={activeTab.id} tab={activeTab} />
+          ) : activeTab.kind === "render-preview" ? (
+            <RenderPreviewView key={activeTab.id} tab={activeTab} />
           ) : activeTabHasPending ? (
             <TabDiffView key={activeTab.id} tab={activeTab} />
           ) : (

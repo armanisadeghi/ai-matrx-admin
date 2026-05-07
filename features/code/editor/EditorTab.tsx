@@ -1,10 +1,11 @@
 "use client";
 
 import React from "react";
-import { Database, X } from "lucide-react";
+import { Database, Eye, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FileIcon } from "../styles/file-icon";
 import { getAdapterForTabId } from "../library-sources/registry";
+import { hasRenderPreviewerForTabId } from "../preview/renderPreviewRegistry";
 
 export interface EditorTabProps {
   id: string;
@@ -14,6 +15,7 @@ export interface EditorTabProps {
   onSelect: (id: string) => void;
   onClose: (id: string) => void;
   onMiddleClick?: (id: string) => void;
+  onOpenPreview?: (id: string) => void;
 }
 
 export const EditorTab: React.FC<EditorTabProps> = ({
@@ -24,11 +26,13 @@ export const EditorTab: React.FC<EditorTabProps> = ({
   onSelect,
   onClose,
   onMiddleClick,
+  onOpenPreview,
 }) => {
   const sourceAdapter = getAdapterForTabId(id);
   const sourceLabel = sourceAdapter
     ? `Single source of truth — saves write back to ${sourceAdapter.label}`
     : null;
+  const canPreview = onOpenPreview ? hasRenderPreviewerForTabId(id) : false;
   return (
     <div
       role="tab"
@@ -64,6 +68,23 @@ export const EditorTab: React.FC<EditorTabProps> = ({
         >
           <Database size={11} aria-hidden />
         </span>
+      ) : null}
+      {canPreview ? (
+        <button
+          type="button"
+          aria-label="Open live preview"
+          title="Open live preview"
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenPreview?.(id);
+          }}
+          className={cn(
+            "ml-1 flex h-4 w-4 items-center justify-center rounded text-neutral-500 hover:bg-neutral-300 hover:text-neutral-900 dark:hover:bg-neutral-700 dark:hover:text-neutral-100",
+            !active && "opacity-0 group-hover:opacity-100",
+          )}
+        >
+          <Eye size={12} />
+        </button>
       ) : null}
       <button
         type="button"
