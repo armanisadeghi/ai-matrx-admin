@@ -68,6 +68,7 @@ import { useOpenImageUploaderWindow } from '@/features/window-panels/windows/ima
 <ImageAssetUploader
   preset="social"                    // "social" | "cover" | "avatar" | "logo" | "favicon" | "square"
   currentUrl={form.image_url}
+  enableViewerAction                 // preview opens the shared image window panel
   onComplete={(result) => {
     if (!result) return clear();
     setForm({
@@ -94,8 +95,8 @@ openUploader({
 // - Server-side Sharp pipeline: all variants share one original, stay consistent
 // - 6 presets covering every common image shape (social, logo, favicon, …)
 // - Drag-drop, click, OR paste a public URL
-// - Supabase Storage by default (configurable bucket + folder)
-// - Uploads under the user's folder with RLS protection`;
+// - Cloud-files backed uploads with configurable visibility + folder
+// - Optional preview action opens uploaded variants in the shared image panel`;
 
   const handleOpenWindow = () => {
     openWindow({
@@ -115,7 +116,7 @@ openUploader({
     <ComponentDisplayWrapper
       component={component}
       code={code}
-      description="Drag-and-drop image upload with server-side Sharp processing. One file in, every configured size out. Ships with six presets covering podcasts, OG images, avatars, logos, and favicons. Available as an inline component and as a floating WindowPanel (via useOpenImageUploaderWindow)."
+      description="Drag-and-drop image upload with server-side Sharp processing. One file in, every configured size out. Ships with six presets covering podcasts, OG images, avatars, logos, and favicons. The inline preview can open the uploaded variants in the shared image WindowPanel."
     >
       <div className="w-full max-w-2xl space-y-4">
         <div className="flex flex-wrap gap-2">
@@ -144,6 +145,7 @@ openUploader({
             onComplete={setResult}
             currentUrl={result?.primary_url ?? null}
             currentVariants={result}
+            enableViewerAction
             label={`${preset.charAt(0).toUpperCase()}${preset.slice(1)} image`}
           />
         </div>

@@ -19,10 +19,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
-  Check,
   ChevronRight,
   FolderClosed,
-  Lock,
   Loader2,
   Search,
   ImageIcon,
@@ -44,15 +42,9 @@ import {
 import { loadUserFileTree } from "@/features/files/redux/thunks";
 import { useFolderContents } from "@/features/files/hooks/useFolderContents";
 import {
-  isAudioMime,
   isImageMime,
-  isPdfMime,
-  isVideoMime,
   resolveMime,
 } from "@/features/files/utils/file-types";
-import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
-import { FileMeta } from "@/features/files/components/core/FileMeta/FileMeta";
-import { MediaThumbnail } from "@/features/files/components/core/MediaThumbnail/MediaThumbnail";
 import type {
   CloudFileRecord,
   CloudFolderRecord,
@@ -67,6 +59,8 @@ import {
 } from "@/components/image/cloud/resolveCloudFileUrl";
 import { useBrowseAction } from "@/features/image-manager/browse/BrowseImageProvider";
 import { toast } from "sonner";
+import { CloudFilesBrowserTable } from "./CloudFilesBrowserTable";
+import { isCloudFileSelectable } from "./cloudFilesBrowserUtils";
 
 export type AllowedFileKind =
   | "image"
@@ -106,8 +100,14 @@ export function CloudFilesTab({
   const [query, setQuery] = useState("");
   const [resolvingId, setResolvingId] = useState<string | null>(null);
 
-  const { isSelected, toggleImage, addImage, clearImages, selectionMode } =
-    useSelectedImages();
+  const {
+    selectedImages,
+    isSelected,
+    toggleImage,
+    addImage,
+    clearImages,
+    selectionMode,
+  } = useSelectedImages();
   const browse = useBrowseAction();
 
   // Hydrate the tree if it hasn't loaded yet (e.g., modal opened on a
@@ -131,28 +131,6 @@ export function CloudFilesTab({
   const currentFolder = currentFolderId
     ? (foldersById[currentFolderId] ?? null)
     : null;
-
-  const allowAny = allowFileTypes.includes("any");
-
-  const isSelectable = (file: CloudFileRecord): boolean => {
-    if (allowAny) return true;
-    const mime = resolveMime(file.mimeType, file.fileName);
-    if (allowFileTypes.includes("image") && isImageMime(mime)) return true;
-    if (allowFileTypes.includes("video") && isVideoMime(mime)) return true;
-    if (allowFileTypes.includes("audio") && isAudioMime(mime)) return true;
-    if (allowFileTypes.includes("pdf") && isPdfMime(mime)) return true;
-    if (
-      allowFileTypes.includes("document") &&
-      (mime.startsWith("text/") ||
-        mime.includes("word") ||
-        mime.includes("excel") ||
-        mime.includes("spreadsheet") ||
-        mime.includes("presentation") ||
-        mime === "application/pdf")
-    )
-      return true;
-    return false;
-  };
 
   // Build the visible rows (folders + files), filtered by query when set.
   const { folderRows, fileRows } = useMemo(() => {
@@ -206,7 +184,7 @@ export function CloudFilesTab({
     }
 
     // Selection modes (single / multiple)
-    if (!isSelectable(file)) return;
+    if (!isCloudFileSelectable(file, allowFileTypes)) return;
     const sourceId = `cloud:${file.id}`;
     if (isSelected(sourceId)) {
       toggleImage({
@@ -232,6 +210,23 @@ export function CloudFilesTab({
 
   const isLoading = treeStatus === "loading" || treeStatus === "idle";
   const isEmpty = folderRows.length === 0 && fileRows.length === 0;
+  const selectedImageIds = useMemo(
+    () => new Set(selectedImages.map((image) => image.id)),
+    [selectedImages],
+  );
+  const disabledFileIds = useMemo(
+    () =>
+      new Set(
+        fileRows
+          .filter((file) =>
+            selectionMode === "none"
+              ? !isImageMime(resolveMime(file.mimeType, file.fileName))
+              : !isCloudFileSelectable(file, allowFileTypes),
+          )
+          .map((file) => file.id),
+      ),
+    [allowFileTypes, fileRows, selectionMode],
+  );
 
   return (
     <div className="h-full flex flex-col">
@@ -303,103 +298,16 @@ export function CloudFilesTab({
             ) : null}
           </div>
         ) : (
-          <ul className="divide-y">
-            {folderRows.map((folder) => (
-              <li key={folder.id}>
-                <button
-                  type="button"
-                  onClick={() => setCurrentFolderId(folder.id)}
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-accent/60 transition-colors"
-                >
-                  <FileIcon isFolder size={20} />
-                  <span className="flex-1 truncate text-sm">
-                    {folder.folderName}
-                  </span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </button>
-              </li>
-            ))}
-            {fileRows.map((file) => {
-              const sourceId = `cloud:${file.id}`;
-              const selected = isSelected(sourceId);
-              const selectable = isSelectable(file);
-              const resolving = resolvingId === file.id;
-              const mime = resolveMime(file.mimeType, file.fileName);
-              const showThumb = isImageMime(mime) || isVideoMime(mime);
-              const isBrowse = selectionMode === "none";
-              const browseClickable = isBrowse && isImageMime(mime);
-              const rowDisabled = isBrowse
-                ? !browseClickable || resolving
-                : !selectable || resolving;
-              const titleText = isBrowse
-                ? browseClickable
-                  ? `Open ${file.fileName}`
-                  : file.fileName
-                : !selectable
-                  ? "This file type isn't selectable here"
-                  : file.fileName;
-              return (
-                <li key={file.id}>
-                  <button
-                    type="button"
-                    onClick={() => handleRowClick(file)}
-                    disabled={rowDisabled}
-                    title={titleText}
-                    className={cn(
-                      "flex w-full items-center gap-3 px-4 py-2 text-left transition-colors",
-                      !rowDisabled && "hover:bg-accent/60",
-                      isBrowse && !browseClickable && "opacity-70 cursor-default",
-                      !isBrowse && !selectable && "opacity-60 cursor-not-allowed",
-                      resolving && "opacity-60 cursor-wait",
-                      !isBrowse && selected && "bg-accent",
-                    )}
-                  >
-                    <div className="h-9 w-9 flex-shrink-0 rounded overflow-hidden bg-muted/40">
-                      {showThumb ? (
-                        <MediaThumbnail
-                          file={file}
-                          iconSize={20}
-                          className="h-full w-full"
-                        />
-                      ) : (
-                        <div className="h-full w-full flex items-center justify-center">
-                          <FileIcon fileName={file.fileName} size={20} />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="truncate text-sm font-medium">
-                        {file.fileName}
-                      </div>
-                      <FileMeta
-                        file={{
-                          fileSize: file.fileSize,
-                          updatedAt: file.updatedAt,
-                          visibility: file.visibility,
-                        }}
-                        hide={{ visibility: true }}
-                        className="mt-0.5"
-                      />
-                    </div>
-                    {!isBrowse && !selectable ? (
-                      <Lock
-                        className="h-3.5 w-3.5 text-muted-foreground"
-                        aria-hidden="true"
-                      />
-                    ) : null}
-                    {!isBrowse && selected ? (
-                      <div className="h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
-                        <Check className="h-3 w-3" />
-                      </div>
-                    ) : null}
-                    {resolving ? (
-                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                    ) : null}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          <CloudFilesBrowserTable
+            folders={folderRows}
+            files={fileRows}
+            currentUserId={userId}
+            resolvingId={resolvingId}
+            selectedImageIds={selectedImageIds}
+            disabledFileIds={disabledFileIds}
+            onOpenFolder={setCurrentFolderId}
+            onActivateFile={handleRowClick}
+          />
         )}
       </div>
     </div>

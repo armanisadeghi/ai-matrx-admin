@@ -91,6 +91,7 @@ export function ProfilePhotoTab() {
         folder="profile"
         currentUrl={savedUrl ?? currentAvatar}
         visibility="public"
+        enableViewerAction
         onComplete={handleComplete}
         label="New avatar"
       />

@@ -25,10 +25,12 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { AlertCircle, CheckCircle2, ImageIcon, Link as LinkIcon, Loader2, Trash2, Upload, X } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Eye, ImageIcon, Link as LinkIcon, Loader2, Trash2, Upload, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ImagePreset, ImageUploadResponse } from '@/app/api/images/upload/route';
 import type { Visibility } from '@/features/files/types';
+import { useAppDispatch } from '@/lib/redux/hooks';
+import { openOverlay } from '@/lib/redux/slices/overlaySlice';
 
 // ── Types exported for consumers ──────────────────────────────────────────
 
@@ -75,6 +77,8 @@ export interface ImageAssetUploaderProps {
     compact?: boolean;
     /** Show "or paste image URL" toggle. Default: true. */
     allowUrlPaste?: boolean;
+    /** Show an action that opens the uploaded variants in the shared image viewer panel. */
+    enableViewerAction?: boolean;
     /** Label shown above the drop zone. */
     label?: string;
     /** Hide the variant chips row even when URLs exist. */
@@ -139,6 +143,41 @@ const PRESET_BLURB: Record<ImagePreset, string> = {
     square: 'Generates 1024×1024',
 };
 
+interface BuildImageAssetViewerPayloadArgs {
+    variants: ImageUploaderVariants;
+    label: string;
+    preset: ImagePreset;
+}
+
+export interface ImageAssetViewerPayload {
+    images: string[];
+    initialIndex?: number;
+    alts?: string[];
+    title?: string;
+}
+
+export function buildImageAssetViewerPayload({
+    variants,
+    label,
+    preset,
+}: BuildImageAssetViewerPayloadArgs): ImageAssetViewerPayload | null {
+    const presetLabels = PRESET_VARIANT_LABELS[preset];
+    const entries = presetLabels
+        .map(({ key, label: variantLabel }) => ({
+            url: variants[key],
+            alt: `${label} ${variantLabel.replace(/×/g, 'x')}`,
+        }))
+        .filter((entry): entry is { url: string; alt: string } => Boolean(entry.url));
+
+    if (!entries.length) return null;
+
+    return {
+        images: entries.map((entry) => entry.url),
+        alts: entries.map((entry) => entry.alt),
+        title: label,
+    };
+}
+
 function StatusIcon({ state }: { state: UploadState }) {
     if (state === 'uploading') return <Loader2 className="h-4 w-4 animate-spin text-primary" />;
     if (state === 'success') return <CheckCircle2 className="h-4 w-4 text-success" />;
@@ -156,12 +195,14 @@ export function ImageAssetUploader({
     visibility = 'public',
     compact = false,
     allowUrlPaste = true,
+    enableViewerAction = false,
     label = 'Image',
     hideVariantBadges = false,
     accept = DEFAULT_ACCEPT,
     disabled = false,
     className,
 }: ImageAssetUploaderProps) {
+    const dispatch = useAppDispatch();
     const inputRef = useRef<HTMLInputElement>(null);
     const [section, setSection] = useState<SectionState>({ state: 'idle', error: null, fileName: null });
     const [variants, setVariants] = useState<ImageUploaderVariants>({
@@ -252,6 +293,22 @@ export function ImageAssetUploader({
     const blurb = PRESET_BLURB[preset];
     const dropZoneHeight = compact ? 'py-4' : 'py-6';
     const iconSize = compact ? 'h-6 w-6' : 'h-8 w-8';
+    const viewerPayload = buildImageAssetViewerPayload({ variants, label, preset });
+
+    const openViewer = useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!viewerPayload) return;
+        dispatch(
+            openOverlay({
+                overlayId: 'imageViewer',
+                instanceId: 'default',
+                data: {
+                    ...viewerPayload,
+                    initialIndex: viewerPayload.initialIndex ?? 0,
+                },
+            }),
+        );
+    }, [dispatch, viewerPayload]);
 
     return (
         <div className={cn('flex flex-col gap-2', className)}>
@@ -363,14 +420,27 @@ export function ImageAssetUploader({
                             />
                         )}
                         {!disabled && (
-                            <button
-                                type="button"
-                                onClick={remove}
-                                title="Remove image"
-                                className="shrink-0 p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                            >
-                                <Trash2 className="h-4 w-4" />
-                            </button>
+                            <div className="shrink-0 flex items-center gap-1">
+                                {enableViewerAction && viewerPayload ? (
+                                    <button
+                                        type="button"
+                                        onClick={openViewer}
+                                        title="Open image panel"
+                                        aria-label="Open image panel"
+                                        className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+                                    >
+                                        <Eye className="h-4 w-4" />
+                                    </button>
+                                ) : null}
+                                <button
+                                    type="button"
+                                    onClick={remove}
+                                    title="Remove image"
+                                    className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
+                            </div>
                         )}
                     </div>
                 ) : (

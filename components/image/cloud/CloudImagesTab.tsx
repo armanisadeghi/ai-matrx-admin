@@ -22,20 +22,41 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  Search,
+  Download,
+  FolderInput,
+  Globe,
   ImageOff,
   Loader2,
-  Check,
   Clock,
   Cloud,
-  Info,
   LayoutGrid,
   Grid3x3,
   List as ListIcon,
+  Lock,
+  Trash2,
+  Users,
   type LucideIcon,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/official/SearchInput";
 import { Button } from "@/components/ui/button";
+import EmptyStateCard from "@/components/official/cards/EmptyStateCard";
+import { FloatingSelectionToolbar } from "@/components/shared/FloatingSelectionToolbar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
@@ -49,10 +70,15 @@ import {
   selectAllFilesArray,
   selectTreeStatus,
 } from "@/features/files/redux/selectors";
-import { loadUserFileTree } from "@/features/files/redux/thunks";
+import {
+  deleteFile,
+  getSignedUrl,
+  loadUserFileTree,
+  moveFile,
+  updateFileMetadata,
+} from "@/features/files/redux/thunks";
 import { isImageMime, resolveMime } from "@/features/files/utils/file-types";
-import { MediaThumbnail } from "@/features/files/components/core/MediaThumbnail/MediaThumbnail";
-import type { CloudFileRecord } from "@/features/files/types";
+import type { CloudFileRecord, Visibility } from "@/features/files/types";
 import {
   useSelectedImages,
   type ImageSource,
@@ -62,8 +88,11 @@ import {
   resolveCloudFileUrl,
 } from "@/components/image/cloud/resolveCloudFileUrl";
 import { ImageGrid } from "@/components/image/shared/ImageGrid";
+import { CloudImageGrid } from "@/components/image/cloud/CloudImageGrid";
+import { CloudImageList } from "@/components/image/cloud/CloudImageList";
 import { useBrowseAction } from "@/features/image-manager/browse/BrowseImageProvider";
 import { CloudFileMetadataSheet } from "@/features/image-manager/components/CloudFileMetadataSheet";
+import { openFolderPicker } from "@/features/files/components/pickers/CloudFilesPickerHost";
 import { toast } from "sonner";
 
 const RECENTS_WINDOW_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
@@ -114,6 +143,11 @@ export function CloudImagesTab({ providedUrls }: CloudImagesTabProps) {
     null,
   );
   const [viewMode, setViewMode] = useState<ViewMode>(loadInitialView);
+  const [bulkSelectedIds, setBulkSelectedIds] = useState<string[]>([]);
+  const [bulkBusy, setBulkBusy] = useState<
+    "download" | "move" | "visibility" | "delete" | null
+  >(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   // Persist the view mode whenever it changes.
   useEffect(() => {
@@ -160,6 +194,113 @@ export function CloudImagesTab({ providedUrls }: CloudImagesTabProps) {
         return bTs - aTs;
       });
   }, [allFiles, query, showRecentsOnly]);
+
+  useEffect(() => {
+    const visibleIds = new Set(imageFiles.map((file) => file.id));
+    setBulkSelectedIds((current) => current.filter((id) => visibleIds.has(id)));
+  }, [imageFiles]);
+
+  const selectedBulkFiles = useMemo(
+    () => imageFiles.filter((file) => bulkSelectedIds.includes(file.id)),
+    [imageFiles, bulkSelectedIds],
+  );
+
+  const handleToggleBulkSelected = (fileId: string) => {
+    setBulkSelectedIds((current) =>
+      current.includes(fileId)
+        ? current.filter((id) => id !== fileId)
+        : [...current, fileId],
+    );
+  };
+
+  const handleClearBulkSelection = () => {
+    setBulkSelectedIds([]);
+  };
+
+  const handleBulkDownload = async () => {
+    if (selectedBulkFiles.length === 0 || bulkBusy) return;
+    setBulkBusy("download");
+    try {
+      for (const file of selectedBulkFiles) {
+        const { url } = await dispatch(
+          getSignedUrl({ fileId: file.id, expiresIn: 3600 }),
+        ).unwrap();
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.rel = "noopener noreferrer";
+        anchor.download = file.fileName;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+      }
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Could not download selection";
+      toast.error(message);
+    } finally {
+      setBulkBusy(null);
+    }
+  };
+
+  const handleBulkMove = async () => {
+    if (selectedBulkFiles.length === 0 || bulkBusy) return;
+    const target = await openFolderPicker({
+      title: `Move ${selectedBulkFiles.length} ${selectedBulkFiles.length === 1 ? "image" : "images"} to folder`,
+      description: "Choose a destination folder.",
+    });
+    if (target === undefined) return;
+    setBulkBusy("move");
+    try {
+      for (const file of selectedBulkFiles) {
+        await dispatch(
+          moveFile({ fileId: file.id, newParentFolderId: target }),
+        ).unwrap();
+      }
+      setBulkSelectedIds([]);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Could not move selection";
+      toast.error(message);
+    } finally {
+      setBulkBusy(null);
+    }
+  };
+
+  const handleBulkVisibility = async (visibility: Visibility) => {
+    if (selectedBulkFiles.length === 0 || bulkBusy) return;
+    setBulkBusy("visibility");
+    try {
+      for (const file of selectedBulkFiles) {
+        await dispatch(
+          updateFileMetadata({ fileId: file.id, patch: { visibility } }),
+        ).unwrap();
+      }
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Could not update visibility";
+      toast.error(message);
+    } finally {
+      setBulkBusy(null);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedBulkFiles.length === 0 || bulkBusy) return;
+    setConfirmDelete(false);
+    setBulkBusy("delete");
+    try {
+      for (const file of selectedBulkFiles) {
+        await dispatch(deleteFile({ fileId: file.id })).unwrap();
+      }
+      setBulkSelectedIds([]);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Could not delete selection";
+      toast.error(message);
+    } finally {
+      setBulkBusy(null);
+    }
+  };
 
   const handleTileClick = async (file: CloudFileRecord) => {
     // ─── Browse mode: resolve ONLY the clicked file and open the viewer.
@@ -217,33 +358,40 @@ export function CloudImagesTab({ providedUrls }: CloudImagesTabProps) {
   };
 
   const isLoading = treeStatus === "loading" || treeStatus === "idle";
+  const imageCountLabel = `${imageFiles.length} image${imageFiles.length !== 1 ? "s" : ""}`;
 
   return (
     <TooltipProvider delayDuration={300}>
       <div className="h-full flex flex-col">
-        <div className="border-b border-border px-4 py-3 flex items-center gap-2 flex-wrap">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search your images..."
-              className="pl-8 text-base"
-              style={{ fontSize: "16px" }}
-            />
-          </div>
-          <Button
-            type="button"
-            variant={showRecentsOnly ? "default" : "outline"}
-            size="sm"
-            onClick={() => setShowRecentsOnly((v) => !v)}
-          >
-            <Clock className="h-3.5 w-3.5 mr-1.5" />
-            Recents
-          </Button>
-          <ViewModeToggle value={viewMode} onChange={setViewMode} />
-          <div className="text-xs text-muted-foreground hidden sm:block">
-            {imageFiles.length} image{imageFiles.length !== 1 ? "s" : ""}
+        <div className="border-b border-border px-4 py-2.5 pr-14 flex items-center gap-3 flex-wrap">
+          <SearchInput
+            value={query}
+            onValueChange={setQuery}
+            placeholder="Search your images..."
+            className="min-w-[260px] flex-1"
+            inputClassName="h-9 bg-background text-base"
+            showClearButton={true}
+            autoFocus={false}
+          />
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            <Button
+              type="button"
+              variant={showRecentsOnly ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowRecentsOnly((v) => !v)}
+              className="h-9"
+            >
+              <Clock className="h-3.5 w-3.5 mr-1.5" />
+              Recents
+            </Button>
+            <ViewModeToggle value={viewMode} onChange={setViewMode} />
+            <div
+              className="hidden h-9 items-center rounded-md border border-border/80 bg-card/70 px-2.5 text-xs font-medium text-muted-foreground shadow-sm sm:flex"
+              aria-label={`${imageCountLabel} loaded`}
+              aria-live="polite"
+            >
+              {imageCountLabel}
+            </div>
           </div>
         </div>
 
@@ -281,26 +429,43 @@ export function CloudImagesTab({ providedUrls }: CloudImagesTabProps) {
             {isLoading && allFiles.length === 0 ? (
               <CloudLoadingState />
             ) : imageFiles.length === 0 ? (
-              <CloudEmptyState
-                hasQuery={query.length > 0}
-                hasRecents={showRecentsOnly}
-              />
+              <div className="rounded-md border border-dashed border-border/80 bg-card/30">
+                <EmptyStateCard
+                  title={
+                    query.length > 0
+                      ? "No matching images"
+                      : showRecentsOnly
+                        ? "No recent images"
+                        : "No images in your cloud yet"
+                  }
+                  description={
+                    query.length > 0
+                      ? "Try a different search term, or clear filters."
+                      : "Upload an image from the Upload tab and it will appear here automatically."
+                  }
+                  icon={query.length > 0 ? ImageOff : Cloud}
+                />
+              </div>
             ) : viewMode === "list" ? (
-              <CloudFilesList
+              <CloudImageList
                 files={imageFiles}
                 resolvingId={resolvingId}
                 selectionMode={selectionMode}
                 isSelected={(id) => isSelected(`cloud:${id}`)}
+                bulkSelectedIds={bulkSelectedIds}
+                onToggleBulkSelected={handleToggleBulkSelected}
                 onTileClick={handleTileClick}
                 onShowMetadata={setMetadataFile}
               />
             ) : (
-              <CloudFilesGrid
+              <CloudImageGrid
                 files={imageFiles}
                 density={viewMode}
                 resolvingId={resolvingId}
                 selectionMode={selectionMode}
                 isSelected={(id) => isSelected(`cloud:${id}`)}
+                bulkSelectedIds={bulkSelectedIds}
+                onToggleBulkSelected={handleToggleBulkSelected}
                 onTileClick={handleTileClick}
                 onShowMetadata={setMetadataFile}
               />
@@ -314,6 +479,104 @@ export function CloudImagesTab({ providedUrls }: CloudImagesTabProps) {
             if (!open) setMetadataFile(null);
           }}
         />
+        <FloatingSelectionToolbar
+          selectedCount={bulkSelectedIds.length}
+          actions={[
+            {
+              id: "download",
+              label: "Download",
+              icon: <Download className="h-3.5 w-3.5" />,
+              onClick: () => void handleBulkDownload(),
+              running: bulkBusy === "download",
+              disabled: bulkBusy !== null,
+            },
+            {
+              id: "move",
+              label: "Move...",
+              icon: <FolderInput className="h-3.5 w-3.5" />,
+              onClick: () => void handleBulkMove(),
+              running: bulkBusy === "move",
+              disabled: bulkBusy !== null,
+            },
+          ]}
+          onClear={handleClearBulkSelection}
+        >
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                disabled={bulkBusy !== null}
+                className={cn(
+                  "flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors",
+                  "text-foreground hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50",
+                )}
+              >
+                {bulkBusy === "visibility" ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Lock className="h-3.5 w-3.5" />
+                )}
+                Visibility
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="w-44">
+              <DropdownMenuItem
+                onClick={() => void handleBulkVisibility("private")}
+              >
+                <Lock className="mr-2 h-4 w-4" /> Private
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => void handleBulkVisibility("shared")}
+              >
+                <Users className="mr-2 h-4 w-4" /> Shared
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => void handleBulkVisibility("public")}
+              >
+                <Globe className="mr-2 h-4 w-4" /> Public
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <button
+            type="button"
+            onClick={() => setConfirmDelete(true)}
+            disabled={bulkBusy !== null}
+            className={cn(
+              "flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors",
+              "text-destructive hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-50",
+            )}
+          >
+            {bulkBusy === "delete" ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Trash2 className="h-3.5 w-3.5" />
+            )}
+            Delete
+          </button>
+        </FloatingSelectionToolbar>
+        <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                Delete {bulkSelectedIds.length}{" "}
+                {bulkSelectedIds.length === 1 ? "image" : "images"}?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                These images will move to Trash. You can restore them later from
+                the Files area.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => void handleBulkDelete()}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </TooltipProvider>
   );
@@ -332,7 +595,7 @@ function ViewModeToggle({
 }) {
   return (
     <div
-      className="inline-flex rounded-md border border-border bg-card overflow-hidden"
+      className="inline-flex h-9 rounded-md border border-border bg-card overflow-hidden"
       role="group"
       aria-label="View mode"
     >
@@ -348,7 +611,7 @@ function ViewModeToggle({
                 aria-pressed={active}
                 aria-label={opt.label}
                 className={cn(
-                  "h-8 w-8 flex items-center justify-center transition-colors border-r border-border last:border-r-0",
+                  "h-9 w-8 flex items-center justify-center transition-colors border-r border-border last:border-r-0",
                   active
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-accent hover:text-foreground",
@@ -365,281 +628,11 @@ function ViewModeToggle({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Grid renderer — handles both "cozy" (default) and "compact" densities.
-// ---------------------------------------------------------------------------
-
-interface FilesViewProps {
-  files: CloudFileRecord[];
-  resolvingId: string | null;
-  selectionMode: "single" | "multiple" | "none";
-  isSelected: (fileId: string) => boolean;
-  onTileClick: (file: CloudFileRecord) => void;
-  onShowMetadata: (file: CloudFileRecord) => void;
-}
-
-function CloudFilesGrid({
-  files,
-  density,
-  resolvingId,
-  selectionMode,
-  isSelected,
-  onTileClick,
-  onShowMetadata,
-}: FilesViewProps & { density: "cozy" | "compact" }) {
-  const gridClasses =
-    density === "compact"
-      ? "grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-9 gap-2"
-      : "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3";
-  const iconSize = density === "compact" ? 32 : 48;
-  const checkSize =
-    density === "compact"
-      ? "h-4 w-4 top-1 right-1"
-      : "h-5 w-5 top-1.5 right-1.5";
-  const infoSize =
-    density === "compact" ? "h-4 w-4 top-1 left-1" : "h-5 w-5 top-1.5 left-1.5";
-
-  return (
-    <div className={gridClasses}>
-      {files.map((file) => {
-        const selected = isSelected(file.id);
-        const resolving = resolvingId === file.id;
-        const isBrowse = selectionMode === "none";
-        return (
-          <button
-            key={file.id}
-            type="button"
-            onClick={() => onTileClick(file)}
-            disabled={resolving}
-            className={cn(
-              "group relative aspect-square overflow-hidden rounded-md border-2 transition-all bg-muted/40",
-              "hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/40",
-              !isBrowse && selected
-                ? "border-primary ring-2 ring-primary/30"
-                : "border-transparent",
-              resolving && "opacity-60 cursor-wait",
-            )}
-            title={file.fileName}
-            aria-label={
-              isBrowse
-                ? `Open ${file.fileName}`
-                : selected
-                  ? `Deselect ${file.fileName}`
-                  : `Select ${file.fileName}`
-            }
-          >
-            <MediaThumbnail
-              file={file}
-              iconSize={iconSize}
-              className="absolute inset-0"
-            />
-            {!isBrowse && selected ? (
-              <div
-                className={cn(
-                  "absolute rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md",
-                  checkSize,
-                )}
-              >
-                <Check className="h-3 w-3" />
-              </div>
-            ) : null}
-            {resolving ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-background/40">
-                <Loader2 className="h-5 w-5 animate-spin text-primary" />
-              </div>
-            ) : null}
-            <span
-              role="button"
-              tabIndex={0}
-              onClick={(event) => {
-                event.stopPropagation();
-                event.preventDefault();
-                onShowMetadata(file);
-              }}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.stopPropagation();
-                  event.preventDefault();
-                  onShowMetadata(file);
-                }
-              }}
-              title="File details"
-              aria-label={`Details for ${file.fileName}`}
-              className={cn(
-                "absolute rounded-full bg-background/80 text-foreground flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity cursor-pointer hover:bg-background",
-                infoSize,
-              )}
-            >
-              <Info className="h-3 w-3" />
-            </span>
-            {density !== "compact" ? (
-              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent text-white text-[11px] px-2 py-1 truncate opacity-0 group-hover:opacity-100 transition-opacity">
-                {file.fileName}
-              </div>
-            ) : null}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// List renderer — table-style row with thumbnail + name + meta.
-// ---------------------------------------------------------------------------
-
-function CloudFilesList({
-  files,
-  resolvingId,
-  selectionMode,
-  isSelected,
-  onTileClick,
-  onShowMetadata,
-}: FilesViewProps) {
-  return (
-    <ul className="divide-y divide-border rounded-md border border-border bg-card overflow-hidden">
-      {files.map((file) => {
-        const selected = isSelected(file.id);
-        const resolving = resolvingId === file.id;
-        const isBrowse = selectionMode === "none";
-        const updatedAt = file.updatedAt ? new Date(file.updatedAt) : null;
-        const sizeLabel = formatFileSize(file.fileSize);
-        return (
-          <li
-            key={file.id}
-            className={cn(
-              "flex items-center gap-3 pl-2 pr-3 py-1.5 transition-colors",
-              !isBrowse && selected ? "bg-primary/10" : "hover:bg-accent/40",
-            )}
-          >
-            <button
-              type="button"
-              onClick={() => onTileClick(file)}
-              disabled={resolving}
-              className={cn(
-                "flex flex-1 min-w-0 items-center gap-3 text-left focus:outline-none rounded-sm focus:ring-2 focus:ring-primary/40",
-                resolving && "opacity-60 cursor-wait",
-              )}
-              aria-label={
-                isBrowse
-                  ? `Open ${file.fileName}`
-                  : selected
-                    ? `Deselect ${file.fileName}`
-                    : `Select ${file.fileName}`
-              }
-            >
-              <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-sm bg-muted/40">
-                <MediaThumbnail
-                  file={file}
-                  iconSize={20}
-                  className="absolute inset-0"
-                />
-                {resolving ? (
-                  <div className="absolute inset-0 flex items-center justify-center bg-background/40">
-                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  </div>
-                ) : null}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm text-foreground truncate">
-                    {file.fileName}
-                  </span>
-                  {!isBrowse && selected ? (
-                    <Check className="h-3 w-3 text-primary flex-shrink-0" />
-                  ) : null}
-                </div>
-                <div className="text-[11px] text-muted-foreground truncate">
-                  {[
-                    sizeLabel,
-                    updatedAt ? formatRelative(updatedAt) : null,
-                    file.mimeType,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </div>
-              </div>
-            </button>
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                onShowMetadata(file);
-              }}
-              aria-label={`Details for ${file.fileName}`}
-              className="h-7 w-7 flex-shrink-0 rounded text-muted-foreground hover:bg-accent hover:text-foreground transition-colors flex items-center justify-center"
-              title="File details"
-            >
-              <Info className="h-3.5 w-3.5" />
-            </button>
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
-
-function formatFileSize(bytes: number | null | undefined): string | null {
-  if (!bytes || bytes < 0) return null;
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 * 1024 * 1024)
-    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-  return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`;
-}
-
-function formatRelative(date: Date): string {
-  const diffMs = Date.now() - date.getTime();
-  const sec = Math.round(diffMs / 1000);
-  if (sec < 60) return "just now";
-  const min = Math.round(sec / 60);
-  if (min < 60) return `${min}m ago`;
-  const hr = Math.round(min / 60);
-  if (hr < 24) return `${hr}h ago`;
-  const day = Math.round(hr / 24);
-  if (day < 30) return `${day}d ago`;
-  const mo = Math.round(day / 30);
-  if (mo < 12) return `${mo}mo ago`;
-  return `${Math.round(mo / 12)}y ago`;
-}
-
 function CloudLoadingState() {
   return (
     <div className="flex items-center justify-center py-16 text-muted-foreground">
       <Loader2 className="h-5 w-5 animate-spin mr-2" />
       <span className="text-sm">Loading your images...</span>
-    </div>
-  );
-}
-
-function CloudEmptyState({
-  hasQuery,
-  hasRecents,
-}: {
-  hasQuery: boolean;
-  hasRecents: boolean;
-}) {
-  return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="mx-auto w-14 h-14 rounded-full bg-muted flex items-center justify-center mb-4">
-        {hasQuery ? (
-          <ImageOff className="h-7 w-7 text-muted-foreground" />
-        ) : (
-          <Cloud className="h-7 w-7 text-muted-foreground" />
-        )}
-      </div>
-      <h3 className="text-base font-medium text-foreground mb-1">
-        {hasQuery
-          ? "No matching images"
-          : hasRecents
-            ? "No recent images"
-            : "No images in your cloud yet"}
-      </h3>
-      <p className="text-sm text-muted-foreground max-w-sm">
-        {hasQuery
-          ? "Try a different search term, or clear filters."
-          : "Upload an image from the Upload tab and it will appear here automatically."}
-      </p>
     </div>
   );
 }

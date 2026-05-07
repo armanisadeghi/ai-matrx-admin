@@ -16,7 +16,7 @@
  */
 
 import React, { useMemo, useState } from "react";
-import { Sparkles } from "lucide-react";
+import { GalleryVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ResponsiveGallery } from "@/components/image/ResponsiveGallery";
 import { useSelectedImages } from "@/components/image/context/SelectedImagesProvider";
@@ -91,22 +91,24 @@ export function PublicImagesSection({
   return (
     <div className="h-full overflow-auto">
       <section className="px-4 pt-3">
-        <header className="flex items-center gap-2 mb-4 pr-10">
-          <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-          <h3 className="text-xs uppercase tracking-wide text-muted-foreground">
-            Curated Covers
-          </h3>
-          <div className="ml-auto flex flex-wrap gap-1">
+        <header className="mb-3 flex flex-wrap items-center gap-2 pr-8">
+          <div className="flex items-center gap-4 pr-10">
+            <GalleryVertical className="h-3.5 w-3.5 text-amber-500" />
+            <h3 className="text-xs uppercase tracking-wide text-muted-foreground">
+              Curated Covers
+            </h3>
+          </div>
+          <div className="ml-auto flex flex-wrap gap-1 rounded-md border border-border/70 bg-card/45 p-0.5">
             {THEME_OPTIONS.map((opt) => (
               <button
                 key={opt.id}
                 type="button"
                 onClick={() => setTheme(opt.id)}
                 className={cn(
-                  "h-6 px-2 rounded-full text-[11px] font-medium transition-colors border",
+                  "h-6 rounded px-2 text-[11px] font-medium transition-colors",
                   theme === opt.id
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-card border-border text-muted-foreground hover:bg-accent hover:text-foreground",
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground",
                 )}
               >
                 {opt.label}
@@ -149,12 +151,7 @@ export function PublicImagesSection({
         </div>
       </section>
 
-      <section className="p-4">
-        <header className="flex items-center gap-2 mb-2">
-          <h3 className="text-xs uppercase tracking-wide text-muted-foreground">
-            Search Unsplash
-          </h3>
-        </header>
+      <section className="px-4 pt-3 pb-6">
         <ResponsiveGallery
           type="unsplash"
           initialSearchTerm={initialSearchTerm}

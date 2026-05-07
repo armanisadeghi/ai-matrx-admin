@@ -5,7 +5,8 @@ import { useUnsplashGallery } from '@/hooks/images/useUnsplashGallery';
 import { DesktopImageCard } from '../../shared/DesktopImageCard';
 import { EnhancedImageViewer } from './EnhancedImageViewer';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2 } from 'lucide-react';
+import EmptyStateCard from '@/components/official/cards/EmptyStateCard';
+import { ImageOff, Loader2 } from 'lucide-react';
 import { UnsplashSearch } from '../UnsplashSearch';
 
 export interface Photo {
@@ -119,13 +120,37 @@ export function EnhancedUnsplashGallery({ initialSearchTerm }: EnhancedUnsplashG
         setViewMode(mode);
     };
 
+    const displayQuery = searchQuery.trim();
+    const resultTitle = displayQuery ? `Results for "${displayQuery}"` : 'Search Unsplash';
+    const resultCountLabel = loading ? '...' : `${photos.length}`;
+    const resultUnitLabel = photos.length === 1 ? 'image loaded' : 'images loaded';
+    const showEmptyState = !loading && photos.length === 0;
+
     useEffect(() => {
         handleSearch(searchQuery);
     }, []);
 
     return (
-        <div className="w-full p-4 space-y-8">
-            <div className="w-full mb-6">
+        <div className="w-full space-y-4">
+            <section className="w-full space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                        <h3 className="truncate text-sm font-semibold text-foreground">
+                            {resultTitle}
+                        </h3>
+                    </div>
+                    <div
+                        className="shrink-0 flex items-center gap-2 rounded-md border border-border/80 bg-card/55 px-3 py-1.5 text-right shadow-sm"
+                        aria-live="polite"
+                    >
+                        <div className="text-base font-semibold leading-none text-foreground">
+                            {resultCountLabel}
+                        </div>
+                        <div className="text-[10px] font-medium uppercase text-muted-foreground">
+                            {loading ? 'Searching' : resultUnitLabel}
+                        </div>
+                    </div>
+                </div>
                 <UnsplashSearch
                     onSearch={handleSearchChange}
                     loading={loading}
@@ -140,22 +165,32 @@ export function EnhancedUnsplashGallery({ initialSearchTerm }: EnhancedUnsplashG
                     viewMode={viewMode}
                     onViewModeChange={handleViewModeChange}
                 />
-            </div>
+            </section>
 
-            <div className={`grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 ${viewMode === 'natural' ? 'items-start' : ''}`}>
-                {photos.map((photo, index) => (
-                    <div
-                        key={`${photo.id}-${index}`}
-                        ref={index === photos.length - 1 ? lastPhotoElementRef : undefined}
-                    >
-                        <DesktopImageCard 
-                            photo={photo} 
-                            onClick={() => handlePhotoClick(photo)}
-                            viewMode={viewMode}
-                        />
-                    </div>
-                ))}
-            </div>
+            {showEmptyState ? (
+                <div className="rounded-md border border-dashed border-border/80 bg-card/30">
+                    <EmptyStateCard
+                        title="No images loaded"
+                        description="Try a different search term or adjust the filters to find Unsplash images."
+                        icon={ImageOff}
+                    />
+                </div>
+            ) : (
+                <div className={`grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 ${viewMode === 'natural' ? 'items-start' : ''}`}>
+                    {photos.map((photo, index) => (
+                        <div
+                            key={`${photo.id}-${index}`}
+                            ref={index === photos.length - 1 ? lastPhotoElementRef : undefined}
+                        >
+                            <DesktopImageCard 
+                                photo={photo} 
+                                onClick={() => handlePhotoClick(photo)}
+                                viewMode={viewMode}
+                            />
+                        </div>
+                    ))}
+                </div>
+            )}
 
             {loading && (
                 <div className="flex justify-center items-center h-24">

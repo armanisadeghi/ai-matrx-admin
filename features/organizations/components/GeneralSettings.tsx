@@ -294,6 +294,7 @@ export function GeneralSettings({
               onComplete={(result) => setLogoUrl(result?.primary_url ?? "")}
               folder="organizations/logos"
               disabled={isSaving}
+              enableViewerAction
               label="Organization logo"
             />
           ) : (

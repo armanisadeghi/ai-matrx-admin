@@ -2,7 +2,7 @@
 
 **Status:** `active`
 **Tier:** `2`
-**Last updated:** `2026-05-06`
+**Last updated:** `2026-05-07`
 
 ---
 
@@ -197,6 +197,10 @@ The Image Manager Hub plan landed across Phases 1–7 (May 2026). Pending owner-
 
 ## Change log
 
+- `2026-05-07` — My Cloud image bulk selection: extracted image grid/list renderers, added per-image bulk checkboxes, wired a shared floating selection toolbar for download/move/visibility/delete/cancel, and reused the official empty-state card for empty results.
+- `2026-05-07` — Browse-mode image preview gained icon-only rotate-left, rotate-right, flip-horizontal, and flip-vertical controls in the shared Image Viewer window.
+- `2026-05-07` — My Cloud search now uses the official `SearchInput`, matching Public Search while preserving the existing filename filter behavior.
+- `2026-05-07` — Public Search toolbar polish: switched Unsplash search to the official `SearchInput`, moved result text into a dedicated results header, added a more visible loaded-count status, and reused the official `EmptyStateCard` when no Unsplash images are loaded.
 - `2026-05-05` — **Legacy `/image-editing/*` routes deleted** (CLEANUP-CANDIDATES.md items 2-5). Dropped the entire `app/(authenticated)/image-editing/` directory (4 pages + 1 layout): the disabled placeholder, the parallax-scroll gallery demo, the standalone public-image-search demo, and the simple-crop demo. `pnpm tsc --noEmit` clean. Knock-on cleanups not yet applied (per owner): `components/matrx/parallax-scroll/` is now orphaned, and the live "Image Search" entry in `constants/navigation-links.tsx` (plus `favicon-route-data.ts` and the deprecated `MatrixFloatingMenu.tsx`) still link to `/image-editing/public-image-search` and will 404 from `<MatrxFloatingMenu>`/`<NavigationMenu>` until pruned. The `ToolsTab.tsx` **Beta** subgroup also still links to the deleted routes — owner asked to leave the Tools tab untouched.
 - `2026-05-05` — **Fabric.js purge** (CLEANUP-CANDIDATES.md items 1 + 9). Deleted `components/advanced-image-editor/` (17 files), `vendors/fabric.js` (~1.0 MB), and the orphaned duplicate `app/vendor/fabric.js` (~1.2 MB), plus their now-empty parent directories. Companion build-config cleanup: dropped the `vendors/fabric.js` `script-loader` rule from `utils/next-config/webpackConfig.js`, removed the duplicate fabric-specific `jsdom` client externalization block from `next.config.js` (the remaining block in `webpackConfig.js` still covers other transitive consumers), and removed `@types/fabric` from `package.json` devDependencies. `pnpm install` re-pinned the lockfile. The `/image-editing/*` legacy demo routes and the `ToolsTab` Beta group still reference `/image-editing` placeholder URLs — pending in items 2-7 of the cleanup checklist.
 - `2026-05-05` — **Your Cloud** view-mode toggle (Cozy / Compact / List) plus localStorage persistence under `image-manager:cloud-images-view`. Same UX feel as Public Images — Cozy is the previous default (5-col grid), Compact bumps to 9-col with smaller tiles, List is a table-style row view with thumbnail + filename + size + relative timestamp + mime. Also fixed a Browse-mode bug: clicking a tile previously kicked off `Promise.all(imageFiles.map(resolveCloudFileUrl))` (a signed-URL request per visible image, on every single click) AND pushed each `ResolvedCloudUrl` *object* into the viewer's `images: string[]` contract — so `<ImageViewerWindow>` rendered `<img src="[object Object]">`. Browse now resolves only the clicked file's URL and opens the viewer with one image.
