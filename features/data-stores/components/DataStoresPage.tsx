@@ -241,7 +241,7 @@ function CreateStoreInline({ onCreated }: { onCreated: (id: string) => void }) {
       <Input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="Name (e.g. Yorba case)"
+        placeholder="Name (e.g. Smith case)"
         className="h-8 text-xs"
         autoFocus
       />

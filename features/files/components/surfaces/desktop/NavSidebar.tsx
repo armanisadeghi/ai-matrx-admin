@@ -17,11 +17,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Plus, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   setActiveFileId,
   setActiveFolderId,
 } from "@/features/files/redux/slice";
+import { selectAllFoldersMap } from "@/features/files/redux/selectors";
+import { encodeFolderPathSegments } from "@/features/files/utils/url-state";
 import { FileTree } from "@/features/files/components/core/FileTree/FileTree";
 import { NavSidebarFlatFolders } from "./NavSidebarFlatFolders";
 import { SidebarModeToggle, useSidebarMode } from "./SidebarModeToggle";
@@ -36,6 +38,7 @@ export function NavSidebar({ section }: NavSidebarProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { mode } = useSidebarMode();
+  const foldersById = useAppSelector(selectAllFoldersMap);
 
   // Sections that filter the file list independently of activeFolderId
   // (Starred/Recents/Shared/Trash/Photos/Requests). When the user picks a
@@ -58,9 +61,26 @@ export function NavSidebar({ section }: NavSidebarProps) {
     (folderId: string) => {
       dispatch(setActiveFolderId(folderId));
       dispatch(setActiveFileId(null));
+      // Always navigate to the canonical /files/<path> URL when a folder
+      // is picked from the sidebar. Two reasons:
+      //   1. Filtered sections (Recents/Photos/…) wouldn't render the
+      //      picked folder anyway — sending the user to the "all" surface
+      //      makes the click do something visible.
+      //   2. Even on the "all" section we want the URL to reflect the new
+      //      folder so reload + sharing work.
+      // Virtual folders (Notes adapter, etc.) don't have a stable folder
+      // path that the catch-all route can resolve, so they keep the
+      // existing behaviour: Redux-only update + bare /files for filtered
+      // sections.
+      const folder = foldersById[folderId];
+      if (folder?.source.kind === "real") {
+        const segments = encodeFolderPathSegments(folder.folderPath);
+        router.push(segments ? `/files/${segments}` : "/files");
+        return;
+      }
       if (isFilteredSection) router.push("/files");
     },
-    [dispatch, isFilteredSection, router],
+    [dispatch, foldersById, isFilteredSection, router],
   );
 
   const handleSelectFile = useCallback(

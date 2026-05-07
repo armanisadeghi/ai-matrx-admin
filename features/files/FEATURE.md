@@ -210,15 +210,68 @@ app/(a)/files/                                        # authed app (URL `/files`
 ├── loading.tsx             # skeleton matching final DOM (zero layout shift)
 ├── error.tsx
 ├── page.tsx                # root: tree sidebar + "All files"
-├── [[...path]]/page.tsx    # folder deep link
+├── [[...path]]/page.tsx    # folder deep link  (resolves `folder_path` server-side; reads ?…)
 ├── f/[fileId]/page.tsx     # file detail (preview + metadata + versions + sharing)
 ├── share/[token]/page.tsx  # authed share view
-└── trash/page.tsx          # soft-deleted
+├── photos/page.tsx         # image-only filter view  (reads ?…)
+├── recents/page.tsx        # recently-changed files view  (reads ?…)
+├── shared/page.tsx         # shared-with-me view  (reads ?…)
+├── starred/page.tsx        # starred items (placeholder)  (reads ?…)
+├── trash/page.tsx          # soft-deleted  (reads ?…)
+├── folders/page.tsx        # tree explorer  (reads ?…)
+├── activity/page.tsx       # placeholder  (reads ?…)
+└── requests/page.tsx       # placeholder  (reads ?…)
 
 app/(public)/share/[token]/page.tsx                   # public, unauthenticated share view
 ```
 
 `app/(a)` rules are enforced — see [app/(a)/_read_first_route_rules/RULES.md](../../app/(a)/_read_first_route_rules/RULES.md). SSR-first, zero layout shift, Cache Components patterns.
+
+### URL-encoded UI state (Phase 12: shareable + reload-safe)
+
+Every page above hydrates its UI state from the URL on first paint. The
+folder PATH lives in the pathname (resolved by the catch-all route via
+`cld_folders.folder_path`), and everything else (sort, view mode, filters,
+search, active preview, visible columns) lives in the query string. The
+codec is in [utils/url-state.ts](utils/url-state.ts) and the server-side
+parsing helper in [utils/server-search-params.ts](utils/server-search-params.ts).
+
+```
+/files/Reports/2026/Q1
+  ?view=grid                    # omit when "list" (default)
+  &sort=updated_at&dir=desc     # omit when "name" / "asc" (defaults)
+  &kind=files                   # omit when "all" (default)
+  &details=extended             # omit when "compact" (default)
+  &chip=recents                 # omit when null
+  &q=invoice                    # omit when empty
+  &file=<fileId>                # omit when no preview is open
+  &cf.type=image,video          # multi-select; comma joined
+  &cf.size=large&cf.access=shared
+  &cf.modified=week&cf.created=today
+  &cf.rag=indexed,not_indexed
+  &cf.name=foo&cf.ext=pdf&cf.mime=image/&cf.path=foo
+  &cf.owner=uid1,uid2
+  &cols=name,owner,type,size    # only when set differs from DEFAULT_VISIBLE_COLUMNS
+```
+
+Defaults are **never** serialised — a fresh `/files` view stays at a clean
+URL. Round-trip flow:
+
+1. **Server route** awaits `searchParams`, calls `readFilesUiFromParams()`
+   to produce `{ initialUiPatch, initialFileId }`, and passes both into
+   `<PageShell/>`. SSR'd Redux state matches the URL on first paint — no
+   flicker of unfiltered rows.
+2. **`useOneShotUiHydration`** (in PageShell) dispatches `setUiBatch(patch)`
+   on mount in a single transaction.
+3. **`<FilesUrlSync/>`** subscribes to every relevant Redux selector and
+   `router.replace`s the URL on subsequent changes (skip-on-mount via
+   `skippedFirstRef` so it doesn't immediately re-emit the hydrated values).
+   Non-owned params (`?utm_source=…`) are preserved verbatim.
+4. **Folder navigation** uses `router.push` (back/forward retraces folder
+   history) — explicit in `PageShell.handleSelectFolder`, `NavSidebar`,
+   and `ContentHeader` breadcrumbs. Real folders only; virtual folders
+   (Notes adapter, etc.) skip URL push because their `folder_path` isn't
+   resolvable by the catch-all route.
 
 ---
 
@@ -582,3 +635,21 @@ See [migration/MASTER-PLAN.md](migration/MASTER-PLAN.md) for the phase-ordered p
   - Public share: open a shared PDF link in incognito → see "Open in app" CTA. Open a shared JPG → no CTA.
   - Notes: open any note → see the new Sparkles button in the toolbar. Click it → live progress, then green "Indexed".
   - RagSearchHits: pass response from `useRagSearch("contract terms")` → list of clickable hits, each link going to the right surface.
+- **2026-05-06** — **URL-persisted folder + filters + sort.** The whole `/files` view is now reload-safe and shareable via the URL. Folder navigation lives in the path; sort + view + filters + search + active preview live in `?…` query params; defaults are omitted so a fresh view stays at a clean URL.
+
+  **New surface area.**
+  - [utils/url-state.ts](utils/url-state.ts) — bidirectional codec. `serializeUiToParams(ui)` emits `URLSearchParams` for every non-default field; `parseParamsToUiPatch(params)` validates each value against the allowed set and returns a `Partial<UiState>` ready for `setUiBatch`. Multi-select filters (`cf.type`, `cf.owner`, `cf.rag`) are comma-joined; visible columns serialise as the list of currently-on columns and only when they differ from `DEFAULT_VISIBLE_COLUMNS`. Includes `encodeFolderPathSegments(path)` so `router.push` callsites build the same `/files/<segments>` URL the catch-all route resolves.
+  - [utils/server-search-params.ts](utils/server-search-params.ts) — server-side `readFilesUiFromParams(searchParams)` helper. One-liner per route: `const { initialUiPatch, initialFileId } = readFilesUiFromParams(await searchParams);`. Fail-soft on missing or malformed params (lands on defaults, never throws).
+  - [components/surfaces/FilesUrlSync.tsx](components/surfaces/FilesUrlSync.tsx) — render-less Redux → URL bridge. Subscribes to every relevant selector (`selectViewMode`, `selectSort`, `selectKindFilter`, `selectDetailsLevel`, `selectSearchQuery`, `selectChipFilter`, `selectActiveFileId`, `selectColumnFilters`, `selectVisibleColumns`) and writes them back via `router.replace` (no history pollution per filter tweak). Skips the first effect tick to avoid re-emitting the values that `useOneShotUiHydration` just applied. Diffs against the same owned-key subset of the current URL so unrelated params (`?utm_source=…`) survive intact.
+
+  **Slice changes.** `UiState` grew `searchQuery: string` and `chipFilter: ChipFilter | null` (lifted from local PageShell `useState`), plus a new `setUiBatch(partial)` reducer that lets the URL hydration apply many fields in a single dispatch. `ChipFilter` (`"recents" | "starred"`) is exported from [types.ts](types.ts); the legacy `FilterChipKey` in `FilterChips.tsx` is now a deprecated re-export so existing import sites keep compiling.
+
+  **PageShell rewiring.** [components/surfaces/PageShell.tsx](components/surfaces/PageShell.tsx) accepts a new `initialUiPatch?: Partial<UiState>` prop. `useOneShotUiHydration` mirrors the existing `useOneShotSelection` pattern — both run once on mount before first paint. `handleSelectFolder` now `router.push`es the canonical `/files/<folderPath>` URL when the activated folder is real (virtual folders skip — their `folder_path` isn't resolvable by the catch-all route). Same rule applied in [NavSidebar](components/surfaces/desktop/NavSidebar.tsx) and [ContentHeader](components/surfaces/desktop/ContentHeader.tsx) breadcrumbs so every entry point updates the URL consistently. `<FilesUrlSync/>` mounts at the bottom of `PageShell`.
+
+  **Route updates.** All nine `app/(a)/files/*` page files now accept `searchParams?: Promise<ServerSearchParams>` and forward `initialUiPatch` + `initialFileId` to `<PageShell/>`. The catch-all `[[...path]]/page.tsx` does this in addition to its existing folder-path → folder-id resolution. Routes touched: `[[...path]]`, `recents`, `photos`, `shared`, `starred`, `trash`, `folders`, `activity`, `requests`. The placeholder `app/(authenticated)/org/[slug]/files/page.tsx` is untouched (still a "Coming soon" card, doesn't use PageShell).
+
+  **Verified.** `pnpm next dev` (turbopack) compiles clean with zero new warnings. End-to-end probe with the dev-login authed cookie:
+  - `GET /files?view=grid&sort=updated_at&dir=desc&kind=files&details=extended&q=invoice&cf.type=image,video&cf.size=large&cf.access=shared` → **200**, hydrated state in SSR HTML reads `searchQuery: "invoice"`, `columnFilters.type: ["image", "video"]`, `kindFilter: "files"`, `detailsLevel: "extended"`.
+  - `GET /files/recents?cf.type=document&sort=created_at&dir=desc` → **200**.
+  - `GET /files/Reports/2026/Q1?cf.modified=week&sort=size&dir=desc` → **200** (folder catch-all + filters round-trip together).
+  - `GET /files?cols=name,owner,extension,mime,path,size,version&cf.rag=indexed,not_indexed` → **200** (visible-columns + multi-select RAG filter).

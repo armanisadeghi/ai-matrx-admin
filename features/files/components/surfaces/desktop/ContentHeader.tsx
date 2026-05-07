@@ -13,9 +13,17 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowLeft, ExternalLink, Settings2, Share2, Upload } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  ExternalLink,
+  Settings2,
+  Share2,
+  Upload,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { encodeFolderPathSegments } from "@/features/files/utils/url-state";
 import {
   selectAllFoldersMap,
   selectKindFilter,
@@ -78,6 +86,7 @@ export function ContentHeader({
   className,
 }: ContentHeaderProps) {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const foldersById = useAppSelector(selectAllFoldersMap);
   const kindFilter = useAppSelector(selectKindFilter);
   const folder = activeFolderId ? foldersById[activeFolderId] : null;
@@ -106,6 +115,20 @@ export function ContentHeader({
   const handleNavigate = (folderId: string | null) => {
     dispatch(setActiveFolderId(folderId));
     dispatch(setActiveFileId(null));
+    // Mirror the folder change in the URL pathname so the breadcrumb
+    // also updates browser history. Same rule as PageShell:
+    // virtual folders don't have a stable folder_path the catch-all
+    // route can resolve, so they only update Redux. Real folders
+    // (including null = root) push the canonical /files/<path> URL.
+    if (folderId === null) {
+      router.push("/files");
+      return;
+    }
+    const folder = foldersById[folderId];
+    if (folder?.source.kind === "real") {
+      const segments = encodeFolderPathSegments(folder.folderPath);
+      router.push(segments ? `/files/${segments}` : "/files");
+    }
   };
 
   const handleOpenShareLink = async () => {
@@ -128,7 +151,9 @@ export function ContentHeader({
     >
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-1.5">
-          <TooltipIcon label={folder ? "Up to parent folder" : "Already at root"}>
+          <TooltipIcon
+            label={folder ? "Up to parent folder" : "Already at root"}
+          >
             <button
               type="button"
               aria-label="Up to parent folder"

@@ -11,8 +11,16 @@
 import { Clock, Star } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { ChipFilter } from "@/features/files/types";
 
-export type FilterChipKey = "recents" | "starred";
+/**
+ * Re-export of the canonical `ChipFilter` type from features/files/types
+ * so existing import sites that read `FilterChipKey` from this module
+ * keep compiling. New code should prefer `ChipFilter` directly.
+ *
+ * @deprecated Use `ChipFilter` from `@/features/files/types`.
+ */
+export type FilterChipKey = ChipFilter;
 
 export interface FilterChipsProps {
   active: FilterChipKey | null;

@@ -90,7 +90,9 @@ export interface ProcessingFrame {
   current: number;
   total: number;
   /** Per-stage state — overrides default progression based on activeStage. */
-  stageStates?: Partial<Record<ProcessingStageId, "pending" | "running" | "done" | "error">>;
+  stageStates?: Partial<
+    Record<ProcessingStageId, "pending" | "running" | "done" | "error">
+  >;
   /** Last update wall-time (ms since epoch). Used to render "Xs since last update". */
   lastUpdate: number;
   /** Most recent content sample emitted by a stage's done event. The dialog
@@ -126,6 +128,14 @@ export interface ProcessingProgressDialogProps {
   onClose: () => void;
   /** When false, hides the minimize button (e.g. mobile). */
   allowMinimize?: boolean;
+  /**
+   * Open straight into the bottom-right floating widget instead of the
+   * full-screen overlay. Use this when the ingest is fired from a
+   * surface the user wants to keep visible (e.g. the /files table).
+   * The user can still click the widget's expand button to see the
+   * detailed view if they want.
+   */
+  defaultMinimized?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -178,8 +188,9 @@ export function ProcessingProgressDialog({
   onCancel,
   onClose,
   allowMinimize = true,
+  defaultMinimized = false,
 }: ProcessingProgressDialogProps) {
-  const [minimized, setMinimized] = useState(false);
+  const [minimized, setMinimized] = useState(defaultMinimized);
   const [mounted, setMounted] = useState(false);
 
   // SSR-safe portal mount.
@@ -187,10 +198,14 @@ export function ProcessingProgressDialog({
     setMounted(true);
   }, []);
 
-  // Reset minimized state when the dialog opens fresh.
+  // Reset minimized state when the dialog opens fresh — but honour the
+  // caller's `defaultMinimized` preference. Without this branch, the
+  // /files Document tab path always pops a full-screen overlay over
+  // the file table even though the caller asked for the floating
+  // widget.
   useEffect(() => {
-    if (open) setMinimized(false);
-  }, [open]);
+    if (open) setMinimized(defaultMinimized);
+  }, [open, defaultMinimized]);
 
   // Block body scroll while the full overlay is shown.
   useEffect(() => {
@@ -306,9 +321,7 @@ function FullOverlay({
           )}
 
           {/* Reassurance footer */}
-          {!finished && (
-            <NavigateAwayCard />
-          )}
+          {!finished && <NavigateAwayCard />}
         </div>
       </div>
     </div>
@@ -322,7 +335,10 @@ function FullOverlay({
 function Stepper({
   stageStates,
 }: {
-  stageStates: Record<ProcessingStageId, "pending" | "running" | "done" | "error">;
+  stageStates: Record<
+    ProcessingStageId,
+    "pending" | "running" | "done" | "error"
+  >;
 }) {
   return (
     <ol className="grid grid-cols-4 gap-3">
@@ -333,17 +349,14 @@ function Stepper({
           state === "done"
             ? "text-green-700 dark:text-green-400 border-green-500/40 bg-green-500/10"
             : state === "running"
-            ? "text-primary border-primary/50 bg-primary/10 ring-2 ring-primary/30"
-            : state === "error"
-            ? "text-destructive border-destructive/50 bg-destructive/10"
-            : "text-muted-foreground border-border bg-muted/20";
+              ? "text-primary border-primary/50 bg-primary/10 ring-2 ring-primary/30"
+              : state === "error"
+                ? "text-destructive border-destructive/50 bg-destructive/10"
+                : "text-muted-foreground border-border bg-muted/20";
         return (
           <li
             key={s.id}
-            className={cn(
-              "rounded-lg border px-3 py-2 transition-all",
-              tone,
-            )}
+            className={cn("rounded-lg border px-3 py-2 transition-all", tone)}
           >
             <div className="flex items-center gap-2">
               <span className="relative flex h-7 w-7 items-center justify-center rounded-full border bg-background/80">
@@ -386,7 +399,9 @@ function StagePreviewPanel({ preview }: { preview: StagePreview }) {
           </Badge>
         </div>
         <pre className="whitespace-pre-wrap break-words font-sans text-xs leading-relaxed text-foreground/90 max-h-72 overflow-auto bg-muted/30 rounded p-3">
-          {preview.text || <span className="italic text-muted-foreground">(empty page)</span>}
+          {preview.text || (
+            <span className="italic text-muted-foreground">(empty page)</span>
+          )}
         </pre>
         {preview.more && (
           <p className="text-[10px] text-muted-foreground italic">
@@ -417,15 +432,23 @@ function StagePreviewPanel({ preview }: { preview: StagePreview }) {
         )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           <div className="space-y-1">
-            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Raw</div>
+            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              Raw
+            </div>
             <pre className="whitespace-pre-wrap break-words font-sans text-xs leading-relaxed bg-muted/30 rounded p-3 max-h-56 overflow-auto">
-              {preview.raw_text || <span className="italic text-muted-foreground">(empty)</span>}
+              {preview.raw_text || (
+                <span className="italic text-muted-foreground">(empty)</span>
+              )}
             </pre>
           </div>
           <div className="space-y-1">
-            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Cleaned</div>
+            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              Cleaned
+            </div>
             <pre className="whitespace-pre-wrap break-words font-sans text-xs leading-relaxed bg-green-500/5 border border-green-500/20 rounded p-3 max-h-56 overflow-auto">
-              {preview.cleaned_text || <span className="italic text-muted-foreground">(empty)</span>}
+              {preview.cleaned_text || (
+                <span className="italic text-muted-foreground">(empty)</span>
+              )}
             </pre>
           </div>
         </div>
@@ -487,7 +510,9 @@ function RunningView({
   const stageDef = STAGES.find((s) => s.id === frame?.activeStage);
   const Icon = stageDef?.Icon ?? Cloud;
   const pct =
-    frame?.fraction != null ? Math.min(100, Math.round(frame.fraction * 100)) : null;
+    frame?.fraction != null
+      ? Math.min(100, Math.round(frame.fraction * 100))
+      : null;
   const [, force] = useState(0);
   // Re-render once per second so the "Xs ago" indicator advances.
   useEffect(() => {
@@ -530,7 +555,9 @@ function RunningView({
           <div className="flex items-center justify-between text-xs text-muted-foreground tabular-nums">
             <span>
               {(frame?.current ?? 0).toLocaleString()}
-              {(frame?.total ?? 0) > 0 ? ` / ${frame!.total.toLocaleString()}` : ""}
+              {(frame?.total ?? 0) > 0
+                ? ` / ${frame!.total.toLocaleString()}`
+                : ""}
             </span>
             <span>
               {pct != null ? `${pct}%` : "—"}
@@ -564,13 +591,13 @@ function NavigateAwayCard() {
         </div>
         <div className="space-y-1">
           <div className="font-medium">
-            You can safely close or minimize this — processing continues on
-            the server.
+            You can safely close or minimize this — processing continues on the
+            server.
           </div>
           <div className="text-xs text-muted-foreground">
             Use <strong>Minimize</strong> to keep an eye on progress in the
-            corner while you work, or close it and check back from the
-            library row's status pills any time.
+            corner while you work, or close it and check back from the library
+            row's status pills any time.
           </div>
         </div>
       </div>
@@ -685,10 +712,15 @@ function MinimizedWidget({
   const finished = !!result || !!error;
   const stageDef = STAGES.find((s) => s.id === frame?.activeStage);
   const pct =
-    frame?.fraction != null ? Math.min(100, Math.round(frame.fraction * 100)) : null;
+    frame?.fraction != null
+      ? Math.min(100, Math.round(frame.fraction * 100))
+      : null;
+  const openInLibraryHref = result?.processedDocumentId
+    ? `/rag/library/${result.processedDocumentId}/preview`
+    : null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-[200] w-[340px] rounded-lg border bg-card shadow-2xl">
+    <div className="fixed bottom-4 right-4 z-[200] w-[340px] rounded-lg border bg-card shadow-2xl animate-in fade-in slide-in-from-bottom-2 duration-200">
       <div className="flex items-center gap-2 border-b px-3 py-2">
         {finished ? (
           error ? (
@@ -713,6 +745,7 @@ function MinimizedWidget({
           onClick={onExpand}
           className="rounded p-1 hover:bg-accent"
           title="Expand"
+          type="button"
         >
           <Maximize2 className="h-3.5 w-3.5" />
         </button>
@@ -721,6 +754,7 @@ function MinimizedWidget({
             onClick={onClose}
             className="rounded p-1 hover:bg-accent"
             title="Close"
+            type="button"
           >
             <XIcon className="h-3.5 w-3.5" />
           </button>
@@ -732,10 +766,25 @@ function MinimizedWidget({
           <div className="flex items-center justify-between text-[10px] text-muted-foreground tabular-nums">
             <span>
               {(frame?.current ?? 0).toLocaleString()}
-              {(frame?.total ?? 0) > 0 ? ` / ${frame!.total.toLocaleString()}` : ""}
+              {(frame?.total ?? 0) > 0
+                ? ` / ${frame!.total.toLocaleString()}`
+                : ""}
             </span>
             <span>{pct != null ? `${pct}%` : "—"}</span>
           </div>
+        </div>
+      )}
+      {finished && !error && openInLibraryHref && (
+        <div className="border-t px-3 py-2">
+          <a
+            href={openInLibraryHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-primary px-2 py-1 text-[11px] font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            Open in Library
+            <Maximize2 className="h-3 w-3" />
+          </a>
         </div>
       )}
     </div>
@@ -752,7 +801,10 @@ function deriveStageStates(
   done: boolean,
   failed: boolean,
 ): Record<ProcessingStageId, "pending" | "running" | "done" | "error"> {
-  const out: Record<ProcessingStageId, "pending" | "running" | "done" | "error"> = {
+  const out: Record<
+    ProcessingStageId,
+    "pending" | "running" | "done" | "error"
+  > = {
     extract: "pending",
     clean: "pending",
     chunk: "pending",
@@ -797,7 +849,10 @@ function useElapsedSinceLastUpdate(lastUpdate: number | null): {
   if (lastUpdate == null) {
     ref.current.current = 0;
   } else {
-    ref.current.current = Math.max(0, Math.floor((Date.now() - lastUpdate) / 1000));
+    ref.current.current = Math.max(
+      0,
+      Math.floor((Date.now() - lastUpdate) / 1000),
+    );
   }
   return ref.current;
 }

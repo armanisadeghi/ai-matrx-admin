@@ -55,6 +55,8 @@ import { StageStatusPills } from "./StageStatusPills";
 import { useLibraryDoc } from "../hooks/useLibrary";
 import type { LibraryChunkPreview } from "../types";
 import type { StageName } from "../api/stages";
+import type { ProcessingJob } from "../hooks/useProcessingRunner";
+import { ProcessingJobView } from "./ProcessingJobView";
 
 export interface LibraryDocDetailSheetProps {
   processedDocumentId: string | null;
@@ -69,6 +71,15 @@ export interface LibraryDocDetailSheetProps {
     processedDocumentId: string,
     documentName: string,
   ) => void;
+  /** Live processing jobs for THIS doc — when present, the Stages tab
+   *  renders the rich live job view inline (in-place inside this sheet)
+   *  instead of relying on the standalone ProcessingProgressSheet. The
+   *  caller filters runner.jobs down to only this doc's jobs. */
+  activeJobs?: ProcessingJob[];
+  /** Cancel handler for inline jobs (forwarded to ProcessingJobView). */
+  onCancelJob?: (jobId: string) => void;
+  /** Dismiss handler for inline jobs (forwarded to ProcessingJobView). */
+  onDismissJob?: (jobId: string) => void;
 }
 
 export function LibraryDocDetailSheet({
@@ -76,6 +87,9 @@ export function LibraryDocDetailSheet({
   onClose,
   onMutated,
   onRequestStageRun,
+  activeJobs,
+  onCancelJob,
+  onDismissJob,
 }: LibraryDocDetailSheetProps) {
   const { doc, loading, error, reload } = useLibraryDoc(processedDocumentId);
   const [copiedId, setCopiedId] = useState(false);
@@ -364,16 +378,17 @@ export function LibraryDocDetailSheet({
                         Pipeline state
                       </h3>
                       <p className="text-xs text-muted-foreground mb-3">
-                        Each pill is a stable stage. Click any pill to run
-                        (or re-run) the action that produces it. Progress
-                        and heartbeats stream live.
+                        Each pill is a stable stage. Click any pill to run (or
+                        re-run) the action that produces it. Progress and
+                        heartbeats stream live below.
                       </p>
                       <StageStatusPills
                         processedDocumentId={doc.id}
                         documentName={doc.name}
                         onRequestRun={
                           onRequestStageRun
-                            ? (stage) => onRequestStageRun(stage, doc.id, doc.name)
+                            ? (stage) =>
+                                onRequestStageRun(stage, doc.id, doc.name)
                             : undefined
                         }
                         onMutated={() => {
@@ -383,42 +398,79 @@ export function LibraryDocDetailSheet({
                       />
                     </div>
 
-                    <div className="rounded-md border bg-muted/20 p-3 text-xs space-y-2">
-                      <div className="font-medium text-foreground">How it flows</div>
-                      <ol className="ml-5 list-decimal space-y-1 text-muted-foreground">
-                        <li>
-                          <strong className="text-foreground">Cloud File</strong>{" "}
-                          — your uploaded binary lives in S3
-                          (<code>cld_files</code>).
-                        </li>
-                        <li>
-                          <strong className="text-foreground">Raw Text</strong>{" "}
-                          — pages are extracted from the binary
-                          (<em>Extract</em> action).
-                        </li>
-                        <li>
-                          <strong className="text-foreground">Clean Text</strong>{" "}
-                          — each page is LLM-cleaned + section-classified
-                          (<em>Clean</em> action).
-                        </li>
-                        <li>
-                          <strong className="text-foreground">Chunks</strong>{" "}
-                          — pages are split into retrievable, page-aware
-                          pieces (<em>Chunk</em> action).
-                        </li>
-                        <li>
-                          <strong className="text-foreground">Vectors</strong>{" "}
-                          — each chunk gets an embedding for similarity
-                          search (<em>Embed</em> action).
-                        </li>
-                        <li>
-                          <strong className="text-foreground">In Stores</strong>{" "}
-                          — a data-store binding is what makes content
-                          discoverable to an agent (manage from the
-                          Data Stores page).
-                        </li>
-                      </ol>
-                    </div>
+                    {/* Inline live job view — replaces the explanation card
+                        while a job is in flight (or freshly finished). The
+                        sheet stays the same width, so this just fills the
+                        existing tab area with the rich animated visualization
+                        instead of opening a second sheet. */}
+                    {activeJobs && activeJobs.length > 0 ? (
+                      <div className="space-y-6">
+                        {activeJobs.map((job) => (
+                          <ProcessingJobView
+                            key={job.jobId}
+                            job={job}
+                            showActions
+                            onCancel={
+                              onCancelJob
+                                ? () => onCancelJob(job.jobId)
+                                : undefined
+                            }
+                            onDismiss={
+                              onDismissJob
+                                ? () => onDismissJob(job.jobId)
+                                : undefined
+                            }
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="rounded-md border bg-muted/20 p-3 text-xs space-y-2">
+                        <div className="font-medium text-foreground">
+                          How it flows
+                        </div>
+                        <ol className="ml-5 list-decimal space-y-1 text-muted-foreground">
+                          <li>
+                            <strong className="text-foreground">
+                              Cloud File
+                            </strong>{" "}
+                            — your uploaded binary lives in S3 (
+                            <code>cld_files</code>).
+                          </li>
+                          <li>
+                            <strong className="text-foreground">
+                              Raw Text
+                            </strong>{" "}
+                            — pages are extracted from the binary (
+                            <em>Extract</em> action).
+                          </li>
+                          <li>
+                            <strong className="text-foreground">
+                              Clean Text
+                            </strong>{" "}
+                            — each page is LLM-cleaned + section-classified (
+                            <em>Clean</em> action).
+                          </li>
+                          <li>
+                            <strong className="text-foreground">Chunks</strong>{" "}
+                            — pages are split into retrievable, page-aware
+                            pieces (<em>Chunk</em> action).
+                          </li>
+                          <li>
+                            <strong className="text-foreground">Vectors</strong>{" "}
+                            — each chunk gets an embedding for similarity search
+                            (<em>Embed</em> action).
+                          </li>
+                          <li>
+                            <strong className="text-foreground">
+                              In Stores
+                            </strong>{" "}
+                            — a data-store binding is what makes content
+                            discoverable to an agent (manage from the Data
+                            Stores page).
+                          </li>
+                        </ol>
+                      </div>
+                    )}
                   </div>
                 </ScrollArea>
               </TabsContent>

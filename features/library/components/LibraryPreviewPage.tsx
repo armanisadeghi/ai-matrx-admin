@@ -26,9 +26,7 @@ import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
-  ExternalLink,
   Loader2,
-  RefreshCw,
   Search as SearchIcon,
   AlertCircle,
 } from "lucide-react";
@@ -133,7 +131,9 @@ export function LibraryPreviewPage({
               <Skeleton className="h-5 w-64" />
             ) : (
               <div className="flex items-center gap-2 min-w-0">
-                <h1 className="text-sm font-semibold break-words">{doc.name}</h1>
+                <h1 className="text-sm font-semibold break-words">
+                  {doc.name}
+                </h1>
                 <StatusBadge status={(doc.status as DocStatus) ?? "unknown"} />
                 <span className="text-xs text-muted-foreground whitespace-nowrap">
                   {doc.pagesPersisted} pages · {doc.chunks} chunks ·{" "}

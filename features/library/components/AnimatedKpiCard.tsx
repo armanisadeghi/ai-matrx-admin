@@ -171,15 +171,23 @@ function CountUp({ value }: { value: number }) {
     prev.current = end;
   }, [value]);
 
+  // motion.js can't animate to/from `currentColor` (it isn't an
+  // animatable value), so we render two stacked layers — the resting layer
+  // inherits color naturally, and a green flash overlay fades in/out
+  // when the value increases. Same visual, no "value-not-animatable"
+  // warnings spamming the dev console.
   return (
-    <motion.span
-      animate={{
-        color: pulse ? "rgb(16 185 129)" : "currentColor",
-      }}
-      transition={{ duration: 0.4 }}
-      className="inline-block"
-    >
-      {display.toLocaleString()}
-    </motion.span>
+    <span className="relative inline-block">
+      <span className="inline-block">{display.toLocaleString()}</span>
+      <motion.span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 inline-block text-emerald-500"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: pulse ? 1 : 0 }}
+        transition={{ duration: 0.35 }}
+      >
+        {display.toLocaleString()}
+      </motion.span>
+    </span>
   );
 }

@@ -110,13 +110,13 @@ export function DocumentTab({
   }
 
   // While an ingest is in flight (or has just errored), render the
-  // new full-screen ProcessingProgressDialog (via the IngestProgressDialog
-  // adapter) instead of the old in-tab progress card. The dialog supports
-  // minimize-to-corner and a clear "you can navigate away" message.
-  // The placeholder under the dialog gives the tab body something to show
-  // if the user minimizes/closes the dialog mid-run.
-  const ingestActive =
-    ingest.status === "running" || ingest.status === "error";
+  // ProcessingProgressDialog as the floating bottom-right widget by
+  // default — the file table the user came from stays visible behind
+  // it. The user can click the widget's expand button to see the full
+  // four-stage stepper + previews if they want detail. The placeholder
+  // under the widget tells them where to look in case they collapsed
+  // the preview pane while a run is in flight.
+  const ingestActive = ingest.status === "running" || ingest.status === "error";
   if (ingestActive) {
     return (
       <>
@@ -124,6 +124,7 @@ export function DocumentTab({
           open
           fileName={file?.fileName ?? "this file"}
           ingest={ingest}
+          defaultMinimized
           onClose={() => {
             ingest.reset();
             refresh();
@@ -138,8 +139,8 @@ export function DocumentTab({
           <Loader2 className="h-4 w-4 animate-spin" />
           <span>
             {ingest.status === "running"
-              ? "Processing — full progress in the live dialog."
-              : "Processing failed — see the dialog for details."}
+              ? "Processing — live progress in the corner."
+              : "Processing failed — see the corner widget for details."}
           </span>
         </div>
       </>
@@ -186,8 +187,8 @@ export function DocumentTab({
     <div className={cn("flex h-full w-full flex-col", className)}>
       <div className="flex items-center justify-between border-b border-border bg-muted/20 px-3 py-1 text-xs shrink-0">
         <span className="text-muted-foreground">
-          {state.doc.derivation_kind} · {state.doc.total_pages ?? 0}{" "}
-          pages · {state.doc.chunk_count} chunks
+          {state.doc.derivation_kind} · {state.doc.total_pages ?? 0} pages ·{" "}
+          {state.doc.chunk_count} chunks
         </span>
         <div className="flex items-center gap-1">
           <button
@@ -405,9 +406,9 @@ function UnavailableCard({
         </h3>
         <p className="text-xs text-muted-foreground break-words">{reason}</p>
         <p className="text-[10px] text-muted-foreground/70">
-          The Python team is shipping `GET /files/&#123;id&#125;/document` (REQUESTS.md
-          item 14a). Until then, RAG features may not detect existing
-          processings.
+          The Python team is shipping `GET /files/&#123;id&#125;/document`
+          (REQUESTS.md item 14a). Until then, RAG features may not detect
+          existing processings.
         </p>
       </div>
       <button

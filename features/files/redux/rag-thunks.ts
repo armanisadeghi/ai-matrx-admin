@@ -90,12 +90,21 @@ export const prefetchRagStatusesForFiles = createAsyncThunk<
     }
 
     // Determine which real ids actually need a network probe.
+    //
+    // We deliberately do NOT re-fetch ids currently in `pending`. A
+    // previously-dispatched batch is still resolving them — re-firing
+    // would just spawn parallel dispatches of the same answer. The
+    // module-level `inflight` map in `lookupFileDocument` dedupes the
+    // network call but not the dispatch noise. This also makes the
+    // FileTable's auto-prefetch effect safe against re-renders during
+    // the resolution window: each render that re-fires the thunk sees
+    // every in-flight id as already pending and bails.
     const toFetch = realIds.filter((id) => {
       if (force) return true;
       const cur = existing[id];
-      // Re-fetch when no answer yet, when stuck pending (a previous batch
-      // was interrupted), or when the previous answer was inconclusive.
-      return !cur || cur === "pending" || cur === "unknown";
+      // Re-fetch when no answer yet or when the previous answer was
+      // inconclusive (transient backend error / endpoint unavailable).
+      return !cur || cur === "unknown";
     });
 
     // Apply the synthetic-id batch even if there are no real fetches —

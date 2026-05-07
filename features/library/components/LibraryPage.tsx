@@ -200,10 +200,14 @@ export function LibraryPage() {
   // fetch) instead of from the `docs` array directly so we can use a
   // single useLibrary call without rendering loops.
   const [hasNonTerminalDocs, setHasNonTerminalDocs] = useState(false);
-  const pollMs =
-    runner.hasActive || hasNonTerminalDocs ? POLL_INTERVAL_MS : 0;
+  const pollMs = runner.hasActive || hasNonTerminalDocs ? POLL_INTERVAL_MS : 0;
 
-  const { docs: finalDocs, total: finalTotal, loading: finalLoading, error: finalError } = useLibrary({
+  const {
+    docs: finalDocs,
+    total: finalTotal,
+    loading: finalLoading,
+    error: finalError,
+  } = useLibrary({
     search: debouncedSearch || undefined,
     status: statusFilter === "all" ? null : statusFilter,
     limit: 100,
@@ -275,15 +279,33 @@ export function LibraryPage() {
     docName: string,
   ) => {
     const subtitle =
-      stage === "extract" ? "Re-extract pages from the cloud file"
-      : stage === "clean"  ? "LLM cleanup + section classification"
-      : stage === "chunk"  ? "Page-aware hierarchical chunking"
-      : stage === "embed"  ? "Embed any chunks missing a vector"
-      : "Full pipeline";
+      stage === "extract"
+        ? "Re-extract pages from the cloud file"
+        : stage === "clean"
+          ? "LLM cleanup + section classification"
+          : stage === "chunk"
+            ? "Page-aware hierarchical chunking"
+            : stage === "embed"
+              ? "Embed any chunks missing a vector"
+              : "Full pipeline";
     const jobId = await runner.runStage(docId, stage, docName, subtitle);
     setFocusJobId(jobId);
-    setSheetOpen(true);
+    // If the user is already inside the doc-detail sheet for this doc,
+    // the inline ProcessingJobView in the Stages tab will pick up the
+    // new job automatically. Don't open a second sheet — that's what
+    // caused the jarring width-change the user complained about.
+    if (selectedDocId !== docId) {
+      setSheetOpen(true);
+    }
   };
+
+  // Jobs scoped to the currently-open doc — the detail sheet renders these
+  // inline in its Stages tab. Includes terminal jobs the user hasn't
+  // dismissed so the success / error result panel stays visible.
+  const docScopedJobs = useMemo(() => {
+    if (!selectedDocId) return [];
+    return runner.jobs.filter((j) => j.processedDocumentId === selectedDocId);
+  }, [runner.jobs, selectedDocId]);
 
   const headerStats = useMemo(
     () => ({
@@ -564,11 +586,13 @@ export function LibraryPage() {
           </Table>
         )}
 
-        {!finalLoading && finalDocs.length > 0 && finalTotal > finalDocs.length && (
-          <p className="px-6 py-3 text-xs text-muted-foreground italic">
-            Showing first {finalDocs.length} of {finalTotal} documents.
-          </p>
-        )}
+        {!finalLoading &&
+          finalDocs.length > 0 &&
+          finalTotal > finalDocs.length && (
+            <p className="px-6 py-3 text-xs text-muted-foreground italic">
+              Showing first {finalDocs.length} of {finalTotal} documents.
+            </p>
+          )}
       </div>
 
       <LibraryDocDetailSheet
@@ -578,6 +602,9 @@ export function LibraryPage() {
         onRequestStageRun={(stage, docId, docName) => {
           void handleRequestStageRun(stage, docId, docName);
         }}
+        activeJobs={docScopedJobs}
+        onCancelJob={runner.cancel}
+        onDismissJob={runner.dismiss}
       />
 
       <QuickSearchDialog
@@ -627,8 +654,8 @@ export function LibraryPage() {
               )}
               {bulkConfirmStatus === "extracted" && (
                 <>
-                  This will delete every document where pages were extracted
-                  but chunking never ran. Re-process to rebuild.
+                  This will delete every document where pages were extracted but
+                  chunking never ran. Re-process to rebuild.
                 </>
               )}
               {bulkConfirmStatus === "embedding" && (
@@ -744,10 +771,7 @@ function DocRow({
           >
             {doc.embeddingsOai.toLocaleString()}
             {embedPartial && (
-              <span className="text-muted-foreground">
-                {" "}
-                / {doc.chunks}
-              </span>
+              <span className="text-muted-foreground"> / {doc.chunks}</span>
             )}
           </span>
           {embedPartial && (
@@ -772,10 +796,7 @@ function DocRow({
       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
         {formatRelative(doc.createdAt)}
       </TableCell>
-      <TableCell
-        className="text-right"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-end gap-1">
           <Button
             size="sm"

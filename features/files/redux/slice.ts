@@ -28,6 +28,8 @@ import type {
   CloudUserGroup,
   CloudUserGroupMember,
   AccessFilter,
+  ChipFilter,
+  ColumnFilters,
   ColumnId,
   DetailsLevel,
   KindFilter,
@@ -41,6 +43,7 @@ import type {
   SortDirection,
   TreeChildren,
   TypeFilter,
+  UiState,
   UploadState,
   UploadStatus,
   ViewMode,
@@ -248,6 +251,8 @@ const initialState: CloudFilesState = {
       rag: [],
     },
     visibleColumns: { ...DEFAULT_VISIBLE_COLUMNS },
+    searchQuery: "",
+    chipFilter: null,
     activeFileId: null,
     activeFolderId: null,
     focusedId: null,
@@ -858,6 +863,75 @@ const slice = createSlice({
       state.ui.activeFolderId = action.payload;
     },
 
+    /** Tree-wide search box value. Empty string clears the search. */
+    setSearchQuery(state, action: PayloadAction<string>) {
+      state.ui.searchQuery = action.payload;
+    },
+
+    /** Active sticky chip (Recents / Starred). Pass null to clear. */
+    setChipFilter(state, action: PayloadAction<ChipFilter | null>) {
+      state.ui.chipFilter = action.payload;
+    },
+
+    /**
+     * Apply many UI fields in one transaction. Used by the URL-sync layer
+     * to hydrate Redux from a `?...` query string on first paint without
+     * dispatching N separate actions (which would each spawn a re-render).
+     *
+     * Only fields present in the payload are written. Pass `columnFilters`
+     * with the FULL shape — partial column-filter merges are intentionally
+     * not supported here; the URL serializer always emits the full shape.
+     */
+    setUiBatch(state, action: PayloadAction<Partial<UiState>>) {
+      const next = action.payload;
+      if (next.viewMode !== undefined) state.ui.viewMode = next.viewMode;
+      if (next.sortBy !== undefined) state.ui.sortBy = next.sortBy;
+      if (next.sortDir !== undefined) state.ui.sortDir = next.sortDir;
+      if (next.kindFilter !== undefined) state.ui.kindFilter = next.kindFilter;
+      if (next.detailsLevel !== undefined) {
+        state.ui.detailsLevel = next.detailsLevel;
+      }
+      if (next.searchQuery !== undefined) {
+        state.ui.searchQuery = next.searchQuery;
+      }
+      if (next.chipFilter !== undefined) state.ui.chipFilter = next.chipFilter;
+      if (next.activeFileId !== undefined) {
+        state.ui.activeFileId = next.activeFileId;
+      }
+      if (next.activeFolderId !== undefined) {
+        state.ui.activeFolderId = next.activeFolderId;
+      }
+      if (next.columnFilters !== undefined) {
+        const cf = next.columnFilters as Partial<ColumnFilters>;
+        if (cf.name !== undefined) state.ui.columnFilters.name = cf.name;
+        if (cf.type !== undefined) state.ui.columnFilters.type = cf.type;
+        if (cf.extension !== undefined) {
+          state.ui.columnFilters.extension = cf.extension;
+        }
+        if (cf.mime !== undefined) state.ui.columnFilters.mime = cf.mime;
+        if (cf.path !== undefined) state.ui.columnFilters.path = cf.path;
+        if (cf.owner !== undefined) state.ui.columnFilters.owner = cf.owner;
+        if (cf.modified !== undefined) {
+          state.ui.columnFilters.modified = cf.modified;
+        }
+        if (cf.created !== undefined) {
+          state.ui.columnFilters.created = cf.created;
+        }
+        if (cf.size !== undefined) state.ui.columnFilters.size = cf.size;
+        if (cf.access !== undefined) state.ui.columnFilters.access = cf.access;
+        if (cf.rag !== undefined) state.ui.columnFilters.rag = cf.rag;
+      }
+      if (next.visibleColumns !== undefined) {
+        state.ui.visibleColumns = {
+          ...DEFAULT_VISIBLE_COLUMNS,
+          ...next.visibleColumns,
+          // `name` is the row anchor — never hideable. Keep this invariant
+          // even when callers (or a malicious URL) try to flip it.
+          name: true,
+        };
+      }
+    },
+
     /**
      * Move "focus" (Google-Drive-style single-item highlight) to the given id.
      * Pass null to clear. Automatically set after folder/file creation so the
@@ -1048,6 +1122,9 @@ export const {
   resetColumnVisibility,
   setActiveFileId,
   setActiveFolderId,
+  setSearchQuery,
+  setChipFilter,
+  setUiBatch,
   setFocusedId,
   // uploads
   trackUploadStart,

@@ -379,6 +379,14 @@ export interface TreeState {
 
 export type ViewMode = "list" | "grid" | "columns";
 /**
+ * Sticky filter chips above the file table. Mirrors the `FilterChips`
+ * component's union — re-declared here (not imported) so the slice
+ * stays component-cycle-free. Keep in sync with
+ * `features/files/components/surfaces/desktop/FilterChips.tsx`.
+ */
+export type ChipFilter = "recents" | "starred";
+
+/**
  * Column sort keys. Mirror the file-table columns so users can sort by any
  * column they're looking at. Folders always group ahead of files regardless
  * of the active key (Box / Drive / Dropbox convention) — see `compareNodes`.
@@ -528,6 +536,18 @@ export interface UiState {
   columnFilters: ColumnFilters;
   /** Which optional columns are mounted in the file table. */
   visibleColumns: VisibleColumns;
+  /**
+   * Tree-wide search box value. Lives in Redux (not local component state)
+   * so the URL-sync layer can reflect it as `?q=…` and so cross-component
+   * reads (e.g. clearing search from a chip) don't need callbacks.
+   */
+  searchQuery: string;
+  /**
+   * Sticky filter chip currently active (Recents / Starred). Independent
+   * of `kindFilter` — chips apply preset semantics on top of any column
+   * filters. `null` = no chip.
+   */
+  chipFilter: ChipFilter | null;
   activeFileId: string | null;
   activeFolderId: string | null;
   /**

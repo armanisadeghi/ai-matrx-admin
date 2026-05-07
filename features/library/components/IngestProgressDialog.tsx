@@ -33,6 +33,9 @@ export interface IngestProgressDialogProps {
   /** Called when the user closes the dialog AFTER the run has reached
    *  a terminal state. */
   onClose: () => void;
+  /** Open straight into the floating widget instead of the full overlay.
+   *  See ProcessingProgressDialog for behaviour. */
+  defaultMinimized?: boolean;
 }
 
 export function IngestProgressDialog({
@@ -40,6 +43,7 @@ export function IngestProgressDialog({
   fileName,
   ingest,
   onClose,
+  defaultMinimized,
 }: IngestProgressDialogProps) {
   // Track the last update time so the dialog's "Xs ago" indicator is real.
   const lastUpdateRef = useRef<number>(Date.now());
@@ -72,6 +76,10 @@ export function IngestProgressDialog({
         chunk: `${r.chunks_written.toLocaleString()} chunks written`,
         embed: `${r.embeddings_written.toLocaleString()} embeddings written`,
       },
+      // Threaded through so the minimized widget and full success view
+      // can deep-link to /rag/library/<id>/preview when the user wants
+      // to open the freshly-indexed document in a new tab.
+      processedDocumentId: r.processed_document_id ?? null,
     };
   }, [ingest.status, ingest.result]);
 
@@ -85,6 +93,7 @@ export function IngestProgressDialog({
       error={ingest.error}
       onCancel={ingest.cancel}
       onClose={onClose}
+      defaultMinimized={defaultMinimized}
     />
   );
 }
@@ -98,8 +107,7 @@ function progressToFrame(
   lastUpdate: number,
 ): ProcessingFrame {
   const stage = legacyStageToId(p.stage);
-  const fraction =
-    p.total > 0 ? Math.min(1, p.current / p.total) : null;
+  const fraction = p.total > 0 ? Math.min(1, p.current / p.total) : null;
   return {
     activeStage: stage,
     message: p.message ?? p.stage,
@@ -107,8 +115,7 @@ function progressToFrame(
     current: p.current,
     total: p.total,
     lastUpdate,
-    latestPreview:
-      (p.preview as ProcessingFrame["latestPreview"]) ?? null,
+    latestPreview: (p.preview as ProcessingFrame["latestPreview"]) ?? null,
   };
 }
 

@@ -267,6 +267,18 @@ export const selectVisibleColumns = createSelector(
   (ui) => ui.visibleColumns,
 );
 
+/** Tree-wide search box value (mirrors the URL `?q=…`). */
+export const selectSearchQuery = createSelector(
+  [selectUiSlice],
+  (ui) => ui.searchQuery,
+);
+
+/** Active sticky chip (Recents / Starred); null when no chip is active. */
+export const selectChipFilter = createSelector(
+  [selectUiSlice],
+  (ui) => ui.chipFilter,
+);
+
 export const selectActiveFileId = createSelector(
   [selectUiSlice],
   (ui) => ui.activeFileId,
