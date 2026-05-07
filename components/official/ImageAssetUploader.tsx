@@ -70,7 +70,13 @@ export interface ImageAssetUploaderProps {
     parentFolderId?: string | null;
     /** Max size per cloud-mode file in bytes (UI-only; server enforces its own cap). */
     maxSize?: number;
-    /** Enable paste from clipboard in cloud mode. Defaults true. */
+    /**
+     * Clipboard paste capture. Defaults to "auto": enabled for cloud mode,
+     * disabled for asset mode. Use "asset" to let a variant uploader process
+     * pasted clipboard images through `/api/images/upload`.
+     */
+    pasteCaptureMode?: 'auto' | 'off' | 'cloud' | 'asset';
+    /** Enable paste from clipboard in cloud mode. Defaults true. Prefer `pasteCaptureMode` for new code. */
     enablePaste?: boolean;
     /** Allow multiple files in cloud mode. Asset mode always uses the first file. */
     multiple?: boolean;
@@ -213,6 +219,12 @@ export function formatCloudUploadFailures(
     return failed.map((f) => `${f.name}: ${f.error}`).join('; ');
 }
 
+export function buildPastedImageFileName(mimeType: string, timestamp = Date.now()) {
+    const subtype = mimeType.split('/')[1]?.toLowerCase();
+    const ext = subtype === 'jpeg' ? 'jpg' : subtype || 'png';
+    return `pasted-${timestamp}.${ext}`;
+}
+
 export function ImageAssetUploader({
     mode = 'asset',
     onComplete,
@@ -220,6 +232,7 @@ export function ImageAssetUploader({
     onError,
     parentFolderId = null,
     maxSize,
+    pasteCaptureMode = 'auto',
     enablePaste = true,
     multiple = false,
     preset = 'social',
@@ -400,8 +413,12 @@ export function ImageAssetUploader({
         disabled,
     });
 
+    const resolvedPasteCaptureMode = pasteCaptureMode === 'auto'
+        ? mode === 'cloud' && enablePaste ? 'cloud' : 'off'
+        : pasteCaptureMode;
+
     useEffect(() => {
-        if (mode !== 'cloud' || !enablePaste || typeof window === 'undefined') return;
+        if (resolvedPasteCaptureMode === 'off' || typeof window === 'undefined') return;
         const handler = (event: ClipboardEvent) => {
             if (!event.clipboardData?.items) return;
             const images: File[] = [];
@@ -409,18 +426,21 @@ export function ImageAssetUploader({
                 if (!item.type.startsWith('image/')) continue;
                 const blob = item.getAsFile();
                 if (!blob) continue;
-                const ext = blob.type.split('/')[1] ?? 'png';
-                images.push(new File([blob], `pasted-${Date.now()}.${ext}`, { type: blob.type }));
+                images.push(new File([blob], buildPastedImageFileName(blob.type), { type: blob.type }));
             }
             if (!images.length) return;
             event.preventDefault();
             setPasteHighlight(true);
             setTimeout(() => setPasteHighlight(false), 400);
-            void uploadCloudFiles(images);
+            if (resolvedPasteCaptureMode === 'cloud') {
+                void uploadCloudFiles(images);
+                return;
+            }
+            void uploadFile(images[0]);
         };
         window.addEventListener('paste', handler);
         return () => window.removeEventListener('paste', handler);
-    }, [mode, enablePaste, uploadCloudFiles]);
+    }, [resolvedPasteCaptureMode, uploadCloudFiles, uploadFile]);
 
     const presetLabels = PRESET_VARIANT_LABELS[preset];
     const blurb = PRESET_BLURB[preset];
@@ -590,8 +610,10 @@ export function ImageAssetUploader({
                             </p>
                             <p className="text-xs text-muted-foreground mt-0.5">
                                 {mode === 'cloud'
-                                    ? enablePaste ? 'JPG, PNG, WebP · Paste with Ctrl/⌘V' : 'JPG, PNG, WebP'
-                                    : `JPG, PNG, WebP · ${blurb}`}
+                                    ? resolvedPasteCaptureMode === 'cloud' ? 'JPG, PNG, WebP · Paste with Ctrl/⌘V' : 'JPG, PNG, WebP'
+                                    : resolvedPasteCaptureMode === 'asset'
+                                        ? `JPG, PNG, WebP · ${blurb} · Paste with Ctrl/⌘V`
+                                        : `JPG, PNG, WebP · ${blurb}`}
                             </p>
                         </div>
                     </div>

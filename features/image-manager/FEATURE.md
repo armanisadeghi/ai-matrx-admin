@@ -118,7 +118,7 @@ Primary group:
 2. **Your Cloud** (`CloudImagesTab`) — image-filtered view of `cloud_files`. Includes a per-tile `Info` button that opens the `CloudFileMetadataSheet` side drawer.
 3. **All Files** (`CloudFilesTab`) — full cloud-files browser. Includes a "Photos" link to `/files/photos` for the deeper file-management view.
 4. **Upload** (`CloudUploadTab`) — image-first drag/drop/paste/picker powered by `<ImageAssetUploader mode="cloud">`, while preserving the Cloud Files upload pipeline. Includes a collapsible "Paste base64 instead" sub-tool (`Base64DecoderShell`).
-5. **Branded Upload** (`BrandedUploadTab`) — wraps `<ImageAssetUploader>`. Presets: `social | cover | avatar | logo | favicon | square`. Generated variants are auto-pushed to `SelectedImagesProvider`.
+5. **Branded Upload** (`BrandedUploadTab`) — wraps `<ImageAssetUploader pasteCaptureMode="asset">`. Presets: `social | cover | avatar | logo | favicon | square`. Dragged, picked, or pasted images run through the Sharp variant pipeline and generated variants are auto-pushed to `SelectedImagesProvider`.
 6. **Image Studio** (`FullImageStudioTab`, id `studio-full`) — embeds the full three-column `<ImageStudioShell>` (the same component that powers `/image-studio/convert`). Lazy-loaded with `dynamic(... ssr: false)`. Users get the complete preset-catalog → file-card grid → export-panel pipeline without leaving the hub.
 7. **Studio Light** (`ImageStudioTab`, id `image-studio`) — embeds the picker-tuned `<EmbeddedImageStudio hideTitle>`. Returns variant URLs straight to `SelectedImagesProvider`, which the full shell does not — picker callers still want this.
 8. **Studio Library** (`StudioLibraryTab`) — read-only embed of the `Images/Generated/...` cloud folder. Resolves the folder ID via `ensureFolderPath`, then keys a `<CloudFilesTab>` to it.
@@ -159,8 +159,8 @@ Adding a new tile is a `ToolDescriptor` append — see `ToolsTab.tsx`.
 
 ### Branded upload flow (Sharp variants)
 
-1. User picks a preset chip and uploads.
-2. `<ImageAssetUploader>` POSTs to `/api/images/upload` with the preset key.
+1. User picks a preset chip and uploads by drop, picker, or clipboard paste.
+2. `<ImageAssetUploader pasteCaptureMode="asset">` POSTs to `/api/images/upload` with the preset key.
 3. Server returns `{ image_url, primary_url, social_url, ... }` — every populated URL is auto-added to `SelectedImagesProvider` so the user can drag the variant into a form afterwards.
 
 ---
@@ -199,6 +199,7 @@ The Image Manager Hub plan landed across Phases 1–7 (May 2026). Pending owner-
 ## Change log
 
 - `2026-05-07` — `/images/upload` now renders `<ImageAssetUploader mode="cloud">` for the main image dropzone, preserving the existing Cloud Files upload pipeline, folder picker, paste support, selection integration, and base64 sub-tool while aligning the Upload and Branded Upload visual affordances.
+- `2026-05-07` — Branded Upload now opts into `ImageAssetUploader pasteCaptureMode="asset"`, so clipboard images can be pasted directly into the Sharp variant pipeline.
 - `2026-05-07` — My Cloud image bulk selection: extracted image grid/list renderers, added per-image bulk checkboxes, wired a shared floating selection toolbar for download/move/visibility/delete/cancel, and reused the official empty-state card for empty results.
 - `2026-05-07` — Browse-mode image preview gained icon-only rotate-left, rotate-right, flip-horizontal, and flip-vertical controls in the shared Image Viewer window.
 - `2026-05-07` — My Cloud search now uses the official `SearchInput`, matching Public Search while preserving the existing filename filter behavior.
