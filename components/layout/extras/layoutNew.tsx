@@ -13,7 +13,7 @@ import type { RootState } from "@/lib/redux/store";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/layout/MatrixLogo";
 // @ts-ignore - constants module exists but TypeScript may not resolve it correctly
-import { appSidebarLinks } from "@/constants";
+import { appSidebarLinks } from "@/features/shell/navigation/navigationLinks";
 import { ThemeSwitcher } from "@/styles/themes/ThemeSwitcher";
 import {
   Tooltip,

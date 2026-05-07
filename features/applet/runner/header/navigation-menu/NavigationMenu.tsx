@@ -12,7 +12,7 @@ import { Menu, Crown, Settings, Sun, Moon, Bug } from "lucide-react";
 import { setMode } from "@/styles/themes/themeSlice";
 import Image from "next/image";
 import Link from "next/link";
-import { navigationLinks } from "@/constants/navigation-links";
+import { navigationLinks } from "@/features/shell/navigation/navigationLinks";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";

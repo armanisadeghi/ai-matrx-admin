@@ -1,87 +1,15 @@
 // ShellIcon.tsx — Server component icon renderer
-// Maps icon name strings to Lucide React components without requiring JSX in data files
+// Icon name strings are resolved via `features/shell/shellIconMap.ts`.
 
-import {
-  Aperture,
-  BookOpen,
-  LayoutDashboard,
-  MessageCircle,
-  NotebookPen,
-  ListTodo,
-  Puzzle,
-  FolderOpen,
-  Wand2,
-  LayoutGrid,
-  FlaskConical,
-  Mic,
-  Table,
-  Globe,
-  Container,
-  Mail,
-  Workflow,
-  Settings,
-  ShieldCheck,
-  Database,
-  Radio,
-  LogIn,
-  User,
-  PanelLeft,
-  Menu,
-  X,
-  Webhook,
-  List,
-  LayoutTemplate,
-  Plus,
-  ArrowLeftRight,
-  Loader2,
-  Code2,
-  Lightbulb,
-  type LucideProps,
-} from "lucide-react";
-
-const iconMap: Record<string, React.ComponentType<LucideProps>> = {
-  Aperture,
-  BookOpen,
-  LayoutDashboard,
-  MessageCircle,
-  NotebookPen,
-  ListTodo,
-  Puzzle,
-  FolderOpen,
-  Wand2,
-  LayoutGrid,
-  FlaskConical,
-  Mic,
-  Table,
-  Globe,
-  Container,
-  Mail,
-  Workflow,
-  Settings,
-  ShieldCheck,
-  Database,
-  Radio,
-  LogIn,
-  User,
-  PanelLeft,
-  Menu,
-  X,
-  Webhook,
-  List,
-  LayoutTemplate,
-  Plus,
-  ArrowLeftRight,
-  Loader2,
-  Code2,
-  Lightbulb,
-};
+import type { LucideProps } from "lucide-react";
+import { shellIconComponents } from "../shellIconMap";
 
 interface ShellIconProps extends LucideProps {
   name: string;
 }
 
 export default function ShellIcon({ name, ...props }: ShellIconProps) {
-  const Icon = iconMap[name];
+  const Icon = shellIconComponents[name];
   if (!Icon) return null;
   return <Icon {...props} />;
 }

@@ -54,6 +54,7 @@ import { StatusBadge } from "./StatusBadge";
 import { StageStatusPills } from "./StageStatusPills";
 import { useLibraryDoc } from "../hooks/useLibrary";
 import type { LibraryChunkPreview } from "../types";
+import type { StageName } from "../api/stages";
 
 export interface LibraryDocDetailSheetProps {
   processedDocumentId: string | null;
@@ -61,12 +62,20 @@ export interface LibraryDocDetailSheetProps {
   /** Called after the user mutates the doc (delete / rename) so the
    *  parent table can refetch. Optional — sheet still works without it. */
   onMutated?: () => void;
+  /** Optional — when provided, clicking a stage pill opens this
+   *  page-level full-screen dialog instead of the inline popover. */
+  onRequestStageRun?: (
+    stage: StageName,
+    processedDocumentId: string,
+    documentName: string,
+  ) => void;
 }
 
 export function LibraryDocDetailSheet({
   processedDocumentId,
   onClose,
   onMutated,
+  onRequestStageRun,
 }: LibraryDocDetailSheetProps) {
   const { doc, loading, error, reload } = useLibraryDoc(processedDocumentId);
   const [copiedId, setCopiedId] = useState(false);
@@ -361,6 +370,12 @@ export function LibraryDocDetailSheet({
                       </p>
                       <StageStatusPills
                         processedDocumentId={doc.id}
+                        documentName={doc.name}
+                        onRequestRun={
+                          onRequestStageRun
+                            ? (stage) => onRequestStageRun(stage, doc.id, doc.name)
+                            : undefined
+                        }
                         onMutated={() => {
                           reload();
                           onMutated?.();

@@ -47,6 +47,7 @@ import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFileById } from "@/features/files/redux/selectors";
 import { DocumentViewer } from "@/features/documents/components/DocumentViewer";
+import { IngestProgressDialog } from "@/features/library/components/IngestProgressDialog";
 import { useFileDocument } from "@/features/files/hooks/useFileDocument";
 import {
   onFileDocumentProcessed,
@@ -107,17 +108,40 @@ export function DocumentTab({
     return <div className={cn("h-full w-full", className)} />;
   }
 
-  // While an ingest is in flight, every state should show the streaming
-  // progress card — even if the file is currently `found`. That way
-  // hitting "Reprocess" on an already-ingested file shows the same UI
-  // as a first-time ingestion.
-  if (ingest.status === "running") {
+  // While an ingest is in flight (or has just errored), render the
+  // new full-screen ProcessingProgressDialog (via the IngestProgressDialog
+  // adapter) instead of the old in-tab progress card. The dialog supports
+  // minimize-to-corner and a clear "you can navigate away" message.
+  // The placeholder under the dialog gives the tab body something to show
+  // if the user minimizes/closes the dialog mid-run.
+  const ingestActive =
+    ingest.status === "running" || ingest.status === "error";
+  if (ingestActive) {
     return (
-      <IngestProgressCard
-        fileName={file?.fileName ?? null}
-        ingest={ingest}
-        className={className}
-      />
+      <>
+        <IngestProgressDialog
+          open
+          fileName={file?.fileName ?? "this file"}
+          ingest={ingest}
+          onClose={() => {
+            ingest.reset();
+            refresh();
+          }}
+        />
+        <div
+          className={cn(
+            "flex h-full w-full items-center justify-center gap-2 text-sm text-muted-foreground",
+            className,
+          )}
+        >
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>
+            {ingest.status === "running"
+              ? "Processing — full progress in the live dialog."
+              : "Processing failed — see the dialog for details."}
+          </span>
+        </div>
+      </>
     );
   }
 

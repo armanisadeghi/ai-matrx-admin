@@ -6,7 +6,7 @@ import { mapUserData } from "@/utils/userDataMapper";
 import {
   appSidebarLinks,
   adminSidebarLinks,
-} from "@/constants/navigation-links";
+} from "@/features/shell/navigation/navigationLinks";
 import {
   getAdminStatus,
   type AdminLevel,

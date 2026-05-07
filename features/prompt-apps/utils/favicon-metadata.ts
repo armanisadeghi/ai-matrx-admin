@@ -1,7 +1,7 @@
 import { generateSVGFavicon, svgToDataURI } from "@/utils/favicon-utils";
 import type { Metadata } from "next";
 
-// Default Prompt Apps favicon: emerald "PA" (matches navigation-links.tsx)
+// Default Prompt Apps favicon: emerald "PA" (matches favicon-route-data / nav-data)
 const DEFAULT_PROMPT_APP_FAVICON = { color: "#10b981", letter: "PA" };
 
 export type PromptAppIconsVariant = "default" | "demo";

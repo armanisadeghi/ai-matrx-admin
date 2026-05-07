@@ -194,12 +194,36 @@ function parseLine(line: string): IngestStreamEvent | null {
   const kind = data.kind;
 
   if (kind === "rag.ingest.progress") {
+    // The backend emits stage-specific counter keys (pages_*, chunks_*),
+    // NOT generic current/total. Map them so the FE has one shape to render.
+    // - extract / cleanup            → pages
+    // - chunk / embed / upsert       → chunks
+    // - fetch / complete / error     → no counters (0 / 0)
+    const stage = (data.stage as IngestProgress["stage"]) ?? "fetch";
+    const pagesDone = data.pages_done as number | undefined;
+    const pagesTotal = data.pages_total as number | undefined;
+    const chunksDone = data.chunks_done as number | undefined;
+    const chunksTotal = data.chunks_total as number | undefined;
+    let current = 0;
+    let total = 0;
+    if (stage === "extract" || stage === "cleanup") {
+      current = pagesDone ?? 0;
+      total = pagesTotal ?? 0;
+    } else if (stage === "chunk" || stage === "embed" || stage === "upsert") {
+      current = chunksDone ?? 0;
+      total = chunksTotal ?? 0;
+    }
+    // Fallback: if the backend ever sends generic current/total, honour them.
+    if (total === 0 && typeof data.total === "number") {
+      total = data.total as number;
+      current = (data.current as number) ?? 0;
+    }
     return {
       event: "rag.ingest.progress",
       data: {
-        stage: (data.stage as IngestProgress["stage"]) ?? "fetch",
-        current: (data.current as number) ?? 0,
-        total: (data.total as number) ?? 0,
+        stage,
+        current,
+        total,
         message: (data.message as string) ?? undefined,
       },
     };

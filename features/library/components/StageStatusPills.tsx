@@ -123,12 +123,21 @@ export interface StageStatusPillsProps {
   /** Called when any stage action completes successfully (so the parent
    *  can refresh other dependent state — counts, library list, etc.). */
   onMutated?: () => void;
+  /** Optional — when provided, clicking a pill opens this full-screen
+   *  runner instead of the small in-popover panel. The callback receives
+   *  the StageName ("extract" | "clean" | "chunk" | "embed"). When omitted,
+   *  the pills fall back to the inline popover with a Run button. */
+  onRequestRun?: (stage: StageName) => void;
+  /** Document title to render in the dialog header (when delegating). */
+  documentName?: string;
 }
 
 export function StageStatusPills({
   processedDocumentId,
   compact = false,
   onMutated,
+  onRequestRun,
+  documentName,
 }: StageStatusPillsProps) {
   const { status, loading, reload } = useStagesStatus(processedDocumentId);
   // Auto-refresh status whenever a stage action completes — the parent
@@ -160,6 +169,8 @@ export function StageStatusPills({
           processedDocumentId={processedDocumentId}
           compact={compact}
           onMutated={handleMutated}
+          onRequestRun={onRequestRun}
+          documentName={documentName}
         />
       ))}
     </div>
@@ -177,6 +188,8 @@ function StagePill({
   processedDocumentId,
   compact,
   onMutated,
+  onRequestRun,
+  documentName: _documentName,
 }: {
   def: PillDef;
   status: StageStatus | null;
@@ -184,6 +197,8 @@ function StagePill({
   processedDocumentId: string | null;
   compact: boolean;
   onMutated: () => void;
+  onRequestRun?: (stage: StageName) => void;
+  documentName?: string;
 }) {
   const state = status?.state ?? "missing";
   const current = status?.current ?? 0;
@@ -213,6 +228,21 @@ function StagePill({
     return pillBody;
   }
 
+  // Delegated mode — caller manages a single page-level dialog. One click
+  // opens it. No popover, no per-row action runner.
+  if (onRequestRun) {
+    return (
+      <button
+        type="button"
+        onClick={() => onRequestRun(def.action!)}
+        className="appearance-none border-0 bg-transparent p-0 m-0"
+      >
+        {pillBody}
+      </button>
+    );
+  }
+
+  // Standalone mode — popover with an inline action runner.
   return (
     <Popover>
       <PopoverTrigger asChild>{pillBody}</PopoverTrigger>

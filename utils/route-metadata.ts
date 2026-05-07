@@ -7,7 +7,7 @@
 //
 // FAVICON LETTER RULE: every route should have a UNIQUE letter badge.
 //   - For system color families (demo/tests/admin): color is fixed, letter MUST be unique per route.
-//   - For primary routes: color + letter come from navigation-links.tsx.
+//   - For primary routes: color + letter come from `favicon-route-data` (nav hrefs are defined in `features/shell/constants/nav-data.ts`).
 //   - Pass `letter` to override or supply a per-route badge when needed.
 //
 // The root (a)/layout.tsx sets template: "%s — AI Matrx".
@@ -27,10 +27,10 @@ import { siteConfig } from "@/config/extras/site";
  * `letter`      — 1–2 char badge for the favicon. REQUIRED for routes inside a
  *                 system color family (demo / tests / admin) — every route in the
  *                 family must use a UNIQUE letter so tabs are distinguishable.
- *                 Optional for primary routes (falls back to navigation-links.tsx entry).
+ *                 Optional for primary routes (falls back to favicon-route-data match).
  *
  * @example
- * // Root section layout (primary route — letter from nav-links.tsx)
+ * // Root section layout (primary route — letter from favicon-route-data)
  * export const metadata = createRouteMetadata("/agents", {
  *   title: "Agents",
  *   description: "Build, configure, and deploy AI agents",

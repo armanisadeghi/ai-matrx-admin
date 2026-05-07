@@ -35,10 +35,14 @@ import {
   Sparkles,
   AlertTriangle,
   Trash2,
+  Upload,
   Search as SearchAction,
   MoreHorizontal,
 } from "lucide-react";
 import { toast } from "sonner";
+import { uploadFile } from "@/features/files/api/files";
+import { useProcessingRunner } from "../hooks/useProcessingRunner";
+import { ProcessingProgressDialog } from "./ProcessingProgressDialog";
 import {
   Dialog,
   DialogContent,
@@ -89,6 +93,48 @@ export function LibraryPage() {
   const [bulkRunning, setBulkRunning] = useState(false);
   const [searchDocId, setSearchDocId] = useState<string | null>(null);
   const [searchDocName, setSearchDocName] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const runner = useProcessingRunner();
+
+  // Open the OS file picker — single button, no extra dialog.
+  const handleOpenPicker = () => fileInputRef.current?.click();
+
+  // Upload a file directly from the library, then kick the full pipeline
+  // and show the new full-screen progress dialog.
+  const handleFilePicked = async (file: File) => {
+    setUploading(true);
+    const tid = toast.loading(`Uploading ${file.name}…`);
+    try {
+      const { data } = await uploadFile({
+        file,
+        filePath: file.name,
+        visibility: "private",
+      });
+      toast.dismiss(tid);
+      if (!data?.file_id) {
+        toast.error("Upload succeeded but no file_id returned");
+        return;
+      }
+      toast.success(`Uploaded — starting pipeline`);
+      // Refresh the library list so the new doc shows up the moment its
+      // first stage event lands.
+      setRefreshKey((n) => n + 1);
+      await runner.runForCldFile(
+        data.file_id,
+        file.name,
+        "Upload + full pipeline (extract → clean → chunk → embed)",
+      );
+      // Final refresh after the run completes.
+      setRefreshKey((n) => n + 1);
+    } catch (err) {
+      toast.dismiss(tid);
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const handleBulkDelete = async (status: DocStatus) => {
     setBulkRunning(true);
@@ -145,6 +191,25 @@ export function LibraryPage() {
             </p>
           </div>
           <div className="flex gap-2">
+            {/* Hidden file input — driven by the Upload button below. */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              accept="application/pdf,image/*,text/*,.md,.txt"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleFilePicked(f);
+              }}
+            />
+            <Button
+              size="sm"
+              onClick={handleOpenPicker}
+              disabled={uploading}
+            >
+              <Upload className="h-4 w-4 mr-1" />
+              {uploading ? "Uploading…" : "Upload & process"}
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -395,6 +460,17 @@ export function LibraryPage() {
         processedDocumentId={selectedDocId}
         onClose={() => setSelectedDocId(null)}
         onMutated={() => setRefreshKey((n) => n + 1)}
+        onRequestStageRun={(stage, docId, docName) => {
+          // Page-level full-screen dialog. Sheet stays mounted underneath
+          // so the user can return to it the moment they minimize/close.
+          const subtitle =
+            stage === "extract" ? "Re-extract pages from the cloud file"
+              : stage === "clean"  ? "LLM cleanup + section classification"
+              : stage === "chunk"  ? "Page-aware hierarchical chunking"
+              : stage === "embed"  ? "Embed any chunks missing a vector"
+              : "Full pipeline";
+          runner.runStage(docId, stage, docName, subtitle);
+        }}
       />
 
       <QuickSearchDialog
@@ -407,6 +483,23 @@ export function LibraryPage() {
         }}
         processedDocumentId={searchDocId}
         documentName={searchDocName}
+      />
+
+      {/* Full-screen processing dialog (used by Upload + process and any
+          stage actions that opt in via the runner). Lives at page root so
+          it survives sheet close + supports minimize-to-corner. */}
+      <ProcessingProgressDialog
+        open={runner.open}
+        title={runner.title}
+        subtitle={runner.subtitle ?? undefined}
+        frame={runner.frame}
+        result={runner.result}
+        error={runner.error}
+        onCancel={runner.cancel}
+        onClose={() => {
+          runner.close();
+          setRefreshKey((n) => n + 1);
+        }}
       />
 
       {/* Bulk-delete confirm dialog */}

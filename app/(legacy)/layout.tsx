@@ -16,7 +16,7 @@ import { EntityProviders } from "@/app/EntityProviders";
 import {
   appSidebarLinks,
   adminSidebarLinks,
-} from "@/constants/navigation-links";
+} from "@/features/shell/navigation/navigationLinks";
 import NavigationLoader from "@/components/loaders/NavigationLoader";
 import ResponsiveLayout from "@/components/layout/new-layout/ResponsiveLayout";
 import { loadAuthedLayoutData } from "@/lib/auth/authedLayoutData";

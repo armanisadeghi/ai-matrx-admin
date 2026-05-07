@@ -1,5 +1,5 @@
 // nav-data.ts — Pure data, no React/JSX imports
-// Maps icon names to Lucide component names for server-side rendering
+// Single source of truth for primary + admin shell navigation (all layouts).
 
 export interface ShellNavChild {
   label: string;
@@ -17,16 +17,24 @@ export interface ShellNavItem {
   description?: string;
   color?: string;
   children?: ShellNavChild[];
+  /** Admin dropdown grouping (Desktop admin menu). */
+  category?: string;
+  /** Profile / header navigation menu. */
+  profileMenu?: boolean;
+  /** Dashboard app grid tiles. */
+  dashboard?: boolean;
 }
 
-// Primary navigation items
+// Primary navigation items — canonical app URLs shared by (a), (ssr), and (authenticated).
 export const primaryNavItems: ShellNavItem[] = [
   {
     label: "Dashboard",
-    href: "/ssr/dashboard",
+    href: "/dashboard",
     iconName: "LayoutDashboard",
     section: "primary",
     dockOrder: 1,
+    profileMenu: true,
+    dashboard: true,
     description: "Your central hub for all activities and insights",
     color: "sky",
   },
@@ -35,6 +43,8 @@ export const primaryNavItems: ShellNavItem[] = [
     href: "/agents",
     iconName: "Webhook",
     section: "primary",
+    profileMenu: true,
+    dashboard: true,
     description: "AI Agent Harness Management",
     color: "blue",
     children: [
@@ -48,18 +58,12 @@ export const primaryNavItems: ShellNavItem[] = [
     ],
   },
   {
-    label: "Prompt Builder",
-    href: "/ssr/prompts",
-    iconName: "Wand2",
-    section: "primary",
-    description: "Create and manage AI prompts",
-    color: "teal",
-  },
-  {
     label: "Prompt Apps",
     href: "/prompt-apps",
     iconName: "LayoutGrid",
     section: "primary",
+    profileMenu: true,
+    dashboard: true,
     description: "Browse and run interactive apps built from prompts",
     color: "emerald",
   },
@@ -68,15 +72,19 @@ export const primaryNavItems: ShellNavItem[] = [
     href: "/research",
     iconName: "FlaskConical",
     section: "primary",
+    profileMenu: true,
+    dashboard: true,
     description: "Deep research with Automated topic analysis",
     color: "purple",
   },
   {
     label: "Chat",
-    href: "/ssr/chat",
+    href: "/chat",
     iconName: "MessageCircle",
     section: "primary",
     dockOrder: 2,
+    profileMenu: true,
+    dashboard: false,
     description: "Interact with our reimagined chat interface",
     color: "indigo",
   },
@@ -86,6 +94,8 @@ export const primaryNavItems: ShellNavItem[] = [
     iconName: "NotebookPen",
     section: "primary",
     dockOrder: 3,
+    profileMenu: true,
+    dashboard: true,
     description: "Create and manage your notes and documents",
     color: "amber",
   },
@@ -95,6 +105,8 @@ export const primaryNavItems: ShellNavItem[] = [
     iconName: "ListTodo",
     section: "primary",
     dockOrder: 4,
+    profileMenu: true,
+    dashboard: true,
     description: "Organize and track your tasks and projects",
     color: "emerald",
   },
@@ -104,6 +116,8 @@ export const primaryNavItems: ShellNavItem[] = [
     iconName: "Puzzle",
     section: "primary",
     dockOrder: 5,
+    profileMenu: true,
+    dashboard: true,
     description: "Create and manage projects, collaborate with teams",
     color: "violet",
   },
@@ -113,6 +127,8 @@ export const primaryNavItems: ShellNavItem[] = [
     iconName: "FolderOpen",
     section: "primary",
     dockOrder: 6,
+    profileMenu: true,
+    dashboard: true,
     description: "Browse and manage your files and documents",
     color: "blue",
   },
@@ -121,16 +137,19 @@ export const primaryNavItems: ShellNavItem[] = [
     href: "/images",
     iconName: "Aperture",
     section: "primary",
+    profileMenu: true,
+    dashboard: true,
     description:
       "Browse, generate, edit, annotate, convert — every image tool in one place",
     color: "pink",
   },
-
   {
     label: "Transcripts",
     href: "/transcripts",
     iconName: "Mic",
     section: "primary",
+    profileMenu: true,
+    dashboard: true,
     description: "Record, transcribe and manage audio content",
     color: "rose",
   },
@@ -139,6 +158,8 @@ export const primaryNavItems: ShellNavItem[] = [
     href: "/data",
     iconName: "Table",
     section: "primary",
+    profileMenu: true,
+    dashboard: true,
     description: "Manage your custom data or create tables in a Chat",
     color: "cyan",
   },
@@ -147,6 +168,8 @@ export const primaryNavItems: ShellNavItem[] = [
     href: "/scraper",
     iconName: "Globe",
     section: "primary",
+    profileMenu: true,
+    dashboard: true,
     description: "Extract and process data from web sources",
     color: "orange",
   },
@@ -155,6 +178,8 @@ export const primaryNavItems: ShellNavItem[] = [
     href: "/sandbox",
     iconName: "Container",
     section: "primary",
+    profileMenu: true,
+    dashboard: true,
     description: "Your AI Agents in a cloud computer with your stuff!",
     color: "orange",
   },
@@ -163,6 +188,8 @@ export const primaryNavItems: ShellNavItem[] = [
     href: "/code",
     iconName: "Code2",
     section: "primary",
+    profileMenu: true,
+    dashboard: true,
     description: "VSCode-style workspace for sandbox and cloud projects",
     color: "indigo",
   },
@@ -171,6 +198,8 @@ export const primaryNavItems: ShellNavItem[] = [
     href: "/messages",
     iconName: "Mail",
     section: "primary",
+    profileMenu: true,
+    dashboard: true,
     description: "Direct messages and conversations",
     color: "pink",
   },
@@ -179,6 +208,8 @@ export const primaryNavItems: ShellNavItem[] = [
     href: "/workflows",
     iconName: "Workflow",
     section: "primary",
+    profileMenu: true,
+    dashboard: true,
     description: "Design and automate complex workflows",
     color: "purple",
   },
@@ -187,6 +218,8 @@ export const primaryNavItems: ShellNavItem[] = [
     href: "/ssr/context",
     iconName: "BookOpen",
     section: "primary",
+    profileMenu: true,
+    dashboard: true,
     description: "Manage context items, templates, and knowledge",
     color: "cyan",
   },
@@ -195,6 +228,8 @@ export const primaryNavItems: ShellNavItem[] = [
     href: "/rag/data-stores",
     iconName: "Database",
     section: "primary",
+    profileMenu: true,
+    dashboard: true,
     description:
       "Documents, data stores, and RAG search across your indexed content",
     color: "amber",
@@ -230,6 +265,7 @@ export const adminNavItems: ShellNavItem[] = [
     href: "/administration",
     iconName: "ShieldCheck",
     section: "admin",
+    category: "primary",
     color: "red",
   },
   {
@@ -237,47 +273,146 @@ export const adminNavItems: ShellNavItem[] = [
     href: "/administration/official-components",
     iconName: "Puzzle",
     section: "admin",
+    category: "primary",
     color: "violet",
   },
   {
-    label: "Schema Manager",
-    href: "/legacy/administration/schema-manager",
-    iconName: "Database",
+    label: "Admins & Levels",
+    href: "/administration/admins",
+    iconName: "Shield",
     section: "admin",
-    color: "cyan",
+    category: "primary",
+    color: "red",
+  },
+  {
+    label: "Apps",
+    href: "/apps",
+    iconName: "Boxes",
+    section: "admin",
+    category: "Applets",
+    color: "emerald",
   },
   {
     label: "App Builder",
     href: "/apps/app-builder",
     iconName: "Lightbulb",
     section: "admin",
+    category: "Applets",
     color: "amber",
+  },
+  {
+    label: "Applet demo",
+    href: "/apps/demo",
+    iconName: "LayoutPanelLeft",
+    section: "admin",
+    category: "Applets",
+    color: "rose",
+  },
+  {
+    label: "Dynamic Layout Demo",
+    href: "/apps/dynamic-layouts/options",
+    iconName: "Columns2",
+    section: "admin",
+    category: "Applets",
+    color: "green",
+  },
+  {
+    label: "All Layouts",
+    href: "/apps/all-layouts",
+    iconName: "LayoutPanelLeft",
+    section: "admin",
+    category: "Applets",
+    color: "blue",
+  },
+  {
+    label: "App Builder Hub",
+    href: "/apps/builder/hub",
+    iconName: "Sparkles",
+    section: "admin",
+    category: "Applets",
+    color: "indigo",
+  },
+  {
+    label: "Markdown Tests",
+    href: "/tests/markdown-tests",
+    iconName: "BookOpen",
+    section: "admin",
+    category: "Concepts",
+    color: "slate",
+  },
+  {
+    label: "Schema Manager",
+    href: "/legacy/administration/schema-manager",
+    iconName: "Database",
+    section: "admin",
+    category: "Concepts",
+    color: "cyan",
+  },
+  {
+    label: "Text Cleaner",
+    href: "/administration/utils/text-cleaner",
+    iconName: "Eraser",
+    section: "admin",
+    category: "Concepts",
+    color: "slate",
+  },
+  {
+    label: "All Form Tests",
+    href: "/tests/forms",
+    iconName: "FileInput",
+    section: "admin",
+    category: "Entities",
+    color: "slate",
+  },
+  {
+    label: "Selector Tests",
+    href: "/tests/selector-test",
+    iconName: "SquareMousePointer",
+    section: "admin",
+    category: "Redux",
+    color: "slate",
+  },
+  {
+    label: "InteliTable",
+    href: "/tests/matrx-table",
+    iconName: "Table",
+    section: "admin",
+    category: "Entities",
+    color: "slate",
+  },
+  {
+    label: "Sandbox Admin",
+    href: "/admin/sandbox",
+    iconName: "Container",
+    section: "admin",
+    category: "Automation",
+    color: "orange",
   },
   {
     label: "Socket Admin",
     href: "/admin/socketio",
     iconName: "Radio",
     section: "admin",
+    category: "Infrastructure",
     color: "blue",
   },
 ];
 
-// Mobile dock items (sorted by dockOrder)
 export const dockItems = primaryNavItems
   .filter((item) => item.dockOrder != null)
   .sort((a, b) => (a.dockOrder ?? 0) - (b.dockOrder ?? 0));
 
-// Settings item — always at bottom of sidebar
 export const settingsItem: ShellNavItem = {
   label: "Settings",
   href: "/settings",
   iconName: "Settings",
   section: "primary",
+  profileMenu: true,
+  dashboard: false,
   description: "Manage your account and preferences",
   color: "slate",
 };
 
-// Color mapping for dashboard app icons (tailwind bg classes)
 export const iconColorMap: Record<string, string> = {
   sky: "bg-sky-500/15 text-sky-600 dark:bg-sky-400/15 dark:text-sky-400",
   indigo:
@@ -296,6 +431,8 @@ export const iconColorMap: Record<string, string> = {
   cyan: "bg-cyan-500/15 text-cyan-600 dark:bg-cyan-400/15 dark:text-cyan-400",
   orange:
     "bg-orange-500/15 text-orange-600 dark:bg-orange-400/15 dark:text-orange-400",
+  green:
+    "bg-green-500/15 text-green-600 dark:bg-green-400/15 dark:text-green-400",
   pink: "bg-pink-500/15 text-pink-600 dark:bg-pink-400/15 dark:text-pink-400",
   red: "bg-red-500/15 text-red-600 dark:bg-red-400/15 dark:text-red-400",
   slate:
