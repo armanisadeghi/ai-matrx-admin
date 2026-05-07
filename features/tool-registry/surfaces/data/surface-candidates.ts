@@ -18,9 +18,16 @@
  */
 
 // `chrome-extension` is the matrx-extend Chrome extension's surface identifier.
-// Once the extension's Phase 2 bridge ships (Supabase Broadcast channel
-// `matrx-extension-bridge:<userId>`), this client_name becomes a real surface.
-// Until then, no SURFACE_CANDIDATES entry declares it. See:
+// The Phase 2 bridge has shipped: see the `chrome-extension/agent-bridge`
+// candidate below. Two substrates carry the FRONTEND_RPC envelope between
+// this app and the extension:
+//   1. `chrome.runtime.sendMessage(extensionId, ...)` via the extension's
+//      `externally_connectable` whitelist (same-machine, sub-ms RTT).
+//   2. Supabase Broadcast on `matrx-extension-bridge:<userId>` — used when
+//      the extension is on a different device. Subscribed in this repo via
+//      `hooks/useExtensionBridgeChannel.ts`. The reference inbound route is
+//      `app/api/extension/append-message/route.ts`.
+// See:
 //   - docs/MATRX_EXTEND_CONNECTION.md (this repo)
 //   - matrx-extend's docs/CROSS_REPO_INTEGRATION.md
 export interface SurfaceCandidate {
@@ -119,4 +126,12 @@ export const SURFACE_CANDIDATES: readonly SurfaceCandidate[] = [
   { name: "matrx-public/contact",              client_name: "matrx-public", description: "Contact form",                               sort_order: 220, is_active: false, group: "page" },
   { name: "matrx-public/request-access",       client_name: "matrx-public", description: "Access request form",                        sort_order: 230, is_active: false, group: "page" },
   { name: "matrx-public/privacy-policy",       client_name: "matrx-public", description: "Privacy policy page",                        sort_order: 240, is_active: false, group: "page" },
+
+  // chrome-extension (matrx-extend) · bridge surface for cross-repo RPC.
+  // The extension reaches this app over two substrates carrying the same
+  // FRONTEND_RPC envelope: `chrome.runtime.sendMessage(extensionId, ...)`
+  // (same machine, externally_connectable) and Supabase Broadcast on
+  // `matrx-extension-bridge:<userId>` (cross machine). See
+  // docs/MATRX_EXTEND_CONNECTION.md and hooks/useExtensionBridgeChannel.ts.
+  { name: "chrome-extension/agent-bridge",     client_name: "chrome-extension", description: "matrx-extend bridge surface — FRONTEND_RPC over chrome.runtime + Supabase Broadcast", sort_order: 100, is_active: false, group: "widget" },
 ];

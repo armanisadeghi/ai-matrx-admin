@@ -1,10 +1,13 @@
 # matrx-extend Connection — Frontend
 
-**Status:** Channel does **not exist yet**. This doc captures the Phase 0
-scaffold so future agents know where the bridge will live, what substrates
-it will use, and which pieces of pre-existing code look like a bridge but
-are NOT one. The real bridge ships in **Phase 2** of the four-repo
-cross-integration plan owned by matrx-extend.
+**Status:** Phase 2 has shipped. The bridge runs over two substrates
+(extension-side `externally_connectable` and Supabase Broadcast on
+`matrx-extension-bridge:<userId>`) carrying a shared `FRONTEND_RPC`
+envelope. The Broadcast subscriber lives in
+`hooks/useExtensionBridgeChannel.ts`; the reference inbound route is
+`app/api/extension/append-message/route.ts`; and the surface is
+declared as `chrome-extension/agent-bridge` in
+`features/tool-registry/surfaces/data/surface-candidates.ts`.
 
 This is the matrx-frontend-side reference. The master doc lives in the
 extension repo — see [§ Pointer to master](#pointer-to-master) at the
@@ -17,9 +20,10 @@ bottom.
 - matrx-frontend is the Next.js 16 admin / no-code-builder UI at
   `aimatrx.com` (and `mymatrx.com`). matrx-extend is the Chrome
   extension (the agent harness).
-- Today there is **zero** runtime channel between them. Two pre-existing
-  scaffolding fragments mention `chrome-extension` but are dead refs
-  (see [§ Surface area](#surface-area)).
+- The bridge has shipped: `useExtensionBridgeChannel` subscribes the
+  Broadcast channel, `app/api/extension/append-message` is the
+  reference inbound route, and the `chrome-extension/agent-bridge`
+  surface candidate now declares it (see [§ Surface area](#surface-area)).
 - Phase 2 will add **two substrates** that share one envelope:
   `chrome.runtime.onMessageExternal` (same machine) and Supabase
   Broadcast (cross machine). A single `FRONTEND_RPC` envelope rides on
@@ -46,9 +50,8 @@ workflows — opening a panel from the extension, appending a message to
 a conversation hosted here, or signaling that the user has captured a
 page that the admin UI should react to.
 
-The integration channel **does not exist yet**. This doc describes
-where it will live and what it will plug into. **Phase 0 is scaffold
-only — no runtime bridge code in this repo at this stage.**
+The integration channel is live as of Phase 2. This doc describes
+the substrates, the auth model, and how to add new commands.
 
 ---
 
@@ -65,23 +68,30 @@ Phase 2 lands:
 | [`features/window-panels/url-sync/initUrlHydration.ts`](../features/window-panels/url-sync/initUrlHydration.ts) | Where each `?panels=...` key gets a hydrator. |
 | [`app/api/agent/feedback/route.ts`](../app/api/agent/feedback/route.ts) | Reference Bearer-`AGENT_API_KEY` route — pattern the extension's headless calls will follow. |
 | [`app/api/mcp/[transport]/route.ts`](../app/api/mcp/[transport]/route.ts) | Reference dual-auth route (Bearer or `?token=`). |
-| `app/api/extension/append-message/route.ts` | **Planned (Phase 2 task C1.d).** Headless conversation message-append endpoint. Does not exist today. |
+| [`app/api/extension/append-message/route.ts`](../app/api/extension/append-message/route.ts) | Headless conversation message-append endpoint — Phase 2 reference inbound route for the extension. |
+| [`hooks/useExtensionBridgeChannel.ts`](../hooks/useExtensionBridgeChannel.ts) | Page-side Broadcast subscriber for `matrx-extension-bridge:<userId>`. Receives FRONTEND_RPC events on cross-machine paths. |
 | `wxt.config.ts` (in matrx-extend, NOT this repo) | `externally_connectable.matches` whitelist. Listed here as a cross-repo reference because the whitelist must include this app's origins. |
 
-### Pre-existing dead references (do **not** treat as a bridge)
+### Recent change — `chrome-extension` is now a real surface candidate
 
-Two fragments mention `chrome-extension` but neither is a working
-bridge. Avoid building on them or touching them in unrelated PRs:
+Previously, two fragments mentioning `chrome-extension` were dead
+references. With Phase 2 shipped, one is now backed by the real bridge:
 
-- [`features/tool-registry/surfaces/data/surface-candidates.ts:24`](../features/tool-registry/surfaces/data/surface-candidates.ts) —
-  `client_name: "chrome-extension"` is in the type union but no surface
-  declares it. Dead reference.
+- [`features/tool-registry/surfaces/data/surface-candidates.ts`](../features/tool-registry/surfaces/data/surface-candidates.ts) —
+  the `client_name: "chrome-extension"` type union member is now backed
+  by a `SURFACE_CANDIDATES` entry: `chrome-extension/agent-bridge`. It
+  documents the two substrates (`externally_connectable` +
+  `matrx-extension-bridge:<userId>` Broadcast) and links back to this
+  doc. The header comment in that file has been updated to reflect the
+  shipped state.
 - [`utils/errorContext.ts:10`](../utils/errorContext.ts) — defensive
   stack-frame filter that strips `chrome-extension://` URLs from
-  reported stack traces. Harmless, but creates the illusion of a
-  bridge where none exists.
+  reported stack traces. Still harmless, still not a bridge — left as-is.
 
-The real bridge ships in Phase 2; both of these can stay.
+The real bridge lives in `hooks/useExtensionBridgeChannel.ts` (Broadcast
+subscriber) and `app/api/extension/append-message/route.ts` (inbound
+RPC reference route). Add new actions there, not by re-using the dead-
+reference framing above.
 
 ---
 

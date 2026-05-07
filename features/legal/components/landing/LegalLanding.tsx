@@ -174,10 +174,10 @@ export default function LegalLanding() {
             </span>
           </h1>
           <p className="mt-6 mx-auto max-w-2xl text-[clamp(1rem,0.95rem+0.25vw,1.25rem)] text-muted-foreground leading-relaxed">
-            Research that shows its work. Document RAG you can audit. Drafting
-            agents you can replay. Calculators that do not drift. The frontier
-            labs build the engines — we build the vehicle that takes them
-            into the firm.
+            Research that shows its work. Case files you can search and cite
+            in plain English. Drafting agents you can replay. Calculators that
+            do not drift. The frontier labs build the engines — we build the
+            vehicle that takes them into the firm.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button

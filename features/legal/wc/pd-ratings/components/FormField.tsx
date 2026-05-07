@@ -4,8 +4,8 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 interface FieldProps {
-  label: string;
-  hint?: string;
+  label: React.ReactNode;
+  hint?: React.ReactNode;
   htmlFor?: string;
   trailing?: React.ReactNode;
   children: React.ReactNode;

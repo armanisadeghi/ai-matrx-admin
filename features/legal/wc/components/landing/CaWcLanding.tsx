@@ -11,6 +11,11 @@ import {
   CheckCircle2,
   Briefcase,
   ShieldHalf,
+  Search,
+  FileStack,
+  Bot,
+  Eye,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -19,10 +24,49 @@ const STATS = [
   { value: "100%", label: "AMA Guides aligned" },
   { value: "5", label: "Calculators in one shell" },
   { value: "Both", label: "Sides supported" },
-  { value: "Replay", label: "Every calc trajectory" },
+  { value: "Replay", label: "Every action audited" },
 ];
 
-const CAPABILITIES: Array<{
+const CORE_CAPABILITIES = [
+  {
+    icon: Search,
+    title: "Case-law & rules research with citations",
+    description:
+      "Search the DWC, panel decisions, agency bulletins, the Labor Code, and the broader web in one place. Every claim in the resulting memo links back to the source it came from.",
+  },
+  {
+    icon: FileStack,
+    title: "Search every record in the file",
+    description:
+      "Upload medical reports, QME reports, deposition transcripts, applications, and agency correspondence. Ask questions in plain English; every answer cites the document, page, and paragraph.",
+  },
+  {
+    icon: Bot,
+    title: "Drafting assistants per document type",
+    description:
+      "AOE/COE memos, opening briefs, demand letters, settlement summaries, deposition outlines. Specialist assistants per task — not one all-purpose chat.",
+  },
+  {
+    icon: Calculator,
+    title: "Deterministic WC calculators",
+    description:
+      "PD ratings (0–100%), weeks of indemnity, present value, life-pension thresholds at 70%+, and AWC. Numbers an adjuster will not argue with.",
+  },
+  {
+    icon: Eye,
+    title: "Audit-ready trail on every action",
+    description:
+      "Every model call, document read, calculation, and edit is traced and replayable. Hand the trajectory to opposing counsel, a judge, or compliance.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Determinism at the perimeter",
+    description:
+      "Math executes through validated formulas, not an LLM guess. Permissions, schemas, and audit trails are not surfaces the model can argue past.",
+  },
+];
+
+const WORKFLOWS: Array<{
   icon: typeof Calculator;
   title: string;
   description: string;
@@ -63,7 +107,7 @@ const CAPABILITIES: Array<{
     icon: Library,
     title: "Defense / applicant libraries",
     description:
-      "Bring your firm’s playbooks, motion templates, and prior briefs. Every drafted document grounds against your library, not the public internet.",
+      "Bring your firm’s playbooks, motion templates, and prior briefs. Drafts ground against your own library — not the public internet.",
   },
 ];
 
@@ -116,9 +160,9 @@ const STEPS = [
   },
   {
     number: "03",
-    title: "Calculate",
+    title: "Calculate, draft, and review",
     description:
-      "PD rating, weeks, present value, AWC — deterministic, grounded in the saved injuries.",
+      "Ratings, briefs, memos, and depositions — all grounded in the saved file, all replayable.",
   },
   {
     number: "04",
@@ -147,28 +191,24 @@ export default function CaWcLanding() {
             California Workers&rsquo; Comp
           </div>
           <h1 className="text-[clamp(2rem,1.5rem+2.5vw,3.75rem)] font-bold tracking-tight text-foreground leading-[1.1]">
-            Built for{" "}
+            The agentic harness, built for{" "}
             <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              both sides
-            </span>{" "}
-            of every claim.
+              California WC firms.
+            </span>
           </h1>
           <p className="mt-6 mx-auto max-w-2xl text-[clamp(1rem,0.95rem+0.25vw,1.25rem)] text-muted-foreground leading-relaxed">
-            From applicant intake to defense diligence — claims, ratings,
-            QME reviews, depositions, and settlement modeling. Memory that
-            survives, tools that do not hallucinate, and a trajectory you can
-            hand to opposing counsel.
+            Research, document review, drafting, depositions, and ratings —
+            built for the way California Workers&rsquo; Comp firms actually
+            work, with the rigor required by the WCAB and the speed your
+            caseload demands. Both applicant and defense.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button
               size="lg"
               className="w-full sm:w-auto min-h-[44px] text-base px-8 gap-2"
-              asChild
             >
-              <Link href="/legal/ca-wc/pd-ratings-calculator">
-                Open the PD Ratings Calculator
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+              Get Started
+              <ArrowRight className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
@@ -176,7 +216,7 @@ export default function CaWcLanding() {
               className="w-full sm:w-auto min-h-[44px] text-base px-8"
               asChild
             >
-              <Link href="/legal">Back to Legal overview</Link>
+              <Link href="#capabilities">See what it does</Link>
             </Button>
           </div>
 
@@ -199,60 +239,39 @@ export default function CaWcLanding() {
         </div>
       </section>
 
-      {/* Capabilities */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-24">
+      {/* Core capabilities */}
+      <section
+        id="capabilities"
+        className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-24"
+      >
         <div className="text-center mb-12 sm:mb-16">
           <h2 className="text-[clamp(1.5rem,1.25rem+1.5vw,2.5rem)] font-bold tracking-tight">
-            Every CA WC workflow on one harness
+            What AI Matrx does for WC firms
           </h2>
           <p className="mt-4 text-muted-foreground text-lg max-w-2xl mx-auto">
-            Calculators where math is sacred, agents where reasoning is needed,
-            and a record of every step in between.
+            The same six capabilities under every claim — research, document
+            review, drafting, calculators, replayability, and determinism.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {CAPABILITIES.map((feature) => {
-            const inner = (
-              <>
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <feature.icon className="h-5 w-5" />
-                </div>
-                <h3 className="text-base font-semibold mb-2 flex items-center gap-1.5">
-                  {feature.title}
-                  {feature.href ? (
-                    <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
-                  ) : null}
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {feature.description}
-                </p>
-              </>
-            );
-
-            const cardClass = cn(
-              "group relative rounded-2xl border border-border bg-card p-6",
-              "transition-all duration-300",
-              "hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5",
-            );
-
-            if (feature.href) {
-              return (
-                <Link
-                  key={feature.title}
-                  href={feature.href}
-                  className={cardClass}
-                >
-                  {inner}
-                </Link>
-              );
-            }
-
-            return (
-              <div key={feature.title} className={cardClass}>
-                {inner}
+          {CORE_CAPABILITIES.map((feature) => (
+            <div
+              key={feature.title}
+              className={cn(
+                "group relative rounded-2xl border border-border bg-card p-6",
+                "transition-all duration-300",
+                "hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5",
+              )}
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary mb-4 group-hover:scale-110 transition-transform duration-300">
+                <feature.icon className="h-5 w-5" />
               </div>
-            );
-          })}
+              <h3 className="text-base font-semibold mb-2">{feature.title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {feature.description}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -299,30 +318,90 @@ export default function CaWcLanding() {
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="mx-auto max-w-5xl px-4 sm:px-6 py-16 sm:py-24">
+      {/* WC-specific workflows */}
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-24">
         <div className="text-center mb-12 sm:mb-16">
           <h2 className="text-[clamp(1.5rem,1.25rem+1.5vw,2.5rem)] font-bold tracking-tight">
-            How it works
+            WC workflows, end to end
           </h2>
-          <p className="mt-4 text-muted-foreground text-lg">
-            From intake to defensible numbers in four steps.
+          <p className="mt-4 text-muted-foreground text-lg max-w-2xl mx-auto">
+            Specialty surfaces tuned to the documents, calculations, and
+            checkpoints that actually move a CA WC matter forward.
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
-          {STEPS.map((step) => (
-            <div key={step.number} className="flex gap-4">
-              <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-2xl bg-primary/10 text-primary font-bold text-lg">
-                {step.number}
-              </div>
-              <div>
-                <h3 className="font-semibold text-base mb-1">{step.title}</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {WORKFLOWS.map((feature) => {
+            const inner = (
+              <>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <feature.icon className="h-5 w-5" />
+                </div>
+                <h3 className="text-base font-semibold mb-2 flex items-center gap-1.5">
+                  {feature.title}
+                  {feature.href ? (
+                    <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+                  ) : null}
+                </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  {step.description}
+                  {feature.description}
                 </p>
+              </>
+            );
+
+            const cardClass = cn(
+              "group relative rounded-2xl border border-border bg-card p-6",
+              "transition-all duration-300",
+              "hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5",
+            );
+
+            if (feature.href) {
+              return (
+                <Link
+                  key={feature.title}
+                  href={feature.href}
+                  className={cardClass}
+                >
+                  {inner}
+                </Link>
+              );
+            }
+
+            return (
+              <div key={feature.title} className={cardClass}>
+                {inner}
               </div>
-            </div>
-          ))}
+            );
+          })}
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="bg-card/50 border-y border-border">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 py-16 sm:py-24">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-[clamp(1.5rem,1.25rem+1.5vw,2.5rem)] font-bold tracking-tight">
+              How it works
+            </h2>
+            <p className="mt-4 text-muted-foreground text-lg">
+              From intake to defensible numbers and drafted documents in four
+              steps.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+            {STEPS.map((step) => (
+              <div key={step.number} className="flex gap-4">
+                <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-2xl bg-primary/10 text-primary font-bold text-lg">
+                  {step.number}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-base mb-1">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {step.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -330,22 +409,16 @@ export default function CaWcLanding() {
       <section className="border-t border-border bg-card/50">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 py-16 sm:py-24 text-center">
           <h2 className="text-[clamp(1.5rem,1.25rem+1.5vw,2.5rem)] font-bold tracking-tight">
-            Open the PD Ratings Calculator
+            Bring AI Matrx into your WC practice
           </h2>
           <p className="mt-4 text-muted-foreground text-lg mb-8">
-            Five sub-calculators in one shell — PPD, present value, weeks,
-            life expectancy, and AWC. AMA Guides aligned, replayable, fair to
-            both sides.
+            Research, drafting, depositions, and ratings — for applicant and
+            defense firms alike. Built for California WC, replayable end to
+            end.
           </p>
-          <Button
-            size="lg"
-            className="min-h-[44px] text-base px-10 gap-2"
-            asChild
-          >
-            <Link href="/legal/ca-wc/pd-ratings-calculator">
-              Launch PD Ratings
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+          <Button size="lg" className="min-h-[44px] text-base px-10 gap-2">
+            Get Started
+            <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
       </section>
