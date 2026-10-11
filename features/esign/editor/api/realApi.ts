@@ -99,7 +99,10 @@ export function makeRealEditorApi(dispatch: AppDispatch): EditorApi {
       if (a.granted === false) return null;
       const envelope = (a.envelope ?? {}) as Record<string, unknown>;
       const draft = (a.draft ?? null) as Record<string, unknown> | null;
-      const composition = (draft && "composition" in draft ? draft.composition : draft) as EnvelopeDraftV1 | null;
+      const raw = (draft && "composition" in draft ? draft.composition : draft) as EnvelopeDraftV1 | null;
+      // Which recipients really have a code is what the server holds (hashes), not the flag the browser saved.
+      const held = new Set(Array.isArray(draft?.access_codes_set) ? draft.access_codes_set.filter((k): k is string => typeof k === "string") : []);
+      const composition = raw ? { ...raw, recipients: (raw.recipients ?? []).map((r) => ({ ...r, has_access_code: held.has(r.key) })) } : raw;
       return {
         revision: Number(draft?.revision ?? a.draft_revision ?? 0),
         composition: composition as EnvelopeDraftV1,
