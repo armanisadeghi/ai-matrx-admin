@@ -21,20 +21,24 @@ export function pendingOnDemandLibraries(code: string | null | undefined): strin
   return pendingEntriesFor(code);
 }
 
-/** True when every library `code` imports is loaded (always true for no code). */
+/**
+ * True when every library `code` imports is loaded (always true for no code).
+ * Readiness is STATE (the key whose loads finished), never a re-read: the
+ * React Compiler memoizes `pendingOnDemandLibraries(code)` on `code`, so a
+ * re-render alone would read the first answer forever.
+ */
 export function useOnDemandScopeReady(code: string | null | undefined): boolean {
-  const pending = pendingOnDemandLibraries(code);
-  const key = pending.join("|");
-  const [, setLoaded] = useState(0);
+  const key = pendingOnDemandLibraries(code).join("|");
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
   useEffect(() => {
     if (!key) return;
     let live = true;
     void prepareScopeModules(key.split("|")).then(() => {
-      if (live) setLoaded((n) => n + 1);
+      if (live) setLoadedKey(key);
     });
     return () => {
       live = false;
     };
   }, [key]);
-  return pending.length === 0;
+  return key === "" || loadedKey === key;
 }

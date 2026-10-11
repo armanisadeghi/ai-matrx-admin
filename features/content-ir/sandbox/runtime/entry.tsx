@@ -182,6 +182,23 @@ function renderFailure(
 }
 
 /**
+ * A library that sizes itself from a ResizeObserver's FIRST callback (fiber's
+ * <Canvas>, via react-use-measure) drops it when it lands before React's
+ * passive effects. On the page a later layout shift re-measures; in the frame
+ * nothing moves, so the canvas stayed 300x150 and blank. One window `resize`
+ * after the body's effects have run (a parent's effect runs after its
+ * children's) is that layout pass. Only for bodies that load a library.
+ */
+function FirstLayoutPass({ enabled, children }: { enabled: boolean; children: React.ReactNode }) {
+    React.useEffect(() => {
+        if (!enabled) return;
+        const id = setTimeout(() => window.dispatchEvent(new Event("resize")), 0);
+        return () => clearTimeout(id);
+    }, [enabled]);
+    return <>{children}</>;
+}
+
+/**
  * Compile and mount one organization-authored component into `container`.
  * Never throws — every failure path renders a named message instead.
  */
@@ -204,7 +221,9 @@ export function mountKindComponent(
         const Mounted = Component;
         root.render(
             <FrameErrorBoundary onError={options.onError}>
-                <Mounted {...props} />
+                <FirstLayoutPass enabled={needsLibraries}>
+                    <Mounted {...props} />
+                </FirstLayoutPass>
             </FrameErrorBoundary>,
         );
     };

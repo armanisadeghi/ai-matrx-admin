@@ -17,7 +17,12 @@ export function provideAppScopeModules(): void {
   provideScopeModules({
     "motion/react": () => import("motion/react"),
     "react-katex": () => import("./react-katex-scope"),
-    "react-pdf": () => import("react-pdf"),
+    // pdf.js needs its worker: the app's same-origin copy (`build:pdfjs-worker`), as the PDF viewer sets it.
+    "react-pdf": async () => {
+      const mod = await import("react-pdf");
+      mod.pdfjs.GlobalWorkerOptions.workerSrc = "/pdfjs/pdf.worker.min.mjs";
+      return mod;
+    },
     // A person's code imports `xlsx`: it gets the SheetJS module Alchemy's workbook engine bundles (one copy in the app).
     xlsx: async () => (await import("@ai-matrx/alchemy/operate/formats/xlsx")).loadSheetJs(),
     "@react-three/fiber": () => import("@react-three/fiber"),

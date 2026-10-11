@@ -77,7 +77,9 @@ function probeBox(host: HTMLElement, mode: RenderMode): Omit<DemoProbe, "errors"
     return { height: heard ? frame.getBoundingClientRect().height : 0, standIns: null, images: null };
   }
   const shell = host.firstElementChild as HTMLElement | null;
-  const height = shell ? shell.getBoundingClientRect().height - 8 : 0;
+  // The kind's loading placeholder (body or libraries still arriving) is not a render.
+  const loading = host.querySelector("[data-kind-loading]") !== null;
+  const height = shell && !loading ? shell.getBoundingClientRect().height - 8 : 0;
   const hostRect = host.getBoundingClientRect();
   const images = { total: 0, broken: 0, cropped: 0 };
   host.querySelectorAll("img").forEach((img) => {
