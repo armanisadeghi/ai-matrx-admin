@@ -15,6 +15,7 @@
 // dimension-matched skeleton: the page chrome paints instantly and the rows
 // stream into a hole of the same size, so nothing shifts.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 
@@ -37,13 +38,11 @@ export default async function MyAccessLogPage() {
       <RecordPageHeader record={{ name: "Who opened my data" }} />
       <div className="h-full overflow-y-auto">
         <div className="mx-auto w-full max-w-3xl space-y-4 p-4 pt-[var(--shell-header-h)] sm:p-6 sm:pt-[var(--shell-header-h)]">
-          <div className="space-y-1">
-            <h1
-              className="text-lg font-semibold"
-              title="Emergency access is read-only, expires, and is logged here, including refusals"
-            >
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-lg font-semibold">
               Every time anyone opened your data
             </h1>
+            <InfoHint text="Emergency access is read-only, expires, and is logged here, including refusals." label="About emergency access" />
           </div>
           <Suspense fallback={<AccessLogFeedSkeleton />}>
             <AccessLogFeed />

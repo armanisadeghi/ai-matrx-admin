@@ -24,8 +24,9 @@
 
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useEffect, useState } from "react";
-import { AlertTriangle, ChevronDown, ChevronRight, Gauge, Info, Package } from "lucide-react";
+import { AlertTriangle, ChevronDown, ChevronRight, Gauge, Package } from "lucide-react";
 import { RefreshCwTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
@@ -347,19 +348,16 @@ export function SpendDashboard() {
           density="full"
           headlineActions={
             <div className="flex items-center gap-0.5">
-              <span
-                className="inline-flex h-7 w-7 items-center justify-center text-muted-foreground"
-                title={`AI + providers, lower bound. Day boundaries use ${data.timezone.replaceAll("_", " ")}. Fixed monthly services: ${
+              <InfoHint
+                text={`AI + providers, lower bound. Day boundaries use ${data.timezone.replaceAll("_", " ")}. Fixed monthly services: ${
                   fixedMonthly === null
                     ? "loading"
                     : fixedMonthly === "missing" || fixedMonthly <= 0
                       ? "not set"
                       : `${usd(fixedMonthly, rate)}/month`
                 }.`}
-              >
-                <Info className="h-3.5 w-3.5" aria-hidden />
-                <span className="sr-only">Spend scope details</span>
-              </span>
+                label="Spend scope details"
+              />
               <RefreshCwTapButton
                 variant="transparent"
                 ariaLabel={

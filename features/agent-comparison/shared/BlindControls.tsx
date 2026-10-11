@@ -85,11 +85,7 @@ export function BlindControls({
           ? "bg-violet-500/15 text-violet-500 border-violet-500/40"
           : "text-muted-foreground border-border hover:bg-muted/50",
       )}
-      title={
-        enabled
-          ? "Blind test ON — on Submit, columns shuffle and all identifying info (model, settings, prompt, tokens, cost, speed) hides until you Reveal"
-          : "Blind test: shuffle + hide everything identifying so you evaluate responses without bias. Reveal when done."
-      }
+      title={enabled ? "Blind test is on" : "Turn on blind test"}
       aria-pressed={enabled}
       aria-label="Blind test"
     >

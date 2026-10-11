@@ -5,6 +5,7 @@
  * the create canvas tab. Pure presentational; parent owns EditorState.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { TriangleAlert, Trash2 } from "lucide-react";
 import { EntityTypeChip } from "@/components/entity-types/EntityTypeChip";
 import { EntityTypeCombobox } from "@/components/entity-types/EntityTypeCombobox";
@@ -269,11 +270,9 @@ export function RuleEditorForm({
 
       {conveys ? (
         <div className="flex flex-col gap-1.5">
-          <span
-            className="text-xs font-medium"
-            title="Permission is the lowest along a path; admin on a container never grants admin on its contents."
-          >
+          <span className="flex items-center gap-1 text-xs font-medium">
             Maximum conveyed level
+            <InfoHint text="Permission is the lowest along a path; admin on a container never grants admin on its contents." label="About the conveyed level" />
           </span>
           <Select
             value={editor.conveysMax}

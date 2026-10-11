@@ -316,7 +316,7 @@ export function JobBoardPreview() {
               type="button"
               aria-pressed={domainOnly}
               onClick={() => setDomainOnly((v) => !v)}
-              title={`The domain door — the same board, sliced to the ${PREVIEW_DOMAIN} feature's own jobs.`}
+              title={`Only ${PREVIEW_DOMAIN} jobs`}
               className={cn(
                 "rounded-md border px-2.5 py-1 text-xs transition-colors",
                 domainOnly

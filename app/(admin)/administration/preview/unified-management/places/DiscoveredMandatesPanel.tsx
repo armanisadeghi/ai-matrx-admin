@@ -73,7 +73,7 @@ function MatchedKeys({
                 ? `"${c.key}" resolves to this place's "${c.satisfiedByPlaceValue}"${
                     kv ? ` via known value ${kv.id}` : ""
                   }`
-                : `"${c.key}" has no read path in this place — that is the only thing keeping the job off this page.`
+                : `"${c.key}" has no read path in this place`
             }
             className={cn(
               "inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-mono",

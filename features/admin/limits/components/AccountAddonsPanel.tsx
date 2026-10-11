@@ -20,6 +20,7 @@
 //   * Pretend a tracking-only capability stops anything. `enforced = false` is
 //     labelled in words wherever the number appears.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { asClause } from "@ai-matrx/kit/text";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Check, ChevronDown, Plus } from "lucide-react";
@@ -669,11 +670,9 @@ export function AccountAddonsPanel() {
       <div className="space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="max-w-2xl rounded-lg border border-border bg-muted/40 p-4 text-sm">
-            <p
-              className="font-medium"
-              title="Lower, self-imposed ceilings are guardrails, set by the org or person in their own settings."
-            >
+            <p className="flex items-center gap-1 font-medium">
               An add-on only ever raises an allowance.
+              <InfoHint text="Lower, self-imposed ceilings are guardrails, set by the org or person in their own settings." label="About add-ons and ceilings" />
             </p>
           </div>
         </div>

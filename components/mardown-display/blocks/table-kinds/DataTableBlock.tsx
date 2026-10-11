@@ -79,6 +79,7 @@
  *    data" that hides what was asked for.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { displayLabel } from "@ai-matrx/kit/text-case";
 import React from "react";
 import {
@@ -635,12 +636,12 @@ export function DataTableBlock({ serverData, className }: DataTableBlockProps) {
                       )}
                     >
                       {column.undeclared ? (
-                        <span
-                          className="rounded border border-dashed border-amber-500/60 px-1 text-[10px] font-normal leading-tight text-amber-600 dark:text-amber-400"
-                          title="The source declared no column here — these cells came from rows longer than the column list. Shown rather than dropped."
-                        >
-                          undeclared
-                        </span>
+                        <>
+                          <span className="rounded border border-dashed border-amber-500/60 px-1 text-[10px] font-normal leading-tight text-amber-600 dark:text-amber-400">
+                            undeclared
+                          </span>
+                          <InfoHint text="The source declared no column here; these cells came from rows longer than the column list." label="About an undeclared column" />
+                        </>
                       ) : (
                         <ColumnTypeBadge
                           type={column.type}

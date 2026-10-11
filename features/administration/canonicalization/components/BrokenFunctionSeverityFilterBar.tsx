@@ -110,7 +110,7 @@ export function BrokenFunctionSeverityFilterBar({
           <button
             type="button"
             onClick={() => onToggleUnclassified(!includeUnclassified)}
-            title="Rows with no severity at all — written before classification existed, or a classifier gap. Treat as a checker bug."
+            title="Rows with no severity"
             aria-pressed={includeUnclassified}
             className={cn(
               "inline-flex h-6 items-center gap-1.5 rounded-md border px-2 text-[11px] transition-colors",

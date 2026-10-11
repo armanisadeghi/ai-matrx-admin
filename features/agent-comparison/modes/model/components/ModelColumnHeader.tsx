@@ -9,6 +9,7 @@
  * are many tunable knobs).
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useState } from "react";
 import {
   ChevronsLeftRight,
@@ -215,7 +216,7 @@ export function ModelColumnHeader({
           title={
             column.collapsed
               ? "Expand this column"
-              : "Collapse this column — it'll shrink to a thin slice you can click to bring back"
+              : "Collapse this column"
           }
           aria-label={column.collapsed ? "Expand column" : "Collapse column"}
         >
@@ -242,12 +243,10 @@ export function ModelColumnHeader({
           Model
         </span>
         {usingAgentDefault && !isBaseline && (
-          <span
-            className="text-[10px] text-muted-foreground shrink-0"
-            title="No model picked for this column, so it runs on the agent's own model. Pick one to compare."
-          >
-            agent default
-          </span>
+          <>
+            <span className="text-[10px] text-muted-foreground shrink-0">agent default</span>
+            <InfoHint text="No model picked for this column, so it runs on the agent's own model. Pick one to compare." label="About the agent default model" />
+          </>
         )}
         <div
           className="flex-1 min-w-0"

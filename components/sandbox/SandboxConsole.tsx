@@ -12,6 +12,7 @@
 
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import "@/styles/terminal-host.css";
 import { useEffect, useRef, useState } from "react";
 import { createLineEditor } from "@ai-matrx/terminal";
@@ -159,21 +160,25 @@ export function SandboxConsole(props: SandboxConsoleProps) {
       >
         <div className="pointer-events-none absolute right-3 top-1 flex flex-col items-end gap-1">
           {lineStaged ? (
-            <span
-              data-testid="agent-staged-command-marker"
-              title="An agent typed this command; nothing runs until you press Enter, and editing it clears this marker."
-              className="pointer-events-auto rounded border border-amber-500/30 bg-amber-500/15 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-amber-400"
-            >
-              staged by agent · not run
+            <span className="flex items-center gap-1">
+              <span
+                data-testid="agent-staged-command-marker"
+                className="pointer-events-auto rounded border border-amber-500/30 bg-amber-500/15 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-amber-400"
+              >
+                staged by agent · not run
+              </span>
+              <InfoHint className="pointer-events-auto" text="An agent typed this command; nothing runs until you press Enter, and editing it clears this marker." label="About a staged command" />
             </span>
           ) : null}
           {cwdStaged ? (
-            <span
-              data-testid="agent-staged-cwd-marker"
-              title={`${cwd} was set by an agent, not a cd you ran; your next command runs there`}
-              className="pointer-events-auto rounded border border-amber-500/30 bg-amber-500/15 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-amber-400"
-            >
-              folder set by agent
+            <span className="flex items-center gap-1">
+              <span
+                data-testid="agent-staged-cwd-marker"
+                className="pointer-events-auto rounded border border-amber-500/30 bg-amber-500/15 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-amber-400"
+              >
+                folder set by agent
+              </span>
+              <InfoHint className="pointer-events-auto" text={`${cwd} was set by an agent, not a cd you ran; your next command runs there.`} label="About the folder set by an agent" />
             </span>
           ) : null}
         </div>

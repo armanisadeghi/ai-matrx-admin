@@ -37,6 +37,7 @@
 //     its values are entered per organization (Organizations admin, custom
 //     limits) and inherited by members. Its row says so and links there.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Loader2, Plus, X } from "lucide-react";
@@ -542,12 +543,8 @@ export function PlanAllowancesPanel() {
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="type-title">AI points</h3>
           {pointsCap && <EnforcementBadge enforced={pointsCap.enforced} />}
-          <span
-            className="type-secondary text-muted-foreground"
-            title="Blank is unlimited, 0 is not included, — means the window is off."
-          >
-            per person, in points
-          </span>
+          <span className="type-secondary text-muted-foreground">per person, in points</span>
+          <InfoHint text="Blank is unlimited, 0 is not included, and a dash means the window is off." label="About allowance values" />
           <div className="ml-auto flex items-center gap-1">
             {OPTIONAL_POINTS_WINDOWS.map((period) => {
               const on = pointsColumns.some((c) => c.period === period);

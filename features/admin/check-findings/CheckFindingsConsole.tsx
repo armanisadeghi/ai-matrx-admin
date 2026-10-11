@@ -20,6 +20,7 @@
  * server-only and has no reachable item; this page offers no control for it (FEATURE.md).
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { Suspense, useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -246,12 +247,12 @@ function ConsoleBody({ frontendAccept, source = liveCheckFindingsSource, banner 
                 {formatCount(totals.open)} open
               </span>
               {totals.unitemized ? (
-                <span
-                  className="font-medium text-foreground"
-                  title="These checks ran and failed, but name no items one by one: each one's headline is the finding to fix."
-                >
+                <>
+                <span className="font-medium text-foreground">
                   {formatCount(totals.unitemized)} failing without an item list
                 </span>
+                <InfoHint text="These checks ran and failed, but name no items one by one: each one's headline is the finding to fix." label="About failing without an item list" />
+                </>
               ) : null}
               {totals.broken ? (
                 <span className="font-medium text-destructive">{totals.broken} check broken</span>
@@ -552,9 +553,10 @@ function CheckBoard({
         ) : r.run.scan_complete ? (
           <span className="text-success">complete</span>
         ) : (
-          <span className="text-warning" title="Without the end-of-scan marker, absent items are never marked fixed.">
-            partial
-          </span>
+          <>
+            <span className="text-warning">partial</span>
+            <InfoHint text="Without the end-of-scan marker, absent items are never marked fixed." label="About a partial scan" />
+          </>
         ),
     },
     { id: "repo", header: "Repo", accessorFn: (r) => r.check.repo ?? "", filter: "select", width: 120 },
@@ -780,9 +782,10 @@ function CheckDetail({
             {item.db_accept_reason}
           </span>
         ) : (
-          <span className="text-muted-foreground" title="An allowlist accept keeps its reason, who and when in the check's own allowlist file.">
-            in the {repo ?? "repo"} allowlist
-          </span>
+          <>
+            <span className="text-muted-foreground">in the {repo ?? "repo"} allowlist</span>
+            <InfoHint text="An allowlist accept keeps its reason, who and when in the check's own allowlist file." label="About allowlist accepts" />
+          </>
         ),
     },
     {
@@ -1044,22 +1047,18 @@ function ItemDecision({
   if (item.state !== "open" && item.state !== "handed_off") return null;
   if (item.item_key === SUMMARY_ITEM_KEY) {
     return (
-      <span
-        className="text-[11px] text-muted-foreground"
-        title="The check failed without listing items — fix what its headline names; it closes on the next passing run."
-      >
-        fix what it names
-      </span>
+      <>
+        <span className="text-[11px] text-muted-foreground">fix what it names</span>
+        <InfoHint text="The check failed without listing items. Fix what its headline names; it closes on the next passing run." label="About fixing a check without items" />
+      </>
     );
   }
   if (isReservedKey(item.item_key)) {
     return (
-      <span
-        className="text-[11px] text-muted-foreground"
-        title="A record about the check itself — fix the check; it closes on the next whole run."
-      >
-        fix the check
-      </span>
+      <>
+        <span className="text-[11px] text-muted-foreground">fix the check</span>
+        <InfoHint text="A record about the check itself. Fix the check; it closes on the next whole run." label="About fixing the check" />
+      </>
     );
   }
   if (acceptable && (view.kind === "landing" || view.kind === "committing")) return null;
@@ -1149,9 +1148,10 @@ function PendingAcceptBadge({ view }: { view: PendingAcceptView }) {
       );
     case "still_reported":
       return (
-        <span className="text-[10px] text-destructive" title="A run that started after the accept landed still reports this finding.">
-          Accept landed, still reported
-        </span>
+        <>
+          <span className="text-[10px] text-destructive">Accept landed, still reported</span>
+          <InfoHint text="A run that started after the accept landed still reports this finding." label="About a still-reported finding" />
+        </>
       );
     case "failed":
       return (

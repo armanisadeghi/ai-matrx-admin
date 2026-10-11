@@ -20,6 +20,7 @@
  * paste text · import a transcript. A row opens the document viewer.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -237,9 +238,8 @@ function StageCell({
   if (state === "read_failed")
     return (
       <span className="flex items-center gap-1.5 text-xs text-warning">
-        <span title="This row's status could not be read from the server. Other rows are unaffected.">
-          {STAGE_CELL_LABEL.read_failed}
-        </span>
+        <span>{STAGE_CELL_LABEL.read_failed}</span>
+        <InfoHint text="This row's status could not be read from the server. Other rows are unaffected." label="About this status" />
         <Button
           type="submit"
           variant="outline"
@@ -266,9 +266,8 @@ function StageCell({
     );
   return (
     <span className="flex items-center gap-1.5 text-xs text-warning">
-      <span title="Searches still answer with this Source's previous text; its current version is not indexed yet.">
-        Index stale
-      </span>
+      <span>Index stale</span>
+      <InfoHint text="Searches still answer with this Source's previous text; its current version is not indexed yet." label="About a stale index" />
       <Button
         type="submit"
         variant="outline"
@@ -1172,10 +1171,11 @@ export function SourcesPage() {
         {/* The source is paged: show its raw match count without duplicating the table's distinct loaded count. */}
         {rows.length > 0 && total !== null && hasMore ? (
           <div className="flex items-center justify-center gap-3 py-2 text-xs text-muted-foreground">
-            <span title="Includes recaptures; the number of distinct Sources may be smaller.">
+            <span>
               {/* read-gate-exempt: shown only with rows and a total, which only a successful page read provides */}
               {formatCount(total)} matching capture records
             </span>
+            <InfoHint text="Includes recaptures; the number of distinct Sources may be smaller." label="About this count" />
             <Button
               icon={loadingMore ? (
                 <Loader2 className="animate-spin" />

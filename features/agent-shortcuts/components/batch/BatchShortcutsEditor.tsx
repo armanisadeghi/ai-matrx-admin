@@ -1,5 +1,6 @@
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -640,6 +641,7 @@ export function BatchShortcutsEditor({
                 type now carries the mandate identity the router supplies. This
                 badge is the proof, in the UI, of which storage answered — and
                 it screams while the answer is still the legacy one. */}
+            <>
             <span
               className={cn(
                 "shrink-0 rounded border px-1.5 py-0.5 font-mono text-[10px]",
@@ -647,16 +649,21 @@ export function BatchShortcutsEditor({
                   ? "border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
                   : "border-amber-500/40 text-amber-600 dark:text-amber-400",
               )}
-              title={
-                mandateBackedRows > 0
-                  ? "Rows are mandate-backed: the active storage supplied a mandate identity for them."
-                  : "SHORTCUT_STORAGE_CUTOVER is OFF, so the active storage supplies no mandate identity. The grid is already storage-agnostic — it reads and writes through the router — but until the switch flips these rows have no mandate behind them."
-              }
             >
               mandate-backed{" "}
               <UntrustedCount value={mandateBackedRows} trustworthy={!shortcutsError} label="Mandate-backed rows" />/
               <UntrustedCount value={shortcutsForAgent.length} trustworthy={!shortcutsError} label="Shortcuts" />
             </span>
+            {/* Off-state: the shortcut-storage cutover switch is still off, so the active storage supplies no mandate identity. */}
+            <InfoHint
+              text={
+                mandateBackedRows > 0
+                  ? "These rows are mandate-backed: the active storage supplied a mandate identity for them."
+                  : "The active storage supplies no mandate identity yet, so these rows have no mandate behind them."
+              }
+              label="About mandate-backed rows"
+            />
+            </>
           </div>
 
           {/* Zone 1 — pick targets */}

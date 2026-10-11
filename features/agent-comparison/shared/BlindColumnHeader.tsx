@@ -91,7 +91,7 @@ export function BlindColumnHeader({
         title={
           collapsed
             ? "Expand this column"
-            : "Collapse this column — it'll shrink to a thin slice you can click to bring back"
+            : "Collapse this column"
         }
         aria-label={collapsed ? "Expand column" : "Collapse column"}
       >

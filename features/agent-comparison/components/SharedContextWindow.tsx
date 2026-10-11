@@ -18,6 +18,7 @@
  * AgentConversationColumn → CreatorRunPanel → Context tab.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useMemo, useState } from "react";
 import { Plus, Trash2, Building2, Briefcase, ClipboardList, Layers } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -268,8 +269,8 @@ function SharedContextScopeStatus() {
         }.`;
 
   return (
+    <>
     <span
-      title={tooltip}
       className={cn(
         "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium",
         submittableCount === 0
@@ -283,6 +284,8 @@ function SharedContextScopeStatus() {
         ? "No columns"
         : `${submittableCount} column${submittableCount === 1 ? "" : "s"}`}
     </span>
+    <InfoHint text={tooltip} label="About where edits apply" />
+    </>
   );
 }
 

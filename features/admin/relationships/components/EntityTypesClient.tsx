@@ -13,6 +13,7 @@
 // active registry tokens (server prop) against the generated vocabulary and
 // stays up until they match again.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useEffect, useMemo, useState, useTransition } from "react";
@@ -382,12 +383,12 @@ export function EntityTypesClient({ entityTypes }: Props) {
                 opens on {row.default_list_scope === "organization" ? "org" : "mine"}
               </span>
               {row.suppress_platform_admin_lane && (
-                <span
-                  className="rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground"
-                  title="Matrx staff have no standing read of this table — they go through the audited emergency door like anyone else."
-                >
-                  staff closed
-                </span>
+                <>
+                  <span className="rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                    staff closed
+                  </span>
+                  <InfoHint text="Matrx staff have no standing read of this table; they use the audited emergency door like anyone else." label="About staff closed" />
+                </>
               )}
             </div>
           );

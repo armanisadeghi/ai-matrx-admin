@@ -20,6 +20,7 @@
  * (common-docs/systems/architecture/database/data-lifecycle/projects/data-lifecycle-platform/PLAN.md), never an impulse click.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Archive, Clock, Trash2, Undo2 } from "lucide-react";
 
@@ -385,6 +386,7 @@ export default function TrashPage() {
             if (!clock) return null;
             const overdue = isScheduleOverdue(clock.wipe_on, notice?.as_of ?? null);
             return (
+              <>
               <span
                 className={cn(
                   "hidden shrink-0 text-xs sm:inline",
@@ -392,14 +394,17 @@ export default function TrashPage() {
                     ? "font-medium text-amber-700 dark:text-amber-400"
                     : "text-muted-foreground",
                 )}
-                title={
-                  longDate(clock.wipe_on)
-                    ? `Earliest group schedule: ${longDate(clock.wipe_on)}. Individual rows may have later deadlines.`
-                    : undefined
-                }
               >
                 Group schedule: {overdue ? "eligible for deletion" : whenPhrase(clock.days_left)}
               </span>
+              {longDate(clock.wipe_on) ? (
+                <InfoHint
+                  text={`Earliest group schedule: ${longDate(clock.wipe_on)}. Individual rows may have later deadlines.`}
+                  label="About the group schedule"
+                  className="hidden sm:inline-flex"
+                />
+              ) : null}
+              </>
             );
           }}
         />

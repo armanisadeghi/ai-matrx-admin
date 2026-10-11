@@ -1,4 +1,5 @@
 "use client";
+import { InfoHint } from "@/components/official/InfoHint";
 import React from 'react';
 import UnifiedBookmarkManager from './UnifiedBookmarkManager';
 import { useRouter } from 'next/navigation';
@@ -28,8 +29,9 @@ const BookmarkManagerPage: React.FC = () => {
       <div className="flex flex-col h-full">
         <div className="mb-4 flex items-center gap-3">
           <BookmarkIcon className="h-7 w-7 text-blue-500" />
-          <div>
-            <h1 title="Manage all your saved paths and bookmarks across the application." className="text-3xl font-bold">Bookmark Manager</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold">Bookmark Manager</h1>
+            <InfoHint text="Manage all your saved paths and bookmarks across the application." label="About the Bookmark Manager" />
           </div>
         </div>
         

@@ -11,6 +11,7 @@
  * every field read is defensive because values are partial mid-stream.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import React from "react";
 import {
   Clock,
@@ -204,14 +205,13 @@ export function ProviderRunReceiptBlock({
               ? "border border-dashed border-warning/60 text-warning"
               : "bg-muted text-foreground",
           )}
-          title={
-            cost.unmeasured
-              ? "The provider reported no cost for this call. Unmeasured is not free — never fold it into a total as zero."
-              : "Spend, as the provider reported it"
-          }
+          title={cost.unmeasured ? undefined : "Spend, as the provider reported it"}
         >
           {cost.text}
         </span>
+        {cost.unmeasured ? (
+          <InfoHint text="The provider reported no cost for this call. Unmeasured is not free, so it is not counted as zero." label="About unmeasured cost" />
+        ) : null}
         {fromCache && (
           <RankChip
             title={

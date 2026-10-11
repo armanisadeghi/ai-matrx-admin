@@ -51,6 +51,7 @@
  * a list says how many things are in it, and a record shows its fields.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { Button, Badge } from "@ai-matrx/design-system/controls";
 import React from "react";
 import {
@@ -124,12 +125,12 @@ export const ColumnTypeBadge: React.FC<{
 }> = ({ type, sourceType, nullable }) => {
   if (typeof type !== "string" || type.trim() === "") {
     return (
-      <span
-        className="shrink-0 rounded border border-dashed border-muted-foreground/50 px-1 text-[10px] font-normal leading-tight text-muted-foreground/70"
-        title="Type unknown — the source could not declare one. This is NOT the same as text: nothing here has been checked, so read every value literally."
-      >
-        ?
-      </span>
+      <>
+        <span className="shrink-0 rounded border border-dashed border-muted-foreground/50 px-1 text-[10px] font-normal leading-tight text-muted-foreground/70">
+          ?
+        </span>
+        <InfoHint text="Type unknown: the source could not declare one. It is not the same as text, so read every value literally." label="About an unknown type" />
+      </>
     );
   }
   const detail = [
@@ -306,7 +307,7 @@ const TemporalCell: React.FC<{
     return declared ? (
       <span
         className="font-mono text-xs text-warning"
-        title={`This column is declared ${shape}, but this value is not one — shown exactly as it arrived.`}
+        title={`Not a valid ${shape}; shown as it arrived`}
       >
         {value}
       </span>
@@ -468,7 +469,7 @@ export const DataCell: React.FC<{
     return (
       <span
         className="select-none text-muted-foreground/50"
-        title="This row is shorter than the declared column list — the source supplied no cell here. Padded, not invented."
+        title="Row is short here; the source gave no cell"
       >
         ·
       </span>

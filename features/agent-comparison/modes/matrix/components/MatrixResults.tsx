@@ -7,6 +7,7 @@
  * break-even share.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useState } from "react";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { ExternalLink, History, RotateCw } from "lucide-react";
@@ -513,8 +514,9 @@ function ToolsAnalysis({
               <tr className="border-b border-border text-muted-foreground">
                 <th className="text-left font-medium px-3 py-1.5">Pair</th>
                 <th className="text-left font-medium px-2 py-1.5">By cost</th>
-                <th className="text-left font-medium px-3 py-1.5" title="Input (cached included) plus output, so cache warmth does not move it">
-                  By all tokens
+                <th className="text-left font-medium px-3 py-1.5">
+                  By all tokens{" "}
+                  <InfoHint text="Input (cached included) plus output, so cache warmth does not move it." label="About by all tokens" />
                 </th>
               </tr>
             </thead>

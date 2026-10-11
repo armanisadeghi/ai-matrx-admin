@@ -170,7 +170,7 @@ export function SeoBudget({
       )}
       title={
         over
-          ? `${count - limits.maxChars} characters over the ${limits.maxChars}-character budget — search engines will truncate it.`
+          ? `${count - limits.maxChars} characters over the ${limits.maxChars}-character budget`
           : short
             ? `Under the ${limits.minChars}-character minimum — there is room to say more.`
             : `Inside the ${limits.minChars}–${limits.maxChars} character window.`

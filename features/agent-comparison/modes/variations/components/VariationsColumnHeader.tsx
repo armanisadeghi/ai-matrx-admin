@@ -180,8 +180,8 @@ export function VariationsColumnHeader({
         )}
         title={
           column.paused
-            ? "Resume this variation (currently paused; Submit All is skipping it)"
-            : "Pause this variation (skip it on Submit All without deleting)"
+            ? "Resume this variation"
+            : "Pause this variation"
         }
         aria-label={column.paused ? "Resume variation" : "Pause variation"}
         aria-pressed={column.paused}

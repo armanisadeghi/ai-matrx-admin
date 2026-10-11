@@ -9,6 +9,7 @@
 // (admin), grant/revoke via the existing RPC pair; people are found by email
 // through the canonical `searchUserByEmail`.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -95,15 +96,13 @@ export function IndustryCuratorsPanel({ industry }: { industry: Industry }) {
 
   return (
     <div className="mt-5 space-y-2">
-      <div
-        className="flex items-center gap-1.5 text-sm font-medium text-foreground"
-        title="Curators author and propose packs; only platform admins ratify or publish."
-      >
+      <div className="flex items-center gap-1.5 text-sm font-medium text-foreground">
         <ShieldCheck
           className="h-3.5 w-3.5 text-muted-foreground"
           aria-hidden
         />
         Curators of “{industry.name}”
+        <InfoHint text="Curators author and propose packs; only platform admins ratify or publish." label="About curators" />
       </div>
       <div className="flex gap-2">
         <UserSearchField

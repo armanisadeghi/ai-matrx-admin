@@ -1,5 +1,6 @@
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 // features/admin/shared-knowledge/packs/PackTopicsSection.tsx
 //
@@ -254,11 +255,9 @@ export function PackTopicsSection({ detail, onChanged }: { detail: AdminPackDeta
   return (
     <div className="matrx-touch-targets space-y-2">
       <div className="flex items-center justify-between gap-2">
-        <p
-          className="text-xs text-muted-foreground"
-          title="Children inherit a parent's worth; value each topic as high in the tree as it holds true."
-        >
+        <p className="flex items-center gap-1 text-xs text-muted-foreground">
           {detail.topics.length} topics valued
+          <InfoHint text="Children inherit a parent's worth; value each topic as high in the tree as it holds true." label="About topic worth" />
         </p>
         {canAuthor ? (
           <Button icon={<Plus />} variant="outline" onClick={() => setAdding(true)} disabled={adding}> Add topic

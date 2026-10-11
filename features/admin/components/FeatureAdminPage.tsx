@@ -16,6 +16,7 @@
 
 export const dynamic = "force-dynamic";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import AppLink from "@/components/navigation/AppLink";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -99,22 +100,27 @@ function TierPill({
   tier: NonNullable<FeatureAdminComponent["tier"]>;
 }) {
   return (
+    <>
     <span
       className={cn(
         "shrink-0 inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0 text-[10px] font-medium uppercase tracking-wider leading-4",
         TIER_STYLES[tier],
       )}
-      title={
-        tier === "official"
-          ? "Registered in the official-components registry"
-          : tier === "candidate"
-            ? "Official-candidate — promoted-by-use but not yet in the official registry"
-            : "Internal — feature-local file path readout"
-      }
     >
       {tier === "official" && <ShieldCheck className="h-2.5 w-2.5" />}
       {tier}
     </span>
+    <InfoHint
+      text={
+        tier === "official"
+          ? "Registered in the official-components registry."
+          : tier === "candidate"
+            ? "Promoted by use but not yet in the official registry."
+            : "A feature-local file path readout."
+      }
+      label={`About the ${tier} tier`}
+    />
+    </>
   );
 }
 

@@ -16,6 +16,7 @@
 // One RPC per save (seo.starter_pack_item_save) — the same door every other
 // pack item uses. Do NOT fork a second editor for this machinery (P22).
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
@@ -334,11 +335,9 @@ function MeaningEditor({
           the converter obeys, so this editor is the remaining door: the
           question is asked, and the author answers it. */}
       {d.worth_effect === "scale" && !isRelativeQualifier(d.value, d.label) ? (
-        <p
-          className="text-[11px] leading-4 text-warning"
-          title="A factor only scales worth a keyword already earned, so on a new site it does nothing."
-        >
+        <p className="flex items-center gap-1 text-[11px] leading-4 text-warning">
           A × factor adds nothing on its own — use ± points
+          <InfoHint text="A factor only scales worth a keyword already earned, so on a new site it does nothing." label="About the factor" />
         </p>
       ) : null}
       <div className="flex justify-end gap-2">
@@ -384,13 +383,13 @@ export function PackMeaningSection({
   return (
     <div className="matrx-touch-targets space-y-2">
       <div className="flex items-center justify-between gap-2">
-        <p
-          className="text-xs text-muted-foreground"
-          title="Points add to the 100 baseline; keep a × factor for relative words like “free”."
-        >
-          {detail.meaning.length} answers ·{" "}
-          <span className="text-emerald-600 dark:text-emerald-400">{promoters} promote</span> ·{" "}
-          <span className="text-red-600 dark:text-red-400">{demoters} demote</span>
+        <p className="flex items-center gap-1 text-xs text-muted-foreground">
+          <span>
+            {detail.meaning.length} answers ·{" "}
+            <span className="text-emerald-600 dark:text-emerald-400">{promoters} promote</span> ·{" "}
+            <span className="text-red-600 dark:text-red-400">{demoters} demote</span>
+          </span>
+          <InfoHint text="Points add to the 100 baseline; keep a × factor for relative words like “free”." label="About points and factors" />
         </p>
         {canAuthor ? (
           <Button

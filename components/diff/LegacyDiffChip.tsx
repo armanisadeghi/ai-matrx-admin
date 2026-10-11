@@ -39,7 +39,8 @@ export function LegacyDiffChip({
         e.stopPropagation();
         window.open(GALLERY_URL, "_blank", "noopener,noreferrer");
       }}
-      title={`${reason} — click to open the Diff Gallery and compare all diff renderers`}
+      title="Open the Diff Gallery"
+      aria-label={`Open the Diff Gallery: ${reason}`}
       className={cn(
         "inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-600 transition-colors hover:bg-amber-500/20 dark:text-amber-400",
         className,

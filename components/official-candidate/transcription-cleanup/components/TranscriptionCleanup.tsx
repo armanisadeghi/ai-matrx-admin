@@ -430,8 +430,8 @@ export default function TranscriptionCleanup({
                   onClick={handleProcess}
                   title={
                     responseValue.trim().length > 0
-                      ? "Run the cleaning agent again on the current transcript (replaces the response)"
-                      : "Run the cleaning agent on the current transcript"
+                      ? "Re-clean the transcript (replaces the response)"
+                      : "Clean the transcript"
                   }
                   className="inline-flex h-6 items-center gap-1 rounded-md bg-primary px-2 text-[11px] font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >

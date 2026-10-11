@@ -16,6 +16,7 @@
 //    standalone here. Sending them into the nested route would hand them an
 //    AccessGate for a BRAND they were never given, defeating the share.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -122,11 +123,9 @@ export default async function TopicalMapDoor({
             {map.description ? (
               <p className="mt-1 text-sm text-muted-foreground">{map.description}</p>
             ) : null}
-            <p
-              className="mt-1 text-xs text-muted-foreground"
-              title="You can read this map but not its brand, so editing is unavailable"
-            >
+            <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
               Status: {map.status}
+              <InfoHint text="You can read this map but not its brand, so editing is unavailable." label="About read-only access" />
             </p>
           </div>
           <div className="flex items-center gap-2">

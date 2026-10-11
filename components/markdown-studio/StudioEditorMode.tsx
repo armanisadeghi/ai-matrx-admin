@@ -168,7 +168,7 @@ export function StudioEditorMode({
         onClick={() => void archiveCopy()}
         disabled={busy !== null}
         className="flex h-8 min-w-11 items-center justify-center gap-1 rounded-md px-2 text-muted-foreground hover:bg-muted hover:text-foreground"
-        title="Archive the proving copy (soft delete — recoverable from the notes trash)"
+        title="Archive the proving copy (recoverable from trash)"
       >
         {busy === "archive" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Archive className="h-3.5 w-3.5" />}
         <span className="hidden sm:inline">Archive copy</span>
@@ -180,7 +180,7 @@ export function StudioEditorMode({
       onClick={() => void makeCopy()}
       disabled={busy !== null || !opened}
       className="flex h-8 items-center gap-1 rounded-md px-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
-      title="Create a disposable note with this exact text; saves go there, never to the loaded record"
+      title="Make a disposable copy; saves go to the copy"
     >
       {busy === "copy" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CopyPlus className="h-3.5 w-3.5" />}
       <span className="hidden sm:inline">Make an editable copy</span>
