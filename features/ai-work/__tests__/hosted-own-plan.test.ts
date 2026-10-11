@@ -19,6 +19,9 @@ jest.mock("@/lib/api/call-api", () => ({
 jest.mock("@/lib/api/typed-client", () => ({
   apiGet: (...args: unknown[]) => apiGet(...args),
   apiPost: (...args: unknown[]) => apiPost(...args),
+  // The real pure URL helper: a double must not drop a function the product
+  // calls (submitOwnPlanCode builds its URL with it).
+  withQuery: jest.requireActual("@/lib/api/typed-client").withQuery,
   buildPath: (template: string, params: Record<string, string>) =>
     template.replace(/\{([^}]+)\}/g, (_m, key: string) =>
       encodeURIComponent(params[key]),

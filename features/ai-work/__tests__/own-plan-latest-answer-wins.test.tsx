@@ -101,7 +101,13 @@ it("a payer flip during Connect neither re-reads nor erases the sign-in link", a
   expect(button(container, "Connect your Claude account").disabled).toBe(true);
 
   await act(async () => {
-    start.resolve({ provider: "claude_code", state: "awaiting_code" } as OwnPlanStatus);
+    // The real server's awaiting answer always carries the sign-in link;
+    // the Connect flow treats a link-less answer as "still starting".
+    start.resolve({
+      provider: "claude_code",
+      state: "awaiting_code",
+      sign_in_url: "https://claude.ai/oauth/authorize?x=1",
+    } as OwnPlanStatus);
   });
   expect(container.querySelector('[data-testid="state"]')?.textContent).toBe("awaiting_code");
 });
