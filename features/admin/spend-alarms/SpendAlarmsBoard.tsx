@@ -56,9 +56,15 @@ export function SpendAlarmsBoard() {
   // Who it is for (Arman 2026-10-11): the list opens on the owner's decisions, like his dock.
   // ?audience=agent_fix is the dock's "N being fixed by agents" door; info_only = "Worked as designed".
   const audienceParam = params.get("audience");
-  const [audience, setAudience] = useState<AudienceFilter>(
-    audienceParam === "any" || ALARM_AUDIENCES.includes(audienceParam as AlarmAudience) ? (audienceParam as AudienceFilter) : "owner_decision",
-  );
+  const fromParam = (v: string | null): AudienceFilter =>
+    v === "any" || ALARM_AUDIENCES.includes(v as AlarmAudience) ? (v as AudienceFilter) : "owner_decision";
+  const [audience, setAudience] = useState<AudienceFilter>(fromParam(audienceParam));
+  // The dock's door lands here by client navigation on the same page: follow the address when it changes.
+  const [seenParam, setSeenParam] = useState(audienceParam);
+  if (seenParam !== audienceParam) {
+    setSeenParam(audienceParam);
+    setAudience(fromParam(audienceParam));
+  }
   const inScope = (r: SpendAlarmRecord) => (!kindFilter || r.kind === kindFilter) && (audience === "any" || audienceOf(r) === audience);
   const ringingOf = (a: AlarmAudience) => rows.filter((r) => audienceOf(r) === a && (!kindFilter || r.kind === kindFilter) && isRinging(r)).length;
 
