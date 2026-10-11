@@ -54,6 +54,7 @@ interface RootLayoutProps {
 
 import SessionIntegrityGate from "@/features/shell/components/SessionIntegrityGate";
 import { UrlStateDoor } from "@/lib/url-state/UrlStateDoor";
+import { BUILD_IDENTITY_META, serverBuildIdentity } from "@/lib/deployment/build-identity";
 
 export default async function RootLayout({ children }: RootLayoutProps) {
   // Phase 3: server-read theme cookie so the very first HTML frame has the
@@ -66,6 +67,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
   //      `prefers-color-scheme` default for true first-visits.
   //   3. themePolicy's cookie-write side-effect (PR 3.B) keeps the cookie
   //      in lockstep with the Redux action on every toggle.
+  const buildIdentity = serverBuildIdentity();
   const cookieStore = await cookies();
   const themeCookie = cookieStore.get("theme")?.value;
   const isDark = themeCookie === "dark";
@@ -102,6 +104,9 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         <meta name="password-manager-off" content="true" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="google" content="notranslate" />
+        {/* Build identity at REQUEST time, never compiled in (lib/deployment/build-identity.ts). */}
+        <meta name={BUILD_IDENTITY_META.deploymentId} content={buildIdentity.deploymentId} />
+        <meta name={BUILD_IDENTITY_META.commitSha} content={buildIdentity.commitSha} />
         {/* Sync-engine pre-paint script — declarative, built from
                     each policy's `prePaint` descriptors. Owns `.dark` class
                     and `data-theme` on <html> before first paint when the

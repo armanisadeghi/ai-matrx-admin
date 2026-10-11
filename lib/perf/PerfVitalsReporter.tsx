@@ -38,6 +38,7 @@ import {
   type VitalName,
   type VitalSample,
 } from "./vitals";
+import { currentCommitSha } from "@/lib/deployment/build-identity";
 
 const RATE_KNOB = "perf.client_sample_rate";
 const ROUTE_RATES_KNOB = "perf.client_sample_rate_by_route";
@@ -74,7 +75,7 @@ function flush(): void {
     console.error("[perf-vitals] Supabase url or publishable key is missing; the sampled batch is dropped");
     return;
   }
-  const release = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA;
+  const release = currentCommitSha();
   const samples = fresh.map((s) => (release ? { ...s, release } : s));
   void fetch(`${url}/rest/v1/rpc/perf_client_report`, {
     method: "POST",

@@ -76,7 +76,8 @@ export async function startKitBuild(
         focus: input.options.focus ?? "",
         difficulty: input.options.difficulty ?? "",
         depth: input.options.depth ?? "standard",
-        count: input.options.count ?? null,
+        // 0 = scale the count to the source (the server reads it so).
+        count: input.options.count ?? 0,
       },
     },
     "The kit did not start building. Try again.",
