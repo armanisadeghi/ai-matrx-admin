@@ -10,6 +10,7 @@ import { Button, RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { ConfigurationTable, ConfigurationTableRow } from "@ai-matrx/design-system/controls";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import MarkdownStream from "@ai-matrx/chat/ui/markdown-stream/MarkdownStream";
+import KindInstanceRender from "@/features/content-ir/studio/components/KindInstanceRender";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { PlacementTable, ValueBox } from "./PlacementTable";
 import { RunFacts, StreamedRunBlock } from "./RunFacts";
@@ -71,14 +72,33 @@ function DeliveredTable({ run }: { run: StoredRun }) {
   );
 }
 
+/**
+ * A stored answer that IS a structured value (an object, optionally in a ```json fence) — so
+ * the left side renders it through the one kind renderer, exactly as a new run on the right
+ * does. A text answer returns null and keeps the markdown view.
+ */
+function structuredAnswer(output: string): Record<string, unknown> | null {
+  const text = output.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+  if (!text.startsWith("{")) return null;
+  try {
+    const parsed: unknown = JSON.parse(text);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : null;
+  } catch {
+    return null; // not one JSON object: the text view shows it as written
+  }
+}
+
 export function RunAsItHappened({
   stored,
   audience,
   mandateKey,
+  outputKind,
 }: {
   stored: StoredRunState;
   audience: "admin" | "product";
   mandateKey: string;
+  /** The mandate's declared output kind; the value's own `__kind` wins. */
+  outputKind: string | null;
 }) {
   const replay = useStreamedRun();
   return (
@@ -104,7 +124,19 @@ export function RunAsItHappened({
           <RunSectionTitle>Output</RunSectionTitle>
           {run.output ? (
             <div className="rounded-md border border-border px-3 py-2 text-sm">
-              <MarkdownStream content={run.output} imagePolicy="ai" allowFullScreenEditor={false} />
+              {(() => {
+                const value = structuredAnswer(run.output);
+                if (!value) return <MarkdownStream content={run.output} imagePolicy="ai" allowFullScreenEditor={false} />;
+                const own = typeof value.__kind === "string" ? value.__kind : null;
+                return (
+                  <KindInstanceRender
+                    kind={own ?? outputKind ?? "generic_structured"}
+                    value={value}
+                    variant="bare"
+                    showRoutingNote={false}
+                  />
+                );
+              })()}
             </div>
           ) : (
             <p className="text-[12px] text-muted-foreground">No output recorded</p>

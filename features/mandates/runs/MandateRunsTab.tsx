@@ -113,7 +113,7 @@ function SelectedRun({
       <ResizablePanelGroup orientation="horizontal" className="h-full">
         <ResizablePanel id="mandate-run-left" defaultSize="50%" minSize="25%">
           <div className="h-full overflow-y-auto p-3">
-            <RunAsItHappened stored={stored} audience={audience} mandateKey={mandateKey} />
+            <RunAsItHappened stored={stored} audience={audience} mandateKey={mandateKey} outputKind={outputKind} />
           </div>
         </ResizablePanel>
         <ResizableHandle />
