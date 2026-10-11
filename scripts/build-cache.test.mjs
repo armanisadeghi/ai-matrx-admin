@@ -2,8 +2,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createRequire } from "node:module";
-const { buildCacheDecision, BUILD_CACHE_PROFILES } = createRequire(import.meta.url)("./build-cache-policy.cjs");
-const on = [...BUILD_CACHE_PROFILES][0];
+const { buildCacheDecision: decide } = createRequire(import.meta.url)("./build-cache-policy.cjs");
+const on = "demos";
+const buildCacheDecision = (env) => decide(env, new Set([on])); // the rules, independent of which sites are switched on today
 
 test("on for a listed profile on Vercel", () => assert.equal(buildCacheDecision({ VERCEL: "1", MATRX_PROFILE: on }).on, true));
 test("off for an unlisted profile", () => assert.equal(buildCacheDecision({ VERCEL: "1", MATRX_PROFILE: "not-a-profile" }).on, false));
