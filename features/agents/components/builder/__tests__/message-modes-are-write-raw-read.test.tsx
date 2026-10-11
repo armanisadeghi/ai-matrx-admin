@@ -32,8 +32,8 @@ describe("agent builder prompt box modes", () => {
     const labels = items.map((i) => i.querySelector("span")?.textContent);
     expect(labels).toEqual(["Write", "Raw", "Read"]);
   });
-  it("opens in Raw until the default is flipped", () => {
-    expect(DEFAULT_MESSAGE_VIEW_MODE).toBe("plain");
+  it("opens in Write (signed off byte-exact 2026-10-10)", () => {
+    expect(DEFAULT_MESSAGE_VIEW_MODE).toBe("write");
   });
   it("shows the toolbar and Insert menu in Write and Raw, not Read", () => {
     expect(showsTextTools("write")).toBe(true);
