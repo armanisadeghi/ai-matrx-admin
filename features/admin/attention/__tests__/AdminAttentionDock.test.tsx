@@ -34,6 +34,7 @@ import { clearMutes, muteItem, readMuteMap } from "../item-mute";
 import { clearSnooze, writeSnooze } from "../dock-snooze";
 import type { OpenOutage } from "@/features/admin/system-errors/open-outages";
 import type { SystemScheduleAlarm } from "@/features/scheduling/service/queries";
+import type { SpendAlarmAttentionRow } from "@/features/admin/spend-alarms/spendAlarms";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
@@ -65,6 +66,28 @@ jest.mock("@/features/scheduling/service/queries", () => ({
   fetchSystemScheduleAlarms: () => fetchSystemScheduleAlarms(),
   muteSystemScheduleAlarm: (args: MuteArgs) => muteSystemScheduleAlarm(args),
   clearSystemScheduleAlarmMute: (id: string) => clearSystemScheduleAlarmMute(id),
+}));
+
+const fetchSpendAlarmsForAttention = jest.fn();
+const setSpendAlarmStatus = jest.fn(async (..._args: unknown[]) => {});
+jest.mock("@/features/admin/spend-alarms/spendAlarms", () => {
+  const actual = jest.requireActual("@/features/admin/spend-alarms/spendAlarms");
+  return {
+    ...actual,
+    fetchSpendAlarmsForAttention: () => fetchSpendAlarmsForAttention(),
+    setSpendAlarmStatus: (...args: unknown[]) => setSpendAlarmStatus(...args),
+  };
+});
+jest.mock("@/features/admin/spend-approvals/spendApprovals", () => ({
+  decideSpendApproval: jest.fn(async () => {}),
+}));
+jest.mock("@/features/scheduling/service/schedulerClient", () => ({
+  patchSystemTask: jest.fn(async () => {}),
+  runSystemTaskNow: jest.fn(async () => ({ run_id: "r" })),
+}));
+// THE copy door pulls the Alchemy workspace; the row only needs to render it.
+jest.mock("@/components/agent-copy/CopyButtons", () => ({
+  CopyButtons: ({ label }: { label: string }) => <button type="button" aria-label={`Copy ${label}`} />,
 }));
 
 jest.mock("@/features/scheduling/redux/tasks/thunks", () => ({
@@ -185,6 +208,45 @@ function alarm(over: Partial<SystemScheduleAlarm> = {}): SystemScheduleAlarm {
   };
 }
 
+const SPEND_ID = "c0ffee00-3333-4a4a-8b8b-00000000cc03";
+function spend(over: Partial<SpendAlarmAttentionRow> = {}): SpendAlarmAttentionRow {
+  return {
+    id: SPEND_ID,
+    kind: "protected_account_refusal",
+    level: "critical",
+    title: "Protected account billed",
+    detail: "A scheduled import billed the protected test account and was refused.",
+    rule: null,
+    fix: "Find the automation billing this protected account and stop it",
+    subject_type: "user",
+    subject_id: "u",
+    subject_name: "Test Admin (admin@admin.com)",
+    refs: {},
+    occurrence_count: 1388,
+    first_seen_at: new Date(Date.now() - 86_400_000).toISOString(),
+    last_seen_at: new Date().toISOString(),
+    cost_usd: null,
+    cost_avoided_usd: null,
+    status: "open",
+    snoozed_until: null,
+    snooze_note: null,
+    resolved_at: null,
+    resolved_by: null,
+    resolution_note: null,
+    reopened_count: 0,
+    refused: true,
+    code_fix: null,
+    person: null,
+    snoozed_by: null,
+    latest_occurrence_at: new Date().toISOString(),
+    latest_occurrence_detail: "Refused again",
+    task_enabled: null,
+    task_title: null,
+    approval_status: null,
+    ...over,
+  };
+}
+
 let container: HTMLDivElement;
 let root: Root;
 let resizeObservers: ResizeObserverCallback[] = [];
@@ -261,6 +323,9 @@ beforeEach(() => {
   fetchSystemScheduleAlarms.mockReset();
   fetchDatedChanges.mockReset();
   fetchDatedChanges.mockResolvedValue([]);
+  fetchSpendAlarmsForAttention.mockReset();
+  fetchSpendAlarmsForAttention.mockResolvedValue([]);
+  setSpendAlarmStatus.mockClear();
   muteSystemScheduleAlarm.mockClear();
   window.localStorage.clear();
   window.sessionStorage.clear();
@@ -517,4 +582,56 @@ describe("AdminAttentionDock", () => {
     await expand();
     expect(rows()).toHaveLength(1);
   });
+  it("spend alarms are on the dock: counted in the pill and title, with the record door and Copy for AI", async () => {
+    fetchSystemScheduleAlarms.mockResolvedValue([alarm()]);
+    fetchOpenOutages.mockResolvedValue([]);
+    fetchSpendAlarmsForAttention.mockResolvedValue([spend(), spend({ id: "s2", level: "info", title: "Source skipped" })]);
+    await mount();
+    expect(container.textContent).toContain("2 things need a person · 1 to know");
+    await expand();
+    const title = container.querySelector('[data-testid="attention-title"]')?.textContent ?? "";
+    expect(title).toContain("Spend alarms: 1 critical, 1 for your information.");
+    const section = container.querySelector('[data-testid="attention-section-spend-alarms"]');
+    expect(section).not.toBeNull();
+    const row = section!.querySelector('[data-testid="attention-row"]')!;
+    expect(row.querySelector('[data-testid="entity-ref"]')?.getAttribute("href")).toBe(`/administration/billing/alarms/${SPEND_ID}`);
+    expect(row.textContent).toContain("1,388 times · last ");
+    expect(row.textContent).toContain("What to do: Find the automation billing this protected account and stop it");
+    expect(row.querySelector('[aria-label="Copy Spend alarm"]')).not.toBeNull();
+  });
+
+  it("muting a spend alarm for 1 hour snoozes THE RECORD (until, for every super admin)", async () => {
+    fetchOpenOutages.mockResolvedValue([]);
+    fetchSystemScheduleAlarms.mockResolvedValue([]);
+    fetchSpendAlarmsForAttention.mockResolvedValue([spend()]);
+    await mount();
+    await expand();
+    const before = Date.now();
+    await click(rows()[0].querySelector('[data-testid="attention-mute-1h"]')!);
+    for (let i = 0; i < 4; i += 1) await tick();
+    expect(setSpendAlarmStatus).toHaveBeenCalledTimes(1);
+    const [id, status, options] = setSpendAlarmStatus.mock.calls[0] as [string, string, { snoozedUntil: string; note: string | null }];
+    expect(id).toBe(SPEND_ID);
+    expect(status).toBe("snoozed");
+    expect(options.note).toBeNull();
+    const until = Date.parse(options.snoozedUntil);
+    expect(until).toBeGreaterThanOrEqual(before + 3_600_000);
+    expect(until).toBeLessThan(before + 3_600_000 + 60_000);
+  });
+
+  it("thirty spend alarms show the worst eight and a '+22 more' door to the alarm list", async () => {
+    fetchOpenOutages.mockResolvedValue([]);
+    fetchSystemScheduleAlarms.mockResolvedValue([]);
+    fetchSpendAlarmsForAttention.mockResolvedValue(
+      Array.from({ length: 30 }, (_, n) => spend({ id: `s${n}`, level: n < 25 ? "warning" : "critical" })),
+    );
+    await mount();
+    expect(container.textContent).toContain("30 things need a person");
+    await expand();
+    expect(rows()).toHaveLength(8);
+    const more = container.querySelector('[data-testid="attention-more-spend-alarms"]');
+    expect(more?.textContent).toBe("+22 more");
+    expect(more?.getAttribute("href")).toBe("/administration/billing/alarms");
+  });
 });
+

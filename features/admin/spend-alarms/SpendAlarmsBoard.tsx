@@ -122,6 +122,7 @@ export function SpendAlarmsBoard() {
       header: "Status",
       filter: "select",
       tone: (r) => (r.status === "resolved" ? "success" : r.status === "snoozed" ? "muted" : undefined),
+      cell: (r) => (r.status === "snoozed" && r.snooze_note ? `snoozed — ${r.snooze_note}` : r.status),
     },
     { id: "handler", header: "Handler", accessorFn: (r) => r.refs.handler ?? "" },
   ];

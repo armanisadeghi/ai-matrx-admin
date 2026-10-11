@@ -5,7 +5,7 @@
  * removing it from the world (`partitionItems` keeps it as `muted`).
  */
 
-import { buildAttentionNotice, partitionItems } from "../build-notice";
+import { buildAttentionNotice, partitionItems, SECTION_LIMIT } from "../build-notice";
 import type { AttentionItem, AttentionSourceState } from "../types";
 
 function item(over: Partial<AttentionItem> & { id: string }): AttentionItem {
@@ -114,4 +114,31 @@ describe("buildAttentionNotice", () => {
     expect(buildAttentionNotice([src], { "s:o": NOW + 10 }, NOW)).toBeNull();
     expect(buildAttentionNotice([src], { "s:o": NOW - 10 }, NOW)).not.toBeNull();
   });
+  it("info rows are listed last and counted apart: they never make the dock red or say 'needs a person'", () => {
+    const src = source({
+      id: "a",
+      items: [item({ id: "i", severity: "info" }), item({ id: "w", severity: "warning" })],
+    });
+    const notice = buildAttentionNotice([src], {}, NOW)!;
+    expect(notice.sections[0].items.map((i) => i.id)).toEqual(["w", "i"]);
+    expect(notice.infoCount).toBe(1);
+    expect(notice.pill).toBe("1 thing needs a person · 1 to know");
+    const infoOnly = buildAttentionNotice([source({ id: "b", items: [item({ id: "i", severity: "info" })] })], {}, NOW)!;
+    expect(infoOnly.tone).toBe("warning");
+    expect(infoOnly.pill).toBe("1 thing to know");
+  });
+
+  it("a long source shows its worst rows and says how many more wait on its review page", () => {
+    const many = Array.from({ length: 30 }, (_, n) =>
+      item({ id: `r${n}`, severity: n < 3 ? "info" : n < 10 ? "warning" : "critical" }),
+    );
+    const notice = buildAttentionNotice([source({ id: "a", items: many })], {}, NOW)!;
+    const section = notice.sections[0];
+    expect(section.items).toHaveLength(SECTION_LIMIT);
+    expect(section.items.every((i) => i.severity === "critical")).toBe(true);
+    expect(section.hidden).toBe(30 - SECTION_LIMIT);
+    // The counts stay whole: the cap shortens the card, never the truth.
+    expect(notice.criticalCount + notice.warningCount + notice.infoCount).toBe(30);
+  });
 });
+

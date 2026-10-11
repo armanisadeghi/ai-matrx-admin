@@ -75,6 +75,8 @@ export interface SpendAlarmRecord {
   cost_avoided_usd: number | null;
   status: AlarmStatus;
   snoozed_until: string | null;
+  /** Why it was muted (the attention dock's Mute note); null when not snoozed or no note. */
+  snooze_note: string | null;
   resolved_at: string | null;
   resolved_by: string | null;
   resolution_note: string | null;
@@ -110,7 +112,7 @@ export interface SpendAlarmOccurrence {
 }
 
 const RECORD_COLUMNS =
-  "id, kind, level, title, detail, rule, fix, subject_type, subject_id, subject_name, refs, occurrence_count, first_seen_at, last_seen_at, cost_usd, cost_avoided_usd, status, snoozed_until, resolved_at, resolved_by, resolution_note, reopened_count, metadata";
+  "id, kind, level, title, detail, rule, fix, subject_type, subject_id, subject_name, refs, occurrence_count, first_seen_at, last_seen_at, cost_usd, cost_avoided_usd, status, snoozed_until, snooze_note, resolved_at, resolved_by, resolution_note, reopened_count, metadata";
 
 function asRefs(value: unknown): AlarmRefs {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
@@ -202,19 +204,63 @@ export async function fetchSpendAlarmOccurrences(alarmId: string): Promise<Spend
   });
 }
 
-/** Resolve (for everyone; it reopens if it happens again), snooze, or reopen. */
+/**
+ * Resolve (for everyone; it reopens if it happens again), snooze, or reopen. A snooze is a fact
+ * about the record: until when (`snoozedUntil`, else `snoozeHours` from now), why (`note`) and who
+ * (the caller) — the attention dock's Mute writes exactly this, so every super admin sees it.
+ */
 export async function setSpendAlarmStatus(
   id: string,
   status: AlarmStatus,
-  options: { note?: string; snoozeHours?: number } = {},
+  options: { note?: string | null; snoozeHours?: number; snoozedUntil?: string } = {},
 ): Promise<void> {
   const { error } = await billing().rpc("spend_alarm_set_status", {
     p_id: id,
     p_status: status,
     p_note: options.note || undefined,
     p_snooze_hours: options.snoozeHours ?? 24,
+    p_snoozed_until: options.snoozedUntil,
   });
   if (error) throw pgErrorToError(error);
+}
+
+// ── The attention dock's read ──────────────────────────────────────────────
+
+/**
+ * One unresolved alarm as the super-admin attention dock reads it
+ * (`billing.spend_alarms_for_attention`, a super-admin door that works on every page, not only
+ * inside the admin lane): the record, its snooze (until, note, who), its latest occurrence, and the
+ * live task/approval state its actions depend on.
+ */
+export interface SpendAlarmAttentionRow extends SpendAlarmRecord {
+  /** The snoozer's email. */
+  snoozed_by: string | null;
+  latest_occurrence_at: string | null;
+  latest_occurrence_detail: string | null;
+  /** The named scheduled task's state; null when the record names none or it is gone. */
+  task_enabled: boolean | null;
+  task_title: string | null;
+  approval_status: string | null;
+}
+
+const strOrNull = (v: unknown): string | null => (typeof v === "string" && v ? v : null);
+
+export async function fetchSpendAlarmsForAttention(): Promise<SpendAlarmAttentionRow[]> {
+  const { data, error } = await billing().rpc("spend_alarms_for_attention", { p_limit: 200 });
+  if (error) throw pgErrorToError(error);
+  return (data ?? []).map((raw) => {
+    const row = raw as unknown as Record<string, unknown>;
+    return {
+      ...toRecord({ ...row, resolved_at: null, resolved_by: null, resolution_note: null }),
+      snooze_note: strOrNull(row.snooze_note),
+      snoozed_by: strOrNull(row.snoozed_by),
+      latest_occurrence_at: strOrNull(row.latest_occurrence_at),
+      latest_occurrence_detail: strOrNull(row.latest_occurrence_detail),
+      task_enabled: typeof row.task_enabled === "boolean" ? row.task_enabled : null,
+      task_title: strOrNull(row.task_title),
+      approval_status: strOrNull(row.approval_status),
+    };
+  });
 }
 
 /** Whether a record should ring now: open, or snoozed past its time. */

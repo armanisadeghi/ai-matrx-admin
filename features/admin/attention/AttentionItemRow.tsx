@@ -22,6 +22,7 @@ import {
   AlertTriangle,
   BellOff,
   ExternalLink,
+  Info,
   Loader2,
   Volume2,
 } from "lucide-react";
@@ -36,6 +37,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AppLink } from "@/components/navigation/AppLink";
+import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
 import { humanizeRelative } from "@/features/scheduling/utils/triggerHumanize";
@@ -62,7 +64,13 @@ export function AttentionItemRow({
   onUnmute,
 }: AttentionItemRowProps) {
   const [busy, setBusy] = useState<string | null>(null);
-  const Icon = item.severity === "critical" ? AlertOctagon : AlertTriangle;
+  const Icon = item.severity === "critical" ? AlertOctagon : item.severity === "info" ? Info : AlertTriangle;
+  const severityText =
+    item.severity === "critical"
+      ? "text-destructive"
+      : item.severity === "info"
+        ? "text-muted-foreground"
+        : "text-warning";
   const impactDoors = item.doors.filter((d) => d.kind === "impact");
   const evidenceDoors = item.doors.filter((d) => d.kind === "evidence");
 
@@ -82,13 +90,7 @@ export function AttentionItemRow({
       data-attention-key={item.key}
     >
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <Icon
-          className={cn(
-            "h-3.5 w-3.5 shrink-0",
-            item.severity === "critical" ? "text-destructive" : "text-warning",
-          )}
-          aria-hidden
-        />
+        <Icon className={cn("h-3.5 w-3.5 shrink-0", severityText)} aria-hidden />
         {item.record ? (
           <EntityRef
             token={item.record.token}
@@ -102,14 +104,16 @@ export function AttentionItemRow({
         ) : (
           <span className="font-medium text-foreground">{item.title}</span>
         )}
-        <span
-          className={cn(
-            "text-[11px]",
-            item.severity === "critical" ? "text-destructive" : "text-warning",
-          )}
-        >
-          {item.state}
-        </span>
+        <span className={cn("text-[11px]", severityText)}>{item.state}</span>
+        {item.copy && (
+          <CopyButtons
+            size="xs"
+            label={item.copy.label}
+            className="ml-auto"
+            human={item.copy.human}
+            agent={item.copy.agent}
+          />
+        )}
       </div>
 
       <p className="text-xs text-muted-foreground" data-testid="attention-sentence">
@@ -119,6 +123,13 @@ export function AttentionItemRow({
       {item.about && (
         <p className="truncate text-[11px] text-muted-foreground/80" title={item.about}>
           {item.about}
+        </p>
+      )}
+
+      {item.fix && (
+        <p className="text-[11px] text-foreground" data-testid="attention-fix">
+          <span className="text-muted-foreground">What to do: </span>
+          {item.fix}
         </p>
       )}
 

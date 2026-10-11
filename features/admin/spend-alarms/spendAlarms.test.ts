@@ -24,6 +24,7 @@ const rec = (over: Partial<SpendAlarmRecord> = {}): SpendAlarmRecord => ({
   cost_avoided_usd: null,
   status: "open",
   snoozed_until: null,
+  snooze_note: null,
   resolved_at: null,
   resolved_by: null,
   resolution_note: null,

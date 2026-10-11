@@ -136,6 +136,28 @@ export function scheduleAlarmItems(
         apply: (untilMs, note) => deps.mute(row.task_id, new Date(untilMs).toISOString(), note),
         clear: () => deps.unmute(row.task_id),
       },
+      copy: {
+        label: "Schedule alarm",
+        human: () => [row.title, `${stateOf(row)}. ${row.detail}`, row.last_run_error ?? "", scheduleHref(row.task_id)].filter(Boolean).join("\n"),
+        agent: () => ({
+          kind: "schedule-alarm",
+          location: scheduleHref(row.task_id),
+          description: "One scheduled job that needs a person, with its last run.",
+          attributes: { alarm: row.alarm, severity: row.severity, kind: row.kind },
+          data: {
+            task_id: row.task_id,
+            title: row.title,
+            alarm: row.alarm,
+            detail: row.detail,
+            enabled: row.enabled,
+            next_due_at: row.next_due_at,
+            suspended_at: row.suspended_at,
+            failed_streak: row.failed_streak,
+            last_run: { id: row.last_run_id, status: row.last_run_status, error: row.last_run_error, finished_at: row.last_run_finished_at },
+            impact: row.impact,
+          },
+        }),
+      },
     };
   });
 }

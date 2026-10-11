@@ -255,7 +255,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
     ? record.status === "open"
       ? LEVEL_LABEL[record.level]
       : record.status === "snoozed"
-        ? `Snoozed until ${when(record.snoozed_until)}`
+        ? `Snoozed until ${when(record.snoozed_until)}${record.snooze_note ? ` — ${record.snooze_note}` : ""}`
         : "Resolved"
     : "";
 

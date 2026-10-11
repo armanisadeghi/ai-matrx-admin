@@ -65,6 +65,17 @@ export function providerOutageItems(
       ],
       impactDeclared: null,
       actions: [],
+      copy: {
+        label: "Provider outage",
+        human: () => `${providerLabel(outage.provider)}: ${describeOutage(outage, now).sentence}`,
+        agent: () => ({
+          kind: "provider-outage",
+          location: OUTAGE_DETAILS_HREF,
+          description: "One open AI provider outage as the server recorded it.",
+          attributes: { provider: outage.provider, error_type: outage.error_type },
+          data: outage,
+        }),
+      },
       mute: {
         scope: "local",
         current: null,

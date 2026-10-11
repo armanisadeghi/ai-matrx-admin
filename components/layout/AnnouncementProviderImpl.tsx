@@ -4,9 +4,9 @@
  * Announcement Provider — heavy body (Impl).
  *
  * Calls the `getActiveAnnouncements` server action and renders the
- * `SystemAnnouncementBanner` when there's an unviewed active announcement, and mounts the
- * notification centre's loud notices (`features/notifications/components/LoudNotices`: spend
- * alarms and every other event declared loud, delivered by aidream's `notify()`). Lazy-loaded by
+ * `SystemAnnouncementBanner` when there's an unviewed active announcement. Announcements are the
+ * user-facing feature-announcement rail only — spend alarms and every other operator alert live on
+ * the super-admin attention dock (`features/admin/attention`), never here. Lazy-loaded by
  * `AnnouncementProvider.tsx` ONLY after shell data has loaded, so the server action's dep graph
  * (supabase admin client + feedback types + modal markup) never enters the static graph of any route.
  */
@@ -15,7 +15,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { getActiveAnnouncements } from "@/actions/feedback.actions";
 import { SystemAnnouncement } from "@/types/feedback.types";
 import SystemAnnouncementBanner from "./SystemAnnouncementBanner";
-import LoudNotices from "@/features/notifications/components/LoudNotices";
 import { useAppSelector } from "@/lib/redux/hooks";
 
 export default function AnnouncementProviderImpl() {
@@ -41,15 +40,10 @@ export default function AnnouncementProviderImpl() {
 
   const currentAnnouncement = announcements[currentAnnouncementIndex];
 
-  return (
-    <>
-      <LoudNotices />
-      {currentAnnouncement ? (
-        <SystemAnnouncementBanner
-          key={currentAnnouncement.id}
-          announcement={currentAnnouncement}
-        />
-      ) : null}
-    </>
-  );
+  return currentAnnouncement ? (
+    <SystemAnnouncementBanner
+      key={currentAnnouncement.id}
+      announcement={currentAnnouncement}
+    />
+  ) : null;
 }

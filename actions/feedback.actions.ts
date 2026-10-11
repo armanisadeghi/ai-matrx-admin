@@ -1095,8 +1095,8 @@ export async function getActiveAnnouncements(): Promise<{
     const supabase = await createClient();
 
     // Targeted announcements: target_user_id NULL = global; a user_id means
-    // only that user sees the popup (e.g. Batch-system spend alarms aimed at
-    // the platform operator).
+    // only that user sees the popup. Never an alarm: operator alerts live on
+    // the super-admin attention dock (features/admin/attention).
     const {
       data: { user },
     } = await getClaimsUser(supabase);

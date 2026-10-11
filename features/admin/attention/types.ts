@@ -24,7 +24,11 @@
  * Adding a concern = one source module + one hook. The dock does not change.
  */
 
-export type AttentionSeverity = "critical" | "warning";
+/**
+ * `info` is listed (last) and counted apart: it never turns the dock red and never says
+ * "needs a person" — a record that wants to be known, not decided (a spend alarm's info grade).
+ */
+export type AttentionSeverity = "critical" | "warning" | "info";
 
 /** A page the person can open from the row — where the damage shows, or the evidence. */
 export interface AttentionDoor {
@@ -73,6 +77,25 @@ export interface AttentionMute {
   clear: (() => Promise<void>) | null;
 }
 
+/** What "Copy for AI" hands an agent — the Alchemy agent payload envelope. */
+export interface AttentionAgentPayload {
+  kind: string;
+  location: string;
+  description: string;
+  data: unknown;
+  attributes?: Record<string, string | number | boolean | null | undefined>;
+}
+
+/**
+ * Copy for the row — a person's text and an agent's payload, through THE copy door
+ * (`components/agent-copy/CopyButtons`). Any source whose record can be investigated supplies it.
+ */
+export interface AttentionCopy {
+  label: string;
+  human: () => string;
+  agent: () => AttentionAgentPayload;
+}
+
 export interface AttentionItem {
   /** `${sourceId}:${id}` — unique across sources; the local mute key. */
   key: string;
@@ -87,6 +110,13 @@ export interface AttentionItem {
   sentence: string;
   /** What the job is for, when the record carries a description. */
   about: string | null;
+  /**
+   * What to do, in one line, when the record says so ("Approve or reject the held automation",
+   * or a fix already shipped in code). Absent when the actions say it all.
+   */
+  fix?: string | null;
+  /** Copy / Copy for AI on the row. Absent when there is nothing worth handing over. */
+  copy?: AttentionCopy;
   /** The record door — absent for things with no record (an outage). */
   record: { token: string; id: string; href: string } | null;
   doors: AttentionDoor[];

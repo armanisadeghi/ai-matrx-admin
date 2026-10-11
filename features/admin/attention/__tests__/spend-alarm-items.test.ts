@@ -1,0 +1,188 @@
+/**
+ * Spend alarms on the attention dock — the record (`billing.spend_alarm`, read through
+ * `billing.spend_alarms_for_attention`) becomes a decision row: severity, the record door, a
+ * count/last-seen state, one sentence with names (never a uuid), the blocked records as
+ * "Where it shows", the latest occurrence as evidence, the fix beside the complaint, and a mute
+ * that is a FACT ABOUT THE RECORD (`spend_alarm_set_status`: snoozed until + note + by).
+ */
+
+import { spendAlarmItems, summarizeSpendAlarms, SPEND_ALARM_SOURCE_ID, type SpendAlarmDeps } from "../sources/spend-alarms";
+import { adminScheduleHref } from "@/features/scheduling/constants/routes";
+import type { SpendAlarmAttentionRow } from "@/features/admin/spend-alarms/spendAlarms";
+
+const NOW = Date.parse("2026-10-10T23:00:00Z");
+const TASK = "7f3e2a10-1111-4b2c-8d00-00000000aa01";
+const APPROVAL = "9a0b1c2d-2222-4e3f-9a00-00000000bb02";
+const ALARM = "c0ffee00-3333-4a4a-8b8b-00000000cc03";
+
+function row(over: Partial<SpendAlarmAttentionRow> = {}): SpendAlarmAttentionRow {
+  return {
+    id: ALARM,
+    kind: "spend_approval_hold",
+    level: "warning",
+    title: `Run held for approval: ${TASK}`,
+    detail: `The automation ${TASK} wanted to spend and was held until a person decides.`,
+    rule: "Automated spend needs an approval",
+    fix: "Approve or reject the held automation",
+    subject_type: "sch_task",
+    subject_id: TASK,
+    subject_name: "Nightly SEO crawl",
+    refs: { task_id: TASK, approval_id: APPROVAL },
+    occurrence_count: 1388,
+    first_seen_at: "2026-10-09T10:00:00Z",
+    last_seen_at: "2026-10-10T22:51:00Z",
+    cost_usd: null,
+    cost_avoided_usd: 3.2,
+    status: "open",
+    snoozed_until: null,
+    resolved_at: null,
+    resolved_by: null,
+    resolution_note: null,
+    reopened_count: 0,
+    refused: true,
+    code_fix: null,
+    person: null,
+    snooze_note: null,
+    snoozed_by: null,
+    latest_occurrence_at: "2026-10-10T22:51:00Z",
+    latest_occurrence_detail: `Held again for ${TASK}`,
+    task_enabled: true,
+    task_title: "Nightly SEO crawl",
+    approval_status: "waiting",
+    ...over,
+  };
+}
+
+function deps(over: Partial<SpendAlarmDeps> = {}): SpendAlarmDeps & { calls: unknown[][] } {
+  const calls: unknown[][] = [];
+  return {
+    calls,
+    setStatus: async (...args) => {
+      calls.push(["setStatus", ...args]);
+    },
+    decideApproval: async (...args) => {
+      calls.push(["decideApproval", ...args]);
+    },
+    setTaskEnabled: async (...args) => {
+      calls.push(["setTaskEnabled", ...args]);
+    },
+    runTaskNow: async (...args) => {
+      calls.push(["runTaskNow", ...args]);
+    },
+    now: NOW,
+    ...over,
+  };
+}
+
+const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+
+describe("spendAlarmItems", () => {
+  it("maps a record to a decision row: severity, record door, count state, names not ids", () => {
+    const [item] = spendAlarmItems([row()], deps());
+    expect(item.key).toBe(`${SPEND_ALARM_SOURCE_ID}:${ALARM}`);
+    expect(item.severity).toBe("warning");
+    expect(item.record).toEqual({ token: "spend_alarm", id: ALARM, href: `/administration/billing/alarms/${ALARM}` });
+    expect(item.state).toMatch(/^1,388 times · last /);
+    expect(item.title).toBe("Run held for approval: Nightly SEO crawl");
+    expect(item.sentence).toContain("Nightly SEO crawl");
+    expect(item.sentence).not.toMatch(UUID);
+    expect(item.title).not.toMatch(UUID);
+    expect(item.fix).toBe("Approve or reject the held automation");
+  });
+
+  it("info is its own severity; critical stays critical", () => {
+    const items = spendAlarmItems([row({ id: "a", level: "info" }), row({ id: "b", level: "critical" })], deps());
+    expect(items.map((i) => i.severity)).toEqual(["info", "critical"]);
+  });
+
+  it("the blocked records are 'Where it shows' doors, the latest occurrence is the evidence", () => {
+    const [item] = spendAlarmItems([row()], deps());
+    const impact = item.doors.filter((d) => d.kind === "impact");
+    expect(impact.map((d) => d.href)).toEqual([
+      adminScheduleHref(TASK),
+      `/administration/billing/approvals?id=${APPROVAL}`,
+    ]);
+    expect(impact[0].label).toBe("Nightly SEO crawl");
+    const evidence = item.doors.filter((d) => d.kind === "evidence");
+    expect(evidence).toHaveLength(1);
+    expect(evidence[0].href).toBe(`/administration/billing/alarms/${ALARM}#occurrences`);
+    expect(evidence[0].what ?? "").not.toMatch(UUID);
+    expect(item.impactDeclared).toBe(true);
+  });
+
+  it("the fix beside the complaint: Approve / Reject for a waiting hold, Pause for a running task, Resolve — consequences first", async () => {
+    const d = deps();
+    const [item] = spendAlarmItems([row()], d);
+    const ids = item.actions.map((a) => a.id);
+    expect(ids).toEqual(expect.arrayContaining(["approve", "reject", "pause", "run_now", "resolve"]));
+    expect(ids).not.toContain("resume");
+    for (const action of item.actions) {
+      expect(action.confirm?.description.length ?? 0).toBeGreaterThan(10);
+    }
+    await item.actions.find((a) => a.id === "approve")!.run();
+    await item.actions.find((a) => a.id === "pause")!.run();
+    await item.actions.find((a) => a.id === "resolve")!.run();
+    expect(d.calls).toEqual([
+      ["decideApproval", APPROVAL, "approve"],
+      ["setTaskEnabled", TASK, false],
+      ["setStatus", ALARM, "resolved", {}],
+    ]);
+  });
+
+  it("a paused task offers Resume, a decided approval no longer offers its own verb", () => {
+    const [item] = spendAlarmItems([row({ task_enabled: false, approval_status: "approved" })], deps());
+    const ids = item.actions.map((a) => a.id);
+    expect(ids).toContain("resume");
+    expect(ids).not.toContain("pause");
+    expect(ids).not.toContain("approve");
+    expect(ids).toContain("reject");
+  });
+
+  it("MUTE IS A FACT ABOUT THE RECORD: until + note go to spend_alarm_set_status; unmute reopens", async () => {
+    const d = deps();
+    const [item] = spendAlarmItems([row()], d);
+    expect(item.mute?.scope).toBe("server");
+    expect(item.mute?.current).toBeNull();
+    const until = NOW + 60 * 60 * 1000;
+    await item.mute!.apply(until, "Known: approvals backlog");
+    await item.mute!.clear!();
+    expect(d.calls).toEqual([
+      ["setStatus", ALARM, "snoozed", { snoozedUntil: new Date(until).toISOString(), note: "Known: approvals backlog" }],
+      ["setStatus", ALARM, "open", {}],
+    ]);
+  });
+
+  it("a snoozed record carries its mute (until, note, by); a snooze that has run out is not a mute", () => {
+    const until = new Date(NOW + 3_600_000).toISOString();
+    const [live] = spendAlarmItems(
+      [row({ status: "snoozed", snoozed_until: until, snooze_note: "backlog", snoozed_by: "admin@admin.com" })],
+      deps(),
+    );
+    expect(live.mute?.current).toEqual({ until, reason: "backlog", by: "admin@admin.com" });
+    const [expired] = spendAlarmItems(
+      [row({ status: "snoozed", snoozed_until: new Date(NOW - 1).toISOString(), snooze_note: "old" })],
+      deps(),
+    );
+    expect(expired.mute?.current).toBeNull();
+  });
+
+  it("every row can be copied for AI with the record's own words and doors", () => {
+    const [item] = spendAlarmItems([row()], deps());
+    expect(item.copy).toBeDefined();
+    const payload = item.copy!.agent();
+    expect(payload.kind).toBe("spend-alarm");
+    expect(payload.location).toBe(`/administration/billing/alarms/${ALARM}`);
+    expect(item.copy!.human()).toContain("Nightly SEO crawl");
+  });
+});
+
+describe("summarizeSpendAlarms", () => {
+  it("counts by level for the dock title; null at zero", () => {
+    expect(summarizeSpendAlarms([])).toBeNull();
+    const items = spendAlarmItems(
+      [row({ id: "1", level: "critical" }), row({ id: "2", level: "critical" }), row({ id: "3" }), row({ id: "4", level: "info" })],
+      deps(),
+    );
+    expect(summarizeSpendAlarms(items)).toBe("Spend alarms: 2 critical, 1 needs a decision, 1 for your information.");
+  });
+});

@@ -85,6 +85,7 @@ import { useLocalMutes } from "./useLocalMutes";
 import { useProviderOutageSource } from "./sources/useProviderOutageSource";
 import { useScheduleAlarmSource } from "./sources/useScheduleAlarmSource";
 import { useDatedChangeSource } from "./sources/useDatedChangeSource";
+import { useSpendAlarmSource } from "./sources/useSpendAlarmSource";
 import type { AttentionAction, AttentionItem } from "./types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { asClause } from "@ai-matrx/kit/text";
@@ -133,7 +134,8 @@ export default function AdminAttentionDock() {
   const schedules = useScheduleAlarmSource(canRead);
   const outages = useProviderOutageSource(canRead);
   const datedChanges = useDatedChangeSource(canRead);
-  const sources = [datedChanges, schedules, outages];
+  const spendAlarms = useSpendAlarmSource(canRead);
+  const sources = [datedChanges, spendAlarms, schedules, outages];
 
   const float = useDraggableFloat({
     storageKey: POSITION_KEY,
@@ -359,7 +361,7 @@ export default function AdminAttentionDock() {
         if (!open) setNoteFor(null);
       }}
       title={noteFor ? `Mute "${noteFor.title}" for ${NOTE_MUTE.label}` : "Mute"}
-      description="Say why it is fine for this to stay off — every super-admin will read it beside the schedule, and the mute ends on its own."
+      description="Say why this can stay quiet — every super-admin reads it on the record, and the mute ends on its own."
       placeholder="e.g. Commerce module not built yet; nothing to sync"
       multiline
       rows={3}
@@ -379,7 +381,7 @@ export default function AdminAttentionDock() {
   );
 
   if (collapsed) {
-    const count = notice ? notice.criticalCount + notice.warningCount : 0;
+    const count = notice ? notice.criticalCount + notice.warningCount + notice.infoCount : 0;
     const label = notice
       ? notice.pill
       : `${loudFailures.length === 1 ? "A check" : `${loudFailures.length} checks`} could not be read`;
@@ -478,7 +480,7 @@ export default function AdminAttentionDock() {
             </div>
           ))}
 
-          {notice?.sections.map(({ source, items }) => (
+          {notice?.sections.map(({ source, items, hidden }) => (
             <section key={source.id} className="mt-2" data-testid={`attention-section-${source.id}`}>
               <div className="flex items-center justify-between gap-2">
                 <h3 className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
@@ -505,6 +507,18 @@ export default function AdminAttentionDock() {
                   />
                 ))}
               </ul>
+              {hidden > 0 && source.review && (
+                <AppLink
+                  href={source.review.href}
+                  className="mt-1 inline-block text-[11px] text-muted-foreground underline-offset-2 hover:text-primary hover:underline"
+                  data-testid={`attention-more-${source.id}`}
+                >
+                  +{hidden} more
+                </AppLink>
+              )}
+              {hidden > 0 && !source.review && (
+                <p className="mt-1 text-[11px] text-muted-foreground">+{hidden} more</p>
+              )}
             </section>
           ))}
         </div>
