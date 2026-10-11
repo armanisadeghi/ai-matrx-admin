@@ -7,9 +7,9 @@
 
 
 const createWorkbook = jest.fn();
-const peekSelectedOrganizationId = jest.fn();
-jest.mock("@/lib/api/organization-admission", () => ({
-  peekSelectedOrganizationId: () => peekSelectedOrganizationId(),
+const ensureOrgId = jest.fn();
+jest.mock("@/lib/organizations/ensureOrgId", () => ({
+  ensureOrgId: (...a: unknown[]) => ensureOrgId(...a),
 }));
 jest.mock("@/features/workbooks/workbook-service", () => ({
   createWorkbook: (...a: unknown[]) => createWorkbook(...a),
@@ -32,8 +32,13 @@ const RLS = 'new row violates row-level security policy for table "udt_workbooks
 
 beforeEach(() => {
   createWorkbook.mockReset();
-  peekSelectedOrganizationId.mockReset();
-  peekSelectedOrganizationId.mockReturnValue(GUEST_ORGANIZATION);
+  ensureOrgId.mockReset();
+  // The load ladder answers a moment after the page paints: the guest's home organization arrives late.
+  ensureOrgId.mockImplementation(async (orgId: string | null) => {
+    if (orgId) return orgId;
+    await new Promise((r) => setTimeout(r, 5));
+    return GUEST_ORGANIZATION;
+  });
 });
 
 describe("Open as workbook from a table shared with you", () => {
@@ -45,7 +50,7 @@ describe("Open as workbook from a table shared with you", () => {
     expect(createWorkbook.mock.calls[0][0]).toMatchObject({ organizationId: CEDAR_RIDGE });
   });
 
-  it("a guest refused in the table's organization gets it in their own active organization", async () => {
+  it("a guest refused in the table's organization gets it in their own home organization, waited for", async () => {
     createWorkbook
       .mockResolvedValueOnce({ success: false, error: RLS })
       .mockResolvedValueOnce({ success: true, data: { id: "wb-2" } });
@@ -53,13 +58,14 @@ describe("Open as workbook from a table shared with you", () => {
     expect(made).toEqual({ success: true, data: { id: "wb-2" } });
     expect(createWorkbook).toHaveBeenCalledTimes(2);
     expect(createWorkbook.mock.calls[1][0].organizationId).toBe(GUEST_ORGANIZATION);
+    expect(ensureOrgId).toHaveBeenCalledWith(null);
   });
 
-  it("does not guess a guest organization when none is selected", async () => {
-    peekSelectedOrganizationId.mockReturnValue(null);
+  it("a guest with no organization of their own is told so, and nothing is written elsewhere", async () => {
+    ensureOrgId.mockRejectedValue(new Error("You don't belong to an organization yet. Create one to continue."));
     createWorkbook.mockResolvedValueOnce({ success: false, error: RLS });
     const made = await createLinkedWorkbook("Physio Follow-ups", CEDAR_RIDGE);
-    expect(made).toEqual({ success: false, error: "Select an organization before creating a workbook." });
+    expect(made).toEqual({ success: false, error: "You don't belong to an organization yet. Create one to continue." });
     expect(createWorkbook).toHaveBeenCalledTimes(1);
   });
 

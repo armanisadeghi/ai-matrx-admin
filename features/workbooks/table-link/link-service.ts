@@ -10,7 +10,7 @@
 import { mergeJsonColumn } from "@ai-matrx/data/db";
 
 import { supabase } from "@/utils/supabase/client";
-import { peekSelectedOrganizationId } from "@/lib/api/organization-admission";
+import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { createWorkbook, saveSnapshot } from "@/features/workbooks/workbook-service";
 import {
   addTableColumn,
@@ -185,14 +185,21 @@ export function isWorkbookInsertRefused(error: string): boolean {
  * there, beside the table. Someone the table was shared WITH (an Editor guest, not a member) may
  * not create rows in that organization, and that insert used to answer the raw
  * `new row violates row-level security policy for table "udt_workbooks"`; their copy now goes to
- * their own active organization — the link still names the table, which their share lets them read.
+ * their own home organization — the link still names the table, which their share lets them read.
  */
 export async function createLinkedWorkbook(name: string, tableOrganizationId: string): ReturnType<typeof createWorkbook> {
   const args = { name, description: "Linked to a table", source: "created" as const };
   const inTableOrg = await createWorkbook({ ...args, organizationId: tableOrganizationId });
   if (!isServiceFailure(inTableOrg) || !isWorkbookInsertRefused(inTableOrg.error)) return inTableOrg;
-  const organizationId = peekSelectedOrganizationId();
-  if (!organizationId) return { success: false, error: "Select an organization before creating a workbook." };
+  // EVERY ITEM HAS ONE HOME SCOPE (Arman, 2026-10-10): the guest's copy goes to their own home organization —
+  // the one the load ladder answers from their account (last active → start-up → first), waited for, never
+  // a peek that reads null while the ladder is still answering (MEMBER-DEFECTS-4 item 3).
+  let organizationId: string;
+  try {
+    organizationId = await ensureOrgId(null);
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : "Your organization could not be found." };
+  }
   return createWorkbook({ ...args, organizationId });
 }
 
