@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 import type { FieldValue } from "../../contract/fieldModel";
 import { PAPER } from "../../contract/paper";
-import { isMarkKind, isNameKind, type SField } from "../model";
+import { isMarkKind, isNameKind, optionText, type SField } from "../model";
 
 export interface ControlInputProps {
   field: SField;
@@ -117,7 +117,7 @@ export function ControlInput({
         {options.map((o) => (
           <label key={o.id} htmlFor={`esign-radio-${o.id}`} className="flex min-h-11 items-center gap-3 type-body text-foreground">
             <RadioGroupItem id={`esign-radio-${o.id}`} value={o.id} />
-            {o.option_value ?? o.label}
+            {optionText(o) ?? o.label}
           </label>
         ))}
       </RadioGroup>

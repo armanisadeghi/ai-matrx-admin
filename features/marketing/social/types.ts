@@ -311,6 +311,8 @@ export interface PostCardModel {
   shares: number | null;
   isAd: boolean;
   removed: boolean;
+  /** Captured by this organization's own browser (SCHEMA.md A7): the card carries the From your browser mark. */
+  fromBrowser?: boolean;
   outlier: OutlierInput;
   outlierScore: number | null;
   percentile: number | null;

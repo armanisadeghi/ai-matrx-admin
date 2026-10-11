@@ -10,12 +10,13 @@ import type { AppDispatch } from "@/lib/redux/store";
 import { resolveParty } from "@/features/crm/service";
 import { createBrand, createProperty, createSite } from "../data/service";
 import { ingestProfile } from "../social/server";
+import { rememberedMaxPostsPlain } from "../social/post-count";
 import { readProfile } from "../social/service";
 import type { SocialPlatform, SocialProgress } from "../social/types";
 import type { PersonBrandDeps, SeedProfile } from "./person-brand-flow";
 import { seedFromProfileRow } from "./person-brand-flow";
 
-/** One handle or profile URL → the stored profile (one profile page; it costs points). */
+/** One handle or profile URL → the stored profile with the default number of posts (a setting; it costs points). */
 export async function lookUpSeedProfile(args: {
   handleOrUrl: string;
   platform?: SocialPlatform;
@@ -24,7 +25,7 @@ export async function lookUpSeedProfile(args: {
   onProgress?: (progress: SocialProgress) => void;
 }): Promise<SeedProfile> {
   const result = await ingestProfile(
-    { handleOrUrl: args.handleOrUrl.trim(), platform: args.platform, pages: 1 },
+    { handleOrUrl: args.handleOrUrl.trim(), platform: args.platform, maxPosts: await rememberedMaxPostsPlain() },
     { organizationId: args.organizationId, signal: args.signal, onProgress: args.onProgress },
   );
   const row = await readProfile(result.profile_id);

@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 import type { FieldValue } from "../../contract/fieldModel";
 import { PAPER, recipientColor } from "../../contract/paper";
-import { formatIsoDate, isFilled, isMarkKind, KIND_LABEL, KIND_TAG, looksNotNumeric, type SField } from "../model";
+import { chipText, formatIsoDate, isFilled, isMarkKind, KIND_LABEL, looksNotNumeric, optionText, otherFace, type SField } from "../model";
 
 export interface PaperFieldProps {
   field: SField;
@@ -58,7 +58,9 @@ export function PaperField(props: PaperFieldProps) {
   const filled = isFilled(field, value);
   const border = missed ? "#dc2626" : color;
   const domId = `esign-field-${field.id}`;
-  const interactiveInline = !compact && !locked && !isMarkKind(field.kind) && field.kind !== "date_signed";
+  const isChoice = field.kind === "checkbox" || field.kind === "radio";
+  // A tick or a choice is made right on the page at any width (Docusign); only text-like kinds hand a phone to the drawer.
+  const interactiveInline = !locked && (isChoice || (!compact && !isMarkKind(field.kind) && field.kind !== "date_signed"));
 
   return (
     <div
@@ -113,7 +115,7 @@ export function PaperField(props: PaperFieldProps) {
 /** A radio or checkbox laid out to its box: a square control sized to the shorter side, and a radio's
  *  option label beside it when the box is wide enough — wrapped, in text sized to the box. */
 function Choice({ field, on, color }: { field: SField; on: boolean; color?: string }) {
-  const label = field.kind === "radio" ? field.option_value : null;
+  const label = optionText(field);
   return (
     <span className="flex h-full w-full items-center justify-center gap-[0.3em] overflow-hidden" style={{ color: color ?? PAPER.ink }}>
       <span className="flex shrink-0 items-center justify-center" style={{ width: "min(100cqh, 100cqw)", height: "min(100cqh, 100cqw)" }}>
@@ -156,7 +158,7 @@ function FieldFace({
         <PenLine className="hidden h-3 w-3 shrink-0 @[64px]:block" />
         {/* A narrow box says the short word; a wide one the whole tag. */}
         <span className="truncate @[84px]:hidden">{field.kind === "initials" ? "Initial" : "Sign"}</span>
-        <span className="hidden truncate @[84px]:inline">{KIND_TAG[field.kind]}</span>
+        <span className="hidden truncate @[84px]:inline">{chipText(field)}</span>
       </span>
     );
   }
@@ -168,13 +170,13 @@ function FieldFace({
   }
   return (
     <span className="truncate px-0.5 font-medium" style={{ color, fontSize: "clamp(7px, 55cqh, 11px)" }}>
-      {KIND_TAG[field.kind] || ""}
+      {chipText(field)}
     </span>
   );
 }
 
 /** Desktop: type, pick and tick directly on the page. */
-function InlineInput({ field, value, dateFormat, onChange, onBlur, onActivate, domId }: PaperFieldProps & { domId: string }) {
+function InlineInput({ field, value, dateFormat, compact, onChange, onBlur, onActivate, domId }: PaperFieldProps & { domId: string }) {
   const common = {
     id: domId,
     "aria-label": field.label,
@@ -192,11 +194,12 @@ function InlineInput({ field, value, dateFormat, onChange, onBlur, onActivate, d
         id={domId}
         role={field.kind}
         aria-checked={on}
-        aria-label={field.kind === "radio" ? (field.option_value ?? field.label) : field.label}
+        aria-label={field.kind === "radio" ? (optionText(field) ?? field.label) : field.label}
         aria-required={field.required}
-        onFocus={() => onActivate(field)}
+        // On a phone a tap only chooses: the drawer is for typing, so focus does not open it.
+        onFocus={() => (compact ? undefined : onActivate(field))}
         onClick={() => onChange(field.id, field.kind === "radio" ? true : !on)}
-        className="flex h-full w-full items-center justify-center"
+        className="relative flex h-full w-full items-center justify-center before:absolute before:-inset-2 before:content-['']"
         style={{ color: PAPER.ink }}
       >
         <Choice field={field} on={on} />
@@ -211,7 +214,7 @@ function InlineInput({ field, value, dateFormat, onChange, onBlur, onActivate, d
         value={typeof value === "string" ? value : ""}
         onChange={(e) => onChange(field.id, e.target.value === "" ? null : e.target.value)}
       >
-        <option value="">{KIND_TAG.dropdown}</option>
+        <option value="">{chipText(field)}</option>
         {(field.options ?? []).map((o) => (
           <option key={o} value={o}>
             {o}
@@ -229,7 +232,7 @@ function InlineInput({ field, value, dateFormat, onChange, onBlur, onActivate, d
         style={{ ...common.style, fontSize: "clamp(8px, 22cqh, 13px)" }}
         value={typeof value === "string" ? value : ""}
         maxLength={field.max_length ?? 4000}
-        placeholder={field.placeholder ?? KIND_TAG.text}
+        placeholder={field.placeholder ?? chipText(field)}
         onChange={(e) => onChange(field.id, e.target.value)}
       />
     );
@@ -243,7 +246,7 @@ function InlineInput({ field, value, dateFormat, onChange, onBlur, onActivate, d
       readOnly={field.read_only === true}
       value={typeof value === "string" ? value : ""}
       maxLength={field.kind === "text" ? (field.max_length ?? 4000) : undefined}
-      placeholder={field.placeholder ?? KIND_TAG[field.kind] ?? KIND_LABEL[field.kind]}
+      placeholder={field.placeholder ?? (chipText(field) || KIND_LABEL[field.kind])}
       aria-invalid={looksNotNumeric(field.kind, value) || undefined}
       title={looksNotNumeric(field.kind, value) ? "This does not look like a number. You can still use it." : (field.tooltip ?? (field.kind === "date" ? `Format ${field.date_format ?? dateFormat}` : undefined))}
       onChange={(e) => onChange(field.id, e.target.value)}
@@ -307,23 +310,17 @@ function OtherField({
   style,
 }: PaperFieldProps & { style: React.CSSProperties }) {
   const signed = other?.signed ?? false;
+  // Someone else's open field is a quiet placeholder, never their name, a label or a raw value
+  // (Docusign greys other recipients' fields out); after they sign: their mark, tick or text.
+  const shown = otherFace(field, value, signed, dateFormat);
   let face: React.ReactNode = null;
   if (signed && isMarkKind(field.kind) && other?.markUrl) {
     // eslint-disable-next-line @next/next/no-img-element -- a data: URL of a finished signer's mark
     face = <img src={other.markUrl} alt={`${other.name ?? "Signer"}'s ${field.kind}`} className="h-full w-full object-contain" />;
-  } else if (signed && value !== null && value !== undefined) {
-    face =
-      value === true ? (
-        <Check className="h-[85%] w-[85%]" strokeWidth={3} />
-      ) : (
-        <span className="truncate px-0.5">
-          {typeof value === "string" && field.kind === "date" ? formatIsoDate(value, field.date_format ?? dateFormat) : String(value)}
-        </span>
-      );
-  } else if (!signed) {
-    // Someone else's open field is a quiet placeholder, never their name or a label (Docusign greys
-    // other recipients' fields out); the name stays in the aria-label.
-    face = null;
+  } else if (shown.kind === "check") {
+    face = <Check className="h-[85%] w-[85%]" strokeWidth={3} />;
+  } else if (shown.kind === "text") {
+    face = <span className="truncate px-0.5">{shown.text}</span>;
   }
   return (
     <div

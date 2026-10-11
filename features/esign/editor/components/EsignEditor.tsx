@@ -65,6 +65,8 @@ export interface EsignEditorProps {
   /** The draft now exists on the server: the host moves the address bar. */
   onCreated?(envelopeId: string): void;
   onSendComplete?(result: SendResult): void;
+  /** The envelope went out and the sender stays on this page: the host shows the envelope instead. */
+  onSent?(envelopeId: string): void;
   onTemplateSaved?(templateId: string): void;
   backHref?: string;
   restoredNotice?: boolean;
@@ -424,12 +426,13 @@ export function EsignEditor(props: EsignEditorProps) {
     const noCode = result.warnings.filter((w) => w.code === "access_code_not_set").length;
     if (noBox > 0) toast.warning(`${noBox} ${noBox === 1 ? "recipient has" : "recipients have"} no signature field.`);
     if (noCode > 0) toast.warning(`${noCode} ${noCode === 1 ? "recipient gets" : "recipients get"} an emailed code: no access code was set.`);
-    router.replace(onlyMe ? `/sign/e/${result.envelope_id}` : `/esign/${result.envelope_id}`);
     try {
       localStorage.removeItem(`matrx.esign.draft.${id}`);
     } catch {
       /* ignore */
     }
+    if (onlyMe || !props.onSent) router.replace(onlyMe ? `/sign/e/${result.envelope_id}` : `/esign/${result.envelope_id}`);
+    else props.onSent(result.envelope_id);
   }
 
   async function saveTemplateNow(name: string, description: string) {

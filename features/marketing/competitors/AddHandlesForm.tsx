@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { Loader2, UserPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { PostCountControl } from "@/features/marketing/social/components/PostCountControl";
 import { Select } from "@ai-matrx/design-system/controls";
 import { toast } from "@/lib/toast";
 import { SocialAccountInput, useSocialAccountInput } from "@/features/marketing/social/components/SocialAccountInput";
@@ -61,6 +62,7 @@ export function AddHandlesForm({ row, brand }: { row: BrandCompetitor; brand: Br
         onValueChange={(v) => setPlatform(v as CompetitorSocialPlatform)}
       />
       <SocialAccountInput input={input} className="min-w-0 flex-1" />
+      <PostCountControl organizationId={brand.organizationId} platform={platform} disabled={busy} />
       <Button type="submit" variant="outline" disabled={!input.account || busy} icon={busy ? <Loader2 className="animate-spin" /> : <UserPlus />}>
         {trackPoints ? `Add · ${trackPoints}` : "Add"}
       </Button>

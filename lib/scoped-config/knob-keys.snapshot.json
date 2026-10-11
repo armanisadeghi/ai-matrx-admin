@@ -3965,6 +3965,7 @@
 ["social","pinterest.pin_analytics_per_sync"],
 ["social","pinterest.requests_per_minute"],
 ["social","profile_pages_max"],
+["social","profile_posts_default"],
 ["social","refresh_tracked_enabled"],
 ["social","reuse_hours_post"],
 ["social","reuse_hours_profile"],

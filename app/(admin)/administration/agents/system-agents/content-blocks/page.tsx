@@ -3,7 +3,7 @@
 import React, { Suspense } from "react";
 import { ContentBlocksManager } from "@/components/admin/ContentBlocksManager";
 
-// ONE canonical block editor (skill.render_definition) — the same manager the
+// ONE canonical block editor (agent.prompt_block) — the same manager the
 // /administration/utilities/content-blocks page renders.
 export default function AdminContentBlocksPage() {
   // The manager reads `?block=` with useSearchParams, which the App Router

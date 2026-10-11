@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Download, LogIn } from "lucide-react";
+import { Download } from "lucide-react";
 import { PublicHeaderAuth } from "./PublicHeaderAuth";
 import { PublicHeaderFeedback } from "./PublicHeaderFeedback";
 import { PublicHeaderThemeToggle } from "./PublicHeaderThemeToggle";
@@ -15,18 +15,9 @@ import {
 } from "./publicHeaderChrome";
 import { MATRX_LOCAL_DOWNLOAD_PATH } from "@/features/matrx-local-download/release";
 
+/** Holds the auth slot without claiming signed-in or signed-out. */
 function AuthFallback() {
-  return (
-    <Button
-      icon={<LogIn />}
-      type="submit"
-      variant="quiet"
-      className={cn(PUBLIC_HEADER_ICON_BUTTON, "w-auto")}
-      disabled
-    >
-      <span className="hidden sm:inline">Sign In</span>
-    </Button>
-  );
+  return <span aria-hidden="true" className={PUBLIC_HEADER_ICON_BUTTON} />;
 }
 
 function ThemeToggleFallback() {

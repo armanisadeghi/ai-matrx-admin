@@ -214,6 +214,40 @@ export function readEnvelope(load: Pick<SignerLoadV2, "documents" | "me">): { fi
   return { fields, groups };
 }
 
+/** The label the sender wrote, or null when the label is only the auto-name ("Text 2", "Choice 1"). */
+export function givenLabel(field: Pick<FieldDefinitionV2, "kind" | "label">): string | null {
+  const label = field.label.trim();
+  if (label === "") return null;
+  const auto = new RegExp(`^${KIND_LABEL[field.kind].replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} \\d+$`);
+  return auto.test(label) ? null : label;
+}
+
+/** The chip on an empty field: the sender's label, else the kind's short tag. */
+export function chipText(field: Pick<FieldDefinitionV2, "kind" | "label">): string {
+  return givenLabel(field) ?? KIND_TAG[field.kind];
+}
+
+/** The words beside a radio or checkbox option: the sender's label, else the option value, else null. */
+export function optionText(field: Pick<FieldDefinitionV2, "kind" | "label" | "option_value">): string | null {
+  return givenLabel(field) ?? field.option_value ?? null;
+}
+
+/** What another signer's field shows on this signer's page. Never a raw value: a checked option is a
+ *  mark, an unchosen one and any empty or null value is nothing, an applied mark with no picture is a word. */
+export type OtherFace = { kind: "none" } | { kind: "check" } | { kind: "text"; text: string };
+
+export function otherFace(field: Pick<FieldDefinitionV2, "kind" | "date_format">, value: unknown, signed: boolean, dateFormat: string): OtherFace {
+  if (!signed || value === null || value === undefined) return { kind: "none" };
+  if (field.kind === "checkbox" || field.kind === "radio") {
+    return value === true || value === "true" ? { kind: "check" } : { kind: "none" };
+  }
+  if (isMarkKind(field.kind)) {
+    return value === "applied" ? { kind: "text", text: field.kind === "initials" ? "Initialed" : "Signed" } : { kind: "none" };
+  }
+  if (typeof value !== "string" || value.trim() === "") return { kind: "none" };
+  return { kind: "text", text: field.kind === "date" ? formatIsoDate(value, field.date_format ?? dateFormat) : value };
+}
+
 /** What the recipient row says for a name kind (the server fills the same at Sign, §2.3). */
 export function recipientValue(kind: FieldKindV2, me: Record<string, unknown>): string | null {
   const full = str(me.full_name) ?? "";
@@ -391,7 +425,7 @@ export function describeValue(field: FieldDefinitionV2, value: FieldValue, dateF
   if (isMarkKind(field.kind)) return value === "applied" ? (field.kind === "signature" ? "Signed" : "Initialed") : "—";
   if (field.kind === "checkbox" || field.kind === "radio") {
     if (value !== true) return "—";
-    return field.kind === "radio" ? (field.option_value ?? "Chosen") : "Checked";
+    return field.kind === "radio" ? (optionText(field) ?? "Chosen") : "Checked";
   }
   if (typeof value !== "string" || value === "") return "—";
   if (field.kind === "date") return formatIsoDate(value, field.date_format ?? dateFormat);

@@ -140,7 +140,7 @@ export function SocialProviderCard() {
         ) : null}
         <Row
           icon={Receipt}
-          label="This month · all organizations"
+          label="This month · all your organizations"
           loading={spendRollup.isPending}
           detail={
             spendRollup.isPending

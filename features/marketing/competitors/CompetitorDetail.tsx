@@ -6,6 +6,7 @@
  * numbers only — never a key, an id or a JSON view.
  */
 
+import { PostCountControl } from "@/features/marketing/social/components/PostCountControl";
 import { asClause } from "@ai-matrx/kit/text";
 import Link from "next/link";
 import { useMemo } from "react";
@@ -157,7 +158,8 @@ export function CompetitorDetail({
         </section>
       ) : null}
 
-      <footer className="flex flex-wrap gap-2 border-t border-border pt-3">
+      <footer className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
+        {found?.links.length ? <PostCountControl organizationId={brand.organizationId} /> : null}
         {model.canFindSocials ? (
           <Button
             variant="outline"

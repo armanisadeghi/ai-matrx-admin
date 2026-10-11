@@ -71,6 +71,7 @@ import { OUTLIER_TIER_THRESHOLDS, formatCompact, formatPercentile, profileBaseli
 import { useSocialSpend } from "../cost";
 import { COUNT_UNREADABLE_MESSAGE, loadMoreRequest } from "../post-count";
 import { PostCountControl } from "./PostCountControl";
+import { PostsShownLine } from "./PostsShownLine";
 import { LimitLine, fetchedText, stoppedText } from "./FetchLines";
 import { ProviderChip } from "./ProviderFallbackNotice";
 import { refreshProfile, socialErrorCode, socialErrorMessage, trackAccount } from "../server";
@@ -470,9 +471,9 @@ export function AccountDetail({ platform, profileId }: { platform: string; profi
           <span title={role === "own" ? "One of this brand's own accounts." : undefined}>
             <Badge>{`Tracked · ${TRACKED_ROLE_LABELS[role]}`}</Badge>
           </span>
-        ) : (
+        ) : canEdit ? (
           <Badge tone="warning">Not tracked</Badge>
-        )}
+        ) : null}
         <span className="ml-auto flex flex-wrap items-center gap-1">
           {!canEdit ? null : tracked.data ? (
             <>
@@ -528,12 +529,9 @@ export function AccountDetail({ platform, profileId }: { platform: string; profi
       </div>
 
       <div className="-mt-1 flex min-h-4 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground" data-testid="fetch-lines">
-        <span>{posts.isLoading ? "" : `${list.length.toLocaleString("en-US")} posts loaded${(lastFetch?.has_more ?? false) ? " · more available" : ""}`}</span>
-        {lastFetch?.has_more && canEdit ? (
-          <Button variant="quiet" onClick={() => void refresh({ more: true })} disabled={busy}>
-            Load more
-          </Button>
-        ) : null}
+        {posts.isLoading ? <span /> : (
+          <PostsShownLine organizationId={brand.organizationId} platform={p.platform} loaded={list.length} reportedTotal={p.post_count} moreFlag={lastFetch?.has_more ?? false} canLoadMore={canEdit} busy={busy} onLoadMore={() => void refresh({ more: true })} />
+        )}
         {fetchedText(lastFetch?.fetched_at ?? p.last_refreshed_at, lastFetch?.reused) ? (
           <span>{fetchedText(lastFetch?.fetched_at ?? p.last_refreshed_at, lastFetch?.reused)}</span>
         ) : null}

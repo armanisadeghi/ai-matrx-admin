@@ -20,7 +20,7 @@
  */
 
 import Link from "next/link";
-import { Bookmark, Copy, ExternalLink, MoreHorizontal } from "lucide-react";
+import { AppWindow, Bookmark, Copy, ExternalLink, MoreHorizontal } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { openContextMenuForElement } from "@ai-matrx/context-menu/engine";
 
@@ -44,6 +44,7 @@ import { PostCardMenuItems } from "./PostCardMenuItems";
 import { postMenuKey, registerPostCardMenu } from "./post-card-menu";
 import { accountHref as accountHrefOf } from "../account-href";
 import { postThumbnailDoor } from "../server";
+import { FROM_BROWSER_LABEL, isCapturedPostId } from "../gated/capturedPosts";
 import { PlatformMark } from "./PlatformMark";
 import { SocialImage } from "./SocialImage";
 import { formatSocialHandle } from "@/features/marketing/lib/social-handle";
@@ -157,6 +158,15 @@ export function SocialPostCard({ post, onOpen, onSave, extraActions, isNew, comp
             Removed
           </span>
         ) : null}
+        {post.fromBrowser ? (
+          <span
+            title={FROM_BROWSER_LABEL}
+            className="absolute bottom-1.5 right-1.5 inline-flex max-w-[70%] items-center gap-0.5 truncate rounded bg-card/90 px-1 text-[11px] text-foreground"
+          >
+            <AppWindow className="h-3 w-3 shrink-0" aria-hidden />
+            {FROM_BROWSER_LABEL}
+          </span>
+        ) : null}
         {post.isAd ? (
           <span className="absolute bottom-1.5 right-1.5 rounded bg-card/90 px-1 text-[11px] text-foreground">
             Ad
@@ -231,7 +241,7 @@ export function SocialPostCard({ post, onOpen, onSave, extraActions, isNew, comp
                   {a.label}
                 </DropdownMenuItem>
               ))}
-              {brand ? (
+              {brand && !isCapturedPostId(post.postId) ? (
                 <PostCardMenuItems post={post} brandSeg={brand.seg} organizationId={brand.organizationId} hasSaveHandler={Boolean(onSave)} />
               ) : null}
               {onSave && canEdit ? (

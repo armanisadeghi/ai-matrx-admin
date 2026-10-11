@@ -60,6 +60,8 @@ import {
   trackAccount,
 } from "@/features/marketing/social/server";
 import { useSocialSpend } from "@/features/marketing/social/cost";
+import { PostCountControl } from "@/features/marketing/social/components/PostCountControl";
+import { rememberedMaxPostsPlain } from "@/features/marketing/social/post-count";
 import {
   SocialAccountInput,
   useSocialAccountInput,
@@ -291,6 +293,7 @@ export function HandleBrandCreator({
             brandId: created.brand.id,
             propertyId: p.propertyId ?? undefined,
             allowEmpty: true,
+            maxPosts: await rememberedMaxPostsPlain(),
           },
           {
             organizationId,
@@ -385,7 +388,9 @@ export function HandleBrandCreator({
           <ErrorAlchemyMenu error={failure} /></p>
         ) : null}
         <div className="flex items-center justify-end gap-2">
-          {lookCost ? (
+          {organizationId ? (
+            <PostCountControl organizationId={organizationId} platform={parsed.status === "ok" ? parsed.platform : null} disabled={busy} />
+          ) : lookCost ? (
             <span className="text-xs text-muted-foreground">{lookCost}</span>
           ) : null}
           <Button variant="quiet" disabled={busy} onClick={onClose}>
@@ -608,6 +613,7 @@ export function HandleBrandCreator({
           })}
         </ul>
         <div className="flex items-center justify-end gap-2">
+          {!anyDone && organizationId ? <PostCountControl organizationId={organizationId} disabled={busy} /> : null}
           {!anyDone && trackCost ? (
             <span className="text-xs text-muted-foreground">{trackCost}</span>
           ) : null}

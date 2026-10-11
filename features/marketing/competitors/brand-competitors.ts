@@ -19,6 +19,7 @@ import type { AppDispatch } from "@/lib/redux/store";
 import type { Database } from "@/types/database.types";
 import { extractSocialLinks, type FoundSocialLink } from "./social-links";
 import { trackAccount, socialErrorMessage } from "../social/server";
+import { rememberedMaxPostsPlain } from "../social/post-count";
 import { SocialStreamError } from "../social/stream";
 import type { SocialPlatform } from "../social/types";
 import { BackendApiError } from "@/lib/api/errors";
@@ -291,6 +292,8 @@ export async function trackSocialAccount(req: TrackSocialRequest, organizationId
           role: req.role,
           brandId: req.brand_id,
           label: req.label,
+          // The person's / organization's default post count (a setting), never a built-in number.
+          maxPosts: await rememberedMaxPostsPlain(),
         },
         { organizationId },
       );

@@ -19,6 +19,7 @@ import { actionUsd, formatPointsAlways } from "../cost";
 import { socialKeys } from "../hooks";
 import type { PostCardModel, SocialCosts } from "../types";
 import { postActionRunners } from "./usePostActions";
+import { isCapturedPostId } from "../gated/capturedPosts";
 
 export const postMenuKey = (postId: string) => `social-post:${postId}`;
 
@@ -57,7 +58,11 @@ export function postCardMenuRows(input: PostCardMenuInput): RecordMenuRows {
     },
     ...(extraActions ?? []).map((a) => ({ kind: "item" as const, id: `x-${a.id}`, label: a.label, onSelect: () => a.onSelect(post) })),
   ];
-  if (brand) {
+  // A post only this organization's browser captured is not in the shared cache, so the server's post
+  // actions (swipe, transcript, breakdown) have nothing to act on; its account link still opens.
+  if (brand && isCapturedPostId(post.postId)) {
+    if (accountHref) items.push({ kind: "link", id: "open-account", label: "Open account", icon: UserRound, href: accountHref });
+  } else if (brand) {
     const runners = postActionRunners(
       { postId: post.postId, organizationId: brand.organizationId, hasTranscript: false },
       { invalidate: () => queryClient.invalidateQueries({ queryKey: socialKeys.all }) },

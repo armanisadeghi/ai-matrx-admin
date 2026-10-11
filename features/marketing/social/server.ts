@@ -25,6 +25,7 @@ import { BackendApiError, parseHttpError } from "@/lib/api/errors";
 import { parseMatrxNdjsonResponse } from "@ai-matrx/agents/matrx";
 
 import { SocialStreamError, consumeSocialEvents } from "./stream";
+import { capturedMediaRefs, capturedThumbnailDoor, isCapturedPostId, readCapturedPost } from "./gated/capturedPosts";
 import type {
   AdLibrary,
   AdsSearchResult,
@@ -228,9 +229,13 @@ export function ingestPost(
   );
 }
 
-/** max_posts wins over pages server-side; with neither, one page (the old default). */
+/**
+ * max_posts wins over pages server-side; with neither, the server uses the `social.profile_posts_default`
+ * setting for this organization and person. Never a built-in page count here.
+ */
 function pagesOrMax(input: { pages?: number; maxPosts?: number }): { pages?: number; max_posts?: number } {
-  return input.maxPosts != null ? { max_posts: input.maxPosts } : { pages: input.pages ?? 1 };
+  if (input.maxPosts != null) return { max_posts: input.maxPosts };
+  return input.pages != null ? { pages: input.pages } : {};
 }
 
 export function ingestProfile(
@@ -323,6 +328,11 @@ export async function analyzePost(postId: string, opts: CallOptions): Promise<An
 }
 
 export async function listPostMedia(postId: string, opts: CallOptions): Promise<PostMediaRef[]> {
+  // A post captured in the organization's own browser: its stored images, behind the captured-post door.
+  if (isCapturedPostId(postId)) {
+    const row = await readCapturedPost(postId);
+    return row ? capturedMediaRefs(row) : [];
+  }
   const { data } = await getJson<PostMediaRef[]>(`${BASE}/posts/${postId}/media`, {
     organizationId: org(opts.organizationId),
     signal: opts.signal,
@@ -348,7 +358,8 @@ export async function fetchPlaybackUrl(
 }
 
 /** The stored thumbnail door of a post (small JPEG; 404 when none was stored). */
-export const postThumbnailDoor = (postId: string): string => `${BASE}/posts/${postId}/thumbnail`;
+export const postThumbnailDoor = (postId: string): string =>
+  isCapturedPostId(postId) ? capturedThumbnailDoor(postId) : `${BASE}/posts/${postId}/thumbnail`;
 
 /** The stored avatar door of an account (small JPEG; 404 when none was stored). */
 export const profileAvatarDoor = (profileId: string): string => `${BASE}/profiles/${profileId}/avatar`;

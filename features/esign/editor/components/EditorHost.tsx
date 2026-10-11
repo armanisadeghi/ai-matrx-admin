@@ -19,6 +19,7 @@ import type { EnvelopeDraftV1 } from "../../contract/draft";
 import { makeRealEditorApi } from "../api/realApi";
 import { emptyDraft } from "../model";
 import { readMirror } from "../useDraftSync";
+import { EnvelopeDetail } from "@/features/esign/envelopes/EnvelopeDetail";
 import { EsignEditor, type EditorUploader, type UploadedDoc } from "./EsignEditor";
 
 const FilePickerWindow = dynamic(
@@ -57,6 +58,9 @@ export function EditorHost({ source }: { source: Source }) {
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
   const started = useRef(false);
+  // A successful send replaces the editor with the envelope's own page, in place (the address is
+  // already /esign/<id>, so a router.replace to it would change nothing on screen).
+  const [sentId, setSentId] = useState<string | null>(null);
 
   useEffect(() => {
     if (started.current) return;
@@ -128,6 +132,7 @@ export function EditorHost({ source }: { source: Source }) {
     },
   };
 
+  if (sentId) return <EnvelopeDetail envelopeId={sentId} />;
   if (failed) {
     return <div className="flex h-full items-center justify-center px-6 text-center type-body text-muted-foreground">{failed}</div>;
   }
@@ -154,6 +159,10 @@ export function EditorHost({ source }: { source: Source }) {
         uploader={uploader}
         restoredNotice={loaded.restored}
         backHref={source.kind === "template" ? "/esign/templates" : "/esign"}
+        onSent={(id) => {
+          window.history.replaceState(null, "", draftHref(id));
+          setSentId(id);
+        }}
         onCreated={(id) => window.history.replaceState(null, "", draftHref(id))}
         onTemplateSaved={(id) => source.kind === "template" && !source.templateId && router.replace(`/esign/templates/${id}`)}
       />

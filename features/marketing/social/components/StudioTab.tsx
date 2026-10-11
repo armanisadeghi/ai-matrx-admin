@@ -134,7 +134,7 @@ export function StudioTab() {
     );
   }
   if (!current && boards.data && !canEdit) {
-    return <p className="p-4 text-sm text-muted-foreground">No Studio board yet.</p>;
+    return <p className="p-4 text-sm text-muted-foreground">Studio boards are private to {brandName}&apos;s team</p>;
   }
   if (!current) return <RegionSkeleton />;
 

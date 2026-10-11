@@ -1,5 +1,5 @@
 // Database types for the content-blocks admin editor.
-// Canonical table: skill.render_definition (public.content_blocks retired —
+// Canonical table: agent.prompt_block (public.content_blocks retired —
 // see scripts/dead-relations.json). Categories: platform.categories
 // (dimension 'shortcut', placement_type 'content-block').
 

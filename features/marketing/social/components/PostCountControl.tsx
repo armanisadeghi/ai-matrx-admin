@@ -12,16 +12,14 @@ import { useQuery } from "@tanstack/react-query";
 import { getCosts } from "../server";
 import { formatPointsAlways } from "../cost";
 import {
-  POST_COUNT_CHOICES,
-  POST_COUNT_LABELS,
+  choiceLabel,
+  choiceMenu,
   postsUsd,
   resolveCount,
   usePostCount,
   useProfilePostsMax,
   type PostCountChoice,
 } from "../post-count";
-
-const OPTIONS: SelectOption<PostCountChoice>[] = POST_COUNT_CHOICES.map((c) => ({ value: c, label: POST_COUNT_LABELS[c] }));
 
 /** The count the current choice means, and the words for its cost. */
 export function usePostCountEstimate(organizationId: string, platform: string | null | undefined, countOverride?: number) {
@@ -50,9 +48,10 @@ export function PostCountControl({
 }) {
   const { choice, setChoice } = usePostCount();
   const { estimate, count, maxError } = usePostCountEstimate(organizationId, platform);
+  const options: SelectOption<PostCountChoice>[] = choiceMenu(choice).map((c) => ({ value: c, label: choiceLabel(c) }));
   return (
     <span className="inline-flex items-center gap-2" data-testid="post-count-control">
-      <Select aria-label="How many posts" value={choice} options={OPTIONS} onValueChange={setChoice} disabled={disabled} />
+      <Select aria-label="How many posts" value={choice ?? ""} options={options} onValueChange={setChoice} disabled={disabled || choice === null} />
       <span className="min-w-16 text-xs text-muted-foreground" aria-live="polite">
         {maxError ? "Limit not loaded" : choice === "all" && count != null ? `${count.toLocaleString("en-US")} max` : ""}
         {estimate ? ` ${estimate}` : ""}

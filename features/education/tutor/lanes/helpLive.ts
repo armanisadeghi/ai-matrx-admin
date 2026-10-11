@@ -205,7 +205,16 @@ export function helpLive(ctx: HelpLiveContext) {
         return null;
       }
       // Partial-tolerant: an errored stream may still carry a usable object.
-      return readHelp(result.data);
+      const help = readHelp(result.data);
+      if (!help) {
+        // Never a silent empty answer: say WHY the run produced nothing.
+        console.error("[flashcards.helpLive] no answer:", {
+          success: result.success,
+          error: result.error,
+          errorDetail: result.errorDetail,
+        });
+      }
+      return help;
     } catch (err) {
       console.error("[flashcards.helpLive] failed:", err);
       return null;

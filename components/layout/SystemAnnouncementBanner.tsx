@@ -107,6 +107,8 @@ export default function SystemAnnouncementBanner({
       aria-label="System announcement"
       role="status"
       aria-live="polite"
+      // Floating chrome: the shell gives every page scroll owner runway for it.
+      data-matrx-floating-bottom=""
       className="fixed inset-x-4 bottom-0 z-50 mx-auto w-auto max-w-3xl animate-in fade-in slide-in-from-bottom-3 pb-safe duration-300 sm:inset-x-6"
     >
       <div className="relative overflow-hidden rounded-3xl border border-glass-edge bg-glass shadow-glass-lg backdrop-blur-glass backdrop-saturate-glass">

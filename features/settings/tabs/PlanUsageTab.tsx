@@ -21,6 +21,7 @@ import { SpendBudgetCard } from "@/features/entitlements/guardrails/SpendBudgetC
 import { MyUsageCard } from "@/features/entitlements/usage-gate/MyUsageCard";
 import { RedeemCodeField } from "@/features/entitlements/coupons/RedeemCodeField";
 import { BillingSummary } from "@/features/entitlements/components/BillingSummary";
+import { MyCostSoFar } from "@/features/entitlements/usage-history/MyCostSoFar";
 import { UsageHistory } from "@/features/entitlements/usage-history/UsageHistory";
 import { useUserOrganizations } from "@/features/organizations/hooks";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -41,6 +42,7 @@ export function PlanUsageTab() {
       {userId ? <BillingSummary scope={{ kind: "personal", userId }} /> : null}
       <SettingsSubHeader title="Effective usage" icon={UserRound} />
       <MyUsageCard />
+      <MyCostSoFar />
       <UsageHistory />
       {/* Free-time coupons for this account (rule 18): POST /api/billing/coupons/redeem. */}
       <RedeemCodeField />

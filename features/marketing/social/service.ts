@@ -57,6 +57,7 @@ import type {
 } from "./types";
 import { isTrackedRole } from "./types";
 import { hookLineOf, num, toPostCardModel } from "./mappers";
+import { capturedDetail, isCapturedPostId, readCapturedPost } from "./gated/capturedPosts";
 
 function fail(label: string, message: string): never {
   throw new Error(`${label}: ${message}`);
@@ -364,6 +365,13 @@ export interface PostDetailRead {
 }
 
 export async function readPostDetail(postId: string): Promise<PostDetailRead | null> {
+  // A post captured in the organization's own browser (SCHEMA.md A7) opens in the same window.
+  if (isCapturedPostId(postId)) {
+    const row = await readCapturedPost(postId);
+    if (!row) return null;
+    const profile = await readProfile(row.profile_id);
+    return { ...capturedDetail(row, profile?.handle ?? null), profile };
+  }
   const { data, error } = await supabase
     .schema("social")
     .from("post")
@@ -378,6 +386,7 @@ export async function readPostDetail(postId: string): Promise<PostDetailRead | n
 }
 
 export async function readPostMetricSnapshots(postId: string): Promise<PostMetricSnapshotRow[]> {
+  if (isCapturedPostId(postId)) return []; // a captured post's figures are its one observation, on the row
   return readAllRows<PostMetricSnapshotRow>(
     ({ from, to }) =>
       supabase
@@ -394,6 +403,7 @@ export async function readPostMetricSnapshots(postId: string): Promise<PostMetri
 }
 
 export async function readPostTranscript(postId: string): Promise<PostTranscriptRow | null> {
+  if (isCapturedPostId(postId)) return null;
   const { data, error } = await supabase
     .schema("social")
     .from("post_transcript")
@@ -410,6 +420,7 @@ export async function readPostAnalysis(
   postId: string,
   organizationId: string,
 ): Promise<PostAnalysisRow | null> {
+  if (isCapturedPostId(postId)) return null;
   const { data, error } = await supabase
     .schema("social")
     .from("post_analysis")

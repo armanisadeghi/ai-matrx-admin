@@ -11,7 +11,10 @@ import {
   selectDisplayName,
   selectProfilePhoto,
 } from "@/lib/redux/slices/userSlice";
-import { selectIsSuperAdminPerson } from "@/lib/redux/selectors/userSelectors";
+import {
+  selectAuthReady,
+  selectIsSuperAdminPerson,
+} from "@/lib/redux/selectors/userSelectors";
 import { cn } from "@/lib/utils";
 import { useIsMounted } from "@/hooks/use-is-mounted";
 import { useLoginHref } from "@/hooks/auth/useLoginHref";
@@ -48,12 +51,16 @@ export function PublicHeaderAuth() {
   // Avoid hydration mismatch: GlobalAuthSync populates the user slice after
   // mount, so the very first client render must match the server's render
   // (always unauthenticated). After mount we honor the real Redux state.
-  // Without this gate, the server emits the Sign In <Button> and the client's
+  // Without this gate, the server emits the empty auth slot and the client's
   // first render emits the authed <div>, which triggers React's hydration
   // error and unmounts the entire subtree.
   const mounted = useIsMounted();
 
   const isAuthenticated = mounted && !!user.id && !user.isAnonymous;
+  // GlobalAuthSync answers "who is this?" a moment after mount. Until it has,
+  // saying "Sign In" would be a guess — and a wrong one for every signed-in
+  // visitor. Hold the slot (same size, nothing claimed) until the answer lands.
+  const authReady = useSelector(selectAuthReady);
 
   // Calculate initials for avatar fallback
   const initials = getInitials(displayName);
@@ -89,6 +96,10 @@ export function PublicHeaderAuth() {
         />
       </div>
     );
+  }
+
+  if (!mounted || !authReady) {
+    return <span aria-hidden="true" className={PUBLIC_HEADER_ICON_BUTTON} />;
   }
 
   // Not authenticated - show sign in button
