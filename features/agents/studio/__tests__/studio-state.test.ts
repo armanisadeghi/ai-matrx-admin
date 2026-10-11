@@ -5,6 +5,7 @@ import {
   examplesBuildSpec,
   readStudioState,
   studioCaseFromBuild,
+  studioCasesFromBuild,
   studioHref,
 } from "../studio-state";
 import { STUDIO_MODES, studioMode } from "../modes";
@@ -67,11 +68,21 @@ describe("Agent Studio state", () => {
     expect(cases.every((c) => c.source === EXAMPLES_CASE_SOURCE && typeof c.baseline_output === "string")).toBe(true);
     expect(cases[0]).not.toHaveProperty("user_input");
     expect(spec.purpose).toContain("north gutter loose");
+    // The goal shown in Settings is one line, never the examples.
+    expect(spec.summary).toBe("Writes new work like the person's own examples");
+    expect(examplesBuildSpec([{ output: "x", input: "" }], "Job-complete emails").summary).toBe(
+      "Writes job-complete emails, like the person's own examples",
+    );
     expect(studioCaseFromBuild({ request: { spec: { sample_inputs: spec.sample_inputs } } }, EXAMPLES_CASE_SOURCE)).toEqual({
       variables: {},
       userInput: "Chen, 14 Elm St, north gutter loose",
       approved: "Dear Mr Chen, the gutter on the north side is pulling away.",
     });
+    // Every example becomes one of the kept agent's test cases.
+    expect(studioCasesFromBuild({ request: { spec: { sample_inputs: spec.sample_inputs } } }, EXAMPLES_CASE_SOURCE).map((c) => c.userInput)).toEqual([
+      "",
+      "Chen, 14 Elm St, north gutter loose",
+    ]);
     // A mode-2 build never reads an example as its approved answer, nor the reverse.
     expect(studioCaseFromBuild({ request: { spec: { sample_inputs: spec.sample_inputs } } })).toBeNull();
   });

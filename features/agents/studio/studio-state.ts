@@ -140,6 +140,31 @@ export function studioCaseFromBuild(
   };
 }
 
+/** Every case the Studio sent with `source` (each example of "From examples"), in order. */
+export function studioCasesFromBuild(state: FactoryBuildState | null | undefined, source: string): StudioCase[] {
+  const raw = state?.request?.spec?.["sample_inputs"];
+  if (typeof raw !== "string" || !raw.trim()) return [];
+  let cases: unknown;
+  try {
+    cases = JSON.parse(raw);
+  } catch {
+    return [];
+  }
+  if (!Array.isArray(cases)) return [];
+  return cases
+    .filter((c): c is Record<string, unknown> => typeof c === "object" && c !== null && (c as Record<string, unknown>).source === source)
+    .map((c) => ({
+      variables: Object.fromEntries(
+        Object.entries((c.variables as Record<string, unknown> | undefined) ?? {}).filter(
+          (e): e is [string, string] => typeof e[1] === "string",
+        ),
+      ),
+      userInput: typeof c.user_input === "string" ? c.user_input : "",
+      approved: typeof c.baseline_output === "string" ? c.baseline_output : "",
+    }))
+    .filter((c) => c.approved.trim() !== "");
+}
+
 /** One finished thing the person made, and (optionally) what it was made from. */
 export interface StudioExample {
   output: string;
@@ -168,7 +193,7 @@ export function filledStudioExamples(examples: readonly StudioExample[]): Studio
 export function examplesBuildSpec(
   examples: readonly StudioExample[],
   job: string,
-): { name: string; purpose: string; sample_inputs: string; grading_rubric: string } {
+): { name: string; summary: string; purpose: string; sample_inputs: string; grading_rubric: string } {
   const given = filledStudioExamples(examples);
   const said = job.trim();
   const lines = [
@@ -190,6 +215,9 @@ export function examplesBuildSpec(
   }));
   return {
     name: buildNameFrom(said || `like my examples ${given[0]?.output.slice(0, 40) ?? ""}`),
+    // The agent's one-line goal (the factory's `description`): without it the whole job text,
+    // examples included, became the goal shown in Settings.
+    summary: said ? `Writes ${said.charAt(0).toLowerCase()}${said.slice(1)}, like the person's own examples` : "Writes new work like the person's own examples",
     purpose: lines.join("\n"),
     sample_inputs: JSON.stringify(cases),
     grading_rubric:

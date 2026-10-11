@@ -82,6 +82,7 @@ import {
   rerunSeedFrom,
   studioJobParam,
   studioCaseFromBuild,
+  studioCasesFromBuild,
   studioHref,
   type StudioCase,
   type StudioMessageRecord,
@@ -219,29 +220,36 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     })();
   }, [mode.id, state.agentId, state.runId, go]);
 
-  // (c) The approved answer becomes the agent's first test case, once.
+  // (c) The approved answer becomes the agent's first test case, once ("From examples": every
+  // example becomes one, with the input it was made from when the person gave it).
   const savedCaseFor = useRef<string | null>(null);
   useEffect(() => {
     const agentId = state.agentId;
     if (!agentId || !studioCase?.approved || savedCaseFor.current === agentId) return;
     savedCaseFor.current = agentId;
+    const fromExamples = mode.id === "from-examples";
+    const cases = fromExamples ? studioCasesFromBuild(build, EXAMPLES_CASE_SOURCE) : [studioCase];
     void (async () => {
       try {
         if ((await fetchAgentSamples(agentId)).length > 0) return;
-        await createAgentSample({
-          agentId,
-          label: "Approved in the Studio",
-          variables: studioCase.variables,
-          userInput: studioCase.userInput,
-          referenceOutput: studioCase.approved,
-          head: await fetchAgentContractHead(agentId),
-        });
-        toast.success("Your approved result is its first test case");
+        const head = await fetchAgentContractHead(agentId);
+        for (const [i, c] of cases.entries()) {
+          await createAgentSample({
+            agentId,
+            label: fromExamples ? `Your example ${i + 1}` : "Approved in the Studio",
+            variables: c.variables,
+            userInput: c.userInput,
+            referenceOutput: c.approved,
+            head,
+          });
+        }
+        setCasesVersion((v) => v + 1);
+        toast.success(fromExamples ? "Your examples are its test cases" : "Your approved result is its first test case");
       } catch (e) {
         toast.error("The first test case did not save", { description: e instanceof Error ? e.message : String(e) });
       }
     })();
-  }, [state.agentId, studioCase]);
+  }, [state.agentId, studioCase, build, mode.id]);
 
   // Opened from a System Builder step: the kept agent is written back onto that step, once.
   const wroteBackFor = useRef<string | null>(null);
