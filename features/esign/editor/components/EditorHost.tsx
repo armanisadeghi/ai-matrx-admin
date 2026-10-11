@@ -13,6 +13,7 @@ import { useUserConnections } from "@/features/messaging/hooks/useUserConnection
 import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserEmail, selectUserFullName, selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { useSenderName } from "../useSenderName";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 
 import type { EnvelopeDraftV1 } from "../../contract/draft";
@@ -55,6 +56,7 @@ export function EditorHost({ source }: { source: Source }) {
   const userId = useAppSelector(selectUserId);
   const email = useAppSelector(selectUserEmail);
   const fullName = useAppSelector(selectUserFullName);
+  const senderName = useSenderName();
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
   const started = useRef(false);
@@ -114,7 +116,7 @@ export function EditorHost({ source }: { source: Source }) {
 
   const { connections } = useUserConnections((loaded?.organizationId ?? activeOrg) ? { organizationId: (loaded?.organizationId ?? activeOrg) as string } : {});
   const people = useMemo(() => connections.map((c) => ({ user_id: c.user_id, display_name: c.display_name ?? null, email: c.email ?? null })), [connections]);
-  const me = useMemo(() => (userId ? { user_id: userId, display_name: fullName ?? null, email: email ?? null } : null), [userId, fullName, email]);
+  const me = useMemo(() => (userId ? { user_id: userId, display_name: fullName || senderName || null, email: email ?? null } : null), [userId, fullName, senderName, email]);
 
   const { upload, uploading } = useFileUpload();
   const [pickerOpen, setPickerOpen] = useState(false);

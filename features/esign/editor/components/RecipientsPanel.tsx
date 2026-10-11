@@ -157,13 +157,13 @@ export function RecipientsPanel({ draft, edit, people, me, setAccessCode, templa
             className="rounded-md border border-border bg-card"
             style={{ borderLeft: `4px solid ${recipientColor(r.color_index)}` }}
           >
-            <div className="flex items-center gap-2 px-2 py-1.5">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 px-2 py-1.5">
               <Button variant="quiet" aria-label={expanded ? "Collapse" : "Expand"} icon={expanded ? <ChevronDown /> : <ChevronRight />} onClick={() => setOpen(expanded ? null : r.key)} />
               {sequential && <span className="w-4 shrink-0 text-center type-secondary tabular-nums text-muted-foreground">{i + 1}</span>}
-              <div className="min-w-0 flex-1">
+              <div className="min-w-[8rem] flex-1">
                 <div className="flex min-w-0 items-center gap-1.5">
                   <span className="truncate type-title">{r.full_name || r.template_role || "Name needed"}</span>
-                  {r.user_id ? <Badge tone="info">Member</Badge> : <Badge>Outside</Badge>}
+                  <span className="shrink-0">{r.user_id ? <Badge tone="info">Member</Badge> : <Badge>Outside</Badge>}</span>
                 </div>
                 <div title={r.email || undefined} className={cn("break-all type-secondary", isEmail(r.email) || templateMode ? "text-muted-foreground" : "text-destructive")}>{r.email || (templateMode ? "Filled in when used" : "Email needed")}</div>
                 {needsCode(r) && !templateMode && <div className="type-secondary text-destructive">Access code needed</div>}
@@ -253,8 +253,8 @@ export function RecipientsPanel({ draft, edit, people, me, setAccessCode, templa
           </button>
         ))}
         {isEmail(query) && !people.some((c) => c.email?.toLowerCase() === query.trim().toLowerCase()) && (
-          <Button icon={<UserPlus />} onClick={() => setGuest({ name: "", email: query.trim() })}>
-            Add {query.trim()} from outside
+          <Button icon={<UserPlus />} title={`Add ${query.trim()} from outside`} onClick={() => setGuest({ name: "", email: query.trim() })}>
+            Add from outside
           </Button>
         )}
         {guest && (
@@ -310,7 +310,7 @@ function AccessCodeField({ recipient, setAccessCode, onSet }: { recipient: Draft
           type={shown ? "text" : "password"}
           autoComplete="off"
           maxLength={ACCESS_CODE_MAX + 4}
-          placeholder={recipient.has_access_code ? "Code set. Type to replace" : `${ACCESS_CODE_MIN} to ${ACCESS_CODE_MAX} characters`}
+          placeholder={recipient.has_access_code ? "Code set" : `${ACCESS_CODE_MIN} to ${ACCESS_CODE_MAX} characters`}
           value={value}
           onChange={(e) => {
             setValue(e.target.value);

@@ -986,7 +986,7 @@ export function SignerSurface({
         open={dialog === "finish"}
         rows={recordedRows(null)}
         senderName={senderName}
-        messageAllowed={load.settings.message_to_sender_allowed}
+        messageAllowed={load.settings.message_to_sender_allowed && !(typeof load.me.email === "string" && !!load.sender.email && load.me.email.toLowerCase() === load.sender.email.toLowerCase())}
         busy={busy === "sign"}
         error={dialogError}
         voice={door.seat === "signed_in"}

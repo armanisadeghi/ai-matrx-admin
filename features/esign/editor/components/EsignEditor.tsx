@@ -92,6 +92,28 @@ export function toTemplate(d: EnvelopeDraftV1): EnvelopeTemplateV1 {
   };
 }
 
+const candidatesKey = (id: string) => `matrx.esign.candidates.${id}`;
+
+function readCandidates(id: string | null): Record<string, DetectCandidate[]> {
+  if (!id || typeof window === "undefined") return {};
+  try {
+    const raw = localStorage.getItem(candidatesKey(id));
+    const parsed: unknown = raw ? JSON.parse(raw) : null;
+    return parsed && typeof parsed === "object" ? (parsed as Record<string, DetectCandidate[]>) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeCandidates(id: string, all: Record<string, DetectCandidate[]>) {
+  try {
+    if (Object.values(all).some((l) => l.length > 0)) localStorage.setItem(candidatesKey(id), JSON.stringify(all));
+    else localStorage.removeItem(candidatesKey(id));
+  } catch {
+    /* a full or blocked store is not a failure */
+  }
+}
+
 export function EsignEditor(props: EsignEditorProps) {
   const router = useRouter();
   const { api, mode, uploader } = props;
@@ -109,7 +131,7 @@ export function EsignEditor(props: EsignEditorProps) {
   const [activeRecipient, setActiveRecipient] = useState<string | null>(null);
   const [tab, setTab] = useState<"documents" | "people" | "message" | "fields">(props.initial.draft.documents.length ? "people" : "documents");
   const [zoom, setZoom] = useState(1);
-  const [candidates, setCandidates] = useState<Record<string, DetectCandidate[]>>({});
+  const [candidates, setCandidates] = useState<Record<string, DetectCandidate[]>>(() => readCandidates(props.envelopeId));
   const [finding, setFinding] = useState(false);
   const [sheet, setSheet] = useState<null | "setup" | "fields" | "props">(null);
   const [sendOpen, setSendOpen] = useState(false);
@@ -388,6 +410,11 @@ export function EsignEditor(props: EsignEditorProps) {
     setCandidates({});
     toast.success(`Added ${added.length} ${added.length === 1 ? "field" : "fields"}.${taken > 0 ? ` ${taken} ${taken === 1 ? "spot" : "spots"} already had a field.` : ""}`);
   }
+
+  // Suggestions not yet accepted or dismissed survive a reload, per envelope (like the draft mirror).
+  useEffect(() => {
+    if (boot.id && !templateMode) writeCandidates(boot.id, candidates);
+  }, [boot.id, candidates, templateMode]);
 
   const candidateCount = Object.values(candidates).reduce((a, l) => a + l.length, 0);
 
