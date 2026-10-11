@@ -12,6 +12,7 @@ import { useState } from "react";
 import { Bookmark, Copy, ExternalLink, MoreHorizontal, Radar } from "lucide-react";
 
 import { Badge } from "@ai-matrx/design-system/controls";
+import { useClipboard } from "@ai-matrx/kit/clipboard";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -52,6 +53,7 @@ export interface AdCardProps {
 }
 
 export function AdCard({ ad, onOpen, onSave, onTrack, isNew, className }: AdCardProps) {
+  const { copyText } = useClipboard();
   const [thumbFailed, setThumbFailed] = useState(false);
   const showThumb = Boolean(ad.thumbnailUrl) && !thumbFailed;
   const run = runLabel(ad);
@@ -141,10 +143,10 @@ export function AdCard({ ad, onOpen, onSave, onTrack, isNew, className }: AdCard
               {ad.libraryUrl ? (
                 <DropdownMenuItem
                   onSelect={() => {
-                    void navigator.clipboard
-                      .writeText(ad.libraryUrl ?? "")
-                      .then(() => toast.success("Link copied"))
-                      .catch(() => toast.error("Couldn't copy the link"));
+                    void copyText(ad.libraryUrl ?? "").then((copied) => {
+                      if (copied) toast.success("Link copied");
+                      else toast.error("Couldn't copy the link");
+                    });
                   }}
                 >
                   <Copy className="mr-2 h-4 w-4" />

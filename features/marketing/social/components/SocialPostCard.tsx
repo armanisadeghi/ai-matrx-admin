@@ -28,6 +28,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { useMarketingBrandOptional } from "@/features/marketing/lib/brand-context";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -79,6 +80,7 @@ export interface SocialPostCardProps {
 }
 
 export function SocialPostCard({ post, onOpen, onSave, extraActions, isNew, compact, accountHref, hideOutlier, className }: SocialPostCardProps) {
+  const { copyText } = useClipboard();
   const brand = useMarketingBrandOptional();
   const canEdit = useCanEditSocial(brand?.seg);
   const badge = outlierBadgeModel(post.outlier);
@@ -187,10 +189,10 @@ export function SocialPostCard({ post, onOpen, onSave, extraActions, isNew, comp
               </DropdownMenuItem>
               <DropdownMenuItem
                 onSelect={() => {
-                  void navigator.clipboard
-                    .writeText(post.url)
-                    .then(() => toast.success("Link copied"))
-                    .catch(() => toast.error("Couldn't copy the link"));
+                  void copyText(post.url).then((copied) => {
+                    if (copied) toast.success("Link copied");
+                    else toast.error("Couldn't copy the link");
+                  });
                 }}
               >
                 <Copy className="mr-2 h-4 w-4" />

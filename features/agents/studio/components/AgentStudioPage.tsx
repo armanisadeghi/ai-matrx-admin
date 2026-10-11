@@ -31,6 +31,8 @@ import { selectInstanceStatus } from "@ai-matrx/chat/agents/redux/execution-syst
 import {
   selectLatestAnswerText,
   selectLatestAssistantMessageId,
+  selectMessageById,
+  selectOrderedMessageIds,
 } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { AGENT_BUILDER_CONTEXT_MENU_PROPS } from "@ai-matrx/chat/agents/agent-context/buildAgentBuilderContextData";
@@ -49,7 +51,20 @@ import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { studioMode } from "../modes";
-import { CAPTURE_QUESTION, readStudioState, studioJobParam, studioCaseFromBuild, studioHref, type StudioCase, type StudioState } from "../studio-state";
+import {
+  CAPTURE_QUESTION,
+  DOER_CONTEXT_KEY,
+  DOER_NOTE,
+  approvedAnswerFrom,
+  readStudioState,
+  studioJobParam,
+  studioCaseFromBuild,
+  studioHref,
+  type StudioCase,
+  type StudioMessageRecord,
+  type StudioState,
+} from "../studio-state";
+import { loadMakeDraft, saveMakeDraft } from "../make-draft";
 import { StudioStart } from "./StudioStart";
 import { StudioRun } from "./StudioRun";
 import { StudioControls } from "./StudioControls";
@@ -59,6 +74,8 @@ const ASSISTANT_SURFACE = "agent-studio:assistant";
 /** The center's runs are the builder page's OWN conversations: they never receive the builder. */
 const tryKey = (agentId: string) => `agent-builder:${agentId}`;
 const CAPTURE_WAIT_MS = 600_000;
+/** The doer's standing hint, on its own conversation (never a new agent). */
+const DOER_CONTEXT = { [DOER_CONTEXT_KEY]: DOER_NOTE };
 
 type MakePhase =
   | { kind: "idle" }
@@ -168,7 +185,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       surfaceKey: ASSISTANT_SURFACE,
       sourceFeature: "agent-studio",
       config: { displayMode: "direct", autoRun: true, allowChat: true },
-      runtime: { userInput: text },
+      runtime: { userInput: text, context: DOER_CONTEXT },
     });
     return true;
   };
@@ -186,20 +203,36 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     }
   };
 
+  /** The latest answer that actually came back — never a refused or failed turn. */
+  const readApproved = (chatId: string) => {
+    const s = store.getState();
+    const ids = selectOrderedMessageIds(chatId)(s);
+    const byId: Record<string, StudioMessageRecord | undefined> = {};
+    for (const id of ids) byId[id] = selectMessageById(chatId, id)(s) as StudioMessageRecord | undefined;
+    return approvedAnswerFrom(ids, byId);
+  };
+
   const makeThisAnAgent = async () => {
     const chatId = state.chatId;
     if (!chatId) return;
-    const s = store.getState();
-    const approved = selectLatestAnswerText(chatId)(s);
+    const approved = readApproved(chatId)?.text ?? "";
     if (!approved.trim()) {
       toast.error("Get a result you like first");
       return;
     }
     try {
       setPhase({ kind: "capturing" });
-      const before = selectLatestAssistantMessageId(chatId)(s);
-      if (!(await sendToAssistant(CAPTURE_QUESTION))) return setPhase({ kind: "idle" });
-      const capture = await waitForAnswerAfter(chatId, before);
+      // (a) The capture turn enriches the brief; the brief still reads the whole chat without it,
+      // so a refused or failed capture is announced and the build goes on.
+      let capture = "";
+      try {
+        const before = selectLatestAssistantMessageId(chatId)(store.getState());
+        if (await sendToAssistant(CAPTURE_QUESTION)) capture = await waitForAnswerAfter(chatId, before);
+      } catch (e) {
+        toast.info("Building from the chat alone", {
+          description: `The assistant did not answer the how-it-worked question: ${e instanceof Error ? e.message : String(e)}`,
+        });
+      }
       setPhase({ kind: "reading" });
       const answer = await makeAgentFromChat(dispatch, chatId, () => undefined, [], undefined, {
         approvedOutput: approved,
@@ -209,11 +242,32 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       if (!answer.ok) throw new Error(answer.says);
       if (!("brief" in answer)) throw new Error("The inputs did not come back");
       setPhase({ kind: "confirm", brief: answer.brief, approved, capture });
+      // A reload from here resumes the confirm card (the draft rides on the doer's conversation).
+      void saveMakeDraft(chatId, { brief: answer.brief, approved, capture }).catch((e: unknown) =>
+        toast.error("This step will not survive a reload", { description: e instanceof Error ? e.message : String(e) }),
+      );
     } catch (e) {
       setPhase({ kind: "idle" });
       toast.error("Making the agent stopped", { description: e instanceof Error ? e.message : String(e) });
     }
   };
+
+  // Reload mid-"Make this an agent": the confirm card comes back from the conversation's draft.
+  const restoredFor = useRef<string | null>(null);
+  useEffect(() => {
+    const chatId = state.chatId;
+    if (mode.id !== "do-with-me" || !chatId || state.buildId || restoredFor.current === chatId) return;
+    restoredFor.current = chatId;
+    let live = true;
+    void loadMakeDraft<StudioBrief>(chatId)
+      .then((draft) => {
+        if (live && draft) setPhase((p) => (p.kind === "idle" ? { kind: "confirm", ...draft } : p));
+      })
+      .catch((e: unknown) => toast.error("The saved draft did not load", { description: e instanceof Error ? e.message : String(e) }));
+    return () => {
+      live = false;
+    };
+  }, [mode.id, state.chatId, state.buildId]);
 
   const buildConfirmed = async (brief: StudioBrief, approved: string, capture: string) => {
     if (!state.chatId) return;
@@ -226,6 +280,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     });
     if (answer.ok && "buildId" in answer) {
       setPhase({ kind: "idle" });
+      void saveMakeDraft(state.chatId, null).catch(() => undefined); // the build's record holds it now
       go({ buildId: answer.buildId });
       if (isMobile) setPaneTab("agent");
     } else {
@@ -247,6 +302,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       agentId={doerId}
       conversationId={state.chatId}
       surfaceKey={ASSISTANT_SURFACE}
+      context={DOER_CONTEXT}
       onConversation={(id) => {
         if (id !== state.chatId) go({ chatId: id });
       }}
@@ -259,7 +315,10 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       <ConfirmInputs
         brief={phase.brief}
         onBuild={(b) => void buildConfirmed(b, phase.approved, phase.capture)}
-        onCancel={() => setPhase({ kind: "idle" })}
+        onCancel={() => {
+          setPhase({ kind: "idle" });
+          if (state.chatId) void saveMakeDraft(state.chatId, null).catch(() => undefined);
+        }}
       />
     );
   } else if (phase.kind !== "idle") {

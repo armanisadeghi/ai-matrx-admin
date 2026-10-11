@@ -31,6 +31,8 @@ interface StudioRunProps {
   seed?: StudioRunSeed | null;
   showVariables?: boolean;
   runKey?: number;
+  /** Per-conversation context entries (`runtime.context`), sent with the first launch. */
+  context?: Record<string, unknown>;
   onConversation?: (conversationId: string) => void;
 }
 
@@ -41,6 +43,7 @@ export function StudioRun({
   seed = null,
   showVariables = false,
   runKey = 0,
+  context,
   onConversation,
 }: StudioRunProps) {
   const { launchAgent } = useAgentLauncher();
@@ -67,12 +70,14 @@ export function StudioRun({
           allowChat: true,
           showVariablePanel: showVariables,
         },
-        runtime: seed
-          ? {
-              ...(seed.variables && Object.keys(seed.variables).length > 0 ? { variables: seed.variables } : {}),
-              ...(seed.userInput ? { userInput: seed.userInput } : {}),
-            }
-          : undefined,
+        runtime:
+          seed || context
+            ? {
+                ...(seed?.variables && Object.keys(seed.variables).length > 0 ? { variables: seed.variables } : {}),
+                ...(seed?.userInput ? { userInput: seed.userInput } : {}),
+                ...(context ? { context } : {}),
+              }
+            : undefined,
         onConversationCreated: (id: string) => {
           setShown(id);
           onConversation?.(id);
@@ -93,7 +98,7 @@ export function StudioRun({
     } else {
       void fresh();
     }
-  }, [agentId, conversationId, runKey, surfaceKey, seed, showVariables, launchAgent, dispatch, onConversation]);
+  }, [agentId, conversationId, runKey, surfaceKey, seed, showVariables, context, launchAgent, dispatch, onConversation]);
 
   if (error) {
     return (

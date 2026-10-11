@@ -406,6 +406,7 @@ declare
   v_caller uuid := auth.uid(); s jsonb := iam._access_setup_of(p_type); v_org uuid; v_mine text[];
   v_admin text[]; v_stages text[]; v_seats jsonb := '[]'::jsonb; v_seat jsonb; v_key text; v_may boolean;
   v_any_may boolean := false; v_holders jsonb; v_excluded jsonb; v_cells jsonb; v_role text; v_confirm jsonb;
+  v_add_via jsonb; v_may_add boolean; v_may_excl boolean; v_admin_holder boolean;
 begin
   if v_caller is null then return jsonb_build_object('ok', false, 'reason', 'no_caller'); end if;
   if s is null then return jsonb_build_object('ok', false, 'reason', 'no_setup'); end if;
@@ -419,6 +420,9 @@ begin
    where m.organization_id = v_org and m.user_id = v_caller and m.container_type = 'organization'
      and m.status = 'active' and m.deleted_at is null limit 1;
 
+  -- exclude and confirm belong to the admin seats and the organization's owners/admins
+  v_admin_holder := (v_mine && v_admin) or coalesce(v_role in ('owner', 'admin'), false);
+
   for v_seat in select e from jsonb_array_elements(s -> 'seats') e loop
     v_key := v_seat ->> 'key';
     if coalesce((v_seat ->> 'opens_record')::boolean, true) = false then continue; end if;
@@ -426,6 +430,11 @@ begin
              and coalesce(v_seat #>> '{resolver,kind}', '') <> 'grants'
              and v_mine && (coalesce((select array_agg(x) from jsonb_array_elements_text(coalesce(v_seat -> 'assignable_by', '[]'::jsonb)) x), '{}') || v_admin);
     v_any_may := v_any_may or v_may;
+    -- a seat that declares add_via is filled through its type's own flow (e.g. peer nomination), never directly
+    v_add_via := v_seat -> 'add_via';
+    v_may_add := v_may and (v_add_via is null or v_add_via ->> 'action' is null
+                            or iam.may_act_seat(v_caller, p_type, p_id, v_add_via ->> 'action'));
+    v_may_excl := v_may and v_admin_holder;
     select coalesce(jsonb_agg(iam._access_setup_person(t.user_id, v_org)
                               || jsonb_build_object('source', t.source, 'removable', t.removable)
                               order by t.source, t.user_id), '[]'::jsonb)
@@ -441,6 +450,7 @@ begin
              'level', s #>> array['grid', v_key, pe ->> 'key', 'level'],
              'rows', s #>> array['grid', v_key, pe ->> 'key', 'rows'],
              'from_stage', s #> array['grid', v_key, pe ->> 'key', 'from_stage'],
+             'opens_at', iam._access_setup_stage_meaning(s, p_id, s #> array['grid', v_key, pe ->> 'key', 'from_stage']),
              'reached', case when s #> array['grid', v_key, pe ->> 'key', 'from_stage'] is null then true
                              else iam._access_setup_stage_reached(s #> array['grid', v_key, pe ->> 'key', 'from_stage'], v_stages) end)
              order by pe_ord), '[]'::jsonb)
@@ -452,7 +462,10 @@ begin
       'required', coalesce((v_seat ->> 'required')::boolean, false),
       'many', coalesce((v_seat ->> 'many')::boolean, false),
       'resolver', v_seat #>> '{resolver,kind}',
-      'may_change', v_may,
+      'may_change', v_may_add or v_may_excl,
+      'may_add', v_may_add,
+      'may_exclude', v_may_excl,
+      'add_via', v_add_via ->> 'action',
       'fallback_only', jsonb_array_length(v_holders) > 0
                        and not exists (select 1 from jsonb_array_elements(v_holders) h where h ->> 'source' <> 'fallback'),
       'holders', v_holders,
@@ -476,6 +489,7 @@ begin
     'stages_reached', to_jsonb(v_stages),
     'seats', v_seats,
     'confirmed', v_confirm,
+    'may_confirm', v_admin_holder and v_any_may,
     'needs_confirm', iam._access_setup_needs_confirm(p_type, v_org, v_caller, array[p_id]),
     'candidates', case when v_any_may then (
         select coalesce(jsonb_agg(iam._access_setup_person(m.user_id, v_org)), '[]'::jsonb)
@@ -545,6 +559,16 @@ begin
   v_may := coalesce((select array_agg(x) from jsonb_array_elements_text(coalesce(v_seat -> 'assignable_by', '[]'::jsonb)
                                                                           || coalesce(s -> 'admin_seats', '[]'::jsonb)) x), '{}');
   if not (v_mine && v_may) then return jsonb_build_object('ok', false, 'reason', 'not_permitted'); end if;
+  if p_change = 'add' and v_seat ? 'add_via' then
+    return jsonb_build_object('ok', false, 'reason', 'add_via', 'action', v_seat #>> '{add_via,action}');
+  end if;
+  if p_change = 'exclude' and not (
+       v_mine && coalesce((select array_agg(x) from jsonb_array_elements_text(coalesce(s -> 'admin_seats', '[]'::jsonb)) x), '{}')
+       or exists (select 1 from iam.memberships m where m.organization_id = v_org and m.user_id = v_caller
+                    and m.container_type = 'organization' and m.role in ('owner', 'admin')
+                    and m.status = 'active' and m.deleted_at is null)) then
+    return jsonb_build_object('ok', false, 'reason', 'not_permitted');
+  end if;
   if p_user is null or not exists (select 1 from iam.memberships m where m.organization_id = v_org and m.user_id = p_user
                                      and m.container_type = 'organization' and m.status = 'active' and m.deleted_at is null) then
     return jsonb_build_object('ok', false, 'reason', 'validation', 'field', 'user');

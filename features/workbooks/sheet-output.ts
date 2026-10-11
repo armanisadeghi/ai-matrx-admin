@@ -5,14 +5,13 @@
  */
 
 import { downloadFile } from "@ai-matrx/kit/download";
+import { toDelimitedText } from "@ai-matrx/alchemy/operate/read";
 import { univerSnapshotToRows } from "@/features/workbooks/univer-snapshot-rows";
 
-function csvCell(value: string): string {
-  return /[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
-}
-
 export function rowsToCsv(rows: readonly (readonly string[])[]): string {
-  return rows.map((r) => r.map(csvCell).join(",")).join("\r\n");
+  const [header, ...body] = rows;
+  if (!header) return "";
+  return toDelimitedText(header, body, { spreadsheetSafe: false });
 }
 
 export function downloadSheetAsCsv(

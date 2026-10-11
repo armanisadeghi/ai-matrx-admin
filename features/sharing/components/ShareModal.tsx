@@ -24,6 +24,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useSharing, useIsOwner } from "@/utils/permissions/hooks";
+import { useGrantableLevels } from "../hooks/useGrantableLevels";
 import {
   getShareableResource,
   getResourceTypeLabel,
@@ -244,6 +245,10 @@ export function ShareModal({
       }),
     { enabled: isOpen },
   );
+  // ONE-LADDER: Edit may share inside the organization, so the dialog opens for anyone the doors would
+  // let give at least one level, and offers only those levels (iam.may_grant_as, via the thin door).
+  const grantable = useGrantableLevels(resourceType, resourceId, isOpen);
+  const canShare = isOwner || grantable.maySharePeople;
   const ownerUnknown = !hasOverride && !ownerLoading && ownerError !== null;
 
   // A resource type missing from the registry can never share — say so loudly
@@ -320,6 +325,16 @@ export function ShareModal({
           tab still shows you everyone who can reach this and why.
         </p>
       </div>
+    </div>
+  );
+
+  // The add form is for anyone who may give at least one level; below that the door's own sentence says why.
+  const shareBlockedNotice = grantable.loading ? null : (
+    <div className="p-3 rounded-lg border bg-muted/30 flex items-start gap-2">
+      <Lock className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+      <p className="text-sm">
+        {grantable.error ?? grantable.levels.viewer ?? "You need Edit or Full access on this to share it."}
+      </p>
     </div>
   );
 
@@ -448,7 +463,7 @@ export function ShareModal({
                 {/* WHO CAN SEE THIS (SHARE-LANE-CONTROL): the lane, above the people it limits. */}
                 <WhoCanSeeThis
                   whoCanSee={whoCanSee}
-                  canChange={isOwner}
+                  canChange={canShare}
                   onChoose={setWhoCanSee}
                   row={{
                     resourceType,
@@ -469,7 +484,7 @@ export function ShareModal({
                 {/* Current user permissions */}
                 <div>
                   <h3 className="text-sm font-medium mb-2">Current Access</h3>
-                  {!isOwner && !loading && userPermissions.length === 0 ? (
+                  {!canShare && !loading && userPermissions.length === 0 ? (
                     <p className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
                       The list of people with access is visible to Admins.
                     </p>
@@ -499,9 +514,10 @@ export function ShareModal({
                 </div>
 
                 {/* Add user form */}
-                {isOwner ? (
+                {canShare ? (
                   <ShareWithUserTab
                     levelWording={levelWording}
+                    grantable={grantable}
                     onShare={shareWithUser}
                     onSuccess={refresh}
                     resourceType={resourceType}
@@ -549,7 +565,7 @@ export function ShareModal({
                       : {})}
                   />
                 ) : (
-                  manageBlockedNotice
+                  shareBlockedNotice
                 )}
 
                 {/* THE ROUTE FROM THE REFUSAL TO THE REMEDY (lane SHARE-OUT).

@@ -30,6 +30,7 @@ import { ArrowLeft, Bookmark, ExternalLink, PanelRightClose, RefreshCw } from "l
 
 import { ReadFailure } from "@ai-matrx/design-system";
 import { Button, RegionSkeleton, SegmentedControl, Tabs } from "@ai-matrx/design-system/controls";
+import { useClipboard } from "@ai-matrx/kit/clipboard";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -167,6 +168,7 @@ function TranscriptTab({ postId, organizationId, canEdit }: { postId: string; or
 }
 
 function TranscriptBody({ text, language, wordCount }: { text: string; language: string; wordCount: number | null }) {
+  const { copyText } = useClipboard();
   const [showTimes, setShowTimes] = useState(false);
   const paragraphs = useMemo(() => parseTranscript(text), [text]);
   const hasTimes = paragraphs.some((p) => p.start !== null);
@@ -186,9 +188,10 @@ function TranscriptBody({ text, language, wordCount }: { text: string; language:
           ) : null}
           <Button
             variant="quiet"
-            onClick={() =>
-              void navigator.clipboard.writeText(plainTranscript(paragraphs)).then(() => toast.success("Copied"))
-            }
+            onClick={() => void copyText(plainTranscript(paragraphs)).then((copied) => {
+              if (copied) toast.success("Copied");
+              else toast.error("Couldn't copy the transcript");
+            })}
           >
             Copy
           </Button>
@@ -221,6 +224,7 @@ function MetricsTab({
   baselineViews: number | null;
   velocity: number | null;
 }) {
+  const { copyText } = useClipboard();
   const snapshots = usePostMetrics(postId);
   const [metric, setMetric] = useState<PostMetricKey>("views");
   if (snapshots.isLoading) return <RegionSkeleton shape="rows" count={3} />;
@@ -267,7 +271,10 @@ function MetricsTab({
           disabled={points.length === 0}
           onClick={() => {
             const csv = seriesToCsv(POST_METRIC_LABELS[active], points);
-            void navigator.clipboard.writeText(csv).then(() => toast.success("CSV copied"));
+            void copyText(csv).then((copied) => {
+              if (copied) toast.success("CSV copied");
+              else toast.error("Couldn't copy the CSV");
+            });
           }}
         >
           CSV

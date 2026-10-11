@@ -128,3 +128,86 @@ export const CAPTURE_QUESTION = [
   "the inputs that will change from one time to the next (with the values I used today),",
   "and every preference or correction I gave you along the way.",
 ].join(" ");
+
+/**
+ * The doer's standing hint (DESIGN.md §11 cut-line "standing doer hint"): until a holder for a
+ * declared `agent_studio.doer` mandate comes out of the Agent Factory, the doer stays the default
+ * chat agent and this note rides on ITS conversation as context (`runtime.context`) — never a new
+ * agent, never hand-written instructions.
+ */
+export const DOER_CONTEXT_KEY = "agent_studio_doer_note";
+export const DOER_NOTE = [
+  "You are helping this person get a real result for their job in the Agent Studio.",
+  "Do the job fully and well with every tool you have. When they are happy with the result, they will",
+  "turn this chat into a reusable agent, so make the steps, inputs and preferences you rely on easy to see.",
+].join(" ");
+
+/** A message record as the chat store keeps it (only what the Studio reads). */
+export interface StudioMessageRecord {
+  role?: string;
+  status?: string;
+  error?: unknown;
+  _clientStatus?: string;
+  metadata?: unknown;
+  content?: unknown;
+}
+
+function recordText(record: StudioMessageRecord): string {
+  const blocks = Array.isArray(record.content) ? (record.content as Array<Record<string, unknown>>) : [];
+  return blocks
+    .filter((b) => (b.type === "text" || b.type === undefined) && typeof b.text === "string")
+    .map((b) => b.text as string)
+    .join("\n")
+    .trim();
+}
+
+function isFailed(record: StudioMessageRecord): boolean {
+  const md = record.metadata as Record<string, unknown> | null | undefined;
+  return (
+    record.status === "failed" ||
+    Boolean(record.error) ||
+    record._clientStatus === "error" ||
+    (!!md && typeof md === "object" && md.failed === true)
+  );
+}
+
+/**
+ * The answer the person approved: the LATEST assistant answer that actually came back. A refused
+ * or failed turn (an approval hold, a provider error, a stop) is never the approved result — the
+ * plain "latest assistant message" would hand the build an error line as its baseline.
+ */
+export function approvedAnswerFrom(
+  orderedIds: readonly string[] | undefined,
+  byId: Record<string, StudioMessageRecord | undefined> | undefined,
+): { id: string; text: string } | null {
+  if (!orderedIds || !byId) return null;
+  for (let i = orderedIds.length - 1; i >= 0; i--) {
+    const record = byId[orderedIds[i]];
+    if (!record || record.role !== "assistant" || isFailed(record)) continue;
+    const text = recordText(record);
+    if (text) return { id: orderedIds[i], text };
+  }
+  return null;
+}
+
+/**
+ * "Make this an agent", in flight: the approved answer, the doer's capture and the inputs brief
+ * awaiting the person's confirm. Kept ON the doer's conversation (`chat.conversation.metadata`,
+ * key below) so a reload mid-flow resumes the confirm card instead of losing the approval.
+ */
+export const MAKE_DRAFT_KEY = "agent_studio_make";
+
+export interface StudioMakeDraft<Brief = unknown> {
+  approved: string;
+  capture: string;
+  brief: Brief;
+}
+
+export function readMakeDraft<Brief>(metadata: unknown): StudioMakeDraft<Brief> | null {
+  if (!metadata || typeof metadata !== "object") return null;
+  const raw = (metadata as Record<string, unknown>)[MAKE_DRAFT_KEY];
+  if (!raw || typeof raw !== "object") return null;
+  const d = raw as Record<string, unknown>;
+  if (typeof d.approved !== "string" || !d.approved.trim() || !d.brief || typeof d.brief !== "object") return null;
+  return { approved: d.approved, capture: typeof d.capture === "string" ? d.capture : "", brief: d.brief as Brief };
+}

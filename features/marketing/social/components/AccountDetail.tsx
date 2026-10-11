@@ -34,6 +34,7 @@ import {
   type SelectOption,
 } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
+import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { socialRowOpen } from "../row-open";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -270,6 +271,7 @@ function PostsPanel({
 }
 
 function GrowthPanel({ profileId }: { profileId: string }) {
+  const { copyText } = useClipboard();
   const snapshots = useProfileSnapshots(profileId);
   const [range, setRange] = useState<string>("90");
   const [now] = useState(() => Date.now());
@@ -289,7 +291,10 @@ function GrowthPanel({ profileId }: { profileId: string }) {
           <Button
             variant="quiet"
             disabled={points.length === 0}
-            onClick={() => void navigator.clipboard.writeText(seriesToCsv("Followers", points)).then(() => toast.success("CSV copied"))}
+            onClick={() => void copyText(seriesToCsv("Followers", points)).then((copied) => {
+              if (copied) toast.success("CSV copied");
+              else toast.error("Couldn't copy the CSV");
+            })}
           >
             CSV
           </Button>

@@ -21,6 +21,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Copy, ExternalLink, KeyRound, Loader2, LogOut, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { Input } from "@ai-matrx/design-system/controls";
 import { toast } from "@/lib/toast";
@@ -106,6 +107,7 @@ async function readClaudeAccounts(): Promise<ClaudeAccountRow[]> {
 type Busy = "starting" | "code" | "cancel" | `out:${string}` | null;
 
 export function ClaudeAccountsPanel() {
+  const { copyText } = useClipboard();
   const [rows, setRows] = useState<ClaudeAccountRow[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [pending, setPending] = useState<{ slot: string; status: OwnPlanStatus } | null>(null);
@@ -226,7 +228,7 @@ export function ClaudeAccountsPanel() {
   };
 
   const copyUrl = async () => {
-    await navigator.clipboard.writeText(connectorUrl);
+    if (!(await copyText(connectorUrl))) return;
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1500);
   };

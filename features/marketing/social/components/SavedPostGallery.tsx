@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { downloadUrl } from "@ai-matrx/kit/download";
 import { fetchPlaybackUrl, socialErrorMessage } from "../server";
 import type { PostMediaRef } from "../types";
 
@@ -84,7 +85,7 @@ function ArchivedSlide({ file, organizationId, onRatio, fill, position }: {
       {error ? (
         <div className="flex flex-col items-center gap-2 px-4 text-center text-white">
           <span className="text-sm">{error}<ErrorAlchemyMenu error={error} /></span>
-          {src ? <a href={src} download={file.file_id} className="inline-flex items-center gap-1 underline"><Download className="h-4 w-4" aria-hidden />Download saved file</a> : <Button variant="outline" onClick={() => setAttempt(attempt + 1)}>Try again</Button>}
+          {src ? <Button variant="outline" icon={<Download />} onClick={() => downloadUrl(src, file.file_id)}>Download saved file</Button> : <Button variant="outline" onClick={() => setAttempt(attempt + 1)}>Try again</Button>}
         </div>
       ) : src ? isVideo ? (
         <video src={src} controls playsInline className="h-full w-full object-contain" onError={() => setError("Preview unavailable")} onLoadedMetadata={event => {

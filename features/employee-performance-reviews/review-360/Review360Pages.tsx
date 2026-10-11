@@ -16,7 +16,7 @@ import PerformanceReviewApp from "@/features/employee-performance-reviews/compon
 import { createBlankReview, type Review } from "@/features/employee-performance-reviews/schema";
 import type { ReviewPersistence } from "@/features/employee-performance-reviews/use-reviews";
 import { useHrContext } from "@/features/hr/shared/useHrContext";
-import { googleCalendarUrl, icsContent, icsFileName } from "@/lib/calendar/eventLinks";
+import { downloadIcs, googleCalendarUrl } from "@/lib/calendar/eventLinks";
 import { toast } from "@/lib/toast";
 
 import { TRACK_TITLE } from "../review-360.typed-table";
@@ -356,7 +356,6 @@ function Respond({ trackId, org }: { trackId: string; org: string }) {
       }
     : null;
   const calendar = calendarEvent ? googleCalendarUrl(calendarEvent) : null;
-  const icsHref = calendarEvent ? `data:text/calendar;charset=utf-8,${encodeURIComponent(icsContent(calendarEvent))}` : null;
 
   return (
     <div className="h-full overflow-hidden pt-[var(--shell-header-h)]">
@@ -372,10 +371,8 @@ function Respond({ trackId, org }: { trackId: string; org: string }) {
                   <a href={calendar} target="_blank" rel="noopener noreferrer">Add to calendar</a>
                 </Button>
               ) : null}
-              {icsHref ? (
-                <Button variant="quiet" asChild>
-                  <a href={icsHref} download={icsFileName(TRACK_TITLE)}>.ics with reminder</a>
-                </Button>
+              {calendarEvent ? (
+                <Button variant="quiet" onClick={() => downloadIcs(calendarEvent)}>.ics with reminder</Button>
               ) : null}
               <Button variant="primary" icon={<Send />} disabled={submitted} onClick={() => void submit()}>
                 {submitted ? "Submitted" : "Submit"}

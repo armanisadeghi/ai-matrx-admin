@@ -8,10 +8,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { ExamplesField, emptyExamples, filledExamples } from "@/features/agents/factory/components/ExamplesField";
+import { ExamplesField, filledExamples } from "@/features/agents/factory/components/ExamplesField";
 import { startAgentBuild } from "@/features/agents/factory/service";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { announceComingSoon } from "@/lib/coming-soon/announce";
@@ -33,7 +33,9 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
   const router = useRouter();
   const [open, setOpen] = useState<StudioMode["id"] | null>(initialJob ? "describe" : null);
   const [description, setDescription] = useState(initialJob);
-  const [examples, setExamples] = useState<string[]>(emptyExamples);
+  // Build-first: examples are optional, so none are asked for up front — one quiet
+  // "Add a real example" opens the shared field with a single box.
+  const [examples, setExamples] = useState<string[]>([]);
   const [starting, setStarting] = useState(false);
 
   const pick = (mode: StudioMode) => {
@@ -120,8 +122,21 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
               minHeight={96}
               autoGrow
             />
-            <ExamplesField examples={examples} onChange={setExamples} disabled={starting} />
-            <div className="flex justify-end">
+            {examples.length > 0 && <ExamplesField examples={examples} onChange={setExamples} disabled={starting} />}
+            <div className="flex items-center justify-between gap-2">
+              {examples.length === 0 ? (
+                <Button
+                  variant="quiet"
+                  icon={<Plus />}
+                  data-testid="studio-add-example"
+                  onClick={() => setExamples([""])}
+                  disabled={starting}
+                >
+                  Add a real example
+                </Button>
+              ) : (
+                <span />
+              )}
               <Button variant="primary" onClick={() => void build()} disabled={!description.trim() || starting}>
                 {starting ? "Starting…" : "Build it"}
               </Button>

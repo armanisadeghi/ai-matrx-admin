@@ -1,23 +1,6 @@
 -- chair-step: Store Tables scoped setups (access-setup PLAN §12.1). iam.access_setup gains scope ({"table_id"}, null for hr_review) and a generated scope_key; the primary key becomes (entity_type, scope_key). iam._access_setup_of(type) is REPLACED by iam._access_setup_of(type, id) (a record resolves its Table's scoped setup) and dropped; EVERY caller (16 functions) is repointed in this file. The check gains its store mode (iam._access_setup_problems_store: no subject seat, no stages, parts named by the Table's field records, every store seat with fn / set_fn / has_fn — the person-scoped form required) through the validate trigger and iam.access_setup_check(type, scope). No store row is written here; the hr_review answers are unchanged (its row keeps scope null).
 -- lane: access-store
 -- lock: iam
--- based-on: iam._cells_for_now(uuid, text, uuid, text) 2ff07f735375136e9ba8de4bd0eefaad671a8312380e90d09fe5db5b26b3c342
--- based-on: iam._part_level_now(uuid, text, uuid, text, text, uuid) 2efbe45576784bc024e3c13d62a86b3303b3c14bdf3baa19abb754db848a35c1
--- based-on: iam._seat_rows_of(uuid, text, uuid) 08bd19accc4b531972ae570b33660b23a50336fc69b94fea5788a47673b82104
--- based-on: iam._seat_table_now(text, uuid) 2155bc26bfee45e1f77dab6ef8b2db1b5772961cafcdc036724116b548a3473e
--- based-on: iam.access_setup_check(text) 3dcad4d3629acca21373351942996dc13297c127c27f22f227059287984aa3f9
--- based-on: iam.may_act_seat(uuid, text, uuid, text) feff89fd02f62fb6b925ad25862b38b867512e75024a0132ee3ccd850c66aab1
--- based-on: iam.may_act(uuid, text, uuid, text) 3c3dfe4b509e0065b7d9a8d223aa6f18be70dafd730e03e6ae7789ae3200da40
--- based-on: iam.parts_for(uuid, text, uuid) f6df572b484dba87c2fe600f8dac490f522d154aedd828761129dad46a2e644a
--- based-on: iam.record_access_setup(text, uuid) 5e7ab437beb8377a3a918a3c2e9ac1d3846b46fad5a4c19733429e5354b7d458
--- based-on: iam.record_seat_clear(text, uuid, text, uuid) 080441bab7e27fcf487fd7a8db2dca7343fa1b7795c8064b6f565bffed037deb
--- based-on: iam.record_seat_set(text, uuid, text, uuid, text, text) 47455727cd9f8e3509b1f56ef72534a33e2e3b68a05d3cafaaf1ef9894c144c8
--- based-on: iam.record_setup_confirm(text, uuid[]) 27fe85da3cda6c7698f264ecce974c7b4ace49730ef75ae5714bee823a0e24e9
--- based-on: iam.records_where_seated(uuid, text, uuid) 6d3cf8e7b35fa8b2fd576de182386f71d3c0f3f48fe7dbc874e72492c10722f2
--- based-on: iam.redact_by_parts(text, uuid, uuid, jsonb) dc709c0e449a6912eb4aaa44e0257b1f8ba9f7810975e9e01ed66c5c49f21319
--- based-on: iam.seats_of(uuid, text, uuid) f8b45cfbd3c65ddf49e34c95c4ea94403a5a434a31ee72763330fa529c7e130e
--- based-on: iam.seats_opening(uuid, text, uuid) 983f8cb5d95977c598a24161990a9b683a0be137fcce369491f2cab5177571d9
--- based-on: iam._access_setup_validate() 35ac769e2908141bc5c6db3327565dd28280be26848bddfb9616675938c84625
 --
 -- Plan: common-docs/systems/platform/access/projects/access-setup/PLAN.md §12.1 ("Declaration and lookup").
 -- Inverse: migrations/inverse/accesssetup_store_f_a_store_table_is_one_scoped_setup_down.sql
@@ -551,6 +534,7 @@ declare
   v_caller uuid := auth.uid(); s jsonb := iam._access_setup_of(p_type, p_id); v_org uuid; v_mine text[];
   v_admin text[]; v_stages text[]; v_seats jsonb := '[]'::jsonb; v_seat jsonb; v_key text; v_may boolean;
   v_any_may boolean := false; v_holders jsonb; v_excluded jsonb; v_cells jsonb; v_role text; v_confirm jsonb;
+  v_add_via jsonb; v_may_add boolean; v_may_excl boolean; v_admin_holder boolean;
 begin
   if v_caller is null then return jsonb_build_object('ok', false, 'reason', 'no_caller'); end if;
   if s is null then return jsonb_build_object('ok', false, 'reason', 'no_setup'); end if;
@@ -564,6 +548,9 @@ begin
    where m.organization_id = v_org and m.user_id = v_caller and m.container_type = 'organization'
      and m.status = 'active' and m.deleted_at is null limit 1;
 
+  -- exclude and confirm belong to the admin seats and the organization's owners/admins
+  v_admin_holder := (v_mine && v_admin) or coalesce(v_role in ('owner', 'admin'), false);
+
   for v_seat in select e from jsonb_array_elements(s -> 'seats') e loop
     v_key := v_seat ->> 'key';
     if coalesce((v_seat ->> 'opens_record')::boolean, true) = false then continue; end if;
@@ -571,6 +558,11 @@ begin
              and coalesce(v_seat #>> '{resolver,kind}', '') <> 'grants'
              and v_mine && (coalesce((select array_agg(x) from jsonb_array_elements_text(coalesce(v_seat -> 'assignable_by', '[]'::jsonb)) x), '{}') || v_admin);
     v_any_may := v_any_may or v_may;
+    -- a seat that declares add_via is filled through its type's own flow (e.g. peer nomination), never directly
+    v_add_via := v_seat -> 'add_via';
+    v_may_add := v_may and (v_add_via is null or v_add_via ->> 'action' is null
+                            or iam.may_act_seat(v_caller, p_type, p_id, v_add_via ->> 'action'));
+    v_may_excl := v_may and v_admin_holder;
     select coalesce(jsonb_agg(iam._access_setup_person(t.user_id, v_org)
                               || jsonb_build_object('source', t.source, 'removable', t.removable)
                               order by t.source, t.user_id), '[]'::jsonb)
@@ -586,6 +578,7 @@ begin
              'level', s #>> array['grid', v_key, pe ->> 'key', 'level'],
              'rows', s #>> array['grid', v_key, pe ->> 'key', 'rows'],
              'from_stage', s #> array['grid', v_key, pe ->> 'key', 'from_stage'],
+             'opens_at', iam._access_setup_stage_meaning(s, p_id, s #> array['grid', v_key, pe ->> 'key', 'from_stage']),
              'reached', case when s #> array['grid', v_key, pe ->> 'key', 'from_stage'] is null then true
                              else iam._access_setup_stage_reached(s #> array['grid', v_key, pe ->> 'key', 'from_stage'], v_stages) end)
              order by pe_ord), '[]'::jsonb)
@@ -597,7 +590,10 @@ begin
       'required', coalesce((v_seat ->> 'required')::boolean, false),
       'many', coalesce((v_seat ->> 'many')::boolean, false),
       'resolver', v_seat #>> '{resolver,kind}',
-      'may_change', v_may,
+      'may_change', v_may_add or v_may_excl,
+      'may_add', v_may_add,
+      'may_exclude', v_may_excl,
+      'add_via', v_add_via ->> 'action',
       'fallback_only', jsonb_array_length(v_holders) > 0
                        and not exists (select 1 from jsonb_array_elements(v_holders) h where h ->> 'source' <> 'fallback'),
       'holders', v_holders,
@@ -621,6 +617,7 @@ begin
     'stages_reached', to_jsonb(v_stages),
     'seats', v_seats,
     'confirmed', v_confirm,
+    'may_confirm', v_admin_holder and v_any_may,
     'needs_confirm', iam._access_setup_needs_confirm(p_type, v_org, v_caller, array[p_id]),
     'candidates', case when v_any_may then (
         select coalesce(jsonb_agg(iam._access_setup_person(m.user_id, v_org)), '[]'::jsonb)
@@ -690,6 +687,16 @@ begin
   v_may := coalesce((select array_agg(x) from jsonb_array_elements_text(coalesce(v_seat -> 'assignable_by', '[]'::jsonb)
                                                                           || coalesce(s -> 'admin_seats', '[]'::jsonb)) x), '{}');
   if not (v_mine && v_may) then return jsonb_build_object('ok', false, 'reason', 'not_permitted'); end if;
+  if p_change = 'add' and v_seat ? 'add_via' then
+    return jsonb_build_object('ok', false, 'reason', 'add_via', 'action', v_seat #>> '{add_via,action}');
+  end if;
+  if p_change = 'exclude' and not (
+       v_mine && coalesce((select array_agg(x) from jsonb_array_elements_text(coalesce(s -> 'admin_seats', '[]'::jsonb)) x), '{}')
+       or exists (select 1 from iam.memberships m where m.organization_id = v_org and m.user_id = v_caller
+                    and m.container_type = 'organization' and m.role in ('owner', 'admin')
+                    and m.status = 'active' and m.deleted_at is null)) then
+    return jsonb_build_object('ok', false, 'reason', 'not_permitted');
+  end if;
   if p_user is null or not exists (select 1 from iam.memberships m where m.organization_id = v_org and m.user_id = p_user
                                      and m.container_type = 'organization' and m.status = 'active' and m.deleted_at is null) then
     return jsonb_build_object('ok', false, 'reason', 'validation', 'field', 'user');

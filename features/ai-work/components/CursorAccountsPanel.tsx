@@ -15,6 +15,7 @@
 import { useEffect, useState } from "react";
 import { Check, Copy, ExternalLink, KeyRound, Loader2, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { Input } from "@ai-matrx/design-system/controls";
 import { toast } from "@/lib/toast";
@@ -35,6 +36,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export function CursorAccountsPanel() {
+  const { copyText } = useClipboard();
   const [rows, setRows] = useState<CursorAccountRow[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -92,7 +94,7 @@ export function CursorAccountsPanel() {
   };
 
   const copyUrl = async () => {
-    await navigator.clipboard.writeText(mcpUrl);
+    if (!(await copyText(mcpUrl))) return;
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1500);
   };

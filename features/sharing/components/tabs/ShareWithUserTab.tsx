@@ -34,6 +34,7 @@ import {
   PERMISSION_LEVELS,
 } from "@/utils/permissions/levels";
 import { PermissionLevelDescription } from "../PermissionBadge";
+import type { GrantableLevels } from "../../hooks/useGrantableLevels";
 import { createClient } from "@/utils/supabase/client";
 import {
   useUserConnections,
@@ -92,6 +93,11 @@ interface ShareWithUserTabProps {
    * Comment · View (Spaces copies Notion's Share menu). Default: the role words.
    */
   levelWording?: "roles" | "notion";
+  /**
+   * The levels the doors will accept from THIS person (iam.may_grant_as). A level with a reason is shown
+   * disabled with that reason; omitted, every level is offered and the door answers (as before).
+   */
+  grantable?: GrantableLevels;
 }
 
 type StatusType = "idle" | "loading" | "success" | "error";
@@ -156,6 +162,7 @@ function candidateOf(connection: ConnectionUser, foundByEmail: boolean): UserSea
  */
 export function ShareWithUserTab({
   levelWording = "roles",
+  grantable,
   onShare,
   onSuccess,
   resourceType,
@@ -169,6 +176,12 @@ export function ShareWithUserTab({
   const [searchQuery, setSearchQuery] = useState("");
   const [permissionLevel, setPermissionLevel] =
     useState<PermissionLevel>("viewer");
+  /** The reason a level may not be given by this person, or null when they may (or nothing is known yet). */
+  const whyNotLevel = (level: PermissionLevel): string | null => {
+    const why = grantable?.levels[level];
+    return typeof why === "string" ? why : null;
+  };
+  const chosenWhy = whyNotLevel(permissionLevel);
   const [status, setStatus] = useState<Status>({ type: "idle", message: "" });
   const [selectedContact, setSelectedContact] = useState<ConnectionUser | null>(
     null,
@@ -635,33 +648,45 @@ export function ShareWithUserTab({
             <SelectContent>
               {levelWording === "notion"
                 ? [...PERMISSION_LEVELS].reverse().map((level) => (
-                    <SelectItem key={level} value={level} title={PERMISSION_LEVEL_HINTS[level]}>
+                    <SelectItem key={level} value={level} disabled={whyNotLevel(level) !== null} title={whyNotLevel(level) ?? PERMISSION_LEVEL_HINTS[level]}>
                       {PERMISSION_LEVEL_LABELS[level]}
                     </SelectItem>
                   ))
                 : (
                   <>
-              <SelectItem value="viewer" title={PERMISSION_LEVEL_HINTS.viewer}>{PERMISSION_LEVEL_SHORT_LABELS.viewer}</SelectItem>
+              <SelectItem value="viewer" disabled={whyNotLevel("viewer") !== null} title={whyNotLevel("viewer") ?? PERMISSION_LEVEL_HINTS.viewer}>{PERMISSION_LEVEL_SHORT_LABELS.viewer}</SelectItem>
               {/* VIS-17b: `commenter` is the FOURTH rung of the one ladder — it has been in
                   `public.permission_level` since G0 and every policy and RPC accepts it, and
                   this picker was the one place a person could not choose it (lane SHARE,
                   2026-09-19). A ladder with a rung nobody can reach is not one ladder. */}
-              <SelectItem value="commenter" title={PERMISSION_LEVEL_HINTS.commenter}>{PERMISSION_LEVEL_SHORT_LABELS.commenter}</SelectItem>
-              <SelectItem value="editor" title={PERMISSION_LEVEL_HINTS.editor}>{PERMISSION_LEVEL_SHORT_LABELS.editor}</SelectItem>
+              <SelectItem value="commenter" disabled={whyNotLevel("commenter") !== null} title={whyNotLevel("commenter") ?? PERMISSION_LEVEL_HINTS.commenter}>{PERMISSION_LEVEL_SHORT_LABELS.commenter}</SelectItem>
+              <SelectItem value="editor" disabled={whyNotLevel("editor") !== null} title={whyNotLevel("editor") ?? PERMISSION_LEVEL_HINTS.editor}>{PERMISSION_LEVEL_SHORT_LABELS.editor}</SelectItem>
               {/* THE SCOPE-QUALIFIED ADMIN RULE (access/DECISIONS.md 2026-09-10): the heading
                   above is "Permission Level", which names no item, so the bare "Admin" is
                   qualified here. */}
-              <SelectItem value="admin" title={PERMISSION_LEVEL_HINTS.admin}>{PERMISSION_LEVEL_SHORT_LABELS.admin}</SelectItem>
+              <SelectItem value="admin" disabled={whyNotLevel("admin") !== null} title={whyNotLevel("admin") ?? PERMISSION_LEVEL_HINTS.admin}>{PERMISSION_LEVEL_SHORT_LABELS.admin}</SelectItem>
                   </>
                 )}
             </SelectContent>
           </Select>
           <PermissionLevelDescription level={permissionLevel} />
+          {/* Full access (and anything else this person may not give) is disabled above; one line says why. */}
+          {chosenWhy ? <p className="text-xs text-muted-foreground">{chosenWhy}</p> : null}
+          {!chosenWhy && whyNotLevel("admin") ? (
+            <p className="text-xs text-muted-foreground" data-share-level-reason="">
+              {whyNotLevel("admin")}
+            </p>
+          ) : null}
+          {grantable?.outside ? (
+            <p className="text-xs text-muted-foreground" data-share-outside-reason="">
+              {grantable.outside}
+            </p>
+          ) : null}
         </div>
 
         <Button
           onClick={handleShare}
-          disabled={isLoading || !email.trim()}
+          disabled={isLoading || !email.trim() || chosenWhy !== null}
           className="w-full h-9"
         >
           {isLoading ? (

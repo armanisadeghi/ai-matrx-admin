@@ -132,8 +132,8 @@ export function PermissionLevelDescription({
   const descriptions: Record<PermissionLevel, string> = {
     viewer: "Can view",
     commenter: "Can view and comment",
-    editor: "Can view and edit",
-    admin: "Admin of this item (view, edit, share, delete)",
+    editor: "Can view and edit values and content",
+    admin: "Full access: also structure and sharing",
   };
 
   return (
