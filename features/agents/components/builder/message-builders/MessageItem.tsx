@@ -42,6 +42,7 @@ import {
 // Universal v3 context menu — the SAME menu everywhere. The wrapper is the
 // lightweight shell (imported statically); MenuContent lazy-loads on first open.
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
+import { promptSectionSections } from "./promptSectionMenu";
 import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";
 import { MessageItemButtons } from "@/features/agents/components/builder/message-builders/MessageItemButtons";
 import {
@@ -910,6 +911,13 @@ export function MessageItem({
             redoHint={redoHint}
             onViewHistory={handleViewHistory}
             hasHistory={canUndo || canRedo}
+            resolveExtraSectionsOnOpen={() =>
+              promptSectionSections({
+                variableNames,
+                getTextarea: () => textareaRef.current,
+                onChange: handleTextChange,
+              })
+            }
           >
             <textarea
               ref={handleTextareaRef}

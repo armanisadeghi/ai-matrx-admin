@@ -20,6 +20,7 @@ import { SystemPromptOptimizer } from "@/features/agents/components/builder/mess
 import type { AgentDefinitionMessage } from "@ai-matrx/chat/agents/types/agent-message-types";
 
 // Module Shared Components
+import { promptSectionSections } from "../promptSectionMenu";
 import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";
 import { SystemMessageButtons } from "@/features/agents/components/builder/message-builders/system-instructions/SystemMessageButtons";
 import { MessageFlagToggles } from "@ai-matrx/chat/agents/message-flags/MessageFlagToggles";
@@ -835,6 +836,13 @@ export function SystemMessage({
               redoHint={redoHint}
               onViewHistory={handleViewHistory}
               hasHistory={canUndo || canRedo}
+              resolveExtraSectionsOnOpen={() =>
+                promptSectionSections({
+                  variableNames,
+                  getTextarea: () => textareaRefs.current[systemMessageIndex] || null,
+                  onChange: handleTextChange,
+                })
+              }
             >
               <textarea
                 ref={handleTextareaRef}
