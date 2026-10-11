@@ -1245,6 +1245,13 @@ export const primaryNavItems: ShellNavItem[] = [
         dashboard: true,
         group: "Write",
       },
+      // Same destinations as the Workspace / Data / Utilities / Publish / Communications menus, linked here too so
+      // everything authored is one click from Content (domain tree: content = spaces, notes, documents, workbooks, utilities).
+      { label: "Spaces", href: "/spaces", iconName: "NotebookTabs", description: "Pages, databases and templates in one workspace", color: "amber", guestHidden: true, group: "Write" },
+      { label: "Workbooks", href: "/workbooks", iconName: "FileSpreadsheet", description: "Lossless spreadsheets — multi-sheet, formulas, formatting", color: "emerald", guestHidden: true, group: "Write" },
+      { label: "Markdown Studio", href: "/markdown-studio", iconName: "PenLine", description: "Interactive markdown editor and parser comparison", color: "slate", group: "Write" },
+      { label: "Message Templates", href: "/chat/message-templates", iconName: "MessageSquareQuote", guestHidden: true, group: "Write" },
+      { label: "Print or PDF", href: "/print/documents", iconName: "Printer", description: "Written content as a styled document or a PDF", color: "blue", group: "Write" },
       { label: "E-Signatures", href: "/esign", iconName: "FileSignature", guestHidden: true, group: "Write" },
       { label: "E-Sign Templates", href: "/esign/templates", iconName: "FileSignature", guestHidden: true, group: "Write" },
       { label: "Notes Window", href: "/notes", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-notes-panel" },
