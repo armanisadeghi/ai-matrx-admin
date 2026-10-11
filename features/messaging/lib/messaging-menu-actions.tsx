@@ -280,6 +280,9 @@ export function buildConversationMenuSection(args: {
     label: "Conversation",
     icon: ExternalLink,
     anchor: "after-compare",
+    // The row is what was right-clicked: its actions come FIRST and inline,
+    // never folded into a submenu under the generic text tools.
+    primary: conversation !== null,
     items,
   };
 }
@@ -372,6 +375,7 @@ export function buildMessageMenuSection(args: {
     label: "Message",
     icon: Copy,
     anchor: "after-compare",
+    primary: message !== null,
     items,
   };
 }
