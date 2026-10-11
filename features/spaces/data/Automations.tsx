@@ -123,6 +123,21 @@ function toDraft(a: AutomationAction, firstField: string): Draft {
   }
 }
 
+/**
+ * "Only if <property> is <words>", case-blind and whole, the way a person means it: a choice is stored as its own
+ * word ("approved") while she types "Approved". Read back by `condWords`.
+ */
+const condOf = (field: string, words: string) => ({
+  op: "matches",
+  args: [{ field }, { const: `(?i)^${words.trim().replace(/[.^$*+?()[\]{}|\\-]/g, "\\$&")}$` }],
+});
+const condWords = (c: unknown): { field: string | null; words: string } => {
+  const x = c as { op?: string; args?: Array<{ field?: string; const?: unknown }> } | null | undefined;
+  const raw = String(x?.args?.[1]?.const ?? "");
+  const words = x?.op === "matches" && raw.startsWith("(?i)^") && raw.endsWith("$") ? raw.slice(5, -1).replace(/\\(.)/g, "$1") : raw;
+  return { field: x?.args?.[0]?.field ?? null, words };
+};
+
 const nameOf = (fields: Field[], id: string | undefined) => fields.find((f) => f.id === id)?.label ?? "a property";
 
 /** A date or date-time property: what "when a date arrives" can wait for. */
@@ -416,9 +431,9 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
     setEvery(t.on === "schedule" ? t.every : "week");
     setWeekday(t.on === "schedule" ? (t.weekday ?? 1) : 1);
     setMonthDay(t.on === "schedule" ? String(t.day ?? 1) : "1");
-    const c = a.spec.condition as { args?: Array<{ field?: string; const?: unknown }> } | null | undefined;
-    setCondField(c?.args?.[0]?.field ?? null);
-    setCondIs(String(c?.args?.[1]?.const ?? ""));
+    const c = condWords(a.spec.condition);
+    setCondField(c.field);
+    setCondIs(c.words);
     setDrafts(a.spec.actions.map((x) => toDraft(x, firstField)));
     setSaid(null);
   };
@@ -451,7 +466,7 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
     const spec: AutomationSpec = {
       name: name.trim(),
       trigger: triggerSpec(),
-      condition: condField && !timed ? { op: "eq", args: [{ field: condField }, { const: condIs }] } : null,
+      condition: condField && !timed ? condOf(condField, condIs) : null,
       actions: drafts.map((d) => toAction(d, tableId, firstField)),
     };
     const got = await client.automationDeclare({ table_id: tableId as never, spec, automation_id: (editing?.id ?? null) as never });
