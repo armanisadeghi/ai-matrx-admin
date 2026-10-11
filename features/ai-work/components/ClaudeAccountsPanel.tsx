@@ -116,6 +116,8 @@ export function ClaudeAccountsPanel() {
   const [copied, setCopied] = useState(false);
   const [connectFailure, setConnectFailure] = useState<string | null>(null);
   const connectAbort = useRef<AbortController | null>(null);
+  /** The account slot the running Connect is signing in, so Cancel can end it. */
+  const connectSlot = useRef<string | null>(null);
   const [capacity, setCapacity] = useState<SandboxCapacityRefusal | null>(null);
   const connectorUrl = `${resolveBaseUrl().replace(/\/$/, "")}/api/matrx-mcp`;
 
@@ -147,6 +149,7 @@ export function ClaudeAccountsPanel() {
     setConnectFailure(null);
     const controller = new AbortController();
     connectAbort.current = controller;
+    connectSlot.current = slot;
     try {
       if (opts.afterStop) await waitForFreeSlot(controller.signal);
       if (controller.signal.aborted) return;
@@ -168,12 +171,14 @@ export function ClaudeAccountsPanel() {
       if (full) setCapacity(full);
       else setConnectFailure(getUserMessage(cause));
     } finally {
-      if (connectAbort.current === controller) connectAbort.current = null;
-      setBusy(null);
+      // Cancel took over (it owns `busy` now) when it detached this controller.
+      if (connectAbort.current === controller) {
+        connectAbort.current = null;
+        connectSlot.current = null;
+        setBusy(null);
+      }
     }
   };
-
-  const cancelStarting = () => connectAbort.current?.abort();
 
   const finish = async () => {
     if (!pending || !code.trim()) return;
@@ -195,21 +200,36 @@ export function ClaudeAccountsPanel() {
         setPending({ slot, status: { ...before, detail: outcome.message } });
       }
     } finally {
-      if (connectAbort.current === controller) connectAbort.current = null;
-      setBusy(null);
+      if (connectAbort.current === controller) {
+        connectAbort.current = null;
+        setBusy(null);
+      }
     }
   };
 
+  /**
+   * Every wait is cancellable, and Cancel answers at once: the local wait
+   * (starting, or a code Claude is checking) ends immediately and the panel
+   * clears; ending the sign-in in the sandbox then runs behind "Cancelling…".
+   */
   const cancel = async () => {
-    if (!pending) return;
+    const slot = pending?.slot ?? connectSlot.current;
+    const running = connectAbort.current;
+    connectAbort.current = null;
+    connectSlot.current = null;
+    running?.abort();
+    setPending(null);
+    setCode("");
+    if (!slot) {
+      setBusy(null);
+      return;
+    }
     setBusy("cancel");
     try {
-      await cancelOwnPlanSignIn(PROVIDER, pending.slot);
+      await cancelOwnPlanSignIn(PROVIDER, slot);
     } catch (cause) {
       toast.error(getUserMessage(cause));
     } finally {
-      setPending(null);
-      setCode("");
       setBusy(null);
     }
   };
@@ -263,9 +283,19 @@ export function ClaudeAccountsPanel() {
               <Loader2 aria-hidden className="size-3.5 shrink-0 animate-spin text-muted-foreground" />
               <span className="truncate">Starting your sandbox…</span>
             </span>
-            <Button variant="quiet" onClick={cancelStarting}>
+            <Button variant="quiet" onClick={() => void cancel()}>
               Cancel
             </Button>
+          </div>
+        )}
+
+        {busy === "cancel" && (
+          <div
+            className="mt-3 flex items-center gap-2 rounded-lg border border-border p-3 text-xs text-foreground"
+            role="status"
+          >
+            <Loader2 aria-hidden className="size-3.5 shrink-0 animate-spin text-muted-foreground" />
+            <span className="truncate">Cancelling…</span>
           </div>
         )}
 
@@ -323,10 +353,9 @@ export function ClaudeAccountsPanel() {
               </Button>
               <Button
                 variant="quiet"
-               
                 aria-label="Cancel sign-in"
                 onClick={() => void cancel()}
-                disabled={busy !== null}
+                disabled={busy !== null && busy !== "code"}
                 icon={<X />}
               />
             </div>

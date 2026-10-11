@@ -55,6 +55,23 @@ export function cleanTitle(raw: string): string {
     .trim();
 }
 
+/** The longest session label, matching the server's agent-mail rule
+ * (`agent_messaging.service._short` + `session_label`) the phone shows. */
+export const SESSION_LABEL_MAX = 60;
+
+/**
+ * A session's short label: its cleaned title on one line, cut at
+ * {@link SESSION_LABEL_MAX} with an ellipsis, plus `(workspace)` when known.
+ * A title is often the session's whole first prompt; a recipient list must
+ * never show that.
+ */
+export function shortSessionLabel(title: string, workspace?: string | null): string {
+  const flat = cleanTitle(title) || "Session";
+  const short =
+    flat.length <= SESSION_LABEL_MAX ? flat : `${flat.slice(0, SESSION_LABEL_MAX - 1).trimEnd()}…`;
+  return workspace?.trim() ? `${short} (${workspace.trim()})` : short;
+}
+
 /** A one-line preview: markdown markers, links and headings flattened to text. */
 export function plainPreview(raw: string): string {
   return raw

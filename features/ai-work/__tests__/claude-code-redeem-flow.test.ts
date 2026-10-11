@@ -8,7 +8,7 @@
  */
 
 import {
-  CODE_NOT_ACCEPTED_MESSAGE,
+  NO_WORD_FROM_CLAUDE_MESSAGE,
   OFFLINE_MESSAGE,
   REDEEM_TIMEOUT_MESSAGE,
   runClaudeCodeRedeem,
@@ -29,6 +29,18 @@ const refused: OwnPlanStatus = {
   sign_in_url: "https://claude.ai/oauth/x",
   detail:
     "Claude did not accept that code: Invalid code. Please make sure the full code was copied. Paste the newest code again.",
+};
+const refusedOnStatus = {
+  ...refused,
+  answer_to_code: "Invalid code. Please make sure the full code was copied.",
+} as OwnPlanStatus;
+/** What a box whose status door forgot the code answers (2026-10-11). */
+const backToStart: OwnPlanStatus = {
+  provider: "claude_code",
+  state: "awaiting_code",
+  signed_in: false,
+  sign_in_url: "https://claude.ai/oauth/x",
+  detail: "Sign in on Claude's page, then paste the code it shows you.",
 };
 const waitingNoDetail: OwnPlanStatus = {
   provider: "claude_code",
@@ -86,9 +98,26 @@ it("a submit that never answers still ends: the status door is asked, and says s
   const outcome = await runClaudeCodeRedeem(deps);
   expect(outcome).toEqual({
     kind: "settled",
-    status: { ...waitingNoDetail, detail: CODE_NOT_ACCEPTED_MESSAGE },
+    status: { ...waitingNoDetail, detail: NO_WORD_FROM_CLAUDE_MESSAGE },
   });
   expect(deps.submit).toHaveBeenCalledTimes(1);
+});
+
+it("no word from Claude is said as that, never as a guessed refusal or a silent restart", async () => {
+  // 2026-10-11: `redeeming`, then the status door answered with the generic
+  // "Sign in on Claude's page…", and the panel silently went back to the start.
+  const { deps } = harness({ submit: redeeming, statuses: [backToStart] });
+  const outcome = await runClaudeCodeRedeem(deps);
+  expect(outcome).toEqual({
+    kind: "settled",
+    status: { ...backToStart, detail: NO_WORD_FROM_CLAUDE_MESSAGE },
+  });
+  expect(JSON.stringify(outcome)).not.toMatch(/not accepted|did not accept/i);
+});
+
+it("Claude's own refusal, settled on the status door, is shown in Claude's words", async () => {
+  const { deps } = harness({ submit: NEVER, statuses: [refusedOnStatus] });
+  expect(await runClaudeCodeRedeem(deps)).toEqual({ kind: "settled", status: refusedOnStatus });
 });
 
 it("'Failed to fetch' on every call ends offline, never spins", async () => {

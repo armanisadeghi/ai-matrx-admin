@@ -56,6 +56,9 @@ const ctx = await browser.newContext(
   width < 768 ? { ...devices["iPhone 13"], viewport: { width, height: 812 } } : { viewport: { width, height: 900 } },
 );
 const page = await ctx.newPage();
+const consoleErrors = [];
+page.on("console", (m) => { if (m.type() === "error") consoleErrors.push(m.text().slice(0, 300)); });
+page.on("pageerror", (e) => consoleErrors.push(`pageerror: ${String(e).slice(0, 300)}`));
 try {
   await page.goto(url, { timeout: 180_000 });
   if (page.url().includes("__dev-walk")) {
@@ -204,5 +207,6 @@ try {
 } finally {
   await browser.close();
 }
+if (consoleErrors.length) console.log(`console errors (${consoleErrors.length}):\n  ${consoleErrors.slice(0, 8).join("\n  ")}`);
 console.log(failures.length ? `FAILED ${failures.length}` : `ok ${tag}`);
 process.exit(failures.length ? 1 : 0);

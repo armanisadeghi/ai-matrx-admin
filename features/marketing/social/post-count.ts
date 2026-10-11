@@ -17,8 +17,9 @@ export type PostCountChoice = (typeof POST_COUNT_CHOICES)[number];
 export const POST_COUNT_LABELS: Record<PostCountChoice, string> = { "12": "12", "50": "50", "100": "100", "500": "500", all: "All" };
 export const COMMENT_COUNT_CHOICES = [20, 100, 200] as const;
 export const LOAD_MORE_STEP = 50;
-/** Where an org admin changes the limits. */
-export const SOCIAL_LIMITS_HREF = (organizationId: string) => `/organizations/${organizationId}/settings/configuration`;
+/** Where an org admin changes the limits; with a setting name it scrolls to that exact row (rows anchor at their full key). */
+export const SOCIAL_LIMITS_HREF = (organizationId: string, setting?: string) =>
+  `/organizations/${organizationId}/settings/configuration${setting ? `#social.${setting}` : ""}`;
 
 const KEY = "social.postCount.v1";
 const DEFAULT_CHOICE: PostCountChoice = "12";

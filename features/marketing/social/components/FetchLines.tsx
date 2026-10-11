@@ -20,7 +20,7 @@ export function LimitLine({ limit, organizationId }: { limit: SocialLimitApplied
   return (
     <span className="text-xs text-muted-foreground" data-testid="limit-line">
       {`Limited to ${limit.value.toLocaleString("en-US")} (asked ${limit.requested.toLocaleString("en-US")}) by ${SETTING_LABELS[limit.setting] ?? limit.setting} · `}
-      <Link href={SOCIAL_LIMITS_HREF(organizationId)} className="underline">
+      <Link href={SOCIAL_LIMITS_HREF(organizationId, limit.setting)} className="underline">
         Change
       </Link>
     </span>

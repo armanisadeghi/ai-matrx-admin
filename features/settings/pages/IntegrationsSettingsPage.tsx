@@ -104,6 +104,7 @@ import { StorageConnectionsPanel } from "@/features/storage-connections/StorageC
 import { SocialConnectionsPanel } from "@/features/social-connections/SocialConnectionsPanel";
 import { listSocialConnections } from "@/features/social-connections/connections";
 import { CustomerAccountsPanel } from "@/features/social-connections/CustomerAccountsPanel";
+import { WhatsAppBusinessPanel } from "@/features/social-connections/WhatsAppBusinessPanel";
 import {
   loadCustomerSocialConnections,
   type CustomerSocialConnection,
@@ -1011,6 +1012,7 @@ export function IntegrationsWorkspace({
     if (item.id === "native:social-accounts")
       return organizationId ? (
         <CustomerAccountsPanel organizationId={organizationId} />
+        <WhatsAppBusinessPanel organizationId={organizationId} />
       ) : (
         <p className="p-4 text-sm text-muted-foreground">
           Choose an organization to connect an account.

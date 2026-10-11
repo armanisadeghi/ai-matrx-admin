@@ -1,4 +1,4 @@
-import { agentRoomKind, BUSY_STALE_MS, cleanTitle, deliveryLag, effectivePresence, plainPreview, type MemberCursor } from "../presence";
+import { agentRoomKind, BUSY_STALE_MS, cleanTitle, deliveryLag, effectivePresence, plainPreview, SESSION_LABEL_MAX, shortSessionLabel, type MemberCursor } from "../presence";
 
 const NOW = Date.parse("2026-10-09T12:00:00Z");
 const ENDED = 30 * 60_000;
@@ -62,5 +62,22 @@ describe("cleanTitle / plainPreview", () => {
     expect(plainPreview("## Independent review\n- **Engineering:** Passed. [link](http://x)")).toBe(
       "Independent review Engineering: Passed. link",
     );
+  });
+});
+
+describe("shortSessionLabel — a recipient is named, never its first prompt", () => {
+  const prompt =
+    "Please look at the hosted runtime and figure out why the own-plan code redeem\n hangs for 35 seconds on production, then fix it and add tests";
+
+  it("cuts a first-prompt title to the server's 60-character label with an ellipsis", () => {
+    const label = shortSessionLabel(prompt);
+    expect(label.length).toBeLessThanOrEqual(SESSION_LABEL_MAX);
+    expect(label.endsWith("…")).toBe(true);
+    expect(label).not.toMatch(/\n/);
+  });
+
+  it("names the workspace, and leaves a short title alone", () => {
+    expect(shortSessionLabel("Fix login", "aidream")).toBe("Fix login (aidream)");
+    expect(shortSessionLabel("Fix login")).toBe("Fix login");
   });
 });

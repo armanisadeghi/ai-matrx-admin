@@ -198,10 +198,15 @@ export type RedeemDeps = {
 };
 
 export const REDEEM_TIMEOUT_MS = 90_000;
+/** The code hop's longest wait: the server's box lookup (≤12 s), its code
+ * forward (18 s) and its protocol probe (10 s), under the ALB's 60 s cut. */
+export const REDEEM_SUBMIT_TIMEOUT_MS = 45_000;
 export const REDEEM_TIMEOUT_MESSAGE =
   "Claude did not answer about that code in time. Start the sign-in again.";
-export const CODE_NOT_ACCEPTED_MESSAGE =
-  "Claude has not accepted that code. Check it and paste it again.";
+/** The code went out and no word from Claude came back. Never a guess at
+ * Claude's verdict: only Claude's own words (`answer_to_code`) say refused. */
+export const NO_WORD_FROM_CLAUDE_MESSAGE =
+  "Couldn't hear back from Claude about that code. Paste it again to retry.";
 /** The server's "Claude is still checking the code" state. Compared as a
  * string: the generated `OwnPlanState` union gains it on the next publish. */
 export const REDEEMING_STATE = "redeeming";
@@ -210,24 +215,32 @@ export function isRedeeming(status: OwnPlanStatus): boolean {
   return String(status.state) === REDEEMING_STATE;
 }
 
+/** Claude's own words about the last pasted code (server field, newer than
+ * the generated types), or null when Claude said nothing about it. */
+export function claudeAnswerToCode(status: OwnPlanStatus): string | null {
+  const answer = (status as { answer_to_code?: unknown }).answer_to_code;
+  return typeof answer === "string" && answer.trim() ? answer : null;
+}
+
 export async function runClaudeCodeRedeem(deps: RedeemDeps): Promise<RedeemOutcome> {
   const deadline = deps.now() + (deps.timeoutMs ?? REDEEM_TIMEOUT_MS);
   const callMs = deps.callTimeoutMs ?? CONNECT_CALL_TIMEOUT_MS;
-  const budget = () => Math.min(callMs, deadline - deps.now());
+  const submitMs = deps.callTimeoutMs ?? REDEEM_SUBMIT_TIMEOUT_MS;
+  const budget = (ms: number) => Math.min(ms, deadline - deps.now());
   let unreachable = 0;
-  let submitUnanswered = false;
 
+  // Reached only when the code's own answer did not come back directly (no
+  // answer, or `redeeming`). A settled status then carries Claude's words in
+  // `answer_to_code`, or nothing: in that case say so, never guess a verdict.
   const settle = (status: OwnPlanStatus): RedeemOutcome => {
-    // The code may never have reached Claude: say so rather than showing the
-    // same waiting screen as if nothing happened.
-    if (submitUnanswered && !status.signed_in && !status.detail) {
-      return { kind: "settled", status: { ...status, detail: CODE_NOT_ACCEPTED_MESSAGE } };
+    if (!status.signed_in && !claudeAnswerToCode(status)) {
+      return { kind: "settled", status: { ...status, detail: NO_WORD_FROM_CLAUDE_MESSAGE } };
     }
     return { kind: "settled", status };
   };
 
   try {
-    const status = await bounded(deps.submit, budget(), deps.signal);
+    const status = await bounded(deps.submit, budget(submitMs), deps.signal);
     if (!isRedeeming(status)) return { kind: "settled", status };
   } catch (cause) {
     if (cause instanceof Cancelled || deps.signal.aborted) return { kind: "cancelled" };
@@ -235,7 +248,6 @@ export async function runClaudeCodeRedeem(deps: RedeemDeps): Promise<RedeemOutco
       return { kind: "failed", message: deps.describe(cause) };
     }
     // No answer: the code may still be with Claude, so ask the status door.
-    submitUnanswered = true;
     unreachable = 1;
   }
 
@@ -247,7 +259,7 @@ export async function runClaudeCodeRedeem(deps: RedeemDeps): Promise<RedeemOutco
     if (deps.now() >= deadline) continue;
     delay = Math.min(Math.round(delay * 1.5), 3_000);
     try {
-      const status = await bounded(deps.status, budget(), deps.signal);
+      const status = await bounded(deps.status, budget(callMs), deps.signal);
       unreachable = 0;
       if (!isRedeeming(status)) return settle(status);
     } catch (cause) {

@@ -5,6 +5,7 @@ import { asConversationId, type Message, type RecipientDelivery } from "@ai-matr
 import { useConversation } from "@ai-matrx/messaging/react";
 import type { LiveSession } from "./useLiveHub";
 import type { AgentMemberInfo, SessionMemberRow } from "./service";
+import { shortSessionLabel } from "./presence";
 import { expiredByMember, recipientDeliveryFor, type DeliveryRecipient } from "./delivery";
 
 /**
@@ -36,7 +37,7 @@ export function useRoomDelivery(
       const bindings = session?.bindingIds ?? [member.member_id];
       return {
         member,
-        label: session?.title ?? "Session",
+        label: session ? shortSessionLabel(session.title, session.workspace) : "Session",
         actorIds: bindings.map((id) => `coding_session:${id}`),
       };
     });
