@@ -32,6 +32,7 @@ import agentDefinitionReducer, {
 import {
   addField,
   assignField,
+  createFieldFlags,
   fieldFlagsSize,
   hasField,
   removeField,
@@ -436,11 +437,18 @@ export const agentBuilderSlice = createSlice({
       markAgentRecordClean(record);
     },
 
-    /** Called after a successful save. Current values become the new clean baseline. */
+    /**
+     * Called after a successful save. Current values become the new clean
+     * baseline, but the undo/redo stacks SURVIVE: Save is not a history
+     * boundary (Docs/VS Code/Notion). Undoing past a save re-dirties the field
+     * against the saved baseline, and the next Save writes the undone text.
+     */
     markAgentSaved(state, action: PayloadAction<{ id: string }>) {
       const record = state.agents[action.payload.id];
       if (!record) return;
-      markAgentRecordClean(record);
+      record._dirty = false;
+      record._dirtyFields = createFieldFlags();
+      record._fieldHistory = {};
     },
 
     /**
@@ -504,6 +512,15 @@ export const agentBuilderSlice = createSlice({
         byteEstimate: estimateBytes(currentValue),
       });
 
+      // A clean field (just saved) has no baseline yet: the value we are
+      // leaving IS the saved one, so remember it for dirty tracking.
+      if (
+        !hasField(record._dirtyFields, entry.field) &&
+        record._fieldHistory[entry.field] === undefined
+      ) {
+        (record._fieldHistory as FieldSnapshot)[entry.field] = currentValue;
+      }
+
       assignField(record, entry.field, entry.value);
 
       // Recalculate dirty state: compare against _fieldHistory (the clean baseline)
@@ -537,10 +554,23 @@ export const agentBuilderSlice = createSlice({
         byteEstimate: estimateBytes(currentValue),
       });
 
+      if (
+        !hasField(record._dirtyFields, entry.field) &&
+        record._fieldHistory[entry.field] === undefined
+      ) {
+        (record._fieldHistory as FieldSnapshot)[entry.field] = currentValue;
+      }
+
       assignField(record, entry.field, entry.value);
 
-      addField(record._dirtyFields, entry.field);
-      record._dirty = true;
+      const baseline = record._fieldHistory[entry.field];
+      if (baseline !== undefined && isEqual(entry.value, baseline)) {
+        removeField(record._dirtyFields, entry.field);
+        delete record._fieldHistory[entry.field];
+      } else {
+        addField(record._dirtyFields, entry.field);
+      }
+      record._dirty = fieldFlagsSize(record._dirtyFields) > 0;
     },
 
     /** Clears the undo/redo stacks without affecting the current state. */

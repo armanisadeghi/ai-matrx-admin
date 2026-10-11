@@ -20,6 +20,14 @@ export { getPlatform, isMacLike, isTouchDevice, getUndoShortcutHint, getRedoShor
 // Hook
 // ---------------------------------------------------------------------------
 
+function focusIsOffTextEntry(e: KeyboardEvent): boolean {
+  const t = e.target as HTMLElement | null;
+  if (!t || typeof t.closest !== "function") return true;
+  return !t.closest(
+    "input, textarea, select, [contenteditable=''], [contenteditable='true'], .ProseMirror, [role='textbox']",
+  );
+}
+
 interface UseAgentUndoRedoOptions {
   agentId: string | null;
   /**
@@ -76,7 +84,12 @@ export function useAgentUndoRedo({
     function handleKeyDown(e: KeyboardEvent) {
       const mod = isMacLike() ? e.metaKey : e.ctrlKey;
       if (!mod) return;
-      if (!keyEventInside(e, scope())) return;
+      // Another mount already answered this key (one ⌘Z = one undo).
+      if (e.defaultPrevented) return;
+      // Inside this mount's surface, OR focus rests on a non-text control
+      // (the Save button, the page) — Raw hides its textarea on blur and
+      // Save moves focus, so scoping to the textarea alone lost ⌘Z after Save.
+      if (!keyEventInside(e, scope()) && !focusIsOffTextEntry(e)) return;
 
       if (e.key === "z" || e.key === "Z") {
         if (e.shiftKey) {
