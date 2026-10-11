@@ -10,7 +10,7 @@
 // The icon picker opens from one React host beside the editor (`CalloutIconHost`), anchored on the slot.
 
 import { createBlockSpec, defaultProps } from "@blocknote/core";
-import { DynamicIcon } from "@ai-matrx/icons";
+import { IconResolver } from "@ai-matrx/icons";
 import { useEffect, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
@@ -29,7 +29,7 @@ export function CalloutGlyph({ name }: { name: string }) {
   if (isEmojiText(name)) return <span role="img" aria-label="emoji" style={{ fontSize: 19, lineHeight: 1 }}>{name}</span>;
   const Icon = SPACE_ICONS[name];
   if (Icon) return <Icon size={20} strokeWidth={1.75} aria-hidden />;
-  return <DynamicIcon name={name} size={20} fallbackIcon="FileText" />;
+  return <IconResolver iconName={name} size={20} className="" style={{ strokeWidth: 1.75 }} fallbackIcon="FileText" />;
 }
 
 export const CalloutBlock = createBlockSpec(

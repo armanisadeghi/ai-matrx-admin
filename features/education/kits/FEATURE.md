@@ -12,6 +12,7 @@ A kit is the learner's material for ONE subject plus every study aid made from o
 A new kit is a `scope` under the per-org "Study kit" scope type (slug `study-kit`; `kitScope.ts`):
 
 - **Sources** are plain edges `source → ('scope', kitId)` with metadata `kitSource: true`; a kit holds any number of them. Removing one archives its edge (`assoc_remove` tombstones); the Source is untouched.
+- **Archived kits:** archiving sets the scope's `deleted_at` (restorable); the live read (`context_scopes`) never answers for it, so the kit page asks the archive (`readArchivedKit`: the kit's edges name its org, `archivedScopesOfType` confirms) and shows "archived" + Restore — never "no study kit grouping".
 - **Aids** are flagged `member` edges `aid → ('scope', kitId)` (`educationKit: true`, `targetKind`).
 - **Lineage:** each generated aid links a `source` edge to EVERY Source, stamped `kitId`, so "Made from" names each one (`convert/recordSourceLineage.ts` is the one writer).
 - **Legacy anchor kits** (made before the scope model: the kit id IS the ingest anchor, a `file`/`note`/`processed_document`/`fc_set`/`assessment`) are still read from the anchor's incoming `source` edges. The first time one takes another Source it is promoted (`promoteAnchorKit` in `kitService.ts`: kit scope created, anchor becomes Source #1, aids copied, old edges stamped `kitId`, old URL opens the new kit; nothing deleted).

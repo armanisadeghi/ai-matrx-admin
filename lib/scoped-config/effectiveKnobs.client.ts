@@ -52,7 +52,8 @@ export function useEffectiveKnob(
         console.error(
           `[knob] ${fullKey} could not be resolved (feature='${address.feature}', ` +
             `key='${address.key}'), so every reader is falling back to its own ` +
-            "default. Seed the row, or pass the register's { feature, key } pair:",
+            // The error names its own cause and remedy (an unseeded row, a refused or dropped read).
+            "default:",
           error,
         );
       },

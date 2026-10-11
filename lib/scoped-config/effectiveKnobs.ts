@@ -267,7 +267,7 @@ export function isSignedOutVisitor(): boolean {
   return !(store.getState() as { userAuth?: { id: string | null } }).userAuth?.id;
 }
 
-type RpcResult = { data: unknown; error: { message: string } | null };
+type RpcResult = { data: unknown; error: { message: string; code?: string } | null };
 type PlatformRpc = (name: string, args: Record<string, unknown>) => Promise<RpcResult>;
 
 /**
@@ -351,6 +351,34 @@ async function ensureDefaults(
   return run;
 }
 
+/**
+ * 🚨 THE FAILURE SAYS WHAT HAPPENED, NOT WHAT USUALLY HAPPENS (2026-10-10). This sentence used to end
+ * "A 42501 here means the signed-in person is not a member of that organization" on EVERY failure and
+ * print `organization='null'` for a read with no organization, so a dropped request ("Failed to fetch")
+ * read as "organization-scoped knob reads return 42501 when the organization is null" — a defect that
+ * does not exist: with no organization the server skips the organization rung and answers the platform
+ * values plus the person's own settings. Only a real 42501 is explained, and by the case it is.
+ */
+export function snapshotFailureSentence(
+  organizationId: string | null,
+  error: { message: string; code?: string },
+): string {
+  const where = organizationId
+    ? `organization='${organizationId}'`
+    : "no organization (platform values and this person's own settings)";
+  const code = error.code ? ` [${error.code}]` : "";
+  const why =
+    error.code !== "42501"
+      ? ""
+      : organizationId
+        ? " The signed-in person is not a member of that organization; the read is gated on membership by design."
+        : " With no organization only a read without a signed-in session is refused: this ran as a signed-out visitor.";
+  return (
+    `platform.knob_snapshot_delta could not answer for ${where}: ${error.message}${code}.${why} ` +
+    "Every setting on this screen is falling back to its consumer's own default until it can."
+  );
+}
+
 /** One small round trip (plus the defaults read on a cold browser). No caching, no races — the caller owns both. */
 async function fetchKnobSnapshot(
   supabase: ReturnType<typeof createClient>,
@@ -380,15 +408,7 @@ async function fetchKnobSnapshot(
     p_scopes: buildScopes(deviceId, scopes),
     p_etag: prior?.etag ?? undefined,
   });
-  if (error) {
-    throw new Error(
-      `platform.knob_snapshot_delta could not answer for organization='${organizationId}': ` +
-        `${error.message}. Every setting on this screen is falling back to its ` +
-        "consumer's own default until it can. A 42501 here means the signed-in " +
-        "person is not a member of that organization — the read is gated on " +
-        "membership by design.",
-    );
-  }
+  if (error) throw new Error(snapshotFailureSentence(organizationId, error));
   const payload = (data ?? {}) as {
     etag?: string;
     defaults_version?: string;
