@@ -32,6 +32,11 @@ import {
 } from "@ai-matrx/print/react";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { useOpenArtifactInCanvas } from "@/features/canvas/hooks/useOpenArtifactInCanvas";
+import { Layers } from "lucide-react";
+import { toast } from "@/lib/toast";
+import { fcService } from "@/features/flashcards/data/fcService";
+import { flashcardSetHref } from "@/features/flashcards/routes";
+import { quizToFlashcards } from "./quiz-flashcards";
 import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
 import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-registry";
 import { IconButton } from "@ai-matrx/design-system";
@@ -451,6 +456,40 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
     setQuestionStartTime(Date.now());
   };
 
+  // "Make flashcards": the quiz's questions become a real deck (the platform's one deck writer).
+  const [deckHref, setDeckHref] = useState<string | null>(null);
+  const [makingDeck, setMakingDeck] = useState(false);
+  const handleMakeFlashcards = async () => {
+    if (makingDeck) return;
+    if (deckHref) {
+      window.open(deckHref, "_blank", "noopener");
+      return;
+    }
+    const cards = quizToFlashcards(quizState?.originalQuestions ?? []);
+    if (cards.length === 0) {
+      toast.error("This quiz has no question with a readable answer to turn into cards.");
+      return;
+    }
+    setMakingDeck(true);
+    try {
+      const res = await fcService.createSetWithCards(
+        {
+          name: parsedQuiz?.title || "Quiz",
+          metadata: { source_system: "quiz_block", source_id: quizState?.quizId ?? null },
+        },
+        cards,
+      );
+      if (!res.data) {
+        toast.error(res.error ?? "The flashcards could not be saved.");
+        return;
+      }
+      setDeckHref(flashcardSetHref({ id: res.data.set.id }));
+      toast.success(`${cards.length} flashcards saved. Click the deck button again to open them.`);
+    } finally {
+      setMakingDeck(false);
+    }
+  };
+
   const handleDownloadQuiz = () => {
     downloadQuizState(quizState);
   };
@@ -632,6 +671,13 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
                   )}
                 </div>
               )}
+
+              <IconButton
+                icon={Layers}
+                tooltip={deckHref ? "Open flashcard deck" : "Make flashcards from this quiz"}
+                onClick={handleMakeFlashcards}
+                disabled={makingDeck}
+              />
 
               <IconButton
                 icon={Download}
