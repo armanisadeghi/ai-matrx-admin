@@ -11,7 +11,7 @@ import Link from "next/link";
 import { DownloadCloud, RefreshCw } from "lucide-react";
 import { tableShapeChanged } from "@ai-matrx/records/react";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
-import { formatRelativeTime } from "@ai-matrx/kit/format";
+import { formatCount, formatRelativeTime } from "@ai-matrx/kit/format";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -90,7 +90,7 @@ export function FetchedSourceBar({
           {fetched.sourceLabel} · {inputWords(fetched.input)}
         </span>
         <span className="shrink-0 text-xs text-muted-foreground">
-          · {busy ? (run.progress?.label ?? "Fetching") : ago(fetched.fetchedAt)} · {fetched.rows.toLocaleString("en-US")} rows
+          · {busy ? (run.progress?.label ?? "Fetching") : ago(fetched.fetchedAt)} · {formatCount(fetched.rows)} rows
         </span>
         <span className="flex-1" />
         <Tooltip>
@@ -126,9 +126,9 @@ export function FetchedSourceBar({
       </div>
       {(textValues > 0 || trimmed) && (
         <div className="flex items-center gap-1 text-[11px] text-muted-foreground" data-fetch-notes="">
-          {textValues > 0 && <span>{textValues.toLocaleString("en-US")} values kept as text</span>}
+          {textValues > 0 && <span>{formatCount(textValues)} values kept as text</span>}
           {textValues > 0 && trimmed && <span>·</span>}
-          {trimmed && <span>Trimmed to your limit of {trimmed.value.toLocaleString("en-US")}</span>}
+          {trimmed && <span>Trimmed to your limit of {formatCount(trimmed.value)}</span>}
           {trimmed && settingHref && (
             <>
               <span>·</span>

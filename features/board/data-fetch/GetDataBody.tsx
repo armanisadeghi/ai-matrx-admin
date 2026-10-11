@@ -11,7 +11,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, Database, DownloadCloud, Loader2 } from "lucide-react";
+import { AlertTriangle, Database, DownloadCloud } from "lucide-react";
 import {
   Badge,
   Button,
@@ -22,7 +22,12 @@ import {
   SegmentedControl,
 } from "@ai-matrx/design-system/controls";
 
+import { ReadFailure } from "@ai-matrx/design-system";
+
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { formatCount, formatDurationMs } from "@ai-matrx/kit/format";
 import { ProInput } from "@/components/official/ProInput";
+import { Spinner } from "@/components/ui/spinner";
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
 import { cn } from "@/lib/utils";
 
@@ -96,26 +101,27 @@ export function GetDataBody({ tileId, source, onSource }: ItemBodyProps) {
   if (!organizationId) {
     return <EmptyState icon={<Database className="h-5 w-5" />} title="No organization yet" line="Data is fetched into an organization." />;
   }
-  if (catalog.isLoading) return <RegionSkeleton shape="rows" count={8} className="p-4" aria-label="Loading sources" />;
+  if (catalog.isLoading) {
+    return (
+      <div className="p-4">
+        <RegionSkeleton shape="rows" count={8} aria-label="Loading sources" />
+      </div>
+    );
+  }
   if (catalog.error || !catalog.data) {
     return (
-      <EmptyState
-        icon={<AlertTriangle className="h-5 w-5" />}
-        title="Sources did not load"
-        line={catalog.error instanceof Error ? catalog.error.message : undefined}
-        action={<Button onClick={() => void catalog.refetch()}>Try again</Button>}
-      />
+      <div className="p-4">
+        <ReadFailure error={catalog.error} what="the data sources" onRetry={() => void catalog.refetch()} />
+      </div>
     );
   }
 
   const fetchNow = (src: DataSource, values: Record<string, string>, count: number) => {
-    const built = buildInput(src, values);
-    if (!built.input) return;
-    const request = { sourceKey: src.key, sourceLabel: src.label, input: built.input, count };
+    const input = buildInput(src, values).input;
+    if (!input) return;
+    const request = { sourceKey: src.key, sourceLabel: src.label, input, count };
     saveDraft({ sourceKey: src.key, values, count, request });
-    startRun(tileId, (onProgress) =>
-      fetchData({ sourceKey: src.key, input: built.input!, maxRecords: count }, { organizationId, onProgress }),
-    );
+    startRun(tileId, (onProgress) => fetchData({ sourceKey: src.key, input, maxRecords: count }, { organizationId, onProgress }));
   };
 
   return (
@@ -187,28 +193,24 @@ function SourcePicker({
                 const selectable = !busy && (s.verified || allowUnverified);
                 const active = s.key === pickedKey;
                 return (
-                  <button
+                  <Button
                     key={s.key}
-                    type="button"
+                    variant="quiet"
+                    pressed={active}
                     role="option"
                     aria-selected={active}
                     disabled={!selectable}
-                    data-clickable=""
                     data-source-key={s.key}
                     title={!s.verified && !allowUnverified ? "Not verified yet. Turn on Unverified to use it." : undefined}
+                    meta={s.verified ? undefined : "Unverified"}
+                    className="w-full"
                     onClick={() => {
                       setPickedKey(s.key);
                       onDraft({ ...draft, sourceKey: s.key, values: {}, request: undefined });
                     }}
-                    className={cn(
-                      "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm",
-                      active ? "bg-primary/10 text-foreground" : "text-foreground hover:bg-muted",
-                      !selectable && "opacity-50",
-                    )}
                   >
-                    <span className="min-w-0 flex-1 truncate">{s.label}</span>
-                    {!s.verified && <Badge tone="warning">Unverified</Badge>}
-                  </button>
+                    {s.label}
+                  </Button>
                 );
               })}
             </div>
@@ -306,7 +308,7 @@ function SourceForm({
           <span className="text-xs font-medium text-muted-foreground">How many</span>
           {limit && (
             <span className="text-xs text-muted-foreground" data-limit={limit.value}>
-              Up to {limit.value.toLocaleString("en-US")}
+              Up to {formatCount(limit.value)}
               {settingHref && (
                 <>
                   {" · "}
@@ -340,6 +342,7 @@ function SourceForm({
           {choice === "custom" && (
             <ClampedNumberInput
               aria-label="Custom count"
+              className="w-24"
               value={custom}
               min={1}
               max={limit?.value ?? null}
@@ -354,17 +357,14 @@ function SourceForm({
           {estimate ?? "No price yet"}
         </span>
         <Button type="submit" variant="primary" icon={<DownloadCloud className="h-4 w-4" />} disabled={!built.input}>
-          Fetch {count.toLocaleString("en-US")}
+          Fetch {formatCount(count)}
         </Button>
       </div>
     </form>
   );
 }
 
-function elapsed(startedAt: number, now: number): string {
-  const s = Math.max(0, Math.floor((now - startedAt) / 1000));
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-}
+const elapsed = (startedAt: number, now: number): string => formatDurationMs(Math.max(0, now - startedAt));
 
 function ProgressView({ source, progress, startedAt }: { source: DataSource | null; progress: DataFetchProgress | null; startedAt: number }) {
   const [now, setNow] = useState(() => Date.now());
@@ -375,7 +375,7 @@ function ProgressView({ source, progress, startedAt }: { source: DataSource | nu
   const share = progress?.current != null && progress.total ? Math.min(1, progress.current / progress.total) : null;
   return (
     <div className="m-auto flex w-full max-w-sm flex-col items-center gap-3 text-center" aria-live="polite" data-fetch-progress="">
-      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      <Spinner className="h-6 w-6 text-primary" />
       <div className="text-sm font-medium text-foreground">{source?.label ?? "Fetching"}</div>
       <div className="text-xs text-muted-foreground">
         {progress?.label ?? "Starting"}
@@ -397,10 +397,13 @@ export function RefusalView({ refusal, organizationId, onBack }: { refusal: Data
   return (
     <div className="m-auto flex max-w-sm flex-col items-center gap-3 text-center" role="alert" data-fetch-refusal={refusal.code}>
       <AlertTriangle className="h-6 w-6 text-destructive" />
-      <div className="text-sm font-medium text-foreground">{refusal.userMessage}</div>
+      <div className="flex items-center gap-1 text-sm font-medium text-foreground">
+        {refusal.userMessage}
+        <ErrorAlchemyMenu error={refusal.userMessage} />
+      </div>
       {refusal.limit && (
         <div className="text-xs text-muted-foreground">
-          Limit {refusal.limit.value.toLocaleString("en-US")}
+          Limit {formatCount(refusal.limit.value)}
           {href && (
             <>
               {" · "}
