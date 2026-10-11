@@ -8,7 +8,7 @@
  * current in-memory builder state, whether saved or not.
  */
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
@@ -20,8 +20,19 @@ import {
 import { AgentConversationColumn } from "@ai-matrx/chat/agents/components/shared/AgentConversationColumn";
 import { useComposerMode } from "@ai-matrx/chat/agents/components/inputs/smart-input/composer/useComposerMode";
 import { useCompactInputMaxHeight } from "@ai-matrx/chat/agents/components/inputs/smart-input/composer/useCompactInputMaxHeight";
+import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { cn } from "@/lib/utils";
+import { useIsMobile } from "@ai-matrx/kit/media-query";
+import { ModelViewPanel } from "../model-view/ModelViewPanel";
 import { AgentSamplesLauncher } from "../samples/AgentSamplesLauncher";
 import type { ConversationInvocation } from "@ai-matrx/chat/agents/types/conversation-invocation.types";
+
+type RightView = "test" | "model";
+
+const RIGHT_VIEWS = [
+  { value: "test", label: "Test" },
+  { value: "model", label: "Model view" },
+] as const;
 
 interface AgentBuilderRightPanelProps {
   agentId: string;
@@ -31,6 +42,9 @@ export function AgentBuilderRightPanel({
   agentId,
 }: AgentBuilderRightPanelProps) {
   const dispatch = useAppDispatch();
+  const [view, setView] = useState<RightView>("test");
+  // On a phone the Build/Test tabs frame already clears the shell header.
+  const isMobile = useIsMobile();
   const sourceFeature = "agent-builder";
   const surfaceKey = `${sourceFeature}:${agentId}`;
   const { mode: composerMode } = useComposerMode();
@@ -92,27 +106,46 @@ export function AgentBuilderRightPanel({
   }
 
   return (
-    <div ref={measureRef} className="flex h-full min-h-0 flex-col">
-      <div className="min-h-0 flex-1">
-        <AgentConversationColumn
-          conversationId={conversationId}
-          displayConversationId={displayConversationId ?? undefined}
-          surfaceKey={surfaceKey}
-          aboveInput={
-            <AgentSamplesLauncher
-              agentId={agentId}
-              conversationId={conversationId}
-              className="px-2 pb-1"
-            />
-          }
-          smartInputProps={{
-            // The compact composer (composer/FEATURE.md) — this is a side
-            // panel. The agent is FIXED to the one being built, so no agent
-            // switch is offered (the pill is a plain label).
-            composer: { size: "compact", mode: composerMode, maxInputHeightPx },
-          }}
+    <div className="flex h-full min-h-0 flex-col">
+      <div className={cn("shrink-0 px-2 pb-1", !isMobile && "pt-[var(--shell-header-h)]")}>
+        <SegmentedControl
+          aria-label="Right panel view"
+          value={view}
+          onValueChange={setView}
+          data={RIGHT_VIEWS}
         />
       </div>
+      {/* Both stay mounted: switching never restarts the test conversation. */}
+      <div
+        ref={measureRef}
+        className={cn("flex min-h-0 flex-1 flex-col", view !== "test" && "hidden")}
+      >
+        <div className="min-h-0 flex-1">
+          <AgentConversationColumn
+            conversationId={conversationId}
+            displayConversationId={displayConversationId ?? undefined}
+            surfaceKey={surfaceKey}
+            aboveInput={
+              <AgentSamplesLauncher
+                agentId={agentId}
+                conversationId={conversationId}
+                className="px-2 pb-1"
+              />
+            }
+            smartInputProps={{
+              // The compact composer (composer/FEATURE.md) — this is a side
+              // panel. The agent is FIXED to the one being built, so no agent
+              // switch is offered (the pill is a plain label).
+              composer: { size: "compact", mode: composerMode, maxInputHeightPx },
+            }}
+          />
+        </div>
+      </div>
+      {view === "model" ? (
+        <div className="min-h-0 flex-1">
+          <ModelViewPanel agentId={agentId} conversationId={conversationId} />
+        </div>
+      ) : null}
     </div>
   );
 }
