@@ -275,6 +275,7 @@ export function MindMapDetail({ mediaId, edit = false }: { mediaId: string; edit
           presentation="workspace"
           selectedNode={selectedNode}
           onSelectNode={setSelectedNode}
+          studyContext={{ entityType: "study_media", entityId: mediaId, title: "This mind map" }}
         />
 
         <div className="absolute left-3 right-3 top-3 z-20 flex min-w-0 flex-col gap-2 rounded-xl border border-border/70 bg-card/90 p-2 shadow-lg backdrop-blur-xl sm:right-auto sm:max-w-[calc(100%-12rem)] lg:flex-row lg:items-center">

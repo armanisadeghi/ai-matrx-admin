@@ -115,9 +115,15 @@ export interface ArtifactOrigin {
 export async function readArtifactOrigins(
   entityType: string,
   entityId: string,
+  options: { failureMode?: "empty" | "throw" } = {},
 ): Promise<ArtifactOrigin[]> {
   const res = await associationsService.listForEntity(entityType, entityId);
-  if (!res.ok) return [];
+  if (!res.ok) {
+    if (options.failureMode === "throw") {
+      throw new Error(`Could not read the origins of ${entityType}:${entityId}`, { cause: res.error });
+    }
+    return [];
+  }
   return res.data.edges
     .filter((e) => e.direction === "outgoing" && e.role === "source")
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))

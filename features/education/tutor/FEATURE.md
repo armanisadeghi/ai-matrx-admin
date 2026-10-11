@@ -14,6 +14,7 @@ honest about the edge of what it knows. Not a new chat store: the canonical `/ch
   message via `useConversationRoutePromotion`; `embedded` mode powers AskTutor panels).
 - `AskTutorButton` is the shared "ask my tutor" primitive (takes a `seed`; docks in
   `MatrxDynamicPanelHost`, never a blocking `Sheet`).
+- Every study surface carries it (deck study, Write, Test, Match, assessment taker, study guide, mind map, kit hub, summary, notes); per-row "Ask why" lists (assessment results, Fast Fire) render ONE `AskTutorPanel` re-seeded per row. Seeds come only from `seeds.ts`.
 - `mandates.ts`: `education.tutor_message` via `useMandate`; an unresolved mandate REFUSES with the
   error visible, never a fallback agent id.
 - `learnerMemory.ts` is THE cross-session memory assembler (study spine, FSRS `item_mastery`,
@@ -33,6 +34,7 @@ Retrieval contract: IC-3 in `common-docs/systems/education/INTEGRATION_MAP.md`.
   (`listLearnerOwnedGroundingSources` -> `files.my_rag_jobs('completed')`). Empty inventory fails
   closed; a search failure aborts before the composer is snapshotted (the draft is never lost).
   The pre-send window says "Searching your study material"; a failure stays with Retry.
+- **Source scope:** a seed with `studyContext: { entityType, entityId, title? }` (kit `scope`, `fc_set`, `note`, `study_media`, `assessment`, a Source itself) searches ONLY that place's Sources (`sourceScope.ts` → `corpus: explicit`); none mappable = whole library; a read failure refuses the send. `TutorSourceStrip` shows them (chips open) with "All my material" to widen.
 - The Holder reads the request-only `tutor_retrieved_evidence` key (passages + seed + weak-card
   digest), which surface auto-context policy cannot filter. Four fixed `tutor_grounding_citation_N`
   slots overwrite every send (unused blank) and persist chunk/file/document/page coordinates on the

@@ -22,6 +22,7 @@ import { useState } from "react";
 import { Loader2, AlertCircle, BookOpen, Search, X } from "lucide-react";
 import { CanvasPagePanel } from "@/features/canvas/host/pagePanel";
 import { AskTutorButton } from "@/features/education/tutor/components/AskTutorButton";
+import type { TutorStudyContext } from "@/features/education/tutor/sourceScope";
 import { VerifyAgainstSourceButton } from "@/features/education/trust/components/VerifyAgainstSourceButton";
 import type { TrustEnvelope } from "@/features/education/trust/types";
 import { parseDiagramJSON } from "@ai-matrx/rich-content/display/blocks/diagram/parseDiagramJSON";
@@ -96,16 +97,18 @@ function seedForNode(node: DiagramNode): { title: string; material: string } {
 function NodePanel({
   node,
   mapTrust,
+  studyContext,
   onClose,
 }: {
   node: DiagramNode;
+  studyContext?: TutorStudyContext;
   /** The map's TrustEnvelope — a linked node card is verified against ITS cited
    *  sources (nodes carry no per-node citations of their own). */
   mapTrust: TrustEnvelope | null | undefined;
   onClose: () => void;
 }) {
   const card = nodeCard(node);
-  const seed = seedForNode(node);
+  const seed = { ...seedForNode(node), ...(studyContext ? { studyContext } : {}) };
   // The node's detail is the page's canvas tab (one per map view); a click on
   // another node renames the tab and brings it forward.
   return (
@@ -207,8 +210,11 @@ export function MindMapView({
   presentation = "card",
   selectedNode,
   onSelectNode,
+  studyContext,
 }: {
   envelope: unknown;
+  /** Where the map lives (its study_media row) — the tutor searches its Sources. */
+  studyContext?: TutorStudyContext;
   /** Map-level TrustEnvelope, threaded to the node panel's verify affordance. */
   mapTrust?: TrustEnvelope | null;
   /** Dedicated routes use the canonical edge-to-edge graph workspace. */
@@ -246,6 +252,7 @@ export function MindMapView({
         <NodePanel
           node={selected}
           mapTrust={mapTrust}
+          studyContext={studyContext}
           onClose={() => selectNode(null)}
         />
       )}

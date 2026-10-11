@@ -27,8 +27,11 @@ import type {
 import {
   retrieveGroundedPassages,
   serializeGroundedPassages,
+  type GroundingCorpus,
   type GroundingResult,
+  type GroundingSource,
 } from "@/features/rag/api/grounding";
+import type { TutorStudyContext } from "./sourceScope";
 
 /** A specific item a surface wants the tutor grounded in (AskTutor entry). */
 export interface TutorGroundingSeed {
@@ -36,6 +39,11 @@ export interface TutorGroundingSeed {
   title?: string;
   /** The verbatim item content to ground in (e.g. "Front: … / Back: …"). */
   material: string;
+  /**
+   * Where the tutor was opened (a kit, deck, guide, note, map, quiz). Its
+   * Sources become the search corpus (`sourceScope.ts`); omit = whole library.
+   */
+  studyContext?: TutorStudyContext;
 }
 
 export interface TutorLaunchGrounding {
@@ -71,6 +79,20 @@ export interface AssembleTutorGroundingOptions {
   userId?: string;
   /** Canonical generated-text language preference from Settings. */
   responseLanguage?: string;
+  /**
+   * The exact Sources to search (resolved from `seed.studyContext`). Empty or
+   * absent = the learner's whole library (today's behaviour).
+   */
+  sources?: readonly GroundingSource[];
+}
+
+/** The corpus a tutor turn searches: the context's Sources, else everything. */
+export function tutorGroundingCorpus(
+  sources: readonly GroundingSource[] | undefined,
+): GroundingCorpus {
+  return sources && sources.length > 0
+    ? { mode: "explicit", sources: [...sources] }
+    : { mode: "learner_owned" };
 }
 
 /** Request-only evidence and its compact durable citation-coordinate ledger. */
@@ -243,7 +265,7 @@ export async function assembleTutorGrounding(
 
   const retrieval = opts.query?.trim()
     ? await retrieveGroundedPassages(
-        { query: opts.query, corpus: { mode: "learner_owned" }, limit: 4 },
+        { query: opts.query, corpus: tutorGroundingCorpus(opts.sources), limit: 4 },
         { userId: opts.userId },
       )
     : null;

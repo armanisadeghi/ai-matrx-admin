@@ -95,6 +95,12 @@ import { parseGroundedPassageCitations } from "@/features/rag/api/grounding";
 import { extractTurnTrust } from "../turnTrust";
 import { TutorLanding } from "./TutorLanding";
 import { TutorTrustStrip } from "./TutorTrustStrip";
+import { TutorSourceStrip } from "./TutorSourceStrip";
+import {
+  resolveTutorSourceScope,
+  type TutorScopedSource,
+  type TutorStudyContext,
+} from "../sourceScope";
 import { TutorTurnTrust } from "./TutorTurnTrust";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { asClause } from "@ai-matrx/kit/text";
@@ -139,6 +145,30 @@ export interface EducationTutorClientProps {
 }
 
 const defaultHref = (id: string) => `/education/tutor/${id}`;
+
+interface HeldScope {
+  key: string;
+  promise: Promise<TutorScopedSource[]>;
+}
+
+/**
+ * One resolution per study context, shared by the strip and the send boundary
+ * so a send that beats the strip still searches the right corpus. A failed
+ * read is dropped from the ref, so the next send retries it.
+ */
+function loadScopeOnce(
+  ref: { current: HeldScope | null },
+  context: TutorStudyContext,
+): Promise<TutorScopedSource[]> {
+  const key = `${context.entityType}:${context.entityId}`;
+  if (ref.current?.key === key) return ref.current.promise;
+  const promise = resolveTutorSourceScope(context);
+  ref.current = { key, promise };
+  promise.catch(() => {
+    if (ref.current?.promise === promise) ref.current = null;
+  });
+  return promise;
+}
 
 export function EducationTutorClient(props: EducationTutorClientProps) {
   // The tutor's agent resolves through its MANDATE (system default → org
@@ -214,6 +244,41 @@ function EducationTutorClientInner({
     "userPreferences.textGeneration.language",
   );
   const isFreshRoute = !conversationIdProp;
+
+  // ── Source scope (seed.studyContext) ─────────────────────────────────────
+  // Opened from a kit / deck / guide / note / map / quiz: search ONLY that
+  // place's Sources (NotebookLM's bar). No context = whole library, as before.
+  const studyContext = seed?.studyContext;
+  const studyContextKey = studyContext
+    ? `${studyContext.entityType}:${studyContext.entityId}`
+    : null;
+  const [widenedToLibrary, setWidenedToLibrary] = useState(false);
+  const [scopedSources, setScopedSources] = useState<{
+    key: string;
+    sources: TutorScopedSource[] | null;
+    error: unknown;
+  } | null>(null);
+  const scopePromiseRef = useRef<HeldScope | null>(null);
+  const contextType = studyContext?.entityType;
+  const contextId = studyContext?.entityId;
+  useEffect(() => {
+    if (!contextType || !contextId || !authReady) return;
+    const key = `${contextType}:${contextId}`;
+    const promise = loadScopeOnce(scopePromiseRef, { entityType: contextType, entityId: contextId });
+    let cancelled = false;
+    promise.then(
+      (sources) => {
+        if (!cancelled) setScopedSources({ key, sources, error: null });
+      },
+      (err) => {
+        logFailure("[EducationTutorClient] source scope failed", err);
+        if (!cancelled) setScopedSources({ key, sources: null, error: err });
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [contextType, contextId, authReady]);
 
   // ── Entitlement gate (P8): tutor messages are a metered capability ────────
   // Reactive to the boot-hydrated snapshot. Permissive today (the capability
@@ -911,11 +976,19 @@ function EducationTutorClientInner({
         "Your learner account is still loading. Please try again.",
       );
 
+    // Scoped to the study context's Sources unless the learner widened; a
+    // context with no Sources searches the whole library. A failed read
+    // throws (draft kept) — never a silent widen.
+    const scoped =
+      widenedToLibrary || !studyContext
+        ? null
+        : await loadScopeOnce(scopePromiseRef, studyContext);
     const grounding = await assembleTutorGrounding({
       seed,
       query,
       userId,
       responseLanguage,
+      sources: scoped?.map((source) => source.grounding),
     });
     if (grounding.retrieval?.status === "failed") {
       throw new Error(
@@ -1070,6 +1143,15 @@ function EducationTutorClientInner({
             what="your study material's citations"
             onRetry={() => setTrustAttempt((n) => n + 1)}
             className="mx-3 my-2"
+          />
+        )}
+        {studyContextKey && (
+          <TutorSourceStrip
+            contextTitle={studyContext?.title}
+            sources={scopedSources?.key === studyContextKey ? scopedSources.sources : null}
+            error={scopedSources?.key === studyContextKey ? scopedSources.error : null}
+            widened={widenedToLibrary}
+            onWidenChange={setWidenedToLibrary}
           />
         )}
         {!turnTrust && messageCount === 0 && (

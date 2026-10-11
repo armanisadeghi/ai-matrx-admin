@@ -225,7 +225,7 @@ function useStudyPassageActions(guide: Note): { actions: Action[]; tutor: React.
     const selection = passage(t);
     if (!selection) return;
     selectionToolbarHostOf(t)?.ui.close();
-    setTutorSeed({ title: guide.label || "Study guide", material: `Study guide: ${guide.label}\n\nSelected passage:\n${selection.anchor.exact}` });
+    setTutorSeed({ title: guide.label || "Study guide", material: `Study guide: ${guide.label}\n\nSelected passage:\n${selection.anchor.exact}`, studyContext: { entityType: "note", entityId: guide.id, title: guide.label || "This guide" } });
   };
   const actions: Action[] = [
     { id: "selection:tutor-explain", label: "I don't get this", icon: registerAlchemyIcon(CircleHelp), category: "ask", order: 0, placement: "primary", preserveSelection: true, eligible: eligible("selection:tutor-explain"), run: openTutor },

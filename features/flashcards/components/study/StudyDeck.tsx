@@ -38,6 +38,7 @@ import {
   Expand,
   Flame,
   SlidersHorizontal,
+  Pencil,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -109,7 +110,9 @@ import {
   asCardKind,
   CARD_KIND,
   matchingPairs,
-  studyFaces,
+  orientedStudyFaces,
+  showsBackFirst,
+  type AnswerWith,
 } from "../../utils/cardVariants";
 import {
   helpLive,
@@ -135,6 +138,14 @@ import { CardDetailLayers } from "./CardDetailLayers";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { useFlashcardMandates } from "../../data/mandate-disclosure";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { useSetting } from "@/features/settings/hooks/useSetting";
+import { useAccess } from "@/utils/permissions/access";
+import { canEditAccess } from "@/utils/permissions/access-core";
+import {
+  SwipeGradeEdges,
+  useSwipeToGrade,
+  type SwipeGrade,
+} from "./SwipeToGrade";
 
 // One-at-a-time on user action — the enhance dialog (its agents, preview flow,
 // entitlement chrome) loads only when the learner actually asks to improve a
@@ -144,6 +155,17 @@ const EnhanceSetDialog = lazy(() =>
     default: m.EnhanceSetDialog,
   })),
 );
+
+// "Edit card" — the deck editor's own CardEditor in a dialog, loaded on the
+// learner's first tap of the pencil (same in-gate lazy as the enhance dialog).
+const StudyCardEditDialog = lazy(() =>
+  import("./StudyCardEditDialog").then((m) => ({
+    default: m.StudyCardEditDialog,
+  })),
+);
+
+/** Per-person "Answer with" choice — durable user preference, synced. */
+const ANSWER_WITH_SETTING = "userPreferences.flashcard.answerWith";
 
 const FC_CARD_ITEM_TYPE = "fc_card";
 /** Below this many graded cards, an end-of-session AI review is more noise
@@ -341,6 +363,22 @@ export function StudyDeck(props: StudyDeckProps) {
   // disables confidence (`enableConfidence = false` → always simple).
   const [gradeStyle, setGradeStyle] = useState<GradeStyle>(readGradeStyle);
   const useConfidence = enableConfidence && gradeStyle === "confidence";
+
+  // "Answer with" — definition (front first, the default) or term (back
+  // first). Basic cards only; cloze / matching / formula keep their direction.
+  const [answerWithSetting, setAnswerWith] =
+    useSetting<AnswerWith>(ANSWER_WITH_SETTING);
+  const answerWith: AnswerWith =
+    answerWithSetting === "term" ? "term" : "definition";
+
+  // "Edit card" — only for someone who can edit the owning deck (the same
+  // gate SetDetailView uses); cross-set drivers pass no setId and never offer it.
+  const access = useAccess(setId ? "fc_set" : undefined, setId ?? undefined);
+  const canEditDeck =
+    Boolean(setId) &&
+    !access.loading &&
+    (access.isOwner || canEditAccess(access.level));
+  const [editOpen, setEditOpen] = useState(false);
 
   // VISION §2 (WP3 gap 7) — pre-flip confidence: the Brainscape "predict
   // before you peek" signal. In confidence mode the 1–5 row appears BEFORE
@@ -779,6 +817,33 @@ export function StudyDeck(props: StudyDeckProps) {
     });
   };
 
+  // Swipe-to-grade (touch): right = knew it, left = again — the same grade
+  // the buttons write in whichever grading style is on. Armed only once the
+  // answer is showing, and never on a matching card (it self-grades).
+  const gradeBySwipe = (swipe: SwipeGrade): void => {
+    if (grading) return;
+    const knewIt = swipe === "good";
+    if (!useConfidence) {
+      void handleGrade(knewIt ? "correct" : "incorrect");
+    } else if (preFlipConfidence != null) {
+      void handleGrade(knewIt ? "correct" : "incorrect", preFlipConfidence);
+    } else {
+      // 4 = "Knew it", 1 = "No idea" on the 1–5 row.
+      const confidence: Confidence = knewIt ? 4 : 1;
+      void handleGrade(confidenceToResult(confidence), confidence);
+    }
+  };
+  const swipeArmed =
+    isFlipped &&
+    !grading &&
+    !completed &&
+    Boolean(current) &&
+    currentKind !== CARD_KIND.matching;
+  const gradeSwipe = useSwipeToGrade({
+    enabled: swipeArmed,
+    onGrade: gradeBySwipe,
+  });
+
   // ── Shared pieces (desktop + phone render the SAME controls) ──────────────
 
   /** ONE caption slot over ONE 44px row, whichever grading style is on. */
@@ -836,9 +901,8 @@ export function StudyDeck(props: StudyDeckProps) {
       </div>
     );
 
-  /** Grading style + the keyboard map — one quiet menu, not a text link. */
-  const renderOptionsMenu = (): ReactNode =>
-    enableConfidence ? (
+  /** Answer with · grading style · the keyboard map — one quiet menu. */
+  const renderOptionsMenu = (): ReactNode => (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -852,21 +916,40 @@ export function StudyDeck(props: StudyDeckProps) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-60">
           <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
-            Grading
+            Answer with
           </DropdownMenuLabel>
           <DropdownMenuRadioGroup
-            value={gradeStyle}
+            value={answerWith}
             onValueChange={(value) =>
-              chooseGradeStyle(value === "simple" ? "simple" : "confidence")
+              setAnswerWith(value === "term" ? "term" : "definition")
             }
           >
-            <DropdownMenuRadioItem value="confidence">
-              1–5 confidence
+            <DropdownMenuRadioItem value="definition">
+              Definition
             </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="simple">
-              Again · Partial · Correct
-            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="term">Term</DropdownMenuRadioItem>
           </DropdownMenuRadioGroup>
+          {enableConfidence && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
+                Grading
+              </DropdownMenuLabel>
+              <DropdownMenuRadioGroup
+                value={gradeStyle}
+                onValueChange={(value) =>
+                  chooseGradeStyle(value === "simple" ? "simple" : "confidence")
+                }
+              >
+                <DropdownMenuRadioItem value="confidence">
+                  1–5 confidence
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="simple">
+                  Again · Partial · Correct
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </>
+          )}
           {!isMobile && (
             <>
               <DropdownMenuSeparator />
@@ -877,7 +960,7 @@ export function StudyDeck(props: StudyDeckProps) {
           )}
         </DropdownMenuContent>
       </DropdownMenu>
-    ) : null;
+  );
 
   /**
    * The card's whole toolbox as ONE wrapping row of compact tools; each tool's
@@ -954,6 +1037,8 @@ export function StudyDeck(props: StudyDeckProps) {
                 material: `Front: "${card.front}"\nBack: "${card.back}"${
                   card.topic ? `\nTopic: ${card.topic}` : ""
                 }`,
+                // The deck's Sources become the tutor's corpus.
+                ...(setId ? { studyContext: { entityType: "fc_set", entityId: setId, title: "This deck" } } : {}),
               }}
               label="Tutor"
               variant="ghost"
@@ -977,6 +1062,22 @@ export function StudyDeck(props: StudyDeckProps) {
             struggling={strugglingOnCurrent}
             variant="toolbar"
           />
+        )}
+
+        {/* Fix a card the moment it reads wrong — the deck editor's own card
+            editor in a dialog; the study view refreshes in place. */}
+        {canEditDeck && (
+          <Button
+            icon={<Pencil />}
+            type="button"
+            variant="quiet"
+            className={cn(STUDY_TOOL_BUTTON, editOpen && STUDY_TOOL_BUTTON_ACTIVE)}
+            onClick={() => setEditOpen(true)}
+            title="Edit this card"
+            aria-label="Edit this card"
+          >
+            Edit
+          </Button>
         )}
 
         {/* VISION §1 — deepen THIS card without leaving the session. Only when
@@ -1008,6 +1109,22 @@ export function StudyDeck(props: StudyDeckProps) {
       </div>
     );
   };
+
+  // Mounted on first open only; keyed inside by card id.
+  const editDialog =
+    canEditDeck && current && editOpen ? (
+      <Suspense fallback={null}>
+        <StudyCardEditDialog
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          card={current}
+          index={currentIndex}
+          count={cards.length}
+          mastery={masteryByCard[current.id]}
+          onSaved={() => onCardsChanged?.()}
+        />
+      </Suspense>
+    ) : null;
 
   if (loading) {
     return (
@@ -1272,7 +1389,7 @@ export function StudyDeck(props: StudyDeckProps) {
       <>
         <FlashcardMobileView
           mode="study"
-          cards={toFlashcardMobileCardsFromStudy(cards)}
+          cards={toFlashcardMobileCardsFromStudy(cards, answerWith)}
           controlledIndex={currentIndex}
           onIndexChange={goTo}
           controlledFlipped={isFlipped}
@@ -1284,7 +1401,9 @@ export function StudyDeck(props: StudyDeckProps) {
           bottomBar={mobileBottomBar}
           toolsPanel={mobileTools}
           answerStrip={mobileSources}
+          swipeGrade={{ enabled: swipeArmed, onGrade: gradeBySwipe }}
         />
+        {editDialog}
         {/* Same canonical enhance flow as desktop — mounted on first open. */}
         {setId && current && enhanceOpen && (
           <Suspense fallback={null}>
@@ -1319,7 +1438,9 @@ export function StudyDeck(props: StudyDeckProps) {
 
   // Card variant — matching branches to its own player; cloze/basic flip, with
   // cloze rendering its blanked/revealed faces (studyFaces) instead of raw markup.
-  const cardFaces = studyFaces(current);
+  const cardFaces = orientedStudyFaces(current, answerWith);
+  const cardTurned = showsBackFirst(current, answerWith);
+  const cardImages = getCardImages(current);
 
   return (
     <Shell>
@@ -1396,6 +1517,15 @@ export function StudyDeck(props: StudyDeckProps) {
           ) : (
             <>
               {/* The card face is a selection surface: dragging across its text gets the one selection toolbar (Copy first). */}
+              {/* Swipe-to-grade surface (touch only, armed once flipped): the
+                  card follows the finger; edge tabs show which grade lands. */}
+              <div
+                className="relative"
+                style={gradeSwipe.touchStyle}
+                {...gradeSwipe.handlers}
+              >
+              {swipeArmed && <SwipeGradeEdges swipe={gradeSwipe} />}
+              <div style={gradeSwipe.cardStyle}>
               <ContentView viewKey={`fc-card-${current.id}`} text={() => studyCardMarkdown(current)} className="max-h-[clamp(15rem,46dvh,32rem)] overflow-auto">
               <NonEditableContextMenu sourceFeature="system">
               <FlashcardItem
@@ -1408,12 +1538,14 @@ export function StudyDeck(props: StudyDeckProps) {
                 onFlipToggle={flip}
                 lastResult={resultsByCard[current.id] ?? null}
                 voiceTest={voiceTestForCard?.(current)}
-                frontImage={getCardImages(current).front}
-                backImage={getCardImages(current).back}
+                frontImage={cardTurned ? cardImages.back : cardImages.front}
+                backImage={cardTurned ? cardImages.front : cardImages.back}
                 heightClassName="h-[clamp(15rem,46dvh,32rem)]"
               />
               </NonEditableContextMenu>
               </ContentView>
+              </div>
+              </div>
 
               {/* P0 Trust — once the answer is revealed, show where it came
                   from. Renders nothing for hand-made cards. */}
@@ -1507,6 +1639,7 @@ export function StudyDeck(props: StudyDeckProps) {
           />
         </Suspense>
       )}
+      {editDialog}
     </Shell>
   );
 }
