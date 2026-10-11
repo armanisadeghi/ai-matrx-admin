@@ -1,13 +1,14 @@
 import { launchAgentExecution } from "@ai-matrx/chat/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
 import type { AppDispatch } from "@/lib/redux/store";
 
+import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
+
 /**
- * The owner's planner system agent ("Master Intelligence Architect"). It has no mandate yet,
- * so the System Builder runs it by id through the canonical agent-run door AS THE PERSON
- * (their own allowance, never a service key). When a mandate is registered for it, replace
- * this constant with the mandate key (see common-docs/operations/conflicts.md).
+ * The planner is a Mandate (`agent_factory.system_plan`, declared in aidream
+ * `services/mandates/client_mandates.py`): which agent plans is the mandate's
+ * Holder, never an id in this file. The page offers one value, `intelligence_description`.
  */
-export const PLANNER_AGENT_ID = "53594e9c-ddb7-4b6f-8881-7b4d487392da";
+export const PLANNER_MANDATE_KEY = MANDATE_KEYS.agent_factory__system_plan;
 
 export class PlannerRefused extends Error {}
 
@@ -20,7 +21,7 @@ export async function runPlanner(
   try {
     launch = await dispatch(
       launchAgentExecution({
-        agentId: PLANNER_AGENT_ID,
+        mandateKey: PLANNER_MANDATE_KEY,
         surfaceKey: "system-builder",
         sourceFeature: "agent-generator",
         isEphemeral: false,
