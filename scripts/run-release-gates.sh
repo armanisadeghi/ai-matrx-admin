@@ -90,6 +90,10 @@ if $STRICT; then
         # were all green. ~30s, offline, zero findings at introduction.
         # `pnpm check:matrx-imports:self-test` proves it can still fail.
         "Every @ai-matrx import exists in the installed package|pnpm check:matrx-imports"
+        # EVERY IMPORTED @ai-matrx PACKAGE IS DECLARED. 2026-10-10 v0.4.3122 imported
+        # @ai-matrx/context-menu/react with no package.json entry: green locally (pnpm had it
+        # beside another package), "Module not found" on Vercel's clean install.
+        "Every imported @ai-matrx package is declared in package.json|pnpm check:matrx-deps-declared"
         # ONE WAY TO TALK TO THE DATABASE (@ai-matrx/data owns it — data layer design,
         # common-docs projects/npm-package-extraction/lanes/data-layer-design.md). Every
         # direct supabase call (.from/.rpc/.schema/auth/createClient/a /rest/v1 URL) is
@@ -1145,6 +1149,10 @@ else
         # were all green. ~30s, offline, zero findings at introduction.
         # `pnpm check:matrx-imports:self-test` proves it can still fail.
         "Every @ai-matrx import exists in the installed package|pnpm check:matrx-imports"
+        # EVERY IMPORTED @ai-matrx PACKAGE IS DECLARED. 2026-10-10 v0.4.3122 imported
+        # @ai-matrx/context-menu/react with no package.json entry: green locally (pnpm had it
+        # beside another package), "Module not found" on Vercel's clean install.
+        "Every imported @ai-matrx package is declared in package.json|pnpm check:matrx-deps-declared"
         # ONE WAY TO TALK TO THE DATABASE (@ai-matrx/data owns it — data layer design,
         # common-docs projects/npm-package-extraction/lanes/data-layer-design.md). Every
         # direct supabase call (.from/.rpc/.schema/auth/createClient/a /rest/v1 URL) is

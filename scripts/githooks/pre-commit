@@ -55,5 +55,11 @@ if [ -n "$STAGED" ]; then
         echo "  Never pin, never delete the import to go green." >&2
         exit 1
     fi
+    # JOB 3 — every imported @ai-matrx package is declared in package.json (~1s, offline). An
+    # undeclared one builds locally and dies "Module not found" on Vercel (v0.4.3122, 2026-10-10).
+    if ! (cd "$ROOT" && node scripts/check-matrx-deps-declared.mjs); then
+        echo "COMMIT REFUSED: add the package(s) above to package.json as \"latest\" and commit again." >&2
+        exit 1
+    fi
 fi
 exit 0
