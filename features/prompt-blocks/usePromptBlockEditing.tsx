@@ -187,5 +187,9 @@ export function usePromptBlockEditing({ agentId, text, onChange, textareaRef, wr
     </>
   );
 
-  return { toolbarButton, nodes, menuSections, insertFromMenu, highlight, noteTyping, declared, missing, openPicker };
+  // Spread onto EditableContextMenu: a content block picked from the menu becomes a declared {{<name>}}.
+  // Typed `object` so this compiles against @ai-matrx/context-menu releases before onInsertPromptBlock.
+  const menuProps: object = useMemo(() => ({ onInsertPromptBlock: insertFromMenu }), [insertFromMenu]);
+
+  return { toolbarButton, nodes, menuSections, menuProps, insertFromMenu, highlight, noteTyping, declared, missing, openPicker };
 }

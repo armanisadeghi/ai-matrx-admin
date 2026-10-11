@@ -915,7 +915,7 @@ export function MessageItem({
           </div>
         ) : isEditing ? (
           <EditableContextMenu
-              onInsertPromptBlock={blockEditing.insertFromMenu}
+              {...blockEditing.menuProps}
             sourceFeature="agent-builder"
             menuDesign="global"
             menuFeatureTitle="Prompt"
