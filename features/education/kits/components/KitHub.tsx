@@ -646,14 +646,18 @@ export function KitHub({
   // The kit as the tutor sees it: its outline (what it covers) and its aids.
   const tutorButton = (
     <AskTutorButton
-      seed={documentTutorSeed(
-        "study kit",
-        kit.title,
-        [
-          ...(outline.sections ?? []).map((section) => `## ${section.title}\n${section.summary}`),
-          `Study aids: ${ordered.map((artifact) => artifact.title).join(", ")}`,
-        ].join("\n\n"),
-      )}
+      seed={{
+        ...documentTutorSeed(
+          "study kit",
+          kit.title,
+          [
+            ...(outline.sections ?? []).map((section) => `## ${section.title}\n${section.summary}`),
+            `Study aids: ${ordered.map((artifact) => artifact.title).join(", ")}`,
+          ].join("\n\n"),
+        ),
+        // The kit's Sources are the tutor's corpus (tutor/sourceScope.ts).
+        studyContext: { entityType: kit.sourceType, entityId: kit.sourceId, title: kit.title },
+      }}
       label="Tutor"
       className={proposedButton}
     />
