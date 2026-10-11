@@ -2,9 +2,9 @@
  * DocumentHistoryViewer — read-only audit log for a single document.
  *
  * Mirror of `WorkbookHistoryViewer`. Lists snapshots newest-first with a
- * Restore button that writes a NEW snapshot row labeled "Restored from <id>".
- * The realtime hook in DocumentEditor will hot-swap to the new snapshot when
- * not running with collab=true.
+ * Restore button that writes a NEW snapshot row labeled "Restored from <id>",
+ * then shows it in the open editor and its collab peers through the one
+ * content-replacement door (`lib/univer/openEditorContent`).
  */
 "use client";
 

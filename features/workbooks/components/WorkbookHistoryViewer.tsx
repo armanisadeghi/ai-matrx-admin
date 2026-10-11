@@ -4,8 +4,8 @@
  * Lists snapshots newest-first. Each entry shows origin (autosave / manual /
  * imported / restored), created_at, and a Restore button that takes the
  * snapshot's JSON and writes a NEW snapshot row labeled "Restored from <id>".
- * The realtime hook in WorkbookEditor will hot-swap to the new snapshot
- * automatically (it's the new latest).
+ * The open editor (and its collab peers) then shows it through the one
+ * content-replacement door (`lib/univer/openEditorContent`).
  *
  * Read RLS already scopes by viewer permission of the parent workbook —
  * no extra gating needed here.
@@ -104,8 +104,8 @@ export function WorkbookHistoryViewer({ workbookId, editable = true }: Props) {
         return;
       }
 
-      // Write a NEW snapshot pinned as 'restored'. The realtime hook in
-      // WorkbookEditor will pick this up as the new latest and hot-swap.
+      // Write a NEW snapshot pinned as 'restored', then show it in the open
+      // editor (and its collab peers) below.
       const saved = await saveSnapshot({
         workbookId,
         snapshot: full.snapshot,
