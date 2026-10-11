@@ -12,6 +12,7 @@
  * verdict, a classification IN text, and the mandate should say which.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import type { MandateRow } from "./mandate-health";
@@ -115,10 +116,13 @@ export function MandateInputsCell({
       // Has an input declaration; we just do not hold its values yet.
       return (
         <span
-          className="type-secondary text-muted-foreground"
-          title={`Inputs are declared by the Provision "${row.provisionKey}" — open the mandate to see every offered value.`}
+          className="inline-flex items-center gap-1 type-secondary text-muted-foreground"
         >
           <span className="type-meta">Declared by its provision</span>
+          <InfoHint
+            text={`Inputs are declared by the Provision "${row.provisionKey}". Open the mandate to see every offered value.`}
+            label="About declared inputs"
+          />
         </span>
       );
     }

@@ -21,6 +21,7 @@
 // Server half: aidream POST /masterworks/audition (durable streaming run via
 // useMasterworkRun; verdict event `masterwork_audition_verdict`). Owner-only.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { formatRelativeTime } from "@/utils/datetime";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -135,7 +136,7 @@ function HistoryStrip({
                   type="button"
                   onClick={() => onOpen(run)}
                   className={cn(
-                    "w-20 shrink-0 text-left underline-offset-2 hover:underline",
+                    "w-24 shrink-0 text-left underline-offset-2 hover:underline",
                     run.id === openRunId
                       ? "font-medium text-primary"
                       : "text-primary",
@@ -144,11 +145,12 @@ function HistoryStrip({
                   {new Date(run.startedAt).toLocaleDateString()}
                 </button>
               ) : (
-                <span
-                  className="w-20 shrink-0 text-muted-foreground"
-                  title="This run finished before verdicts were stored, so there is nothing to reopen."
-                >
+                <span className="inline-flex w-24 shrink-0 items-center gap-1 text-muted-foreground">
                   {new Date(run.startedAt).toLocaleDateString()}
+                  <InfoHint
+                    text="This run finished before verdicts were stored, so there is nothing to reopen."
+                    label="About this run"
+                  />
                 </span>
               )}
               <span className={cn("w-14 shrink-0 font-medium", scoreTone(run.qualityScore))}>

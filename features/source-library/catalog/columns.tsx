@@ -9,6 +9,7 @@
  * explicitly rather than pretending.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { Captions, CaptionsOff, CircleDashed, Radio } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Muted, timeCell, type EntityColumnSpec } from "@/lib/entity-list/columns";
@@ -232,7 +233,7 @@ function buildBaseColumns(
                         title={
                             languages.length
                                 ? `Caption tracks: ${languages.join(", ")}`
-                                : "Captions are reported. Which languages is only known after a check."
+                                : undefined
                         }
                     >
                         <Captions className="size-3.5" aria-hidden />

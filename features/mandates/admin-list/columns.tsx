@@ -8,6 +8,7 @@
 // `defaultHidden` and one click away in the column picker — nothing is
 // removed. Filter/sort values come from ./fields.ts, the one reader.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Switch } from "@/components/ui/switch";
@@ -430,10 +431,13 @@ function SourceCell({
   if (!row.sources) {
     return (
       <span
-        className="type-secondary text-muted-foreground"
-        title="The code scan has no reference to this key. Until every repository has a complete scan this means nobody looked — not that it is unused."
+        className="inline-flex items-center gap-1 type-secondary text-muted-foreground"
       >
         {NONE_FOUND}
+        <InfoHint
+          text="The code scan has no reference to this key. Until every repository is fully scanned, that does not mean it is unused."
+          label="About no references found"
+        />
       </span>
     );
   }

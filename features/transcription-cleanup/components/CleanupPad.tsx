@@ -2676,7 +2676,7 @@ export default function CleanupPad({
               onClick={() => void handleProcess()}
               title={
                 responseValue.trim().length > 0
-                  ? "Run the cleaning agent again on the current transcript (replaces the cleaned text)"
+                  ? "Run the cleaning agent again (replaces the cleaned text)"
                   : "Run the cleaning agent on the current transcript"
               }
               className="inline-flex h-7 shrink-0 items-center justify-center gap-1 rounded-md bg-primary px-2.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"

@@ -10,6 +10,7 @@
  *                        the server's reason (or nothing) — never a greyed button.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -95,10 +96,13 @@ export function SourceStateCell({
         case "transcribed_not_landed":
             return (
                 <span
-                    className="text-[11px] text-muted-foreground"
-                    title="A transcript exists, but the server has not filed it as a Source yet, so there is nothing to open."
+                    className="inline-flex items-center gap-1 text-[11px] text-muted-foreground"
                 >
                     Transcribed · not filed as a Source yet
+                    <InfoHint
+                        text="A transcript exists, but the server has not filed it as a Source yet, so there is nothing to open."
+                        label="About this state"
+                    />
                 </span>
             );
         case "unknown":

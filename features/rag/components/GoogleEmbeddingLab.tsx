@@ -1,5 +1,6 @@
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useState } from "react";
@@ -86,8 +87,12 @@ export function GoogleEmbeddingLab() {
       <main className="matrx-touch-targets h-full overflow-auto bg-background">
         <div className="mx-auto max-w-5xl space-y-6 px-4 py-7 sm:px-6">
           <header>
-            <h1 title="Test the same catalog-routed Gemini embedding runtime available to the knowledge pipeline." className="flex items-center gap-2 text-xl font-semibold">
+            <h1 className="flex items-center gap-2 text-xl font-semibold">
               <Binary className="h-5 w-5 text-primary" /> Gemini embedding lab
+              <InfoHint
+                text="Tests the same catalog-routed Gemini embedding runtime the knowledge pipeline uses."
+                label="About this lab"
+              />
             </h1>
           </header>
 

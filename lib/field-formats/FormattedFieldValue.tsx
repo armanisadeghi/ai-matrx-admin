@@ -124,7 +124,7 @@ export function FormattedFieldValue({
     // options is how a user finds the stray values already in their data. Say
     // so plainly instead of the generic type-mismatch reason.
     const reason = isChoiceFormat(format?.id)
-      ? "Not one of this column's options — still saved, and safe to fix or add as an option."
+      ? "Not an option of this column; still saved, fix or add it"
       : result.reason;
     return (
       <span className={cn(MISMATCH_CLASS, className)} title={reason}>

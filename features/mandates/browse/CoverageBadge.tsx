@@ -19,6 +19,7 @@
 // (./useCoverageList.tsx → ./service.ts); the active narrowing shows as a
 // strip with a Clear button above the list.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { createContext, useContext, useEffect, useState } from "react";
 import { CircleAlert, CircleDashed } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -206,10 +207,13 @@ export function MandateCoverageBadge({
   if (verdict.kind === "unanswered") {
     return (
       <span
-        className="type-meta text-muted-foreground/70"
-        title="Another owner's Mandate — this organization's coverage does not answer for it."
+        className="inline-flex items-center gap-1 type-meta text-muted-foreground/70"
       >
         —
+        <InfoHint
+          text="Another owner's Mandate; this organization's coverage does not answer for it."
+          label="About this dash"
+        />
       </span>
     );
   }

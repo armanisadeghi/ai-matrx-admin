@@ -134,7 +134,7 @@ export function SchemaEditor({
               ? "border-primary bg-primary/10 text-primary-ink"
               : "border-border bg-card text-muted-foreground hover:text-foreground",
           )}
-          title="Parse the response as structured data (JSON → table rows). If a chunk isn't JSON, its text is stored anyway, anchored to its pages."
+          title="Parse as JSON table rows; text that isn't JSON is kept"
         >
           Structured data
         </button>
@@ -147,7 +147,7 @@ export function SchemaEditor({
               ? "border-primary bg-primary/10 text-primary-ink"
               : "border-border bg-card text-muted-foreground hover:text-foreground",
           )}
-          title="Store the agent's full response as one text row per chunk, anchored to its pages. No JSON parsing."
+          title="Store the full response as one text row per chunk"
         >
           Text
         </button>

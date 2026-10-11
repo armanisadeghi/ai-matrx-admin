@@ -219,7 +219,7 @@ export function CleanupReviewDialog({
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-accent",
               )}
-              title="See the actual before → after of the whole note (canonical diff)"
+              title="See the whole note, before and after"
             >
               <Columns2 className="h-3.5 w-3.5" />
               Full diff

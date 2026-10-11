@@ -19,6 +19,7 @@
  *    optional note), never a single stray click.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useMemo, useState } from "react";
 import {
   Brain,
@@ -83,11 +84,6 @@ export function ConfidenceBadge({
           ? "border-emerald-500/40 text-emerald-700 dark:text-emerald-300"
           : "border-amber-500/40 text-amber-700 dark:text-amber-300",
       )}
-      title={
-        linked
-          ? "Recorded provenance — this edge comes from stored ids, not a guess"
-          : "Derived here — located by position or adjacency, not a recorded link"
-      }
     >
       {linked ? (
         <Link2 className="h-3 w-3" aria-hidden />
@@ -95,6 +91,14 @@ export function ConfidenceBadge({
         <Zap className="h-3 w-3" aria-hidden />
       )}
       {linked ? "linked" : "inferred"}
+      <InfoHint
+        text={
+          linked
+            ? "Recorded provenance: this edge comes from stored ids, not a guess."
+            : "Derived here: located by position or adjacency, not a recorded link."
+        }
+        label="About this link"
+      />
     </span>
   );
 }

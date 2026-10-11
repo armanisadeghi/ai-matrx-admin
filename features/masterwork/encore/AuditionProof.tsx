@@ -26,6 +26,7 @@
 // line. And no dead control — the Bench has no button in the app yet, so the
 // screen SAYS where it runs instead of showing one that does nothing.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { BadgeCheck, FlaskConical, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -237,10 +238,13 @@ export function AuditionProof({
     <div className={cn("mt-3", className)}>
       <p
         className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-foreground"
-        title="50 means it matched the expert's published work, rule by rule"
       >
         <BadgeCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
         <span>{headline}</span>
+        <InfoHint
+          text="50 means it matched the expert's published work, rule by rule."
+          label="About this score"
+        />
         {auditionedAt ? (
           <span className="font-normal text-muted-foreground">
             · {formatRelativeTime(auditionedAt)}

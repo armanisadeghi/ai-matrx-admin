@@ -618,7 +618,7 @@ function HierarchyTree({
                 <button
                   type="button"
                   onClick={() => onToggleOrg(o.id)}
-                  title="Include this organization (a scope alone never implies its org)"
+                  title="Include this organization"
                   className={cn(
                     "flex h-4 w-4 shrink-0 items-center justify-center rounded border",
                     selOrgs.has(o.id)

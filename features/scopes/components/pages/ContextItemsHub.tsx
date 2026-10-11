@@ -1,5 +1,6 @@
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import type { ContextField } from "@ai-matrx/records/scopes";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { useEffect, useRef, useState } from "react";
@@ -600,8 +601,13 @@ function ContextItemsOrgView({
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {orgName}
             </p>
-            <h1 title="Every field across all scope types in this organization, grouped by type." className="text-2xl font-bold text-foreground leading-tight">
+            <h1 className="text-2xl font-bold text-foreground leading-tight">
               All context items
+              <InfoHint
+                text="Every field across all scope types in this organization, grouped by type."
+                label="About context items"
+                className="ml-2"
+              />
             </h1>
           </div>
         </div>

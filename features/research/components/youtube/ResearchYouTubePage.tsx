@@ -1,5 +1,6 @@
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
 import Image from "next/image";
 import Link from "next/link";
@@ -235,8 +236,13 @@ export default function ResearchYouTubePage() {
             <p className="text-sm font-medium text-red-600 dark:text-red-400">
               Permanent topic sources
             </p>
-            <h1 title="Each video is linked to this topic, while its metadata, comments, transcript, and structured analysis are stored once and reused everywhere." className="mt-2 text-3xl font-semibold tracking-tight">
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight">
               YouTube research library
+              <InfoHint
+                text="Each video is linked to this topic; its metadata, comments, transcript and analysis are stored once and reused everywhere."
+                label="About this library"
+                className="ml-2"
+              />
             </h1>
           </div>
 

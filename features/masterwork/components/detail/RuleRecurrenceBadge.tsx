@@ -20,6 +20,7 @@
 // THE NO-DEAD-ENDS RULE: the count is the true number of DISTINCT pieces, and
 // below the threshold this renders nothing rather than a badge that says "1".
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useEffect, useState } from "react";
 import { Repeat } from "lucide-react";
 import { knobInt } from "@/lib/knobs/featureKnobs";
@@ -72,10 +73,13 @@ export function RuleRecurrenceBadge({
         "inline-flex items-center gap-1 rounded-full border border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground",
         className,
       )}
-      title={`This judgment appears in ${pieces} different pieces of this source. It is shown so you can see what the author repeats — it changes nothing about the rule.`}
     >
       <Repeat className="h-3 w-3" />
       Seen in {pieces} pieces
+      <InfoHint
+        text={`This judgment appears in ${pieces} different pieces of this source. It shows what the author repeats and changes nothing about the rule.`}
+        label="About repeated judgments"
+      />
     </span>
   );
 }

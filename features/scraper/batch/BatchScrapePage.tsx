@@ -52,6 +52,7 @@
 // Each row shows its Source and opens it. A row that did not land
 // says why (the door's own sentence), never a silent gap.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import Link from "next/link";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -489,7 +490,15 @@ export default function BatchScrapePage() {
     },
     {
       id: "estimated_words",
-      header: <span title="Estimated from characters at roughly 5.5 characters per word; this is not an observed word count.">Estimated words</span>,
+      header: (
+        <span className="inline-flex items-center gap-1">
+          Estimated words
+          <InfoHint
+            text="Estimated from characters at roughly 5.5 characters per word; not an observed word count."
+            label="About estimated words"
+          />
+        </span>
+      ),
       label: "Estimated words",
       accessorFn: (row) => estimatedWordCount(batchCharacterCount(row)),
       filter: "number",
@@ -499,10 +508,7 @@ export default function BatchScrapePage() {
         if (words == null)
           return <span className="text-muted-foreground">—</span>;
         return (
-          <span
-            className="text-sm text-muted-foreground"
-            title="Estimated from characters at roughly 5.5 characters per word; this is not an observed word count."
-          >
+          <span className="text-sm text-muted-foreground">
             {words.toLocaleString()}
           </span>
         );

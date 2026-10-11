@@ -1,5 +1,6 @@
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
 import React, {
   useEffect,
@@ -482,13 +483,16 @@ export function SurfacesContainer() {
       >
         <span
           className="min-w-0 truncate text-xs tabular-nums text-muted-foreground"
-          title={`${surfaces.length} surfaces · ${totalActive} active · ${manifestedSurfaceNames.size} with a code manifest · ${totalUnbound} with no agents or tools`}
         >
           <UntrustedCount value={surfaces.length} read={readOf({ loading, error, data: surfaces })} label="Surfaces" /> surfaces · {totalActive} active
           {!isMobile && totalUnbound > 0 && (
             <> · {totalUnbound} with no agents or tools</>
           )}
         </span>
+        <InfoHint
+          text={`${surfaces.length} surfaces · ${totalActive} active · ${manifestedSurfaceNames.size} with a code manifest · ${totalUnbound} with no agents or tools`}
+          label="About surface counts"
+        />
         {loading && (
           <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
         )}

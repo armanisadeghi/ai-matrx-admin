@@ -1,5 +1,6 @@
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { Badge } from "@/components/ui/badge";
 import { PUBLISHED_TO_WEB_LABEL, publishedToWebLabel } from "@/lib/row-access";
 import {
@@ -59,9 +60,12 @@ function SourceCell({ row }: { row: RulebookListRow }) {
     return (
       <span
         className="truncate text-xs text-muted-foreground"
-        title="We couldn't read what this Rulebook was built from. The Rulebook itself is fine — reload the list to ask again."
       >
         Couldn&apos;t read this
+        <InfoHint
+          text="We couldn't read what this Rulebook was built from. The Rulebook itself is fine; reload the list to ask again."
+          label="About this message"
+        />
         <ErrorAlchemyMenu />
       </span>
     );

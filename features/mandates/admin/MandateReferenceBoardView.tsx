@@ -299,11 +299,12 @@ function PatrolRunsTable({ patrol }: { patrol: MandatePatrolSection }) {
         <span className="whitespace-nowrap">
           {formatSeconds(run.wall_seconds)}
           {run.seconds_source === "derived_from_timestamps" ? (
-            <span
-              className="ml-1 text-muted-foreground"
-              title="Derived from this run's own start and finish times — the patrol did not record its duration on this run."
-            >
+            <span className="ml-1 inline-flex items-center gap-0.5 text-muted-foreground">
               ~
+              <InfoHint
+                text="Derived from this run's start and finish times; the patrol did not record its duration."
+                label="About this duration"
+              />
             </span>
           ) : null}
         </span>

@@ -20,6 +20,7 @@
 // Ruling QD-L2-1; cost if wrong is one RPC plus a listConfig — the columns and
 // row actions move across unchanged.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useCallback, useEffect, useState } from "react";
 import { Archive, ArchiveRestore, MessagesSquare } from "lucide-react";
 import {
@@ -132,9 +133,13 @@ export function InterviewListClient() {
         ) : (
           <span
             className="block truncate font-mono text-[11px] text-muted-foreground"
-            title="This account's address could not be read; the id is shown instead."
           >
             {row.respondent_user_id.slice(0, 8)}…
+            <InfoHint
+              text="This account's address could not be read; the id is shown instead."
+              label="About this id"
+              className="ml-1"
+            />
           </span>
         ),
     },

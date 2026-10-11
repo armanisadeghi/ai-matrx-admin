@@ -7,6 +7,7 @@
 // mandates this holder fills for the viewer, each linking to its place on the
 // Intelligence page. No count, no door — an em dash, like every empty cell.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
 import {
@@ -27,11 +28,14 @@ export function FillsMandatesCell({
   if (mandates === null) {
     return (
       <span
-        className="inline-flex text-muted-foreground"
-        title="Could not read which mandates this fills — reload to try again"
+        className="inline-flex items-center gap-1 text-muted-foreground"
         aria-label="Not measured"
       >
         <AlertTriangle className="h-3.5 w-3.5" />
+        <InfoHint
+          text="Could not read which mandates this fills. Reload to try again."
+          label="About this warning"
+        />
       </span>
     );
   }

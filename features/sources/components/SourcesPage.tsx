@@ -22,6 +22,7 @@
  * paste text · import a transcript. A row opens the document viewer.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -1296,9 +1297,13 @@ export function SourcesPage() {
             next page. */}
         {rows.length > 0 && total !== null && hasMore ? (
           <div className="flex items-center justify-center gap-3 py-2 text-xs text-muted-foreground">
-            <span title="Sources are listed newest first, a page at a time. A page read again is one Source.">
+            <span className="inline-flex items-center gap-1">
               {/* read-gate-exempt: shown only with rows and a total, which only a successful page read provides */}
               Showing the newest {formatCount(visibleRows.length)} Sources — more available
+              <InfoHint
+                text="Sources are listed newest first, a page at a time. A page read again is one Source."
+                label="About this list"
+              />
             </span>
             <Button
               icon={loadingMore ? (

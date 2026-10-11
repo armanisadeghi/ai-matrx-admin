@@ -18,6 +18,7 @@
 
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { Clock, Lightbulb, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -121,9 +122,12 @@ export function FileRagStatusChip({
     return (
       <span
         className={cn(PILL, "text-muted-foreground", className)}
-        title="Choose an organization in the header to see this file's Knowledge status."
       >
         Needs an organization
+        <InfoHint
+          text="Choose an organization in the header to see this file's Knowledge status."
+          label="About this status"
+        />
       </span>
     );
   }

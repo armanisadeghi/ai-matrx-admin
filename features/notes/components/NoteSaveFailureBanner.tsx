@@ -158,7 +158,7 @@ export function NoteSaveFailureBanner({ noteId }: NoteSaveFailureBannerProps) {
             type="button"
             onClick={() => window.location.reload()}
             className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted cursor-pointer"
-            title="Reload after copying or downloading your work — your local backup will be offered back"
+            title="Reload; your local backup will be offered back"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             Reload

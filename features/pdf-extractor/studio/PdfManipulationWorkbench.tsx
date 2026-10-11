@@ -12,6 +12,7 @@
  * full extractor studio chrome (sidebar, text panes, pipeline toolbar).
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useCallback, useEffect, useState } from "react";
 import { AlertCircle, Loader2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -178,8 +179,13 @@ export function PdfManipulationWorkbench({
         <div className="mx-auto flex max-w-[1600px] flex-col gap-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h1 title="Same viewer + ManipulationPanel as PDF Extractor — pick a cloud PDF, then use the right rail (crop draws on the left pane)." className="text-base font-semibold text-foreground">
+              <h1 className="text-base font-semibold text-foreground">
                 PDF manipulation workbench
+                <InfoHint
+                  text="Pick a cloud PDF, then use the right rail; crop draws on the left pane."
+                  label="About this workbench"
+                  className="ml-1.5"
+                />
               </h1>
             </div>
             {source.payload ? (

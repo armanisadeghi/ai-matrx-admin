@@ -19,6 +19,7 @@
 // the run, each with its peek and new-tab door; "Open" goes to the canonical
 // viewer of what it produced — the conversation, or the workflow run page.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
@@ -607,15 +608,16 @@ function runColumns({
             <NewTabLink href={href} label={`this run's ${label}`} />
           </span>
         ) : (
-          <span
-            className="text-muted-foreground"
-            title={
-              run.conversationId
-                ? "A background run: it kept no transcript to open. Its cost, status and output check are above."
-                : "This run left no conversation to open."
-            }
-          >
+          <span className="inline-flex items-center gap-1 text-muted-foreground">
             —
+            <InfoHint
+              text={
+                run.conversationId
+                  ? "A background run with no transcript to open; its cost, status and output check are above."
+                  : "This run left no conversation to open."
+              }
+              label="About this dash"
+            />
           </span>
         );
       },

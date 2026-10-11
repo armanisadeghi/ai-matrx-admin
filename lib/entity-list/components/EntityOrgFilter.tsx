@@ -106,7 +106,7 @@ export function EntityOrgFilter({ orgId, onChange, counts, countsLoading, onOpen
           type="button"
           data-entity-org-filter=""
           aria-label={`Organization filter: ${label}`}
-          title="Filter this list by organization. This never changes your active organization."
+          title="Filter by organization; your active one is unchanged"
           className={cn(
             "matrx-glyph-trim inline-flex h-7 min-w-0 max-w-full items-center sm:shrink-0 gap-1.5 rounded-md border px-2 text-xs font-medium transition-colors sm:max-w-[11rem] lg:max-w-[16rem]",
             orgId

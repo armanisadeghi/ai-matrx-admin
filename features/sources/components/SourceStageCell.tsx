@@ -6,6 +6,7 @@
  * status read → Retry (moved from the retired Sources page's table).
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,8 +50,12 @@ export function SourceStageCell({
   if (state === "read_failed")
     return (
       <span className="flex items-center gap-1.5 text-xs text-warning">
-        <span title="This Source's status could not be read from the server. Other rows are unaffected.">
+        <span className="inline-flex items-center gap-1">
           {STAGE_CELL_LABEL.read_failed}
+          <InfoHint
+            text="This Source's status could not be read from the server. Other rows are unaffected."
+            label="About this status"
+          />
         </span>
         <Button variant="outline" onClick={(e) => stop(e, onRetryRead)}>
           Retry
@@ -75,8 +80,12 @@ export function SourceStageCell({
     );
   return (
     <span className="flex items-center gap-1.5 text-xs text-warning">
-      <span title="Searches still answer with this Source's previous text; its current version is not indexed yet.">
+      <span className="inline-flex items-center gap-1">
         Index stale
+        <InfoHint
+          text="Searches still answer with this Source's previous text; its current version is not indexed yet."
+          label="About the stale index"
+        />
       </span>
       <Button variant="outline" disabled={busy} onClick={(e) => stop(e, onReindex)}>
         Re-index

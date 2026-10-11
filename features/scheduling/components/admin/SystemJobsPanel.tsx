@@ -24,6 +24,7 @@
 
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { usePageCapture } from "@/components/agent-copy/page-capture/usePageCapture";
 import { adminPageCapture } from "@/components/agent-copy/page-capture/pageCapture";
@@ -430,9 +431,12 @@ export function SystemJobsPanel({ lane }: { lane: "system" | "support" }) {
         r.handler_registered === false ? (
           <span
             className="inline-flex items-center gap-1 whitespace-nowrap type-secondary text-destructive"
-            title="No handler is registered on the server for this tool; enabling will be refused."
           >
             <AlertTriangle className="h-3 w-3" /> Missing
+            <InfoHint
+              text="No handler is registered on the server for this tool; enabling will be refused."
+              label="About the missing handler"
+            />
           </span>
         ) : r.handler_gate_pending ? (
           <span className="whitespace-nowrap type-secondary text-warning" title="Registered, waiting on a pending approval gate.">

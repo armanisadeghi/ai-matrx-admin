@@ -20,6 +20,7 @@
  *    recipient resolved SERVER-SIDE by exact email (`onAssign`), optionally
  *    with a server-generated password the creator never sees.
  */
+import { InfoHint } from "@/components/official/InfoHint";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -757,11 +758,6 @@ function FieldRuntimeSettings({
       </p>
       <label
         className="flex items-center gap-2 text-xs text-muted-foreground"
-        title={
-          draft.envKey
-            ? undefined
-            : "Name the runtime key first — a sandbox variable needs a name."
-        }
       >
         {VAULT_LABELS.sandboxAccess}
         <Switch
@@ -769,6 +765,10 @@ function FieldRuntimeSettings({
           disabled={!draft.envKey}
           onCheckedChange={(checked) => onChange({ inject: checked })}
           aria-label={`Inject ${draft.def.label} into sandboxes`}
+        />
+        <InfoHint
+          text="A sandbox variable needs a name, so enter the runtime key first."
+          label="About sandbox access"
         />
       </label>
     </div>
@@ -2281,11 +2281,6 @@ function CustomBuilder({
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <label
                   className="flex items-center gap-2 text-xs text-muted-foreground"
-                  title={
-                    field.envKey
-                      ? undefined
-                      : "Name the environment key first — a sandbox variable needs a name."
-                  }
                 >
                   {VAULT_LABELS.sandboxAccess}
                   <Switch
@@ -2295,6 +2290,10 @@ function CustomBuilder({
                       setField(index, { inject: checked })
                     }
                     aria-label="Inject into sandboxes"
+                  />
+                  <InfoHint
+                    text="A sandbox variable needs a name, so enter the environment key first."
+                    label="About sandbox access"
                   />
                 </label>
                 {fields.length > 1 && (

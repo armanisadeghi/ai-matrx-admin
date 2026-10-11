@@ -1,5 +1,6 @@
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SourceImportance } from "../../ranking";
@@ -30,11 +31,14 @@ export function SourceRankBadges({
     <div className={cn("space-y-1.5", className)}>
       <div className="flex items-center gap-2 flex-wrap">
         <span
-          title="Composite of this source's search ranks across all keywords — rewards ranking well for many keywords, so breadth can beat a single #1."
           className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 type-meta font-semibold text-primary-ink"
         >
           <TrendingUp className="h-3 w-3" />
           Importance {score}
+          <InfoHint
+            text="Composite of this source's search ranks across all keywords; ranking well for many keywords can beat a single #1."
+            label="About importance"
+          />
         </span>
         {bestRank != null && (
           <span className="type-meta text-muted-foreground tabular-nums">

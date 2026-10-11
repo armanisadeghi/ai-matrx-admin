@@ -879,7 +879,7 @@ function GroupRows({
               className="py-1.5 px-1 align-middle"
               title={
                 r.importance
-                  ? `Importance ${r.importance.score} — composite of search ranks across ${r.importance.keywordCount} keyword${r.importance.keywordCount === 1 ? "" : "s"} (rewards ranking well for many keywords)`
+                  ? `Importance ${r.importance.score} across ${r.importance.keywordCount} keyword${r.importance.keywordCount === 1 ? "" : "s"}`
                   : "Not ranked for any keyword"
               }
             >

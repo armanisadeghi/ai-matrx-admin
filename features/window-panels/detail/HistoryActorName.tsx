@@ -18,6 +18,7 @@
 
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useRecordActors } from "@/components/official/record-stamps/useRecordActors";
 import { resolveUserName } from "@/components/user/UserIdentity";
 import type { DetailRow } from "@ai-matrx/detail";
@@ -57,9 +58,13 @@ export function HistoryActorName({
   return (
     <span
       className="font-mono text-[10px]"
-      title="We could not find the person behind this id — they are not a member of this record's organization."
     >
       {actorId}
+      <InfoHint
+        text="We could not find the person behind this id; they are not a member of this record's organization."
+        label="About this id"
+        className="ml-1"
+      />
     </span>
   );
 }

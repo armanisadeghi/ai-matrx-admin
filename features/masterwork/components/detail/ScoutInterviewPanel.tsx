@@ -559,7 +559,7 @@ function InterviewColumn({
                 type="button"
                 onClick={() => stageChip(chip.message)}
                 className="rounded-full border border-border bg-card px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-                title="Puts the request in the message box — you can edit it before sending."
+                title="Put this request in the message box to edit before sending"
               >
                 {chip.label}
               </button>

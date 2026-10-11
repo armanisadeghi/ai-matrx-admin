@@ -387,7 +387,7 @@ function AgentFromChatResult({
           </Link>
         </Button>
         <Button variant="primary" asChild icon={<MessagesSquare className="h-4 w-4" />}>
-          <a href={continueWithAgentHref(result)} target="_blank" rel="noreferrer" title="The agent in the builder, with the agent that wrote it in the side chat">
+          <a href={continueWithAgentHref(result)} target="_blank" rel="noreferrer" title="Open in the builder, with its author in the side chat">
             Keep working on it
           </a>
         </Button>

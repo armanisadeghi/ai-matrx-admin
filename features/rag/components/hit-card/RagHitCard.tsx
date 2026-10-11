@@ -17,6 +17,7 @@
  * to `RagHitView` and pass `href` (deep-link) + `onOpen` (window).
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useId, useState } from "react";
 import {
   BookMarked,
@@ -184,10 +185,13 @@ function EntityOnlyBadge() {
   return (
     <span
       className="inline-flex shrink-0 items-center gap-1 rounded-md bg-amber-500/12 px-1.5 py-0.5 type-meta font-medium text-amber-700 ring-1 ring-inset ring-amber-500/20 dark:text-amber-300"
-      title="Surfaced only because its source mentions a matched entity — no semantic (vector) or keyword (lexical) match. Treat with care."
     >
       <TriangleAlert className="h-3 w-3" />
       entity only
+      <InfoHint
+        text="Surfaced only because its source mentions a matched entity, with no semantic or keyword match. Treat with care."
+        label="About entity-only hits"
+      />
     </span>
   );
 }

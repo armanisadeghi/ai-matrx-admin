@@ -243,8 +243,8 @@ export function FindReplaceBar({ noteId, textareaRef }: FindReplaceBarProps) {
             }}
             title={
               isGlobal
-                ? "Searching all notes — click to limit to this note"
-                : "Search this note only — click to search all notes (Ctrl+Shift+F)"
+                ? "Searching all notes: click to limit to this note"
+                : "Searching this note: click for all notes (Ctrl+Shift+F)"
             }
           >
             <Globe />

@@ -20,6 +20,7 @@
  *     query cache, or a URL. Revealed restricted values auto-clear in ~30s;
  *     visible values stay for the lifetime of the mounted row.
  */
+import { InfoHint } from "@/components/official/InfoHint";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useEffect, useRef, useState } from "react";
@@ -440,19 +441,25 @@ export function SecretValue({
   const controls = protectedExecution ? (
     <span
       className="flex shrink-0 items-center gap-1.5 rounded-md bg-muted/50 px-2 py-1 text-[11px] font-medium text-muted-foreground"
-      title="Native provider use only — this private passkey material cannot be revealed, copied, or used as a runtime value."
     >
       <LockKeyhole className="h-3.5 w-3.5" />
       Native provider only
+      <InfoHint
+        text="This private passkey material cannot be revealed, copied, or used as a runtime value."
+        label="About native provider only"
+      />
     </span>
   ) : secret.sealed ? (
     // Sealed: a lock and nothing else. There is no unseal control to hide.
     <span
       className="flex shrink-0 items-center gap-1.5 rounded-md bg-muted/50 px-2 py-1 text-[11px] font-medium text-muted-foreground"
-      title="Sealed — this value can never be shown to a human. Only trusted server execution can use it."
     >
       <LockKeyhole className="h-3.5 w-3.5" />
       Automation only
+      <InfoHint
+        text="Sealed: this value can never be shown to a human. Only trusted server execution can use it."
+        label="About automation only"
+      />
     </span>
   ) : secret.allowed ? (
     <>

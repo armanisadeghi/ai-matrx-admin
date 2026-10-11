@@ -20,6 +20,7 @@
  * feel polished enough for any normal user.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -526,13 +527,16 @@ function ScopeSidebar({
         <KindToggle value={scope.kindFilter} onChange={scope.setKindFilter} />
         <label
           className="flex items-center gap-2 text-xs cursor-pointer"
-          title="Re-orders the fused candidates with Cohere's rerank-v4.0-pro cross-encoder (reads each candidate against your query text). Retrieval itself runs on Voyage voyage-4-large embeddings; when the whole window scores low-confidence the fusion order is kept instead."
         >
           <Checkbox
             checked={scope.rerank}
             onCheckedChange={(v) => scope.setRerank(v === true)}
           />
           <span>Rerank results</span>
+          <InfoHint
+            text="Re-orders the top candidates by reading each against your query; if none score confidently, the original order is kept."
+            label="About reranking"
+          />
         </label>
         <label className="flex items-center gap-2 text-xs cursor-pointer">
           <Checkbox
@@ -543,13 +547,16 @@ function ScopeSidebar({
         </label>
         <label
           className="flex items-center gap-2 text-xs cursor-pointer"
-          title="Also surface chunks about entities that share a knowledge-graph cluster with your query's matched entities (canonical concept expansion). Broadens recall — the reranker filters. Cross-spelling matches (e.g. 'HTN' → 'hypertension') work regardless of this toggle."
         >
           <Checkbox
             checked={scope.expandClusters}
             onCheckedChange={(v) => scope.setExpandClusters(v === true)}
           />
           <span>Expand entity clusters</span>
+          <InfoHint
+            text="Also surface chunks about entities in the same knowledge-graph cluster as your query's entities. Broadens recall; the reranker filters."
+            label="About entity clusters"
+          />
         </label>
         <label className="flex items-center gap-2 text-xs">
           <span className="text-muted-foreground">Multi-query</span>
@@ -1239,10 +1246,14 @@ function SearchTab({
                 {response.rerank_status === "low_confidence" && (
                   <span
                     className="text-amber-600 dark:text-amber-500"
-                    title="Cohere reranked the candidates but every one scored below the confidence floor — no strong match for this query, so the fusion (RRF) order was kept."
                   >
                     {" "}
                     · rerank skipped: low confidence
+                    <InfoHint
+                      text="Every candidate scored below the confidence floor, so no strong match was found and the original order was kept."
+                      label="About skipped reranking"
+                      className="ml-1"
+                    />
                   </span>
                 )}
                 {response.rerank_status === "failed" && (

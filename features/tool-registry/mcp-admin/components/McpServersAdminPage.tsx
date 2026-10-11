@@ -1,5 +1,6 @@
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";
@@ -1665,10 +1666,13 @@ function TestFreshnessBadge({ testFresh }: { testFresh: TestFreshness }) {
     return (
       <span
         className="inline-flex items-center gap-1 rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
-        title="No connection test on record. Click 'Test connection' to probe the endpoint."
       >
         <Plug className="h-3 w-3" />
         untested
+        <InfoHint
+          text="No connection test on record. Click 'Test connection' to probe the endpoint."
+          label="About untested servers"
+        />
       </span>
     );
   }

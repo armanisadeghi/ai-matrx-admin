@@ -7,6 +7,7 @@
 // id-based run page which owns the live stream — so the creation is persistent
 // and returnable from the very first second.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -64,8 +65,13 @@ export function CreateView() {
           <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary-ink">
             <Mic className="h-7 w-7" />
           </span>
-          <h1 title="The podcast studio turns any idea, document, or note into a fully produced two-host episode — with cover art, video, and audio." className="text-xl font-semibold text-foreground">
+          <h1 className="text-xl font-semibold text-foreground">
             Sign in to create podcasts
+            <InfoHint
+              text="The podcast studio turns any idea, document or note into a two-host episode with cover art, video and audio."
+              label="About the podcast studio"
+              className="ml-1.5"
+            />
           </h1>
           <Button variant="primary" asChild>
             <Link href="/login?next=/podcast/studio/create">
