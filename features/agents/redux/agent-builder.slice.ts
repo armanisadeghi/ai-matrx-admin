@@ -144,6 +144,15 @@ function pushUndoEntry(
   record._undoPast = compressStack(record._undoPast);
 }
 
+/** Records `value` as the clean baseline for `field` (generic so the field and value types stay paired). */
+function rememberBaseline<K extends keyof AgentDefinition>(
+  record: AgentDefinitionRecord,
+  field: K,
+  value: AgentDefinition[K],
+): void {
+  (record._fieldHistory as FieldSnapshot)[field] = value;
+}
+
 /**
  * Applies a user edit with dirty tracking, field history, and undo stack.
  * Captures the original value ONCE per field per clean cycle.
@@ -518,7 +527,7 @@ export const agentBuilderSlice = createSlice({
         !hasField(record._dirtyFields, entry.field) &&
         record._fieldHistory[entry.field] === undefined
       ) {
-        (record._fieldHistory as FieldSnapshot)[entry.field] = currentValue;
+        rememberBaseline(record, entry.field, currentValue);
       }
 
       assignField(record, entry.field, entry.value);
@@ -558,7 +567,7 @@ export const agentBuilderSlice = createSlice({
         !hasField(record._dirtyFields, entry.field) &&
         record._fieldHistory[entry.field] === undefined
       ) {
-        (record._fieldHistory as FieldSnapshot)[entry.field] = currentValue;
+        rememberBaseline(record, entry.field, currentValue);
       }
 
       assignField(record, entry.field, entry.value);
