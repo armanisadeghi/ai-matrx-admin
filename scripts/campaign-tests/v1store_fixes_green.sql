@@ -421,12 +421,13 @@ begin
       'migrate_merge', 'migrate_purge', 'migrate_retype', 'migrate_split',
       'trg_associations_bump_visibility', 'work_take_assignment',
       -- measured 2026-09-21 (RED-SUITES) — twenty-four that landed after the first census
-      '_checklist_watch', '_checklist_watch_for', '_pipeline_on_entry', '_sign_request_resolve',
+      -- (2026-10-11: the six custom.sign_request_* / _sign_request_resolve entries left with the
+      -- retired /sign/<token> path, migrations/inverse/esign_parity_28.)
+      '_checklist_watch', '_checklist_watch_for', '_pipeline_on_entry',
       'capture_sheet_declare', 'checklist_steps_table', 'dashboard_declare', 'dashboard_delete',
       'doc_template_delete', 'enrich_land', 'enrich_pin', 'entity_field_retire',
       'entity_field_update', 'migrate_reclass', 'pipeline_declare', 'portal_declare',
-      'provenance_prune', 'rule_declare', 'sign_request_cancel', 'sign_request_decline',
-      'sign_request_public', 'sign_request_remind', 'sign_request_sign', 'work_approval_decide'];
+      'provenance_prune', 'rule_declare', 'work_approval_decide'];
     v_new text;
     v_gone text;
   begin

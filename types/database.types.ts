@@ -8408,6 +8408,20 @@ export type Database = {
       }
     }
     Functions: {
+      _cost_activity: {
+        Args: {
+          p_admin: boolean
+          p_kind: string
+          p_label: string
+          p_provider: string
+        }
+        Returns: string
+      }
+      _cost_feature: {
+        Args: { p_kind: string; p_provider: string }
+        Returns: string
+      }
+      _cost_feature_label: { Args: { p_key: string }; Returns: string }
       _coupon_code: { Args: never; Returns: string }
       _coupon_take: {
         Args: { p_code: string; p_user: string }
@@ -8464,6 +8478,23 @@ export type Database = {
       _free_period_state: {
         Args: { p_plan: string; p_user: string }
         Returns: Json
+      }
+      _my_cost_base: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          charged_points: number
+          conversation_id: string
+          cost: number
+          created_at: string
+          feature: string
+          id: string
+          label: string
+          link_id: string
+          link_kind: string
+          organization_id: string
+          provider: string
+          status: string
+        }[]
       }
       _points_usage_state: {
         Args: { p_org: string; p_plan: string; p_user: string }
@@ -8687,6 +8718,53 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      my_cost_breakdown: {
+        Args: {
+          p_feature?: string
+          p_from?: string
+          p_group?: string
+          p_organization?: string
+          p_to?: string
+        }
+        Returns: {
+          calls: number
+          charged_points: number
+          cost_usd: number
+          first_at: string
+          group_key: string
+          group_label: string
+          last_at: string
+          points: number
+        }[]
+      }
+      my_cost_records: {
+        Args: {
+          p_activity?: string
+          p_before_at?: string
+          p_before_id?: string
+          p_feature?: string
+          p_from?: string
+          p_limit?: number
+          p_organization?: string
+          p_to?: string
+        }
+        Returns: {
+          charged_points: number
+          conversation_id: string
+          cost_usd: number
+          created_at: string
+          detail: string
+          feature: string
+          feature_label: string
+          id: string
+          link_id: string
+          link_kind: string
+          organization_id: string
+          organization_name: string
+          points: number
+          status: string
+        }[]
       }
       org_capability_status: { Args: { p_org: string }; Returns: Json }
       org_custom_limit_remove: {
@@ -20368,6 +20446,366 @@ export type Database = {
         }
         Relationships: []
       }
+      external_conversation: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          custom_fields: Json
+          deleted_at: string | null
+          id: string
+          inbox_id: string
+          integration_connection_resource_id: string
+          last_message_at: string | null
+          metadata: Json
+          organization_id: string
+          provider: string
+          provider_conversation_ref: string
+          remote_party_name: string | null
+          remote_party_ref: string
+          status: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          id?: string
+          inbox_id: string
+          integration_connection_resource_id: string
+          last_message_at?: string | null
+          metadata?: Json
+          organization_id: string
+          provider: string
+          provider_conversation_ref: string
+          remote_party_name?: string | null
+          remote_party_ref: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          id?: string
+          inbox_id?: string
+          integration_connection_resource_id?: string
+          last_message_at?: string | null
+          metadata?: Json
+          organization_id?: string
+          provider?: string
+          provider_conversation_ref?: string
+          remote_party_name?: string | null
+          remote_party_ref?: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "external_conversation_inbox_id_fkey"
+            columns: ["inbox_id"]
+            isOneToOne: false
+            referencedRelation: "external_inbox"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      external_delivery_event: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          custom_fields: Json
+          deleted_at: string | null
+          id: string
+          message_id: string
+          metadata: Json
+          occurred_at: string
+          organization_id: string
+          payload_hash: string
+          provider_event_ref: string
+          status: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          id?: string
+          message_id: string
+          metadata?: Json
+          occurred_at: string
+          organization_id: string
+          payload_hash: string
+          provider_event_ref: string
+          status: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          id?: string
+          message_id?: string
+          metadata?: Json
+          occurred_at?: string
+          organization_id?: string
+          payload_hash?: string
+          provider_event_ref?: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "external_delivery_event_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "external_message"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      external_inbox: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          custom_fields: Json
+          deleted_at: string | null
+          id: string
+          integration_connection_resource_id: string
+          metadata: Json
+          oauth_client_id: string
+          organization_id: string
+          provider: string
+          provider_account_ref: string
+          provider_phone_ref: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          status: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          id?: string
+          integration_connection_resource_id: string
+          metadata?: Json
+          oauth_client_id: string
+          organization_id: string
+          provider: string
+          provider_account_ref: string
+          provider_phone_ref: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          id?: string
+          integration_connection_resource_id?: string
+          metadata?: Json
+          oauth_client_id?: string
+          organization_id?: string
+          provider?: string
+          provider_account_ref?: string
+          provider_phone_ref?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
+      external_message: {
+        Row: {
+          client_idempotency_key: string | null
+          content: Json
+          conversation_id: string
+          created_at: string
+          created_by: string | null
+          custom_fields: Json
+          deleted_at: string | null
+          delivery_state: string
+          direction: string
+          dispatch_started_at: string | null
+          id: string
+          last_error: string | null
+          message_type: string
+          metadata: Json
+          organization_id: string
+          provider_created_at: string | null
+          provider_message_ref: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          client_idempotency_key?: string | null
+          content: Json
+          conversation_id: string
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          delivery_state: string
+          direction: string
+          dispatch_started_at?: string | null
+          id?: string
+          last_error?: string | null
+          message_type: string
+          metadata?: Json
+          organization_id: string
+          provider_created_at?: string | null
+          provider_message_ref?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          client_idempotency_key?: string | null
+          content?: Json
+          conversation_id?: string
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          delivery_state?: string
+          direction?: string
+          dispatch_started_at?: string | null
+          id?: string
+          last_error?: string | null
+          message_type?: string
+          metadata?: Json
+          organization_id?: string
+          provider_created_at?: string | null
+          provider_message_ref?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "external_message_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "external_conversation"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      external_provider_receipt: {
+        Row: {
+          attached_message_id: string | null
+          created_at: string
+          created_by: string | null
+          custom_fields: Json
+          deleted_at: string | null
+          id: string
+          inbox_id: string
+          metadata: Json
+          occurred_at: string
+          organization_id: string
+          payload_hash: string
+          provider_event_ref: string
+          provider_message_ref: string
+          recipient_ref: string
+          status: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          attached_message_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          id?: string
+          inbox_id: string
+          metadata?: Json
+          occurred_at: string
+          organization_id: string
+          payload_hash: string
+          provider_event_ref: string
+          provider_message_ref: string
+          recipient_ref: string
+          status: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          attached_message_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          id?: string
+          inbox_id?: string
+          metadata?: Json
+          occurred_at?: string
+          organization_id?: string
+          payload_hash?: string
+          provider_event_ref?: string
+          provider_message_ref?: string
+          recipient_ref?: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "external_provider_receipt_attached_message_id_fkey"
+            columns: ["attached_message_id"]
+            isOneToOne: false
+            referencedRelation: "external_message"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "external_provider_receipt_inbox_id_fkey"
+            columns: ["inbox_id"]
+            isOneToOne: false
+            referencedRelation: "external_inbox"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meet_call_invites: {
         Row: {
           authority_version: number
@@ -26259,6 +26697,99 @@ export type Database = {
           note?: string | null
           singleton?: boolean
           updated_at?: string
+        }
+        Relationships: []
+      }
+      converter_run: {
+        Row: {
+          code_sha: string | null
+          converter_id: string
+          converter_version: number
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          duration_ms: number | null
+          error: string | null
+          id: string
+          input_sha256: string | null
+          items_out: number
+          metadata: Json
+          mode: string
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          report: Json
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          source_format: string
+          status: string
+          subject_id: string | null
+          subject_type: string | null
+          target: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          code_sha?: string | null
+          converter_id: string
+          converter_version: number
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          duration_ms?: number | null
+          error?: string | null
+          id?: string
+          input_sha256?: string | null
+          items_out?: number
+          metadata?: Json
+          mode: string
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          report?: Json
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          source_format: string
+          status: string
+          subject_id?: string | null
+          subject_type?: string | null
+          target: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          code_sha?: string | null
+          converter_id?: string
+          converter_version?: number
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          duration_ms?: number | null
+          error?: string | null
+          id?: string
+          input_sha256?: string | null
+          items_out?: number
+          metadata?: Json
+          mode?: string
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          report?: Json
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          source_format?: string
+          status?: string
+          subject_id?: string | null
+          subject_type?: string | null
+          target?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
         }
         Relationships: []
       }
@@ -35954,15 +36485,6 @@ export type Database = {
         }
         Returns: string
       }
-      _sign_request_resolve: {
-        Args: { p_token: string }
-        Returns: {
-          data: Json
-          ok: boolean
-          organization_id: string
-          request_id: string
-        }[]
-      }
       _stage_field_key: {
         Args: { p_organization_id: string; p_table_id: string }
         Returns: string
@@ -41622,60 +42144,8 @@ export type Database = {
           table_name: string
         }[]
       }
-      sign_request_cancel: {
-        Args: {
-          p_organization_id: string
-          p_reason?: string
-          p_request_id: string
-        }
-        Returns: Json
-      }
-      sign_request_create: {
-        Args: {
-          p_expires_in?: string
-          p_field_key: string
-          p_organization_id: string
-          p_render_id: string
-          p_signer_email: string
-          p_signer_name: string
-        }
-        Returns: Json
-      }
-      sign_request_decline: {
-        Args: {
-          p_ip?: string
-          p_reason?: string
-          p_token: string
-          p_user_agent?: string
-        }
-        Returns: Json
-      }
-      sign_request_public: {
-        Args: { p_origin?: string; p_token: string }
-        Returns: Json
-      }
-      sign_request_remind: {
-        Args: { p_organization_id: string; p_request_id: string }
-        Returns: Json
-      }
       sign_request_sentence: { Args: { p_data: Json }; Returns: string }
-      sign_request_sign: {
-        Args: {
-          p_image?: string
-          p_ip?: string
-          p_mark: string
-          p_origin?: string
-          p_signed_name: string
-          p_token: string
-          p_user_agent?: string
-        }
-        Returns: Json
-      }
       sign_request_state: { Args: { p_data: Json }; Returns: string }
-      sign_request_unchanged: {
-        Args: { p_organization_id: string; p_request_id: string }
-        Returns: boolean
-      }
       sign_requests: {
         Args: { p_organization_id: string; p_record_id: string }
         Returns: {
@@ -41702,8 +42172,6 @@ export type Database = {
           viewed_at: string
         }[]
       }
-      sign_token_decode: { Args: { p_token: string }; Returns: string }
-      sign_token_encode: { Args: { p_bytes: string }; Returns: string }
       silent_page_doors: {
         Args: never
         Returns: {
@@ -50124,6 +50592,23 @@ export type Database = {
         }[]
       }
       envelope_sender: { Args: { p_envelope_id: string }; Returns: Json }
+      esign_add_recipient: {
+        Args: {
+          p_access_code: string
+          p_email: string
+          p_envelope_id: string
+          p_full_name: string
+          p_position: number
+          p_role: string
+          p_user_id?: string
+          p_verification: string
+        }
+        Returns: Json
+      }
+      esign_correct_recipient: {
+        Args: { p_changes: Json; p_signer_id: string }
+        Returns: Json
+      }
       esign_draft_create: {
         Args: {
           p_copy_of_envelope_id?: string
@@ -50147,6 +50632,7 @@ export type Database = {
         Args: { p_code: string; p_envelope_id: string; p_recipient_key: string }
         Returns: Json
       }
+      esign_remove_recipient: { Args: { p_signer_id: string }; Returns: Json }
       esign_saved_signature_delete: { Args: { p_id: string }; Returns: Json }
       esign_saved_signature_set_default: {
         Args: { p_id: string }
@@ -132204,6 +132690,128 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "ad_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "social_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      captured_post: {
+        Row: {
+          caption: string | null
+          captured_at: string
+          comments: number | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          duration_seconds: number | null
+          extras: Json
+          file_ids: string[]
+          format: string
+          id: string
+          likes: number | null
+          metadata: Json
+          organization_id: string
+          platform: string
+          platform_post_id: string
+          post_id: string | null
+          posted_at: string | null
+          posted_label: string | null
+          profile_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          saves: number | null
+          shares: number | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          source_document_id: string | null
+          thumbnail_file_id: string | null
+          thumbnail_url: string | null
+          updated_at: string
+          updated_by: string | null
+          url: string | null
+          version: number
+          views: number | null
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          caption?: string | null
+          captured_at?: string
+          comments?: number | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          duration_seconds?: number | null
+          extras?: Json
+          file_ids?: string[]
+          format?: string
+          id?: string
+          likes?: number | null
+          metadata?: Json
+          organization_id: string
+          platform: string
+          platform_post_id: string
+          post_id?: string | null
+          posted_at?: string | null
+          posted_label?: string | null
+          profile_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          saves?: number | null
+          shares?: number | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          source_document_id?: string | null
+          thumbnail_file_id?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+          version?: number
+          views?: number | null
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          caption?: string | null
+          captured_at?: string
+          comments?: number | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          duration_seconds?: number | null
+          extras?: Json
+          file_ids?: string[]
+          format?: string
+          id?: string
+          likes?: number | null
+          metadata?: Json
+          organization_id?: string
+          platform?: string
+          platform_post_id?: string
+          post_id?: string | null
+          posted_at?: string | null
+          posted_label?: string | null
+          profile_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          saves?: number | null
+          shares?: number | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          source_document_id?: string | null
+          thumbnail_file_id?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+          version?: number
+          views?: number | null
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "captured_post_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "social_profile"

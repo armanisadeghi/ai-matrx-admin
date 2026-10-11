@@ -26,7 +26,7 @@
 --   W5      archiving and restoring the approval row itself still works (deleted_at only)
 --   W6      work_decide_many still decides
 --   W7      the organization archive still withdraws and the undo still returns (approvals + sign requests)
---   W8      a sign request's own doors still write: remind, cancel
+--   W8      (retired 2026-10-11 with custom.sign_request_remind / _cancel)
 -- THE VERDICT IS THE EXIT CODE. Everything is rolled back.
 --
 -- RUN IT (dev clone only), session pooler:
@@ -235,20 +235,6 @@ exception when others then
   insert into res values ('W4 archiving the subject still withdraws its pending approval', false, m);
 end $$;
 
--- ── W8a: a sign request's own door still writes (admin reminds) ─────────────────────────────────
-do $$
-declare r jsonb; m text; n text;
-begin
-  r := custom.sign_request_remind(current_setting('t.cedar')::uuid, (select val from ids where k = 'sr')::uuid);
-  reset role;
-  select d.data ->> 'reminder_count' into n from custom.record d where d.id = (select val from ids where k = 'sr')::uuid;
-  set local role authenticated;
-  insert into res values ('W8a sign_request_remind still writes', coalesce((r ->> 'reminded')::boolean, false) and n = '1', r::text || ' count=' || coalesce(n, 'NULL'));
-exception when others then
-  get stacked diagnostics m = message_text;
-  insert into res values ('W8a sign_request_remind still writes', false, m);
-end $$;
-
 -- ── W7: the organization archive withdraws and the undo returns (the store's own, as postgres) ──
 reset role;
 do $$
@@ -279,21 +265,12 @@ exception when others then
   insert into res values ('W7 organization archive withdraws (approval + sign request) and the undo returns both', false, m);
 end $$;
 
--- ── W8b: cancel still writes (admin) ────────────────────────────────────────────────────────────
+-- (W8a/W8b — custom.sign_request_remind / _cancel still writing — left with the retired /sign/<token>
+-- path, 2026-10-11: migrations/inverse/esign_parity_28. A records signature is an e-sign envelope now.)
 set local role authenticated;
-select set_config('request.jwt.claims', json_build_object('sub', current_setting('t.admin'), 'role', 'authenticated')::text, true) \g /dev/null
-do $$
-declare r jsonb; m text;
-begin
-  r := custom.sign_request_cancel(current_setting('t.cedar')::uuid, (select val from ids where k = 'sr')::uuid, 'Sent to the wrong address');
-  insert into res values ('W8b sign_request_cancel still writes', r ->> 'state' = 'invalidated', r::text);
-exception when others then
-  get stacked diagnostics m = message_text;
-  insert into res values ('W8b sign_request_cancel still writes', false, m);
-end $$;
--- F11: the cancelled request put back to its first version would be live again — from the asker's seat
+-- F11: a sign request put back to its first version would be live again — from the asker's seat
 select set_config('request.jwt.claims', json_build_object('sub', current_setting('t.test'), 'role', 'authenticated')::text, true) \g /dev/null
-insert into res select 'F11 person: record_restore_version un-cancelling a sign request is refused by the signature door', pg_temp.refused_by_door(o, 'sign_request'), o from pg_temp.try(format(
+insert into res select 'F11 person: record_restore_version putting a sign request back is refused by the signature door', pg_temp.refused_by_door(o, 'sign_request'), o from pg_temp.try(format(
   $q$select custom.record_restore_version(%L, %L, 1)$q$, current_setting('t.cedar'), (select val from ids where k = 'sr'))) o;
 reset role;
 

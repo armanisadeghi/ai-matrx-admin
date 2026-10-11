@@ -27,7 +27,7 @@
 --   lead technician  test@test.com   (member; the table is shared to her; she approves; assigned)
 --   owner            admin@admin.com (owner; builds, files, archives, restores)
 -- Out of the seat (asserting nothing while out): the organization, memberships, knob and Home;
--- the signature request row (its own suite, esign_green, proves how one is made); archiving the
+-- the signature request row (the retired custom.sign_request_create made them; this fixture stands in for it); archiving the
 -- Ruiz job while the organization is archived (no member can reach it then); and the store-side
 -- reads that check what the archive wrote.
 
@@ -160,7 +160,7 @@ begin
   perform custom.work_assign(v_org, v_w_ruiz, c_tech, now() + interval '3 days', false);
   v_all := array[v_a_tanaka, v_a_ruiz, v_a_col, v_w_tanaka, v_w_ruiz];
 
-  -- the repair authorization sent to Mr. Tanaka (out of the seat: esign_green proves the maker)
+  -- the repair authorization sent to Mr. Tanaka (out of the seat: its maker, custom.sign_request_create, is retired)
   perform set_config('role', 'postgres', true);
   -- CHAIR-SELF-APPROVAL: a sign_request row is written only under its door's mark; this fixture stands in for the create door
   perform set_config('custom.decision_door', 'sign_request:create', true);
