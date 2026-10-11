@@ -80,9 +80,35 @@ for (const [name, needle] of Object.entries(needles)) {
   if (!data.includes(needle)) fail(`${name}: what was loaded did not come back on save`);
 }
 
+// ── 3. a signed-in person can still edit ───────────────────────────────────
+// identifyUniverUser hands Univer the signed-in id. Univer's local authz
+// grants Owner/Editor by id PREFIX, so a bare uuid refuses every edit
+// ("The range is protected") — shipped once on 2026-10-10. Rebuild the id the
+// way lib/univer/identifyUniverUser.ts does and ask Univer's own authz.
+{
+  const src = readFileSync(new URL("../lib/univer/identifyUniverUser.ts", import.meta.url), "utf8");
+  const tpl = src.match(/return `([^`$]*)\$\{userId\}`/);
+  if (!/setCurrentUser\(\{ userID: univerOwnerId\(/.test(src) || !tpl) {
+    fail("identifyUniverUser no longer builds the Univer id through univerOwnerId()");
+  } else {
+    const { IAuthzIoService, UserManagerService } = core;
+    const { UnitAction, UnitObject } = await import("@univerjs/protocol");
+    const inj = univer.__getInjector();
+    const canEdit = async (userID) => {
+      inj.get(UserManagerService).setCurrentUser({ userID, name: "p", avatar: "" });
+      const [r] = await inj.get(IAuthzIoService).allowed({ objectID: "wb", objectType: UnitObject.Workbook, actions: [UnitAction.Edit] });
+      return r?.allowed === true;
+    };
+    const uuid = "6f1c2c4e-0000-4000-8000-000000000001";
+    const signedIn = breakArg === "owner-id" ? uuid : `${tpl[1]}${uuid}`;
+    if (!(await canEdit(signedIn))) fail(`a signed-in person (Univer id "${signedIn}") cannot edit — every cell would read "The range is protected"`);
+    if (await canEdit(uuid)) fail("self-test: a bare uuid was allowed to edit, so this check cannot catch the regression");
+  }
+}
+
 if (failures.length) {
   console.error("[check:univer-addons] FAIL\n - " + failures.join("\n - "));
   process.exit(1);
 }
-console.log(`[check:univer-addons] OK — ${presets.length - 2} add-on presets registered; validation, conditional formatting, filter and notes survive save -> load`);
+console.log(`[check:univer-addons] OK — ${presets.length - 2} add-on presets registered; validation, conditional formatting, filter and notes survive save -> load; a signed-in person can edit`);
 process.exit(0);
