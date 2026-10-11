@@ -1,0 +1,112 @@
+"use client";
+
+/**
+ * Mode "Build it with Claude Code". Without a draft: the copyable prompt for Claude Code. With
+ * `?draft=<id>` (the link the plugin skill returns): what Claude Code sent, then Build, through the
+ * Studio's from-chat door and the Agent Factory. Claude never writes the agent; its bundle is evidence.
+ */
+
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Check, Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { RegionSkeleton } from "@ai-matrx/design-system/controls";
+import { claudeCodePrompt } from "./claude-code-prompt";
+import { readDraft, type ClaudeCodeDraft } from "./bring-over-api";
+import { BuildFromImport } from "./BuildFromImport";
+
+export function WithClaudeCode() {
+  const draftId = useSearchParams().get("draft");
+  return draftId ? <DraftReview draftId={draftId} /> : <PromptToCopy />;
+}
+
+function PromptToCopy() {
+  const [job, setJob] = useState("");
+  const [copied, setCopied] = useState(false);
+  const prompt = claudeCodePrompt(job);
+  const copy = async () => {
+    await navigator.clipboard.writeText(prompt);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <div className="mx-auto w-full max-w-2xl space-y-5 p-4" data-testid="with-claude-code">
+      <header className="space-y-1">
+        <h1 className="text-xl font-semibold">Build it with Claude Code</h1>
+        <p className="text-sm text-muted-foreground">
+          Give this to Claude Code in the project where you do the work. It sends us what defines the job, and you
+          finish here.
+        </p>
+      </header>
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium" htmlFor="job">
+          What should the agent do? (optional)
+        </label>
+        <Textarea id="job" rows={2} value={job} onChange={(e) => setJob(e.target.value)} />
+      </div>
+      <pre
+        className="whitespace-pre-wrap rounded-md border bg-card p-3 text-sm"
+        data-testid="claude-code-prompt"
+      >
+        {prompt}
+      </pre>
+      <Button onClick={copy}>
+        {copied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
+        {copied ? "Copied" : "Copy the prompt"}
+      </Button>
+    </div>
+  );
+}
+
+function DraftReview({ draftId }: { draftId: string }) {
+  const dispatch = useAppDispatch();
+  const [draft, setDraft] = useState<ClaudeCodeDraft | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    readDraft(dispatch, draftId)
+      .then((d) => live && setDraft(d))
+      .catch((e: unknown) => live && setError(e instanceof Error ? e.message : "We couldn't open that draft."));
+    return () => {
+      live = false;
+    };
+  }, [dispatch, draftId]);
+
+  if (error) {
+    return (
+      <p className="mx-auto max-w-2xl p-4 text-sm text-destructive" role="alert">
+        {error}
+      </p>
+    );
+  }
+  if (!draft) return <RegionSkeleton />;
+  return (
+    <div className="mx-auto w-full max-w-2xl space-y-5 p-4" data-testid="claude-code-draft">
+      <header className="space-y-1">
+        <h1 className="text-xl font-semibold">Here is what Claude Code sent</h1>
+        <p className="text-sm text-muted-foreground">Nothing is built yet. Check it, then build.</p>
+      </header>
+      <section className="space-y-1">
+        <h2 className="text-sm font-medium">The job</h2>
+        <p className="whitespace-pre-wrap text-sm">{draft.task}</p>
+      </section>
+      <ul className="list-disc space-y-1 pl-5 text-sm">
+        <li>{draft.hasClaudeMd ? "Your CLAUDE.md instructions" : "No CLAUDE.md instructions"}</li>
+        <li>{draft.skills.length > 0 ? `Skills: ${draft.skills.join(", ")}` : "No skills"}</li>
+        <li>
+          {draft.exampleCount} real example{draft.exampleCount === 1 ? "" : "s"}
+        </li>
+      </ul>
+      {draft.examples.map((e, i) => (
+        <details key={i} className="rounded-md border p-2 text-sm">
+          <summary className="cursor-pointer font-medium">Example {i + 1}</summary>
+          <p className="mt-2 whitespace-pre-wrap text-muted-foreground">In: {e.input}</p>
+          <p className="mt-2 whitespace-pre-wrap">Out: {e.output}</p>
+        </details>
+      ))}
+      <BuildFromImport source={{ draft_id: draft.draftId }} />
+    </div>
+  );
+}

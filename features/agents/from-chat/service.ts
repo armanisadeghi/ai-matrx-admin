@@ -44,7 +44,23 @@ export type FromChatAnswer =
    * example that maps onto the agent's inputs); `says` names any example left out.
    */
   | { ok: true; buildId: string; proofCases: number | null; says: string }
+  /** Agent Studio `stage: "inputs"`: the brief, for the person to confirm its inputs. */
+  | { ok: true; brief: StudioBrief }
   | { ok: false; says: string; failedAt: FromChatStep | null };
+
+/** The brief the Studio's inputs stage sends back (aidream `from_chat.ChatBrief`). */
+export interface StudioBrief {
+  name: string;
+  variables: { name: string; description: string; test_value: string }[];
+  [key: string]: unknown;
+}
+
+function studioBriefOf(d: AgentStudioFromChatProgressData): StudioBrief | null {
+  const b = (d as { brief?: unknown }).brief;
+  if (!b || typeof b !== "object") return null;
+  const brief = b as StudioBrief;
+  return typeof brief.name === "string" && Array.isArray(brief.variables) ? brief : null;
+}
 
 /**
  * The build the door started, when it did (`build_id` on the `building` progress event —
@@ -111,10 +127,24 @@ export function resultRuns(result: FromChatResult): Partial<Record<FromChatStep,
   return { briefing: id("brief_conversation_id"), building: id("builder_conversation_id"), proving: id("proof_conversation_id") };
 }
 
+/**
+ * A chat brought over from Claude instead of one stored on the platform (aidream
+ * `agent_studio/import_source.py`): a Claude Code draft, or one conversation of an uploaded / pasted
+ * claude.ai export with the person's optional project and pasted context. Agent Studio door only.
+ */
+export interface ImportSourceInput {
+  draft_id?: string;
+  file_id?: string;
+  text?: string;
+  key?: string;
+  project_key?: string;
+  extra_context?: string;
+}
+
 /** Turn one chat into an agent; `onStep` hears each step as the server reaches it. */
 export async function makeAgentFromChat(
   dispatch: AppDispatch,
-  conversationId: string,
+  conversationId: string | ImportSourceInput,
   onStep: (step: FromChatStep, says: string, runConversationId: string | null) => void,
   /** The person's own examples (R52): more proof cases beside the chat's own request. */
   examples: string[] = [],
@@ -123,15 +153,42 @@ export async function makeAgentFromChat(
    * stream their tokens into it, rendered by the canonical pipeline (`LiveRunDisplay`).
    */
   onAdopted?: (requestId: string) => void,
+  /**
+   * The Agent Studio's "Make this an agent" (door `studio`: always an Agent Factory build, no
+   * knob): the answer the person approved becomes the first test case's baseline, and the doer's
+   * own capture of how it got there rides the build brief.
+   */
+  studio?: {
+    approvedOutput: string;
+    capture: string;
+    /** `inputs` = brief only (confirm card); `build` (default) = build, from `brief` when given. */
+    stage?: "inputs" | "build";
+    brief?: StudioBrief;
+  },
 ): Promise<FromChatAnswer> {
   const given = examples.map((e) => e.trim()).filter(Boolean);
-  const body = given.length > 0 ? { conversation_id: conversationId, examples: given } : { conversation_id: conversationId };
+  const body = {
+    ...(typeof conversationId === "string"
+      ? { conversation_id: conversationId }
+      : { import_source: conversationId }),
+    ...(given.length > 0 ? { examples: given } : {}),
+    ...(studio
+      ? {
+          door: "studio" as const,
+          approved_output: studio.approvedOutput,
+          capture: studio.capture,
+          stage: studio.stage ?? "build",
+          ...(studio.brief ? { brief: studio.brief } : {}),
+        }
+      : {}),
+  };
   let result: AgentStudioFromChatResultData | null = null;
   let refusal: string | null = null;
   let lastStep: FromChatStep | null = null;
   let buildId: string | null = null;
   let proofCases: number | null = null;
   let buildSays = "";
+  let studioBrief: StudioBrief | null = null;
 
   const onStreamEvent = (event: TypedStreamEvent) => {
     if (event.event === "data") {
@@ -143,6 +200,7 @@ export async function makeAgentFromChat(
           proofCases = progressProofCases(d);
           buildSays = d.says;
         }
+        studioBrief = studioBriefOf(d) ?? studioBrief;
         onStep(d.step, d.says, progressRunConversationId(d));
       } else if (isResult(d)) {
         result = d;
@@ -171,7 +229,8 @@ export async function makeAgentFromChat(
         callApi({
           path: "/admin/agent-studio/from-chat",
           method: "POST",
-          body,
+          // door/stage/brief/import_source are newer than the generated request type
+          body: body as never,
           stream: true,
           expectedErrorStatuses: [401, 403, 404, 409, 422],
           consumeStream,
@@ -181,7 +240,8 @@ export async function makeAgentFromChat(
         callApi({
           path: "/agent-studio/from-chat",
           method: "POST",
-          body,
+          // door/stage/brief/import_source are newer than the generated request type
+          body: body as never,
           stream: true,
           expectedErrorStatuses: [401, 403, 404, 409, 422],
           consumeStream,
@@ -192,6 +252,8 @@ export async function makeAgentFromChat(
     return { ok: false, says: response.error.message || "Making the agent did not start.", failedAt: lastStep };
   }
   if (refusal) return { ok: false, says: refusal, failedAt: lastStep };
+  const confirmable = studioBrief as StudioBrief | null;
+  if (studio?.stage === "inputs" && confirmable) return { ok: true, brief: confirmable };
   const done = result as AgentStudioFromChatResultData | null;
   if (!done && buildId) return { ok: true, buildId, proofCases, says: buildSays };
   if (!done) {
