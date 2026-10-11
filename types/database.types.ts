@@ -7487,6 +7487,8 @@ export type Database = {
           resolved_by: string | null
           rule: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          snooze_note: string | null
+          snoozed_by: string | null
           snoozed_until: string | null
           status: string
           subject_id: string
@@ -7525,6 +7527,8 @@ export type Database = {
           resolved_by?: string | null
           rule?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          snooze_note?: string | null
+          snoozed_by?: string | null
           snoozed_until?: string | null
           status?: string
           subject_id: string
@@ -7563,6 +7567,8 @@ export type Database = {
           resolved_by?: string | null
           rule?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          snooze_note?: string | null
+          snoozed_by?: string | null
           snoozed_until?: string | null
           status?: string
           subject_id?: string
@@ -8744,6 +8750,7 @@ export type Database = {
           p_id: string
           p_note?: string
           p_snooze_hours?: number
+          p_snoozed_until?: string
           p_status: string
         }
         Returns: {
@@ -8773,6 +8780,8 @@ export type Database = {
           resolved_by: string | null
           rule: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          snooze_note: string | null
+          snoozed_by: string | null
           snoozed_until: string | null
           status: string
           subject_id: string
@@ -8790,6 +8799,38 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      spend_alarms_for_attention: {
+        Args: { p_limit?: number }
+        Returns: {
+          approval_status: string
+          cost_avoided_usd: number
+          cost_usd: number
+          detail: string
+          first_seen_at: string
+          fix: string
+          id: string
+          kind: string
+          last_seen_at: string
+          latest_occurrence_at: string
+          latest_occurrence_detail: string
+          level: string
+          metadata: Json
+          occurrence_count: number
+          refs: Json
+          reopened_count: number
+          rule: string
+          snooze_note: string
+          snoozed_by: string
+          snoozed_until: string
+          status: string
+          subject_id: string
+          subject_name: string
+          subject_type: string
+          task_enabled: boolean
+          task_title: string
+          title: string
+        }[]
       }
       spend_approval_draw: {
         Args: {
@@ -24277,6 +24318,23 @@ export type Database = {
           unseen_updates: number
         }[]
       }
+      my_loud_notices: {
+        Args: { p_limit?: number }
+        Returns: {
+          body: string
+          created_at: string
+          deep_link: string
+          event_key: string
+          id: string
+          payload: Json
+          read_at: string
+          severity: string
+          subject: string
+          target_id: string
+          target_kind: string
+          updated_at: string
+        }[]
+      }
       my_notification_unread_count: { Args: never; Returns: number }
       my_notifications: {
         Args: { p_before?: string; p_limit?: number; p_unread_only?: boolean }
@@ -35450,6 +35508,15 @@ export type Database = {
       }
       _rich_text_problem: { Args: { p_text: string }; Returns: string }
       _row_control_columns: { Args: never; Returns: Json }
+      _row_label_text: {
+        Args: {
+          p_expr: Json
+          p_organization_id: string
+          p_record_id: string
+          p_table_id: string
+        }
+        Returns: string
+      }
       _rule_eval_seated: {
         Args: {
           p_context?: Json
@@ -41556,6 +41623,18 @@ export type Database = {
       table_row_defaults_set: {
         Args: {
           p_defaults: Json
+          p_organization_id: string
+          p_table_id: string
+        }
+        Returns: Json
+      }
+      table_row_label: {
+        Args: { p_organization_id: string; p_table_id: string }
+        Returns: Json
+      }
+      table_row_label_set: {
+        Args: {
+          p_formula: string
           p_organization_id: string
           p_table_id: string
         }
@@ -49319,6 +49398,16 @@ export type Database = {
         }
         Returns: Json
       }
+      _acted: {
+        Args: {
+          p_declined_at: string
+          p_envelope_id: string
+          p_signed_at: string
+          p_signer_id: string
+          p_status: string
+        }
+        Returns: string
+      }
       _acts_for: { Args: { p_signer_id: string }; Returns: string[] }
       _arm: { Args: never; Returns: undefined }
       _can_act: { Args: { p_signer_id: string }; Returns: Json }
@@ -49775,6 +49864,7 @@ export type Database = {
         Returns: string
       }
       outsider_token_sender: { Args: { p_secret: string }; Returns: Json }
+      recipient_lock: { Args: { p_signer_id: string }; Returns: string }
       record_certificate_file: {
         Args: { p_certificate_id: string; p_file_id: string }
         Returns: Json
@@ -74370,6 +74460,10 @@ export type Database = {
         Args: { p_review_id: string; p_role: string; p_uid: string }
         Returns: string
       }
+      _review_login_holds_employment: {
+        Args: { p_employment_id: string; p_person: string }
+        Returns: boolean
+      }
       _review_logins_of_employment: {
         Args: { p_employment_id: string }
         Returns: string[]
@@ -74377,6 +74471,10 @@ export type Database = {
       _review_org_capable: {
         Args: { p_capability: string; p_org: string }
         Returns: string[]
+      }
+      _review_org_capable_has: {
+        Args: { p_capability: string; p_org: string; p_person: string }
+        Returns: boolean
       }
       _review_orgs_capable: {
         Args: { p_capability: string; p_person: string }
@@ -76122,33 +76220,61 @@ export type Database = {
         Returns: Json
       }
       review_seat_employee: { Args: { p_review_id: string }; Returns: string[] }
+      review_seat_employee_has: {
+        Args: { p_person: string; p_review_id: string }
+        Returns: boolean
+      }
       review_seat_employee_set: {
         Args: { p_person: string }
         Returns: string[]
       }
       review_seat_hr: { Args: { p_review_id: string }; Returns: string[] }
+      review_seat_hr_has: {
+        Args: { p_person: string; p_review_id: string }
+        Returns: boolean
+      }
       review_seat_hr_set: { Args: { p_person: string }; Returns: string[] }
       review_seat_line_manager: {
         Args: { p_review_id: string }
         Returns: string[]
+      }
+      review_seat_line_manager_has: {
+        Args: { p_person: string; p_review_id: string }
+        Returns: boolean
       }
       review_seat_line_manager_set: {
         Args: { p_person: string }
         Returns: string[]
       }
       review_seat_manager: { Args: { p_review_id: string }; Returns: string[] }
+      review_seat_manager_has: {
+        Args: { p_person: string; p_review_id: string }
+        Returns: boolean
+      }
       review_seat_manager_set: { Args: { p_person: string }; Returns: string[] }
       review_seat_peers: { Args: { p_review_id: string }; Returns: string[] }
+      review_seat_peers_has: {
+        Args: { p_person: string; p_review_id: string }
+        Returns: boolean
+      }
       review_seat_peers_set: { Args: { p_person: string }; Returns: string[] }
       review_seat_skip_level: {
         Args: { p_review_id: string }
         Returns: string[]
+      }
+      review_seat_skip_level_has: {
+        Args: { p_person: string; p_review_id: string }
+        Returns: boolean
       }
       review_seat_skip_level_set: {
         Args: { p_person: string }
         Returns: string[]
       }
       review_seat_upper: { Args: { p_review_id: string }; Returns: string[] }
+      review_seat_upper_has: {
+        Args: { p_person: string; p_review_id: string }
+        Returns: boolean
+      }
       review_seat_upper_in_org: {
         Args: { p_org: string; p_person: string }
         Returns: boolean
@@ -79097,6 +79223,17 @@ export type Database = {
       _rls_plan_is: {
         Args: { p_create: string[]; p_kept: string[]; p_tbl: string }
         Returns: undefined
+      }
+      _seat_resolve_all: {
+        Args: { p_id: string; p_seat: Json; p_type: string }
+        Returns: string[]
+      }
+      _seat_rows_of: {
+        Args: { p_id: string; p_person: string; p_type: string }
+        Returns: {
+          seat: string
+          source: string
+        }[]
       }
       _seat_table: {
         Args: { p_id: string; p_type: string }
