@@ -27,6 +27,7 @@ import {
   SPEND_ALARM_REVIEW_HREF,
   SPEND_ALARM_SOURCE_ID,
   SPEND_ALARM_SOURCE_LABEL,
+  delegatedSpendAlarms,
   spendAlarmItems,
   summarizeSpendAlarms,
 } from "./spend-alarms";
@@ -86,6 +87,7 @@ export function useSpendAlarmSource(enabled: boolean): AttentionSourceState {
     loud: true,
     summarize: summarizeSpendAlarms,
     review: { href: SPEND_ALARM_REVIEW_HREF, label: "Review all spend alarms" },
+    delegated: delegatedSpendAlarms(query.data ?? []),
     refetch,
   };
 }

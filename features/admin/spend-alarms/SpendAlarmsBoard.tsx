@@ -16,7 +16,12 @@ import { useListViewPrefs } from "@/lib/list-views/useListViewPrefs";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { formatAdminUsd } from "@/components/cost/formatAdminCost";
 import {
+  ALARM_AUDIENCES,
+  AUDIENCE_LABEL,
   LEVEL_LABEL,
+  audienceOf,
+  workItemHref,
+  type AlarmAudience,
   SPEND_ALARMS_PATH,
   alarmTitle,
   costLabel,
@@ -31,6 +36,7 @@ import {
 } from "./spendAlarms";
 
 type StatusFilter = "ringing" | "snoozed" | "resolved" | "all";
+type AudienceFilter = AlarmAudience | "any";
 
 const LEVEL_RANK = { critical: 0, warning: 1, info: 2 } as const;
 
@@ -47,20 +53,26 @@ export function SpendAlarmsBoard() {
   // ?kind=<kind> narrows the list to one kind (the record page's "Open the skipped Sources").
   const kindFilter = params.get("kind");
   const [status, setStatus] = useState<StatusFilter>("ringing");
-
-
+  // Who it is for (Arman 2026-10-11): the list opens on the owner's decisions, like his dock.
+  // ?audience=agent_fix is the dock's "N being fixed by agents" door; info_only = "Worked as designed".
+  const audienceParam = params.get("audience");
+  const [audience, setAudience] = useState<AudienceFilter>(
+    audienceParam === "any" || ALARM_AUDIENCES.includes(audienceParam as AlarmAudience) ? (audienceParam as AudienceFilter) : "owner_decision",
+  );
+  const inScope = (r: SpendAlarmRecord) => (!kindFilter || r.kind === kindFilter) && (audience === "any" || audienceOf(r) === audience);
+  const ringingOf = (a: AlarmAudience) => rows.filter((r) => audienceOf(r) === a && (!kindFilter || r.kind === kindFilter) && isRinging(r)).length;
 
   const visible = rows
-    .filter((r) => !kindFilter || r.kind === kindFilter)
+    .filter(inScope)
     .filter((r) =>
       status === "all" ? true : status === "ringing" ? isRinging(r) : status === "snoozed" ? r.status === "snoozed" && !isRinging(r) : r.status === "resolved",
     )
     .sort((a, b) => LEVEL_RANK[a.level] - LEVEL_RANK[b.level] || b.last_seen_at.localeCompare(a.last_seen_at));
 
   // Every row read (never a capped page): the tab labels carry the same counts the dock shows.
-  const counts = spendAlarmCounts(rows.filter((r) => !kindFilter || r.kind === kindFilter));
+  const counts = spendAlarmCounts(rows.filter(inScope));
   const ringing = counts.critical + counts.warning + counts.info;
-  const resolvedCount = rows.filter((r) => r.status === "resolved" && (!kindFilter || r.kind === kindFilter)).length;
+  const resolvedCount = rows.filter((r) => r.status === "resolved" && inScope(r)).length;
 
   const columns: MatrxColumnDef<SpendAlarmRecord>[] = [
     {
@@ -84,6 +96,21 @@ export function SpendAlarmsBoard() {
       href: (r) => spendAlarmHref(r.id),
       width: 420,
       // The column's href makes the cell the link; a Link inside it would nest <a> in <a>.
+    },
+    {
+      id: "audience",
+      header: "For",
+      width: 170,
+      filter: "select",
+      tone: (r) => (audienceOf(r) === "owner_decision" ? "warning" : audienceOf(r) === "agent_fix" ? undefined : "muted"),
+      accessorFn: (r) => AUDIENCE_LABEL[audienceOf(r)],
+      href: (r) => (audienceOf(r) === "agent_fix" && r.work_item_id ? workItemHref(r.work_item_id) : undefined),
+      cell: (r) =>
+        audienceOf(r) === "agent_fix" && r.work_item_status
+          ? `${AUDIENCE_LABEL.agent_fix} · ${r.work_item_status.replace(/_/g, " ")}`
+          : r.audience_note
+            ? `${AUDIENCE_LABEL[audienceOf(r)]} · ${r.audience_note}`
+            : AUDIENCE_LABEL[audienceOf(r)],
     },
     {
       id: "subject",
@@ -173,13 +200,24 @@ export function SpendAlarmsBoard() {
           )}
           cellLines="two"
           read={readOf({ loading, error }, { what: "spend alarms" })}
-          emptyState={{ title: status === "ringing" ? "No alarms ringing" : "No alarms" }}
+          emptyState={{ title: status === "ringing" ? (audience === "owner_decision" ? "Nothing needs you" : "No alarms ringing") : "No alarms" }}
           toolbar={{
             title: "Spend alarms",
             search: true,
             searchPlaceholder: "Search alarms, kinds, subjects…",
             actions: (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <SegmentedControl<AudienceFilter>
+                  aria-label="Who it is for"
+                  value={audience}
+                  onValueChange={setAudience}
+                  data={[
+                    { value: "owner_decision", label: `${AUDIENCE_LABEL.owner_decision} ${ringingOf("owner_decision")}` },
+                    { value: "agent_fix", label: `${AUDIENCE_LABEL.agent_fix} ${ringingOf("agent_fix")}` },
+                    { value: "info_only", label: `${AUDIENCE_LABEL.info_only} ${ringingOf("info_only")}` },
+                    { value: "any", label: "Everyone" },
+                  ]}
+                />
                 <SegmentedControl<StatusFilter>
                   aria-label="Status"
                   value={status}

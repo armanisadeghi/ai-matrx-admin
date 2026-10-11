@@ -75,7 +75,8 @@ export function buildAttentionNotice(
 
   for (const source of sources) {
     const { live } = partitionItems(source.items, localMutes, now);
-    if (live.length === 0) continue;
+    // A source with nothing live for the owner still carries its "N being fixed by agents" line.
+    if (live.length === 0 && !source.delegated?.count) continue;
     // Stable sort: within a severity the source's own order (its newest/worst first) holds.
     const ordered = [...live].sort((a, b) => RANK[a.severity] - RANK[b.severity]);
     for (const i of ordered) {
@@ -89,7 +90,7 @@ export function buildAttentionNotice(
       items: ordered.slice(0, SECTION_LIMIT),
       hidden: Math.max(0, ordered.length - SECTION_LIMIT),
     });
-    const summary = source.summarize(ordered);
+    const summary = ordered.length > 0 ? source.summarize(ordered) : null;
     if (summary) summaries.push(summary);
   }
 

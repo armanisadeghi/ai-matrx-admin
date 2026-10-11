@@ -509,6 +509,15 @@ export default function AdminAttentionDock() {
               {hidden > 0 && !source.review && (
                 <p className="mt-1 text-[11px] text-muted-foreground">+{hidden} more</p>
               )}
+              {source.delegated && source.delegated.count > 0 && (
+                <AppLink
+                  href={source.delegated.href}
+                  className="mt-1 inline-block text-[11px] text-muted-foreground underline-offset-2 hover:text-primary hover:underline"
+                  data-testid={`attention-delegated-${source.id}`}
+                >
+                  {source.delegated.count} being fixed by agents
+                </AppLink>
+              )}
             </section>
           ))}
         </div>

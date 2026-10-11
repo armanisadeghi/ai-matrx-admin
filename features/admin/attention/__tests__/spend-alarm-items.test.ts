@@ -6,7 +6,9 @@
  * that is a FACT ABOUT THE RECORD (`spend_alarm_set_status`: snoozed until + note + by).
  */
 
-import { spendAlarmItems, summarizeSpendAlarms, SPEND_ALARM_SOURCE_ID, type SpendAlarmDeps } from "../sources/spend-alarms";
+import { delegatedSpendAlarms, spendAlarmItems, summarizeSpendAlarms, SPEND_ALARM_SOURCE_ID, type SpendAlarmDeps } from "../sources/spend-alarms";
+import { buildAttentionNotice } from "../build-notice";
+import type { AttentionSourceState } from "../types";
 import { adminScheduleHref } from "@/features/scheduling/constants/routes";
 import type { SpendAlarmAttentionRow } from "@/features/admin/spend-alarms/spendAlarms";
 
@@ -188,5 +190,41 @@ describe("summarizeSpendAlarms", () => {
       deps(),
     );
     expect(summarizeSpendAlarms(items)).toBe("Spend alarms: 2 critical, 1 needs a decision, 1 for your information.");
+  });
+});
+
+
+describe("who an alarm is for (Arman 2026-10-11: the owner's card shows only what needs him)", () => {
+  const owner = row({ id: "a-owner", audience: "owner_decision" });
+  const agent = row({ id: "a-agent", kind: "sms_sent_ungated", level: "critical", audience: "agent_fix", work_item_id: "w-1" });
+  const info = row({ id: "a-info", kind: "protected_account_refusal", level: "critical", audience: "info_only" });
+  const escalated = row({ id: "a-esc", audience: "owner_decision", audience_note: "Agents could not fix this: needs a price decision" });
+
+  it("lists only owner decisions as rows; agent_fix and info_only never reach the card", () => {
+    const items = spendAlarmItems([owner, agent, info, escalated], deps());
+    expect(items.map((i) => i.id)).toEqual(["a-owner", "a-esc"]);
+    expect(items.every((i) => i.audience === "owner_decision")).toBe(true);
+  });
+
+  it("says what the agent tried when an alarm came back to the owner", () => {
+    const [item] = spendAlarmItems([escalated], deps());
+    expect(item.about).toContain("Agents could not fix this: needs a price decision");
+  });
+
+  it("counts agent_fix as one line linking to the agents' list, muted ones excluded", () => {
+    const muted = row({ id: "a-muted", audience: "agent_fix", status: "snoozed", snoozed_until: "2026-10-11T23:00:00Z" });
+    expect(delegatedSpendAlarms([owner, agent, info, muted], NOW)).toEqual({ count: 1, href: "/administration/billing/alarms?audience=agent_fix" });
+    expect(delegatedSpendAlarms([owner, info], NOW)).toBeNull();
+  });
+
+  it("the agents line rides the section but never the pill; zero owner decisions = no card", () => {
+    const source = (items: ReturnType<typeof spendAlarmItems>): AttentionSourceState => ({
+      id: SPEND_ALARM_SOURCE_ID, label: "Spend alarms", items, status: "ok", error: null, loud: true,
+      summarize: summarizeSpendAlarms, review: null, refetch: () => {}, delegated: { count: 4, href: "/x" },
+    });
+    const withOwner = buildAttentionNotice([source(spendAlarmItems([owner, agent, info], deps()))], {}, NOW);
+    expect(withOwner?.pill).toBe("1 thing needs a person");
+    expect(withOwner?.sections[0].source.delegated?.count).toBe(4);
+    expect(buildAttentionNotice([source(spendAlarmItems([agent, info], deps()))], {}, NOW)).toBeNull();
   });
 });

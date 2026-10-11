@@ -32,6 +32,7 @@ import {
   alarmHeadline,
   alarmSentence,
   alarmTitle,
+  audienceOf,
   fetchSpendAlarmOccurrences,
   fixFor,
   KIND_LABEL,
@@ -39,6 +40,7 @@ import {
   refLinks,
   SPEND_ALARMS_PATH,
   spendAlarmHref,
+  spendAlarmsByAudienceHref,
   whose,
   type SpendAlarmAttentionRow,
 } from "@/features/admin/spend-alarms/spendAlarms";
@@ -213,13 +215,29 @@ function actionsOf(row: SpendAlarmAttentionRow, deps: SpendAlarmDeps): Attention
   return out;
 }
 
+/**
+ * The agent-fix line: unresolved `agent_fix` records, being fixed by agents through the work queue.
+ * Muted ones are not counted (the owner already chose not to hear about them).
+ */
+export function delegatedSpendAlarms(
+  rows: readonly SpendAlarmAttentionRow[],
+  now: number = Date.now(),
+): { count: number; href: string } | null {
+  const count = rows.filter(
+    (r) => audienceOf(r) === "agent_fix" && r.status !== "resolved" && !(r.status === "snoozed" && r.snoozed_until && Date.parse(r.snoozed_until) > now),
+  ).length;
+  return count > 0 ? { count, href: spendAlarmsByAudienceHref("agent_fix") } : null;
+}
+
 export function spendAlarmItems(
   rows: readonly SpendAlarmAttentionRow[],
   deps: SpendAlarmDeps,
 ): AttentionItem[] {
   const now = deps.now ?? Date.now();
   const origin = deps.origin ?? "";
-  return rows.map((row) => {
+  // The owner's card shows only what needs him (Arman 2026-10-11): agent_fix is a count line,
+  // info_only lives on the list under "Worked as designed".
+  return rows.filter((row) => audienceOf(row) === "owner_decision").map((row) => {
     const names = namesOf(row);
     const href = spendAlarmHref(row.id);
     const title = alarmTitle({ ...row, names: Object.fromEntries(names) });
@@ -265,7 +283,8 @@ export function spendAlarmItems(
       title,
       state: stateOf(row, now),
       sentence,
-      about: [whose(row), cost].filter(Boolean).join(" · ") || null,
+      about: [row.audience_note, whose(row), cost].filter(Boolean).join(" · ") || null,
+      audience: "owner_decision",
       fix: fix ?? null,
       record: { token: "spend_alarm", id: row.id, href },
       doors,

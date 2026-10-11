@@ -30,6 +30,13 @@
  */
 export type AttentionSeverity = "critical" | "warning" | "info";
 
+/**
+ * Who an item is FOR (Arman 2026-10-11, "What do I do with these?"): the owner's dock lists only
+ * `owner_decision`; `agent_fix` items are being fixed by agents (a count line, never rows);
+ * `info_only` is a protection that worked as designed (review page only). Absent = owner_decision.
+ */
+export type AttentionAudience = "owner_decision" | "agent_fix" | "info_only";
+
 /** A page the person can open from the row — where the damage shows, or the evidence. */
 export interface AttentionDoor {
   href: string;
@@ -118,6 +125,8 @@ export interface AttentionItem {
   fix?: string | null;
   /** Copy / Copy for AI on the row. Absent when there is nothing worth handing over. */
   copy?: AttentionCopy;
+  /** Who the item is for; absent = owner_decision. The dock lists only owner_decision. */
+  audience?: AttentionAudience;
   /** The record door — absent for things with no record (an outage). */
   record: { token: string; id: string; href: string } | null;
   doors: AttentionDoor[];
@@ -158,4 +167,9 @@ export interface AttentionSourceState {
    * not counted in the pill — unless critical — so the pill's spend count equals the alarm list's.
    */
   counted?: boolean;
+  /**
+   * Items this source has handed to agents (`agent_fix`): never rows on the dock, one quiet line
+   * "N being fixed by agents" linking to where they are tracked. Not counted in the pill.
+   */
+  delegated?: { count: number; href: string } | null;
 }

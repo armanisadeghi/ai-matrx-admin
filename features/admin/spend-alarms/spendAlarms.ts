@@ -21,6 +21,25 @@ export type AlarmStatus = "open" | "snoozed" | "resolved";
 export const SPEND_ALARMS_PATH = "/administration/billing/alarms";
 export const spendAlarmHref = (id: string) => `${SPEND_ALARMS_PATH}/${id}`;
 
+/**
+ * Who an alarm is FOR (aidream services/billing/alarm_audience.py, Arman 2026-10-11): the owner's
+ * card shows only `owner_decision`; `agent_fix` is filed into the agent work queue and resolves with
+ * it; `info_only` is a protection that worked as designed (list only).
+ */
+export type AlarmAudience = "owner_decision" | "agent_fix" | "info_only";
+export const ALARM_AUDIENCES: readonly AlarmAudience[] = ["owner_decision", "agent_fix", "info_only"];
+export const AUDIENCE_LABEL: Record<AlarmAudience, string> = {
+  owner_decision: "Your decision",
+  agent_fix: "Agents fixing",
+  info_only: "Worked as designed",
+};
+export const spendAlarmsByAudienceHref = (audience: AlarmAudience) => `${SPEND_ALARMS_PATH}?audience=${audience}`;
+/** The agent work item an `agent_fix` alarm is filed as (users.user_feedback, the feedback console deep link). */
+export const workItemHref = (id: string) => `/administration/users/feedback?feedback=${encodeURIComponent(id)}`;
+export function audienceOf(r: { audience?: AlarmAudience | null }): AlarmAudience {
+  return r.audience && ALARM_AUDIENCES.includes(r.audience) ? r.audience : "owner_decision";
+}
+
 /** Every ref key the writer may send (aidream `REF_KEYS`). */
 export type AlarmRefs = Partial<
   Record<
@@ -97,6 +116,13 @@ export interface SpendAlarmRecord {
   snoozed_by?: string | null;
   /** How many occurrence rows are recorded (each carries a times count). */
   recorded_rows?: number;
+  /** Who the alarm is for; absent on rows read before the column existed (= owner_decision). */
+  audience?: AlarmAudience;
+  /** Why an agent_fix alarm came back to the owner: what the agent tried. */
+  audience_note?: string | null;
+  /** The agent work item (users.user_feedback) an agent_fix alarm is filed as. */
+  work_item_id?: string | null;
+  work_item_status?: string | null;
   /** The record this one was merged into (one record per decision). */
   merged_into?: string | null;
 }
@@ -182,6 +208,10 @@ function fromRowsDoor(raw: Record<string, unknown>): SpendAlarmAttentionRow {
     task_enabled: typeof raw.task_enabled === "boolean" ? raw.task_enabled : null,
     task_title: strOrNull(raw.task_title),
     approval_status: strOrNull(raw.approval_status),
+    audience: audienceOf({ audience: raw.audience as AlarmAudience | null }),
+    audience_note: strOrNull(raw.audience_note),
+    work_item_id: strOrNull(raw.work_item_id),
+    work_item_status: strOrNull(raw.work_item_status),
   };
 }
 

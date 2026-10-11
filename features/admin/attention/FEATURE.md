@@ -112,6 +112,18 @@ alarm list `/administration/billing/alarms` (Snoozed filter shows the note). Thi
 in-app surface for spend alarms; aidream e-mails critical ones and nothing else (guard
 `aidream/scripts/check_no_direct_alarm_announcements.py`, `--live`).
 
+## Who an item is for (2026-10-11)
+
+Arman: "What do I do with these?" Every item may carry `audience` (`types.ts` `AttentionAudience`):
+`owner_decision` (absent = this) is a row; `agent_fix` is never a row: the source sets
+`delegated: {count, href}` and the section shows one quiet line "N being fixed by agents" (not in the
+pill; at zero owner decisions the card is absent); `info_only` stays on the review page. Spend alarms
+read `audience` from `billing.spend_alarm_rows` (aidream `alarm_audience.py` classifies; agent_fix is
+filed into the agent work queue `users.user_feedback` and resolves with it; an escalated one comes back
+as `owner_decision` with `audience_note` on the row's `about`). The alarm list opens on "Your decision"
+with "Agents fixing" and "Worked as designed" beside it (`?audience=`). Tests:
+`__tests__/spend-alarm-items.test.ts` "who an alarm is for".
+
 ## Dated changes (when they speak)
 
 Quiet until the lead window, loud inside it — decided in the database, rendered here and by
