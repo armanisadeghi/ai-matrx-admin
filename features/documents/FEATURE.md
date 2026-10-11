@@ -6,3 +6,5 @@ page). Holds the document editor, model (`document-model/`), service (`document-
 Markdown <-> Univer converters, the page/canvas theme, history views and the agent-context builders.
 Shared Univer runtime: `lib/univer/`; collab: `lib/collab/`. The data-model and history notes for
 documents and workbooks live together in `features/workbooks/FEATURE.md`.
+
+- ✅ Univer 1.0.4 `docs-hyper-link` and `docs-drawing` presets loaded in `DocumentEditor` (links and images in the ribbon).
