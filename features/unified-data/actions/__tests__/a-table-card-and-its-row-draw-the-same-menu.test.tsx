@@ -14,6 +14,8 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { MatrxTableRowAlchemyProvider } from "@ai-matrx/design-system/data-table";
+import { MatrxDataTableProvider, type MatrxDataTableHost } from "@ai-matrx/design-system/data-table/host";
+import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { tableActions } from "@ai-matrx/records-ui/object-actions";
 import { whatYouMayDo } from "@ai-matrx/records-ui";
 
@@ -42,6 +44,9 @@ if (typeof (globalThis as { ResizeObserver?: unknown }).ResizeObserver !== "func
 }
 
 const TABLE = homeRow({ name: "Referral Intake Queue" });
+// The app binds the row's Alchemy launcher at boot (MatrxDataTableHost `ports.CopyControls`); a row
+// whose copy sits in the menu opens nothing without it, so the test binds the same component.
+const HOST = { CopyControls: CopyButtons } as MatrxDataTableHost;
 const CONTROLS = { closeDetail() {}, openDetail() {}, openWindow() {}, closeWindow() {}, hasPendingEdits: false, discardPendingEdits() {} };
 
 function config() {
@@ -78,6 +83,7 @@ async function openAndRead(trigger: HTMLElement): Promise<string[]> {
   });
   await settle();
   const menu = document.querySelector('[role="menu"]');
+  if (!menu) console.log('DOM', document.body.innerHTML.slice(0,2500));
   expect(menu).not.toBeNull();
   return [...menu!.querySelectorAll('[role^="menuitem"]')].map((el) => (el.textContent ?? "").trim());
 }
@@ -86,13 +92,15 @@ it("the card's ⋯ draws exactly the entries the table row's ⋯ draws", async (
   // The table row, wired the way MatrxDataTable wires a row whose copy sits in the menu.
   await act(async () =>
     root.render(
-      <MatrxTableRowAlchemyProvider copy={dataHomeRowCopy(TABLE)} placement="menu" controls={CONTROLS}>
-        <ItemMenu config={config()} align="end">
-          <button type="button" data-the-row="">
-            row
-          </button>
-        </ItemMenu>
-      </MatrxTableRowAlchemyProvider>,
+      <MatrxDataTableProvider value={HOST}>
+        <MatrxTableRowAlchemyProvider copy={dataHomeRowCopy(TABLE)} placement="menu" controls={CONTROLS}>
+          <ItemMenu config={config()} align="end">
+            <button type="button" data-the-row="">
+              row
+            </button>
+          </ItemMenu>
+        </MatrxTableRowAlchemyProvider>
+      </MatrxDataTableProvider>,
     ),
   );
   await settle();
@@ -105,16 +113,18 @@ it("the card's ⋯ draws exactly the entries the table row's ⋯ draws", async (
 
   await act(async () =>
     root.render(
-      <DataHomeCards
-        rows={[TABLE]}
-        density="comfortable"
-        showShared
-        hrefFor={() => TABLE.href}
-        actions={{ menuFor: () => config, onOpenRow: () => {} }}
-        isStarred={() => false}
-        onOpened={() => {}}
-        {...({} as Record<string, never>)}
-      />,
+      <MatrxDataTableProvider value={HOST}>
+        <DataHomeCards
+          rows={[TABLE]}
+          density="comfortable"
+          showShared
+          hrefFor={() => TABLE.href}
+          actions={{ menuFor: () => config, onOpenRow: () => {} }}
+          isStarred={() => false}
+          onOpened={() => {}}
+          {...({} as Record<string, never>)}
+        />
+      </MatrxDataTableProvider>,
     ),
   );
   await settle();

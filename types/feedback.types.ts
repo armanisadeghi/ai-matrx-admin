@@ -405,7 +405,7 @@ export type SystemAnnouncement = Pick<
 > & {
   announcement_type: AnnouncementType;
   min_display_seconds: number;
-  /** Server-written extras. Spend alarms carry `alarm: true` here (see components/layout/spendAlarm.ts). */
+  /** Server-written extras. (Spend alarms no longer ride announcements: they are loud notifications.) */
   metadata?: SystemAnnouncementDatabaseRow["metadata"];
 };
 

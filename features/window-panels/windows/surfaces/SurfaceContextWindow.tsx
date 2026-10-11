@@ -20,6 +20,7 @@ import {
   Crosshair,
   FileText,
   RefreshCw,
+  Search,
   ShieldCheck,
   TriangleAlert,
 } from "lucide-react";
@@ -354,7 +355,8 @@ export default function SurfaceContextWindow({
   const valuesSection = (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex shrink-0 items-center gap-2 border-b border-border p-2">
-        <div className="min-w-0 flex-1">
+        <div className="relative min-w-0 flex-1">
+          <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             adornment="start"
             value={query}
@@ -488,6 +490,7 @@ export default function SurfaceContextWindow({
 
   const actionsSection = (
     <div className="min-h-0 flex-1 overflow-y-auto pb-2">
+      {/* Declared descriptions are agent-facing prompts; never rendered to a person. */}
       <SectionHeading title="Changes" count={wiredTargets.length} />
       {wiredTargets.length === 0 ? (
         <p className="px-3 py-2 text-xs text-muted-foreground">Nothing to change here.</p>
@@ -499,7 +502,6 @@ export default function SurfaceContextWindow({
               <ListRow
                 key={`${entry.surfaceName}:${entry.target.name}`}
                 title={entry.target.label}
-                line={entry.target.description}
                 trailing={<Badge tone={policy.tone}>{policy.label}</Badge>}
               />
             );
@@ -548,7 +550,6 @@ export default function SurfaceContextWindow({
             <ListRow
               key={tool.name}
               title={tool.label}
-              line={tool.description}
               trailing={tool.mode ? <Badge>{tool.mode === "ui" ? "On screen" : tool.mode === "draft" ? "Draft" : "Saves"}</Badge> : null}
             />
           ))}
