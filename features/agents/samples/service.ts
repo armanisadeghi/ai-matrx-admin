@@ -448,6 +448,9 @@ export async function fetchCandidateRuns(
     // held code calls) used to inherit the parent's agent id and showed up
     // here as runs whose "input" was the labeler prompt.
     .is("parent_conversation_id", null)
+    // A fork (a Debrief, a "this message only" re-run) replays a run; it is not one a person
+    // launched — the Studio's Improve mode opened a Debrief fork as the agent's "latest run".
+    .is("forked_from_id", null)
     .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })
