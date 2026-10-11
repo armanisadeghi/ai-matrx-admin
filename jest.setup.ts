@@ -350,8 +350,6 @@ if (typeof globalThis.CSS === "undefined" || typeof globalThis.CSS?.escape !== "
     require("@/features/mandates/feature-intelligence/registry") as typeof import("@/features/mandates/feature-intelligence/registry");
   const hrefs = () =>
     require("@/features/mandates/feature-intelligence/hrefs") as typeof import("@/features/mandates/feature-intelligence/hrefs");
-  const placement = () =>
-    require("@/features/mandates/feature-intelligence/placement") as typeof import("@/features/mandates/feature-intelligence/placement");
   const react = require("react") as typeof import("react");
   /* eslint-enable @typescript-eslint/no-require-imports */
   seam.registerSurfaceIntelligence({
@@ -360,7 +358,7 @@ if (typeof globalThis.CSS === "undefined" || typeof globalThis.CSS?.escape !== "
     usePageIntelligenceDoors: () => doors().usePageIntelligenceDoors(),
     declaredPlacesFor: (feature) => places().declaredPlacesFor(feature),
     featureIntelligenceHref: (feature, options) => hrefs().featureIntelligenceHref(feature, options),
-    targetForKey: (mandateKey) => placement().targetForKey(mandateKey),
+    intelligenceHref: (mandateKey, context) => hrefs().intelligenceHref(mandateKey, context),
   });
 }
 

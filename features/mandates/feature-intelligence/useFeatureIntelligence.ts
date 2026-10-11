@@ -3,19 +3,21 @@
 import { useEffect, useState } from "react";
 import { onMandateCacheInvalidated } from "@ai-matrx/chat/mandates/service";
 import { fetchFeatureIntelligence } from "./service";
-import { targetPrefixes } from "./placement";
 import {
-  fetchRegisteredPlacesForFeature,
+  fetchRegisteredPlacesForKeys,
   keepVisibleJobs,
   mergePlaces,
   resolveDeclaredPlaces,
 } from "./places";
+import { usePlacement } from "./usePlacement";
+import { entriesWithin, entryKeys, type PlacedEntry, type Tree } from "./placement-model";
 import type {
   FeatureIntelligenceRow,
   IntelligenceContext,
   IntelligenceLevel,
   ResolvedPlace,
 } from "./types";
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 
 export interface FeatureIntelligenceState {
   rows: FeatureIntelligenceRow[];
@@ -24,14 +26,19 @@ export interface FeatureIntelligenceState {
   error: string | null;
   /** A failed read of registered places — the declared ones still show. */
   placesError: string | null;
+  /** The registry tree and the page's arranged jobs (null until read). */
+  tree: Tree | null;
+  arranged: Map<string, PlacedEntry[]> | null;
 }
 
 /**
- * One feature's jobs and places for a seat. Re-reads whenever any binding is
- * written (the resolution cache's invalidation), so an action on this page
- * shows its result without a reload.
+ * One page's jobs and places for a seat — a registry node with every node
+ * below it, or a lane. Re-reads whenever any binding is written (the
+ * resolution cache's invalidation), so an action on this page shows its
+ * result without a reload.
  */
 export function useFeatureIntelligence(args: {
+  /** A registry node slug or a lane id. */
   feature: string;
   level: IntelligenceLevel;
   organizationId: string | null;
@@ -42,8 +49,14 @@ export function useFeatureIntelligence(args: {
 }): FeatureIntelligenceState {
   const { feature, level, organizationId, userId, enabled } = args;
   const contextKey = JSON.stringify(args.context);
+  const placement = usePlacement();
+  const keys: AnyMandateKey[] =
+    placement.tree && placement.arranged
+      ? [...new Set(entriesWithin(placement.tree, placement.arranged, feature).flatMap(entryKeys))].sort()
+      : [];
+  const keyList = placement.arranged ? keys.join("|") : null;
   const [epoch, setEpoch] = useState(0);
-  const [state, setState] = useState<FeatureIntelligenceState>({
+  const [state, setState] = useState<Omit<FeatureIntelligenceState, "tree" | "arranged">>({
     rows: [],
     places: [],
     loading: true,
@@ -54,18 +67,17 @@ export function useFeatureIntelligence(args: {
   useEffect(() => onMandateCacheInvalidated(() => setEpoch((n) => n + 1)), []);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || keyList === null) return;
     let cancelled = false;
     const context = JSON.parse(contextKey) as IntelligenceContext;
+    // The keys were typed on the way in; the join is only the effect's stable identity.
+    const mandateKeys = (keyList ? keyList.split("|") : []) as AnyMandateKey[];
     setState((prev) => ({ ...prev, loading: prev.rows.length === 0, error: null }));
     (async () => {
       try {
-        // The jobs and the registered screens are read side by side: the
-        // screens are asked by the target's key prefixes, then kept to the
-        // jobs this viewer can see (which are already only this target's).
         const [rows, registeredAnswer] = await Promise.all([
-          fetchFeatureIntelligence({ feature, level, organizationId, userId }),
-          fetchRegisteredPlacesForFeature(targetPrefixes(feature) ?? [], context).then(
+          fetchFeatureIntelligence({ mandateKeys, level, organizationId, userId }),
+          fetchRegisteredPlacesForKeys(mandateKeys, context).then(
             (places) => ({ places, error: null as string | null }),
             (error: unknown) => ({
               places: [] as ResolvedPlace[],
@@ -73,17 +85,16 @@ export function useFeatureIntelligence(args: {
             }),
           ),
         ]);
-        const declared = resolveDeclaredPlaces(feature, context);
-        const visible = new Set(rows.map((row) => row.mandateKey));
+        const visible = new Set<string>(rows.map((row) => row.mandateKey));
+        const declared = resolveDeclaredPlaces(visible, context);
         const registered = keepVisibleJobs(registeredAnswer.places, visible);
-        const placesError = registeredAnswer.error;
         if (cancelled) return;
         setState({
           rows,
           places: mergePlaces(declared, registered),
           loading: false,
           error: null,
-          placesError,
+          placesError: registeredAnswer.error,
         });
       } catch (error) {
         if (cancelled) return;
@@ -97,7 +108,13 @@ export function useFeatureIntelligence(args: {
     return () => {
       cancelled = true;
     };
-  }, [feature, level, organizationId, userId, contextKey, enabled, epoch]);
+  }, [keyList, level, organizationId, userId, contextKey, enabled, epoch]);
 
-  return state;
+  return {
+    ...state,
+    loading: state.loading && !placement.error,
+    error: state.error ?? placement.error,
+    tree: placement.tree,
+    arranged: placement.arranged,
+  };
 }

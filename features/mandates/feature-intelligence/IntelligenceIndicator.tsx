@@ -32,21 +32,19 @@ import { cn } from "@/lib/utils";
 import { useLiveSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
 import { fetchMandateIdentities, type MandateIdentity } from "@ai-matrx/chat/mandates/service";
 import { mandateDisplayName } from "../mandate-words";
-import { featureIntelligenceHref, resolveIntelligenceSlug } from "./hrefs";
+import { featureIntelligenceHref, intelligenceHref } from "./hrefs";
 import { DECLARED_FEATURES, declaredPlacesFor } from "./registry";
-import { targetForKey, targetLabel } from "./placement";
-import { registryDomain } from "./taxonomy";
 import { keyInFeature, shortMandateName } from "./service";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import type { IntelligenceContext } from "./types";
 import { registerPageIntelligenceDoor } from "./page-intelligence-doors";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 
 export interface IntelligenceIndicatorProps {
   /**
-   * The code feature (`flashcards`, `education`) or registry Feature id whose
-   * jobs this is. Defaults to the page of the first key. The popover's page
-   * link opens the registry Feature all the jobs land on — or, when they span
-   * several, their Domain's section of the directory.
+   * The code feature (`flashcards`, `education`) or registry node slug whose
+   * jobs this is. The popover's page link opens it (a code feature id resolves
+   * on the server to the node its jobs share); with none, the first job's page.
    */
   feature?: string;
   /** The jobs behind this spot. Omit to use what the page registered. */
@@ -109,11 +107,14 @@ export function IntelligenceIndicator({
   const live = useLiveSurfaceMandates();
   const pathname = usePathname() ?? "";
   const routeScoped = scope === "route" && !mandateKeys;
-  const resolvedFeature = feature ?? (mandateKeys?.[0] ? targetForKey(mandateKeys[0]) : null);
+  const resolvedFeature = feature ?? null;
+  const declaredKeys = new Set<string>(
+    (resolvedFeature ? (declaredPlacesFor(resolvedFeature)?.places ?? []) : []).flatMap(
+      (place) => place.mandateKeys,
+    ),
+  );
   const belongs = (key: AnyMandateKey) =>
-    !resolvedFeature ||
-    keyInFeature(key, resolvedFeature) ||
-    targetForKey(key) === resolvedFeature;
+    !resolvedFeature || keyInFeature(key, resolvedFeature) || declaredKeys.has(key);
   const registered = mandateKeys
     ? [...mandateKeys]
     : live.map((ref) => ref.mandateKey).filter(belongs);
@@ -139,9 +140,9 @@ export function IntelligenceIndicator({
   const [identitiesFailed, setIdentitiesFailed] = useState(false);
   const keyList = keys.join("|");
   useEffect(() => {
-    if (!pageOnly || !resolvedFeature) return;
+    if (!pageOnly || (!resolvedFeature && !keyList)) return;
     return registerPageIntelligenceDoor({
-      feature: resolvedFeature,
+      feature: resolvedFeature ?? "",
       context,
       mandateKeys: keys,
     });
@@ -165,21 +166,17 @@ export function IntelligenceIndicator({
     };
   }, [open, keyList]);
 
-  if (!resolvedFeature || pageOnly) return null;
+  if ((!resolvedFeature && keys.length === 0) || pageOnly) return null;
   // A page with no jobs of its own shows no mark — never the section's list.
   if (routeScoped && keys.length === 0) return null;
-  // The page these jobs live on: the one registry target they all land on, or
-  // the feature's own resolution (a Feature, or its Domain's section).
-  const targets = [...new Set(keys.map(targetForKey))];
-  const pageSlug = targets.length === 1 ? targets[0] : resolvedFeature;
-  const resolvedPage = resolveIntelligenceSlug(pageSlug);
   const featureName =
-    resolvedPage && "target" in resolvedPage
-      ? targetLabel(resolvedPage.target)
-      : resolvedPage && "domain" in resolvedPage
-        ? (registryDomain(resolvedPage.domain)?.name ?? resolvedPage.domain)
-        : (declaredPlacesFor(resolvedFeature)?.label ?? resolvedFeature);
-  const pageHref = featureIntelligenceHref(pageSlug, { context });
+    (resolvedFeature
+      ? (declaredPlacesFor(resolvedFeature)?.label ?? humanizeIdentifier(resolvedFeature))
+      : null) ?? "this page";
+  // The page these jobs live on: the feature's own page, or the first job's.
+  const pageHref = resolvedFeature
+    ? featureIntelligenceHref(resolvedFeature, { context })
+    : intelligenceHref(keys[0], context);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -193,7 +190,7 @@ export function IntelligenceIndicator({
             <button
               type="button"
               aria-label={label ? `Intelligence: ${label}` : `Intelligence: ${featureName}`}
-              data-intelligence-indicator={resolvedFeature}
+              data-intelligence-indicator={resolvedFeature ?? ""}
               data-intelligence-scope={scope}
               className={cn(
                 "group/intel inline-flex shrink-0 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
@@ -233,7 +230,7 @@ export function IntelligenceIndicator({
               return (
                 <li key={key}>
                   <Link
-                    href={featureIntelligenceHref(routeScoped ? targetForKey(key) : resolvedFeature, { mandateKey: key, context })}
+                    href={intelligenceHref(key, context)}
                     target="_blank"
                     rel="noopener noreferrer"
                     prefetch={false}

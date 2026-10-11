@@ -2,13 +2,13 @@
 //
 // WHERE EACH JOB RUNS — two real sources, one list:
 //   1. DECLARED places — each code feature's map, kept true by its own test,
-//      regrouped onto registry targets (`declaredPlacesForTarget`).
+//      regrouped onto a page's jobs (`declaredPlacesForKeys`).
 //   2. REGISTERED places — screens whose manifest names the job
 //      (`ui.ui_surface_agent_role` joined to `ui.ui_surface`, public read).
 // A job neither source names is shown as "not recorded yet", never guessed.
 
 import { supabase } from "@/utils/supabase/client";
-import { declaredPlacesFor, declaredPlacesForTarget } from "./registry";
+import { declaredPlacesFor, declaredPlacesForKeys } from "./registry";
 import type { IntelligenceContext, ResolvedPlace } from "./types";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 
@@ -48,24 +48,29 @@ interface RegisteredSurfaceRow {
 }
 
 /**
- * Screens whose manifest names a job under one of these key prefixes — asked
- * without waiting for the job list, so the page reads both side by side. Keep
- * the answer to the jobs the viewer can see with `keepVisibleJobs`.
+ * Screens whose manifest names one of these jobs (exact keys, read in chunks).
+ * Keep the answer to the jobs the viewer can see with `keepVisibleJobs`.
  */
-export async function fetchRegisteredPlacesForFeature(
-  prefixes: readonly string[],
+export async function fetchRegisteredPlacesForKeys(
+  keys: readonly string[],
   context: IntelligenceContext,
 ): Promise<ResolvedPlace[]> {
-  if (prefixes.length === 0) return [];
-  const { data: roles, error } = await supabase
-    .schema("ui")
-    .from("ui_surface_agent_role")
-    .select("surface_name,label,mandate_key")
-    .is("deleted_at", null)
-    .or(prefixes.map((prefix) => `mandate_key.like."${prefix}.%"`).join(","));
-  if (error) throw new Error(`Registered places: ${error.message}`);
-  return placesFromRoles((roles ?? []) as RegisteredRoleRow[], context);
+  if (keys.length === 0) return [];
+  const roles: RegisteredRoleRow[] = [];
+  for (let start = 0; start < keys.length; start += KEY_CHUNK) {
+    const { data, error } = await supabase
+      .schema("ui")
+      .from("ui_surface_agent_role")
+      .select("surface_name,label,mandate_key")
+      .is("deleted_at", null)
+      .in("mandate_key", keys.slice(start, start + KEY_CHUNK));
+    if (error) throw new Error(`Registered places: ${error.message}`);
+    roles.push(...((data ?? []) as RegisteredRoleRow[]));
+  }
+  return placesFromRoles(roles, context);
 }
+
+const KEY_CHUNK = 150;
 
 /** Registered places narrowed to visible jobs; a place left with none is dropped. */
 export function keepVisibleJobs(
@@ -125,12 +130,12 @@ async function placesFromRoles(
   return [...grouped.values()];
 }
 
-/** Declared places for a registry target, with links filled from the context. */
+/** Declared places that run these jobs, with links filled from the context. */
 export function resolveDeclaredPlaces(
-  target: string,
+  keys: ReadonlySet<string>,
   context: IntelligenceContext,
 ): ResolvedPlace[] {
-  return declaredPlacesForTarget(target).map((place) => ({
+  return declaredPlacesForKeys(keys).map((place) => ({
     id: place.id,
     label: place.label,
     trigger: place.trigger,

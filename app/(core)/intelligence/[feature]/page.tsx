@@ -9,21 +9,22 @@ import {
 } from "@/features/mandates/feature-intelligence/IntelligenceTargetRoute";
 import {
   featureIntelligenceHref,
-  intelligenceDomainHref,
-  resolveIntelligenceSlug,
+  intelligenceHref,
 } from "@/features/mandates/feature-intelligence/hrefs";
 import {
-  NO_DOMAIN_TARGET,
-  isTarget,
-} from "@/features/mandates/feature-intelligence/placement";
+  readServerTree,
+  resolveSlug,
+} from "@/features/mandates/feature-intelligence/resolve-destination";
+import { isLane } from "@/features/mandates/feature-intelligence/placement-model";
 
 /**
- * /intelligence/[feature] — the AI jobs of one registry Feature (its id from
- * the registry: `seo`, `local-listings`), or `unassigned` for jobs with no
- * Domain yet (features/mandates/feature-intelligence). `?mandate=<key>`
- * focuses one job; any other value (`setId`, `brandId`, …) fills place links.
- * An old page id (`marketing`, `podcast`, `content_plan`) redirects to the
- * Feature all its jobs moved to, or to its Domain's section of the directory.
+ * /intelligence/[feature] — the AI jobs of one registry node at any depth (its
+ * slug: `seo`, `seo-keywords`), or a lane (`everywhere`, `yours`,
+ * `your-organization`, `unplaced`, `fixtures`) for jobs no node holds
+ * (features/mandates/feature-intelligence). `?mandate=<key>` focuses one job;
+ * any other value (`setId`, `brandId`, …) fills place links. A code feature id
+ * (`podcast`, `marketing`) opens the node its declared jobs share;
+ * `unassigned` (the old no-Domain page) opens Unplaced.
  */
 
 const SLUG_RE = /^[a-z][a-z0-9_-]*$/;
@@ -34,9 +35,13 @@ export async function generateMetadata({
   params: Promise<{ feature: string }>;
 }) {
   const { feature } = await params;
-  const title = isTarget(feature)
-    ? intelligencePageTitle(feature)
-    : "Intelligence";
+  let title = "Intelligence";
+  if (SLUG_RE.test(feature)) {
+    const tree = await readServerTree().catch(() => null);
+    if (tree && (isLane(feature) || tree.bySlug.has(feature))) {
+      title = intelligencePageTitle(feature, tree);
+    }
+  }
   return createDynamicRouteMetadata("/mandates", {
     title,
     description: `The AI jobs in ${title.replace(/ intelligence$/, "")}, what runs them, and where.`,
@@ -52,36 +57,25 @@ export default async function FeatureIntelligenceRoute({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const [{ feature }, query] = await Promise.all([params, searchParams]);
-  if (
-    SLUG_RE.test(feature) &&
-    (isTarget(feature) || feature === NO_DOMAIN_TARGET)
-  ) {
-    return (
-      <IntelligenceTargetRoute
-        target={feature}
-        path={`/intelligence/${feature}`}
-        query={query}
-      />
-    );
-  }
+  if (!SLUG_RE.test(feature)) notFound();
 
-  const { isAuthenticated } = await getSessionVerdict();
-  if (!isAuthenticated) redirect(loginHref(`/intelligence/${feature}`));
-
-  // An old page id keeps working: a focused job opens on its own page, and the
-  // id itself lands on the Feature its jobs moved to or on its Domain.
+  const verdict = await getSessionVerdict();
+  if (!verdict.isAuthenticated) redirect(loginHref(`/intelligence/${feature}`));
   const { focus, context } = splitQuery(query);
-  if (SLUG_RE.test(feature) && focus) {
-    redirect(featureIntelligenceHref(feature, { mandateKey: focus, context }));
+
+  if (feature === "unassigned") redirect(featureIntelligenceHref("unplaced", { context }));
+
+  const tree = await readServerTree();
+  const resolved = await resolveSlug(feature, tree, verdict.user.id);
+  if (resolved.kind === "page") {
+    return <IntelligenceTargetRoute target={feature} tree={tree} query={query} />;
   }
-  const destination = SLUG_RE.test(feature)
-    ? resolveIntelligenceSlug(feature)
-    : null;
-  if (destination && "target" in destination) {
-    redirect(featureIntelligenceHref(destination.target, { context }));
+  // An old page id keeps working: a focused job opens on its own page, and the
+  // id itself lands on the node its jobs share (or the directory).
+  if (resolved.kind === "redirect") {
+    if (focus) redirect(intelligenceHref(focus, context));
+    redirect(resolved.slug ? featureIntelligenceHref(resolved.slug, { context }) : "/intelligence");
   }
-  if (destination && "domain" in destination)
-    redirect(intelligenceDomainHref(destination.domain));
   // An unknown slug is a real 404 — never an empty page that looks like a
   // feature with no jobs.
   notFound();

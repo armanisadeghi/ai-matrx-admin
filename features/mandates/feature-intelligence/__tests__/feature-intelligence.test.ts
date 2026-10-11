@@ -5,7 +5,8 @@ import {
   resolveDeclaredPlaces,
 } from "../places";
 import { keyInFeature, lanesFor, shortMandateName } from "../service";
-import { featureIntelligenceHref, featureOfMandateKey } from "../hrefs";
+import { featureIntelligenceHref, intelligenceHref } from "../hrefs";
+import { declaredPlacesFor } from "../registry";
 import { effectiveRunOverride } from "../run-override";
 import type { FeatureIntelligenceRow, ResolvedPlace } from "../types";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
@@ -60,11 +61,14 @@ describe("feature intelligence — places", () => {
   });
 
   it("declared research places link inside the topic", () => {
-    const places = resolveDeclaredPlaces("research", { topicId: "abc" });
-    expect(places.find((entry) => entry.id === "synthesis")?.href).toBe(
+    const keys = new Set<string>(
+      (declaredPlacesFor("research")?.places ?? []).flatMap((entry) => entry.mandateKeys),
+    );
+    const places = resolveDeclaredPlaces(keys, { topicId: "abc" });
+    expect(places.find((entry) => entry.id === "research:synthesis")?.href).toBe(
       "/research/topics/abc/synthesis",
     );
-    expect(places.find((entry) => entry.id === "source")?.href).toBeNull();
+    expect(places.find((entry) => entry.id === "research:source")?.href).toBeNull();
   });
 });
 
@@ -162,103 +166,29 @@ describe("feature intelligence — registered places", () => {
   });
 });
 
-describe("feature intelligence — hrefs", () => {
-  it("research inside a topic stays in the topic", () => {
+describe("feature intelligence — hrefs (no placement in the link)", () => {
+  it("a job link asks the server, carrying every context value", () => {
     expect(
       featureIntelligenceHref("research", {
         mandateKey: "research.report",
         context: { topicId: "t1" },
       }),
-    ).toBe("/research/topics/t1/intelligence?mandate=research.report");
+    ).toBe("/intelligence?mandate=research.report&topicId=t1");
+    expect(intelligenceHref("seo.finding_fixer", { brandId: "b1" })).toBe(
+      "/intelligence?mandate=seo.finding_fixer&brandId=b1",
+    );
   });
 
-  it("any other feature uses the generic route and carries its context", () => {
+  it("research without a job, inside a topic, stays in the topic", () => {
+    expect(featureIntelligenceHref("research", { context: { topicId: "t1", tab: "x" } })).toBe(
+      "/research/topics/t1/intelligence?tab=x",
+    );
+  });
+
+  it("any other page uses the generic route and carries its context", () => {
     expect(
       featureIntelligenceHref("flashcards", { context: { setId: "s1" } }),
     ).toBe("/intelligence/flashcards?setId=s1");
-  });
-});
-
-describe("feature intelligence — registry pages and old ids", () => {
-  it("a focused job always opens on the page its key lands on", () => {
-    expect(
-      featureIntelligenceHref("marketing", { mandateKey: "seo.finding_fixer" }),
-    ).toBe("/intelligence/seo?mandate=seo.finding_fixer");
-    expect(
-      featureIntelligenceHref("education", {
-        mandateKey: "education.quiz_generate",
-      }),
-    ).toBe("/intelligence/quizzes-and-tests?mandate=education.quiz_generate");
-    expect(
-      featureIntelligenceHref("x", { mandateKey: "education.page_guidance" }),
-    ).toBe(
-      "/intelligence/education/unassigned?mandate=education.page_guidance",
-    );
-  });
-
-  it("an old id opens the one Feature its jobs moved to, or its Domain", () => {
-    expect(featureIntelligenceHref("podcast")).toBe("/intelligence/podcasts");
-    expect(featureIntelligenceHref("content_plan")).toBe(
-      "/intelligence/content-planning",
-    );
-    expect(featureIntelligenceHref("seo")).toBe("/intelligence/seo");
-    expect(featureIntelligenceHref("marketing")).toBe(
-      "/intelligence?domain=marketing",
-    );
-    expect(featureIntelligenceHref("education")).toBe(
-      "/intelligence?domain=education",
-    );
-    expect(featureIntelligenceHref("masterwork")).toBe(
-      "/intelligence?domain=masterwork",
-    );
-    expect(featureOfMandateKey("podcast_client.topic_ideas")).toBe("podcasts");
-  });
-
-  it("the directory groups by Domain, one card per registry Feature, gaps last", () => {
-    const { buildIndexRows } = jest.requireActual("../IntelligenceIndex");
-    const rows = buildIndexRows([
-      "seo.map_author",
-      "seo.press_story_analyst",
-      "marketing.page_image",
-      "podcast_client.topic_ideas",
-      "zzz_new.job",
-      "zzz.a",
-    ]);
-    const row = (feature: string) =>
-      rows.find((entry: { feature: string }) => entry.feature === feature);
-    expect(row("seo")).toMatchObject({
-      label: "SEO",
-      domain: "marketing",
-      jobs: 1,
-    });
-    expect(row("public-relations")).toMatchObject({
-      domain: "marketing",
-      jobs: 1,
-    });
-    expect(row("marketing/unassigned")).toMatchObject({
-      label: "Marketing",
-      unassigned: true,
-      jobs: 1,
-    });
-    expect(row("podcasts")).toMatchObject({ domain: "publish", jobs: 1 });
-    const orphans = rows.filter(
-      (entry: { domain: string | null }) => entry.domain === null,
-    );
-    expect(
-      orphans.map((entry: { label: string; fixture: boolean }) => [
-        entry.label,
-        entry.fixture,
-      ]),
-    ).toEqual([
-      ["Not yet assigned to a domain", false],
-      ["Test fixtures", true],
-    ]);
-    // Every "not yet assigned" card sits in the one bottom section, named by its Domain.
-    const last = rows.slice(-3).map((entry: { label: string }) => entry.label);
-    expect(last).toEqual([
-      "Marketing",
-      "Not yet assigned to a domain",
-      "Test fixtures",
-    ]);
+    expect(featureIntelligenceHref("seo-keywords")).toBe("/intelligence/seo-keywords");
   });
 });

@@ -22,8 +22,7 @@ jest.mock("@ai-matrx/chat/surfaces/runtime/intelligence", () => ({ registerSurfa
 jest.mock("@/features/mandates/feature-intelligence/IntelligenceIndicator", () => ({ IntelligenceIndicator: () => null, declaredKeysForRoute: jest.fn() }));
 jest.mock("@/features/mandates/feature-intelligence/page-intelligence-doors", () => ({ usePageIntelligenceDoors: jest.fn() }));
 jest.mock("@/features/mandates/feature-intelligence/registry", () => ({ declaredPlacesFor: jest.fn() }));
-jest.mock("@/features/mandates/feature-intelligence/hrefs", () => ({ featureIntelligenceHref: jest.fn() }));
-jest.mock("@/features/mandates/feature-intelligence/placement", () => ({ targetForKey: jest.fn() }));
+jest.mock("@/features/mandates/feature-intelligence/hrefs", () => ({ featureIntelligenceHref: jest.fn(), intelligenceHref: jest.fn() }));
 jest.mock("@/features/block-state/remarkDurability", () => {
   const actual = jest.requireActual("@ai-matrx/chat/agents/redux/execution-system/instance-resources/remarks") as {
     registerRemarkDurability: (port: unknown) => () => void;

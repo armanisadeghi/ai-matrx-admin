@@ -27,8 +27,10 @@ import {
 } from "@/features/mandates/feature-intelligence/IntelligenceIndicator";
 import { usePageIntelligenceDoors } from "@/features/mandates/feature-intelligence/page-intelligence-doors";
 import { declaredPlacesFor } from "@/features/mandates/feature-intelligence/registry";
-import { featureIntelligenceHref } from "@/features/mandates/feature-intelligence/hrefs";
-import { targetForKey } from "@/features/mandates/feature-intelligence/placement";
+import {
+  featureIntelligenceHref,
+  intelligenceHref,
+} from "@/features/mandates/feature-intelligence/hrefs";
 
 registerSurfaceIntelligence({
   Indicator: IntelligenceIndicator,
@@ -36,7 +38,7 @@ registerSurfaceIntelligence({
   usePageIntelligenceDoors,
   declaredPlacesFor,
   featureIntelligenceHref,
-  targetForKey,
+  intelligenceHref,
 });
 
 export function ChatSurfaceRegistrations(): null {

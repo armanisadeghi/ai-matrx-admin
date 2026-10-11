@@ -1,24 +1,21 @@
 // features/mandates/feature-intelligence/IntelligenceTargetRoute.tsx
 //
-// The server half of every intelligence page (`/intelligence/<feature>`,
-// `/intelligence/<domain>/unassigned`, `/intelligence/unassigned`): signs the
-// viewer in, sends a focused job that belongs elsewhere to its own page, and
-// renders the feature-agnostic body for one registry target.
+// The server half of every intelligence page (`/intelligence/<node slug>` at
+// any depth, and the lanes `/intelligence/everywhere|yours|your-organization|
+// unplaced|fixtures`): signs the viewer in, sends a focused job that sits
+// elsewhere to its own page, and renders the page body under a one-row header
+// whose breadcrumb is the registry path (Marketing › SEO › SEO Keywords).
 
+import Link from "next/link";
+import { Fragment } from "react";
 import { redirect } from "next/navigation";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { loginHref } from "@/utils/auth/auth-destination";
 import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";
 import { FeatureIntelligence } from "./FeatureIntelligence";
-import { featureIntelligenceHref } from "./hrefs";
-import {
-  NOT_ASSIGNED_TO_FEATURE,
-  NO_DOMAIN_TARGET,
-  targetDomain,
-  targetForKey,
-  targetLabel,
-} from "./placement";
-import { registryDomain } from "./taxonomy";
+import { intelligenceHref } from "./hrefs";
+import { homeOfKey } from "./resolve-destination";
+import { isLane, isWithin, LANES, pathOf, type Tree } from "./placement-model";
 import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 
 export type RouteQuery = Record<string, string | string[] | undefined>;
@@ -42,40 +39,76 @@ export function splitQuery(query: RouteQuery): {
   return { focus, context };
 }
 
-/** The page's title — the registry's words, never a raw id. */
-export function intelligencePageTitle(target: string): string {
-  if (target === NO_DOMAIN_TARGET) return targetLabel(target);
-  if (target.endsWith("/unassigned")) {
-    const domain = registryDomain(targetDomain(target) ?? "");
-    return `${domain?.name ?? ""} — ${NOT_ASSIGNED_TO_FEATURE.toLowerCase()}`;
-  }
-  return `${targetLabel(target)} intelligence`;
+/** The page's name — the registry's words, never a raw id. */
+export function intelligencePageTitle(page: string, tree: Tree): string {
+  if (isLane(page)) return LANES[page];
+  return `${tree.bySlug.get(page)?.name ?? page} intelligence`;
+}
+
+/** Is a job's home this page (the node or below it, or the same lane)? */
+export function homeIsOnPage(home: string, page: string, tree: Tree): boolean {
+  if (isLane(page) || isLane(home)) return home === page;
+  return isWithin(tree, home, page);
 }
 
 export async function IntelligenceTargetRoute({
   target,
-  path,
+  tree,
   query,
 }: {
+  /** A registry node slug or a lane id. */
   target: string;
-  /** This page's own path, for the sign-in return. */
-  path: string;
+  tree: Tree;
   query: RouteQuery;
 }) {
-  const { isAuthenticated } = await getSessionVerdict();
-  if (!isAuthenticated) redirect(loginHref(path));
+  const verdict = await getSessionVerdict();
+  const path = `/intelligence/${target}`;
+  if (!verdict.isAuthenticated) redirect(loginHref(path));
 
   const { focus, context } = splitQuery(query);
-  // A focused job another page shows (an old link, a key that moved) opens there.
-  if (focus && targetForKey(focus) !== target) {
-    redirect(featureIntelligenceHref(target, { mandateKey: focus, context }));
+  // A focused job another page shows (an old link, a job that moved) opens there.
+  if (focus) {
+    const home = await homeOfKey(focus, verdict.user.id);
+    if (home && !homeIsOnPage(home, target, tree)) redirect(intelligenceHref(focus, context));
   }
+  const crumbs = isLane(target) ? [] : pathOf(tree, target);
   return (
     <>
       <PageHeader>
-        <span className="truncate type-title text-foreground">
-          {intelligencePageTitle(target)}
-        </span>
+        <nav aria-label="Intelligence path" className="flex min-w-0 items-center gap-1 type-title">
+          <Link href="/intelligence" className="shrink-0 text-muted-foreground hover:text-foreground">
+            Intelligence
+          </Link>
+          {crumbs.length === 0 ? (
+            <>
+              <span className="shrink-0 text-muted-foreground" aria-hidden>›</span>
+              <span className="truncate text-foreground">{intelligencePageTitle(target, tree)}</span>
+            </>
+          ) : (
+            crumbs.map((node, index) =>
+              index === crumbs.length - 1 ? (
+                <Fragment key={node.slug}>
+                  <span className="shrink-0 text-muted-foreground" aria-hidden>›</span>
+                  <span className="truncate text-foreground" aria-current="page" title={node.name}>
+                    {node.name}
+                  </span>
+                </Fragment>
+              ) : (
+                // On a phone only the page's own name shows; its parents stay in the tree.
+                <span key={node.slug} className="flex min-w-0 shrink items-center gap-1 max-sm:hidden">
+                  <span className="shrink-0 text-muted-foreground" aria-hidden>›</span>
+                  <Link
+                    href={`/intelligence/${encodeURIComponent(node.slug)}`}
+                    className="min-w-0 truncate text-muted-foreground hover:text-foreground"
+                    title={node.name}
+                  >
+                    {node.name}
+                  </Link>
+                </span>
+              ),
+            )
+          )}
+        </nav>
       </PageHeader>
       <div className="h-full overflow-y-auto overflow-x-hidden pt-[var(--shell-header-h)]">
         <FeatureIntelligence
