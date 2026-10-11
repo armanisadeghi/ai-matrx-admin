@@ -36,6 +36,8 @@ interface CheckpointSummary {
   display_name: unknown;
   verdict: unknown;
   error: unknown;
+  door: unknown;
+  engine: unknown;
 }
 
 /**
@@ -45,7 +47,7 @@ interface CheckpointSummary {
  * generated select parser can instantiate (TS2589); the row is read below.
  */
 const LIST_SELECT: string =
-  "id, status, created_at, started_at, ended_at, global_execution_checkpoint(created_at, status:state->>status, current_step:state->>current_step, outcome:state->>outcome, send_backs:state->send_backs, agent_id:state->>agent_id, mandate_key:state->request->>mandate_key, name:state->request->spec->>name, display_name:state->request->spec->>display_name, verdict:state->steps->proof_review->answer->>verdict, error:state->>error)";
+  "id, status, created_at, started_at, ended_at, user_id:context->>user_id, global_execution_checkpoint(created_at, status:state->>status, current_step:state->>current_step, outcome:state->>outcome, send_backs:state->send_backs, agent_id:state->>agent_id, mandate_key:state->request->>mandate_key, name:state->request->spec->>name, display_name:state->request->spec->>display_name, verdict:state->steps->proof_review->answer->>verdict, error:state->>error, door:state->request->>door, engine:state->>engine)";
 
 interface ListRow {
   id: string;
@@ -53,6 +55,7 @@ interface ListRow {
   created_at: string;
   started_at: string | null;
   ended_at: string | null;
+  user_id: string | null;
   global_execution_checkpoint: CheckpointSummary[] | null;
 }
 
@@ -85,11 +88,17 @@ export async function listFactoryBuilds(
       mandateKey: str(cp?.mandate_key),
       name: str(cp?.display_name) ?? str(cp?.name),
       currentStep: str(cp?.current_step),
-      outcome: str(cp?.outcome),
+      // Old builds (and a worker that died before writing one) carry no outcome: a spine row that
+      // ended failed/cancelled reads "failed"; a running one has none yet.
+      outcome: str(cp?.outcome) ?? (row.status === "failed" || row.status === "cancelled" ? "failed" : null),
       sendBacks,
       verdict: str(cp?.verdict),
       agentId: str(cp?.agent_id),
       error: str(cp?.error),
+      door: str(cp?.door),
+      engine: str(cp?.engine) ?? "pipeline",
+      userId: str(row.user_id),
+      cost: null,
     };
   });
   return { rows, total: count ?? null };

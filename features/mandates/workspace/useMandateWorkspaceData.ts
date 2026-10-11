@@ -229,6 +229,25 @@ export function useMandateWorkspaceData(
           : await mandateQuery.eq("mandate_key", mandateKeyOrId).limit(1);
       if (mandateError) throw operationFailed("open this mandate", mandateError);
       const mandate = mandateRows?.[0];
+      if (!mandate && systemOnly && !isUuidValue(mandateKeyOrId)) {
+        // The management page asked for a SYSTEM mandate by key and none
+        // exists. The key may still name an organization's or a person's
+        // mandate (the system filter above hid it, so the page said "no
+        // mandate is registered" about a row that exists). Look again without
+        // the org filter: found -> the honest verdict is "not a system
+        // mandate" with the support door; still nothing -> truly unregistered.
+        const { data: tenantRows, error: tenantError } = await mandateDefinitions(
+          supabase,
+        )
+          .select("id")
+          .is("deleted_at", null)
+          .eq("mandate_key", mandateKeyOrId)
+          .order("updated_at", { ascending: false })
+          .limit(1);
+        if (tenantError) throw operationFailed("open this mandate", tenantError);
+        const tenantId = tenantRows?.[0]?.id;
+        if (tenantId) throw new NotASystemMandate(tenantId);
+      }
       if (!mandate) throw new MandateNotFound(mandateKeyOrId);
       if (systemOnly && mandate.organization_id !== SYSTEM_ORGANIZATION_ID) {
         throw new NotASystemMandate(mandate.id);

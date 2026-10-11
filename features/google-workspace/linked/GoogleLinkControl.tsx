@@ -60,6 +60,33 @@ export interface GoogleLinkAdapter {
 
 type Conflict = { from: "update" | "push"; remote: GoogleRemoteVersion; remoteContent?: unknown };
 
+function stableJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
+  if (value && typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .filter(([, v]) => v !== undefined)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${stableJson(v)}`).join(",")}}`;
+  }
+  return JSON.stringify(value ?? null);
+}
+
+/**
+ * What the person wrote, hashed: a workbook's tabs, cells and styles (never the
+ * plugin state Univer re-saves on every open), or a document's markdown.
+ */
+export async function contentFingerprint(content: unknown): Promise<string> {
+  const basis =
+    typeof content === "string"
+      ? content
+      : (() => {
+          const wb = (content ?? {}) as Record<string, unknown>;
+          return stableJson({ sheetOrder: wb.sheetOrder, sheets: wb.sheets, styles: wb.styles });
+        })();
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(basis));
+  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 export function timeAgo(iso: string | null | undefined): string {
   if (!iso) return "never";
   const seconds = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
@@ -92,6 +119,33 @@ export function GoogleLinkControl({ adapter, editable }: { adapter: GoogleLinkAd
       live = false;
     };
   }, [adapter.recordKind, adapter.recordId]);
+
+  // An imported record's first open: what the editor shows IS Google's content,
+  // so its fingerprint is the baseline "changed here since?" compares against.
+  useEffect(() => {
+    if (!link?.baselineOnOpen) return;
+    let live = true;
+    let tries = 0;
+    const attempt = async () => {
+      if (!live) return;
+      let content: unknown;
+      try {
+        content = adapter.readLocal();
+      } catch {
+        if (++tries < 20) window.setTimeout(() => void attempt(), 500);
+        return;
+      }
+      const next: GoogleFileLink = { ...link, baselineOnOpen: false, localFingerprint: await contentFingerprint(content) };
+      const res = await writeGoogleLink(adapter.recordKind, adapter.recordId, next);
+      if (!live) return;
+      if (res.ok) setLink(next);
+      else toast.error(`Could not save this item's Google link: ${res.error}`);
+    };
+    void attempt();
+    return () => {
+      live = false;
+    };
+  }, [link?.baselineOnOpen, link?.fileId]);
 
   const saveLink = async (next: GoogleFileLink | null) => {
     const res = await writeGoogleLink(adapter.recordKind, adapter.recordId, next);
@@ -143,6 +197,7 @@ export function GoogleLinkControl({ adapter, editable }: { adapter: GoogleLinkAd
         lastSyncedAt: now,
         remoteVersion: remote.version,
         localSnapshotId: await adapter.latestLocalSnapshotId(),
+        localFingerprint: await contentFingerprint(content),
         lastDirection: "to_google",
       });
       toast.success(`Created in ${appName}`, {
@@ -160,6 +215,8 @@ export function GoogleLinkControl({ adapter, editable }: { adapter: GoogleLinkAd
       lastSyncedAt: new Date().toISOString(),
       remoteVersion: remote.version,
       localSnapshotId: snapshotId,
+      localFingerprint: await contentFingerprint(adapter.readLocal()),
+      baselineOnOpen: false,
       lastDirection: "from_google",
     });
     toast.success(`Updated from ${appName}`);
@@ -172,7 +229,9 @@ export function GoogleLinkControl({ adapter, editable }: { adapter: GoogleLinkAd
         ? await readSheetAsWorkbook(link.connectionId, link.fileId, adapter.recordId).then((r) => ({ content: r.workbook as unknown, remote: r.remote }))
         : await readDocAsMarkdown(link.connectionId, link.fileId).then((r) => ({ content: r.markdown as unknown, remote: r.remote }));
       const remoteChanged = read.remote.version !== link.remoteVersion;
-      const localChanged = (await adapter.latestLocalSnapshotId()) !== link.localSnapshotId;
+      const localChanged = link.localFingerprint
+        ? (await contentFingerprint(adapter.readLocal())) !== link.localFingerprint
+        : (await adapter.latestLocalSnapshotId()) !== link.localSnapshotId;
       if (!remoteChanged) {
         toast.info(`Already up to date with ${appName}`);
         return;
@@ -205,6 +264,8 @@ export function GoogleLinkControl({ adapter, editable }: { adapter: GoogleLinkAd
         lastSyncedAt: new Date().toISOString(),
         remoteVersion: remote.version,
         localSnapshotId: await adapter.latestLocalSnapshotId(),
+        localFingerprint: await contentFingerprint(content),
+        baselineOnOpen: false,
         lastDirection: "to_google",
       });
       toast.success(`Pushed to ${appName}`, { description: notes.join(" ") || undefined });

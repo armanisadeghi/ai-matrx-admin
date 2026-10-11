@@ -9,7 +9,9 @@
 import { CrumbTrailHeader } from "@/features/shell/components/header/templates/CrumbTrailHeader";
 import { useMandateWorkspaceData } from "@/features/mandates/workspace/useMandateWorkspaceData";
 import { useMandateDisplayName } from "@/features/mandates/useMandateDisplayName";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { adminMandateSupportRecordHref } from "@/features/mandates/admin-routes";
 import {
   MANDATE_LIST_PREVIEW_HREF,
   mandateRecordPreviewHref,
@@ -66,11 +68,20 @@ export function OverridesPreviewPage({
                   : "text-destructive"
               }
             >
-              {failure && failure.kind !== "load-failed"
-                ? "Mandate not found"
-                : (failure?.message ?? error ?? "This mandate could not be read.")}
+              {failure && failure.kind === "not-a-system-mandate"
+                ? failure.message
+                : failure && failure.kind !== "load-failed"
+                  ? "Mandate not found"
+                  : (failure?.message ?? error ?? "This mandate could not be read.")}
               <ErrorAlchemyMenu error={failure?.message} />
             </span>
+            {failure && failure.kind === "not-a-system-mandate" && "mandateId" in failure ? (
+              <Button asChild variant="outline">
+                <Link href={adminMandateSupportRecordHref(String(failure.mandateId))}>
+                  Open in Mandate support lookup
+                </Link>
+              </Button>
+            ) : null}
             {failure?.retryable ? (
               <Button variant="outline" onClick={refresh}>
                 Retry

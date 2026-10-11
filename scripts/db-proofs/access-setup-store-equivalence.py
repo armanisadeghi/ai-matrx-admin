@@ -276,13 +276,18 @@ def run_masks_and_notices():
                 new_n = one("""select custom.store_part_notice(f, 'read') from custom.record f
                                 where f.id = %s""", (legacy['key_ids'][k],))
                 core = {kk: new_n.get(kk) for kk in notice}
-                if core != notice or not new_n.get('who'):
+                if core != notice or (new_n.get('part') and not new_n.get('who')):
                     nd.append((key, lvl, k, notice, new_n))
     for d in diffs[:6]:
         print('   MASK DIFF', d)
     for d in nd[:4]:
         print('   NOTICE DIFF', d)
     check('masks: legacy visible keys == part answer, every person x every rung', not diffs, f'{total} masks, {len(diffs)} differences')
+    live = q("""with people(u) as (select unnest(%(uids)s::uuid[])), lv(l) as (select unnest(array[null,'viewer','commenter','edit_content','editor','admin']::public.permission_level[]))
+                select count(*), count(*) filter (where custom.read_mask_for(u, %(org)s::uuid, %(t)s::uuid, l, a) - 'all_key_ids'
+                                                   is distinct from custom._legacy_read_mask_for(u, %(org)s::uuid, %(t)s::uuid, l, a) - 'all_key_ids')
+                  from people, lv, (values ('read'), ('edit')) x(a)""", {'uids': [P[k]['uid'] for k, *_ in PEOPLE], 'org': ORG, 't': TABLE})[0]
+    check('masks: live custom.read_mask_for == frozen copy (visible, notices, ids), read and edit', live[1] == 0, f'{live[0]} masks, {live[1]} differences')
     check('notices: legacy {reason, needs, or, reads, says} kept, plus part and who', not nd, f'{len(nd)} differences')
     sample = one("select custom.store_part_notice(f, 'read') from custom.record f where f.id = %s", (F['bonus'],))
     print(f"   notice for Bonus: part={sample.get('part')!r} who={sample.get('who')!r}")
@@ -481,6 +486,77 @@ def run_panel():
     q("rollback to savepoint panel")
 
 
+def run_scoped():
+    """A Table WITH a scoped setup (accesssetup_store_f/g): "Pay" = Hourly rate + Bonus, read by Table admins (edit)
+    and the person named in Employee on THAT row (read); per-row cells answer only with a row."""
+    owner()
+    q("savepoint scoped")
+    for k in ('hourly_rate', 'bonus'):
+        q("update custom.record set data = data || '{\"part\":\"Pay\"}'::jsonb where id = %s", (F[k],))
+    def seat(key, grammar, required=False):
+        d = {'key': key, 'resolver': {'kind': 'store', 'seat': grammar, 'fn': 'custom.store_seat_holders(uuid,jsonb)',
+                                      'set_fn': 'custom.store_seat_records(uuid,uuid,jsonb)', 'has_fn': 'custom.store_seat_has(uuid,uuid,jsonb)'}}
+        if required:
+            d.update({'required': True, 'fallback': 'org_owners_admins'})
+        return d
+    setup = {'admin_seats': ['table_admin'],
+             'seats': [seat('table_admin', {'kind': 'row_level', 'min': 'admin'}, True),
+                       seat('the_employee', {'kind': 'row_field', 'field_id': F['employee']}, True),
+                       seat('row_maker', {'kind': 'row_creator'})],
+             'grid': {'table_admin': {'part:pay': {'level': 'editor'}}, 'the_employee': {'part:pay': {'level': 'viewer'}}}}
+    q("insert into iam.access_setup (entity_type, scope, setup, declared_by) values ('record', %s::jsonb, %s::jsonb, 'store-equivalence fixture')",
+      (json.dumps({'table_id': TABLE}), json.dumps(setup)))
+    chk = one("select iam.access_setup_check('record', %s::jsonb)", (json.dumps({'table_id': TABLE}),))
+    check('scoped: the store check passes the Crew pay setup', chk['ok'], json.dumps(chk['problems']))
+    for bad, why in [({**setup, 'subject_seat': 'the_employee'}, 'a subject seat'),
+                     ({**setup, 'grid': {'table_admin': {'part:pay': {'level': 'editor', 'rows': 'own'}}}}, 'rows own'),
+                     ({**setup, 'seats': [{**setup['seats'][0], 'resolver': {**setup['seats'][0]['resolver'], 'has_fn': None}}] + setup['seats'][1:]}, 'no person-scoped form'),
+                     ({**setup, 'grid': {'table_admin': {'part:medical': {'level': 'editor'}}}}, 'a part no column carries')]:
+        q("savepoint bad")
+        try:
+            q("update iam.access_setup set setup = %s::jsonb where entity_type = 'record' and scope_key = %s::jsonb",
+              (json.dumps(bad), json.dumps({'table_id': TABLE})))
+            refused = False
+        except Exception:
+            refused = True
+        q("rollback to savepoint bad")
+        check(f'scoped: the check refuses {why}', refused)
+    def reads(k, row, f, lvl=None):
+        if lvl is None:
+            return one("select iam.part_may_read(%s, %s, %s)", (P[k]['uid'], row, F[f]))
+        return one("select iam.part_may_touch(%s, %s, %s, %s, 'read')", (P[k]['uid'], row, F[f], lvl))
+    check('per-row: the employee reads Hourly rate and Bonus on the row naming them',
+          reads('employee', ROWS[0], 'hourly_rate') and reads('employee', ROWS[0], 'bonus'))
+    check('per-row: ...and not on another row', not reads('employee', ROWS[1], 'hourly_rate'))
+    check('per-row: the employee cannot edit Pay (a read cell)', not one("select iam.part_may_edit(%s, %s, %s)", (P['employee']['uid'], ROWS[0], F['hourly_rate'])))
+    check('per-row: a Table editor no longer reads Pay (confidential let them)', not reads('t_editor', ROWS[0], 'hourly_rate'))
+    check('per-row: the Table admin reads and edits Pay', reads('t_admin', ROWS[2], 'bonus')
+          and one("select iam.part_may_edit(%s, %s, %s)", (P['t_admin']['uid'], ROWS[2], F['bonus'])))
+    check('set-wide: a per-row part is hidden without a row (sort, filter, search, aggregates)',
+          not reads('employee', None, 'hourly_rate', 'viewer') and reads('t_admin', None, 'hourly_rate', 'admin'))
+    pv = {r[0]: r for r in q("select * from iam.parts_visible_for(%s, %s, 'viewer')", (P['employee']['uid'], TABLE))}
+    check('parts_visible_for: Pay hidden set-wide, marked per row', pv.get('part:pay') is not None
+          and pv['part:pay'][2] is False and pv['part:pay'][4] is True, str(pv.get('part:pay')))
+    check('per-row: Role (no part) unchanged for the employee', reads('employee', ROWS[0], 'role'))
+    # the required seat nobody holds on a row falls to the organization owners and admins
+    org_admin_lvl = one("select custom.effective_level(%s, %s, %s, 'record')", (P['org_admin']['uid'], ORG, ROWS[1]))
+    check('fallback: row 2 names nobody, so organization admins hold the employee seat there',
+          one("select custom._store_column_itself(%s, %s, %s, %s, 'viewer', 'read')", (P['org_admin']['uid'], ROWS[1], F['hourly_rate'], ORG))
+          and not one("select custom._store_column_itself(%s, %s, %s, %s, 'viewer', 'read')", (P['org_admin']['uid'], ROWS[0], F['hourly_rate'], ORG)),
+          f'org admin level on row 2 = {org_admin_lvl}')
+    who = one("select custom.store_part_notice(f, 'read') ->> 'who' from custom.record f where id = %s", (F['bonus'],))
+    check('notice: who reads Pay, from the setup', who is not None and 'Employee' in who, repr(who))
+    check('share of ONE column still opens it on top of the part', reads('share_e', None, 'hourly_rate', 'viewer'))
+    # plant: per-row cells ignored -> the employee loses Pay on their own row
+    body = one("select pg_get_functiondef('custom._store_column_itself(uuid,uuid,uuid,uuid,permission_level,text)'::regprocedure)")
+    q("savepoint plant2")
+    q(body.replace("if custom.store_seat_has(p_person, p_row, v_cell -> 'seat') then return true; end if;", ""))
+    caught = not reads('employee', ROWS[0], 'hourly_rate')
+    q("rollback to savepoint plant2")
+    check('PLANT caught: per-row cells ignored', caught)
+    q("rollback to savepoint scoped")
+
+
 def plant(label, sql_fn):
     q("savepoint plant")
     q(sql_fn)
@@ -511,6 +587,7 @@ try:
     run_writes()
     run_panel()
     run_plants()
+    run_scoped()
 finally:
     conn.rollback()
     conn.close()

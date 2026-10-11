@@ -7,6 +7,7 @@
  * it resolves, so the list below never jumps.
  */
 
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Badge, Button, PromoBanner } from "@ai-matrx/design-system/controls";
@@ -52,7 +53,12 @@ export function GoogleHomeStrip({
         eyebrow={app}
         title="Couldn't check your Google connection"
         line={state.error.slice(0, 60)}
-        action={<Button variant="outline" onClick={refresh}>Retry</Button>}
+        action={
+          <span className="flex items-center gap-1">
+            <ErrorAlchemyMenu error={state.error} operation={`Check the ${app} connection`} size="icon" />
+            <Button variant="outline" onClick={refresh}>Retry</Button>
+          </span>
+        }
         aria-label={app}
       />
     );

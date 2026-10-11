@@ -588,12 +588,15 @@ export function NoteEditorCore({
             // host narrower than 48rem — a Board tile, the /notes column — the
             // text touched the left edge. Same formula as Plain's textarea:
             // 1.5rem minimum, centred 48rem column when wider.
-            "[&_.rich-editor-visual>div]:max-w-none! [&_.rich-editor-visual>div]:px-[max(1.5rem,calc((100%-48rem)/2))]! [&_.rich-editor-source>div]:max-w-none! [&_.rich-editor-source>div]:px-[max(1.5rem,calc((100%-48rem)/2))]!",
+            // Styled through the editor's named column hook, never a child combinator on its scroller:
+            // that also matched the block grip's box, which grew 48px wide and 85dvh tall,
+            // sat ON the first letters and swallowed every press at the start of a line.
+            "[&_.rich-editor-column]:max-w-none! [&_.rich-editor-column]:px-[max(1.5rem,calc((100%-48rem)/2))]!",
             // Match Plain/Split/Read inside the rich editor's scroll owners.
             // Padding the frame instead would lift the host's metadata/footer.
             // Embedded hosts keep the rich editor's existing compact runway.
             !embedded &&
-              "[&_.rich-editor-visual>div]:pb-[85dvh]! [&_.rich-editor-source>div]:pb-[85dvh]!",
+              "[&_.rich-editor-column]:pb-[85dvh]!",
           )}
         >
           <RichEditor

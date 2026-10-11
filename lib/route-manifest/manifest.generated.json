@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1403,
+  "routeCount": 1402,
   "routes": [
     {
       "pattern": "/",
@@ -6539,11 +6539,6 @@
       "pattern": "/sign-up",
       "status": "live",
       "source": "app/(auth-pages)/sign-up/page.tsx"
-    },
-    {
-      "pattern": "/sign/[token]",
-      "status": "live",
-      "source": "app/(link)/sign/[token]/page.tsx"
     },
     {
       "pattern": "/sign/e/[envelopeId]",

@@ -27,8 +27,16 @@ export interface GoogleFileLink {
   lastSyncedAt: string;
   /** The Google content fingerprint at the last sync (server-computed). */
   remoteVersion: string | null;
-  /** Our own latest snapshot id at the last sync — "changed here since?". */
+  /** Our own latest snapshot id at the last sync (history pointer). */
   localSnapshotId: string | null;
+  /**
+   * Fingerprint of OUR content at the last sync — "changed here since?". Snapshot
+   * ids cannot answer that: opening the editor saves a fresh snapshot whose
+   * content is unchanged.
+   */
+  localFingerprint?: string | null;
+  /** Set by an import: the first editor open records the fingerprint of what it shows. */
+  baselineOnOpen?: boolean;
   lastDirection: "to_google" | "from_google";
 }
 

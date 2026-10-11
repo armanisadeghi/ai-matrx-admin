@@ -159,6 +159,14 @@ export interface FactoryBuildRow {
   verdict: string | null;
   agentId: string | null;
   error: string | null;
+  /** The agent-creating door that started it (`request.door`); null = started from the admin page or an older build. */
+  door: string | null;
+  /** `pipeline` (code) unless the build recorded `workflow`. */
+  engine: string;
+  /** Who started it (`context.user_id` on the root row). */
+  userId: string | null;
+  /** Real cost in dollars: the sum of the build's child executions. null = not loaded / failed to load. */
+  cost: number | null;
 }
 
 export interface FactoryBuildDetail {

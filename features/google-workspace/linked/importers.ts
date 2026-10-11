@@ -51,6 +51,8 @@ function linkFor(
     lastSyncedAt: now,
     remoteVersion,
     localSnapshotId: snapshotId,
+    localFingerprint: null,
+    baselineOnOpen: true,
     lastDirection: "from_google",
   };
 }
