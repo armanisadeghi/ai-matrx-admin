@@ -536,6 +536,10 @@ export function AccountDetail({ platform, profileId }: { platform: string; profi
           </Button>
         ) : null}
         <ProviderChip provider={p.provider} trace={lastFetch?.trace} />
+        {lastFetch?.posts_requested != null && lastFetch.posts_received != null ? (
+          <span>{`Got ${lastFetch.posts_received.toLocaleString("en-US")} of ${lastFetch.posts_requested.toLocaleString("en-US")} asked`}</span>
+        ) : null}
+        {lastFetch?.stopped_reason === "points_limit" ? <span className="text-destructive">Stopped early: points limit reached. Posts already loaded are kept.</span> : null}
         <LimitLine limit={lastFetch?.limit_applied} organizationId={brand.organizationId} />
       </div>
 

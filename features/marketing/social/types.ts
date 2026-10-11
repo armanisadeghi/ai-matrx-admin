@@ -159,6 +159,8 @@ export interface IngestProfileResult {
   limit_applied?: SocialLimitApplied | null;
   reused?: boolean;
   fetched_at?: string | null;
+  /** "points_limit" when a points refusal stopped the walk (posts already stored are kept). */
+  stopped_reason?: string | null;
 }
 
 /** The server cut a request down to a setting; the UI names it in place. */
@@ -177,6 +179,7 @@ export interface TrackAccountResult {
   posts_received?: number;
   has_more?: boolean;
   limit_applied?: SocialLimitApplied | null;
+  stopped_reason?: string | null;
 }
 
 export interface TrackAccountInput {

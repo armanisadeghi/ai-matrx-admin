@@ -128,8 +128,9 @@ export function TrackAccountDialog({
         );
         await invalidate();
         const loaded = result.posts_received != null ? ` · ${result.posts_received.toLocaleString("en-US")} posts` : "";
+        const stopped = result.stopped_reason === "points_limit" ? " · stopped early: points limit" : "";
         const cut = result.limit_applied ? ` · limited to ${result.limit_applied.value.toLocaleString("en-US")} by a setting` : "";
-        toast.success(`${result.created ? "Account tracked" : "Already tracked"}${loaded}${cut}`);
+        toast.success(`${result.created ? "Account tracked" : "Already tracked"}${loaded}${cut}${stopped}`);
         onOpenChange(false);
       }
       input.reset();
