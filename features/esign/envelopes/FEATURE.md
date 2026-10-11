@@ -33,12 +33,15 @@ on `features/esign/signing` (`/sign/e/<id>`, `/x/sign`). Product truth: `common-
 - **Sending freezes the exact bytes.** The server reads each PDF, hashes it (sha-256), counts pages, and the signing surface checks signers against that hash.
 - **A colleague signs as themself.** A signer whose email is a member of the sending organization is an `internal_user` (`/sign/e/<id>`); anyone else is an outsider (link + emailed code).
 - **Verification re-hashes.** `POST /esign/envelopes/{id}/verify` re-reads the frozen bytes and passes them as `observed`; "verified" needs every document `match` and the certificate's signature.
-- **Every sender notice links to `/esign/<id>` and reaches the sender's account address** (`esign._notify`); a resend always carries a fresh link (`esign.retire_signer_link`).
+- **Every sender notice links to `/esign/<id>` and reaches the sender's account address** (`esign._notify`); a resend always carries a fresh link (`esign.retire_signer_link`) — never for a recipient who has acted.
+- **A recipient who has acted is locked** (owner ruling 2026-10-10, Docusign Correct/Void). Signed, declined, passed on or finished reviewing: the database refuses any change or removal from every path — sender JWT, service role, server connection, an armed door — with `recipient_locked` (trigger `_zz_a_lock_acted_recipient`, `esign._acted`, `esign.recipient_lock`; migration `esign_parity_27`). Only notice bookkeeping and the finished page's sign-up hint still move. The page shows a lock with the reason and offers Void + Make a copy (`LOCKED_RECIPIENT_STATUSES`); Send again shows only for unacted recipients, and every correction of one is on the ledger (`signer_record_changed`, `signer_removed`, `resent` with `email_before`/`email_after`). A sent envelope takes no new document (`document_after_send`). Live proof: aidream `services/esign/tests/test_recipient_lock_live.py`.
 - The list reads at most 500 envelopes and pages them in the browser (fine at today's volumes; move paging into `esign_envelope_list` when a person has more).
 
 ---
 
 ## Change Log
+
+- 2026-10-10 — The recipient lock: acted recipients show a lock (why + Void / Make a copy), Send again only for unacted ones, the Void dialog says what it does; `acknowledged` gets its label. Database walls in migration `esign_parity_27`; aidream resend refuses an acted recipient before touching their link.
 
 - 2026-10-04 — Send page rebuilt to the DocuSign bar: the attached PDF is on screen, signers are picked from the organization's members or added as guests, Signature / Initials / Date / Name boxes are placed, moved, resized and deleted per signer in that signer's colour (contract: `fields[]` fractions of the page, `signers[].user_id` for a picked member). Envelope page: the top no longer sits under the header band; documents open in a viewer; signed copy download. PENDING: `fields` and `user_id` ride the send request once `@ai-matrx/agents` publishes them (`fieldsForSend` in `types.ts` builds the array).
 
