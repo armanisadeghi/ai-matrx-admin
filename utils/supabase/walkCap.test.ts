@@ -2,7 +2,6 @@
 
 import {
   WALK_CAP_HEADER,
-  WALK_BUSY_PROTECT_MS,
   createWalkKnobReader,
   decideWalkAdmission,
   walkCapDevEndpoint,
@@ -54,52 +53,13 @@ describe("decideWalkAdmission — the live-database walk cap", () => {
 
   it("breaks equal LRU timestamps by insertion order", () => {
     const registry = registryWith([
-      ["first.localhost:3001", T0 - 5 * MIN],
-      ["second.localhost:3001", T0 - 5 * MIN],
-      ["third.localhost:3001", T0 - 5 * MIN],
-      ["fourth.localhost:3001", T0 - 5 * MIN],
+      ["first.localhost:3001", T0],
+      ["second.localhost:3001", T0],
+      ["third.localhost:3001", T0],
+      ["fourth.localhost:3001", T0],
     ]);
     const decision = decideWalkAdmission(registry, "new.localhost:3001", T0, KNOBS);
     expect(decision.evicted).toEqual(["first.localhost:3001"]);
-  });
-
-  it("a host that made any request in the busy window is never evicted; the newcomer is refused instead", () => {
-    const registry = registryWith([
-      ["a.localhost:3001", T0 - 5 * MIN],
-      ["b.localhost:3001", T0 - 5 * MIN],
-      ["c.localhost:3001", T0 - 5 * MIN],
-      ["d.localhost:3001", T0 - 5 * MIN],
-    ]);
-    // Four sessions all keep working: only background traffic or a click, seconds apart.
-    for (const host of ["a", "b", "c", "d"]) {
-      decideWalkAdmission(registry, `${host}.localhost:3001`, T0, KNOBS, host === "a" ? "activity" : "background");
-    }
-    const decision = decideWalkAdmission(registry, "e.localhost:3001", T0 + 30_000, KNOBS);
-    expect(decision.verdict).toBe("refuse");
-    expect(decision.evicted).toEqual([]);
-    expect(registry.evicted.size).toBe(0);
-    expect(registry.admitted.has("e.localhost:3001")).toBe(false);
-    // Once they have been quiet past the busy window, the oldest is evicted for the newcomer again.
-    const later = decideWalkAdmission(registry, "e.localhost:3001", T0 + WALK_BUSY_PROTECT_MS + 1, KNOBS);
-    expect(later.verdict).toBe("admit");
-    expect(later.evicted).toEqual(["b.localhost:3001"]);
-  });
-
-  it("with 7 sessions all active on 4 slots nobody active is ever parked (the ping-pong)", () => {
-    const registry = registryWith([]);
-    const hosts = ["a", "b", "c", "d", "e", "f", "g"].map((h) => `${h}.localhost:3001`);
-    let now = T0;
-    for (const host of hosts) decideWalkAdmission(registry, host, now, KNOBS); // first four admitted, the rest refused
-    const parkedEver = new Set<string>();
-    for (let tick = 0; tick < 60; tick += 1) {
-      now += 5_000;
-      for (const host of hosts) {
-        const decision = decideWalkAdmission(registry, host, now, KNOBS, "document");
-        if (decision.verdict === "parked") parkedEver.add(host);
-      }
-    }
-    expect([...parkedEver]).toEqual([]);
-    expect(registry.admitted.size).toBe(4);
   });
 
   it("an explicit user activity touch keeps a host ahead of background requests", () => {
@@ -110,6 +70,7 @@ describe("decideWalkAdmission — the live-database walk cap", () => {
       ["d.localhost:3001", T0 - MIN],
     ]);
     decideWalkAdmission(registry, "active.localhost:3001", T0, KNOBS, "activity");
+    decideWalkAdmission(registry, "quiet.localhost:3001", T0 + MIN, KNOBS, "background");
     const decision = decideWalkAdmission(registry, "new.localhost:3001", T0 + MIN, KNOBS);
     expect(decision.evicted).toEqual(["quiet.localhost:3001"]);
   });
@@ -221,10 +182,10 @@ describe("walkCapGate — development against production only", () => {
 
   function gateInput(overrides: Partial<Parameters<typeof walkCapGate>[0]> = {}) {
     const registry = registryWith([
-      ["a.localhost:3001", T0 - 5 * MIN],
-      ["b.localhost:3001", T0 - 4 * MIN],
-      ["c.localhost:3001", T0 - 4 * MIN],
-      ["d.localhost:3001", T0 - 4 * MIN],
+      ["a.localhost:3001", T0],
+      ["b.localhost:3001", T0],
+      ["c.localhost:3001", T0],
+      ["d.localhost:3001", T0],
     ]);
     return {
       host: "e.localhost:3001",

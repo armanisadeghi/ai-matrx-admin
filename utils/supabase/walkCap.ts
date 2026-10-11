@@ -57,19 +57,7 @@ export type WalkRequestKind = "background" | "document" | "activity" | "resume";
 export interface WalkRegistry {
   admitted: Map<string, number>;
   evicted: Set<string>;
-  /** Last request of ANY kind per admitted host; only used to protect a busy host from LRU eviction. */
-  lastRequest?: Map<string, number>;
 }
-
-/**
- * A host that made ANY request (document, background or explicit activity) within this many ms is in
- * use right now and is never evicted to admit another host (2026-10-10, lane HISTORY-FIELD-REVERT:
- * with 7 sessions sharing 4 slots, LRU eviction by lastSeen alone parked a host seconds after its
- * last click, it resumed, and evicted the next one — a ping-pong that paused every session every
- * 3-6 tool calls). When every slot is protected the NEWCOMER is refused instead (honest 503 page).
- * This does not extend the idle window: a host with no real interaction for the window still expires.
- */
-export const WALK_BUSY_PROTECT_MS = 120_000;
 
 /**
  * The admission rule. `registry` maps an admitted preview host to the last
@@ -114,41 +102,29 @@ export function decideWalkAdmission(
   if (existing && (kind === "document" || kind === "activity" || kind === "resume")) {
     registry.admitted.set(host, now);
   }
-  const lastRequest = (registry.lastRequest ??= new Map());
-  if (existing) lastRequest.set(host, now);
-  const isBusy = (h: string): boolean =>
-    now - Math.max(registry.admitted.get(h) ?? 0, lastRequest.get(h) ?? 0) < WALK_BUSY_PROTECT_MS;
 
   // A newly admitted host always gets a slot. Break timestamp ties by map
   // insertion order so LRU eviction is deterministic and testable.
-  // Returns false when every admitted host is busy (nothing may be evicted).
-  const evictOldest = (): boolean => {
-    const oldest = [...registry.admitted.entries()]
-      .filter(([candidateHost]) => candidateHost !== host && !isBusy(candidateHost))
-      .reduce<string | null>(
-        (candidate, [candidateHost, seen]) =>
-          candidate === null || seen < (registry.admitted.get(candidate) ?? Infinity)
-            ? candidateHost
-            : candidate,
-        null,
-      );
-    if (!oldest) return false;
+  const evictOldest = () => {
+    const oldest = [...registry.admitted.entries()].reduce<string | null>(
+      (candidate, [candidateHost, seen]) =>
+        candidate === null || seen < (registry.admitted.get(candidate) ?? Infinity)
+          ? candidateHost
+          : candidate,
+      null,
+    );
+    if (!oldest) return;
     registry.admitted.delete(oldest);
-    lastRequest.delete(oldest);
     registry.evicted.add(oldest);
     evicted.push(oldest);
-    return true;
   };
   if (!existing) {
-    while (registry.admitted.size >= knobs.cap) {
-      if (!evictOldest()) return { verdict: "refuse", active: active(), evicted };
-    }
+    while (registry.admitted.size >= knobs.cap) evictOldest();
     registry.evicted.delete(host);
     registry.admitted.set(host, now);
-    lastRequest.set(host, now);
     return { verdict: "admit", newlyAdmitted: true, active: active(), evicted };
   }
-  while (registry.admitted.size > knobs.cap) if (!evictOldest()) break;
+  while (registry.admitted.size > knobs.cap) evictOldest();
   if (!registry.admitted.has(host)) {
     return { verdict: "parked", active: active(), evicted };
   }
@@ -263,7 +239,7 @@ code{background:#f1f1f1;padding:1px 5px;border-radius:4px}
 <h1>This preview is over the live-database walk cap</h1>
 <p>${active.length} agent sessions are already signed in against production (the cap is ${knobs.cap}):</p>
 <ul>${list}</ul>
-<p>A session in use is never paused for another. Wait until one has been quiet for ${WALK_BUSY_PROTECT_MS / 1000} seconds (or idle for ${knobs.windowMinutes} minutes), then reload this page.</p>
+<p>Wait until one of them goes idle for ${knobs.windowMinutes} minutes, then reload this page.</p>
 <p><small>Host refused: <code>${escapeHtml(host)}</code>. Knobs: <code>${WALK_CAP_FEATURE}.${CAP_KEY}</code> and <code>${WALK_CAP_FEATURE}.${WINDOW_KEY}</code>. This check runs only in local development against the live database.</small></p>
 </body></html>`;
 }
