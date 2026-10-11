@@ -29,6 +29,10 @@ function ports() {
 }
 
 describe("univer image store", () => {
+  beforeEach(() => {
+    Object.assign(URL, { createObjectURL: jest.fn(() => "blob:local-pic"), revokeObjectURL: jest.fn() });
+  });
+
   it("stores a 2 MB picture as a reference, not as bytes in the snapshot", async () => {
     const p = ports();
     const saved = (await createMatrxImageStore(p).saveImage(png(2_000_000))) as {
@@ -36,6 +40,8 @@ describe("univer image store", () => {
       imageSourceType: string;
     };
     expect(p.upload).toHaveBeenCalledTimes(1);
+    // Univer measures the picture from this before inserting; empty means nothing is inserted.
+    expect((saved as { base64Cache: string }).base64Cache).toMatch(/^blob:/);
     expect(saved.imageSourceType).toBe("URL");
     expect(saved.source).toBe(`${MATRX_IMAGE_PREFIX}f-1`);
     expect(JSON.stringify(saved).length).toBeLessThan(500);
