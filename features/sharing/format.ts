@@ -24,6 +24,7 @@ import {
   type AccessSummary,
 } from "@/features/sharing/service/accessSummary";
 import type { PermissionWithDetails } from "@/utils/permissions/types";
+import { getResourceTypeLabel } from "@/utils/permissions/registry";
 
 /** Location line for every sharing payload. */
 export function sharingLocation(surface: string): string {
@@ -325,6 +326,12 @@ export interface AccessReasonRow {
   containerId?: string;
 }
 
+/** The person-facing noun for an entity token ("udt_document" reads "document", never the raw token). */
+export function recordNoun(entityType: string): string {
+  const label = getResourceTypeLabel(entityType);
+  return (label === entityType ? entityType.replace(/^udt_/, "").replace(/_/g, " ") : label).toLowerCase();
+}
+
 /**
  * THE reason list — rendered by `AccessSummaryPanel` AND copied by every
  * payload that includes it. One extractor, two consumers; the export can never
@@ -341,7 +348,7 @@ export function accessReasonRows(
       id: "org-readable",
       kind: "organization",
       title: `Everyone in ${summary.organizationName}`,
-      detail: `Every member of that organization can open this ${entityType.replace(/_/g, " ")}`,
+      detail: `Every member of that organization can open this ${recordNoun(entityType)}`,
     });
   }
 
