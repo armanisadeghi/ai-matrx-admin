@@ -2,8 +2,9 @@
 //
 // ONE FEATURE'S JOBS, from the viewer's seat. The list is the member list door
 // (`public.mnd_member_list`) — holder-neutral, so a workflow holder reads as
-// plainly as an agent — narrowed to the feature's keys; the definition adds the
-// output kind the list row does not carry.
+// plainly as an agent — narrowed to the exact keys the page holds (placed from
+// data, `placement-model.ts`); the definition adds the output kind the list row
+// does not carry.
 
 import { createClient } from "@/utils/supabase/client";
 import { readAllRows } from "@ai-matrx/data/db";
@@ -16,13 +17,12 @@ import {
 } from "../member-list/rpc";
 import type { MandateMemberRow } from "../member-list/types";
 import { featurePrefixes } from "./registry";
-import { keyInTarget, targetPrefixes } from "./placement";
 import type { FeatureIntelligenceRow, IntelligenceLevel } from "./types";
 import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 
 export interface FeatureIntelligenceQuery {
-  /** The registry target (`seo`, `education/unassigned`) — see `placement.ts`. */
-  feature: string;
+  /** The exact jobs the page holds (its node and every node below it, or its lane). */
+  mandateKeys: readonly AnyMandateKey[];
   level: IntelligenceLevel;
   /** Organization level: the organization being managed. Person level: the
    * active organization whose rung answers "what runs for me". */
@@ -109,28 +109,13 @@ export function lanesFor(
 export async function fetchFeatureIntelligence(
   query: FeatureIntelligenceQuery,
 ): Promise<FeatureIntelligenceRow[]> {
-  // The target's definitions the viewer can see (RLS), read first: they say
-  // which lanes to ask and carry the output kind the list row does not. A
-  // target's jobs can start with several prefixes (Study Kit: `education.`
-  // and `media.`) — all of them are read in ONE query, then kept to the keys
-  // that land on this target.
-  const prefixes = targetPrefixes(query.feature);
-  const [defsAll, systemOrgId] = await Promise.all([
-    readAllRows(
-      ({ from, to }) => {
-        let request = mandateDefinitions(createClient())
-          .select("mandate_key, output_kind, description, organization_id, created_by", { count: "exact" })
-          .is("deleted_at", null);
-        if (prefixes) {
-          request = request.or(prefixes.map((prefix) => `mandate_key.like."${prefix}.%"`).join(","));
-        }
-        return request.order("mandate_key", { ascending: true }).range(from, to);
-      },
-      { label: `mandate definitions for ${query.feature}` },
-    ),
+  if (query.mandateKeys.length === 0) return [];
+  // The page's definitions the viewer can see (RLS), read first: they say which
+  // lanes to ask and carry the output kind the list row does not.
+  const [featureDefs, systemOrgId] = await Promise.all([
+    readDefinitionsFor(query.mandateKeys),
     resolveSystemOrgId(),
   ]);
-  const featureDefs = defsAll.filter((row) => keyInTarget(storedMandateKey(row.mandate_key), query.feature));
   if (featureDefs.length === 0) return [];
   const defs = new Map(
     featureDefs.map((row) => [
@@ -140,13 +125,14 @@ export async function fetchFeatureIntelligence(
   );
 
   const featureKeys = featureDefs.map((row) => storedMandateKey(row.mandate_key));
+  const wanted = new Set<string>(featureKeys);
   const pages = await Promise.all(
     lanesFor(featureDefs, systemOrgId, query.userId, query.level)
       .map((lane) => pageOf(query, lane, featureKeys)),
   );
   const byId = new Map<string, MandateMemberRow>();
   for (const row of pages.flat()) {
-    if (keyInTarget(row.mandateKey, query.feature)) byId.set(row.id, row);
+    if (wanted.has(row.mandateKey)) byId.set(row.id, row);
   }
 
   return [...byId.values()]
@@ -157,4 +143,28 @@ export async function fetchFeatureIntelligence(
       description: defs.get(row.mandateKey)?.description ?? null,
     }))
     .sort((a, b) => a.shortName.localeCompare(b.shortName));
+}
+
+const KEY_CHUNK = 150;
+
+async function readDefinitionsFor(keys: readonly AnyMandateKey[]) {
+  const chunks: AnyMandateKey[][] = [];
+  for (let start = 0; start < keys.length; start += KEY_CHUNK) {
+    chunks.push(keys.slice(start, start + KEY_CHUNK));
+  }
+  const parts = await Promise.all(
+    chunks.map((chunk) =>
+      readAllRows(
+        ({ from, to }) =>
+          mandateDefinitions(createClient())
+            .select("mandate_key, output_kind, description, organization_id, created_by", { count: "exact" })
+            .is("deleted_at", null)
+            .in("mandate_key", chunk)
+            .order("mandate_key", { ascending: true })
+            .range(from, to),
+        { label: "mandate definitions for an intelligence page" },
+      ),
+    ),
+  );
+  return parts.flat();
 }

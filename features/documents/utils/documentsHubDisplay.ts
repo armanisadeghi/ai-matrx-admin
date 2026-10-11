@@ -18,6 +18,7 @@ const SOURCE_LABELS: Record<DocumentSource, string> = {
   imported_docx: "Imported DOCX",
   imported_md: "Imported Markdown",
   imported_txt: "Imported Text",
+  linked_gdoc: "Imported from Google Docs",
 };
 
 export function documentSourceLabel(source: DocumentSource): string {

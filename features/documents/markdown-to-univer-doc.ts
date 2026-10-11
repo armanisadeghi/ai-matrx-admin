@@ -23,8 +23,8 @@
  *   - `sectionBreaks` — the trailing `\n`.
  *
  * Scope: headings, paragraphs, bold/italic/strikethrough/inline-code, links
- * (rendered as their text), unordered/ordered lists, blockquotes, fenced code
- * blocks, horizontal rules, and GFM tables (flattened to readable rows). Nested
+ * (Univer hyperlink ranges keep the address), unordered/ordered lists, blockquotes, fenced code
+ * blocks, horizontal rules, and GFM tables (real Univer tables). Nested
  * emphasis is supported. Anything exotic degrades to plain readable text rather
  * than leaking syntax.
  */
@@ -32,10 +32,18 @@
 import { plainTitleFromMarkdown } from "@ai-matrx/rich-content/markdown-core/plain-title";
 import {
   BooleanNumber,
+  CustomRangeType,
+  ObjectRelativeFromH,
+  ObjectRelativeFromV,
+  TableAlignmentType,
+  TableRowHeightRule,
+  TableSizeType,
+  TableTextWrapType,
   createParagraphId,
   createSectionId,
 } from "@univerjs/core";
 import type {
+  ICustomRange,
   IDocumentData,
   IParagraph,
   ISectionBreak,
@@ -44,7 +52,10 @@ import type {
 } from "@univerjs/core";
 import { LocaleType } from "@univerjs/presets";
 
-import { defaultDocumentPageStyle } from "@/features/documents/document-page-style";
+import {
+  DEFAULT_DOCUMENT_PAGE_STYLE,
+  defaultDocumentPageStyle,
+} from "@/features/documents/document-page-style";
 import {
   findTableEnd,
   rowCells,
@@ -60,6 +71,8 @@ interface InlineStyle {
   italic?: boolean;
   code?: boolean;
   strike?: boolean;
+  /** Link address — becomes a Univer hyperlink range, never just its text. */
+  link?: string;
 }
 
 interface Segment extends InlineStyle {
@@ -116,8 +129,8 @@ function parseStyled(text: string, base: InlineStyle = {}): Segment[] {
     } else if (m[5] !== undefined) {
       segs.push(...parseStyled(m[5], { ...base, strike: true }));
     } else if (m[6] !== undefined) {
-      // Link → render the link text only (normal content, no markdown syntax).
-      segs.push(...parseStyled(m[6], base));
+      // Link → its text carries the address as a hyperlink range.
+      segs.push(...parseStyled(m[6], { ...base, link: m[7] }));
     }
     last = re.lastIndex;
   }
@@ -165,16 +178,51 @@ class DocBuilder {
   private paragraphs: IParagraph[] = [];
   private paragraphIds = new Set<string>();
   private textRuns: ITextRun[] = [];
+  private sectionBreaks: ISectionBreak[] = [];
+  private sectionIds = new Set<string>();
+  private customRanges: ICustomRange[] = [];
+  private tables: NonNullable<NonNullable<IDocumentData["body"]>["tables"]> = [];
+  private tableSource: NonNullable<IDocumentData["tableSource"]> = {};
 
-  addParagraph(segments: Segment[], opts: ParagraphOpts = {}): void {
+  /** Segment text + styles + hyperlink ranges, no paragraph terminator. */
+  private addInline(segments: Segment[], opts: ParagraphOpts): void {
+    let openLink: string | undefined;
+    let linkStart = 0;
+    const closeLink = () => {
+      if (openLink === undefined) return;
+      this.parts.push(LINK_END);
+      this.customRanges.push({
+        startIndex: linkStart,
+        endIndex: this.cursor,
+        rangeId: `link-${this.customRanges.length}-${linkStart}`,
+        rangeType: CustomRangeType.HYPERLINK,
+        properties: { url: openLink },
+      });
+      this.cursor += 1;
+      openLink = undefined;
+    };
     for (const seg of segments) {
       if (!seg.text) continue;
+      if (seg.link !== openLink) {
+        closeLink();
+        if (seg.link !== undefined) {
+          openLink = seg.link;
+          linkStart = this.cursor;
+          this.parts.push(LINK_START);
+          this.cursor += 1;
+        }
+      }
       const st = this.cursor;
       this.parts.push(seg.text);
       this.cursor += seg.text.length;
       const ts = buildTextStyle(seg, opts);
       if (ts) this.textRuns.push({ st, ed: this.cursor, ts });
     }
+    closeLink();
+  }
+
+  addParagraph(segments: Segment[], opts: ParagraphOpts = {}): void {
+    this.addInline(segments, opts);
     // Paragraph terminator.
     this.parts.push("\r");
     this.paragraphs.push({
@@ -182,6 +230,102 @@ class DocBuilder {
       paragraphId: createParagraphId(this.paragraphIds),
     });
     this.cursor += 1;
+  }
+
+  /**
+   * A real Univer table (dataStream table tokens + `tables` + `tableSource`),
+   * the same shape Insert > Table writes. `rows[r][c]` = that cell's segments.
+   */
+  addTable(rows: Segment[][][], headerBold: boolean): void {
+    const colCount = Math.max(1, ...rows.map((r) => r.length));
+    const pageWidth =
+      (DEFAULT_DOCUMENT_PAGE_STYLE.pageSize?.width ?? 595) -
+      (DEFAULT_DOCUMENT_PAGE_STYLE.marginLeft ?? 90) -
+      (DEFAULT_DOCUMENT_PAGE_STYLE.marginRight ?? 90);
+    const tableId = cryptoRandomId().replace(/-/g, "").slice(0, 6);
+    const start = this.cursor;
+    this.parts.push(TABLE_START);
+    this.cursor += 1;
+    rows.forEach((row, r) => {
+      this.parts.push(TABLE_ROW_START);
+      this.cursor += 1;
+      for (let c = 0; c < colCount; c++) {
+        this.parts.push(TABLE_CELL_START);
+        this.cursor += 1;
+        const cell = row[c] ?? [];
+        const cellStart = this.cursor;
+        this.addInline(cell, {});
+        if (r === 0 && headerBold) this.boldRunsSince(cellStart);
+        this.parts.push("\r");
+        this.paragraphs.push({
+          startIndex: this.cursor,
+          paragraphId: createParagraphId(this.paragraphIds),
+          paragraphStyle: {
+            spaceAbove: { v: 3 },
+            lineSpacing: 2,
+            spaceBelow: { v: 0 },
+          },
+        });
+        this.cursor += 1;
+        this.parts.push("\n");
+        this.sectionBreaks.push({
+          startIndex: this.cursor,
+          sectionId: createSectionId(this.sectionIds),
+        });
+        this.cursor += 1;
+        this.parts.push(TABLE_CELL_END);
+        this.cursor += 1;
+      }
+      this.parts.push(TABLE_ROW_END);
+      this.cursor += 1;
+    });
+    this.parts.push(TABLE_END);
+    this.cursor += 1;
+    this.tables.push({ startIndex: start, endIndex: this.cursor, tableId });
+    const margin = {
+      start: { v: 10 },
+      end: { v: 10 },
+      top: { v: 5 },
+      bottom: { v: 5 },
+    };
+    this.tableSource[tableId] = {
+      tableRows: rows.map(() => ({
+        tableCells: Array.from({ length: colCount }, () => ({ margin: { ...margin } })),
+        trHeight: { val: { v: 30 }, hRule: TableRowHeightRule.AUTO },
+      })),
+      tableColumns: Array.from({ length: colCount }, () => ({
+        size: { type: TableSizeType.SPECIFIED, width: { v: pageWidth / colCount } },
+      })),
+      tableId,
+      align: TableAlignmentType.START,
+      indent: { v: 0 },
+      textWrap: TableTextWrapType.NONE,
+      position: {
+        positionH: { relativeFrom: ObjectRelativeFromH.PAGE, posOffset: 0 },
+        positionV: { relativeFrom: ObjectRelativeFromV.PAGE, posOffset: 0 },
+      },
+      dist: { distB: 0, distL: 0, distR: 0, distT: 0 },
+      cellMargin: { ...margin },
+      size: { type: TableSizeType.UNSPECIFIED, width: { v: pageWidth } },
+    } as NonNullable<IDocumentData["tableSource"]>[string];
+    // A table is always followed by a paragraph (Univer's own insert adds one).
+    this.addParagraph([]);
+  }
+
+  /** Header cells: bold every run written since `from` (plain runs get one). */
+  private boldRunsSince(from: number): void {
+    const end = this.cursor;
+    if (end <= from) return;
+    const covered = this.textRuns.filter((t) => t.st >= from);
+    for (const t of covered) t.ts = { ...t.ts, bl: BooleanNumber.TRUE };
+    let at = from;
+    const gaps: ITextRun[] = [];
+    for (const t of [...covered].sort((a, b) => a.st - b.st)) {
+      if (t.st > at) gaps.push({ st: at, ed: t.st, ts: { bl: BooleanNumber.TRUE } });
+      at = Math.max(at, t.ed);
+    }
+    if (at < end) gaps.push({ st: at, ed: end, ts: { bl: BooleanNumber.TRUE } });
+    this.textRuns.push(...gaps);
   }
 
   isEmpty(): boolean {
@@ -200,9 +344,10 @@ class DocBuilder {
     }
     this.parts.push("\n");
     const sectionBreaks: ISectionBreak[] = [
+      ...this.sectionBreaks,
       {
         startIndex: this.cursor,
-        sectionId: createSectionId(new Set()),
+        sectionId: createSectionId(this.sectionIds),
       },
     ];
     this.cursor += 1;
@@ -214,17 +359,29 @@ class DocBuilder {
       body: {
         dataStream: this.parts.join(""),
         paragraphs: this.paragraphs,
-        textRuns: this.textRuns,
+        textRuns: this.textRuns.sort((a, b) => a.st - b.st),
         sectionBreaks,
+        ...(this.customRanges.length ? { customRanges: this.customRanges } : {}),
+        ...(this.tables.length ? { tables: this.tables } : {}),
       },
+      ...(this.tables.length ? { tableSource: this.tableSource } : {}),
       documentStyle: defaultDocumentPageStyle(),
     };
   }
 }
 
-// ─── block helpers ───────────────────────────────────────────────────────────
+// Univer's DataStreamTreeTokenType control characters (literals: this module is
+// also loaded where Univer's runtime is not).
+const TABLE_START = "\x1A";
+const TABLE_ROW_START = "\x1B";
+const TABLE_CELL_START = "\x1C";
+const TABLE_CELL_END = "\x1D";
+const TABLE_ROW_END = "\x0E";
+const TABLE_END = "\x0F";
+const LINK_START = "\x1F";
+const LINK_END = "\x1E";
 
-const TABLE_CELL_SEP = "   |   ";
+// ─── block helpers ───────────────────────────────────────────────────────────
 
 // THE GFM row rule (gfm-table-lines): an escaped `\|` stays in its cell and
 // shows as `|` (the one cell-pipe rule), exactly as chat and Studio draw it.
@@ -233,22 +390,12 @@ const splitTableRow = (line: string): string[] => rowCells(line).map(unescapeCel
 function addTable(builder: DocBuilder, tableLines: string[]): void {
   const header = splitTableRow(tableLines[0]);
   // tableLines[1] is the `---|---` separator — skip it.
-  const rows = tableLines
+  const body = tableLines
     .slice(2)
     .map(splitTableRow)
     .filter((r) => r.some((c) => c.length > 0));
-
-  const rowToSegments = (cells: string[], bold: boolean): Segment[] => {
-    const segs: Segment[] = [];
-    cells.forEach((cell, idx) => {
-      if (idx > 0) segs.push({ text: TABLE_CELL_SEP });
-      segs.push(...parseInline(cell, bold ? { bold: true } : {}));
-    });
-    return segs;
-  };
-
-  builder.addParagraph(rowToSegments(header, true));
-  for (const row of rows) builder.addParagraph(rowToSegments(row, false));
+  const toCells = (cells: string[]): Segment[][] => cells.map((cell) => parseInline(cell));
+  builder.addTable([toCells(header), ...body.map(toCells)], true);
 }
 
 /**

@@ -360,6 +360,7 @@
     "check:points-rate-exposure": "tsx scripts/check-points-rate-exposure.ts",
     "check:points-rate-exposure:self-test": "tsx scripts/check-points-rate-exposure.ts --self-test",
     "check:reserved-icons": "tsx scripts/check-reserved-icons.ts",
+    "check:intelligence-placement-from-data": "tsx scripts/check-intelligence-placement-from-data.ts",
     "check:lexicon": "tsx scripts/check-lexicon.ts",
     "check:lexicon:write": "tsx scripts/check-lexicon.ts --write",
     "check:lexicon:self-test": "tsx scripts/check-lexicon.ts --self-test",

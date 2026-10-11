@@ -38,10 +38,12 @@ import {
   VERDICT_WORD,
   attemptWord,
   inputPartWord,
+  pairFailureSentence,
   pairWalkLabel,
   sharedInputsLine,
 } from "../words";
 import { Chip, JsonBlock, MetricsLine, NewTabLink, StateLine, detailPageHref } from "./parts";
+import { useCandidateHolderLabel } from "./CandidateHolderName";
 
 export interface CandidateRunRow extends Record<string, unknown> {
   run: LiveCandidateRun;
@@ -102,12 +104,6 @@ function parsedStructure(text: string): Record<string, unknown> | unknown[] | nu
 export function structuredArgs(value: unknown): unknown {
   if (typeof value !== "string") return value;
   return parsedStructure(value) ?? value;
-}
-
-function errorMessage(error: unknown): string | null {
-  const record = obj(error);
-  if (!record) return str(error);
-  return str(record.message) ?? str(record.code);
 }
 
 /** The door's own input (P2): `variables` + `user_input`, top-level or under `request`. */
@@ -213,7 +209,8 @@ function ReviewBlock({
   const judge = obj(payload?.judge);
   const reasoning = str(judge?.reasoning);
   const stopped = obj(payload?.stopped_at);
-  const candidateError = errorMessage(payload?.candidate_error);
+  // A sentence, never the raw server text (it can carry internal ids).
+  const candidateError = pairFailureSentence(payload?.candidate_error, run.candidate_error_code);
 
   let headline: string;
   if (run.status === "completed" && run.verdict) headline = VERDICT_WORD[run.verdict];
@@ -258,7 +255,7 @@ function ReviewBlock({
         <ErrorNotice
           size="compact"
           title={run.status === "timed_out" ? "Candidate timed out" : "Candidate failed"}
-          message={candidateError ?? run.candidate_error_code ?? "The candidate run failed without a reason."}
+          message={run.status === "timed_out" ? "The candidate ran out of time." : candidateError}
           error={payload?.candidate_error ?? run.candidate_error_code}
           code={run.candidate_error_code ?? undefined}
           operation="Run the mandate candidate"
@@ -411,6 +408,16 @@ function AnswersBlock({
   candidate: LiveCandidate | null;
   payload: LiveCandidateRunPayload | null;
 }) {
+  const liveName = useCandidateHolderLabel(
+    candidate?.baseline_holder_type,
+    candidate?.baseline_holder_version_id,
+    candidate?.baseline_holder_name ?? null,
+  );
+  const candidateName = useCandidateHolderLabel(
+    candidate?.holder_type,
+    candidate?.holder_version_id,
+    candidate?.holder_name ?? null,
+  );
   return (
     <section className="@container space-y-2" data-candidate-answers>
       <h4 className="type-secondary font-semibold uppercase tracking-wide text-muted-foreground">Answers</h4>
@@ -418,7 +425,7 @@ function AnswersBlock({
         <AnswerColumn
           side="live"
           title="Live"
-          holder={candidate?.baseline_holder_name ?? null}
+          holder={liveName}
           metrics={run.live_metrics}
           output={payload ? payload.live_output : undefined}
           error={payload ? payload.live_error : undefined}
@@ -432,7 +439,7 @@ function AnswersBlock({
         <AnswerColumn
           side="candidate"
           title="Candidate"
-          holder={candidate?.holder_name ?? null}
+          holder={candidateName}
           versionId={run.candidate_resolved_version_id ?? null}
           holderType={candidate?.holder_type ?? null}
           metrics={run.candidate_metrics}
@@ -473,7 +480,8 @@ function AnswerColumn(props: {
   stopped?: boolean;
 }) {
   const text = answerText(props.output);
-  const error = errorMessage(props.error) ?? props.errorCode;
+  const error =
+    props.error != null || props.errorCode ? pairFailureSentence(props.error, props.errorCode) : null;
   return (
     <div className="flex min-w-0 flex-col gap-2 rounded-lg border border-border p-2.5" data-candidate-answer={props.side}>
       <div className="min-w-0">

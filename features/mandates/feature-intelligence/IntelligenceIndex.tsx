@@ -3,19 +3,19 @@
 // features/mandates/feature-intelligence/IntelligenceIndex.tsx
 //
 // /intelligence — the directory of every part of the app that uses AI, in the
-// registry's shape: a section per Domain, a card per registry Feature (its
-// icon and name, the jobs it runs, how many places they run, and — once the
-// member list answers — how many agents and workflows run them for you and how
-// many are not running), and one honest "not yet assigned to a feature" card
-// per Domain. Search finds a card by its name, its Domain, or anything inside
-// it — a job's name or what it does, the screen it runs on, the agent or
-// workflow running it. Each card opens that target's intelligence page.
-// `focusDomain` (from `?domain=`, where old page ids land) scrolls to a Domain.
+// live registry's shape: a section per Domain (its own jobs first), a card per
+// Feature (its icon and name, the jobs at or below it, how many places they
+// run, and — once the member list answers — how many agents and workflows run
+// them for you and how many are not running), with one collapsible row per
+// node below it at any depth; then Everywhere, the owner lanes and Unplaced.
+// Search finds a card by its name, its Domain, a node below it, or anything
+// inside it. `focusDomain` (from `?domain=`) scrolls to a Domain.
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   CircleAlert,
+  ChevronRight,
   CircleCheck,
   Loader2,
   MapPin,
@@ -31,37 +31,23 @@ import { featureIcon } from "./feature-icons";
 import { IntelligenceSearchBar, useIntelligenceQuery } from "./IntelligenceSearch";
 import { useIntelligenceDirectory } from "./useIntelligenceDirectory";
 import {
-  buildDirectory,
   matchFeature,
   matchStrength,
   summarize,
+  type DirectoryChild,
   type DirectoryDomain,
   type DirectoryFeature,
   type MatchReason,
 } from "./index-model";
-import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
-
-/** Kept for the index tests: one row per feature with its counts. */
-export function buildIndexRows(mandateKeys: readonly AnyMandateKey[]) {
-  return buildDirectory(
-    mandateKeys.map((mandate_key) => ({ mandate_key })),
-  ).map((row) => ({
-    feature: row.feature,
-    label: row.label,
-    domain: row.domain,
-    jobs: row.jobs.length,
-    places: row.places.length,
-    unassigned: row.unassigned,
-    fixture: row.fixture,
-  }));
-}
 
 const plural = (n: number, one: string, many = `${one}s`) =>
   `${n} ${n === 1 ? one : many}`;
 
 function jobsLine(feature: DirectoryFeature): string {
   if (feature.jobs.length === 0) return "No jobs you can see yet";
-  const names = feature.jobs.slice(0, 4).map((job) => job.name);
+  const names = feature.jobs
+    .slice(0, 4)
+    .map((job) => (job.versions > 0 ? `${job.name} (${plural(job.versions, "version")})` : job.name));
   const more = feature.jobs.length - names.length;
   return more > 0 ? `${names.join(", ")} and ${more} more` : names.join(", ");
 }
@@ -91,10 +77,10 @@ function FeatureCard({
   const summary = summarize(feature);
   const why = reasonText(reason);
   return (
-    <li className="min-w-0">
+    <li className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/40">
       <Link
         href={featureIntelligenceHref(feature.feature)}
-        className="group flex h-full min-w-0 flex-col gap-2 rounded-xl border border-border bg-card p-3.5 transition-colors hover:border-primary/40 hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="group flex min-w-0 flex-1 flex-col gap-2 p-3.5 transition-colors hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
       >
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-ink">
@@ -147,6 +133,54 @@ function FeatureCard({
           ) : null}
         </div>
       </Link>
+      {feature.children.length > 0 ? (
+        <ul className="border-t border-border/70 px-1.5 py-1" aria-label={`${feature.label} parts`}>
+          {feature.children.map((child) => (
+            <ChildRow key={child.slug} child={child} depth={0} />
+          ))}
+        </ul>
+      ) : null}
+    </li>
+  );
+}
+
+/** One node below a card: its name and job count, opening its own page; its own children fold under it. */
+function ChildRow({ child, depth }: { child: DirectoryChild; depth: number }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <li className="min-w-0">
+      <div className="flex min-w-0 items-center gap-1" style={{ paddingLeft: depth * 14 }}>
+        {child.children.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => setOpen((value) => !value)}
+            aria-expanded={open}
+            aria-label={open ? `Collapse ${child.label}` : `Expand ${child.label}`}
+            className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+          >
+            <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-90")} aria-hidden />
+          </button>
+        ) : (
+          <span className="h-6 w-6 shrink-0" aria-hidden />
+        )}
+        <Link
+          href={featureIntelligenceHref(child.slug)}
+          className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-1.5 py-1 type-body text-foreground hover:bg-accent/40"
+          title={child.label}
+        >
+          <span className="min-w-0 flex-1 truncate">{child.label}</span>
+          <span className="shrink-0 type-secondary tabular-nums text-muted-foreground">
+            {plural(child.count, "job")}
+          </span>
+        </Link>
+      </div>
+      {open ? (
+        <ul>
+          {child.children.map((grand) => (
+            <ChildRow key={grand.slug} child={grand} depth={depth + 1} />
+          ))}
+        </ul>
+      ) : null}
     </li>
   );
 }
@@ -161,7 +195,7 @@ function DomainSection({
   focused: boolean;
 }) {
   if (items.length === 0) return null;
-  const id = `intelligence-domain-${domain.domain ?? "none"}`;
+  const id = `intelligence-domain-${domain.domain}`;
   const jobs = items.reduce((sum, item) => sum + item.feature.jobs.length, 0);
   return (
     <section
@@ -178,13 +212,13 @@ function DomainSection({
       >
         <span>{domain.label}</span>
         <span className="type-secondary font-normal tabular-nums text-muted-foreground">
-          {plural(items.length, domain.domain === "unassigned" ? "group" : "feature")}, {plural(jobs, "job")}
+          {items.every((item) => item.feature.lane) ? plural(jobs, "job") : `${plural(items.filter((item) => item.feature.feature !== domain.domain).length, "feature")}, ${plural(jobs, "job")}`}
         </span>
       </h2>
       <ul className="grid grid-cols-1 gap-2.5 md:grid-cols-2 xl:grid-cols-3">
         {items.map((item) => (
           <FeatureCard
-            key={`${item.feature.feature}:${item.feature.fixture ? "fixture" : "jobs"}`}
+            key={item.feature.feature}
             feature={item.feature}
             reason={item.reason}
           />
@@ -210,7 +244,7 @@ export function IntelligenceIndex({
     const items: { feature: DirectoryFeature; reason: MatchReason }[] = [];
     for (const feature of domain.features) {
       if (feature.fixture && !isAdmin) continue;
-      const reason = matchFeature(feature, query);
+      const reason = matchFeature(feature, query, domain.label);
       if (reason) items.push({ feature, reason });
     }
     // While searching, the strongest matches lead (the sort is stable, so the
@@ -225,7 +259,7 @@ export function IntelligenceIndex({
   );
   const visible = (directory ?? []).filter((row) => !row.fixture);
   const totalJobs = visible.reduce((sum, row) => sum + row.jobs.length, 0);
-  const featureCount = visible.filter((row) => !row.unassigned).length;
+  const featureCount = visible.filter((row) => !row.lane && row.feature !== row.domain).length;
   const domainCount = new Set(visible.map((row) => row.domain).filter(Boolean))
     .size;
 
@@ -280,7 +314,7 @@ export function IntelligenceIndex({
       ) : (
         sections.map((section) => (
           <DomainSection
-            key={section.domain.domain ?? "none"}
+            key={section.domain.domain}
             domain={section.domain}
             items={section.items}
             focused={!searching && section.domain.domain === focusDomain}

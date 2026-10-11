@@ -142,7 +142,7 @@ export function EverywhereElse({
   context,
 }: {
   query: string;
-  /** This page's own target; its jobs are shown above, never repeated here. */
+  /** This page's own node slug or lane id; its jobs are shown above, never repeated here. */
   excludeTarget: string;
   context?: IntelligenceContext;
 }) {
@@ -154,9 +154,11 @@ export function EverywhereElse({
   const hits: ElsewhereHit[] = [];
   for (const domain of domains ?? []) {
     for (const feature of domain.features) {
-      if (feature.feature === excludeTarget || (feature.fixture && !isAdmin)) continue;
+      if (feature.fixture && !isAdmin) continue;
       for (const job of feature.jobs) {
-        const text = [job.name, job.description, job.goal, job.holderName, feature.label].filter(Boolean).join(" ");
+        // This page's own jobs (its node and every node below it) are shown above.
+        if (job.home === excludeTarget || job.path.includes(excludeTarget)) continue;
+        const text = [job.name, job.description, job.goal, job.holderName, feature.label, job.pathNames].filter(Boolean).join(" ");
         if (hasAll(text, tokens)) hits.push({ feature, job });
       }
     }

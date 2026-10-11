@@ -37,7 +37,8 @@ import {
   useIntelligenceQuery,
 } from "./IntelligenceSearch";
 import { UseOwnDialog } from "./UseOwnDialog";
-import { targetLabel } from "./placement";
+import { PlacedJobs } from "./PlacedJobs";
+import { entryKeys, groupOf, homeLabel, isLane, LANES, type NodeGroup, type PlacedEntry } from "./placement-model";
 import { effectiveRunOverride } from "./run-override";
 import type {
   FeatureIntelligenceRow,
@@ -49,7 +50,7 @@ import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
 
 export interface FeatureIntelligenceProps {
-  /** The registry target (`research`, `seo`, `education/unassigned`) — `placement.ts`. */
+  /** The page: a registry node slug (`research`, `seo-keywords`) or a lane id (`unplaced`). */
   feature: string;
   /** Values the feature's place links need (`topicId`, `setId`, …). */
   context?: IntelligenceContext;
@@ -121,7 +122,11 @@ export function FeatureIntelligence({
   const [hoverPlace, setHoverPlace] = useState<string | null>(null);
   const [ownFor, setOwnFor] = useState<FeatureIntelligenceRow | null>(null);
 
-  const featureLabel = targetLabel(feature);
+  const featureLabel = state.tree
+    ? homeLabel(state.tree, feature)
+    : isLane(feature)
+      ? LANES[feature]
+      : feature;
   const whoFor = orgLevel ? (activeOrgName ?? "your organization") : "you";
 
   // Bring the focused job into view once the rows are on screen.
@@ -137,11 +142,67 @@ export function FeatureIntelligence({
   const searching = query.trim().length > 0;
   const tokens = queryTokens(query);
   const shownRows = state.rows.filter((row) => rowMatches(row, tokens, state.places));
+  const rowByKey = new Map(state.rows.map((row) => [row.mandateKey, row] as const));
+  const shownKeys = new Set<string>(shownRows.map((row) => row.mandateKey));
+  const keep = (entry: PlacedEntry) => entryKeys(entry).some((key) => shownKeys.has(key));
+  const group: NodeGroup | null =
+    state.tree && state.arranged
+      ? isLane(feature)
+        ? laneGroup(feature, (state.arranged.get(feature) ?? []).filter(keep))
+        : groupOf(state.tree, state.arranged, feature, keep)
+      : null;
 
   const hoveredPlaceKeys = hoverPlace
     ? new Set(state.places.find((place) => place.id === hoverPlace)?.mandateKeys ?? [])
     : null;
   const activeKey = hoverKey ?? (hoverPlace ? null : focusMandateKey);
+
+  const renderJob = (row: FeatureIntelligenceRow) => {
+    const topicChoice = effectiveRunOverride(row, runOverrides[row.mandateKey]);
+    return <IntelligenceJobCard
+      key={row.id}
+      row={row}
+      places={state.places}
+      focused={
+        row.mandateKey === focusMandateKey ||
+        (hoveredPlaceKeys?.has(row.mandateKey) ?? false)
+      }
+      orgLevel={orgLevel}
+      organizationId={seatOrgId}
+      busy={actions.busyKey === row.mandateKey}
+      canReset={Boolean(topicChoice && !orgLevel) || row.decidedRung === rungFor(seatLevel)}
+      resetLabel={topicChoice && !orgLevel
+        ? "Remove topic choice"
+        : orgLevel ? "Remove organization choice" : "Remove my choice"}
+      detailsHref={memberMandateRecordHref(
+        seatLevel,
+        row.mandateKey,
+        orgLevel ? activeOrgId : null,
+      )}
+      runOverride={topicChoice}
+      onHover={setHoverKey}
+      onDuplicate={() => void actions.duplicateAndModify(row, {
+        // An unverified topic choice remains the exact source. If it
+        // cannot be copied, leave the topic choice untouched instead
+        // of replacing it with a copy of a different mandate holder.
+        effectiveTopicAgentId: topicChoice?.health === "unavailable" ? undefined : topicChoice?.holderId,
+        afterBind: topicChoice && clearRunOverride
+          ? () => clearRunOverride(row.mandateKey)
+          : undefined,
+      })}
+      onUseOwn={() => setOwnFor(row)}
+      onReset={() => {
+        if (topicChoice && !orgLevel && clearRunOverride) {
+          void clearRunOverride(row.mandateKey).then(
+            () => toast.success("This topic now uses the active mandate choice."),
+            (error: unknown) => toast.error(error instanceof Error ? error.message : String(error)),
+          );
+        } else {
+          void actions.resetToDefault(row);
+        }
+      }}
+    />;
+  };
 
   return (
     <div className={cn("mx-auto w-full max-w-5xl px-3 py-5 sm:px-6 lg:px-8 lg:py-7", className)}>
@@ -203,54 +264,15 @@ export function FeatureIntelligence({
           No job on this page matches &ldquo;{query.trim()}&rdquo;.
         </p>
       ) : (
-        <ul className="space-y-2">
-          {shownRows.map((row) => {
-            const topicChoice = effectiveRunOverride(row, runOverrides[row.mandateKey]);
-            return <IntelligenceJobCard
-              key={row.id}
-              row={row}
-              places={state.places}
-              focused={
-                row.mandateKey === focusMandateKey ||
-                (hoveredPlaceKeys?.has(row.mandateKey) ?? false)
-              }
-              orgLevel={orgLevel}
-              organizationId={seatOrgId}
-              busy={actions.busyKey === row.mandateKey}
-              canReset={Boolean(topicChoice && !orgLevel) || row.decidedRung === rungFor(seatLevel)}
-              resetLabel={topicChoice && !orgLevel
-                ? "Remove topic choice"
-                : orgLevel ? "Remove organization choice" : "Remove my choice"}
-              detailsHref={memberMandateRecordHref(
-                seatLevel,
-                row.mandateKey,
-                orgLevel ? activeOrgId : null,
-              )}
-              runOverride={topicChoice}
-              onHover={setHoverKey}
-              onDuplicate={() => void actions.duplicateAndModify(row, {
-                // An unverified topic choice remains the exact source. If it
-                // cannot be copied, leave the topic choice untouched instead
-                // of replacing it with a copy of a different mandate holder.
-                effectiveTopicAgentId: topicChoice?.health === "unavailable" ? undefined : topicChoice?.holderId,
-                afterBind: topicChoice && clearRunOverride
-                  ? () => clearRunOverride(row.mandateKey)
-                  : undefined,
-              })}
-              onUseOwn={() => setOwnFor(row)}
-              onReset={() => {
-                if (topicChoice && !orgLevel && clearRunOverride) {
-                  void clearRunOverride(row.mandateKey).then(
-                    () => toast.success("This topic now uses the active mandate choice."),
-                    (error: unknown) => toast.error(error instanceof Error ? error.message : String(error)),
-                  );
-                } else {
-                  void actions.resetToDefault(row);
-                }
-              }}
-            />;
-          })}
-        </ul>
+        <PlacedJobs
+          group={group ?? laneGroup(feature, [])}
+          rowByKey={rowByKey}
+          renderJob={renderJob}
+          detailsHref={(mandateKey) => memberMandateRecordHref(seatLevel, mandateKey, orgLevel ? activeOrgId : null)}
+          focusMandateKey={focusMandateKey}
+          searching={searching}
+          context={context}
+        />
       )}
 
       <EverywhereElse query={query} excludeTarget={feature} context={context} />
@@ -272,4 +294,16 @@ export function FeatureIntelligence({
       ) : null}
     </div>
   );
+}
+
+/** A lane page draws as one flat group. */
+function laneGroup(feature: string, own: PlacedEntry[]): NodeGroup {
+  return {
+    slug: feature,
+    name: isLane(feature) ? LANES[feature] : feature,
+    status: null,
+    own,
+    children: [],
+    count: own.length,
+  };
 }

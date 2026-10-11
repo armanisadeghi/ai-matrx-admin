@@ -51,6 +51,23 @@ export function useHolderVersion(
   return answer && answer.id === versionId ? answer.version : null;
 }
 
+/**
+ * THE one label for a candidate's (or its baseline's) holder — the card, the
+ * decision dialogs and the pair window all say "Name · v1" (verifier,
+ * 2026-10-10: the card said "v1" while promote and the pair window said "a
+ * pinned version", the server's words when it reads no version number).
+ */
+export function useCandidateHolderLabel(
+  type: "agent" | "workflow" | null | undefined,
+  versionId: string | null | undefined,
+  name: string | null,
+): string | null {
+  const version = useHolderVersion(type ?? null, versionId ?? null);
+  if (!versionId || version?.number == null) return name;
+  const base = version.name?.trim() || name?.replace(/ \(a pinned version\)$/, "") || "Agent";
+  return `${base} · v${version.number}`;
+}
+
 export function CandidateHolderName({
   type,
   id,
@@ -62,11 +79,7 @@ export function CandidateHolderName({
   versionId: string | null;
   name: string | null;
 }) {
-  const version = useHolderVersion(type, versionId);
-  const shown =
-    versionId && version?.number != null
-      ? `${version.name?.trim() || name || "Agent"} · v${version.number}`
-      : name;
+  const shown = useCandidateHolderLabel(type, versionId, name);
   return (
     <span className="inline-flex min-w-0 items-center" data-candidate-holder title={versionId ?? undefined}>
       <EntityRef

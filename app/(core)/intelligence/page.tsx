@@ -1,15 +1,22 @@
 import { redirect } from "next/navigation";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { IntelligenceIndex } from "@/features/mandates/feature-intelligence/IntelligenceIndex";
+import { splitQuery } from "@/features/mandates/feature-intelligence/IntelligenceTargetRoute";
+import {
+  mandateDestination,
+  readServerTree,
+} from "@/features/mandates/feature-intelligence/resolve-destination";
 import { createRouteMetadata } from "@/utils/route-metadata";
 import { loginHref } from "@/utils/auth/auth-destination";
 import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";
 
 /**
- * /intelligence — every AI job, grouped by registry Domain and Feature
- * (features/mandates/feature-intelligence). Each card opens
- * /intelligence/<feature>; `?domain=<id>` scrolls to one Domain (old page ids
- * that span several Features land there).
+ * /intelligence — every AI job, grouped by the registry: a section per Domain,
+ * a card per Feature, then Everywhere, the owner lanes and Unplaced
+ * (features/mandates/feature-intelligence). `?mandate=<key>` is every job
+ * link's door: it reads the job's node and redirects there (or to the research
+ * topic's page when the link carries `topicId`), carrying every other param.
+ * `?domain=<slug>` scrolls to one Domain.
  */
 
 export const metadata = createRouteMetadata("/mandates", {
@@ -23,10 +30,21 @@ export default async function IntelligenceIndexRoute({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const [{ isAuthenticated }, query] = await Promise.all([getSessionVerdict(), searchParams]);
+  const [verdict, query] = await Promise.all([getSessionVerdict(), searchParams]);
   const domain = typeof query.domain === "string" ? query.domain : null;
-  if (!isAuthenticated) {
-    redirect(loginHref(domain ? `/intelligence?domain=${encodeURIComponent(domain)}` : "/intelligence"));
+  if (!verdict.isAuthenticated) {
+    const search = new URLSearchParams();
+    for (const [name, raw] of Object.entries(query)) {
+      const value = Array.isArray(raw) ? raw[0] : raw;
+      if (value) search.set(name, value);
+    }
+    const qs = search.toString();
+    redirect(loginHref(qs ? `/intelligence?${qs}` : "/intelligence"));
+  }
+  const { focus, context } = splitQuery(query);
+  if (focus) {
+    const { domain: _domain, ...rest } = context;
+    redirect(await mandateDestination(focus, rest, verdict.user.id, await readServerTree()));
   }
   return (
     <>

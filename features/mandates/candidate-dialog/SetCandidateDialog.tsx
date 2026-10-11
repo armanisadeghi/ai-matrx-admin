@@ -61,8 +61,8 @@ import {
 } from "./api";
 import {
   EMPTY_TARGET,
-  RUNG_COLLECTS,
-  RUNG_LABEL,
+  rungCollectsFor,
+  rungLabelFor,
   doorLabel,
   liveRungOf,
   holderOfDraft,
@@ -85,6 +85,11 @@ export interface SetCandidateDialogProps {
   followLiveRung?: boolean;
   /** The mandate's declared output kind, for the workflow picker. */
   outputKind?: string | null;
+  /**
+   * The organization bounding the "Everyone" level (`mandateHomeBound`): the
+   * home org's name for a mandate that lives in one, null when system-homed.
+   */
+  homeName?: string | null;
   onClose: () => void;
   onSet?: (candidate: LiveCandidate) => void;
 }
@@ -128,6 +133,7 @@ function SetCandidateBody({
   rung: seatRung,
   followLiveRung = false,
   outputKind = null,
+  homeName = null,
   onClose,
   onSet,
 }: SetCandidateDialogProps) {
@@ -265,7 +271,10 @@ function SetCandidateBody({
         }}
         mandateKey={mandateKey}
         outputKind={outputKind}
-        agentTabs={{ visibleTabs: ["system", "mine", "shared", "all"], initialTab: "system" }}
+        // No forced tab: the list's own default opens on Mine (the person's
+        // agents — the likely targets) and moves to System only when they own
+        // none. Forcing System opened on "No system agents found".
+        agentTabs={{ visibleTabs: ["mine", "shared", "all", "system"] }}
         consumerId={`mandate-candidate-${mandateKey}`}
         refusal={refusal ?? knownRefusal}
         disabled={busy}
@@ -290,7 +299,7 @@ function SetCandidateBody({
           <SelectContent>
             {rungChoices.map((choice) => (
               <SelectItem key={rungValue(choice)} value={rungValue(choice)}>
-                {RUNG_LABEL[choice.rung]}
+                {rungLabelFor(choice.rung, homeName)}
                 {liveRung && sameRung(liveRung, choice) ? " · live" : ""}
               </SelectItem>
             ))}
@@ -299,7 +308,7 @@ function SetCandidateBody({
 
         <span className="hidden sm:block" />
         <span data-error-box className="min-h-4 type-meta text-muted-foreground" data-candidate-rung-collects>
-          {liveRungPending ? null : rung ? RUNG_COLLECTS[rung.rung] : "Couldn't read the live level"}
+          {liveRungPending ? null : rung ? rungCollectsFor(rung.rung, homeName) : "Couldn't read the live level"}
         <ErrorAlchemyMenu /></span>
 
         <label htmlFor="candidate-runs" className="text-[12px] font-medium">

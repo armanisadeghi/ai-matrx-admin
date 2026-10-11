@@ -142,7 +142,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "document_source",
     label: "Document source",
     description:
-      'How the document came to exist: "created", "imported_docx", "imported_md", or "imported_txt". Empty in the library view.',
+      'How the document came to exist: "created", "imported_docx", "imported_md", "imported_txt", or "linked_gdoc". Empty in the library view.',
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 14,

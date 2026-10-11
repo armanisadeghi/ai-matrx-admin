@@ -24,6 +24,8 @@ import {
 } from "../member-list/rpc";
 import { onMandateCacheInvalidated } from "@ai-matrx/chat/mandates/service";
 import { lanesFor } from "./service";
+import { usePlacement } from "./usePlacement";
+import type { Tree } from "./placement-model";
 import {
   buildDomains,
   type DirectoryDefinition,
@@ -94,6 +96,7 @@ onMandateCacheInvalidated(() => holdersCache.clear());
 export interface IntelligenceDirectoryState {
   domains: DirectoryDomain[] | null;
   defs: DirectoryDefRow[] | null;
+  tree: Tree | null;
   error: string | null;
 }
 
@@ -106,6 +109,7 @@ export function useIntelligenceDirectory(): IntelligenceDirectoryState {
   // Display read: the page's organization filter (none = All organizations),
   // never the active organization (active-org law).
   const pageOrgFilter = usePageOrgFilter();
+  const placement = usePlacement();
 
   useEffect(() => onMandateCacheInvalidated(() => setEpoch((n) => n + 1)), []);
 
@@ -151,5 +155,11 @@ export function useIntelligenceDirectory(): IntelligenceDirectoryState {
     };
   }, [defs, pageOrgFilter, userId, epoch]);
 
-  return { domains: defs ? buildDomains(defs, holders) : null, defs, error };
+  const { tree, arranged } = placement;
+  return {
+    domains: defs && tree && arranged ? buildDomains(defs, { tree, arranged }, holders) : null,
+    defs,
+    tree,
+    error: error ?? placement.error,
+  };
 }

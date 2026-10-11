@@ -40,6 +40,7 @@ jest.mock("@/components/cost/Cost", () => ({ Cost: () => null }));
 jest.mock("@/lib/toast", () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
 jest.mock("@/features/mandates/candidates/components/CandidateHolderName", () => ({
   CandidateHolderName: ({ name }: { name: string }) => <span>{name}</span>,
+  useCandidateHolderLabel: (_t: unknown, _v: unknown, name: string | null) => name,
 }));
 jest.mock("@/features/mandates/candidates/openers", () => ({
   useOpenCandidateRun: () => jest.fn(),

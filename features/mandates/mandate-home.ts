@@ -22,3 +22,17 @@ export function mandateScopeLabel(
   if (homeOrganizationId.toLowerCase() === SYSTEM_ORGANIZATION_ID.toLowerCase()) return "System";
   return homeName ?? "An organization you are not in";
 }
+
+/**
+ * The organization that bounds a mandate's "Everyone" level: the home org's
+ * name when the mandate lives in one organization, `null` when it is
+ * system-homed (or has no home) and "Everyone" really is everyone.
+ */
+export function mandateHomeBound(
+  homeOrganizationId: string | null | undefined,
+  homeName: string | null,
+): string | null {
+  if (!homeOrganizationId) return null;
+  if (homeOrganizationId.toLowerCase() === SYSTEM_ORGANIZATION_ID.toLowerCase()) return null;
+  return homeName ?? "its organization";
+}

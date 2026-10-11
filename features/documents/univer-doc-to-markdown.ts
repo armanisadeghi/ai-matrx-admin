@@ -28,6 +28,34 @@
 
 const TABLE_CELL_SEP = "   |   ";
 
+// Univer's DataStreamTreeTokenType control characters (literals: no Univer runtime here).
+const TABLE_START = "\x1A";
+const TABLE_ROW_START = "\x1B";
+const TABLE_CELL_START = "\x1C";
+const TABLE_CELL_END = "\x1D";
+const TABLE_ROW_END = "\x0E";
+const TABLE_END = "\x0F";
+const LINK_START = "\x1F";
+const LINK_END = "\x1E";
+
+interface CustomRangeLike {
+  startIndex?: number;
+  endIndex?: number;
+  rangeType?: number;
+  properties?: { url?: unknown };
+}
+
+/** The Univer-native shapes (real tables, hyperlink ranges) written back as markdown. */
+function tableMarkdown(rows: string[][]): string[] {
+  const width = Math.max(1, ...rows.map((r) => r.length));
+  const cell = (r: string[], i: number) => (r[i] ?? "").replace(/^\*\*(.*)\*\*$/, "$1");
+  const line = (r: string[], plain: boolean) =>
+    `| ${Array.from({ length: width }, (_, i) => (plain ? cell(r, i) : (r[i] ?? ""))).join(" | ")} |`;
+  const out = [line(rows[0], true), `|${" --- |".repeat(width)}`];
+  for (const r of rows.slice(1)) out.push(line(r, false));
+  return out;
+}
+
 interface TextRunLike {
   st?: number;
   ed?: number;
@@ -110,9 +138,28 @@ export function univerDocToMarkdown(snapshot: unknown): string {
     .filter((r) => typeof r.st === "number" && typeof r.ed === "number")
     .sort((a, b) => (a.st as number) - (b.st as number));
 
+  const links = new Map<number, string>();
+  for (const r of asArray<CustomRangeLike>((body as { customRanges?: unknown }).customRanges)) {
+    if (r.rangeType === 0 && typeof r.endIndex === "number" && typeof r.properties?.url === "string") {
+      links.set(r.endIndex, r.properties.url);
+    }
+  }
+  // A slice of the stream with its hyperlink tokens read back as `[text](url)`.
+  const readSlice = (from: number, to: number): string => {
+    let out = "";
+    for (let k = from; k < to; k++) {
+      const c = dataStream[k];
+      if (c === LINK_START) out += "[";
+      else if (c === LINK_END) out += `](${links.get(k) ?? ""})`;
+      else out += c;
+    }
+    return out;
+  };
+
   const lines: string[] = [];
   let cursor = 0;
   let runIndex = 0;
+  let tableRows: string[][] | null = null;
 
   // Paragraph boundaries are the `\r`s in the stream itself — reading them from
   // the stream (rather than trusting `paragraphs`) keeps a snapshot written by
@@ -120,13 +167,40 @@ export function univerDocToMarkdown(snapshot: unknown): string {
   for (let i = 0; i <= dataStream.length; i++) {
     const ch = dataStream[i];
     const atEnd = i === dataStream.length;
+    if (!atEnd) {
+      if (ch === TABLE_START) {
+        tableRows = [];
+        cursor = i + 1;
+        continue;
+      }
+      if (tableRows && ch === TABLE_ROW_START) {
+        tableRows.push([]);
+        cursor = i + 1;
+        continue;
+      }
+      if (tableRows && ch === TABLE_CELL_START) {
+        tableRows[tableRows.length - 1]?.push("");
+        cursor = i + 1;
+        continue;
+      }
+      if (tableRows && (ch === TABLE_CELL_END || ch === TABLE_ROW_END)) {
+        cursor = i + 1;
+        continue;
+      }
+      if (tableRows && ch === TABLE_END) {
+        if (tableRows.length) lines.push("", ...tableMarkdown(tableRows), "");
+        tableRows = null;
+        cursor = i + 1;
+        continue;
+      }
+    }
     if (!atEnd && ch !== "\r" && ch !== "\n") continue;
 
     const start = cursor;
     const end = i;
     cursor = i + 1;
     if (end <= start) {
-      if (ch === "\r") lines.push("");
+      if (ch === "\r" && !tableRows) lines.push("");
       if (atEnd) break;
       continue;
     }
@@ -151,15 +225,25 @@ export function univerDocToMarkdown(snapshot: unknown): string {
     for (const run of paragraphRuns) {
       const rs = Math.max(run.st as number, start);
       const re = Math.min(run.ed as number, end);
-      if (rs > at) text += dataStream.slice(at, rs);
+      if (rs > at) text += readSlice(at, rs);
       if (re > rs) {
-        text += emphasize(dataStream.slice(rs, re), run.ts, heading != null);
+        text += emphasize(readSlice(rs, re), run.ts, heading != null);
       }
       at = Math.max(at, re);
     }
-    if (at < end) text += dataStream.slice(at, end);
+    if (at < end) text += readSlice(at, end);
 
-    lines.push(heading ? `${"#".repeat(heading)} ${text.trim()}` : text);
+    if (tableRows) {
+      // A table cell: its paragraphs join into the one cell, pipes escaped.
+      const row = tableRows[tableRows.length - 1];
+      if (row?.length) {
+        const part = text.trim().replace(/\|/g, "\\|");
+        const last = row.length - 1;
+        row[last] = row[last] ? `${row[last]} ${part}` : part;
+      }
+    } else {
+      lines.push(heading ? `${"#".repeat(heading)} ${text.trim()}` : text);
+    }
     if (atEnd) break;
   }
 

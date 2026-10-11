@@ -228,3 +228,27 @@ export function pairWalkLabel(run: Pick<LiveCandidateRun, "number" | "created_at
   const clock = at.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: false });
   return `Pair ${run.number} · ${clock}`;
 }
+
+/**
+ * Plain reasons for the failure codes a person can act on — the same words the
+ * server's review notice uses (aidream `candidates/review.py` `_FAILURE_REASON`).
+ */
+export const PAIR_FAILURE_REASON: Record<string, string> = {
+  protected_account_run_refused: "this account can't be billed for background runs",
+  override_not_applied: "the candidate couldn't be switched in",
+  attempts_exhausted: "it crashed on every attempt",
+  executor_crashed: "it crashed",
+  candidate_closed: "the candidate was closed first",
+  uncovered_door: "this kind of run can't be repeated",
+};
+
+/**
+ * The sentence a failed side of a pair shows. Never the raw server message —
+ * it can carry internal ids; that detail rides in ErrorNotice's details.
+ */
+export function pairFailureSentence(error: unknown, rowCode: string | null | undefined): string {
+  const record = error && typeof error === "object" ? (error as Record<string, unknown>) : null;
+  const code = (typeof record?.code === "string" ? record.code : null) ?? rowCode ?? "";
+  const reason = PAIR_FAILURE_REASON[code] ?? (rowCode ? PAIR_FAILURE_REASON[rowCode] : undefined);
+  return reason ? `Not run: ${reason}` : "The run failed.";
+}

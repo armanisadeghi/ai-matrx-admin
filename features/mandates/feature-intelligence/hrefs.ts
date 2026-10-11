@@ -1,67 +1,64 @@
 // features/mandates/feature-intelligence/hrefs.ts
 //
-// Where a job's intelligence lives. Pages are registry targets (`placement.ts`):
-// `/intelligence/<registry feature id>`, `/intelligence/<domain>/unassigned`,
-// or `/intelligence/unassigned`. A research topic keeps its own page. Callers
-// may pass a code feature id (`podcast`, `marketing`) — it resolves to the
-// target all its jobs land on, or to its Domain's section of the directory.
-// `?mandate=<key>` focuses one job, and always wins: the key picks the page.
+// Where a job's intelligence lives. Links are synchronous and carry no
+// placement: a job link is `/intelligence?mandate=<key>&<context>`, and the
+// server route (`app/(core)/intelligence/page.tsx`) reads the job's node and
+// redirects — to `/intelligence/<node slug>`, a lane page, or the research
+// topic's own page when the link carries `topicId` and the node is Research
+// or below it. A page link is `/intelligence/<slug>`: a registry node slug or
+// lane id opens itself; a code feature id (`podcast`, `marketing`) resolves on
+// the server to the node its jobs share. Every context value rides along.
 
-import { declaredPlacesFor } from "./registry";
-import {
-  NO_DOMAIN_TARGET,
-  isTarget,
-  legacyDestination,
-  targetForKey,
-} from "./placement";
 import type { IntelligenceContext } from "./types";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 
-/** The directory, opened at one Domain's section. */
-export function intelligenceDomainHref(domain: string): string {
-  return `/intelligence?domain=${encodeURIComponent(domain)}`;
+/** The registry node that owns research topics' own intelligence page. */
+export const RESEARCH_NODE = "research";
+
+/** The research topic's own intelligence page. */
+export function topicIntelligenceHref(topicId: string, params?: URLSearchParams): string {
+  const base = `/research/topics/${encodeURIComponent(topicId)}/intelligence`;
+  const query = params?.toString();
+  return query ? `${base}?${query}` : base;
 }
 
-function targetPath(target: string): string {
-  if (target === NO_DOMAIN_TARGET) return "/intelligence/unassigned";
-  return `/intelligence/${target.split("/").map(encodeURIComponent).join("/")}`;
-}
-
-/** A page id or a code feature id → where it opens. */
-export function resolveIntelligenceSlug(
-  slug: string,
-): { target: string } | { domain: string } | null {
-  if (isTarget(slug)) return { target: slug };
-  return legacyDestination(slug, declaredPlacesFor(slug)?.extraPrefixes ?? []);
-}
-
-export function featureIntelligenceHref(
-  featureSlug: string,
-  options: { mandateKey?: AnyMandateKey | null; context?: IntelligenceContext } = {},
-): string {
-  const resolved = options.mandateKey
-    ? { target: targetForKey(options.mandateKey) }
-    : resolveIntelligenceSlug(featureSlug);
-  if (!resolved) return "/intelligence";
-  if ("domain" in resolved) return intelligenceDomainHref(resolved.domain);
-  const target = resolved.target;
-  const topicId = options.context?.topicId;
-  const base =
-    target === "research" && topicId
-      ? `/research/topics/${encodeURIComponent(topicId)}/intelligence`
-      : targetPath(target);
-  const params = new URLSearchParams();
-  if (options.mandateKey) params.set("mandate", options.mandateKey);
-  for (const [name, value] of Object.entries(options.context ?? {})) {
-    if (value && !(target === "research" && name === "topicId")) {
-      params.set(name, value);
-    }
-  }
+function withQuery(base: string, params: URLSearchParams): string {
   const query = params.toString();
   return query ? `${base}?${query}` : base;
 }
 
-/** The page (registry target) that shows a mandate key. */
-export function featureOfMandateKey(mandateKey: AnyMandateKey): string {
-  return targetForKey(mandateKey);
+function contextParams(context: IntelligenceContext | undefined, skip?: string): URLSearchParams {
+  const params = new URLSearchParams();
+  for (const [name, value] of Object.entries(context ?? {})) {
+    if (value && name !== skip) params.set(name, value);
+  }
+  return params;
+}
+
+/** One job's page: the server resolves its node and redirects. */
+export function intelligenceHref(
+  mandateKey: AnyMandateKey,
+  context?: IntelligenceContext,
+): string {
+  const params = new URLSearchParams();
+  params.set("mandate", mandateKey);
+  for (const [name, value] of contextParams(context)) params.set(name, value);
+  return withQuery("/intelligence", params);
+}
+
+/** A page by its slug (node slug, lane id, or code feature id), or one job on it. */
+export function featureIntelligenceHref(
+  featureSlug: string,
+  options: { mandateKey?: AnyMandateKey | null; context?: IntelligenceContext } = {},
+): string {
+  if (options.mandateKey) return intelligenceHref(options.mandateKey, options.context);
+  const topicId = options.context?.topicId;
+  if (featureSlug === RESEARCH_NODE && topicId) {
+    return topicIntelligenceHref(topicId, contextParams(options.context, "topicId"));
+  }
+  if (!featureSlug) return "/intelligence";
+  return withQuery(
+    `/intelligence/${encodeURIComponent(featureSlug)}`,
+    contextParams(options.context),
+  );
 }

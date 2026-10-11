@@ -67,7 +67,7 @@ import {
 } from "@ai-matrx/design-system/controls";
 import { Section } from "@/features/mandates/workspace/Section";
 import { EffectiveConfigLayers } from "@/features/mandates/components/EffectiveConfigLayers";
-import { mandateScopeLabel } from "@/features/mandates/mandate-home";
+import { mandateHomeBound, mandateScopeLabel } from "@/features/mandates/mandate-home";
 import type { SystemRungHealth } from "@/features/mandates/workspace/system-rung-health";
 import { MandateCoverageAlert } from "@/features/mandates/workspace/MandateCoverageAlert";
 import { MandateProvenancePanel } from "@/features/mandates/workspace/MandateProvenancePanel";
@@ -677,6 +677,10 @@ function OneMandateRecordBody({
               data.mandate.label,
             )}
             outputKind={data.mandate.output_kind ?? null}
+            homeName={mandateHomeBound(
+              data.mandate.organization_id,
+              nameOfOrg(data.mandate.organization_id ?? ""),
+            )}
             readOnly={readOnly}
             rung={
               perspective === "system"

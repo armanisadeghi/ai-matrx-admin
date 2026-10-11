@@ -4,8 +4,9 @@
 // CODE feature, each kept true by a test that reads its call sites
 // (`__tests__/declared-places.test.ts`, plus flashcards' and research's own).
 // These ids are code ids (`podcast`, `marketing`), not pages: pages are
-// registry targets (`placement.ts`), and `declaredPlacesForTarget` regroups the
-// places onto them. Add a feature's map here beside its code.
+// registry nodes (placed from data, `placement-model.ts`), and
+// `declaredPlacesForKeys` regroups the places onto a page's jobs. Add a
+// feature's map here beside its code.
 
 import { FLASHCARDS_PLACES } from "@/features/flashcards/data/intelligence-places";
 import { RESEARCH_PLACES } from "@/features/research/components/intelligence/places";
@@ -52,7 +53,6 @@ import { MEET_PLACES } from "@/features/meet/intelligence-places";
 import { CODING_SESSION_PLACES } from "@/features/ai-work/conversations/intelligence-places";
 import { PROOF_RUNS_PLACES } from "@/features/proof-runs/intelligence-places";
 import { DISTILLATION_PLACES } from "@/features/masterwork/distillation-intelligence-places";
-import { keyInTarget } from "./placement";
 import type { FeaturePlaces, MandatePlace } from "./types";
 
 export const DECLARED_FEATURES: readonly FeaturePlaces[] = [
@@ -114,23 +114,18 @@ export function featurePrefixes(feature: string): readonly string[] {
 }
 
 /**
- * Every declared place that runs a job of this registry target, narrowed to
- * those jobs. Places are declared by the CODE feature that owns the screen;
- * the registry groups jobs differently, so one place map can feed several
- * targets and one target can gather places from several maps.
+ * Every declared place that runs one of these jobs, narrowed to those jobs.
+ * Places are declared by the CODE feature that owns the screen; a page groups
+ * jobs by registry node, so one place map can feed several pages and one page
+ * can gather places from several maps.
  */
-export function declaredPlacesForTarget(target: string): MandatePlace[] {
+export function declaredPlacesForKeys(keys: ReadonlySet<string>): MandatePlace[] {
   const out: MandatePlace[] = [];
   for (const entry of DECLARED_FEATURES) {
     for (const place of entry.places) {
-      const keys = place.mandateKeys.filter((key) => keyInTarget(key, target));
-      if (keys.length === 0) continue;
-      out.push({
-        ...place,
-        id:
-          entry.feature === target ? place.id : `${entry.feature}:${place.id}`,
-        mandateKeys: keys,
-      });
+      const kept = place.mandateKeys.filter((key) => keys.has(key));
+      if (kept.length === 0) continue;
+      out.push({ ...place, id: `${entry.feature}:${place.id}`, mandateKeys: kept });
     }
   }
   return out;

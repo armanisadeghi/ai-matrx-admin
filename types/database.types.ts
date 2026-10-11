@@ -82844,6 +82844,7 @@ export type Database = {
           required_output_keys: string[]
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           source_mandate_id: string | null
+          taxonomy_node_slug: string | null
           typed_input_complete: boolean
           updated_at: string
           updated_by: string | null
@@ -82890,6 +82891,7 @@ export type Database = {
           required_output_keys?: string[]
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           source_mandate_id?: string | null
+          taxonomy_node_slug?: string | null
           typed_input_complete?: boolean
           updated_at?: string
           updated_by?: string | null
@@ -82936,6 +82938,7 @@ export type Database = {
           required_output_keys?: string[]
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           source_mandate_id?: string | null
+          taxonomy_node_slug?: string | null
           typed_input_complete?: boolean
           updated_at?: string
           updated_by?: string | null
@@ -84205,6 +84208,21 @@ export type Database = {
       generate_shortcut_mandate_key: {
         Args: { p_label: string; p_surface: string }
         Returns: string
+      }
+      intelligence_placement: {
+        Args: { p_keys?: string[] }
+        Returns: {
+          created_by: string
+          is_fixture: boolean
+          mandate_id: string
+          mandate_key: string
+          node_slug: string
+          organization_id: string
+          origin: string
+          placed_by: string
+          rollup_anchor_id: string
+          surface_name: string
+        }[]
       }
       latest_references: {
         Args: {
@@ -98452,7 +98470,12 @@ export type Database = {
         Args: { p_depth?: number; p_id: string; p_type: string }
         Returns: boolean
       }
+      home_scope_org: { Args: { p_scope: string }; Returns: string }
       is_client_channel: { Args: never; Returns: boolean }
+      is_general_scope: {
+        Args: { p_org: string; p_scope: string }
+        Returns: boolean
+      }
       is_provisioning: { Args: never; Returns: boolean }
       is_service_only_history: { Args: { p_token: string }; Returns: boolean }
       is_sqlstate: { Args: { p_code: string }; Returns: boolean }
@@ -98987,6 +99010,7 @@ export type Database = {
           reason: string
         }[]
       }
+      organization_general_scope: { Args: { p_org: string }; Returns: string }
       orgs_tightening: { Args: { p_token: string }; Returns: string[] }
       part_anchor_problem: { Args: { p: Json }; Returns: string }
       part_anchor_target_problem: {
@@ -99810,6 +99834,15 @@ export type Database = {
       seed_shown_to_default_knob: {
         Args: { p_token: string }
         Returns: undefined
+      }
+      set_home: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: string
+          p_expected_version?: number
+          p_scope_id: string
+        }
+        Returns: Json
       }
       set_org_change_policy: {
         Args: {
@@ -112544,6 +112577,7 @@ export type Database = {
         | "imported_docx"
         | "imported_md"
         | "imported_txt"
+        | "linked_gdoc"
       field_data_type:
         | "string"
         | "number"
@@ -135075,6 +135109,7 @@ export type Database = {
           situation: string | null
           sort_order: number
           supports_dictionary: boolean
+          taxonomy_node_slug: string | null
           updated_at: string
           updated_by: string | null
           url_pattern: string | null
@@ -135112,6 +135147,7 @@ export type Database = {
           situation?: string | null
           sort_order?: number
           supports_dictionary?: boolean
+          taxonomy_node_slug?: string | null
           updated_at?: string
           updated_by?: string | null
           url_pattern?: string | null
@@ -135149,6 +135185,7 @@ export type Database = {
           situation?: string | null
           sort_order?: number
           supports_dictionary?: boolean
+          taxonomy_node_slug?: string | null
           updated_at?: string
           updated_by?: string | null
           url_pattern?: string | null
@@ -143213,6 +143250,7 @@ export type Database = {
           file_path: string | null
           folder_id: string | null
           folder_name: string | null
+          home_scope_id: string
           id: string
           label: string
           last_device_id: string | null
@@ -143244,6 +143282,7 @@ export type Database = {
           file_path?: string | null
           folder_id?: string | null
           folder_name?: string | null
+          home_scope_id?: string
           id?: string
           label?: string
           last_device_id?: string | null
@@ -143275,6 +143314,7 @@ export type Database = {
           file_path?: string | null
           folder_id?: string | null
           folder_name?: string | null
+          home_scope_id?: string
           id?: string
           label?: string
           last_device_id?: string | null
@@ -147126,6 +147166,7 @@ export const Constants = {
         "imported_docx",
         "imported_md",
         "imported_txt",
+        "linked_gdoc",
       ],
       field_data_type: [
         "string",
