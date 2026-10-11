@@ -8,7 +8,12 @@
 
 import type { Json } from "@/types/database.types";
 import type { CardWithDetails } from "../types";
-import { studyFaces } from "../../utils/cardVariants";
+import {
+  orientedStudyFaces,
+  showsBackFirst,
+  studyFaces,
+  type AnswerWith,
+} from "../../utils/cardVariants";
 
 export const QUIZ_DISTRACTOR_COUNT = 3;
 
@@ -100,16 +105,21 @@ function normalize(s: string): string {
 export function buildQuizQuestions(
   cards: CardWithDetails[],
   pool: CardWithDetails[] = cards,
+  answerWith?: AnswerWith | null,
 ): QuizQuestion[] {
   const allBacks = pool.map((c) => studyFaces(c).back);
+  const allFronts = pool.map((c) => studyFaces(c).front);
 
   return cards.map((card) => {
-    const faces = studyFaces(card);
+    // "Answer with: term" turns a basic card around — it asks the definition,
+    // answers with the term, and draws its distractors from sibling terms.
+    const turned = showsBackFirst(card, answerWith);
+    const faces = orientedStudyFaces(card, answerWith);
     const correctNorm = normalize(faces.back);
     const seen = new Set<string>([correctNorm]);
     const siblingDistractors: string[] = [];
 
-    for (const back of shuffle(allBacks)) {
+    for (const back of shuffle(turned ? allFronts : allBacks)) {
       const norm = normalize(back);
       if (seen.has(norm)) continue;
       seen.add(norm);
@@ -129,7 +139,8 @@ export function buildQuizQuestions(
 
     // A card this deck already paid to have quiz items written for never pays
     // again — the stored payload is folded in exactly like a fresh agent run.
-    const stored = readStoredQuizItems(card.dynamic_content);
+    // Stored items ask in the card's own direction, so a turned card skips them.
+    const stored = turned ? null : readStoredQuizItems(card.dynamic_content);
     return stored ? applyStoredQuizItems(base, stored) : base;
   });
 }

@@ -21,6 +21,8 @@ function stripMd(s: string): string {
   return s
     .replace(/\*\*(.+?)\*\*/g, "$1")
     .replace(/__(.+?)__/g, "$1")
+    .replace(/(^|[\s(])\*([^*\n]+?)\*(?=[\s).,;:!?]|$)/g, "$1$2")
+    .replace(/(^|[\s(])_([^_\n]+?)_(?=[\s).,;:!?]|$)/g, "$1$2")
     .replace(/`([^`]+)`/g, "$1")
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
     .replace(/\s+/g, " ")
@@ -57,7 +59,7 @@ function doerOf(text: string): StepDoer {
   const t = text.toLowerCase();
   if (/\b(no ai|simple code|code compares|deterministic|pure code|workflow node)\b/.test(t)) return "code";
   if (/\b(decision model|decision-model|small model|classifier)\b/.test(t)) return "decision";
-  if (/\b(frontier|mid-size|mid size)\b/.test(t)) return "ai-call";
+  if (/\b(frontier|mid-size|mid size|top-tier|top tier|large model)\b/.test(t)) return "ai-call";
   if (/\b(workflow pauses|you (review|approve|check|decide|upload)|a person signs)\b/.test(t)) return "human";
   if (/\bagent\b/.test(t)) return "agent";
   if (/\b(ai call|llm call|model call|prompt)\b/.test(t)) return "ai-call";
@@ -66,22 +68,86 @@ function doerOf(text: string): StepDoer {
 }
 
 function modelClassOf(text: string): string | null {
-  const m = /\b(frontier|mid-size|mid size|small|decision|tiny)\s+(?:model|models)?/i.exec(text);
+  const m = /\b(frontier|mid-size|mid size|top-tier|top tier|small|decision|tiny)[\s-]+models?\b/i.exec(text);
   if (!m) return null;
   const c = m[1].toLowerCase();
-  return c === "mid size" ? "mid-size" : c;
+  if (c === "mid size") return "mid-size";
+  if (c === "top-tier" || c === "top tier") return "frontier";
+  return c;
 }
 
+/** Cut at a word boundary (never mid-word), adding an ellipsis only when something was cut. */
 function clip(s: string, n: number): string {
-  return s.length <= n ? s : `${s.slice(0, n - 1).trimEnd()}…`;
+  if (s.length <= n) return s;
+  const cut = s.slice(0, n - 1);
+  const at = cut.lastIndexOf(" ");
+  return `${(at > n * 0.5 ? cut.slice(0, at) : cut).trimEnd().replace(/[,;:\-–—]$/, "")}…`;
+}
+
+/** Markdown to plain prose: one line per sentence-ish unit, list markers and emphasis gone. */
+export function plainOf(md: string): string {
+  const parts: string[] = [];
+  for (const raw of md.split("\n")) {
+    const line = stripMd(
+      raw
+        .replace(/^\s*#{1,6}\s+/, "")
+        .replace(/^\s*>\s?/, "")
+        .replace(/^\s*(?:[-*•]|\d+[.)])\s+/, "")
+        .replace(/^\s*\|?\s*[-:| ]+\|?\s*$/, ""),
+    );
+    if (!line) continue;
+    parts.push(/[.!?:;)"”]$/.test(line) ? line : `${line}.`);
+  }
+  return parts.join(" ").replace(/\s+/g, " ").trim();
+}
+
+/** The first one or two whole sentences, at most `max` characters, never cut mid-word. */
+export function summaryOf(plain: string, max = 220): string {
+  const sentences = plain.split(/(?<=[.!?])\s+/).filter(Boolean);
+  if (sentences.length === 0) return "";
+  let out = sentences[0];
+  if (out.length > max) return clip(out, max);
+  for (const next of sentences.slice(1, 2)) {
+    if (`${out} ${next}`.length > max) break;
+    out = `${out} ${next}`;
+  }
+  return out;
+}
+
+const MODEL_CLASS_LABEL: Record<string, string> = {
+  frontier: "Frontier model",
+  "mid-size": "Mid-size model",
+  small: "Small model",
+  tiny: "Small model",
+  decision: "Decision model",
+};
+
+/** The one badge a step shows, from its parsed type (null only when the type is unknown). */
+export function stepBadge(step: Pick<SystemPlanStep, "doer" | "modelClass">): string | null {
+  switch (step.doer) {
+    case "decision":
+      return "Decision model";
+    case "ai-call":
+      return (step.modelClass && MODEL_CLASS_LABEL[step.modelClass]) || "AI call";
+    case "agent":
+      return "Agent";
+    case "code":
+      return "Code";
+    case "human":
+      return "You";
+    default:
+      return null;
+  }
 }
 
 function stepFrom(n: number, title: string, body: string): SystemPlanStep {
-  const text = stripMd(body);
+  const plain = plainOf(body);
   return {
     n,
-    title: clip(stripMd(title), 90),
-    job: clip(text, 320),
+    title: clip(stripMd(title), 120),
+    markdown: body.replace(/\n{3,}/g, "\n\n").trim(),
+    summary: summaryOf(plain),
+    job: plain,
     doer: doerOf(`${title} ${body}`),
     modelClass: modelClassOf(`${title} ${body}`),
     usesAgentId: null,
@@ -99,7 +165,7 @@ function listItems(lines: string[]): Array<{ title: string; body: string }> {
       if (cur) items.push(finish(cur));
       cur = { head: m[2], rest: [] };
     } else if (cur && line.trim() !== "") {
-      cur.rest.push(line.trim());
+      cur.rest.push(line.replace(/^ {0,3}/, "").trimEnd());
     }
   }
   if (cur) items.push(finish(cur));
@@ -107,10 +173,10 @@ function listItems(lines: string[]): Array<{ title: string; body: string }> {
 
   function finish(c: { head: string; rest: string[] }) {
     const bold = /^\*\*(.+?)\*\*\s*[:—–-]*\s*(.*)$/.exec(c.head);
-    if (bold) return { title: bold[1], body: [bold[2], ...c.rest].join(" ") };
+    if (bold) return { title: bold[1], body: [bold[2], ...c.rest].join("\n") };
     const colon = /^([^:—–]{3,70}?)\s*[:—–]\s+(.*)$/.exec(c.head);
-    if (colon) return { title: colon[1], body: [colon[2], ...c.rest].join(" ") };
-    return { title: c.head, body: c.rest.join(" ") };
+    if (colon) return { title: colon[1], body: [colon[2], ...c.rest].join("\n") };
+    return { title: c.head, body: c.rest.join("\n") };
   }
 }
 
@@ -120,9 +186,9 @@ function boldStepParagraphs(lines: string[]): Array<{ title: string; body: strin
   for (const line of lines) {
     const m = /^\s*\*\*\s*Step\s*\d+\s*[:.\-–—]\s*(.+?)\*\*\s*(.*)$/i.exec(line);
     if (m) out.push({ title: m[1].replace(/[.:]\s*$/, ""), body: m[2] ? [m[2]] : [] });
-    else if (out.length > 0 && line.trim()) out[out.length - 1].body.push(line.replace(/^\s*[-*•]\s+/, "").trim());
+    else if (out.length > 0) out[out.length - 1].body.push(line.trimEnd());
   }
-  return out.map((o) => ({ title: o.title, body: o.body.join(" ") }));
+  return out.map((o) => ({ title: o.title, body: o.body.join("\n") }));
 }
 
 export function parsePlannerAnswer(
@@ -142,7 +208,7 @@ export function parsePlannerAnswer(
     if (bolded.length >= 2) {
       steps = bolded.map((b, i) => stepFrom(i + 1, b.title, b.body));
     } else if (subs.length >= 1 && head.level < 7) {
-      steps = subs.map((s, i) => stepFrom(i + 1, s.title.replace(/^(step\s*)?\d+[.):]?\s*/i, ""), s.lines.join(" ")));
+      steps = subs.map((s, i) => stepFrom(i + 1, s.title.replace(/^(step\s*)?\d+[.):]?\s*/i, ""), s.lines.join("\n")));
     } else {
       const items = listItems(head.lines);
       steps = items.map((it, i) => stepFrom(i + 1, it.title.replace(/^(step\s*)?\d+[.):]?\s*/i, ""), it.body));
@@ -168,10 +234,11 @@ export function parsePlannerAnswer(
   return { description, title, recommendation, steps, answer, conversationId };
 }
 
-/** The job text the single-agent Studio opens with for one step. */
+/** The job text the single-agent Studio opens with for one step: the full step as plain prose. */
 export function jobForStep(plan: Pick<SystemPlan, "title">, step: SystemPlanStep): string {
-  const parts = [`${step.title}.`, step.job, `This is step ${step.n} of the system "${plan.title}".`];
-  return parts.filter(Boolean).join(" ").slice(0, 900);
+  const end = (t: string) => (/[.!?]$/.test(t) ? t : `${t}.`);
+  const parts = [end(stripMd(step.title)), step.job, `This is step ${step.n} of the system "${stripMd(plan.title)}".`];
+  return parts.filter(Boolean).join(" ");
 }
 
 export function studioHrefForStep(plan: SystemPlan, step: SystemPlanStep, planId: string | null): string {

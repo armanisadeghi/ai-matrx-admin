@@ -6,7 +6,7 @@ jest.mock("@/utils/supabase/client", () => ({ createClient: () => ({}), supabase
 
 import { outcomeLabel } from "@/components/mardown-display/blocks/agent-factory-kinds/AgentFactoryKindBlocks";
 import { usableLabel } from "@/features/admin/users/useAdminUserLabel";
-import { DOORS, FACTORY_DOOR_STAMP_SINCE, factoryDoorCounts, oldCountsForDoor } from "../overview";
+import { DOORS, FACTORY_DOOR_STAMP_SINCE, doorLabel, factoryDoorCounts, oldCountsForDoor } from "../overview";
 import type { FactoryBuildRow } from "../types";
 
 const now = new Date().toISOString();
@@ -52,5 +52,40 @@ describe("words for people", () => {
   it("the profile placeholder 'User' is never a name", () => {
     expect(usableLabel("User", "admin@admin.com")).toBe("admin@admin.com");
     expect(usableLabel("Arman Sadeghi", "a@b.c")).toBe("Arman Sadeghi");
+  });
+});
+
+describe("door labels", () => {
+  // Every door code the server accepts (aidream services/agent_factory/pipeline_door.py DOORS).
+  const SERVER_DOORS = [
+    "agent_author", "agent_service", "custom_action", "from_chat", "mandate_holder_draft", "generate",
+    "plan_room", "node_agent", "content_foundry", "people_mcp", "masterwork", "agent_author_rebuild", "studio",
+  ];
+  it("every server door code has a human label, never the raw code", () => {
+    for (const code of SERVER_DOORS) {
+      expect(DOORS.some((d) => d.key === code)).toBe(true);
+      expect(doorLabel(code)).not.toBe(code);
+    }
+  });
+  it("matches the live server list when the aidream checkout is beside this one", () => {
+    const fs = require("fs") as typeof import("fs");
+    const path = "../aidream/aidream/services/agent_factory/pipeline_door.py";
+    if (!fs.existsSync(path)) return;
+    const src = fs.readFileSync(path, "utf8");
+    const block = /DOORS: tuple\[str, \.\.\.\] = \(([\s\S]*?)\)/.exec(src)![1];
+    const codes = [...block.matchAll(/"(\w+)"/g)].map((m) => m[1]);
+    for (const code of codes) expect(doorLabel(code)).not.toBe(code);
+  });
+  it("studio is always the factory, with no knob", () => {
+    expect(DOORS.find((d) => d.key === "studio")?.alwaysFactory).toBe(true);
+    expect(doorLabel(null)).toBe("Admin page");
+  });
+});
+
+describe("who label", () => {
+  it("uses the email when the name is only the front of it", () => {
+    expect(usableLabel("test", "test@test.com")).toBe("test@test.com");
+    expect(usableLabel("User", "a@b.com")).toBe("a@b.com");
+    expect(usableLabel("Cora Diaz", "cora@x.com")).toBe("Cora Diaz");
   });
 });

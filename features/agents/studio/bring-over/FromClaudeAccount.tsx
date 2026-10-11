@@ -16,6 +16,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { useFileUpload } from "@/features/files/handler/hooks/useFileUpload";
 import { previewExport, type ExportPreview } from "./bring-over-api";
 import { BuildFromImport } from "./BuildFromImport";
+import { BringOverFrame } from "./BringOverFrame";
 
 type Source = { file_id: string } | { text: string };
 
@@ -59,13 +60,10 @@ export function FromClaudeAccount() {
   const canRead = Boolean(file) || text.trim().length >= 40;
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-6 p-4" data-testid="from-claude-account">
-      <header className="space-y-1">
-        <h1 className="text-xl font-semibold">Bring it over from my Claude account</h1>
-        <p className="text-sm text-muted-foreground">
-          Pick a conversation (and a project, if you have one) and we build an agent that does what it did.
-        </p>
-      </header>
+    <BringOverFrame title="Bring it over from my Claude account" testId="from-claude-account">
+      <p className="text-sm text-muted-foreground">
+        Pick a conversation (and a project, if you have one) and we build an agent that does what it did.
+      </p>
 
       {!preview ? (
         <section className="space-y-4" aria-label="Your export">
@@ -190,6 +188,6 @@ export function FromClaudeAccount() {
           </Button>
         </section>
       )}
-    </div>
+    </BringOverFrame>
   );
 }

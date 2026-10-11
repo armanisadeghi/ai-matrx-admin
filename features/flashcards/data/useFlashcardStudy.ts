@@ -32,6 +32,7 @@ import type { FcSetRow, CardWithDetails } from "./types";
 import type {
   ItemMasteryRow,
   RecordAttemptInput,
+  SessionPatch,
 } from "@/features/education/study/types";
 import type { ReviewResult } from "../types";
 import { pickRound } from "./roundSize";
@@ -93,6 +94,9 @@ export interface UseFlashcardStudyResult {
       /** Grade this card instead of the one at `currentIndex` (Learn mode
        *  runs its own staged queue over the loaded cards). */
       cardId?: string;
+      /** The attempt's id, chosen by the caller so it can later correct this
+       *  attempt (studyService.overrideAttempt — Learn's late "I was right"). */
+      attemptId?: string;
     },
   ) => Promise<ItemMasteryRow | null>;
   /** True while a grade write is in flight. */
@@ -105,11 +109,10 @@ export interface UseFlashcardStudyResult {
    *  (no session — `withSession: false`, or still loading). Phase 4: lets the
    *  shared <StudyDeck/> auto-run the end-of-session AI review against it. */
   sessionId: string | null;
-  /** Phase 1B (Learn mode) — distinct cards mastered (graded correct) at
-   *  least once this load. Only meaningful when `reshuffleWeighted` is on;
-   *  `progress.total` still reflects the ORIGINAL card count even though the
-   *  working queue shrinks as cards are mastered. */
-  masteredCount: number;
+  /** End the session now (the learner leaves before it is done). With
+   *  `mastery`, an unfinished sitting is recorded partial; a no-op once the
+   *  session is closed or before the first answer opened one. */
+  endSession?: () => void;
   /** Re-read the card rows (new layers / sub-cards after an in-session
    *  enrich/deepen) without restarting the session or resetting progress.
    *  Optional because cross-set drivers (due review, weak-area drill) have no
@@ -136,14 +139,14 @@ export interface UseFlashcardStudyOptions {
    */
   mode?: string;
   /**
-   * Phase 1B (Learn mode) — instead of linear advance-and-never-return, a
-   * wrong/partial grade reinserts the card `LEARN_REQUEUE_OFFSET` slots ahead
-   * in the working queue (so it resurfaces soon) and a correct grade removes
-   * it entirely (mastered for this session). The session/deck naturally ends
-   * once the queue is empty. Classic study (default `false`) is unaffected —
-   * `cards` stays the static, ordered set.
+   * Learn mode — the caller's own mastery count. When given, the session is
+   * "completed" only when every card is mastered (`mastered >= total`), never
+   * merely because every card was answered once; ending earlier (leaving, or
+   * `endSession`) records it partial: status 'abandoned' (the column allows
+   * active|completed|abandoned) with `aggregate_score.outcome = 'partial'`.
+   * Absent = classic: completed once every card has been graded.
    */
-  reshuffleWeighted?: boolean;
+  mastery?: { mastered: number; total: number } | null;
   /**
    * False until an organization is chosen — see StudyOrganizationGate. Nothing
    * loads and no `study_session` is written while it is false, so a surface
@@ -161,8 +164,8 @@ export interface UseFlashcardStudyOptions {
 }
 
 /**
- * Learn mode's working-queue step, shared by every Learn driver (this hook and
- * the on-device public deck, useLocalFlashcardStudy): the graded card leaves
+ * The on-device public deck's Learn working-queue step (useLocalFlashcardStudy;
+ * the signed-in Learn runs the staged machine in learnQueue.ts): the graded card leaves
  * the queue; a wrong/partial grade puts it back `LEARN_REQUEUE_OFFSET` slots
  * ahead so it resurfaces soon. Pure — returns a new array.
  */
@@ -181,6 +184,15 @@ export function requeueAfterGrade<T extends { id: string }>(
   return next;
 }
 
+/** The close patch for a sitting that ended unfinished. */
+function abandonPatch(partial: Record<string, string | number> | null): SessionPatch {
+  return {
+    status: "abandoned",
+    ended_at: new Date().toISOString(),
+    ...(partial ? { aggregate_score: partial } : {}),
+  };
+}
+
 function clampIndex(index: number, length: number): number {
   if (length <= 0) return 0;
   if (index < 0) return 0;
@@ -195,7 +207,7 @@ export function useFlashcardStudy(
     setId,
     withSession = false,
     mode = STUDY_MODE,
-    reshuffleWeighted = false,
+    mastery = null,
     enabled = true,
     round,
   } = options;
@@ -230,14 +242,8 @@ export function useFlashcardStudy(
   const [masteryByCard, setMasteryByCard] = useState<
     Record<string, ItemMasteryRow | undefined>
   >({});
-  // Phase 1B (Learn mode) — `cards` becomes a shrinking working queue when
-  // `reshuffleWeighted` is on, so the ORIGINAL count is captured separately
-  // for a stable `progress.total` (otherwise the bar would shrink as cards
-  // get mastered instead of filling up).
-  const [originalCount, setOriginalCount] = useState(0);
   /** Cards in the loaded deck — larger than `cards` when a round is dealt. */
   const [deckSize, setDeckSize] = useState(0);
-  const [masteredIds, setMasteredIds] = useState<Set<string>>(new Set());
 
   // Render-synced mirrors for `refreshCards`, whose queue rebuild runs AFTER
   // an awaited fetch: reading the closure state there would resurrect
@@ -247,12 +253,10 @@ export function useFlashcardStudy(
   // committed session state.
   const cardsRef = useRef(cards);
   const currentIndexRef = useRef(currentIndex);
-  const masteredIdsRef = useRef(masteredIds);
   useEffect(() => {
     cardsRef.current = cards;
     currentIndexRef.current = currentIndex;
-    masteredIdsRef.current = masteredIds;
-  }, [cards, currentIndex, masteredIds]);
+  }, [cards, currentIndex]);
 
   // Declared BEFORE the load effect so it commits first on mount — the load
   // effect's offline fallback reads it.
@@ -279,8 +283,6 @@ export function useFlashcardStudy(
         setError(null);
         setCurrentIndex(0);
         setIsFlipped(false);
-        setOriginalCount(0);
-        setMasteredIds(new Set());
         return;
       }
 
@@ -288,7 +290,6 @@ export function useFlashcardStudy(
       setError(null);
       setCurrentIndex(0);
       setIsFlipped(false);
-      setMasteredIds(new Set());
       // Reset the grade map HERE, before any await — not after the mastery
       // fetch. Otherwise there is a committed render where `cards` is the NEW
       // set but `resultsByCard` still holds the PREVIOUS set's grades, and if
@@ -356,7 +357,6 @@ export function useFlashcardStudy(
       setSet(loadedSet);
       setDeckSize(deckCards.length);
       setCards(loadedCards);
-      setOriginalCount(loadedCards.length);
 
       // Load prior mastery for sidebar/stats display — but do NOT seed
       // resultsByCard. Every card with history has a last_result; counting
@@ -441,10 +441,8 @@ export function useFlashcardStudy(
     // await resumes, and everything below runs in one synchronous block so
     // nothing can interleave between the read and the writes.
     const prevQueue = cardsRef.current;
-    const mastered = masteredIdsRef.current;
     const currentId = prevQueue[currentIndexRef.current]?.id ?? null;
     const knownIds = new Set(prevQueue.map((c) => c.id));
-    for (const id of mastered) knownIds.add(id);
     const added = freshAll.filter((c) => !knownIds.has(c.id));
     const nextQueue = [
       ...prevQueue.flatMap((c) => {
@@ -455,7 +453,6 @@ export function useFlashcardStudy(
     ];
     setSet(res.data.set);
     setCards(nextQueue);
-    if (added.length > 0) setOriginalCount((n) => n + added.length);
     const anchored = currentId
       ? nextQueue.findIndex((c) => c.id === currentId)
       : -1;
@@ -482,17 +479,6 @@ export function useFlashcardStudy(
     goTo(currentIndex - 1);
   };
 
-  // Learn mode: once a card is removed from the shrinking `cards` queue
-  // (mastered, no reinsertion) the current index can point past the new
-  // end — clamp it back onto the last remaining card (or 0 when empty).
-  // Synchronizes local index state with an external-to-this-effect array
-  // mutation (the grade() below), not a same-render derivation.
-  useEffect(() => {
-    if (!reshuffleWeighted) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCurrentIndex((idx) => clampIndex(idx, cards.length));
-  }, [cards.length, reshuffleWeighted]);
-
   const grade = async (
     result: ReviewResult,
     extra?: {
@@ -500,6 +486,7 @@ export function useFlashcardStudy(
       responseTranscript?: string;
       confidence?: number;
       cardId?: string;
+      attemptId?: string;
     },
   ): Promise<ItemMasteryRow | null> => {
     const card = extra?.cardId
@@ -521,6 +508,7 @@ export function useFlashcardStudy(
         method: mode,
         result,
         responseKind: extra?.responseKind ?? "selected",
+        ...(extra?.attemptId ? { attemptId: extra.attemptId } : {}),
         ...(extra?.confidence != null ? { confidence: extra.confidence } : {}),
         ...(extra?.responseTranscript
           ? { responseTranscript: extra.responseTranscript }
@@ -555,18 +543,7 @@ export function useFlashcardStudy(
         }));
       }
 
-      if (reshuffleWeighted) {
-        // Learn mode: remove the card from the working queue; a wrong/
-        // partial grade reinserts it a few slots ahead instead of at the
-        // very end, so it resurfaces soon rather than "never again".
-        setCards((prevCards) => requeueAfterGrade(prevCards, card, result));
-        if (result === "correct") {
-          setMasteredIds((prev) => new Set(prev).add(card.id));
-        }
-        setIsFlipped(false);
-        // currentIndex stays put — the splice already shifted the next card
-        // into this slot (or clamps naturally via the render below).
-      } else if (!extra?.cardId) {
+      if (!extra?.cardId) {
         goTo(currentIndex + 1);
       }
       return mastery;
@@ -589,22 +566,27 @@ export function useFlashcardStudy(
     (id) => resultsByCard[id] === "correct",
   ).length;
 
-  // Learn mode: "done" is cards MASTERED (graded correct at least once), not
-  // merely attempted — a wrong grade keeps a card in the working queue, so
-  // counting it as done would complete the session before it's truly over.
-  // `total` is pinned to the original set size so the bar fills up instead
-  // of shrinking as the queue drains.
-  const progress: FlashcardStudyProgress = reshuffleWeighted
-    ? {
-        done: masteredIds.size,
-        total: originalCount,
-        correct: masteredIds.size,
-      }
-    : {
-        done: gradedIds.length,
-        total: cards.length,
-        correct: correctCount,
-      };
+  const progress: FlashcardStudyProgress = {
+    done: gradedIds.length,
+    total: cards.length,
+    correct: correctCount,
+  };
+
+  // Learn passes its own mastery: "done" is every card MASTERED, never every
+  // card answered once (a staged Learn card needs several answers).
+  const learnMode = mastery != null;
+  const mastered = mastery?.mastered ?? 0;
+  const masteryTotal = mastery?.total ?? 0;
+  const sessionDone = mastery
+    ? masteryTotal > 0 && mastered >= masteryTotal
+    : progress.total > 0 && progress.done >= progress.total;
+  // What an unfinished sitting records when it closes (read at close time).
+  const partialScoreRef = useRef<Record<string, string | number> | null>(null);
+  useEffect(() => {
+    partialScoreRef.current = learnMode
+      ? { outcome: "partial", mastered, total: masteryTotal }
+      : null;
+  });
 
   // ── Close the session terminal-first. Without this, classic/learn/write
   //    sessions NEVER reached a terminal state by their own action: the live DB
@@ -625,10 +607,7 @@ export function useFlashcardStudy(
     return () => {
       if (outgoing && !outgoing.closed) {
         outgoing.closed = true;
-        void studyService.updateSession(outgoing.id, {
-          status: "abandoned",
-          ended_at: new Date().toISOString(),
-        });
+        void studyService.updateSession(outgoing.id, abandonPatch(partialScoreRef.current));
       }
     };
   }, [session]);
@@ -636,24 +615,31 @@ export function useFlashcardStudy(
   useEffect(() => {
     const ref = closeRef.current;
     if (!ref || ref.closed || !session) return;
-    if (progress.total > 0 && progress.done >= progress.total) {
+    if (sessionDone) {
       ref.closed = true;
       void studyService.updateSession(session.id, {
         status: "completed",
         ended_at: new Date().toISOString(),
+        ...(learnMode
+          ? { aggregate_score: { outcome: "mastered", mastered, total: masteryTotal } }
+          : {}),
       });
     }
-  }, [session, progress.done, progress.total]);
+  }, [session, sessionDone, learnMode, mastered, masteryTotal]);
+
+  const endSession = (): void => {
+    const ref = closeRef.current;
+    if (!ref || ref.closed) return;
+    ref.closed = true;
+    void studyService.updateSession(ref.id, abandonPatch(partialScoreRef.current));
+  };
 
   useEffect(() => {
     return () => {
       const ref = closeRef.current;
       if (ref && !ref.closed) {
         ref.closed = true;
-        void studyService.updateSession(ref.id, {
-          status: "abandoned",
-          ended_at: new Date().toISOString(),
-        });
+        void studyService.updateSession(ref.id, abandonPatch(partialScoreRef.current));
       }
     };
   }, []);
@@ -675,7 +661,7 @@ export function useFlashcardStudy(
     progress,
     masteryByCard,
     sessionId: session?.id ?? null,
-    masteredCount: masteredIds.size,
+    endSession,
     refreshCards,
     deckSize,
   };

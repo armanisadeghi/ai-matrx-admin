@@ -104,7 +104,7 @@ describe("Learn session completion", () => {
       });
     }
     await hook.act(async () => {
-      hook.current.endSession();
+      hook.current.endSession?.();
     });
     expect(updateSession).toHaveBeenCalledTimes(1);
     expect(updateSession).toHaveBeenCalledWith(

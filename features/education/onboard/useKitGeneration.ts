@@ -26,7 +26,7 @@
 
 import { useRef, useState } from "react";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
-import { getGenerator } from "@/features/education/convert/registry";
+import { TARGET_PRESENTATION } from "@/features/education/convert/targetPresentation";
 import { resolveKitTitle, type KitTitle } from "./kitTitle";
 import type {
   ConvertOptions,
@@ -320,7 +320,7 @@ export function useKitGeneration(): UseKitGeneration {
     setTargets(
       kinds.map((k) => ({
         targetKind: k,
-        label: getGenerator(k)?.label ?? k,
+        label: TARGET_PRESENTATION[k].label,
         status: "pending" as const,
       })),
     );

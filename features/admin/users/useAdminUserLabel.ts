@@ -25,6 +25,12 @@ const PLACEHOLDER_NAMES = new Set(["user"]);
 export function usableLabel(label: string | null, email: string | null): string | null {
   const trimmed = label?.trim() ?? "";
   if (!trimmed || PLACEHOLDER_NAMES.has(trimmed.toLowerCase())) return email?.trim() || null;
+  // A name that is only the front of the email ("test" for test@test.com) is a placeholder too:
+  // beside full emails it reads as a different person, so the email stands in.
+  const mail = email?.trim() ?? "";
+  if (mail && mail.toLowerCase() !== trimmed.toLowerCase() && mail.toLowerCase().startsWith(trimmed.toLowerCase())) {
+    return mail;
+  }
   return trimmed;
 }
 

@@ -43,6 +43,27 @@ export const KIT_BUILD_SOURCE_FEATURE = "education-ingest";
 /** The run's name in its floating window. */
 export const KIT_BUILD_LABEL = "Study kit outputs";
 
+/**
+ * Every output the server build makes (aidream `education_kit_build_v1.TARGETS`
+ * — one step each). The kit picker offers exactly these; it never asks the
+ * tab's own generator registry, which no longer builds a kit.
+ */
+export const KIT_BUILD_TARGETS: readonly TargetKind[] = [
+  "deck",
+  "quiz",
+  "practice_test",
+  "summary",
+  "notes",
+  "mind_map",
+  "memory_aid",
+  "audio",
+];
+
+/** True when the server build makes this output. */
+export function kitBuildMakes(kind: TargetKind): boolean {
+  return KIT_BUILD_TARGETS.includes(kind);
+}
+
 export interface KitBuildStart {
   kitId: string;
   organizationId: string;

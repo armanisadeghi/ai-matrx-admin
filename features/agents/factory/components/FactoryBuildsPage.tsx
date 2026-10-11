@@ -37,7 +37,7 @@ import { StartBuildDialog } from "./StartBuildDialog";
 import { SpineStatusChip, formatDuration } from "./factory-shared";
 import { FactoryDoorsTable } from "./FactoryDoorsTable";
 import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
-import { DOORS, formatDollars, loadBuildCosts } from "../overview";
+import { doorLabel, formatDollars, loadBuildCosts } from "../overview";
 
 export const FACTORY_BASE_PATH = "/administration/agents/factory";
 
@@ -94,11 +94,7 @@ export function FactoryBuildsPage() {
       rows.map((r) => ({ ...r, cost: costs ? (costs.get(r.id) ?? 0) : null })),
     [rows, costs],
   );
-  const doorPlace = useCallback(
-    (door: string | null) =>
-      DOORS.find((d) => d.key === door)?.place ?? door ?? "Admin page",
-    [],
-  );
+  const doorPlace = useCallback((door: string | null) => doorLabel(door), []);
 
   const columns = useMemo(
     (): MatrxColumnDef<FactoryBuildRow>[] => [

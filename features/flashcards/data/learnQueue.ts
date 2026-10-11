@@ -133,6 +133,45 @@ export function answerLearn(state: LearnState, correct: boolean): LearnState {
   };
 }
 
+/**
+ * Apply a typed answer's meaning verdict that landed AFTER the learner moved
+ * on. The learner never waits on the check: Continue steps the machine with a
+ * provisional grade (the spelling match), and this reconciles it when the
+ * verdict returns. A late "right" masters the card and drops its unasked
+ * re-ask; a late "wrong" sends it back to multiple choice for a LATER round.
+ * Round counts change only while that round is still the current one.
+ */
+export function settleTypedVerdict(
+  state: LearnState,
+  verdict: { cardId: string; round: number; provisionalCorrect: boolean; correct: boolean },
+): LearnState {
+  const { cardId, round, provisionalCorrect, correct } = verdict;
+  if (provisionalCorrect === correct || !(cardId in state.stages)) return state;
+  const sameRound = state.round === round;
+  const stages = { ...state.stages };
+  if (correct) {
+    stages[cardId] = "mastered";
+    const queue = state.queue.filter((q, i) => i < state.position || q.cardId !== cardId);
+    return {
+      ...state,
+      stages,
+      queue,
+      roundMissed: sameRound ? state.roundMissed.filter((id) => id !== cardId) : state.roundMissed,
+      roundCorrect: sameRound ? state.roundCorrect + 1 : state.roundCorrect,
+    };
+  }
+  if (stages[cardId] === "mastered") stages[cardId] = "choice";
+  return {
+    ...state,
+    stages,
+    roundMissed:
+      sameRound && !state.roundMissed.includes(cardId)
+        ? [...state.roundMissed, cardId]
+        : state.roundMissed,
+    roundCorrect: sameRound ? Math.max(0, state.roundCorrect - 1) : state.roundCorrect,
+  };
+}
+
 /** True when every question in the round has been answered. */
 export function isRoundOver(state: LearnState): boolean {
   return state.round > 0 && state.position >= state.queue.length;

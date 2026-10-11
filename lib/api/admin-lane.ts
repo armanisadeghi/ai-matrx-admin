@@ -18,10 +18,12 @@
 //      audits (aidream `aidream/api/middleware/admin_lane_admission.py`):
 //        - in the admin organization (a membership) the request is filed there
 //          and still reads as the admin lane for admin-reach doors;
-//        - bound to the platform tenant — only PLATFORM-CONTENT work, a request
-//          carrying a Matrx System record's own organization (a built-in agent,
-//          a system mandate, a system kind record) — it is the one admission of
-//          a non-member;
+//        - bound to the platform tenant — only reading/editing PLATFORM CONTENT
+//          (a built-in agent, a system mandate, a system kind record) — it is
+//          the one admission of a non-member. A PERSON's new conversation,
+//          request or run stamped with the tenant is REFUSED
+//          (`platform_tenant_not_for_people`, Arman 2026-10-10): runs always
+//          carry the active organization;
 //        - any other organization is refused exactly as without the header.
 //      The header alone grants nothing.
 

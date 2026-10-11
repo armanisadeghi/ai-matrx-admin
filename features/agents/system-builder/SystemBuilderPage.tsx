@@ -12,19 +12,10 @@ import { AgentListDropdown } from "@ai-matrx/agents/catalog/react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { supabase } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast";
-import { parsePlannerAnswer, studioHrefForStep } from "./parse-plan";
+import { parsePlannerAnswer, stepBadge, studioHrefForStep } from "./parse-plan";
 import { runPlanner } from "./planner";
 import { listMyPlans, loadPlan, saveNewPlan, savePlanChanges, type SavedPlanSummary } from "./plan-store";
 import type { SystemPlan, SystemPlanStep } from "./types";
-
-const DOER_LABEL: Record<SystemPlanStep["doer"], string> = {
-  agent: "Agent",
-  "ai-call": "AI call",
-  decision: "Decision model",
-  code: "Code / node",
-  human: "You",
-  unknown: "Step",
-};
 
 async function agentNameOf(id: string): Promise<string | null> {
   const { data } = await supabase.schema("agent").from("definition").select("name").eq("id", id).maybeSingle();
@@ -40,6 +31,9 @@ function StepRow({
   href: string;
   onUseAgent: (agentId: string) => void;
 }) {
+  const badge = stepBadge(step);
+  const summary = step.summary ?? step.job;
+  const full = (step.markdown ?? "").trim();
   return (
     <li className="flex gap-3 rounded-lg border border-border bg-card p-3">
       <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary-ink">
@@ -48,16 +42,19 @@ function StepRow({
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="type-body font-medium text-foreground">{step.title}</span>
-          {step.doer !== "unknown" ? (
-            <span className="rounded-full border border-border px-2 py-0.5 type-meta text-muted-foreground">
-              {DOER_LABEL[step.doer]}
-            </span>
-          ) : null}
-          {step.modelClass ? (
-            <span className="type-meta text-muted-foreground">{step.modelClass}</span>
+          {badge ? (
+            <span className="rounded-full border border-border px-2 py-0.5 type-meta text-muted-foreground">{badge}</span>
           ) : null}
         </div>
-        {step.job ? <p className="mt-1 type-secondary text-muted-foreground">{step.job}</p> : null}
+        {summary ? <p className="mt-1 type-secondary text-muted-foreground">{summary}</p> : null}
+        {full && full !== summary ? (
+          <details className="group mt-1">
+            <summary className="cursor-pointer type-meta text-primary-ink">Show the full step</summary>
+            <div className="mt-2 border-l border-border pl-3" data-message-content>
+              <MarkdownStream content={step.markdown} hideCopyButton allowFullScreenEditor={false} />
+            </div>
+          </details>
+        ) : null}
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {step.usesAgentId ? (
             <Link

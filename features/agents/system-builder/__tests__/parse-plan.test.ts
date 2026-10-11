@@ -1,4 +1,4 @@
-import { parsePlannerAnswer, studioHrefForStep } from "../parse-plan";
+import { jobForStep, parsePlannerAnswer, plainOf, stepBadge, studioHrefForStep } from "../parse-plan";
 
 const ANSWER = `# Weekly AP Biology quiz system
 
@@ -75,5 +75,48 @@ describe("parsePlannerAnswer when steps sit under workflow sub-headings", () => 
     expect(plan.steps).toHaveLength(9);
     expect(plan.steps[0].title).toBe("Pull out what matters in the chapter");
     expect(plan.steps[5].doer).toBe("code");
+  });
+});
+
+describe("step cards are clean prose with one badge", () => {
+  const read = (f: string) =>
+    require("fs").readFileSync(require("path").join(__dirname, f), "utf8") as string;
+  const fixtures = ["real-planner-answer.fixture.md", "real-planner-answer-2.fixture.md", "real-planner-answer-3.fixture.md"];
+
+  it.each(fixtures)("%s: no markdown in summary or job, whole words, a badge on every step", (f) => {
+    const plan = parsePlannerAnswer(read(f), "x");
+    expect(plan.steps.length).toBeGreaterThan(1);
+    for (const s of plan.steps) {
+      for (const text of [s.summary, s.job, s.title]) {
+        expect(text).not.toMatch(/\*|`|(^|\s)[-•]\s|\s_\w/);
+      }
+      expect(s.summary.length).toBeGreaterThan(0);
+      expect(s.summary.length).toBeLessThanOrEqual(221);
+      // a clip ends in an ellipsis after a whole word, never mid-word
+      if (s.summary.endsWith("…")) expect(s.job.startsWith(s.summary.slice(0, -1).trimEnd())).toBe(true);
+      expect(s.markdown.length).toBeGreaterThan(0);
+      expect(stepBadge(s)).not.toBeNull();
+    }
+  });
+
+  it("the Studio job is the full plain step, not a truncated one", () => {
+    const plan = parsePlannerAnswer(read("real-planner-answer-3.fixture.md"), "x");
+    for (const s of plan.steps) {
+      const job = jobForStep(plan, s);
+      expect(job).toContain(s.job);
+      expect(job).not.toMatch(/\*|…/);
+      expect(job).toContain(`This is step ${s.n} of the system`);
+    }
+  });
+
+  it("one badge per step from the parsed type", () => {
+    expect(stepBadge({ doer: "decision", modelClass: "decision" })).toBe("Decision model");
+    expect(stepBadge({ doer: "ai-call", modelClass: "frontier" })).toBe("Frontier model");
+    expect(stepBadge({ doer: "code", modelClass: null })).toBe("Code");
+    expect(stepBadge({ doer: "unknown", modelClass: null })).toBeNull();
+  });
+
+  it("plainOf strips emphasis and list markers into sentences", () => {
+    expect(plainOf("1. Pull the rows. *Rules, no AI.*\n- Why: it is free")).toBe("Pull the rows. Rules, no AI. Why: it is free.");
   });
 });

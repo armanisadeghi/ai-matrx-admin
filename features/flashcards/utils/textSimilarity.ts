@@ -18,13 +18,27 @@ export function textSimilarity(a: string, b: string): number {
   return 1 - distance / maxLen;
 }
 
-function normalize(s: string): string {
+/** An answer reduced to what a learner means: case, accents, punctuation,
+ *  markdown emphasis and runs of whitespace are ignored. */
+export function normalizeAnswer(s: string): string {
   return s
-    .trim()
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
     .toLowerCase()
-    .replace(/[.,!?;:'"()\[\]]/g, "")
-    .replace(/\s+/g, " ");
+    .replace(/['\u2018\u2019`]/g, "")
+    .replace(/[\p{P}*~]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
+
+/** True when a typed answer IS the expected answer after normalisation —
+ *  correct with no fuzzy match and no AI call. */
+export function answersMatch(typed: string, expected: string): boolean {
+  const x = normalizeAnswer(typed);
+  return x.length > 0 && x === normalizeAnswer(expected);
+}
+
+const normalize = normalizeAnswer;
 
 function levenshteinDistance(a: string, b: string): number {
   const rows = a.length + 1;
