@@ -9,35 +9,19 @@
  */
 import path from "node:path";
 import fs from "node:fs";
-import { ESLint } from "eslint";
+import { execFileSync } from "node:child_process";
 
 const ROOT = path.resolve(__dirname, "../../..");
 const PACKAGE_SRC = path.resolve(ROOT, "../aidream/apps/shared/rich-content/src");
 
 async function violations(globs: string[], cwd: string): Promise<string[]> {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const hooks = require("eslint-plugin-react-hooks");
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const tsParser = require("@typescript-eslint/parser");
-  const eslint = new ESLint({
-    cwd,
-    overrideConfigFile: true,
-    overrideConfig: [
-      {
-        files: ["**/*.ts", "**/*.tsx"],
-        languageOptions: { parser: tsParser, parserOptions: { ecmaFeatures: { jsx: true } } },
-        plugins: { "react-hooks": hooks.default ?? hooks },
-        linterOptions: { reportUnusedDisableDirectives: "off" },
-        rules: { "react-hooks/rules-of-hooks": "error" },
-      },
-    ],
+  // A child process: ESLint's flat-config loader needs real dynamic import, which jest's VM lacks.
+  const out = execFileSync("node", [path.join(ROOT, "scripts/check-kind-hook-order.cjs"), cwd, ...globs], {
+    cwd: ROOT,
+    encoding: "utf8",
+    maxBuffer: 64 * 1024 * 1024,
   });
-  const results = await eslint.lintFiles(globs);
-  return results.flatMap((r) =>
-    r.messages
-      .filter((m) => m.ruleId === "react-hooks/rules-of-hooks")
-      .map((m) => `${path.relative(cwd, r.filePath)}:${m.line} ${m.message.slice(0, 90)}`),
-  );
+  return JSON.parse(out) as string[];
 }
 
 describe("kind blocks keep their hooks in one order", () => {
