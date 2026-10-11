@@ -86,6 +86,7 @@ import { isServiceFailure } from "@/features/data-tables/types";
 import { downloadUniverAsXlsx } from "@/features/workbooks/univer-to-xlsx";
 import { workbookHistoryToggleInput } from "@/lib/univer/historyKinds";
 import { WorkbookSheetReferenceCopyButton } from "@/features/workbooks/components/WorkbookSheetReferenceCopyButton";
+import { WorkbookTableLink } from "@/features/workbooks/table-link/WorkbookTableLink";
 
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -768,6 +769,10 @@ export default function WorkbookEditor({
             </div>
           )}
           {toolbarRightSlot}
+          {/* Custom-table link (Lane B): linked chip or "Make table". */}
+          {bootState === "ready" && (
+            <WorkbookTableLink apiRef={apiRef} workbookId={workbookId} editable={editable} />
+          )}
           {bootState === "ready" && (
             <WorkbookSheetReferenceCopyButton
               apiRef={apiRef}

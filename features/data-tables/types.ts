@@ -63,9 +63,6 @@ export type Dataset = {
   task_id: string | null;
   template_id: string | null;
   template_version: number | null;
-  workbook_id: string | null;
-  sheet_index: number | null;
-  sync_source: Json | null;
   published_to_web: boolean;
   published_to_web_at: string | null;
   published_to_web_by: string | null;

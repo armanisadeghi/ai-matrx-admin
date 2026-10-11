@@ -257,8 +257,6 @@ function asDataset(
     metadata: extras.metadata as Dataset["metadata"],
     custom_fields: {},
     project_id: null,
-    sheet_index: null,
-    sync_source: null,
     task_id: null,
     template_id: null,
     template_version: null,
@@ -267,7 +265,6 @@ function asDataset(
     published_to_web: false,
     published_to_web_at: null,
     published_to_web_by: null,
-    workbook_id: null,
   } as Dataset;
 }
 

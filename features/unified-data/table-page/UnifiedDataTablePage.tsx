@@ -18,6 +18,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTable } from "@ai-matrx/records/react";
 import { SyncedTableBar } from "@/features/unified-data/connect-database/SyncedTableBar";
 import { SyncIntoWorkspaceButton } from "@/features/unified-data/connect-database/SyncIntoWorkspaceButton";
+import { TableWorkbookLinkButton } from "@/features/workbooks/table-link/TableWorkbookLinkButton";
 import type { PageView, ViewAddressState } from "@ai-matrx/records-ui";
 import { VIEW_ADDRESS_KEYS, viewAddressFromParams, viewAddressToParams } from "@ai-matrx/records-ui";
 import type { RecordFilter } from "@ai-matrx/records";
@@ -100,6 +101,8 @@ function TableRouteHeader({
           <SyncedTableBar key="synced" tableId={tableId} organizationId={organizationId} />
           {/* Airtable "sync a view into another base" (lane SYNC-AIRTABLE). */}
           <SyncIntoWorkspaceButton key="sync-into" tableId={tableId} organizationId={organizationId} />
+          {/* A linked workbook: open as one, or update/refresh the linked one. */}
+          <TableWorkbookLinkButton key="workbook-link" tableId={tableId} />
           {/* ONE copy/export on this page (merged-grid review 2, D6: two identical buttons, header and
               toolbar): the table's own, in its toolbar's copy/export menu. The page capture below is
               still registered, so agents and "Copy full context" read it. */}
