@@ -6,7 +6,8 @@
  * runner (`AgentRunner`: transcript, variables, composer, every answer's actions incl. Debrief).
  *
  * - `conversationId` set → that stored conversation is reopened (`loadConversation`); if it cannot
- *   be (never sent, deleted), a fresh one starts and `onConversation` reports its id.
+ *   be (never sent — it would reopen with no composer — or deleted), a fresh one starts and
+ *   `onConversation` reports its id.
  * - `runKey` changes → a NEW conversation (the Studio's "run again, fresh every time").
  * - `seed` set → the first turn runs at once with those inputs (mode 2's original request).
  */
@@ -17,7 +18,8 @@ import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { AgentRunner } from "@ai-matrx/chat/agents/components/smart/AgentRunner";
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
 import { loadConversation } from "@ai-matrx/chat/agents/redux/execution-system/thunks/load-conversation.thunk";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { selectOrderedMessageIds } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
+import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 
 export interface StudioRunSeed {
   variables?: Record<string, string>;
@@ -48,6 +50,7 @@ export function StudioRun({
 }: StudioRunProps) {
   const { launchAgent } = useAgentLauncher();
   const dispatch = useAppDispatch();
+  const store = useAppStore();
   const [shown, setShown] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const startedFor = useRef<string | null>(null);
@@ -94,6 +97,11 @@ export function StudioRun({
       )
         .unwrap()
         .then(() => {
+          // A conversation that was opened but never sent reloads with no composer: start fresh.
+          if (selectOrderedMessageIds(conversationId)(store.getState()).length === 0) {
+            void fresh();
+            return;
+          }
           setShown(conversationId);
           onConversation?.(conversationId);
         })
@@ -101,7 +109,7 @@ export function StudioRun({
     } else {
       void fresh();
     }
-  }, [agentId, conversationId, runKey, surfaceKey, seed, showVariables, context, launchAgent, dispatch, onConversation]);
+  }, [agentId, conversationId, runKey, surfaceKey, seed, showVariables, context, launchAgent, dispatch, store, onConversation]);
 
   if (error) {
     return (

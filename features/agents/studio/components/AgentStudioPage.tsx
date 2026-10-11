@@ -509,10 +509,10 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   const header = (
     <div className="flex h-10 shrink-0 items-center gap-2 border-b border-border px-2" data-testid="studio-header">
       <Button variant="quiet" icon={<ArrowLeft />} aria-label="Back" onClick={() => router.push(studioHref({}))} />
-      <span className="text-sm font-semibold text-foreground">Agent Studio</span>
-      <span className="truncate text-xs text-muted-foreground">{agentName ?? mode.title}</span>
+      {!isMobile && <span className="shrink-0 text-sm font-semibold text-foreground">Agent Studio</span>}
+      <span className="min-w-0 truncate text-xs text-muted-foreground">{agentName ?? mode.title}</span>
       <PlanBackLink state={state} />
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex shrink-0 items-center gap-2">
         <StudioCost
           buildId={state.buildId}
           buildDone={Boolean(state.agentId) || Boolean(build?.outcome)}
@@ -529,8 +529,8 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
           </Button>
         )}
         {state.agentId && (
-          <Button variant="outline" icon={<RotateCcw />} onClick={runAgain}>
-            Run again
+          <Button variant="outline" icon={<RotateCcw />} aria-label="Run again" onClick={runAgain}>
+            {isMobile ? null : "Run again"}
           </Button>
         )}
       </div>
