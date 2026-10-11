@@ -394,6 +394,14 @@ function applyServerNoteUpsert(
     }
   }
 
+  // The home is server-owned (only platform.set_home or the insert default
+  // writes it) and never a user edit, so a not-older row always carries it —
+  // even while the body is dirty (a new note's INSERT receipt, another
+  // device's move).
+  if (typeof note.home_scope_id === "string" && note.home_scope_id) {
+    existing.home_scope_id = note.home_scope_id;
+  }
+
   // Never downgrade fetch status
   applyFetchStatus(existing, fetchStatus);
 

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1404,
+  "routeCount": 1410,
   "routes": [
     {
       "pattern": "/",
@@ -1809,6 +1809,16 @@
       "source": "app/(core)/agents/new/studio/page.tsx"
     },
     {
+      "pattern": "/agents/new/studio/from-claude",
+      "status": "live",
+      "source": "app/(core)/agents/new/studio/from-claude/page.tsx"
+    },
+    {
+      "pattern": "/agents/new/studio/with-claude-code",
+      "status": "live",
+      "source": "app/(core)/agents/new/studio/with-claude-code/page.tsx"
+    },
+    {
       "pattern": "/agents/orchestras",
       "status": "live",
       "source": "app/(core)/agents/orchestras/page.tsx"
@@ -1822,6 +1832,21 @@
       "pattern": "/agents/org-chart",
       "status": "live",
       "source": "app/(core)/agents/org-chart/page.tsx"
+    },
+    {
+      "pattern": "/agents/prompt-blocks",
+      "status": "live",
+      "source": "app/(core)/agents/prompt-blocks/page.tsx"
+    },
+    {
+      "pattern": "/agents/prompt-blocks/[id]",
+      "status": "live",
+      "source": "app/(core)/agents/prompt-blocks/[id]/page.tsx"
+    },
+    {
+      "pattern": "/agents/prompt-blocks/new",
+      "status": "live",
+      "source": "app/(core)/agents/prompt-blocks/new/page.tsx"
     },
     {
       "pattern": "/agents/shortcuts",
@@ -1847,6 +1872,11 @@
       "pattern": "/agents/shortcuts/new",
       "status": "live",
       "source": "app/(core)/agents/shortcuts/new/page.tsx"
+    },
+    {
+      "pattern": "/agents/system-builder",
+      "status": "live",
+      "source": "app/(core)/agents/system-builder/page.tsx"
     },
     {
       "pattern": "/agents/templates",

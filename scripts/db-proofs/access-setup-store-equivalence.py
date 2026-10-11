@@ -112,6 +112,22 @@ def quarantined(c):
         return bool(k.fetchone()[0])
 
 
+if '--self-test' in sys.argv:
+    # PROVES THE REFUSAL: a CLONE_DATABASE_URL naming the live database (its SUPABASE_MATRIX user and host) must exit 2
+    # before any connection is opened; so must a missing CLONE-REF clone_ref.
+    _live_user, _live_host = env.get('SUPABASE_MATRIX_USER', 'postgres.live'), env.get('SUPABASE_MATRIX_HOST', 'live.example')
+    env['CLONE_DATABASE_URL'] = f'postgresql://{_live_user}:not-a-password@{_live_host}:6543/postgres'
+    _real_connect = psycopg.connect
+    psycopg.connect = lambda *a, **k: (_ for _ in ()).throw(AssertionError('self-test: a connection was attempted'))
+    try:
+        clone_connect()
+        print('SELF-TEST FAIL: a live CLONE_DATABASE_URL was accepted'); sys.exit(1)
+    except SystemExit as e:
+        if e.code != 2:
+            print(f'SELF-TEST FAIL: exit {e.code}, expected 2'); sys.exit(1)
+    finally:
+        psycopg.connect = _real_connect
+    print('SELF-TEST PASS: a live target is refused (exit 2) before any connection is opened'); sys.exit(0)
 conn, CLONE_REF = clone_connect()
 if not quarantined(conn):
     conn.close()
@@ -652,6 +668,95 @@ def run_scoped():
         m = one("select custom.read_mask_for(%s, %s, %s, 'viewer', 'read')", (P['employee']['uid'], ORG, TABLE))
         check('read mask (swapped): Pay is withheld set-wide from the employee, with its part and who',
               'hourly_rate' not in m['visible'] and (m['notices'].get('hourly_rate') or {}).get('part') == 'Pay', json.dumps(m['notices'].get('hourly_rate')))
+    # ROW-SCOPED PARTS IN READS (accesssetup_store_j): the employee's page reveals Pay on their own row only
+    def as_seat(k):
+        seat_as = P[k]['uid']
+        cur.execute("reset role")
+        cur.execute("select set_config('request.jwt.claims', %s, true), set_config('request.jwt.claim.sub', %s, true)",
+                    (json.dumps({"sub": seat_as, "role": "authenticated"}), seat_as))
+        cur.execute("set local role authenticated")
+    if one("select to_regprocedure('custom.store_row_visible(uuid,uuid,custom.record,text[])') is not null"):
+        as_seat('employee')
+        page = one("select custom.read_records_page(%s, %s, '{}'::jsonb, null, '[]'::jsonb, null, false, 50, 0)", (ORG, TABLE))
+        docs = {r['id']: r['document'] for r in page['rows']}
+        own, other = docs.get(ROWS[0], {}), docs.get(ROWS[1], {})
+        check('page: the employee sees Hourly rate and Bonus on their own row', own.get('hourly_rate') == 42.5 and own.get('bonus') == 1800, json.dumps({k: own.get(k) for k in ('hourly_rate', 'bonus')}))
+        check('page: ...and not on another row (withheld)', other.get('hourly_rate') is None and other.get('bonus') is None)
+        sp = one("""select custom.read_records_page(%s, %s, '{}'::jsonb, null, '[{"field":"hourly_rate","direction":"desc"}]'::jsonb, null, false, 50, 0)""", (ORG, TABLE))
+        check('page: sorting by Hourly rate is ignored for the employee', 'hourly_rate' in json.dumps(sp.get('sort_ignored')), json.dumps(sp.get('sort_ignored')))
+        q("savepoint agg")
+        try:
+            ag = one("""select custom.record_aggregate(%s, %s, '[]'::jsonb, '[{"op":"sum","key":"hourly_rate"}]'::jsonb)""", (ORG, TABLE))
+            agg_txt = json.dumps(ag)[:220]
+            agg_ok = 'withheld' in agg_txt and '42.5' not in json.dumps(ag)
+        except Exception as e:
+            agg_txt = 'refused: ' + str(e).splitlines()[0]
+            agg_ok = 'withheld' in agg_txt or 'not yours' in agg_txt or 'cannot' in agg_txt
+            q("rollback to savepoint agg")
+        check('aggregate: a sum over Hourly rate is withheld from the employee', agg_ok, agg_txt)
+        owner()
+        card = one("select custom.record_card(%s, %s, %s)", (P['employee']['uid'], ORG, ROWS[0]))
+        card2 = one("select custom.record_card(%s, %s, %s)", (P['employee']['uid'], ORG, ROWS[1]))
+        check('card: own row reveals Pay, another row does not', (card or {}).get('hourly_rate') == 42.5 and (card2 or {}).get('hourly_rate') is None)
+        owner()
+        as_seat('t_editor')
+        ep = one("select custom.read_records_page(%s, %s, '{}'::jsonb, null, '[]'::jsonb, null, false, 50, 0)", (ORG, TABLE))
+        check('page: a Table editor sees Pay on no row', all(r['document'].get('hourly_rate') is None for r in ep['rows']))
+        owner()
+        body2 = one("select pg_get_functiondef('custom.store_row_visible(uuid,uuid,custom.record,text[])'::regprocedure)")
+        q("savepoint plant3")
+        q(body2.replace("if jsonb_array_length(r) = 0 or p_row.id is null then return p_visible; end if;", "return p_visible;"))
+        as_seat('employee')
+        pp = one("select custom.read_records_page(%s, %s, '{}'::jsonb, null, '[]'::jsonb, null, false, 50, 0)", (ORG, TABLE))
+        owner()
+        q("rollback to savepoint plant3")
+        check('PLANT caught: row reveals dropped -> the employee loses their own Pay',
+              {r['id']: r['document'] for r in pp['rows']}.get(ROWS[0], {}).get('hourly_rate') is None)
+    # THE SETUP DOOR (accesssetup_store_k)
+    if one("select to_regprocedure('custom.table_access_setup_set(uuid,jsonb,jsonb,text)') is not null"):
+        def door(k, sql, args):
+            as_seat(k)
+            q("savepoint door")
+            try:
+                r = one(sql, args); ok = True
+            except Exception as e:
+                r, ok = str(e).splitlines()[0], False
+                q("rollback to savepoint door")
+            owner()
+            return ok, r
+        scope_k = json.dumps({'table_id': TABLE})
+        q("delete from iam.access_setup where entity_type = 'record' and scope_key = %s::jsonb", (scope_k,))
+        q("update custom.record set data = data - 'part' where id in (%s, %s)", (F['hourly_rate'], F['bonus']))
+        org_admin_seat = seat('org_admins', {'kind': 'org_role', 'role': 'admin'}, True)
+        narrow = {'admin_seats': ['org_admins'], 'seats': [org_admin_seat, setup['seats'][1]],
+                  'grid': {'org_admins': {'part:pay': {'level': 'editor'}}, 'the_employee': {'part:pay': {'level': 'viewer'}}}}
+        moves = {F['hourly_rate']: 'Pay', F['bonus']: 'Pay'}
+        ok, pv = door('t_admin', "select custom.table_access_setup_preview(%s, %s::jsonb, %s::jsonb)", (TABLE, json.dumps(narrow), json.dumps(moves)))
+        check('door preview: who loses sight is counted before saving', ok and pv['ok'] and pv['loses_sight'] > 0 and pv['problems'] == [], json.dumps({k: pv.get(k) for k in ('loses_sight', 'gains_sight', 'problems')}) if ok else pv)
+        ok, r1 = door('t_admin', "select custom.table_access_setup_set(%s, %s::jsonb, %s::jsonb, 'Pay to org admins')", (TABLE, json.dumps(narrow), json.dumps(moves)))
+        check('door: a table admin writes the setup and moves the columns', ok and r1['ok'], str(r1)[:160])
+        meta = one("select metadata from iam.access_audit where id = %s", (r1['audit_id'],)) if ok else None
+        check('door: audited with before and after', meta is not None and 'before' in meta and meta['after']['setup'] == narrow)
+        check('door: the Table admin (not an org admin) no longer reads Pay', not reads('t_admin', ROWS[2], 'bonus'))
+        widen = {**narrow, 'seats': narrow['seats'] + [setup['seats'][0]], 'grid': {**narrow['grid'], 'table_admin': {'part:pay': {'level': 'editor'}}}}
+        ok, r2 = door('t_admin', "select custom.table_access_setup_set(%s, %s::jsonb, '{}'::jsonb, 'admins read Pay again')", (TABLE, json.dumps(widen)))
+        notes = 'n/a'
+        check('door: an admin widening their own sight notifies the other admins', ok and r2['ok'] and r2['notified'] >= 1 and len(r2['widened']) > 0, f"{r2 if not ok else {k: r2[k] for k in ('widened', 'notified')}} notices={notes}")
+        ok, rv = door('t_admin', "select custom.table_access_setup_revert(%s, %s)", (TABLE, r2['audit_id'] if isinstance(r2, dict) else None))
+        cur_setup = one("select setup from iam.access_setup where entity_type = 'record' and scope_key = %s::jsonb", (scope_k,))
+        check('door: one-click revert restores the archived version', ok and cur_setup == narrow, str(rv)[:160])
+        ok, rbad = door('t_admin', "select custom.table_access_setup_set(%s, %s::jsonb, '{}'::jsonb, null)", (TABLE, json.dumps({**narrow, 'subject_seat': 'x'})))
+        check('door: the store check refuses a bad setup', not ok and 'cannot be saved' in rbad, rbad[:120])
+        ok, rv2 = door('t_editor', "select custom.table_access_setup_set(%s, %s::jsonb, '{}'::jsonb, null)", (TABLE, json.dumps(widen)))
+        check('door: a non-admin is refused', not ok)
+        as_seat('t_admin'); q("select set_config('app.actor_tier', 'agent', true)")
+        q("savepoint ag2")
+        try:
+            q("select custom.table_access_setup_set(%s, %s::jsonb, '{}'::jsonb, null)", (TABLE, json.dumps(widen))); agent_refused = False
+        except Exception:
+            agent_refused = True
+        q("rollback to savepoint ag2"); q("select set_config('app.actor_tier', '', true)"); owner()
+        check('door: an agent is refused', agent_refused)
     # plant: per-row cells ignored -> the employee loses Pay on their own row
     body = one("select pg_get_functiondef('custom._store_column_itself(uuid,uuid,uuid,uuid,permission_level,text)'::regprocedure)")
     q("savepoint plant2")

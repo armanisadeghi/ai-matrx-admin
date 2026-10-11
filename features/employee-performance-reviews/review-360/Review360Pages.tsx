@@ -3,7 +3,8 @@
 // The three 360 review screens under /hr/performance: the HR manager's list, one review (both
 // halves side by side once both are in), and a respondent's own half in the existing editor.
 
-import { hrPerformanceReviewHref } from "@/features/hr/routes";
+import { hrPerformanceHref, hrPerformanceReviewHref } from "@/features/hr/routes";
+import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -287,7 +288,8 @@ export function Review360RespondPage({ trackId }: { trackId: string }) {
 function Respond({ trackId, org }: { trackId: string; org: string }) {
   const client = useRecordsClient();
   const [track, setTrack] = useState<TrackView | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // The track would not open (not this person's half, or not readable): the platform's access surface says why.
+  const [refused, setRefused] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const submittedRef = useRef(false);
   useEffect(() => {
@@ -308,7 +310,7 @@ function Respond({ trackId, org }: { trackId: string; org: string }) {
       if (r.ok && r.data.kind) {
         setTrack(r.data);
         setSubmitted(Boolean(r.data.submittedAt));
-      } else setError(r.ok ? "This review is not yours to open." : r.message);
+      } else setRefused(true);
     });
     return () => {
       live = false;
@@ -333,7 +335,7 @@ function Respond({ trackId, org }: { trackId: string; org: string }) {
     },
   }));
 
-  if (error) return <Shell><ErrorNotice title="This review could not be opened"  message={error} /></Shell>;
+  if (refused) return <Shell><AccessGate token="record" id={trackId} fallbackHref={hrPerformanceHref(org)} fallbackLabel="Performance" /></Shell>;
   if (!track) return <Shell><div className="m-4 h-24 animate-pulse rounded-md bg-card/40" aria-label="Loading your review" /></Shell>;
 
   const submit = async () => {

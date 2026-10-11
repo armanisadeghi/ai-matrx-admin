@@ -1,3 +1,4 @@
+-- window-class: drops the _a000_edit_content_is_editor trigger on iam.permissions and platform.share_links; ACCESS EXCLUSIVE plus the supautils set, apply 0100-0400 Pacific
 -- lane: ONE-LADDER
 -- Inverse of one_ladder_edit_is_content_full_is_structure.sql: restores every patched body verbatim, the edit_content policy and grants, and drops the new objects.
 
