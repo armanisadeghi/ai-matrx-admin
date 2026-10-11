@@ -6,22 +6,20 @@
 > drifts from the vision, stop and flag the owner.
 
 Everything lives under `app/(core)/education/` (guest-accessible, server-rendered, app shell).
-Three route kinds that never mix shapes:
+`/education` is the guest landing; a signed-in learner is redirected to `/education/overview`.
+Marketing never masquerades as the signed-in surface. Three route kinds that never mix shapes:
 
 | Layer | Shape | Example |
 |---|---|---|
-| Marketing / discovery | **Nested** under an axis, data-driven `[slug]`; 100% server, `MarketingPageShell` | `education/study-aids/flashcards` |
+| Marketing / discovery | **Nested** under an axis (`subjects`, `levels`, `exam-prep`, `study-aids`, `features`), data-driven `[slug]`; 100% server, `MarketingPageShell` | `education/study-aids/flashcards` |
 | SEO content | Catch-all `education/learn/[...slug]`; Article JSON-LD | `education/learn/biology/photosynthesis` |
 | Application tools | **Flat**, one segment per tool plus its sub-routes; server shell + client islands | `education/flashcards/[setId]/study` |
-
-`/education` is the guest landing (a signed-in learner is redirected to `/education/overview`, the
-compact navigation hub). Marketing never masquerades as the signed-in surface.
 
 ## The load-bearing rule: marketing is nested, the app is flat
 
 A tool is reached from many marketing angles, and all of them link into the one flat tool route.
 Never nest a tool under an axis (`study-aids/flashcards/all` is wrong). Marketing slug and tool
-slug differ (FastFire: marketing `features/fastfire`, tool `fastfire`). A tool graduates from its
+slug can differ (FastFire: marketing `features/fastfire`, tool `fastfire`). A tool graduates from its
 `EduToolComingSoon` placeholder at the **same slug**, never into `(transitional)`, `(legacy)` or a
 sibling feature.
 
@@ -43,47 +41,30 @@ on the server (a view-only sharee on `/edit` is redirected to `[id]`, never 404)
 
 ## Route to feature map
 
-All routes are real surfaces unless marked (redirect). Tool entries are in
-`features/education/data/tools.ts`.
+Sub-routes: list the folder. Tool entries are in `features/education/data/tools.ts`.
 
-| Route | Feature module | Sub-routes |
-|---|---|---|
-| `flashcards` | `features/flashcards` | `new` (+ `new/from-source`, `new/import` redirect to the one create page), `[setId]` (+ `edit`, `study`, `learn`, `test`, `write`, `match`, `sessions`), `review`, `weak-areas`, `sessions/[sessionId]`, `progress` (redirect to `/education/progress`), `admin` |
-| `flashcards-2` | (redirect to `flashcards`) | |
-| `fastfire` | `features/flashcards/fast-fire` | `capture-test` (redirect to the admin harness) |
-| `quizzes`, `practice-tests` | `education/assessment` | `new`, `[id]`, `[id]/edit`, `[id]/results` |
-| `grade-work` | `education/assessment` | single surface |
-| `tutor` | `education/tutor` | `new`, `[conversationId]` |
-| `audio-study`, `mind-maps` | `education/media` | `new`, `new/manual`, `[id]`, `[id]/edit`; audio also `review` |
-| `memory` | `education/memory` | `new`, `new/manual`, `[id]`, `[id]/edit` |
-| `notes` | `education/notes` | `new`, `[id]`, `[id]/edit` |
-| `summaries` | `education/onboard` (converter output) | `new`, `[id]`, `[id]/edit` |
-| `study-guides` | `education/study-guides` | `[id]` |
-| `kits` | `education/kits`, `onboard` | `new` (THE create page), `[sourceId]`; `start` (redirect to `kits/new`, keeps `?source=`) |
-| `library` | `education/library` | `community` (public certified decks), `suggestions` (owner inbox) |
-| `sessions`, `progress`, `planner` | `education/study` | `progress/learning-gain` |
-| `practice-oral` | `education/spoken-practice` | single surface |
-| `game` | `education/engage` | `host`, `join`, `solo`, `play/[roomId]` |
-| `classes` | `education/classes` | `join`, `[classId]`, `[classId]/tests/[testId]` (+ `study`) |
-| `family` | `education/family` | `[studentId]` (read-only) |
-| `creator` | `education/creators` | dashboard; public face is `/c/[handle]` outside `(core)` |
-| `data`, `offline` | `education/onboard`, `education/study` | data ownership/export/delete; offline shell |
-| `media` | `education/media` | `[id]` |
-| `overview` | `education/home` | |
-| axes `subjects`, `levels`, `exam-prep`, `study-aids`, `features` | `education/data` registries | each `[slug]`; `subjects/quick-math` (`[id]`, `admin`) |
-| `learn` | `education/publishing` | `[...slug]`, `admin` |
-| `admin` | `features/admin` map | |
+- `flashcards` -> `features/flashcards`; `fastfire` -> `features/flashcards/fast-fire`.
+- `quizzes`, `practice-tests`, `grade-work` -> `education/assessment`; `tutor` -> `education/tutor`.
+- `audio-study`, `mind-maps`, `media/[id]` -> `education/media`; `memory`, `notes` -> own module.
+- `summaries` -> `education/onboard` (converter output); `study-guides` -> `education/study-guides`.
+- `kits` -> `education/kits` + `onboard` (`kits/new` is THE create page).
+- `library` (+ `community`, `suggestions`) -> `education/library`; `classes` -> `education/classes`.
+- `sessions`, `progress`, `planner`, `offline` -> `education/study`; `data` -> `education/onboard`.
+- `practice-oral` -> `education/spoken-practice`; `game` -> `education/engage`.
+- `family` -> `education/family`; `creator` -> `education/creators` (public face `/c/[handle]`, outside `(core)`).
+- `overview` -> `education/home`; `learn` -> `education/publishing`; `admin` -> `features/admin` map.
+- Redirects: `flashcards-2` -> `flashcards`; `start` -> `kits/new` (keeps `?source=`); `flashcards/new/import` -> `flashcards/new`; `flashcards/progress` -> `/education/progress`; `fastfire/capture-test` -> the admin harness.
 
 Admin-only: `education/admin`, `flashcards/admin`, `learn/admin`, `subjects/quick-math/admin`.
 
 ## The route graph is closed (THE DOOR LAW)
 
 Every route has at least one inbound link a user can click; fix a gap on sight.
-- `offline` has two doors: the "Offline study & sync" card on `/education/data` and the
-  queue-depth chip from `OfflineStudySyncMount` (renders nothing at zero).
-- `media/[id]` is the canonical route for the `study_media` entity token
-  (`data/entityRoutes.ts`), used when a caller holds an id and not the kind. The typed routes
-  stay beside it. **`MediaRouter` must handle every `EduMediaKind`**; add a branch whenever a kind is added.
+- `offline` is reached from the "Offline study & sync" card on `/education/data` and the
+  `OfflineStudySyncMount` queue-depth chip.
+- `media/[id]` is the canonical route for the `study_media` entity token (`data/entityRoutes.ts`),
+  used when a caller holds an id and not the kind. **`MediaRouter` must handle every
+  `EduMediaKind`**; add a branch whenever a kind is added.
 - `library/suggestions` is linked from the Community Library header.
 
 ## Conventions
@@ -97,6 +78,6 @@ Every route has at least one inbound link a user can click; fix a gap on sight.
 - Route files live in `app/(core)/education/**` only; tool code in its own `features/` module and
   the route file stays thin. Registries driving marketing and tool entries: `features/education/data/`.
 - New tool: add an `EduToolEntry` to `data/tools.ts`, create `education/<tool>/page.tsx` plus the
-  canonical sub-routes, and add its row above.
+  canonical sub-routes, and add its line above.
 - Lucide icons only, validated at runtime (see FEATURE.md); no emojis; mobile rules per the
   `ios-mobile-first` skill.
