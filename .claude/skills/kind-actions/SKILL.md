@@ -104,7 +104,8 @@ confirm. For a chain of steps pass `run={() => …}` (returns the last step's en
 - **Never** write results into `data`; results live in `itemState`, keyed per piece
   (`idea_<number>_<what>`), so the original answer stays intact.
 - Render the saved result in place, next to the piece it belongs to, and keep the button
-  available to run again (re-running replaces the saved value).
+  available to run again (re-running replaces the saved value). A saved image renders with
+  `KindImage` (`@/components/kind-kit/KindImage`), never a bare `<img>` — see [chains.md](chains.md).
 - `{ok:false}` comes with a sentence for the reader — show it small beside the button (the kit
   button does); never swallow it.
 - No shortcut exists for the job yet? Build the agent with the `create-agent` skill, then create

@@ -60,17 +60,23 @@ async function visualize(idea, runAction) {
 { "file_id": "…", "mime_type": "image/png", "width": 1024, "height": 1536, "organization_id": "…" }
 ```
 
-When the host hands `itemState` back to the component it adds `src` to every saved image ref
-(nested up to three levels): a `blob:` URL the component can put straight into `<img>`. The
-host fetched the bytes with the reader's own authorization; the component never builds a URL
-from a `file_id` (it cannot reach the file server).
+Render it with **`KindImage`** — never a bare `<img>`. It shows the WHOLE image (sized from its
+real width/height, `object-contain`, scaled to fit `maxHeight`; it never crops), renders the
+platform's canonical image component on a page (expand, share, copy, download, context menu), and
+inside the sandbox frame shows the image with Expand and Share that open the canonical file
+preview and share windows through `runAction` (`open_file` / `share_file`). It also handles
+loading (placeholder) and a failed load (one line).
 
 ```tsx
+import { KindImage } from "@/components/kind-kit/KindImage";
+
 const image = itemState[`idea_${idea.number}_image`];
-{image?.src && <img src={image.src} alt={idea.title} className="w-full rounded-md" />}
-{image && !image.src && !image.src_error && <Skeleton className="aspect-[4/5] w-full" />}
-{image?.src_error && <p className="text-xs text-muted-foreground">{image.src_error}</p>}
+<KindImage image={image} alt={idea.title} runAction={runAction} pending={busy && !image} />
 ```
+
+When the host hands `itemState` back it adds `src` to every saved image ref (a `blob:` URL it
+fetched with the reader's own authorization); `KindImage` uses it. The component never builds a
+URL from a `file_id` (it cannot reach the file server).
 
 - `src` is `null` while the bytes load; `src_error` carries a sentence when they could not.
 - Never save a `src`, a `url` or a download link — only the ref. Links are derived at render
