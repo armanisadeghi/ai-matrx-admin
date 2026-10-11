@@ -6,15 +6,14 @@ import {
   type ImageStorePorts,
 } from "@/lib/univer/univerImageStore";
 
-/** The real file-store ports: upload, read back as an object URL, tell the person on failure. */
+/** The real file-store ports: upload, read back as a blob, tell the person on failure. */
 export const matrxImagePorts: ImageStorePorts = {
   async upload(file) {
     const { fileId } = await mediaClient.upload(file);
     return { fileId };
   },
-  async getBlobUrl(fileId) {
-    const handle = await mediaClient.getBlob({ file_id: fileId });
-    return handle.url;
+  async getBlob(fileId) {
+    return (await mediaClient.getBlob({ file_id: fileId })).blob;
   },
   onUploadError(error) {
     toast({

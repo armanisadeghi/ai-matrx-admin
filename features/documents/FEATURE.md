@@ -7,4 +7,4 @@ Markdown <-> Univer converters, the page/canvas theme, history views and the age
 Shared Univer runtime: `lib/univer/`; collab: `lib/collab/`. The data-model and history notes for
 documents and workbooks live together in `features/workbooks/FEATURE.md`.
 
-- ✅ Univer 1.0.4 `docs-hyper-link` and `docs-drawing` presets loaded in `DocumentEditor` (links and images in the ribbon).
+- ✅ Univer 1.0.4 `docs-hyper-link` and `docs-drawing` presets loaded in `DocumentEditor` (links and images in the ribbon). Images are stored in the file store and the document keeps a `matrx-file:<id>` reference (`lib/univer/univerImageStore.ts`); comment attribution keeps Univer's owner-role id (`univerOwnerId`), so a signed-in person can edit.

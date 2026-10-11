@@ -7,7 +7,7 @@
  */
 
 import type { IWorkbookData } from "@univerjs/core";
-import type * as ExcelJSTypes from "exceljs";
+import { loadExcelJs, type ExcelJSTypes } from "@/lib/xlsx-engine/exceljs-door";
 import {
   H_ALIGN_IN,
   RESOURCE,
@@ -39,10 +39,10 @@ const rid = (prefix: string) => `${prefix}${Math.random().toString(36).slice(2, 
 const sheetId = (name: string) => `${name.replace(/[^A-Za-z0-9_-]+/g, "-").slice(0, 32) || "sheet"}-${Math.random().toString(36).slice(2, 8)}`;
 
 export async function importXlsxWithExcelJs(
-  file: File,
+  file: { name: string; arrayBuffer(): Promise<ArrayBuffer> },
   options: XlsxImportOptions = {},
 ): Promise<Partial<IWorkbookData>> {
-  const ExcelJS = (await import("exceljs")).default as typeof ExcelJSTypes;
+  const ExcelJS = await loadExcelJs();
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.load(await file.arrayBuffer());
 
@@ -104,6 +104,9 @@ export async function importXlsxWithExcelJs(
       rowCount: Math.max(maxR + 1, ws.rowCount, 100),
       columnCount: Math.max(maxC + 1, ws.columnCount, 26),
     };
+
+    const tab = colorOf(ws.properties?.tabColor);
+    if (tab) sheet.tabColor = tab;
 
     const merges = (ws.model as Json).merges as string[] | undefined;
     const mergeData = (merges ?? []).map((m) => parseA1Range(m)).filter((m): m is RangeLike => !!m);

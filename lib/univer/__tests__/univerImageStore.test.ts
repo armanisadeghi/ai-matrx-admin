@@ -23,7 +23,7 @@ const png = (size: number) => new File([new Uint8Array(size)], "p.png", { type: 
 function ports() {
   return {
     upload: jest.fn(async () => ({ fileId: "f-1" })),
-    getBlobUrl: jest.fn(async (id: string) => `blob:${id}`),
+    getBlob: jest.fn(async (id: string) => new Blob([id])),
     onUploadError: jest.fn(),
   };
 }
@@ -44,9 +44,16 @@ describe("univer image store", () => {
   it("paints a reference through the file store, and leaves other URLs alone", async () => {
     const p = ports();
     const store = createMatrxImageStore(p);
-    expect(await store.download(`${MATRX_IMAGE_PREFIX}f-1`)).toBe("blob:f-1");
+    const made = jest.fn((b: Blob) => `blob:made-${b.size}`);
+    const revoked = jest.fn();
+    Object.assign(URL, { createObjectURL: made, revokeObjectURL: revoked });
+    expect(await store.download(`${MATRX_IMAGE_PREFIX}f-1`)).toBe("blob:made-3");
     await store.download(`${MATRX_IMAGE_PREFIX}f-1`);
-    expect(p.getBlobUrl).toHaveBeenCalledTimes(1);
+    expect(p.getBlob).toHaveBeenCalledTimes(1);
+    store.dispose();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(revoked).toHaveBeenCalledWith("blob:made-3");
     expect(await store.download("https://x.test/a.png")).toBe("https://x.test/a.png");
   });
 

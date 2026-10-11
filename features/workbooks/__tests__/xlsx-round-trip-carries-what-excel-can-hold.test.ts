@@ -52,6 +52,7 @@ function build() {
         columnData: { 0: { w: 140 } },
         rowData: { 0: { h: 30 } },
         freeze: { xSplit: 1, ySplit: 1, startRow: 1, startColumn: 1 },
+        tabColor: "#ff0000",
       },
     },
     resources,
@@ -78,6 +79,7 @@ describe("xlsx round trip", () => {
     expect(Math.abs(sheet.columnData[0].w - 140)).toBeLessThanOrEqual(4);
     expect(Math.abs(sheet.rowData[0].h - 30)).toBeLessThanOrEqual(2);
     expect(sheet.freeze).toMatchObject({ xSplit: 1, ySplit: 1 });
+    expect(sheet.tabColor).toBe("#ff0000");
 
     const dv = Object.values(readResource<Record<string, any[]>>(resources, RESOURCE.validation) ?? {})[0] ?? []; // eslint-disable-line @typescript-eslint/no-explicit-any
     expect(dv.find((r) => r.type === "list")).toMatchObject({ formula1: "Open,Won,Lost", ranges: [range(1, 1, 4, 1)] });
@@ -97,5 +99,24 @@ describe("xlsx round trip", () => {
     writeResource(snap.resources, RESOURCE.table, { s1: { t1: { name: "T1" } } });
     const { report } = await buildXlsxFromUniver(snap as never);
     expect(report.dropped.join(" ")).toMatch(/Tables/);
+  });
+
+  it("names the checkbox change instead of making it silently", async () => {
+    const snap = build() as { resources: UniverResource[] };
+    writeResource(snap.resources, RESOURCE.validation, {
+      s1: [{ uid: "v3", type: "checkbox", ranges: [range(1, 3, 4, 3)] }],
+    });
+    const { report } = await buildXlsxFromUniver(snap as never);
+    expect(report.dropped.join(" ")).toMatch(/Checkboxes/);
+  });
+
+  it("reads a CSV through the same single reader", async () => {
+    const csv = "Name,Amount\nWest,120\nEast,340\n";
+    const file = new File([csv], "sales.csv", { type: "text/csv" });
+    Object.assign(file, { arrayBuffer: async () => new TextEncoder().encode(csv).buffer });
+    const back = await xlsxToUniverWorkbook(file);
+    const sheet = Object.values(back.sheets ?? {})[0] as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+    expect(sheet.cellData[0][0].v).toBe("Name");
+    expect(sheet.cellData[2][1].v).toBe(340);
   });
 });
