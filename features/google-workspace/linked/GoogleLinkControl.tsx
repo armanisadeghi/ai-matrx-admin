@@ -33,7 +33,14 @@ import { errorSentence, toast } from "@/lib/toast";
 import { approvalQueueHref, SENT_FOR_APPROVAL_MESSAGE } from "@/features/google-workspace/service";
 
 import { GoogleDocsMark, GoogleSheetsMark } from "./marks";
-import { readGoogleLink, writeGoogleLink, type GoogleFileLink, type LinkedRecordKind } from "./link-store";
+import {
+  readGoogleLink,
+  writeGoogleLink,
+  writePendingGoogleLink,
+  type GoogleFileLink,
+  type LinkedRecordKind,
+} from "./link-store";
+import { completePendingLink } from "./pending-link";
 import {
   createDocFromMarkdown,
   createSheetFromWorkbook,
@@ -109,8 +116,19 @@ export function GoogleLinkControl({ adapter, editable }: { adapter: GoogleLinkAd
     let live = true;
     void readGoogleLink(adapter.recordKind, adapter.recordId).then((res) => {
       if (!live) return;
-      if (res.ok) setLink(res.link);
-      else {
+      if (res.ok) {
+        setLink(res.link);
+        // A create that went through an approval: save the link once it is applied.
+        if (!res.link) {
+          void completePendingLink(adapter.recordKind, adapter.recordId)
+            .then((outcome) => {
+              if (!live || outcome.state !== "linked") return;
+              setLink(outcome.link);
+              toast.success(`Linked to ${adapter.recordKind === "workbook" ? "Google Sheets" : "Google Docs"}`);
+            })
+            .catch((error: unknown) => toast.error(errorSentence(error)));
+        }
+      } else {
         setLink(null);
         toast.error(`Could not read this item's Google link: ${res.error}`);
       }
@@ -181,6 +199,17 @@ export function GoogleLinkControl({ adapter, editable }: { adapter: GoogleLinkAd
         ? await createSheetFromWorkbook(state.connection.connectionId, adapter.title, content)
         : await createDocFromMarkdown(state.connection.connectionId, adapter.title, String(content ?? ""));
       if (outcome.proposed) {
+        // Remember WHICH approval makes the file, so approving it also saves the link.
+        const queued = await writePendingGoogleLink(adapter.recordKind, adapter.recordId, {
+          assistId: outcome.assistId,
+          kind: isSheet ? "google_sheet" : "google_doc",
+          connectionId: state.connection.connectionId,
+          name: adapter.title,
+          queuedAt: new Date().toISOString(),
+          localFingerprint: await contentFingerprint(content),
+          localSnapshotId: await adapter.latestLocalSnapshotId(),
+        });
+        if (!queued.ok) throw new Error(queued.error);
         proposed(outcome.assistId);
         return;
       }

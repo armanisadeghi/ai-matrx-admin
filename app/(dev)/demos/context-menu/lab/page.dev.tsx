@@ -441,16 +441,13 @@ const DEFAULT_CONTEXT_DATA = `{
 // (this lab has no real note to act on).
 const LAB_NOTES_EXTRAS = createNotesEditorExtraSections({
   isDirty: true,
-  allFolders: ["Inbox", "Archive"],
-  currentFolder: "Inbox",
   openTabCount: 2,
   onSave: () => {},
   onDuplicate: () => {},
   onExport: () => {},
   onShareLink: () => {},
   onShareClipboard: () => {},
-  onMoveToFolder: () => {},
-  onMoveDialog: () => {},
+  onMoveToHome: () => {},
   onCloseTab: () => {},
   onCloseOtherTabs: () => {},
   onCloseAllTabs: () => {},

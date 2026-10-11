@@ -69,11 +69,54 @@ export async function readGoogleLink(
   return { ok: true, link: googleLinkIn(data?.metadata) };
 }
 
+/**
+ * A create that an organization's review mode turned into an approval request:
+ * the file does not exist yet, so the link cannot be saved. This remembers WHICH
+ * approval will make it, so the link is completed once it is applied.
+ */
+export interface PendingGoogleLink {
+  assistId: string;
+  kind: GoogleFileLink["kind"];
+  connectionId: string;
+  name: string;
+  queuedAt: string;
+  localFingerprint: string | null;
+  localSnapshotId: string | null;
+}
+
+export async function readPendingGoogleLink(
+  kind: LinkedRecordKind,
+  id: string,
+): Promise<PendingGoogleLink | null> {
+  const { data } = await supabase.schema("workbench").from(TABLE[kind]).select("metadata").eq("id", id).maybeSingle();
+  const raw = (data?.metadata as { google_link_pending?: unknown } | null)?.google_link_pending;
+  if (!raw || typeof raw !== "object" || typeof (raw as PendingGoogleLink).assistId !== "string") return null;
+  return raw as PendingGoogleLink;
+}
+
 /** Save (or with `null`, remove) the record's Google link. */
 export async function writeGoogleLink(
   kind: LinkedRecordKind,
   id: string,
   link: GoogleFileLink | null,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  return writeMetadataKey(kind, id, "google_link", link, link ? "google_link_pending" : undefined);
+}
+
+export async function writePendingGoogleLink(
+  kind: LinkedRecordKind,
+  id: string,
+  pending: PendingGoogleLink | null,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  return writeMetadataKey(kind, id, "google_link_pending", pending);
+}
+
+async function writeMetadataKey(
+  kind: LinkedRecordKind,
+  id: string,
+  key: "google_link" | "google_link_pending",
+  value: unknown,
+  alsoClear?: "google_link_pending",
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const table = TABLE[kind];
   const result = await mergeJsonColumn<MetaRow>({
@@ -82,8 +125,9 @@ export async function writeGoogleLink(
     readColumn: (row) => row.metadata,
     merge: (current) => {
       const next: Record<string, unknown> = { ...(current ?? {}) };
-      if (link) next.google_link = link;
-      else delete next.google_link;
+      if (value) next[key] = value;
+      else delete next[key];
+      if (alsoClear) delete next[alsoClear];
       return next;
     },
     applyUpdate: ({ value, expectedVersion, nextVersion }) =>

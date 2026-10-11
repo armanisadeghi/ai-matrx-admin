@@ -29,7 +29,7 @@ import { resolve } from "node:path";
 
 import { expect, test, type Page } from "@playwright/test";
 
-import { signIn } from "../../../../../../scripts/lib/seat-browser.mjs";
+import { fillSecret, until } from "../../../../../../scripts/lib/seat-browser.mjs";
 import {
   ADMIN_EMAIL,
   ADMIN_PASSWORD,
@@ -149,7 +149,11 @@ test.describe.serial("THE VARIABLE RULE in the UI", () => {
         continue;
       }
       // The form paints late on a cold route (first compile): wait for it here, never re-navigate.
-      if (!(await page.locator("#email").waitFor({ timeout: 150_000 }).then(() => true, () => false))) continue;
+      if (!(await page.locator("#email").waitFor({ timeout: 90_000 }).then(() => true, () => false))) {
+        const seen = (await page.innerText("body").catch(() => "")).replace(/\s+/g, " ").slice(0, 160);
+        console.log(`[variable-rule] no sign-in form at ${page.url()} — page says: ${seen}`);
+        continue;
+      }
       await page.waitForTimeout(4000); // the form only accepts input once its bundle attaches
       await page.fill("#email", ADMIN_EMAIL);
       await fillSecret(page, "#password", ADMIN_PASSWORD);

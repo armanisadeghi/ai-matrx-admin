@@ -92,8 +92,6 @@ export function NotesDemoPanel({
   // row-for-row the live one.
   const notesExtras = createNotesEditorExtraSections({
     isDirty,
-    allFolders: DEMO_NOTE_FOLDERS,
-    currentFolder: DEMO_NOTE_FOLDERS[0],
     openTabCount: DEMO_NOTE_OPEN_TABS.length,
     onSave: () => {
       setIsDirty(false);
@@ -103,9 +101,7 @@ export function NotesDemoPanel({
     onExport: () => toast.success("Exported (demo)"),
     onShareLink: () => toast.success("Share link (demo)"),
     onShareClipboard: () => copyNotify("Copied to clipboard (demo)", "success"),
-    onMoveToFolder: (folder) => toast.success(`Moved to ${folder} (demo)`),
-    onMoveDialog: () => toast.success("Move dialog (demo)"),
-    onCreateFolder: () => toast.success("New folder (demo)"),
+    onMoveToHome: () => toast.success("Move to home (demo)"),
     onCloseTab: () => toast.success("Close tab (demo)"),
     onCloseOtherTabs: () => toast.success("Close other tabs (demo)"),
     onCloseAllTabs: () => toast.success("Close all tabs (demo)"),

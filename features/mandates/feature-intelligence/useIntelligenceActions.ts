@@ -102,7 +102,7 @@ export function useIntelligenceActions(seat: IntelligenceSeat) {
 
   const readChoice = async (row: FeatureIntelligenceRow) => {
     const rows = await fetchFeatureIntelligence({
-      feature: row.mandateKey.split(".")[0],
+      mandateKeys: [row.mandateKey],
       level: seat.level,
       organizationId: seat.organizationId,
       userId,
