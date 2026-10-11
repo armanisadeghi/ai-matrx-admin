@@ -186,6 +186,8 @@ export function PromptWriteBox({
     <EditableContextMenu
       sourceFeature="agent-builder"
       surfaceName={surfaceName}
+      menuDesign="global"
+      menuFeatureTitle="Prompt"
       contentSource={{ type: "raw" }}
       contextData={contextData}
       insertAtCaret={(text: string) => {

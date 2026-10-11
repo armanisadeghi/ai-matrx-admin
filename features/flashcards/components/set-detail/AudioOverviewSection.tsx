@@ -30,7 +30,6 @@ import { SessionAudio } from "@/features/education/study/components/SessionAudio
 import { ensureSpokenFrontsForSet } from "@/features/flashcards/fast-fire/spoken-front/generateSpokenFront.thunk";
 import { ensureHelperAudioForSet } from "@/features/flashcards/fast-fire/helper-audio/generateHelperAudio.thunk";
 import { useEntitlementGuard } from "@/features/entitlements/components/useEntitlementGuard";
-import { fcService } from "../../data/fcService";
 import { buildDeckOverviewRequest } from "../../data/podcastOverview";
 import type { FcSetRow, CardWithDetails } from "../../data/types";
 import { useFlashcardMandates } from "../../data/mandate-disclosure";
@@ -222,17 +221,16 @@ export function AudioOverviewSection({
 }) {
   useFlashcardMandates(["spokenFrontTts", "enrichCard", "helperTts"]);
   const { state, start, cancel, reset } = usePodcastRun();
-  const [persisting, setPersisting] = useState(false);
-  // Guards against double-persisting the same completed run — `state.status`
-  // stays "done" across re-renders, so a plain effect dep would re-fire the
-  // save on every unrelated parent re-render.
-  const persistedRef = useRef(false);
+  // The SERVER saves the finished audio onto the set (`audio_overview_for_set`
+  // on the request, 2026-10-11) — a closed tab or a locked phone no longer
+  // leaves an episode no deck points at. This page only shows what landed.
+  const shownRef = useRef(false);
 
   const generating = state.status === "running";
 
   useEffect(() => {
-    if (state.status !== "done" || persistedRef.current) return;
-    persistedRef.current = true;
+    if (state.status !== "done" || shownRef.current) return;
+    shownRef.current = true;
     const fileId =
       state.audioFileId ?? fileIdFromUserFilesUrl(state.audioUrl ?? "");
     if (!fileId) {
@@ -241,32 +239,23 @@ export function AudioOverviewSection({
       );
       return;
     }
-    void (async () => {
-      setPersisting(true);
-      const res = await fcService.updateSetAudioOverview(setId, fileId);
-      setPersisting(false);
-      if (res.error) {
-        toast.error(res.error);
-        return;
-      }
-      onFileIdChange(fileId);
-      toast.success("Audio overview ready");
-    })();
-  }, [state.status, state.audioFileId, state.audioUrl, setId, onFileIdChange]);
+    onFileIdChange(fileId);
+    toast.success("Audio overview ready");
+  }, [state.status, state.audioFileId, state.audioUrl, onFileIdChange]);
 
   const handleGenerate = () => {
     if (cards.length === 0) {
       toast.error("Add some cards to this set first");
       return;
     }
-    persistedRef.current = false;
+    shownRef.current = false;
     const { request, truncated } = buildDeckOverviewRequest(set, cards);
     if (truncated) {
       toast.info(
         "This deck is large — the audio overview covers the first 60 cards.",
       );
     }
-    void start(request);
+    void start({ ...request, audio_overview_for_set: setId });
   };
 
   const handledGenerate = useRef(runSignals?.generate ?? 0);
@@ -359,7 +348,6 @@ export function AudioOverviewSection({
           <Button
             icon={<RefreshCw />}
             variant="quiet"
-            disabled={persisting}
             onClick={handleGenerate}
           >
             Regenerate

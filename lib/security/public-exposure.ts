@@ -876,8 +876,8 @@ export const ANON_COLUMN_SURFACE: ReadonlyArray<AnonColumnSurface> = [
   {
     relation: "workbench.notes",
     columns: [
-      "id", "label", "content", "folder_name", "tags", "position",
-      "created_at", "updated_at", "folder_id", "file_path", "content_hash", "sync_version",
+      "id", "label", "content", "tags", "position",
+      "created_at", "updated_at", "file_path", "content_hash", "sync_version",
       "last_device_id", "project_id", "task_id", "visibility", "published_to_web", "deleted_at",
     ],
     why:

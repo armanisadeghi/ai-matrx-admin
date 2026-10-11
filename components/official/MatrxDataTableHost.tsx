@@ -65,7 +65,11 @@ function TableWindowPanel(props: TableWindowPanelProps) {
 // the level read off the clicked element, and drawn beside the row's own
 // descriptor sections. A table that declares none passes no `sections`, and
 // this boundary is exactly what it was.
-function TableContextMenuBoundary({ label, children, sections }: TableContextMenuBoundaryProps) {
+function TableContextMenuBoundary(props: TableContextMenuBoundaryProps) {
+  const { label, children, sections } = props;
+  // A table that asked for the designed menu (records-ui's grid: `contextMenu.designedMenu`). Read
+  // structurally, so a table package that predates the flag draws the classic menu.
+  const designed = (props as { designedMenu?: unknown }).designedMenu === true;
   const insideMenu = useIsInsideContextMenu();
   const resolveSections = useCallback(
     (target: HTMLElement | null) => {
@@ -81,7 +85,8 @@ function TableContextMenuBoundary({ label, children, sections }: TableContextMen
   // The heading is what was right-clicked, in the words on screen: a column heading's name
   // ("Content: Route tag"), never the table's id or "Data table". A row or cell is headed by the
   // row registry (its cell's words); anywhere else keeps the table's label.
-  return <NonEditableContextMenu sourceFeature="system" contextData={{ content: label }} resolveContextOnOpen={headingWords} {...(sections ? { resolveExtraSectionsOnOpen: resolveSections } : {})}><div className="contents">{children}</div></NonEditableContextMenu>;
+  // Designed: the feature section is headed by what was clicked (the row's name, the column's), so no fixed title.
+  return <NonEditableContextMenu sourceFeature="system" contextData={{ content: label }} resolveContextOnOpen={headingWords} {...(sections ? { resolveExtraSectionsOnOpen: resolveSections } : {})} {...(designed ? { menuDesign: "global" as const } : {})}><div className="contents">{children}</div></NonEditableContextMenu>;
 }
 function headingWords(target: HTMLElement | null) {
   const heading = target?.closest<HTMLElement>("th, [role='columnheader']");

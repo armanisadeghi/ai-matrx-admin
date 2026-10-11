@@ -208,33 +208,6 @@ export const fcService = {
   },
 
   /**
-   * Phase 7 — persist (or clear) the set's generated audio overview. Callers
-   * MUST pass a durable `file_id`, never a raw/signed URL (media-durability
-   * doctrine) — `AudioOverviewSection` resolves one from the podcast run's
-   * `audio_stream_end.file_id` (falling back to `fileIdFromUserFilesUrl`)
-   * before calling this.
-   */
-  async updateSetAudioOverview(
-    setId: string,
-    fileId: string | null,
-  ): Promise<FcResult<FcSetRow>> {
-    try {
-      const { data, error } = await writeOneRow(
-        EDU()
-          .from("fc_set")
-          .update({ audio_overview_file_id: fileId })
-          .eq("id", setId)
-          .select("*"),
-        { action: "update", noun: "set" },
-      );
-      if (error) return fail("updateSetAudioOverview", error);
-      return { data: withDisplayTitle(data as FcSetRow, "name"), error: null };
-    } catch (e) {
-      return fail("updateSetAudioOverview", e);
-    }
-  },
-
-  /**
    * Save a set's row controls — "Shown to" and "Published to the web" — from the RowAccessControl
    * menu (access ladder Words table). The one writer for a deck's row controls.
    */

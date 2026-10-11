@@ -846,6 +846,8 @@ export function SystemMessage({
             <EditableContextMenu
               onInsertPromptBlock={blockEditing.insertFromMenu}
               sourceFeature="agent-builder"
+              menuDesign="global"
+              menuFeatureTitle="Prompt"
               surfaceName="matrx-user/agent-builder"
               contentSource={{ type: "raw" }}
               entity={{

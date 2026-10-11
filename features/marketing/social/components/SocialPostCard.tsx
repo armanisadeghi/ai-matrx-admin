@@ -21,6 +21,8 @@
 
 import Link from "next/link";
 import { Bookmark, Copy, ExternalLink, MoreHorizontal } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { openContextMenuForElement } from "@ai-matrx/context-menu/engine";
 
 import {
   DropdownMenu,
@@ -39,6 +41,8 @@ import type { PostCardModel } from "../types";
 import { OutlierBadge } from "./OutlierBadge";
 import { useCanEditSocial } from "../useCanEditSocial";
 import { PostCardMenuItems } from "./PostCardMenuItems";
+import { postMenuKey, registerPostCardMenu } from "./post-card-menu";
+import { accountHref as accountHrefOf } from "../account-href";
 import { postThumbnailDoor } from "../server";
 import { PlatformMark } from "./PlatformMark";
 import { SocialImage } from "./SocialImage";
@@ -89,10 +93,25 @@ export function SocialPostCard({ post, onOpen, onSave, extraActions, isNew, comp
   const hideBadge = hideOutlier || badge.text === NO_VIEWS_TEXT;
   const stats = [countLabel(post.views, "view"), compact ? null : countLabel(post.likes, "like")].filter(Boolean).join(" · ");
   const absolute = post.postedAt ? postedTitle(post.postedAt) : "";
+  const queryClient = useQueryClient();
+  // The card's rows join the page's ONE right-click menu ("Post"), registered only when it opens.
+  const registerMenu = () =>
+    registerPostCardMenu({
+      post,
+      brand: brand ? { seg: brand.seg, organizationId: brand.organizationId } : null,
+      accountHref: brand ? accountHrefOf(brand.seg, post) : null,
+      canEdit,
+      copyText,
+      onSave,
+      extraActions,
+      queryClient,
+    });
 
   return (
     <div
       data-clickable={onOpen ? "" : undefined}
+      data-record-menu={postMenuKey(post.postId)}
+      onContextMenuCapture={registerMenu}
       className={cn(
         "group relative flex min-w-0 flex-col overflow-hidden rounded-lg border border-border bg-card",
         className,
@@ -175,6 +194,15 @@ export function SocialPostCard({ post, onOpen, onSave, extraActions, isNew, comp
               <button
                 type="button"
                 aria-label="Post actions"
+                // Inside a page menu a pointer press on `⋯` opens that same menu (the designed menu's
+                // "Post" section); the dropdown stays for the keyboard and for a card with no page menu.
+                onPointerDown={(e) => {
+                  if (e.button === 0 && e.currentTarget.closest('[data-alchemy-trigger="context"]')) e.preventDefault();
+                }}
+                onClick={(e) => {
+                  if (e.detail === 0 || !e.currentTarget.closest('[data-alchemy-trigger="context"]')) return;
+                  openContextMenuForElement(e.currentTarget);
+                }}
                 className="matrx-tap-area -mr-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:text-foreground"
               >
                 <MoreHorizontal className="h-4 w-4" />
