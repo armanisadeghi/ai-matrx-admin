@@ -22,6 +22,7 @@ import {
   bodyCell,
   columnLetter,
   displayText,
+  readonlyWords,
   sameValue,
   valueFromCell,
   type LinkedField,
@@ -327,7 +328,7 @@ export function planToSheet(args: {
   const base = baselineIndex(link, args.baseline);
   const table = new Map(tableRows.map((r) => [r.id, r]));
   const placed = new Set<string>();
-  const shown = (f: LinkedField, row: TableRowLike) => display?.[f.field_name]?.get(row.id) ?? null;
+  const shown = (f: LinkedField) => display?.[f.field_name] ?? null;
 
   for (const row of sheet.rows) {
     if (!row.id) {
@@ -351,7 +352,7 @@ export function planToSheet(args: {
     for (const f of link.fields) {
       const col = located.columns.get(f.field_name);
       if (col === undefined) continue;
-      const tableValue = f.kind === "readonly" ? (shown(f, current) ?? displayText(current.data[f.field_name])) : current.data[f.field_name];
+      const tableValue = f.kind === "readonly" ? readonlyWords(current.data[f.field_name], shown(f)) : current.data[f.field_name];
       if (sameValue(f, values[f.field_name], tableValue)) continue;
       if (f.kind !== "readonly" && before && sameValue(f, tableValue, before[f.field_name])) {
         plan.sheetEditsKept += 1;
@@ -359,7 +360,7 @@ export function planToSheet(args: {
       }
       const conflict = f.kind !== "readonly" && !!before && !sameValue(f, values[f.field_name], before[f.field_name]);
       changes.push({ field_name: f.field_name, header: f.header, from: values[f.field_name] ?? null, to: tableValue ?? null, conflict });
-      plan.writes.push({ row: row.row, col, cell: bodyCell(f, current.data[f.field_name], shown(f, current)) });
+      plan.writes.push({ row: row.row, col, cell: bodyCell(f, current.data[f.field_name], shown(f)) });
     }
     if (changes.length > 0) plan.updated.push({ id: row.id, row: rowNo, label: labelFrom(link, current.data, `Row ${rowNo}`), changes });
   }
@@ -371,7 +372,7 @@ export function planToSheet(args: {
     for (const f of link.fields) {
       const col = located.columns.get(f.field_name);
       if (col === undefined) continue;
-      const cell = bodyCell(f, record.data[f.field_name], shown(f, record));
+      const cell = bodyCell(f, record.data[f.field_name], shown(f));
       if (cell) plan.writes.push({ row: next, col, cell });
     }
     plan.writes.push({ row: next, col: idCol, cell: { v: record.id, t: 1 } });

@@ -212,9 +212,9 @@ function listWords(value: unknown): string[] {
 }
 
 /** A stored value as the cell that shows it (without style; the caller adds the column's style). */
-export function cellFromValue(field: LinkedField, value: unknown, display?: string | null): SheetCell | null {
+export function cellFromValue(field: LinkedField, value: unknown, words?: ReadonlyMap<string, string> | null): SheetCell | null {
   if (field.kind === "readonly") {
-    const text = display ?? displayText(value);
+    const text = readonlyWords(value, words);
     return text === "" ? null : { v: text, t: CELL_STRING };
   }
   if (value === null || value === undefined || value === "") return null;
@@ -250,6 +250,20 @@ export function cellFromValue(field: LinkedField, value: unknown, display?: stri
 function choiceWord(field: LinkedField, value: string): string {
   const lower = value.trim().toLowerCase();
   return field.choices?.find((c) => c.toLowerCase() === lower) ?? value;
+}
+
+/**
+ * What a read-only cell shows. A relation cell stores the id(s) of the records it points at; the
+ * store's words door answers by THAT id (never by the id of the row holding the cell), so each
+ * stored id is swapped for its words and an id nothing answered keeps its own text.
+ */
+export function readonlyWords(value: unknown, words?: ReadonlyMap<string, string> | null): string {
+  if (!words || words.size === 0) return displayText(value);
+  const parts = Array.isArray(value) ? value : [value];
+  return parts
+    .filter((p) => p !== null && p !== undefined && p !== "")
+    .map((p) => (typeof p === "string" ? words.get(p.trim()) ?? displayText(p) : displayText(p)))
+    .join(", ");
 }
 
 export function displayText(value: unknown): string {
@@ -342,7 +356,7 @@ export interface TableForSheet {
   name: string;
   fields: LinkedField[];
   rows: Array<{ id: string; data: Record<string, unknown> }>;
-  /** Display words for read-only cells (relations), by field then record id. */
+  /** Display words for read-only cells (relations), by field then the id of the RELATED record the cell stores. */
   display?: Record<string, Map<string, string>>;
 }
 
@@ -378,8 +392,8 @@ export function headerCell(field: LinkedField | null): SheetCell {
   return { v: field.header, t: CELL_STRING, s: field.kind === "readonly" ? READONLY_HEADER_STYLE_ID : HEADER_STYLE_ID };
 }
 
-export function bodyCell(field: LinkedField, value: unknown, display?: string | null): SheetCell | null {
-  const cell = cellFromValue(field, value, display);
+export function bodyCell(field: LinkedField, value: unknown, words?: ReadonlyMap<string, string> | null): SheetCell | null {
+  const cell = cellFromValue(field, value, words);
   const s = bodyStyleFor(field);
   if (!cell) return s ? { s } : null;
   return s ? { ...cell, s } : cell;
@@ -422,7 +436,7 @@ export function buildLinkedSheet(table: TableForSheet, sheetId: string): SheetLi
   rows.forEach((row, r) => {
     const out: Record<string, SheetCell> = {};
     fields.forEach((f, c) => {
-      const cell = bodyCell(f, row.data[f.field_name], table.display?.[f.field_name]?.get(row.id) ?? null);
+      const cell = bodyCell(f, row.data[f.field_name], table.display?.[f.field_name] ?? null);
       if (cell) out[c] = cell;
     });
     out[idCol] = { v: row.id, t: CELL_STRING };

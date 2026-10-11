@@ -134,6 +134,16 @@ export interface TableRead extends TableForSheet {
   columns: DatasetField[];
 }
 
+/** The ids of the related records a relation column's cells store (the words door answers by these). */
+function relatedIds(rows: readonly { data: Record<string, unknown> }[], fieldName: string): string[] {
+  const ids = new Set<string>();
+  for (const r of rows) {
+    const v = r.data[fieldName];
+    for (const part of Array.isArray(v) ? v : [v]) if (typeof part === "string" && part.trim()) ids.add(part.trim());
+  }
+  return [...ids];
+}
+
 /** Every record and the schema, with relation words, as the sheet shows them. */
 export async function readTableForSheet(tableId: string, only?: readonly LinkedField[]): Promise<LinkResult<TableRead>> {
   const complete = await getCompleteTable({ tableId });
@@ -154,7 +164,7 @@ export async function readTableForSheet(tableId: string, only?: readonly LinkedF
     const column = columns.find((c) => c.field_name === f.field_name);
     const formatId = (column?.metadata as { format?: { id?: string } } | null)?.format?.id;
     if (f.kind !== "readonly" || (formatId !== "relation" && formatId !== "person") || rows.length === 0) continue;
-    display[f.field_name] = await readRelationWords({ tableId, fieldName: f.field_name, rowIds: rows.map((r) => r.id) });
+    display[f.field_name] = await readRelationWords({ tableId, fieldName: f.field_name, rowIds: relatedIds(rows, f.field_name) });
   }
   return {
     ok: true,

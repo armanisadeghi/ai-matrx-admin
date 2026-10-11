@@ -34,7 +34,7 @@ const ROWS = [
   { id: "rec-2", data: { company: "Northwind Logistics", stage: "Proposal", deal_value: 42000, signed: false, close_date: "2026-12-01", owner: "u-2" } },
   { id: "rec-3", data: { company: "Blue Mesa Clinics", stage: "Won", deal_value: 9900, signed: true, close_date: "2026-10-02", owner: "u-1" } },
 ];
-const DISPLAY = { owner: new Map([["rec-1", "Dana Ortiz"], ["rec-2", "Sam Lee"], ["rec-3", "Dana Ortiz"]]) };
+const DISPLAY = { owner: new Map([["u-1", "Dana Ortiz"], ["u-2", "Sam Lee"]]) };
 const SHEET = "sheet-deals";
 
 function exported(): WorkbookLike {
@@ -180,7 +180,7 @@ describe("refresh sheet from table", () => {
       { ...ROWS[1], data: { ...ROWS[1].data, stage: "Won" } }, // table edit
       { id: "rec-4", data: { company: "Pinecrest Pediatrics", stage: "Lead", deal_value: 12000, signed: false, close_date: "2027-01-15", owner: "u-2" } },
     ]; // rec-3 archived
-    const display = { owner: new Map([...DISPLAY.owner, ["rec-4", "Sam Lee"]]) };
+    const display = { owner: new Map([...DISPLAY.owner]) };
     const plan = planToSheet({ sheet: parseSheet(edited, SHEET)!, baseline: parseSheet(base, SHEET)!, link, tableRows: table, display });
     expect(plan.updated.map((u) => [u.id, u.changes.map((c) => c.header)])).toEqual([["rec-2", ["Stage"]]]);
     expect(plan.writes).toContainEqual({ row: 2, col: col("Stage"), cell: { v: "Won", t: 1 } });
@@ -189,6 +189,18 @@ describe("refresh sheet from table", () => {
     expect(plan.appended).toEqual([{ id: "rec-4", row: 5, label: "Pinecrest Pediatrics" }]);
     expect(plan.writes).toContainEqual({ row: 4, col: ID_COL, cell: { v: "rec-4", t: 1 } });
     expect(plan.writes).toContainEqual({ row: 4, col: col("Owner"), cell: { v: "Sam Lee", t: 1, s: "tl-ro" } });
+  });
+});
+
+describe("read-only relation cells", () => {
+  it("shows the words of the related record the cell stores, never the holding row's own text", () => {
+    const wb = exported();
+    const cells = wb.sheets![SHEET].cellData!;
+    expect([1, 2, 3].map((r) => cells[r]![col("Owner")]!.v)).toEqual(["Dana Ortiz", "Sam Lee", "Dana Ortiz"]);
+  });
+  it("keeps the stored id's text when the words door answered nothing", () => {
+    const wb = buildLinkedWorkbook({ name: "Pipeline", fields: FIELDS, rows: ROWS, display: { owner: new Map() } }, { workbookId: "wb-1", sheetId: SHEET });
+    expect(wb.sheets![SHEET].cellData![1]![col("Owner")]!.v).toBe("u-1");
   });
 });
 
