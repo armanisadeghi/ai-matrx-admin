@@ -17,7 +17,7 @@
  *   the localStorage entry.
  */
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "@ai-matrx/chat/store/hooks";
 import isEqual from "lodash/isEqual";
 import {
@@ -111,6 +111,41 @@ export function useAgentAutoSave(agentId: string) {
     }
   }, [agentId, record, fetchStatus, dispatch]);
 
+  // The newest record, for the page-leave flush below.
+  const latestRef = useRef(record);
+  useEffect(() => {
+    latestRef.current = record;
+  }, [record]);
+
+  /** Write the backup now: every dirty field of the newest record (never a stale snapshot). */
+  const writeBackup = useCallback(() => {
+    const current = latestRef.current;
+    if (skipPersistence || !current?._dirty) return;
+    const storageKey = `${STORAGE_PREFIX}${agentId}`;
+    try {
+      const snapshot: Record<string, unknown> = { _dirty: true };
+      if (current._dirtyFields) {
+        const fields = new Set(
+          Object.keys(current._dirtyFields) as (keyof AgentDefinition)[],
+        );
+        // The class pin (settings.offering_id) belongs to exactly one model:
+        // back up the model and the settings together, so a restore never
+        // pairs the saved model with another model's class (refused by the
+        // database with P0002) or the reverse.
+        if (fields.has("modelId") || fields.has("settings")) {
+          fields.add("modelId");
+          fields.add("settings");
+        }
+        for (const field of fields) {
+          snapshot[field] = readField(current, field);
+        }
+      }
+      localStorage.setItem(storageKey, JSON.stringify(snapshot));
+    } catch {
+      // Quota exceeded or private mode — silently ignore
+    }
+  }, [agentId, skipPersistence]);
+
   // Debounced backup when dirty (skip for view-only shared agents)
   useEffect(() => {
     // The re-applied edits have now reached the record (it is dirty), so the
@@ -118,35 +153,28 @@ export function useAgentAutoSave(agentId: string) {
     if (record?._dirty) restoredRef.current = false;
     if (skipPersistence || !record?._dirty) return undefined;
     if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      const storageKey = `${STORAGE_PREFIX}${agentId}`;
-      try {
-        const snapshot: Record<string, unknown> = { _dirty: true };
-        if (record._dirtyFields) {
-          const fields = new Set(
-            Object.keys(record._dirtyFields) as (keyof AgentDefinition)[],
-          );
-          // The class pin (settings.offering_id) belongs to exactly one model:
-          // back up the model and the settings together, so a restore never
-          // pairs the saved model with another model's class (refused by the
-          // database with P0002) or the reverse.
-          if (fields.has("modelId") || fields.has("settings")) {
-            fields.add("modelId");
-            fields.add("settings");
-          }
-          for (const field of fields) {
-            snapshot[field] = readField(record, field);
-          }
-        }
-        localStorage.setItem(storageKey, JSON.stringify(snapshot));
-      } catch {
-        // Quota exceeded or private mode — silently ignore
-      }
-    }, DEBOUNCE_MS);
+    timerRef.current = setTimeout(writeBackup, DEBOUNCE_MS);
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [agentId, record, skipPersistence]);
+  }, [record, skipPersistence, writeBackup]);
+
+  // A reload or tab close inside the debounce window must not drop the last edits (a field
+  // declared a moment ago — a prompt block — came back "not declared" after an auto-reload).
+  useEffect(() => {
+    const flush = () => writeBackup();
+    const onHidden = () => {
+      if (document.visibilityState === "hidden") writeBackup();
+    };
+    window.addEventListener("pagehide", flush);
+    window.addEventListener("beforeunload", flush);
+    document.addEventListener("visibilitychange", onHidden);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      window.removeEventListener("beforeunload", flush);
+      document.removeEventListener("visibilitychange", onHidden);
+    };
+  }, [writeBackup]);
 
   // Clear on successful save (clean state) — never while a backup is still
   // waiting to be re-applied, or in the commit that just re-applied it.

@@ -169,3 +169,29 @@ test("a settings-only edit backs up the model with it, so a class pin never rest
     jest.useRealTimers();
   }
 });
+
+test("leaving the page inside the debounce window still backs up the newest edit (a just-declared prompt block)", () => {
+  localStorage.clear();
+  const store = makeStore();
+  serverFetch(store);
+  mount(store);
+  act(() => {
+    store.dispatch(setAgentField({ id: AGENT, field: "settings", value: { moderation: "auto" } }));
+  });
+  expect(localStorage.getItem(KEY)).toBeNull(); // the debounce has not fired yet
+  act(() => {
+    store.dispatch(
+      setAgentField({
+        id: AGENT,
+        field: "promptBlocks",
+        value: [{ name: "kind-agent-mandate-specification" }] as never,
+      }),
+    );
+  });
+  act(() => {
+    window.dispatchEvent(new Event("pagehide"));
+  });
+  const saved = JSON.parse(localStorage.getItem(KEY) ?? "{}");
+  expect(saved.promptBlocks).toEqual([{ name: "kind-agent-mandate-specification" }]);
+  expect(saved.settings).toEqual({ moderation: "auto" });
+});
