@@ -252,3 +252,12 @@ export function pairFailureSentence(error: unknown, rowCode: string | null | und
   const reason = PAIR_FAILURE_REASON[code] ?? (rowCode ? PAIR_FAILURE_REASON[rowCode] : undefined);
   return reason ? `Not run: ${reason}` : "The run failed.";
 }
+
+/**
+ * True when a review-walk window was opened from a candidate pair (its detail
+ * label is `pairWalkLabel`'s "Pair N · hh:mm"). The walk then speaks the pair's
+ * failure sentence, not the raw server text.
+ */
+export function isPairWalkLabel(detailLabel: string | null | undefined): boolean {
+  return typeof detailLabel === "string" && /^Pair \d+/.test(detailLabel);
+}

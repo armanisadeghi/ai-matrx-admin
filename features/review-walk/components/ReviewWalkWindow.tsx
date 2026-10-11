@@ -66,6 +66,7 @@ import {
 } from "./TurnDiagnosis";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { RecordedStepError } from "./RecordedStepError";
 
 export interface ReviewWalkWindowProps {
   onClose: () => void;
@@ -585,13 +586,7 @@ export default function ReviewWalkWindow(props: ReviewWalkWindowProps) {
                 </div>
               )}
               {current.out.unit.error != null && (
-                <div className="rounded border border-red-500/30 bg-red-500/5 px-2 py-1 text-[11px] text-red-700 dark:text-red-300">
-                  This step recorded an error:{" "}
-                  {typeof current.out.unit.error === "string"
-                    ? current.out.unit.error
-                    : JSON.stringify(current.out.unit.error)}
-                  <ErrorAlchemyMenu error={current.out.unit.error} />
-                </div>
+                <RecordedStepError error={current.out.unit.error} detailLabel={detailLabel} />
               )}
 
               {!current.out.capturable && (
