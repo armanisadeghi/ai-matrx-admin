@@ -76,6 +76,8 @@ import { mountUniverDocument } from "@/features/documents/univer-mount-document"
 import { useUniverDarkModeSync } from "@/lib/univer/useUniverDarkModeSync";
 import { useUniverDocSurfaceTheme } from "@/features/documents/hooks/useUniverDocSurfaceTheme";
 import { sanitizeUniverDocSnapshot } from "@/features/documents/utils/sanitizeUniverDocSnapshot";
+import { registerMatrxImageStore } from "@/lib/univer/univerImageStore";
+import { matrxImagePorts } from "@/lib/univer/matrxImagePorts";
 import { disposeUniverInstance } from "@/lib/univer/disposeUniverInstance";
 import { registerUniverFacadeDependencies } from "@/lib/univer/registerUniverFacadeDependencies";
 import { RemoteCursorsLayer } from "@/lib/collab/RemoteCursorsLayer";
@@ -326,6 +328,8 @@ export default function DocumentEditor({
         }
         univerRef.current = univer;
         apiRef.current = univerAPI;
+        // Pictures go to the file store; the snapshot keeps only a reference.
+        registerMatrxImageStore(univer.__getInjector(), matrxImagePorts);
 
         // THE CANVAS PAINTS WHAT IT IS TOLD. Univer's dark mode otherwise
         // inverts every fill on its way to the context and THROWS on a colour

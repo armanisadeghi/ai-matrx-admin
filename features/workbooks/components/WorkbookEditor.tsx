@@ -78,12 +78,15 @@ import "@univerjs/preset-sheets-thread-comment/lib/index.css";
 import { supabase } from "@/utils/supabase/client";
 import { useThemeMode } from "@/styles/themes/useThemeMode";
 import { Button } from "@ai-matrx/design-system";
+import { WorkbookDataToolbar } from "@/features/workbooks/components/WorkbookDataToolbar";
 import { cn } from "@/lib/utils";
 import { useToolToggle } from "@/features/canvas/host/toolCanvas";
 import { toast } from "@/components/ui/use-toast";
 
 import { useWorkbookRealtime } from "@/features/workbooks/hooks/useWorkbookRealtime";
 import { useUniverDarkModeSync } from "@/lib/univer/useUniverDarkModeSync";
+import { registerMatrxImageStore } from "@/lib/univer/univerImageStore";
+import { matrxImagePorts } from "@/lib/univer/matrxImagePorts";
 import { disposeUniverInstance } from "@/lib/univer/disposeUniverInstance";
 import { isSnapshotMutation } from "@/lib/univer/isSnapshotMutation";
 import { RemoteCursorsLayer } from "@/lib/collab/RemoteCursorsLayer";
@@ -308,6 +311,8 @@ export default function WorkbookEditor({
         }
         univerRef.current = univer;
         apiRef.current = univerAPI;
+        // Pictures go to the file store; the snapshot keeps only a reference.
+        registerMatrxImageStore(univer.__getInjector(), matrxImagePorts);
 
         // Hydrate from the latest persisted snapshot, or create empty.
         const res = await getLatestSnapshot(workbookId);
@@ -817,6 +822,7 @@ export default function WorkbookEditor({
               <span>{statusPill.text}</span>
             </div>
           )}
+          {bootState === "ready" && <WorkbookDataToolbar apiRef={apiRef} editable={editable} />}
           {toolbarRightSlot}
           {/* Custom-table link (Lane B): linked chip or "Make table". */}
           {bootState === "ready" && (
