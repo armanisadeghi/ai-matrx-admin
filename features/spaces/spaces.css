@@ -268,11 +268,35 @@
   background: var(--spaces-hover);
 }
 .spaces-section-title {
+  display: inline-flex;
   flex: 1;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
   color: var(--spaces-ink-soft);
   font-size: 12px;
   font-weight: 500;
   text-align: left;
+}
+/* Notion's section caret: hidden until the header is hovered, points down when open. */
+.spaces-section-caret {
+  opacity: 0;
+  color: var(--spaces-ink-soft);
+  transition: transform 150ms ease, opacity 120ms ease;
+}
+.spaces-section-caret[data-open] {
+  transform: rotate(90deg);
+}
+.spaces-section-head:hover .spaces-section-caret,
+.spaces-section-title:focus-visible .spaces-section-caret {
+  opacity: 1;
+}
+.spaces-section-add {
+  opacity: 0;
+}
+.spaces-section-head:hover .spaces-section-add,
+.spaces-section-add:focus-visible {
+  opacity: 1;
 }
 .spaces-row {
   position: relative;
@@ -333,22 +357,46 @@
   width: 22px;
   height: 22px;
 }
+.spaces-row-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 100ms ease;
+}
+/* Notion's tree disclosure: the chevron takes the page icon's own 22px slot while the row is
+   hovered or focused, so every title starts on the same line and nothing shifts. */
 .spaces-row-chevron {
   position: absolute;
   inset: 0;
-  display: none;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 4px;
+  color: var(--spaces-ink-soft);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 100ms ease, background-color 100ms ease;
+}
+.spaces-row-chevron > svg {
+  transition: transform 150ms ease;
+}
+.spaces-row-chevron[data-open] > svg {
+  transform: rotate(90deg);
 }
 .spaces-row-chevron:hover {
   background: var(--spaces-hover-strong);
+  color: var(--spaces-ink);
 }
-.spaces-row:hover .spaces-row-chevron {
-  display: inline-flex;
+.spaces-row:hover .spaces-row-chevron,
+.spaces-row:focus-visible .spaces-row-chevron,
+.spaces-row-chevron:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
 }
-.spaces-row:hover .spaces-row-glyph {
-  visibility: hidden;
+.spaces-row:hover .spaces-row-glyph,
+.spaces-row:focus-visible .spaces-row-glyph,
+.spaces-row:has(.spaces-row-chevron:focus-visible) .spaces-row-glyph {
+  opacity: 0;
 }
 .spaces-row-title {
   flex: 1 1 auto;
