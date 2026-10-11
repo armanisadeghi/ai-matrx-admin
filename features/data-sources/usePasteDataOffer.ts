@@ -23,16 +23,16 @@ export function getDataHref(opts: { sourceKey?: string; field?: string; value?: 
 }
 
 /**
- * A pasted address that a data source covers → a toast OFFER "Get as data table" (opens the Get
- * data page prefilled). Never fetches on paste; the paste itself lands in the box as usual.
+ * The one paste handler: a pasted address that a data source covers → a toast OFFER "Get as data
+ * table" (opens the Get data page prefilled). Never fetches on paste; the paste itself lands as usual.
  */
-export function usePasteDataOffer(textareaRef: RefObject<HTMLTextAreaElement | null>, disabled = false) {
+function usePasteOfferHandler(disabled: boolean) {
   const router = useRouter();
   const queryClient = useQueryClient();
   // org-filter: write-target the offered fetch makes a new table in the organization she works in
   const { organizationId } = useOrganizationRequired();
 
-  const onPaste = useEffectEvent((event: ClipboardEvent) => {
+  return useEffectEvent((event: ClipboardEvent) => {
     if (disabled || !organizationId) return;
     const text = event.clipboardData?.getData("text/plain") ?? "";
     if (!text.trim() || text.trim().includes("\n") || !asWebAddress(text)) return;
@@ -58,13 +58,38 @@ export function usePasteDataOffer(textareaRef: RefObject<HTMLTextAreaElement | n
         console.warn("[data-sources] paste offer unavailable:", err instanceof Error ? err.message : err);
       });
   });
+}
 
+/** Paste offer on one textarea (the legacy chat input's clipboard slot). */
+export function usePasteDataOffer(textareaRef: RefObject<HTMLTextAreaElement | null>, disabled = false) {
+  const onPaste = usePasteOfferHandler(disabled);
   useEffect(() => {
     const el = textareaRef.current;
     if (!el) return undefined;
     el.addEventListener("paste", onPaste);
     return () => el.removeEventListener("paste", onPaste);
   }, [textareaRef]);
+}
+
+/** The main composer marks itself with this attribute (SmartAgentInput); its box is a textarea or a text editor inside it. */
+export const COMPOSER_SELECTOR = "[data-composer-size]";
+
+/** True when a paste landed in a chat composer's text box (pure; the matcher wiring is tested on it). */
+export function isComposerPasteTarget(target: EventTarget | null): boolean {
+  const el = target instanceof Element ? target : null;
+  return !!el && !!el.closest(COMPOSER_SELECTOR) && !!el.closest("textarea, [contenteditable='true'], [contenteditable='']");
+}
+
+/** The main /chat composer (SmartAgentInput lives in the chat package, with no paste slot): one document listener scoped to composers. */
+export function useComposerPasteDataOffer() {
+  const handler = usePasteOfferHandler(false);
+  useEffect(() => {
+    const onPaste = (event: ClipboardEvent) => {
+      if (isComposerPasteTarget(event.target)) handler(event);
+    };
+    document.addEventListener("paste", onPaste, true);
+    return () => document.removeEventListener("paste", onPaste, true);
+  }, []);
 }
 
 /** The chat composer's paste slot: pasted images as before, plus the data-table offer for an address. */

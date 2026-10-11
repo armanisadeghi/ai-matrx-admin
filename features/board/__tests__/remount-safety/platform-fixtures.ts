@@ -26,6 +26,9 @@ const KNOBS: Record<string, unknown> = {
   "selection_toolbar.highlight_while_editing": false,
   // migrations/campaign/merge7_the_merged_grid_is_a_feature_knob.sql
   "data_tables.merged_grid": false,
+  // platform.feature_knob billing.points_per_usd (live row, 20000): costs convert at it (components/cost/pointsRate.ts),
+  // which every fetched-table bar and fetch estimate reads (features/data-sources/hooks.ts).
+  "billing.points_per_usd": 20000,
 };
 
 export function seedPlatform(): void {

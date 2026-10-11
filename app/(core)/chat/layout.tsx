@@ -1,6 +1,7 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
 import { ChatIncognitoProvider } from "@ai-matrx/chat/agents/components/chat/ChatIncognitoProvider";
 import { ChatIncognitoHeaderButton } from "@ai-matrx/chat/agents/components/chat/ChatIncognitoHeaderButton";
+import { ChatPasteOffer } from "@/features/data-sources/ChatPasteOffer";
 
 export const metadata = createRouteMetadata("/chat", {
   title: "Chat",
@@ -26,6 +27,7 @@ export default function ChatLayout({
   return (
     <ChatIncognitoProvider>
       <ChatIncognitoHeaderButton />
+      <ChatPasteOffer />
       {children}
     </ChatIncognitoProvider>
   );
