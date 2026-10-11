@@ -44,6 +44,7 @@ import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
 import { recordPageHref } from "@/features/unified-data/table-page/recordPageHref";
 import { recordStoreShare } from "@/features/sharing/components/RecordStoreShareSurface";
+import { recordStoreColumnAccess } from "@/features/access-setup/components/ColumnAccessPanel";
 import { APPLETS_PORT } from "@/features/applets/embed/appletsPort";
 import { RecordScopedChat } from "@/features/unified-data/record-chat/RecordScopedChat";
 import { RecordRunsSection } from "@/features/workflow-runtime/simple-builder/RecordRunsSection";
@@ -189,6 +190,9 @@ export function recordsUiHostFor({ ports, merged, gridContext, rights }: Records
       },
     },
     share: recordStoreShare,
+    // "Who can see and edit…" on a column header (access-setup PLAN §12, records-ui `columnAccess`).
+    // Spread as its own object: a records-ui build before the port ignores the key.
+    ...{ columnAccess: recordStoreColumnAccess },
     // "This organization is archived" on every refusal that names one: an owner (or super admin) gets
     // "Restore organization" (the one iam.organization_restore door), everyone else is told who can.
     // Spread as its own object: a records-ui build before the port ignores the key.

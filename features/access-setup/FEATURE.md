@@ -58,3 +58,14 @@ action on its record page.
 ## Change log
 
 - 2026-10-10 — created (lane access-setup): record + cycle panels, window, after-create helper, review wiring.
+
+## Store Tables — who sees and edits a column (PLAN §12, phase 1)
+
+- `components/ColumnAccessPanel.tsx` — the column's People involved panel, opened from a Table column header
+  ("Who can see and edit…") through the records-ui host port `columnAccess` (wired in
+  `features/data-tables/records-ui-host/recordsUiHost.tsx`). Part name + how private + every person who reaches
+  the Table (Sees / Edits / Hidden); a proposal is asked of the store first and marks who loses sight or editing.
+- `columnAccessService.ts` — `custom.field_access_setup` (read; `p_proposed` counts who loses sight) and
+  `custom.field_access_set` (table admins only, never an agent; audited). Migrations `accesssetup_store_a…e`.
+- Phase 1 answers from the sensitivity word (a part's columns share one word); nothing is swapped yet.
+
