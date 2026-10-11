@@ -75,7 +75,8 @@ begin
       v_fail := v_fail || ('1 the button settings did not land: ' || coalesce((v_doc -> 'config')::text, 'null'));
     end if;
     v_res := custom.button_press(v_org, v_job, b_map);
-    if v_res ->> 'url' is distinct from 'https://maps.google.com/?q=1420 Birch Lane' then
+    -- updated 2026-10-10: since WALK-FIXES D3 a row value inside a link is percent-encoded (94e4a8b3aaf).
+    if v_res ->> 'url' is distinct from 'https://maps.google.com/?q=1420%20Birch%20Lane' then
       v_fail := v_fail || ('1 the press answered ' || v_res::text);
     end if;
   exception when others then

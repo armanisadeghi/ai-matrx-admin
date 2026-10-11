@@ -132,7 +132,12 @@ const condOf = (field: string, words: string) => ({
   args: [{ field }, { const: `(?i)^${words.trim().replace(/[.^$*+?()[\]{}|\\-]/g, "\\$&")}$` }],
 });
 const condWords = (c: unknown): { field: string | null; words: string } => {
-  const x = c as { op?: string; args?: Array<{ field?: string; const?: unknown }> } | null | undefined;
+  const top = c as { op?: string; args?: Array<{ op?: string; field?: string; const?: unknown }> } | null | undefined;
+  // The store keeps "present AND match" for words (an empty property is "no"); the match is the second part.
+  const x = (top?.op === "and" && top.args?.[0]?.op === "present" ? top.args[1] : top) as
+    | { op?: string; args?: Array<{ field?: string; const?: unknown }> }
+    | null
+    | undefined;
   const raw = String(x?.args?.[1]?.const ?? "");
   const words = x?.op === "matches" && raw.startsWith("(?i)^") && raw.endsWith("$") ? raw.slice(5, -1).replace(/\\(.)/g, "$1") : raw;
   return { field: x?.args?.[0]?.field ?? null, words };
@@ -633,7 +638,11 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
                   <Input aria-label="Slack message" placeholder="Message, {Name} for a property" value={d.text} onChange={(e) => put(i, { text: e.target.value })} />
                 </>
               ) : (
-                <Input aria-label="Agent prompt" placeholder="Ask an agent" value={d.prompt} onChange={(e) => put(i, { prompt: e.target.value })} />
+                <>
+                  <Input aria-label="Agent prompt" placeholder="Ask an agent" value={d.prompt} onChange={(e) => put(i, { prompt: e.target.value })} />
+                  {/* The agent step records the question for a person to run; it spends nothing by itself (0 pts a run). */}
+                  <span className="type-secondary text-muted-foreground" data-testid="spaces-automation-agent-cost">Waits for a person · runs no AI · 0 pts</span>
+                </>
               )}
               <Button variant="quiet" icon={<X size={14} />} aria-label="Remove action" onClick={() => setDrafts(drafts.filter((_, j) => j !== i))} />
             </div>
@@ -669,6 +678,11 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
                     {describeSpec(a.spec, fields)}
                     {a.last_run ? ` · last run ${a.last_run.status}` : ""}
                   </div>
+                  {(a as AutomationItem & { disabled_reason?: string }).disabled_reason || a.last_run?.status === "failed" ? (
+                    <div className="type-secondary truncate text-destructive" data-testid="spaces-automation-problem">
+                      {(a as AutomationItem & { disabled_reason?: string }).disabled_reason ?? a.last_run?.says}
+                    </div>
+                  ) : null}
                 </button>
                 {a.archived_at ? (
                   <Button variant="quiet" icon={<RotateCcw size={14} />} aria-label="Restore automation" onClick={() => void flip(client.automationRestore({ automation_id: a.id }))} />

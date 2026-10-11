@@ -265,6 +265,33 @@ export function overflowItemLabel(node: ReactNode): string | null {
 }
 
 /**
+ * 🚨 THE WHOLE ROW IS THE TAP TARGET (2026-10-10). An overflow item is the
+ * control plus its printed name as a SIBLING; a tap on the name hit nothing, so
+ * only the small icon opened "New table". A tap anywhere in the row that is
+ * not already inside the control is forwarded to the control. A popup trigger
+ * (Radix opens on pointerdown, not click) gets the pointerdown first.
+ */
+export function forwardRowTap(event: {
+  target: EventTarget | null;
+  currentTarget: HTMLElement;
+}): void {
+  const row = event.currentTarget;
+  const target = event.target as HTMLElement | null;
+  if (!target) return;
+  const control = row.querySelector<HTMLElement>(
+    "button, a[href], [role='button'], [role='menuitem']",
+  );
+  if (!control || control.contains(target) || control.hasAttribute("disabled")) return;
+  if (control.getAttribute("aria-haspopup")) {
+    control.dispatchEvent(
+      new PointerEvent("pointerdown", { bubbles: true, button: 0, pointerType: "touch" }),
+    );
+    return;
+  }
+  control.click();
+}
+
+/**
  * ONE overflow-strip item, for every RouteHeader consumer: the action, plus its
  * name printed as text whenever `overflowItemLabel` finds one. A control is
  * absent or honest — inside a menu, an icon alone is neither: two copy-shaped
@@ -278,6 +305,7 @@ export function OverflowMenuItem({ action }: { action: FlatAction }) {
     <div
       data-route-header-overflow-item
       className="flex shrink-0 items-center gap-1.5 px-1"
+      onClick={forwardRowTap}
     >
       {action.node}
       {label ? (

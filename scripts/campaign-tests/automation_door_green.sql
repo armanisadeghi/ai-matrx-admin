@@ -82,11 +82,12 @@ begin
   raise notice '0 PASS — seated as the editor of the Content table.';
 
   -- ══ PART 1 — THE SPEC, JUDGED WHOLE ═══════════════════════════════════════════════════
+  -- 1a (updated 2026-10-10, AUTOMATIONS-AIRTABLE): schedules are a real trigger since AUTOMATION-TIME; one that does
+  -- not say how often is refused by name (trigger.every) and stores nothing.
   v_res := custom.automation_declare(v_org, v_content, jsonb_build_object('name', 'Daily digest',
     'trigger', jsonb_build_object('on', 'schedule'), 'actions', jsonb_build_array(jsonb_build_object('do', 'agent', 'prompt', 'x'))));
-  if (v_res ->> 'ok')::boolean or v_res -> '_errors' -> 'trigger' is null or v_res ->> 'automation_id' is not null
-     or (v_res -> '_errors' ->> 'trigger') not like '%schedule%' then
-    raise exception '1a: a schedule trigger was not refused by name: %', v_res; end if;
+  if (v_res ->> 'ok')::boolean or v_res -> '_errors' -> 'trigger.every' is null or v_res ->> 'automation_id' is not null then
+    raise exception '1a: a schedule that does not say how often was not refused by name: %', v_res; end if;
   v_res := custom.automation_declare(v_org, v_content, jsonb_build_object('name', 'Bad field',
     'trigger', jsonb_build_object('on', 'property_edited', 'field', gen_random_uuid()),
     'actions', jsonb_build_array(jsonb_build_object('do', 'set', 'values', jsonb_build_object(gen_random_uuid(), 'x')))));
@@ -99,7 +100,7 @@ begin
     'actions', jsonb_build_array(jsonb_build_object('do', 'webhook', 'url', 'http://localhost/hook'))));
   if (v_res ->> 'ok')::boolean or v_res -> '_errors' -> 'actions.0.url' is null then raise exception '1d: a non-https webhook was stored: %', v_res; end if;
   if jsonb_array_length(custom.automations(v_content, v_org) -> 'automations') <> 0 then raise exception '1e: a refused spec left an automation behind'; end if;
-  raise notice '1 PASS — a schedule, a missing property, no actions and a non-https webhook each come back as _errors; nothing was stored.';
+  raise notice '1 PASS — a schedule with no interval, a missing property, no actions and a non-https webhook each come back as _errors; nothing was stored.';
 
   -- ══ PART 2 — "WHEN STATUS BECOMES READY, ADD AN APPROVAL AND TELL ME" ═══════════════════
   v_res := custom.automation_declare(v_org, v_content, jsonb_build_object('name', 'Ready stories go to Approvals',
