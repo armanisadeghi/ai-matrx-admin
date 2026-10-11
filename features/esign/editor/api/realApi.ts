@@ -30,6 +30,7 @@ const REFUSAL_TEXT: Record<string, string> = {
   template_not_found: "That template no longer exists.",
   draft_invalid: "This draft has something we could not save.",
   code_too_short: "An access code needs at least 4 characters.",
+  code_too_long: "An access code can have 20 characters at most.",
   stale_template: "Someone changed this template. Reload it.",
   no_documents: "Add a document first.",
   no_signers: "Add someone to sign first.",

@@ -12,3 +12,17 @@ describe("sendBlockers — access code (verify A3, sender defect 3)", () => {
     expect(sendBlockers({ ...emptyDraft("x"), documents: [doc], recipients: [set, mail] })).toEqual([]);
   });
 });
+
+describe("access code is a real option", () => {
+  const doc = { key: "d", file_id: "f", name: "Lease.pdf", page_count: 1 };
+  it("names the recipient whose code is missing, and a member never needs one", () => {
+    const r = newRecipient([], { full_name: "Bob Outside", email: "b@example.com", verification: "access_code" });
+    const member = newRecipient([r], { full_name: "Mia", email: "m@example.com", user_id: "u1", verification: "access_code" });
+    expect(sendBlockers({ ...emptyDraft("x"), documents: [doc], recipients: [r, member] })).toEqual(["Set an access code for Bob Outside."]);
+  });
+  it("a copy that lost its code asks again, and the choice is kept (never turned into an email code)", () => {
+    const copied = newRecipient([], { full_name: "Bob", email: "b@example.com", verification: "access_code", has_access_code: false });
+    expect(copied.verification).toBe("access_code");
+    expect(sendBlockers({ ...emptyDraft("x"), documents: [doc], recipients: [copied] })).toContain("Set an access code for Bob.");
+  });
+});

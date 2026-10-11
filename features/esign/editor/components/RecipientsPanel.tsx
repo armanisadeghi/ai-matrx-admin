@@ -7,7 +7,7 @@
 
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { useState } from "react";
-import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, Trash2, UserPlus } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, Eye, EyeOff, Trash2, UserPlus } from "lucide-react";
 
 import { Badge, Button, Field, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 import type { DraftRecipient, EnvelopeDraftV1, RecipientRole, RecipientVerification } from "../../contract/draft";
 import { recipientColor } from "../../contract/paper";
-import { ACCESS_CODE_OFFERED, isEmail, newRecipient, ROLE_LABEL } from "../model";
+import { ACCESS_CODE_MAX, ACCESS_CODE_MIN, isEmail, newRecipient, ROLE_LABEL } from "../model";
 import { ProInput } from "@/components/official/ProInput";
 
 export interface Person {
@@ -38,9 +38,12 @@ const ROLE_OPTIONS = (Object.keys(ROLE_LABEL) as RecipientRole[]).map((v) => ({ 
 const VERIFY_OPTIONS: { value: RecipientVerification; label: string }[] = [
   { value: "none", label: "Email link" },
   { value: "email_code", label: "Email code" },
-  ...(ACCESS_CODE_OFFERED ? [{ value: "access_code" as const, label: "Access code" }] : []),
+  { value: "access_code", label: "Access code" },
 ];
 const MAX_MATCHES = 6;
+
+/** An outside recipient who opens with an access code the sender has not typed (a copy or template never carries it). */
+const needsCode = (r: DraftRecipient) => !r.user_id && r.verification === "access_code" && !r.has_access_code;
 
 export function RecipientsPanel({ draft, edit, people, me, setAccessCode, templateMode }: Props) {
   const [roleName, setRoleName] = useState("");
@@ -163,6 +166,7 @@ export function RecipientsPanel({ draft, edit, people, me, setAccessCode, templa
                   {r.user_id ? <Badge tone="info">Member</Badge> : <Badge>Outside</Badge>}
                 </div>
                 <div title={r.email || undefined} className={cn("break-all type-secondary", isEmail(r.email) || templateMode ? "text-muted-foreground" : "text-destructive")}>{r.email || (templateMode ? "Filled in when used" : "Email needed")}</div>
+                {needsCode(r) && !templateMode && <div className="type-secondary text-destructive">Access code needed</div>}
               </div>
               {sequential && recipients.length > 1 && (
                 <div className="flex shrink-0">
@@ -281,29 +285,53 @@ export function RecipientsPanel({ draft, edit, people, me, setAccessCode, templa
 
 function AccessCodeField({ recipient, setAccessCode, onSet }: { recipient: DraftRecipient; setAccessCode(key: string, code: string | null): Promise<boolean>; onSet(has: boolean): void }) {
   const [value, setValue] = useState("");
+  const [shown, setShown] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const save = () => {
+    const code = value.trim();
+    if (!code) return;
+    if (code.length < ACCESS_CODE_MIN || code.length > ACCESS_CODE_MAX) {
+      setError(`Use ${ACCESS_CODE_MIN} to ${ACCESS_CODE_MAX} characters.`);
+      return;
+    }
+    void setAccessCode(recipient.key, code)
+      .then((has) => {
+        onSet(has);
+        setValue("");
+        setError(null);
+      })
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : "That code could not be saved."));
+  };
   return (
     <div className="flex flex-col gap-1">
-      <Field
-        aria-label="Access code"
-        type="password"
-        autoComplete="off"
-        placeholder={recipient.has_access_code ? "Code set — type to replace" : "Choose a code (4 or more characters)"}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onBlur={() => {
-          if (!value) return;
-          void setAccessCode(recipient.key, value)
-            .then((has) => {
-              onSet(has);
-              setValue("");
-              setError(null);
-            })
-            .catch((err: unknown) => setError(err instanceof Error ? err.message : "That code could not be saved."));
-        }}
-      />
-      {recipient.has_access_code && !error && <span className="type-secondary text-muted-foreground">Code set</span>}
-      {error && <ErrorNotice size="inline" message={error} operation="Set an access code" className="type-secondary" />}
+      <div className="flex items-center gap-1.5">
+        <Field
+          aria-label="Access code"
+          type={shown ? "text" : "password"}
+          autoComplete="off"
+          maxLength={ACCESS_CODE_MAX + 4}
+          placeholder={recipient.has_access_code ? "Code set. Type to replace" : `${ACCESS_CODE_MIN} to ${ACCESS_CODE_MAX} characters`}
+          value={value}
+          onChange={(e) => {
+            setValue(e.target.value);
+            setError(null);
+          }}
+          onBlur={save}
+          onKeyDown={(e) => {
+            if (e.key !== "Enter") return;
+            e.preventDefault();
+            save();
+          }}
+        />
+        <Button variant="quiet" aria-label={shown ? "Hide the code" : "Show the code"} icon={shown ? <EyeOff /> : <Eye />} onClick={() => setShown((v) => !v)} />
+      </div>
+      {error ? (
+        <ErrorNotice size="inline" message={error} operation="Set an access code" className="type-secondary" />
+      ) : recipient.has_access_code ? (
+        <span className="type-secondary text-muted-foreground">Code set</span>
+      ) : (
+        <span className="type-secondary text-destructive">Access code needed</span>
+      )}
     </div>
   );
 }
