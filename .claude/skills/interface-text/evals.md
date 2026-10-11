@@ -66,7 +66,16 @@ Slice: `app/(admin)`, `features/admin`, `features/administration` (855 candidate
 
 563 units on the core product; `check-owner-words.mjs` held back 6 (reviewers kept 2 as Arman's guidance — one added to `keep.json` — and returned 4 he had only quoted while complaining). Discover sonnet 14/14 validator-clean; reviewers' outputs validator-clean (round 1 shipped 31 over-budget lines). 13 confirms all certified; misses harvested into `fix.md` (flipped consequences, surviving code names, definition placement, measured truncation, per-row hints, required props). Measured 362 → 145 NOVEL.
 
+## Scenario E5 — tooltip recovery over rounds 1–2 (2026-10-11)
+
+427 cut strings from 94 commits. Three `quick` sonnet judges with no machine check skimmed: 5 of 153
+and ~12 of 128 units opened at HEAD, the rest given rule-based verdicts, 0 tooltips proposed —
+**FAIL** (killed). Lesson: a judgment-only pass needs a machine-checked proof per unit (a verbatim
+HEAD snippet), and goes to opus when the judgment is "what did a newcomer lose". A script cut the set
+to 120 units where the replacement was < 55% of the original and carried no identifiers; two opus
+judges ruled per unit and applied the tooltips.
+
 ## Detector self-test
 
-`pnpm check:interface-text:self-test` (matrx-frontend) — all five rules fire on the kg-cost
-shape and the fixed shape is clean. Verified 2026-09-30.
+`pnpm check:interface-text:self-test` (matrx-frontend) — all six rules (`native-title` added
+2026-10-11) fire on the kg-cost shape and the fixed shape is clean. Verified 2026-10-11.

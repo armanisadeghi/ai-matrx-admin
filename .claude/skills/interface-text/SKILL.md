@@ -32,7 +32,7 @@ the code comment and `FEATURE.md` are for.
    Then give every label, icon button, abbreviation or number a newcomer might not understand a
    **one-sentence tooltip**: `title=` on `KpiTile`, `components/official/InfoHint` everywhere
    else (hover, keyboard and touch — a native `title=` attribute is unreachable on phones). A
-   complex thing gets a help popover (`CompactHelpPopover`, `components/official/settings/SettingsRow.tsx`).
+   complex thing gets a help popover (`FieldHelp` from `@ai-matrx/design-system/controls`; a `Field`'s string `help` and a settings row's `helpText` already render one).
    When you delete prose, ask what a newcomer loses and move that into a tooltip — never just
    delete (Arman, 2026-10-10: "our changes need to push for ALWAYS tooltips").
 3. **Fit the slot.** Secondary text ≤ **60** chars, one line, never two sentences. Tooltip ≤
