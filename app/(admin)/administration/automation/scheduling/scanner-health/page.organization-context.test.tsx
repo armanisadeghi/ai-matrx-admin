@@ -31,6 +31,7 @@ jest.mock("@tanstack/react-query", () => ({
   useQueryClient: () => queryClient,
 }));
 
+jest.mock("@/features/admin/attention/AttentionSignalPanel", () => ({ AttentionSignalPanel: () => null }));
 jest.mock("@/features/admin/attention/sources/useScheduleAlarmSource", () => ({
   SCHEDULE_ALARMS_QUERY_KEY: ["schedule-alarms"],
   useScheduleAlarmSource: () => ({ items: [], status: "ok", error: null }),

@@ -76,7 +76,7 @@ import {
   selectIsSuperAdmin,
 } from "@/lib/redux/selectors/userSelectors";
 import { AttentionItemRow } from "./AttentionItemRow";
-import { buildAttentionNotice } from "./build-notice";
+import { buildAttentionNotice, type NoticeTriage } from "./build-notice";
 import { DEFAULT_SNOOZE, readSnoozedUntil, SNOOZE_CHOICES, writeSnooze } from "./dock-snooze";
 import { muteLabel, touchMutes } from "./item-mute";
 import { MuteDialog } from "./MuteDialog";
@@ -86,7 +86,9 @@ import { useScheduleAlarmSource } from "./sources/useScheduleAlarmSource";
 import { useDatedChangeSource } from "./sources/useDatedChangeSource";
 import { useSpendAlarmSource } from "./sources/useSpendAlarmSource";
 import { useSpendTodaySource } from "./sources/useSpendTodaySource";
-import type { AttentionAction, AttentionItem } from "./types";
+import { useAttentionTriage } from "./sources/useAttentionTriage";
+import { recordAttention, type AttentionEventItem } from "./triage-service";
+import type { AttentionAction, AttentionItem, AttentionSourceState } from "./types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { asClause } from "@ai-matrx/kit/text";
 
@@ -95,6 +97,8 @@ export const ATTENTION_QUERY_PREFIX = ["admin-attention"] as const;
 const POSITION_KEY = "matrx.admin-attention.position";
 const LEGACY_COLLAPSED_KEY = "matrx.admin-attention.collapsed";
 const TABLE_FOOTER_EXCLUSION = { selector: "[data-matrx-table-footer]" } as const;
+/** Where "being prepared by agents" opens: the review page with the signal and every routed item. */
+export const ATTENTION_REVIEW_HREF = "/administration/automation/scheduling/scanner-health#attention-triage";
 
 /**
  * A fresh page is always compact. Remembering an expanded operational notice
@@ -135,6 +139,7 @@ export default function AdminAttentionDock() {
   const spendAlarms = useSpendAlarmSource(canRead);
   const spendToday = useSpendTodaySource(canRead);
   const sources = [datedChanges, spendAlarms, spendToday, schedules, outages];
+  const triageState = useAttentionTriage(canRead);
 
   const float = useDraggableFloat({
     storageKey: POSITION_KEY,
@@ -207,9 +212,34 @@ export default function AdminAttentionDock() {
   const shownSources = snoozed
     ? sources.map((s) => ({ ...s, items: s.items.filter((item) => item.mute === null) }))
     : sources;
-  const notice = canRead ? buildAttentionNotice(shownSources, localMutes, now) : null;
+  // Only ready owner decisions reach the card, at most the budget (platform.attention_card).
+  // While the triage read is in flight the card waits — never a flash of every alarm.
+  const noticeTriage: NoticeTriage | null =
+    triageState.status === "ok" && triageState.triage
+      ? triageState.triage
+      : triageState.status === "failed"
+        ? "unavailable"
+        : null;
+  const notice =
+    canRead && noticeTriage !== null ? buildAttentionNotice(shownSources, localMutes, now, noticeTriage) : null;
+  const triageFailure: AttentionSourceState | null =
+    triageState.status === "failed"
+      ? {
+          id: "attention-triage",
+          label: "Sorting",
+          items: [],
+          status: "failed",
+          error: triageState.error,
+          loud: true,
+          summarize: () => null,
+          review: null,
+          refetch: triageState.refetch,
+        }
+      : null;
   const loudFailures =
-    canRead && !snoozed ? sources.filter((s) => s.status === "failed" && s.loud) : [];
+    canRead && !snoozed
+      ? [...sources.filter((s) => s.status === "failed" && s.loud), ...(triageFailure ? [triageFailure] : [])]
+      : [];
   const visible = notice !== null || loudFailures.length > 0;
   // Every page starts compact, the alarm list included — and the pill ALWAYS expands on a click.
   // (Harsh walk 2026-10-10: on the alarm list the pill was forced shut, so a click did nothing.)
@@ -228,6 +258,24 @@ export default function AdminAttentionDock() {
       delete root.dataset.adminAttention;
     };
   }, [collapsed, visible]);
+
+  // THE SIGNAL METRIC: record what the owner card shows (one episode per item until he acts,
+  // mutes, or it expires — platform.attention_record dedupes). Keyed on the card's keys so a
+  // poll that changes nothing records nothing.
+  const eventOf = (item: AttentionItem): AttentionEventItem => {
+    const verdict = noticeTriage && noticeTriage !== "unavailable" ? noticeTriage.verdicts.get(item.key) : undefined;
+    return { item_key: item.key, source: item.sourceId, kind: verdict?.kind ?? "*" };
+  };
+  const shownOnCard =
+    notice && noticeTriage && noticeTriage !== "unavailable"
+      ? notice.sections.filter((s) => s.source.counted !== false).flatMap((s) => s.items).map(eventOf)
+      : [];
+  const shownSignature = shownOnCard.map((e) => e.item_key).join("|");
+  useEffect(() => {
+    if (!shownSignature) return;
+    void recordAttention("shown", shownOnCard);
+    // shownOnCard is derived from the same render as shownSignature.
+  }, [shownSignature]);
 
   if (!canRead) return null;
   // Snoozed: silent, and silent on purpose — it returns on its own — unless an
@@ -253,6 +301,7 @@ export default function AdminAttentionDock() {
     }
     try {
       await action.run();
+      void recordAttention("acted", [eventOf(item)], action.id);
       toast.success(`${action.label}: done for "${item.title}"`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : String(error));
@@ -264,6 +313,7 @@ export default function AdminAttentionDock() {
     if (!mute) return;
     try {
       await mute.apply(Date.now() + ms, note);
+      void recordAttention("muted", [eventOf(item)], note);
       const span = muteLabel(ms);
       toast.success(
         mute.scope === "server"
@@ -520,6 +570,15 @@ export default function AdminAttentionDock() {
               )}
             </section>
           ))}
+          {notice && notice.preparedByAgents > 0 && (
+            <AppLink
+              href={ATTENTION_REVIEW_HREF}
+              className="mt-2 block text-[11px] text-muted-foreground underline-offset-2 hover:text-primary hover:underline"
+              data-testid="attention-prepared-by-agents"
+            >
+              {notice.preparedByAgents} more being prepared by agents
+            </AppLink>
+          )}
         </div>
       </div>
       {noteDialog}

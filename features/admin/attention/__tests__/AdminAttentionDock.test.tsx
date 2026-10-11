@@ -42,6 +42,39 @@ jest.mock("next/navigation", () => ({
   usePathname: () => mockPathname,
 }));
 
+// The triage read (platform.attention_card). Default: pass every item through to the card with
+// a budget no test reaches, so the dock's own behaviour is what the older tests prove; the
+// anti-noise tests below set a real triage.
+const passThroughTriage = () => ({
+  budget: 1_000,
+  ownerOnCard: 0,
+  overBudget: 0,
+  preparedByAgents: 0,
+  infoOnly: 0,
+  verdicts: {
+    get: (key: string) => ({
+      itemKey: key,
+      source: key.split(":")[0],
+      kind: "*",
+      title: "",
+      audience: "owner_decision",
+      routedTo: "owner_card",
+      ready: true,
+      notReadyReason: null,
+      cardRank: null,
+      sentence: null,
+      sentencePrepared: false,
+      recommendedAction: null,
+    }),
+  },
+});
+const fetchAttentionTriage = jest.fn();
+const recordAttention = jest.fn(async (..._args: unknown[]) => {});
+jest.mock("../triage-service", () => ({
+  fetchAttentionTriage: () => fetchAttentionTriage(),
+  recordAttention: (...args: unknown[]) => recordAttention(...args),
+}));
+
 const fetchOpenOutages = jest.fn();
 jest.mock("@/features/admin/system-errors/open-outages", () => {
   const actual = jest.requireActual("@/features/admin/system-errors/open-outages");
@@ -342,6 +375,9 @@ beforeEach(() => {
   superAdmin = true;
   selectedOrganizationId = "org-admin";
   fetchOpenOutages.mockReset();
+  fetchAttentionTriage.mockReset();
+  fetchAttentionTriage.mockImplementation(async () => passThroughTriage());
+  recordAttention.mockClear();
   fetchSystemScheduleAlarms.mockReset();
   fetchDatedChanges.mockReset();
   fetchDatedChanges.mockResolvedValue([]);
@@ -674,5 +710,43 @@ describe("AdminAttentionDock", () => {
     expect(more?.textContent).toBe("+22 more");
     expect(more?.getAttribute("href")).toBe("/administration/billing/alarms");
   });
-});
 
+  it("anti-noise: only ready owner decisions render; the rest is one muted 'being prepared by agents' line, recorded as shown", async () => {
+    const { parseTriage } = jest.requireActual("../triage");
+    const ids = ["0001", "0002", "0003"].map((n) => `a7c1e2d3-0000-4e5f-9a00-00000000${n}`);
+    fetchSystemScheduleAlarms.mockResolvedValue(ids.map((id, i) => alarm({ task_id: id, title: `Job ${i}` })));
+    fetchOpenOutages.mockResolvedValue([]);
+    fetchAttentionTriage.mockImplementation(async () =>
+      parseTriage({
+        budget: 5,
+        prepared_by_agents: 2,
+        items: [
+          { item_key: `schedule-alarms:${ids[0]}`, source: "schedule-alarms", kind: "suspended_recovered", audience: "owner_decision", routed_to: "owner_card", card_rank: 1 },
+          { item_key: `schedule-alarms:${ids[1]}`, source: "schedule-alarms", kind: "failing", audience: "agent_fix", routed_to: "agent_fix" },
+          { item_key: `schedule-alarms:${ids[2]}`, source: "schedule-alarms", kind: "suspended", audience: "owner_decision", routed_to: "agent_fix", not_ready_reason: "It says more than one sentence." },
+        ],
+      }),
+    );
+    await mount();
+    expect(container.textContent).toContain("1 thing needs a person");
+    await expand();
+    expect(rows()).toHaveLength(1);
+    const line = container.querySelector('[data-testid="attention-prepared-by-agents"]');
+    expect(line?.textContent).toBe("2 more being prepared by agents");
+    expect(recordAttention).toHaveBeenCalledWith("shown", [
+      { item_key: `schedule-alarms:${ids[0]}`, source: "schedule-alarms", kind: "suspended_recovered" },
+    ]);
+  });
+
+  it("anti-noise: nothing ready for the owner means no dock at all", async () => {
+    const { parseTriage } = jest.requireActual("../triage");
+    fetchSystemScheduleAlarms.mockResolvedValue([alarm()]);
+    fetchOpenOutages.mockResolvedValue([]);
+    fetchAttentionTriage.mockImplementation(async () =>
+      parseTriage({ budget: 5, prepared_by_agents: 19, items: [{ item_key: `schedule-alarms:${alarm().task_id}`, routed_to: "agent_fix" }] }),
+    );
+    await mount();
+    expect(container.querySelector('[data-surface-value="admin_attention_dock_collapsed"]')).toBeNull();
+    expect(recordAttention).not.toHaveBeenCalled();
+  });
+});

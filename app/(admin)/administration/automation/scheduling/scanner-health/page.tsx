@@ -23,6 +23,7 @@ import { getStatus } from "@/features/scheduling/service/schedulerClient";
 import type { ScannerStatusResponse } from "@/features/scheduling/service/schedulerApi.types";
 import { humanizeRelative } from "@/features/scheduling/utils/triggerHumanize";
 import { AttentionItemRow } from "@/features/admin/attention/AttentionItemRow";
+import { AttentionSignalPanel } from "@/features/admin/attention/AttentionSignalPanel";
 import { partitionItems } from "@/features/admin/attention/build-notice";
 import { NOTE_MUTE } from "@/features/admin/attention/item-mute";
 import {
@@ -257,6 +258,8 @@ export default function ScannerHealthPage() {
           Refresh
         </Button>
       </div>
+
+      <AttentionSignalPanel />
 
       {/* Schedules that need a human. First on the page, because a green
           scanner told nobody that an approved nightly had switched itself off.

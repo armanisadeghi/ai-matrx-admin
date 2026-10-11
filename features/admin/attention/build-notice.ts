@@ -7,6 +7,7 @@
  * and wallpaper is how the next alarm gets missed.
  */
 
+import { asCardItem, FALLBACK_CARD_BUDGET, type AttentionTriage } from "./triage";
 import type { AttentionItem, AttentionSeverity, AttentionSourceState } from "./types";
 
 /**
@@ -34,6 +35,76 @@ export interface AttentionNotice {
    * shown; `hidden` live rows wait behind the source's review door.
    */
   sections: Array<{ source: AttentionSourceState; items: AttentionItem[]; hidden: number }>;
+  /**
+   * Triaged: every live item NOT on the card that agents are fixing or preparing (agent_fix,
+   * not ready, over budget). Shown as one muted line — never added to the pill.
+   */
+  preparedByAgents: number;
+}
+
+/**
+ * The triage the card applies. `undefined`: none (the review page and old callers — every live
+ * item). An `AttentionTriage`: only its on-card owner decisions, at most its budget.
+ * `"unavailable"`: the triage read failed — the first FALLBACK_CARD_BUDGET items, never the list.
+ */
+export type NoticeTriage = AttentionTriage | "unavailable" | undefined;
+
+/**
+ * Narrow every source to the card: on-card verdicts only, prepared sentence + recommended action
+ * applied, the whole card capped at the budget. A source with `counted: false` (Spend today) is a
+ * fact, not an alarm: kept only when it is critical — or when the card has a decision anyway.
+ */
+function triageSources(
+  sources: readonly AttentionSourceState[],
+  triage: AttentionTriage | "unavailable",
+  localMutes: Record<string, number>,
+  now: number,
+): { sources: AttentionSourceState[]; preparedByAgents: number } {
+  const budget = triage === "unavailable" ? FALLBACK_CARD_BUDGET : triage.budget;
+  let room = budget;
+  let overflow = 0;
+  const narrowed: AttentionSourceState[] = [];
+  // Rank order across sources: the database's card_rank; fallback: severity, then source order.
+  const candidates: Array<{ source: AttentionSourceState; item: AttentionItem; rank: number }> = [];
+  sources.forEach((source, sourceIndex) => {
+    if (source.counted === false) return;
+    const { live } = partitionItems(source.items, localMutes, now);
+    live.forEach((item, i) => {
+      if (triage === "unavailable") {
+        candidates.push({ source, item, rank: RANK[item.severity] * 10_000 + sourceIndex * 1_000 + i });
+        return;
+      }
+      const verdict = triage.verdicts.get(item.key);
+      if (verdict?.routedTo !== "owner_card") return;
+      candidates.push({ source, item: asCardItem(item, verdict), rank: verdict.cardRank ?? 9_999 });
+    });
+  });
+  candidates.sort((a, b) => a.rank - b.rank);
+  const onCard = new Map<string, AttentionItem[]>();
+  for (const c of candidates) {
+    if (room <= 0) {
+      overflow += 1;
+      continue;
+    }
+    room -= 1;
+    onCard.set(c.source.id, [...(onCard.get(c.source.id) ?? []), c.item]);
+  }
+  const hasDecision = candidates.length > 0;
+  for (const source of sources) {
+    if (source.counted === false) {
+      const { live } = partitionItems(source.items, localMutes, now);
+      const facts = live.filter((i) => hasDecision || i.severity === "critical");
+      narrowed.push({ ...source, items: facts });
+      continue;
+    }
+    // One "being prepared by agents" line for the whole card replaces each source's own line.
+    narrowed.push({ ...source, items: onCard.get(source.id) ?? [], delegated: null });
+  }
+  const preparedByAgents =
+    triage === "unavailable"
+      ? overflow
+      : triage.preparedByAgents + overflow;
+  return { sources: narrowed, preparedByAgents };
 }
 
 function isLive(item: AttentionItem, localMutes: Record<string, number>, now: number): boolean {
@@ -63,10 +134,13 @@ export function partitionItems(
 }
 
 export function buildAttentionNotice(
-  sources: readonly AttentionSourceState[],
+  allSources: readonly AttentionSourceState[],
   localMutes: Record<string, number>,
   now: number = Date.now(),
+  triage: NoticeTriage = undefined,
 ): AttentionNotice | null {
+  const triaged = triage === undefined ? null : triageSources(allSources, triage, localMutes, now);
+  const sources = triaged ? triaged.sources : allSources;
   const sections: AttentionNotice["sections"] = [];
   const summaries: string[] = [];
   let criticalCount = 0;
@@ -110,5 +184,6 @@ export function buildAttentionNotice(
     warningCount,
     infoCount,
     sections,
+    preparedByAgents: triaged?.preparedByAgents ?? 0,
   };
 }

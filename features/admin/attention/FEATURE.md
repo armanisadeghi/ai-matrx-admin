@@ -157,7 +157,46 @@ mute → record status, Copy for AI, summary), `__tests__/AdminAttentionDock.tes
 one card for two sources, doors, local vs server mute, non-admin issues no
 request, loud vs silent failure, never an all-clear, expired mute ignored).
 
+## Anti-noise: audience, readiness, budget, signal (2026-10-11)
+
+Arman: "they bombard me so the important things get missed ... I stop looking, and eventually I
+turn the feature off." The DATABASE triages every dock item once, for this dock and for the agents'
+`attention` MCP tool (aidream `aidream/services/attention`, `aidream/api/mcp/agent_service/attention_tools.py`):
+
+| Piece | Where |
+|---|---|
+| Audience per source + kind (`owner_decision` / `agent_fix` / `info_only`); `override_*` is the knob | `platform.attention_audience_rule` (kind `*` = source default) |
+| Per-item override, prepared card sentence + recommended action, resolution, filed work item | `platform.attention_item_state` |
+| Rulings on records: hold on a general-purpose agent, limit hit on a system job → `agent_fix` | `platform.attention_spend_ruling`; knob `platform.attention.general_purpose_agents` |
+| Readiness gate + duplicate + stale + budget (pure, tested with fixtures) | `platform.attention_classify(items, now)` |
+| Every source normalized | `platform.attention_raw_items()` |
+| The dock's read (settles the signal first) | `platform.attention_card()` |
+| Signal metric: one episode per showing, closed `acted` / `muted` / `expired` | `platform.attention_showing`, written by `platform.attention_record` |
+| Auto-demotion: a kind muted or ignored `demote_after` (2) times in `demote_window_days` (7) without acting → `agent_fix`, with a note | `platform.attention_settle` |
+| Report: shown, acted, signal rate per kind, card vs budget | `platform.attention_report(days)` |
+| Agent writes, audited (who, when, note) | `platform.attention_write` → `platform.attention_audit` |
+
+Audience precedence: per-item override → the record's own audience (spend alarms: the ruling,
+then `billing.spend_alarm.audience`) → kind rule (override, then default) → `info` severity is
+`info_only` → source rule → `agent_fix`. Readiness (owner decisions only): one plain sentence (no
+uuid, hex id, snake_case code or error code; ≤ 220 chars; one sentence), evidence (run, occurrence
+or record link), ONE recommended action with its consequence, no duplicate on the card, not stale
+(`stale_days`, 7, unless recurring). A failure routes the item to `agent_fix` with the reason.
+The card holds `card_budget` (5) items; the rest is "N more being prepared by agents" (muted,
+links to the review page) — never a bigger pill. Nothing ready → no dock at all. Spend today is a
+fact: shown beside a decision, or alone only when critical. A failed triage read is loud and the
+card falls back to `FALLBACK_CARD_BUDGET` items. Review page: the signal panel
+(`AttentionSignalPanel.tsx`) on scanner-health. Runbook: `common-docs/skills/attention-triage`.
+Files: `triage.ts` (pure), `triage-service.ts`, `sources/useAttentionTriage.ts`,
+`build-notice.ts` (`NoticeTriage`). Tests: `__tests__/triage.test.ts`, the anti-noise cases in
+`__tests__/AdminAttentionDock.test.tsx`; live: aidream
+`aidream/services/attention/tests/test_attention_triage_live.py`; tool:
+`aidream/api/mcp/agent_service/tests/test_attention_tools.py`.
+
 ## Change log
+
+- **2026-10-11** — Anti-noise triage (section above). Live: 27 pending → 0 on the owner card
+  (19 being prepared by agents, 15 info only, 4 muted).
 
 - **2026-10-10** — Every dock read answers on EVERY page: `scheduler.system_schedule_alarms` and
   `platform.dated_changes_for_attention` (via `_dated_change_caller_ok`) gated on the
