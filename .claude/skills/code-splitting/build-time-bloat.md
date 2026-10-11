@@ -43,3 +43,7 @@ Turbopack's file tracing copies every file a server route might read into that r
 2. **App code importing a CLI script.** The check-findings page imported `scripts/findings/registry.mjs`, which imports a dozen filesystem-scanning checks, and shipped ~22,000 files (migrations, docs, scripts, typescript, eslint). App code imports DATA (JSON or a pure module like `scripts/findings/accept-info.mjs`), never a script module.
 
 Guard: `node scripts/check-server-trace-scope.mjs [.next]` after a build lists every route whose trace holds migrations/, docs/, CLI scripts, typescript, eslint, or more than 400 repo source files (self-test: `scripts/check-server-trace-scope.test.mjs`). Measure output with it before and after any change that touches `fs`, `process.cwd()` or `@/scripts/`.
+
+## The build cache (2026-10-10)
+
+Turbopack's persistent cache is kept in S3, not Vercel's build cache (too big for its 4.75 GB cap): `scripts/build-cache.mjs` restores it before `next build` and saves it after, at most every 120 min. Which projects use it is ONE constant, `BUILD_CACHE_PROFILES` in `scripts/build-cache-policy.cjs`. Per release: `[cold-build]` in the message compiles from scratch and stores a fresh cache; `[no-cache]` skips it entirely. A build that "got slow" may simply have restored nothing — read its `[build-cache]` line before hunting the graph. Compare cold builds with cold builds and warm with warm.
