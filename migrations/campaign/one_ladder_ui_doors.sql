@@ -45,7 +45,6 @@ begin
 end
 $fn$;
 
-revoke all on function iam.my_grantable_levels(text, uuid) from public, anon;
 
 insert into platform.client_callable_door
   (schema_name, function_name, identity_args, identity_argtypes, reason, declared_by, non_client_lane, signed_in_callers, anonymous_callers)

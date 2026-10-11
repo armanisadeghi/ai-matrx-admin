@@ -1,5 +1,5 @@
 -- lane: ONE-LADDER-3
--- based-on: platform.set_shown_to(text, uuid, text) __NEW__
+-- based-on: platform.set_shown_to(text, uuid, text) 0052397a834e752317400f46a6f27b6a312a4a7b5908dbc5f19a1ccddfc31444
 -- Inverse of one_ladder_ui_doors.sql: restores set_shown_to verbatim and drops the thin door.
 
 CREATE OR REPLACE FUNCTION platform.set_shown_to(p_resource_type text, p_resource_id uuid, p_shown_to text)

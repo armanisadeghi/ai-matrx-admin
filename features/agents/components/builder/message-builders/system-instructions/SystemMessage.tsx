@@ -815,6 +815,7 @@ export function SystemMessage({
               surfaceName="matrx-user/agent-builder"
               variableNames={variableNames}
               contextData={contextMenuData}
+              promptBlocks={blockEditing.highlight}
               placeholder="You're a very helpful assistant"
             />
           ) : viewMode === "preview" ? (

@@ -22,6 +22,7 @@ import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { sectionMenuSection, wrapEditorSelection } from "@ai-matrx/rich-editor/core/section-menu";
 import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import RichEditor, { type RichEditorController } from "@ai-matrx/rich-editor/editor/RichEditor";
+import type { PromptBlockHost } from "@ai-matrx/rich-editor/editor/RichEditorContext";
 import { FormatButtons } from "@ai-matrx/rich-editor/format/FormatButtons";
 import { textareaFormatTarget } from "@ai-matrx/rich-editor/format/format-target";
 import { insertIntoText, type PromptInsert } from "@ai-matrx/rich-editor/core/prompt-inserts";
@@ -140,6 +141,8 @@ export interface PromptWriteBoxProps {
   variableNames?: readonly string[];
   /** The surface scope the right-click menu acts on. */
   contextData?: Record<string, unknown>;
+  /** Prompt blocks the agent declares / that resolve to nothing; `{{<name>}}` draws as a block chip. */
+  promptBlocks?: PromptBlockHost | null;
 }
 
 /** Write: the rich editor over the stored prompt text (see header). */
@@ -152,6 +155,7 @@ export function PromptWriteBox({
   minHeight = 240,
   variableNames,
   contextData,
+  promptBlocks = null,
 }: PromptWriteBoxProps) {
   const declared = useMemo(() => variableNames?.map((name) => ({ name })) ?? null, [variableNames]);
   const box = (
@@ -167,6 +171,7 @@ export function PromptWriteBox({
         chrome="bare"
         hostContextMenu
         variables={declared}
+        promptBlocks={promptBlocks}
         controllerRef={controllerRef}
         placeholder={placeholder}
         surfaceName={surfaceName}

@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-11T06:45:04.100Z",
+  "generated_at": "2026-10-11T06:50:27.765Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -5683,6 +5683,12 @@
       "filename": "one_ladder_share_lane_and_seat_level.sql",
       "checksum": "9107765bdf7a4da478f7ded15c82b10307fba9ca6b1facbd60c0d98477e0f1b1",
       "applied_at": "2026-10-11 05:45:50.616188+00"
+    },
+    "migrations/campaign/one_ladder_ui_doors.sql": {
+      "source": "matrx-frontend",
+      "filename": "one_ladder_ui_doors.sql",
+      "checksum": "54d21a20fab515ca78a9367dedd28fac60384f8a606cadfd3d002b69bdd1fe9a",
+      "applied_at": "2026-10-11 06:50:24.244083+00"
     },
     "migrations/campaign/onehome_b2_the_workspace_alias_is_gone.sql": {
       "source": "matrx-frontend",

@@ -878,6 +878,7 @@ export function MessageItem({
             surfaceName="matrx-user/agent-builder"
             variableNames={variableNames}
             contextData={contextMenuData}
+            promptBlocks={blockEditing.highlight}
             minHeight={80}
             placeholder={
               message.role === "assistant"
