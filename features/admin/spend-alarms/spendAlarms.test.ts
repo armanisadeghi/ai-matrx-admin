@@ -28,6 +28,8 @@ const rec = (over: Partial<SpendAlarmRecord> = {}): SpendAlarmRecord => ({
   resolved_by: null,
   resolution_note: null,
   reopened_count: 0,
+  refused: true,
+  code_fix: { on: "2026-10-10", commit: "aidream 8ab384301f", what: "Skipped once", related_kind: "source_intelligence_skipped", handler: "auto_ingest" },
   ...over,
 });
 
@@ -85,5 +87,24 @@ describe("headlines carry no raw ids", () => {
     const bare = alarmHeadline(`Run held for spend approval: agent ${id}`, id, null);
     expect(hasRawId(bare)).toBe(false);
     expect(alarmHeadline("Spend spike: Platform spend, last hour")).toBe("Spend spike: Platform spend, last hour");
+  });
+});
+
+import { costLabel, fixFor, isMigrated, refHref } from "./spendAlarms";
+
+describe("what the record page leads with", () => {
+  const fmt = (n: number) => `$${n.toFixed(2)}`;
+  it("cost is never a bare dash", () => {
+    expect(costLabel(rec(), fmt)).toBe("$0.00 — refused before spending");
+    expect(costLabel(rec({ cost_usd: 10.67 }), fmt)).toBe("$10.67 spent");
+    expect(costLabel(rec({ refused: false }), fmt)).toBe("Not measured");
+  });
+  it("a handler-scoped fix covers only that handler", () => {
+    expect(fixFor(rec({ refs: { handler: "auto_ingest" } }))?.commit).toBe("aidream 8ab384301f");
+    expect(fixFor(rec({ refs: { handler: "agent-app" } }))).toBeNull();
+  });
+  it("migrated occurrences are told apart, and documents open", () => {
+    expect(isMigrated({ refs: { migrated: "x" } as never })).toBe(true);
+    expect(refHref("source_id", "d-1", { source_kind: "document" })).toBe("/documents/d-1");
   });
 });

@@ -42,6 +42,13 @@ import {
   alarmHeadline,
   fetchSpendAlarm,
   LEVEL_LABEL,
+  MIGRATED_NOTE,
+  costLabel,
+  countAlarmsOfKind,
+  fetchItemTitles,
+  fixFor,
+  isMigrated,
+  kindListHref,
   fetchSpendAlarmOccurrences,
   fetchTaskState,
   refHref,
@@ -73,6 +80,10 @@ function scrubIds(text: string, names: ReadonlyMap<string, string>): string {
   let out = text;
   for (const [id, name] of names) out = out.split(id).join(name);
   return out.replace(/\s*\(?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\)?/gi, "");
+}
+
+function fixDate(iso: string): string {
+  return new Date(`${iso}T12:00:00Z`).toLocaleDateString(undefined, { day: "numeric", month: "short" });
 }
 
 function when(iso: string | null | undefined): string {
@@ -118,6 +129,8 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [version, setVersion] = useState(0);
+  const [itemTitles, setItemTitles] = useState<ReadonlyMap<string, string>>(new Map());
+  const [relatedCount, setRelatedCount] = useState<number | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -138,7 +151,13 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
           approval = (data as { status?: string } | null)?.status ?? null;
         }
         const people = [rec?.refs.user_id, rec?.resolved_by, t?.user_id].filter((v): v is string => !!v);
-        const resolved = people.length ? await fetchUserDisplayNames(people).catch(() => new Map<string, string>()) : new Map<string, string>();
+        const fetched = people.length ? await fetchUserDisplayNames(people).catch(() => new Map<string, string>()) : new Map<string, string>();
+        // A generic "User" placeholder is never a name.
+        const resolved = new Map([...fetched].filter(([, n]) => n && n.trim().toLowerCase() !== "user"));
+        const served = occ.filter((o) => o.refs.source_id).map((o) => ({ kind: o.refs.source_kind, id: o.refs.source_id as string }));
+        const titles = await fetchItemTitles(served).catch(() => new Map<string, string>());
+        const fix = rec ? fixFor(rec) : null;
+        const related = fix?.related_kind ? await countAlarmsOfKind(fix.related_kind).catch(() => null) : null;
         if (!alive) return;
         setRecord(rec);
         setOccurrences(occ);
@@ -148,6 +167,8 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
         if (rec?.refs.agent_id && rec.subject_name && rec.subject_type === "agent") resolved.set(rec.refs.agent_id, rec.subject_name);
         if (t?.title && rec?.refs.task_id) resolved.set(rec.refs.task_id, t.title);
         setNames(resolved);
+        setItemTitles(titles);
+        setRelatedCount(related);
         setError(rec ? null : "This alarm does not exist");
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : String(e));
@@ -261,12 +282,13 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
     },
     {
       id: "served",
-      header: "Served item",
+      header: "Item",
       accessorFn: (o) => [o.refs.source_kind, o.refs.source_id].filter(Boolean).join(" "),
       cell: (o) => {
+        if (isMigrated(o)) return <span className="text-muted-foreground">{MIGRATED_NOTE}</span>;
         if (!o.refs.source_id) return <span className="text-muted-foreground">—</span>;
         const href = refHref("source_id", o.refs.source_id, o.refs);
-        const text = `${o.refs.source_kind ?? "source"} ${o.refs.source_id.slice(0, 8)}`;
+        const text = itemTitle(o) ?? o.refs.source_id;
         return href ? (
           <Link href={href} className="text-primary hover:underline">
             {text}
@@ -280,6 +302,27 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
     { id: "request", header: "Request", accessorFn: (o) => o.refs.request_id ?? "", cellKind: "uuid" },
     { id: "cost_usd", accessorKey: "cost_usd", header: "Cost", cell: (o) => (o.cost_usd == null ? "—" : formatAdminUsd(o.cost_usd)) },
   ];
+
+  const shippedFix = record ? fixFor(record) : null;
+  const migratedCount = occurrences.filter(isMigrated).reduce((n, o) => n + o.repeat_count, 0);
+  const itemTitle = (o: SpendAlarmOccurrence) =>
+    o.refs.source_id ? itemTitles.get(o.refs.source_id) ?? `${o.refs.source_kind ?? "Source"} ${o.refs.source_id.slice(0, 8)}` : null;
+  const servedItems = [
+    ...new Map(
+      occurrences
+        .filter((o) => o.refs.source_id)
+        .map((o) => [o.refs.source_id as string, { id: o.refs.source_id as string, title: itemTitle(o) as string, href: refHref("source_id", o.refs.source_id as string, o.refs) }]),
+    ).values(),
+  ];
+  const visibleColumns = columns.filter((c) => {
+    if (c.id === "occurred_at" || c.id === "served") return true;
+    // Hide a column no occurrence fills (a repeat count of 1 says nothing).
+    return occurrences.some((o) => {
+      if (isMigrated(o)) return false;
+      const v = c.accessorFn ? c.accessorFn(o) : (o as unknown as Record<string, unknown>)[c.accessorKey ?? ""];
+      return v !== null && v !== undefined && v !== "" && v !== 1;
+    });
+  });
 
   const consequence: Record<Exclude<NonNullable<Pending>["kind"], "resolve">, string> = {
     run_now: `Runs ${taskName} once now, as you, and spends what one run costs. You land on its page to watch.`,
@@ -318,7 +361,22 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
                 agent={agentPayload}
               />
               <p className="pr-20 text-sm font-medium text-foreground">{scrubIds(record.detail, names)}</p>
-              {record.fix ? <p className="mt-1 text-sm text-muted-foreground">{record.fix}</p> : null}
+              {shippedFix ? (
+                <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-success/40 bg-success/10 px-3 py-2 text-sm">
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-success" aria-hidden />
+                  <span className="text-foreground">
+                    {`Fixed in code on ${fixDate(shippedFix.on)} (${shippedFix.commit}): ${shippedFix.what}.`}
+                    {relatedCount != null ? ` Skipped items now: ${relatedCount.toLocaleString()}.` : ""}
+                  </span>
+                  {shippedFix.related_kind ? (
+                    <Link href={kindListHref(shippedFix.related_kind)} className="ml-auto text-primary hover:underline">
+                      Open the skipped Sources
+                    </Link>
+                  ) : null}
+                </div>
+              ) : record.fix ? (
+                <p className="mt-1 text-sm text-muted-foreground">{record.fix}</p>
+              ) : null}
               <dl className="mt-3 grid grid-cols-[9rem_1fr] gap-x-3 gap-y-1 text-sm">
                 <dt className="text-muted-foreground">Rule</dt>
                 <dd>{record.rule ?? "—"}</dd>
@@ -326,7 +384,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
                 <dd>
                   {record.refs.user_id ? (
                     <Link href={refHref("user_id", record.refs.user_id) ?? "#"} className="text-primary hover:underline">
-                      {names.get(record.refs.user_id) ?? record.refs.user_id}
+                      {names.get(record.refs.user_id) ?? "Unknown person"}
                     </Link>
                   ) : (
                     record.subject_name ?? `${record.subject_type} ${record.subject_id}`
@@ -348,9 +406,9 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
               <KpiTile label="First seen" value={when(record.first_seen_at)} />
               <KpiTile label="Last seen" value={when(record.last_seen_at)} />
               <KpiTile
-                label={record.cost_avoided_usd != null ? "Cost avoided" : "Cost"}
-                value={record.cost_avoided_usd != null ? formatAdminUsd(record.cost_avoided_usd) : record.cost_usd != null ? formatAdminUsd(record.cost_usd) : null}
-                title="Spent by the occurrences, or kept from being spent by the refusal; dash when not measured"
+                label="Cost"
+                value={costLabel(record, formatAdminUsd)}
+                tone={record.cost_usd ? "bad" : "neutral"}
               />
             </div>
 
@@ -364,6 +422,24 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
                 agent={agentPayload}
               />
               <RefList record={record} names={names} />
+              {servedItems.length > 0 ? (
+                <div className="mt-2 text-sm">
+                  <span className="text-muted-foreground">Served items </span>
+                  {servedItems.map((it, i) => (
+                    <span key={it.id}>
+                      {i > 0 ? ", " : ""}
+                      {it.href ? (
+                        <Link href={it.href} className="text-primary hover:underline">
+                          {it.title}
+                        </Link>
+                      ) : (
+                        it.title
+                      )}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              {occurrences.some(isMigrated) ? <p className="mt-2 text-sm text-muted-foreground">{`${migratedCount.toLocaleString()} earlier times: ${MIGRATED_NOTE}`}</p> : null}
               {task ? (
                 <p className="mt-2 text-sm">
                   <Link href={adminScheduleHref(record.refs.task_id as string)} className="text-primary hover:underline">
@@ -377,7 +453,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
             <div className="h-[28rem] min-h-0">
               <MatrxDataTable
                 data={occurrences}
-                columns={columns}
+                columns={visibleColumns}
                 getRowId={(o) => o.id}
                 isLoading={loading}
                 tableId="spend-alarm-occurrences"

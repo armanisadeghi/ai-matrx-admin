@@ -78,6 +78,19 @@ export interface SpendAlarmRecord {
   resolved_by: string | null;
   resolution_note: string | null;
   reopened_count: number;
+  /** The gate refused before any money moved. */
+  refused: boolean;
+  /** A fix already shipped for this kind (aidream ALARM_KINDS.code_fix). */
+  code_fix: CodeFix | null;
+}
+
+export interface CodeFix {
+  on: string;
+  commit: string;
+  what: string;
+  related_kind?: string;
+  /** The fix covers only records whose handler is this one. */
+  handler?: string;
 }
 
 export interface SpendAlarmOccurrence {
@@ -92,7 +105,7 @@ export interface SpendAlarmOccurrence {
 }
 
 const RECORD_COLUMNS =
-  "id, kind, level, title, detail, rule, fix, subject_type, subject_id, subject_name, refs, occurrence_count, first_seen_at, last_seen_at, cost_usd, cost_avoided_usd, status, snoozed_until, resolved_at, resolved_by, resolution_note, reopened_count";
+  "id, kind, level, title, detail, rule, fix, subject_type, subject_id, subject_name, refs, occurrence_count, first_seen_at, last_seen_at, cost_usd, cost_avoided_usd, status, snoozed_until, resolved_at, resolved_by, resolution_note, reopened_count, metadata";
 
 function asRefs(value: unknown): AlarmRefs {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
@@ -104,8 +117,12 @@ function asRefs(value: unknown): AlarmRefs {
 }
 
 function toRecord(row: Record<string, unknown>): SpendAlarmRecord {
+  const meta = (row.metadata && typeof row.metadata === "object" ? row.metadata : {}) as Record<string, unknown>;
+  const fix = meta.code_fix && typeof meta.code_fix === "object" ? (meta.code_fix as CodeFix) : null;
   return {
     ...(row as unknown as SpendAlarmRecord),
+    refused: meta.refused === true,
+    code_fix: fix && typeof fix.what === "string" ? fix : null,
     refs: asRefs(row.refs),
     cost_usd: row.cost_usd == null ? null : Number(row.cost_usd),
     cost_avoided_usd: row.cost_avoided_usd == null ? null : Number(row.cost_avoided_usd),
@@ -203,6 +220,7 @@ export interface RefLink {
 
 const SOURCE_KIND_HREF: Record<string, (id: string) => string> = {
   note: (id) => `/notes/${id}`,
+  document: (id) => `/documents/${id}`,
   cx_message: (id) => `/chat/${id}`,
 };
 
@@ -420,4 +438,51 @@ export function alarmCostLine(cost: number | null | undefined, avoided: number |
   if (cost != null) return `${fmt(cost)} spent`;
   if (avoided != null) return `${fmt(avoided)} kept from spending`;
   return null;
+}
+
+// ── Facts the record page leads with ──────────────────────────────────────
+
+/** Occurrence rows moved from the old per-person announcements carry no per-run detail. */
+export const MIGRATED_NOTE = "Detail not recorded before 10 Oct 23:00";
+export const isMigrated = (o: Pick<SpendAlarmOccurrence, "refs">) => "migrated" in (o.refs as Record<string, unknown>);
+
+/** The shipped fix that covers THIS record (a handler-scoped fix covers only that handler). */
+export function fixFor(r: Pick<SpendAlarmRecord, "code_fix" | "refs">): CodeFix | null {
+  const fix = r.code_fix;
+  if (!fix) return null;
+  return !fix.handler || fix.handler === r.refs.handler ? fix : null;
+}
+
+/** "$x spent", "$0 — refused before spending", or "Not measured". */
+export function costLabel(
+  r: Pick<SpendAlarmRecord, "cost_usd" | "cost_avoided_usd" | "refused">,
+  fmt: (n: number) => string,
+): string {
+  if (r.cost_usd != null) return `${fmt(r.cost_usd)} spent`;
+  if (r.cost_avoided_usd != null) return `${fmt(r.cost_avoided_usd)} kept from spending`;
+  if (r.refused) return `${fmt(0)} — refused before spending`;
+  return "Not measured";
+}
+
+export async function countAlarmsOfKind(kind: string): Promise<number> {
+  const { count, error } = await billing()
+    .from("spend_alarm")
+    .select("id", { count: "exact", head: true })
+    .eq("kind", kind)
+    .is("deleted_at", null);
+  if (error) throw pgErrorToError(error);
+  return count ?? 0;
+}
+
+export const kindListHref = (kind: string) => `${SPEND_ALARMS_PATH}?kind=${encodeURIComponent(kind)}`;
+
+/** Titles of the served items (documents), by id; an untitled one reads "Untitled document". */
+export async function fetchItemTitles(items: { kind?: string; id: string }[]): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  const docs = [...new Set(items.filter((i) => i.kind === "document").map((i) => i.id))].filter((id) => /^[0-9a-f-]{36}$/i.test(id));
+  if (docs.length) {
+    const { data } = await supabase.schema("content").from("document").select("id, title").in("id", docs);
+    for (const d of (data ?? []) as { id: string; title: string | null }[]) out.set(d.id, d.title?.trim() || "Untitled document");
+  }
+  return out;
 }
