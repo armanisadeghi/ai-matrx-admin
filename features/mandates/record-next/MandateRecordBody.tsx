@@ -306,12 +306,12 @@ function OneMandateRecordBody({
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <Button asChild variant="outline" size="sm">
+              <Button asChild variant="outline">
                 <Link href={adminMandateSupportRecordHref(String(failed.mandateId))}>
                   Open in Mandate support lookup
                 </Link>
               </Button>
-              <Button asChild variant="quiet" size="sm">
+              <Button asChild variant="quiet">
                 <Link href={listHref}>System mandates</Link>
               </Button>
             </div>
