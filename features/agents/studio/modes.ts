@@ -65,5 +65,5 @@ export const STUDIO_MODES: readonly StudioMode[] = [
 
 export function studioMode(id: string | null | undefined): StudioMode | null {
   const mode = STUDIO_MODES.find((m) => m.id === id);
-  return mode && !mode.comingSoonId ? mode : null;
+  return mode && !mode.comingSoonId && !mode.href ? mode : null;
 }

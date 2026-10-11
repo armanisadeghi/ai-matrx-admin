@@ -151,11 +151,11 @@ function AgentFromChatWindowInner({
       setBuildId(answer.buildId);
       setProof({ cases: answer.proofCases, says: answer.says });
       setPhase("building");
-    } else if (answer.ok) {
+    } else if (answer.ok && "result" in answer) {
       setResult(answer.result);
       setTab("compare");
       setPhase("done");
-    } else {
+    } else if (!answer.ok) {
       setFailure({ says: answer.says, at: answer.failedAt });
       setPhase("failed");
     }
