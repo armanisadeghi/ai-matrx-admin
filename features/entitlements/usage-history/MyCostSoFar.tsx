@@ -147,11 +147,11 @@ export function MyCostSoFar() {
   }, [tab, drill]);
 
   const columns = useMemo<MatrxColumnDef<MyCostGroupRow>[]>(() => [
-    { id: "label", header: level === "day" ? "Day" : level === "organization" ? "Organization" : level === "activity" ? "What it was" : "Activity", accessorFn: (r) => r.label, width: 260 },
-    { id: "calls", header: "Charges", accessorFn: (r) => r.calls, filter: "number", width: 90, align: "right", cell: (r) => (
+    { id: "label", header: level === "day" ? "Day" : level === "organization" ? "Organization" : level === "activity" ? "What it was" : "Activity", accessorFn: (r) => r.label, width: 150 },
+    { id: "calls", header: "Charges", accessorFn: (r) => r.calls, filter: "number", width: 70, align: "right", cell: (r) => (
       <button type="button" className="tabular-nums underline-offset-2 hover:underline" aria-label={`Open the ${r.calls} charges for ${r.label}`} onClick={() => open(r)}>{r.calls.toLocaleString()}</button>
     ) },
-    { id: "cost", header: admin ? "Cost" : "Points used", accessorFn: (r) => r.costUsd ?? r.points, filter: "number", width: 190, align: "right", cell: (r) => <Money usd={r.costUsd} points={r.points} /> },
+    { id: "cost", header: admin ? "Cost" : "Points used", accessorFn: (r) => r.costUsd ?? r.points, filter: "number", width: 150, align: "right", cell: (r) => <Money usd={r.costUsd} points={r.points} /> },
     { id: "charged", header: "Counted against plan", accessorFn: (r) => r.chargedPoints, filter: "number", width: 150, align: "right", mobileHidden: true, cell: (r) => formatPoints(r.chargedPoints) },
     { id: "first", header: "First", accessorFn: (r) => r.firstAt ?? "", width: 120, mobileHidden: true, cell: (r) => dayOnly(r.firstAt) },
     { id: "last", header: "Last", accessorFn: (r) => r.lastAt ?? "", width: 120, mobileHidden: true, cell: (r) => dayOnly(r.lastAt) },
@@ -287,8 +287,8 @@ function MyCostRecords({ period, orgId, drill, admin }: { period: MyCostPeriod; 
 
   const columns = useMemo<MatrxColumnDef<MyCostRecord>[]>(() => [
     { id: "at", header: "When", accessorFn: (r) => r.createdAt, filter: "date", width: 170, cell: (r) => when(r.createdAt) },
-    { id: "activity", header: "Activity", accessorFn: (r) => r.featureLabel, filter: "select", width: 190 },
-    { id: "detail", header: "What it was for", accessorFn: (r) => r.detail, width: 260 },
+    { id: "activity", header: "Activity", accessorFn: (r) => r.featureLabel, filter: "select", width: 150, mobileHidden: true },
+    { id: "detail", header: "What it was for", accessorFn: (r) => r.detail, width: 200 },
     { id: "org", header: "Organization", accessorFn: (r) => r.organizationName ?? "—", filter: "select", width: 170, mobileHidden: true },
     { id: "cost", header: admin ? "Cost" : "Points used", accessorFn: (r) => r.costUsd ?? r.points, filter: "number", width: 190, align: "right", cell: (r) => <Money usd={r.costUsd} points={r.points} /> },
     { id: "charged", header: "Counted against plan", accessorFn: (r) => r.chargedPoints, filter: "number", width: 150, align: "right", mobileHidden: true, cell: (r) => formatPoints(r.chargedPoints) },

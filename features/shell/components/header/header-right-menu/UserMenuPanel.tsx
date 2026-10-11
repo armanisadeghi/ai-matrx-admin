@@ -47,6 +47,8 @@ export default function UserMenuPanel({
       {divider}
 
       <LinkMenuItem href="/intelligence" icon="Intelligence" label="Intelligence" />
+      {/* What my activity has cost so far: Plan & usage (features/entitlements/usage-history/MyCostSoFar). */}
+      <LinkMenuItem href="/user-settings/plan" icon="Gauge" label="Usage & cost" />
 
       {divider}
 

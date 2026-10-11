@@ -698,3 +698,15 @@ is now `brsgrqvjdzwihsvnfqkf`). Flashcards consumers' `commit()` landed since (v
   default is canonical). Reworded the two over-claiming `/pricing/pledge` bullets (pre-charge reminder,
   refunds/proration) to honest "Before paid launch" commitments; final wording pending Arman sign-off
   (roadmap). No code change to the entitlement contract.
+
+- **2026-10-11 — "What your activity has cost" (Settings → Plan & usage; account menu → Usage & cost).**
+  One place for a person's own spend: summary row (all time · this month · today), period switcher
+  (today / week / month / all / custom), organization filter, and a drill table
+  activity → what it was → each charge (a conversation charge opens the conversation). Source is
+  `runtime.global_execution` (every recorded cost: AI tokens plus ScrapeCreators, Bright Data, X/Grok,
+  web search, Twilio, files, tools) through `billing.my_cost_breakdown` / `billing.my_cost_records`,
+  NOT only `billing.usage_ledger`: the ledger starts 2026-09-12 and misses roughly half of recorded
+  cost, so a ledger-only total understated it. "Counted against plan" is the ledger share. Admin
+  person reads dollars to the cent with points beside; everyone else reads points (20,000 = $1).
+  Person = the execution's recorded `context.user_id`; costs with no person are platform costs and
+  are not in anyone's total. Code: `usage-history/MyCostSoFar.tsx`, `myCostService.ts`.

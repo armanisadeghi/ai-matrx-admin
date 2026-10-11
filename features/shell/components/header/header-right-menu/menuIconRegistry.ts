@@ -22,6 +22,7 @@ import {
   AudioLines,
   MonitorSpeaker,
   Building2,
+  Gauge,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { INTELLIGENCE_ICON } from "@/components/icons/domain-icons";
@@ -50,6 +51,7 @@ export const MENU_ICON_REGISTRY = {
   AudioLines,
   MonitorSpeaker,
   Building2,
+  Gauge,
   /** The reserved Intelligence icon (components/icons/domain-icons.ts). */
   Intelligence: INTELLIGENCE_ICON,
 } as const;
