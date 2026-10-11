@@ -109,13 +109,22 @@ export function InfoHint({ text, label = "More info", className, side = "top" }:
     // Brings its own provider: an official component works wherever it is imported (a
     // test, a portal, a page without the app shell) — 2026-09-30, final-switch tests.
     <TooltipProvider delayDuration={200}>
-    <Tooltip>
+    <Tooltip open={open} onOpenChange={setOpen}>
       <TooltipTrigger asChild>
         <button
           type="button"
           aria-label={label}
           className={cn(TRIGGER_CLASS, className)}
-          onClick={isolate}
+          // A click opens it too (hover is not the only way in).
+          onClick={(e) => {
+            isolate(e);
+            setOpen(true);
+          }}
+          // Inside a table header (or any parent that has its own tooltip or drag handle), the
+          // parent must not see the pointer: its tooltip would open and close this one, and a
+          // press would start a column drag. Found 2026-10-11 on MatrxDataTable headers.
+          onPointerMove={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
         >
           {glyph}
         </button>
