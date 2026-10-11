@@ -85,6 +85,7 @@ import { useProviderOutageSource } from "./sources/useProviderOutageSource";
 import { useScheduleAlarmSource } from "./sources/useScheduleAlarmSource";
 import { useDatedChangeSource } from "./sources/useDatedChangeSource";
 import { useSpendAlarmSource } from "./sources/useSpendAlarmSource";
+import { useSpendTodaySource } from "./sources/useSpendTodaySource";
 import type { AttentionAction, AttentionItem } from "./types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { asClause } from "@ai-matrx/kit/text";
@@ -132,7 +133,8 @@ export default function AdminAttentionDock() {
   const outages = useProviderOutageSource(canRead);
   const datedChanges = useDatedChangeSource(canRead);
   const spendAlarms = useSpendAlarmSource(canRead);
-  const sources = [datedChanges, spendAlarms, schedules, outages];
+  const spendToday = useSpendTodaySource(canRead);
+  const sources = [datedChanges, spendAlarms, spendToday, schedules, outages];
 
   const float = useDraggableFloat({
     storageKey: POSITION_KEY,

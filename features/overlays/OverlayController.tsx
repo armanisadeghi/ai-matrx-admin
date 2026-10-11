@@ -739,10 +739,6 @@ const CharacterCounterWindow = lazyOverlay(
     import("@/features/window-panels/windows/text-counter/CharacterCounterWindow"),
   { ssr: false },
 );
-const DailySpendWindow = lazyOverlay(
-  () => import("@/features/window-panels/windows/spend/DailySpendWindow"),
-  { ssr: false },
-);
 const StructuredValueWindow = lazyOverlay(
   () =>
     import("@/features/window-panels/windows/structured-value/StructuredValueWindow"),
@@ -1559,9 +1555,6 @@ export default function OverlayController() {
     characterCounterWindow: useAppSelector((s) =>
       selectIsOverlayOpen(s, "characterCounterWindow"),
     ),
-    dailySpendWindow: useAppSelector((s) =>
-      selectIsOverlayOpen(s, "dailySpendWindow"),
-    ),
     convertToShapeWindow: useAppSelector((s) =>
       selectIsOverlayOpen(s, "convertToShapeWindow"),
     ),
@@ -2019,9 +2012,6 @@ export default function OverlayController() {
     ) as Record<string, unknown> | null,
     characterCounterWindow: useAppSelector((s) =>
       selectOverlayData(s, "characterCounterWindow"),
-    ) as Record<string, unknown> | null,
-    dailySpendWindow: useAppSelector((s) =>
-      selectOverlayData(s, "dailySpendWindow"),
     ) as Record<string, unknown> | null,
     convertToShapeWindow: useAppSelector((s) =>
       selectOverlayData(s, "convertToShapeWindow"),
@@ -5536,20 +5526,6 @@ export default function OverlayController() {
               typeof data?.initialText === "string"
                 ? data.initialText
                 : undefined
-            }
-          />
-        );
-      })()}
-
-      {/* dailySpendWindow */}
-      {(() => {
-        const isOpen = isOpenById.dailySpendWindow;
-        if (!isOpen) return null;
-        return (
-          <DailySpendWindow
-            isOpen
-            onClose={() =>
-              dispatch(closeOverlay({ overlayId: "dailySpendWindow" }))
             }
           />
         );

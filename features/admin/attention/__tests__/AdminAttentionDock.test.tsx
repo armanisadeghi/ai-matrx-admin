@@ -36,9 +36,10 @@ import type { OpenOutage } from "@/features/admin/system-errors/open-outages";
 import type { SystemScheduleAlarm } from "@/features/scheduling/service/queries";
 import type { SpendAlarmAttentionRow } from "@/features/admin/spend-alarms/spendAlarms";
 
+let mockPathname = "/";
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
-  usePathname: () => "/",
+  usePathname: () => mockPathname,
 }));
 
 const fetchOpenOutages = jest.fn();
@@ -88,6 +89,10 @@ jest.mock("@/features/scheduling/service/schedulerClient", () => ({
 // THE copy door pulls the Alchemy workspace; the row only needs to render it.
 jest.mock("@/components/agent-copy/CopyButtons", () => ({
   CopyButtons: ({ label }: { label: string }) => <button type="button" aria-label={`Copy ${label}`} />,
+}));
+
+jest.mock("@/components/agent-copy/CopyForAiButton", () => ({
+  CopyForAiButton: ({ label }: { label: string }) => <button type="button" aria-label={`Copy ${label} for AI`} />,
 }));
 
 jest.mock("@/features/scheduling/redux/tasks/thunks", () => ({
@@ -505,7 +510,7 @@ describe("AdminAttentionDock", () => {
     await expand();
 
     const before = Date.now();
-    await click(rows()[0].querySelector('[data-testid="attention-mute-8d"]')!);
+    await click(rows()[0].querySelector('[data-testid="attention-mute-7d"]')!);
     for (let i = 0; i < 4; i += 1) await tick();
 
     expect(muteSystemScheduleAlarm).toHaveBeenCalledTimes(1);
@@ -515,8 +520,22 @@ describe("AdminAttentionDock", () => {
     expect(args.by).toBe("admin@admin.com");
     expect(args.reason).toBeNull();
     const until = Date.parse(args.untilIso);
-    expect(until).toBeGreaterThanOrEqual(before + 8 * 24 * 3_600_000);
-    expect(until).toBeLessThan(before + 8 * 24 * 3_600_000 + 60_000);
+    expect(until).toBeGreaterThanOrEqual(before + 7 * 24 * 3_600_000);
+    expect(until).toBeLessThan(before + 7 * 24 * 3_600_000 + 60_000);
+  });
+
+  it("the pill expands on the alarm list too (a click there used to do nothing)", async () => {
+    mockPathname = "/administration/billing/alarms";
+    try {
+      fetchSystemScheduleAlarms.mockResolvedValue([alarm()]);
+      fetchOpenOutages.mockResolvedValue([]);
+      await mount();
+      await expand();
+      expect(container.querySelector('[data-testid="attention-title"]')).not.toBeNull();
+      expect(rows().length).toBeGreaterThan(0);
+    } finally {
+      mockPathname = "/";
+    }
   });
 
   it("a non-super-admin renders nothing and issues no request", async () => {
@@ -598,6 +617,8 @@ describe("AdminAttentionDock", () => {
     expect(row.textContent).toContain("1,388 times · last ");
     expect(row.textContent).toContain("What to do: Find the automation billing this protected account and stop it");
     expect(row.querySelector('[aria-label="Copy Spend alarm"]')).not.toBeNull();
+    // Copy for AI is its own visible button, not an entry inside the copy menu.
+    expect(row.querySelector('[aria-label="Copy Spend alarm for AI"]')).not.toBeNull();
   });
 
   it("muting a spend alarm for 1 hour snoozes THE RECORD (until, for every super admin)", async () => {

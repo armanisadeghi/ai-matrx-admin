@@ -35,7 +35,6 @@ import ErrorInspectorBadge from "@/features/admin/error-inspector/ErrorInspector
 import NeedsYouAssistProducer from "@/features/capture-ladder/NeedsYouAssistProducer";
 import AdminAttentionDock from "@/features/admin/attention/AdminAttentionDock";
 import { FirstSignInAgeGateMount } from "@/features/education/compliance/FirstSignInAgeGateMount";
-import { DailySpendPopoverMount } from "@/features/admin/spend/DailySpendPopoverMount";
 import { ensureScopeTree } from "@/features/scopes/redux/thunks/ensureScopeTree";
 import { ensureScopeSkeleton } from "@/features/scopes/redux/thunks/ensureScopeSkeleton";
 import { registerBlobCacheServiceWorker } from "@/features/files/cache/register-service-worker";
@@ -227,7 +226,6 @@ export default function DeferredSingletonCore() {
           2026-09-11: scare me with the number, never block the code). Cadence
           is the knob platform.spend_popover.times_per_day — 0 turns it off; a
           dismissal ends the day. Internally gated on selectIsSuperAdmin. */}
-      {user?.id && <DailySpendPopoverMount />}
     </>
   );
 }

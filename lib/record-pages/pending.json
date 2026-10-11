@@ -1417,7 +1417,6 @@
   "window:features/window-panels/windows/seo/SocialCardWindow.tsx",
   "window:features/window-panels/windows/smart-code-editor/SmartCodeEditorWindow.tsx",
   "window:features/window-panels/windows/source-inspector/SourceInspectorWindow.tsx",
-  "window:features/window-panels/windows/spend/DailySpendWindow.tsx",
   "window:features/window-panels/windows/structured-value/StructuredValueWindow.tsx",
   "window:features/window-panels/windows/surfaces/SurfaceAgentBindWindow.tsx",
   "window:features/window-panels/windows/surfaces/SurfaceContextWindow.tsx",

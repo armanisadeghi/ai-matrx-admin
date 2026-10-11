@@ -4342,7 +4342,6 @@
   "overlay crmManagerWindow (CRM Manager)",
   "overlay cropStudioWindow (Crop Studio)",
   "overlay curatedIconPickerWindow (Icon Picker)",
-  "overlay dailySpendWindow (Spend so far today)",
   "overlay detailWindow (Record detail)",
   "overlay dictionarySelectorWindow (Dictionary Context)",
   "overlay diffViewerWindow (Compare)",

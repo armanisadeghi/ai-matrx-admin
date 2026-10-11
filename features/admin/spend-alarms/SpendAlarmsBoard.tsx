@@ -16,7 +16,7 @@ import { formatAdminUsd } from "@/components/cost/formatAdminCost";
 import {
   LEVEL_LABEL,
   SPEND_ALARMS_PATH,
-  alarmHeadline,
+  alarmTitle,
   costLabel,
   fixFor,
   refHref,
@@ -24,7 +24,7 @@ import {
   fetchSpendAlarms,
   isRinging,
   spendAlarmHref,
-  type SpendAlarmRecord,
+  type SpendAlarmAttentionRow as SpendAlarmRecord,
 } from "./spendAlarms";
 
 type StatusFilter = "ringing" | "snoozed" | "resolved" | "all";
@@ -72,14 +72,16 @@ export function SpendAlarmsBoard() {
       tone: (r) => (r.level === "critical" ? "danger" : r.level === "warning" ? "warning" : "muted"),
       sortValue: (r) => LEVEL_RANK[r.level],
       cell: (r) => LEVEL_LABEL[r.level],
+      // The SAME rule the attention dock counts by (spendAlarmCounts: ringing, by effective level), over every row read.
       kpi: [
-        { op: "count", id: "critical", label: "Critical", countWhere: (r) => r.level === "critical", tone: (v) => (v > 0 ? "danger" : undefined) },
-        { op: "count", id: "warning", label: "To decide", countWhere: (r) => r.level === "warning", tone: (v) => (v > 0 ? "warning" : undefined) },
+        { op: "count", id: "critical", label: "Critical", countWhere: (r) => r.level === "critical" && isRinging(r), tone: (v) => (v > 0 ? "danger" : undefined) },
+        { op: "count", id: "warning", label: "To decide", countWhere: (r) => r.level === "warning" && isRinging(r), tone: (v) => (v > 0 ? "warning" : undefined) },
+        { op: "count", id: "muted", label: "Muted", countWhere: (r) => r.status === "snoozed" && !isRinging(r) },
       ],
     },
     {
       id: "title",
-      accessorFn: (r) => alarmHeadline(r.title, r.subject_id, r.subject_name),
+      accessorFn: (r) => alarmTitle(r),
       header: "Alarm",
       href: (r) => spendAlarmHref(r.id),
       width: 420,
@@ -112,19 +114,25 @@ export function SpendAlarmsBoard() {
       id: "fix",
       header: "What to do",
       width: 260,
-      accessorFn: (r) => (fixFor(r) ? "Fixed in code; resolve it" : r.fix ?? ""),
+      accessorFn: (r) => (r.watching ? "Fixed, watching" : fixFor(r) ? "Fixed in code; resolve it" : r.fix ?? ""),
 
     },
     { id: "last_seen_at", accessorKey: "last_seen_at", header: "Last seen", cell: (r) => new Date(r.last_seen_at).toLocaleString() },
     {
       id: "status",
-      accessorKey: "status",
       header: "Status",
+      width: 260,
       filter: "select",
       tone: (r) => (r.status === "resolved" ? "success" : r.status === "snoozed" ? "muted" : undefined),
-      cell: (r) => (r.status === "snoozed" && r.snooze_note ? `snoozed — ${r.snooze_note}` : r.status),
+      accessorFn: (r) =>
+        r.status === "snoozed" && !isRinging(r)
+          ? `Muted until ${new Date(r.snoozed_until as string).toLocaleString()}${r.snoozed_by ? ` by ${r.snoozed_by}` : ""}${r.snooze_note ? `: ${r.snooze_note}` : ""}`
+          : r.status === "resolved"
+            ? "Resolved"
+            : r.watching
+              ? "Fixed, watching"
+              : "Open",
     },
-    { id: "handler", header: "Handler", accessorFn: (r) => r.refs.handler ?? "" },
   ];
 
   return (
@@ -186,7 +194,7 @@ export function SpendAlarmsBoard() {
             location: SPEND_ALARMS_PATH,
             rowKind: "spend-alarm",
             listKind: "spend-alarm",
-            humanRow: (r) => `${r.level} · ${r.title} · x${r.occurrence_count} · ${spendAlarmHref(r.id)}`,
+            humanRow: (r) => `${r.level} · ${alarmTitle(r)} · x${r.occurrence_count} · ${spendAlarmHref(r.id)}`,
             agentRow: (r) => ({ ...r, page: spendAlarmHref(r.id) }),
           }}
         />

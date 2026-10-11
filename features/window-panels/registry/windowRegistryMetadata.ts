@@ -1897,32 +1897,6 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     mobilePresentation: "fullscreen",
   },
 
-  // ── Daily spend (super admins) ────────────────────────────────────────────
-  // Ephemeral on purpose: this window is raised by the day, not restored by the
-  // browser. Its "come back tomorrow" memory is the dismissal record in
-  // localStorage (features/admin/spend/dailySpendPopoverState.ts), not window
-  // persistence — restoring it on every refresh would be nagging, not alarming.
-  {
-    slug: "daily-spend-window",
-    overlayId: "dailySpendWindow",
-    kind: "window",
-    label: "Spend so far today",
-    defaultData: {},
-    ephemeral: true,
-    mobilePresentation: "drawer",
-    // D11: it raises itself once a day, so it must say where it is allowed to
-    // do that. The dashboard and the administration surfaces are where a
-    // super admin is already looking at how the platform is doing; a drop
-    // zone, a chat, or a document is not. Away from home it DEFERS — the
-    // "shown today" record is untouched and it raises on the next visit here.
-    // The administration LANDING page only — never the working tables under
-    // it (2026-09-26: it opened over the middle of the mandate list).
-    unbiddenHome: [
-      "/dashboard",
-      { route: "/administration", exact: true },
-      "/administration/spend",
-    ],
-  },
 
   // ── Details (one structured value, through the canonical renderer) ────────
   // Ephemeral on purpose: the window shows a value a surface handed it, and a

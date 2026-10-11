@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   BellOff,
+  Bell,
   Bot,
   Check,
   CheckCircle2,
@@ -35,21 +36,22 @@ import { adminScheduleHref } from "@/features/scheduling/constants/routes";
 import { patchSystemTask, runSystemTaskNow } from "@/features/scheduling/service/schedulerClient";
 import { decideSpendApproval } from "@/features/admin/spend-approvals/spendApprovals";
 import { supabase } from "@/utils/supabase/client";
+import { MuteDialog } from "@/features/admin/attention/MuteDialog";
+import { muteLabel } from "@/features/admin/attention/item-mute";
+import { AlarmSourcesList } from "./AlarmSourcesList";
 import {
   SPEND_ALARMS_PATH,
   alarmActions,
   alarmAgentData,
-  alarmHeadline,
+  alarmSentence,
+  alarmTitle,
   fetchSpendAlarm,
   LEVEL_LABEL,
-  KIND_LABEL,
-  MIGRATED_NOTE,
+  migratedNote,
   costLabel,
   fetchItemTitles,
-  fetchSpendAlarmsOfKind,
   fixFor,
   isMigrated,
-  readable,
   whose,
   type ItemLabel,
   fetchSpendAlarmOccurrences,
@@ -61,6 +63,7 @@ import {
   type AlarmActionId,
   type AlarmLevel,
   type SpendAlarmOccurrence,
+  type SpendAlarmAttentionRow,
   type SpendAlarmRecord,
 } from "./spendAlarms";
 
@@ -92,11 +95,19 @@ function RefList({ record, names }: { record: SpendAlarmRecord; names: ReadonlyM
   return (
     <dl className="grid grid-cols-[9rem_1fr] gap-x-3 gap-y-1 text-sm">
       {links.map((l) => {
-        const shown = names.get(l.value) ?? (l.key === "approval_id" ? "Open in spend approvals" : l.value);
+        const shown =
+          names.get(l.value) ??
+          (l.key === "approval_id"
+            ? "Open in spend approvals"
+            : l.key === "handler" || l.key === "driver" || l.key === "mandate_key" || l.key === "provider" || l.key === "operation" || l.key === "scope"
+              ? l.value.replace(/^mandate(_candidate)?:/, "").replace(/[_]+/g, " ")
+              : l.href
+                ? `Open ${l.label.toLowerCase()}`
+                : "Recorded");
         return (
           <div key={l.key} className="contents">
             <dt className="text-muted-foreground">{l.label}</dt>
-            <dd className="min-w-0 truncate font-mono text-xs leading-5">
+            <dd className="min-w-0 truncate leading-5">
               {l.href ? (
                 <Link href={l.href} className="text-primary hover:underline">
                   {shown}
@@ -114,7 +125,8 @@ function RefList({ record, names }: { record: SpendAlarmRecord; names: ReadonlyM
 
 export function SpendAlarmRecordPage({ id }: { id: string }) {
   const router = useRouter();
-  const [record, setRecord] = useState<SpendAlarmRecord | null>(null);
+  const [record, setRecord] = useState<SpendAlarmAttentionRow | null>(null);
+  const [muteOpen, setMuteOpen] = useState(false);
   const [occurrences, setOccurrences] = useState<SpendAlarmOccurrence[]>([]);
   const [task, setTask] = useState<{ enabled: boolean; title: string; user_id: string } | null>(null);
   const [approvalStatus, setApprovalStatus] = useState<string | null>(null);
@@ -126,7 +138,6 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
   const [busy, setBusy] = useState(false);
   const [version, setVersion] = useState(0);
   const [itemTitles, setItemTitles] = useState<ReadonlyMap<string, ItemLabel>>(new Map());
-  const [skipped, setSkipped] = useState<{ id: string; title: string; href: string | null }[] | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -134,6 +145,11 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
     (async () => {
       try {
         const rec = await fetchSpendAlarm(id);
+        // A record merged into one-per-decision opens the record it became.
+        if (rec?.merged_into) {
+          router.replace(spendAlarmHref(rec.merged_into));
+          return;
+        }
         const occ = rec ? await fetchSpendAlarmOccurrences(id) : [];
         const t = rec?.refs.task_id ? await fetchTaskState(rec.refs.task_id).catch(() => null) : null;
         let approval: string | null = null;
@@ -150,20 +166,8 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
         const fetched = people.length ? await fetchUserDisplayNames(people).catch(() => new Map<string, string>()) : new Map<string, string>();
         // A generic "User" placeholder is never a name.
         const resolved = new Map([...fetched].filter(([, n]) => n && n.trim().toLowerCase() !== "user"));
-        const fix = rec ? fixFor(rec) : null;
-        // The skipped Sources themselves (each skip alarm's subject IS the Source), listed on this page.
-        const relatedRecords = fix?.related_kind ? await fetchSpendAlarmsOfKind(fix.related_kind).catch(() => []) : [];
-        const served = [
-          ...occ.filter((o) => o.refs.source_id).map((o) => ({ kind: o.refs.source_kind, id: o.refs.source_id as string })),
-          ...relatedRecords.map((r) => ({ id: r.subject_id })),
-          ...(rec?.subject_type === "source" ? [{ id: rec.subject_id }] : []),
-        ];
+        const served = occ.filter((o) => o.refs.source_id && o.refs.source_kind === "document").map((o) => ({ kind: o.refs.source_kind, id: o.refs.source_id as string }));
         const titles = await fetchItemTitles(served).catch(() => new Map<string, ItemLabel>());
-        const related = relatedRecords.map((r) => ({
-          id: r.id,
-          title: titles.get(r.subject_id)?.title ?? r.subject_name ?? "Source (not found)",
-          href: titles.get(r.subject_id)?.href ?? null,
-        }));
         if (!alive) return;
         setRecord(rec);
         setOccurrences(occ);
@@ -174,9 +178,9 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
         for (const [docId, label] of titles) if (!resolved.has(docId)) resolved.set(docId, label.title);
         if (rec?.refs.agent_id && rec.subject_name && rec.subject_type === "agent") resolved.set(rec.refs.agent_id, rec.subject_name);
         if (t?.title && rec?.refs.task_id) resolved.set(rec.refs.task_id, t.title);
+        for (const [rid, n] of Object.entries(rec?.names ?? {})) if (!resolved.has(rid)) resolved.set(rid, n);
         setNames(resolved);
         setItemTitles(titles);
-        setSkipped(fix?.related_kind ? related : null);
         setError(rec ? null : "This alarm does not exist");
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : String(e));
@@ -240,13 +244,18 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
     if (record.status === "resolved") {
       headerActions.push({ label: "Reopen", icon: RotateCcw, showLabel: true, onPress: () => act(() => setSpendAlarmStatus(id, "open"), "Alarm reopened") });
     } else {
-      headerActions.push({
-        label: "Snooze 24h",
-        icon: BellOff,
-        showLabel: true,
-        disabled: busy,
-        onPress: () => act(() => setSpendAlarmStatus(id, "snoozed", { snoozeHours: 24 }), "Snoozed for 24 hours"),
-      });
+      if (record.status === "snoozed") {
+        headerActions.push({
+          label: "Unmute",
+          icon: Bell,
+          showLabel: true,
+          disabled: busy,
+          onPress: () => act(() => setSpendAlarmStatus(id, "open"), "Unmuted"),
+        });
+        headerActions.push({ label: "Change mute", icon: BellOff, showLabel: true, disabled: busy, onPress: () => setMuteOpen(true) });
+      } else {
+        headerActions.push({ label: "Mute", icon: BellOff, showLabel: true, disabled: busy, onPress: () => setMuteOpen(true) });
+      }
       headerActions.push({ label: "Resolve", icon: CheckCircle2, primary: true, onPress: () => setPending({ kind: "resolve" }) });
     }
   }
@@ -255,7 +264,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
     ? record.status === "open"
       ? LEVEL_LABEL[record.level]
       : record.status === "snoozed"
-        ? `Snoozed until ${when(record.snoozed_until)}${record.snooze_note ? ` — ${record.snooze_note}` : ""}`
+        ? "Muted"
         : "Resolved"
     : "";
 
@@ -264,7 +273,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
     location: spendAlarmHref(id),
     description: "One spend alarm with its ids and occurrences.",
     attributes: { level: record?.level ?? "", status: record?.status ?? "", count: String(record?.occurrence_count ?? 0) },
-    data: record ? alarmAgentData(record, occurrences, typeof window === "undefined" ? "" : window.location.origin) : null,
+    data: record ? alarmAgentData({ ...record, names: record.names }, occurrences, typeof window === "undefined" ? "" : window.location.origin) : null,
   });
 
   const columns: MatrxColumnDef<SpendAlarmOccurrence>[] = [
@@ -293,7 +302,9 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
       header: "Item",
       accessorFn: (o) => [o.refs.source_kind, o.refs.source_id].filter(Boolean).join(" "),
       cell: (o) => {
-        if (isMigrated(o)) return <span className="text-muted-foreground">{MIGRATED_NOTE}</span>;
+        if (isMigrated(o)) return <span className="text-muted-foreground">{migratedNote()}</span>;
+        if (o.refs.mandate_key) return names.get(o.refs.mandate_key) ?? o.refs.mandate_key.replace(/[._]+/g, " ");
+        if (o.refs.operation) return o.refs.operation;
         if (!o.refs.source_id) return <span className="text-muted-foreground">—</span>;
         const href = itemHref(o);
         const text = itemTitle(o) ?? "Source (not found)";
@@ -306,13 +317,11 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
         );
       },
     },
-    { id: "handler", header: "Handler", accessorFn: (o) => o.refs.handler ?? "" },
-    { id: "request", header: "Request", accessorFn: (o) => o.refs.request_id ?? "", cellKind: "uuid" },
+    { id: "organization", header: "Organization", accessorFn: (o) => (o.refs.organization_id ? names.get(o.refs.organization_id) ?? "" : "") },
     { id: "cost_usd", accessorKey: "cost_usd", header: "Cost", cell: (o) => (o.cost_usd == null ? "—" : formatAdminUsd(o.cost_usd)) },
   ];
 
   const shippedFix = record ? fixFor(record) : null;
-  const migratedCount = occurrences.filter(isMigrated).reduce((n, o) => n + o.repeat_count, 0);
   const itemTitle = (o: SpendAlarmOccurrence) =>
     o.refs.source_id ? itemTitles.get(o.refs.source_id)?.title ?? "Source (not found)" : null;
   const itemHref = (o: SpendAlarmOccurrence) => (o.refs.source_id ? itemTitles.get(o.refs.source_id)?.href ?? null : null);
@@ -320,15 +329,10 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
   const afterFix = fixAt
     ? occurrences.filter((o) => !isMigrated(o) && Date.parse(o.occurred_at) > fixAt).reduce((n, o) => n + o.repeat_count, 0)
     : 0;
-  const servedItems = [
-    ...new Map(
-      occurrences
-        .filter((o) => o.refs.source_id)
-        .map((o) => [o.refs.source_id as string, { id: o.refs.source_id as string, title: itemTitle(o) as string, href: itemHref(o) }]),
-    ).values(),
-  ];
   const visibleColumns = columns.filter((c) => {
     if (c.id === "occurred_at" || c.id === "served") return true;
+    // Times counts every row, the migrated one included, so the rows add up to the record's count.
+    if (c.id === "repeat_count") return occurrences.some((o) => o.repeat_count > 1);
     // Hide a column no occurrence fills (a repeat count of 1 says nothing).
     return occurrences.some((o) => {
       if (isMigrated(o)) return false;
@@ -337,11 +341,12 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
     });
   });
 
+  const subjectName = record ? (record.subject_name ?? (record.refs.agent_id ? names.get(record.refs.agent_id) : null) ?? whose(record)) : "this subject";
   const consequence: Record<Exclude<NonNullable<Pending>["kind"], "resolve">, string> = {
     run_now: `Runs ${taskName} once now, as you, and spends what one run costs. You land on its page to watch.`,
     pause: `Stops ${taskName} from firing until someone resumes it. Runs already going finish.`,
-    approve: "Lets this subject run again without asking, at its current cost.",
-    reject: "Holds every automated run of this subject until someone approves it.",
+    approve: `Lets ${subjectName} run again without asking, at its current cost.`,
+    reject: `Holds every automated run of ${subjectName} until someone approves it.`,
   };
 
   return (
@@ -352,7 +357,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
           { label: "Billing", href: "/administration/billing" },
           { label: "Alarms", href: SPEND_ALARMS_PATH },
         ]}
-        record={{ name: record ? KIND_LABEL[record.kind] ?? alarmHeadline(record.title, record.subject_id, record.subject_name) : loading ? "Alarm" : "Alarm not found" }}
+        record={{ name: record ? alarmTitle(record) : loading ? "Alarm" : "Alarm not found" }}
         status={record ? { label: statusLabel, tone: record.status === "open" ? LEVEL_TONE[record.level] : "neutral" } : undefined}
         actions={headerActions}
       />
@@ -373,7 +378,20 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
                 human={() => `${record.title}\n${record.detail}\nRule: ${record.rule ?? "—"}\n${window.location.origin}${spendAlarmHref(id)}`}
                 agent={agentPayload}
               />
-              <p className="pr-20 text-sm font-medium text-foreground">{readable(record.detail, names)}</p>
+              <p className="pr-20 text-sm font-medium text-foreground">{alarmSentence({ ...record, names: Object.fromEntries(names) })}</p>
+              {record.status === "snoozed" ? (
+                <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-2 text-sm" data-testid="alarm-muted">
+                  <BellOff className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+                  <span className="min-w-0 flex-1">
+                    {`Muted until ${when(record.snoozed_until)}${record.snoozed_by ? ` by ${record.snoozed_by}` : ""}${record.snooze_note ? `: ${record.snooze_note}` : ""}`}
+                  </span>
+                </div>
+              ) : null}
+              {record.watching ? (
+                <p className="mt-2 text-sm text-muted-foreground" data-testid="alarm-watching">
+                  Fixed, watching: critical again if it recurs
+                </p>
+              ) : null}
               {shippedFix ? (
                 <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-success/40 bg-success/10 px-3 py-2 text-sm">
                   <CheckCircle2 className="h-4 w-4 shrink-0 text-success" aria-hidden />
@@ -386,25 +404,6 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
                 </div>
               ) : record.fix ? (
                 <p className="mt-1 text-sm text-muted-foreground">{record.fix}</p>
-              ) : null}
-              {skipped && skipped.length > 0 ? (
-                <div className="mt-2 text-sm" data-testid="skipped-sources">
-                  <span className="text-muted-foreground">{`Skipped Sources (${skipped.length}): `}</span>
-                  {skipped.map((it, i) => (
-                    <span key={it.id}>
-                      {i > 0 ? ", " : ""}
-                      {it.href ? (
-                        <Link href={it.href} className="text-primary hover:underline">
-                          {it.title}
-                        </Link>
-                      ) : (
-                        <Link href={spendAlarmHref(it.id)} className="text-muted-foreground hover:underline">
-                          {it.title}
-                        </Link>
-                      )}
-                    </span>
-                  ))}
-                </div>
               ) : null}
               <dl className="mt-3 grid grid-cols-[9rem_1fr] gap-x-3 gap-y-1 text-sm">
                 <dt className="text-muted-foreground">Rule</dt>
@@ -451,24 +450,6 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
                 agent={agentPayload}
               />
               <RefList record={record} names={names} />
-              {servedItems.length > 0 ? (
-                <div className="mt-2 text-sm">
-                  <span className="text-muted-foreground">{`Documents (${servedItems.length}): `}</span>
-                  {servedItems.map((it, i) => (
-                    <span key={it.id}>
-                      {i > 0 ? ", " : ""}
-                      {it.href ? (
-                        <Link href={it.href} className="text-primary hover:underline">
-                          {it.title}
-                        </Link>
-                      ) : (
-                        it.title
-                      )}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-              {occurrences.some(isMigrated) ? <p className="mt-2 text-sm text-muted-foreground">{`${migratedCount.toLocaleString()} earlier times: ${MIGRATED_NOTE}`}</p> : null}
               {task ? (
                 <p className="mt-2 text-sm">
                   <Link href={adminScheduleHref(record.refs.task_id as string)} className="text-primary hover:underline">
@@ -479,7 +460,9 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
               ) : null}
             </section>
 
-            <div className="h-[28rem] min-h-0">
+            <AlarmSourcesList alarmId={id} heading={record.kind === "protected_account_refusal" ? "Sources skipped instead" : "Sources"} />
+
+            <div className="h-[28rem] min-h-0" id="occurrences">
               <MatrxDataTable
                 data={occurrences}
                 columns={visibleColumns}
@@ -488,7 +471,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
                 tableId="spend-alarm-occurrences"
                 read={readOf({ loading, error }, { what: "occurrences" })}
                 emptyState={{ title: "No occurrences recorded" }}
-                toolbar={{ title: "Occurrences", search: true }}
+                toolbar={{ title: `Occurrences · ${record.occurrence_count.toLocaleString()} times`, search: true }}
                 copy={{
                   label: "Occurrence",
                   listLabel: "Alarm occurrences",
@@ -504,6 +487,19 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
         ) : null}
       </div>
 
+      <MuteDialog
+        open={muteOpen}
+        onOpenChange={setMuteOpen}
+        subject={record ? alarmTitle(record) : "this alarm"}
+        scope="server"
+        initialNote={record?.snooze_note ?? null}
+        onConfirm={async (choice, muteNote) => {
+          await act(
+            () => setSpendAlarmStatus(id, "snoozed", { snoozedUntil: new Date(Date.now() + choice.ms).toISOString(), note: muteNote }),
+            `Muted for ${muteLabel(choice.ms)}`,
+          );
+        }}
+      />
       <ConfirmDialog
         open={pending?.kind === "resolve"}
         onOpenChange={(o) => !o && setPending(null)}
@@ -525,8 +521,8 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
             : pending?.kind === "pause"
               ? "Pause automation"
               : pending?.kind === "approve"
-                ? "Approve"
-                : "Reject"
+                ? `Approve spend for ${subjectName}`
+                : `Reject spend for ${subjectName}`
         }
         description={pending && pending.kind !== "resolve" ? consequence[pending.kind] : undefined}
         variant={pending?.kind === "pause" || pending?.kind === "reject" ? "destructive" : "default"}

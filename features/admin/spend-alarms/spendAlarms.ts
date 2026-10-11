@@ -87,6 +87,18 @@ export interface SpendAlarmRecord {
   code_fix: CodeFix | null;
   /** The person behind the alarm as "Name (email)", resolved by the writer. */
   person: string | null;
+  /** The table's grade; `level` is the EFFECTIVE level (a watched fix reads info). */
+  graded_level?: AlarmLevel;
+  /** Its fix has shipped and it has not happened since: "Fixed, watching" (critical again if it recurs). */
+  watching?: boolean;
+  /** Every ref id the record carries, by name (org, agent, mandate label, person, task). */
+  names?: Record<string, string>;
+  /** Who muted it (name or email). */
+  snoozed_by?: string | null;
+  /** How many occurrence rows are recorded (each carries a times count). */
+  recorded_rows?: number;
+  /** The record this one was merged into (one record per decision). */
+  merged_into?: string | null;
 }
 
 export interface CodeFix {
@@ -142,21 +154,60 @@ function billing() {
   return supabase.schema("billing");
 }
 
-export async function fetchSpendAlarm(id: string): Promise<SpendAlarmRecord | null> {
-  const { data, error } = await billing().from("spend_alarm").select(RECORD_COLUMNS).eq("id", id).maybeSingle();
-  if (error) throw pgErrorToError(error);
-  return data ? toRecord(data as Record<string, unknown>) : null;
+/** One row of `billing.spend_alarm_rows` — THE read the dock and the list share. */
+function fromRowsDoor(raw: Record<string, unknown>): SpendAlarmAttentionRow {
+  const meta = (raw.metadata && typeof raw.metadata === "object" ? raw.metadata : {}) as Record<string, unknown>;
+  const names: Record<string, string> = {};
+  if (raw.names && typeof raw.names === "object") {
+    for (const [k, v] of Object.entries(raw.names as Record<string, unknown>)) if (typeof v === "string" && v) names[k] = v;
+  }
+  return {
+    ...toRecord(raw),
+    resolved_by: strOrNull(raw.resolved_by),
+    snooze_note: strOrNull(raw.snooze_note),
+    snoozed_by: strOrNull(raw.snoozed_by),
+    graded_level: (raw.graded_level as AlarmLevel | undefined) ?? (raw.level as AlarmLevel),
+    watching: raw.watching === true,
+    names,
+    recorded_rows: typeof raw.recorded_rows === "number" ? raw.recorded_rows : undefined,
+    merged_into: typeof meta.merged_into === "string" ? meta.merged_into : null,
+    latest_occurrence_at: strOrNull(raw.latest_occurrence_at),
+    latest_occurrence_detail: strOrNull(raw.latest_occurrence_detail),
+    task_enabled: typeof raw.task_enabled === "boolean" ? raw.task_enabled : null,
+    task_title: strOrNull(raw.task_title),
+    approval_status: strOrNull(raw.approval_status),
+  };
 }
 
-export async function fetchSpendAlarms(): Promise<SpendAlarmRecord[]> {
-  const { data, error } = await billing()
-    .from("spend_alarm")
-    .select(RECORD_COLUMNS)
-    .is("deleted_at", null)
-    .order("last_seen_at", { ascending: false })
-    .limit(1000);
-  if (error) throw pgErrorToError(error);
-  return (data ?? []).map((r) => toRecord(r as Record<string, unknown>));
+/** PostgREST answers at most 1,000 rows per request; the reader pages until the door is empty. */
+export const ROWS_PAGE = 1000;
+
+/**
+ * Every spend alarm record (or just `id`) through `billing.spend_alarm_rows`, all pages. The dock
+ * reads the unresolved ones, the list reads everything — the SAME door, so their counts agree.
+ */
+export async function fetchSpendAlarmRows(
+  options: { id?: string; includeResolved?: boolean } = {},
+): Promise<SpendAlarmAttentionRow[]> {
+  const out: SpendAlarmAttentionRow[] = [];
+  for (let from = 0; ; from += ROWS_PAGE) {
+    const { data, error } = await billing()
+      .rpc("spend_alarm_rows", { p_id: options.id ?? null, p_include_resolved: options.includeResolved ?? true } as never)
+      .range(from, from + ROWS_PAGE - 1);
+    if (error) throw pgErrorToError(error);
+    const rows = (data ?? []) as unknown as Record<string, unknown>[];
+    out.push(...rows.map(fromRowsDoor));
+    if (rows.length < ROWS_PAGE) return out;
+  }
+}
+
+export async function fetchSpendAlarm(id: string): Promise<SpendAlarmAttentionRow | null> {
+  const rows = await fetchSpendAlarmRows({ id });
+  return rows[0] ?? null;
+}
+
+export async function fetchSpendAlarms(): Promise<SpendAlarmAttentionRow[]> {
+  return fetchSpendAlarmRows({ includeResolved: true });
 }
 
 export async function fetchSpendAlarmsOfKind(kind: string): Promise<SpendAlarmRecord[]> {
@@ -246,21 +297,111 @@ export interface SpendAlarmAttentionRow extends SpendAlarmRecord {
 const strOrNull = (v: unknown): string | null => (typeof v === "string" && v ? v : null);
 
 export async function fetchSpendAlarmsForAttention(): Promise<SpendAlarmAttentionRow[]> {
-  const { data, error } = await billing().rpc("spend_alarms_for_attention", { p_limit: 200 });
+  return fetchSpendAlarmRows({ includeResolved: false });
+}
+
+// ── One count, two surfaces ────────────────────────────────────────────────
+
+export interface AlarmCounts {
+  critical: number;
+  warning: number;
+  info: number;
+  snoozed: number;
+}
+
+/**
+ * THE count of spend alarms, used by the attention dock's spend section AND the list's KPI tiles:
+ * ringing records by effective level, plus how many are muted. Same rows, same function, same
+ * numbers (guard: spendAlarms.test.ts "list and dock agree").
+ */
+export function spendAlarmCounts(
+  rows: readonly Pick<SpendAlarmRecord, "level" | "status" | "snoozed_until">[],
+  now: number = Date.now(),
+): AlarmCounts {
+  const out: AlarmCounts = { critical: 0, warning: 0, info: 0, snoozed: 0 };
+  for (const r of rows) {
+    if (r.status === "resolved") continue;
+    if (!isRinging(r, now)) {
+      out.snoozed += 1;
+      continue;
+    }
+    out[r.level] += 1;
+  }
+  return out;
+}
+
+// ── The Sources an alarm is about ──────────────────────────────────────────
+
+export interface AlarmSourceItem {
+  id: string;
+  /** Resolved type: note, document, space, task, message, source. */
+  kind: string;
+  /** The raw kind the writer recorded (the group key). */
+  source_kind: string;
+  title: string | null;
+  deleted?: boolean;
+  missing?: boolean;
+  parent_id?: string;
+  format?: string | null;
+  times: number;
+  last_at: string;
+}
+
+export interface AlarmSourceGroup {
+  kind: string;
+  total: number;
+  items: AlarmSourceItem[];
+}
+
+export async function fetchAlarmSources(
+  alarmId: string,
+  options: { kind?: string; offset?: number; limit?: number } = {},
+): Promise<{ total: number; groups: AlarmSourceGroup[] }> {
+  const { data, error } = await billing().rpc("spend_alarm_sources", {
+    p_alarm_id: alarmId,
+    p_kind: options.kind ?? null,
+    p_offset: options.offset ?? 0,
+    p_limit: options.limit ?? 10,
+  } as never);
   if (error) throw pgErrorToError(error);
-  return (data ?? []).map((raw) => {
-    const row = raw as unknown as Record<string, unknown>;
-    return {
-      ...toRecord({ ...row, resolved_at: null, resolved_by: null, resolution_note: null }),
-      snooze_note: strOrNull(row.snooze_note),
-      snoozed_by: strOrNull(row.snoozed_by),
-      latest_occurrence_at: strOrNull(row.latest_occurrence_at),
-      latest_occurrence_detail: strOrNull(row.latest_occurrence_detail),
-      task_enabled: typeof row.task_enabled === "boolean" ? row.task_enabled : null,
-      task_title: strOrNull(row.task_title),
-      approval_status: strOrNull(row.approval_status),
-    };
-  });
+  const v = (data ?? { total: 0, groups: [] }) as { total: number; groups: AlarmSourceGroup[] };
+  return { total: v.total ?? 0, groups: v.groups ?? [] };
+}
+
+const SOURCE_GROUP_LABEL: Record<string, string> = {
+  note: "Notes",
+  document: "Documents",
+  task: "Tasks",
+  cx_message: "Chat messages",
+  source: "Other Sources",
+};
+
+export function sourceGroupLabel(kind: string): string {
+  return SOURCE_GROUP_LABEL[kind] ?? kind.replace(/[_-]+/g, " ").replace(/^\w/, (c) => c.toUpperCase());
+}
+
+/** A Source's own page; null when it is gone. */
+export function alarmSourceHref(item: AlarmSourceItem): string | null {
+  if (item.deleted || item.missing) return null;
+  switch (item.kind) {
+    case "note":
+      return `/notes/${item.id}`;
+    case "task":
+      return `/tasks/${item.id}`;
+    case "message":
+      return item.parent_id ? `/chat/${item.parent_id}` : null;
+    case "space":
+    case "document":
+      return documentHref(item.id, item.format ?? (item.kind === "space" ? "spaces" : null));
+    default:
+      return null;
+  }
+}
+
+/** "Potential Common Apps", "(deleted)", or "A note that no longer exists". */
+export function alarmSourceTitle(item: AlarmSourceItem): string {
+  if (item.missing || !item.title) return `${item.kind === "message" ? "A message" : `A ${item.kind}`} that no longer exists (deleted)`;
+  return item.deleted ? `${item.title} (deleted)` : item.title;
 }
 
 /** Whether a record should ring now: open, or snoozed past its time. */
@@ -462,9 +603,18 @@ export function alarmAgentData(record: SpendAlarmRecord, occurrences: SpendAlarm
       last_seen_at: record.last_seen_at,
       cost_usd: record.cost_usd,
       cost_avoided_usd: record.cost_avoided_usd,
+      cost: costLabel(record, (n) => `$${n.toFixed(2)}`),
+      watching: record.watching ?? false,
+      muted: record.status === "snoozed" ? { until: record.snoozed_until, by: record.snoozed_by ?? null, note: record.snooze_note } : null,
       resolved: record.resolved_at ? { at: record.resolved_at, by: record.resolved_by, note: record.resolution_note } : null,
     },
-    blocked: refLinks(record.refs).map((l) => ({ what: l.label, id: l.value, link: l.href ? `${origin}${l.href}` : null })),
+    blocked: refLinks(record.refs).map((l) => ({
+      what: l.label,
+      id: l.value,
+      name: record.names?.[l.value] ?? null,
+      link: l.href ? `${origin}${l.href}` : null,
+    })),
+    recorded_occurrences: occurrences.length,
     occurrences: occurrences.map((o) => ({
       at: o.occurred_at,
       repeats: o.repeat_count,
@@ -506,8 +656,13 @@ export function alarmCostLine(cost: number | null | undefined, avoided: number |
 
 // ── Facts the record page leads with ──────────────────────────────────────
 
-/** Occurrence rows moved from the old per-person announcements carry no per-run detail. */
-export const MIGRATED_NOTE = "Detail not recorded before 10 Oct 23:00";
+/** When per-run detail started being recorded (the record migration, 2026-10-10 23:00 UTC). */
+export const MIGRATED_AT = "2026-10-10T23:00:00Z";
+
+/** Occurrence rows moved from the old per-person announcements carry no per-run detail. Viewer's timezone. */
+export function migratedNote(): string {
+  return `Detail not recorded before ${new Date(MIGRATED_AT).toLocaleString(undefined, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}`;
+}
 export const isMigrated = (o: Pick<SpendAlarmOccurrence, "refs">) => "migrated" in (o.refs as Record<string, unknown>);
 
 /** The shipped fix that covers THIS record (a handler-scoped fix covers only that handler). */
@@ -615,4 +770,78 @@ export function readable(text: string, names: ReadonlyMap<string, string>): stri
   for (const [id, name] of names) out = out.split(id).join(name);
   out = out.replace(/\s*\(?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\)?/gi, "").replace(/\s{2,}/g, " ").trim();
   return out.charAt(0).toUpperCase() + out.slice(1);
+}
+
+// ── The sentence: what happened, in words — never a code, an id or a terminal colour ──
+
+const ANSI_RE = /\u001b\[[0-9;]*[A-Za-z]/g;
+
+/** Terminal colour codes and ORM banners out; the first meaningful line of an error in. */
+export function stripAnsi(text: string): string {
+  return text.replace(ANSI_RE, "");
+}
+
+/** What ran, by name, from a refusal's handler ("mandate:hindsight.replay_judge" → the mandate's name). */
+export function handlerPhrase(handler: string | undefined, names: Readonly<Record<string, string>>, refs: AlarmRefs): string {
+  if (!handler) return "An automated run";
+  const [head, ...rest] = handler.split(":");
+  const key = rest.join(":");
+  if (head === "mandate" || head === "mandate_candidate") {
+    const label = names[refs.mandate_key ?? key] ?? names[key];
+    const what = label ? `Mandate: ${label}` : "a mandate";
+    return head === "mandate_candidate" ? `A trial run of ${what}` : `A run of ${what}`;
+  }
+  const known: Record<string, string> = {
+    auto_ingest: "Auto-ingest",
+    source_intelligence: "Source intelligence",
+    "agent-app": "A scheduled agent app run",
+    "agent-mail": "An agent mail run",
+  };
+  return known[handler] ?? `An automated ${handler.replace(/[_-]+/g, " ")} run`;
+}
+
+/** The record's one sentence for a person. Kind-specific where the stored text leaks codes. */
+export function alarmSentence(
+  r: Pick<SpendAlarmRecord, "kind" | "detail" | "title" | "refs" | "subject_name" | "person"> & { names?: Record<string, string> },
+): string {
+  const names = r.names ?? {};
+  const person = (r.refs.user_id && names[r.refs.user_id]) || r.person || null;
+  if (r.kind === "protected_account_refusal") {
+    return `${handlerPhrase(r.refs.handler, names, r.refs)} would have run as, and billed, ${person ?? "a protected account"}, a protected test account. It was refused before it ran, so nothing was billed.`;
+  }
+  if (r.kind === "guardrail.check_failed") {
+    const m = /^The (.+?) could not run/.exec(stripAnsi(r.detail));
+    const what = m?.[1] ?? "guardrail check";
+    const timedOut = /timed? ?out|timeout/i.test(r.detail);
+    return `The ${what} could not run${timedOut ? ": its database query timed out" : ""}. Until it runs, protection for this automation reads stale data.`;
+  }
+  let text = stripAnsi(r.detail || r.title);
+  // "Limit: None; observed: None" says nothing.
+  text = text.replace(/\s*Limit: None; observed: None\.?/g, "");
+  // key=value pairs read as "Label: name".
+  text = text.replace(/\(?\b([a-z]+(?:_[a-z]+)+)=([\w.:-]+)\)?/g, (_m, key: string, value: string) => {
+    const label = REF_LABEL[key as keyof AlarmRefs] ?? key.replace(/_/g, " ");
+    return `${label}: ${names[value] ?? value}`;
+  });
+  // A bare (snake_case_code) parenthetical is a code, not a word.
+  text = text.replace(/\s*\((?:[a-z0-9]+[_.])+[a-z0-9]+\)/g, "");
+  // Dotted code paths (module.function) are for engineers, not this sentence.
+  text = text.replace(/\b(?:[a-z_]+\.){2,}[a-z_]+\b/g, "the origin stamp");
+  const idNames = new Map(Object.entries(names));
+  if (r.refs.user_id && person) idNames.set(r.refs.user_id, person);
+  return readable(text.replace(/\n+/g, " "), idNames);
+}
+
+/** The record's headline, by name: no ids, and the five protected-account refusals told apart. */
+export function alarmTitle(
+  r: Pick<SpendAlarmRecord, "kind" | "title" | "refs" | "subject_id" | "subject_name" | "person"> & { names?: Record<string, string> },
+): string {
+  const names = r.names ?? {};
+  if (r.kind === "protected_account_refusal") {
+    const person = (r.refs.user_id && names[r.refs.user_id]) || r.person || "a protected account";
+    return `${handlerPhrase(r.refs.handler, names, r.refs)} tried to bill ${person}`;
+  }
+  let title = r.title;
+  for (const [id, name] of Object.entries(names)) title = title.split(id).join(name);
+  return alarmHeadline(title, r.subject_id, r.subject_name) || KIND_LABEL[r.kind] || "Spend alarm";
 }

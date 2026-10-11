@@ -166,11 +166,15 @@ describe("spendAlarmItems", () => {
     expect(expired.mute?.current).toBeNull();
   });
 
-  it("every row can be copied for AI with the record's own words and doors", () => {
-    const [item] = spendAlarmItems([row()], deps());
+  it("every row can be copied for AI with the record's own words, doors, occurrences and cost", async () => {
+    const occ = [{ id: "o1", occurred_at: "2026-10-10T22:51:00Z", repeat_count: 3, run_id: null, execution_id: null, refs: {}, detail: null, cost_usd: null }];
+    const [item] = spendAlarmItems([row()], deps({ fetchOccurrences: async () => occ }));
     expect(item.copy).toBeDefined();
-    const payload = item.copy!.agent();
+    const payload = await item.copy!.agent();
     expect(payload.kind).toBe("spend-alarm");
+    const data = payload.data as { occurrences: unknown[]; alarm: { cost: string } };
+    expect(data.occurrences).toHaveLength(1);
+    expect(data.alarm.cost).toBe("$3.20 kept from spending");
     expect(payload.location).toBe(`/administration/billing/alarms/${ALARM}`);
     expect(item.copy!.human()).toContain("Nightly SEO crawl");
   });

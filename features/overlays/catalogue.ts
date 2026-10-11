@@ -408,11 +408,6 @@ export const OVERLAY_CATALOGUE = {
     instanceMode: "singleton",
     isWindow: true,
   },
-  dailySpendWindow: {
-    label: "Spend so far today",
-    instanceMode: "singleton",
-    isWindow: true,
-  },
   convertToShapeWindow: {
     label: "Convert JSON to Shape",
     instanceMode: "singleton",

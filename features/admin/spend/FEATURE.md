@@ -211,22 +211,15 @@ Seeded by `migrations/spend_popover_knobs.sql` and
 them to the RPC, which RAISES when one is missing; if they cannot be read the
 explorer says so and computes nothing rather than guess where a line sits.
 
-## The popover
+## Spend today (on the attention dock)
 
-`features/window-panels/windows/spend/DailySpendWindow.tsx` **wraps the canonical
-headline** (`SpendHeadline.tsx`), the same component the dashboard renders — a
-window panel wraps the canonical component, never a hand-rolled copy. It adds
-only the two doors out: _Dismiss for today_ and _Open spend dashboard_.
-
-It is raised by `DailySpendPopoverMount`, mounted render-free in
-`app/DeferredSingletonCore.tsx` and internally gated on `selectIsSuperAdmin`, so
-it never delays first paint and never reaches a non-super-admin.
-
-The "already seen it today" memory is local-first and per viewer
-(`dailySpendPopoverState.ts`, `localStorage` key `matrx.spend_popover.v1`), NOT
-window persistence — the registry entry is deliberately `ephemeral`. Every
-storage access is wrapped: a private window or blocked storage degrades to "not
-shown yet", never a throw.
+The daily popover window is retired (2026-10-10: every admin alert lives on the super-admin
+attention dock, nothing else opens on its own). Its facts are the dock source
+`features/admin/attention/sources/spend-today.ts` (+ `useSpendTodaySource.ts`): today, runs,
+yesterday, last 7 days, month to date, the biggest spender and the unmeasured cost sources, from
+`fetchSpendHeadline`. `platform.spend_popover.times_per_day` = 0 turns the row off;
+`scare_threshold_usd` makes it critical (else information). "Dismiss for today" is a local mute
+until local midnight.
 
 ## Scrolling — one scroller, never two
 
@@ -264,9 +257,6 @@ boundary—the admin shell itself is structurally non-scrollable.
 | `features/admin/spend/format.ts`                                                                                                   | money/time formatting, one place                           |
 | `features/admin/spend/useSpendPopoverKnobs.ts`, `useSpendExplorerKnobs.ts`                                                         | the knobs                                                  |
 | `features/admin/spend/dailySpendPopoverState.ts`                                                                                   | per-viewer, per-day show/dismiss memory                    |
-| `features/admin/spend/DailySpendPopoverMount.tsx`                                                                                  | the once-a-day trigger                                     |
-| `features/window-panels/windows/spend/DailySpendWindow.tsx`                                                                        | the floating window                                        |
-| `features/overlays/openers/dailySpendWindow.tsx`                                                                                   | the one way to open it                                     |
 | `migrations/spend_dashboard_admin_rpcs.sql`, `spend_popover_knobs.sql`, `spend_explorer_admin_rpc.sql`, `spend_explorer_knobs.sql` | the database half                                          |
 
 Registered in `features/admin/constants/admin-categories.ts` +

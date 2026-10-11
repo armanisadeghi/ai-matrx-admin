@@ -30,6 +30,9 @@ import {
   alarmAgentData,
   alarmCostLine,
   alarmHeadline,
+  alarmSentence,
+  alarmTitle,
+  fetchSpendAlarmOccurrences,
   fixFor,
   KIND_LABEL,
   readable,
@@ -59,6 +62,8 @@ export interface SpendAlarmDeps {
   now?: number;
   /** Prefix for absolute links in copied text (the page's origin); empty in tests. */
   origin?: string;
+  /** The occurrences Copy for AI hands over (tests inject; the dock reads them on press). */
+  fetchOccurrences?: (alarmId: string) => Promise<import("@/features/admin/spend-alarms/spendAlarms").SpendAlarmOccurrence[]>;
 }
 
 function usd(n: number): string {
@@ -82,7 +87,8 @@ function stateOf(row: SpendAlarmAttentionRow, now: number): string {
   const n = row.occurrence_count;
   const times = `${n.toLocaleString("en-US")} ${n === 1 ? "time" : "times"}`;
   const last = lastSeen(row.last_seen_at, now);
-  return last ? `${times} · last ${last}` : times;
+  const head = row.watching ? "Fixed, watching · " : "";
+  return `${head}${last ? `${times} · last ${last}` : times}`;
 }
 
 /** ids → names the record already carries, so no sentence shows a uuid. */
@@ -91,12 +97,14 @@ function namesOf(row: SpendAlarmAttentionRow): Map<string, string> {
   if (row.subject_id && row.subject_name) names.set(row.subject_id, row.subject_name);
   if (row.refs.task_id && row.task_title) names.set(row.refs.task_id, row.task_title);
   if (row.refs.user_id && row.person) names.set(row.refs.user_id, row.person);
+  for (const [id, name] of Object.entries(row.names ?? {})) if (!names.has(id)) names.set(id, name);
   return names;
 }
 
 function actionsOf(row: SpendAlarmAttentionRow, deps: SpendAlarmDeps): AttentionAction[] {
   const refs = row.refs;
   const taskName = row.task_title ?? "this automation";
+  const subject = row.subject_name ?? (row.refs.agent_id ? row.names?.[row.refs.agent_id] : null) ?? whose(row);
   const ids = alarmActions(row, {
     task: row.task_enabled === null ? null : { enabled: row.task_enabled },
     approvalStatus: row.approval_status,
@@ -110,8 +118,8 @@ function actionsOf(row: SpendAlarmAttentionRow, deps: SpendAlarmDeps): Attention
         label: "Approve",
         variant: "default",
         confirm: {
-          title: "Approve this spend?",
-          description: "Lets this subject run again without asking, at its current cost.",
+          title: `Approve spend for ${subject}?`,
+          description: `Lets ${subject} run again without asking, at its current cost.`,
           confirmLabel: "Approve",
         },
         run: () => deps.decideApproval(approvalId, "approve"),
@@ -123,8 +131,8 @@ function actionsOf(row: SpendAlarmAttentionRow, deps: SpendAlarmDeps): Attention
         label: "Reject",
         variant: "outline",
         confirm: {
-          title: "Reject this spend?",
-          description: "Holds every automated run of this subject until someone approves it.",
+          title: `Reject spend for ${subject}?`,
+          description: `Holds every automated run of ${subject} until someone approves it.`,
           confirmLabel: "Reject",
           variant: "destructive",
         },
@@ -197,7 +205,7 @@ export function spendAlarmItems(
   return rows.map((row) => {
     const names = namesOf(row);
     const href = spendAlarmHref(row.id);
-    const title = alarmHeadline(readable(row.title, names), row.subject_id, row.subject_name) || KIND_LABEL[row.kind] || "Spend alarm";
+    const title = alarmTitle({ ...row, names: Object.fromEntries(names) });
 
     const doors: AttentionItem["doors"] = [];
     for (const link of refLinks(row.refs)) {
@@ -214,7 +222,9 @@ export function spendAlarmItems(
         kind: "evidence",
         href: `${href}#occurrences`,
         label: "Latest occurrence",
-        what: row.latest_occurrence_detail ? readable(row.latest_occurrence_detail, names) : undefined,
+        what: row.latest_occurrence_detail
+          ? alarmSentence({ ...row, detail: row.latest_occurrence_detail, names: Object.fromEntries(names) })
+          : undefined,
       });
     }
 
@@ -228,7 +238,7 @@ export function spendAlarmItems(
         ? { until: row.snoozed_until as string, reason: row.snooze_note, by: row.snoozed_by }
         : null;
 
-    const sentence = readable(row.detail || row.title, names);
+    const sentence = alarmSentence({ ...row, names: Object.fromEntries(names) });
 
     return {
       key: `${SPEND_ALARM_SOURCE_ID}:${row.id}`,
@@ -254,12 +264,13 @@ export function spendAlarmItems(
       copy: {
         label: "Spend alarm",
         human: () => [title, sentence, fix ? `What to do: ${fix}` : "", `${origin}${href}`].filter(Boolean).join("\n"),
-        agent: () => ({
+        // The real occurrences and cost, read when Copy for AI is pressed (never an empty list).
+        agent: async () => ({
           kind: "spend-alarm",
           location: href,
-          description: "One spend alarm with its ids and the records it blocked.",
+          description: "One spend alarm with its ids, its occurrences and the records it blocked.",
           attributes: { level: row.level, status: row.status, count: row.occurrence_count },
-          data: alarmAgentData(row, [], origin),
+          data: alarmAgentData(row, await (deps.fetchOccurrences ?? fetchSpendAlarmOccurrences)(row.id), origin),
         }),
       },
     };
