@@ -86,3 +86,48 @@ export const OUTSIDE_DATABASE_PROVIDER = "postgres";
 
 /** Where the Connect a database page lives. */
 export const CONNECT_DATABASE_PATH = "/data/connect";
+
+// ── LANE SYNC-AIRTABLE (2026-10-10): every synced table, not only outside databases ──────────────
+// aidream `/synced-tables` (aidream/services/synced_tables). A Google Sheets link shared "anyone with
+// the link" or any https CSV link becomes a synced table; ONE refresh door re-reads whatever a synced
+// table comes from (sheet, CSV, outside database, another table's view).
+
+export type SyncAutoRefresh = "off" | "hourly" | "daily" | "on_change";
+
+/** A Google Sheets / CSV link becomes a synced table in this organization. */
+export async function connectSyncedLink(
+  organizationId: string,
+  input: { url: string; headerRow?: number; tableName?: string; autoRefresh?: "off" | "hourly" | "daily" },
+): Promise<SyncAnswer> {
+  const { data } = await postJson<SyncAnswer>(
+    "/synced-tables/link",
+    {
+      organization_id: organizationId,
+      url: input.url,
+      header_row: input.headerRow ?? 1,
+      table_name: input.tableName || null,
+      auto_refresh: input.autoRefresh ?? "off",
+    },
+    { organizationId },
+  );
+  return data;
+}
+
+/** Re-read whatever a synced table comes from, as the person. */
+export async function refreshAnySyncedTable(organizationId: string, tableId: string): Promise<SyncAnswer> {
+  const { data } = await postJson<SyncAnswer>(
+    "/synced-tables/refresh",
+    { organization_id: organizationId, table_id: tableId },
+    { organizationId },
+  );
+  return data;
+}
+
+/** Plain words for where a synced table's rows come from. */
+export function syncedFromLabel(provider: string): string {
+  if (provider === OUTSIDE_DATABASE_PROVIDER) return "an outside database";
+  if (provider === "google_sheets") return "Google Sheets";
+  if (provider === "csv_url") return "a CSV link";
+  if (provider === "matrx_view") return "another table";
+  return "outside AI Matrx";
+}

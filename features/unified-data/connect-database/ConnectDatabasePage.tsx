@@ -24,6 +24,7 @@ import { SavesTo, SAVED_WHERE_CHOSEN } from "@/features/make/MakeMount";
 import { extractErrorMessage } from "@/utils/errors";
 
 import { connectTable, inspectDatabase, type InspectAnswer, type OutsideTable } from "./service";
+import { SyncFromLinkForm } from "./SyncFromLinkForm";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 type Step =
@@ -202,6 +203,7 @@ export function ConnectDatabasePage() {
                   )}
                 </section>
               ) : null}
+              <SyncFromLinkForm organizationId={organizationId} />
             </>
           )}
         </div>

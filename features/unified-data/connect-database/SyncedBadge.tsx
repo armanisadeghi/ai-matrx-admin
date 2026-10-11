@@ -12,6 +12,8 @@ import { OUTSIDE_DATABASE_PROVIDER } from "./service";
 function syncedFromWords(provider: string): string {
   if (provider === OUTSIDE_DATABASE_PROVIDER) return "Rows come from an outside database; your own columns sit beside them.";
   if (provider === "google_sheets") return "Rows come from a Google Sheet; your own columns sit beside them.";
+  if (provider === "csv_url") return "Rows come from a CSV link; your own columns sit beside them.";
+  if (provider === "matrx_view") return "Rows come from another table's view; your own columns sit beside them.";
   return "Rows come from outside AI Matrx; your own columns sit beside them.";
 }
 
