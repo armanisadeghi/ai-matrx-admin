@@ -2,7 +2,8 @@
 """
 EQUIVALENCE PROOF for the access setup of the standard performance review (access-setup PLAN §8 step 3; §9).
 
-Everything runs on the live database inside ONE transaction that is ALWAYS rolled back: the fixture people (auth users
+Everything runs on the NIGHTLY CLONE ONLY (common-docs/operations/clone/CURRENT.md), inside ONE transaction that is ALWAYS
+rolled back: the fixture people (auth users
 made from persona-factory personas, tagged app_metadata.test_fixture with a 1-hour expiry, never committed), their
 employments, positions, HR roles, cycles, reviews, responses and peer nominations, the knob values, the planted faults.
 Nothing persists.
@@ -26,13 +27,21 @@ manager_sees_self, peers_enabled, peer_anonymous, calibration_required, the skip
 declined with submitted and draft responses x replaced manager x login linked after the review x reorg x coworker with no
 seat x upper management (the upper_management HR role).
 
+LIVE IS REFUSED (incident 2026-10-10: one rolled-back proof transaction held iam.users / iam.organizations on live
+for 75 minutes and blocked every new table on the platform). The script connects only through CLONE_DATABASE_URL
+(aidream/.env, then matrx-frontend/.env.local) or CLONE-REF + its password file, and exits 2 unless the connection's
+project ref is CLONE-REF's clone_ref AND the server shows the clone's quarantine facts (pg_net absent, no active pg_cron
+job - never true of production). A watchdog thread on a second connection re-checks the quarantine every 15 s; whenever
+it cannot prove the clone, it terminates the proof's backend once its transaction is older than PROOF_MAX_XACT_SECONDS
+(default 120) and the script exits 3.
+
 Exit 1 when mode 1 differs, a stratum is empty, or a plant is not caught. Mode 2's NOT list is reported, never "fixed" here.
 Run from aidream so its .env and the persona factory are found:
-  cd aidream && uv run python ../matrx-frontend/scripts/db-proofs/access-setup-review-equivalence.py
+  cd aidream && uv run python ../matrx-frontend/scripts/db-proofs/access-setup-review-equivalence.py   (~3.5 h on the clone)
 Options: WRITES=all (write doors in every knob configuration; default: first and last), QUICK=1 (one configuration),
 MODE1_ONLY=1 (debug: stop after the first configuration's mode 1 and print its differences by door). ~27 min in full.
 """
-import json, os, re, sys, time, uuid
+import json, os, re, sys, threading, time, uuid
 from collections import Counter, defaultdict
 
 import psycopg
@@ -42,6 +51,8 @@ sys.path.insert(0, '/Users/armanisadeghi/code/aidream')
 from aidream.testing.persona import make_persona, build_tag  # noqa: E402
 
 env = dotenv_values('/Users/armanisadeghi/code/aidream/.env')
+FIXTURE_TEMPLATE = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fixtures',
+                                               'access-setup-review-template.json')))
 SUITE = 'access-setup/review-equivalence'
 
 # Organizations and their HR scaffolding (read, never changed outside the rolled-back transaction)
@@ -114,9 +125,93 @@ def check(label, ok, detail=''):
         failures.append(label)
 
 
-conn = psycopg.connect(host=env['SUPABASE_MATRIX_HOST'], port=5432, dbname=env['SUPABASE_MATRIX_DATABASE_NAME'],
-                       user=env['SUPABASE_MATRIX_USER'], password=env['SUPABASE_MATRIX_PASSWORD'], autocommit=False)
+# ---------------------------------------------------------------------------------------------------------------------
+# the clone, and nothing else
+# ---------------------------------------------------------------------------------------------------------------------
+CLONE_REF_FILE = '/Users/armanisadeghi/code/common-docs/operations/clone/CLONE-REF'
+
+
+def refuse(msg, code=2):
+    print(f"REFUSED: {msg}\nThis proof runs ONLY on the nightly clone (common-docs/operations/clone/CURRENT.md). It never "
+          f"runs on live: on 2026-10-10 one rolled-back proof transaction held live's iam tables for 75 minutes.", flush=True)
+    sys.exit(code)
+
+
+def clone_ref_values():
+    vals = {}
+    for line in open(CLONE_REF_FILE):
+        if '=' in line and not line.lstrip().startswith('#'):
+            k, v = line.split('=', 1)
+            vals[k.strip()] = v.strip()
+    return vals
+
+
+def clone_connect():
+    """A connection to the clone named by CLONE-REF, proven by the connection's project ref; never SUPABASE_MATRIX_*."""
+    ref = clone_ref_values().get('clone_ref')
+    if not ref:
+        refuse(f"{CLONE_REF_FILE} names no clone_ref")
+    url = env.get('CLONE_DATABASE_URL') or dotenv_values(
+        '/Users/armanisadeghi/code/matrx-frontend/.env.local').get('CLONE_DATABASE_URL')
+    if url:
+        m = re.match(r'postgres(?:ql)?://([^:@/]+)(?::[^@]*)?@([^:/?]+)', url)
+        user, host = (m.group(1), m.group(2)) if m else ('', '')
+        if user != f'postgres.{ref}' and host != f'db.{ref}.supabase.co':
+            refuse(f"CLONE_DATABASE_URL names user {user!r} on {host!r}, not the clone {ref} named by CLONE-REF")
+        return psycopg.connect(url, autocommit=False, prepare_threshold=None), ref
+    v = clone_ref_values()
+    pw_file = os.path.expanduser(v.get('password_file', ''))
+    if not pw_file or not os.path.exists(pw_file):
+        refuse('neither CLONE_DATABASE_URL nor the CLONE-REF password file is present')
+    return psycopg.connect(host=v['pooler_host'], port=int(v.get('pooler_port', 6543)), dbname=v.get('database', 'postgres'),
+                           user=f'postgres.{ref}', password=open(pw_file).read().strip(), autocommit=False,
+                           prepare_threshold=None), ref
+
+
+def quarantined(c):
+    """The clone's quarantine facts, never true of production: pg_net absent AND no active pg_cron job."""
+    with c.cursor() as k:
+        k.execute("""select not exists (select 1 from pg_extension where extname = 'pg_net')
+                       and (to_regclass('cron.job') is null
+                            or not exists (select 1 from cron.job where active))""")
+        return bool(k.fetchone()[0])
+
+
+conn, CLONE_REF = clone_connect()
+if not quarantined(conn):
+    conn.close()
+    refuse(f"the server behind the {CLONE_REF} connection does not show the clone's quarantine (pg_net absent and no "
+           f"active pg_cron job)")
+conn.rollback()
 cur = conn.cursor()
+PROOF_PID = None
+WATCHDOG_LIMIT = float(os.environ.get('PROOF_MAX_XACT_SECONDS', '120'))
+WATCHDOG_TRIPPED = threading.Event()
+
+
+def watchdog():
+    """Second connection: while the target cannot be proven the clone, no proof transaction may outlive the limit."""
+    try:
+        w, _ = clone_connect()
+        w.autocommit = True
+    except SystemExit:
+        return
+    while PROOF_PID is not None and not WATCHDOG_TRIPPED.is_set():
+        try:
+            if not quarantined(w):
+                with w.cursor() as k:
+                    k.execute("""select extract(epoch from now() - xact_start) from pg_stat_activity
+                                  where pid = %s and xact_start is not null""", (PROOF_PID,))
+                    row = k.fetchone()
+                    if row and row[0] > WATCHDOG_LIMIT:
+                        print(f"WATCHDOG: the target no longer shows the clone's quarantine and the proof transaction is "
+                              f"{row[0]:.0f}s old (> {WATCHDOG_LIMIT:.0f}s): terminating backend {PROOF_PID}", flush=True)
+                        k.execute("select pg_terminate_backend(%s)", (PROOF_PID,))
+                        WATCHDOG_TRIPPED.set()
+                        return
+        except Exception as e:   # a failed check is reported, never silent
+            print(f"WATCHDOG: check failed ({e.__class__.__name__}: {e})", flush=True)
+        time.sleep(15)
 
 
 def q(sql, args=None):
@@ -196,6 +291,15 @@ def build_fixture():
          on conflict do nothing""", (ORG_F, ORG_F, P['owner']['uid']))
 
     snapshot = one("select template_snapshot from hr.review_cycle where id = %s", (SNAPSHOT_CYCLE,))
+    if snapshot is None:   # the clone predates the cycle: its snapshot as read from live (fixtures/)
+        snapshot = FIXTURE_TEMPLATE['cycle_template_snapshot']
+    if not one("select exists (select 1 from hr.review_template where id = %s)", (TEMPLATE_M,)):
+        t = FIXTURE_TEMPLATE['template']
+        q("""insert into hr.review_template (id, name, description, sections, rating_scale, is_default, organization_id,
+                    created_by, updated_by, version, metadata)
+             values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+          (t['id'], t['name'], t['description'], json.dumps(t['sections']), json.dumps(t['rating_scale']), t['is_default'],
+           t['organization_id'], t['created_by'], t['updated_by'], t['version'], json.dumps(t['metadata'])))
     for org in (ORG_M, ORG_F):
         for i, st in enumerate(STAGES + ['draft']):
             CYCLES[(org, st)] = one(
@@ -605,6 +709,11 @@ def main():
     if stray:
         print('REFUSED: an mx.* override is set; the proof runs only on the plain session.')
         return 2
+    global PROOF_PID
+    PROOF_PID = one("select pg_backend_pid()")
+    threading.Thread(target=watchdog, daemon=True).start()
+    log(f"target: clone {CLONE_REF} (quarantine confirmed), backend {PROOF_PID}; watchdog limit {WATCHDOG_LIMIT:.0f}s "
+        f"whenever the quarantine cannot be proven")
     q("set local statement_timeout = 0")
     q("set local transaction_timeout = 0")      # the whole proof is one transaction (~30 min for six configurations)
     q("set local idle_in_transaction_session_timeout = 0")
@@ -761,6 +870,7 @@ OPENING_LIST = [   # the written opening list (PLAN §8 step 3, plus the owner's
     'a fallback filling an empty required seat',
     'a login linked after creation saves and submits its own self-evaluation',
 ]
+SUBJECT_HR_REOPEN = 'legacy offered reopen to HR who is the subject; its own door refused them'
 
 
 ACCESS_REFUSALS = {'not_reachable', 'not_permitted', 'not_the_manager', 'not_the_employee', 'not_respondent'}
@@ -826,7 +936,7 @@ def mode1_class(d, known, opening_pairs, upper_in, cycle_org):
     # reopen = true while the legacy reopen door refused them (it needs seat 'hr' or the manager lane): a dead button
     Ld = _parse(normalize(legacy, known))
     if _dead_subject_reopen(Ld) and _seatless(Ld, []) == N:
-        return 'legacy offered reopen to HR who is the subject; its own door refused them'
+        return SUBJECT_HR_REOPEN
     if _refused(L) and _refused(N):
         return 'both refuse (the reason is worded differently)'
     if _refused(N):
@@ -867,6 +977,10 @@ def opening_class(row):
     ci, caller, review, door, fact, part, legacy, predicted, seats = row
     labels = seats or []
     base = sorted({s.split('(')[0] for s in labels if s != 'line_manager'})
+    # legacy's can.reopen read hr._rev_can_manage alone: HR who is the review's subject (the model seats them as the
+    # employee only) saw reopen = true while the legacy reopen door refused them - a dead button, not access
+    if fact == 'can reopen' and legacy == 'true' and predicted == 'false' and base == ['employee']:
+        return SUBJECT_HR_REOPEN
     if predicted == 'true' and legacy == 'false':
         if door == 'hr_review_list_mine' and 'upper_management' in base:
             return OPENING_LIST[0]
@@ -944,6 +1058,8 @@ def plants(known):
     before = sum(1 for r in base if opening_class((0,) + tuple(r)) == 'upper management where listed')
     q("""create or replace function hr.review_seat_upper(p_review_id uuid) returns uuid[] language sql stable
          security definer set search_path to 'hr', 'public' as $$ select '{}'::uuid[] $$""")
+    q("""create or replace function hr.review_seat_upper_has(p_person uuid, p_review_id uuid) returns boolean
+         language sql stable security definer set search_path to 'hr', 'public' as $$ select false $$""")
     after_rows = [r for r in q("select * from pg_temp.mode2(0)") if r[5] != r[6]]
     after = sum(1 for r in after_rows if opening_class((0,) + tuple(r)) == 'upper management where listed')
     check('plant 3 (upper-management resolver dropped): mode 2 sees the change', after != before,
@@ -961,8 +1077,15 @@ if __name__ == '__main__':
         failures.append('the proof raised before it finished (traceback above)')
         code = 1
     finally:
-        conn.rollback()     # ALWAYS: nothing in this proof is ever committed
-        conn.close()
+        try:
+            conn.rollback()     # ALWAYS: nothing in this proof is ever committed
+            conn.close()
+        except Exception:
+            pass
+        PROOF_PID = None
+    if WATCHDOG_TRIPPED.is_set():
+        failures.append('the watchdog terminated the proof transaction (target not proven the clone)')
+        code = 3
     print(f"\n{'FAILED: ' + ', '.join(failures) if failures else 'ALL CHECKS PASSED'} · rolled back · "
           f"{time.time() - T0:.0f}s")
     sys.exit(code or (1 if failures else 0))

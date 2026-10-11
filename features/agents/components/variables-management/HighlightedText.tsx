@@ -1,5 +1,5 @@
 import React from "react";
-import { isDeclarableVariableName } from "@ai-matrx/chat/agents/utils/variable-utils";
+import { isDeclarableVariableName, splitVariableText } from "@ai-matrx/chat/agents/utils/variable-utils";
 
 interface HighlightedTextProps {
     text: string;
@@ -15,14 +15,15 @@ interface HighlightedTextProps {
 // (`"__kind": …`) is shown as written: the wrapper marks it a deliberate source
 // view for the kind-leak sentinel; `contents` keeps it out of layout.
 export const HighlightedText = ({ text, validVariables = [] }: HighlightedTextProps) => {
-    const parts = text.split(/(\{\{[^}]+\}\})/g);
+    // `{{!name}}` is the author's example, not a variable: it stays plain text.
+    const parts = splitVariableText(text);
 
     return (
         <span data-kind-source="explicit" className="contents">
-            {parts.map((part, idx) => {
-                const variableMatch = part.match(/^\{\{([^}]+)\}\}$/);
-                if (variableMatch) {
-                    const variableName = variableMatch[1];
+            {parts.map((segment, idx) => {
+                if (segment.kind === "variable") {
+                    const part = segment.text;
+                    const variableName = part.slice(2, -2);
                     const isValid = validVariables.includes(variableName);
                     const isLiteral = !isValid && !isDeclarableVariableName(variableName.trim());
 
@@ -48,7 +49,7 @@ export const HighlightedText = ({ text, validVariables = [] }: HighlightedTextPr
                         </span>
                     );
                 }
-                return <span key={idx}>{part}</span>;
+                return <span key={idx}>{segment.text}</span>;
             })}
         </span>
     );

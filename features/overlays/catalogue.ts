@@ -1038,7 +1038,7 @@ export const OVERLAY_CATALOGUE = {
     isWindow: true,
   },
   surfaceContextWindow: {
-    label: "Surface Context",
+    label: "This page",
     instanceMode: "singleton",
     isWindow: true,
   },

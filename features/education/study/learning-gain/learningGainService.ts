@@ -111,13 +111,13 @@ export function buildGainReport(
   );
   const p1Pairs = pairLearningGain(scored);
 
-  const rows: LearningGainRow[] = p1Pairs
-    .filter((p) => p.baseline && p.post)
-    .flatMap((p) => [toGainRow(p.baseline!), toGainRow(p.post!)]);
-  const awaitingPost = p1Pairs
-    .filter((p) => p.baseline && !p.post)
-    .map((p) => toGainRow(p.baseline!))
-    .sort((a, b) => b.takenAt.localeCompare(a.takenAt));
+  const rows: LearningGainRow[] = [];
+  const awaitingPost: LearningGainRow[] = [];
+  for (const { baseline, post } of p1Pairs) {
+    if (baseline && post) rows.push(toGainRow(baseline), toGainRow(post));
+    else if (baseline) awaitingPost.push(toGainRow(baseline));
+  }
+  awaitingPost.sort((a, b) => b.takenAt.localeCompare(a.takenAt));
   return buildReport(rows, awaitingPost);
 }
 

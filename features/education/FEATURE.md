@@ -19,6 +19,7 @@ Feature modules (each with its own FEATURE.md where listed): `assessment`, `clas
 
 - `service/studyService.ts` is the sole caller of `public.study_record_attempt`; modes record through `offline/recordAttemptOffline.ts` (outbox, replay, pending grades; `OfflineStudySyncMount` is in the layout).
 - `planner/` (plan builder, goals, staleness, recovery, `usePlannerAgent`) and `analytics/` (`computeAnalytics`, narrative) feed the planner and `/education/progress`; `dashboard/` computes Study Today; `learning-gain/` serves `/education/progress/learning-gain`.
+- `learning-gain/` shows only the learner's own completed baseline/post rows (no sample data; a lone baseline reads "Post-test pending"). `LearningGainOffer` (kit board + deck page) offers a skippable baseline on a fresh deck and the post-test once at mastery ≥ knob `education.learning_gain.post_test_mastery`; answers persist in `userPreferences.flashcard.learningGainOffers`.
 - Collection reads declare `mine` (`created_by = requireUserId()`, streaks by `user_id`) so admin-wide RLS never turns a learner list into an all-users list. The one exception is `getSession(sessionId)`: it narrows by record id only, so coaches and granted viewers whom RLS admits open the full session.
 - Signed out, `/education/progress` is a sign-in gate (`progress/layout.tsx`); `requireUserId` throws `NotAuthenticatedError`, which `fail()` returns as a state, never a console error.
 

@@ -62,12 +62,12 @@ export function decideGainOffer(input: GainOfferInput): GainOffer {
     (b) => !mine.some((r) => r.phase === "post" && r.gain_group_id === b.gain_group_id),
   );
   if (
-    open &&
+    open?.gain_group_id &&
     !input.answered[postOfferKey(input.deckId)] &&
     input.masteredPct != null &&
     input.masteredPct >= input.threshold
   ) {
-    return { kind: "post", assessmentId: open.assessment_id, gainGroupId: open.gain_group_id! };
+    return { kind: "post", assessmentId: open.assessment_id, gainGroupId: open.gain_group_id };
   }
 
   if (

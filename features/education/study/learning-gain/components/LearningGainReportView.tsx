@@ -161,7 +161,7 @@ export function LearningGainReportView({
                   <span className="font-semibold text-foreground">
                     {overallGainPct}%
                   </span>{" "}
-                  of the gap between what you knew and mastery.
+                  of the gap to mastery.
                 </p>
               )}
             </section>
@@ -186,11 +186,17 @@ export function LearningGainReportView({
               </section>
             )}
 
-            <p className="text-[11px] leading-relaxed text-muted-foreground">
-              Improvement = post-assessment score − baseline score. Gap closed
-              uses normalized gain (Hake&apos;s g): (post − pre) ÷ (1 − pre) — the
-              share of what was left to learn that you actually learned.
-            </p>
+            {/* Improvement = post − baseline. Gap closed = Hake's normalized
+                gain (post − pre) ÷ (1 − pre): the share of what was left to
+                learn that was learned. */}
+            {report.pairs.length > 0 && (
+              <p
+                className="text-[11px] text-muted-foreground"
+                title="Gap closed is (post − pre) ÷ (1 − pre), the share of what was left to learn."
+              >
+                Gap closed uses normalized gain (Hake&apos;s g)
+              </p>
+            )}
           </div>
         )}
       </div>
