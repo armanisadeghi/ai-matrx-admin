@@ -7,7 +7,8 @@ import { contractOfMandate, goalOfMandate } from "@/lib/supabase/mandateStorage"
 import { resolveMandateGoal } from "../goal";
 import { parseDraftInputs } from "../authoring/service";
 import type { MandateWorkspaceData } from "./useMandateWorkspaceData";
-import type { MandateWorkspaceTab, WorkspacePerspective } from "./MandateWorkspace";
+import type { MandateWorkspaceTab } from "./MandateWorkspace";
+import { mandateScopeLabel } from "../mandate-home";
 import { outputConstraintsOf } from "./definition-output";
 
 export type MandateAlchemyCapture =
@@ -34,13 +35,8 @@ export function useMandateAlchemyTabCapture(tab: MandateWorkspaceTab, capture: M
   }, [capture, partId, registry, tab]);
 }
 
-function scopeLabel(perspective: WorkspacePerspective, organizationName: string | null): string {
-  if (perspective === "system") return "System";
-  if (perspective === "organization") return organizationName ?? "Organization";
-  return "Personal";
-}
-
-export function buildMandateDefinitionCore(data: MandateWorkspaceData, perspective: WorkspacePerspective, organizationName: string | null): Json {
+/** `homeName` is the name of the mandate's HOME organization (`mandate.organization_id`), never the viewer's. */
+export function buildMandateDefinitionCore(data: MandateWorkspaceData, homeName: string | null): Json {
   const definition = contractOfMandate(data.mandate) as Record<string, unknown>;
   const goal = resolveMandateGoal({ stored: goalOfMandate(data.mandate) }).goal ?? "";
   const provision = data.offer
@@ -62,7 +58,7 @@ export function buildMandateDefinitionCore(data: MandateWorkspaceData, perspecti
     ? provision
     : data.contract.requiredVariables.map((name) => ({ name, description: "", kind: null, required: true }));
   return {
-    scope: scopeLabel(perspective, organizationName),
+    scope: mandateScopeLabel(data.mandate.organization_id, homeName),
     feature: data.mandate.mandate_key.split(".")[0] ?? data.mandate.mandate_key,
     enabled: data.mandate.is_enabled ?? null,
     goal,
@@ -108,17 +104,17 @@ function source(id: string, label: string, getPayload: () => Json | string): Sou
 }
 
 export function MandateAlchemy({
-  data, activeTab, tabs, perspective, organizationName, buildTab,
+  data, activeTab, tabs, homeName, buildTab,
 }: {
   data: MandateWorkspaceData;
   activeTab: MandateWorkspaceTab;
   tabs: readonly MandateWorkspaceTab[];
-  perspective: WorkspacePerspective;
-  organizationName: string | null;
+  /** The mandate's HOME organization's name (the export's scope). */
+  homeName: string | null;
   buildTab: (tab: MandateWorkspaceTab) => MandateAlchemyCapture;
 }) {
   const registry = useContext(CaptureContext);
-  const core = buildMandateDefinitionCore(data, perspective, organizationName);
+  const core = buildMandateDefinitionCore(data, homeName);
   const coreSource = () => {
     if (data.provisionKey && !data.offer) {
       throw new Error("The declared Provision has not loaded. Wait for it before exporting the saved definition Core.");

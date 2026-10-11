@@ -67,7 +67,7 @@ import {
 } from "@ai-matrx/design-system/controls";
 import { Section } from "@/features/mandates/workspace/Section";
 import { EffectiveConfigLayers } from "@/features/mandates/components/EffectiveConfigLayers";
-import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
+import { mandateScopeLabel } from "@/features/mandates/mandate-home";
 import type { SystemRungHealth } from "@/features/mandates/workspace/system-rung-health";
 import { MandateCoverageAlert } from "@/features/mandates/workspace/MandateCoverageAlert";
 import { MandateProvenancePanel } from "@/features/mandates/workspace/MandateProvenancePanel";
@@ -380,28 +380,21 @@ function OneMandateRecordBody({
       : activeTab === "runs" || activeTab === "candidates"
         ? "definition"
         : activeTab;
-  const orgName =
-    perspective === "organization" && principal.kind === "org"
-      ? nameOfOrg(principal.orgId)
-      : null;
+  // The export's scope is the mandate's HOME, never the viewer (mandate-home.ts).
+  const orgName = nameOfOrg(data.mandate.organization_id ?? "");
   const exportMenu = (
     <MandateAlchemy
       data={data}
       activeTab={exportTab}
       tabs={tabIds}
-      perspective={perspective}
-      organizationName={orgName}
+      homeName={orgName}
       buildTab={(tab): MandateAlchemyCapture =>
         tab === "definition"
           ? {
               status: "ready",
               savedOnly: true,
               data: {
-                saved_definition: buildMandateDefinitionCore(
-                  data,
-                  perspective,
-                  orgName,
-                ),
+                saved_definition: buildMandateDefinitionCore(data, orgName),
                 pins: normalizeTransferJson(data.pins),
                 pinned_context: data.pinnedContext,
               },
@@ -732,14 +725,9 @@ function MandateFactsLine({
   feature: string;
   homeName: string | null;
 }) {
-  const home = data.mandate.organization_id;
   // Say what is true: the platform, a named organization, one the viewer is
   // not a member of, or no home at all — never a generic "Organization".
-  const homeLabel = !home
-    ? "No home organization"
-    : home.toLowerCase() === SYSTEM_ORGANIZATION_ID.toLowerCase()
-      ? "System"
-      : (homeName ?? "An organization you are not in");
+  const homeLabel = mandateScopeLabel(data.mandate.organization_id, homeName);
   return (
     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 type-secondary text-muted-foreground">
       <span className="font-medium text-foreground">{homeLabel}</span>

@@ -108,6 +108,7 @@ import { useMandateHolder } from "@ai-matrx/chat/mandates/useMandateHolder";
 import { useCopyMandateWorkflow } from "../useCopyMandateWorkflow";
 import { MANDATE_WORKSPACE_SURFACE_NAME } from "@/features/surfaces/manifests/mandate-workspace.manifest";
 import { normalizeTransferJson } from "@ai-matrx/alchemy/operate";
+import { mandateScopeLabel } from "../mandate-home";
 import { useMandateAlchemyTabCapture, MandateAlchemy, MandateAlchemyCaptureProvider, buildMandateDefinitionCore, type MandateAlchemyCapture } from "./MandateAlchemy";
 import type { ResolvedMandateHolder } from "@ai-matrx/chat/mandates/service";
 import {
@@ -684,10 +685,9 @@ function OneMandateWorkspace({
             // Candidates and Runs are live reads, not saved mandate data — they export as Definition.
             activeTab={activeTab === "candidates" || activeTab === "runs" ? "definition" : activeTab}
             tabs={WORKSPACE_TABS.filter((item) => (!item.admin || authoring) && item.id !== "candidates" && item.id !== "runs").map((item) => item.id)}
-            perspective={perspective}
-            organizationName={perspective === "organization" && principal.kind === "org" ? nameOfOrg(principal.orgId) : null}
+            homeName={nameOfOrg(data.mandate.organization_id)}
             buildTab={(tab): MandateAlchemyCapture => tab === "definition"
-              ? { status: "ready", savedOnly: true, data: { saved_definition: buildMandateDefinitionCore(data, perspective, perspective === "organization" && principal.kind === "org" ? nameOfOrg(principal.orgId) : null), pins: normalizeTransferJson(data.pins), pinned_context: data.pinnedContext } }
+              ? { status: "ready", savedOnly: true, data: { saved_definition: buildMandateDefinitionCore(data, nameOfOrg(data.mandate.organization_id)), pins: normalizeTransferJson(data.pins), pinned_context: data.pinnedContext } }
               : { status: "error", message: "This tab has not finished publishing its saved data." }}
           />
           </div>
@@ -702,15 +702,11 @@ function OneMandateWorkspace({
             <div className="rounded-lg border border-border bg-card px-3">
               <PropertyRow
                 label="Scope"
-                value={
-                  perspective === "system"
-                    ? "System"
-                    : perspective === "organization"
-                      ? (nameOfOrg(
-                          principal.kind === "org" ? principal.orgId : "",
-                        ) ?? "Organization unavailable")
-                      : "Personal"
-                }
+                // Where the mandate LIVES, never who is looking (mandate-home.ts).
+                value={mandateScopeLabel(
+                  data.mandate.organization_id,
+                  nameOfOrg(data.mandate.organization_id ?? ""),
+                )}
               />
               <PropertyRow
                 label="Feature"
