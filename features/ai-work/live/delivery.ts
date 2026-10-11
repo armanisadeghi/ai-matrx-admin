@@ -15,8 +15,8 @@
 import type { RecipientDelivery } from "@ai-matrx/messaging";
 import type { SessionMemberRow } from "./service";
 
-/** The words for `delivered_via`; `host_wake` is Matrx 2 or the cloud courier. */
-export function deliveredViaLabel(via: string | null, remote: boolean): string | null {
+/** The words for `delivered_via`, straight from the stored value (no guessing from the session). */
+export function deliveredViaLabel(via: string | null): string | null {
   switch (via) {
     case null:
     case "own":
@@ -28,7 +28,11 @@ export function deliveredViaLabel(via: string | null, remote: boolean): string |
     case "claude_wake":
       return "wake";
     case "host_wake":
-      return remote ? "cloud" : "Matrx 2";
+      return "Matrx 2";
+    case "claude_cloud":
+      return "Claude cloud";
+    case "cursor_cloud":
+      return "Cursor cloud";
     case "agent_injection":
       return "agent turn";
     case "add_agent":
@@ -50,8 +54,6 @@ export interface DeliveryRecipient {
   readonly label: string;
   /** Actor ids that ARE this member (its own messages are never mail for it). */
   readonly actorIds: readonly string[];
-  /** A Claude cloud session (its host wake is the cloud courier). */
-  readonly remote: boolean;
 }
 
 /** Message ids the delivery service reported expired, per member id. */
@@ -88,7 +90,7 @@ export function recipientDeliveryFor(
     return at !== undefined && position <= at;
   };
   const out: RecipientDelivery[] = [];
-  for (const { member, label, actorIds, remote } of recipients) {
+  for (const { member, label, actorIds } of recipients) {
     if (actorId !== null && actorIds.includes(actorId)) continue;
     if (expired.get(member.member_id)?.has(message.id)) {
       out.push({ key: member.id, label, state: "expired" });
@@ -99,7 +101,7 @@ export function recipientDeliveryFor(
         label,
         state: "delivered",
         at: isCursor ? member.delivered_at : null,
-        via: isCursor ? deliveredViaLabel(member.delivered_via, remote) : null,
+        via: isCursor ? deliveredViaLabel(member.delivered_via) : null,
       });
     } else if (reached(member.offered_through)) {
       out.push({ key: member.id, label, state: "offered", at: member.offered_at });

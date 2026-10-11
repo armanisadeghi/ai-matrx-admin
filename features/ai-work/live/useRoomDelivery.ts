@@ -30,7 +30,6 @@ export function useRoomDelivery(
           member,
           label: agentInfo[member.member_id]?.agentName ?? "AI Matrx agent",
           actorIds: [`agent_conversation:${member.member_id}`],
-          remote: false,
         };
       }
       const session = sessions.find((s) => s.bindingIds.includes(member.member_id)) ?? null;
@@ -39,7 +38,6 @@ export function useRoomDelivery(
         member,
         label: session?.title ?? "Session",
         actorIds: bindings.map((id) => `coding_session:${id}`),
-        remote: session?.remote ?? false,
       };
     });
     const order = new Map(messages.map((m, i) => [m.id as string, i]));

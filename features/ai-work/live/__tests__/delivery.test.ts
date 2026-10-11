@@ -10,8 +10,8 @@ const row = (over: Partial<SessionMemberRow>): SessionMemberRow => ({
 const ids = ["m1", "m2", "m3"];
 const order = new Map(ids.map((id, i) => [id, i]));
 const msg = (id: string, metadata: Record<string, unknown> = {}) => ({ id, metadata });
-const recipient = (member: SessionMemberRow, remote = false): DeliveryRecipient => ({
-  member, label: "Fix auth", actorIds: ["coding_session:cs-1"], remote,
+const recipient = (member: SessionMemberRow): DeliveryRecipient => ({
+  member, label: "Fix auth", actorIds: ["coding_session:cs-1"],
 });
 const none = new Map<string, Set<string>>();
 
@@ -54,9 +54,10 @@ describe("recipientDeliveryFor: cursors are positions in the room", () => {
     expect(recipientDeliveryFor(msg("m1"), order, [recipient(moved)], expired)?.[0]?.state).toBe("delivered");
   });
 
-  it("host wake names Matrx 2 or the cloud courier", () => {
-    expect(deliveredViaLabel("host_wake", false)).toBe("Matrx 2");
-    expect(deliveredViaLabel("host_wake", true)).toBe("cloud");
-    expect(deliveredViaLabel("own", false)).toBeNull();
+  it("each route is named by its stored value", () => {
+    expect(deliveredViaLabel("host_wake")).toBe("Matrx 2");
+    expect(deliveredViaLabel("claude_cloud")).toBe("Claude cloud");
+    expect(deliveredViaLabel("cursor_cloud")).toBe("Cursor cloud");
+    expect(deliveredViaLabel("own")).toBeNull();
   });
 });
