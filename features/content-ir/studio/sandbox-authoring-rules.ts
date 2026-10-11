@@ -98,11 +98,11 @@ export const SANDBOX_AUTHORING_RULES: readonly SandboxAuthoringRule[] = [
         topic: "links",
         title: "Links must be ordinary links",
         allowed:
-            "http:, https:, mailto:, tel:, and relative links inside the platform.",
+            "Plain <a href> with http:, https:, mailto:, tel:, or a relative link inside the platform. A click opens it in a new tab — the frame relays it to the page, so write the anchor as you would anywhere (target=\"_blank\" is optional).",
         forbidden:
-            "javascript: and data: in a link — including one that arrives inside the data your component is rendering.",
+            "javascript: and data: in a link — including one that arrives inside the data your component is rendering. window.open and navigating the frame are not available; use a link.",
         consequence:
-            "The link is rendered inert and says so rather than doing something on click. This one matters even for a component you trust: the value in the field may not be one you wrote.",
+            "The link is rendered inert and says so rather than doing something on click (a refused click is warned, never silent). This one matters even for a component you trust: the value in the field may not be one you wrote.",
     },
     {
         topic: "overlays",

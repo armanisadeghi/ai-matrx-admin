@@ -61,11 +61,11 @@ export default function PlaygroundClient() {
           />
           <Button
             variant="outline"
-            size="sm"
-            className="h-7 gap-1 text-xs"
-            onClick={() => dispatch(setMode(theme === "dark" ? "light" : "dark"))}
+            icon={theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            onClick={() => {
+              dispatch(setMode(theme === "dark" ? "light" : "dark"));
+            }}
           >
-            {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
             {theme === "dark" ? "Light" : "Dark"}
           </Button>
         </div>

@@ -28,9 +28,7 @@ function VendorPanel({ vendor, index }) {
         actions={
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-6 w-6" aria-label="Terms">
-                <Info className="h-3.5 w-3.5" />
-              </Button>
+              <Button variant="quiet" icon={<Info className="h-4 w-4" />} aria-label="Terms" />
             </PopoverTrigger>
             <PopoverContent className="w-60 text-xs">{streamText(vendor.terms, "No terms yet")}</PopoverContent>
           </Popover>
@@ -38,9 +36,7 @@ function VendorPanel({ vendor, index }) {
         footer={
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="h-7 gap-1 text-xs">
-                <NotebookPen className="h-3.5 w-3.5" /> Notes
-              </Button>
+              <Button variant="outline" icon={<NotebookPen className="h-4 w-4" />}>Notes</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>

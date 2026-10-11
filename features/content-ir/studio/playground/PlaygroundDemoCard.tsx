@@ -70,7 +70,9 @@ function ResetItemState({ nonce }: { nonce: number }) {
 function probeBox(host: HTMLElement, mode: RenderMode): Omit<DemoProbe, "errors" | "ageMs"> {
   const frame = host.querySelector("iframe");
   if (mode === "frame" && frame) {
-    return { height: frame.getBoundingClientRect().height, standIns: null, images: null };
+    // A frame that never spoke shows its placeholder height — that is not a render.
+    const heard = frame.getAttribute("data-matrx-kind-sandbox-heard") === "true";
+    return { height: heard ? frame.getBoundingClientRect().height : 0, standIns: null, images: null };
   }
   const shell = host.firstElementChild as HTMLElement | null;
   const height = shell ? shell.getBoundingClientRect().height - 8 : 0;
@@ -174,7 +176,11 @@ export function PlaygroundDemoCard({ demo, mode: pageMode, frameSandbox, frameRe
 
   const frameBlocked = mode === "frame" && !frameSandbox;
   const shape = frameBlocked ? (
-    <p className="p-2 text-xs text-destructive">{frameRefusal ?? "Frame setting loading"}</p>
+    frameRefusal ? (
+      <p className="p-2 text-xs text-destructive">{frameRefusal}</p>
+    ) : (
+      <p className="p-2 text-xs text-muted-foreground">Loading frame setting</p>
+    )
   ) : (
     <DbKindComponent
       key={`${mode}-${mountedAt}`}
@@ -237,8 +243,7 @@ export function PlaygroundDemoCard({ demo, mode: pageMode, frameSandbox, frameRe
         />
         <Button
           variant="outline"
-          size="sm"
-          className="h-7 gap-1 text-xs"
+          icon={<Play className="h-4 w-4" />}
           disabled={frames !== null}
           onClick={() => {
             setDataMode("full");
@@ -246,17 +251,16 @@ export function PlaygroundDemoCard({ demo, mode: pageMode, frameSandbox, frameRe
             setFrames(streamFrames(demo.sample));
           }}
         >
-          <Play className="h-3.5 w-3.5" /> {frames ? "Streaming" : "Replay"}
+          {frames ? "Streaming" : "Replay"}
         </Button>
         {demo.savesItemState ? (
           <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 gap-1 text-xs"
+            variant="quiet"
+            icon={<RotateCcw className="h-4 w-4" />}
             disabled={!host.canvasItemId}
             onClick={() => setResetNonce((n) => n + 1)}
           >
-            <RotateCcw className="h-3.5 w-3.5" /> Reset state
+            Reset state
           </Button>
         ) : null}
       </div>

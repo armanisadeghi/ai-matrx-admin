@@ -2,6 +2,13 @@
 -- lane: access-setup
 -- lock: hr
 -- ground-standing-ok: b - the restored bodies (iam._access_setup_problems, iam.record_access_setup) call iam._access_setup_stages, which accesssetup_b_the_seat_and_part_answers_down.sql drops; that sibling runs AFTER this inverse (inverses run in reverse order: o, n, m ... b), so the callee still stands when this one runs.
+-- based-on: iam.record_access_setup(text, uuid) 2def879394eb48b4c3c41168c1d7c368649cdcd155a682ab9fe1578bc1aa1046
+-- based-on: iam._access_setup_problems(text, jsonb) d63857728f4cd1bf17ad7ea6279196ed38c6c050acb4475f469cf618e238833c
+-- based-on: hr.hr_review_cycle_list(uuid) 84e06ddb5d912af2f24f305d7e07fb2557b75b8c38ceff0495e29c50355314b5
+-- based-on: hr.hr_review_cycle_get(uuid) 83735b5ecea5b2598dc8e2b710e6427f563566a311057e4cad67608be500570a
+-- based-on: iam.record_seat_set(text, uuid, text, uuid, text, text) 354d8ffa2be58820be9f448967485b18db87bf2e153b63a9f3815c5aeb8ba17d
+-- based-on: public.hr_role_assign(uuid, text, text, uuid, uuid[], date, date, text) c937e911b6e541e21cc49882af6a9120187592442436263341d0476770ef34ba
+-- based-on: hr.hr_review_start_candidates(uuid) beacbe3bd6ae0beef9e5b65941a9245556397b7c2b269a5f9a8f89c6b63de09b
 
 update iam.access_setup
    set setup = jsonb_set(setup, '{seats}',

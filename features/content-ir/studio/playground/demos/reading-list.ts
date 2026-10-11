@@ -23,8 +23,8 @@ export default function ReadingList({ data }) {
         stats={[{ label: "books", value: books.length }]}
         copy={{ label: "Reading list", human: () => sorted.map((b) => rowLabel(b, "title") + " — " + cellText(b.author)).join("\n"), json: () => data }}
         actions={
-          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => setField(field === "title" ? "month" : "title")}>
-            <ArrowDownUp className="h-3.5 w-3.5" /> {field === "title" ? "By title" : "By month"}
+          <Button variant="quiet" icon={<ArrowDownUp className="h-4 w-4" />} onClick={() => setField(field === "title" ? "month" : "title")}>
+            {field === "title" ? "By title" : "By month"}
           </Button>
         }
       />
