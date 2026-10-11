@@ -258,7 +258,7 @@ export function AuthenticatorWorkspace() {
             <Button
               icon={<Plus />}
               onClick={() => setEnrollOpen(true)}
-              disabled={busy || !websiteDefinition}
+              disabled={busy}
               variant="outline"
               className="shrink-0"
             >
@@ -297,7 +297,7 @@ export function AuthenticatorWorkspace() {
                 variant="primary"
                 className="mt-4"
                 onClick={() => setEnrollOpen(true)}
-                disabled={busy || !websiteDefinition}
+                disabled={busy}
               >
                 Add authenticator
               </Button>
@@ -327,7 +327,7 @@ export function AuthenticatorWorkspace() {
 
         <AuthenticatorSetupDialog
           open={enrollOpen}
-          onOpenChange={(open) => { setEnrollOpen(open); if (!open) pendingItem.current = null; }}
+          onOpenChange={(open) => { setEnrollOpen(open); if (!open && pendingItem.current?.non_secret_fields?.some((field) => field.key === "totp_enabled")) pendingItem.current = null; }}
           onEnroll={async (input, parsed) => {
             const item = pendingItem.current ?? await vault.actions.createItem({
               principal: { type: "user" },
