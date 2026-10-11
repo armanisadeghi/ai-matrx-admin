@@ -2080,6 +2080,13 @@ export type Database = {
         }
         Relationships: []
       }
+      context_menu_slim_view: {
+        Row: {
+          categories_flat: Json | null
+          placement_type: string | null
+        }
+        Relationships: []
+      }
       context_menu_view: {
         Row: {
           categories_flat: Json | null
@@ -7452,6 +7459,188 @@ export type Database = {
           },
         ]
       }
+      spend_alarm: {
+        Row: {
+          alarm_key: string
+          cost_avoided_usd: number | null
+          cost_usd: number | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          detail: string
+          first_seen_at: string
+          fix: string | null
+          id: string
+          kind: string
+          last_seen_at: string
+          level: string
+          metadata: Json
+          occurrence_count: number
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          refs: Json
+          reopened_count: number
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          rule: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          snoozed_until: string | null
+          status: string
+          subject_id: string
+          subject_name: string | null
+          subject_type: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          alarm_key: string
+          cost_avoided_usd?: number | null
+          cost_usd?: number | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          detail?: string
+          first_seen_at?: string
+          fix?: string | null
+          id?: string
+          kind: string
+          last_seen_at?: string
+          level?: string
+          metadata?: Json
+          occurrence_count?: number
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          refs?: Json
+          reopened_count?: number
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          rule?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          snoozed_until?: string | null
+          status?: string
+          subject_id: string
+          subject_name?: string | null
+          subject_type: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          alarm_key?: string
+          cost_avoided_usd?: number | null
+          cost_usd?: number | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          detail?: string
+          first_seen_at?: string
+          fix?: string | null
+          id?: string
+          kind?: string
+          last_seen_at?: string
+          level?: string
+          metadata?: Json
+          occurrence_count?: number
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          refs?: Json
+          reopened_count?: number
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          rule?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          snoozed_until?: string | null
+          status?: string
+          subject_id?: string
+          subject_name?: string | null
+          subject_type?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
+      spend_alarm_occurrence: {
+        Row: {
+          alarm_id: string
+          cost_usd: number | null
+          created_at: string
+          created_by: string | null
+          detail: string | null
+          execution_id: string | null
+          id: string
+          metadata: Json
+          occurred_at: string
+          organization_id: string
+          refs: Json
+          repeat_count: number
+          run_id: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          alarm_id: string
+          cost_usd?: number | null
+          created_at?: string
+          created_by?: string | null
+          detail?: string | null
+          execution_id?: string | null
+          id?: string
+          metadata?: Json
+          occurred_at?: string
+          organization_id: string
+          refs?: Json
+          repeat_count?: number
+          run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          alarm_id?: string
+          cost_usd?: number | null
+          created_at?: string
+          created_by?: string | null
+          detail?: string | null
+          execution_id?: string | null
+          id?: string
+          metadata?: Json
+          occurred_at?: string
+          organization_id?: string
+          refs?: Json
+          repeat_count?: number
+          run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spend_alarm_occurrence_alarm_id_fkey"
+            columns: ["alarm_id"]
+            isOneToOne: false
+            referencedRelation: "spend_alarm"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spend_approval: {
         Row: {
           action_request_id: string
@@ -8537,6 +8726,8 @@ export type Database = {
         Args: { p_org_id?: string }
         Returns: number
       }
+      spend_alarm_raise: { Args: { p: Json }; Returns: Json }
+      spend_alarm_regrade: { Args: { p_grades: Json }; Returns: number }
       spend_alarm_scan: {
         Args: {
           p_baseline_days?: number
@@ -8547,6 +8738,58 @@ export type Database = {
           p_run_cost_usd?: number
         }
         Returns: Json
+      }
+      spend_alarm_set_status: {
+        Args: {
+          p_id: string
+          p_note?: string
+          p_snooze_hours?: number
+          p_status: string
+        }
+        Returns: {
+          alarm_key: string
+          cost_avoided_usd: number | null
+          cost_usd: number | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          detail: string
+          first_seen_at: string
+          fix: string | null
+          id: string
+          kind: string
+          last_seen_at: string
+          level: string
+          metadata: Json
+          occurrence_count: number
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          refs: Json
+          reopened_count: number
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          rule: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          snoozed_until: string | null
+          status: string
+          subject_id: string
+          subject_name: string | null
+          subject_type: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "spend_alarm"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       spend_approval_draw: {
         Args: {
@@ -34148,9 +34391,22 @@ export type Database = {
         Args: { p_organization_id: string; p_spec: Json; p_table_id: string }
         Returns: Json
       }
+      _automation_cond_norm: {
+        Args: {
+          p_cond: Json
+          p_fields?: Json
+          p_organization_id: string
+          p_table_id: string
+        }
+        Returns: Json
+      }
       _automation_fields: {
         Args: { p_organization_id: string; p_table_id: string }
         Returns: Json
+      }
+      _automation_fill: {
+        Args: { p_byid: Json; p_fields: Json; p_text: string }
+        Returns: string
       }
       _automation_flip: {
         Args: {
@@ -34170,6 +34426,10 @@ export type Database = {
           table_id: string
         }[]
       }
+      _automation_is: {
+        Args: { p_field_id: string; p_value: Json }
+        Returns: Json
+      }
       _automation_now: { Args: never; Returns: string }
       _automation_run: {
         Args: {
@@ -34184,6 +34444,7 @@ export type Database = {
         }
         Returns: string
       }
+      _automation_text_of: { Args: { p_value: Json }; Returns: string }
       _automation_time_item: {
         Args: {
           p_automation: Json
@@ -34204,6 +34465,14 @@ export type Database = {
           p_source: string
           p_target: string
           p_values: Json
+        }
+        Returns: Json
+      }
+      _automation_view_rule: {
+        Args: {
+          p_organization_id: string
+          p_table_id: string
+          p_view_id: string
         }
         Returns: Json
       }
@@ -34842,6 +35111,29 @@ export type Database = {
         Args: { d: Json; p_label: string; v: Json }
         Returns: boolean
       }
+      _legacy_hidden_field_notice: {
+        Args: { p_action?: string; p_field: Record<string, unknown> }
+        Returns: Json
+      }
+      _legacy_read_mask_at: {
+        Args: {
+          p_action?: string
+          p_level: Database["public"]["Enums"]["permission_level"]
+          p_level_given: boolean
+          p_record_id: string
+        }
+        Returns: Json
+      }
+      _legacy_read_mask_for: {
+        Args: {
+          p_action?: string
+          p_level: Database["public"]["Enums"]["permission_level"]
+          p_organization_id: string
+          p_table_id: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       _may_know_table: {
         Args: { p_organization_id: string; p_table_id: string }
         Returns: boolean
@@ -35193,6 +35485,38 @@ export type Database = {
         Returns: string
       }
       _status_group_word: { Args: { p_word: string }; Returns: string }
+      _store_cell_per_row: { Args: { p_cell: Json }; Returns: boolean }
+      _store_column_itself: {
+        Args: {
+          p_action: string
+          p_field_id: string
+          p_level: Database["public"]["Enums"]["permission_level"]
+          p_org: string
+          p_person: string
+          p_row: string
+        }
+        Returns: boolean
+      }
+      _store_part_cells: {
+        Args: { p_org: string; p_part: string; p_table: string; p_word: string }
+        Returns: Json
+      }
+      _store_person_card: { Args: { p_user: string }; Returns: Json }
+      _store_portal_allows: {
+        Args: {
+          p_action: string
+          p_field_id: string
+          p_org: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      _store_seat_candidates: { Args: { p_record: string }; Returns: string[] }
+      _store_seat_cell_people: { Args: { p_value: Json }; Returns: string[] }
+      _store_seat_field_key: {
+        Args: { p_field_id: string; p_table_id: string }
+        Returns: string
+      }
       _table_approver: {
         Args: { p_data: Json; p_organization_id: string }
         Returns: string
@@ -35940,6 +36264,14 @@ export type Database = {
           p_automation_id: string
           p_enabled: boolean
           p_organization_id: string
+        }
+        Returns: Json
+      }
+      automation_test: {
+        Args: {
+          p_automation_id: string
+          p_organization_id: string
+          p_record_id?: string
         }
         Returns: Json
       }
@@ -37512,6 +37844,14 @@ export type Database = {
           p_token: string
           p_user: string
         }
+        Returns: Json
+      }
+      field_access_set: {
+        Args: { p_field_id: string; p_part: string; p_word: string }
+        Returns: Json
+      }
+      field_access_setup: {
+        Args: { p_field_id: string; p_proposed?: Json }
         Returns: Json
       }
       field_add_rung: {
@@ -40908,10 +41248,36 @@ export type Database = {
       status_groups_of: { Args: { p_groups: Json }; Returns: Json }
       storage_modes: { Args: never; Returns: string[] }
       store_census_pair_ceiling: { Args: never; Returns: number }
+      store_field_part: { Args: { p_field_data: Json }; Returns: string }
       store_is_open: { Args: { p_organization_id?: string }; Returns: boolean }
       store_off_sentence: {
         Args: { p_organization_id: string }
         Returns: string
+      }
+      store_part_notice: {
+        Args: { p_action?: string; p_field: Record<string, unknown> }
+        Returns: Json
+      }
+      store_part_who: {
+        Args: { p_action?: string; p_cells: Json }
+        Returns: string
+      }
+      store_seat_fallback: { Args: { p_org: string }; Returns: string[] }
+      store_seat_has: {
+        Args: { p_person: string; p_record: string; p_seat: Json }
+        Returns: boolean
+      }
+      store_seat_holders: {
+        Args: { p_record: string; p_seat: Json }
+        Returns: {
+          source: string
+          user_id: string
+        }[]
+      }
+      store_seat_invalid: { Args: { p_seat: Json }; Returns: string }
+      store_seat_records: {
+        Args: { p_person: string; p_seat: Json; p_table: string }
+        Returns: string[]
       }
       subscription_cadences: {
         Args: { p_organization_id: string }
@@ -41000,6 +41366,10 @@ export type Database = {
         }[]
       }
       table_copies_in_progress: { Args: never; Returns: Json }
+      table_copy_sync: {
+        Args: { p_organization_id: string; p_spec: Json }
+        Returns: Json
+      }
       table_declare: {
         Args: { p_organization_id: string; p_spec: Json }
         Returns: string
@@ -41282,6 +41652,24 @@ export type Database = {
       }
       table_sync: {
         Args: { p_home_id: string; p_organization_id: string; p_spec: Json }
+        Returns: Json
+      }
+      table_sync_cell: {
+        Args: {
+          p_key: string
+          p_land: Json
+          p_organization_id: string
+          p_record_id: string
+        }
+        Returns: Json
+      }
+      table_sync_due_tick: { Args: never; Returns: Json }
+      table_sync_settings_set: {
+        Args: {
+          p_organization_id: string
+          p_settings: Json
+          p_table_id: string
+        }
         Returns: Json
       }
       table_template_declare: {
@@ -73998,6 +74386,15 @@ export type Database = {
         Args: { p_review_id: string; p_uid: string }
         Returns: boolean
       }
+      _review_response_row: {
+        Args: {
+          p_lane: string
+          p_review_id: string
+          p_role: string
+          p_uid: string
+        }
+        Returns: string
+      }
       _review_skip_level_on: { Args: { p_org: string }; Returns: boolean }
       _rules_evidence: { Args: { p_ids: string[] }; Returns: Json }
       _run_fixture_probe: {
@@ -78363,7 +78760,9 @@ export type Database = {
         Returns: boolean
       }
       _access_setup_of: { Args: { p_type: string }; Returns: Json }
-      _access_setup_person: { Args: { p_user: string }; Returns: Json }
+      _access_setup_person:
+        | { Args: { p_user: string }; Returns: Json }
+        | { Args: { p_org: string; p_user: string }; Returns: Json }
       _access_setup_problems: {
         Args: { p_type: string; s: Json }
         Returns: string[]
@@ -78401,6 +78800,18 @@ export type Database = {
         Returns: Json
       }
       _cells_for: {
+        Args: { p_id: string; p_part: string; p_person: string; p_type: string }
+        Returns: {
+          borrowed: boolean
+          from_stage: Json
+          level: Database["public"]["Enums"]["permission_level"]
+          names: string
+          reached: boolean
+          rows_rule: string
+          seat: string
+        }[]
+      }
+      _cells_for_now: {
         Args: { p_id: string; p_part: string; p_person: string; p_type: string }
         Returns: {
           borrowed: boolean
@@ -78481,6 +78892,39 @@ export type Database = {
           sch: unknown
           tbl: unknown
           tgt: string
+        }[]
+      }
+      _legacy_may_touch_field: {
+        Args: {
+          p_action?: string
+          p_field_id: string
+          p_level_on_record: Database["public"]["Enums"]["permission_level"]
+          p_organization_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      _legacy_may_touch_field_itself: {
+        Args: {
+          p_action?: string
+          p_field_id: string
+          p_level_on_record: Database["public"]["Enums"]["permission_level"]
+          p_organization_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      _legacy_visible_field_ids: {
+        Args: {
+          p_action?: string
+          p_level_on_record: Database["public"]["Enums"]["permission_level"]
+          p_organization_id: string
+          p_table_id: string
+          p_user_id: string
+        }
+        Returns: {
+          field_id: string
+          field_key: string
         }[]
       }
       _managed_invitation: {
@@ -78579,6 +79023,17 @@ export type Database = {
           token: string
         }[]
       }
+      _part_level_now: {
+        Args: {
+          p_id: string
+          p_part: string
+          p_person: string
+          p_row_id?: string
+          p_row_token?: string
+          p_type: string
+        }
+        Returns: Database["public"]["Enums"]["permission_level"]
+      }
       _person_name: { Args: { p_user_id: string }; Returns: string }
       _policy_probe_read_as_signed_in: {
         Args: { p_key: string; p_tbl: unknown; p_val: string }
@@ -78644,6 +79099,15 @@ export type Database = {
         Returns: undefined
       }
       _seat_table: {
+        Args: { p_id: string; p_type: string }
+        Returns: {
+          removable: boolean
+          seat: string
+          source: string
+          user_id: string
+        }[]
+      }
+      _seat_table_now: {
         Args: { p_id: string; p_type: string }
         Returns: {
           removable: boolean
@@ -79600,6 +80064,24 @@ export type Database = {
         }
         Returns: Database["public"]["Enums"]["permission_level"]
       }
+      part_may_edit: {
+        Args: { p_field_id: string; p_person: string; p_row: string }
+        Returns: boolean
+      }
+      part_may_read: {
+        Args: { p_field_id: string; p_person: string; p_row: string }
+        Returns: boolean
+      }
+      part_may_touch: {
+        Args: {
+          p_action?: string
+          p_field_id: string
+          p_level: Database["public"]["Enums"]["permission_level"]
+          p_person: string
+          p_row: string
+        }
+        Returns: boolean
+      }
       parts_for: {
         Args: { p_id: string; p_person: string; p_type: string }
         Returns: {
@@ -79608,6 +80090,20 @@ export type Database = {
           opens_at_stage: Json
           part: string
           rows_rule: string
+        }[]
+      }
+      parts_visible_for: {
+        Args: {
+          p_level: Database["public"]["Enums"]["permission_level"]
+          p_person: string
+          p_table: string
+        }
+        Returns: {
+          label: string
+          may_edit: boolean
+          may_read: boolean
+          part: string
+          per_row: boolean
         }[]
       }
       people_lists_a_non_member_can_read: {
@@ -82978,6 +83474,13 @@ export type Database = {
       }
     }
     Views: {
+      context_menu_slim_view: {
+        Row: {
+          categories_flat: Json | null
+          placement_type: string | null
+        }
+        Relationships: []
+      }
       context_menu_view: {
         Row: {
           categories_flat: Json | null
@@ -96602,6 +97105,7 @@ export type Database = {
         Args: {
           p_from: string
           p_group?: string
+          p_initiation?: string
           p_stage?: string
           p_to: string
         }
@@ -96616,6 +97120,7 @@ export type Database = {
           p_agent_id?: string
           p_from: string
           p_group?: string
+          p_initiation?: string
           p_organization_id?: string
           p_route?: string
           p_server_task_id?: string
@@ -96629,11 +97134,14 @@ export type Database = {
           p90: number
         }[]
       }
+      ai_latency_initiation: { Args: { p_route: string }; Returns: string }
       ai_latency_report: {
         Args: {
           p_agent_id?: string
+          p_dims?: string
           p_from: string
           p_group?: string
+          p_initiation?: string
           p_organization_id?: string
           p_route?: string
           p_server_task_id?: string
