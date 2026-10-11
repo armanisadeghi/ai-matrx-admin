@@ -14,16 +14,25 @@
  *   3. build:   the confirmed inputs + the approved answer + the capture → an Agent Factory build
  *               (always the factory; its own blind proof review);
  *   4. flip:    the left keeps the same conversation; the center runs a fresh instance of the new
- *               agent on the confirmed inputs, beside the approved answer, which is also saved as
- *               the agent's first test case.
+ *               agent on the confirmed inputs, beside the approved answer (a compare INSIDE the
+ *               center pane, `StudioCompare`), which is also saved as the agent's first test case.
+ *
+ * Mode "Improve an agent I have": the picked agent's recent real runs become its test cases, the
+ * latest run opens in the center (`?run=`), and the right pane opens on Debrief. Feedback to the
+ * assistant revises it through the same builder write targets as "Describe it".
+ *
+ * Mode "From examples I already have": a factory build whose proof cases are the person's own
+ * examples; the center runs the new agent on one example's input beside that example.
+ *
+ * The page is a focused surface: the shell's own chat stands aside here (`@ai-matrx/chat`
+ * `shellChatHostedElsewhere`), so the three panes are the whole width.
  */
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, RotateCcw } from "lucide-react";
-import { Badge, Button, EmptyState, Tabs } from "@ai-matrx/design-system/controls";
+import { Button, EmptyState, Tabs } from "@ai-matrx/design-system/controls";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
-import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { useMandate } from "@ai-matrx/chat/mandates/useMandate";
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
 import { DEFAULT_NEW_CHAT_MANDATE_KEY } from "@ai-matrx/chat/agents/components/chat/chat-quick-actions.config";
@@ -45,7 +54,15 @@ import { BuildProgress } from "@/features/agents/factory/components/BuildProgres
 import { getFactoryBuild } from "@/features/agents/factory/service";
 import { KEPT_OUTCOMES, type FactoryBuildState } from "@/features/agents/factory/types";
 import { makeAgentFromChat, type StudioBrief } from "@/features/agents/from-chat/service";
-import { createAgentSample, fetchAgentContractHead, fetchAgentSamples } from "@/features/agents/samples/service";
+import {
+  borrowSampleFromRun,
+  createAgentSample,
+  fetchAgentContractHead,
+  fetchAgentSamples,
+  fetchCandidateRuns,
+  sampleInputText,
+  type AgentSampleRow,
+} from "@/features/agents/samples/service";
 import { fetchFullAgent } from "@/features/agents/redux/fetch-full-agent.thunk";
 import { useAgentBuilderSurfaceScope } from "@/features/agents/hooks/useAgentBuilderSurfaceScope";
 import { useAgentBuilderWriteHandlers } from "@/features/agents/hooks/useAgentBuilderWriteHandlers";
@@ -53,9 +70,12 @@ import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { studioMode } from "../modes";
+import { planImprove } from "../improve";
 import {
   CAPTURE_QUESTION,
+  CHAT_CASE_SOURCE,
   DOER_CONTEXT_KEY,
+  EXAMPLES_CASE_SOURCE,
   DOER_NOTE,
   approvedAnswerFrom,
   readStudioState,
@@ -73,6 +93,7 @@ import { StudioRun } from "./StudioRun";
 import { StudioControls } from "./StudioControls";
 import { StudioCost } from "./StudioCost";
 import { StudioPath } from "./StudioEmpty";
+import { StudioCompare } from "./StudioCompare";
 import { PlanBackLink, writeAgentToPlanStep } from "./PlanBackLink";
 
 const ASSISTANT_SURFACE = "agent-studio:assistant";
@@ -115,8 +136,10 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   const router = useRouter();
   const isMobile = useIsMobile();
   const mode = studioMode(state.mode)!;
-  const { mandate, error: doerError } = useMandate(DEFAULT_NEW_CHAT_MANDATE_KEY);
-  const doerId = mandate?.agentId ?? null;
+  const { mandate, error: mandateError } = useMandate(DEFAULT_NEW_CHAT_MANDATE_KEY);
+  // The assistant: the default chat agent, unless the URL names another (`?assistant=`).
+  const doerId = state.assistantId ?? mandate?.agentId ?? null;
+  const doerError = state.assistantId ? null : mandateError;
   const { launchAgent } = useAgentLauncher();
 
   const [build, setBuild] = useState<FactoryBuildState | null>(null);
@@ -145,7 +168,55 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       live = false;
     };
   }, [state.buildId, state.agentId]);
-  const studioCase: StudioCase | null = mode.id === "do-with-me" ? studioCaseFromBuild(build) : null;
+  const studioCase: StudioCase | null =
+    mode.id === "do-with-me"
+      ? studioCaseFromBuild(build, CHAT_CASE_SOURCE)
+      : mode.id === "from-examples"
+        ? studioCaseFromBuild(build, EXAMPLES_CASE_SOURCE)
+        : null;
+  /** The run seed a case gives: only when the case carries an input (an example may not). */
+  const caseSeed =
+    studioCase && (studioCase.userInput.trim() || Object.keys(studioCase.variables).length > 0)
+      ? { variables: studioCase.variables, userInput: studioCase.userInput }
+      : null;
+  /** Bumped when the agent's test cases change, so the Cases list re-reads them. */
+  const [casesVersion, setCasesVersion] = useState(0);
+
+  // Mode "Improve": the agent's recent real runs become its test cases (once per agent), and the
+  // latest opens in the center. `improveReady` holds the center until that is known, so it never
+  // starts a fresh run on top of the one it is about to open.
+  const [improveReady, setImproveReady] = useState(mode.id !== "improve" || Boolean(state.runId));
+  const plannedFor = useRef<string | null>(null);
+  useEffect(() => {
+    const agentId = state.agentId;
+    if (mode.id !== "improve" || !agentId || plannedFor.current === agentId) return;
+    plannedFor.current = agentId;
+    void (async () => {
+      try {
+        const [runs, samples] = await Promise.all([fetchCandidateRuns(agentId, { limit: 15 }), fetchAgentSamples(agentId)]);
+        const already = new Set(samples.map((s) => s.source_conversation_id).filter((id): id is string => Boolean(id)));
+        const plan = planImprove(runs, already);
+        let saved = 0;
+        for (const run of plan.borrow) {
+          try {
+            await borrowSampleFromRun({ agentId, run });
+            saved += 1;
+          } catch (e) {
+            toast.error("A run did not become a test case", { description: e instanceof Error ? e.message : String(e) });
+          }
+        }
+        if (saved > 0) {
+          toast.success(saved === 1 ? "Its latest run is now a test case" : `Its ${saved} latest runs are now test cases`);
+          setCasesVersion((v) => v + 1);
+        }
+        if (plan.latest && !state.runId) go({ runId: plan.latest.conversationId });
+      } catch (e) {
+        toast.error("Its recent runs did not load", { description: e instanceof Error ? e.message : String(e) });
+      } finally {
+        setImproveReady(true);
+      }
+    })();
+  }, [mode.id, state.agentId, state.runId, go]);
 
   // (c) The approved answer becomes the agent's first test case, once.
   const savedCaseFor = useRef<string | null>(null);
@@ -302,15 +373,28 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     if (s.agent_id && s.outcome && KEPT_OUTCOMES.has(s.outcome)) go({ agentId: s.agent_id });
   };
 
-  /** Fresh every time: a NEW conversation on the same inputs (mode 2's original request, or the last run's). */
+  /** Fresh every time: a NEW conversation on the same inputs (the case's own, or the last run's). */
   const runAgain = () => {
-    if (!studioCase && runConversation) {
+    if (!caseSeed && runConversation) {
       const s = store.getState();
       const values = selectOwnSubmittedFirstTurnValues(runConversation)(s) as Record<string, unknown> | undefined;
       const messages = selectConversationMessages(runConversation)(s) as StudioMessageRecord[];
       setRerunSeed(rerunSeedFrom(values, messages));
     }
     setRunKey((k) => k + 1);
+  };
+
+  /** A saved test case, run fresh in the center. */
+  const runCase = (sample: AgentSampleRow) => {
+    const variables: Record<string, string> = {};
+    if (sample.variables && typeof sample.variables === "object" && !Array.isArray(sample.variables)) {
+      for (const [k, v] of Object.entries(sample.variables)) {
+        if (v !== null && v !== undefined && v !== "") variables[k] = typeof v === "string" ? v : JSON.stringify(v);
+      }
+    }
+    setRerunSeed({ variables, userInput: sampleInputText(sample) });
+    setRunKey((k) => k + 1);
+    if (isMobile) setPaneTab("agent");
   };
 
   // ── panes ──
@@ -353,11 +437,15 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
         }
       />
     );
+  } else if (state.agentId && !improveReady) {
+    center = <EmptyState icon={<AGENT_ICON className="h-5 w-5" />} title="Opening its latest run" />;
   } else if (state.agentId) {
-    const seed = studioCase ? { variables: studioCase.variables, userInput: studioCase.userInput } : rerunSeed;
+    // A picked case (Cases tab) or "Run again" wins over the case the build started from.
+    const seed = runKey > 0 && rerunSeed ? rerunSeed : (caseSeed ?? rerunSeed);
     const run = (
       <StudioRun
         agentId={state.agentId}
+        conversationId={mode.id === "improve" ? state.runId : null}
         surfaceKey={tryKey(state.agentId)}
         seed={seed}
         showVariables
@@ -366,13 +454,12 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       />
     );
     center = studioCase?.approved ? (
-      <div className="grid h-full min-h-0 grid-cols-1 lg:grid-cols-2">
-        <div className="min-h-0 border-r border-border">{run}</div>
-        <div className="min-h-0 overflow-y-auto p-3" data-testid="studio-approved">
-          <Badge className="mb-2">Approved</Badge>
-          <RichContent level="full" imagePolicy="ai" source={studioCase.approved} />
-        </div>
-      </div>
+      <StudioCompare
+        run={run}
+        original={studioCase.approved}
+        originalLabel={mode.id === "from-examples" ? "Your example" : "Approved"}
+        phone={isMobile}
+      />
     ) : (
       run
     );
@@ -383,7 +470,12 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       </div>
     );
   } else {
-    center = <StudioPath mode={mode.id === "do-with-me" ? "do-with-me" : "describe"} current={hasAnswer ? 1 : 0} />;
+    center =
+      mode.id === "improve" ? (
+        <EmptyState icon={<AGENT_ICON className="h-5 w-5" />} title="Pick an agent to improve" />
+      ) : (
+        <StudioPath mode={mode.id === "do-with-me" ? "do-with-me" : "describe"} current={hasAnswer ? 1 : 0} />
+      );
   }
 
   const right = (
@@ -392,6 +484,9 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       runConversationId={runConversation}
       onFeedback={(text) => void sendToAssistant(text)}
       onSaved={runAgain}
+      onUseCase={runCase}
+      casesVersion={casesVersion}
+      initialTab={mode.id === "improve" ? "debrief" : "settings"}
     />
   );
 
@@ -448,16 +543,16 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     </div>
   ) : (
     <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
-      <ResizablePanel defaultSize="32%" minSize="20%" collapsible>
-        <div className="h-full min-h-0">{left}</div>
+      <ResizablePanel defaultSize="28%" minSize="18%" collapsible>
+        <div className="h-full min-h-0" data-testid="studio-pane-assistant">{left}</div>
       </ResizablePanel>
       <ResizableHandle />
-      <ResizablePanel defaultSize="42%" minSize="25%">
-        <div className="h-full min-h-0">{center}</div>
+      <ResizablePanel defaultSize="50%" minSize="30%">
+        <div className="h-full min-h-0" data-testid="studio-pane-agent">{center}</div>
       </ResizablePanel>
       <ResizableHandle />
-      <ResizablePanel defaultSize="26%" minSize="18%" collapsible>
-        {right}
+      <ResizablePanel defaultSize="22%" minSize="16%" collapsible>
+        <div className="h-full min-h-0" data-testid="studio-pane-controls">{right}</div>
       </ResizablePanel>
     </ResizablePanelGroup>
   );

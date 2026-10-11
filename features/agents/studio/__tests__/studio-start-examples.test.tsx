@@ -33,3 +33,21 @@ describe("StudioStart — Describe it", () => {
     expect(host.querySelector('[data-testid="studio-add-example"]')).toBeNull();
   });
 });
+
+describe("StudioStart — From examples I already have", () => {
+  it("builds through the factory only once two examples are in, each as a proof case with its baseline", async () => {
+    const { startAgentBuild } = jest.requireMock("@/features/agents/factory/service") as { startAgentBuild: jest.Mock };
+    startAgentBuild.mockResolvedValue("build-1");
+    const onStart = jest.fn();
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    act(() => {
+      createRoot(host).render(<StudioStart onStart={onStart} onBack={() => undefined} />);
+    });
+    act(() => (host.querySelector('[data-testid="studio-mode-from-examples"]') as HTMLButtonElement).click());
+    const build = () => host.querySelector('[data-testid="studio-examples-build"]') as HTMLButtonElement;
+    expect(build()).not.toBeNull();
+    expect(build().disabled).toBe(true);
+    expect(host.querySelectorAll('[data-testid="studio-example"]')).toHaveLength(2);
+  });
+});

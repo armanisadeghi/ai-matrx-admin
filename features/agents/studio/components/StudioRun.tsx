@@ -93,7 +93,10 @@ export function StudioRun({
         }),
       )
         .unwrap()
-        .then(() => setShown(conversationId))
+        .then(() => {
+          setShown(conversationId);
+          onConversation?.(conversationId);
+        })
         .catch(() => void fresh());
     } else {
       void fresh();

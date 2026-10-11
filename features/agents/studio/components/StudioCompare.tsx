@@ -56,7 +56,6 @@ export function StudioCompare({ run, original, originalLabel, phone = false }: S
           value={shown}
           onValueChange={(v) => setView(v as CompareView)}
           data={compareViews(originalLabel, phone)}
-          size="sm"
         />
         {shown === "both" && (
           <Button
