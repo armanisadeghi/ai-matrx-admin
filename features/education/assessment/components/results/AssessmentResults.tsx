@@ -34,7 +34,7 @@ import { SourceCitations } from "@/features/education/trust/components/SourceCit
 import { VerifyAgainstSourceButton } from "@/features/education/trust/components/VerifyAgainstSourceButton";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { AskTutorPanel } from "@/features/education/tutor/components/AskTutorButton";
-import { missedQuestionTutorSeed } from "@/features/education/tutor/seeds";
+import { assessmentStudyContext, missedQuestionTutorSeed } from "@/features/education/tutor/seeds";
 import type { TutorGroundingSeed } from "@/features/education/tutor/grounding";
 import { assessmentService } from "../../data/assessmentService";
 import { pairLearningGain } from "../../data/learningGain";
@@ -391,6 +391,10 @@ export function AssessmentResults({
                                       learnerAnswer: d?.response,
                                       correctAnswer: item.correct_answer,
                                       explanation: d?.explanation || item.explanation,
+                                      studyContext: assessmentStudyContext(
+                                        assessmentId,
+                                        assessment.title,
+                                      ),
                                     }),
                                   },
                             )

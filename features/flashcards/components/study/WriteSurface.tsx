@@ -42,7 +42,7 @@ import { useFlashcardMandates } from "../../data/mandate-disclosure";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AskTutorButton } from "@/features/education/tutor/components/AskTutorButton";
-import { flashcardTutorSeed } from "@/features/education/tutor/seeds";
+import { deckStudyContext, flashcardTutorSeed } from "@/features/education/tutor/seeds";
 import { cn } from "@/lib/utils";
 import { useSetting } from "@/features/settings/hooks/useSetting";
 import { studyFaces } from "../../utils/cardVariants";
@@ -278,6 +278,7 @@ export function WriteSurface({ setId }: { setId: string }) {
                     topic: current.topic,
                     learnerAnswer: typed,
                     answered: submitted,
+                    studyContext: deckStudyContext(setId),
                   })}
                   iconOnly
                   variant="ghost"

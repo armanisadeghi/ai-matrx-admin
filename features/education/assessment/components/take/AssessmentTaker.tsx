@@ -29,6 +29,7 @@ import { useUserOrganizations } from "@/features/organizations/hooks";
 import { QuestionView, optionsOf } from "./QuestionView";
 import { AskTutorButton } from "@/features/education/tutor/components/AskTutorButton";
 import {
+  assessmentStudyContext,
   missedQuestionTutorSeed,
   openQuestionTutorSeed,
 } from "@/features/education/tutor/seeds";
@@ -364,10 +365,12 @@ export function AssessmentTaker({
                               correctAnswer: current.correct_answer,
                               explanation: record.graded.explanation || current.explanation,
                               wasCorrect: record.graded.result === "correct",
+                              studyContext: assessmentStudyContext(assessment.id, assessment.title),
                             })
                           : openQuestionTutorSeed({
                               question: current.prompt,
                               options: optionsOf(current),
+                              studyContext: assessmentStudyContext(assessment.id, assessment.title),
                             })
                       }
                       label="Tutor"

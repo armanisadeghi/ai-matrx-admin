@@ -23,6 +23,7 @@ import CardFaceBlock from "@/components/mardown-display/blocks/flashcards/CardFa
 import { useFlashcardMandates } from "../../data/mandate-disclosure";
 import { AskTutorButton } from "@/features/education/tutor/components/AskTutorButton";
 import {
+  deckStudyContext,
   missedQuestionTutorSeed,
   openQuestionTutorSeed,
 } from "@/features/education/tutor/seeds";
@@ -78,10 +79,12 @@ export function TestSurface({ setId }: { setId: string }) {
                           wasCorrect:
                             (study.selected ?? "").trim().toLowerCase() ===
                             study.current.correctAnswer.trim().toLowerCase(),
+                          studyContext: deckStudyContext(setId),
                         })
                       : openQuestionTutorSeed({
                           question: study.current.aiQuestion || study.current.front,
                           options: study.current.options,
+                          studyContext: deckStudyContext(setId),
                         })
                   }
                   iconOnly

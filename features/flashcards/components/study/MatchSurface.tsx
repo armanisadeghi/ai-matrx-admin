@@ -30,7 +30,7 @@ import { FixGiveawayCardsAction } from "../giveaway/FixGiveawayCardsAction";
 import CardFaceBlock from "@/components/mardown-display/blocks/flashcards/CardFaceBlock";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { AskTutorButton } from "@/features/education/tutor/components/AskTutorButton";
-import { deckTutorSeed } from "@/features/education/tutor/seeds";
+import { deckStudyContext, deckTutorSeed } from "@/features/education/tutor/seeds";
 
 const EDU_BASE = "/education/flashcards";
 
@@ -60,7 +60,7 @@ export function MatchSurface({ setId }: { setId: string }) {
             <div className="flex items-center gap-1">
               {game.set && pairs.size > 0 ? (
                 <AskTutorButton
-                  seed={deckTutorSeed(game.set.name, [...pairs.values()])}
+                  seed={deckTutorSeed(game.set.name, [...pairs.values()], deckStudyContext(setId))}
                   iconOnly
                   variant="ghost"
                 />
