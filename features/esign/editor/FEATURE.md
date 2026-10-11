@@ -25,3 +25,4 @@ Contract: `common-docs/projects/esign-parity/CONTRACT.md` §1, §12, §15 (froze
 ## Change log
 - 2026-10-07 — editor, templates list, envelope page rewrite built against a mock; real doors wired (parity lane, sender).
 - 2026-10-10 — Access code is a real option (owner ruling): masked field with show/hide, named Send blocker, flags from stored hashes; the `honestVerification` downgrade is gone (gates lane).
+- 2026-10-11 — After Send the editor is replaced IN PLACE by the envelope page (EditorHost sentId): router.replace to the draft's own address changed nothing on screen. Unaccepted Find-fields suggestions persist per envelope in the browser. Recipient cards wrap; own row filled from the profile name.

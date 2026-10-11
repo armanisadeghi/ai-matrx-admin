@@ -41,6 +41,8 @@ on `features/esign/signing` (`/sign/e/<id>`, `/x/sign`). Product truth: `common-
 
 ## Change Log
 
+- 2026-10-11 — Correct in flight: header action `Correct` opens `CorrectDialog` — recipients who have not acted change name, email, how they open it (with an access code) and order, can be removed, and a person can be added; each change writes a ledger event (`signer_record_changed`, `signer_added`, `signer_removed`) and the changed or added person gets a fresh link. Acted recipients stay locked (`recipient_locked`). Server: aidream `/esign/envelopes/{id}/signers[/{signer}[/correct]]` over `esign.esign_correct_recipient` / `esign_add_recipient` / `esign_remove_recipient`.
+
 - 2026-10-10 — The recipient lock: acted recipients show a lock (why + Void / Make a copy), Send again only for unacted ones, the Void dialog says what it does; `acknowledged` gets its label. Database walls in migration `esign_parity_27`; aidream resend refuses an acted recipient before touching their link.
 
 - 2026-10-04 — Send page rebuilt to the DocuSign bar: the attached PDF is on screen, signers are picked from the organization's members or added as guests, Signature / Initials / Date / Name boxes are placed, moved, resized and deleted per signer in that signer's colour (contract: `fields[]` fractions of the page, `signers[].user_id` for a picked member). Envelope page: the top no longer sits under the header band; documents open in a viewer; signed copy download. PENDING: `fields` and `user_id` ride the send request once `@ai-matrx/agents` publishes them (`fieldsForSend` in `types.ts` builds the array).
