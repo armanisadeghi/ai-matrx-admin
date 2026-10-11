@@ -156,6 +156,18 @@ describe("update table from sheet", () => {
   });
 });
 
+describe("choices the store keeps as lowercase keys", () => {
+  it("shows the list's word, and a key that matches the word is not a change", () => {
+    const stored = ROWS.map((r) => ({ ...r, data: { ...r.data, stage: String(r.data.stage).toLowerCase() } }));
+    const wb = buildLinkedWorkbook({ name: "Pipeline", fields: FIELDS, rows: stored, display: DISPLAY }, { workbookId: "wb-1", sheetId: SHEET });
+    expect(wb.sheets![SHEET].cellData![2]![col("Stage")]!.v).toBe("Proposal");
+    const parsed = parseSheet(wb, SHEET)!;
+    const plan = planToTable({ sheet: parsed, baseline: null, link, tableRows: stored });
+    expect(plan.changed).toEqual([]);
+    expect(planToSheet({ sheet: parsed, baseline: null, link, tableRows: stored, display: DISPLAY }).writes).toEqual([]);
+  });
+});
+
 describe("refresh sheet from table", () => {
   it("writes table edits in place, keeps sheet-only edits, appends new records, clears gone ones", () => {
     const base = exported();

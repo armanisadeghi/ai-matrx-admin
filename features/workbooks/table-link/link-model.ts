@@ -220,12 +220,25 @@ export function cellFromValue(field: LinkedField, value: unknown, display?: stri
       if (!d) return { v: String(value), t: CELL_STRING };
       return { v: toSerial(d.getTime()), t: CELL_NUMBER };
     }
+    case "choice":
+      return { v: choiceWord(field, String(value)), t: CELL_STRING };
     case "multi_choice":
+      return { v: listWords(value).map((w) => choiceWord(field, w)).join(", "), t: CELL_STRING };
     case "list_text":
       return { v: listWords(value).join(", "), t: CELL_STRING };
     default:
       return { v: String(value), t: CELL_STRING };
   }
+}
+
+/**
+ * The list's own word for a stored choice. The store keeps a select's value as a lowercase key
+ * ("proposal") while the list reads "Proposal"; the sheet shows the list's word so the dropdown
+ * recognises it.
+ */
+function choiceWord(field: LinkedField, value: string): string {
+  const lower = value.trim().toLowerCase();
+  return field.choices?.find((c) => c.toLowerCase() === lower) ?? value;
 }
 
 export function displayText(value: unknown): string {
@@ -294,7 +307,10 @@ export function sameValue(field: LinkedField, a: unknown, b: unknown): boolean {
         const d = typeof v === "string" ? parseDateish(v) : null;
         return d ? isoMinute(d) : String(v);
       }
+      case "choice":
+        return String(v).trim().toLowerCase();
       case "multi_choice":
+        return listWords(v).map((w) => w.toLowerCase()).join("\u0001");
       case "list_text":
         return listWords(v).join("\u0001");
       case "readonly":

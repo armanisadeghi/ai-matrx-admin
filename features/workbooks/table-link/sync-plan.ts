@@ -157,7 +157,7 @@ function readRow(fields: readonly LinkedField[], columns: Map<string, number>, c
     const read = valueFromCell(f, cells[col]);
     values[f.field_name] = read.value;
     if (!read.ok) problems[f.field_name] = read.problem;
-    else if (f.kind === "choice" && f.choices && f.choices.length > 0 && typeof read.value === "string" && read.value && !f.choices.includes(read.value)) {
+    else if (f.kind === "choice" && f.choices && f.choices.length > 0 && typeof read.value === "string" && read.value && !f.choices.some((c) => c.toLowerCase() === (read.value as string).toLowerCase())) {
       problems[f.field_name] = "Not in the list";
     }
   }
