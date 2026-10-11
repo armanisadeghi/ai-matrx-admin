@@ -83,6 +83,9 @@ await act(page, async () => {
     await mail.getByRole("textbox", { name: "Email subject" }).fill("{Name} is done");
     await mail.getByRole("textbox", { name: "Email message" }).fill("{Name} moved to {Status}.");
     check("Slack message is offered", (await ed.getByRole("button", { name: "Slack message" }).count()) === 1);
+    await ed.getByRole("button", { name: "Agent", exact: true }).click();
+    check("an agent step says it runs no AI", /runs no AI/.test(await ed.getByTestId("spaces-automation-agent-cost").innerText()));
+    await ed.getByTestId("spaces-automation-action").nth(1).getByRole("button", { name: "Remove action" }).click();
     await page.screenshot({ path: `${SHOT}/airtable-editor.png` });
     await ed.getByRole("button", { name: "Create" }).click();
     await page.waitForTimeout(3000);

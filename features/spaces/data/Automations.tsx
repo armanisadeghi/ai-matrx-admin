@@ -678,9 +678,9 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
                     {describeSpec(a.spec, fields)}
                     {a.last_run ? ` · last run ${a.last_run.status}` : ""}
                   </div>
-                  {(a as AutomationItem & { disabled_reason?: string }).disabled_reason || a.last_run?.status === "failed" ? (
+                  {a.disabled_reason || a.last_run?.status === "failed" ? (
                     <div className="type-secondary truncate text-destructive" data-testid="spaces-automation-problem">
-                      {(a as AutomationItem & { disabled_reason?: string }).disabled_reason ?? a.last_run?.says}
+                      {a.disabled_reason ?? a.last_run?.says}
                     </div>
                   ) : null}
                 </button>

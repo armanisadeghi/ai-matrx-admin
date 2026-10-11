@@ -68,6 +68,13 @@ type Pending =
   | { kind: "reject" }
   | null;
 
+/** Prose with every known id swapped for its name, and any other raw id dropped. */
+function scrubIds(text: string, names: ReadonlyMap<string, string>): string {
+  let out = text;
+  for (const [id, name] of names) out = out.split(id).join(name);
+  return out.replace(/\s*\(?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\)?/gi, "");
+}
+
 function when(iso: string | null | undefined): string {
   return iso ? new Date(iso).toLocaleString() : "—";
 }
@@ -78,7 +85,7 @@ function RefList({ record, names }: { record: SpendAlarmRecord; names: ReadonlyM
   return (
     <dl className="grid grid-cols-[9rem_1fr] gap-x-3 gap-y-1 text-sm">
       {links.map((l) => {
-        const shown = l.key === "user_id" ? names.get(l.value) ?? l.value : l.value;
+        const shown = names.get(l.value) ?? (l.key === "approval_id" ? "Open in spend approvals" : l.value);
         return (
           <div key={l.key} className="contents">
             <dt className="text-muted-foreground">{l.label}</dt>
@@ -137,6 +144,9 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
         setOccurrences(occ);
         setTask(t);
         setApprovalStatus(approval);
+        if (rec?.refs.user_id && rec.subject_name) resolved.set(rec.refs.user_id, rec.subject_name.split(" · ")[0]!);
+        if (rec?.refs.agent_id && rec.subject_name && rec.subject_type === "agent") resolved.set(rec.refs.agent_id, rec.subject_name);
+        if (t?.title && rec?.refs.task_id) resolved.set(rec.refs.task_id, t.title);
         setNames(resolved);
         setError(rec ? null : "This alarm does not exist");
       } catch (e) {
@@ -230,7 +240,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
 
   const columns: MatrxColumnDef<SpendAlarmOccurrence>[] = [
     { id: "occurred_at", accessorKey: "occurred_at", header: "When", cell: (o) => when(o.occurred_at), sortValue: (o) => o.occurred_at },
-    { id: "repeat_count", accessorKey: "repeat_count", header: "Times", kpi: { op: "sum", label: "Occurrences" } },
+    { id: "repeat_count", accessorKey: "repeat_count", header: "Times" },
     {
       id: "run",
       header: "Run",
@@ -307,7 +317,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
                 human={() => `${record.title}\n${record.detail}\nRule: ${record.rule ?? "—"}\n${window.location.origin}${spendAlarmHref(id)}`}
                 agent={agentPayload}
               />
-              <p className="pr-20 text-sm font-medium text-foreground">{record.detail}</p>
+              <p className="pr-20 text-sm font-medium text-foreground">{scrubIds(record.detail, names)}</p>
               {record.fix ? <p className="mt-1 text-sm text-muted-foreground">{record.fix}</p> : null}
               <dl className="mt-3 grid grid-cols-[9rem_1fr] gap-x-3 gap-y-1 text-sm">
                 <dt className="text-muted-foreground">Rule</dt>
@@ -334,7 +344,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
             </section>
 
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              <KpiTile label="Times" value={record.occurrence_count.toLocaleString()} tone={record.level === "critical" ? "bad" : "neutral"} hint={`Reopened ${record.reopened_count}x`} />
+              <KpiTile label="Times" value={record.occurrence_count.toLocaleString()} tone={record.level === "critical" ? "bad" : "neutral"} hint={record.reopened_count ? `Reopened ${record.reopened_count}x` : undefined} />
               <KpiTile label="First seen" value={when(record.first_seen_at)} />
               <KpiTile label="Last seen" value={when(record.last_seen_at)} />
               <KpiTile

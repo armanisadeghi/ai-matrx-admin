@@ -75,20 +75,19 @@ export function SpendAlarmsBoard() {
       accessorFn: (r) => alarmHeadline(r.title, r.subject_id, r.subject_name),
       header: "Alarm",
       href: (r) => spendAlarmHref(r.id),
+      width: 360,
       cell: (r) => (
         <Link href={spendAlarmHref(r.id)} className="text-primary hover:underline">
           {alarmHeadline(r.title, r.subject_id, r.subject_name)}
         </Link>
       ),
     },
-    { id: "fix", header: "What to do", accessorFn: (r) => r.fix ?? "" },
-    { id: "kind", accessorKey: "kind", header: "Kind", filter: "select" },
     {
       id: "subject",
-      header: "Subject",
-      accessorFn: (r) => r.subject_name ?? `${r.subject_type} ${r.subject_id}`,
+      header: "Whose",
+      accessorFn: (r) => r.subject_name ?? `${r.refs.provider ?? r.subject_type}${r.refs.operation ? ` ${r.refs.operation}` : ""}`,
     },
-    { id: "handler", header: "Handler", accessorFn: (r) => r.refs.handler ?? "" },
+    { id: "fix", header: "What to do", accessorFn: (r) => r.fix ?? "" },
     {
       id: "occurrence_count",
       accessorKey: "occurrence_count",
@@ -111,6 +110,8 @@ export function SpendAlarmsBoard() {
       cell: (r) => alarmCostLine(r.cost_usd, r.cost_avoided_usd, formatAdminUsd) ?? "—",
       kpi: { op: "sum", label: "Cost" },
     },
+    { id: "kind", accessorKey: "kind", header: "Kind", filter: "select" },
+    { id: "handler", header: "Handler", accessorFn: (r) => r.refs.handler ?? "" },
   ];
 
   return (
