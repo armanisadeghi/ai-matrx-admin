@@ -143,7 +143,7 @@ export default function DocumentsLandingPage() {
     router.push(`/documents/${res.data.id}`);
   }, [organizationId, router]);
 
-  const { userId, starredIds, menuFor } = useFileItemActions(
+  const { userId, starredIds, menuFor, sectionsFor, dialogs } = useFileItemActions(
     DOCUMENT_ADAPTER,
     reload,
   );
@@ -255,6 +255,7 @@ export default function DocumentsLandingPage() {
                 hideSearch={view === "table"}
               />
               <FileScopeBar scope={scope} onChange={setScope} />
+              {dialogs}
 
               {isSearching ? (
                 <p className="px-1 text-[11px] tabular-nums text-muted-foreground">
@@ -327,6 +328,7 @@ export default function DocumentsLandingPage() {
               <DocumentsHubTable
                 documents={filteredDocuments}
                 menuFor={(doc) => menuFor(doc, scope === "trash")}
+                sectionsFor={(payload) => sectionsFor(payload, scope === "trash")}
               />
             ) : (
               <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-3">

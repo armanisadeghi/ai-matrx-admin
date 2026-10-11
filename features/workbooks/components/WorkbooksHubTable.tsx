@@ -4,11 +4,17 @@
 // hub uses, so both lists inherit table features together.
 
 import type { ReactNode } from "react";
-import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
+import {
+  MatrxDataTable,
+  type MatrxColumnDef,
+  type MatrxTableMenuSection,
+} from "@ai-matrx/design-system/data-table";
 import { Badge } from "@/components/ui/badge";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { formatAbsoluteDate, formatRelativeTime, toEpochMs } from "@/utils/datetime";
 import type { Workbook } from "@/features/data-tables/types";
+import type { FileMenuPayload } from "@/features/file-actions/types";
+import { workbookSourceLabel } from "@/features/workbooks/workbook-service";
 
 function columnsFor(menuFor: (wb: Workbook) => ReactNode): MatrxColumnDef<Workbook>[] {
   return [
@@ -33,11 +39,11 @@ function columnsFor(menuFor: (wb: Workbook) => ReactNode): MatrxColumnDef<Workbo
     {
       id: "source",
       header: "Source",
-      accessorFn: (wb) => wb.source,
+      accessorFn: (wb) => workbookSourceLabel(wb.source),
       filter: "select",
       cell: (wb) => (
         <Badge variant="outline" className="text-[10px] font-medium uppercase tracking-wide">
-          {wb.source.replace(/_/g, " ")}
+          {workbookSourceLabel(wb.source)}
         </Badge>
       ),
     },
@@ -72,9 +78,12 @@ function columnsFor(menuFor: (wb: Workbook) => ReactNode): MatrxColumnDef<Workbo
 export function WorkbooksHubTable({
   workbooks,
   menuFor,
+  sectionsFor,
 }: {
   workbooks: Workbook[];
   menuFor: (wb: Workbook) => ReactNode;
+  /** The right-click menu of a row: the same actions as its ⋯ menu. */
+  sectionsFor?: (payload: FileMenuPayload<Workbook>) => MatrxTableMenuSection[];
 }) {
   return (
     <MatrxDataTable<Workbook>
@@ -86,6 +95,7 @@ export function WorkbooksHubTable({
       getRowId={(wb) => wb.id}
       getRowHref={(wb) => `/workbooks/${wb.id}`}
       defaultSort={{ id: "updated", direction: "desc" }}
+      {...(sectionsFor ? { contextMenu: { sections: sectionsFor } } : {})}
     />
   );
 }

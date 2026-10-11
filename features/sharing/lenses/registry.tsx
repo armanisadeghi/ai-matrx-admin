@@ -34,6 +34,7 @@ import { SharedFileLens } from "@/features/sharing/lenses/file-lens";
 import { ConversationShareLens } from "@/features/sharing/lenses/conversation-lens";
 import { FlashcardSetShareLens } from "@/features/sharing/lenses/flashcard-set-lens";
 import { RecordShareLens } from "@/features/sharing/lenses/record-lens";
+import { DocumentShareLens, WorkbookShareLens } from "@/features/sharing/lenses/file-record-lens";
 
 export interface ShareLensProps {
   /** The resolved share payload (registry `public_columns` projection). */
@@ -75,6 +76,8 @@ const SHARE_LENS_REGISTRY: Record<string, ShareLensRender> = {
   // One row of a table (access ladder T-40): its fields arrive as `result.children`, projected
   // by the database (never a Confidential, Restricted, protected or relation field).
   record: (p) => <RecordShareLens result={p.result} token={p.token} />,
+  workbook: (p) => <WorkbookShareLens result={p.result} token={p.token} />,
+  udt_document: (p) => <DocumentShareLens result={p.result} token={p.token} />,
   seo_collection_run: (p) => (
     <AiVisibilityRenderer result={p.result} token={p.token} />
   ),
