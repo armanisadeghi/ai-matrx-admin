@@ -2853,7 +2853,7 @@ export function RagSearchExperience() {
             {/* Below md the strip scrolls; from md up it is never squeezed — the scope chips
                 (which truncate) give way, so no tab (Diagnostics) is ever clipped. */}
             <div className="flex-1 min-w-0 overflow-x-auto overflow-y-hidden scrollbar-hide md:flex-none md:shrink-0 md:overflow-visible">
-              <TabsList>
+              <TabsList overflow="wrap">
                 <TabsTrigger value="search" className="shrink-0">
                   <SearchIcon className="h-3.5 w-3.5" /> Search
                 </TabsTrigger>

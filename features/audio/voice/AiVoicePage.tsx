@@ -97,7 +97,7 @@ const AiVoicePage: React.FC = () => {
     return (
         <div className="h-full overflow-y-auto p-6 pt-[calc(var(--shell-header-h)+1rem)] bg-background text-foreground">
             <Tabs defaultValue="hands-free" className="w-full">
-                <TabsList className="mb-6">
+                <TabsList overflow="wrap" className="mb-6">
                     <TabsTrigger value="hands-free">Hands-free Chat</TabsTrigger>
                     <TabsTrigger value="playground">Voice Playground</TabsTrigger>
                     <TabsTrigger value="voices">Matrx Voices</TabsTrigger>

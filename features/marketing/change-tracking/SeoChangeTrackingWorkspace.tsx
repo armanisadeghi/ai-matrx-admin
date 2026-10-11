@@ -1559,7 +1559,7 @@ function ChangeDetail({
       className="flex h-full min-h-0 flex-col overflow-hidden"
     >
       <div className="shrink-0 border-b px-4 py-2">
-        <TabsList>
+        <TabsList overflow="wrap">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="theories">Theories</TabsTrigger>
           <TabsTrigger value="implementation">Implementation</TabsTrigger>

@@ -549,7 +549,7 @@ export function ToolViewPage({ tool }: Props) {
             className="flex-1 flex flex-col overflow-hidden"
           >
             <div className="flex-shrink-0 px-6 pt-2 border-b border-border">
-              <TabsList>
+              <TabsList overflow="wrap">
                 <TabsTrigger value="overview">
                   <Info className="h-3.5 w-3.5" />
                   Overview
