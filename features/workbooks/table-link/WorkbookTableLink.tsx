@@ -61,8 +61,11 @@ async function linkSheetToNewTable(
   const fields = table.data.fields.filter((f) => byHeader.has(f.header.trim().toLowerCase()));
   if (fields.length === 0) throw new Error("None of the table's columns match this sheet's header row");
   const { matched: assigned, unmatched } = matchRowsToRecords(sheet, fields, table.data.rows);
-  const idCol = sheet.maxCol + 1;
-  writeCells(api, sheetId, [{ row: 0, col: idCol, cell: { v: RECORD_ID_HEADER, t: 1 } }, ...[...assigned].map(([row, id]) => ({ row, col: idCol, cell: { v: id, t: 1 } }))], {});
+  const existingIdCol = [...sheet.headers.entries()].find(([, h]) => h.trim() === RECORD_ID_HEADER)?.[0];
+  const idCol = existingIdCol ?? sheet.maxCol + 1;
+  // A stale id column from an earlier link is rewritten whole: rows that matched nothing are cleared.
+  const stale = existingIdCol === undefined ? [] : sheet.rows.filter((r) => !assigned.has(r.row)).map((r) => ({ row: r.row, col: idCol, cell: null }));
+  writeCells(api, sheetId, [{ row: 0, col: idCol, cell: { v: RECORD_ID_HEADER, t: 1 } }, ...stale, ...[...assigned].map(([row, id]) => ({ row, col: idCol, cell: { v: id, t: 1 } }))], {});
   api.getActiveWorkbook()?.getSheetBySheetId(sheetId)?.hideColumns(idCol, 1);
   const now = new Date().toISOString();
   const link: TableLink = {
@@ -173,7 +176,9 @@ export function WorkbookTableLink({
       toast.error("Put a header row and at least one row of data on this sheet first");
       return;
     }
-    const [headers, ...rows] = grid.rows;
+    // A Record ID column left from an earlier link is never imported as data.
+    const keep = grid.rows[0].map((h, i) => (h.trim() === RECORD_ID_HEADER ? -1 : i)).filter((i) => i >= 0);
+    const [headers, ...rows] = grid.rows.map((r) => keep.map((i) => r[i] ?? ""));
     openSaveToTable({
       grid: { headers, rows },
       title: grid.sheetName,
