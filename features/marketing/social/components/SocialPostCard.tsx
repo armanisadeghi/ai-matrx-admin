@@ -161,7 +161,7 @@ export function SocialPostCard({ post, onOpen, onSave, extraActions, isNew, comp
         {post.fromBrowser ? (
           <span
             title={FROM_BROWSER_LABEL}
-            className="absolute bottom-1.5 right-1.5 inline-flex max-w-[70%] items-center gap-0.5 truncate rounded bg-card/90 px-1 text-[11px] text-foreground"
+            className="absolute bottom-1.5 right-1.5 inline-flex max-w-[calc(100%-0.75rem)] items-center gap-0.5 truncate rounded bg-card/90 px-1 text-[11px] text-foreground"
           >
             <AppWindow className="h-3 w-3 shrink-0" aria-hidden />
             {FROM_BROWSER_LABEL}

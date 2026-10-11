@@ -57,7 +57,7 @@ import type {
 } from "./types";
 import { isTrackedRole } from "./types";
 import { hookLineOf, num, toPostCardModel } from "./mappers";
-import { capturedDetail, isCapturedPostId, readCapturedPost } from "./gated/capturedPosts";
+import { capturedDetail, isCapturedPostId, mergeCapturedPosts, readCapturedPost, readCapturedPosts } from "./gated/capturedPosts";
 
 function fail(label: string, message: string): never {
   throw new Error(`${label}: ${message}`);
@@ -370,7 +370,23 @@ export async function readPostDetail(postId: string): Promise<PostDetailRead | n
     const row = await readCapturedPost(postId);
     if (!row) return null;
     const profile = await readProfile(row.profile_id);
-    return { ...capturedDetail(row, profile?.handle ?? null), profile };
+    const handle = profile?.handle ?? null;
+    const detail = capturedDetail(row, handle);
+    // The multiple the account page shows: over the union of the shared and the captured posts.
+    const [sharedPosts, captured] = await Promise.all([
+      readProfilePosts({ profileId: row.profile_id, handle }),
+      readCapturedPosts(row.profile_id),
+    ]);
+    const card = mergeCapturedPosts(sharedPosts, captured, { handle }).find((c) => c.postId === postId);
+    if (card) {
+      Object.assign(detail.stat, {
+        outlier_score: card.outlier.score,
+        baseline_views: card.outlier.baselineViews,
+        baseline_window: card.outlier.baselineWindow,
+        percentile: card.outlier.percentile,
+      });
+    }
+    return { ...detail, profile };
   }
   const { data, error } = await supabase
     .schema("social")
