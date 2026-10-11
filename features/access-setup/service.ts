@@ -6,6 +6,7 @@
 // Doors (all SECURITY DEFINER, declared in platform.client_callable_door):
 //   iam.record_access_setup(type, id)            the panel's read
 //   iam.record_seat_set(type, id, seat, user, change, reason)   add / exclude one person on a seat
+//   iam.record_seat_add_via(type, id, seat, user)  add on a seat whose setup declares add_via (the type's own flow)
 //   iam.record_seat_clear(type, id, seat, user)  undo that add / exclude
 //   iam.record_setup_confirm(type, ids[])        one access-log row: "people involved confirmed"
 //   hr.hr_review_cycle_access_setup(cycle)       the cycle-level panel (org-wide seats, stage knobs)
@@ -32,6 +33,15 @@ const REFUSALS: Record<string, string> = {
   subject_seat_is_the_record: "This person is who the record is about.",
   nothing_to_undo: "Nothing to undo here.",
   validation: "That person is not a member of this organization.",
+  add_via: "This seat is filled by its own request. Add the person again.",
+  not_in_organization: "That person does not work for this employer.",
+  is_a_party: "That person is already part of this record.",
+  already_nominated: "That person was already asked.",
+  peer_has_no_login: "That person has no sign-in yet, so they cannot be asked.",
+  peer_reviews_not_open: "Peer feedback is not open yet.",
+  cycle_not_open: "This cycle is closed, so nobody can be added.",
+  review_closed_to_peers: "Peer feedback can no longer be requested here.",
+  not_active: "That person is not active right now.",
   no_setup: "This record has no people setup.",
 };
 
@@ -98,6 +108,19 @@ export async function setSeat(
     }),
   );
   return r.ok ? { ok: true, data: true } : r;
+}
+
+/** Add through the seat's own flow (iam.record_seat_add_via); `status` "pending" = waiting for approval. */
+export async function addSeatVia(
+  type: string,
+  id: string,
+  seat: string,
+  userId: string,
+): Promise<AccessResult<{ status: string | null }>> {
+  const r = await settle("record_seat_add_via", () =>
+    supabase.schema("iam").rpc("record_seat_add_via", { p_type: type, p_id: id, p_seat: seat, p_user: userId }),
+  );
+  return r.ok ? { ok: true, data: { status: typeof r.data.status === "string" ? r.data.status : null } } : r;
 }
 
 export async function clearSeat(type: string, id: string, seat: string, userId: string): Promise<AccessResult<true>> {

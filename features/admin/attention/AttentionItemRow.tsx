@@ -38,11 +38,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AppLink } from "@/components/navigation/AppLink";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
+import { CopyForAiButton } from "@/components/agent-copy/CopyForAiButton";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
 import { humanizeRelative } from "@/features/scheduling/utils/triggerHumanize";
 import { cn } from "@/lib/utils";
-import { MUTE_CHOICES, NOTE_MUTE } from "./item-mute";
+import { MUTE_CHOICES } from "./item-mute";
 import type { AttentionAction, AttentionItem } from "./types";
 
 export interface AttentionItemRowProps {
@@ -99,20 +100,17 @@ export function AttentionItemRow({
             href={item.record.href}
             openInNewTab
             alwaysShowActions
-            labelClassName="font-medium text-foreground"
+            labelClassName="font-medium text-foreground whitespace-normal break-words line-clamp-2"
           />
         ) : (
-          <span className="font-medium text-foreground">{item.title}</span>
+          <span className="line-clamp-2 break-words font-medium text-foreground">{item.title}</span>
         )}
         <span className={cn("text-[11px]", severityText)}>{item.state}</span>
         {item.copy && (
-          <CopyButtons
-            size="xs"
-            label={item.copy.label}
-            className="ml-auto"
-            human={item.copy.human}
-            agent={item.copy.agent}
-          />
+          <span className="ml-auto inline-flex items-center gap-1">
+            <CopyButtons size="xs" label={item.copy.label} hide={["ai"]} human={item.copy.human} />
+            <CopyForAiButton size="sm" compact label={item.copy.label} agent={item.copy.agent} />
+          </span>
         )}
       </div>
 
@@ -197,8 +195,13 @@ export function AttentionItemRow({
             <span className="text-[11px] text-muted-foreground" data-testid="attention-mute-state">
               Muted until {humanizeRelative(item.mute.current.until).replace(/^in /, "")} from now
               {item.mute.current.by ? ` by ${item.mute.current.by}` : ""}
-              {item.mute.current.reason ? ` — ${item.mute.current.reason}` : ""}
+              {item.mute.current.reason ? `: ${item.mute.current.reason}` : ""}
             </span>
+            {item.mute.scope === "server" && (
+              <Button variant="quiet" disabled={busy !== null} onClick={() => onMuteWithNote(item)} aria-label={`Change the mute on ${item.title}`}>
+                Change
+              </Button>
+            )}
             {item.mute.clear && (
               <Button
                 icon={busy === "unmute" ? (
@@ -247,14 +250,10 @@ export function AttentionItemRow({
                   Mute for {choice.label}
                 </DropdownMenuItem>
               ))}
-              {item.mute.scope === "server" && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onSelect={() => onMuteWithNote(item)}>
-                    Mute for {NOTE_MUTE.label} with a note…
-                  </DropdownMenuItem>
-                </>
-              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem data-testid="attention-mute-note" onSelect={() => onMuteWithNote(item)}>
+                Mute with a note…
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}

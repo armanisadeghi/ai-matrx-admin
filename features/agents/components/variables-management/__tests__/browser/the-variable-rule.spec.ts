@@ -117,8 +117,7 @@ async function chipsNamed(page: Page, name: string): Promise<number> {
   return page
     .evaluate((n) => {
       let count = 0;
-      for (const el of Array.from(document.querySelectorAll("main *"))) {
-        if (el.closest("button,[role=dialog]")) continue; // the Undeclared/Variables rows are lists, not the editor
+      for (const el of Array.from(document.querySelectorAll("[contenteditable=true] *"))) {
         const text = (el.textContent ?? "").replace(/[\u200b\s]/g, "");
         if (text !== n && text !== `{{${n}}}` && text !== `{}${n}`) continue;
         for (let cur: Element | null = el, i = 0; cur && i < 3; cur = cur.parentElement, i += 1) {

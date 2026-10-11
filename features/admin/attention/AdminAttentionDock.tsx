@@ -43,7 +43,6 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertOctagon,
@@ -65,7 +64,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AppLink } from "@/components/navigation/AppLink";
-import { TextInputDialog } from "@ai-matrx/design-system";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -80,7 +78,8 @@ import {
 import { AttentionItemRow } from "./AttentionItemRow";
 import { buildAttentionNotice } from "./build-notice";
 import { DEFAULT_SNOOZE, readSnoozedUntil, SNOOZE_CHOICES, writeSnooze } from "./dock-snooze";
-import { NOTE_MUTE, touchMutes } from "./item-mute";
+import { muteLabel, touchMutes } from "./item-mute";
+import { MuteDialog } from "./MuteDialog";
 import { useLocalMutes } from "./useLocalMutes";
 import { useProviderOutageSource } from "./sources/useProviderOutageSource";
 import { useScheduleAlarmSource } from "./sources/useScheduleAlarmSource";
@@ -120,12 +119,10 @@ export default function AdminAttentionDock() {
   // A new dock is compact without consulting browser storage. Retiring the
   // legacy preference happens after paint so rendering stays pure.
   const [collapsedChoice, setCollapsedChoice] = useState(true);
-  const pathname = usePathname();
   const [snoozedUntil, setSnoozedUntil] = useState(readSnoozedUntil);
   const localMutes = useLocalMutes();
   const now = useNow();
   const [noteFor, setNoteFor] = useState<AttentionItem | null>(null);
-  const [noteBusy, setNoteBusy] = useState(false);
   const wakeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [cardElement, setCardElement] = useState<HTMLDivElement | null>(null);
 
@@ -212,13 +209,9 @@ export default function AdminAttentionDock() {
   const loudFailures =
     canRead && !snoozed ? sources.filter((s) => s.status === "failed" && s.loud) : [];
   const visible = notice !== null || loudFailures.length > 0;
-  // On a source's OWN review page the page is the expanded view: the card
-  // would only float over the very rows (and Unmute buttons) it points at.
-  // The pill stays, so the person still sees the count and the way back.
-  const onReviewPage = sources.some(
-    (s) => s.review !== null && pathname !== null && pathname.startsWith(s.review.href),
-  );
-  const collapsed = onReviewPage || collapsedChoice;
+  // Every page starts compact, the alarm list included — and the pill ALWAYS expands on a click.
+  // (Harsh walk 2026-10-10: on the alarm list the pill was forced shut, so a click did nothing.)
+  const collapsed = collapsedChoice;
 
   // The singleton lives outside every route's React tree, so this document
   // marker is the one shared contract every shell scroll owner can consume.
@@ -240,7 +233,6 @@ export default function AdminAttentionDock() {
   if (!visible) return null;
 
   const toggleCollapsed = () => {
-    if (onReviewPage) return;
     const next = !collapsedChoice;
     setCollapsedChoice(next);
   };
@@ -270,10 +262,11 @@ export default function AdminAttentionDock() {
     if (!mute) return;
     try {
       await mute.apply(Date.now() + ms, note);
+      const span = muteLabel(ms);
       toast.success(
         mute.scope === "server"
-          ? `"${item.title}" is muted for every super-admin — it comes back on its own.`
-          : `"${item.title}" is muted in this browser — it comes back on its own.`,
+          ? `Muted "${item.title}" for ${span}, for every super admin.`
+          : `Muted "${item.title}" for ${span} in this browser.`,
       );
     } catch (error) {
       toast.error(error instanceof Error ? error.message : String(error));
@@ -293,6 +286,7 @@ export default function AdminAttentionDock() {
   const Icon = notice?.tone === "warning" ? AlertTriangle : AlertOctagon;
   const tone = notice?.tone ?? "warning";
   const shell = "z-50 w-[min(46rem,calc(100vw-1.5rem))] shadow-xl";
+  // On a phone the expanded dock is a compact sheet: under half the screen, its body scrolls.
   const iconButton =
     "rounded-md p-1 text-muted-foreground hover:bg-background/60 hover:text-foreground";
 
@@ -355,27 +349,18 @@ export default function AdminAttentionDock() {
   );
 
   const noteDialog = (
-    <TextInputDialog
+    <MuteDialog
       open={noteFor !== null}
       onOpenChange={(open) => {
         if (!open) setNoteFor(null);
       }}
-      title={noteFor ? `Mute "${noteFor.title}" for ${NOTE_MUTE.label}` : "Mute"}
-      description="Say why this can stay quiet — every super-admin reads it on the record, and the mute ends on its own."
-      placeholder="e.g. Commerce module not built yet; nothing to sync"
-      multiline
-      rows={3}
-      confirmLabel={`Mute for ${NOTE_MUTE.label}`}
-      busy={noteBusy}
-      onConfirm={async (value) => {
+      subject={noteFor?.title ?? ""}
+      scope={noteFor?.mute?.scope ?? "server"}
+      initialNote={noteFor?.mute?.current?.reason ?? null}
+      onConfirm={async (choice, note) => {
         if (!noteFor) return;
-        setNoteBusy(true);
-        try {
-          await onMute(noteFor, NOTE_MUTE.ms, value.trim());
-          setNoteFor(null);
-        } finally {
-          setNoteBusy(false);
-        }
+        await onMute(noteFor, choice.ms, note);
+        setNoteFor(null);
       }}
     />
   );
@@ -409,7 +394,7 @@ export default function AdminAttentionDock() {
           >
             <Icon className="h-3.5 w-3.5" aria-hidden />
             <span>{label}</span>
-            {count > 0 && !onReviewPage && <ChevronDown className="h-3.5 w-3.5" aria-hidden />}
+            {count > 0 && <ChevronDown className="h-3.5 w-3.5" aria-hidden />}
           </button>
           {snoozeMenu}
           {closeButton}
@@ -429,7 +414,7 @@ export default function AdminAttentionDock() {
       <div
         role="status"
         className={cn(
-          "flex max-h-[min(70dvh,40rem)] flex-col rounded-lg border bg-card/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-card/80",
+          "flex max-h-[45dvh] flex-col rounded-lg border sm:max-h-[min(70dvh,40rem)] bg-card/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-card/80",
           tone === "destructive" ? "border-destructive/40" : "border-warning/40",
         )}
       >

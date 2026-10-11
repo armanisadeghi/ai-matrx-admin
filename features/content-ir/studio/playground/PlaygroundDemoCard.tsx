@@ -69,6 +69,8 @@ function ResetItemState({ nonce }: { nonce: number }) {
 
 function probeBox(host: HTMLElement, mode: RenderMode): Omit<DemoProbe, "errors" | "ageMs"> {
   const frame = host.querySelector("iframe");
+  // Frame mode with no frame yet (the setting is loading or refused): nothing rendered.
+  if (mode === "frame" && !frame) return { height: 0, standIns: null, images: null };
   if (mode === "frame" && frame) {
     // A frame that never spoke shows its placeholder height — that is not a render.
     const heard = frame.getAttribute("data-matrx-kind-sandbox-heard") === "true";

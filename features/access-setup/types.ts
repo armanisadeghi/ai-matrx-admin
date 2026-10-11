@@ -25,6 +25,8 @@ export interface SeatCell {
   rows: string | null;
   /** The stage (or any of the stages) the cell opens at; null = always. */
   fromStage: string[] | null;
+  /** fromStage said as the stage it equals under the record's knobs (setup stage_meaning_fn); label from this. */
+  opensAt: string[] | null;
   reached: boolean;
 }
 
@@ -34,6 +36,12 @@ export interface SeatView {
   many: boolean;
   resolver: string | null;
   mayChange: boolean;
+  /** May add a person here (for an addVia seat: through that type's own flow). */
+  mayAdd: boolean;
+  /** Exclude belongs to the admin seats and the organization's owners/admins. */
+  mayExclude: boolean;
+  /** The action the type's own flow runs for an add (e.g. "peer_nominate"); null = a direct seat add. */
+  addVia: string | null;
   fallbackOnly: boolean;
   holders: SeatHolder[];
   excluded: SeatPerson[];
@@ -50,6 +58,8 @@ export interface RecordAccessSetup {
   seats: SeatView[];
   confirmed: { at: string; by: SeatPerson | null } | null;
   needsConfirm: boolean;
+  /** Confirm belongs to the admin seats and the organization's owners/admins. */
+  mayConfirm: boolean;
   candidates: SeatPerson[];
 }
 
@@ -106,6 +116,7 @@ function parseCell(raw: Rec): SeatCell | null {
     level: str(raw.level) ?? "viewer",
     rows: str(raw.rows),
     fromStage: typeof from === "string" ? [from] : Array.isArray(from) ? strs(from) : null,
+    opensAt: Array.isArray(raw.opens_at) ? strs(raw.opens_at) : null,
     reached: raw.reached !== false,
   };
 }
@@ -134,6 +145,9 @@ export function parseRecordAccessSetup(raw: Rec): RecordAccessSetup | null {
         many: s.many === true,
         resolver: str(s.resolver),
         mayChange: s.may_change === true,
+        mayAdd: s.may_add === true,
+        mayExclude: s.may_exclude === true,
+        addVia: str(s.add_via),
         fallbackOnly: s.fallback_only === true,
         holders: recs(s.holders).map(parseHolder).filter((h): h is SeatHolder => h !== null),
         excluded: recs(s.excluded).map(parsePerson).filter((p): p is SeatPerson => p !== null),
@@ -142,6 +156,7 @@ export function parseRecordAccessSetup(raw: Rec): RecordAccessSetup | null {
     }),
     confirmed,
     needsConfirm: raw.needs_confirm === true,
+    mayConfirm: raw.may_confirm === true,
     candidates: recs(raw.candidates).map(parsePerson).filter((p): p is SeatPerson => p !== null),
   };
 }

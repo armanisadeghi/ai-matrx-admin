@@ -5480,9 +5480,6 @@ BEGIN
 END;
 $function$;
 
-create policy edit_content_update on content.document for update
-  using (iam.has_access('document'::text, id, 'edit_content'::public.permission_level))
-  with check (iam.has_access('document'::text, id, 'edit_content'::public.permission_level));
 drop trigger if exists _a000_edit_content_is_editor on iam.permissions;
 drop trigger if exists _a000_edit_content_is_editor on platform.share_links;
 drop function if exists iam._edit_content_is_editor();

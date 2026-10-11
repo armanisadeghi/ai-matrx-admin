@@ -26,6 +26,8 @@ const DAY = 24 * HOUR;
 export interface MuteChoice {
   id: string;
   label: string;
+  /** The segmented control's label. */
+  short: string;
   ms: number;
 }
 
@@ -35,16 +37,21 @@ export interface MuteChoice {
  * on the schedule (pause it, delete it), not on the alarm about it.
  */
 export const MUTE_CHOICES: MuteChoice[] = [
-  { id: "1h", label: "1 hour", ms: HOUR },
-  { id: "8h", label: "8 hours", ms: 8 * HOUR },
-  { id: "1d", label: "1 day", ms: DAY },
-  { id: "3d", label: "3 days", ms: 3 * DAY },
-  { id: "8d", label: "8 days", ms: 8 * DAY },
-  { id: "30d", label: "30 days", ms: 30 * DAY },
+  { id: "1h", label: "1 hour", short: "1h", ms: HOUR },
+  { id: "4h", label: "4 hours", short: "4h", ms: 4 * HOUR },
+  { id: "1d", label: "1 day", short: "1 day", ms: DAY },
+  { id: "7d", label: "7 days", short: "7 days", ms: 7 * DAY },
+  { id: "30d", label: "30 days", short: "30 days", ms: 30 * DAY },
 ];
 
-/** The span "mute with a note" uses — the note is for a long silence. */
+/** The longest mute (any duration can carry a note: MuteDialog). */
 export const NOTE_MUTE = MUTE_CHOICES[MUTE_CHOICES.length - 1];
+
+/** "1 hour", "7 days" — the label of the choice nearest `ms`, for a toast that names the duration. */
+export function muteLabel(ms: number): string {
+  const nearest = MUTE_CHOICES.reduce((a, b) => (Math.abs(b.ms - ms) < Math.abs(a.ms - ms) ? b : a));
+  return nearest.label;
+}
 
 export type MuteMap = Record<string, number>;
 

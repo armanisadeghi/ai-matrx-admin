@@ -266,9 +266,10 @@ begin
 end
 $patch$;
 
--- Spaces pages: the extra edit_content update policy goes; std_update already admits Edit, and the
--- structure guard (now asking admin) keeps Edit off the page's structure columns.
-drop policy if exists edit_content_update on content.document;
+-- Spaces pages: content.document.edit_content_update is left in place. After the fold no grant holds
+-- edit_content, and has_access(..., 'edit_content') admits editor and above, which std_update already
+-- admits, so the policy grants nothing new; dropping it needs an ACCESS EXCLUSIVE lock on a hot table.
+-- The structure guard (now asking admin) keeps Edit off the page's structure columns either way.
 
 -- Fold: every edit_content grant becomes Edit (one statement).
 update iam.permissions set permission_level = 'editor' where permission_level = 'edit_content';
@@ -287,9 +288,7 @@ begin
   return new;
 end
 $fn$;
-drop trigger if exists _a000_edit_content_is_editor on iam.permissions;
 create trigger _a000_edit_content_is_editor before insert or update of permission_level on iam.permissions
   for each row execute function iam._edit_content_is_editor();
-drop trigger if exists _a000_edit_content_is_editor on platform.share_links;
 create trigger _a000_edit_content_is_editor before insert or update of permission_level on platform.share_links
   for each row execute function iam._edit_content_is_editor();

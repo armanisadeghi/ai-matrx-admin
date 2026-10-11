@@ -38,7 +38,7 @@ function Bars({ bars }: { bars: DistributionBar[] }) {
   );
 }
 
-export function CalibrationTab({ cycleId, orgRef, open }: { cycleId: string; orgRef: HrOrgRef; open: boolean }) {
+export function CalibrationTab({ cycleId, orgRef, open, readOnly = false }: { cycleId: string; orgRef: HrOrgRef; open: boolean; readOnly?: boolean }) {
   const [data, setData] = useState<CalibrationData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [edits, setEdits] = useState<Record<string, { rating: string; note: string }>>({});
@@ -108,7 +108,7 @@ export function CalibrationTab({ cycleId, orgRef, open }: { cycleId: string; org
       accessorFn: (r) => ratingLabel(scale, r.calibratedRating),
       filter: "text",
       width: 200,
-      cell: (r) => (
+      cell: (r) => readOnly ? ratingLabel(scale, r.calibratedRating) : (
         <Select
           aria-label={`Calibrated rating for ${r.employeeName}`}
           value={edits[r.reviewId]?.rating ?? r.calibratedRating ?? NONE}
@@ -124,7 +124,7 @@ export function CalibrationTab({ cycleId, orgRef, open }: { cycleId: string; org
       accessorFn: (r) => r.calibrationNote ?? "",
       filter: "text",
       width: 260,
-      cell: (r) => (
+      cell: (r) => readOnly ? (r.calibrationNote ?? "") : (
         <ProInput
           aria-label={`Calibration note for ${r.employeeName}`}
           placeholder="Why"
@@ -134,7 +134,7 @@ export function CalibrationTab({ cycleId, orgRef, open }: { cycleId: string; org
         />
       ),
     },
-    {
+    ...(readOnly ? [] : [{
       id: "save",
       header: "",
       accessorFn: () => "",
@@ -145,7 +145,7 @@ export function CalibrationTab({ cycleId, orgRef, open }: { cycleId: string; org
           Save
         </Button>
       ),
-    },
+    }] satisfies MatrxColumnDef<CalibrationRow>[]),
   ];
   const copy: MatrxDataTableCopyConfig<CalibrationRow> = {
     label: "calibration row",

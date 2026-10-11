@@ -187,6 +187,8 @@ export interface CycleReviewRow {
 
 export interface CycleDetail {
   cycle: CycleSummary & { organizationId: string };
+  /** Upper management reads the cycle (hr.review_seat_upper_in_org); launch, close and calibrate stay HR's. */
+  readOnly: boolean;
   total: number;
   reviews: CycleReviewRow[];
 }
@@ -436,6 +438,7 @@ export function parseCycleDetail(raw: Rec): CycleDetail | null {
     cycle: { ...base, organizationId: str(raw.cycle.organization_id) ?? "" },
     total: num(counts.total) ?? reviews.length,
     reviews,
+    readOnly: raw.read_only === true,
   };
 }
 
@@ -467,6 +470,8 @@ export function parseLaunch(raw: Rec): LaunchResult {
 /** One person the caller may start a single review for (hr_review_start_candidates). */
 export interface StartCandidate {
   employmentId: string;
+  /** The person's HR profile (hr.employee id), when the door names it. */
+  employeeId: string | null;
   name: string;
   /** "report": the caller manages them by position; "employee": reachable because the caller is HR. */
   relation: "report" | "employee";
@@ -480,6 +485,7 @@ export function parseStartCandidates(raw: unknown): StartCandidate[] {
     if (!employmentId) return [];
     return [{
       employmentId,
+      employeeId: str(p.employee_id),
       name: str(p.name) ?? "Unnamed employee",
       relation: p.relation === "report" ? "report" : "employee",
       openReviewId: str(p.open_review_id),

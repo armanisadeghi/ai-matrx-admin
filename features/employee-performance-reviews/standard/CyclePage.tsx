@@ -18,6 +18,8 @@ import { HrPageState } from "@/features/hr/shared/HrStates";
 import { useHrContext } from "@/features/hr/shared/useHrContext";
 import { toast } from "@/lib/toast";
 import { useAfterCreateOpenAccessSetup } from "@/features/access-setup/afterCreate";
+import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { hrPerformanceHref } from "@/features/hr/routes";
 
 import { CalibrationTab } from "./CalibrationTab";
 import { launchRefusalMessage } from "./messages";
@@ -33,6 +35,7 @@ export function CyclePage({ cycleId }: { cycleId: string }) {
   const orgRef = hr.orgRef;
   const [cycle, setCycle] = useState<CycleDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [refusal, setRefusal] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
   const [refused, setRefused] = useState<LaunchRefused[]>([]);
   const [closing, setClosing] = useState(false);
@@ -46,7 +49,11 @@ export function CyclePage({ cycleId }: { cycleId: string }) {
       if (r.ok) {
         setCycle(r.data);
         setError(null);
-      } else setError(r.message);
+        setRefusal(null);
+      } else {
+        setError(r.message);
+        setRefusal(r.reason);
+      }
     });
     return () => {
       live = false;
@@ -101,6 +108,16 @@ export function CyclePage({ cycleId }: { cycleId: string }) {
 
   const c = cycle?.cycle;
   const closed = c?.status === "closed";
+  const readOnly = cycle?.readOnly === true;
+
+  // A refused door is the platform's denial (who it belongs to, ask for access), never "did not finish".
+  if (refusal === "not_reachable") {
+    return (
+      <div className="h-full overflow-y-auto pt-[var(--shell-header-h)]">
+        <AccessGate token="hr_review_cycle" id={cycleId} fallbackHref={hrPerformanceHref(orgRef)} fallbackLabel="Performance" />
+      </div>
+    );
+  }
 
   return (
     <HrPageState loading={cycle === null && error === null} error={error ? new Error(error) : null} onRetry={reload} operation="This review cycle" variant="panel">
@@ -129,7 +146,7 @@ export function CyclePage({ cycleId }: { cycleId: string }) {
                 <span className="text-muted-foreground">Acknowledged </span>
                 {c.acknowledgedCount} of {cycle.total}
               </span>
-              {!closed ? (
+              {!closed && !readOnly ? (
                 <Button className="ml-auto" icon={<Lock />} variant="outline" onClick={() => setClosing(true)}>
                   Close cycle
                 </Button>
@@ -146,9 +163,9 @@ export function CyclePage({ cycleId }: { cycleId: string }) {
               ]}
             />
 
-            {view === "calibration" ? <CalibrationTab cycleId={cycleId} orgRef={orgRef} open={!closed} /> : null}
+            {view === "calibration" ? <CalibrationTab cycleId={cycleId} orgRef={orgRef} open={!closed} readOnly={readOnly} /> : null}
 
-            {view === "reviews" && !closed && c.organizationId ? (
+            {view === "reviews" && !closed && !readOnly && c.organizationId ? (
               <LaunchPanel
                 cycleId={cycleId}
                 organizationId={c.organizationId}

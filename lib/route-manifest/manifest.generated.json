@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1402,
+  "routeCount": 1403,
   "routes": [
     {
       "pattern": "/",
@@ -6529,6 +6529,11 @@
       "pattern": "/shapes/new",
       "status": "live",
       "source": "app/(core)/shapes/(workspace)/new/page.tsx"
+    },
+    {
+      "pattern": "/shapes/playground",
+      "status": "live",
+      "source": "app/(core)/shapes/(workspace)/playground/page.tsx"
     },
     {
       "pattern": "/sign-out",

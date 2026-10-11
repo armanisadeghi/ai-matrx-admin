@@ -171,17 +171,34 @@ export async function readTableForSheet(tableId: string, only?: readonly LinkedF
 
 // ─── action 1: open a table as a linked workbook ─────────────────────────────
 
+/**
+ * A row-level-security refusal on the workbook insert — the person may not make workbooks in that
+ * organization (a guest the table was shared with, not a member of the table's organization).
+ */
+export function isWorkbookInsertRefused(error: string): boolean {
+  return /row-level security/i.test(error);
+}
+
+/**
+ * THE WORKBOOK LIVES WHERE ITS MAKER MAY MAKE ONE. A member of the table's organization gets it
+ * there, beside the table. Someone the table was shared WITH (an Editor guest, not a member) may
+ * not create rows in that organization, and that insert used to answer the raw
+ * `new row violates row-level security policy for table "udt_workbooks"`; their copy now goes to
+ * their own active organization — the link still names the table, which their share lets them read.
+ */
+export async function createLinkedWorkbook(name: string, tableOrganizationId: string): ReturnType<typeof createWorkbook> {
+  const args = { name, description: "Linked to a table", source: "created" as const };
+  const inTableOrg = await createWorkbook({ ...args, organizationId: tableOrganizationId });
+  if (!isServiceFailure(inTableOrg) || !isWorkbookInsertRefused(inTableOrg.error)) return inTableOrg;
+  return createWorkbook(args);
+}
+
 export async function openTableAsWorkbook(tableId: string): Promise<LinkResult<{ workbookId: string; href: string }>> {
   try {
     const table = await readTableForSheet(tableId);
     if (!table.ok) return table;
     if (!table.data.organizationId) return fail("This table's workspace could not be found");
-    const created = await createWorkbook({
-      name: table.data.name,
-      description: "Linked to a table",
-      source: "created",
-      organizationId: table.data.organizationId,
-    });
+    const created = await createLinkedWorkbook(table.data.name, table.data.organizationId);
     if (isServiceFailure(created)) return fail(created.error);
     const workbookId = created.data.id;
     const sheetId = randomId("sheet").slice(0, 20);

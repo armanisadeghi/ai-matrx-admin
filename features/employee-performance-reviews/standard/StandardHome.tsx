@@ -15,7 +15,7 @@ import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { useAfterCreateOpenAccessSetup } from "@/features/access-setup/afterCreate";
 import { HrPageState } from "@/features/hr/shared/HrStates";
 import { useHrContext } from "@/features/hr/shared/useHrContext";
-import { hrPerformance360Href, hrPerformanceCycleHref, hrPerformanceGoalsHref, hrPerformanceReviewHref } from "@/features/hr/routes";
+import { hrEmployeeHref, hrPerformance360Href, hrPerformanceCycleHref, hrPerformanceGoalsHref, hrPerformanceReviewHref } from "@/features/hr/routes";
 
 import { useReloadOnReviewsChanged } from "./invalidation";
 import { NewCycleDialog } from "./NewCycleDialog";
@@ -46,6 +46,7 @@ const roleLabel = (seats: readonly string[]): string => {
 function useReviewsData(organizationId: string | null, employerKey: string) {
   const [reviews, setReviews] = useState<ReviewSummary[] | null>(null);
   const [cycles, setCycles] = useState<CycleSummary[] | null>(null);
+  const [cyclesReadOnly, setCyclesReadOnly] = useState(false);
   const [requests, setRequests] = useState<PeerRequest[]>([]);
   const [people, setPeople] = useState<StartRow[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -81,8 +82,10 @@ function useReviewsData(organizationId: string | null, employerKey: string) {
       const cyc = await listCycles(organizationId);
       if (!live) return;
       // not_permitted is the normal answer for a person who is not an HR seat: no cycles section, no error.
-      if (cyc.ok) setCycles(cyc.data);
-      else if (cyc.reason === "not_permitted") setCycles(null);
+      if (cyc.ok) {
+        setCycles(cyc.data.cycles);
+        setCyclesReadOnly(cyc.data.readOnly);
+      } else if (cyc.reason === "not_permitted") setCycles(null);
       else setError(cyc.message);
     })();
     return () => {
@@ -90,7 +93,7 @@ function useReviewsData(organizationId: string | null, employerKey: string) {
     };
   }, [organizationId, employerKey, tick]);
 
-  return { reviews, cycles, requests, people, error, reload };
+  return { reviews, cycles, cyclesReadOnly, requests, people, error, reload };
 }
 
 export function StandardHome() {
@@ -98,7 +101,7 @@ export function StandardHome() {
   const org = hr.active?.organization_id ?? null;
   const orgRef = hr.orgRef;
   const employers = hr.scope.employers;
-  const { reviews, cycles, requests, people, error, reload } = useReviewsData(
+  const { reviews, cycles, cyclesReadOnly, requests, people, error, reload } = useReviewsData(
     org,
     JSON.stringify(employers.map((e) => [e.organization_id, e.name])),
   );
@@ -186,7 +189,22 @@ export function StandardHome() {
   ];
 
   const peopleColumns: MatrxColumnDef<StartRow>[] = [
-    { id: "name", header: "Employee", accessorFn: (p) => p.name, filter: "text", width: 240, frozen: true },
+    {
+      id: "name",
+      header: "Employee",
+      accessorFn: (p) => p.name,
+      filter: "text",
+      width: 240,
+      frozen: true,
+      cell: (p) =>
+        p.employeeId ? (
+          <Link className="hover:underline" href={hrEmployeeHref(p.employeeId, null, { org: p.organizationId })}>
+            {p.name}
+          </Link>
+        ) : (
+          p.name
+        ),
+    },
     ...(employers.length > 1
       ? [{ id: "employer", header: "Employer", accessorFn: (p: StartRow) => p.employerName, filter: "text" as const, width: 200 }]
       : []),
@@ -364,7 +382,7 @@ export function StandardHome() {
                   toolbar={{
                     title: "Cycles",
                     searchPlaceholder: "Search cycles",
-                    add: { onAdd: () => setCreating(true) },
+                    ...(cyclesReadOnly ? {} : { add: { onAdd: () => setCreating(true) } }),
                   }}
                   detail={{ enabled: false }}
                   copy={cycleCopy}
@@ -375,9 +393,11 @@ export function StandardHome() {
                   icon={<ClipboardCheck />}
                   title="No review cycles yet"
                   action={
-                    <Button icon={<Plus />} variant="primary" onClick={() => setCreating(true)}>
-                      New cycle
-                    </Button>
+                    cyclesReadOnly ? undefined : (
+                      <Button icon={<Plus />} variant="primary" onClick={() => setCreating(true)}>
+                        New cycle
+                      </Button>
+                    )
                   }
                 />
               )}

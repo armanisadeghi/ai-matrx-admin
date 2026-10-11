@@ -93,7 +93,8 @@ export interface AttentionAgentPayload {
 export interface AttentionCopy {
   label: string;
   human: () => string;
-  agent: () => AttentionAgentPayload;
+  /** May read more (a record's occurrences) when pressed. */
+  agent: () => AttentionAgentPayload | Promise<AttentionAgentPayload>;
 }
 
 export interface AttentionItem {
