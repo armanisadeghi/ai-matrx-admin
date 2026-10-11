@@ -17,7 +17,9 @@
 #   release-admin:  -> admin only
 #   release-demos:  -> demos only
 #   release-lab:    -> lab only
-#   release-all:    -> every project (lab included, so it never goes stale)
+#   release-all:    -> main always; admin/demos/lab only when their own pages changed or
+#                      their last build is >= 60 min old (scripts/satellite-builds.mjs);
+#                      `[all-sites]` in the message builds every project
 # Every other push is skipped. Never search earlier commits for a release
 # prefix: while a release is still building, the production SHA lags main, so
 # range scanning makes every later ordinary push rediscover the same release

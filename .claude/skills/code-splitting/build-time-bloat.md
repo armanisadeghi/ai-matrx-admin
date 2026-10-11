@@ -47,3 +47,8 @@ Guard: `node scripts/check-server-trace-scope.mjs [.next]` after a build lists e
 ## The build cache (2026-10-10)
 
 Turbopack's persistent cache is kept in S3, not Vercel's build cache (too big for its 4.75 GB cap): `scripts/build-cache.mjs` restores it before `next build` and saves it after, at most every 120 min. Which projects use it is ONE constant, `BUILD_CACHE_PROFILES` in `scripts/build-cache-policy.cjs`. Per release: `[cold-build]` in the message compiles from scratch and stores a fresh cache; `[no-cache]` skips it entirely. A build that "got slow" may simply have restored nothing — read its `[build-cache]` line before hunting the graph. Compare cold builds with cold builds and warm with warm.
+
+## Fewer builds, cheaper builds (2026-10-11, Arman: ~50 releases a day need not all be complete)
+
+- **Satellites:** on `release-all:`, admin/demos/lab build only when their own route group changed or their last build is ≥ 60 min old (`scripts/satellite-builds.mjs`, state in S3, one `[satellite] BUILD|SKIP` line in the ignore step). `[all-sites]` or a site-specific release prefix always builds. A satellite that "didn't pick up" a shared-code change within the hour is the thing to investigate; inside the hour it is by design.
+- **Sandbox stylesheet:** reused for up to 24 h when its style sources are unchanged (`[kind-sandbox-css]` line). A new Tailwind class can be unstyled inside sandboxed shapes until the daily rebuild — `[fresh-css]` fixes it now.

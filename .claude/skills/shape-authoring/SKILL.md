@@ -258,6 +258,12 @@ immediately and fills in:
 </layout>
 
 <design>
+- **Unstyled element inside the sandbox frame? Check the daily stylesheet first.** On Vercel the
+  frame's stylesheet (`public/kind-sandbox.css`) is rebuilt at most once a day: a Tailwind class used
+  for the FIRST time in a repo file since the last rebuild is missing from it until the next one
+  (the main app is unaffected). The release's build log has one `[kind-sandbox-css] REUSED …` or
+  `BUILT …` line saying which happened. Fix now: put `[fresh-css]` in the next release message.
+  Rule + reason: `features/content-ir/sandbox/build-kind-sandbox.ts` § THE DAILY STYLESHEET.
 - Modern, professional, delicate. Semantic Tailwind tokens only: `bg-card`, `bg-muted`,
   `text-foreground`, `text-muted-foreground`, `border-border`, `text-primary` and their variants.
   No hex colors, no arbitrary values, no emojis in the interface.
