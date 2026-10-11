@@ -10,7 +10,7 @@
 import { useEffect, useState, useTransition } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { BellRing, CheckCircle2, Circle, Copy, Download, Eye, FileText, LayoutTemplate, PenLine, RotateCw, ShieldCheck, XCircle } from "lucide-react";
+import { BellRing, CheckCircle2, Circle, Copy, Download, Eye, FileText, LayoutTemplate, Lock, PenLine, RotateCw, ShieldCheck, XCircle } from "lucide-react";
 
 import { Badge, Button, Field, SegmentedControl, Switch } from "@ai-matrx/design-system/controls";
 import { downloadFile } from "@ai-matrx/kit/download";
@@ -40,7 +40,7 @@ import {
   type EnvelopeActAnswer,
   type EnvelopeState,
 } from "./service";
-import { SIGNER_STATUS_LABEL, signHref, statusLabel } from "./types";
+import { LOCKED_RECIPIENT_REASON, LOCKED_RECIPIENT_STATUSES, SIGNER_STATUS_LABEL, signHref, statusLabel } from "./types";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 const PdfPreview = dynamic(() => import("@/features/pdf/components/viewer/PdfPreview"), {
@@ -79,6 +79,7 @@ const REFUSAL_TEXT: Record<string, string> = {
   envelope_expired: "This envelope expired.",
   cannot_void_completed: "A completed envelope cannot be voided.",
   waiting_on_earlier_position: "That signer's turn has not come yet.",
+  recipient_locked: "They have already acted. Void and send a corrected copy.",
 };
 
 const ROLE_LABEL: Record<string, string> = { signer: "Signs", viewer: "Needs to view", cc_recipient: "Receives a copy" };
@@ -129,6 +130,7 @@ export function EnvelopeDetail({ envelopeId }: { envelopeId: string }) {
   const [voidOpen, setVoidOpen] = useState(false);
   const [voidReason, setVoidReason] = useState("");
   const [resendFor, setResendFor] = useState<{ id: string; email: string; outsider: boolean } | null>(null);
+  const [lockedFor, setLockedFor] = useState<{ name: string; status: string } | null>(null);
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [templateOpen, setTemplateOpen] = useState(false);
   const [templateSaving, setTemplateSaving] = useState(false);
@@ -213,13 +215,17 @@ export function EnvelopeDetail({ envelopeId }: { envelopeId: string }) {
   const composition = (draft && "composition" in draft ? draft.composition : draft) as EnvelopeDraftV1 | null | undefined;
   const reminders = state.scheduledNotices.filter((n) => text(n, "status") === "scheduled" || text(n, "status") === "pending");
 
+  function makeCopy() {
+    startNavigation(() => router.push(`/esign/new?copy=${envelopeId}&name=${encodeURIComponent(title)}`));
+  }
+
   const actions: RecordPageAction[] = [
     ...(mySigner
       ? [{ label: "Sign now", icon: PenLine, primary: true, disabled: navigating, onPress: () => startNavigation(() => router.push(signHref(envelopeId))) }]
       : []),
     ...(isOpen ? [{ label: "Remind", icon: BellRing, disabled: busy !== null, onPress: () => void run("remind", () => remindEnvelope(dispatch, envelopeId), "Reminder sent.") }] : []),
     { label: "Download", icon: Download, onPress: () => setDownloadOpen(true) },
-    { label: "Make a copy", icon: Copy, onPress: () => startNavigation(() => router.push(`/esign/new?copy=${envelopeId}&name=${encodeURIComponent(title)}`)) },
+    { label: "Make a copy", icon: Copy, onPress: makeCopy },
     ...(composition ? [{ label: "Save as template", icon: LayoutTemplate, onPress: () => setTemplateOpen(true) }] : []),
     ...(isOpen ? [{ label: "Void", icon: XCircle, destructive: true, disabled: busy !== null, onPress: () => setVoidOpen(true) }] : []),
   ];
@@ -260,6 +266,7 @@ export function EnvelopeDetail({ envelopeId }: { envelopeId: string }) {
                 const id = String(s.id);
                 const st = text(s, "status") ?? "pending";
                 const signed = st === "signed";
+                const locked = LOCKED_RECIPIENT_STATUSES.has(st);
                 const role = text(s, "role") ?? "signer";
                 const prog = state.progress[id];
                 const next = reminders.find((n) => text(n, "signer_id") === id);
@@ -274,10 +281,20 @@ export function EnvelopeDetail({ envelopeId }: { envelopeId: string }) {
                       <div className="truncate type-secondary text-muted-foreground">{text(s, "email")}</div>
                     </div>
                     <div className="shrink-0 text-right type-secondary text-muted-foreground">
-                      <div>{!signed && st !== "declined" && ["voided", "expired"].includes(text(e, "status") ?? "") ? (text(e, "status") === "voided" ? "Voided" : "Expired") : (SIGNER_STATUS_LABEL[st] ?? humanize(st))}</div>
+                      <div>{!locked && ["voided", "expired"].includes(text(e, "status") ?? "") ? (text(e, "status") === "voided" ? "Voided" : "Expired") : (SIGNER_STATUS_LABEL[st] ?? humanize(st))}</div>
                       {signed ? <div>{when(text(s, "signed_at"))}</div> : prog && prog.required_total > 0 ? <div className="tabular-nums">{prog.required_done} of {prog.required_total} fields</div> : next ? <div>Reminder {when(text(next, "deliver_at"))}</div> : text(s, "viewed_at") ? <div>Viewed {when(text(s, "viewed_at"))}</div> : null}
                     </div>
-                    {isOpen && !signed && st !== "declined" && (
+                    {locked && (
+                      <Button
+                        icon={<Lock />}
+                        variant="quiet"
+                        aria-label={`${text(s, "full_name") ?? "This recipient"} is locked`}
+                        title={LOCKED_RECIPIENT_REASON[st]}
+                        className="print:hidden"
+                        onClick={() => setLockedFor({ name: text(s, "full_name") ?? "This recipient", status: st })}
+                      />
+                    )}
+                    {isOpen && !locked && (
                       <Button
                         icon={<RotateCw />}
                         variant="quiet"
@@ -418,7 +435,7 @@ export function EnvelopeDetail({ envelopeId }: { envelopeId: string }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Void this envelope</DialogTitle>
-            <DialogDescription>Every signing link stops working. You can send a new one later.</DialogDescription>
+            <DialogDescription>Every signing link stops working and no one else can sign. Make a copy to send a corrected one.</DialogDescription>
           </DialogHeader>
           <ProTextarea value={voidReason} placeholder="Sent the wrong version" onChange={(ev) => setVoidReason(ev.target.value)} />
           <DialogFooter>
@@ -430,6 +447,38 @@ export function EnvelopeDetail({ envelopeId }: { envelopeId: string }) {
               onClick={() => void run("void", () => voidEnvelope(dispatch, envelopeId, voidReason.trim()), "Envelope voided.").then((ok) => ok && setVoidOpen(false))}
             >
               Void
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={lockedFor !== null} onOpenChange={(open) => !open && setLockedFor(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="h-4 w-4 shrink-0 text-muted-foreground" />
+              {lockedFor?.name}
+            </DialogTitle>
+            <DialogDescription>
+              {lockedFor ? LOCKED_RECIPIENT_REASON[lockedFor.status] : null} {isOpen ? "To change them, void this envelope and send a corrected copy." : "To change them, send a corrected copy."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="quiet" onClick={() => setLockedFor(null)}>Close</Button>
+            {isOpen && (
+              <Button
+                variant="danger"
+                icon={<XCircle />}
+                onClick={() => {
+                  setLockedFor(null);
+                  setVoidOpen(true);
+                }}
+              >
+                Void
+              </Button>
+            )}
+            <Button variant="primary" icon={<Copy />} disabled={navigating} onClick={makeCopy}>
+              Make a copy
             </Button>
           </DialogFooter>
         </DialogContent>

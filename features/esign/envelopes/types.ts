@@ -64,6 +64,22 @@ export const SIGNER_STATUS_LABEL: Record<string, string> = {
   delegated: "Passed on",
   delivery_failed: "Not delivered",
   expired: "Expired",
+  acknowledged: "Reviewed",
+};
+
+/**
+ * A recipient in one of these states has ACTED and is locked (owner ruling 2026-10-10, Docusign "Correct"):
+ * nothing about them changes and they are never removed — the database refuses it by name
+ * (`recipient_locked`, `esign._acted`, migration esign_parity_27). The way out is Void + a corrected copy.
+ */
+export const LOCKED_RECIPIENT_STATUSES: ReadonlySet<string> = new Set(["signed", "declined", "delegated", "acknowledged"]);
+
+/** One short line for why a locked recipient cannot change. */
+export const LOCKED_RECIPIENT_REASON: Record<string, string> = {
+  signed: "Signed, so their details are locked.",
+  declined: "Declined, so their details are locked.",
+  delegated: "Passed it on, so their details are locked.",
+  acknowledged: "Finished reviewing, so their details are locked.",
 };
 
 // ─── sending: recipients and placed fields ───────────────────────────────────────

@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import type { DraftField, EnvelopeDraftV1, EnvelopeTemplateV1 } from "../../contract/draft";
 import type { FieldKindV2 } from "../../contract/fieldModel";
 import { useSenderName } from "../useSenderName";
+import { withPlacedBox } from "../fieldSizing";
 import { clampBox, effectiveSubject, fieldRecipients, newField, newId, sendBlockers } from "../model";
 import { useDraftHistory } from "../history";
 import { useDraftSync, type SaveStatus } from "../useDraftSync";
@@ -215,7 +216,7 @@ export function EsignEditor(props: EsignEditorProps) {
         toast.error("Add someone to sign first.");
         return;
       }
-      const f = newField(kind, { document_key, recipient_key: who, page, cx, cy }, draft.fields);
+      const f = withPlacedBox(newField(kind, { document_key, recipient_key: who, page, cx, cy }, draft.fields));
       let groups = draft.groups;
       if (kind === "radio") {
         const g = draft.groups.filter((x) => x.kind === "radio" && x.recipient_key === who).at(-1);

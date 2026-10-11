@@ -34,3 +34,30 @@ separate live surface (`workbook-service.ts`, `document-service.ts`, `/workbooks
 **Workbook collab v2 — ✅ DONE (2026-06-12):**
 - ✅ Implemented, verified (`collab/verify-collab.ts` 10/10 incl. real-Broadcast e2e), and flag flipped ON at `/workbooks/[id]`. Architecture + the three bugs the verify gate caught are documented in `collab/FEATURE.md`.
 - ⏳ v2.1 polish (optional): pixel-positioned cursor rings over the actual cell (currently a toolbar presence strip); repurpose `useWorkbookRealtime` to log-only.
+
+## Table link — a custom table and a sheet, synced on demand (2026-10-10)
+
+`table-link/` is the one module. A custom table opens as a workbook ("Open as workbook" in the table
+header) or a tidy sheet becomes a table ("Make table" in the workbook toolbar, through the ONE
+`saveToTable` overlay — never a second importer); either way the sheet and the table are LINKED.
+
+- **Where the link lives:** `udt_workbooks.metadata.table_links[]` (system metadata, one home):
+  table id, sheet id, linked fields (field ↔ header, kind), `baseline_snapshot_id` (the snapshot
+  saved at the last sync), `last_synced_at`. The table side finds its workbooks by a `metadata @>`
+  read; nothing is written on the table.
+- **The sheet's rules:** row 1 is the header row; the hidden `Record ID` column carries each row's
+  record. Columns are found by header, never position. New rows → new records; new columns are
+  listed and ignored unless the person adds them as fields; other tabs, side formulas, notes and
+  formatting are never touched.
+- **Updates are previews, both ways, three-way** (`sync-plan.ts`, tested): sheet now × table now ×
+  baseline. An edit on one side wins; both → a named conflict defaulting to the side updated FROM.
+  Sheet → table goes through the seam's `bulkWrite` (insert / merge / archive) and writes new ids
+  back into the sheet; table → sheet writes cells in place through Univer (collab + autosave carry
+  them). The table page's "Update from workbook" / "Refresh workbook" open the workbook with
+  `?tableSync=update|refresh`, where the same dialog runs — one apply path.
+- **Broken rules** are named by column ("Column B was "Stage", now "Pipeline stage"") with Restore
+  header, or "Export fresh copy" (a new linked workbook; this one unlinks). Validation offers,
+  never blocks — only a missing id column stops an update.
+- Field types: choice → dropdown, multi-choice → multi dropdown, boolean → checkbox, dates →
+  date validation + format, numbers/currency/percent → number formats, relations / lookups /
+  formulas / rollups / stamps / JSON → read-only words (edits there are ignored and counted).

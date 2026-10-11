@@ -162,7 +162,6 @@
     "sentence-under-title|app/(core)/tools/pdf-extractor/PdfStudioRouteClient.tsx",
     "sentence-under-title|app/(link)/error.tsx",
     "sentence-under-title|app/(link)/q/[token]/ActionRunner.tsx",
-    "sentence-under-title|app/(link)/sign/[token]/SignRunner.tsx",
     "sentence-under-title|app/(portal)/portal/c/[slug]/page.tsx",
     "sentence-under-title|app/(portal)/portal/c/[slug]/r/[recordId]/page.tsx",
     "sentence-under-title|app/(transitional)/local/page.tsx",

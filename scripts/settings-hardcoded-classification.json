@@ -674,12 +674,6 @@
       "reason": "Keeps the WHOLE token mint — all three attempts and their backoff — inside Vercel's serverless invocation budget, so a black-holed orchestrator socket ends as this route's own abort rather than as FUNCTION_INVOCATION_TIMEOUT, which kills the caller's retry path with it. A hosting-platform constraint we do not own, not tunable business behaviour. (Renamed from TOKEN_MINT_ATTEMPT_TIMEOUT_MS when the budget moved from per-attempt to whole-mint; same constant, same argument.)"
     },
     {
-      "file": "matrx-frontend/app/api/sign/[token]/route.ts",
-      "name": "MAX_IMAGE_CHARS",
-      "kind": "protocol",
-      "reason": "Bounds a base64 signature-image payload to a generous fixed ceiling well above any real drawing; a payload sanity check, not an org preference."
-    },
-    {
       "file": "matrx-frontend/components/layout/AuthSessionWatcher.tsx",
       "name": "EMPTY_COOKIE_CONFIRM_MS",
       "kind": "ui-timing",
