@@ -62,11 +62,15 @@ export function createMatrxImageStore(ports: ImageStorePorts) {
         throw error;
       }
       const source = MATRX_IMAGE_PREFIX + fileId;
+      // Univer measures the picture from base64Cache before it inserts (an empty one throws, nothing is
+      // inserted). A blob URL of the file just chosen serves that and paints it; it is never saved.
+      const localUrl = URL.createObjectURL(file);
+      blobUrls.set(fileId, Promise.resolve(localUrl));
       return {
         imageId: generateRandomId(6),
         imageSourceType: ImageSourceType.URL,
         source,
-        base64Cache: "",
+        base64Cache: localUrl,
         status: ImageUploadStatusType.SUCCUSS,
       };
     },
