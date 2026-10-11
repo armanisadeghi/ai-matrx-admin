@@ -128,7 +128,7 @@ describe("update table from sheet", () => {
     expect(plan.issues).toContainEqual(expect.objectContaining({ kind: "missing_header", header: "Stage", column: "B", found: "Pipeline stage" }));
     expect(describeIssue(plan.issues[0])).toBe('Column B was "Stage", now "Pipeline stage"');
     expect(plan.changed.map((c) => c.changes.map((x) => x.header))).toEqual([["Company"]]);
-    expect(plan.located.extraColumns.map((c) => c.header)).toEqual(["Pipeline stage"]);
+    expect(plan.located.extraColumns).toEqual([]);
   });
 
   it("refuses to match anything when the id column is gone", () => {

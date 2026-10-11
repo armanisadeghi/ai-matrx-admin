@@ -87,7 +87,9 @@ export function locateColumns(sheet: ParsedSheet, link: Pick<TableLink, "fields"
     if (found.length > 1) issues.push({ kind: "duplicate_header", header: field.header, columns: found.map(columnLetter) });
     columns.set(field.field_name, found[0]);
   }
-  const known = new Set<number>([...columns.values(), ...(idCol === null ? [] : [idCol])]);
+  // A column that is the renamed header of a linked field is reported once, as the rename.
+  const renamed = issues.flatMap((i) => (i.kind === "missing_header" && i.col !== null && i.found !== null ? [i.col] : []));
+  const known = new Set<number>([...columns.values(), ...renamed, ...(idCol === null ? [] : [idCol])]);
   const extraColumns: ExtraColumn[] = [...sheet.headers.entries()]
     .filter(([col]) => !known.has(col))
     .filter(([col, header]) => !(norm(header) === norm(RECORD_ID_HEADER) && col !== idCol))
