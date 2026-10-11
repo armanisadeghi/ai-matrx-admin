@@ -7,7 +7,7 @@
     "check:session-handover:self-test": "node scripts/check-session-handover.mjs --self-test",
     "dev": "bash scripts/agent-dev-server.sh start",
     "build": "pnpm check:private-diagnostics && ts-node scripts/generate-manifest.ts && pnpm generate:surface-index && pnpm build:sw && pnpm build:kind-sandbox && pnpm build:pdfjs-worker && pnpm build:next",
-    "build:next": "pnpm check:private-diagnostics && node scripts/build-cache.mjs restore && next build && node scripts/build-cache.mjs save && node scripts/check-turbopack-chunk-identities.mjs && node scripts/check-server-trace-scope.mjs && node scripts/satellite-builds.mjs record",
+    "build:next": "pnpm check:private-diagnostics && node scripts/build-cache.mjs restore && node scripts/next-build-stable-env.mjs && node scripts/build-cache.mjs save && node scripts/check-turbopack-chunk-identities.mjs && node scripts/check-server-trace-scope.mjs && node scripts/satellite-builds.mjs record",
     "build:sw": "tsx features/files/cache/service-worker/build-sw.ts",
     "build:kind-sandbox": "tsx features/content-ir/sandbox/build-kind-sandbox.ts",
     "harness:kind-sandbox": "tsx features/content-ir/sandbox/make-acceptance-harness.ts",

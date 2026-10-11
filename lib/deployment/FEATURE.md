@@ -92,5 +92,7 @@ constant-aware pass found**, and then **RED 87 (exit 2) at the deployed
 
 ## Change Log
 
+- 2026-10-11 — **Build identity at request time.** `build-identity.ts`: the root layout writes the deployment id and commit into `<meta name="matrx-deployment-id|matrx-commit-sha">`; browser code reads them with `currentDeploymentId()` / `currentCommitSha()` (provenance, overlay diagnostics, error-capture dedupe, perf vitals). `NEXT_PUBLIC_DEPLOYMENT_ID` is gone from `next.config.js` and `NEXT_PUBLIC_VERCEL_*` is stripped from `next build` — a per-build value compiled into the bundle defeated the persistent build cache (THE BUILD-CACHE LAW, code-splitting skill).
+
 - 2026-09-30 — Kept the auth-free Shape sandbox shell and assets on every deployment origin; the proxy preserves its route-owned iframe CSP while skipping session and capture work.
 - 2026-09-08 — Shared loaded-document provenance now accompanies canonical error persistence, retaining occurrence-time identity across the debounce.
