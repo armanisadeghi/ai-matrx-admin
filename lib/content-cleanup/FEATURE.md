@@ -120,6 +120,10 @@ Rules on top of the shared invariants:
 
 ## Change log
 
+- `2026-10-11` — **`remove-blank-lines` added** (extra group, off by default): deletes
+  every empty line while keeping each line on its own line (`1\n\n2` → `1\n2`). One
+  blank line is kept beside a protected block so markdown still parses it as a block.
+  Tests: `__tests__/remove-blank-lines.test.ts`.
 - `2026-07-25` — **Region operations added** (`region-operations.ts`): `condense-json`
   / `minify-json` / `expand-json`, the first ops allowed to rewrite a *protected*
   region — always through the new `lib/json-format` parser+writer, never a regex,

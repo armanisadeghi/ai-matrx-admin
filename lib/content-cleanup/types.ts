@@ -45,6 +45,7 @@ export type CleanupOperationId =
   | "collapse-spaces"
   | "trim-trailing-whitespace"
   | "collapse-blank-lines"
+  | "remove-blank-lines"
   | "trim-document-edges";
 
 /**

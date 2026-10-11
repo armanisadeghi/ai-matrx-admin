@@ -59,6 +59,9 @@ const SMART_SINGLE_QUOTES = new RegExp(
   `[${chars(0x2018, 0x2019, 0x201a, 0x201b, 0x2032)}]`,
   "g",
 );
+/** The orchestrator's protected-region sentinels (see clean.ts). */
+const PROTECTED_OPEN = String.fromCodePoint(0xe000);
+const PROTECTED_CLOSE = String.fromCodePoint(0xe001);
 const ELLIPSIS = new RegExp(chars(0x2026), "g");
 const BULLET_GLYPHS = new RegExp(
   `^(\\s*)[${chars(
@@ -222,6 +225,31 @@ export const CLEANUP_OPERATIONS: CleanupOperationDef[] = [
         end: m.index + m[0].length,
         replacement: "\n\n",
       })),
+    run(t) {
+      return fromEdits(t, this.edits(t));
+    },
+  },
+  {
+    id: "remove-blank-lines",
+    human: "Removed blank lines between lines",
+    label: "Remove all blank lines",
+    description: "Delete every empty line; lines are never joined.",
+    defaultEnabled: false,
+    group: "extra",
+    // A run of newlines (with any whitespace-only lines between) becomes one
+    // newline. Next to a protected block (code, table, JSON…) one blank line is
+    // kept so markdown still sees the block as its own block.
+    edits: (t) =>
+      regexEdits(t, /\n(?:[ \t]*\n)+/g, (m) => {
+        const end = m.index + m[0].length;
+        const touchesBlock =
+          t[m.index - 1] === PROTECTED_CLOSE || t[end] === PROTECTED_OPEN;
+        return {
+          start: m.index,
+          end,
+          replacement: touchesBlock ? "\n\n" : "\n",
+        };
+      }).filter((e) => t.slice(e.start, e.end) !== e.replacement),
     run(t) {
       return fromEdits(t, this.edits(t));
     },
