@@ -44,6 +44,8 @@ const note = {
 export function seedNote(): void {
   seed("workbench.notes", [note]);
   seedRpc("get_notes_shared_with_me", []);
+  // platform.home_labels: names the homes a note lives in that the scope tree does not carry (a read).
+  seedRpc("home_labels", []);
   // The notes provider owns `custom_fields` and reads the note's values once
   // (features/unified-data/customFieldsRead.ts) — no custom values yet.
   seedRpc("entity_record_read", {});

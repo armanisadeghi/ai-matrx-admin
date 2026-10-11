@@ -33,9 +33,11 @@ import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 // The lazy menu body pulls the whole action engine; the question here is only
 // whether the right-click REACHES the shell.
-jest.mock("next/dynamic", () => () => function TestMenuContent() {
-  return null;
-});
+jest.mock("@ai-matrx/context-menu/menu-content", () => ({
+  AlchemyMenuContent: function TestMenuContent() {
+    return null;
+  },
+}));
 jest.mock("@ai-matrx/kit/media-query", () => ({ ...jest.requireActual("@ai-matrx/kit/media-query"), useIsMobile: () => false }));
 jest.mock("@ai-matrx/chat/agents/hooks/useWidgetHandle", () => ({
   useOptionalWidgetHandle: () => null,

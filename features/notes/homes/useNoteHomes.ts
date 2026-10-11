@@ -25,6 +25,10 @@ export interface UseNoteHomesReturn {
   organizations: ReturnType<typeof useWholeScopeTree>["organizations"];
 }
 
+// The names of homes outside the scope tree, kept for the tab: the sidebar remounts (board hide/show,
+// route changes) and must not ask `platform.home_labels` again for homes it already named.
+const outsideTreeCache: Record<string, NoteHome | null> = {};
+
 export function useNoteHomes(): UseNoteHomesReturn {
   const tree = useWholeScopeTree();
   const noteOrganizationIds = useAppSelector(selectNoteOrganizationIds);
@@ -35,7 +39,7 @@ export function useNoteHomes(): UseNoteHomesReturn {
   // `platform.home_labels` — the door for homes the person meets — so the
   // sidebar never shows a nameless group. Never a direct read of
   // custom.context_scopes: people have no SELECT on it.
-  const [outsideTree, setOutsideTree] = useState<Record<string, NoteHome | null>>({});
+  const [outsideTree, setOutsideTree] = useState<Record<string, NoteHome | null>>(() => ({ ...outsideTreeCache }));
   useEffect(() => {
     if (tree.status !== "ready") return;
     const known = new Set<string>();
@@ -65,6 +69,7 @@ export function useNoteHomes(): UseNoteHomesReturn {
             isGeneral: row.is_general,
           };
         }
+        Object.assign(outsideTreeCache, next);
         setOutsideTree((prev) => ({ ...prev, ...next }));
       });
     return () => {

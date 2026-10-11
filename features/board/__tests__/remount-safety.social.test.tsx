@@ -131,6 +131,13 @@ function seedSocial() {
   seed("social.swipe_collection_item", []);
   // The post's stored media (none: the poster is the provider thumbnail).
   seedFetch(/\/social\/posts\/[^/]+\/media$/, () => []);
+  // The profile tile prices its "how many posts" fetch from the server's price list (staleTime 1h):
+  // a served list is read once and then kept, so waking or remounting must not read it again.
+  seedFetch(/\/social\/costs$/, () => ({
+    call_usd: 0.01,
+    operations: { track: 0.01 },
+    per_post: { instagram: { usd_per_page: 0.01, posts_per_page: 12 } },
+  }));
 }
 
 const textOf = (tile: TileHandle) => (tile.container.textContent ?? "").trim().slice(0, 80);

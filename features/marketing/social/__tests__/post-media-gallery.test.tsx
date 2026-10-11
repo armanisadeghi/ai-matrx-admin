@@ -3,6 +3,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PostMedia } from "../components/PostMedia";
+import { downloadUrl } from "@ai-matrx/kit/download";
 import { fetchPlaybackUrl, listPostMedia } from "../server";
 import type { PostMediaRef } from "../types";
 
@@ -10,6 +11,7 @@ import type { PostMediaRef } from "../types";
 jest.mock("../server", () => ({ fetchPlaybackUrl: jest.fn(), listPostMedia: jest.fn(), postThumbnailDoor: () => "thumbnail", socialErrorMessage: (_e: unknown, fallback: string) => fallback }));
 jest.mock("../postSpend", () => ({ confirmPostSpend: jest.fn() }));
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));
+jest.mock("@ai-matrx/kit/download", () => ({ downloadUrl: jest.fn() }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => "travel-org" }));
 
 let host: HTMLDivElement;
@@ -50,8 +52,10 @@ it("preserves mixed-media order and offers an authenticated download after decod
   await next();
   await act(async () => { host.querySelector("img")?.dispatchEvent(new Event("error")); });
   expect(host.textContent).toContain("Preview unavailable");
-  const download = host.querySelector<HTMLAnchorElement>("a[download]");
-  expect(download?.href).toBe("blob:/media/image_2");
+  const download = Array.from(host.querySelectorAll<HTMLButtonElement>("button")).find(b => b.textContent?.includes("Download saved file"));
+  expect(download).toBeDefined();
+  await act(async () => { download?.click(); });
+  expect(downloadUrl).toHaveBeenCalledWith("blob:/media/image_2", "image_2");
   expect(fetchPlaybackUrl).toHaveBeenLastCalledWith("/media/image_2", expect.objectContaining({ organizationId: "travel-org" }));
 });
 it("does not claim a provider cover is an archived carousel when no assets exist", async () => {

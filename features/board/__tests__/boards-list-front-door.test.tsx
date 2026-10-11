@@ -125,8 +125,8 @@ describe("the Board menu", () => {
     expect(rows.filter((r) => r.href === "/board/all")).toEqual([]);
   });
 
-  it("has ONE 'Boards' row, and it is the list", () => {
-    const boards = rows.filter((r) => r.label === "Boards");
+  it("has ONE 'Board' row, and it is the list", () => {
+    const boards = rows.filter((r) => r.label === "Board");
     expect(boards.map((r) => r.href)).toEqual(["/board"]);
   });
 });

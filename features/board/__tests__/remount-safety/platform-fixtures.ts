@@ -29,6 +29,8 @@ const KNOBS: Record<string, unknown> = {
   // platform.feature_knob billing.points_per_usd (live row, 20000): costs convert at it (components/cost/pointsRate.ts),
   // which every fetched-table bar and fetch estimate reads (features/data-sources/hooks.ts).
   "billing.points_per_usd": 20000,
+  // features/marketing/social/post-count.ts POST_COUNT_KNOB (platform default 50): the profile tile's "how many posts" control.
+  "social.profile_posts_default": 50,
 };
 
 export function seedPlatform(): void {
