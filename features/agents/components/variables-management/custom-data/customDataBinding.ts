@@ -41,19 +41,6 @@ export function shapeWords(shape: CustomDataShape): string {
   }
 }
 
-export const MISSING_CHOICES: {
-  value: CustomDataBinding["missing"];
-  label: string;
-  hint: string;
-}[] = [
-  {
-    value: "absent",
-    label: "Say it's missing",
-    hint: "the agent is told there is no data",
-  },
-  { value: "block", label: "Stop the run", hint: "nothing runs without it" },
-];
-
 // The default row cap for a whole-table read is the feature knob
 // `agents.variable_binding.default_row_limit` (see useBindingKnobs.ts).
 

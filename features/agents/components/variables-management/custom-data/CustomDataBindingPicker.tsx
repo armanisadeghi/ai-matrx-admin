@@ -5,8 +5,8 @@
  *
  * Choose a table, then the whole table / one record / one field of a record.
  * Table and record reads get a row template (prefilled from the table's own
- * fields, with clickable placeholders), a whole-table read gets a row limit,
- * and every binding says what happens when the data is missing. The panel at
+ * fields, with clickable placeholders) and a whole-table read gets a row limit.
+ * No data means the agent gets an empty value (the variable rule). The panel at
  * the bottom shows EXACTLY what the agent will see, resolved by the server the
  * way a run resolves it (aidream `POST /agents/variable-bindings/preview`).
  *
@@ -51,7 +51,6 @@ import {
 } from "@/components/ui/creatable-picker";
 import type { CustomDataBinding } from "@ai-matrx/chat/agents/types/agent-definition.types";
 import {
-  MISSING_CHOICES,
   SHAPE_CHOICES,
   defaultTemplate,
   placeholdersFor,
@@ -146,11 +145,6 @@ export function CustomDataBindingPicker({
                   </>
                 )}
               </p>
-              <MissingChoice
-                binding={binding}
-                onChange={onChange}
-                readonly={readonly}
-              />
             </>
           )}
         >
@@ -163,11 +157,6 @@ export function CustomDataBindingPicker({
         </CustomDataRecordsScope>
       ) : (
         <>
-          <MissingChoice
-            binding={binding}
-            onChange={onChange}
-            readonly={readonly}
-          />
           <CustomDataBindingPreview
             binding={binding}
             variableName={variableName}
@@ -499,50 +488,8 @@ function BoundTableDetails({
         </div>
       )}
 
-      <MissingChoice
-        binding={binding}
-        onChange={onChange}
-        readonly={readonly}
-      />
-
       <CustomDataBindingPreview binding={binding} variableName={variableName} />
     </>
-  );
-}
-
-function MissingChoice({
-  binding,
-  onChange,
-  readonly,
-}: Pick<CustomDataBindingPickerProps, "binding" | "onChange" | "readonly">) {
-  return (
-    <div className="space-y-1.5">
-      <Label className="text-xs font-medium text-foreground">
-        When there is no data
-      </Label>
-      <Select
-        value={binding.missing}
-        onValueChange={(v) => {
-          const choice = MISSING_CHOICES.find((c) => c.value === v);
-          if (choice) onChange({ ...binding, missing: choice.value });
-        }}
-        disabled={readonly}
-      >
-        <SelectTrigger>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {MISSING_CHOICES.map((c) => (
-            <SelectItem key={c.value} value={c.value}>
-              <span>{c.label}</span>
-              <span className="ml-2 type-secondary text-muted-foreground hidden sm:inline">
-                — {c.hint}
-              </span>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
   );
 }
 

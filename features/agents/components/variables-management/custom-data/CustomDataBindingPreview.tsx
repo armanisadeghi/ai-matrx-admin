@@ -160,20 +160,17 @@ export function CustomDataBindingPreview({
         <>
           {state.outcome === "absent" && (
             <p className="inline-flex items-center gap-1 type-meta text-warning">
-              No data — the agent is told:
+              No data — the agent gets an empty value
               {state.absentReason && (
                 <InfoHint text={asClause(state.absentReason)} label="Why" />
               )}
             </p>
           )}
-          {state.outcome === "blocks_run" && (
-            <p className="type-meta text-warning">
-              No data — the run would stop
-            </p>
+          {state.text && (
+            <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words rounded bg-muted/50 p-2 font-mono type-meta text-foreground">
+              {state.text}
+            </pre>
           )}
-          <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words rounded bg-muted/50 p-2 font-mono type-meta text-foreground">
-            {state.text}
-          </pre>
           {state.outcome === "delivered" &&
             state.rowCount !== null &&
             state.notes.length === 0 && (
