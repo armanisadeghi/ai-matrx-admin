@@ -126,7 +126,10 @@ export function GoogleLinkControl({ adapter, editable }: { adapter: GoogleLinkAd
       const outcome = isSheet
         ? await createSheetFromWorkbook(state.connection.connectionId, adapter.title, content)
         : await createDocFromMarkdown(state.connection.connectionId, adapter.title, String(content ?? ""));
-      if (outcome.proposed) return proposed(outcome.assistId);
+      if (outcome.proposed) {
+        proposed(outcome.assistId);
+        return;
+      }
       const { file, remote, notes } = outcome.result;
       const now = new Date().toISOString();
       await saveLink({
@@ -188,7 +191,10 @@ export function GoogleLinkControl({ adapter, editable }: { adapter: GoogleLinkAd
       const outcome = isSheet
         ? await pushWorkbookToSheet(link.connectionId, link.fileId, content, link.remoteVersion, force)
         : { proposed: false as const, result: await pushMarkdownToDoc(link.connectionId, link.fileId, String(content ?? ""), link.remoteVersion, force) };
-      if (outcome.proposed) return proposed(outcome.assistId);
+      if (outcome.proposed) {
+        proposed(outcome.assistId);
+        return;
+      }
       const { status, remote, notes } = outcome.result;
       if (status === "conflict") {
         setConflict({ from: "push", remote });
@@ -233,9 +239,7 @@ export function GoogleLinkControl({ adapter, editable }: { adapter: GoogleLinkAd
 
   const trigger = (
     <Button
-      variant="ghost"
-      size="sm"
-      className="h-7 gap-1 px-2 text-xs"
+      variant="quiet"
       title={link ? `Linked to ${appName}` : `${appName}`}
       disabled={busy !== null}
     >

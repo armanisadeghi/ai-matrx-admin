@@ -72,6 +72,9 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { GoogleHomeStrip } from "@/features/google-workspace/linked/GoogleHomeStrip";
+import { googleLinkIn } from "@/features/google-workspace/linked/link-store";
+import { GoogleSheetsMark } from "@/features/google-workspace/linked/marks";
 
 /**
  * Pre-flight import file check. We deliberately do NOT use the `accept`
@@ -589,6 +592,14 @@ export default function WorkbooksLandingPage() {
       </BottomSheet>
       <div className="h-full overflow-y-auto scrollbar-none">
         <div className="w-full space-y-4 px-4 pb-4 pt-[calc(var(--shell-header-h)+1rem)]">
+          <GoogleHomeStrip
+            kind="workbook"
+            linked={workbooks.flatMap((wb) => {
+              const link = googleLinkIn(wb.metadata);
+              return link ? [{ id: wb.id, name: wb.workbook_name, link }] : [];
+            })}
+            onImported={(id) => router.push(`/workbooks/${id}`)}
+          />
           {!error && (workbooks.length > 0 || scope !== "all") ? (
             <>
               <DocumentsHubToolbar
@@ -705,6 +716,18 @@ export default function WorkbooksLandingPage() {
                       </span>
                       {/* An imported workbook knows the file it came from —
                           a relationship we can resolve must be reachable. */}
+                      {googleLinkIn(wb.metadata)?.webViewLink && (
+                        <a
+                          href={googleLinkIn(wb.metadata)?.webViewLink ?? undefined}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex shrink-0 items-center"
+                          title="Open in Google Sheets"
+                          aria-label="Open in Google Sheets"
+                        >
+                          <GoogleSheetsMark className="size-3.5" />
+                        </a>
+                      )}
                       {wb.original_file_id && (
                         <EntityDoorControls
                           token="file"

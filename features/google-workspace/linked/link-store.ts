@@ -91,5 +91,5 @@ export async function writeGoogleLink(
   if (result.status === "saved") return { ok: true };
   if (result.status === "not_found") return { ok: false, error: "This item could not be found." };
   if (result.status === "conflict") return { ok: false, error: "It changed while saving the Google link. Try again." };
-  return { ok: false, error: result.error };
+  return { ok: false, error: result.error instanceof Error ? result.error.message : String(result.error) };
 }

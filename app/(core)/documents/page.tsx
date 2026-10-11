@@ -25,6 +25,8 @@ import { toast } from "@/components/ui/use-toast";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { TapTargetButtonSolid } from "@ai-matrx/design-system/tap-target";
 import { DocumentListCard } from "@/features/documents/components/DocumentListCard";
+import { GoogleHomeStrip } from "@/features/google-workspace/linked/GoogleHomeStrip";
+import { googleLinkIn } from "@/features/google-workspace/linked/link-store";
 import { DocumentsHubTable } from "@/features/documents/components/DocumentsHubTable";
 import { DocumentsHubToolbar } from "@/features/documents/components/DocumentsHubToolbar";
 import {
@@ -251,6 +253,14 @@ export default function DocumentsLandingPage() {
             the content takes header clearance — otherwise it sits under the
             glass header and collides with the title and the New button. */}
         <div className="w-full space-y-4 p-1.5 pt-[var(--shell-header-h)]">
+          <GoogleHomeStrip
+            kind="document"
+            linked={documents.flatMap((doc) => {
+              const link = googleLinkIn(doc.metadata);
+              return link ? [{ id: doc.id, name: doc.document_name, link }] : [];
+            })}
+            onImported={(id) => router.push(`/documents/${id}`)}
+          />
           {!error && showToolbar ? (
             <>
               <DocumentsHubToolbar
