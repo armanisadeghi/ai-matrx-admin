@@ -20,7 +20,6 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
 import {
   Layers,
   ListChecks,
@@ -501,15 +500,9 @@ function TargetRow({
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-foreground">{meta.label}</span>
           {!available && (
-            <button
-              type="button"
-              onClick={() =>
-                void announceComingSoon("education.convert-target-generators")
-              }
-              className="rounded-full border border-border bg-muted px-1.5 py-0 text-[10px] font-medium uppercase tracking-wide text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-            >
-              Coming soon
-            </button>
+            <span className="rounded-full border border-border bg-muted px-1.5 py-0 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+              Unavailable
+            </span>
           )}
           {done && state.result.trust?.confidence && (
             <ConfidenceBadge confidence={state.result.trust.confidence} />

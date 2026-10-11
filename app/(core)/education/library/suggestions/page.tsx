@@ -1,6 +1,7 @@
 // Suggestion inbox — the deck owner reviews suggest-edits on their community
 // decks. Signed-in only; the RLS + RPC enforce owner-only access to the rows.
 
+import { loginHref } from "@/utils/auth/auth-destination";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -32,7 +33,7 @@ export default async function SuggestionInboxPage() {
         </div>
       );
     }
-    redirect(`/login?redirectTo=${encodeURIComponent(eduHref("library", "suggestions"))}`);
+    redirect(loginHref(eduHref("library", "suggestions")));
   }
 
   return (

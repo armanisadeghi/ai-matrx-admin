@@ -7,8 +7,8 @@
 // up/down reorder), and add a new card. Writes go through fcService
 // (RLS-gated — you can only edit sets you own); the VIEW-vs-EDIT permission
 // gate + duplicate-to-edit for view-only sharees is the Wave-5 sharing
-// follow-up. Image/audio card attachments via the canonical fileHandler are
-// NOT yet wired here — tracked as a Phase 1A fast-follow, not faked.
+// follow-up. Card images are wired (CardImageSlot, via the
+// canonical fileHandler); card audio is NOT yet wired — not faked.
 //
 // React Compiler is on: no manual useMemo / useCallback / React.memo.
 
@@ -612,26 +612,32 @@ export function EditSetView({ setId }: { setId: string }) {
 
 /** One card's inline editor — variant-aware (basic / cloze / matching),
  * dirty-tracked with a per-card save, a live-preview toggle, delete, and
- * up/down reorder. */
-function CardEditor({
+ * up/down reorder. THE card editor: the study deck's "Edit card" dialog mounts
+ * this same component (without reorder/delete), never a second editor. */
+export function CardEditor({
   card,
   index,
   count,
-  reordering,
+  reordering = false,
   mastery,
   onMove,
   onDelete,
   onImagesChanged,
+  onSaved,
 }: {
   card: CardWithDetails;
   index: number;
   count: number;
-  reordering: boolean;
+  reordering?: boolean;
   mastery: ItemMasteryRow | undefined;
-  onMove: (direction: -1 | 1) => void;
-  onDelete: () => void;
+  /** Omit to hide the up/down reorder controls. */
+  onMove?: (direction: -1 | 1) => void;
+  /** Omit to hide the delete control. */
+  onDelete?: () => void;
   /** A face image was attached/removed — refetch so the row shows it. */
   onImagesChanged: () => void;
+  /** Each autosave that landed — a host showing the card elsewhere refreshes. */
+  onSaved?: () => void;
 }) {
   const kind = asCardKind(card.card_kind);
 
@@ -689,6 +695,7 @@ function CardEditor({
                 }
               : { ...base, front: v.front.trim(), back: v.back.trim() };
       const res = await fcService.updateCard(card.id, patch);
+      if (!res.error) onSaved?.();
       return { error: res.error };
     },
   });
@@ -749,22 +756,26 @@ function CardEditor({
           <MasteryTierPill mastery={mastery} />
         </span>
         <div className="flex items-center gap-1">
-          <Button
-            icon={<ChevronUp />}
-            variant="quiet"
-            title="Move up"
-            aria-label={`Move card ${index + 1} up`}
-            disabled={index === 0 || reordering}
-            onClick={() => onMove(-1)}
-          />
-          <Button
-            icon={<ChevronDown />}
-            variant="quiet"
-            title="Move down"
-            aria-label={`Move card ${index + 1} down`}
-            disabled={index === count - 1 || reordering}
-            onClick={() => onMove(1)}
-          />
+          {onMove && (
+            <>
+              <Button
+                icon={<ChevronUp />}
+                variant="quiet"
+                title="Move up"
+                aria-label={`Move card ${index + 1} up`}
+                disabled={index === 0 || reordering}
+                onClick={() => onMove(-1)}
+              />
+              <Button
+                icon={<ChevronDown />}
+                variant="quiet"
+                title="Move down"
+                aria-label={`Move card ${index + 1} down`}
+                disabled={index === count - 1 || reordering}
+                onClick={() => onMove(1)}
+              />
+            </>
+          )}
           {kind !== CARD_KIND.matching && (
             <Button
               icon={preview ? (
@@ -778,13 +789,15 @@ function CardEditor({
               {preview ? "Edit" : "Preview"}
             </Button>
           )}
-          <Button
-            icon={<Trash2 />}
-            variant="quiet"
-            title="Delete card"
-            aria-label={`Delete card ${index + 1}`}
-            onClick={onDelete}
-          />
+          {onDelete && (
+            <Button
+              icon={<Trash2 />}
+              variant="quiet"
+              title="Delete card"
+              aria-label={`Delete card ${index + 1}`}
+              onClick={onDelete}
+            />
+          )}
           <AutosaveIndicator
             status={autosave.status}
             lastSavedAt={autosave.lastSavedAt}

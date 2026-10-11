@@ -3,6 +3,7 @@
 // Signed-in only; every creator_* RPC is gated on auth.uid() owning the row.
 // noindex — the PUBLIC page is /c/[handle].
 
+import { loginHref } from "@/utils/auth/auth-destination";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getServerAuth } from "@/utils/supabase/getServerAuth";
@@ -31,7 +32,7 @@ export default async function CreatorManagePage() {
         </div>
       );
     }
-    redirect(`/login?redirectTo=${encodeURIComponent("/education/creator")}`);
+    redirect(loginHref("/education/creator"));
   }
 
   return <CreatorDashboard />;
