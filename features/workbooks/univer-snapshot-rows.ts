@@ -6,11 +6,14 @@
  * pushes rows INTO a workbook; this reads the (possibly user-edited) values
  * back OUT so features can offer "edit in the workbook, then import your
  * changes". Values only (formulas come back as their cached value); first
- * sheet by `sheetOrder`. Reusable — do not fork a per-feature snapshot walker.
+ * sheet by `sheetOrder` unless a sheet id is named. A number shown through a date format reads as
+ * its ISO date (a spreadsheet keeps dates as day serials). Reusable — do not fork a per-feature
+ * snapshot walker. Callers: the workbook's "Make this sheet a table" (features/workbooks/table-link).
  */
 
 interface CellShape {
   v?: unknown;
+  s?: unknown;
 }
 
 interface SheetShape {
@@ -21,6 +24,7 @@ interface SheetShape {
 interface SnapshotShape {
   sheetOrder?: string[];
   sheets?: Record<string, SheetShape>;
+  styles?: Record<string, { n?: { pattern?: string } | null } | null>;
 }
 
 export interface SnapshotRows {
@@ -29,9 +33,29 @@ export interface SnapshotRows {
   rows: string[][];
 }
 
-function cellText(cell: CellShape | null | undefined): string {
+type Styles = SnapshotShape["styles"];
+
+/** The number-format pattern a cell is shown through, if any. */
+function patternOf(cell: CellShape | null | undefined, styles: Styles): string | null {
+  const s = cell?.s;
+  const style = typeof s === "string" ? styles?.[s] : s && typeof s === "object" ? (s as { n?: { pattern?: string } }) : null;
+  const pattern = style?.n?.pattern;
+  return typeof pattern === "string" ? pattern : null;
+}
+
+const DAY_MS = 86_400_000;
+const SERIAL_EPOCH_MS = Date.UTC(1899, 11, 30);
+
+function cellText(cell: CellShape | null | undefined, styles?: Styles): string {
   const value = cell?.v;
   if (value === null || value === undefined) return "";
+  if (typeof value === "number") {
+    const pattern = patternOf(cell, styles)?.replace(/"[^"]*"/g, "").toLowerCase() ?? "";
+    if (/[dy]/.test(pattern)) {
+      const iso = new Date(Math.round(SERIAL_EPOCH_MS + value * DAY_MS)).toISOString();
+      return /h/.test(pattern) ? `${iso.slice(0, 10)} ${iso.slice(11, 16)}` : iso.slice(0, 10);
+    }
+  }
   return String(value);
 }
 
@@ -39,12 +63,16 @@ function cellText(cell: CellShape | null | undefined): string {
  * Extract the first worksheet of a Univer workbook snapshot as a string grid.
  * Returns null when the value is not snapshot-shaped or has no sheets.
  */
-export function univerSnapshotToRows(snapshot: unknown): SnapshotRows | null {
+export function univerSnapshotToRows(snapshot: unknown, options: { sheetId?: string } = {}): SnapshotRows | null {
   if (typeof snapshot !== "object" || snapshot === null) return null;
   const shape = snapshot as SnapshotShape;
   const sheets = shape.sheets ?? {};
-  const firstId =
-    shape.sheetOrder?.find((id) => sheets[id]) ?? Object.keys(sheets)[0];
+  const styles = shape.styles;
+  const firstId = options.sheetId
+    ? sheets[options.sheetId]
+      ? options.sheetId
+      : undefined
+    : (shape.sheetOrder?.find((id) => sheets[id]) ?? Object.keys(sheets)[0]);
   if (!firstId) return null;
   const sheet = sheets[firstId];
   const cellData = sheet?.cellData ?? {};
@@ -71,7 +99,7 @@ export function univerSnapshotToRows(snapshot: unknown): SnapshotRows | null {
     const row: string[] = [];
     const source = cellData[String(r)] ?? {};
     for (let c = 0; c <= maxCol; c += 1) {
-      row.push(cellText(source[String(c)]));
+      row.push(cellText(source[String(c)], styles));
     }
     rows.push(row);
   }

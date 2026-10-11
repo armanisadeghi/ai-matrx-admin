@@ -49,7 +49,8 @@ export function ConversationListPane({
   getApplicationScope,
   className,
 }: ConversationListPaneProps) {
-  const { conversations } = useConversations();
+  const { conversations, markRead, markUnread, setMuted, setArchived } =
+    useConversations();
   const { pins, toggle } = useMessagePins();
   const [menuConversation, setMenuConversation] =
     useState<ConversationSummary | null>(null);
@@ -87,6 +88,7 @@ export function ConversationListPane({
             ? pins.includes(menuConversation.conversation.id)
             : false,
           onTogglePin: toggle,
+          rowActions: { markRead, markUnread, setMuted, setArchived },
           ...(onSelect ? { onOpen: onSelect } : {}),
         }),
       ]}
@@ -95,6 +97,7 @@ export function ConversationListPane({
       <div className={cn("messages-native flex min-h-0 flex-col", className)}>
         <ConversationList
           pinnedConversationIds={pins}
+          onTogglePin={toggle}
           className="min-h-0 flex-1"
           {...(onSelect ? { onSelect } : {})}
           onNewConversation={

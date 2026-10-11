@@ -42,14 +42,15 @@ const SOURCE_FEATURE = sourceFeatureFromSurfaceName(DATA_TABLES_SURFACE) ?? "udt
  * The formula-writing job's offered values (Provision `data.formula_box`), by their declared keys.
  * A formula column's box: its purpose is a calculated column; the result's kind is the column's.
  */
-export function formulaHelpValues(ask: Pick<FormulaHelpAsk, "text" | "columns" | "mistake" | "functions">): SessionContextItem[] {
+export function formulaHelpValues(ask: Pick<FormulaHelpAsk, "text" | "columns" | "mistake" | "functions" | "purpose">): SessionContextItem[] {
   const named = (f: FormulaHelpAsk["columns"][number]) => f.label?.trim() || f.key;
   return [
     {
       id: "formula-purpose",
       key: "formula_purpose",
       label: "What this formula is for",
-      value: "A calculated column; every row shows the result.",
+      // A row action's Work out step says which column it sets (records-ui `FormulaHelpAsk.purpose`).
+      value: ask.purpose ?? "A calculated column; every row shows the result.",
     },
     {
       id: "formula-columns",

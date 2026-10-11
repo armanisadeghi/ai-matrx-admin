@@ -21,11 +21,17 @@
  */
 
 import {
+  Archive,
+  ArchiveRestore,
+  Bell,
+  BellOff,
   Copy,
   CornerUpLeft,
   Database,
   ExternalLink,
   Link2,
+  Mail,
+  MailOpen,
   Pin,
   PinOff,
 } from "lucide-react";
@@ -161,13 +167,56 @@ export function buildConversationMenuSection(args: {
   onOpen?: (conversationId: string) => void;
   isPinned?: boolean;
   onTogglePin?: (conversationId: string) => void;
+  /** The row actions the swipe offers — the package's `useConversations()` hands these over. */
+  rowActions?: {
+    markRead: (conversationId: ConversationSummary["conversation"]["id"]) => void;
+    markUnread: (conversationId: ConversationSummary["conversation"]["id"]) => void;
+    setMuted: (conversationId: ConversationSummary["conversation"]["id"], muted: boolean) => void;
+    setArchived: (conversationId: ConversationSummary["conversation"]["id"], archived: boolean) => void;
+  };
 }): ContextMenuExtraSection {
   const { conversation, onOpen } = args;
   const href = conversation
     ? conversationHref(conversation.conversation.id)
     : null;
 
+  const rowActions = args.rowActions;
   const items: ContextMenuExtraItem[] = [
+    ...(conversation && rowActions
+      ? [
+          conversation.unreadCount > 0
+            ? {
+                kind: "item" as const,
+                id: "dm-mark-read",
+                label: "Mark as read",
+                icon: MailOpen,
+                onSelect: () => rowActions.markRead(conversation.conversation.id),
+              }
+            : {
+                kind: "item" as const,
+                id: "dm-mark-unread",
+                label: "Mark as unread",
+                icon: Mail,
+                onSelect: () => rowActions.markUnread(conversation.conversation.id),
+              },
+          {
+            kind: "item" as const,
+            id: "dm-mute",
+            label: conversation.isMuted ? "Unmute" : "Mute",
+            icon: conversation.isMuted ? Bell : BellOff,
+            onSelect: () =>
+              rowActions.setMuted(conversation.conversation.id, !conversation.isMuted),
+          },
+          {
+            kind: "item" as const,
+            id: "dm-archive",
+            label: conversation.isArchived ? "Unarchive" : "Archive",
+            icon: conversation.isArchived ? ArchiveRestore : Archive,
+            onSelect: () =>
+              rowActions.setArchived(conversation.conversation.id, !conversation.isArchived),
+          },
+        ]
+      : []),
     ...(conversation && args.onTogglePin
       ? [
           {
