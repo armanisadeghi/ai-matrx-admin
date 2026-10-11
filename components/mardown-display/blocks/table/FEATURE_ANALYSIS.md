@@ -142,7 +142,7 @@ Only when the table is complete do features "magically come to life"!
 - Multi-step loader with dynamic messages based on row count
 - Redux integration for task management
 - Safety timeout (20 seconds) for large tables
-- Shows result with UserTableViewer
+- Shows result with the store grid (`UnifiedTable`)
 - "Open in New Tab" button (`/data/{table_id}`)
 
 **State Management:**
@@ -161,7 +161,7 @@ interface SavedTableInfo {
 
 **ViewTableModal Features (ViewTableModal.tsx):**
 - Full-screen modal (95vw × 95vh)
-- Embedded `UserTableViewer` component
+- Embedded store grid (`UnifiedTable`)
 - "Open in New Tab" button
 - Shows row/field counts
 

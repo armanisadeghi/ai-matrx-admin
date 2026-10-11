@@ -12,7 +12,7 @@ const K = MANDATE_KEYS;
 export const DATA_PLACES: FeaturePlaces = {
   feature: "data",
   label: "Data tables",
-  roots: ["features/data-tables", "components/user-generated-table-data", "app/(core)/data"],
+  roots: ["features/data-tables", "app/(core)/data"],
   places: [
     {
       // ONE table page (lane CHAIR-ONE-GRID): /data/<table> and every host that mounts it.

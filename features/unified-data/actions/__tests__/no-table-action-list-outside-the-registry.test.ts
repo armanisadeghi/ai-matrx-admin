@@ -26,7 +26,6 @@ const ROOT = process.cwd();
 const TABLE_TREES = [
   "features/unified-data",
   "features/data-tables",
-  "components/user-generated-table-data",
   "app/(core)/data",
 ];
 

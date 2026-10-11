@@ -90,7 +90,6 @@ export const ALLOWED: Array<{ repo: Repo; claims: string[]; why: string }> = [
     repo: "matrx-frontend",
     claims: [
       "app/(core)/data/**",
-      "components/user-generated-table-data/**",
       "features/data-tables/**",
     ],
     why: "the /data screen and the seam (features/data-tables/service.ts + data-source/*), GRID-PORT's, retired at the archive",
@@ -172,7 +171,7 @@ export const INTEGRATIONS: Integration[] = [
       {
         kind: "nowhere", repo: "matrx-frontend",
         pattern: "(?:from\\s*|import\\(\\s*)[\"'][^\"']*user-generated-table-data/UserTableViewer[\"']",
-        except: ["components/user-generated-table-data/**", "app/(core)/data/**", "app/(dev)/**", "features/data-tables/components/LocatedTableViewer.tsx"],
+        except: ["app/(core)/data/**", "app/(dev)/**", "features/data-tables/components/LocatedTableViewer.tsx"],
         says: "no host mounts the older grid by id without locating the table",
       },
       ...[
@@ -195,13 +194,13 @@ export const INTEGRATIONS: Integration[] = [
       {
         kind: "nowhere", repo: "matrx-frontend",
         pattern: "import\\s+\\{[^}]*\\b(?:createTable|addRow|addColumn|getTableDetails)\\b[^}]*\\}\\s*from\\s*[\"'][^\"']*user-table-utls/table-utils[\"']",
-        except: ["features/data-tables/service.ts", "components/user-generated-table-data/**", "app/(dev)/**"],
+        except: ["features/data-tables/service.ts", "app/(dev)/**"],
         says: "no runtime file imports an older birth or write door from table-utils",
       },
       {
         kind: "nowhere", repo: "matrx-frontend",
         pattern: "\\.rpc\\(\\s*[\"'`](?:create_new_user_table_dynamic|create_user_table_with_fields|add_data_row_to_user_table|append_rows_to_user_table|add_column_to_user_table)[\"'`]",
-        except: ["features/data-tables/service.ts", "features/data-tables/data-source/**", "components/user-generated-table-data/**", "app/(dev)/**"],
+        except: ["features/data-tables/service.ts", "features/data-tables/data-source/**", "app/(dev)/**"],
         says: "no runtime file calls an older birth door by name",
       },
     ],
@@ -240,7 +239,7 @@ export const INTEGRATIONS: Integration[] = [
       {
         kind: "nowhere", repo: "matrx-frontend",
         pattern: "\\.rpc\\(\\s*[\"'`](?:get_user_table_complete|get_user_table_data_paginated(?:_v2)?|get_full_table|get_user_tables)[\"'`]",
-        except: ["features/data-tables/service.ts", "features/data-tables/data-source/**", "components/user-generated-table-data/**", "app/(core)/data/**", "app/(dev)/**", "features/matrx-envelope/referenceResolvers.ts"],
+        except: ["features/data-tables/service.ts", "features/data-tables/data-source/**", "app/(core)/data/**", "app/(dev)/**", "features/matrx-envelope/referenceResolvers.ts"],
         says: "no runtime file outside the seam calls an older read door",
       },
     ],

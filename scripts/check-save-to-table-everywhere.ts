@@ -39,7 +39,6 @@ const REPO = join(dirname(fileURLToPath(import.meta.url)), "..");
 /** Where a person meets content that can hold rows. */
 export const CONTENT_ROOTS = [
   "app",
-  "components/user-generated-table-data",
   "features/page-extraction",
   "components/mardown-display",
   "features/canvas/artifact-types",
@@ -107,7 +106,6 @@ export const OFFERED_BY: Record<string, { by: readonly string[]; why: string }> 
 /** The only files that may make a table themselves, each with why. */
 export const BIRTH_HOMES: Record<string, string> = {
   "components/mardown-display/tables/SaveTableModal.tsx": "the older-store branch the saveToTable overlay opens, until the final switch",
-  "components/user-generated-table-data/CreateTableModal.tsx": "the older /data home's table builder: columns typed by hand with no rows (no shape to save), retired with the older store",
   "features/make/MakeHome.tsx": "/make's New table: an empty table named before anything is typed — no rows, no shape to save",
 };
 

@@ -2,7 +2,7 @@
  * Runtime scope builder for the `matrx-user/data-tables` surface.
  *
  * Called at Run time (never on mount) by the `SurfaceRuntimeProvider` that
- * `UserTableViewer` mounts on the `/data/[id]` route. It takes the viewer's
+ * `RecordStoreTableSurface` mounts around the store grid on the `/data/[id]` route. It takes the grid's
  * RAW live state and derives the declared values — nothing is fabricated: a
  * value the page genuinely does not have is OMITTED rather than faked, which
  * is what lets the manifest's "empty when …" descriptions stay true.
