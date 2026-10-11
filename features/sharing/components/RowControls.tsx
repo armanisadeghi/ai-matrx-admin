@@ -40,6 +40,9 @@ import { SHOWN_TO_ORDER, SHOWN_TO_WORDS } from "@/lib/list-scope/shownToWords";
 import { SearchEngineIndexedSwitch } from "@/features/sharing/indexed/SearchEngineIndexedSwitch";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+/** Every sentence the slot under "Shown to" can hold; all are laid in one grid cell. */
+const SAYS_SLOT_KEYS: ReadonlyArray<ShownTo | "default"> = [...SHOWN_TO_ORDER, "default"];
+
 export interface RowControlsProps {
   resourceType: ResourceType;
   resourceId: string;
@@ -223,13 +226,35 @@ export function RowControls({
         </div>
       )}
       {showShownTo && (
-        <p className="text-xs text-muted-foreground">
-          {shownTo
-            ? SHOWN_TO_WORDS[shownTo].says
-            : "Not set — the default for this type applies."}{" "}
-          A list setting, never who may open it.
-          {busy === "shown" && <Loader2 className="ml-1 inline h-3 w-3 animate-spin" />}
-        </p>
+        // ZERO LAYOUT SHIFT (Arman 2026-10-07): the sentence under "Shown to" changes with every
+        // choice and each one wraps to a different number of lines on a phone. The slot is a
+        // one-cell grid holding EVERY sentence, only the current one visible, so its height is the
+        // tallest one's at any width and nothing below it ever moves. The spinner's place is held
+        // too (invisible, never removed).
+        <div className="grid text-xs text-muted-foreground" data-shown-to-says-slot="">
+          {SAYS_SLOT_KEYS.map((v) => {
+            const current = (shownTo ?? "default") === v;
+            return (
+              <p
+                key={v}
+                className={cn("col-start-1 row-start-1", !current && "invisible")}
+                aria-hidden={!current}
+                data-shown-to-says={v}
+              >
+                {v === "default"
+                  ? "Not set — the default for this type applies."
+                  : SHOWN_TO_WORDS[v].says}{" "}
+                A list setting, never who may open it.
+                <Loader2
+                  className={cn(
+                    "ml-1 inline h-3 w-3 animate-spin",
+                    !(current && busy === "shown") && "invisible",
+                  )}
+                />
+              </p>
+            );
+          })}
+        </div>
       )}
 
       {showPublish && (

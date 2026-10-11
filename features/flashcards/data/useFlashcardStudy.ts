@@ -90,6 +90,9 @@ export interface UseFlashcardStudyResult {
       responseTranscript?: string;
       /** 1–5 confidence tap — drives the FSRS grade (see recordAttempt). */
       confidence?: number;
+      /** Grade this card instead of the one at `currentIndex` (Learn mode
+       *  runs its own staged queue over the loaded cards). */
+      cardId?: string;
     },
   ) => Promise<ItemMasteryRow | null>;
   /** True while a grade write is in flight. */
@@ -496,9 +499,12 @@ export function useFlashcardStudy(
       responseKind?: RecordAttemptInput["responseKind"];
       responseTranscript?: string;
       confidence?: number;
+      cardId?: string;
     },
   ): Promise<ItemMasteryRow | null> => {
-    const card = cards[currentIndex];
+    const card = extra?.cardId
+      ? cards.find((c) => c.id === extra.cardId)
+      : cards[currentIndex];
     if (!card) return null;
 
     setGrading(true);
@@ -560,7 +566,7 @@ export function useFlashcardStudy(
         setIsFlipped(false);
         // currentIndex stays put — the splice already shifted the next card
         // into this slot (or clamps naturally via the render below).
-      } else {
+      } else if (!extra?.cardId) {
         goTo(currentIndex + 1);
       }
       return mastery;

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Button } from "@ai-matrx/design-system";
 import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
 import {
   Select,
@@ -100,6 +101,9 @@ interface PermissionsListProps {
  * payload and every export covers ALL grants, not the visible slice.
  */
 const GRANT_PREVIEW = 12;
+
+/** The empty state's own box (icon, headline, detail, copy row); the first-read stand-in holds it too. */
+const EMPTY_STATE_MIN_HEIGHT = "min-h-[11rem]";
 
 /**
  * What is on the screen besides the grants, in a sentence a person reads.
@@ -201,9 +205,19 @@ export function PermissionsList({
     resource_name: context.resourceName ?? null,
   };
 
-  if (loading) {
+  // ZERO LAYOUT SHIFT (Arman 2026-10-07; lane SHARE-DIALOG-2). Every dialog action (a "Shown to"
+  // change, a grant, a revoke) raises `loading` while the list is re-read. This used to swap the
+  // whole list for a spinner box 88px shorter than the empty state, so everything under it
+  // (the add-a-person form, the organization line) jumped down and back up on every click.
+  // A re-read now keeps what is on screen and only says it is busy; the stand-in below is drawn
+  // only while there is nothing to keep, and it holds the empty state's own height.
+  if (loading && permissions.length === 0) {
     return (
-      <div className="flex items-center justify-center py-8">
+      <div
+        className={`flex items-center justify-center ${EMPTY_STATE_MIN_HEIGHT}`}
+        aria-busy="true"
+        data-grants-reserved=""
+      >
         <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
       </div>
     );
@@ -211,8 +225,11 @@ export function PermissionsList({
 
   if (permissions.length === 0) {
     return (
-      <div className="group text-center py-6 text-muted-foreground">
-        <Lock className="w-10 h-10 mx-auto mb-1.5 opacity-20" />
+      <div
+        className={`group flex flex-col items-center justify-center text-center py-6 text-muted-foreground ${EMPTY_STATE_MIN_HEIGHT}`}
+        data-grants-empty=""
+      >
+        <Lock className="w-10 h-10 mb-1.5 opacity-20" />
         <p className="text-sm">
           {alsoPending && alsoPending.count > 0 ? NO_GRANTS_YET_HEADLINE : NO_GRANTS_HEADLINE}
         </p>
@@ -326,7 +343,11 @@ export function PermissionsList({
     });
 
   return (
-    <div className="space-y-1">
+    <div
+      className={cn("space-y-1 transition-opacity", loading && "opacity-60")}
+      aria-busy={loading}
+      data-grants-busy={loading ? "true" : "false"}
+    >
       {/*
        * List-level copy + export. Both always cover ALL grants, never the
        * visible slice — the preview above is a rendering choice, and an export

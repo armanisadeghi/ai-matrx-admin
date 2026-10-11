@@ -145,6 +145,7 @@ export const defaultUserPreferences: UserPreferences = {
     matchPairCount: 8,
     testQuestionCount: 20,
     writeCardCount: 10,
+    learnRoundSize: 10,
     answerWith: "definition",
     learningGainOffers: {},
   },

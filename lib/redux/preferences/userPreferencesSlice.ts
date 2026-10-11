@@ -342,6 +342,8 @@ export interface FlashcardPreferences {
   testQuestionCount: number;
   /** Cards per Write round; 0 = every card (clamped to the deck). */
   writeCardCount: number;
+  /** Cards per Learn round; 0 = every unmastered card. */
+  learnRoundSize: number;
   /** Classic study / Learn: "definition" shows a basic card's front first
    *  (answer with the definition); "term" shows the back first. Cloze,
    *  matching and formula cards keep their natural direction. */
@@ -1234,6 +1236,7 @@ export const initializeUserPreferencesState = (
       matchPairCount: 8,
       testQuestionCount: 20,
       writeCardCount: 10,
+      learnRoundSize: 10,
       answerWith: "definition",
       learningGainOffers: {},
     },

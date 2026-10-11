@@ -55,21 +55,19 @@ export function usePromptBlockEditing({ agentId, text, onChange, textareaRef, wr
     [saveCaret],
   );
 
-  const pick = useCallback(
-    async (name: string) => {
-      const trigger = picker?.trigger ?? null;
-      setPicker(null);
+  const insertBlock = useCallback(
+    async (name: string, trigger: TypedTrigger | null): Promise<boolean> => {
       try {
         await blocks.declare(name);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Could not declare the block");
-        return;
+        return false;
       }
       const ta = textareaRef.current;
       const write = viewMode === "write" ? writeRef.current : null;
       if (write) {
         write.replaceSelection(blockToken(name));
-        return;
+        return true;
       }
       const caret = caretRef.current;
       const from = caret?.start ?? text.length;
@@ -82,8 +80,27 @@ export function usePromptBlockEditing({ agentId, text, onChange, textareaRef, wr
           ta.setSelectionRange(next.caret, next.caret);
         });
       }
+      return true;
     },
-    [picker, blocks, textareaRef, writeRef, viewMode, text, onChange],
+    [blocks, textareaRef, writeRef, viewMode, text, onChange],
+  );
+
+  const pick = useCallback(
+    async (name: string) => {
+      const trigger = picker?.trigger ?? null;
+      setPicker(null);
+      await insertBlock(name, trigger);
+    },
+    [picker, insertBlock],
+  );
+
+  /** The editor context menu's content blocks: `{{<name>}}` at the caret, declared on the agent. */
+  const insertFromMenu = useCallback(
+    async (block: { name: string; label: string }): Promise<boolean> => {
+      saveCaret();
+      return insertBlock(block.name, null);
+    },
+    [saveCaret, insertBlock],
   );
 
   /** Call with the textarea's new value and caret on every change: `{{<` opens the picker. */
@@ -170,5 +187,5 @@ export function usePromptBlockEditing({ agentId, text, onChange, textareaRef, wr
     </>
   );
 
-  return { toolbarButton, nodes, menuSections, highlight, noteTyping, declared, missing, openPicker };
+  return { toolbarButton, nodes, menuSections, insertFromMenu, highlight, noteTyping, declared, missing, openPicker };
 }

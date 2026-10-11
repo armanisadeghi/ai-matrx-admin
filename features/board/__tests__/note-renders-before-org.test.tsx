@@ -1,7 +1,7 @@
 /**
  * A NEW note tile shows its editor at once: it never waits for the organization lookup or for the
- * Draft folder. The draft is in the store on the tile's first render; the organization (the
- * resolver's answer — never one picked for the person) and the folder are settled behind it.
+ * organization. The draft is in the store on the tile's first render; the organization (the
+ * resolver's answer — never one picked for the person) is settled behind it.
  * Red before: the tile showed a skeleton until `resolveOrganization()` returned.
  */
 import { act, useState, useSyncExternalStore } from "react";
@@ -83,6 +83,6 @@ it("renders the editor before the organization resolves, then settles the placem
     resolveOrg("org-named-by-the-gate");
   });
   expect(placed).toHaveLength(1);
-  expect(placed[0]).toMatchObject({ organizationId: "org-named-by-the-gate", folderName: "Draft" });
+  expect(placed[0]).toMatchObject({ organizationId: "org-named-by-the-gate" });
   await act(async () => root.unmount());
 });

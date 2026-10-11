@@ -84,10 +84,10 @@ describe("a shortcut or binding run gets only what it mapped", () => {
       variables,
       [{ key: "current_note_id", label: "Note" }],
       null,
-      { alwaysOnKeys: ["current_note_folder"] },
+      { alwaysOnKeys: ["current_note_home"] },
     );
     expect(result.contextEntries.map((e) => e.key).sort()).toEqual([
-      "current_note_folder",
+      "current_note_home",
       "current_note_id",
     ]);
     expect(everythingSent(result)).not.toContain("PP-88213");

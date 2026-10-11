@@ -915,6 +915,7 @@ export function MessageItem({
           </div>
         ) : isEditing ? (
           <EditableContextMenu
+              onInsertPromptBlock={blockEditing.insertFromMenu}
             sourceFeature="agent-builder"
             surfaceName="matrx-user/agent-builder"
             // No `entity`: this textarea edits one few-shot example message
