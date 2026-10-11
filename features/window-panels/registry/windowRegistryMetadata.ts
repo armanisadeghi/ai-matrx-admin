@@ -1753,6 +1753,18 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
   },
 
   {
+    // One Data library source (/data/library): what it gives, its price, Get data.
+    // The body is features/data-sources/library/SourceDetail — data carries only `sourceKey`.
+    slug: "data-source",
+    overlayId: "dataSourceWindow",
+    kind: "window",
+    label: "Data Source",
+    defaultData: { sourceKey: null },
+    mobilePresentation: "fullscreen",
+    instanceMode: "singleton",
+  },
+
+  {
     // Compact Custom Dictionary context selector. Opened from the dictionary
     // indicator button on transcription/TTS surfaces; selection persists per
     // user per surface (user_surface_state) — data carries only `surfaceKey`.

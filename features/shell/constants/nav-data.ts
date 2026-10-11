@@ -561,6 +561,15 @@ export const DATA_NAV_CHILDREN: ShellNavChild[] = [
     color: "cyan",
   },
   {
+    // Every data source we can fetch into a table, at its own points price.
+    label: "Data Library",
+    href: "/data/library",
+    iconName: "Library",
+    description: "Reviews, places, products, jobs and more, ready to fetch",
+    color: "cyan",
+    dashboard: true,
+  },
+  {
     label: "Data Tables Window",
     href: "/data",
     iconName: NAV_WINDOW_PANEL_ICON,

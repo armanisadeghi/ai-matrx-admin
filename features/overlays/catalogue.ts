@@ -1149,6 +1149,11 @@ export const OVERLAY_CATALOGUE = {
     instanceMode: "singleton",
     isWindow: true,
   },
+  dataSourceWindow: {
+    label: "Data Source",
+    instanceMode: "singleton",
+    isWindow: true,
+  },
 } as const satisfies Record<string, OverlayCatalogueEntry>;
 
 /**

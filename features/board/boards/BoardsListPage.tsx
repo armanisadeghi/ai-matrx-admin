@@ -29,8 +29,9 @@ export function BoardsListPage() {
 }
 
 function BoardsRoute() {
-  const addKey = useSearchParams().get("add");
-  return addKey ? <AddToBoardRedirect addKey={addKey} /> : <BoardsList />;
+  const params = useSearchParams();
+  const addKey = params.get("add");
+  return addKey ? <AddToBoardRedirect addKey={addKey} addId={params.get("id")} /> : <BoardsList />;
 }
 
 function BoardsList() {

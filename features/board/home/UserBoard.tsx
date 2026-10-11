@@ -401,12 +401,19 @@ export function UserBoard({
     }
     if (!store || addHandled.current === addKey) return;
     addHandled.current = addKey;
+    const addId = searchParams.get("id");
     const rest = new URLSearchParams(searchParams.toString());
     rest.delete("add");
+    rest.delete("id");
     router.replace(rest.size > 0 ? `${pathname}?${rest}` : pathname, { scroll: false });
     const type = addableTypes.find((t) => t.key === addKey);
     if (!type) {
       toast.error(`A board cannot add "${addKey}"`);
+      return;
+    }
+    // `&id=<record>`: a tile bound to that record (an entity type's key IS its source entity).
+    if (addId) {
+      place([{ title: type.label, source: { kind: "entity", entity: type.key, id: addId } }]);
       return;
     }
     const [entry] = startNewEntries(type);

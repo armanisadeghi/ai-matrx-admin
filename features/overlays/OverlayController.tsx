@@ -1216,6 +1216,10 @@ const TranscriptionCleanup = lazyOverlay(
     import("@/components/official-candidate/transcription-cleanup/components/TranscriptionCleanup"),
   { ssr: false },
 );
+const DataSourceWindow = lazyOverlay(
+  () => import("@/features/window-panels/windows/data-sources/DataSourceWindow"),
+  { ssr: false },
+);
 const DictionarySelectorWindow = lazyOverlay(
   () =>
     import("@/features/dictionary/components/DictionarySelectorWindow").then(
@@ -1664,6 +1668,9 @@ export default function OverlayController() {
     dictionarySelectorWindow: useAppSelector((s) =>
       selectIsOverlayOpen(s, "dictionarySelectorWindow"),
     ),
+    dataSourceWindow: useAppSelector((s) =>
+      selectIsOverlayOpen(s, "dataSourceWindow"),
+    ),
     systemInstructionWindow: useAppSelector((s) =>
       selectIsOverlayOpen(s, "systemInstructionWindow"),
     ),
@@ -2099,6 +2106,9 @@ export default function OverlayController() {
     ) as Record<string, unknown> | null,
     dictionarySelectorWindow: useAppSelector((s) =>
       selectOverlayData(s, "dictionarySelectorWindow"),
+    ) as Record<string, unknown> | null,
+    dataSourceWindow: useAppSelector((s) =>
+      selectOverlayData(s, "dataSourceWindow"),
     ) as Record<string, unknown> | null,
     systemInstructionWindow: useAppSelector((s) =>
       selectOverlayData(s, "systemInstructionWindow"),
@@ -7996,6 +8006,24 @@ export default function OverlayController() {
         );
       })}
 
+
+      {/* dataSourceWindow — singleton (one Data library source) */}
+      {(() => {
+        const isOpen = isOpenById.dataSourceWindow;
+        const data = dataById.dataSourceWindow as
+          Record<string, unknown> | null | undefined;
+        const sourceKey = typeof data?.sourceKey === "string" ? data.sourceKey : null;
+        if (!isOpen || !sourceKey) return null;
+        return (
+          <DataSourceWindow
+            isOpen
+            sourceKey={sourceKey}
+            onClose={() =>
+              dispatch(closeOverlay({ overlayId: "dataSourceWindow" }))
+            }
+          />
+        );
+      })()}
 
       {/* dictionarySelectorWindow — singleton */}
       {(() => {
