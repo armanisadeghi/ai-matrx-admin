@@ -76,14 +76,21 @@ async function settle() {
   for (let i = 0; i < 10; i++) await act(async () => new Promise((r) => setTimeout(r, 0)));
 }
 
-async function openAndRead(trigger: HTMLElement): Promise<string[]> {
+// An ItemMenu draws an idle trigger until the person's pointer or focus arms it, and arming swaps in
+// the real menu trigger (a new DOM node). So: focus the idle one, let it arm, then press Enter on
+// whatever the trigger is now — the keyboard path a person takes.
+async function openAndRead(find: () => HTMLElement): Promise<string[]> {
+  await act(async () => {
+    find().focus();
+  });
+  await settle();
+  const trigger = find();
   await act(async () => {
     trigger.focus();
     trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
   });
   await settle();
   const menu = document.querySelector('[role="menu"]');
-  if (!menu) console.log('DOM', document.body.innerHTML.slice(0,2500));
   expect(menu).not.toBeNull();
   return [...menu!.querySelectorAll('[role^="menuitem"]')].map((el) => (el.textContent ?? "").trim());
 }
@@ -104,7 +111,7 @@ it("the card's ⋯ draws exactly the entries the table row's ⋯ draws", async (
     ),
   );
   await settle();
-  const fromRow = await openAndRead(host.querySelector("[data-the-row]") as HTMLElement);
+  const fromRow = await openAndRead(() => host.querySelector("[data-the-row]") as HTMLElement);
   act(() => root.unmount());
   document.body.innerHTML = "";
   host = document.createElement("div");
@@ -128,7 +135,7 @@ it("the card's ⋯ draws exactly the entries the table row's ⋯ draws", async (
     ),
   );
   await settle();
-  const fromCard = await openAndRead(host.querySelector('[aria-label="Actions for Referral Intake Queue"]') as HTMLElement);
+  const fromCard = await openAndRead(() => host.querySelector('[aria-label="Actions for Referral Intake Queue"]') as HTMLElement);
 
   expect(fromRow).toContain("Alchemy");
   expect(fromCard).toEqual(fromRow);
