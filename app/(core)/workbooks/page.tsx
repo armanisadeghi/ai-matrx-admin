@@ -89,15 +89,13 @@ function unsupportedFileReason(file: File): string | null {
   }
   if (name.endsWith(".tsv") || name.endsWith(".txt")) return null; // SheetJS parses these too
 
-  // Drive's "Google Sheets" shortcut is a tiny JSON pointer file that
-  // browsers cannot resolve into the underlying sheet — Drive only exposes
-  // the real content via its API. The user has to "Download as .xlsx" from
-  // Sheets first.
+  // Drive's "Google Sheets" shortcut is a tiny JSON pointer file that browsers cannot resolve into
+  // the sheet; the Google Sheets import reads the real file through Google's own picker.
   if (name.endsWith(".gsheet")) {
-    return "Google Sheets shortcuts can't be imported directly. In Google Sheets choose File → Download → Microsoft Excel (.xlsx), then upload that.";
+    return "A Google Sheets shortcut can't be uploaded. Use Import from Google Sheets.";
   }
   // Anything else.
-  return `"${file.name}" doesn't look like a spreadsheet. Supported: .xlsx, .xls, .csv. If you're importing from Google Sheets, use File → Download → Microsoft Excel (.xlsx) first.`;
+  return `"${file.name}" isn't a spreadsheet file. Supported: .xlsx, .xls, .csv. For a Google Sheet, use Import from Google Sheets.`;
 }
 
 function sortWorkbooks(rows: Workbook[], key: DocumentSortKey): Workbook[] {

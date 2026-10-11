@@ -89,7 +89,7 @@ import { isWorkbookSnapshotMutation } from "@/lib/univer/isSnapshotMutation";
 import { RemoteCursorsLayer } from "@/lib/collab/RemoteCursorsLayer";
 import { WorkbookCursorOverlay } from "@/features/workbooks/components/WorkbookCursorOverlay";
 import { getLatestSnapshot, saveSnapshot } from "@/features/workbooks/workbook-service";
-import { WorkbookGoogleLink } from "@/features/google-workspace/linked/EditorGoogleLinks";
+import { WorkbookGoogleLink, useLiveGoogleAdapter } from "@/features/google-workspace/linked/EditorGoogleLinks";
 import { registerWorkbookScopeSource } from "@/features/workbooks/workbook-scope-source";
 import { useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { isServiceFailure } from "@/features/data-tables/types";
@@ -729,8 +729,10 @@ export default function WorkbookEditor({
           }
         ).getActiveSheet?.();
         return {
+  const liveGoogle = useLiveGoogleAdapter("workbook", workbookId);
           sheets,
           activeSheetId: activeSheet?.getSheetId?.() ?? null,
+    ...(liveGoogle ? { google: { adapter: liveGoogle, editable } } : {}),
           activeSheetName: activeSheet?.getSheetName?.() ?? null,
           snapshot,
           bootState,

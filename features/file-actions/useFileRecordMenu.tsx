@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { FileRecordMenu } from "./FileRecordMenu";
+import type { FileMenuProps } from "./FileMenu";
 import { useFileFavorites } from "./useFileFavorites";
 import { copyRecord, moveRecord, restoreRecord, runDownload, trashRecord } from "./ops";
 import type { FileDownload, FileKindAdapter } from "./types";
@@ -26,6 +27,8 @@ export function useFileRecordMenu<Row extends { id: string; user_id: string }>(
     /** Formats the editor offers itself (its live content), instead of the saved snapshot. */
     downloads?: FileDownload[];
     onProjectMoved?: (projectId: string | null) => void;
+    /** Google rows for the open record (the editor lends its live content). */
+    google?: FileMenuProps["google"];
   },
 ): ReactNode {
   const router = useRouter();
@@ -62,6 +65,7 @@ export function useFileRecordMenu<Row extends { id: string; user_id: string }>(
         });
       }}
       extra={options.extra}
+      google={options.google}
     />
   );
 }

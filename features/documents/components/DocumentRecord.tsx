@@ -22,6 +22,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { Loader2, Printer } from "lucide-react";
 import { useFileRecordMenu } from "@/features/file-actions/useFileRecordMenu";
+import { useLiveGoogleAdapter } from "@/features/google-workspace/linked/EditorGoogleLinks";
 import { DOCUMENT_ADAPTER } from "@/features/file-actions/adapters";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
@@ -305,8 +306,10 @@ export function DocumentRecord({
     return markdown || bodyTextOf(port.getDataStream()).text;
   };
 
+  const liveGoogle = useLiveGoogleAdapter("document", id);
   const fileMenu = useFileRecordMenu(DOCUMENT_ADAPTER, doc, {
     listHref: "/documents",
+    ...(liveGoogle ? { google: { adapter: liveGoogle, editable: canEdit } } : {}),
     onProjectMoved: (projectId) => {
       const current = docRef.current;
       if (current) commitDocument({ ...current, project_id: projectId });

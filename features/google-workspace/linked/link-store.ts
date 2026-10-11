@@ -75,6 +75,13 @@ export async function readGoogleLink(
  * approval will make it, so the link is completed once it is applied.
  */
 export interface PendingGoogleLink {
+  /**
+   * What the approval will do: `create` (the default, the file does not exist yet) makes the
+   * link; `push` writes into the already-linked file (`fileId`) and, once applied, brings the
+   * link's sync point forward.
+   */
+  intent?: "create" | "push";
+  fileId?: string;
   assistId: string;
   kind: GoogleFileLink["kind"];
   connectionId: string;
@@ -88,7 +95,14 @@ export async function readPendingGoogleLink(
   kind: LinkedRecordKind,
   id: string,
 ): Promise<PendingGoogleLink | null> {
-  const { data } = await supabase.schema("workbench").from(TABLE[kind]).select("metadata").eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .schema("workbench")
+    .from(TABLE[kind])
+    .select("metadata")
+    .eq("id", id)
+    .maybeSingle();
+  // A failed read is NOT "no pending approval": an approved change would silently never be recorded.
+  if (error) throw new Error(`Could not check this item's pending Google approval: ${error.message}`);
   const raw = (data?.metadata as { google_link_pending?: unknown } | null)?.google_link_pending;
   if (!raw || typeof raw !== "object" || typeof (raw as PendingGoogleLink).assistId !== "string") return null;
   return raw as PendingGoogleLink;

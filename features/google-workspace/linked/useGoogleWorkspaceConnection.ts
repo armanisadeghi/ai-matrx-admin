@@ -19,12 +19,13 @@ export type GoogleWorkspaceConnectionState =
  * door. `connect()` re-resolves when the connect window closes, so a card that
  * said "Connect" turns into actions without a reload.
  */
-export function useGoogleWorkspaceConnection() {
+export function useGoogleWorkspaceConnection(active = true) {
   const [state, setState] = useState<GoogleWorkspaceConnectionState>({ status: "loading" });
   const [nonce, setNonce] = useState(0);
   const openConnect = useOpenGoogleConnectWindow();
 
   useEffect(() => {
+    if (!active) return;
     const controller = new AbortController();
     resolveGoogleWorkspaceConnection(controller.signal)
       .then((connection) => {
@@ -36,7 +37,7 @@ export function useGoogleWorkspaceConnection() {
         setState({ status: "error", error: error instanceof Error ? error.message : String(error) });
       });
     return () => controller.abort();
-  }, [nonce]);
+  }, [nonce, active]);
 
   const connect = (reason?: string) =>
     openConnect({

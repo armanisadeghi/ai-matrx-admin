@@ -27,9 +27,15 @@ export type PendingOutcome =
   | { state: "ended" }
   | { state: "linked"; link: GoogleFileLink };
 
+type ExistingLink = GoogleFileLink | null;
+
 type Receipt = { state?: string; output?: { file_id?: string; name?: string; open_in_google?: string | null } };
 
-export async function completePendingLink(kind: LinkedRecordKind, id: string): Promise<PendingOutcome> {
+export async function completePendingLink(
+  kind: LinkedRecordKind,
+  id: string,
+  existing: ExistingLink = null,
+): Promise<PendingOutcome> {
   const pending = await readPendingGoogleLink(kind, id);
   if (!pending) return { state: "none" };
   const { data, error } = await supabase
@@ -41,7 +47,26 @@ export async function completePendingLink(kind: LinkedRecordKind, id: string): P
   if (error) throw new Error(error.message);
   const receipt = (data?.result ?? null) as Receipt | null;
   const output = receipt?.state === "applied" ? receipt.output : undefined;
-  if (output?.file_id) {
+  if (pending.intent === "push") {
+    // A reviewed push into an already-linked file: once applied, the link's sync point moves up to
+    // what Google now holds, so the next Update/Push does not read as "changed in both places".
+    if (receipt?.state === "applied" && existing && existing.fileId === pending.fileId) {
+      const remote = await readRemoteVersion(existing.connectionId, existing.fileId, existing.kind === "google_sheet" ? "sheet" : "doc");
+      const link: GoogleFileLink = {
+        ...existing,
+        webViewLink: remote.webViewLink ?? existing.webViewLink,
+        lastSyncedAt: new Date().toISOString(),
+        remoteVersion: remote.version,
+        localSnapshotId: pending.localSnapshotId,
+        localFingerprint: pending.localFingerprint,
+        baselineOnOpen: false,
+        lastDirection: "to_google",
+      };
+      const saved = await writeGoogleLink(kind, id, link);
+      if (!saved.ok) throw new Error(saved.error);
+      return { state: "linked", link };
+    }
+  } else if (output?.file_id) {
     const sheet = pending.kind === "google_sheet";
     const remote = await readRemoteVersion(pending.connectionId, output.file_id, sheet ? "sheet" : "doc");
     const now = new Date().toISOString();

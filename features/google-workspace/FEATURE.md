@@ -368,6 +368,28 @@ pair and the meaning are the plan's — only the row's direction differs, and it
 direction the server already uses for this table. The People edges are `note → party`, which
 that union does carry. Widening it is a package change (THE SAME-SESSION LAW).
 
+## Linked workbooks and documents — `linked/`
+
+A workbook <-> Google Sheet and a document <-> Google Doc, on demand (Create / Open / Update
+from Google / Push to Google / Unlink), never a background sync. Server half:
+`aidream/services/google_workspace/FEATURE.md` ("Linked files"). The link is
+`metadata.google_link` on `workbench.udt_workbooks` / `udt_documents` (`link-store.ts`, written
+through `mergeJsonColumn`); Drive scope is `drive.file`, so the Google Picker (`lib/googlePicker.ts`,
+`importers.ts`) only ever exposes files the person picks.
+- **ONE implementation of the Google rows:** `useGoogleLink` + `GoogleLinkMenuItems` in
+  `GoogleLinkControl.tsx`. The editor toolbar button, the shared File menu in editors and the
+  row menu in lists (`features/file-actions`, `FileMenu`'s `google` prop) all render it. An open
+  editor registers its live adapter (`useLiveGoogleAdapter`); a list row uses
+  `savedRecordGoogleAdapter` (latest saved snapshot). Link state is cached per record so every
+  door shows the same link.
+- **Conflicts never overwrite quietly:** `sync-decision.ts` (pure, tested) decides Update; the
+  dialog says "both" only when both sides really changed, otherwise "Changed in Google ...".
+- **Review mode:** a create or a sheet push the organization routes to approval is remembered
+  on the record (`google_link_pending`, intent `create`|`push`) and `pending-link.ts` completes the
+  link when the approval is applied; a failed read of that marker is surfaced, never treated as
+  "none". Approval cards state what approving cannot carry (server `limitation`).
+- Tests: `linked/__tests__/` (state machine, conflict decision, reviewed push).
+
 ## Invariants
 
 - Standalone OAuth-review routes use `app/Providers.tsx` with the authenticated
@@ -457,6 +479,7 @@ that union does carry. Widening it is a package change (THE SAME-SESSION LAW).
 
 ## Change log
 
+- 2026-10-11 — Linked files: Google rows added to the shared File menu (editors and list rows) through the one `useGoogleLink`; reviewed Sheet push remembers its approval and updates the link; conflict wording matches the real state; unreadable pending marker now surfaces.
 - 2026-09-26 — Added the internal selected-calendar review tab beside the existing Agenda in the
   Calendar window. Reviewers explicitly choose an account, discover its calendars, select one,
   then read the server-bounded window without saving events or changing Google. The adapter uses

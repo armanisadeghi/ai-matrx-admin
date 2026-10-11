@@ -9,7 +9,7 @@
  * routes to review says so, with the approval link — never "done".
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { ArrowDownToLine, ArrowUpFromLine, ExternalLink, Loader2, Unlink } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -50,6 +50,7 @@ import {
   readSheetAsWorkbook,
   type GoogleRemoteVersion,
 } from "./linkedService";
+import { conflictCopy, decideUpdate } from "./sync-decision";
 import { useGoogleWorkspaceConnection } from "./useGoogleWorkspaceConnection";
 
 /** What a host editor lends the control. Content is a workbook snapshot or markdown. */
@@ -57,15 +58,31 @@ export interface GoogleLinkAdapter {
   recordKind: LinkedRecordKind;
   recordId: string;
   title: string;
-  /** The live content right now. */
-  readLocal: () => unknown;
+  /** The content right now (an editor's live content, or a list row's latest saved snapshot). */
+  readLocal: () => unknown | Promise<unknown>;
   /** Put Google's content into the editor and save it; returns the new snapshot id. */
   applyRemote: (content: unknown) => Promise<string | null>;
   /** The newest saved snapshot id (what "changed here since the last sync" compares). */
   latestLocalSnapshotId: () => Promise<string | null>;
 }
 
-type Conflict = { from: "update" | "push"; remote: GoogleRemoteVersion; remoteContent?: unknown };
+type Conflict = {
+  from: "update" | "push";
+  remote: GoogleRemoteVersion;
+  remoteContent?: unknown;
+  /** Whether THIS side changed since the last sync: the dialog says "both" only when true. */
+  localChanged: boolean;
+};
+
+// One link per record, shared by every control showing it (toolbar button, File menu, list row),
+// so an action in one is never stale in another.
+const linkCache = new Map<string, GoogleFileLink | null>();
+const linkListeners = new Set<() => void>();
+const cacheKey = (kind: LinkedRecordKind, id: string) => `${kind}:${id}`;
+function publishLink(kind: LinkedRecordKind, id: string, link: GoogleFileLink | null) {
+  linkCache.set(cacheKey(kind, id), link);
+  linkListeners.forEach((l) => l());
+}
 
 function stableJson(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
@@ -103,40 +120,52 @@ export function timeAgo(iso: string | null | undefined): string {
   return new Date(iso).toLocaleDateString();
 }
 
-export function GoogleLinkControl({ adapter, editable }: { adapter: GoogleLinkAdapter; editable: boolean }) {
+export function useGoogleLink(adapter: GoogleLinkAdapter, editable: boolean, active = true) {
   const isSheet = adapter.recordKind === "workbook";
   const appName = isSheet ? "Google Sheets" : "Google Docs";
-  const Mark = isSheet ? GoogleSheetsMark : GoogleDocsMark;
-  const { state, connect } = useGoogleWorkspaceConnection();
-  const [link, setLink] = useState<GoogleFileLink | null | undefined>(undefined);
+  const { state, connect } = useGoogleWorkspaceConnection(active);
+  const key = cacheKey(adapter.recordKind, adapter.recordId);
+  const [, bump] = useState(0);
+  const [loaded, setLoaded] = useState(linkCache.has(key));
+  const link = linkCache.has(key) ? (linkCache.get(key) ?? null) : undefined;
   const [busy, setBusy] = useState<null | "create" | "update" | "push" | "unlink">(null);
   const [conflict, setConflict] = useState<Conflict | null>(null);
+  const setLink = (next: GoogleFileLink | null) => publishLink(adapter.recordKind, adapter.recordId, next);
 
   useEffect(() => {
+    const listener = () => bump((n) => n + 1);
+    linkListeners.add(listener);
+    return () => {
+      linkListeners.delete(listener);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!active) return;
     let live = true;
     void readGoogleLink(adapter.recordKind, adapter.recordId).then((res) => {
       if (!live) return;
-      if (res.ok) {
-        setLink(res.link);
-        // A create that went through an approval: save the link once it is applied.
-        if (!res.link) {
-          void completePendingLink(adapter.recordKind, adapter.recordId)
-            .then((outcome) => {
-              if (!live || outcome.state !== "linked") return;
-              setLink(outcome.link);
-              toast.success(`Linked to ${adapter.recordKind === "workbook" ? "Google Sheets" : "Google Docs"}`);
-            })
-            .catch((error: unknown) => toast.error(errorSentence(error)));
-        }
-      } else {
+      if (!res.ok) {
         setLink(null);
+        setLoaded(true);
         toast.error(`Could not read this item's Google link: ${res.error}`);
+        return;
       }
+      setLink(res.link);
+      setLoaded(true);
+      // An approval this record is waiting on (a create, or a push into the linked file): record it once applied.
+      void completePendingLink(adapter.recordKind, adapter.recordId, res.link)
+        .then((outcome) => {
+          if (!live || outcome.state !== "linked") return;
+          setLink(outcome.link);
+          toast.success(res.link ? `Pushed to ${appName}` : `Linked to ${appName}`);
+        })
+        .catch((error: unknown) => toast.error(errorSentence(error)));
     });
     return () => {
       live = false;
     };
-  }, [adapter.recordKind, adapter.recordId]);
+  }, [adapter.recordKind, adapter.recordId, active]);
 
   // An imported record's first open: what the editor shows IS Google's content,
   // so its fingerprint is the baseline "changed here since?" compares against.
@@ -148,7 +177,7 @@ export function GoogleLinkControl({ adapter, editable }: { adapter: GoogleLinkAd
       if (!live) return;
       let content: unknown;
       try {
-        content = adapter.readLocal();
+        content = await adapter.readLocal();
       } catch {
         if (++tries < 20) window.setTimeout(() => void attempt(), 500);
         return;
@@ -194,13 +223,14 @@ export function GoogleLinkControl({ adapter, editable }: { adapter: GoogleLinkAd
   const create = () =>
     run("create", async () => {
       if (state.status !== "ready") return;
-      const content = adapter.readLocal();
+      const content = await adapter.readLocal();
       const outcome = isSheet
         ? await createSheetFromWorkbook(state.connection.connectionId, adapter.title, content)
         : await createDocFromMarkdown(state.connection.connectionId, adapter.title, String(content ?? ""));
       if (outcome.proposed) {
         // Remember WHICH approval makes the file, so approving it also saves the link.
         const queued = await writePendingGoogleLink(adapter.recordKind, adapter.recordId, {
+          intent: "create",
           assistId: outcome.assistId,
           kind: isSheet ? "google_sheet" : "google_doc",
           connectionId: state.connection.connectionId,
@@ -244,12 +274,17 @@ export function GoogleLinkControl({ adapter, editable }: { adapter: GoogleLinkAd
       lastSyncedAt: new Date().toISOString(),
       remoteVersion: remote.version,
       localSnapshotId: snapshotId,
-      localFingerprint: await contentFingerprint(adapter.readLocal()),
+      localFingerprint: await contentFingerprint(await adapter.readLocal()),
       baselineOnOpen: false,
       lastDirection: "from_google",
     });
     toast.success(`Updated from ${appName}`);
   };
+
+  const localChangedSince = async (current: GoogleFileLink, content?: unknown): Promise<boolean> =>
+    current.localFingerprint
+      ? (await contentFingerprint(content ?? (await adapter.readLocal()))) !== current.localFingerprint
+      : (await adapter.latestLocalSnapshotId()) !== current.localSnapshotId;
 
   const update = () =>
     run("update", async () => {
@@ -257,16 +292,14 @@ export function GoogleLinkControl({ adapter, editable }: { adapter: GoogleLinkAd
       const read = isSheet
         ? await readSheetAsWorkbook(link.connectionId, link.fileId, adapter.recordId).then((r) => ({ content: r.workbook as unknown, remote: r.remote }))
         : await readDocAsMarkdown(link.connectionId, link.fileId).then((r) => ({ content: r.markdown as unknown, remote: r.remote }));
-      const remoteChanged = read.remote.version !== link.remoteVersion;
-      const localChanged = link.localFingerprint
-        ? (await contentFingerprint(adapter.readLocal())) !== link.localFingerprint
-        : (await adapter.latestLocalSnapshotId()) !== link.localSnapshotId;
-      if (!remoteChanged) {
+      const localChanged = await localChangedSince(link);
+      const decision = decideUpdate(read.remote.version !== link.remoteVersion, localChanged);
+      if (decision === "up_to_date") {
         toast.info(`Already up to date with ${appName}`);
         return;
       }
-      if (localChanged) {
-        setConflict({ from: "update", remote: read.remote, remoteContent: read.content });
+      if (decision === "conflict") {
+        setConflict({ from: "update", remote: read.remote, remoteContent: read.content, localChanged });
         return;
       }
       await applyFromGoogle(link, read.content, read.remote);
@@ -275,17 +308,30 @@ export function GoogleLinkControl({ adapter, editable }: { adapter: GoogleLinkAd
   const push = (force: boolean) =>
     run("push", async () => {
       if (!link) return;
-      const content = adapter.readLocal();
+      const content = await adapter.readLocal();
       const outcome = isSheet
         ? await pushWorkbookToSheet(link.connectionId, link.fileId, content, link.remoteVersion, force)
         : { proposed: false as const, result: await pushMarkdownToDoc(link.connectionId, link.fileId, String(content ?? ""), link.remoteVersion, force) };
       if (outcome.proposed) {
+        // Remember WHICH approval writes the cells, so approving it also brings the link forward.
+        const queued = await writePendingGoogleLink(adapter.recordKind, adapter.recordId, {
+          intent: "push",
+          fileId: link.fileId,
+          assistId: outcome.assistId,
+          kind: link.kind,
+          connectionId: link.connectionId,
+          name: link.name,
+          queuedAt: new Date().toISOString(),
+          localFingerprint: await contentFingerprint(content),
+          localSnapshotId: await adapter.latestLocalSnapshotId(),
+        });
+        if (!queued.ok) throw new Error(queued.error);
         proposed(outcome.assistId);
         return;
       }
       const { status, remote, notes } = outcome.result;
       if (status === "conflict") {
-        setConflict({ from: "push", remote });
+        setConflict({ from: "push", remote, localChanged: await localChangedSince(link, content) });
         return;
       }
       await saveLink({
@@ -325,83 +371,133 @@ export function GoogleLinkControl({ adapter, editable }: { adapter: GoogleLinkAd
     void push(true);
   };
 
-  if (link === undefined || state.status === "loading") return null;
-
-  const trigger = (
-    <Button
-      variant="quiet"
-      title={link ? `Linked to ${appName}` : `${appName}`}
-      disabled={busy !== null}
-    >
-      {busy ? <Loader2 className="size-3 animate-spin" /> : <Mark className="size-3.5" />}
-      {link && <span className="hidden md:inline">Linked</span>}
-    </Button>
+  const dialog = (
+    <Dialog open={conflict !== null} onOpenChange={(open) => !open && setConflict(null)}>
+      <DialogContent className="sm:max-w-md">
+        {(() => {
+          const copy = conflictCopy(adapter.recordKind, appName, conflict?.localChanged ?? true);
+          return (
+            <DialogHeader>
+              <DialogTitle>{copy.title}</DialogTitle>
+              <DialogDescription>{copy.description}</DialogDescription>
+            </DialogHeader>
+          );
+        })()}
+        <DialogFooter className="gap-2 sm:gap-2">
+          <Button variant="outline" onClick={() => setConflict(null)}>
+            Cancel
+          </Button>
+          <Button variant="outline" onClick={takeGoogle} disabled={!editable}>
+            <ArrowDownToLine className="size-4" />
+            Use Google&apos;s
+          </Button>
+          <Button onClick={keepMine}>
+            <ArrowUpFromLine className="size-4" />
+            Keep mine
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 
+  return {
+    isSheet,
+    appName,
+    Mark: isSheet ? GoogleSheetsMark : GoogleDocsMark,
+    state,
+    connect,
+    link,
+    ready: loaded && link !== undefined && state.status !== "loading",
+    busy,
+    editable,
+    adapter,
+    create,
+    update,
+    push,
+    unlink,
+    openInGoogle,
+    dialog,
+  };
+}
+
+export type GoogleLink = ReturnType<typeof useGoogleLink>;
+
+/**
+ * The Google rows. The ONE implementation behind the editor's toolbar button and the shared File menu
+ * (editor and list rows), so a change here reaches every door.
+ */
+export function GoogleLinkMenuItems({ g, withLabel = true }: { g: GoogleLink; withLabel?: boolean }): ReactNode {
+  const { Mark, link, appName, isSheet } = g;
+  if (g.state.status === "loading" || link === undefined) {
+    return (
+      <DropdownMenuItem disabled>
+        <Loader2 className="size-4 animate-spin" />
+        {appName}
+      </DropdownMenuItem>
+    );
+  }
+  if (g.state.status !== "ready") {
+    return (
+      <DropdownMenuItem onSelect={() => g.connect(`to link this ${g.adapter.recordKind} with ${appName}`)}>
+        <Mark className="size-4" />
+        Connect Google
+      </DropdownMenuItem>
+    );
+  }
+  if (!link) {
+    return (
+      <DropdownMenuItem disabled={!g.ready} onSelect={() => void g.create()}>
+        <Mark className="size-4" />
+        {isSheet ? "Create Google Sheet" : "Create Google Doc"}
+      </DropdownMenuItem>
+    );
+  }
+  return (
+    <>
+      {withLabel && (
+        <DropdownMenuLabel className="truncate text-xs font-normal text-muted-foreground" title={link.name}>
+          {link.name} · synced {timeAgo(link.lastSyncedAt)}
+        </DropdownMenuLabel>
+      )}
+      <DropdownMenuItem onSelect={() => g.openInGoogle(link.webViewLink)}>
+        <ExternalLink className="size-4" />
+        Open in {appName}
+      </DropdownMenuItem>
+      <DropdownMenuItem disabled={!g.editable} onSelect={() => void g.update()}>
+        <ArrowDownToLine className="size-4" />
+        Update from Google
+      </DropdownMenuItem>
+      <DropdownMenuItem onSelect={() => void g.push(false)}>
+        <ArrowUpFromLine className="size-4" />
+        Push to Google
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem disabled={!g.editable} onSelect={() => void g.unlink()}>
+        <Unlink className="size-4" />
+        Unlink
+      </DropdownMenuItem>
+    </>
+  );
+}
+
+export function GoogleLinkControl({ adapter, editable }: { adapter: GoogleLinkAdapter; editable: boolean }) {
+  const g = useGoogleLink(adapter, editable);
+  if (!g.ready) return null;
+  const { Mark, link, busy, appName } = g;
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
+        <DropdownMenuTrigger asChild>
+          <Button variant="quiet" title={link ? `Linked to ${appName}` : `${appName}`} disabled={busy !== null}>
+            {busy ? <Loader2 className="size-3 animate-spin" /> : <Mark className="size-3.5" />}
+            {link && <span className="hidden md:inline">Linked</span>}
+          </Button>
+        </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-60">
-          {state.status !== "ready" ? (
-            <DropdownMenuItem onSelect={() => connect(`to link this ${adapter.recordKind} with ${appName}`)}>
-              <Mark className="size-4" />
-              Connect Google
-            </DropdownMenuItem>
-          ) : !link ? (
-            <DropdownMenuItem onSelect={() => void create()}>
-              <Mark className="size-4" />
-              {isSheet ? "Create Google Sheet" : "Create Google Doc"}
-            </DropdownMenuItem>
-          ) : (
-            <>
-              <DropdownMenuLabel className="truncate text-xs font-normal text-muted-foreground" title={link.name}>
-                {link.name} · synced {timeAgo(link.lastSyncedAt)}
-              </DropdownMenuLabel>
-              <DropdownMenuItem onSelect={() => openInGoogle(link.webViewLink)}>
-                <ExternalLink className="size-4" />
-                Open in {appName}
-              </DropdownMenuItem>
-              <DropdownMenuItem disabled={!editable} onSelect={() => void update()}>
-                <ArrowDownToLine className="size-4" />
-                Update from Google
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => void push(false)}>
-                <ArrowUpFromLine className="size-4" />
-                Push to Google
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem disabled={!editable} onSelect={() => void unlink()}>
-                <Unlink className="size-4" />
-                Unlink
-              </DropdownMenuItem>
-            </>
-          )}
+          <GoogleLinkMenuItems g={g} />
         </DropdownMenuContent>
       </DropdownMenu>
-      <Dialog open={conflict !== null} onOpenChange={(open) => !open && setConflict(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Changed in both places</DialogTitle>
-            <DialogDescription>
-              {`This ${adapter.recordKind} and the Google file both changed since the last sync. Keep which one?`}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-2">
-            <Button variant="outline" onClick={() => setConflict(null)}>
-              Cancel
-            </Button>
-            <Button variant="outline" onClick={takeGoogle} disabled={!editable}>
-              <ArrowDownToLine className="size-4" />
-              Use Google&apos;s
-            </Button>
-            <Button onClick={keepMine}>
-              <ArrowUpFromLine className="size-4" />
-              Keep mine
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {g.dialog}
     </>
   );
 }

@@ -16,6 +16,7 @@ import { MoveToProjectDialog } from "./MoveToProjectDialog";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { FileItemMenu } from "./FileItemMenu";
+import { savedRecordGoogleAdapter } from "@/features/google-workspace/linked/EditorGoogleLinks";
 import { useFileFavorites } from "./useFileFavorites";
 import { copyRecord, moveRecord, renameRecord, restoreRecord, runDownload, trashRecord } from "./ops";
 import type { FileKindAdapter, FileMenuPayload } from "./types";
@@ -131,6 +132,11 @@ export function useFileItemActions<Row extends { id: string; user_id: string }>(
         starred={isStarred(row.id)}
         trashed={trashed}
         projectId={adapter.projectIdOf(row)}
+        google={
+          userId !== null && row.user_id === userId
+            ? { adapter: savedRecordGoogleAdapter(adapter.noun, row.id, name), editable: true }
+            : undefined
+        }
         downloads={adapter.downloads(row.id, name)}
         onDownload={(d) => runDownload(adapter, d)}
         onToggleStar={() => void toggle(row.id)}
