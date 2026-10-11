@@ -110,6 +110,24 @@ export function PaperField(props: PaperFieldProps) {
   );
 }
 
+/** A radio or checkbox laid out to its box: a square control sized to the shorter side, and a radio's
+ *  option label beside it when the box is wide enough — wrapped, in text sized to the box. */
+function Choice({ field, on, color }: { field: SField; on: boolean; color?: string }) {
+  const label = field.kind === "radio" ? field.option_value : null;
+  return (
+    <span className="flex h-full w-full items-center justify-center gap-[0.3em] overflow-hidden" style={{ color: color ?? PAPER.ink }}>
+      <span className="flex shrink-0 items-center justify-center" style={{ width: "min(100cqh, 100cqw)", height: "min(100cqh, 100cqw)" }}>
+        {on ? field.kind === "checkbox" ? <Check className="h-[85%] w-[85%]" strokeWidth={3} /> : <span className="h-[55%] w-[55%] rounded-full" style={{ background: PAPER.ink }} /> : null}
+      </span>
+      {label ? (
+        <span className="hidden min-w-0 flex-1 break-words text-left leading-tight @[72px]:block" style={{ color: PAPER.ink, fontSize: "clamp(7px, 42cqh, 12px)", overflow: "hidden", maxHeight: "100%" }}>
+          {label}
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
 /** What a field shows when it is not an inline input: the tag, the mark, the tick, the value. */
 function FieldFace({
   field,
@@ -143,12 +161,7 @@ function FieldFace({
     );
   }
   if (field.kind === "date_signed") return <span className="truncate px-0.5">{dateText}</span>;
-  if (field.kind === "checkbox") {
-    return value === true ? <Check className="h-[85%] w-[85%]" strokeWidth={3} /> : null;
-  }
-  if (field.kind === "radio") {
-    return value === true ? <span className="h-[55%] w-[55%] rounded-full" style={{ background: PAPER.ink }} /> : null;
-  }
+  if (field.kind === "checkbox" || field.kind === "radio") return <Choice field={field} on={value === true} />;
   if (typeof value === "string" && value !== "") {
     const shown = field.kind === "date" ? formatIsoDate(value, field.date_format ?? dateFormat) : value;
     return <span className="w-full truncate px-0.5 text-left">{shown}</span>;
@@ -186,13 +199,7 @@ function InlineInput({ field, value, dateFormat, onChange, onBlur, onActivate, d
         className="flex h-full w-full items-center justify-center"
         style={{ color: PAPER.ink }}
       >
-        {on ? (
-          field.kind === "checkbox" ? (
-            <Check className="h-[85%] w-[85%]" strokeWidth={3} />
-          ) : (
-            <span className="h-[55%] w-[55%] rounded-full" style={{ background: PAPER.ink }} />
-          )
-        ) : null}
+        <Choice field={field} on={on} />
       </button>
     );
   }
@@ -253,12 +260,12 @@ function Callout({ field, onMark, onClear, onNext, filled, color }: PaperFieldPr
       role="group"
       aria-label={`${field.label} actions`}
       className={cn(
-        "absolute left-0 z-40 flex items-center gap-1 whitespace-nowrap rounded-md px-1.5 py-1 text-[12px] font-medium text-white shadow-lg",
+        "absolute left-0 z-40 flex w-max max-w-[min(26rem,90vw)] items-center gap-1 whitespace-nowrap rounded-md px-1.5 py-1 text-[12px] font-medium text-white shadow-lg",
         nearTop ? "top-[calc(100%+6px)]" : "bottom-[calc(100%+6px)]",
       )}
       style={{ background: color }}
     >
-      <span className="flex max-w-[14rem] flex-col px-1" title={field.tooltip ?? undefined}>
+      <span className="flex min-w-0 max-w-[16rem] flex-col px-1" title={field.tooltip ?? undefined}>
         <span className="truncate">
           {field.label}
           {field.required ? " *" : ""}
@@ -314,11 +321,9 @@ function OtherField({
         </span>
       );
   } else if (!signed) {
-    face = (
-      <span className="truncate px-1" style={{ color: PAPER.muted, fontSize: "clamp(7px, 50cqh, 11px)" }}>
-        {other?.name ? `${other.name}` : KIND_LABEL[field.kind]}
-      </span>
-    );
+    // Someone else's open field is a quiet placeholder, never their name or a label (Docusign greys
+    // other recipients' fields out); the name stays in the aria-label.
+    face = null;
   }
   return (
     <div
@@ -328,8 +333,8 @@ function OtherField({
         zIndex: 5,
         color: PAPER.ink,
         fontSize: BOX_FONT,
-        outline: signed ? "none" : `1px dashed ${recipientColor(colorIndex, 0.6)}`,
-        background: signed ? "transparent" : recipientColor(colorIndex, 0.06),
+        outline: signed ? "none" : `1px dashed ${recipientColor(colorIndex, 0.35)}`,
+        background: signed ? "transparent" : recipientColor(colorIndex, 0.04),
       }}
       aria-label={`${KIND_LABEL[field.kind]} for ${other?.name ?? "another signer"}${signed ? ", signed" : ""}`}
     >
