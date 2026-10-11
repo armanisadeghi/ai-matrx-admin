@@ -354,8 +354,10 @@ const nextConfig = {
     // Re-measured 2026-10-09 on main (cfb8899f8, after the fan-out fixes): cold
     // build peak 39.2 GB for the whole tree (OK), WARM compile 71 s vs ~4-5 min,
     // but .next/cache = 6.7 GB + node_modules 3.4 GB, still far over the cap.
-    // Only viable with the cache stored outside Vercel's build cache.
-    turbopackFileSystemCacheForBuild: false,
+    // Only viable with the cache stored outside Vercel's build cache — which is what
+    // scripts/build-cache.mjs does (S3, 2026-10-10). ON only for the profiles in
+    // scripts/build-cache-policy.cjs, and never for a [no-cache] release.
+    turbopackFileSystemCacheForBuild: require("./scripts/build-cache-policy.cjs").buildCacheDecision().on,
     // Avoid the dev snapshot-coordinator panic that drops active review pages.
     turbopackFileSystemCacheForDev: false,
     // ON (2026-08-11): enables `forbidden()` / `unauthorized()` from
