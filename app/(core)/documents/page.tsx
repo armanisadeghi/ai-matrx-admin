@@ -16,6 +16,7 @@ import {
   type FileScope,
 } from "@/features/file-actions/FileScopeBar";
 import { useFileItemActions } from "@/features/file-actions/useFileItemActions";
+import { FileCardContextArea } from "@/features/file-actions/FileCardContextArea";
 import { DOCUMENT_ADAPTER } from "@/features/file-actions/adapters";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -333,16 +334,23 @@ export default function DocumentsLandingPage() {
             ) : (
               <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {filteredDocuments.map((doc) => (
-                  <DocumentListCard
+                  <FileCardContextArea
                     key={doc.id}
-                    doc={doc}
-                    isNavigating={navigatingId === doc.id}
-                    isAnyNavigating={isAnyNavigating}
-                    onNavigate={handleNavigate}
-                    menu={menuFor(doc, scope === "trash")}
-                    starred={starredIds.has(doc.id)}
-                    shared={userId !== null && doc.user_id !== userId}
-                  />
+                    className="grid min-w-0"
+                    menu={(control) => menuFor(doc, scope === "trash", control)}
+                  >
+                    {(menu) => (
+                      <DocumentListCard
+                        doc={doc}
+                        isNavigating={navigatingId === doc.id}
+                        isAnyNavigating={isAnyNavigating}
+                        onNavigate={handleNavigate}
+                        menu={menu}
+                        starred={starredIds.has(doc.id)}
+                        shared={userId !== null && doc.user_id !== userId}
+                      />
+                    )}
+                  </FileCardContextArea>
                 ))}
               </div>
             )

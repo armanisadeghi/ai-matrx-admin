@@ -50,6 +50,9 @@ export type FileMenuProps = Omit<
    * implementation (`GoogleLinkMenuItems`); the adapter says where this record's content comes from.
    */
   google?: { adapter: GoogleLinkAdapter; editable: boolean };
+  /** Open the menu from outside (a card's right-click — `FileCardContextArea`). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 /** Mounts the Google link state beside the dropdown, so its dialogs outlive the menu closing. */
@@ -103,6 +106,8 @@ export function FileMenu({
   trigger = "icon",
   disabled,
   google,
+  open,
+  onOpenChange,
   ...items
 }: FileMenuProps): ReactNode {
   const [menuOpened, setMenuOpened] = useState(false);
@@ -124,9 +129,15 @@ export function FileMenu({
       )}
       {/* In Trash only the owner can act (Restore); anyone else would open an empty menu. */}
       {!(trashed && !items.canManage) && (
-        <GoogleSlot google={trashed ? undefined : google} active={menuOpened}>
+        <GoogleSlot google={trashed ? undefined : google} active={menuOpened || open === true}>
           {(googleRows) => (
-            <DropdownMenu onOpenChange={(open) => open && setMenuOpened(true)}>
+            <DropdownMenu
+              {...(open !== undefined ? { open } : {})}
+              onOpenChange={(next) => {
+                if (next) setMenuOpened(true);
+                onOpenChange?.(next);
+              }}
+            >
               <DropdownMenuTrigger asChild>
                 {trigger === "label" ? (
                   <ToolbarButton

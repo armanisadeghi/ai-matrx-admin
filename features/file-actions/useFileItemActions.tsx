@@ -120,10 +120,15 @@ export function useFileItemActions<Row extends { id: string; user_id: string }>(
     )
   );
 
-  const menuFor = (row: Row, trashed = false): ReactNode => {
+  const menuFor = (
+    row: Row,
+    trashed = false,
+    control?: { open: boolean; onOpenChange: (open: boolean) => void },
+  ): ReactNode => {
     const name = adapter.nameOf(row);
     return (
       <FileItemMenu
+        {...(control ? { open: control.open, onOpenChange: control.onOpenChange } : {})}
         resourceType={adapter.resourceType}
         id={row.id}
         name={name}

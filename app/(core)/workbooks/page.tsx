@@ -39,6 +39,7 @@ import {
   type FileScope,
 } from "@/features/file-actions/FileScopeBar";
 import { useFileItemActions } from "@/features/file-actions/useFileItemActions";
+import { FileCardContextArea } from "@/features/file-actions/FileCardContextArea";
 import { WORKBOOK_ADAPTER } from "@/features/file-actions/adapters";
 import { DocumentsHubToolbar } from "@/features/documents/components/DocumentsHubToolbar";
 import { WorkbooksHubTable } from "@/features/workbooks/components/WorkbooksHubTable";
@@ -659,7 +660,13 @@ export default function WorkbooksLandingPage() {
             // canvas a 1440px window left three 180px cards ("Top …").
             <div className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))]">
               {visibleWorkbooks.map((wb) => (
-                <Card key={wb.id} className="group/entity-ref">
+                <FileCardContextArea
+                  key={wb.id}
+                  className="grid min-w-0"
+                  menu={(control) => menuFor(wb, scope === "trash", control)}
+                >
+                {(cardMenu) => (
+                <Card className="group/entity-ref">
                   <CardContent className="p-4 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       {/* A real anchor, not a button that router.pushes: the
@@ -690,7 +697,7 @@ export default function WorkbooksLandingPage() {
                           id={wb.id}
                           name={wb.workbook_name}
                         />
-                        {menuFor(wb, scope === "trash")}
+                        {cardMenu}
                       </span>
                     </div>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -728,6 +735,8 @@ export default function WorkbooksLandingPage() {
                     </div>
                   </CardContent>
                 </Card>
+                )}
+                </FileCardContextArea>
               ))}
             </div>
           )}
