@@ -147,6 +147,13 @@ request, loud vs silent failure, never an all-clear, expired mute ignored).
 
 ## Change log
 
+- **2026-10-10** — Every dock read answers on EVERY page: `scheduler.system_schedule_alarms` and
+  `platform.dated_changes_for_attention` (via `_dated_change_caller_ok`) gated on the
+  admin-lane-bound `is_super_admin()`, so outside `/administration` the dock said "Schedules could
+  not be read". All three DB doors now gate on `is_super_admin_person()` (identity). Outages are a
+  Python GET gated on the admin level, not the lane. Live proof:
+  `aidream/services/billing/tests/test_attention_dock_doors_live.py`.
+
 - **2026-10-10** — Spend alarms join the dock (source `spend-alarms`) and the loud in-app notice
   rail is deleted (`features/notifications/components/LoudNotices*`, `loud/`, `/demos/loud-notices`,
   `communication.my_loud_notices`). Arman: "I need this thing to be on the proper admin
