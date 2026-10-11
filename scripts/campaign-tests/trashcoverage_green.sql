@@ -43,7 +43,7 @@ declare
     'agent_run','web_brand','web_site','commerce_certified_printer','comparison_set','crm_deal',
     'crm_outreach_list','party','document','seo_engine_schedule','seo_gsc_dig_rule',
     'seo_keyword_class_rule','plan_entity','plan_node','fc_card','content_ir_kind_instance',
-    'skill_render_definition','interview_session','billing_spend_guardrail','studio_session',
+    'interview_session','billing_spend_guardrail','studio_session',
     'project','canvas_item'];
   v_org     uuid;
   v_cat     uuid;

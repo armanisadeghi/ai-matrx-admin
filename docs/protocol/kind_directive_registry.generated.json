@@ -11293,7 +11293,7 @@
     {
       "capability": "pure",
       "class": "reference",
-      "doc": "Pointer to one Content Block (skill.render_definition) row by id (RLS-scoped, read-only).",
+      "doc": "Pointer to one Content Block (agent.prompt_block) row by id (RLS-scoped, read-only).",
       "item_model": "RecordRef",
       "noun": "content_block",
       "purposes": [
@@ -19951,93 +19951,6 @@
         "type": "object"
       },
       "slug": "directive_v1_reference_skill"
-    },
-    {
-      "capability": "pure",
-      "class": "reference",
-      "doc": "Pointer to one Skill Render Definition (skill.render_definition) row by id (RLS-scoped, read-only).",
-      "item_model": "RecordRef",
-      "noun": "skill_render_definition",
-      "purposes": [
-        "substitute",
-        "expand",
-        "inline",
-        "context"
-      ],
-      "schema": {
-        "additionalProperties": false,
-        "properties": {
-          "__kind": {
-            "const": "directive_v1_reference_skill_render_definition",
-            "type": "string"
-          },
-          "items": {
-            "items": {
-              "additionalProperties": true,
-              "description": "Pointer to one row of a registered user-owned resource, by primary id.",
-              "properties": {
-                "description": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ],
-                  "default": null,
-                  "title": "Description"
-                },
-                "id": {
-                  "title": "Id",
-                  "type": "string"
-                },
-                "label": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ],
-                  "default": null,
-                  "title": "Label"
-                },
-                "purpose": {
-                  "default": "substitute",
-                  "title": "Purpose",
-                  "type": "string"
-                },
-                "slot": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ],
-                  "default": null,
-                  "title": "Slot"
-                }
-              },
-              "required": [
-                "id"
-              ],
-              "title": "RecordRef",
-              "type": "object"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "__kind",
-          "items"
-        ],
-        "type": "object"
-      },
-      "slug": "directive_v1_reference_skill_render_definition"
     },
     {
       "capability": "pure",

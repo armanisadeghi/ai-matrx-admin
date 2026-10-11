@@ -57,10 +57,6 @@ export const CATALOG_NOUNS: Record<string, CatalogNounEntry> = {
   "table": "skill.definition",
   "title_column": "label"
  },
- "skill_render_definition": {
-  "table": "skill.render_definition",
-  "title_column": "label"
- },
  "folder": {
   "table": "files.folders",
   "title_column": "folder_name"
@@ -795,10 +791,6 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  },
  "skill_detail": {
   "label": "Skill Detail",
-  "family": "Agents"
- },
- "skill_render_definition": {
-  "label": "Skill Render Definition",
   "family": "Agents"
  },
  "file": {

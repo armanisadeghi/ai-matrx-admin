@@ -6539,9 +6539,9 @@
  },
  {
   "token": "skill_render_definition",
-  "type": "entity",
-  "custom_fields_enabled": true,
-  "is_active": true,
+  "type": "deprecated",
+  "custom_fields_enabled": false,
+  "is_active": false,
   "has_organization": true
  },
  {
