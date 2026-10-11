@@ -13,22 +13,8 @@
  * sheet also renders) list the SAME registry ids in the SAME order and
  * grouping; the agent libraries live inside the AI submenu; nothing repeats.
  */
-jest.mock("@ai-matrx/context-menu/model", () => ({
-  getPlacementIcon: () => null,
-  getPlacementLabel: (p: string) => p,
-  resolveIcon: () => null,
-  resolveRichActionView: (
-    action: { label: unknown; disabled?: (ctx: unknown) => unknown },
-    ctx: unknown,
-  ) => ({
-    label:
-      typeof action.label === "function"
-        ? (action.label as (c: unknown) => string)(ctx)
-        : (action.label as string),
-    disabled: Boolean(action.disabled?.(ctx)),
-  }),
-  PLACEMENT_COLOR: {},
-}));
+// The menu model is the package's built @ai-matrx/context-menu/model: its helpers are
+// internal to the bundle, so they run for real here (a module mock cannot reach them).
 
 import * as fs from "fs";
 import * as path from "path";
