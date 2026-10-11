@@ -44,6 +44,7 @@ export function provideStoredComponentScopeModules(): void {
     "@/components/kind-kit/KindPanel": kindKit,
     "@/components/kind-kit/KindHeaderBar": kindKit,
     "@/components/kind-kit/KindActionButton": kindKit,
+    "@/components/kind-kit/KindImage": kindKit,
     "@/components/kind-kit/StreamingSkeleton": kindKit,
     "@/components/kind-kit/TagList": kindKit,
     "@/lib/utils": () => require("@/lib/utils"),

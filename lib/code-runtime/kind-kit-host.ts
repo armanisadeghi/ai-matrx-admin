@@ -16,6 +16,7 @@ import {
   type KindKitCopyProps,
   type KindKitReadEmptyProps,
   type KindKitReadStaleNoticeProps,
+  type KindImageProps,
 } from "@ai-matrx/content-ir-react/kind-kit";
 
 function AppCopyButtons(props: KindKitCopyProps) {
@@ -33,4 +34,10 @@ function AppReadStaleNotice(props: KindKitReadStaleNoticeProps) {
   return createElement(ReadStaleNotice, props);
 }
 
-setKindKitHost({ CopyButtons: AppCopyButtons, ReadEmpty: AppReadEmpty, ReadStaleNotice: AppReadStaleNotice });
+/** A shape's image: THE canonical image block (the frame bundle aliases this to its frame twin). */
+function AppImage(props: KindImageProps) {
+  const { AppKindImage } = require("@/features/content-ir/react/kind-image/AppKindImage") as typeof import("@/features/content-ir/react/kind-image/AppKindImage");
+  return createElement(AppKindImage, props);
+}
+
+setKindKitHost({ CopyButtons: AppCopyButtons, ReadEmpty: AppReadEmpty, ReadStaleNotice: AppReadStaleNotice, Image: AppImage });

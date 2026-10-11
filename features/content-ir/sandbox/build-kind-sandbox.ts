@@ -92,6 +92,12 @@ const ALIAS: Record<string, string> = {
     __dirname,
     "runtime/FrameCopyButtons.tsx",
   ),
+  // A shape's image: the app's canonical image block cannot run in the frame;
+  // the kit's frame-safe image (Expand/Share relayed to the host) stands in.
+  "@/features/content-ir/react/kind-image/AppKindImage": resolve(
+    __dirname,
+    "runtime/FrameKindImage.tsx",
+  ),
   // Word/PDF export (pdfmake + docx) — announced stand-in; the menu's other
   // formats are the real ones.
   "@ai-matrx/print/document": resolve(
