@@ -14,6 +14,20 @@ import Link from "next/link";
 import type { MandateCandidateCell } from "@/features/mandates/admin-list/rpc";
 import { useLiveCandidateCell } from "../live";
 
+/**
+ * The cell's words. Failed pairs are named in the text, not only in the red
+ * tint and the tooltip: "3 of 3 in" over three failures read as a healthy,
+ * finished collection (verifier, 2026-10-10).
+ */
+export function candidateCellText(cell: MandateCandidateCell): string {
+  const failed = cell.runs_failed ?? 0;
+  const worse = cell.runs_regressed ?? 0;
+  if (failed > 0 && failed >= cell.runs_in) return `${failed} of ${cell.runs_wanted} failed`;
+  const count = `${cell.runs_in} of ${cell.runs_wanted} in`;
+  const marks = [failed > 0 ? `${failed} failed` : null, worse > 0 ? `${worse} worse` : null].filter(Boolean);
+  return marks.length ? `${count} · ${marks.join(" · ")}` : count;
+}
+
 export function CandidateListCell({
   mandateId,
   cell: listCell,
@@ -58,7 +72,7 @@ export function CandidateListCell({
             : "bg-primary/10 text-primary-ink")
       }
     >
-      {cell.runs_in} of {cell.runs_wanted} in
+      {candidateCellText(cell)}
       {cell.open_count > 1 ? <span className="opacity-70">+{cell.open_count - 1}</span> : null}
     </Link>
   );
