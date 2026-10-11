@@ -71,6 +71,12 @@ export type TaskChecklistProps = {
    * one convert path, not two.
    */
   hideActions?: boolean;
+  /**
+   * With `hideActions`, still offer ONE compact "Make tasks" button — an AI answer's checklist
+   * must become real tasks in one click wherever it is shown, not only on a saved artifact.
+   * The Reset / Save pair stays hidden (the host persists ticks itself).
+   */
+  makeTasks?: boolean;
 };
 
 // Main component
@@ -81,6 +87,7 @@ const TaskChecklist = ({
   onSave = (state: CheckboxStateType) => {},
   hideTitle = false,
   hideActions = false,
+  makeTasks = false,
 }: TaskChecklistProps) => {
   const [checklist, setChecklist] = useState<TaskItemType[]>([]);
   const [checkboxState, setCheckboxState] =
@@ -633,6 +640,20 @@ const TaskChecklist = ({
           </NonEditableContextMenu>
 
           {/* Bottom right save/reset/import buttons */}
+          {hideActions && makeTasks && (
+            <div className="mt-3 flex justify-end">
+              <Button
+                size="xs"
+                variant="outline"
+                onClick={() => setIsImportModalOpen(true)}
+                className="flex items-center gap-1"
+                aria-label="Make tasks"
+                title="Turn this checklist into real tasks"
+              >
+                <ListPlus className="h-3.5 w-3.5" /> Make tasks
+              </Button>
+            </div>
+          )}
           {!hideActions && (
             <div className="mt-6 flex justify-end space-x-2">
               <Tooltip>

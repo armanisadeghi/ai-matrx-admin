@@ -48,6 +48,10 @@ export async function discoverTikTokAccount(connectionId: string) {
   return (await apiPost("/tiktok-integrations/discover", { connection_id: connectionId })).data;
 }
 
+export async function listTikTokVideos(connectionId: string, cursor?: number) {
+  return (await apiPost("/tiktok-integrations/videos", { connection_id: connectionId, cursor })).data;
+}
+
 export async function attachTikTokAccount(connectionId: string, resourceRef: string) {
   return (await apiPost("/tiktok-integrations/attach", { connection_id: connectionId, resource_ref: resourceRef })).data;
 }
