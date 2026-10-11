@@ -6,7 +6,7 @@
  */
 
 import type { NodeSource } from "../board/document";
-import type { DataFetchInput, DataFetchResult } from "./contract";
+import type { DataFetchInput, DataFetchResult } from "../../data-sources/contract";
 
 export const DATA_FETCH_META_KEY = "data_fetch";
 
@@ -76,19 +76,6 @@ export function provenanceOf(
     valuesAsText: result.values_as_text,
     limitApplied: result.limit_applied,
   };
-}
-
-/** The input in a few words for the source bar ("trustpilot.com/review/acme.com", "plumbers · Austin"). */
-export function inputWords(input: DataFetchInput): string {
-  if ("url" in input) {
-    try {
-      const u = new URL(input.url);
-      return `${u.hostname.replace(/^www\./, "")}${u.pathname === "/" ? "" : u.pathname}`;
-    } catch {
-      return input.url;
-    }
-  }
-  return input.inputs.map((one) => Object.values(one).join(" · ")).join(", ");
 }
 
 /** A "Get data" tile: a Table tile (`data-table`, no id yet) that starts as the fetch panel. */

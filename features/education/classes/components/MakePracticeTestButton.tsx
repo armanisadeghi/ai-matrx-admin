@@ -38,9 +38,9 @@ import { useAiComplianceGate } from "@/features/education/compliance/useAiCompli
 import { useEntitlementGuard } from "@/features/entitlements/components/useEntitlementGuard";
 import { SourceInput } from "@/features/resource-manager/source-input/components/SourceInput";
 import { useSourceSet } from "@/features/resource-manager/source-input/useSourceSet";
-import { ALL_SOURCE_KIND_IDS } from "@/features/resource-manager/source-input/sourceKinds";
+import { ALL_SOURCE_KIND_IDS, type SourceInputKindId } from "@/features/resource-manager/source-input/sourceKinds";
 import { createSourceRef } from "@ai-matrx/agents/sources";
-import type { SourceDraft, SourceKindId } from "@ai-matrx/agents/sources/runtime";
+import type { SourceDraft } from "@ai-matrx/agents/sources/runtime";
 import { sourceNamesOf } from "@/features/flashcards/data/deckSourceSet";
 import {
   FLASHCARD_SOURCE_DELIVERIES,
@@ -62,7 +62,7 @@ import type { ClassTest } from "../classTests";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 const config = PRACTICE_TEST_CONFIG;
-const TOPUP_KINDS: readonly SourceKindId[] = ALL_SOURCE_KIND_IDS.filter((k) => k !== "topic");
+const TOPUP_KINDS: readonly SourceInputKindId[] = ALL_SOURCE_KIND_IDS.filter((k) => k !== "topic");
 const FOCUS_MAX = 2000;
 
 const questionCount = (n: number) => `${n} ${n === 1 ? "question" : "questions"}`;

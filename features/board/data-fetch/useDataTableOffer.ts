@@ -4,10 +4,10 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { toast } from "@/lib/toast";
 
-import { dataTableOffer } from "../home/board-intake";
+import { dataTableOffer } from "../../data-sources/offer";
 import type { PlacedItem } from "../items/types";
-import { dataSourcesKey } from "./hooks";
-import { getDataSources } from "./server";
+import { dataSourcesKey } from "../../data-sources/hooks";
+import { getDataSources } from "../../data-sources/server";
 import { getDataSource } from "./tile-meta";
 import { useFetchOrganizationId } from "./GetDataBody";
 

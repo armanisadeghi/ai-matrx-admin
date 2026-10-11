@@ -37,6 +37,8 @@ import { DocumentContentInline } from "./renderers/document-content/DocumentCont
 import { resolveDocumentContentView } from "./renderers/document-content/documentContentView";
 import { NoteToolInline } from "./renderers/note/NoteToolInline";
 import { NoteToolOverlay } from "./renderers/note/NoteToolOverlay";
+import { SiteDataInline } from "./renderers/site-data/SiteDataInline";
+import { parseSiteData } from "./renderers/site-data/parseSiteData";
 import { TopicalMapInline } from "./renderers/topical-map/TopicalMapInline";
 import {
   TOPICAL_MAP_ACTION_LABELS,
@@ -521,6 +523,24 @@ const FEATURE_TOOL_RENDERERS: ToolRegistry = {
       if (view) parts.push(view.replaceAll("_", " "));
       return parts.length ? parts.join(" · ") : null;
     },
+  },
+
+  // `site_data` — structured records for a covered site (reviews, places, jobs, products). The card
+  // shows the records and the way to keep them as a table; the data vendor is never named.
+  site_data: {
+    toolName: "site_data",
+    displayName: "Live data",
+    chrome: "card",
+    phaseLabels: {
+      running: "Getting live data",
+      complete: "Got live data",
+      errorPrefix: "Live data failed",
+    },
+    resultsLabel: "Live data",
+    InlineComponent: SiteDataInline,
+    keepExpandedOnStream: true,
+    displayMode: "stay-open",
+    getHeaderSubtitle: (entry) => parseSiteData(entry)?.label ?? null,
   },
 
   note: {

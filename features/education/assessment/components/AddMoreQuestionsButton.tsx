@@ -44,8 +44,8 @@ import { useAiComplianceGate } from "@/features/education/compliance/useAiCompli
 import { useEntitlementGuard } from "@/features/entitlements/components/useEntitlementGuard";
 import { SourceInput } from "@/features/resource-manager/source-input/components/SourceInput";
 import { useSourceSet } from "@/features/resource-manager/source-input/useSourceSet";
-import { ALL_SOURCE_KIND_IDS } from "@/features/resource-manager/source-input/sourceKinds";
-import type { SourceDraft, SourceKindId } from "@ai-matrx/agents/sources/runtime";
+import { ALL_SOURCE_KIND_IDS, type SourceInputKindId } from "@/features/resource-manager/source-input/sourceKinds";
+import type { SourceDraft } from "@ai-matrx/agents/sources/runtime";
 import { originToDraft } from "@/features/flashcards/components/set-detail/AddMoreCardsButton";
 import { sourceNamesOf } from "@/features/flashcards/data/deckSourceSet";
 import {
@@ -68,7 +68,7 @@ import { kindConfigFor } from "./kindConfig";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 /** The top-up never offers "Just a topic": the questions come from material. */
-const TOPUP_KINDS: readonly SourceKindId[] = ALL_SOURCE_KIND_IDS.filter((k) => k !== "topic");
+const TOPUP_KINDS: readonly SourceInputKindId[] = ALL_SOURCE_KIND_IDS.filter((k) => k !== "topic");
 
 export const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
   multiple_choice: "Multiple choice",

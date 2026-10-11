@@ -10,7 +10,9 @@
  * Contract of record: common-docs `projects/unified-source-input/DESIGN.md`.
  */
 
-import type { SourceAttachTo, SourceDelivery, SourceKindId } from "@ai-matrx/agents/sources/runtime";
+import type { SourceAttachTo, SourceDelivery } from "@ai-matrx/agents/sources/runtime";
+
+import type { SourceInputKindId } from "./sourceKinds";
 
 export interface SourceInputProps {
   /**
@@ -19,7 +21,7 @@ export interface SourceInputProps {
    */
   surfaceKey: string;
   /** Which tiles appear ("existing" = Use existing + search). Omitted = every tile. */
-  kinds?: readonly SourceKindId[];
+  kinds?: readonly SourceInputKindId[];
   /** Most Sources the person may pick. Omitted = no limit. */
   max?: number;
   /** The host needs at least one Source (or a topic) before it can run. */

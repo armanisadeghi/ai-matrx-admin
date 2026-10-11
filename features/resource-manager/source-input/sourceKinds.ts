@@ -34,10 +34,18 @@ import {
 } from "@/features/sources/sourceRows";
 import type { SourceDraft, SourceKindId, SourceTileId } from "@ai-matrx/agents/sources/runtime";
 
-export type SourceKindControl = "upload" | "paste" | "url" | "youtube" | "audio" | "topic";
+export type SourceKindControl = "upload" | "paste" | "url" | "youtube" | "audio" | "topic" | "data";
+
+/**
+ * The Data tile (a table made by Get data). The package's tile ids do not name it yet, so the
+ * frontend adds it here: a host narrowing `kinds` may list it beside the package's ids.
+ */
+export const DATA_TILE_ID = "data" as const;
+export type SourceAddTileId = Exclude<SourceTileId, "existing"> | typeof DATA_TILE_ID;
+export type SourceInputKindId = SourceKindId | typeof DATA_TILE_ID;
 
 export interface SourceKindDef {
-  id: Exclude<SourceTileId, "existing">;
+  id: SourceAddTileId;
   /** The tile's one word or two. */
   label: string;
   icon: ComponentType<{ className?: string }>;
@@ -50,7 +58,7 @@ export interface SourceKindDef {
   noun: string;
 }
 
-const door = (id: Exclude<SourceTileId, "existing">) => {
+const door = (id: SourceAddTileId) => {
   const { label, icon, iconClassName } = RESOURCE_PICKER_SOURCE_ITEMS[id];
   return { id, label, icon, iconClassName };
 };
@@ -68,23 +76,24 @@ export const SOURCE_KINDS: readonly SourceKindDef[] = [
   { ...door("audio"), noun: "Recording", control: "audio", accept: "audio/*,video/*" },
   { ...door("image"), noun: "Image", control: "upload", accept: "image/*" },
   { ...door("topic"), noun: "Topic", control: "topic" },
+  { ...door(DATA_TILE_ID), noun: "Table", control: "data" },
 ];
 
 /** Every tile id a host may pass in `kinds` ("existing" = the Use existing row and search). */
-export const ALL_SOURCE_KIND_IDS: readonly SourceTileId[] = [
+export const ALL_SOURCE_KIND_IDS: readonly (SourceTileId | typeof DATA_TILE_ID)[] = [
   ...SOURCE_KINDS.map((k) => k.id),
   "existing",
 ];
 
 /** The Add new tiles a host allows, in registry order. Unknown ids are ignored. */
-export function visibleSourceKinds(kinds: readonly SourceKindId[] | undefined): SourceKindDef[] {
+export function visibleSourceKinds(kinds: readonly SourceInputKindId[] | undefined): SourceKindDef[] {
   if (!kinds) return [...SOURCE_KINDS];
   const allowed = new Set<string>(kinds);
   return SOURCE_KINDS.filter((k) => allowed.has(k.id));
 }
 
 /** True when the host shows what the person already has (the default). */
-export function showsExisting(kinds: readonly SourceKindId[] | undefined): boolean {
+export function showsExisting(kinds: readonly SourceInputKindId[] | undefined): boolean {
   return !kinds || kinds.includes("existing");
 }
 

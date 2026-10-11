@@ -11,7 +11,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, Database, DownloadCloud } from "lucide-react";
+import { Database, DownloadCloud } from "lucide-react";
 import {
   Badge,
   Button,
@@ -24,7 +24,6 @@ import {
 
 import { ReadFailure } from "@ai-matrx/design-system";
 
-import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { formatCount, formatDurationMs } from "@ai-matrx/kit/format";
 import { ProInput } from "@/components/official/ProInput";
 import { Spinner } from "@/components/ui/spinner";
@@ -42,11 +41,13 @@ import {
   type DataFetchRefusal,
   type DataSource,
   type DataSourceCatalog,
-} from "./contract";
-import { limitSettingHref, useDataSources, useFetchEstimate } from "./hooks";
-import { clearRun, resumeRun, runState, startRun, useRun } from "./runs";
-import { fetchData, getJob } from "./server";
+} from "../../data-sources/contract";
+import { limitSettingHref, useDataSources, useFetchEstimate } from "../../data-sources/hooks";
+import { clearRun, resumeRun, runState, startRun, useRun } from "../../data-sources/runs";
+import { fetchData, getJob } from "../../data-sources/server";
 import { provenanceOf, readDataFetchMeta, withDataFetchMeta, type DataFetchDraft } from "./tile-meta";
+
+import { RefusalView } from "../../data-sources/RefusalView";
 
 const TABLE_ENTITY = "data-table";
 
@@ -58,7 +59,7 @@ export function useFetchOrganizationId(): string | null {
   return board ?? active.organizationId ?? null;
 }
 
-export function GetDataBody({ tileId, source, onSource }: ItemBodyProps) {
+export function GetDataBody({ tileId, source, onSource }: Pick<ItemBodyProps, "tileId" | "source" | "onSource">) {
   const meta = source.kind === "entity" ? source.meta : undefined;
   const draft: DataFetchDraft = readDataFetchMeta(meta)?.draft ?? {};
   const organizationId = useFetchOrganizationId();
@@ -98,6 +99,19 @@ export function GetDataBody({ tileId, source, onSource }: ItemBodyProps) {
     );
   }, [done, draft.request, tileId, onSource]);
 
+  // A saved job that is not resolved: show it at once (never the picker, which invites a second paid
+  // click). The reconnect effect above polls the job right away once the organization is known.
+  if (savedJob && run.status !== "failed" && run.status !== "done") {
+    return (
+      <div className="flex h-full">
+        <ProgressView
+          source={catalog.data?.sources.find((s) => s.key === draft.sourceKey) ?? null}
+          progress={run.status === "running" ? run.progress : null}
+          startedAt={run.status === "running" ? run.startedAt : Date.now()}
+        />
+      </div>
+    );
+  }
   if (!organizationId) {
     return <EmptyState icon={<Database className="h-5 w-5" />} title="No organization yet" line="Data is fetched into an organization." />;
   }
@@ -388,33 +402,6 @@ function ProgressView({ source, progress, startedAt }: { source: DataSource | nu
         />
       </div>
       <div className="text-[11px] text-muted-foreground">{elapsed(startedAt, now)} · Keeps going if you leave</div>
-    </div>
-  );
-}
-
-export function RefusalView({ refusal, organizationId, onBack }: { refusal: DataFetchRefusal; organizationId: string | null; onBack: () => void }) {
-  const href = refusal.limit ? limitSettingHref(organizationId, refusal.limit.setting) : null;
-  return (
-    <div className="m-auto flex max-w-sm flex-col items-center gap-3 text-center" role="alert" data-fetch-refusal={refusal.code}>
-      <AlertTriangle className="h-6 w-6 text-destructive" />
-      <div className="flex items-center gap-1 text-sm font-medium text-foreground">
-        {refusal.userMessage}
-        <ErrorAlchemyMenu error={refusal.userMessage} />
-      </div>
-      {refusal.limit && (
-        <div className="text-xs text-muted-foreground">
-          Limit {formatCount(refusal.limit.value)}
-          {href && (
-            <>
-              {" · "}
-              <Link href={href} className="text-primary hover:underline" target="_blank">
-                Change
-              </Link>
-            </>
-          )}
-        </div>
-      )}
-      <Button onClick={onBack}>Back</Button>
     </div>
   );
 }

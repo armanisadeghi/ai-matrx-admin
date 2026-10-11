@@ -57,8 +57,8 @@ import { useAiComplianceGate } from "@/features/education/compliance/useAiCompli
 import { useEntitlementGuard } from "@/features/entitlements/components/useEntitlementGuard";
 import { SourceInput } from "@/features/resource-manager/source-input/components/SourceInput";
 import { useSourceSet } from "@/features/resource-manager/source-input/useSourceSet";
-import { ALL_SOURCE_KIND_IDS } from "@/features/resource-manager/source-input/sourceKinds";
-import type { SourceDraft, SourceKindId } from "@ai-matrx/agents/sources/runtime";
+import { ALL_SOURCE_KIND_IDS, type SourceInputKindId } from "@/features/resource-manager/source-input/sourceKinds";
+import type { SourceDraft } from "@ai-matrx/agents/sources/runtime";
 import { useFlashcardMandates } from "@/features/flashcards/data/mandate-disclosure";
 import { fcService } from "@/features/flashcards/data/fcService";
 import {
@@ -90,7 +90,7 @@ import { useTabBoundRun, type TabBoundRun } from "@/lib/wizard-draft/useTabBound
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 /** The top-up never offers "Just a topic": the cards come from material. */
-const TOPUP_KINDS: readonly SourceKindId[] = ALL_SOURCE_KIND_IDS.filter((k) => k !== "topic");
+const TOPUP_KINDS: readonly SourceInputKindId[] = ALL_SOURCE_KIND_IDS.filter((k) => k !== "topic");
 
 /** The card types a top-up can ask for; none picked = the writer's own mix. */
 export const KIND_CHOICES: { kind: CardKind; label: string }[] = [

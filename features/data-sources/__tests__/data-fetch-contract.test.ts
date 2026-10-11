@@ -14,8 +14,8 @@ import {
   parseJob,
   type DataSource,
 } from "../contract";
-import { dataTableOffer } from "../../home/board-intake";
-import { provenanceOf, readDataFetchMeta, withDataFetchMeta, getDataSource } from "../tile-meta";
+import { dataTableOffer } from "../offer";
+import { provenanceOf, readDataFetchMeta, withDataFetchMeta, getDataSource } from "../../board/data-fetch/tile-meta";
 
 const CATALOG = parseCatalog({
   sources: [

@@ -10,6 +10,7 @@ import {
   ClipboardType,
   Image,
   Layers,
+  Database,
   Library,
   Lightbulb,
   MessagesSquare,
@@ -284,6 +285,7 @@ export type ResourcePickerSourceItemId =
   | "audio"
   | "image"
   | "topic"
+  | "data"
   | "existing";
 
 function menuItemAsTile(
@@ -322,6 +324,12 @@ export const RESOURCE_PICKER_SOURCE_ITEMS: Record<
     label: "Topic",
     icon: Lightbulb,
     iconClassName: "text-orange-600 dark:text-orange-400",
+  },
+  data: {
+    id: "data",
+    label: "Data",
+    icon: Database,
+    iconClassName: "text-cyan-600 dark:text-cyan-400",
   },
   existing: {
     id: "existing",

@@ -30,14 +30,14 @@ import { SourceInput } from "@/features/resource-manager/source-input/components
 import { useSourceSet } from "@/features/resource-manager/source-input/useSourceSet";
 import {
   ALL_SOURCE_KIND_IDS,
+  type SourceInputKindId,
   sourceKindNoun,
 } from "@/features/resource-manager/source-input/sourceKinds";
-import type { SourceKindId } from "@ai-matrx/agents/sources/runtime";
 import { attachableSourceRef } from "../classParts";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 /** "Just a topic" is not a thing a class can hold. */
-const CLASS_SOURCE_KINDS: readonly SourceKindId[] = ALL_SOURCE_KIND_IDS.filter(
+const CLASS_SOURCE_KINDS: readonly SourceInputKindId[] = ALL_SOURCE_KIND_IDS.filter(
   (k) => k !== "topic",
 );
 

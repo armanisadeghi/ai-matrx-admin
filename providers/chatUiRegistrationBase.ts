@@ -22,7 +22,7 @@ import { useTablesEverywhere } from "@/features/unified-data/hub/useTablesEveryw
 import { FileResourceChip } from "@/features/files/components/preview/FileResourceChip";
 import { ConnectorMark } from "@/features/connectors/ConnectorMark";
 import { connectorDefinitionFromMcp } from "@/features/connectors/live-connectors";
-import { useClipboardPaste } from "@/components/ui/file-upload/useClipboardPaste";
+import { useClipboardPasteWithDataOffer } from "@/features/data-sources/usePasteDataOffer";
 import { useCenterControlFit } from "@/features/shell/components/header/useCenterControlFit";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { summarizeContextCell } from "@/features/scopes/utils/referenceCell";
@@ -212,7 +212,7 @@ registerChatUi({
   ConnectorMark,
   confirm,
   useTablesEverywhere,
-  useClipboardPaste,
+  useClipboardPaste: useClipboardPasteWithDataOffer,
   useCenterControlFit,
   connectorDefinitionFromMcp,
   useKnowledgeAttachSearch,

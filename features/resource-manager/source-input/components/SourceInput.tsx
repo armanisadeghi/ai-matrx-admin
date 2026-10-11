@@ -52,9 +52,11 @@ import {
 import { cn } from "@/utils/cn";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import {
+  DATA_TILE_ID,
   showsExisting,
   sourceKindNoun,
   visibleSourceKinds,
+  type SourceAddTileId,
   type SourceKindDef,
 } from "../sourceKinds";
 import { useSourceDraftAddresses } from "../sourceAddress";
@@ -72,11 +74,13 @@ import { fileOrganizationId } from "@/features/files/api/fileOrganization";
 import type { SourceInputProps } from "../types";
 import { SourceCard, formatChars } from "./SourceCard";
 import { UseExisting } from "./UseExisting";
+import { DataSourceTile } from "./DataSourceTile";
+import { RECORD_STORE_TOKEN } from "../recordStoreKinds";
 
 const REVIEW_KNOB = { feature: "sources", key: "review_threshold_chars" } as const;
 const MEASURE_DEBOUNCE_MS = 400;
 
-type AddTileId = Exclude<SourceTileId, "existing">;
+type AddTileId = SourceAddTileId;
 
 export function SourceInput({
   surfaceKey,
@@ -405,7 +409,7 @@ export function SourceInput({
             items={tiles}
             selectedId={active}
             onSelect={(tile) => setActive(active === tile.id ? null : tile.id)}
-            className="grid-cols-4 sm:grid-cols-7"
+            className="grid-cols-4 sm:grid-cols-8"
           />
         </div>
       )}
@@ -603,7 +607,25 @@ function TileArea({
           onSelect={async (uploaded) => {
             const files = fitFiles(uploaded);
             if (!files.length) return;
-            await intake.addUploaded(files, tile.id);
+            if (tile.id !== DATA_TILE_ID) await intake.addUploaded(files, tile.id);
+          }}
+        />
+      );
+    case "data":
+      return (
+        <DataSourceTile
+          surfaceKey={surfaceKey}
+          isPicked={(token, id) => set.hasRef(token, id)}
+          onPick={(table) => {
+            const picked = set.sources.find(
+              (s) => s.draft.ref?.resource_type === RECORD_STORE_TOKEN.table && s.draft.ref.resource_id === table.id,
+            );
+            if (picked) {
+              set.remove(picked.id);
+              return;
+            }
+            if (refuseOverMax()) return;
+            intake.addExisting({ token: RECORD_STORE_TOKEN.table, id: table.id, title: table.title });
           }}
         />
       );

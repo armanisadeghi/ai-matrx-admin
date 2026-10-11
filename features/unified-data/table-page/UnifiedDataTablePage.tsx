@@ -17,6 +17,7 @@ import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTable } from "@ai-matrx/records/react";
 import { SyncedTableBar } from "@/features/unified-data/connect-database/SyncedTableBar";
+import { FetchedTableBar } from "@/features/data-sources/FetchedTableBar";
 import { SyncIntoWorkspaceButton } from "@/features/unified-data/connect-database/SyncIntoWorkspaceButton";
 import { TableWorkbookLinkButton } from "@/features/workbooks/table-link/TableWorkbookLinkButton";
 import type { PageView, ViewAddressState } from "@ai-matrx/records-ui";
@@ -99,6 +100,8 @@ function TableRouteHeader({
           <HeldWritesOnTable key="held" tableId={tableId} organizationId={organizationId} />
           {/* Synced from outside: the chip and Refresh (lane VISION-REACH wave 3). Absent otherwise. */}
           <SyncedTableBar key="synced" tableId={tableId} organizationId={organizationId} />
+          {/* Fetched with "Get data": source, when, rows, Refresh / Get more with points. Absent otherwise. */}
+          <FetchedTableBar key="fetched" tableId={tableId} organizationId={organizationId} inline />
           {/* Airtable "sync a view into another base" (lane SYNC-AIRTABLE). */}
           <SyncIntoWorkspaceButton key="sync-into" tableId={tableId} organizationId={organizationId} />
           {/* A linked workbook: open as one, or update/refresh the linked one. */}

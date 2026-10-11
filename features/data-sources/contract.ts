@@ -201,6 +201,7 @@ export interface DataFetchSpec {
   rowsCreated: number;
   rowsUpdated: number;
   finishedAt: string | null;
+  createdAt: string | null;
 }
 
 export function parseSpec(row: unknown): DataFetchSpec | null {
@@ -217,7 +218,37 @@ export function parseSpec(row: unknown): DataFetchSpec | null {
     rowsCreated: num(r.rows_created) ?? 0,
     rowsUpdated: num(r.rows_updated) ?? 0,
     finishedAt: str(r.finished_at),
+    createdAt: str(r.created_at),
   };
+}
+
+/** A table made by "Get data", as the Data tile of the Source input lists it. */
+export interface FetchedTable {
+  tableId: string;
+  tableName: string;
+  sourceKey: string;
+  finishedAt: string | null;
+}
+
+/** The newest job per table (rows arrive newest first); jobs with no table yet are skipped. */
+export function parseFetchedTables(rows: unknown): FetchedTable[] {
+  if (!Array.isArray(rows)) return [];
+  const out: FetchedTable[] = [];
+  const seen = new Set<string>();
+  for (const row of rows) {
+    if (!row || typeof row !== "object") continue;
+    const r = row as Record<string, unknown>;
+    const tableId = str(r.table_id);
+    if (!tableId || seen.has(tableId)) continue;
+    seen.add(tableId);
+    out.push({
+      tableId,
+      tableName: str(r.table_name) ?? "Untitled table",
+      sourceKey: str(r.source_key) ?? "",
+      finishedAt: str(r.finished_at),
+    });
+  }
+  return out;
 }
 
 /**
@@ -375,4 +406,17 @@ export function matchSourceForUrl(href: string, sources: readonly DataSource[]):
     return !exFirst || exFirst === first;
   });
   return matches.find((s) => s.verified) ?? matches[0] ?? null;
+}
+
+/** The input in a few words for the source bar ("trustpilot.com/review/acme.com", "plumbers · Austin"). */
+export function inputWords(input: DataFetchInput): string {
+  if ("url" in input) {
+    try {
+      const u = new URL(input.url);
+      return `${u.hostname.replace(/^www\./, "")}${u.pathname === "/" ? "" : u.pathname}`;
+    } catch {
+      return input.url;
+    }
+  }
+  return input.inputs.map((one) => Object.values(one).join(" · ")).join(", ");
 }

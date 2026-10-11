@@ -9,7 +9,6 @@
  */
 
 import { classifySocialLink } from "@/features/marketing/social/link";
-import { matchSourceForUrl, type DataSource } from "../data-fetch/contract";
 import type { PlacedItem } from "../items/types";
 import { looksLikeImageUrl, parseWebUrl } from "../items/web-address";
 
@@ -51,18 +50,4 @@ function asAddress(line: string): URL | null {
   if (/\s/.test(line)) return null;
   const url = parseWebUrl(line);
   return url && (url.hostname.includes(".") || url.hostname === "localhost") ? url : null;
-}
-
-/**
- * A pasted or dropped address that a data source can read ("Trustpilot reviews", "Google Maps
- * places"): the board OFFERS "Get as data table" — it never fetches on paste. One address only;
- * the paste itself still lands as usual (a web page tile).
- */
-export function dataTableOffer(text: string, sources: readonly DataSource[]): { source: DataSource; url: string } | null {
-  const lines = text.trim().split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-  if (lines.length !== 1) return null;
-  const url = asAddress(lines[0]);
-  if (!url) return null;
-  const source = matchSourceForUrl(url.href, sources);
-  return source ? { source, url: url.href } : null;
 }
