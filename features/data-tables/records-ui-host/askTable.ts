@@ -4,7 +4,7 @@
  * Which agent answers is the MANDATE, resolved inside `launchMandate` — never an agent id here. The
  * run is headless (`displayMode: "direct"`): the launch thunk waits for the run and hands back its
  * final text, which for this mandate is the structured output as JSON. Inputs ride as named
- * VARIABLES (`table_id`, `question`, `view_id`, `max_words`); nothing machine-shaped goes through
+ * VARIABLES (`table_id`, `question`, `view_id`, `max_words`, `today`); nothing machine-shaped goes through
  * user_input. The package draws the answer and applies each edit against the record's version.
  *
  * `table.ask` is declared in aidream `services/table_agents/mandates.py`; a key declared after this
@@ -12,6 +12,7 @@
  * through `storedMandateKey` (types, never rejects; the server answers an unknown key with a 404).
  */
 
+import { dayKeyInZone } from "@/lib/time/personTimeZone";
 import { launchRefusal } from "@/features/unified-data/row-agent-action/rowAgentAction";
 import { usdToPoints } from "@ai-matrx/kit/format";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
@@ -22,6 +23,12 @@ export const TABLE_ASK_MANDATE_KEY = storedMandateKey("table.ask");
 export const TABLE_ASK_MAX_WORDS = "120";
 
 type LaunchMandate = ReturnType<typeof useAgentLauncher>["launchMandate"];
+
+/** The `today` variable: the person's calendar date and zone when they asked, "YYYY-MM-DD (Zone)". The date is HANDED, never left for the model to guess. */
+export function tableAskToday(zone: string | null | undefined, now: Date = new Date()): string {
+  const resolved = zone && zone !== "" ? zone : Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  return `${dayKeyInZone(resolved, now)} (${resolved})`;
+}
 
 const strings = (value: unknown): string[] => (Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : []);
 
@@ -75,8 +82,12 @@ export async function askTableByMandate(args: {
   readCostUsd?: ((requestId: string) => number | null) | undefined;
   /** The viewer's points-per-dollar rate (null until the knob has answered: the cost is then not measured). */
   pointsRate?: (() => number | null) | undefined;
+  /** The person's saved time zone (IANA); the device zone when absent. */
+  zone?: string | null | undefined;
+  /** The moment of the ask (tests pin it). */
+  now?: Date | undefined;
 }): Promise<TableAskOutcome> {
-  const { launchMandate, organizationId, ask, readCostUsd, pointsRate } = args;
+  const { launchMandate, organizationId, ask, readCostUsd, pointsRate, zone, now } = args;
   try {
     const launched = await launchMandate(TABLE_ASK_MANDATE_KEY, {
       surfaceKey: `data:${ask.tableId}`,
@@ -84,7 +95,7 @@ export async function askTableByMandate(args: {
       sourceFeature: "udt",
       config: { displayMode: "direct", autoRun: true, allowChat: false, showVariablePanel: false },
       runtime: {
-        variables: { table_id: ask.tableId, question: ask.question, view_id: ask.viewId, max_words: TABLE_ASK_MAX_WORDS },
+        variables: { table_id: ask.tableId, question: ask.question, view_id: ask.viewId, max_words: TABLE_ASK_MAX_WORDS, today: tableAskToday(zone, now) },
       },
     });
     const text = launched.responseText?.trim() ?? "";
