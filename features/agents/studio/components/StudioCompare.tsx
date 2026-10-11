@@ -53,6 +53,7 @@ export function StudioCompare({ run, original, originalLabel, phone = false }: S
     <div className="flex h-full min-h-0 flex-col" data-testid="studio-compare" data-view={shown} data-layout={layout}>
       <div className="flex h-9 shrink-0 items-center gap-2 border-b border-border px-2">
         <SegmentedControl
+          aria-label="Compare agent versions"
           value={shown}
           onValueChange={(v) => setView(v as CompareView)}
           data={compareViews(originalLabel, phone)}
