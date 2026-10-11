@@ -10,9 +10,21 @@
 
 ## Purpose
 
-Comprehensive notes system: quick plain notes and formatted notes in one note (modes below), folder organization, auto-labeling, real-time sync via Supabase Realtime, permissions-backed sharing, and a programmatic API that lets any feature in the app save content to notes. Notes is one of the most-integrated surfaces — it's both a standalone feature and a substrate other features target.
+Comprehensive notes system: quick plain notes and formatted notes in one note (modes below), item homes (one home scope per note), auto-labeling, real-time sync via Supabase Realtime, permissions-backed sharing, and a programmatic API that lets any feature in the app save content to notes. Notes is one of the most-integrated surfaces — it's both a standalone feature and a substrate other features target.
 
 ---
+
+## Homes (item homes — folders are retired)
+
+Owner's model: `common-docs/systems/data/scopes-context/VISION.md` § Every item has one home.
+
+- **Every note has exactly one home, and a home is a scope** (`workbench.notes.home_scope_id`). The note's organization IS its home's organization. Never write `organization_id` or `home_scope_id` from the client; the database refuses a mismatch.
+- **One move path:** `homes/moveNoteToHome` → `platform.set_home` with the note's version; waits for the receipt, applies home / organization / version (`applyNoteHomeReceipt`), says "Moved to X" or the database's refusal, and leaves the note put on refusal. Every entry point uses it: sidebar drag (incl. an empty home), the row's hover Move button and "Move to…" (picker anchored to the row; type to filter, Enter to move), tab/editor menus, bulk bar, Ctrl/⌘+Shift+M, the home panel, mobile dock, agent `note_home`.
+- **Every organization offers its General.** One not created yet is a placeholder (`generalPlaceholderId`) resolved on choose by `platform.ensure_general_scope`. A new note with no home chosen carries only the active organization (`ensureOrgId(null)`); the database files it in that organization's General. Nothing prompts for an organization.
+- **One home control:** the bottom-bar home button, the tab-strip shield and the mobile dock open the same `homes/NoteHomePanel` — **Home** (exactly one; choosing moves the note) over **Also relates to** (scope/project/task associations via `ContextAssignmentField` with `organizationPicker={false}`; never moves the note).
+- **Sidebar = home tree:** grouped by `home_scope_id` — each organization's General, then scopes under one heading per scope type. Organization names appear only in a General's label when the person's notes span organizations ("General · <Org>"), on same-named scopes from different organizations, under group-by Organization, and in the organization filter (`?org_filter=`). No organization tag on rows.
+- **Code-owned buckets are tags** (`homes/bucketTags.ts`: Chat Saves, Voice Notes, Scratch, …): a feature stamps the tag on create and leaves the home to the default. Quick save picks a Home, never a folder.
+- `folder_id` / `folder_name` / `workbench.note_folders` still exist only for readers not yet moved (see Open items); new notes code never reads them.
 
 ## Entry points
 
