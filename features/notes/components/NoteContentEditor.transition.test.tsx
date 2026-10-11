@@ -11,6 +11,7 @@ jest.mock("@/components/dialogs/confirm/ConfirmDialogHost", () => ({ confirm: je
 jest.mock("@/lib/toast", () => ({ toast: new Proxy({}, { get: () => jest.fn() }) }));
 import React, { act } from "react";
 import { Provider } from "react-redux";
+import scopesTreeReducer from "@/features/scopes/redux/scopesSlice";
 import { configureStore } from "@reduxjs/toolkit";
 import storeReadsReducer from "@/lib/redux/slices/storeReadsSlice";
 import appContextReducer from "@/lib/redux/slices/appContextSlice";
@@ -23,11 +24,11 @@ import { NotesInstanceProvider } from "../context/NotesInstanceContext";
 import { NoteContentEditor } from "./NoteContentEditor";
 import type { Note } from "../types";
 const id="33333333-3333-4333-8333-333333333333",org="11111111-1111-4111-8111-111111111111",actor="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
-const note=(o:Partial<Note>={}):Note=>({id,organization_id:org,version:4,content:"base",label:"N",folder_name:null,folder_id:null,tags:[],metadata:{},published_to_web: false,position:0,project_id:null,task_id:null,created_at:"",created_by:actor,updated_at:"",updated_by:actor,deleted_at:null,content_hash:null,file_path:null,last_device_id:null,custom_fields:{},sync_version:0,search_engine_indexed:null,shown_to:null,...o});
+const note=(o:Partial<Note>={}):Note=>({id,organization_id:org,version:4,content:"base",label:"N",folder_name:null,folder_id:null,home_scope_id:"home-1",tags:[],metadata:{},published_to_web: false,position:0,project_id:null,task_id:null,created_at:"",created_by:actor,updated_at:"",updated_by:actor,deleted_at:null,content_hash:null,file_path:null,last_device_id:null,custom_fields:{},sync_version:0,search_engine_indexed:null,shown_to:null,...o});
 it("renders mounted realtime, dirty, and acknowledgement transitions without rebasing the draft",async()=>{
  (globalThis as typeof globalThis & {IS_REACT_ACT_ENVIRONMENT?:boolean}).IS_REACT_ACT_ENVIRONMENT=true;
  Object.defineProperty(window, "matchMedia", { value: () => ({ matches: false, addEventListener: () => {}, removeEventListener: () => {} }), configurable: true });
- const store=configureStore({reducer:{notes:notesReducer,storeReads:storeReadsReducer,userAuth:(state={id:actor,authReady:true})=>state,appContext:appContextReducer},middleware:(gdm)=>gdm({serializableCheck:false})});
+ const store=configureStore({reducer:{notes:notesReducer, scopesTree: scopesTreeReducer,storeReads:storeReadsReducer,userAuth:(state={id:actor,authReady:true})=>state,appContext:appContextReducer},middleware:(gdm)=>gdm({serializableCheck:false})});
  const root=createRoot(document.createElement("div"));
  const render=async()=>act(async()=>root.render(<Provider store={store}><NotesInstanceProvider value="i"><NoteContentEditor noteId={id}/></NotesInstanceProvider></Provider>));
  try {

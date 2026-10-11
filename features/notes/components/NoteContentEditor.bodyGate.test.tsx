@@ -22,6 +22,7 @@ const fetchNoteContent = jest.fn((noteId: string) => ({ type: "test/fetchNoteCon
 jest.mock("../redux/thunks", () => ({ ...jest.requireActual("../redux/thunks"), fetchNoteContent: (noteId: string) => fetchNoteContent(noteId) }));
 import React, { act } from "react";
 import { Provider } from "react-redux";
+import scopesTreeReducer from "@/features/scopes/redux/scopesSlice";
 import { configureStore } from "@reduxjs/toolkit";
 import appContextReducer from "@/lib/redux/slices/appContextSlice";
 import { enableMapSet } from "immer";
@@ -39,7 +40,7 @@ const note = (o: Partial<Note> = {}): Note => ({ id, organization_id: org, versi
 const harness = async (run: (c: HTMLElement, store: ReturnType<typeof configureStore>) => Promise<void>, preload?: (s: any) => Promise<void> | void) => {
   (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
   Object.defineProperty(window, "matchMedia", { value: () => ({ matches: false, addEventListener: () => {}, removeEventListener: () => {} }), configurable: true });
-  const store = configureStore({ reducer: { notes: notesReducer, userAuth: (state = { id: actor, authReady: true }) => state, appContext: appContextReducer }, middleware: (gdm) => gdm({ serializableCheck: false }) });
+  const store = configureStore({ reducer: { notes: notesReducer, scopesTree: scopesTreeReducer, userAuth: (state = { id: actor, authReady: true }) => state, appContext: appContextReducer }, middleware: (gdm) => gdm({ serializableCheck: false }) });
   const container = document.createElement("div");
   const root = createRoot(container);
   try {
@@ -89,7 +90,7 @@ it("says so, with Retry, when the read never answers", async () => {
 it("waits for the body of a listed note, then mounts the editor", async () => {
   (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
   Object.defineProperty(window, "matchMedia", { value: () => ({ matches: false, addEventListener: () => {}, removeEventListener: () => {} }), configurable: true });
-  const store = configureStore({ reducer: { notes: notesReducer, userAuth: (state = { id: actor, authReady: true }) => state, appContext: appContextReducer }, middleware: (gdm) => gdm({ serializableCheck: false }) });
+  const store = configureStore({ reducer: { notes: notesReducer, scopesTree: scopesTreeReducer, userAuth: (state = { id: actor, authReady: true }) => state, appContext: appContextReducer }, middleware: (gdm) => gdm({ serializableCheck: false }) });
   const container = document.createElement("div");
   const root = createRoot(container);
   try {

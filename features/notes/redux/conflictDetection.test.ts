@@ -141,7 +141,7 @@ import type { Note } from "../types";
 function fullRow(overrides: Partial<Note> = {}): Note {
   const row: Note = {
     id: NOTE_ID, organization_id: ORG_ID, version: 1, content: "the recipe",
-    label: "The Best Chicken Alfredo", folder_name: "Draft", folder_id: null, tags: [],
+    label: "The Best Chicken Alfredo", folder_name: "Draft", folder_id: null, home_scope_id: "home-1", tags: [],
     metadata: {}, published_to_web: false, position: 0, project_id: null, task_id: null,
     created_at: "2026-09-14T05:55:17.534Z", created_by: "user-1",
     updated_at: "2026-09-14T05:55:17.534Z", updated_by: "user-1", deleted_at: null,

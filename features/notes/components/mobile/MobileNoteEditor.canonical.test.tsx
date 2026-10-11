@@ -11,6 +11,7 @@
 
 import React, { act } from "react";
 import { Provider, useSelector } from "react-redux";
+import scopesTreeReducer from "@/features/scopes/redux/scopesSlice";
 import { configureStore } from "@reduxjs/toolkit";
 import storeReadsReducer from "@/lib/redux/slices/storeReadsSlice";
 import { enableMapSet } from "immer";
@@ -113,7 +114,7 @@ const row = (overrides: Partial<Note> = {}): Note => ({
 const makeStore = () =>
   configureStore({
     reducer: {
-      notes: notesReducer,
+      notes: notesReducer, scopesTree: scopesTreeReducer,
       storeReads: storeReadsReducer,
       // The note's working copy (lib/working-copy) — every editor view reads it.
       workingCopies: workingCopiesReducer,
@@ -286,7 +287,7 @@ describe("MobileNoteEditor carries the notes surface on a phone (W-69)", () => {
     expect(scope.current_note_title).toBe("Move 5208");
 
     const handlers = runtime!.getWriteHandlers?.() ?? {};
-    for (const target of ["note_content", "append_to_note", "note_title", "note_tags", "note_folder"]) {
+    for (const target of ["note_content", "append_to_note", "note_title", "note_tags", "note_home"]) {
       expect(handlers).toHaveProperty(target);
     }
     // A write lands on the record through the editor's own flush path.

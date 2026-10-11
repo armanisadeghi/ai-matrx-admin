@@ -80,6 +80,7 @@ jest.mock("../service/notesService", () => ({
 
 import React, { act } from "react";
 import { Provider } from "react-redux";
+import scopesTreeReducer from "@/features/scopes/redux/scopesSlice";
 import { configureStore, type Middleware } from "@reduxjs/toolkit";
 import appContextReducer from "@/lib/redux/slices/appContextSlice";
 import { enableMapSet } from "immer";
@@ -116,7 +117,7 @@ function makeStore() {
   };
   const store = configureStore({
     reducer: {
-      notes: notesReducer,
+      notes: notesReducer, scopesTree: scopesTreeReducer,
       workingCopies: workingCopiesReducer,
       userAuth: (state = { id: ACTOR, authReady: true }) => state,
       appContext: appContextReducer,

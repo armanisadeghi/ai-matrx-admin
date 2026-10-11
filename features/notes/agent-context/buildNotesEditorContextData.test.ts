@@ -77,11 +77,11 @@ describe("notes agent context", () => {
     });
     const bundle = String(scope.note_bundle);
     expect(bundle.startsWith("<notes_workspace>")).toBe(true);
-    expect(bundle).toContain(`<note id="${NOTE_ID}" title="Clinic intake checklist" folder="Draft" tags="clinic, intake"`);
+    expect(bundle).toContain(`<note id="${NOTE_ID}" title="Clinic intake checklist" home="Draft" tags="clinic, intake"`);
     expect(bundle).toContain("<body># Clinic intake checklist\n- Confirm insurance card</body>");
     expect(bundle).toContain('<scope type="Workflow">Patient intake</scope>');
-    expect(bundle).toContain('<open_tabs total="1"><tab id="33333333-3333-4333-8333-333333333333" folder="Draft">Front desk script</tab></open_tabs>');
-    expect(bundle).toContain('<folders total="2">');
+    expect(bundle).toContain('<open_tabs total="1"><tab id="33333333-3333-4333-8333-333333333333" home="Draft">Front desk script</tab></open_tabs>');
+    expect(bundle).toContain('<homes total="2">');
     expect(bundle).not.toContain("unsaved=");
   });
 

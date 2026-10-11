@@ -159,7 +159,7 @@ describe("typing in a note beside a sidebar of 500+ notes", () => {
     });
 
     // Every folder open — the state that froze the browser.
-    const expandAll = host.querySelector<HTMLButtonElement>('button[aria-label="Expand or collapse all folders"]');
+    const expandAll = host.querySelector<HTMLButtonElement>('button[aria-label="Expand or collapse all groups"]');
     expect(expandAll).not.toBeNull();
     await act(async () => { expandAll!.click(); });
     expect(host.querySelectorAll('button[aria-expanded="true"]').length).toBeGreaterThan(0);

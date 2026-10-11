@@ -44,7 +44,7 @@ describe("Note tab: one menu, opened by right-click and by the … button", () =
       "save",
       "copy-reference",
       "duplicate",
-      "move-to-folder",
+      "move-to-home",
       "about",
       "knowledge",
       "export-markdown",

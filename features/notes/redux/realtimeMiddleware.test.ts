@@ -354,7 +354,7 @@ describe("notes realtime middleware on @ai-matrx/realtime", () => {
       const binding = notesBinding(stub.spec());
       const row = {
         id: "note-1", organization_id: "org-1", version: 2, content: "the recipe", label: "L",
-        folder_name: "Draft", folder_id: "folder-1", tags: [], metadata: {}, shown_to: null, published_to_web: false,
+        folder_name: "Draft", folder_id: "folder-1", home_scope_id: "home-1", tags: [], metadata: {}, shown_to: null, published_to_web: false,
         position: 0, project_id: null, task_id: null, created_at: "2026-09-14T05:55:17.534Z",
         created_by: "user-1", updated_at: "2026-09-14T05:55:18.435Z", updated_by: "user-1",
         deleted_at: null, content_hash: null, file_path: "/Notes/x.md", last_device_id: "dev-1",
