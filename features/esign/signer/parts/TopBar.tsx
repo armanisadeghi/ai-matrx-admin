@@ -91,7 +91,7 @@ export function TopBar(p: TopBarProps) {
           ? "All required fields are done"
           : p.mode === "missed"
             ? `${p.remaining} required field${p.remaining === 1 ? "" : "s"} missed`
-            : `Action required — ${p.remaining} required field${p.remaining === 1 ? "" : "s"} remaining`;
+            : `${p.remaining} required field${p.remaining === 1 ? "" : "s"} left`;
   const tone = p.mode === "ready" ? "bg-success" : p.mode === "missed" ? "bg-destructive" : "bg-primary";
 
   const menu = (
