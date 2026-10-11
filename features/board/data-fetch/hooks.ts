@@ -3,7 +3,6 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
-import { settingDoorHref } from "@/features/settings/doors/settingDoorTarget";
 
 import { createClient } from "@/utils/supabase/client";
 
@@ -34,7 +33,8 @@ export function useFetchEstimate() {
 /** Where a limit's "change" link goes: the organization's own setting row. */
 export function limitSettingHref(organizationId: string | null, setting: string): string | null {
   if (!organizationId || !setting) return null;
-  return settingDoorHref({ scope: "organization", organizationSlugOrId: organizationId, controlId: setting });
+  // The knob rows live on the Configuration page (rows anchor at their full key), not the settings index.
+  return `/organizations/${encodeURIComponent(organizationId)}/settings/configuration#${encodeURIComponent(setting)}`;
 }
 
 export const fetchSpecKey = (tableId: string) => ["board", "data-fetch-spec", tableId] as const;
