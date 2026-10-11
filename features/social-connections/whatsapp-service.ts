@@ -9,9 +9,9 @@ import { createClient } from "@/utils/supabase/client";
 export const signupReceipt = z.object({ state: z.string().min(1), app_id: z.string().regex(/^\d+$/), config_id: z.string().regex(/^\d+$/), expires_at: z.string() });
 export const configReceipt = z.object({ status: z.enum(["available", "unavailable"]), app_id: z.string().nullable().optional(), config_id: z.string().nullable().optional() });
 export const connectionReceipt = z.object({ connection_id: z.string().uuid(), status: z.enum(["connected", "disconnected", "needs_attention"]) });
-export const discoveryReceipt = z.object({ subject: z.object({ id: z.string(), display_name: z.string() }), resources: z.array(z.object({ resource_id: z.string().uuid().nullable().optional(), resource_ref: z.string(), resource_type: z.string(), display_name: z.string(), selected: z.boolean() })), after: z.string().nullable().optional() });
+export const discoveryReceipt = z.object({ subject: z.object({ id: z.string(), display_name: z.string() }), resources: z.array(z.object({ resource_id: z.string().uuid().nullable().optional(), resource_ref: z.string(), resource_type: z.string(), display_name: z.string(), selected: z.boolean(), metadata: z.object({ registration_status: z.enum(["unverified", "pending", "registered"]).optional() }).default({}) })), after: z.string().nullable().optional() });
 
-export async function whatsappRequest(operation: "config" | "start" | "complete" | "discover" | "select" | "refresh" | "disconnect", organizationId: string, body?: Record<string, string>): Promise<unknown> {
+export async function whatsappRequest(operation: "config" | "start" | "complete" | "discover" | "select" | "refresh" | "disconnect" | "register", organizationId: string, body?: Record<string, string>): Promise<unknown> {
   const { data: { session } } = await createClient().auth.getSession();
   if (!session) throw new Error("Sign in to connect WhatsApp.");
   const response = await sendMatrxRequest(buildMatrxRequestUrl(`${resolveServiceBaseUrl("aidream").replace(/\/+$/, "")}/api`, `/api/whatsapp-business/${operation}`), {

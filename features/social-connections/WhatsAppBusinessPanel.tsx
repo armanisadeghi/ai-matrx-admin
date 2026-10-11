@@ -6,6 +6,7 @@ import { readAllRows } from "@ai-matrx/data/db";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@ai-matrx/design-system/controls";
 import { Badge } from "@/components/ui/badge";
 import { InfoHint } from "@/components/official/InfoHint";
 import { createClient } from "@/utils/supabase/client";
@@ -32,6 +33,8 @@ export function WhatsAppBusinessPanel({ organizationId }: { organizationId: stri
 function WhatsAppBusinessContent({ organizationId }: { organizationId: string }) {
   const [connections, setConnections] = useState<SavedConnection[]>([]);
   const [discoveries, setDiscoveries] = useState<Record<string, Discovery>>({});
+  const [registration, setRegistration] = useState<{ connectionId: string; resourceRef: string } | null>(null);
+  const [pin, setPin] = useState("");
   const [prepared, setPrepared] = useState<Prepared | null>(null);
   const [reconnectId, setReconnectId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -63,7 +66,7 @@ function WhatsAppBusinessContent({ organizationId }: { organizationId: string })
 
   async function connect() {
     if (!prepared || busy) return;
-    if (Date.parse(prepared.signup.expires_at) <= Date.now()) { setGeneration((v) => v + 1); setError("Signup expired. Select Connect again."); return; }
+    if (Date.parse(prepared.signup.expires_at) <= Date.now()) { setPrepared(null); setGeneration((v) => v + 1); setError("Signup expired. Select Connect again."); return; }
     const version = context.current;
     const current = () => context.current === version;
     setBusy(true); setError(null);
@@ -111,6 +114,22 @@ function WhatsAppBusinessContent({ organizationId }: { organizationId: string })
     finally { if (context.current === version) setBusy(false); }
   }
 
+  async function registerPhone() {
+    if (!registration || !/^[0-9]{6}$/.test(pin) || busy) return;
+    const version = context.current;
+    setBusy(true); setError(null);
+    try {
+      const result = await whatsappRequest("register", organizationId, { connection_id: registration.connectionId, resource_ref: registration.resourceRef, pin });
+      z.object({ resource_id: z.string().uuid(), registration_status: z.literal("registered") }).parse(result);
+      if (context.current !== version) return;
+      const receipt = discoveryReceipt.parse(await whatsappRequest("discover", organizationId, { connection_id: registration.connectionId }));
+      if (context.current !== version) return;
+      setDiscoveries((previous) => ({ ...previous, [registration.connectionId]: receipt }));
+      setPin(""); setRegistration(null); toast.success("Phone registered.");
+    } catch (cause) { if (context.current === version) setError(cause instanceof Error ? cause.message : "Phone registration failed. Try again."); }
+    finally { if (context.current === version) setBusy(false); }
+  }
+
   return <Card><CardContent className="space-y-3 p-4">
     <div className="flex items-center justify-between gap-3"><h3 className="font-medium">WhatsApp Business <InfoHint text="Connect your own WhatsApp business account and choose the phone numbers AI Matrx can use." /></h3><Badge variant="outline">Approved testers only</Badge></div>
     {error && <ErrorNotice size="inline" message={error} />}
@@ -121,9 +140,10 @@ function WhatsAppBusinessContent({ organizationId }: { organizationId: string })
         {connection.status !== "disconnected" && <><Button variant="outline" disabled={busy} onClick={() => void run(connection.id, "refresh")}>Check access</Button><Button variant="outline" disabled={busy} onClick={() => void run(connection.id, "disconnect")}>Disconnect</Button></>}
         <Button variant="outline" disabled={busy} onClick={() => { setPrepared(null); setReconnectId(connection.id); setGeneration((v) => v + 1); }}>Prepare reconnect</Button>
       </div>
-      {discoveries[connection.id]?.resources.map((phone) => <div key={phone.resource_ref} className="flex items-center justify-between gap-2"><span>{phone.display_name}</span><Button variant="outline" disabled={busy || phone.selected} onClick={() => void select(connection.id, phone.resource_ref)}>{phone.selected ? "Selected" : "Select phone"}</Button></div>)}
+      {discoveries[connection.id]?.resources.map((phone) => <div key={phone.resource_ref} className="flex items-center justify-between gap-2"><span>{phone.display_name}</span><Button variant="outline" disabled={busy || phone.selected} onClick={() => void select(connection.id, phone.resource_ref)}>{phone.selected ? "Selected" : "Select phone"}</Button>{phone.selected && <>{phone.metadata.registration_status === "registered" ? <Badge variant="outline">Registered</Badge> : <Button variant="outline" disabled={busy} onClick={() => { setPin(""); setRegistration({ connectionId: connection.id, resourceRef: phone.resource_ref }); }}>Register phone</Button>}</>}</div>)}
       {discoveries[connection.id]?.after && <Button variant="quiet" disabled={busy} onClick={() => void run(connection.id, "discover", discoveries[connection.id].after ?? undefined)}>More phones</Button>}
     </div>)}
+    {registration && <div className="flex items-center gap-2"><Input type="password" inputMode="numeric" autoComplete="off" maxLength={6} aria-label="Phone registration PIN" placeholder="6-digit PIN" value={pin} onChange={(event) => setPin(event.target.value.replace(/[^0-9]/g, ""))} /><Button disabled={busy || !/^[0-9]{6}$/.test(pin)} onClick={() => void registerPhone()}>Register</Button><Button variant="quiet" disabled={busy} onClick={() => { setPin(""); setRegistration(null); }}>Cancel</Button><InfoHint text="Register only a number added through WhatsApp Business signup. AI Matrx stores this PIN in your private Vault." /></div>}
     <div className="flex gap-2"><Button disabled={busy || !prepared} onClick={() => void connect()}>{reconnectId ? "Reconnect WhatsApp" : "Connect WhatsApp Business"}</Button><Button variant="quiet" disabled={busy} onClick={() => { setPrepared(null); setError(null); setGeneration((v) => v + 1); }}>Reload</Button></div>
   </CardContent></Card>;
 }
