@@ -18,9 +18,10 @@ Contract: `common-docs/projects/esign-parity/CONTRACT.md` §1, §12, §15 (froze
 - `features/esign/templates/` — the template list; `features/esign/envelopes/EnvelopeDetail.tsx` — the sent envelope page.
 
 ## Rules
-- A draft is composition only (`EnvelopeDraftV1`); access codes never enter it (`esign_draft_set_access_code`).
+- A draft is composition only (`EnvelopeDraftV1`); access codes never enter it (`esign_draft_set_access_code`: 4-20 characters, stored as a hash). `has_access_code` is the server's note of a stored hash (`access_codes_set`, applied on load); a copy or template keeps the choice "Access code" but never the code, so the recipient shows "Access code needed" and Send is blocked by name until the sender types it again.
 - Nothing silently discarded: a conflicting edit asks; an unsaved mirror restores with a toast.
 - A signer without a signature field is a warning at Send, never a block.
 
 ## Change log
 - 2026-10-07 — editor, templates list, envelope page rewrite built against a mock; real doors wired (parity lane, sender).
+- 2026-10-10 — Access code is a real option (owner ruling): masked field with show/hide, named Send blocker, flags from stored hashes; the `honestVerification` downgrade is gone (gates lane).

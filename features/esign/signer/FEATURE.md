@@ -70,3 +70,4 @@ doors). Product truth: SPEC-ESIGN in common-docs.
 - 2026-10-07 — part 2: creator stays open until adopt succeeds (slow/failed acts said); act
   arguments follow the published types (save to profile now reaches the server); honest "Signed"
   face for a picture-less mark; mocks, dev demo and the retired v1 `signing/` doc deleted.
+- 2026-10-10 — Gates lane (owner rulings): the access-code step reads "Enter the access code <sender> gave you" (wrong code: tries left, then the 15-minute lock); a busy server on the entry steps says so with "Try again" (503, never a hang); required fields are enforced by the server too (`esign._enforce('F2')` on: the Sign act refuses with `required_fields_missing` and the field ids; Finish already jumps to the next one). Required defaults in `readMap` match `esign._missing_required` (a checkbox is optional unless it says required).
