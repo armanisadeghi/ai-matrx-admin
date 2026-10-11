@@ -6,9 +6,10 @@
 // ON for demos (2026-10-11, second try). The first try restored 13 GB on Vercel but compiled cold:
 // a per-build value (NEXT_PUBLIC_DEPLOYMENT_ID, NEXT_PUBLIC_VERCEL_*) was compiled in and invalidated
 // the cache — fixed by THE BUILD-CACHE LAW (lib/deployment/build-identity.ts). Lab proof with a new
-// deployment id + commit on every build: warm compiles 74 s and 47 s. Next: slim (main) once a demos
-// Vercel build shows a warm compile.
-const BUILD_CACHE_PROFILES = new Set(["demos"]);
+// deployment id + commit on every build: warm compiles 74 s and 47 s. VERCEL PROOF (2026-10-11, demos):
+// cold build saved 3.8 GB in 17 s; the next build restored it in 14 s, compiled in 17.6 s, total
+// 2.0 min (was ~7). Main (slim) and admin turned on the same night.
+const BUILD_CACHE_PROFILES = new Set(["demos", "slim", "admin"]);
 // Minutes between saves. Restores happen every build; a save (pack + upload) only when the stored
 // cache is older than this, so most of ~50 daily releases skip the upload entirely.
 const BUILD_CACHE_SAVE_EVERY_MIN = 120;
