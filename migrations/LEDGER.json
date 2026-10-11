@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-11T05:06:33.872Z",
+  "generated_at": "2026-10-11T05:21:14.524Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -5635,6 +5635,12 @@
       "filename": "oldtables_w7c_both_halves_of_the_relation_guard_judge_what_commits.sql",
       "checksum": "7f7627c689ab65e1f3d9de2fec2ec0046b7e8d39a8c4dada6d4a092e3bcac7aa",
       "applied_at": "2026-09-23 09:55:34.150822+00"
+    },
+    "migrations/campaign/one_ladder_edit_is_content_full_is_structure.sql": {
+      "source": "matrx-frontend",
+      "filename": "one_ladder_edit_is_content_full_is_structure.sql",
+      "checksum": "ccca6a36ba5da50a14000e722346307dabc2f49463c01867530e809f2a75bd5d",
+      "applied_at": "2026-10-11 05:21:02.478854+00"
     },
     "migrations/campaign/onehome_b2_the_workspace_alias_is_gone.sql": {
       "source": "matrx-frontend",

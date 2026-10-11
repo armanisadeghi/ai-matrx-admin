@@ -62,6 +62,9 @@ export interface RowControlsProps {
   onStopPublishing: () => Promise<ShareActionResult>;
 }
 
+/** Each kind's sharing options, read once per page (`get_share_capabilities` answers per kind, not per row). */
+const CAPS_READ = new Map<ResourceType, ShareCapabilities>();
+
 export function RowControls({
   resourceType,
   resourceId,
@@ -78,7 +81,9 @@ export function RowControls({
     notify: copyNotify,
   });
   const { toast } = useToast();
-  const [caps, setCaps] = useState<ShareCapabilities | null>(null);
+  // A kind's sharing options never change while the page is open: read once per kind, and every later
+  // Share dialog draws its row controls on its first frame.
+  const [caps, setCaps] = useState<ShareCapabilities | null>(() => CAPS_READ.get(resourceType) ?? null);
   const [capsError, setCapsError] = useState<string | null>(null);
   const [busy, setBusy] = useState<"shown" | "publish" | null>(null);
   const [copied, setCopied] = useState(false);
@@ -86,8 +91,16 @@ export function RowControls({
   useEffect(() => {
     let live = true;
     setCapsError(null);
+    const known = CAPS_READ.get(resourceType);
+    if (known) {
+      setCaps(known);
+      return;
+    }
     getShareCapabilities(resourceType)
-      .then((c) => live && setCaps(c))
+      .then((c) => {
+        CAPS_READ.set(resourceType, c);
+        if (live) setCaps(c);
+      })
       .catch((e: unknown) => live && setCapsError(extractErrorMessage(e)));
     return () => {
       live = false;
@@ -110,7 +123,16 @@ export function RowControls({
       <ErrorAlchemyMenu error={capsError} /></p>
     );
   }
-  if (!caps || childRecord) return null;
+  if (childRecord) return null;
+  // THE BAR'S PLACE IS HELD WHILE ITS OPTIONS ARE READ (member walk 2026-10-10: "Shown to" arrived late
+  // and pushed the dialog's content down). The reserve is the bar's own box, one row tall, invisible.
+  if (!caps) {
+    return (
+      <section aria-hidden="true" className="invisible space-y-2 rounded-lg border p-3" data-row-controls-reserved="">
+        <div className="flex h-8 items-center" />
+      </section>
+    );
+  }
 
   const showShownTo = caps.shownToOffered && shownTo !== undefined;
   const showPublish = publishable && caps.publishLane !== null;

@@ -5487,3 +5487,4 @@ update iam.permissions set permission_level = 'edit_content' where id in ('11e79
 drop function if exists iam.may_grant_as(uuid, text, uuid, public.permission_level, text, uuid);
 drop function if exists iam.holds_level_as(uuid, text, uuid, public.permission_level);
 delete from platform.feature_knob where feature = 'access.sharing' and key in ('editor_may_share','outside_org_min_level','confidential_min_level');
+delete from platform.client_callable_door where schema_name = 'iam' and function_name in ('may_grant_as', 'holds_level_as');

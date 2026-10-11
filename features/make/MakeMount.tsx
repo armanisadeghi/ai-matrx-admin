@@ -13,6 +13,7 @@
 //     for the person. Guard: __tests__/new-table-is-never-hidden-and-opens-where-pressed.test.tsx.
 
 import { type ReactNode } from "react";
+import { readTheHomeAgain } from "@/features/unified-data/home/readTheHomeAgain";
 import { useRouter } from "next/navigation";
 import { Building2 } from "lucide-react";
 import { RecordsMount, TablesHome } from "@ai-matrx/records-ui";
@@ -107,8 +108,12 @@ export function NewTableBody({
         {...(asked ? { askedBy: asked } : {})}
         {...(onClose ? { onCancel: onClose } : {})}
         onOpenTable={(tableId: string, dashboardId?: string | null) => {
-          onClose?.();
+          // NAVIGATE FIRST, THEN CLOSE (member walk 2026-10-10: "Open the table" stayed on the list). Closing
+          // unmounts this body inside the dialog; the push is issued while it is still mounted, and the
+          // Data home lists the new table at once when the person comes back.
           router.push(dashboardId ? `/data/${tableId}?dashboard=${dashboardId}` : `/data/${tableId}`);
+          readTheHomeAgain();
+          onClose?.();
         }}
       />
     </MakeMount>
@@ -127,7 +132,10 @@ export function NewTableDialog({
   organization?: { id: string; name: string } | null;
 }) {
   return (
-    <Dialog open={what !== null} onOpenChange={(next) => (next ? undefined : onClose())}>
+    // A TABLE MADE HERE IS LISTED AT ONCE (member walk 2026-10-10: the /data list showed it only after a
+    // reload). However the dialog closes — opened, cancelled, or dismissed after an import made the table —
+    // the Data home reads its list again (`readTheHomeAgain`, the same signal an undone archive sends).
+    <Dialog open={what !== null} onOpenChange={(next) => (next ? undefined : (readTheHomeAgain(), onClose()))}>
       {/* A real size, fixed (moving between Blank, Import and the column step never resizes it); on a
           phone the same dialog is a full-height sheet. The close X has its own corner (pr-14). */}
       <DialogContent className="flex h-[min(40rem,85dvh)] w-[min(38rem,calc(100vw-2rem))] max-w-none flex-col gap-0 overflow-hidden p-0 max-md:h-[90dvh]">

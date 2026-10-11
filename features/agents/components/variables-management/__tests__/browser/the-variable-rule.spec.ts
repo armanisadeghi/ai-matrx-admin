@@ -112,26 +112,12 @@ async function renderedTokens(page: Page, token: string): Promise<{ text: string
   }, token).catch(() => []);
 }
 
-/** Editor chips whose whole text is `name` (the editor draws `{{name}}` as a chip reading `name`), coloured. */
-async function chipsNamed(page: Page, name: string): Promise<number> {
-  return page
-    .evaluate((n) => {
-      let count = 0;
-      for (const el of Array.from(document.querySelectorAll("[contenteditable=true] *"))) {
-        const text = (el.textContent ?? "").replace(/[\u200b\s]/g, "");
-        if (text !== n && text !== `{{${n}}}` && text !== `{}${n}`) continue;
-        for (let cur: Element | null = el, i = 0; cur && i < 3; cur = cur.parentElement, i += 1) {
-          const m = getComputedStyle(cur).backgroundColor.match(/rgba?\(([^)]+)\)/);
-          const parts = m ? m[1].split(",").map((x) => parseFloat(x)) : [0, 0, 0, 0];
-          if ((parts.length > 3 ? parts[3] : 1) > 0) {
-            count += 1;
-            break;
-          }
-        }
-      }
-      return count;
-    }, name)
-    .catch(() => 0);
+/**
+ * Every button on the page named exactly `name`. The editor draws each `{{name}}` as such a button, and
+ * the Undeclared / Variables rows add one more each — callers know how many rows list the name.
+ */
+async function buttonsNamed(page: Page, name: string): Promise<number> {
+  return page.getByRole("button", { name, exact: true }).count();
 }
 
 test.describe.serial("THE VARIABLE RULE in the UI", () => {
@@ -251,8 +237,9 @@ test.describe.serial("THE VARIABLE RULE in the UI", () => {
     for (const s of slots) {
       expect(s.alpha, `{{!slot}} is plain text, not a coloured chip (${JSON.stringify(s)})`).toBe(0);
     }
-    expect(await chipsNamed(page, "my"), "{{my}} is drawn as a variable chip in the editor").toBeGreaterThan(0);
-    expect(await chipsNamed(page, "slot"), "{{!slot}} never becomes a chip").toBe(0);
+    // `my` appears once in the Undeclared row and twice as a chip in the system prompt.
+    expect(await buttonsNamed(page, "my"), "{{my}} twice in the prompt, once in the Undeclared row").toBe(3);
+    expect(await buttonsNamed(page, "slot"), "{{!slot}} never becomes a chip or a list entry").toBe(0);
 
     // 4. Declare ONLY fake, with the chip's one click.
     await page.locator("button", { hasText: /^fake\s*$/i }).filter({ has: page.locator("svg") }).first().click();
@@ -261,7 +248,8 @@ test.describe.serial("THE VARIABLE RULE in the UI", () => {
     expect(after, "{{my}} stays undeclared").toMatch(/\bmy\b/);
     expect(after, "{{fake}} is declared now").not.toMatch(/\bfake\b/);
     expect(after).not.toMatch(/slot/);
-    expect(await chipsNamed(page, "fake"), "{{fake}} is drawn as a variable chip in the editor").toBeGreaterThan(0);
+    // `fake` is now a declared variable: one chip in the prompt, none under Undeclared.
+    expect(await buttonsNamed(page, "fake"), "{{fake}} is declared: its chip is in the prompt").toBeGreaterThanOrEqual(1);
 
     // 5. The cheapest plumbing model, chosen as a person chooses it.
     await page.locator("button[aria-haspopup=dialog]").filter({ hasText: /Claude|GPT|Gemini|Llama|Grok/ }).first().click();

@@ -1,5 +1,6 @@
 -- lane: ONE-LADDER
 -- chair-step: tightens structure doors from Edit (editor) to Full access (admin) and folds the retired edit_content level into editor, per Arman's 2026-10-10 ruling "Edit = Edit content, never structure"; all data is test data (Arman, same day).
+-- based-on: iam.content_levels() 1ad9511e1ae168935c1cff45a7ab835d4c7732e86e965cb72322503dd2f324a9
 -- =============================================================================
 -- ONE-LADDER — ONE ACCESS LADDER FOR EVERY KIND OF DATA (Arman, 2026-10-10).
 --   View (viewer) read · Comment (commenter) read + comment · Edit (editor) change values and content,
@@ -169,7 +170,20 @@ $fn$;
 
 revoke all on function iam.may_grant_as(uuid, text, uuid, public.permission_level, text, uuid) from public;
 revoke all on function iam.holds_level_as(uuid, text, uuid, public.permission_level) from public;
-grant execute on function iam.may_grant_as(uuid, text, uuid, public.permission_level, text, uuid) to authenticated, service_role;
+insert into platform.client_callable_door (schema_name, function_name, identity_args, identity_argtypes, reason, declared_by, non_client_lane, signed_in_callers, anonymous_callers) values
+  ('iam', 'may_grant_as', 'p_actor uuid, p_resource_type text, p_resource_id uuid, p_level permission_level, p_target_kind text, p_target_id uuid',
+   ARRAY['uuid','text','uuid','public.permission_level','text','uuid']::regtype[]::oid[],
+   'p_actor is the operating person the calling share door already resolved (auth.uid() or the store principal); p_resource_id is checked against the shareable registry and the kernel; p_target_id is the grantee person or organization; NULL actor or id refuses.',
+   'one_ladder_edit_is_content_full_is_structure.sql',
+   'server_only: read only by the SECURITY DEFINER share doors (share_with_person, share_grant, update_permission_level, grant_org_availability, create_share_link, table_share_outside_*), never called by a client.',
+   false, false),
+  ('iam', 'holds_level_as', 'p_actor uuid, p_resource_type text, p_resource_id uuid, p_level permission_level',
+   ARRAY['uuid','text','uuid','public.permission_level']::regtype[]::oid[],
+   'p_actor is the operating person the calling door resolved; p_resource_id is answered by the store ladder or the kernel; NULL refuses.',
+   'one_ladder_edit_is_content_full_is_structure.sql',
+   'server_only: read only by iam.may_grant_as inside the SECURITY DEFINER share doors, never called by a client.',
+   false, false)
+on conflict do nothing;
 
 -- The level list every picker reads: four levels.
 create or replace function iam.content_levels()
