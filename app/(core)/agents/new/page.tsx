@@ -8,6 +8,7 @@ import {
   Wrench,
   Upload,
   LayoutPanelTop,
+  Network,
 } from "lucide-react";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 
@@ -56,6 +57,15 @@ const CREATION_OPTIONS = [
     description:
       "Import an existing agent configuration from a JSON file",
     gradient: "from-blue-500/5 to-cyan-500/10",
+  },
+  {
+    href: "/agents/system-builder",
+    icon: Network,
+    iconClass: "text-rose-600 dark:text-rose-400",
+    title: "System Builder",
+    description:
+      "More than one agent? Describe the whole job, get a plan of steps, then build or pick an agent for each",
+    gradient: "from-rose-500/5 to-orange-500/10",
   },
   {
     href: "/agents/templates",
