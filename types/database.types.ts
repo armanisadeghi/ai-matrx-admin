@@ -24318,23 +24318,6 @@ export type Database = {
           unseen_updates: number
         }[]
       }
-      my_loud_notices: {
-        Args: { p_limit?: number }
-        Returns: {
-          body: string
-          created_at: string
-          deep_link: string
-          event_key: string
-          id: string
-          payload: Json
-          read_at: string
-          severity: string
-          subject: string
-          target_id: string
-          target_kind: string
-          updated_at: string
-        }[]
-      }
       my_notification_unread_count: { Args: never; Returns: number }
       my_notifications: {
         Args: { p_before?: string; p_limit?: number; p_unread_only?: boolean }
@@ -74456,6 +74439,53 @@ export type Database = {
         Args: { p_scale: Json; p_sections: Json }
         Returns: Json
       }
+      _review_create_one: {
+        Args: {
+          p_cycle_id: string
+          p_employee_id: string
+          p_employee_login: string
+          p_employment_id: string
+          p_manager_due: string
+          p_manager_employment_id: string
+          p_manager_login: string
+          p_organization_id: string
+          p_self_due: string
+        }
+        Returns: Json
+      }
+      _review_individual_cycle: {
+        Args: { p_actor: string; p_organization_id: string }
+        Returns: {
+          closed_at: string | null
+          closed_by: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          launched_at: string | null
+          launched_by: string | null
+          manager_due_on: string | null
+          metadata: Json
+          name: string
+          organization_id: string
+          period_end: string
+          period_start: string
+          self_due_on: string | null
+          share_due_on: string | null
+          status: string
+          template_id: string | null
+          template_snapshot: Json | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "review_cycle"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       _review_lane: {
         Args: { p_review_id: string; p_role: string; p_uid: string }
         Returns: string
@@ -75336,6 +75366,14 @@ export type Database = {
         Returns: Json
       }
       hr_review_share: { Args: { p_review_id: string }; Returns: Json }
+      hr_review_start: {
+        Args: { p_employment_id: string; p_organization_id: string }
+        Returns: Json
+      }
+      hr_review_start_candidates: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
       hr_review_submit_response: {
         Args: { p_review_id: string; p_role: string }
         Returns: Json
@@ -76214,6 +76252,10 @@ export type Database = {
           p_purpose: string
         }
         Returns: Json
+      }
+      review_may_start: {
+        Args: { p_employment_id: string; p_user: string }
+        Returns: boolean
       }
       review_row_facts: {
         Args: { p_id: string; p_token: string }
@@ -82802,6 +82844,7 @@ export type Database = {
           required_output_keys: string[]
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           source_mandate_id: string | null
+          taxonomy_node_slug: string | null
           typed_input_complete: boolean
           updated_at: string
           updated_by: string | null
@@ -82848,6 +82891,7 @@ export type Database = {
           required_output_keys?: string[]
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           source_mandate_id?: string | null
+          taxonomy_node_slug?: string | null
           typed_input_complete?: boolean
           updated_at?: string
           updated_by?: string | null
@@ -82894,6 +82938,7 @@ export type Database = {
           required_output_keys?: string[]
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           source_mandate_id?: string | null
+          taxonomy_node_slug?: string | null
           typed_input_complete?: boolean
           updated_at?: string
           updated_by?: string | null
@@ -84163,6 +84208,21 @@ export type Database = {
       generate_shortcut_mandate_key: {
         Args: { p_label: string; p_surface: string }
         Returns: string
+      }
+      intelligence_placement: {
+        Args: { p_keys?: string[] }
+        Returns: {
+          created_by: string
+          is_fixture: boolean
+          mandate_id: string
+          mandate_key: string
+          node_slug: string
+          organization_id: string
+          origin: string
+          placed_by: string
+          rollup_anchor_id: string
+          surface_name: string
+        }[]
       }
       latest_references: {
         Args: {
@@ -98410,7 +98470,12 @@ export type Database = {
         Args: { p_depth?: number; p_id: string; p_type: string }
         Returns: boolean
       }
+      home_scope_org: { Args: { p_scope: string }; Returns: string }
       is_client_channel: { Args: never; Returns: boolean }
+      is_general_scope: {
+        Args: { p_org: string; p_scope: string }
+        Returns: boolean
+      }
       is_provisioning: { Args: never; Returns: boolean }
       is_service_only_history: { Args: { p_token: string }; Returns: boolean }
       is_sqlstate: { Args: { p_code: string }; Returns: boolean }
@@ -98945,6 +99010,7 @@ export type Database = {
           reason: string
         }[]
       }
+      organization_general_scope: { Args: { p_org: string }; Returns: string }
       orgs_tightening: { Args: { p_token: string }; Returns: string[] }
       part_anchor_problem: { Args: { p: Json }; Returns: string }
       part_anchor_target_problem: {
@@ -99768,6 +99834,15 @@ export type Database = {
       seed_shown_to_default_knob: {
         Args: { p_token: string }
         Returns: undefined
+      }
+      set_home: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: string
+          p_expected_version?: number
+          p_scope_id: string
+        }
+        Returns: Json
       }
       set_org_change_policy: {
         Args: {
@@ -112502,6 +112577,7 @@ export type Database = {
         | "imported_docx"
         | "imported_md"
         | "imported_txt"
+        | "linked_gdoc"
       field_data_type:
         | "string"
         | "number"
@@ -135033,6 +135109,7 @@ export type Database = {
           situation: string | null
           sort_order: number
           supports_dictionary: boolean
+          taxonomy_node_slug: string | null
           updated_at: string
           updated_by: string | null
           url_pattern: string | null
@@ -135070,6 +135147,7 @@ export type Database = {
           situation?: string | null
           sort_order?: number
           supports_dictionary?: boolean
+          taxonomy_node_slug?: string | null
           updated_at?: string
           updated_by?: string | null
           url_pattern?: string | null
@@ -135107,6 +135185,7 @@ export type Database = {
           situation?: string | null
           sort_order?: number
           supports_dictionary?: boolean
+          taxonomy_node_slug?: string | null
           updated_at?: string
           updated_by?: string | null
           url_pattern?: string | null
@@ -143171,6 +143250,7 @@ export type Database = {
           file_path: string | null
           folder_id: string | null
           folder_name: string | null
+          home_scope_id: string
           id: string
           label: string
           last_device_id: string | null
@@ -143202,6 +143282,7 @@ export type Database = {
           file_path?: string | null
           folder_id?: string | null
           folder_name?: string | null
+          home_scope_id?: string
           id?: string
           label?: string
           last_device_id?: string | null
@@ -143233,6 +143314,7 @@ export type Database = {
           file_path?: string | null
           folder_id?: string | null
           folder_name?: string | null
+          home_scope_id?: string
           id?: string
           label?: string
           last_device_id?: string | null
@@ -147084,6 +147166,7 @@ export const Constants = {
         "imported_docx",
         "imported_md",
         "imported_txt",
+        "linked_gdoc",
       ],
       field_data_type: [
         "string",

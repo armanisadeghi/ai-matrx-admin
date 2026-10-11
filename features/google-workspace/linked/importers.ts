@@ -84,7 +84,7 @@ export async function importGoogleDocAsDocument(connection: GoogleConnectionRef)
   const file = await pick(connection, DOC_MIME);
   if (!file) return null;
   const organizationId = await ensureOrgId(null);
-  const created = await createDocument({ name: file.name, organizationId });
+  const created = await createDocument({ name: file.name, source: "linked_gdoc", organizationId });
   if (!created.success) throw new Error(`Could not create the document: ${created.error}`);
   const documentId = created.data.id;
   try {
