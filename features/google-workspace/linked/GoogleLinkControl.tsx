@@ -9,7 +9,7 @@
  * routes to review says so, with the approval link — never "done".
  */
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { ArrowDownToLine, ArrowUpFromLine, ExternalLink, Loader2, Unlink } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -125,20 +125,22 @@ export function useGoogleLink(adapter: GoogleLinkAdapter, editable: boolean, act
   const appName = isSheet ? "Google Sheets" : "Google Docs";
   const { state, connect } = useGoogleWorkspaceConnection(active);
   const key = cacheKey(adapter.recordKind, adapter.recordId);
-  const [, bump] = useState(0);
   const [loaded, setLoaded] = useState(linkCache.has(key));
-  const link = linkCache.has(key) ? (linkCache.get(key) ?? null) : undefined;
+  // Shared per-record link: useSyncExternalStore so every control showing it re-renders together
+  // (and the compiler cannot cache a render-time read of module state). `undefined` = not read yet.
+  const link = useSyncExternalStore(
+    (onChange) => {
+      linkListeners.add(onChange);
+      return () => {
+        linkListeners.delete(onChange);
+      };
+    },
+    () => (linkCache.has(key) ? (linkCache.get(key) ?? null) : undefined),
+    () => undefined,
+  );
   const [busy, setBusy] = useState<null | "create" | "update" | "push" | "unlink">(null);
   const [conflict, setConflict] = useState<Conflict | null>(null);
   const setLink = (next: GoogleFileLink | null) => publishLink(adapter.recordKind, adapter.recordId, next);
-
-  useEffect(() => {
-    const listener = () => bump((n) => n + 1);
-    linkListeners.add(listener);
-    return () => {
-      linkListeners.delete(listener);
-    };
-  }, []);
 
   useEffect(() => {
     if (!active) return;

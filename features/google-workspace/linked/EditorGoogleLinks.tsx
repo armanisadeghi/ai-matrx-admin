@@ -10,7 +10,7 @@
  * content back. Never dispose / create Univer units here.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import type { IDocumentData, IWorkbookData } from "@univerjs/core";
 import type { FUniver } from "@univerjs/presets";
 
@@ -42,15 +42,17 @@ function registerLiveAdapter(adapter: GoogleLinkAdapter): () => void {
 
 /** The open editor's live adapter for a record, or null until its editor is ready. */
 export function useLiveGoogleAdapter(kind: "workbook" | "document", id: string): GoogleLinkAdapter | null {
-  const [, bump] = useState(0);
-  useEffect(() => {
-    const listener = () => bump((n) => n + 1);
-    liveListeners.add(listener);
-    return () => {
-      liveListeners.delete(listener);
-    };
-  }, []);
-  return liveAdapters.get(liveKey(kind, id)) ?? null;
+  // useSyncExternalStore (not a render-time read of module state): the compiler would cache the latter.
+  return useSyncExternalStore(
+    (onChange) => {
+      liveListeners.add(onChange);
+      return () => {
+        liveListeners.delete(onChange);
+      };
+    },
+    () => liveAdapters.get(liveKey(kind, id)) ?? null,
+    () => null,
+  );
 }
 
 function liveApi(apiRef: React.RefObject<FUniver | null>): FUniver {
