@@ -13,6 +13,7 @@
 import { supabase } from "@/utils/supabase/client";
 import { pgErrorToError } from "@ai-matrx/data";
 import { adminScheduleHref } from "@/features/scheduling/constants/routes";
+import { documentHref } from "@/features/scopes/registry/entityRegistry";
 
 export type AlarmLevel = "critical" | "warning" | "info";
 export type AlarmStatus = "open" | "snoozed" | "resolved";
@@ -82,10 +83,14 @@ export interface SpendAlarmRecord {
   refused: boolean;
   /** A fix already shipped for this kind (aidream ALARM_KINDS.code_fix). */
   code_fix: CodeFix | null;
+  /** The person behind the alarm as "Name (email)", resolved by the writer. */
+  person: string | null;
 }
 
 export interface CodeFix {
   on: string;
+  /** When the fix landed (ISO); occurrences after it mean it is not deployed yet. */
+  at?: string;
   commit: string;
   what: string;
   related_kind?: string;
@@ -122,6 +127,7 @@ function toRecord(row: Record<string, unknown>): SpendAlarmRecord {
   return {
     ...(row as unknown as SpendAlarmRecord),
     refused: meta.refused === true,
+    person: typeof meta.person === "string" && meta.person ? meta.person : null,
     code_fix: fix && typeof fix.what === "string" ? fix : null,
     refs: asRefs(row.refs),
     cost_usd: row.cost_usd == null ? null : Number(row.cost_usd),
@@ -147,6 +153,18 @@ export async function fetchSpendAlarms(): Promise<SpendAlarmRecord[]> {
     .is("deleted_at", null)
     .order("last_seen_at", { ascending: false })
     .limit(1000);
+  if (error) throw pgErrorToError(error);
+  return (data ?? []).map((r) => toRecord(r as Record<string, unknown>));
+}
+
+export async function fetchSpendAlarmsOfKind(kind: string): Promise<SpendAlarmRecord[]> {
+  const { data, error } = await billing()
+    .from("spend_alarm")
+    .select(RECORD_COLUMNS)
+    .eq("kind", kind)
+    .is("deleted_at", null)
+    .order("last_seen_at", { ascending: false })
+    .limit(200);
   if (error) throw pgErrorToError(error);
   return (data ?? []).map((r) => toRecord(r as Record<string, unknown>));
 }
@@ -460,7 +478,7 @@ export function costLabel(
 ): string {
   if (r.cost_usd != null) return `${fmt(r.cost_usd)} spent`;
   if (r.cost_avoided_usd != null) return `${fmt(r.cost_avoided_usd)} kept from spending`;
-  if (r.refused) return `${fmt(0)} — refused before spending`;
+  if (r.refused) return `${fmt(0)} · refused`;
   return "Not measured";
 }
 
@@ -476,13 +494,79 @@ export async function countAlarmsOfKind(kind: string): Promise<number> {
 
 export const kindListHref = (kind: string) => `${SPEND_ALARMS_PATH}?kind=${encodeURIComponent(kind)}`;
 
-/** Titles of the served items (documents), by id; an untitled one reads "Untitled document". */
-export async function fetchItemTitles(items: { kind?: string; id: string }[]): Promise<Map<string, string>> {
-  const out = new Map<string, string>();
-  const docs = [...new Set(items.filter((i) => i.kind === "document").map((i) => i.id))].filter((id) => /^[0-9a-f-]{36}$/i.test(id));
-  if (docs.length) {
-    const { data } = await supabase.schema("content").from("document").select("id, title").in("id", docs);
-    for (const d of (data ?? []) as { id: string; title: string | null }[]) out.set(d.id, d.title?.trim() || "Untitled document");
+export interface ItemLabel {
+  title: string;
+  /** The item's own editor; null for a deleted item (it no longer opens). */
+  href: string | null;
+}
+
+/** The served items (documents and Spaces) by id: title and the door to their own editor. */
+export async function fetchItemTitles(items: { kind?: string; id: string }[]): Promise<Map<string, ItemLabel>> {
+  const out = new Map<string, ItemLabel>();
+  const ids = [...new Set(items.filter((i) => !i.kind || i.kind === "document").map((i) => i.id))].filter((id) => /^[0-9a-f-]{36}$/i.test(id));
+  if (ids.length) {
+    const { data } = await supabase.schema("content").from("document").select("id, title, format, deleted_at").in("id", ids);
+    for (const d of (data ?? []) as { id: string; title: string | null; format: string | null; deleted_at: string | null }[]) {
+      const base = d.title?.trim() || (d.format === "spaces" ? "Untitled Space" : "Untitled document");
+      out.set(d.id, { title: d.deleted_at ? `${base} (deleted)` : base, href: d.deleted_at ? null : documentHref(d.id, d.format) });
+    }
   }
   return out;
+}
+
+/** Short names for the record header (the full sentence is in the body). */
+export const KIND_LABEL: Record<string, string> = {
+  protected_account_refusal: "Protected account billed",
+  source_intelligence_skipped: "Source skipped",
+  spend_approval_hold: "Run held for approval",
+  spend_approval_opened: "Approval waiting",
+  spend_approval_expiring: "Approval expiring",
+  spend_approval_expired: "Approval expired",
+  "reconcile.llm_drift": "Provider bill mismatch",
+  spend_spike_platform_hourly: "Spend spike",
+  spend_spike_platform_daily: "Spend spike",
+  spend_spike_account_daily: "Spend spike",
+  origin_unknown: "Spend with no owner",
+  external_spend_gate_refused: "Paid call refused",
+  external_call_unpriced: "Paid call with no price",
+  readiness_not_ready: "Mandate not ready",
+  sms_sent_ungated: "SMS sent without the gate",
+  "guardrail.check_failed": "Guardrail check failing",
+  top_tier_model_refused: "Top-tier call refused",
+  automation_enabled: "New automation enabled",
+  automated_run_expensive: "Expensive automated run",
+  unpriced_calls: "Unpriced calls",
+};
+
+const PROVIDER_LABEL: Record<string, string> = {
+  scrapecreators: "ScrapeCreators",
+  grok_x: "Grok (X)",
+  anthropic: "Anthropic",
+  openai: "OpenAI",
+  google: "Google",
+  twilio: "Twilio",
+};
+
+export function providerLabel(p: string): string {
+  return PROVIDER_LABEL[p] ?? p.replace(/[_-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** Whose alarm it is, by name: a person, a record's title, or a service. Never an id or a type slug. */
+export function whose(r: Pick<SpendAlarmRecord, "subject_name" | "subject_type" | "refs" | "person" | "kind">): string {
+  if (r.subject_type === "source") return r.subject_name ?? "Source (not found)";
+  if (r.subject_name) return r.subject_name;
+  if (r.refs.provider) return `${providerLabel(r.refs.provider)}${r.refs.operation ? ` ${r.refs.operation}` : ""}`;
+  if (r.refs.mandate_key) return r.refs.mandate_key;
+  if (r.person) return r.person;
+  if (r.kind === "sms_sent_ungated") return "SMS with no origin stamp";
+  if (r.subject_type === "sch_task" || r.subject_type === "automation") return "Scheduled task (not found)";
+  return "Platform";
+}
+
+/** A sentence: ids swapped for names (or dropped), first letter capitalised. */
+export function readable(text: string, names: ReadonlyMap<string, string>): string {
+  let out = text;
+  for (const [id, name] of names) out = out.split(id).join(name);
+  out = out.replace(/\s*\(?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\)?/gi, "").replace(/\s{2,}/g, " ").trim();
+  return out.charAt(0).toUpperCase() + out.slice(1);
 }

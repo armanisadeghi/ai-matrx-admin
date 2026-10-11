@@ -29,6 +29,7 @@ const rec = (over: Partial<SpendAlarmRecord> = {}): SpendAlarmRecord => ({
   resolution_note: null,
   reopened_count: 0,
   refused: true,
+  person: "admin@admin.com",
   code_fix: { on: "2026-10-10", commit: "aidream 8ab384301f", what: "Skipped once", related_kind: "source_intelligence_skipped", handler: "auto_ingest" },
   ...over,
 });
@@ -95,7 +96,7 @@ import { costLabel, fixFor, isMigrated, refHref } from "./spendAlarms";
 describe("what the record page leads with", () => {
   const fmt = (n: number) => `$${n.toFixed(2)}`;
   it("cost is never a bare dash", () => {
-    expect(costLabel(rec(), fmt)).toBe("$0.00 — refused before spending");
+    expect(costLabel(rec(), fmt)).toBe("$0.00 · refused");
     expect(costLabel(rec({ cost_usd: 10.67 }), fmt)).toBe("$10.67 spent");
     expect(costLabel(rec({ refused: false }), fmt)).toBe("Not measured");
   });
@@ -106,5 +107,23 @@ describe("what the record page leads with", () => {
   it("migrated occurrences are told apart, and documents open", () => {
     expect(isMigrated({ refs: { migrated: "x" } as never })).toBe(true);
     expect(refHref("source_id", "d-1", { source_kind: "document" })).toBe("/documents/d-1");
+  });
+});
+
+import { readable, whose } from "./spendAlarms";
+
+describe("no ids, no type slugs", () => {
+  it("whose names the person, record or service", () => {
+    expect(whose(rec({ subject_type: "external_api", subject_name: null, refs: { provider: "scrapecreators", operation: "lookup" } }))).toBe("ScrapeCreators lookup");
+    expect(whose(rec({ subject_type: "llm_provider", subject_name: null, refs: { provider: "anthropic" } }))).toBe("Anthropic");
+    expect(whose(rec({ subject_type: "source", subject_name: null, refs: {} }))).toBe("Source (not found)");
+    expect(whose(rec({ kind: "sms_sent_ungated", subject_type: "sms_message", subject_name: null, refs: {}, person: null }))).toBe("SMS with no origin stamp");
+  });
+  it("prose is a sentence with names, never ids", () => {
+    const id = "4117adee-0809-4b46-99b2-8339915d3d2d";
+    expect(readable(`document ${id} is owned by a protected account`, new Map([[id, "Untitled Space"]]))).toBe(
+      "Document Untitled Space is owned by a protected account",
+    );
+    expect(readable(`run of agent ${id} refused`, new Map())).toBe("Run of agent refused");
   });
 });

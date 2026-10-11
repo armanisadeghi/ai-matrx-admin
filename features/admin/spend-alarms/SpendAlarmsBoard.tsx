@@ -4,7 +4,6 @@
 // (views, KPIs, tones). Each row opens its record page; ?id=<alarm> highlights that row.
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, RefreshCw, X } from "lucide-react";
 import { Button, SegmentedControl } from "@ai-matrx/design-system/controls";
@@ -21,6 +20,7 @@ import {
   costLabel,
   fixFor,
   refHref,
+  whose,
   fetchSpendAlarms,
   isRinging,
   spendAlarmHref,
@@ -28,14 +28,6 @@ import {
 } from "./spendAlarms";
 
 type StatusFilter = "ringing" | "snoozed" | "resolved" | "all";
-
-/** Whose alarm it is, as a person or a service: never a raw id. */
-function whose(r: SpendAlarmRecord): string {
-  if (r.subject_name) return r.subject_name;
-  if (r.refs.provider) return `${r.refs.provider}${r.refs.operation ? ` ${r.refs.operation}` : ""}`;
-  if (r.refs.mandate_key) return r.refs.mandate_key;
-  return r.subject_type.replace(/_/g, " ");
-}
 
 const LEVEL_RANK = { critical: 0, warning: 1, info: 2 } as const;
 
@@ -50,8 +42,7 @@ export function SpendAlarmsBoard() {
   const router = useRouter();
   // ?kind=<kind> narrows the list to one kind (the record page's "Open the skipped Sources").
   const kindFilter = params.get("kind");
-  const [status, setStatusState] = useState<StatusFilter>(kindFilter ? "all" : "ringing");
-  const setStatus = (v: StatusFilter) => setStatusState(v);
+  const [status, setStatus] = useState<StatusFilter>("ringing");
 
   useEffect(() => {
     let alive = true;
@@ -92,25 +83,14 @@ export function SpendAlarmsBoard() {
       header: "Alarm",
       href: (r) => spendAlarmHref(r.id),
       width: 420,
-      cell: (r) => (
-        <Link href={spendAlarmHref(r.id)} className="line-clamp-2 whitespace-normal text-primary hover:underline">
-          {alarmHeadline(r.title, r.subject_id, r.subject_name)}
-        </Link>
-      ),
+      // The column's href makes the cell the link; a Link inside it would nest <a> in <a>.
     },
     {
       id: "subject",
       header: "Whose",
       width: 240,
       accessorFn: (r) => whose(r),
-      cell: (r) =>
-        r.refs.user_id ? (
-          <Link href={refHref("user_id", r.refs.user_id) ?? "#"} className="line-clamp-2 whitespace-normal text-primary hover:underline">
-            {whose(r)}
-          </Link>
-        ) : (
-          <span className="line-clamp-2 whitespace-normal">{whose(r)}</span>
-        ),
+      href: (r) => (r.refs.user_id && !r.subject_type.startsWith("source") ? refHref("user_id", r.refs.user_id) ?? undefined : undefined),
     },
     {
       id: "occurrence_count",
@@ -123,7 +103,7 @@ export function SpendAlarmsBoard() {
     {
       id: "cost",
       header: "Cost",
-      width: 150,
+      width: 130,
       accessorFn: (r) => costLabel(r, formatAdminUsd),
       sortValue: (r) => r.cost_usd ?? 0,
       kpi: { op: "count", id: "refused", label: "Refused before spending", countWhere: (r) => r.refused && r.cost_usd == null },
@@ -132,8 +112,8 @@ export function SpendAlarmsBoard() {
       id: "fix",
       header: "What to do",
       width: 260,
-      accessorFn: (r) => (fixFor(r) ? `Fixed in code ${fixFor(r)!.on}; resolve it` : r.fix ?? ""),
-      cell: (r) => <span className="line-clamp-2 whitespace-normal">{fixFor(r) ? "Fixed in code; resolve it" : r.fix ?? ""}</span>,
+      accessorFn: (r) => (fixFor(r) ? "Fixed in code; resolve it" : r.fix ?? ""),
+
     },
     { id: "last_seen_at", accessorKey: "last_seen_at", header: "Last seen", cell: (r) => new Date(r.last_seen_at).toLocaleString() },
     {
@@ -173,6 +153,7 @@ export function SpendAlarmsBoard() {
           viewTabsStore={{ views: viewPrefs.savedViews ?? [], onChange: (savedViews) => setViewPrefs({ savedViews }) }}
           focusRowId={focusId}
           headerWrap="two-lines"
+          cellLines="two"
           read={readOf({ loading, error }, { what: "spend alarms" })}
           emptyState={{ title: status === "ringing" ? "No alarms ringing" : "No alarms" }}
           toolbar={{

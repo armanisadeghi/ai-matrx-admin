@@ -42,13 +42,16 @@ import {
   alarmHeadline,
   fetchSpendAlarm,
   LEVEL_LABEL,
+  KIND_LABEL,
   MIGRATED_NOTE,
   costLabel,
-  countAlarmsOfKind,
   fetchItemTitles,
+  fetchSpendAlarmsOfKind,
   fixFor,
   isMigrated,
-  kindListHref,
+  readable,
+  whose,
+  type ItemLabel,
   fetchSpendAlarmOccurrences,
   fetchTaskState,
   refHref,
@@ -74,13 +77,6 @@ type Pending =
   | { kind: "approve" }
   | { kind: "reject" }
   | null;
-
-/** Prose with every known id swapped for its name, and any other raw id dropped. */
-function scrubIds(text: string, names: ReadonlyMap<string, string>): string {
-  let out = text;
-  for (const [id, name] of names) out = out.split(id).join(name);
-  return out.replace(/\s*\(?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\)?/gi, "");
-}
 
 function fixDate(iso: string): string {
   return new Date(`${iso}T12:00:00Z`).toLocaleDateString(undefined, { day: "numeric", month: "short" });
@@ -129,8 +125,8 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [version, setVersion] = useState(0);
-  const [itemTitles, setItemTitles] = useState<ReadonlyMap<string, string>>(new Map());
-  const [relatedCount, setRelatedCount] = useState<number | null>(null);
+  const [itemTitles, setItemTitles] = useState<ReadonlyMap<string, ItemLabel>>(new Map());
+  const [skipped, setSkipped] = useState<{ id: string; title: string; href: string | null }[] | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -154,21 +150,33 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
         const fetched = people.length ? await fetchUserDisplayNames(people).catch(() => new Map<string, string>()) : new Map<string, string>();
         // A generic "User" placeholder is never a name.
         const resolved = new Map([...fetched].filter(([, n]) => n && n.trim().toLowerCase() !== "user"));
-        const served = occ.filter((o) => o.refs.source_id).map((o) => ({ kind: o.refs.source_kind, id: o.refs.source_id as string }));
-        const titles = await fetchItemTitles(served).catch(() => new Map<string, string>());
         const fix = rec ? fixFor(rec) : null;
-        const related = fix?.related_kind ? await countAlarmsOfKind(fix.related_kind).catch(() => null) : null;
+        // The skipped Sources themselves (each skip alarm's subject IS the Source), listed on this page.
+        const relatedRecords = fix?.related_kind ? await fetchSpendAlarmsOfKind(fix.related_kind).catch(() => []) : [];
+        const served = [
+          ...occ.filter((o) => o.refs.source_id).map((o) => ({ kind: o.refs.source_kind, id: o.refs.source_id as string })),
+          ...relatedRecords.map((r) => ({ id: r.subject_id })),
+          ...(rec?.subject_type === "source" ? [{ id: rec.subject_id }] : []),
+        ];
+        const titles = await fetchItemTitles(served).catch(() => new Map<string, ItemLabel>());
+        const related = relatedRecords.map((r) => ({
+          id: r.id,
+          title: titles.get(r.subject_id)?.title ?? r.subject_name ?? "Source (not found)",
+          href: titles.get(r.subject_id)?.href ?? null,
+        }));
         if (!alive) return;
         setRecord(rec);
         setOccurrences(occ);
         setTask(t);
         setApprovalStatus(approval);
-        if (rec?.refs.user_id && rec.subject_name) resolved.set(rec.refs.user_id, rec.subject_name.split(" · ")[0]!);
+        if (rec?.refs.user_id && (rec.person || rec.subject_name)) resolved.set(rec.refs.user_id, rec.person ?? rec.subject_name!.split(" · ")[0]!);
+        if (rec?.subject_type === "source") resolved.set(rec.subject_id, titles.get(rec.subject_id)?.title ?? rec.subject_name ?? "the Source");
+        for (const [docId, label] of titles) if (!resolved.has(docId)) resolved.set(docId, label.title);
         if (rec?.refs.agent_id && rec.subject_name && rec.subject_type === "agent") resolved.set(rec.refs.agent_id, rec.subject_name);
         if (t?.title && rec?.refs.task_id) resolved.set(rec.refs.task_id, t.title);
         setNames(resolved);
         setItemTitles(titles);
-        setRelatedCount(related);
+        setSkipped(fix?.related_kind ? related : null);
         setError(rec ? null : "This alarm does not exist");
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : String(e));
@@ -287,8 +295,8 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
       cell: (o) => {
         if (isMigrated(o)) return <span className="text-muted-foreground">{MIGRATED_NOTE}</span>;
         if (!o.refs.source_id) return <span className="text-muted-foreground">—</span>;
-        const href = refHref("source_id", o.refs.source_id, o.refs);
-        const text = itemTitle(o) ?? o.refs.source_id;
+        const href = itemHref(o);
+        const text = itemTitle(o) ?? "Source (not found)";
         return href ? (
           <Link href={href} className="text-primary hover:underline">
             {text}
@@ -306,12 +314,17 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
   const shippedFix = record ? fixFor(record) : null;
   const migratedCount = occurrences.filter(isMigrated).reduce((n, o) => n + o.repeat_count, 0);
   const itemTitle = (o: SpendAlarmOccurrence) =>
-    o.refs.source_id ? itemTitles.get(o.refs.source_id) ?? `${o.refs.source_kind ?? "Source"} ${o.refs.source_id.slice(0, 8)}` : null;
+    o.refs.source_id ? itemTitles.get(o.refs.source_id)?.title ?? "Source (not found)" : null;
+  const itemHref = (o: SpendAlarmOccurrence) => (o.refs.source_id ? itemTitles.get(o.refs.source_id)?.href ?? null : null);
+  const fixAt = shippedFix?.at ? Date.parse(shippedFix.at) : null;
+  const afterFix = fixAt
+    ? occurrences.filter((o) => !isMigrated(o) && Date.parse(o.occurred_at) > fixAt).reduce((n, o) => n + o.repeat_count, 0)
+    : 0;
   const servedItems = [
     ...new Map(
       occurrences
         .filter((o) => o.refs.source_id)
-        .map((o) => [o.refs.source_id as string, { id: o.refs.source_id as string, title: itemTitle(o) as string, href: refHref("source_id", o.refs.source_id as string, o.refs) }]),
+        .map((o) => [o.refs.source_id as string, { id: o.refs.source_id as string, title: itemTitle(o) as string, href: itemHref(o) }]),
     ).values(),
   ];
   const visibleColumns = columns.filter((c) => {
@@ -339,7 +352,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
           { label: "Billing", href: "/administration/billing" },
           { label: "Alarms", href: SPEND_ALARMS_PATH },
         ]}
-        record={{ name: record ? alarmHeadline(record.title, record.subject_id, record.subject_name) : loading ? "Alarm" : "Alarm not found" }}
+        record={{ name: record ? KIND_LABEL[record.kind] ?? alarmHeadline(record.title, record.subject_id, record.subject_name) : loading ? "Alarm" : "Alarm not found" }}
         status={record ? { label: statusLabel, tone: record.status === "open" ? LEVEL_TONE[record.level] : "neutral" } : undefined}
         actions={headerActions}
       />
@@ -360,22 +373,38 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
                 human={() => `${record.title}\n${record.detail}\nRule: ${record.rule ?? "—"}\n${window.location.origin}${spendAlarmHref(id)}`}
                 agent={agentPayload}
               />
-              <p className="pr-20 text-sm font-medium text-foreground">{scrubIds(record.detail, names)}</p>
+              <p className="pr-20 text-sm font-medium text-foreground">{readable(record.detail, names)}</p>
               {shippedFix ? (
                 <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-success/40 bg-success/10 px-3 py-2 text-sm">
                   <CheckCircle2 className="h-4 w-4 shrink-0 text-success" aria-hidden />
                   <span className="text-foreground">
                     {`Fixed in code on ${fixDate(shippedFix.on)} (${shippedFix.commit}): ${shippedFix.what}.`}
-                    {relatedCount != null ? ` Skipped items now: ${relatedCount.toLocaleString()}.` : ""}
+                    {afterFix > 0
+                      ? ` Occurrences after the fix: ${afterFix.toLocaleString()} (the fix is not on the live server yet).`
+                      : " No occurrence since the fix; it resolves itself after 24 quiet hours."}
                   </span>
-                  {shippedFix.related_kind ? (
-                    <Link href={kindListHref(shippedFix.related_kind)} className="ml-auto text-primary hover:underline">
-                      Open the skipped Sources
-                    </Link>
-                  ) : null}
                 </div>
               ) : record.fix ? (
                 <p className="mt-1 text-sm text-muted-foreground">{record.fix}</p>
+              ) : null}
+              {skipped && skipped.length > 0 ? (
+                <div className="mt-2 text-sm" data-testid="skipped-sources">
+                  <span className="text-muted-foreground">{`Skipped Sources (${skipped.length}): `}</span>
+                  {skipped.map((it, i) => (
+                    <span key={it.id}>
+                      {i > 0 ? ", " : ""}
+                      {it.href ? (
+                        <Link href={it.href} className="text-primary hover:underline">
+                          {it.title}
+                        </Link>
+                      ) : (
+                        <Link href={spendAlarmHref(it.id)} className="text-muted-foreground hover:underline">
+                          {it.title}
+                        </Link>
+                      )}
+                    </span>
+                  ))}
+                </div>
               ) : null}
               <dl className="mt-3 grid grid-cols-[9rem_1fr] gap-x-3 gap-y-1 text-sm">
                 <dt className="text-muted-foreground">Rule</dt>
@@ -384,10 +413,10 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
                 <dd>
                   {record.refs.user_id ? (
                     <Link href={refHref("user_id", record.refs.user_id) ?? "#"} className="text-primary hover:underline">
-                      {names.get(record.refs.user_id) ?? "Unknown person"}
+                      {names.get(record.refs.user_id) ?? "Owner not recorded"}
                     </Link>
                   ) : (
-                    record.subject_name ?? `${record.subject_type} ${record.subject_id}`
+                    whose(record)
                   )}
                 </dd>
                 {record.status === "resolved" ? (
@@ -424,7 +453,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
               <RefList record={record} names={names} />
               {servedItems.length > 0 ? (
                 <div className="mt-2 text-sm">
-                  <span className="text-muted-foreground">Served items </span>
+                  <span className="text-muted-foreground">{`Documents (${servedItems.length}): `}</span>
                   {servedItems.map((it, i) => (
                     <span key={it.id}>
                       {i > 0 ? ", " : ""}
