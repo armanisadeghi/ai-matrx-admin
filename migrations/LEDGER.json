@@ -10903,6 +10903,12 @@
       "filename": "writeperf4_the_field_set_is_read_once_per_row_down.sql",
       "checksum": "faa8f0c7ba79f6453a6127a85cdf4549ca35ceb45a87cf6e5bee8ce5368ff7c6",
       "applied_at": "2026-09-22 09:33:14.786775+00"
+    },
+    "migrations/campaign/accesssetup_o2_the_access_gate_reads_the_seats.sql": {
+      "source": "matrx-frontend",
+      "filename": "accesssetup_o2_the_access_gate_reads_the_seats.sql",
+      "checksum": "367ef1de643b3e66db5dee0a0eef17f3ef9f74f6232f12ab4ba8d8bf860a77fc",
+      "applied_at": "2026-10-11 05:06:32.467981+00"
     }
   }
 }
