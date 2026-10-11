@@ -789,31 +789,42 @@ def live_plants(top, common_dir):
 # actually installed, which uncommitted files would break the build (a module or name that does
 # not resolve, a member an @ai-matrx type lacks, a file that does not parse, a committed importer
 # left dangling) and closes that set over their importers. Those files stay uncommitted on disk,
-# untouched; the next sync takes them once the package is served. Scream, never block: everything
-# else is committed and released as before. A check that cannot run holds nothing and says so.
+# untouched; the next sync takes them once the package is served. If the check cannot run, stop
+# before committing: otherwise known broken imports can reach a production build.
 SWEEP_CHECK = os.path.join("scripts", "check-sweep-resolves.mjs")
-SWEEP_CHECK_TIMEOUT = 300   # seconds; ~20 s for 45 files on 2026-10-07. Review 2026-11-07.
+SWEEP_CHECK_TIMEOUT = 900   # seconds; large concurrent sweeps can exceed five minutes.
 
 
 def sweep_holds():
-    """[(path, [reason])] the sweep must not commit yet. [] when there is nothing to hold or the
-    check is absent; a check that fails to run is announced and holds nothing."""
+    """[(path, [reason])] the sweep must not commit yet; an unavailable check stops the sync."""
     if not os.path.isfile(SWEEP_CHECK):
-        return []
+        say("SYNC PAUSED — sweep checker is missing (%s); release skipped." % SWEEP_CHECK)
+        sys.exit(PAUSED_EXIT)
     try:
         r = subprocess.run(["node", SWEEP_CHECK, "--json"], capture_output=True, text=True,
                            timeout=SWEEP_CHECK_TIMEOUT)
         if r.returncode != 0:
             raise RuntimeError((r.stderr or r.stdout).strip()[-600:] or "exit %d" % r.returncode)
         data = json.loads(r.stdout.strip().splitlines()[-1])
-    except (OSError, ValueError, RuntimeError, subprocess.TimeoutExpired) as e:
-        say("SWEEP CHECK COULD NOT RUN (%s) — sweeping every file as before, so a file that needs "
-            "an unpublished @ai-matrx version can reach the release: %s" % (SWEEP_CHECK, e))
-        return []
+        holds = data.get("hold")
+        if (type(data.get("checked", 0)) is not int
+                or type(data.get("deletions", 0)) is not int
+                or not isinstance(holds, list) or any(
+            not isinstance(h, dict) or not isinstance(h.get("path"), str) or not h["path"]
+            or not isinstance(h.get("reasons", []), list)
+            or any(not isinstance(reason, str) for reason in h.get("reasons", []))
+            for h in holds
+        )):
+            raise ValueError("malformed sweep result")
+    except (OSError, ValueError, IndexError, AttributeError, TypeError, RuntimeError,
+            subprocess.TimeoutExpired) as e:
+        say("SYNC PAUSED — sweep checker could not run (%s); release skipped: %s"
+            % (SWEEP_CHECK, e))
+        sys.exit(PAUSED_EXIT)
     if data.get("checked") or data.get("deletions"):
         say("sweep check: %d changed file(s), %d deletion(s) against the installed packages, %d held (%ss)"
-            % (data.get("checked", 0), data.get("deletions", 0), len(data.get("hold") or []), data.get("seconds")))
-    return [(h["path"], h.get("reasons") or []) for h in data.get("hold") or []]
+            % (data.get("checked", 0), data.get("deletions", 0), len(holds), data.get("seconds")))
+    return [(h["path"], h.get("reasons") or []) for h in holds]
 
 
 SWEEP_HELD = []   # what the last commit_all held back (main() re-sweeps once after a package update)
