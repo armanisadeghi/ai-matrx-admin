@@ -20,8 +20,13 @@ import { Button as ControlButton, Chip, ControlRow, RowGroup, SettingRow } from 
 import { InfoHint } from "@/components/official/InfoHint";
 import { MandateDoorLink } from "@/features/mandates/components/MandateDoorLink";
 import { InstallStudyAppButton } from "../../components/InstallStudyAppButton";
-import type { EducationSnapshot } from "../types";
+import type { EducationSnapshot, NextAction } from "../types";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+
+/** The study reason behind a next action (a plan rationale, never a failure). */
+function studyReason(action: NextAction): string {
+  return action.why;
+}
 
 export function StudyTodayBlock({ snapshot }: { snapshot: EducationSnapshot }) {
   const { study, nextActions } = snapshot;
@@ -113,7 +118,7 @@ export function StudyTodayBlock({ snapshot }: { snapshot: EducationSnapshot }) {
                   action.minutes != null ? (
                     <span className="inline-flex items-center gap-1">
                       ~{action.minutes} min
-                      <InfoHint text={action.why} label="Why this" />
+                      <InfoHint text={studyReason(action)} label="Reason" />
                     </span>
                   ) : (
                     action.why
