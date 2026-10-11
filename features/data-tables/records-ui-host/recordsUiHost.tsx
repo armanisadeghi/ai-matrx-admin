@@ -421,16 +421,18 @@ export function useRecordsUiPorts({
   );
 
   /** THE TABLE'S ASK BOX: the `table.ask` mandate, run headless (`askTable.ts`). */
+  const askZone = usePersonTimeZone();
   const askTable = useCallback(
     (ask: TableAskRequest) =>
       askTableByMandate({
         launchMandate,
+        zone: askZone,
         organizationId,
         ask,
         readCostUsd: (requestId) => selectUserRequestResult(requestId)(store.getState() as never)?.total_usage?.total?.total_cost ?? null,
         pointsRate: currentPointsRate,
       }),
-    [launchMandate, organizationId, store],
+    [launchMandate, organizationId, store, askZone],
   );
 
   return { members, onAskForOne, openRecords, runAgentAction, askTable, enrich, organizationId, linkRecord };
