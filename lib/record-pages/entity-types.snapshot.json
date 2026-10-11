@@ -21,6 +21,13 @@
   "has_organization": true
  },
  {
+  "token": "access_shadow_log",
+  "type": "system",
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": false
+ },
+ {
   "token": "account_addon",
   "type": "entity",
   "custom_fields_enabled": true,
@@ -33,6 +40,13 @@
   "custom_fields_enabled": false,
   "is_active": true,
   "has_organization": true
+ },
+ {
+  "token": "account_facts",
+  "type": "system",
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": false
  },
  {
   "token": "acquisition_block",
@@ -122,6 +136,20 @@
   "token": "agent_mandate_note",
   "type": "entity",
   "custom_fields_enabled": true,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "agent_prompt_block",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "agent_prompt_block_variant",
+  "type": null,
+  "custom_fields_enabled": false,
   "is_active": true,
   "has_organization": true
  },
@@ -252,6 +280,13 @@
   "has_organization": true
  },
  {
+  "token": "ai_request_latency",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
   "token": "ai_setting",
   "type": "reference",
   "custom_fields_enabled": false,
@@ -268,6 +303,13 @@
  {
   "token": "ai_translation_cell",
   "type": "reference",
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "ai_usage_execution_facts",
+  "type": "system",
   "custom_fields_enabled": false,
   "is_active": true,
   "has_organization": true
@@ -302,6 +344,13 @@
  },
  {
   "token": "anon_form",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "anon_form_visit",
   "type": null,
   "custom_fields_enabled": false,
   "is_active": true,
@@ -455,6 +504,13 @@
   "has_organization": true
  },
  {
+  "token": "applet_visitor_binding",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
   "token": "approach",
   "type": "reference",
   "custom_fields_enabled": false,
@@ -602,6 +658,13 @@
   "has_organization": false
  },
  {
+  "token": "automation_fired",
+  "type": "system",
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
   "token": "base_entity_template",
   "type": "system",
   "custom_fields_enabled": false,
@@ -679,6 +742,20 @@
   "has_organization": true
  },
  {
+  "token": "billing_hard_cost_reconciliation",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "billing_held_run",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
   "token": "billing_plan",
   "type": "reference",
   "custom_fields_enabled": false,
@@ -702,6 +779,27 @@
  {
   "token": "billing_product",
   "type": "reference",
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "billing_provider_balance_snapshot",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "billing_spend_alarm",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "billing_spend_alarm_occurrence",
+  "type": null,
   "custom_fields_enabled": false,
   "is_active": true,
   "has_organization": true
@@ -2051,8 +2149,22 @@
   "has_organization": true
  },
  {
+  "token": "desktop_app_profile",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
   "token": "dev_login_audit",
   "type": "ledger",
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "device_handoff",
+  "type": null,
   "custom_fields_enabled": false,
   "is_active": true,
   "has_organization": true
@@ -2096,6 +2208,13 @@
   "token": "dm_participant",
   "type": "detail",
   "custom_fields_enabled": true,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "dm_session_member",
+  "type": null,
+  "custom_fields_enabled": false,
   "is_active": true,
   "has_organization": true
  },
@@ -2303,6 +2422,13 @@
   "has_organization": true
  },
  {
+  "token": "esign_envelope_draft",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
   "token": "esign_envelope_event",
   "type": "ledger",
   "custom_fields_enabled": false,
@@ -2338,8 +2464,22 @@
   "has_organization": true
  },
  {
+  "token": "esign_saved_signature",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
   "token": "esign_signing_key",
   "type": "restricted",
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "esign_template",
+  "type": null,
   "custom_fields_enabled": false,
   "is_active": true,
   "has_organization": true
@@ -2355,6 +2495,13 @@
   "token": "extension_auth_code",
   "type": "entity",
   "custom_fields_enabled": true,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "external_api_reservation",
+  "type": null,
+  "custom_fields_enabled": false,
   "is_active": true,
   "has_organization": true
  },
@@ -3066,6 +3213,13 @@
   "has_organization": true
  },
  {
+  "token": "hr_goal",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
   "token": "hr_holiday",
   "type": "detail",
   "custom_fields_enabled": true,
@@ -3423,6 +3577,41 @@
   "has_organization": true
  },
  {
+  "token": "hr_review",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "hr_review_cycle",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "hr_review_peer_nomination",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "hr_review_response",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "hr_review_template",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
   "token": "hr_role_assignment",
   "type": "ledger",
   "custom_fields_enabled": false,
@@ -3668,6 +3857,13 @@
   "has_organization": true
  },
  {
+  "token": "iam_access_setup",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": false
+ },
+ {
   "token": "iam_api_key",
   "type": "entity",
   "custom_fields_enabled": true,
@@ -3694,6 +3890,13 @@
   "custom_fields_enabled": false,
   "is_active": true,
   "has_organization": false
+ },
+ {
+  "token": "iam_record_seat_change",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
  },
  {
   "token": "idempotency",
@@ -4137,6 +4340,13 @@
   "has_organization": true
  },
  {
+  "token": "mandate_readiness_verdict",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
   "token": "mandate_reference",
   "type": "entity",
   "custom_fields_enabled": true,
@@ -4291,6 +4501,13 @@
   "has_organization": true
  },
  {
+  "token": "meet_connection",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
   "token": "meet_invitee",
   "type": null,
   "custom_fields_enabled": false,
@@ -4329,6 +4546,13 @@
   "token": "meet_recording",
   "type": "detail",
   "custom_fields_enabled": true,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "meet_session",
+  "type": null,
+  "custom_fields_enabled": false,
   "is_active": true,
   "has_organization": true
  },
@@ -4446,9 +4670,9 @@
  },
  {
   "token": "note_folder",
-  "type": "entity",
-  "custom_fields_enabled": true,
-  "is_active": true,
+  "type": "deprecated",
+  "custom_fields_enabled": false,
+  "is_active": false,
   "has_organization": true
  },
  {
@@ -4560,6 +4784,27 @@
   "token": "ops_issue_event",
   "type": "entity",
   "custom_fields_enabled": true,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "ops_perf_client_event",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "ops_perf_sample",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "ops_perf_statement_snapshot",
+  "type": null,
+  "custom_fields_enabled": false,
   "is_active": true,
   "has_organization": true
  },
@@ -4912,6 +5157,13 @@
   "custom_fields_enabled": false,
   "is_active": true,
   "has_organization": false
+ },
+ {
+  "token": "platform_class_approval_by_org_admin",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
  },
  {
   "token": "platform_continued_access",
@@ -5505,6 +5757,20 @@
   "token": "rulebook",
   "type": "entity",
   "custom_fields_enabled": true,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "run_approval",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "run_approval_event",
+  "type": null,
+  "custom_fields_enabled": false,
   "is_active": true,
   "has_organization": true
  },
@@ -6342,6 +6608,118 @@
   "has_organization": false
  },
  {
+  "token": "social_account_insight_daily",
+  "type": "ledger",
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "social_ad",
+  "type": "entity",
+  "custom_fields_enabled": true,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "social_kpi_goal",
+  "type": "entity",
+  "custom_fields_enabled": true,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "social_own_post_metric",
+  "type": null,
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "social_post",
+  "type": "entity",
+  "custom_fields_enabled": true,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "social_post_analysis",
+  "type": "entity",
+  "custom_fields_enabled": true,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "social_post_comment",
+  "type": "detail",
+  "custom_fields_enabled": true,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "social_post_metric_snapshot",
+  "type": "ledger",
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "social_post_stat",
+  "type": "detail",
+  "custom_fields_enabled": true,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "social_post_transcript",
+  "type": "detail",
+  "custom_fields_enabled": true,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "social_profile",
+  "type": "entity",
+  "custom_fields_enabled": true,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "social_profile_snapshot",
+  "type": "ledger",
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "social_remix_output",
+  "type": "entity",
+  "custom_fields_enabled": true,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "social_swipe_collection",
+  "type": "entity",
+  "custom_fields_enabled": true,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "social_tracked_account",
+  "type": "entity",
+  "custom_fields_enabled": true,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "social_watchlist_hit",
+  "type": "detail",
+  "custom_fields_enabled": true,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
   "token": "soft_delete_cascade_job",
   "type": "system",
   "custom_fields_enabled": false,
@@ -6727,6 +7105,13 @@
   "has_organization": true
  },
  {
+  "token": "tool_call_facts",
+  "type": "system",
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": false
+ },
+ {
   "token": "tool_definition_version",
   "type": "detail",
   "custom_fields_enabled": true,
@@ -6819,16 +7204,16 @@
  },
  {
   "token": "udt_dataset_template",
-  "type": "entity",
-  "custom_fields_enabled": true,
-  "is_active": true,
+  "type": "deprecated",
+  "custom_fields_enabled": false,
+  "is_active": false,
   "has_organization": true
  },
  {
   "token": "udt_dataset_template_fields",
-  "type": "detail",
-  "custom_fields_enabled": true,
-  "is_active": true,
+  "type": "deprecated",
+  "custom_fields_enabled": false,
+  "is_active": false,
   "has_organization": true
  },
  {
@@ -6862,6 +7247,13 @@
  {
   "token": "ui_client",
   "type": "reference",
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "ui_decision_pick",
+  "type": null,
   "custom_fields_enabled": false,
   "is_active": true,
   "has_organization": true
@@ -6956,6 +7348,13 @@
   "custom_fields_enabled": true,
   "is_active": true,
   "has_organization": true
+ },
+ {
+  "token": "user_acquisition_facts",
+  "type": "system",
+  "custom_fields_enabled": false,
+  "is_active": true,
+  "has_organization": false
  },
  {
   "token": "user_active_context",
@@ -7073,6 +7472,13 @@
   "token": "user_surface_state",
   "type": "entity",
   "custom_fields_enabled": true,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "users_calendar_feed",
+  "type": null,
+  "custom_fields_enabled": false,
   "is_active": true,
   "has_organization": true
  },
@@ -7226,6 +7632,13 @@
  {
   "token": "web_brand_offering",
   "type": "detail",
+  "custom_fields_enabled": true,
+  "is_active": true,
+  "has_organization": true
+ },
+ {
+  "token": "web_brand_persona",
+  "type": "entity",
   "custom_fields_enabled": true,
   "is_active": true,
   "has_organization": true
@@ -7673,9 +8086,9 @@
  },
  {
   "token": "working_document",
-  "type": "entity",
-  "custom_fields_enabled": true,
-  "is_active": true,
+  "type": "deprecated",
+  "custom_fields_enabled": false,
+  "is_active": false,
   "has_organization": true
  },
  {

@@ -567,15 +567,15 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   ) : (
     <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
       <ResizablePanel defaultSize="28%" minSize={`${STUDIO_PANE_MIN_PX.assistant}px`} collapsible>
-        <div className="h-full min-h-0" data-testid="studio-pane-assistant">{left}</div>
+        <div className="h-full min-h-0" data-testid="studio-pane-assistant" data-assist-dock-avoid>{left}</div>
       </ResizablePanel>
       <ResizableHandle />
       <ResizablePanel defaultSize="44%" minSize={`${STUDIO_PANE_MIN_PX.agent}px`}>
-        <div className="h-full min-h-0" data-testid="studio-pane-agent">{center}</div>
+        <div className="h-full min-h-0" data-testid="studio-pane-agent" data-assist-dock-avoid>{center}</div>
       </ResizablePanel>
       <ResizableHandle />
       <ResizablePanel defaultSize="28%" minSize={`${STUDIO_PANE_MIN_PX.controls}px`} collapsible>
-        <div className="h-full min-h-0" data-testid="studio-pane-controls">{right}</div>
+        <div className="h-full min-h-0" data-testid="studio-pane-controls" data-assist-dock-avoid>{right}</div>
       </ResizablePanel>
     </ResizablePanelGroup>
   );

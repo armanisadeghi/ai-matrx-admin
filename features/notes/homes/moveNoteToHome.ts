@@ -67,6 +67,8 @@ export const moveNoteToHome = createAsyncThunk<MoveNoteToHomeResult, MoveNoteToH
     const before = (getState() as RootState).notes.notes[noteId] as NoteRecord | undefined;
     if (!before) return refuse("This note is not open here. Reload and try again.");
     if (before.home_scope_id === scopeId) {
+      // Never a silent close: the person picked the home the note is already in.
+      if (!quiet) toast.info(`Already in ${homeLabel}`);
       return {
         ok: true,
         receipt: {

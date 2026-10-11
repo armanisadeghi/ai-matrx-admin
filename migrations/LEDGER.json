@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-11T07:33:21.581Z",
+  "generated_at": "2026-10-11T09:16:15.309Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -6919,6 +6919,12 @@
       "filename": "rls_reference_variant.sql",
       "checksum": "55dcf9f0be1489430affe0bd1f29708bb9151f1bfda86376b7119c0d53adc319",
       "applied_at": "2026-09-21 22:21:41.026035+00"
+    },
+    "migrations/campaign/rowlabel_a_a_table_names_its_records_by_a_formula.sql": {
+      "source": "matrx-frontend",
+      "filename": "rowlabel_a_a_table_names_its_records_by_a_formula.sql",
+      "checksum": "2fd849061a7e34dae1e3e8934293b4f2d38e59f45d907580365a247f18589568",
+      "applied_at": "2026-10-11 01:39:59.31637+00"
     },
     "migrations/campaign/rowlabel_b_every_naming_path_reads_the_formula.sql": {
       "source": "matrx-frontend",

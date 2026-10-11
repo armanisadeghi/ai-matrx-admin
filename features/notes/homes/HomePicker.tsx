@@ -27,8 +27,7 @@ import { cn } from "@/lib/utils";
 import { createScope } from "@/features/scopes/redux/thunks/scopeTreeMutations";
 import { selectNoteById } from "../redux/selectors";
 import {
-  collidingHomeNames,
-  homeDisplayName,
+  homeLabels,
   homeMatchScore,
   homeSections,
   isGeneralScopeType,
@@ -64,11 +63,12 @@ export function HomePickerList({
   const [saving, setSaving] = useState(false);
 
   const sections = useMemo(() => homeSections(homes), [homes]);
-  const collidingNames = useMemo(() => collidingHomeNames(homes), [homes]);
-  // In a list that spans organizations, every General names its organization.
-  const manyGenerals = useMemo(() => homes.filter((h) => h.isGeneral).length > 1, [homes]);
-  const labelFor = (home: NoteHome) =>
-    homeDisplayName(home, { notesSpanManyOrganizations: manyGenerals, collidingNames });
+  // In a list that spans organizations, every General names its organization; no two rows read the same.
+  const labels = useMemo(
+    () => homeLabels(homes, { notesSpanManyOrganizations: homes.filter((h) => h.isGeneral).length > 1 }),
+    [homes],
+  );
+  const labelFor = (home: NoteHome) => labels.get(home.scopeId) ?? home.name;
   // Each item's value is its scope id (unique, never searched); the filter ranks by the home's name.
   const homeById = useMemo(() => new Map(homes.map((home) => [home.scopeId, home])), [homes]);
   const filterHomes = (value: string, search: string) => {

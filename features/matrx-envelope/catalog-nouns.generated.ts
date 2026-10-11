@@ -93,6 +93,34 @@ export const CATALOG_NOUNS: Record<string, CatalogNounEntry> = {
   "table": "admin.feature_docs",
   "title_column": "title"
  },
+ "social_kpi_goal": {
+  "table": "social.kpi_goal",
+  "title_column": "metric"
+ },
+ "social_post_analysis": {
+  "table": "social.post_analysis",
+  "title_column": "hook_text"
+ },
+ "social_remix_output": {
+  "table": "social.remix_output",
+  "title_column": "title"
+ },
+ "social_swipe_collection": {
+  "table": "social.swipe_collection",
+  "title_column": "name"
+ },
+ "social_tracked_account": {
+  "table": "social.tracked_account",
+  "title_column": "label"
+ },
+ "social_watchlist_hit": {
+  "table": "social.watchlist_hit",
+  "title_column": null
+ },
+ "web_brand_persona": {
+  "table": "web.brand_persona",
+  "title_column": "name"
+ },
  "seo_topic": {
   "table": "seo.topic",
   "title_column": "name"
@@ -332,10 +360,6 @@ export const CATALOG_NOUNS: Record<string, CatalogNounEntry> = {
  "message_template": {
   "table": "agent.message_template",
   "title_column": "label"
- },
- "note_folder": {
-  "table": "workbench.note_folders",
-  "title_column": "name"
  },
  "organization": {
   "table": "iam.organizations",
@@ -989,6 +1013,70 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
   "label": "Web Analytics Daily",
   "family": "Marketing & Web"
  },
+ "social_account_insight_daily": {
+  "label": "Own-account daily insights",
+  "family": "Social"
+ },
+ "social_ad": {
+  "label": "Social ad",
+  "family": "Social"
+ },
+ "social_kpi_goal": {
+  "label": "Social KPI goal",
+  "family": "Social"
+ },
+ "social_post": {
+  "label": "Social post",
+  "family": "Social"
+ },
+ "social_post_analysis": {
+  "label": "Social post analysis",
+  "family": "Social"
+ },
+ "social_post_comment": {
+  "label": "Social post comment",
+  "family": "Social"
+ },
+ "social_post_metric_snapshot": {
+  "label": "Social post metric snapshot",
+  "family": "Social"
+ },
+ "social_post_stat": {
+  "label": "Social post stats",
+  "family": "Social"
+ },
+ "social_post_transcript": {
+  "label": "Social post transcript",
+  "family": "Social"
+ },
+ "social_profile": {
+  "label": "Social profile",
+  "family": "Social"
+ },
+ "social_profile_snapshot": {
+  "label": "Social profile snapshot",
+  "family": "Social"
+ },
+ "social_remix_output": {
+  "label": "Remix output",
+  "family": "Social"
+ },
+ "social_swipe_collection": {
+  "label": "Swipe collection",
+  "family": "Social"
+ },
+ "social_tracked_account": {
+  "label": "Tracked social account",
+  "family": "Social"
+ },
+ "social_watchlist_hit": {
+  "label": "Watchlist hit",
+  "family": "Social"
+ },
+ "web_brand_persona": {
+  "label": "Brand persona",
+  "family": "Marketing & Web"
+ },
  "assist": {
   "label": "Assist",
   "family": "Platform"
@@ -1061,6 +1149,10 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
   "label": "Access Delta Run",
   "family": "Access & Identity"
  },
+ "access_shadow_log": {
+  "label": "Access kernel shadow log",
+  "family": "Access & Identity"
+ },
  "account_addon": {
   "label": "Account Addon",
   "family": "Billing"
@@ -1068,6 +1160,10 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  "account_closure": {
   "label": "Account closure",
   "family": "Access & Identity"
+ },
+ "account_facts": {
+  "label": "Roster accounts",
+  "family": "Communication"
  },
  "acquisition_block": {
   "label": "Acquisition Block",
@@ -1108,6 +1204,14 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  "agent_mandate_note": {
   "label": "Mandate Note",
   "family": "Agents"
+ },
+ "agent_prompt_block": {
+  "label": "Prompt Block",
+  "family": "Other"
+ },
+ "agent_prompt_block_variant": {
+  "label": "Prompt Block Variant",
+  "family": "Other"
  },
  "agent_prompt_remediation": {
   "label": "Agent Prompt Remediation",
@@ -1157,9 +1261,17 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
   "label": "AI Provider",
   "family": "AI Models"
  },
+ "ai_request_latency": {
+  "label": "AI Request Latency",
+  "family": "Platform"
+ },
  "ai_setting": {
   "label": "AI Setting",
   "family": "AI Models"
+ },
+ "ai_usage_execution_facts": {
+  "label": "AI usage by execution (counted)",
+  "family": "Runtime"
  },
  "ai_usage_executions": {
   "label": "AI usage by execution",
@@ -1224,6 +1336,10 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  "app_sync_status": {
   "label": "App Sync Status",
   "family": "General"
+ },
+ "applet_visitor_binding": {
+  "label": "Applet Visitor Table",
+  "family": "Agents"
  },
  "approach": {
   "label": "Approach",
@@ -1305,6 +1421,10 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
   "label": "Unregistered candidates",
   "family": "Audit"
  },
+ "automation_fired": {
+  "label": "Automation Fired",
+  "family": "Communication"
+ },
  "base_entity_template": {
   "label": "Base entity template",
   "family": "Platform"
@@ -1349,6 +1469,14 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
   "label": "Free period grant",
   "family": "Billing"
  },
+ "billing_hard_cost_reconciliation": {
+  "label": "Hard-cost reconciliation",
+  "family": "Billing"
+ },
+ "billing_held_run": {
+  "label": "Held run",
+  "family": "Other"
+ },
  "billing_plan": {
   "label": "Billing plan",
   "family": "Billing"
@@ -1364,6 +1492,18 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  "billing_product": {
   "label": "Billing product",
   "family": "Billing"
+ },
+ "billing_provider_balance_snapshot": {
+  "label": "Provider balance snapshot",
+  "family": "Billing"
+ },
+ "billing_spend_alarm": {
+  "label": "Spend alarm",
+  "family": "Other"
+ },
+ "billing_spend_alarm_occurrence": {
+  "label": "Spend alarm occurrence",
+  "family": "Other"
  },
  "billing_spend_approval": {
   "label": "Spend Approval",
@@ -2045,9 +2185,17 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
   "label": "Derive Run",
   "family": "Document Processing"
  },
+ "desktop_app_profile": {
+  "label": "Desktop App Profile",
+  "family": "Communication"
+ },
  "dev_login_audit": {
   "label": "Dev login audit",
   "family": "Admin"
+ },
+ "device_handoff": {
+  "label": "Device Handoff",
+  "family": "Platform"
  },
  "dict_entry": {
   "label": "Dictionary entry",
@@ -2071,6 +2219,10 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  },
  "dm_participant": {
   "label": "DM Conversation Participant",
+  "family": "Communication"
+ },
+ "dm_session_member": {
+  "label": "Messaging Session Member",
   "family": "Communication"
  },
  "dockets": {
@@ -2173,6 +2325,10 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
   "label": "Envelope document",
   "family": "Esign"
  },
+ "esign_envelope_draft": {
+  "label": "E-Signature Draft",
+  "family": "Esign"
+ },
  "esign_envelope_event": {
   "label": "Envelope event",
   "family": "Esign"
@@ -2193,8 +2349,16 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
   "label": "E-sign provider binding",
   "family": "Esign"
  },
+ "esign_saved_signature": {
+  "label": "Saved Signature",
+  "family": "Esign"
+ },
  "esign_signing_key": {
   "label": "E-sign certificate signing key",
+  "family": "Esign"
+ },
+ "esign_template": {
+  "label": "E-Signature Template",
   "family": "Esign"
  },
  "execution_event_cursor": {
@@ -2204,6 +2368,10 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  "extension_auth_code": {
   "label": "Extension auth code",
   "family": "Browser Extension"
+ },
+ "external_api_reservation": {
+  "label": "External API Reservation",
+  "family": "Billing"
  },
  "extract_sweep_state": {
   "label": "Extract sweep state",
@@ -2557,6 +2725,10 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
   "label": "Self-service field policy",
   "family": "HR"
  },
+ "hr_goal": {
+  "label": "Goal",
+  "family": "Other"
+ },
  "hr_holiday": {
   "label": "Holiday",
   "family": "HR"
@@ -2761,6 +2933,26 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
   "label": "Retention rule",
   "family": "HR"
  },
+ "hr_review": {
+  "label": "Performance review",
+  "family": "HR"
+ },
+ "hr_review_cycle": {
+  "label": "Review cycle",
+  "family": "HR"
+ },
+ "hr_review_peer_nomination": {
+  "label": "Peer feedback nomination",
+  "family": "Other"
+ },
+ "hr_review_response": {
+  "label": "Performance review response",
+  "family": "HR"
+ },
+ "hr_review_template": {
+  "label": "Review template",
+  "family": "HR"
+ },
  "hr_role_assignment": {
   "label": "HR role assignment",
   "family": "HR"
@@ -2901,6 +3093,10 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
   "label": "Access audit",
   "family": "Access & Identity"
  },
+ "iam_access_setup": {
+  "label": "Access setup",
+  "family": "Other"
+ },
  "iam_api_key": {
   "label": "API Key",
   "family": "Access & Identity"
@@ -2916,6 +3112,10 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  "iam_read_lane_v2_rollout": {
   "label": "Read lane v2 rollout",
   "family": "Access & Identity"
+ },
+ "iam_record_seat_change": {
+  "label": "Record seat change",
+  "family": "Other"
  },
  "idempotency": {
   "label": "Idempotency",
@@ -3157,6 +3357,10 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
   "label": "Mandate Observation",
   "family": "Mandate"
  },
+ "mandate_readiness_verdict": {
+  "label": "Mandate Readiness Verdict",
+  "family": "Mandate"
+ },
  "mandate_reference": {
   "label": "Mandate Reference",
   "family": "Mandate"
@@ -3241,6 +3445,10 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
   "label": "Meeting Chat Message",
   "family": "Communication"
  },
+ "meet_connection": {
+  "label": "Meeting connection",
+  "family": "Communication"
+ },
  "meet_invitee": {
   "label": "Meeting Invitee",
   "family": "Communication"
@@ -3263,6 +3471,10 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  },
  "meet_recording": {
   "label": "Meeting Recording",
+  "family": "Communication"
+ },
+ "meet_session": {
+  "label": "Meeting session",
   "family": "Communication"
  },
  "meet_transcript_segment": {
@@ -3312,10 +3524,6 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  "ner_shadow": {
   "label": "NER Shadow",
   "family": "Knowledge"
- },
- "note_folder": {
-  "label": "Note Folder",
-  "family": "Workspace"
  },
  "notification": {
   "label": "Notification",
@@ -3379,6 +3587,18 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  },
  "ops_issue_event": {
   "label": "Ops Issue Event",
+  "family": "OPS"
+ },
+ "ops_perf_client_event": {
+  "label": "Performance Client Event",
+  "family": "OPS"
+ },
+ "ops_perf_sample": {
+  "label": "Performance Sample",
+  "family": "OPS"
+ },
+ "ops_perf_statement_snapshot": {
+  "label": "Performance Statement Snapshot",
   "family": "OPS"
  },
  "ops_proof_check": {
@@ -3563,6 +3783,10 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  },
  "platform_class_approval_by_arman": {
   "label": "Class approval by Arman",
+  "family": "Platform"
+ },
+ "platform_class_approval_by_org_admin": {
+  "label": "Class approval by an organization admin",
   "family": "Platform"
  },
  "platform_continued_access": {
@@ -3869,6 +4093,14 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
   "label": "Row version",
   "family": "History"
  },
+ "run_approval": {
+  "label": "Spend approval",
+  "family": "Billing"
+ },
+ "run_approval_event": {
+  "label": "Spend approval event",
+  "family": "Billing"
+ },
  "runtime_operation_stream": {
   "label": "Operation stream",
   "family": "Runtime"
@@ -4133,6 +4365,10 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
   "label": "Sms Webhook Logs",
   "family": "Communication"
  },
+ "social_own_post_metric": {
+  "label": "Own post metrics",
+  "family": "Other"
+ },
  "soft_delete_cascade_job": {
   "label": "Soft-delete cascade job",
   "family": "Platform"
@@ -4329,6 +4565,10 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
   "label": "Tool Call",
   "family": "Workspace"
  },
+ "tool_call_facts": {
+  "label": "Tool call facts",
+  "family": "Workspace"
+ },
  "tool_executor": {
   "label": "Tool executor",
   "family": "Agents"
@@ -4359,6 +4599,10 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  },
  "ui_client": {
   "label": "UI client",
+  "family": "UI"
+ },
+ "ui_decision_pick": {
+  "label": "UI decision picks",
   "family": "UI"
  },
  "ui_surface_action": {
@@ -4407,6 +4651,10 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  },
  "user_achievement": {
   "label": "User Achievement",
+  "family": "Communication"
+ },
+ "user_acquisition_facts": {
+  "label": "Acquired identities",
   "family": "Communication"
  },
  "user_active_context": {
@@ -4475,6 +4723,10 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
  },
  "user_surface_state": {
   "label": "User Surface State",
+  "family": "Communication"
+ },
+ "users_calendar_feed": {
+  "label": "Calendar subscription",
   "family": "Communication"
  },
  "vault_fill_approvals": {
