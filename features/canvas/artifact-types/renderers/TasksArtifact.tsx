@@ -117,6 +117,7 @@ function PersistedTaskChecklist({ content }: { content: string }) {
       content={content}
       hideTitle
       hideActions
+      makeTasks
       initialState={state?.checkboxState}
       onStateChange={onStateChange}
     />
