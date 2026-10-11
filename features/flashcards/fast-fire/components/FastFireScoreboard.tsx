@@ -48,7 +48,7 @@ import { FastFireReviewPlayer } from "./FastFireReviewPlayer";
 import { FastFireReviewPlaylist } from "./FastFireReviewPlaylist";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
 import { AskTutorPanel } from "@/features/education/tutor/components/AskTutorButton";
-import { missedQuestionTutorSeed } from "@/features/education/tutor/seeds";
+import { deckStudyContext, missedQuestionTutorSeed } from "@/features/education/tutor/seeds";
 import type { TutorGroundingSeed } from "@/features/education/tutor/grounding";
 
 const RESULT_META: Record<
@@ -204,6 +204,9 @@ export function FastFireScoreboard({
                                     learnerAnswer: grade?.transcript,
                                     correctAnswer: card.back,
                                     explanation: grade?.feedback,
+                                    studyContext: config.setId
+                                      ? deckStudyContext(config.setId)
+                                      : null,
                                   }),
                                 },
                           )
