@@ -2930,17 +2930,6 @@ export const SHAREABLE_RESOURCE_REGISTRY = {
     urlPathTemplate: "",
     rlsUsesHasPermission: true,
   },
-  skill_render_definition: {
-    resourceType: "skill_render_definition",
-    tableName: "render_definition",
-    schemaName: "skill",
-    idColumn: "id",
-    ownerColumn: "created_by",
-    isPublicColumn: null,
-    displayLabel: "Skill Render Definition",
-    urlPathTemplate: "",
-    rlsUsesHasPermission: true,
-  },
   sms_consent: {
     resourceType: "sms_consent",
     tableName: "sms_consent",

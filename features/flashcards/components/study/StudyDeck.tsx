@@ -1705,26 +1705,21 @@ function AskAiPanel({
             STUDY_TOOL_BODY,
           )}
         >
+          {/* The writing box's own send control: Enter asks, Shift+Enter is a
+              newline — the platform composer convention. The question is
+              optional, so an empty box still asks. */}
           <ProTextarea
             value={question}
             onChange={(e) => onQuestionChange(e.target.value)}
             placeholder="What's confusing? (optional)"
             className="min-h-[52px] resize-none text-xs"
+            onSubmit={onAsk}
+            submitOnEnter
+            allowEmptySubmit
+            submitDisabled={loading}
+            isSubmitting={loading}
+            submitLabel="Ask"
           />
-          <Button
-            icon={loading ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              <GraduationCap />
-            )}
-            variant="primary"
-            type="button"
-            className="self-end"
-            onClick={onAsk}
-            disabled={loading}
-          >
-            Ask
-          </Button>
         </div>
       )}
 

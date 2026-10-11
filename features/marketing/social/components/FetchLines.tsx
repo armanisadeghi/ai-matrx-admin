@@ -17,10 +17,11 @@ const SETTING_LABELS: Record<string, string> = {
 /** "Limited to 500 by Max posts per account · Change" — no hidden limits. */
 export function LimitLine({ limit, organizationId }: { limit: SocialLimitApplied | null | undefined; organizationId: string }) {
   if (!limit) return null;
+  const bare = limit.setting.replace(/^social\./, "");
   return (
     <span className="text-xs text-muted-foreground" data-testid="limit-line">
-      {`Limited to ${limit.value.toLocaleString("en-US")} (asked ${limit.requested.toLocaleString("en-US")}) by ${SETTING_LABELS[limit.setting] ?? limit.setting} · `}
-      <Link href={SOCIAL_LIMITS_HREF(organizationId, limit.setting)} className="underline">
+      {`Showing ${limit.value.toLocaleString("en-US")} of the ${limit.requested.toLocaleString("en-US")} asked · limited by your organization's "${SETTING_LABELS[bare] ?? bare}" · `}
+      <Link href={SOCIAL_LIMITS_HREF(organizationId, bare)} className="underline">
         Change
       </Link>
     </span>
@@ -42,7 +43,7 @@ export function stoppedText(reason: string | null | undefined): string | null {
 /** Toast text for a row refresh: the summary plus any limit and early stop. */
 export function fetchOutcomeText(summary: string, r: { limit_applied?: SocialLimitApplied | null; stopped_reason?: string | null }): string {
   const parts = [summary];
-  if (r.limit_applied) parts.push(`Limited to ${r.limit_applied.value.toLocaleString("en-US")} by ${SETTING_LABELS[r.limit_applied.setting] ?? r.limit_applied.setting}`);
+  if (r.limit_applied) parts.push(`Limited to ${r.limit_applied.value.toLocaleString("en-US")} by ${SETTING_LABELS[r.limit_applied.setting.replace(/^social\./, "")] ?? r.limit_applied.setting}`);
   const stopped = stoppedText(r.stopped_reason);
   if (stopped) parts.push(stopped);
   return parts.join(" · ");

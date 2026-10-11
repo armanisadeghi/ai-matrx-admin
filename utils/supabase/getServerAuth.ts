@@ -36,6 +36,7 @@
 import { cache } from "react";
 import { createClient } from "./server";
 import {
+  accountFlagsFor,
   getClaimsUser,
   isAuthTransportFailure,
   type ApiClaimsUser,
@@ -61,6 +62,14 @@ export interface ServerAuthState {
    * package draws for `MiddlewareSession.authUnavailable`.
    */
   authUnavailable: boolean;
+  /**
+   * `true` when the verified session is a GUEST — an anonymous Supabase
+   * session (JWT claim `is_anonymous`). A guest IS authenticated (identity,
+   * transport) but has no account. `false` for visitors and members.
+   */
+  isGuest: boolean;
+  /** `isAuthenticated && !isGuest` — the flag ACCOUNT UI keys on. */
+  hasAccount: boolean;
 }
 
 /** How long the one retry waits before asking again. Short: the budget that
@@ -90,7 +99,7 @@ async function resolveOnce(): Promise<ServerAuthState> {
         `without a user, NOT as signed out. Cause: ${error?.name ?? "unknown"}: ${error?.message ?? ""}`,
     );
   }
-  return { isAuthenticated: !!user, user, authUnavailable };
+  return { isAuthenticated: !!user, user, authUnavailable, ...accountFlagsFor(user) };
 }
 
 /**

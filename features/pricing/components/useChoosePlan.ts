@@ -9,7 +9,7 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAuthenticated } from "@/lib/redux/selectors/userSelectors";
+import { selectHasAccount } from "@/lib/redux/selectors/userSelectors";
 import { useLoginHref } from "@/hooks/auth/useLoginHref";
 import { planAction } from "@/features/entitlements/catalog/planAction";
 import type { BillingCycle, CatalogPlan } from "@/features/entitlements/catalog/types";
@@ -23,7 +23,7 @@ export function useChoosePlan(): {
   choose: (plan: CatalogPlan, cycle?: BillingCycle) => void;
 } {
   const router = useRouter();
-  const signedIn = useAppSelector(selectIsAuthenticated);
+  const signedIn = useAppSelector(selectHasAccount);
   const [isPending, startTransition] = useTransition();
   // Sign-up keeps the visitor's place (they come back to the plan they chose).
   const signUpHref = useLoginHref("/sign-up");

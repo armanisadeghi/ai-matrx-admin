@@ -1,4 +1,4 @@
-import { capturePollInterval, capturedPostsMissingFrom, enrichWithCaptures, knownPostKeys, parseBrowserCapture } from "../browserCaptures";
+import { capturePollInterval, parseBrowserCapture } from "../browserCaptures";
 import { instagramIdToShortcode, instagramShortcodeToId, samePost } from "../postMatch";
 
 const social = {
@@ -20,11 +20,6 @@ describe("browser captures", () => {
     expect(parseBrowserCapture("doc-1", "x", { ...social, schema: "other" })).toBeNull();
   });
 
-  it("merges only posts the shared cache does not already have (by id or url segment)", () => {
-    const c = parseBrowserCapture("doc-1", "x", social)!;
-    expect(capturedPostsMissingFrom([c], new Set(["Das6jaZmsJl"])).map((p) => p.platformPostId)).toEqual(["Cseuqn0AFkd"]);
-    expect(capturedPostsMissingFrom([c, c], new Set()).length).toBe(2);
-  });
 });
 
 describe("post matching (numeric media id vs shortcode)", () => {
@@ -33,15 +28,6 @@ describe("post matching (numeric media id vs shortcode)", () => {
     expect(instagramIdToShortcode("3107126032038123805")).toBe("Cseuqn0AFkd");
     expect(samePost("instagram", { platformPostId: "DdC6aVWj8_n" }, { platformPostId: "3982001916880080871" })).toBe(true);
     expect(samePost("instagram", { platformPostId: "DdC6aVWj8_n" }, { platformPostId: "3107126032038123805" })).toBe(false);
-  });
-
-  it("hides a captured post whose shared twin is keyed by numeric id, and fills only the missing numbers", () => {
-    const c = parseBrowserCapture("doc-1", "x", { ...social, posts: [{ ...social.posts[0], likes: 40, views: 900 }] })!;
-    const shared = [{ platform: "instagram", url: "https://www.instagram.com/reel/Cseuqn0AFkd/", views: 1200, likes: null, comments: null, shares: null }];
-    expect(capturedPostsMissingFrom([c], knownPostKeys("instagram", shared), "instagram")).toEqual([]);
-    const [merged] = enrichWithCaptures(shared, [c], "instagram");
-    expect(merged.views).toBe(1200);
-    expect(merged.likes).toBe(40);
   });
 });
 

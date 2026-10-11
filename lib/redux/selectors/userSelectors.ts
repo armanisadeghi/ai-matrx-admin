@@ -178,6 +178,18 @@ export const selectAuthReady = (state: RootState): boolean =>
 export const selectIsAuthenticated = (state: RootState): boolean =>
   !!state.userAuth.id;
 
+/**
+ * ACCOUNT, not identity (guests-use-everything D2, 2026-10-11). A GUEST — an
+ * anonymous Supabase session — has an id, so `selectIsAuthenticated` is true
+ * for them (transport/identity readers keep that). Account UI — account menu,
+ * sign-out, billing/plans, storage quota, org picker, member classification —
+ * keys on this instead: a session id that is NOT anonymous.
+ */
+export const selectHasAccount = createSelector(
+  [selectUserId, selectIsAnonymous],
+  (id, isAnonymous): boolean => !!id && !isAnonymous,
+);
+
 export const selectUserAppMetadata = createSelector(
   [selectUserAuth],
   (auth) => auth.appMetadata,

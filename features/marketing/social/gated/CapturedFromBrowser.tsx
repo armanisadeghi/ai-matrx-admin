@@ -1,9 +1,10 @@
 "use client";
 
 /**
- * "From your browser" — what this organization captured about an account in its own browsers,
- * merged after the shared data: only posts the shared cache does not already have, plus the
- * account figures when the shared cache has none. Absent when there is nothing (never an empty box).
+ * "From your browser" — ONE line saying what this organization's own browser captured about an account
+ * ("281 posts from your browser · Oct 9") with the saved page one click away. The captured posts
+ * themselves are cards in the account's post grid and table (SCHEMA.md A7, `capturedPosts.ts`), never a
+ * list here. Absent when there is nothing (never an empty box).
  */
 
 import Link from "next/link";
@@ -12,8 +13,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@ai-matrx/design-system/controls";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
-import { formatCompact } from "../outlier";
-import { capturePollInterval, capturedPostsMissingFrom, fetchBrowserCaptures, type CaptureEntity } from "./browserCaptures";
+import { capturePollInterval, fetchBrowserCaptures, type CaptureEntity } from "./browserCaptures";
+import { FROM_BROWSER_LABEL, capturedSummary } from "./capturedPosts";
 import { guidedResultHref } from "./guidedJob";
 
 export function browserCapturesKey(targets: { type: CaptureEntity; id: string | null | undefined }[]) {
@@ -22,12 +23,11 @@ export function browserCapturesKey(targets: { type: CaptureEntity; id: string | 
 
 export function CapturedFromBrowser({
   targets,
-  knownPlatformPostIds,
-  platform,
+  capturedPostCount,
 }: {
   targets: { type: CaptureEntity; id: string | null | undefined }[];
-  knownPlatformPostIds: ReadonlySet<string>;
-  platform: string;
+  /** Captured posts now shown on the page (the organization's `captured_post` rows for the account). */
+  capturedPostCount: number;
 }) {
   const q = useQuery({ queryKey: browserCapturesKey(targets), queryFn: () => fetchBrowserCaptures(targets), refetchInterval: (q) => capturePollInterval(q.state.data) });
   if (q.isError) {
@@ -41,41 +41,20 @@ export function CapturedFromBrowser({
   const captures = q.data ?? [];
   if (captures.length === 0) return null;
   const latest = captures[0];
-  const extra = capturedPostsMissingFrom(captures, knownPlatformPostIds, platform);
-  const figures = [
-    latest.profile.followerCount !== null ? `${formatCompact(latest.profile.followerCount)} followers` : null,
-    latest.profile.postCount !== null ? `${formatCompact(latest.profile.postCount)} posts` : null,
-  ].filter(Boolean);
+  const count = capturedPostCount > 0 ? capturedPostCount : latest.posts.length;
+  const status =
+    latest.status === "needs_agent" ? "Saved, not read yet" : latest.imagesPending ? "Saving images…" : null;
 
   return (
-    <section aria-label="From your browser" className="flex flex-col gap-2 rounded-md border border-border p-2">
-      <div className="flex min-h-7 flex-wrap items-center gap-2 text-sm">
-        <Badge>From your browser</Badge>
-        <span className="text-muted-foreground">{figures.join(" · ") || "Saved page"}</span>
-        {latest.status === "needs_agent" ? <span className="text-xs text-muted-foreground">Saved, not read yet</span> : null}
-        <Link className="ml-auto text-xs underline-offset-2 hover:underline" href={guidedResultHref(latest.sourceId)}>
-          Saved page
-        </Link>
-      </div>
-      {extra.length > 0 ? (
-        <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2 xl:grid-cols-3">
-          {extra.slice(0, 24).map((p) => (
-            <li key={p.platformPostId} className="flex min-w-0 items-center gap-2 rounded border border-border px-2 py-1 text-xs">
-              <span className="truncate">{p.text || p.postedLabel || p.format}</span>
-              <span className="ml-auto shrink-0 text-muted-foreground">
-                {[p.likes !== null ? `${formatCompact(p.likes)} likes` : null, p.views !== null ? `${formatCompact(p.views)} views` : null]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </span>
-              {p.url ? (
-                <a className="shrink-0 underline-offset-2 hover:underline" href={p.url} target="_blank" rel="noreferrer noopener">
-                  Open
-                </a>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </section>
+    <div aria-label={FROM_BROWSER_LABEL} className="flex min-h-7 min-w-0 flex-wrap items-center gap-2 text-sm">
+      <Badge>{FROM_BROWSER_LABEL}</Badge>
+      <span className="truncate text-muted-foreground">
+        {count > 0 ? capturedSummary(count, latest.capturedAt) : "Saved page"}
+      </span>
+      {status ? <span className="text-xs text-muted-foreground">{status}</span> : null}
+      <Link className="ml-auto text-xs underline-offset-2 hover:underline" href={guidedResultHref(latest.sourceId)}>
+        Saved page
+      </Link>
+    </div>
   );
 }

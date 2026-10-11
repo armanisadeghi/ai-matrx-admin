@@ -22,7 +22,7 @@ import {
   createSocialProfileScope,
 } from "@/features/surfaces/manifests/social-tiles.manifest";
 import { outlierRowKindFromCard, socialProfileKind } from "../kind-models";
-import { ArrowLeft, ExternalLink, Plus, RefreshCw } from "lucide-react";
+import { AppWindow, ArrowLeft, ExternalLink, Plus, RefreshCw } from "lucide-react";
 
 import {
   Badge,
@@ -78,7 +78,8 @@ import { refreshProfile, socialErrorCode, socialErrorMessage, trackAccount } fro
 import { useCanEditSocial } from "../useCanEditSocial";
 import { GatedCaptureOffer } from "../gated/GatedCaptureOffer";
 import { CapturedFromBrowser, browserCapturesKey } from "../gated/CapturedFromBrowser";
-import { capturePollInterval, enrichWithCaptures, fetchBrowserCaptures, knownPostKeys } from "../gated/browserCaptures";
+import { capturePollInterval, fetchBrowserCaptures } from "../gated/browserCaptures";
+import { FROM_BROWSER_LABEL, mergeCapturedPosts, readCapturedPosts } from "../gated/capturedPosts";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { GUIDED_CAPTURE_PLATFORMS } from "../gated/guidedJob";
 import { TRACKED_ROLE_LABELS, isSocialPlatform, isTrackedRole, type IngestProfileResult, type PostCardModel } from "../types";
@@ -135,7 +136,12 @@ const POST_COLUMNS: MatrxColumnDef<PostCardModel>[] = [
     filter: "text",
     width: 220,
     minWidth: 160,
-    cell: (r) => <span className="block truncate">{r.hookLine || "No caption"}</span>,
+    cell: (r) => (
+      <span className="flex min-w-0 items-center gap-1">
+        {r.fromBrowser ? <AppWindow aria-label={FROM_BROWSER_LABEL} className="h-3 w-3 shrink-0 text-muted-foreground" /> : null}
+        <span className="truncate">{r.hookLine || "No caption"}</span>
+      </span>
+    ),
   },
   { id: "format", label: "Format", header: "Format", accessorKey: "format", filter: "select", width: 84 },
   {
@@ -353,6 +359,12 @@ export function AccountDetail({ platform, profileId }: { platform: string; profi
     { type: "social_tracked_account" as const, id: tracked.data?.id ?? null },
   ];
   const captures = useQuery({ queryKey: browserCapturesKey(captureTargets), queryFn: () => fetchBrowserCaptures(captureTargets), refetchInterval: (q) => capturePollInterval(q.state.data) });
+  // The organization's captured posts of this account, merged into the grid and table (SCHEMA.md A7).
+  const capturedPosts = useQuery({
+    queryKey: ["social", "browser-captures", "posts", profileId] as const,
+    queryFn: ({ signal }) => readCapturedPosts(profileId, signal),
+    refetchInterval: () => capturePollInterval(captures.data),
+  });
   const snapshots = useProfileSnapshots(profileId);
   const [tab, setTab] = useState<InnerTab>("posts");
   const openInPanel = useOpenPost();
@@ -435,7 +447,7 @@ export function AccountDetail({ platform, profileId }: { platform: string; profi
 
   const p = profile.data;
   const notice = refreshLine ?? captureNotice;
-  const list = enrichWithCaptures(posts.data ?? [], captures.data ?? [], p.platform);
+  const list = mergeCapturedPosts(posts.data ?? [], capturedPosts.data ?? [], { handle: p.handle ?? null });
   const role = tracked.data && isTrackedRole(tracked.data.role) ? tracked.data.role : null;
   const growth = judgeFollowerGrowth(snapshots.data ?? []);
   const baseline = profileBaseline(list);
@@ -579,11 +591,13 @@ export function AccountDetail({ platform, profileId }: { platform: string; profi
           onCaptured={() => void queryClient.invalidateQueries({ queryKey: ["social", "browser-captures"] })}
         />
       ) : null}
-      <CapturedFromBrowser
-        targets={captureTargets}
-        knownPlatformPostIds={knownPostKeys(p.platform, list)}
-        platform={p.platform}
-      />
+      <CapturedFromBrowser targets={captureTargets} capturedPostCount={capturedPosts.data?.length ?? 0} />
+      {capturedPosts.isError ? (
+        <p className="flex items-center gap-1 text-xs text-muted-foreground">
+          Couldn't read your captured posts
+          <ErrorAlchemyMenu error={capturedPosts.error} operation="load captured posts" />
+        </p>
+      ) : null}
 
       <Tabs aria-label="Account sections" value={tab} onValueChange={setTab} data={INNER_TABS} />
       {posts.isLoading ? (

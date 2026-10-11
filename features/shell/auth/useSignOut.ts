@@ -166,3 +166,32 @@ export function useSignOut() {
     [isSuperAdmin, displayName, email],
   );
 }
+
+/**
+ * GUESTS (guests-use-everything D2, 2026-10-11). A guest — an anonymous
+ * session — has no account to sign back into, so ending the session on this
+ * browser LOSES everything they made here. Guests get no "Sign out": the menu
+ * offers "Create free account" and, behind this confirm, "Forget this browser".
+ * The copy names the loss. Unreachable until guest sessions exist (W2).
+ */
+export const FORGET_GUEST_BROWSER_COPY = {
+  title: "Forget this browser?",
+  description:
+    "Your guest chats, notes and files here are deleted for good. Create a free account to keep them.",
+  confirmLabel: "Forget and delete",
+} as const;
+
+/** Ask, then end the guest session on this device. `true` when it ran. */
+export async function runForgetGuestBrowserFlow(
+  { redirectTo = "/" }: SignOutOptions = {},
+  ask: (options: {
+    title: string;
+    description: string;
+    confirmLabel: string;
+    variant: "destructive";
+  }) => Promise<boolean> = confirm,
+): Promise<boolean> {
+  if (!(await ask({ ...FORGET_GUEST_BROWSER_COPY, variant: "destructive" }))) return false;
+  await performLocalSignOut(redirectTo);
+  return true;
+}

@@ -20,7 +20,7 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAuthenticated } from "@/lib/redux/selectors/userSelectors";
+import { selectHasAccount } from "@/lib/redux/selectors/userSelectors";
 import { readOrganizationFavourites, setOrganizationFavourite } from "@ai-matrx/data/organizations";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast";
@@ -71,7 +71,7 @@ function load(): Promise<void> {
 }
 
 export function useOrganizationFavorites() {
-  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const isAuthenticated = useAppSelector(selectHasAccount);
   const favoriteIds = useSyncExternalStore(subscribe, () => favorites, () => favorites);
 
   useEffect(() => {

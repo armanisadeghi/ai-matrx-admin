@@ -12,7 +12,7 @@ import {
   selectOrganizationName,
   selectShouldPromptForOrganization,
 } from "@/lib/redux/slices/appContextSlice";
-import { selectIsAuthenticated } from "@/lib/redux/selectors/userSelectors";
+import { selectHasAccount } from "@/lib/redux/selectors/userSelectors";
 import { chooseActiveOrganization } from "@/lib/redux/thunks/activeOrgBootstrap";
 import { useScopeTree } from "@/features/scopes/hooks/useScopeTree";
 import { ensureScopeTree } from "@/features/scopes/redux/thunks/ensureScopeTree";
@@ -28,7 +28,7 @@ export function useActiveOrganizationPicker({ load = true }: { load?: boolean } 
   const activeOrgName = useAppSelector(selectOrganizationName);
   const promptForOrg = useAppSelector(selectShouldPromptForOrganization);
   const { organizations, status } = useScopeTree();
-  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const isAuthenticated = useAppSelector(selectHasAccount);
 
   useEffect(() => {
     // Gate on auth: ensureScopeTree no-ops (and stays 'idle') until a user id

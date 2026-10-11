@@ -33,6 +33,16 @@ export const COUNT_UNREADABLE_MESSAGE = "Couldn't read your organization's post 
 export function loadMoreRequest(): { maxPosts: number; continueFromLast: true; quoteCount: number } {
   return { maxPosts: LOAD_MORE_STEP, continueFromLast: true, quoteCount: LOAD_MORE_STEP };
 }
+/** The person's own row for the default count (their settings, "Personal configuration"). */
+export const POST_COUNT_PERSON_HREF = "/user-settings/general/personal-config#social.profile_posts_default";
+/** Why the count is what it is, in one short phrase. Pure. */
+export function countReason(count: number | null, choice: PostCountChoice | null, profilePostsMax: number | null | undefined): { text: string; limited: boolean } {
+  if (count != null && profilePostsMax != null && count > profilePostsMax) {
+    return { text: `limited to ${profilePostsMax.toLocaleString("en-US")} by your organization's maximum`, limited: true };
+  }
+  if (choice === "all") return { text: "all, up to your organization's maximum", limited: false };
+  return { text: "your default", limited: false };
+}
 /** Where an org admin changes the limits; with a setting name it scrolls to that exact row (rows anchor at their full key). */
 export const SOCIAL_LIMITS_HREF = (organizationId: string, setting?: string) =>
   `/organizations/${organizationId}/settings/configuration${setting ? `#social.${setting}` : ""}`;

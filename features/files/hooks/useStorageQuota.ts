@@ -22,7 +22,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
-  selectIsAuthenticated,
+  selectHasAccount,
   selectAuthReady,
   selectUserId,
 } from "@/lib/redux/selectors/userSelectors";
@@ -134,7 +134,7 @@ export function useStorageQuota(
 ): UseStorageQuotaResult {
   const { enabled = true } = options;
   const userId = useAppSelector(selectUserId);
-  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const isAuthenticated = useAppSelector(selectHasAccount);
   const authReady = useAppSelector(selectAuthReady);
   // The EXPLICIT active org — the plan describes the organization the user
   // chose. With none, no plan is fetched and none is shown (the effect below

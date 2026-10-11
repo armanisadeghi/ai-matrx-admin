@@ -38,7 +38,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAuthenticated } from "@/lib/redux/selectors/userSelectors";
+import { selectHasAccount } from "@/lib/redux/selectors/userSelectors";
 import { selectEntitlementTier } from "@/features/entitlements/state/selectors";
 import type { EducationPricing as EducationPricingData } from "./loadEducationPricing";
 import { useLoginHref } from "@/hooks/auth/useLoginHref";
@@ -148,7 +148,7 @@ export function EducationPricing({
   // Sign-up returns the visitor here, so both cards share one destination.
   const signUpHref = useLoginHref("/sign-up");
   const router = useRouter();
-  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const isAuthenticated = useAppSelector(selectHasAccount);
   const tier = useAppSelector(selectEntitlementTier);
   const isPremium = isAuthenticated && tier === "premium";
   const isFreeMember = isAuthenticated && !isPremium;

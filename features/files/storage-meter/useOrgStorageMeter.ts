@@ -26,7 +26,7 @@ import { readPlanStatus } from "@/features/entitlements/plan-service";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAuthReady,
-  selectIsAuthenticated,
+  selectHasAccount,
   selectUserId,
 } from "@/lib/redux/selectors/userSelectors";
 import { extractErrorMessage } from "@/utils/errors";
@@ -91,7 +91,7 @@ export function useOrgStorageMeter(
 ): UseOrgStorageMeterResult {
   const userId = useAppSelector(selectUserId);
   const authReady = useAppSelector(selectAuthReady);
-  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const isAuthenticated = useAppSelector(selectHasAccount);
   const active = authReady && isAuthenticated && !!userId && !!organizationId;
   const [nonce, setNonce] = useState(0);
   // The answer is STAMPED with what it describes. Switching organizations (or

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAuthenticated } from "@/lib/redux/selectors/userSelectors";
+import { selectHasAccount } from "@/lib/redux/selectors/userSelectors";
 
 const VIEWS_KEY = "matrx.guest.surfaceViews";
 const GATE_ATTEMPTS_KEY = "matrx.guest.gateAttempts";
@@ -37,7 +37,7 @@ export function useConversionTracker(): {
   markGateAttempt: (featureName: string) => void;
   reset: () => void;
 } {
-  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const isAuthenticated = useAppSelector(selectHasAccount);
   const [views, setViews] = useState<CountMap>({});
   const [gateAttempts, setGateAttempts] = useState<CountMap>({});
 

@@ -59,3 +59,41 @@ export function routeRequiresAuthentication(pathname: string): boolean {
     pathname === "/redeem"
   );
 }
+
+/** The pages that exist to CREATE or ENTER an account. */
+export const ACCOUNT_ENTRY_PAGES: ReadonlySet<string> = new Set([
+  "/login",
+  "/sign-up",
+  "/check-email",
+]);
+
+/**
+ * GUEST vs MEMBER at the proxy (guests-use-everything D2, 2026-10-11).
+ *
+ * `user` is the proxy's getClaims result (claims spread, `id` = `sub`). A GUEST
+ * is an anonymous Supabase session (`is_anonymous: true`): it carries a verified
+ * identity but no account, so it must be able to REACH `/sign-up` and `/login`
+ * (that is how a guest becomes a member), and on a route that needs an account
+ * it is sent through the login primitive exactly like a visitor.
+ */
+export function isMemberSession(
+  user: { is_anonymous?: unknown } | null | undefined,
+): boolean {
+  return !!user && user.is_anonymous !== true;
+}
+
+/** True when this session is bounced OFF an account-entry page: members only. */
+export function bouncesOffAccountEntryPage(
+  pathname: string,
+  user: { is_anonymous?: unknown } | null | undefined,
+): boolean {
+  return ACCOUNT_ENTRY_PAGES.has(pathname) && isMemberSession(user);
+}
+
+/** True when the proxy must send this request through the login primitive. */
+export function sendsToLogin(
+  pathname: string,
+  user: { is_anonymous?: unknown } | null | undefined,
+): boolean {
+  return !isMemberSession(user) && routeRequiresAuthentication(pathname);
+}

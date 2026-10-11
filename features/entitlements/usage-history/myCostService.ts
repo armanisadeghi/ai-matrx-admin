@@ -1,7 +1,7 @@
 import { createClient } from "@/utils/supabase/client";
 
 /** What the cost doors group by. */
-export type MyCostGroup = "feature" | "organization" | "day";
+export type MyCostGroup = "feature" | "organization" | "day" | "activity";
 export type MyCostPeriodKey = "today" | "week" | "month" | "all" | "custom";
 
 export interface MyCostPeriod {
@@ -35,6 +35,8 @@ export interface MyCostRecord {
   status: string | null;
   organizationId: string | null;
   organizationName: string | null;
+  conversationId: string | null;
+  linkKind: string | null;
   costUsd: number | null;
   points: number;
   chargedPoints: number;
@@ -70,8 +72,14 @@ const nn = (v: unknown): number | null => (v === null || v === undefined ? null 
 
 type Row = Record<string, unknown>;
 
-export async function fetchMyCostBreakdown(period: MyCostPeriod, group: MyCostGroup): Promise<MyCostGroupRow[]> {
-  const { data, error } = await billingRpc("my_cost_breakdown", { p_from: period.from ?? undefined, p_to: period.to ?? undefined, p_group: group });
+export interface MyCostScope {
+  feature?: string | null;
+  organizationId?: string | null;
+  activity?: string | null;
+}
+
+export async function fetchMyCostBreakdown(period: MyCostPeriod, group: MyCostGroup, scope: MyCostScope = {}): Promise<MyCostGroupRow[]> {
+  const { data, error } = await billingRpc("my_cost_breakdown", { p_from: period.from ?? undefined, p_to: period.to ?? undefined, p_group: group, p_feature: scope.feature ?? undefined, p_organization: scope.organizationId ?? undefined });
   if (error) throw error;
   return ((data ?? []) as Row[]).map((r) => ({
     key: String(r.group_key ?? ""),
@@ -85,9 +93,7 @@ export async function fetchMyCostBreakdown(period: MyCostPeriod, group: MyCostGr
   }));
 }
 
-export interface MyCostRecordsFilter {
-  feature?: string | null;
-  organizationId?: string | null;
+export interface MyCostRecordsFilter extends MyCostScope {
   before?: { at: string; id: string } | null;
 }
 
@@ -100,6 +106,7 @@ export async function fetchMyCostRecords(period: MyCostPeriod, filter: MyCostRec
       p_limit: MY_COST_RECORDS_PAGE,
       p_before_at: filter.before?.at ?? undefined,
       p_before_id: filter.before?.id ?? undefined,
+      p_activity: filter.activity ?? undefined,
   });
   if (error) throw error;
   return ((data ?? []) as Row[]).map((r) => ({
@@ -111,6 +118,8 @@ export async function fetchMyCostRecords(period: MyCostPeriod, filter: MyCostRec
     status: (r.status as string | null) ?? null,
     organizationId: (r.organization_id as string | null) ?? null,
     organizationName: (r.organization_name as string | null) ?? null,
+    conversationId: (r.conversation_id as string | null) ?? null,
+    linkKind: (r.link_kind as string | null) ?? null,
     costUsd: nn(r.cost_usd),
     points: n(r.points),
     chargedPoints: n(r.charged_points),

@@ -34,15 +34,20 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { safeRelativePath } from "@/utils/auth/safe-redirect";
-import type { ApiClaimsUser } from "./claimsUser";
+import { accountFlagsFor, type ApiClaimsUser } from "./claimsUser";
 import { getServerAuth } from "./getServerAuth";
 
 export type SessionState = "signed_in" | "signed_out" | "unverified";
 
+/**
+ * `isGuest` / `hasAccount` are ADDITIVE (guests-use-everything D2): a guest —
+ * an anonymous session — is still `signed_in` (identity), so every existing
+ * branch answers exactly as before. Account-only UI keys on `hasAccount`.
+ */
 export type SessionVerdict =
-  | { state: "signed_in"; isAuthenticated: true; user: ApiClaimsUser }
-  | { state: "signed_out"; isAuthenticated: false; user: null }
-  | { state: "unverified"; isAuthenticated: false; user: null };
+  | { state: "signed_in"; isAuthenticated: true; user: ApiClaimsUser; isGuest: boolean; hasAccount: boolean }
+  | { state: "signed_out"; isAuthenticated: false; user: null; isGuest?: false; hasAccount?: false }
+  | { state: "unverified"; isAuthenticated: false; user: null; isGuest?: false; hasAccount?: false };
 
 export type SettledSessionVerdict = Exclude<SessionVerdict, { state: "unverified" }>;
 
@@ -54,9 +59,13 @@ export function sessionVerdictFrom(auth: {
   user: ApiClaimsUser | null;
   authUnavailable: boolean;
 }): SessionVerdict {
-  if (auth.user) return { state: "signed_in", isAuthenticated: true, user: auth.user };
-  if (auth.authUnavailable) return { state: "unverified", isAuthenticated: false, user: null };
-  return { state: "signed_out", isAuthenticated: false, user: null };
+  if (auth.user) {
+    return { state: "signed_in", isAuthenticated: true, user: auth.user, ...accountFlagsFor(auth.user) };
+  }
+  if (auth.authUnavailable) {
+    return { state: "unverified", isAuthenticated: false, user: null, isGuest: false, hasAccount: false };
+  }
+  return { state: "signed_out", isAuthenticated: false, user: null, isGuest: false, hasAccount: false };
 }
 
 /** Pure: where the hold sends a request whose identity could not be verified. */

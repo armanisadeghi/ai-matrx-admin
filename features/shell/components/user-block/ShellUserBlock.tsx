@@ -43,12 +43,15 @@ export default function ShellUserBlock({
   const displayName =
     userData.userMetadata?.name ?? userData.email ?? "Your account";
   const avatarUrl = userData.userMetadata?.avatarUrl;
+  // A GUEST (anonymous session) is signed in but has no account, so no
+  // organization control (guests-use-everything D2). Members: unchanged.
+  const hasAccount = isAuthenticated && !userData.isAnonymous;
   return (
     <div className="shell-user-block" data-shell-user-block>
       <UserMenuEscape />
       <div className="shell-account-rail" data-title-side="right">
         <ShellSettingsMenu />
-        {isAuthenticated ? <ShellOrgSwitcher /> : null}
+        {hasAccount ? <ShellOrgSwitcher /> : null}
         {isAuthenticated ? (
           <label
             htmlFor="shell-user-menu"

@@ -16,7 +16,10 @@ import {
   loginHref,
   readAuthDestination,
 } from "@/utils/auth/auth-destination";
-import { routeRequiresAuthentication } from "@/utils/auth/protected-routes";
+import {
+  bouncesOffAccountEntryPage,
+  sendsToLogin,
+} from "@/utils/auth/protected-routes";
 import { couponAwareDestination } from "@/utils/auth/coupon-links";
 import { GOOGLE_OAUTH_REDIRECT_STATE_COOKIE } from "@/providers/google-provider/oauthRedirect";
 
@@ -150,12 +153,12 @@ export async function updateSession(
   // or self-referential value falls through to normal rendering instead of
   // looping.
   if (user) {
+    // A GUEST (anonymous session) is never forwarded off /login, /sign-up or
+    // /check-email: those pages are how a guest becomes a member.
     const isBounceablePage =
       pathname === landing ||
       pathname === "/dashboard" ||
-      pathname === "/login" ||
-      pathname === "/sign-up" ||
-      pathname === "/check-email";
+      bouncesOffAccountEntryPage(pathname, user);
     if (isBounceablePage) {
       // A coupon link (`/sign-up?coupon=`) opened while signed in still goes
       // to /redeem, which says in one line whether this account can use it.
@@ -170,14 +173,9 @@ export async function updateSession(
     }
   }
 
-  // Handle authenticated users trying to access auth pages with no
-  // destination to honour — send them to the surface's landing page.
-  if (
-    user &&
-    (request.nextUrl.pathname === "/login" ||
-      request.nextUrl.pathname === "/sign-up" ||
-      request.nextUrl.pathname === "/check-email")
-  ) {
+  // Handle MEMBERS on auth pages with no destination to honour — send them to
+  // the surface's landing page. A guest stays: they came here to sign up.
+  if (bouncesOffAccountEntryPage(pathname, user)) {
     const url = request.nextUrl.clone();
     url.pathname = landing;
     return redirectWithSessionCookies(url);
@@ -186,9 +184,8 @@ export async function updateSession(
   // Handle unauthenticated users trying to access routes that require a valid session.
   // Most routes allow guests — they render with limited functionality.
   // Only hard-block routes where unauthenticated access is genuinely harmful.
-  const requiresAuth = routeRequiresAuthentication(pathname);
-
-  if (!user && requiresAuth) {
+  // A GUEST (anonymous session) is treated exactly like a visitor here.
+  if (sendsToLogin(pathname, user)) {
     // THE CAPTURE POINT. This is where a destination is born: the page the
     // user actually asked for, with its query intact and auth chrome stripped.
     // Everything downstream only ever passes it along — it is never recreated.

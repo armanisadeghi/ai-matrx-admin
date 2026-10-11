@@ -25,7 +25,7 @@ import MobileSheetNavLink from "./MobileSheetNavLink";
 import AdminMobileMenuItem from "../sidebar/admin-menu/AdminMobileMenuItem";
 import MobileDrawerUserRow from "../user-block/MobileDrawerUserRow";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAuthenticated } from "@/lib/redux/selectors/userSelectors";
+import { selectHasAccount } from "@/lib/redux/selectors/userSelectors";
 import { ShellSettingsMenu } from "../account-rail/ShellSettingsMenu";
 import { ShellOrgSwitcher } from "../account-rail/ShellOrgSwitcher";
 import { isUserSettingsPath } from "@/features/settings/route-shell/settings-route-path";
@@ -142,7 +142,7 @@ export default function MobileNavigationDrawer({
   const pathname = usePathname() ?? "";
   // Gated destinations (Make, Records) appear where their switch is on.
   const settingsRoute = isUserSettingsPath(pathname);
-  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const isAuthenticated = useAppSelector(selectHasAccount);
 
   const allItems = [...items, settingsItem];
   const activeGroup = allItems.find(

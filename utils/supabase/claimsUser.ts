@@ -153,3 +153,19 @@ export function userFromClaims(claims: JwtPayload | undefined): ApiClaimsUser | 
     user_metadata: claims.user_metadata ?? {},
   };
 }
+
+/**
+ * GUEST vs ACCOUNT (guests-use-everything D2, 2026-10-11). A signed-in
+ * session is either a person with an ACCOUNT or a GUEST — an anonymous
+ * Supabase session (`is_anonymous: true` claim). Identity (`isAuthenticated`)
+ * says "this request carries a verified session"; ACCOUNT UI (account menu,
+ * billing, sign-out, org picker) keys on `hasAccount`. Pure, so the server door,
+ * the verdict and the proxy all draw the same line.
+ */
+export function accountFlagsFor(
+  claims: { is_anonymous?: boolean } | null | undefined,
+): { isGuest: boolean; hasAccount: boolean } {
+  if (!claims) return { isGuest: false, hasAccount: false };
+  const isGuest = claims.is_anonymous === true;
+  return { isGuest, hasAccount: !isGuest };
+}

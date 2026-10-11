@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
-  selectIsAuthenticated,
+  selectHasAccount,
   selectFingerprintId,
 } from "@/lib/redux/selectors/userSelectors";
 
@@ -36,7 +36,7 @@ const VISIT_KEY = "matrx.guest.firstSeenAt";
  * hook honors the real first-seen marker.
  */
 export function useUserType(): UserType {
-  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const isAuthenticated = useAppSelector(selectHasAccount);
   const fingerprintId = useAppSelector(selectFingerprintId);
   const [hasReturned, setHasReturned] = useState(false);
 

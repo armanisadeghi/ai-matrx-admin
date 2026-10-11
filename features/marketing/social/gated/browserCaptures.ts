@@ -11,8 +11,6 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { createClient } from "@/utils/supabase/client";
 
-import { postKeys } from "./postMatch";
-
 export const CAPTURED_PAGE_LABEL = "captured page";
 
 export type CaptureEntity = "social_profile" | "social_tracked_account" | "web_property" | "social_post";
@@ -129,63 +127,6 @@ export async function fetchBrowserCaptures(
   return ((data ?? []) as { id: string; updated_at: string; social: unknown }[])
     .map((r) => parseBrowserCapture(r.id, r.updated_at, r.social))
     .filter((c): c is BrowserCapture => c !== null);
-}
-
-/**
- * Merge: the shared cache first, then captured posts it does not already have, each marked as from
- * the person's browser. "Already have" = any shared identity of the post matches (postMatch): the
- * numeric id, the shortcode, the id in the link. The newest capture wins for a repeated post.
- */
-export function capturedPostsMissingFrom(
-  captures: BrowserCapture[],
-  knownPlatformPostIds: ReadonlySet<string>,
-  platform: string = "instagram",
-): CapturedPostModel[] {
-  const out = new Map<string, CapturedPostModel>();
-  for (const c of captures) {
-    for (const p of c.posts) {
-      const keys = postKeys(platform, p.platformPostId, p.url);
-      if ([...keys].some((k) => knownPlatformPostIds.has(k))) continue;
-      if (out.has(p.platformPostId)) continue;
-      out.set(p.platformPostId, p);
-    }
-  }
-  return [...out.values()];
-}
-
-/** Every identity of the shared-cache posts, for `capturedPostsMissingFrom`. */
-export function knownPostKeys(
-  platform: string,
-  posts: { url: string; platformPostId?: string | null }[],
-): ReadonlySet<string> {
-  const all = new Set<string>();
-  for (const x of posts) for (const k of postKeys(platform, x.platformPostId, x.url)) all.add(k);
-  return all;
-}
-
-/**
- * Shared posts with the organization's captured numbers laid over what the cache lacks: Layer A
- * wins on any metric it has; the capture fills the nulls. Nothing is written back (A4).
- */
-export function enrichWithCaptures<T extends { platform: string; url: string; views: number | null; likes: number | null; comments: number | null; shares: number | null }>(
-  posts: T[],
-  captures: BrowserCapture[],
-  platform: string,
-): T[] {
-  if (captures.length === 0) return posts;
-  const byKey = new Map<string, CapturedPostModel>();
-  for (const c of [...captures].reverse()) for (const p of c.posts) for (const k of postKeys(platform, p.platformPostId, p.url)) byKey.set(k, p);
-  return posts.map((x) => {
-    const hit = [...postKeys(x.platform, null, x.url)].map((k) => byKey.get(k)).find(Boolean);
-    if (!hit) return x;
-    return {
-      ...x,
-      views: x.views ?? hit.views,
-      likes: x.likes ?? hit.likes,
-      comments: x.comments ?? hit.comments,
-      shares: x.shares ?? hit.shares,
-    };
-  });
 }
 
 /** Poll while the newest capture's images are still landing, for at most three minutes after it was saved. */
