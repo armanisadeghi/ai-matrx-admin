@@ -29,7 +29,7 @@ export interface ColumnAccessPanelSubject {
 
 const WORD_LABEL: Record<string, string> = {
   public: "Public",
-  internal: "Everyone on the table",
+  internal: "Everyone",
   confidential: "Confidential",
   restricted: "Restricted",
 };
