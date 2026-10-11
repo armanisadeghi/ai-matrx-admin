@@ -1011,8 +1011,10 @@ export function IntegrationsWorkspace({
       );
     if (item.id === "native:social-accounts")
       return organizationId ? (
-        <CustomerAccountsPanel organizationId={organizationId} />
-        <WhatsAppBusinessPanel organizationId={organizationId} />
+        <div className="space-y-4">
+          <CustomerAccountsPanel organizationId={organizationId} />
+          <WhatsAppBusinessPanel organizationId={organizationId} />
+        </div>
       ) : (
         <p className="p-4 text-sm text-muted-foreground">
           Choose an organization to connect an account.
