@@ -29,6 +29,7 @@ import { selectNoteById } from "../redux/selectors";
 import {
   collidingHomeNames,
   homeDisplayName,
+  homeMatchScore,
   homeSections,
   isGeneralScopeType,
   type NoteHome,
@@ -68,6 +69,15 @@ export function HomePickerList({
   const manyGenerals = useMemo(() => homes.filter((h) => h.isGeneral).length > 1, [homes]);
   const labelFor = (home: NoteHome) =>
     homeDisplayName(home, { notesSpanManyOrganizations: manyGenerals, collidingNames });
+  // Each item's value is its scope id (unique, never searched); the filter ranks by the home's name.
+  const homeById = useMemo(() => new Map(homes.map((home) => [home.scopeId, home])), [homes]);
+  const filterHomes = (value: string, search: string) => {
+    const home = homeById.get(value);
+    if (!home) return 0;
+    // Typing narrows to places the note can GO: Enter never lands on the home it is already in.
+    if (search.trim() && home.scopeId === currentScopeId) return 0;
+    return homeMatchScore(search, home, labelFor(home));
+  };
 
   const orgId = newOrgId || organizations[0]?.id || "";
   const typeOptions = useMemo(() => {
@@ -107,7 +117,7 @@ export function HomePickerList({
   };
 
   return (
-    <Command shouldFilter className="flex min-h-0 flex-1 flex-col">
+    <Command shouldFilter filter={filterHomes} className="flex min-h-0 flex-1 flex-col">
       <CommandInput placeholder="Find a home" value={query} onValueChange={setQuery} />
       <CommandList className={cn("max-h-[360px]", listClassName)}>
         <CommandEmpty>{status === "ready" ? "No home matches" : "Loading homes"}</CommandEmpty>
@@ -120,7 +130,7 @@ export function HomePickerList({
               return (
                 <CommandItem
                   key={home.scopeId}
-                  value={`${label} ${home.organizationName} ${home.scopeTypeLabel} ${home.scopeId}`}
+                  value={home.scopeId}
                   disabled={busy || isCurrent}
                   onSelect={() => void onPick(home, label)}
                   data-home-scope-id={home.scopeId}

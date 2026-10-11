@@ -415,15 +415,11 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
         s,
         "notes",
         id,
-        "label, content, folder_name",
+        "label, content, home_scope_id",
         (r) => ({
           name: clip(r.label, 80),
           about: clip(r.content),
-          details: [
-            r.folder_name
-              ? { label: "Folder", value: String(r.folder_name) }
-              : null,
-          ].filter(Boolean) as EnrichedItem["details"],
+          details: [] as EnrichedItem["details"],
         }),
         "workbench",
       ),

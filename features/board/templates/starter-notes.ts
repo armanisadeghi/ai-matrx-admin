@@ -17,7 +17,7 @@ export interface StarterNoteServices {
 export const defaultStarterNoteServices: StarterNoteServices = {
   async createNote({ label, content, organizationId }) {
     const { NotesAPI } = await import("@/features/notes/service/notesApi");
-    const note = await NotesAPI.create({ label, content, folder_name: "Draft", tags: [], organization_id: organizationId });
+    const note = await NotesAPI.create({ label, content, tags: [], organization_id: organizationId });
     return { id: note.id };
   },
 };

@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useNoteHomes } from "../homes/useNoteHomes";
 import {
   selectAllNotesList,
   selectInstanceTabs,
@@ -38,6 +39,7 @@ export function SplitNotePicker({ children }: SplitNotePickerProps) {
   const [search, setSearch] = useState("");
 
   const allNotes = useAppSelector(selectAllNotesList);
+  const noteHomes = useNoteHomes();
   const openTabIds = useAppSelector(selectInstanceTabs(instanceId));
   const activeTabId = useAppSelector(selectInstanceActiveTab(instanceId));
 
@@ -54,12 +56,12 @@ export function SplitNotePicker({ children }: SplitNotePickerProps) {
       filtered = filtered.filter(
         (n) =>
           n.label.toLowerCase().includes(q) ||
-          n.folder_name?.toLowerCase().includes(q) ||
+          (noteHomes.labelOf(n.home_scope_id) ?? "").toLowerCase().includes(q) ||
           idMatchesQuery(n, q),
       );
     }
     return filtered;
-  }, [allNotes, openTabIds, activeTabId, search]);
+  }, [allNotes, openTabIds, activeTabId, search, noteHomes]);
 
   const handleSelect = (noteId: string) => {
     dispatch(setSplitNote({ instanceId, noteId }));
@@ -105,9 +107,9 @@ export function SplitNotePicker({ children }: SplitNotePickerProps) {
                   >
                     <FileText className="w-3.5 h-3.5 shrink-0 text-primary/60" />
                     <span className="truncate text-xs">{note.label}</span>
-                    {note.folder_name && (
+                    {noteHomes.labelOf(note.home_scope_id) && (
                       <span className="ml-auto text-[0.5625rem] text-muted-foreground/50 truncate max-w-[60px]">
-                        {note.folder_name}
+                        {noteHomes.labelOf(note.home_scope_id)}
                       </span>
                     )}
                   </CommandItem>
@@ -125,9 +127,9 @@ export function SplitNotePicker({ children }: SplitNotePickerProps) {
                 >
                   <FileText className="w-3.5 h-3.5 shrink-0 opacity-50" />
                   <span className="truncate text-xs">{note.label}</span>
-                  {note.folder_name && (
+                  {noteHomes.labelOf(note.home_scope_id) && (
                     <span className="ml-auto text-[0.5625rem] text-muted-foreground/50 truncate max-w-[60px]">
-                      {note.folder_name}
+                      {noteHomes.labelOf(note.home_scope_id)}
                     </span>
                   )}
                 </CommandItem>

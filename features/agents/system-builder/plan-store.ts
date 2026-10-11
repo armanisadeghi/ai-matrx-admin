@@ -6,7 +6,6 @@ import { create, getById, update } from "@/features/notes/service/notesApi";
 import { parsePlannerAnswer } from "./parse-plan";
 import type { Json } from "@/types/database.types";
 import {
-  SYSTEM_PLAN_FOLDER,
   SYSTEM_PLAN_KIND,
   SYSTEM_PLAN_TAG,
   type SystemPlan,
@@ -48,7 +47,6 @@ export async function saveNewPlan(plan: SystemPlan): Promise<string> {
   const note = await create({
     label: plan.title,
     content: toMarkdown(plan),
-    folder_name: SYSTEM_PLAN_FOLDER,
     tags: [SYSTEM_PLAN_TAG],
     custom_fields: fieldsOf(plan),
     organization_id: await ensureOrgId(null),

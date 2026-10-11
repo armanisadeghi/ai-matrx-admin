@@ -39,6 +39,7 @@ interface RecordedQuery {
   eq(...args: unknown[]): RecordedQuery;
   is(...args: unknown[]): RecordedQuery;
   not(...args: unknown[]): RecordedQuery;
+  contains(...args: unknown[]): RecordedQuery;
   order(...args: unknown[]): RecordedQuery;
   range(...args: unknown[]): Promise<{ data: unknown[]; error: null }>;
 }

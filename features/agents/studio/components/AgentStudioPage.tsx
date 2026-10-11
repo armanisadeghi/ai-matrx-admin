@@ -183,9 +183,10 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   const [casesVersion, setCasesVersion] = useState(0);
 
   // Mode "Improve": the agent's recent real runs become its test cases (once per agent), and the
-  // latest opens in the center. `improveReady` holds the center until that is known, so it never
-  // starts a fresh run on top of the one it is about to open.
-  const [improveReady, setImproveReady] = useState(mode.id !== "improve" || Boolean(state.runId));
+  // latest opens in the center. The center waits until that run is in the URL (or the agent has
+  // none), so it never starts a fresh run on top of the one it is about to open.
+  const [improveSettled, setImproveSettled] = useState(false);
+  const improveReady = mode.id !== "improve" || Boolean(state.runId) || improveSettled;
   const plannedFor = useRef<string | null>(null);
   useEffect(() => {
     const agentId = state.agentId;
@@ -210,10 +211,10 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
           setCasesVersion((v) => v + 1);
         }
         if (plan.latest && !state.runId) go({ runId: plan.latest.conversationId });
+        else setImproveSettled(true);
       } catch (e) {
         toast.error("Its recent runs did not load", { description: e instanceof Error ? e.message : String(e) });
-      } finally {
-        setImproveReady(true);
+        setImproveSettled(true);
       }
     })();
   }, [mode.id, state.agentId, state.runId, go]);
@@ -547,11 +548,11 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
         <div className="h-full min-h-0" data-testid="studio-pane-assistant">{left}</div>
       </ResizablePanel>
       <ResizableHandle />
-      <ResizablePanel defaultSize="50%" minSize="30%">
+      <ResizablePanel defaultSize="46%" minSize="30%">
         <div className="h-full min-h-0" data-testid="studio-pane-agent">{center}</div>
       </ResizablePanel>
       <ResizableHandle />
-      <ResizablePanel defaultSize="22%" minSize="16%" collapsible>
+      <ResizablePanel defaultSize="26%" minSize="18%" collapsible>
         <div className="h-full min-h-0" data-testid="studio-pane-controls">{right}</div>
       </ResizablePanel>
     </ResizablePanelGroup>

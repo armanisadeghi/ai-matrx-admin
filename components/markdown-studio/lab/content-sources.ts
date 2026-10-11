@@ -369,12 +369,12 @@ export const STUDIO_SOURCES: Record<StudioSourceKind, StudioSourceDef> = {
     icon: "StickyNote",
     list: async (search) =>
       (await NotesAPI.listItems())
-        .filter((n) => matches(search, n.label, n.folder_name, n.id))
+        .filter((n) => matches(search, n.label, ...(n.tags ?? []), n.id))
         .slice(0, STUDIO_SOURCE_RECENT_LIMIT)
         .map((n) => ({
           id: n.id,
           label: n.label || "Untitled note",
-          sublabel: [n.folder_name, formatWhen(n.updated_at)]
+          sublabel: [(n.tags ?? []).join(", "), formatWhen(n.updated_at)]
             .filter(Boolean)
             .join(" · "),
         })),
@@ -387,7 +387,7 @@ export const STUDIO_SOURCES: Record<StudioSourceKind, StudioSourceDef> = {
     icon: "GraduationCap",
     list: async (search) =>
       (await loadStudyGuideIndex())
-        .filter((n) => matches(search, n.label, n.folder_name, n.id))
+        .filter((n) => matches(search, n.label, ...(n.tags ?? []), n.id))
         .slice(0, STUDIO_SOURCE_RECENT_LIMIT)
         .map((n) => ({
           id: n.id,

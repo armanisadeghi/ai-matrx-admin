@@ -90,7 +90,7 @@ describe("a sticky note's words are a Note", () => {
     stop();
   });
 
-  it("files the Note in the Sticky notes folder, in the board's organization", async () => {
+  it("stamps the Note with the Sticky notes tag, in the board's organization", async () => {
     const { stickyNoteStore } = await import("../persistence/sticky-note-store");
     mockCreateNote.mockResolvedValue({ id: "n1" });
     const id = await stickyNoteStore("org-of-board").create("Pack the kitchen\nboxes in garage");
@@ -98,7 +98,7 @@ describe("a sticky note's words are a Note", () => {
     expect(mockCreateNote).toHaveBeenCalledWith({
       label: "Pack the kitchen",
       content: "Pack the kitchen\nboxes in garage",
-      folder_name: "Sticky notes",
+      tags: ["Sticky notes"],
       organization_id: "org-of-board",
     });
   });

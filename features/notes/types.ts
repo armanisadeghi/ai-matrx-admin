@@ -215,16 +215,9 @@ export interface DeleteNoteOptions {
   expectedActorId?: string;
 }
 
-export interface FolderGroup {
-  folder_name: string;
-  notes: Note[];
-  count: number;
-}
-
 export interface NoteFilters {
   search?: string;
   tags?: string[];
-  folder_name?: string;
 }
 
 export type NoteSortField = "label" | "created_at" | "updated_at";

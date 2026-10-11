@@ -369,7 +369,7 @@ export function EduNotesHome() {
               <Input adornment="start"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search notes by title, folder, or tag"
+                placeholder="Search notes by title or tag"
                 aria-label="Search notes"
               />
             </div>

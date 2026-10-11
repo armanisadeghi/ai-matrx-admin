@@ -28,7 +28,9 @@ cur.execute("""select not exists (select 1 from pg_extension where extname = 'pg
                  and (to_regclass('cron.job') is null or not exists (select 1 from cron.job where active))""")
 if not cur.fetchone()[0]:
     sys.exit('REFUSED: the server does not show the clone quarantine')
+conn.rollback()
 cur.execute("set statement_timeout = 0")
+cur.execute("set transaction read write")   # a pooler backend can carry a leaked read-only default
 
 ORG = '884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f'
 ADMIN = '87a6e699-3622-4869-8843-d0867456c0dd'

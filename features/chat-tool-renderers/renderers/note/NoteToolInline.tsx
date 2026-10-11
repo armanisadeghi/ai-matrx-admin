@@ -121,10 +121,10 @@ export const NoteToolInline: React.FC<ToolRendererProps> = ({
           ) : null}
           <span>{data.stats.characters.toLocaleString()} chars</span>
           <span>{data.stats.words.toLocaleString()} words</span>
-          {data.folder ? (
+          {data.home ? (
             <span className="inline-flex items-center gap-1">
-              <span className="text-muted-foreground/70">Folder</span>
-              <span className="text-foreground">{data.folder}</span>
+              <span className="text-muted-foreground/70">Home</span>
+              <span className="text-foreground">{data.home}</span>
             </span>
           ) : null}
         </div>

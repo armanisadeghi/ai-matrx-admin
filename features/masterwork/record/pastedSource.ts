@@ -40,7 +40,7 @@ import { createNote } from "@/features/notes/service/notesService";
 export const DISTILLATION_SOURCE_ROLE = "distillation_source";
 
 /** Where pasted sources land in the Expert's own Notes. */
-export const PASTED_SOURCE_FOLDER = "Masterwork Sources";
+export const PASTED_SOURCE_TAG = "Masterwork Sources";
 
 /**
  * The paste lane's source identity — byte-identical to the server's
@@ -124,7 +124,7 @@ export async function recordPastedSource(args: {
     const note = await createNote({
       label: title,
       content: text,
-      folder_name: PASTED_SOURCE_FOLDER,
+      tags: [PASTED_SOURCE_TAG],
       organization_id: args.orgId ?? "",
       // NOTHING in the note's `metadata`: the Data Doctrine (§3.2/§4.4,
       // DD-060) reserves that column for system-owned state, and the DB gate

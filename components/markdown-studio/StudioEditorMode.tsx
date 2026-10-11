@@ -20,7 +20,7 @@ import { toast } from "@/lib/toast";
 import type { ContentSource } from "@ai-matrx/rich-content/rich-document/types";
 import { presentOrganizationRefusal } from "@ai-matrx/chat/host/org";
 
-const COPY_FOLDER = "Rich editor proving copies";
+const COPY_TAG = "Rich editor proving copies";
 
 export interface ProvingCopy {
   id: string;
@@ -94,7 +94,7 @@ export function StudioEditorMode({
     const created = await NotesAPI.create({
       label,
       content: text,
-      folder_name: COPY_FOLDER,
+      tags: [COPY_TAG],
       organization_id: await ensureOrgId(undefined),
     });
     const stored = await readBack(created.id);

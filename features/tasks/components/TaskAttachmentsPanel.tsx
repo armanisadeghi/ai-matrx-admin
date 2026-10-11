@@ -266,7 +266,6 @@ export default function TaskAttachmentsPanel({
             items={bundle.notes.map((n) => ({
               key: n.id,
               primary: n.label,
-              secondary: n.folder_name || undefined,
               href: `/notes?active=${n.id}`,
               onRemove: () => handleRemove("note", n.id),
             }))}

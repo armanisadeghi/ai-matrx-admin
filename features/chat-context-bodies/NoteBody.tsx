@@ -10,7 +10,7 @@
 import { useEffect } from "react";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { Link } from "@ai-matrx/chat/host/navigation";
-import { Folder, ExternalLink } from "lucide-react";
+import { House, ExternalLink } from "lucide-react";
 import { NoteContentEditor } from "@/features/notes/components/NoteContentEditor";
 import { NoteViewControls } from "@/features/notes/components/NoteViewControls";
 import { NotesInstanceProvider } from "@/features/notes/context/NotesInstanceContext";
@@ -21,6 +21,7 @@ import {
 } from "@/features/notes/redux/selectors";
 import { useEmbeddedNoteInstance } from "@/features/notes/hooks/useEmbeddedNoteInstance";
 import { fetchNoteContent } from "@/features/notes/redux/thunks";
+import { useNoteHomes } from "@/features/notes/homes/useNoteHomes";
 import {
   Tooltip,
   TooltipContent,
@@ -115,14 +116,15 @@ export function NoteFooter({ item }: ContextItemBodyProps) {
   const note = useAppSelector((s) =>
     noteId ? selectNoteById(noteId)(s) : undefined,
   );
+  const homeLabel = useNoteHomes().labelOf(note?.home_scope_id);
   if (!noteId) return null;
 
   return (
     <>
-      {note?.folder_name && (
+      {homeLabel && (
         <span className="inline-flex min-w-0 items-center gap-1 type-meta text-muted-foreground">
-          <Folder className="h-3 w-3 shrink-0" />
-          <span className="truncate">{note.folder_name}</span>
+          <House className="h-3 w-3 shrink-0" />
+          <span className="truncate">{homeLabel}</span>
         </span>
       )}
       <Tooltip>

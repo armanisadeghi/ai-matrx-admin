@@ -7,8 +7,8 @@
  *
  * Mapping:
  *   - `notes` table rows → file leaves
- *   - `notes.folder_name` (string column) → folders, materialized from the
- *     distinct values plus the explicit `note_folders` table
+ *   - `notes.home_scope_id` (the note's one home, a scope) → directories, one
+ *     per home that holds a note (see notesHomeFolders.ts)
  *   - `notes.label` → display name
  *   - `notes.content` → file content (markdown)
  *   - `notes.updated_at` → optimistic concurrency
@@ -22,7 +22,14 @@
 
 import { StickyNote } from "lucide-react";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { noteCreateErrorMessage } from "@/features/notes/utils/writeErrors";
+import { readAllRows } from "@ai-matrx/data/db";
+import { homeReceiptFrom, homeRefusalMessage } from "@/features/notes/homes/homeModel";
+import { resolveHomeScopeId } from "@/features/notes/homes/moveNoteToHome";
+import {
+  homeVidFromScopeId,
+  nameHomeDirectories,
+  scopeIdFromHomeVid,
+} from "./notesHomeFolders";
 import { registerVirtualSource } from "@/features/files/virtual-sources/registry";
 import { NotesInlinePreview } from "./NotesInlinePreview";
 import type { Database } from "@/types/database.types";
@@ -39,24 +46,6 @@ import type {
   VirtualSourceAdapter,
 } from "@/features/files/virtual-sources/types";
 import { defaultListFilter } from "@/lib/list-scope";
-
-/** Sentinel id used in synthetic ids for the implicit "Unfiled" folder —
- *  notes whose `folder_name` column is null. */
-const UNFILED_VID = "__unfiled__";
-const UNFILED_LABEL = "Unfiled";
-
-/** Build a virtual id for a folder row. Real folder names are unique per user
- *  in `note_folders`, so we use the name as the virtualId. Synthetic ids are
- *  scoped per-adapter so collisions across sources are impossible. */
-function folderVidFromName(name: string): string {
-  return `folder:${name}`;
-}
-
-function folderNameFromVid(vid: string): string | null {
-  if (vid === UNFILED_VID) return null;
-  if (vid.startsWith("folder:")) return vid.slice("folder:".length);
-  return null;
-}
 
 const TAB_ID_PREFIX = "notes:";
 
@@ -95,66 +84,59 @@ const notesAdapter: VirtualSourceAdapter = {
   async list(supabase, userId, args: ListArgs): Promise<VirtualNode[]> {
     if (!userId) return [];
     if (args.parentId === null) {
-      // Adapter root — list folders.
-      // Pull distinct `folder_name` values from notes plus any rows in
-      // `note_folders` (the materialized list). Union avoids missing folders
-      // that exist in either source.
-      // DD-137c / §3.3: `note` and `note_folder` are both registered `organization`, so this tree
-      // opens on the organization's folders. RLS is still the ceiling; this is only where it starts.
+      // Adapter root — one directory per home that holds a note.
       const listScope = await defaultListFilter("note", { userId });
-      const foldersListScope = await defaultListFilter("note_folder", { userId });
-      let folderQuery = supabase
-        .schema("workbench").from("note_folders")
-        .select("name");
-      folderQuery = foldersListScope.apply(folderQuery);
-      let noteFolderQuery = supabase
-        .schema("workbench").from("notes")
-        .select("folder_name")
-        .is("deleted_at", null);
-      noteFolderQuery = listScope.apply(noteFolderQuery);
-      const [folderRows, noteFolders] = await Promise.all([folderQuery, noteFolderQuery]);
-      const names = new Set<string>();
-      let hasUnfiled = false;
-      for (const row of folderRows.data ?? []) {
-        if (row.name) names.add(row.name);
+      const noteRows = await readAllRows<{ home_scope_id: string }>(
+        ({ from, to }) => {
+          let q = supabase
+            .schema("workbench").from("notes")
+            .select("home_scope_id", { count: "exact" })
+            .is("deleted_at", null);
+          q = listScope.apply(q);
+          return q.order("home_scope_id").range(from, to);
+        },
+        { label: "workbench.notes (files tree homes)" },
+      );
+      const homeIds = Array.from(new Set(noteRows.map((row) => row.home_scope_id)));
+      if (homeIds.length === 0) return [];
+      const { data: scopes, error: scopeError } = await supabase
+        .schema("custom").from("context_scopes")
+        .select("id, name, organization_id")
+        .in("id", homeIds);
+      if (scopeError) return [];
+      const orgIds = Array.from(new Set((scopes ?? []).map((s) => s.organization_id).filter((id): id is string => !!id)));
+      const orgNames = new Map<string, string>();
+      if (orgIds.length > 0) {
+        const { data: orgs } = await supabase.schema("iam").from("organizations").select("id, name").in("id", orgIds);
+        for (const org of orgs ?? []) if (org.id) orgNames.set(org.id, org.name ?? "");
       }
-      for (const row of noteFolders.data ?? []) {
-        if (row.folder_name) names.add(row.folder_name);
-        else hasUnfiled = true;
-      }
-      const folders: VirtualNode[] = Array.from(names)
-        .sort((a, b) => a.localeCompare(b))
-        .map((name) => ({
-          id: folderVidFromName(name),
-          kind: "folder" as const,
-          name,
-          parentId: null,
-        }));
-      if (hasUnfiled) {
-        folders.unshift({
-          id: UNFILED_VID,
+      const homes = (scopes ?? []).map((scope) => ({
+        scopeId: scope.id as string,
+        name: (scope.name as string | null) ?? "Home",
+        organizationName: orgNames.get(scope.organization_id as string) ?? "",
+      }));
+      const names = nameHomeDirectories(homes);
+      return homes
+        .map((home): VirtualNode => ({
+          id: homeVidFromScopeId(home.scopeId),
           kind: "folder",
-          name: UNFILED_LABEL,
+          name: names.get(home.scopeId) ?? home.name,
           parentId: null,
-        });
-      }
-      return folders;
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
     }
-    // Inside a folder — list notes whose folder_name matches.
-    const folderName = folderNameFromVid(args.parentId);
+    // Inside a home — list the notes whose home it is.
+    const homeScopeId = scopeIdFromHomeVid(args.parentId);
+    if (!homeScopeId) return [];
     const listListScope = await defaultListFilter("note", { userId });
     let query = supabase
       .schema("workbench").from("notes")
-      .select("id, label, updated_at, version, folder_name");
+      .select("id, label, updated_at, version");
     query = listListScope.apply(query);
     query = args.includeDeleted
       ? query.not("deleted_at", "is", null)
       : query.is("deleted_at", null);
-    if (folderName === null) {
-      query = query.is("folder_name", null);
-    } else {
-      query = query.eq("folder_name", folderName);
-    }
+    query = query.eq("home_scope_id", homeScopeId);
     const { data, error } = await query.order("updated_at", { ascending: false });
     if (error) return [];
     return (data ?? []).map(
@@ -249,29 +231,35 @@ const notesAdapter: VirtualSourceAdapter = {
   },
 
   async move(supabase, userId, args: MoveArgs) {
-    // Move = update folder_name. Parent virtual id is `folder:<name>` or
-    // `__unfiled__` (which clears the column).
-    const folderName =
-      args.newParentId === null ? null : folderNameFromVid(args.newParentId);
-    const update = {
-      folder_name: folderName,
-      updated_at: new Date().toISOString(),
-    };
-    let query = supabase
+    // Move = the one move path: platform.set_home on the note's current version.
+    // The directory is `home:<scope id>`; a note always has a home, so there is
+    // no "unfiled" directory to drop it on.
+    const scopeId = args.newParentId === null ? null : scopeIdFromHomeVid(args.newParentId);
+    if (!scopeId) throw new Error("Drop a note on a home to move it there.");
+    const resolved = await resolveHomeScopeId(scopeId);
+    if (!resolved.ok) throw new Error(resolved.message);
+    const { data: current, error: readError } = await supabase
       .schema("workbench").from("notes")
-      .update(update)
+      .select("version")
       .eq("id", args.id)
-      .eq("created_by", userId);
-    if (args.expectedUpdatedAt) {
-      query = query.eq("updated_at", args.expectedUpdatedAt);
-    }
-    const { data, error } = await query
-      .select("updated_at")
+      .eq("created_by", userId)
+      .is("deleted_at", null)
       .maybeSingle();
-    if (error || !data) {
-      throw new Error("We couldn't move this note. Please try again.");
-    }
-    return { updatedAt: data.updated_at ?? update.updated_at };
+    if (readError || !current) throw new Error("We couldn't move this note. Please try again.");
+    const { data, error } = await supabase.schema("platform").rpc("set_home", {
+      p_entity_type: "note",
+      p_entity_id: args.id,
+      p_scope_id: resolved.scopeId,
+      p_expected_version: current.version,
+    });
+    if (error) throw new Error(homeRefusalMessage(error));
+    homeReceiptFrom(data);
+    const { data: moved } = await supabase
+      .schema("workbench").from("notes")
+      .select("updated_at")
+      .eq("id", args.id)
+      .maybeSingle();
+    return { updatedAt: moved?.updated_at ?? new Date().toISOString() };
   },
 
   async delete(supabase, userId, id) {
@@ -289,30 +277,20 @@ const notesAdapter: VirtualSourceAdapter = {
 
   async create(supabase, userId, args: CreateArgs) {
     if (args.kind === "folder") {
-      // The ONE writer of a new note folder is the database get-or-create
-      // (organization + person + name). A raw insert here collided with the
-      // retired org-blind key and answered "Please try again" — a retry that
-      // could never work (2026-09-18).
-      // org-filter: write-target writes into the organization the person is working in; no list reads it
-      const organizationId = await ensureOrgId(undefined);
-      const { data: folderId, error } = await supabase
-        .schema("workbench")
-        .rpc("note_folder_get_or_create", { p_organization_id: organizationId, p_name: args.name });
-      if (error || !folderId) {
-        throw new Error(noteCreateErrorMessage(error ?? { message: "" }));
-      }
-      const data = { name: args.name.trim() };
-      return {
-        id: folderVidFromName(data.name ?? args.name),
-        kind: "folder" as const,
-        name: data.name ?? args.name,
-        parentId: null,
-      };
+      // A directory here is a home — a scope. Homes are made in Notes ("New home…"), where the
+      // organization and kind are chosen; this tree cannot make one.
+      throw new Error("Make a new home in Notes, then it appears here.");
     }
-    const folderName =
-      args.parentId === null
-        ? null
-        : folderNameFromVid(args.parentId);
+    const homeScopeId = args.parentId === null ? null : scopeIdFromHomeVid(args.parentId);
+    let homeOrganizationId: string | undefined;
+    if (homeScopeId) {
+      const { data: scope } = await supabase
+        .schema("custom").from("context_scopes")
+        .select("organization_id")
+        .eq("id", homeScopeId)
+        .maybeSingle();
+      homeOrganizationId = (scope?.organization_id as string | null | undefined) ?? undefined;
+    }
     const { data, error } = await supabase
       .schema("workbench").from("notes")
       .insert({
@@ -320,10 +298,11 @@ const notesAdapter: VirtualSourceAdapter = {
         created_by: userId,
         label: args.name,
         content: args.content ?? "",
-        folder_name: folderName,
-        // Never create a homeless note — ride the user's active org.
+        // A note made inside a home is that home's (and its organization's); at the root the
+        // database files it in the active organization's General.
+        ...(homeScopeId ? { home_scope_id: homeScopeId } : {}),
         // org-filter: write-target writes into the organization the person is working in; no list reads it
-        organization_id: await ensureOrgId(undefined),
+        organization_id: await ensureOrgId(homeOrganizationId),
         // Notes are private by default. The `notes.visibility` enum column
         // (2026 canonicalization) defaults to `'internal'` at the DB; set it
         // explicitly so a new note isn't silently org-visible.
@@ -349,7 +328,7 @@ const notesAdapter: VirtualSourceAdapter = {
   inlinePreview: NotesInlinePreview,
 
   openInRoute(node) {
-    // Folder nodes don't have a dedicated route; only file leaves do.
+    // Home directories don't have a dedicated route; only file leaves do.
     if (node.kind === "folder") return null;
     return `/notes/${node.id}`;
   },

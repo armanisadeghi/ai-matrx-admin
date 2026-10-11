@@ -18,7 +18,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectNoteById } from "@/features/notes/redux/selectors";
-import { Check, Copy, ExternalLink, Folder, StickyNote, ArrowUpRight } from "lucide-react";
+import { useNoteHomes } from "@/features/notes/homes/useNoteHomes";
+import { Check, Copy, ExternalLink, House, StickyNote, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const CONTENT_PREVIEW_CHARS = 600;
@@ -40,6 +41,7 @@ export function NotePreviewContent({ noteId, onOpen }: NotePreviewContentProps) 
     notify: copyNotify,
   });
   const note = useAppSelector(selectNoteById(noteId));
+  const homeLabel = useNoteHomes().labelOf(note?.home_scope_id);
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -74,10 +76,10 @@ export function NotePreviewContent({ noteId, onOpen }: NotePreviewContentProps) 
           <div className="type-title text-foreground truncate">
             {title}
           </div>
-          {note.folder_name && (
+          {homeLabel && (
             <div className="flex items-center gap-1 type-meta text-muted-foreground mt-0.5">
-              <Folder className="w-3 h-3" />
-              <span className="truncate">{note.folder_name}</span>
+              <House className="w-3 h-3" />
+              <span className="truncate">{homeLabel}</span>
             </div>
           )}
         </div>

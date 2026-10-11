@@ -20,6 +20,7 @@
 
 import type { BoardShape } from "../engine/shapes";
 import { stickyNoteLabel } from "../engine/canvas-text";
+import { NOTE_BUCKET_TAGS } from "@/features/notes/homes/bucketTags";
 
 /** Where a sticky's words are kept (the notes service in the app, a fake in tests). */
 export interface StickyNoteStore {
@@ -37,8 +38,8 @@ export interface StickyBoard {
   stampShape: (id: string, patch: Partial<Omit<BoardShape, "id">>, opts?: { everywhere?: boolean }) => void;
 }
 
-/** The folder every person's sticky notes are filed in (created on their first sticky). */
-export const STICKY_NOTES_FOLDER = "Sticky notes";
+/** The tag every sticky note carries (its home is the database default). */
+export const STICKY_NOTES_TAG = NOTE_BUCKET_TAGS.stickyNotes;
 
 /** Typing settles this long before the Note is written. */
 export const STICKY_SAVE_DELAY_MS = 700;

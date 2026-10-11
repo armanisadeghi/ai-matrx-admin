@@ -119,7 +119,7 @@ export const NoteToolOverlay: React.FC<ToolRendererProps> = ({
               </span>
             </MetaItem>
           ) : null}
-          <MetaItem label="Folder">{data.folder ?? "—"}</MetaItem>
+          <MetaItem label="Home">{data.home ?? "—"}</MetaItem>
           <MetaItem label="Words">{data.stats.words.toLocaleString()}</MetaItem>
           <MetaItem label="Characters">
             {data.stats.characters.toLocaleString()}

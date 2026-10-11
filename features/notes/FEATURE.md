@@ -24,21 +24,22 @@ Owner's model: `common-docs/systems/data/scopes-context/VISION.md` § Every item
 - **One home control:** the bottom-bar home button, the tab-strip shield and the mobile dock open the same `homes/NoteHomePanel` — **Home** (exactly one; choosing moves the note) over **Also relates to** (scope/project/task associations via `ContextAssignmentField` with `organizationPicker={false}`; never moves the note).
 - **Sidebar = home tree:** grouped by `home_scope_id` — each organization's General, then scopes under one heading per scope type. Organization names appear only in a General's label when the person's notes span organizations ("General · <Org>"), on same-named scopes from different organizations, under group-by Organization, and in the organization filter (`?org_filter=`). No organization tag on rows.
 - **Code-owned buckets are tags** (`homes/bucketTags.ts`: Chat Saves, Voice Notes, Scratch, …): a feature stamps the tag on create and leaves the home to the default. Quick save picks a Home, never a folder.
-- `folder_id` / `folder_name` / `workbench.note_folders` still exist only for readers not yet moved (see Open items); new notes code never reads them.
+- **No folder reader remains in the UI.** Pickers (`NotePickerPopover`, the resource picker via `useNotePicker`, the split picker), the /files notes tree (`virtual-sources/adapters/notes.ts`, one directory per home, named by the home, organization appended only when two visible homes share a name), the chat note renderer and the context bodies group and label by `home_scope_id` through `homes/useNoteHomes`. Feature buckets are tags (`homes/bucketTags.ts`; Education lists by `Study Notes`): stamp the tag on create, list with `.contains("tags", [tag])`. Never read or write `folder_id` / `folder_name` / `note_folders` / `note_folder_counts` in new code.
+- **The home picker ranks by the home's NAME** (`homeMatchScore`, passed as the Command's `filter`; each item's value is its scope id). Typing then Enter moves to the highlighted home, which is never the home the note is already in. Never put the organization, kind or id in an item's search value: cmdk's fuzzy scorer ranks scattered letter matches above the home that was typed.
 
 ## Entry points
 
 **Routes**
 
-- `app/(core)/notes/` — main surface (list, folder tree, editor)
+- `app/(core)/notes/` — main surface (list, home tree, editor)
 
 **Feature code** (`features/notes/`)
 
 - `actions/` — thunk-style actions for CRUD
-- `components/` — editor, folder tree, list, share UI
+- `components/` — editor, home tree, list, share UI
 - `constants/` — shared constants
 - `context/` — `NotesInstanceContext` only (the legacy `NotesContext` provider — with its second realtime channel — is deleted; do not recreate it)
-- `hooks/` — note CRUD, labels, folders, realtime subscription
+- `hooks/` — note CRUD, labels, homes, realtime subscription
 - `redux/` — slice + selectors
 - `route/` — route-level helpers
 - `service/` — Supabase DB calls
@@ -54,8 +55,7 @@ Owner's model: `common-docs/systems/data/scopes-context/VISION.md` § Every item
 
 DB tables (verify in Supabase; names representative):
 
-- `notes` — note rows: `id`, `created_by`, `organization_id`, `folder_id`, `label`, `content` (rich/markdown payload), `tags[]`, timestamps. Optional project/task context lives only on `platform.associations` and is projected into the UI by `noteContextAssociations`.
-- `note_folders` — tree structure: parent references
+- `notes` — note rows: `id`, `created_by`, `organization_id`, `home_scope_id`, `label`, `content` (rich/markdown payload), `tags[]`, timestamps. Optional project/task context lives only on `platform.associations` and is projected into the UI by `noteContextAssociations`.
 - `note_labels` — auto-labeling metadata
 
 Key types live in `features/notes/types.ts` and `redux/notes.types.ts`; import their source paths directly.
@@ -115,11 +115,11 @@ its self-test proves the structural raw-literal failure.
 3. The note's working copy saves (debounced; the one door above) → Supabase update
 4. Realtime broadcasts the change to other subscribed clients
 
-### Flow 2 — Folder organization
+### Flow 2 — Home organization
 
-1. Drag-drop or menu action → thunk updates both `folder_name` and `folder_id` on the note row
-2. Every folder picker includes **New folder…**; creating from a note action immediately assigns/moves that note (or the current bulk selection) into the new folder
-3. Folder tree slice re-derives view
+1. Drag-drop or menu action → `moveNoteToHome` (`platform.set_home`) — see Homes above
+2. Every home picker includes **New home…**; creating one from a note action moves that note into it
+3. The sidebar re-derives its home tree from `home_scope_id`
 
 ### Flow 3 — Auto-labeling
 
@@ -129,7 +129,7 @@ its self-test proves the structural raw-literal failure.
 
 ### Flow 4 — Save-from-anywhere programmatic API
 
-1. External feature (e.g. agents) calls the notes programmatic API with content + optional folder / labels
+1. External feature (e.g. agents) calls the notes programmatic API with content + optional home / tags
 2. Note row created; user sees it appear in the Notes surface with realtime
 3. This is a major cross-feature integration point — agents often write notes as side effects
 
@@ -163,8 +163,7 @@ its self-test proves the structural raw-literal failure.
 - **Modes (Arman, 2026-09-27) — ONE rule, `hooks/usePreferredDefaultEditorMode.ts`.** Desktop: **Split** (default — the quick agent-wired textarea left, the formatted note live right through the shared renderer, scroll-synced; `MatrxSplit` with `surfaceName`), **Plain** (that textarea alone — typing is stored exactly as typed, never auto-formatted), **Write** (THE ONE EDITOR's visual view, `components/rich-editor`, `chrome="bare"` + `hostContextMenu`: the header is the one mode switch and the note's own menu answers right-clicks), **Read** (`preview`). Phone: **Plain** (default) and **Write**. Opens in: this session's pick → the mode this note was last typed in (`userPreferences.notes.noteModes`, per person, bounded 300: Write reopens Write, text reopens the device's text mode) → legacy `metadata.lastEditorMode` → the person's default (`notes.defaultEditorMode` desktop / `notes.defaultPhoneEditorMode` phone). **A mode click changes only that note** (`useSelectNoteMode`: its mode + its remembered mode) and never writes a default — the defaults change only on Settings › Editor › Notes (Arman, 2026-09-28; guard `__tests__/mode-click-never-writes-the-default.test.tsx`). Stored values before the switch are read, never rewritten: `wysiwyg` → write, `markdown-split`/`markdown`/`matrx-split`/`split`/`source` → split (`canonicalNoteEditorMode`). **Toast UI never returns to notes** — guard `__tests__/notes-never-mount-toast-ui.test.ts`; bytes guard `__tests__/notes-editor-bytes.test.tsx`. The legacy `features/rich-text-editor/` stays banned.
 - **The `/notes` route uses inline rich-document actions.** The header intentionally contains only view-mode controls; it does not mount a `RichDocumentActionSurface`. Do not pass an `actionsSurfaceId` from `NotesView` unless the matching consumer is mounted. With no remote ID, preview mode renders the full inline bar and split mode renders its compact inline icon menu.
 - **Context ownership** — `organization_id` is the note's home. Project/task context and scope tags are canonical `platform.associations` edges; the note table never carries project/task FK mirrors. See [`features/scopes/FEATURE.md`](../scopes/FEATURE.md).
-- **Folder tree operations are transactional.** Moving a folder with children must update all descendants' paths — don't optimize away the reparenting walk.
-- **Folder selection and creation are one interaction.** Every surface that can assign a note folder must also offer **New folder…** in the same flow. Use the shared adaptive `MoveNoteDialog` / `CreateFolderDialog` (Dialog on desktop, Drawer on mobile); never build a route-, tab-, context-menu-, or window-only fork. A folder move must keep `folder_name` and `folder_id` paired.
+- **Home selection and creation are one interaction.** Every surface that can move a note offers **New home…** in the same flow (`HomePickerList`: a Dialog on desktop and a sheet on mobile); never build a route-, tab-, context-menu-, or window-only fork.
 - **First-save notes retain their captured folder identity.** The stable-ID materializer validates a supplied `folder_id` in the note organization and writes the admitted display name; it never resolves a folder by name.
 
 ### Freeze-loop doctrine — read before touching notes realtime, Redux, or editor code

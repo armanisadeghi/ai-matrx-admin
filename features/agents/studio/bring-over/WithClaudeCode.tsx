@@ -18,6 +18,7 @@ import { toast } from "@/lib/toast";
 import { claudeCodePrompt } from "./claude-code-prompt";
 import { readDraft, type ClaudeCodeDraft } from "./bring-over-api";
 import { BuildFromImport } from "./BuildFromImport";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 export function WithClaudeCode() {
   const draftId = useSearchParams().get("draft");
@@ -83,7 +84,7 @@ function DraftReview({ draftId }: { draftId: string }) {
   if (error) {
     return (
       <p className="mx-auto max-w-2xl p-4 text-sm text-destructive" role="alert">
-        {error}
+        {error}<ErrorAlchemyMenu error={error} />
       </p>
     );
   }

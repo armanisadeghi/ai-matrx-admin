@@ -312,8 +312,7 @@ function RunBoard({
       await NotesAPI.create({
         label: `${workflowName} — ${spec.title}`,
         content: `# ${spec.title}\n\n${text}`,
-        folder_name: "Scratch",
-        tags: ["board", "workflow-run"],
+        tags: ["Scratch", "board", "workflow-run"],
         organization_id: organizationId,
       });
     } catch (err) {

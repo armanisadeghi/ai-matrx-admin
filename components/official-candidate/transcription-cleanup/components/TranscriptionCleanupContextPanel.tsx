@@ -9,9 +9,7 @@
  * - Ad-hoc blocks (noteId = null) are NEVER auto-saved. The user must
  *   explicitly choose "Save as note" — plain typing changes nothing in DB.
  * - Note-linked blocks track isDirty and show an explicit Save button.
- * - The "Transcription Contexts" folder is created implicitly on first use
- *   (the notes service treats folder_name as a plain string, so inserting a
- *   note with that folder_name is enough to materialise the folder in the UI).
+ * - Context notes carry the "Transcription Contexts" tag, stamped on create.
  * - Context blocks are combined on every change and reported upward via
  *   onChange(combinedString). Each titled block is prefixed with [Title].
  */
@@ -27,7 +25,7 @@ import type { Note } from "@/features/notes/types";
 import ActionFeedbackButton from "@/components/official/ActionFeedbackButton";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 
-export const CONTEXT_FOLDER = "Transcription Contexts";
+export const CONTEXT_TAG = "Transcription Contexts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -152,7 +150,7 @@ export function TranscriptionCleanupContextPanel({
     setLoadingNotes(true);
     try {
       const all = await NotesAPI.getAll();
-      const filtered = all.filter((n) => n.folder_name === CONTEXT_FOLDER);
+      const filtered = all.filter((n) => (n.tags ?? []).includes(CONTEXT_TAG));
       setContextNotes(filtered);
       setNotesError(null);
       return filtered;
@@ -181,7 +179,7 @@ export function TranscriptionCleanupContextPanel({
       setOpenDropdownId(null);
 
       if (value === "__new__") {
-        // Save the current block text as a new note in the context folder
+        // Save the current block text as a new note with the context tag
         const block = blocks.find((b) => b.id === blockId);
         if (!block) return;
         if (!block.text.trim() && !block.title.trim()) {
@@ -194,7 +192,7 @@ export function TranscriptionCleanupContextPanel({
           const note = await NotesAPI.create({
             label: block.title.trim() || "Transcription Context",
             content: block.text,
-            folder_name: CONTEXT_FOLDER,
+            tags: [CONTEXT_TAG],
             organization_id: capturedOrganizationId,
           });
           updateAndNotify((prev) =>

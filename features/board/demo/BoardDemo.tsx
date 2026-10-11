@@ -467,8 +467,7 @@ export function BoardDemo({
       await NotesAPI.create({
         label: spec.title,
         content: markdown,
-        folder_name: "Scratch",
-        tags: ["board"],
+        tags: ["Scratch", "board"],
         organization_id: organizationId,
       });
     } catch (err) {

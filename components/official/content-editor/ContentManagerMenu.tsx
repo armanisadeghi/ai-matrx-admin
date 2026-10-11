@@ -63,8 +63,7 @@ export function ContentManagerMenu({
     await NotesAPI.create({
       label: "New Note",
       content: content,
-      folder_name: "Scratch",
-      tags: [],
+      tags: ["Scratch"],
       organization_id: capturedOrganizationId,
     });
   };

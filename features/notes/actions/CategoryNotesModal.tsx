@@ -18,12 +18,12 @@ import {
     X,
     Loader2,
     ChevronLeft,
-    Menu
+    Menu,
+    Tag,
 } from 'lucide-react';
 import { useNotesRedux } from '../hooks/useNotesRedux';
 import type { Note } from '../types';
 import { toast } from "@/lib/toast";
-import { getFolderIconAndColor } from '../utils/folderUtils';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
@@ -78,17 +78,16 @@ export function CategoryNotesModal({
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
-    // Get category icon and color
-    const { icon: CategoryIcon, color: categoryColor } = getFolderIconAndColor(categoryName);
+    // A category is a tag the notes carry (notes have homes, not folders).
 
     // Filter notes by category
     const categoryNotes = useMemo(() => {
-        return notes.filter(note => note.folder_name === categoryName);
+        return notes.filter(note => (note.tags ?? []).includes(categoryName));
     }, [notes, categoryName]);
 
     // Get all notes from other categories for import
     const otherNotes = useMemo(() => {
-        return notes.filter(note => note.folder_name !== categoryName);
+        return notes.filter(note => !(note.tags ?? []).includes(categoryName));
     }, [notes, categoryName]);
 
     // Search within category notes
@@ -111,7 +110,7 @@ export function CategoryNotesModal({
         return otherNotes.filter(note =>
             note.label.toLowerCase().includes(query) ||
             (note.content ?? '').toLowerCase().includes(query) ||
-            (note.folder_name ?? '').toLowerCase().includes(query) ||
+            (note.tags ?? []).some(tag => tag.toLowerCase().includes(query)) ||
             idMatchesQuery(note, query)
         );
     }, [otherNotes, importSearchQuery]);
@@ -147,7 +146,7 @@ export function CategoryNotesModal({
             const newNote = await createNote({
                 label: newNoteLabel.trim() || undefined,
                 content: newNoteContent.trim(),
-                folder_name: categoryName,
+                tags: [categoryName],
                 organization_id: capturedOrganizationId,
             });
             
@@ -240,8 +239,7 @@ export function CategoryNotesModal({
             const imported = await createNote({
                 label: sourceNote.label,
                 content: sourceNote.content,
-                folder_name: categoryName,
-                tags: sourceNote.tags,
+                tags: [...new Set([...(sourceNote.tags ?? []), categoryName])],
                 organization_id: await ensureOrgId(organizationId),
             });
             
@@ -266,7 +264,7 @@ export function CategoryNotesModal({
                 <DialogHeader className="px-4 py-3 border-b border-border flex-shrink-0">
                     <div className="flex items-center justify-between pr-8">
                         <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
-                            <CategoryIcon className={`h-5 w-5 ${categoryColor}`} />
+                            <Tag className="h-5 w-5 text-muted-foreground" />
                             {displayTitle}
                         </DialogTitle>
                         <div className="flex items-center gap-2">
@@ -531,7 +529,7 @@ export function CategoryNotesModal({
                                                             />
                                                         </h4>
                                                         <div className="flex items-center gap-2 mt-1">
-                                                            <Badge variant="outline" className="text-xs">{note.folder_name}</Badge>
+                                                            <Badge variant="outline" className="text-xs">{categoryName}</Badge>
                                                             <span className="text-xs text-muted-foreground">
                                                                 {note.updated_at ? new Date(note.updated_at).toLocaleDateString() : ''}
                                                             </span>

@@ -7,7 +7,7 @@
  * It carries NO content. This hook bridges that gap: it parses the result,
  * pulls the live note out of the notes Redux slice (fetching the full body on
  * demand), and exposes everything the inline + overlay renderers need to show
- * a real, editable note card — content, stats, folder, save status, and a
+ * a real, editable note card — content, stats, home, save status, and a
  * debounced content writer that round-trips through the canonical notes thunks.
  *
  * Single source of truth: this hook owns ALL data access for the renderer so
@@ -23,12 +23,12 @@ import { faviconRouteData } from "@/constants/favicon-route-data";
 import {
   selectNoteById,
   selectNoteContent,
-  selectNoteFolder,
   selectNoteLabel,
   selectNoteFetchStatus,
   selectNoteIsLoading,
   selectNoteSaveState,
 } from "@/features/notes/redux/selectors";
+import { useNoteHomes } from "@/features/notes/homes/useNoteHomes";
 import { fetchNoteContent, saveNote } from "@/features/notes/redux/thunks";
 import { updateNoteContent } from "@/features/notes/redux/slice";
 import {
@@ -71,8 +71,8 @@ export interface NoteToolData {
   label: string;
   /** Live markdown content. `undefined` until the body is fetched. */
   content: string | undefined;
-  /** Folder name, if the note lives in one. */
-  folder: string | undefined;
+  /** The note's home (a scope), by name. */
+  home: string | undefined;
   /** Best-available updated timestamp (live slice value first). */
   updatedAt: string | null;
   /** Created timestamp, once the full note is loaded. */
@@ -119,7 +119,8 @@ export function useNoteToolData(entry: ToolLifecycleEntry): NoteToolData {
   const record = useAppSelector(selectNoteById(key));
   const liveContent = useAppSelector(selectNoteContent(key));
   const liveLabel = useAppSelector(selectNoteLabel(key));
-  const folder = useAppSelector(selectNoteFolder(key));
+  const { labelOf } = useNoteHomes();
+  const home = labelOf(record?.home_scope_id) ?? undefined;
   const fetchStatus = useAppSelector(selectNoteFetchStatus(key));
   const isLoading = useAppSelector(selectNoteIsLoading(key));
   const saveState = useAppSelector(selectNoteSaveState(key));
@@ -171,7 +172,7 @@ export function useNoteToolData(entry: ToolLifecycleEntry): NoteToolData {
     noteId,
     label: liveLabel ?? parsed.label ?? "Untitled note",
     content: liveContent,
-    folder,
+    home,
     updatedAt: record?.updated_at ?? parsed.updatedAt,
     createdAt: record?.created_at ?? null,
     version: typeof record?.version === "number" ? record.version : null,

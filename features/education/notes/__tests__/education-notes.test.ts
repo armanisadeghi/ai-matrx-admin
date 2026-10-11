@@ -90,10 +90,10 @@ describe("the one Education note selector", () => {
     );
   });
 
-  it("the predicate is exact — a lookalike folder is not Education", () => {
+  it("the predicate is exact — a lookalike tag is not Education", () => {
     expect(isEducationNote({ tags: ["Quiz", EDUCATION_NOTES_TAG] })).toBe(true);
-    for (const folder_name of ["Draft", null, undefined, "study notes", "Study Notes "]) {
-      expect(isEducationNote({ folder_name })).toBe(false);
+    for (const tags of [["Draft"], null, undefined, [], ["study notes"], ["Study Notes "]]) {
+      expect(isEducationNote({ tags })).toBe(false);
     }
   });
 });

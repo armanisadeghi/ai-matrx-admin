@@ -190,7 +190,7 @@ describe("destinations are headless handlers on declared write targets", () => {
       sentence: 'Saved to note "Prepared content".',
     });
     expect(mockCreateNote).toHaveBeenCalledWith(
-      expect.objectContaining({ label: "Prepared content", content: "First line\n\nSecond line", folder_name: "Alchemy", organization_id: ORG }),
+      expect.objectContaining({ label: "Prepared content", content: "First line\n\nSecond line", tags: ["Alchemy"], organization_id: ORG }),
     );
     expect(created).toEqual([{ kind: "note", id: "note-7", label: "Prepared content", href: "/notes/note-7" }]);
   });

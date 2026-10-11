@@ -54,7 +54,7 @@ export function NotesTreeView({
   const notesByFolder = useMemo(() => {
     const grouped: Record<string, Note[]> = {};
     for (const note of notes) {
-      (grouped[note.home_scope_id] ??= []).push(note);
+      (grouped[note.home_scope_id ?? ""] ??= []).push(note);
     }
     for (const folder of Object.keys(grouped)) {
       grouped[folder].sort((a, b) => {
@@ -79,7 +79,7 @@ export function NotesTreeView({
   useEffect(() => {
     if (!activeNoteId) return;
     const note = notes.find((n) => n.id === activeNoteId);
-    if (note && note.home_scope_id !== expandedFolder) {
+    if (note?.home_scope_id && note.home_scope_id !== expandedFolder) {
       setExpandedFolder(note.home_scope_id);
     }
   }, [activeNoteId]); // eslint-disable-line react-hooks/exhaustive-deps

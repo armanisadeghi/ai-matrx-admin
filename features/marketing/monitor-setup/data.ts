@@ -227,7 +227,7 @@ export async function saveBriefNote(input: {
     organization_id: input.organizationId,
     label: `News monitor brief — ${input.brandName}`,
     content: input.content,
-    folder_name: "Monitor briefs",
+    tags: ["Monitor briefs"],
   });
   return note.id;
 }

@@ -36,7 +36,7 @@ import ActionFeedbackButton from "@/components/official/ActionFeedbackButton";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 
-export const CONTEXT_FOLDER = "Transcription Contexts";
+export const CONTEXT_TAG = "Transcription Contexts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -241,7 +241,7 @@ export function CleanupContextPanel({
         const note = await NotesAPI.create({
           label: block.title.trim() || "Transcription Context",
           content: block.text,
-          folder_name: CONTEXT_FOLDER,
+          tags: [CONTEXT_TAG],
           organization_id: capturedOrganizationId,
         });
         updateAndNotify((prev) =>

@@ -202,3 +202,29 @@ export function homeRefusalMessage(error: { code?: string | null; message?: stri
   if (error.code === "42501") return "You cannot move this note there.";
   return "The note could not be moved.";
 }
+
+/**
+ * How well a home matches what the person typed in the picker (0 = hidden). The
+ * home's NAME decides the order — exact, then prefix, then a word start, then
+ * anywhere in it; the organization and kind only let it show, below every name
+ * match. cmdk's own fuzzy scorer over a long "name org kind id" string ranked a
+ * home whose letters merely appeared in scattered order above the one named
+ * what was typed, so Enter moved the note somewhere else.
+ */
+export function homeMatchScore(
+  query: string,
+  home: Pick<NoteHome, "name" | "organizationName" | "scopeTypeLabel">,
+  label: string = home.name,
+): number {
+  const q = query.trim().toLocaleLowerCase();
+  if (!q) return 1;
+  for (const text of [label, home.name]) {
+    const name = text.toLocaleLowerCase();
+    if (name === q) return 1;
+    if (name.startsWith(q)) return 0.9;
+    if (name.split(/[^\p{L}\p{N}]+/u).some((word) => word.startsWith(q))) return 0.8;
+    if (name.includes(q)) return 0.7;
+  }
+  const rest = `${home.organizationName} ${home.scopeTypeLabel}`.toLocaleLowerCase();
+  return rest.includes(q) ? 0.3 : 0;
+}

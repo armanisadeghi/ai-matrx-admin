@@ -31,7 +31,6 @@ export interface TaskAssociationsBundle {
     id: string;
     label: string;
     updated_at: string;
-    folder_name?: string | null;
   }[];
   files: {
     id: string;

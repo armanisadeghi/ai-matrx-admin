@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { FileText, Check } from "lucide-react";
+import { NOTE_BUCKET_TAGS } from "../homes/bucketTags";
 import { NotesAPI } from "../service/notesApi";
 import { useToastManager } from "@/hooks/useToastManager";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -25,7 +26,7 @@ interface SaveToScratchButtonProps {
 }
 
 /**
- * One-click button to save content directly to Scratch folder
+ * One-click button to save content directly to Scratch (the Scratch tag)
  * Perfect for quick captures from anywhere in the app
  */
 export function SaveToScratchButton({
@@ -52,8 +53,7 @@ export function SaveToScratchButton({
       await NotesAPI.create({
         label: "New Note",
         content: content.trim(),
-        folder_name: "Scratch",
-        tags: [],
+        tags: [NOTE_BUCKET_TAGS.quickSaves],
         organization_id: capturedOrganizationId,
       });
 

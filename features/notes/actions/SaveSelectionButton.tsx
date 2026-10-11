@@ -17,7 +17,8 @@ import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 
 interface SaveSelectionButtonProps {
-  folder?: string;
+  /** The bucket tag the note is stamped with. */
+  tag?: string;
   variant?: "default" | "outline" | "ghost" | "secondary";
   size?: "default" | "sm" | "lg" | "icon";
   label?: string;
@@ -29,7 +30,7 @@ interface SaveSelectionButtonProps {
  * Automatically captures window.getSelection() when clicked
  */
 export function SaveSelectionButton({
-  folder = "Scratch",
+  tag = "Scratch",
   variant = "ghost",
   size = "icon",
   label,
@@ -55,13 +56,12 @@ export function SaveSelectionButton({
       await NotesAPI.create({
         label: "New Note",
         content: selectedText,
-        folder_name: folder,
-        tags: [],
+        tags: [tag],
         organization_id: capturedOrganizationId,
       });
 
       setJustSaved(true);
-      toast.success(`Saved selection to ${folder}!`);
+      toast.success(`Saved selection to ${tag}!`);
 
       // Clear selection
       selection?.removeAllRanges();
@@ -96,7 +96,7 @@ export function SaveSelectionButton({
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          {justSaved ? "Saved!" : `Save selection to ${folder}`}
+          {justSaved ? "Saved!" : `Save selection to ${tag}`}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

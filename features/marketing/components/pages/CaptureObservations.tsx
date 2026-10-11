@@ -60,8 +60,8 @@ import { Chip } from "@ai-matrx/design-system/controls";
 const OBSERVATION_TAG = "observation";
 /** Note tag carried by observations flagged broken / needs fix. */
 const NEEDS_FIX_TAG = "needs-fix";
-/** Folder the observation notes land in on /notes. */
-const OBSERVATION_FOLDER = "Page Observations";
+/** Bucket tag the observation notes carry on /notes. */
+const OBSERVATION_BUCKET_TAG = "Page Observations";
 
 function observationLabel(content: string): string {
   return plainTitleFromMarkdown(content, { maxLength: 80 }) || "Capture observation";
@@ -180,8 +180,7 @@ function CaptureObservationsDialog({
       const note = await createNote({
         label: observationLabel(content),
         content,
-        folder_name: OBSERVATION_FOLDER,
-        tags: needsFix ? [OBSERVATION_TAG, NEEDS_FIX_TAG] : [OBSERVATION_TAG],
+        tags: needsFix ? [OBSERVATION_BUCKET_TAG, OBSERVATION_TAG, NEEDS_FIX_TAG] : [OBSERVATION_BUCKET_TAG, OBSERVATION_TAG],
         metadata: {
           capture_observation: {
             screenshot_id: screenshot.id,
@@ -200,7 +199,7 @@ function CaptureObservationsDialog({
       if (!attached.ok) {
         // The note EXISTS but is not linked to the capture — say exactly that.
         toast.error("Observation saved but NOT attached to this capture", {
-          description: `The note was created (find it in /notes under "${OBSERVATION_FOLDER}") but the association write failed: ${attached.error ?? "unknown error"}. Attach it manually via the paperclip.`,
+          description: `The note was created (find it in /notes tagged "${OBSERVATION_BUCKET_TAG}") but the association write failed: ${attached.error ?? "unknown error"}. Attach it manually via the paperclip.`,
           duration: 12000,
         });
         return;

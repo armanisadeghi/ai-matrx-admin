@@ -1,30 +1,7 @@
 // features/notes/utils/noteUtils.ts
 
-import type { Note, NoteFilters, NoteSortConfig, FolderGroup } from "../types";
-import { DEFAULT_FOLDER_NAMES } from "../constants/defaultFolders";
+import type { Note, NoteFilters, NoteSortConfig } from "../types";
 import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";
-
-/**
- * Ordered folder names for a sidebar: defaults first, then any folders
- * present on the given notes (alphabetically). Keeps the folder list in
- * lockstep with whatever note set the counts are derived from.
- */
-export function folderNamesForNotes(
-  notes: ReadonlyArray<{ folder_name: string | null }>,
-): string[] {
-  const folderSet = new Set<string>(DEFAULT_FOLDER_NAMES);
-  for (const note of notes) {
-    if (note.folder_name) folderSet.add(note.folder_name);
-  }
-  return Array.from(folderSet).sort((a, b) => {
-    const aIdx = DEFAULT_FOLDER_NAMES.indexOf(a);
-    const bIdx = DEFAULT_FOLDER_NAMES.indexOf(b);
-    if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
-    if (aIdx !== -1) return -1;
-    if (bIdx !== -1) return 1;
-    return a.localeCompare(b);
-  });
-}
 
 /**
  * Filter notes based on search, tags, and folder
@@ -40,13 +17,6 @@ export function filterNotes(notes: Note[], filters: NoteFilters): Note[] {
         note.label.toLowerCase().includes(searchLower) ||
         (note.content ?? "").toLowerCase().includes(searchLower) ||
         idMatchesQuery(note, searchLower),
-    );
-  }
-
-  // Filter by folder
-  if (filters.folder_name) {
-    filtered = filtered.filter(
-      (note) => note.folder_name === filters.folder_name,
     );
   }
 
@@ -97,59 +67,6 @@ export function sortNotes(notes: Note[], sortConfig: NoteSortConfig): Note[] {
 }
 
 /**
- * Group notes by folder
- * Ensures default folders always appear (even if empty)
- */
-export function groupNotesByFolder(notes: Note[]): FolderGroup[] {
-  const folderMap = new Map<string, Note[]>();
-
-  // Initialize default folders (they'll show even if empty)
-  DEFAULT_FOLDER_NAMES.forEach((folderName) => {
-    folderMap.set(folderName, []);
-  });
-
-  // Add notes to their respective folders
-  notes.forEach((note) => {
-    const folder = note.folder_name || "Draft";
-    let bucket = folderMap.get(folder);
-    if (!bucket) {
-      bucket = [];
-      folderMap.set(folder, bucket);
-    }
-    bucket.push(note);
-  });
-
-  const groups: FolderGroup[] = Array.from(folderMap.entries()).map(
-    ([folder_name, notes]) => ({
-      folder_name,
-      notes,
-      count: notes.length,
-    }),
-  );
-
-  // Sort: Default folders first (in order), then custom folders alphabetically
-  groups.sort((a, b) => {
-    const aIsDefault = DEFAULT_FOLDER_NAMES.includes(a.folder_name);
-    const bIsDefault = DEFAULT_FOLDER_NAMES.includes(b.folder_name);
-
-    if (aIsDefault && bIsDefault) {
-      // Both default: maintain DEFAULT_FOLDERS order
-      return (
-        DEFAULT_FOLDER_NAMES.indexOf(a.folder_name) -
-        DEFAULT_FOLDER_NAMES.indexOf(b.folder_name)
-      );
-    }
-    if (aIsDefault) return -1; // Default folders first
-    if (bIsDefault) return 1;
-
-    // Both custom: alphabetical
-    return a.folder_name.localeCompare(b.folder_name);
-  });
-
-  return groups;
-}
-
-/**
  * Extract all unique tags from notes
  */
 export function extractUniqueTags(notes: Note[]): string[] {
@@ -184,23 +101,6 @@ export function findEmptyNewNote(notes: Note[]): Note | null {
         note.label === "New Note" || /^New Note \d+$/.test(note.label);
       return isNewNoteLabel;
     }) || null
-  );
-}
-
-/**
- * Find an existing empty note in a specific folder
- */
-export function findEmptyNewNoteInFolder(
-  notes: Note[],
-  folderName: string,
-): Note | null {
-  return (
-    notes.find(
-      (note) =>
-        note.label === "New Note" &&
-        note.folder_name === folderName &&
-        isNoteContentEmpty(note.content),
-    ) || null
   );
 }
 

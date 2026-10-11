@@ -136,6 +136,9 @@ if not quarantined(conn):
 conn.rollback()
 cur = conn.cursor()
 cur.execute("set statement_timeout = 0")
+# READ WRITE said out loud: a transaction-pooler backend can carry a leaked session default_transaction_read_only
+# (scripts/apply-migration.ts does the same); this is still the one rolled-back transaction on the clone
+cur.execute("set transaction read write")
 PROOF_PID = None
 WATCHDOG_LIMIT = float(os.environ.get('PROOF_MAX_XACT_SECONDS', '120'))
 WATCHDOG_TRIPPED = threading.Event()

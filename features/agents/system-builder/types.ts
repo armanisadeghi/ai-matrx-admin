@@ -27,5 +27,4 @@ export interface SystemPlan {
 }
 
 export const SYSTEM_PLAN_TAG = "system-plan";
-export const SYSTEM_PLAN_FOLDER = "System plans";
 export const SYSTEM_PLAN_KIND = "system_plan_v1";

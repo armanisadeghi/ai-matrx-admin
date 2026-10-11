@@ -152,8 +152,8 @@ export function createNotesHeadlessHandler(getState: () => RootState): WriteHand
       const note = await NotesAPI.create({
         label: item.title,
         content: item.content ?? "",
-        ...(item.folder ? { folder_name: item.folder } : {}),
-        tags: item.tags ?? [],
+        // A destination bucket is a tag now (notes have homes, not folders).
+        tags: [...new Set([...(item.tags ?? []), ...(item.folder ? [item.folder] : [])])],
         organization_id: organizationId,
       });
       created.push({ kind: "note", id: note.id, label: note.label, href: `/notes/${note.id}` });
