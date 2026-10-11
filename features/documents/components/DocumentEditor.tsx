@@ -81,6 +81,7 @@ import { registerUniverFacadeDependencies } from "@/lib/univer/registerUniverFac
 import { RemoteCursorsLayer } from "@/lib/collab/RemoteCursorsLayer";
 import { documentHistoryToggleInput } from "@/lib/univer/historyKinds";
 import { DocumentPageReferenceCopyButton } from "@/features/documents/components/DocumentPageReferenceCopyButton";
+import { DocumentGoogleLink } from "@/features/google-workspace/linked/EditorGoogleLinks";
 import type { DocumentBodyPort } from "@/features/documents/document-body-text";
 import {
   selectWorkingCopyStatus,
@@ -495,6 +496,9 @@ export default function DocumentEditor({
               {statusPill.icon}
               <span>{statusPill.text}</span>
             </div>
+          )}
+          {bootState === "ready" && (
+            <DocumentGoogleLink apiRef={apiRef} documentId={documentId} documentName={documentName} editable={editable} />
           )}
           {bootState === "ready" && (
             <DocumentPageReferenceCopyButton

@@ -80,6 +80,7 @@ import { isSnapshotMutation } from "@/lib/univer/isSnapshotMutation";
 import { RemoteCursorsLayer } from "@/lib/collab/RemoteCursorsLayer";
 import { WorkbookCursorOverlay } from "@/features/workbooks/components/WorkbookCursorOverlay";
 import { getLatestSnapshot, saveSnapshot } from "@/features/workbooks/workbook-service";
+import { WorkbookGoogleLink } from "@/features/google-workspace/linked/EditorGoogleLinks";
 import { registerWorkbookScopeSource } from "@/features/workbooks/workbook-scope-source";
 import { useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { isServiceFailure } from "@/features/data-tables/types";
@@ -772,6 +773,10 @@ export default function WorkbookEditor({
           {/* Custom-table link (Lane B): linked chip or "Make table". */}
           {bootState === "ready" && (
             <WorkbookTableLink apiRef={apiRef} workbookId={workbookId} editable={editable} />
+          )}
+          {/* Google Sheets link (Lane C): create / open / update / push. */}
+          {bootState === "ready" && (
+            <WorkbookGoogleLink apiRef={apiRef} workbookId={workbookId} workbookName={workbookName} editable={editable} />
           )}
           {bootState === "ready" && (
             <WorkbookSheetReferenceCopyButton

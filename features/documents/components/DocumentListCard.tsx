@@ -7,6 +7,8 @@ import { FileText, Loader2, Star, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { DocumentRow } from "@/features/data-tables/types";
 import { documentSourceLabel } from "@/features/documents/utils/documentsHubDisplay";
+import { googleLinkIn } from "@/features/google-workspace/linked/link-store";
+import { GoogleDocsMark } from "@/features/google-workspace/linked/marks";
 
 export function DocumentListCard({
   doc,
@@ -29,6 +31,7 @@ export function DocumentListCard({
 }) {
   const href = `/documents/${doc.id}`;
   const isDisabled = isNavigating || isAnyNavigating;
+  const googleLink = googleLinkIn(doc.metadata);
 
   const handleOpen = (e: React.MouseEvent) => {
     if (e.metaKey || e.ctrlKey) return;
@@ -66,6 +69,18 @@ export function DocumentListCard({
             ) : null}
             {shared ? (
               <Users className="size-3 shrink-0" aria-label="Shared with me" />
+            ) : null}
+            {googleLink?.webViewLink ? (
+              <a
+                href={googleLink.webViewLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex shrink-0 items-center"
+                title="Open in Google Docs"
+                aria-label="Open in Google Docs"
+              >
+                <GoogleDocsMark className="size-3.5" />
+              </a>
             ) : null}
             <span className="truncate">
               Updated {new Date(doc.updated_at).toLocaleString()}
