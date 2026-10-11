@@ -20,7 +20,7 @@ import { buildFile } from "@ai-matrx/alchemy/operate";
 import type { WorkbookCellJson, WorkbookJson } from "@ai-matrx/alchemy/operate/read";
 import type { ICellData, IWorkbookData, IWorksheetData } from "@univerjs/core";
 import { downloadFile } from "@ai-matrx/kit/download";
-import type * as ExcelJSTypes from "exceljs";
+import { loadExcelJs, type ExcelJSTypes } from "@/lib/xlsx-engine/exceljs-door";
 import {
   H_ALIGN_OUT,
   RESOURCE,
@@ -96,7 +96,7 @@ export async function buildXlsxFromUniver(
   snapshot: Snapshot,
   options: Pick<ExportXlsxOptions, "resolveImage"> = {},
 ): Promise<{ bytes: Uint8Array; report: XlsxExportReport }> {
-  const ExcelJS = (await import("exceljs")).default as typeof ExcelJSTypes;
+  const ExcelJS = await loadExcelJs();
   const wb = new ExcelJS.Workbook();
   const dropped = new Set<string>();
   const resources = (snapshot.resources ?? []) as UniverResource[];
@@ -117,6 +117,8 @@ export async function buildXlsxFromUniver(
     const ws = wb.addWorksheet(uniqueName(wb, (sheet.name ?? sheetId).slice(0, 31) || "Sheet1"));
     writeCells(ws, sheet, styles);
     writeLayout(ws, sheet);
+    const tab = colorToArgb(typeof sheet.tabColor === "string" ? sheet.tabColor : undefined);
+    if (tab) ws.properties.tabColor = { argb: tab };
     writeValidation(ws, validation[sheetId], dropped);
     writeConditional(ws, conditional[sheetId], dropped);
     writeFilter(ws, filters[sheetId], dropped);

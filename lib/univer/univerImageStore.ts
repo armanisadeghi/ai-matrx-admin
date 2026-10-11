@@ -28,7 +28,7 @@ export const matrxImageFileId = (source: string): string =>
 
 export type ImageStorePorts = {
   upload(file: File): Promise<{ fileId: string }>;
-  getBlobUrl(fileId: string): Promise<string>;
+  getBlob(fileId: string): Promise<Blob>;
   /** Called when an upload fails, so the person is told (never silent). */
   onUploadError(error: unknown): void;
 };
@@ -47,6 +47,11 @@ type InjectorLike = { get(id: unknown): unknown };
 export function createMatrxImageStore(ports: ImageStorePorts) {
   const blobUrls = new Map<string, Promise<string>>();
   return {
+    /** Revoke every object URL this store made (the editor is going away). */
+    dispose() {
+      for (const pending of blobUrls.values()) void pending.then((url) => URL.revokeObjectURL(url), () => undefined);
+      blobUrls.clear();
+    },
     async saveImage(file: File) {
       if (!ALLOWED.includes(file.type)) throw new Error("ERROR_IMAGE_TYPE");
       let fileId: string;
@@ -70,7 +75,7 @@ export function createMatrxImageStore(ports: ImageStorePorts) {
       const fileId = matrxImageFileId(url);
       let pending = blobUrls.get(fileId);
       if (!pending) {
-        pending = ports.getBlobUrl(fileId);
+        pending = ports.getBlob(fileId).then((blob) => URL.createObjectURL(blob));
         blobUrls.set(fileId, pending);
         pending.catch(() => blobUrls.delete(fileId));
       }
@@ -79,9 +84,19 @@ export function createMatrxImageStore(ports: ImageStorePorts) {
   };
 }
 
+const stores = new WeakMap<object, { dispose(): void }>();
+
+/** Release the object URLs of the store wired into this Univer instance (call as the instance is disposed). */
+export function releaseMatrxImageStore(injector: object | null | undefined): void {
+  if (!injector) return;
+  stores.get(injector)?.dispose();
+  stores.delete(injector);
+}
+
 /** Wire the store into one Univer instance's image services. */
 export function registerMatrxImageStore(injector: InjectorLike, ports: ImageStorePorts): void {
   const store = createMatrxImageStore(ports);
+  stores.set(injector, store);
   const io = injector.get(IImageIoService) as ImageIo;
   io.saveImage = store.saveImage as ImageIo["saveImage"];
   const urls = injector.get(IURLImageService) as UrlImages;

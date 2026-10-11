@@ -88,8 +88,8 @@ const ALLOW: Record<Rule, string[]> = {
     "app/(public)/the-landscape/page.tsx",
     "features/messaging/demo/DemoAttachment.tsx",
   ],
-  // No exemption: app code reaches every format engine through Alchemy (the gfm-lexer twin is gone).
-  formatlibs: [],
+  // The one ExcelJS door: Univer workbooks need styles/validation/notes/pictures, which the Alchemy xlsx format (SheetJS community) cannot hold.
+  formatlibs: ["lib/xlsx-engine/exceljs-door.ts"],
   doorbypass: [
     "../aidream/apps/shared/chat/src/surfaces/runtime/",
     // THE ONE WRITE DOOR bound for the app (ALC-17): it IS the door - it wraps applySurfaceWrite /
@@ -108,7 +108,7 @@ const ALLOW: Record<Rule, string[]> = {
     // ContextMenuV3 and joined into that menu's `extraSections`, which the shell hands to Alchemy.
     // A lookup of owner getters by element key; the rows' actions reach the registry the same way
     // every other extraSections row does. Not an action store.
-    "@ai-matrx/context-menu (src/engine/record-menu-registry.ts)",
+    "../aidream/apps/shared/context-menu/src/engine/record-menu-registry.ts",
     // AP-2 triage (2026-10-07): each holds ADAPTERS / DATA / HANDLES, no runnable menu or toolbar action.
     // Library tab-source adapters (tab-id prefix -> loader); a data-source lookup.
     "features/code/library-sources/registry.ts",

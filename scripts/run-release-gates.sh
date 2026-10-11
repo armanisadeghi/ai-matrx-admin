@@ -940,6 +940,9 @@ if $STRICT; then
         # surface-write door bypass, private action registries. Shrink-only baseline; advisory here.
         "Raw clipboard/download/format-lib/door-bypass in app code (Alchemy doors)|pnpm check:alchemy-doors"
         "Alchemy doors guard self-test|pnpm check:alchemy-doors:self-test"
+        # UNIVER ADD-ONS — every free add-on loads, survives a save, and a signed-in person can
+        # actually type in a cell (the owner-role identity); reds on a planted break. Static, no database.
+        "Univer add-ons load, save back, and a signed-in person can edit|pnpm check:univer-addons"
         # THE SCOPES DATA LAYER IS THE PACKAGE — scope data only through scopeDoors()
         # (@ai-matrx/records/scopes); no custom.context_* door string, no archived context.* reader.
         "Scope data outside scopeDoors() / archived scope-table readers|pnpm check:scopes-data-layer"
@@ -1673,6 +1676,9 @@ else
         # surface-write door bypass, private action registries. Shrink-only baseline; advisory here.
         "Raw clipboard/download/format-lib/door-bypass in app code (Alchemy doors)|pnpm check:alchemy-doors"
         "Alchemy doors guard self-test|pnpm check:alchemy-doors:self-test"
+        # UNIVER ADD-ONS — every free add-on loads, survives a save, and a signed-in person can
+        # actually type in a cell (the owner-role identity); reds on a planted break. Static, no database.
+        "Univer add-ons load, save back, and a signed-in person can edit|pnpm check:univer-addons"
         # THE SCOPES DATA LAYER IS THE PACKAGE — scope data only through scopeDoors()
         # (@ai-matrx/records/scopes); no custom.context_* door string, no archived context.* reader.
         "Scope data outside scopeDoors() / archived scope-table readers|pnpm check:scopes-data-layer"

@@ -5,8 +5,8 @@
     "repo-only": "reads the repository and nothing else"
   },
   "counts": {
-    "repo-only": 171,
-    "live-db": 65
+    "repo-only": 179,
+    "live-db": 68
   },
   "rows": {
     "every-ai-matrx-package-is-declared-and-installed-at-npm-late": {
@@ -180,6 +180,45 @@
       "reason": "no database access in 3 file(s) reached",
       "evidence": []
     },
+    "every-imported-ai-matrx-package-is-declared-in-package-json": {
+      "label": "Every imported @ai-matrx package is declared in package.json",
+      "class": "repo-only",
+      "cmd": "pnpm check:matrx-deps-declared",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "no-new-direct-database-call-outside-ai-matrx-data-shrink-onl": {
+      "label": "No new direct database call outside @ai-matrx/data (shrink-only baseline)",
+      "class": "live-db",
+      "cmd": "pnpm check:db-doors",
+      "reason": "reaches code that can open the live database",
+      "evidence": [
+        {
+          "file": "../aidream/apps/shared/scripts/check-db-doors.mjs",
+          "signal": "admin Supabase client (createAdminClient)"
+        },
+        {
+          "file": "../aidream/apps/shared/scripts/check-db-doors.mjs",
+          "signal": "PostgREST endpoint"
+        }
+      ]
+    },
+    "and-that-guard-can-still-fail": {
+      "label": "…and that guard can still fail",
+      "class": "live-db",
+      "cmd": "pnpm check:db-doors:self-test",
+      "reason": "reaches code that can open the live database",
+      "evidence": [
+        {
+          "file": "../aidream/apps/shared/scripts/check-db-doors.mjs",
+          "signal": "admin Supabase client (createAdminClient)"
+        },
+        {
+          "file": "../aidream/apps/shared/scripts/check-db-doors.mjs",
+          "signal": "PostgREST endpoint"
+        }
+      ]
+    },
     "every-ai-matrx-import-resolves-in-the-installed-packages-fas": {
       "label": "Every @ai-matrx import resolves in the installed packages (fast)",
       "class": "repo-only",
@@ -250,6 +289,20 @@
       "reason": "no database access in 2 file(s) reached",
       "evidence": []
     },
+    "tables-keep-copy-alchemy-no-new-hand-built-table": {
+      "label": "Tables keep copy/Alchemy; no new hand-built table",
+      "class": "repo-only",
+      "cmd": "pnpm check:one-table-law",
+      "reason": "no database access in 3 file(s) reached",
+      "evidence": []
+    },
+    "the-one-table-law-guard-can-still-fail-fixtures-in-a-temp-di": {
+      "label": "The one-table-law guard can still fail (fixtures in a temp dir)",
+      "class": "repo-only",
+      "cmd": "pnpm check:one-table-law:self-test",
+      "reason": "no database access in 3 file(s) reached",
+      "evidence": []
+    },
     "no-hand-written-find-or-create-of-a-table-list-all-search-by": {
       "label": "No hand-written find-or-create of a table (list all, search by slug)",
       "class": "repo-only",
@@ -284,6 +337,18 @@
       "cmd": "pnpm check:signout-scope",
       "reason": "no database access in 3 file(s) reached",
       "evidence": []
+    },
+    "max-cost-tier-held-against-agent-system-writers-rolled-back-": {
+      "label": "Max cost tier held against agent/system writers (rolled-back cases)",
+      "class": "live-db",
+      "cmd": "pnpm check:cost-tier-hold:strict",
+      "reason": "reaches code that can open the live database",
+      "evidence": [
+        {
+          "file": "scripts/check-cost-tier-hold.ts",
+          "signal": "service-role / secret key"
+        }
+      ]
     },
     "no-new-code-reference-to-the-retiring-row-column-access-ladd": {
       "label": "No new code reference to the retiring row column (access ladder T-13)",
@@ -361,7 +426,7 @@
         }
       ]
     },
-    "and-that-guard-can-still-fail": {
+    "and-that-guard-can-still-fail-pnpm-check-unpinned-": {
       "label": "…and that guard can still fail",
       "class": "live-db",
       "cmd": "pnpm check:unpinned-security-columns:self-test",
@@ -1487,7 +1552,7 @@
       "label": "Surface manifest drift",
       "class": "repo-only",
       "cmd": "pnpm exec tsx scripts/check-surface-drift.ts",
-      "reason": "no database access in 11 file(s) reached",
+      "reason": "no database access in 34 file(s) reached",
       "evidence": []
     },
     "surface-mirror-matches-the-code-values-roles-write-targets-t": {
@@ -2158,6 +2223,20 @@
       "reason": "no database access in 2 file(s) reached",
       "evidence": []
     },
+    "element-positioned-by-transform-while-animating-it": {
+      "label": "Element positioned by transform while animating it",
+      "class": "repo-only",
+      "cmd": "pnpm check:transform-motion",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "transform-motion-guard-self-test": {
+      "label": "Transform-motion guard self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:transform-motion:self-test",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
     "history-write-that-skips-next-s-router-sync-window-history-s": {
       "label": "History write that skips Next's router sync (window.history.state)",
       "class": "repo-only",
@@ -2198,6 +2277,27 @@
       "class": "repo-only",
       "cmd": "pnpm check:alchemy-doors:self-test",
       "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
+    "univer-add-ons-load-save-back-and-a-signed-in-person-can-edi": {
+      "label": "Univer add-ons load, save back, and a signed-in person can edit",
+      "class": "repo-only",
+      "cmd": "pnpm check:univer-addons",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "scope-data-outside-scopedoors-archived-scope-table-readers": {
+      "label": "Scope data outside scopeDoors() / archived scope-table readers",
+      "class": "repo-only",
+      "cmd": "pnpm check:scopes-data-layer",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "scopes-data-layer-guard-self-test": {
+      "label": "Scopes data layer guard self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:scopes-data-layer:self-test",
+      "reason": "no database access in 1 file(s) reached",
       "evidence": []
     },
     "copied-state-set-after-a-discarded-copy-result-copy-result-g": {
