@@ -10,7 +10,7 @@
  * inside (features/shell/components/header/variants/USAGE.md).
  */
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import {
   EllipsisVertical,
@@ -39,11 +39,13 @@ import { Skeleton } from "@ai-matrx/design-system";
 import { SourceFavicon } from "@/features/research/components/results/SourceFavicon";
 import { OrganizationRequiredNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
 import { useAuthenticator } from "../../hooks/use-authenticator";
-import { useVault, useVaultDefinitions } from "../../vault-hooks";
+import { useVault } from "../../vault-hooks";
 import { WEBSITE_LOGIN_DEFINITION_KEY } from "../../types";
 import type { AuthenticatorEntry } from "../../authenticator-types";
 import { safeVaultLoginUrl } from "../../utils";
-import { VaultCreateDialog } from "../VaultCreateDialog";
+import { AuthenticatorSetupDialog, authenticatorName } from "./AuthenticatorSetupDialog";
+import { enrollAuthenticator } from "../../authenticator-service";
+import type { VaultItem } from "../../types";
 import { AuthenticatorCode } from "./AuthenticatorCode";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ReadFailure } from "@ai-matrx/design-system";
@@ -209,10 +211,7 @@ export function AuthenticatorWorkspace() {
     actions,
   } = useAuthenticator();
   const vault = useVault({ kind: "mine" });
-  const { definitions } = useVaultDefinitions();
-  const websiteDefinition = definitions.find(
-    (definition) => definition.key === WEBSITE_LOGIN_DEFINITION_KEY,
-  );
+  const pendingItem = useRef<VaultItem | null>(null);
   const busy = authenticatorBusy || vault.busy;
   const [enrollOpen, setEnrollOpen] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<AuthenticatorEntry | null>(
@@ -326,23 +325,24 @@ export function AuthenticatorWorkspace() {
         </div>
       </div>
 
-      {websiteDefinition && (
-        <VaultCreateDialog
+        <AuthenticatorSetupDialog
           open={enrollOpen}
-          onOpenChange={setEnrollOpen}
-          principal={{ type: "user" }}
-          definitions={definitions}
-          busy={busy}
-          initialDefinitionKey={WEBSITE_LOGIN_DEFINITION_KEY}
-          onCreate={(body, attachments) =>
-            attachments?.length
-              ? vault.actions.createItemWithAttachments(body, attachments)
-              : vault.actions.createItem(body)
-          }
-          onAssign={vault.actions.assign}
-          onSaved={refresh}
+          onOpenChange={(open) => { setEnrollOpen(open); if (!open) pendingItem.current = null; }}
+          onEnroll={async (input, parsed) => {
+            const item = pendingItem.current ?? await vault.actions.createItem({
+              principal: { type: "user" },
+              definition_key: WEBSITE_LOGIN_DEFINITION_KEY,
+              definition_version: 1,
+              display_name: authenticatorName("", parsed),
+              fields: [],
+              source: "manual",
+            });
+            pendingItem.current = item;
+            const entry = await enrollAuthenticator(item.id, input);
+            void refresh();
+            return entry;
+          }}
         />
-      )}
 
       <ConfirmDialog
         open={pendingDelete !== null}
