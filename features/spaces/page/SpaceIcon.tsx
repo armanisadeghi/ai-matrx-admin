@@ -2,7 +2,7 @@
 
 // features/spaces/page/SpaceIcon.tsx — draws a Space's icon: a Lucide glyph by name, or an image.
 
-import { DynamicIcon } from "@ai-matrx/icons";
+import { IconResolver } from "@ai-matrx/icons";
 import { FileText } from "lucide-react";
 
 import type { SpaceMedia } from "../contract";
@@ -34,7 +34,8 @@ export function SpaceIcon({ media, size = 18, className }: { media: SpaceMedia |
   }
   const name = media && "icon" in media ? media.icon : "";
   // Any Lucide name draws (a callout's "Info"); the curated set without a lazy load.
-  if (name && !SPACE_ICONS[name]) return <DynamicIcon name={name} size={size} className={className} fallbackIcon="FileText" />;
+  // IconResolver takes pixels; DynamicIcon's `size` is a Tailwind unit (h-17 w-17 is never generated → 24px).
+  if (name && !SPACE_ICONS[name]) return <IconResolver iconName={name} size={size} className={className ?? ""} style={{ strokeWidth: size > 40 ? 1.25 : 1.75 }} fallbackIcon="FileText" />;
   const Icon = (name && SPACE_ICONS[name]) || FileText;
   return <Icon size={size} strokeWidth={size > 40 ? 1.25 : 1.75} className={className} aria-hidden />;
 }

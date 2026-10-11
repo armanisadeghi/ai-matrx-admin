@@ -22,7 +22,7 @@ import { enrichByRunner } from "@/features/data-tables/records-ui-host/enrichPor
 import { useBackendApi } from "@/hooks/useBackendApi";
 import { RecordBodyEditor } from "@/features/data-tables/records-ui-host/RecordBodyEditor";
 import { RecordBodySpace } from "@/features/spaces/embed/RecordBodySpace";
-import { DynamicIcon } from "@ai-matrx/icons";
+import { IconResolver } from "@ai-matrx/icons";
 import { useCallback, useLayoutEffect, useMemo, type ReactNode } from "react";
 import { writeSyncedCell } from "@/features/unified-data/connect-database/service";
 import { extractErrorMessage } from "@/utils/errors";
@@ -141,7 +141,7 @@ function recordSectionsPort(organizationId: string | null): {
  * in-memory preview) wears the same icons without a copy.
  */
 export const RECORDS_ICONS: Pick<RecordsUiHost, "renderIcon"> = {
-  renderIcon: (name: string) => <DynamicIcon name={name} size={14} fallbackIcon="FileText" />,
+  renderIcon: (name: string) => <IconResolver iconName={name} size={14} className="" fallbackIcon="FileText" />,
 };
 
 export function recordsUiHostFor({ ports, merged, gridContext, rights }: RecordsUiHostArgs): RecordsUiHost {
