@@ -165,18 +165,18 @@ function TierCard({ tier }: { tier: TierStatus }) {
     const tierLabel = tier.tier === "ec2" ? "EC2" : "Hosted";
 
     return (
-        <div className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
-            <div className="flex items-start justify-between gap-2">
-                <div>
-                    <div className="flex items-center gap-2">
-                        <Server className="w-4 h-4 text-muted-foreground" />
-                        <h3 className="text-base font-semibold">{tierLabel} tier</h3>
+        <div className="@container rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
+            <div className="flex flex-col items-start gap-2 @lg:flex-row @lg:justify-between">
+                <div className="min-w-0 max-w-full">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Server className="w-4 h-4 shrink-0 text-muted-foreground" />
+                        <h3 className="whitespace-nowrap text-base font-semibold">{tierLabel} tier</h3>
                         {tier.ok ? (
-                            <Badge variant="outline" className="text-emerald-600 border-emerald-600/40 dark:text-emerald-400 dark:border-emerald-400/40">
+                            <Badge variant="outline" className="shrink-0 whitespace-nowrap text-emerald-600 border-emerald-600/40 dark:text-emerald-400 dark:border-emerald-400/40">
                                 <CheckCircle2 className="w-3 h-3 mr-1" /> healthy
                             </Badge>
                         ) : (
-                            <Badge variant="destructive">
+                            <Badge variant="destructive" className="shrink-0 whitespace-nowrap">
                                 <XCircle className="w-3 h-3 mr-1" /> {tier.status}
                             </Badge>
                         )}
@@ -185,14 +185,14 @@ function TierCard({ tier }: { tier: TierStatus }) {
                         href={tier.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1 mt-1"
+                        className="text-xs text-muted-foreground hover:text-primary inline-flex max-w-full items-center gap-1 mt-1"
                     >
-                        {tier.url} <ExternalLink className="w-3 h-3" />
+                        <span className="min-w-0 truncate">{tier.url}</span> <ExternalLink className="w-3 h-3 shrink-0" />
                     </a>
                 </div>
-                <div className="text-right">
+                <div className="min-w-0 max-w-full @lg:text-right">
                     <div className="text-xs text-muted-foreground">source SHA</div>
-                    <div className="text-sm font-mono">
+                    <div className="break-all text-sm font-mono">
                         {tier.release?.sourceSha ?? <span className="text-muted-foreground">unavailable</span>}
                     </div>
                 </div>
@@ -221,7 +221,7 @@ function TierCard({ tier }: { tier: TierStatus }) {
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 pt-2 border-t border-border">
+                    <div className="grid grid-cols-1 gap-x-4 gap-y-1.5 pt-2 border-t border-border @lg:grid-cols-2">
                         <StatRow label="CPU" value={`${sys.cpu_count}`} hint="cores" />
                         <StatRow
                             label="Load"

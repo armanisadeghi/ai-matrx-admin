@@ -2,7 +2,7 @@
 
 import { AlertTriangle, AlertCircle, HelpCircle } from "lucide-react";
 import * as Popover from "@radix-ui/react-popover";
-import { useId } from "react";
+import { useId, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import type {
   SettingsCommonProps,
@@ -179,14 +179,7 @@ export function SettingsRow({
         </div>
       ) : null}
       {description ? (
-        <div
-          className={cn(
-            "mt-0.5 break-words type-secondary leading-snug text-muted-foreground",
-            disabled && "opacity-50",
-          )}
-        >
-          {description}
-        </div>
+        <TruncatedDescription description={description} disabled={disabled} />
       ) : null}
       {warning && (
         <div className="mt-1 flex items-start gap-1.5 type-secondary text-amber-600 dark:text-amber-400">
@@ -280,6 +273,64 @@ export function SettingsRow({
         </div>
       </div>
     </SettingAnchor>
+  );
+}
+
+/**
+ * One line, truncated. When the text does not fit (a phone), a press opens the
+ * full text in a popover; when it fits, the line is plain text and never opens.
+ */
+function TruncatedDescription({
+  description,
+  disabled,
+}: Pick<SettingsCommonProps, "description" | "disabled">) {
+  const lineRef = useRef<HTMLButtonElement>(null);
+  const [open, setOpen] = useState(false);
+  // Rich content (links, controls) cannot sit inside a button; it keeps wrapping.
+  if (typeof description !== "string") {
+    return (
+      <div
+        className={cn(
+          "mt-0.5 break-words type-secondary leading-snug text-muted-foreground",
+          disabled && "opacity-50",
+        )}
+      >
+        {description}
+      </div>
+    );
+  }
+  return (
+    <Popover.Root
+      open={open}
+      onOpenChange={(next) => {
+        const el = lineRef.current;
+        setOpen(next && !!el && el.scrollWidth > el.clientWidth);
+      }}
+    >
+      <Popover.Trigger asChild>
+        <button
+          ref={lineRef}
+          type="button"
+          data-touch-exempt
+          className={cn(
+            "mt-0.5 block w-full min-w-0 truncate text-left type-secondary leading-snug text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            disabled && "opacity-50",
+          )}
+        >
+          {description}
+        </button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          side="bottom"
+          align="start"
+          sideOffset={6}
+          className="z-50 w-72 max-w-[calc(100vw-2rem)] break-words rounded-md border border-border bg-popover p-3 type-secondary leading-snug text-popover-foreground shadow-md [overflow-wrap:anywhere]"
+        >
+          {description}
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }
 

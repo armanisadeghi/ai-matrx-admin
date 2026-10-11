@@ -719,7 +719,7 @@ export function SeoOperationsClient() {
         <h1 className="text-xl font-semibold">SEO Operations</h1>
       </div>
       <Tabs defaultValue="automations">
-        <TabsList>
+        <TabsList overflow="wrap">
           <TabsTrigger value="automations">Automations</TabsTrigger>
           <TabsTrigger value="mandates">Mandates &amp; agents</TabsTrigger>
           <TabsTrigger value="workbench">Evidence Workbench</TabsTrigger>

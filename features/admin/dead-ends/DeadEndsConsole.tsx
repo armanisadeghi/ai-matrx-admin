@@ -403,7 +403,7 @@ export function DeadEndsConsole({
         dead_ends_problems: problems,
       })}
     >
-    <div className="flex h-full min-h-0 flex-col gap-3 p-4">
+    <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto p-4">
       <Header
         report={report}
         now={now}
@@ -502,7 +502,7 @@ export function DeadEndsConsole({
         </div>
       )}
 
-      <div className="min-h-0 flex-1">
+      <div className="min-h-[32rem] flex-1">
         <NonEditableContextMenu
           sourceFeature="admin"
           contentSource={{ type: "raw" }}
