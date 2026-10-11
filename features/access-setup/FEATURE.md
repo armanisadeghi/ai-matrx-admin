@@ -41,6 +41,14 @@ before it opens (live resolvers + fallbacks); Confirm only writes the access-log
 takes HR through `hr_activate_employer` / `hr_employee_create` / `hr_role_assign`). Migration:
 `migrations/campaign/accesssetup_h_the_setup_panel_reads_and_confirms.sql`.
 
+A seat may declare `add_via {fn, action}`: `record_seat_set` refuses a direct add there (`add_via`) and the
+panel's Add calls `iam.record_seat_add_via`, which runs the type's own flow as the caller (hr peers:
+`hr.review_seat_add_peer` → `hr_review_peer_nominate`, employee → pending, manager → approved). The read
+returns `may_add` / `may_exclude` / `add_via` per seat and `may_confirm`; exclude and confirm belong to the
+admin seats and the organization's owners/admins. A setup may declare `stage_meaning_fn`; each cell's
+`opens_at` is its `from_stage` resolved under the record's knobs, and the stage label reads `opens_at`.
+Migrations `accesssetup_o_…`, `accesssetup_o2_…` (the access gate describes a setup type from its seats).
+
 ## Opening rules
 
 - A creating door returns `access_setup: {head_type, ids, cycle_id?, needs_confirm}`; `needs_confirm`
@@ -58,6 +66,7 @@ action on its record page.
 ## Change log
 
 - 2026-10-10 — created (lane access-setup): record + cycle panels, window, after-create helper, review wiring.
+- 2026-10-11 — add_via (peer adds go through nomination), exclude/confirm only for admin seats and owners/admins, `opens_at` stage labels.
 
 ## Store Tables — who sees and edits a column (PLAN §12, phase 1)
 

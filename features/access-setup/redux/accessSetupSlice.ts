@@ -10,6 +10,7 @@ import type { RootState } from "@/lib/redux/rootReducer";
 import { toast } from "@/lib/toast";
 
 import {
+  addSeatVia,
   clearSeat,
   confirmSetup,
   fetchCycleAccessSetup,
@@ -54,13 +55,18 @@ export const loadCycleSetup = createAsyncThunk(
 export const changeSeat = createAsyncThunk(
   "accessSetup/changeSeat",
   async (
-    a: { type: string; id: string; seat: string; userId: string; change: "add" | "exclude" | "undo" },
+    a: { type: string; id: string; seat: string; userId: string; change: "add" | "exclude" | "undo"; addVia?: string | null },
     { dispatch },
   ) => {
-    const r = a.change === "undo"
-      ? await clearSeat(a.type, a.id, a.seat, a.userId)
-      : await setSeat(a.type, a.id, a.seat, a.userId, a.change);
+    // a seat that declares add_via is filled through its type's own flow, never a direct seat add
+    const via = a.change === "add" && a.addVia ? await addSeatVia(a.type, a.id, a.seat, a.userId) : null;
+    const r = via
+      ? via
+      : a.change === "undo"
+        ? await clearSeat(a.type, a.id, a.seat, a.userId)
+        : await setSeat(a.type, a.id, a.seat, a.userId, a.change);
     if (!r.ok) toast.error(r.message);
+    else if (via?.ok && via.data.status === "pending") toast.success("Asked for approval");
     await dispatch(loadRecordSetup({ type: a.type, id: a.id }));
     return r.ok;
   },

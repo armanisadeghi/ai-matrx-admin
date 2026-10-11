@@ -17,6 +17,7 @@ import { TextInputDialog } from "@ai-matrx/design-system";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { HrPageState } from "@/features/hr/shared/HrStates";
+import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { toast } from "@/lib/toast";
 import { useOpenAccessSetupWindow } from "@/features/overlays/openers/accessSetupWindow";
@@ -38,6 +39,7 @@ export function ReviewWorkspace({ reviewId }: { reviewId: string }) {
   const org = useSearchParams()?.get(HR_ORG_PARAM);
   const [detail, setDetail] = useState<ReviewDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [refusal, setRefusal] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [comment, setComment] = useState("");
@@ -53,7 +55,11 @@ export function ReviewWorkspace({ reviewId }: { reviewId: string }) {
       if (r.ok) {
         setDetail(r.data);
         setError(null);
-      } else setError(r.message);
+        setRefusal(null);
+      } else {
+        setError(r.message);
+        setRefusal(r.reason);
+      }
     });
     return () => {
       live = false;
@@ -81,6 +87,25 @@ export function ReviewWorkspace({ reviewId }: { reviewId: string }) {
   const isPeer = review ? isPeerOnly(review.seats) : false;
   const myPeer = detail?.responses.find((r) => r.role === "peer" && r.isMine);
   const peers = detail ? submittedPeerResponses(detail.responses).filter((r) => !r.isMine) : [];
+
+  // A person with no seat on this review gets the platform's denial (with the ask), never "did not finish".
+  if (refusal === "not_reachable") {
+    return (
+      <>
+        <RecordPageHeader
+          backHref={hrPerformanceHref(org)}
+          parents={[
+            { label: "HR", href: hrHref(org) },
+            { label: "Performance", href: hrPerformanceHref(org) },
+          ]}
+          record={{ name: "Review" }}
+        />
+        <div className="h-full overflow-y-auto pt-[var(--shell-header-h)]">
+          <AccessGate token="hr_review" id={reviewId} fallbackHref={hrPerformanceHref(org)} fallbackLabel="Performance" />
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

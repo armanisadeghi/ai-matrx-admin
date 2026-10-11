@@ -120,11 +120,18 @@ export async function listMyReviews(organizationId: string | null): Promise<StdR
   return { ok: true, data: rows.map(parseReviewSummary).filter((x): x is ReviewSummary => x !== null) };
 }
 
-export async function listCycles(organizationId: string): Promise<StdResult<CycleSummary[]>> {
+/** The employer's cycles; `readOnly` when the caller reads them as upper management (no create/launch/close). */
+export async function listCycles(organizationId: string): Promise<StdResult<{ cycles: CycleSummary[]; readOnly: boolean }>> {
   const r = await callDoor("hr_review_cycle_list", { p_organization_id: organizationId });
   if (!r.ok) return r;
   const rows = Array.isArray(r.data.cycles) ? r.data.cycles : [];
-  return { ok: true, data: rows.filter(isRec).map(parseCycleSummary).filter((x): x is CycleSummary => x !== null) };
+  return {
+    ok: true,
+    data: {
+      cycles: rows.filter(isRec).map(parseCycleSummary).filter((x): x is CycleSummary => x !== null),
+      readOnly: r.data.read_only === true,
+    },
+  };
 }
 
 export async function getCycle(cycleId: string): Promise<StdResult<CycleDetail>> {

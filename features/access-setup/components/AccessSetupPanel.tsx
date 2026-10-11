@@ -109,13 +109,20 @@ function AccessSetupBody({ view }: { view: RecordAccessSetup }) {
   const busy = useAppSelector((s) => selectSetupBusy(s, key));
   const me = useAppSelector(selectUserId);
   const config = accessSetupConfig(view.entityType);
-  const canConfirm = view.seats.some((s) => s.mayChange);
+  const canConfirm = view.mayConfirm;
   const ownerSeat = config.ownerSeat ? view.seats.find((s) => s.key === config.ownerSeat) : undefined;
   const offerOwnerSeat = ownerSeat?.fallbackOnly === true && view.myOrgRole === "owner";
   const scope = { kind: "record" as const, type: view.entityType, id: view.recordId };
 
   const change = (seat: string, userId: string, c: "add" | "exclude" | "undo") =>
-    void dispatch(changeSeat({ type: view.entityType, id: view.recordId, seat, userId, change: c }));
+    void dispatch(changeSeat({
+      type: view.entityType,
+      id: view.recordId,
+      seat,
+      userId,
+      change: c,
+      addVia: view.seats.find((s) => s.key === seat)?.addVia ?? null,
+    }));
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -201,7 +208,7 @@ function SeatSection({
         {view.mySeats.includes(seat.key) ? <span className="text-xs text-muted-foreground">You</span> : null}
         <span className="ml-auto flex items-center gap-2">
           <SetAtLink setAt={setAt} />
-          {seat.mayChange && (seat.many || seat.holders.length === 0) ? (
+          {seat.mayAdd && (seat.many || seat.holders.length === 0) ? (
             <Button variant="quiet" icon={<UserPlus className="h-4 w-4" />} disabled={busy} onClick={() => setAdding((a) => !a)}>
               Add
             </Button>
@@ -218,7 +225,7 @@ function SeatSection({
             note={n.note}
             tone={n.tone}
             action={
-              seat.mayChange ? (
+              (h.source === "added" ? seat.mayChange : seat.mayExclude) ? (
                 <HolderAction
                   holder={h}
                   disabled={busy}
@@ -237,7 +244,7 @@ function SeatSection({
           note="Excluded here"
           muted
           action={
-            seat.mayChange ? (
+            seat.mayExclude ? (
               <HolderAction
                 holder={{ ...p, source: "added", removable: true }}
                 disabled={busy}

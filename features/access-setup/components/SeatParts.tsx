@@ -72,7 +72,9 @@ export function SeatPartsLine({ cells, config }: { cells: SeatCell[]; config: Ac
   return (
     <div className="flex flex-wrap gap-1">
       {cells.map((c) => {
-        const when = c.fromStage && c.fromStage.length > 0 ? stageLabel(config, c.fromStage[0]) : null;
+        // the stage the record's knobs make this cell open at (opensAt), else the declared stage
+        const stage = (c.opensAt && c.opensAt.length > 0 ? c.opensAt : c.fromStage)?.[0] ?? null;
+        const when = stage ? stageLabel(config, stage) : null;
         const edits = c.level === "editor" || c.level === "admin";
         return (
           <span

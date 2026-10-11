@@ -8732,8 +8732,61 @@ export type Database = {
         Args: { p_org_id?: string }
         Returns: number
       }
+      spend_alarm_merge_rollups: { Args: { p_kind: string }; Returns: number }
+      spend_alarm_provider_label: { Args: { p: string }; Returns: string }
       spend_alarm_raise: { Args: { p: Json }; Returns: Json }
       spend_alarm_regrade: { Args: { p_grades: Json }; Returns: number }
+      spend_alarm_rollup_key: {
+        Args: {
+          p_kind: string
+          p_occ: Json
+          p_refs: Json
+          p_subject_id: string
+          p_subject_type: string
+        }
+        Returns: Json
+      }
+      spend_alarm_rollup_refresh: { Args: { p_id: string }; Returns: undefined }
+      spend_alarm_rows: {
+        Args: { p_id?: string; p_include_resolved?: boolean }
+        Returns: {
+          approval_status: string
+          cost_avoided_usd: number
+          cost_usd: number
+          deleted: boolean
+          detail: string
+          first_seen_at: string
+          fix: string
+          graded_level: string
+          id: string
+          kind: string
+          last_seen_at: string
+          latest_occurrence_at: string
+          latest_occurrence_detail: string
+          level: string
+          metadata: Json
+          names: Json
+          occurrence_count: number
+          recorded_rows: number
+          refs: Json
+          reopened_count: number
+          resolution_note: string
+          resolved_at: string
+          resolved_by: string
+          rule: string
+          snooze_note: string
+          snoozed_by: string
+          snoozed_until: string
+          status: string
+          subject_id: string
+          subject_name: string
+          subject_type: string
+          task_enabled: boolean
+          task_title: string
+          title: string
+          watching: boolean
+        }[]
+      }
       spend_alarm_scan: {
         Args: {
           p_baseline_days?: number
@@ -8799,6 +8852,19 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      spend_alarm_source_info: {
+        Args: { p_id: string; p_kind: string }
+        Returns: Json
+      }
+      spend_alarm_sources: {
+        Args: {
+          p_alarm_id: string
+          p_kind?: string
+          p_limit?: number
+          p_offset?: number
+        }
+        Returns: Json
       }
       spend_alarms_for_attention: {
         Args: { p_limit?: number }
@@ -76261,6 +76327,10 @@ export type Database = {
         Args: { p_id: string; p_token: string }
         Returns: Json
       }
+      review_seat_add_peer: {
+        Args: { p_review_id: string; p_user: string }
+        Returns: Json
+      }
       review_seat_employee: { Args: { p_review_id: string }; Returns: string[] }
       review_seat_employee_has: {
         Args: { p_person: string; p_review_id: string }
@@ -76322,6 +76392,10 @@ export type Database = {
         Returns: boolean
       }
       review_seat_upper_set: { Args: { p_person: string }; Returns: string[] }
+      review_stage_meaning: {
+        Args: { p_review_id: string; p_stage: string }
+        Returns: string
+      }
       review_stages: { Args: { p_review_id: string }; Returns: string[] }
       review_wf_apply: { Args: { p_instance_id: string }; Returns: Json }
       review_wf_digest: {
@@ -78935,6 +79009,10 @@ export type Database = {
         Args: { p_type: string; s: Json }
         Returns: string[]
       }
+      _access_setup_stage_meaning: {
+        Args: { p_from: Json; p_id: string; p_setup: Json }
+        Returns: Json
+      }
       _access_setup_stage_reached: {
         Args: { p_from: Json; p_stages: string[] }
         Returns: boolean
@@ -80474,6 +80552,10 @@ export type Database = {
       }
       record_access_setup: {
         Args: { p_id: string; p_type: string }
+        Returns: Json
+      }
+      record_seat_add_via: {
+        Args: { p_id: string; p_seat: string; p_type: string; p_user: string }
         Returns: Json
       }
       record_seat_clear: {

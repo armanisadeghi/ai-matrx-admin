@@ -1,6 +1,8 @@
 -- chair-step: inverse of accesssetup_o2 — restores public.access_denied_context without the access-setup branch and iam.record_seat_add_via reading iam._access_setup_of(p_type).
 -- lane: access-setup
 -- lock: hr
+-- based-on: public.access_denied_context(text, uuid) 5a808f17d75ff036f898c67177fa894463d9f3f7febb4da0abc2bf48086787ea
+-- based-on: iam.record_seat_add_via(text, uuid, text, uuid) f2d2a743d3b4d9546f483554c2df696c6f8ae4e0e0fcc3a2bb5aa5d49084ae37
 
 CREATE OR REPLACE FUNCTION public.access_denied_context(p_type text, p_id uuid)
  RETURNS jsonb
