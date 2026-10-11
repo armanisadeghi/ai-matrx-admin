@@ -35,6 +35,8 @@ export interface SaveToTableOverlayProps {
   shapeIndex?: number;
   organizationId?: string | null;
   callbackGroupId?: string | null;
+  /** "Turn into a table": the new table is made at once, then Open is offered. */
+  makeAtOnce?: boolean;
 }
 
 type Where =
@@ -53,6 +55,7 @@ export function SaveToTableOverlay({
   shapeIndex = 0,
   organizationId,
   callbackGroupId,
+  makeAtOnce = false,
 }: SaveToTableOverlayProps) {
   const router = useRouter();
   const userId = useAppSelector(selectUserId);
@@ -106,6 +109,7 @@ export function SaveToTableOverlay({
             <SaveToTable
               source={source}
               shapeIndex={shapeIndex}
+              makeAtOnce={makeAtOnce}
               onSaved={(tableId, how) =>
                 void emitSaveToTableEvent(callbackGroupId, { type: "saved", tableId, how, tableName: null })
               }

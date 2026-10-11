@@ -84,13 +84,15 @@ try {
   }, messageId);
   await page.screenshot({ path: `${out}/${tag}-1-reading.png` });
 
-  // Open from the answer bar's Edit (never a double-click).
-  await answer.locator("[data-message-content]").first().hover();
-  const editButton = answer.getByRole("button", { name: /^Edit( content)?$/ }).first();
-  if (await editButton.count()) await editButton.click();
-  else {
-    await answer.locator("[data-message-content]").first().click({ button: "right" });
-    await page.getByRole("menuitem", { name: /^Edit/ }).first().click();
+  // Open from the doors a person uses (never a double-click): on a phone the answer bar's pencil;
+  // on a desktop the right-click "Edit" (the caret lands where the person pressed).
+  if (width < 768) {
+    // The bar sits after the answer, outside its [data-message-id] node: name the LAST answer of the chat.
+    await page.locator('button[aria-label="Edit content"]').last().click({ timeout: 15_000 });
+  } else {
+    await answer.locator("[data-message-content] :is(p, li)").first().click({ button: "right" });
+    await page.waitForTimeout(700);
+    await page.locator('[role="menu"] [data-alchemy-node="edit"], [role="dialog"] [data-alchemy-node="edit"], [role="menuitem"]:text-is("Edit")').first().click({ timeout: 15_000 });
   }
   const editorSel = `[data-in-place-editor="${messageId}"]`;
   await page.locator(editorSel).waitFor({ timeout: 60_000 });
@@ -180,17 +182,8 @@ try {
   }
 
   if (args.save && !measureOnly) {
-    const stored = async () => {
-      const r = await page.evaluate(async (id) => {
-        const res = await fetch(`/api/__walk-noop`).catch(() => null);
-        void res;
-        return id;
-      }, messageId);
-      return r;
-    };
-    void stored;
     const pm = page.locator(`${editorSel} .ProseMirror`);
-    await pm.locator("p").first().click();
+    await pm.locator("p, li").first().click();
     await page.keyboard.press("End");
     await page.keyboard.type(" (checked)");
     await page.waitForTimeout(400);

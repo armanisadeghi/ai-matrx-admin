@@ -6966,6 +6966,7 @@ export default function OverlayController() {
                 ? data.callbackGroupId
                 : null
             }
+            makeAtOnce={data?.makeAtOnce === true}
           />
         );
       })}

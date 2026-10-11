@@ -32,6 +32,8 @@ export interface OpenSaveToTableOptions extends SaveToTableHandlers {
   shapeIndex?: number;
   /** The organization the content belongs to; absent → the active one (the picker holds when none). */
   organizationId?: string | null;
+  /** "Turn into a table": make the new table at once (no form first), then offer Open. */
+  makeAtOnce?: boolean;
 }
 
 export interface SaveToTableHandle {
@@ -63,6 +65,7 @@ export function useOpenSaveToTable(): ((options: OpenSaveToTableOptions) => Save
             title: options.title ?? null,
             shapeIndex: options.shapeIndex ?? 0,
             organizationId: options.organizationId ?? null,
+            makeAtOnce: options.makeAtOnce === true,
             callbackGroupId: callbacks?.callbackGroupId ?? null,
           },
         }),
