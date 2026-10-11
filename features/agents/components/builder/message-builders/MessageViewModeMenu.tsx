@@ -74,8 +74,8 @@ export const MESSAGE_MODE_LABELS: readonly string[] = MESSAGE_MODE_ORDER.map(
   (m) => MODE_META[m].label,
 );
 
-/** The mode a prompt box opens in. One line to flip: "plain" (Raw) -> "write". */
-export const DEFAULT_MESSAGE_VIEW_MODE: MessageViewMode = "plain";
+/** The mode a prompt box opens in: Write (signed off byte-exact by independent review, 2026-10-10). Raw and Read are one click away. */
+export const DEFAULT_MESSAGE_VIEW_MODE: MessageViewMode = "write";
 
 /** The formatting toolbar and Insert menu show in Write and Raw, never Read. */
 export function showsTextTools(viewMode: MessageViewMode): boolean {
