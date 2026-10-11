@@ -428,7 +428,7 @@ export default function AdminAttentionDock() {
             )}
             aria-hidden
           />
-          <p className="min-w-0 flex-1 text-sm font-medium text-foreground" data-testid="attention-title">
+          <p className="line-clamp-3 min-w-0 flex-1 text-sm font-medium text-foreground sm:line-clamp-none" data-testid="attention-title">
             {notice?.title ?? "Some checks could not be read."}
             <ErrorAlchemyMenu />
           </p>
