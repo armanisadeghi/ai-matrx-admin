@@ -383,6 +383,11 @@ export function TableSyncDialog({
             </div>
           )}
           {body}
+          {loaded.state === "ready" && issues.length === 0 && (
+            <div className="px-1 text-xs text-muted-foreground" data-table-sync-rules="">
+              Stays linked while row 1 and the hidden {RECORD_ID_HEADER} column are intact
+            </div>
+          )}
           {loaded.state === "ready" && nothing && !blocking && (
             <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
               <Check className="size-4" aria-hidden /> Already in sync

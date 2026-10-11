@@ -185,7 +185,8 @@ export function WorkbookTableLink({
       onSaved: async ({ tableId }) => {
         setLinking(true);
         try {
-          const made = await linkSheetToNewTable(api, workbookId, sid, tableId);
+          // The editor can remount while the overlay loads; always link through the live one.
+          const made = await linkSheetToNewTable(apiRef.current ?? api, workbookId, sid, tableId);
           setLinks((current) => [...(current ?? []).filter((l) => l.sheet_id !== sid), made.link]);
           if (made.unmatched.length > 0) {
             toast.error(`Linked; rows ${made.unmatched.slice(0, 8).join(", ")} matched no record and will be added on the next update`);

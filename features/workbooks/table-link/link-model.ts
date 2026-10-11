@@ -195,7 +195,18 @@ function parseDateish(raw: string): Date | null {
 
 function listWords(value: unknown): string[] {
   if (Array.isArray(value)) return value.map((v) => String(v).trim()).filter(Boolean);
-  if (typeof value === "string") return value.split(",").map((w) => w.trim()).filter(Boolean);
+  if (typeof value === "string") {
+    // Univer's multi-select can hand back a JSON list ('["a","b"]') as well as "a,b".
+    if (value.trim().startsWith("[")) {
+      try {
+        const parsed: unknown = JSON.parse(value);
+        if (Array.isArray(parsed)) return parsed.map((v) => String(v).trim()).filter(Boolean);
+      } catch {
+        /* plain text that happens to start with [ */
+      }
+    }
+    return value.split(",").map((w) => w.trim()).filter(Boolean);
+  }
   if (value === null || value === undefined) return [];
   return [String(value)];
 }

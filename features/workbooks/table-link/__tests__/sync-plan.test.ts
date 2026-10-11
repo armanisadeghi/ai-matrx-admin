@@ -9,6 +9,8 @@ import {
   buildLinkedWorkbook,
   linkedFieldFor,
   parseSheet,
+  sameValue,
+  valueFromCell,
   type LinkedField,
   type SheetCell,
   type WorkbookLike,
@@ -207,5 +209,16 @@ describe("Make table: pairing sheet rows with the records the import made", () =
     const { matched, unmatched } = matchRowsToRecords(parseSheet(typed, SHEET)!, FIELDS, [ROWS[0]]);
     expect([...matched.values()]).toEqual(["rec-1"]);
     expect(unmatched).toEqual([3, 4]);
+  });
+});
+
+describe("multi-choice cells", () => {
+  const services = linkedFieldFor(field("services", "Services", "array", { id: "multi_choice", options: { choices: [{ value: "Imaging" }, { value: "Labs" }] } }));
+  it("reads Univer's JSON list and a comma list as the same words, and the two are the same value", () => {
+    const json = valueFromCell(services, { v: '["Imaging","Labs"]' });
+    const comma = valueFromCell(services, { v: "Imaging, Labs" });
+    expect(json).toEqual({ ok: true, value: ["Imaging", "Labs"] });
+    expect(comma).toEqual({ ok: true, value: ["Imaging", "Labs"] });
+    expect(sameValue(services, ["imaging", "labs"], json.value)).toBe(true);
   });
 });
