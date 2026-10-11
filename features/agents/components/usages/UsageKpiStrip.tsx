@@ -22,6 +22,7 @@ import { DIMENSION_ORDER, HISTORY_TILE, dimensionMeta, type UsageDimension } fro
 import type { DimensionCount } from "./unified-rows";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { Chip } from "@ai-matrx/design-system/controls";
+import { InfoHint } from "@/components/official/InfoHint";
 
 export type DimensionReadState = "loading" | "failed" | "ready";
 
@@ -187,6 +188,10 @@ export function HistoryDetail({ history }: { history: HistoryState }) {
           ? "The history read failed."
           : historySummary(history.counts)}{" "}
       <span className="opacity-70">Past runs; never drift-checked</span>
+      <InfoHint
+        label="About past runs"
+        text="These runs already happened and are not places the agent will run again, so they are never checked for drift."
+      />
     </p>
   );
 }

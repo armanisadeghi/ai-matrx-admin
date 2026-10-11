@@ -77,6 +77,7 @@ import { AgentStreamingResponse } from "./AgentJsonDisplay";
 import { VoiceTextarea } from "@/components/official/VoiceTextarea";
 import { ExamplesField, emptyExamples } from "@/features/agents/factory/components/ExamplesField";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { InfoHint } from "@/components/official/InfoHint";
 import { asClause } from "@ai-matrx/kit/text";
 
 // =============================================================================
@@ -823,6 +824,13 @@ export function AgentGenerator({ onComplete, mandate }: AgentGeneratorProps) {
               <Label className="text-xs sm:text-sm font-medium">
                 {mandateMode ? "Your guidance" : "Additional Context"}
                 <span className="type-secondary text-gray-500 ml-1">(Optional)</span>
+                {mandateMode && (
+                  <InfoHint
+                    label="About your guidance"
+                    text="The mandate above is already sent; add only what it leaves out."
+                    className="ml-1"
+                  />
+                )}
               </Label>
               <VoiceTextarea
                 value={userInput}

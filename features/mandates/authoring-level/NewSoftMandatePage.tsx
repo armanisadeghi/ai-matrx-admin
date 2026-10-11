@@ -461,7 +461,11 @@ export function NewSoftMandatePage({ level, orgId = null, orgName = null }: NewS
 
         <TriadFlowMark />
 
-        <Section title="Goal" hint="what it must achieve">
+        <Section
+          title="Goal"
+          hint="what it must achieve"
+          info="Agents turn this goal into the system prompt and the grading rubric."
+        >
           <div className="rounded-xl border border-primary/25 bg-card p-4">
             <ProTextarea
               value={goal}

@@ -151,6 +151,7 @@ export default function VoicesTab() {
       >
         <SettingsRow
           label="Gemini live voice"
+          helpText="Google picks this voice; AI Matrx cannot change it yet."
           anchorId="voice-gemini-live"
           labelFor={null}
           last
