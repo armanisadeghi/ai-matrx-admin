@@ -83,6 +83,8 @@ through `@ai-matrx/realtime` — invoke the `supabase-realtime` skill first.
 
 ## Change log
 
+- `2026-10-11` — education-push: **web push for study reminders.** Browser half `lib/pwa/push.ts` + `usePushDevice` (one row per browser in `communication.push_subscription`, pending live apply), push/notificationclick in the root worker (`blob-sw.js`), "Push in this browser" switch atop Settings → Notifications (`push/PushDeviceRow.tsx`), the once-only ask on a finished study session (`features/education/reminders/StudyReminderOptIn.tsx`). Sender: aidream `services/notifications/web_push.py`.
+
 - `2026-10-07` — BELL-OWNER: **the bell people never learn to ignore.** Triage migration approved by Arman and applied live (the badge's `my_inbox_summary` 404 is gone); badge = only what is new since the bell was opened, marks synced across devices; Clear all, Clear a kind, per-place Clear / Hide from bell; Turn off this type clears its kind. New doors `my_inbox_kinds`, `clear_inbox`.
 
 - `2026-10-03` — claude: **A short pane keeps its notices.** In a split canvas the Notifications pane was ~270px and the pinned All places strip plus the footer took all of it — "Needs you · 24" was clipped under the strip. The notices now keep a 96px floor and the strip yields first, scrolling inside itself (`BellPanel`). Verified live at a 215px pane: the Needs you label and its first row show, All places scrolls.

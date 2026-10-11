@@ -6,7 +6,7 @@
  * reminder ask) uses this; nobody calls the PushManager directly.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { toast } from "@/lib/toast";
 import {
   disablePushOnThisDevice,
@@ -25,14 +25,20 @@ export interface PushDevice {
   disable: () => Promise<void>;
 }
 
+const noSubscribe = () => () => {};
+
 export function usePushDevice(): PushDevice {
-  const [availability, setAvailability] = useState<PushAvailability>("unsupported");
+  // Fixed per page load; the server snapshot keeps hydration identical.
+  const availability = useSyncExternalStore<PushAvailability>(
+    noSubscribe,
+    pushAvailability,
+    () => "unsupported",
+  );
   const [state, setState] = useState<PushDeviceState | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    setAvailability(pushAvailability());
     readPushDeviceState()
       .then((s) => {
         if (!cancelled) setState(s);

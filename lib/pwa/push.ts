@@ -175,7 +175,10 @@ export async function enablePushOnThisDevice(): Promise<PushDeviceState> {
       applicationServerKey: urlBase64ToUint8Array(vapidPublicKey()),
     }));
 
-  const { user, error: authError } = await getClaimsUser(supabase);
+  const {
+    data: { user },
+    error: authError,
+  } = await getClaimsUser(supabase);
   if (authError || !user?.sub) throw new Error("Sign in to turn on reminders.");
   const organizationId = await ensureOrgId(null);
   const row = {
@@ -209,7 +212,9 @@ export async function disablePushOnThisDevice(): Promise<PushDeviceState> {
   const reg = await navigator.serviceWorker.getRegistration("/");
   const sub = reg ? await reg.pushManager.getSubscription() : null;
   if (sub) {
-    const { user } = await getClaimsUser(supabase);
+    const {
+      data: { user },
+    } = await getClaimsUser(supabase);
     if (user?.sub) {
       const res = await pushTable()
         .update({ deleted_at: new Date().toISOString() })
