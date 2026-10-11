@@ -94,12 +94,16 @@ function decisionReason(state: FactoryBuildState): string | null {
   return null;
 }
 
+/** The caller's format line for "Build it as text" — read by the factory as a text answer (R46). */
+export const TEXT_ANSWER_FORMAT = "Markdown text";
+
 function OutcomePanel({
   state,
   spineStatus,
   busy,
   onKeep,
   onBuildUnproven,
+  onBuildAsText,
 }: {
   state: FactoryBuildState;
   /** The execution's real status — the checkpoint can still say running after a worker died. */
@@ -107,6 +111,8 @@ function OutcomePanel({
   busy: boolean;
   onKeep: () => void;
   onBuildUnproven: () => void;
+  /** needs_new_kind: build it now with a text answer (the shape proposal stays filed). */
+  onBuildAsText: () => void;
 }) {
   // A build whose worker died before the reaper settled it: the spine says failed or
   // cancelled while the checkpoint never got an outcome — show it stopped, never blank.
@@ -159,7 +165,14 @@ function OutcomePanel({
       </Button>
     );
   } else if (outcome === "needs_new_kind") {
-    line = "This job needs a new output shape first.";
+    // The shape proposal is filed for the kinds lane either way; a person is never left with
+    // no way forward — the same job, built now with a text answer.
+    line = "It needs a new output shape. Text works today.";
+    actions = (
+      <Button variant="outline" onClick={onBuildAsText} disabled={busy}>
+        Build it as text
+      </Button>
+    );
   } else if (outcome === "workflow_sized") {
     line = "This job needs a workflow, not one agent.";
   } else if (outcome === "worker_lost") {
@@ -263,7 +276,8 @@ export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardW
     }
   };
 
-  const buildUnproven = async () => {
+  /** A follow-up build of the same request: unproven (R34), or the same job as text (R46). */
+  const rebuild = async (how: "unproven" | "as_text") => {
     const req = detail?.state?.request;
     if (!req?.spec) return;
     setBusy(true);
@@ -271,9 +285,9 @@ export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardW
       // The follow-up keeps the door that started this build, and a builtin stays a builtin
       // (an ownerless spec; the server honors it for admins only).
       const next = await startAgentBuild({
-        spec: req.spec,
+        spec: how === "as_text" ? { ...req.spec, response_format: TEXT_ANSWER_FORMAT } : req.spec,
         mandateKey: req.mandate_key ?? null,
-        unproven: true,
+        unproven: how === "unproven",
         door: req.door ?? null,
         builtin: req.spec.owner === null,
       });
@@ -347,7 +361,7 @@ export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardW
             </Button>
           </div>
         ) : (
-          <OutcomePanel state={state} spineStatus={detail.spineStatus} busy={busy} onKeep={() => void keep()} onBuildUnproven={() => void buildUnproven()} />
+          <OutcomePanel state={state} spineStatus={detail.spineStatus} busy={busy} onKeep={() => void keep()} onBuildUnproven={() => void rebuild("unproven")} onBuildAsText={() => void rebuild("as_text")} />
         )
       ) : null}
     </div>
