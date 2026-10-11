@@ -23,7 +23,6 @@ import { createHash, createHmac } from "node:crypto";
 import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { pipeline } from "node:stream/promises";
-import { Readable } from "node:stream";
 import { join } from "node:path";
 import { createRequire } from "node:module";
 
@@ -101,18 +100,50 @@ const done = (child, name) =>
 const secs = (t0) => `${((Date.now() - t0) / 1000).toFixed(0)}s`;
 const mb = (n) => `${(n / 1024 ** 2).toFixed(0)} MB`;
 
+const RANGE_BYTES = 64 * 1024 ** 2; // parallel restore: 64 MB ranges, PARALLEL_RANGES in flight
+const PARALLEL_RANGES = 8;
+
+/** Download the object as PARALLEL_RANGES concurrent byte ranges, written to `out` IN ORDER. */
+async function parallelDownload(s, size, out) {
+  const ranges = [];
+  for (let start = 0; start < size; start += RANGE_BYTES) ranges.push([start, Math.min(size, start + RANGE_BYTES) - 1]);
+  const fetchRange = async ([from, to]) => {
+    for (let attempt = 1; ; attempt++) {
+      const res = await s3(s, "GET", { headers: { range: `bytes=${from}-${to}` } });
+      if (res.status === 206 || res.status === 200) return Buffer.from(await res.arrayBuffer());
+      if (attempt >= 3) throw new Error(`GET range ${from}-${to}: ${res.status}`);
+    }
+  };
+  const pending = new Map();
+  let next = 0;
+  const launch = () => {
+    while (next < ranges.length && pending.size < PARALLEL_RANGES) {
+      const i = next++;
+      pending.set(i, fetchRange(ranges[i]));
+    }
+  };
+  launch();
+  for (let i = 0; i < ranges.length; i++) {
+    const buf = await pending.get(i);
+    pending.delete(i);
+    launch();
+    if (!out.write(buf)) await new Promise((ok) => out.once("drain", ok));
+  }
+  out.end();
+}
+
 async function restore(s) {
   if (s.cold) return log("[cold-build] in the commit message: compiling from scratch (a fresh cache is saved after)");
   const t0 = Date.now();
-  const res = await s3(s, "GET");
-  if (res.status === 404) return log("no stored cache yet: cold compile (this build saves one)");
-  if (!res.ok) throw new Error(`GET ${res.status}`);
-  const size = Number(res.headers.get("content-length") || 0);
+  const head = await s3(s, "HEAD");
+  if (head.status === 404) return log("no stored cache yet: cold compile (this build saves one)");
+  if (!head.ok) throw new Error(`HEAD ${head.status}`);
+  const size = Number(head.headers.get("content-length") || 0);
   rmSync(CACHE_DIR, { recursive: true, force: true });
   mkdirSync(DIST, { recursive: true });
   const tar = spawn("tar", ["-xf", "-", "-C", DIST], { stdio: ["pipe", "inherit", "inherit"] });
-  await Promise.all([pipeline(Readable.fromWeb(res.body), tar.stdin), done(tar, "tar -x")]);
-  log(`restored ${mb(size)} (stored ${res.headers.get("last-modified")}) in ${secs(t0)}`);
+  await Promise.all([parallelDownload(s, size, tar.stdin), done(tar, "tar -x")]);
+  log(`restored ${mb(size)} (stored ${head.headers.get("last-modified")}) in ${secs(t0)} — ${PARALLEL_RANGES} parallel ranges`);
 }
 
 async function lastSaved(s) {
