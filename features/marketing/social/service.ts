@@ -402,7 +402,12 @@ export async function readPostDetail(postId: string): Promise<PostDetailRead | n
 }
 
 export async function readPostMetricSnapshots(postId: string): Promise<PostMetricSnapshotRow[]> {
-  if (isCapturedPostId(postId)) return []; // a captured post's figures are its one observation, on the row
+  if (isCapturedPostId(postId)) {
+    // A captured post's own figures are on its row; once linked to the shared post, that post's series.
+    const linked = (await readCapturedPost(postId))?.post_id;
+    if (!linked) return [];
+    postId = linked;
+  }
   return readAllRows<PostMetricSnapshotRow>(
     ({ from, to }) =>
       supabase
@@ -419,7 +424,11 @@ export async function readPostMetricSnapshots(postId: string): Promise<PostMetri
 }
 
 export async function readPostTranscript(postId: string): Promise<PostTranscriptRow | null> {
-  if (isCapturedPostId(postId)) return null;
+  if (isCapturedPostId(postId)) {
+    const linked = (await readCapturedPost(postId))?.post_id;
+    if (!linked) return null;
+    postId = linked;
+  }
   const { data, error } = await supabase
     .schema("social")
     .from("post_transcript")
@@ -436,7 +445,11 @@ export async function readPostAnalysis(
   postId: string,
   organizationId: string,
 ): Promise<PostAnalysisRow | null> {
-  if (isCapturedPostId(postId)) return null;
+  if (isCapturedPostId(postId)) {
+    const linked = (await readCapturedPost(postId))?.post_id;
+    if (!linked) return null;
+    postId = linked;
+  }
   const { data, error } = await supabase
     .schema("social")
     .from("post_analysis")

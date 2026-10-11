@@ -9,7 +9,27 @@ import { useState } from "react";
 
 import { confirmSocialSpendNow } from "../cost";
 import { useInvalidateSocial } from "../hooks";
-import { addToCollection, analyzePost, createCollection, getTranscript, socialErrorCode, socialErrorMessage } from "../server";
+import { addToCollection, analyzePost, createCollection, getTranscript, ingestPost, socialErrorCode, socialErrorMessage } from "../server";
+import { isCapturedPostId, linkCapturedPost, readCapturedPost } from "../gated/capturedPosts";
+
+/**
+ * The shared-cache post id a server action needs. A post only this organization's browser captured
+ * (`captured:<row>`) has none yet: its public link is read once (the normal single-post fetch, named
+ * in points first), the captured row is linked to the result, and the action runs on that post.
+ * Resolves null when the person declines the fetch.
+ */
+export async function sharedPostIdFor(postId: string, organizationId: string): Promise<string | null> {
+  if (!isCapturedPostId(postId)) return postId;
+  const row = await readCapturedPost(postId);
+  if (!row) throw new Error("This captured post is no longer available.");
+  if (row.post_id) return row.post_id;
+  if (!row.url) throw new Error("This captured post has no link to read it from.");
+  const ok = await confirmSocialSpendNow("post", 1, { title: "Read this post from its link first?", confirmLabel: "Read post" });
+  if (!ok) return null;
+  const read = await ingestPost({ url: row.url, landMedia: false, transcript: false }, { organizationId });
+  await linkCapturedPost(postId, read.post_id);
+  return read.post_id;
+}
 
 export interface PostActionArgs {
   postId: string;
@@ -25,7 +45,8 @@ export function postActionRunners(
   args: PostActionArgs,
   io: { invalidate: () => Promise<unknown>; setBusy?: (b: string | null) => void; setBreakdownNote?: (n: string | null) => void },
 ) {
-  const { postId, organizationId } = args;
+  const { organizationId } = args;
+  const declined = "The person declined; nothing was spent.";
   const setBusy = io.setBusy ?? (() => {});
   const setBreakdownNote = io.setBreakdownNote ?? (() => {});
   const invalidate = io.invalidate;
@@ -37,6 +58,8 @@ export function postActionRunners(
     if (!ok) return "The person declined; nothing was spent.";
     setBusy("transcript");
     try {
+      const postId = await sharedPostIdFor(args.postId, organizationId);
+      if (!postId) return declined;
       const outcome = await getTranscript(postId, { organizationId });
       await invalidate();
       return outcome.status === "available"
@@ -52,6 +75,8 @@ export function postActionRunners(
   async function breakdown(): Promise<string> {
     setBusy("breakdown");
     try {
+      const postId = await sharedPostIdFor(args.postId, organizationId);
+      if (!postId) return declined;
       const result = await analyzePost(postId, { organizationId });
       setBreakdownNote(null);
       await invalidate();
@@ -71,6 +96,8 @@ export function postActionRunners(
   async function saveToSwipe(): Promise<string> {
     setBusy("save");
     try {
+      const postId = await sharedPostIdFor(args.postId, organizationId);
+      if (!postId) return declined;
       const existing = await import("@/features/marketing/social/service").then((m) => m.readSwipeCollections({ organizationId }));
       const id = existing[0]?.id ?? (await createCollection({ name: "Saved" }, { organizationId })).collection_id;
       await addToCollection(id, { itemType: "social_post", itemId: postId }, { organizationId });
