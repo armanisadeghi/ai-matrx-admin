@@ -49,7 +49,8 @@ export default function AdminModuleHeaderDesktopContent({
 
   return (
     <div className={cn("flex items-center justify-between w-full", className)}>
-      <div className="flex items-center gap-1">
+      {/* The home tap button's box carries 3px; the row edge adds its own 3px (tap-target rule 3). */}
+      <div className="flex items-center gap-1 pl-[3px]">
         <AppLink href={moduleHome}>
           <Button
             icon={<Home />}

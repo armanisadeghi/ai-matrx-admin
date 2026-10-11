@@ -39,6 +39,7 @@ import { supabase } from "@/utils/supabase/client";
 import { MuteDialog } from "@/features/admin/attention/MuteDialog";
 import { muteLabel } from "@/features/admin/attention/item-mute";
 import { AlarmSourcesList } from "./AlarmSourcesList";
+import { Button } from "@ai-matrx/design-system/controls";
 import {
   SPEND_ALARMS_PATH,
   alarmActions,
@@ -52,6 +53,7 @@ import {
   fetchItemTitles,
   fixFor,
   isMigrated,
+  isRinging,
   whose,
   type ItemLabel,
   fetchSpendAlarmOccurrences,
@@ -179,6 +181,12 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
         if (rec?.refs.agent_id && rec.subject_name && rec.subject_type === "agent") resolved.set(rec.refs.agent_id, rec.subject_name);
         if (t?.title && rec?.refs.task_id) resolved.set(rec.refs.task_id, t.title);
         for (const [rid, n] of Object.entries(rec?.names ?? {})) if (!resolved.has(rid)) resolved.set(rid, n);
+        // Each occurrence's organization by name (a refusal can come from several).
+        const orgIds = [...new Set(occ.map((o) => o.refs.organization_id).filter((v): v is string => !!v && !resolved.has(v)))];
+        if (orgIds.length) {
+          const { data: orgs } = await supabase.schema("iam").from("organizations").select("id, name").in("id", orgIds);
+          for (const o of (orgs ?? []) as { id: string; name: string | null }[]) if (o.name) resolved.set(o.id, o.name);
+        }
         setNames(resolved);
         setItemTitles(titles);
         setError(rec ? null : "This alarm does not exist");
@@ -244,7 +252,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
     if (record.status === "resolved") {
       headerActions.push({ label: "Reopen", icon: RotateCcw, showLabel: true, onPress: () => act(() => setSpendAlarmStatus(id, "open"), "Alarm reopened") });
     } else {
-      if (record.status === "snoozed") {
+      if (record.status === "snoozed" && !isRinging(record)) {
         headerActions.push({
           label: "Unmute",
           icon: Bell,
@@ -261,8 +269,10 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
   }
 
   const statusLabel = record
-    ? record.status === "open"
-      ? LEVEL_LABEL[record.level]
+    ? record.status === "open" || (record.status === "snoozed" && isRinging(record))
+      ? record.watching
+        ? "Fixed, watching"
+        : LEVEL_LABEL[record.level]
       : record.status === "snoozed"
         ? "Muted"
         : "Resolved"
@@ -379,12 +389,18 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
                 agent={agentPayload}
               />
               <p className="pr-20 text-sm font-medium text-foreground">{alarmSentence({ ...record, names: Object.fromEntries(names) })}</p>
-              {record.status === "snoozed" ? (
+              {record.status === "snoozed" && !isRinging(record) ? (
                 <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-2 text-sm" data-testid="alarm-muted">
                   <BellOff className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                   <span className="min-w-0 flex-1">
                     {`Muted until ${when(record.snoozed_until)}${record.snoozed_by ? ` by ${record.snoozed_by}` : ""}${record.snooze_note ? `: ${record.snooze_note}` : ""}`}
                   </span>
+                  <Button variant="outline" disabled={busy} onClick={() => void act(() => setSpendAlarmStatus(id, "open"), "Unmuted")}>
+                    Unmute
+                  </Button>
+                  <Button variant="quiet" disabled={busy} onClick={() => setMuteOpen(true)}>
+                    Change
+                  </Button>
                 </div>
               ) : null}
               {record.watching ? (
@@ -397,7 +413,9 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
                   <CheckCircle2 className="h-4 w-4 shrink-0 text-success" aria-hidden />
                   <span className="text-foreground">
                     {`Fixed in code on ${fixDate(shippedFix.on)} (${shippedFix.commit}): ${shippedFix.what}.`}
-                    {afterFix > 0
+                    {record.kind === shippedFix.related_kind
+                      ? ""
+                      : afterFix > 0
                       ? ` Occurrences after the fix: ${afterFix.toLocaleString()} (the fix is not on the live server yet).`
                       : " No occurrence since the fix; it resolves itself after 24 quiet hours."}
                   </span>
@@ -460,7 +478,13 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
               ) : null}
             </section>
 
-            <AlarmSourcesList alarmId={id} heading={record.kind === "protected_account_refusal" ? "Sources skipped instead" : "Sources"} />
+            <AlarmSourcesList alarmId={id} heading={
+                record.kind === "source_intelligence_skipped"
+                  ? "Skipped Sources"
+                  : shippedFix?.related_kind
+                    ? "Sources skipped instead"
+                    : "Sources"
+              } />
 
             <div className="h-[28rem] min-h-0" id="occurrences">
               <MatrxDataTable

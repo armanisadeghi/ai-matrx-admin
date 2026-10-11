@@ -274,11 +274,12 @@ test.describe.serial("THE VARIABLE RULE in the UI", () => {
     // The run box's own variable field, then one real turn.
     await page.getByPlaceholder("Enter value...").first().fill(VALUE);
     const sent = page.waitForRequest(
-      (r) => r.method() === "POST" && /\/api\/ai\/agents\/[0-9a-f-]{36}/.test(r.url()),
+      (r) => r.method() === "POST" && /\/ai\/agents\/[0-9a-f-]{36}/.test(r.url()),
       { timeout: 120_000 },
     );
     await page.getByPlaceholder("Type your message...").first().fill(RUN_MESSAGE);
     await page.getByRole("button", { name: "Send message" }).first().click();
+    page.on("request", (r) => r.method() === "POST" && /\/ai\//.test(r.url()) && console.log(`[variable-rule] POST ${new URL(r.url()).pathname}`));
     const request = await sent;
     const body = JSON.parse(request.postData() ?? "{}") as { conversation_id?: string; variables?: Record<string, string> };
     conversationId = body.conversation_id ?? "";

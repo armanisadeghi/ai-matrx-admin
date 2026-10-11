@@ -47,10 +47,14 @@ describe("shape playground", () => {
       "Streaming", "Header copy", "Export", "Panel grid", "Sortable list", "Tag list",
       "save_item_state", "Run in window", "saveAs text", "Image chain", "KindImage",
       "open_file", "share_file", "Web link", "mailto", "tel", "recharts", "motion",
-      "date-fns", "lodash", "react-katex", "xlsx", "react-pdf", "three", "Applets helpers",
+      "date-fns", "lodash", "react-katex", "xlsx", "react-pdf", "three",
       "Dialog", "Popover", "Tooltip", "Container queries",
     ]) {
       expect(covered.has(label)).toBe(true);
     }
+  });
+
+  it("no demo imports the Applet parts (the rulebook: page only, never in shapes)", () => {
+    for (const demo of PLAYGROUND_DEMOS) expect(demo.source).not.toMatch(/from\s+["'](@\/applets|@ai-matrx\/applets\/react)["']/);
   });
 });

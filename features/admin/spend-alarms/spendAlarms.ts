@@ -755,6 +755,8 @@ export function providerLabel(p: string): string {
 /** Whose alarm it is, by name: a person, a record's title, or a service. Never an id or a type slug. */
 export function whose(r: Pick<SpendAlarmRecord, "subject_name" | "subject_type" | "refs" | "person" | "kind">): string {
   if (r.subject_type === "source") return r.subject_name ?? "Source (not found)";
+  // A refusal's subject_name is "person · handler code"; the person is the answer.
+  if (r.kind === "protected_account_refusal") return r.person ?? r.subject_name?.split(" · ")[0] ?? "A protected account";
   if (r.subject_name) return r.subject_name;
   if (r.refs.provider) return `${providerLabel(r.refs.provider)}${r.refs.operation ? ` ${r.refs.operation}` : ""}`;
   if (r.refs.mandate_key) return r.refs.mandate_key;
@@ -788,7 +790,8 @@ export function handlerPhrase(handler: string | undefined, names: Readonly<Recor
   const key = rest.join(":");
   if (head === "mandate" || head === "mandate_candidate") {
     const label = names[refs.mandate_key ?? key] ?? names[key];
-    const what = label ? `Mandate: ${label}` : "a mandate";
+    const plain = (refs.mandate_key ?? key).replace(/[._]+/g, " ").replace(/\s+\d{6,}$/, "").trim();
+    const what = label ? `Mandate: ${label}` : plain ? `Mandate: ${plain}` : "a mandate";
     return head === "mandate_candidate" ? `A trial run of ${what}` : `A run of ${what}`;
   }
   const known: Record<string, string> = {
@@ -843,5 +846,7 @@ export function alarmTitle(
   }
   let title = r.title;
   for (const [id, name] of Object.entries(names)) title = title.split(id).join(name);
-  return alarmHeadline(title, r.subject_id, r.subject_name) || KIND_LABEL[r.kind] || "Spend alarm";
+  // Only an id-shaped subject is swapped for its name ("mandates" is a word, not an id).
+  const idShaped = /[0-9]/.test(r.subject_id) || r.subject_id.includes(":");
+  return alarmHeadline(title, idShaped ? r.subject_id : null, idShaped ? r.subject_name : null) || KIND_LABEL[r.kind] || "Spend alarm";
 }

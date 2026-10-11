@@ -17,10 +17,14 @@ const NOT_IN_MAIN_BUNDLE = [
 function body(code: string, imports: string[] = []) {
     return {
         graph: {
+            entry: "kind-component.tsx",
             modules: {
                 "kind-component.tsx": {
+                    file: "kind-component.tsx",
                     code,
-                    importBindings: imports.map((source) => ({ source })),
+                    declaredTopLevel: [],
+                    componentCandidates: [],
+                    importBindings: imports.map((source) => ({ source, imported: "*", local: "m" })),
                 },
             },
         },

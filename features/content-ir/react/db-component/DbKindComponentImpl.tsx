@@ -56,6 +56,7 @@ import { earlyKeysFromValue } from "@ai-matrx/rich-content/kinds/react/loading/k
 import { correctKindValue, kindCorrectionsOf } from "@ai-matrx/rich-content/kinds/registry/kind-correctors";
 import { KindCorrectionsNotice } from "./KindCorrectionsNotice";
 import { stableImageState, type ImageSources } from "./item-state-media";
+import { useOnDemandScopeReady } from "@/lib/code-runtime/useOnDemandScope";
 
 /**
  * One entry per kind — the resolver's answer and the registry version it was
@@ -263,12 +264,21 @@ const DbKindComponentBody: React.FC<DbKindComponentImplProps> = ({
     }
   }, [bodyPending, kind]);
 
+  // In-page compiles are synchronous: the libraries this body imports
+  // (motion, date-fns, three…) load first, the kind's loading state shows
+  // meanwhile. The sandbox frame preloads the same set itself.
+  const inPageSource =
+    resolution && resolution.config.flavor !== "html" && !(sandbox.enabled && sandbox.ceilings)
+      ? resolution.componentSource
+      : null;
+  const librariesReady = useOnDemandScopeReady(inPageSource);
+
   if (!kind) {
     screamRouteDefect("(unresolvable)", "no kind in envelope or content");
     return generic;
   }
 
-  if (bodyPending) {
+  if (bodyPending || !librariesReady) {
     const loadingValue =
       value !== null && typeof value === "object" && !Array.isArray(value)
         ? (value as Record<string, unknown>)

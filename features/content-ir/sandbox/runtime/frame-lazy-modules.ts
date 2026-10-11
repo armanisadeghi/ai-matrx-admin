@@ -17,8 +17,12 @@
  * registry announces it and the import renders a marked stand-in. It is never
  * faked.
  */
-import { getScopeEntry, provideScopeModules } from "@ai-matrx/code-runtime/scope";
-import { prepareScopeModules } from "@ai-matrx/code-runtime/execute";
+import {
+    graphDemandedEntries,
+    prepareScopeModules,
+    provideScopeModules,
+} from "@ai-matrx/code-runtime/execute";
+import type { TransformedGraph } from "@ai-matrx/code-runtime/execute";
 import {
     FRAME_LIBS_KEY,
     FRAME_LIB_CHUNKS,
@@ -98,34 +102,20 @@ export const LAZY_SPECIFIERS: readonly string[] = Object.values(FRAME_LIB_CHUNKS
 );
 
 interface BodyLike {
-    graph?: {
-        modules?: Record<string, { importBindings?: Array<{ source: string }>; code?: string }>;
-    };
+    graph?: TransformedGraph;
 }
 
-function escapeRegExp(id: string): string {
-    return id.replace(/[$.*+?^()[\]{}|\\]/g, "\\$&");
-}
-
-/** The lazy specifiers these bodies actually reach for. */
+/**
+ * The lazy specifiers these bodies actually reach for — the package's ONE
+ * detector (`graphDemandedEntries`, the same one `executeGraph` and the page
+ * use): an import, or a bare use of a name the entry `provides`.
+ */
 export function neededLazySpecifiers(...bodies: Array<BodyLike | null | undefined>): string[] {
     const needed = new Set<string>();
     for (const body of bodies) {
-        for (const mod of Object.values(body?.graph?.modules ?? {})) {
-            for (const b of mod.importBindings ?? []) {
-                if (chunkForSpecifier(b.source)) needed.add(b.source);
-            }
-            // A bare name an entry provides (`motion`, `THREE`, `XLSX`…).
-            const code = mod.code ?? "";
-            for (const spec of LAZY_SPECIFIERS) {
-                if (needed.has(spec)) continue;
-                for (const id of getScopeEntry(spec)?.provides ?? []) {
-                    if (new RegExp(`(?<![\\w$.])${escapeRegExp(id)}\\b`).test(code)) {
-                        needed.add(spec);
-                        break;
-                    }
-                }
-            }
+        if (!body?.graph?.modules) continue;
+        for (const path of graphDemandedEntries(body.graph)) {
+            if (chunkForSpecifier(path)) needed.add(path);
         }
     }
     return [...needed];

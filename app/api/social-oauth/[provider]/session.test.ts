@@ -1,6 +1,15 @@
 import { isSocialCallbackOrigin, isSocialProvider, parseSocialBrowserSession, safeSocialReturn } from "./session";
 
 describe("social OAuth browser session", () => {
+  test("accepts the exact registered Facebook HTTPS loopback origin", () => {
+    expect(isSocialCallbackOrigin("https://localhost:3000", "facebook")).toBe(true);
+    for (const origin of ["https://localhost:3001", "https://preview.localhost:3000", "https://user@localhost:3000", "https://user:password@localhost:3000", "https://localhost:3000/foreign", "https://localhost:3000?foreign=1", "https://localhost:3000#foreign"]) {
+      expect(isSocialCallbackOrigin(origin, "facebook")).toBe(false);
+    }
+    for (const provider of ["instagram", "threads", "discord", "pinterest", undefined] as const) {
+      expect(isSocialCallbackOrigin("https://localhost:3000", provider)).toBe(false);
+    }
+  });
   test("routes each customer provider through the browser consent bridge", () => {
     for (const provider of ["reddit", "discord", "twitch", "bluesky", "mastodon", "snapchat"]) {
       expect(isSocialProvider(provider)).toBe(true);

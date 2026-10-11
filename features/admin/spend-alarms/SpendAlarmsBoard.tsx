@@ -18,6 +18,7 @@ import {
   SPEND_ALARMS_PATH,
   alarmTitle,
   costLabel,
+  spendAlarmCounts,
   fixFor,
   refHref,
   whose,
@@ -63,6 +64,11 @@ export function SpendAlarmsBoard() {
     )
     .sort((a, b) => LEVEL_RANK[a.level] - LEVEL_RANK[b.level] || b.last_seen_at.localeCompare(a.last_seen_at));
 
+  // Every row read (never a capped page): the tab labels carry the same counts the dock shows.
+  const counts = spendAlarmCounts(rows.filter((r) => !kindFilter || r.kind === kindFilter));
+  const ringing = counts.critical + counts.warning + counts.info;
+  const resolvedCount = rows.filter((r) => r.status === "resolved" && (!kindFilter || r.kind === kindFilter)).length;
+
   const columns: MatrxColumnDef<SpendAlarmRecord>[] = [
     {
       id: "level",
@@ -76,7 +82,6 @@ export function SpendAlarmsBoard() {
       kpi: [
         { op: "count", id: "critical", label: "Critical", countWhere: (r) => r.level === "critical" && isRinging(r), tone: (v) => (v > 0 ? "danger" : undefined) },
         { op: "count", id: "warning", label: "To decide", countWhere: (r) => r.level === "warning" && isRinging(r), tone: (v) => (v > 0 ? "warning" : undefined) },
-        { op: "count", id: "muted", label: "Muted", countWhere: (r) => r.status === "snoozed" && !isRinging(r) },
       ],
     },
     {
@@ -176,9 +181,9 @@ export function SpendAlarmsBoard() {
                   value={status}
                   onValueChange={setStatus}
                   data={[
-                    { value: "ringing", label: "Open" },
-                    { value: "snoozed", label: "Snoozed" },
-                    { value: "resolved", label: "Resolved" },
+                    { value: "ringing", label: `Open ${ringing}` },
+                    { value: "snoozed", label: `Muted ${counts.snoozed}` },
+                    { value: "resolved", label: `Resolved ${resolvedCount}` },
                     { value: "all", label: "All" },
                   ]}
                 />

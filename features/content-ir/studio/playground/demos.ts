@@ -8,9 +8,11 @@ import { LOAN_MATH_DEMO } from "./demos/loan-math";
 import { CREW_TIMESHEET_DEMO } from "./demos/crew-timesheet";
 import { INVOICE_PDF_DEMO } from "./demos/invoice-pdf";
 import { WAREHOUSE_3D_DEMO } from "./demos/warehouse-3d";
-import { READING_LIST_DEMO } from "./demos/reading-list";
 
-/** Every playground demo, in page order. Each source follows the shape-authoring rulebook. */
+/**
+ * Every playground demo, in page order. Each source follows the shape-authoring rulebook —
+ * so none imports the Applet parts, which the rulebook documents as page-only, never for shapes.
+ */
 export const PLAYGROUND_DEMOS: readonly PlaygroundDemo[] = [
   LAUNCH_BRIEF_DEMO,
   SPRINT_BACKLOG_DEMO,
@@ -21,5 +23,4 @@ export const PLAYGROUND_DEMOS: readonly PlaygroundDemo[] = [
   CREW_TIMESHEET_DEMO,
   INVOICE_PDF_DEMO,
   WAREHOUSE_3D_DEMO,
-  READING_LIST_DEMO,
 ];
