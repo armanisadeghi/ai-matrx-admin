@@ -60,10 +60,12 @@ export function PromptBlockPicker({ open, anchor, initialQuery = "", declared, o
   }, [rows, query, lanes, lane]);
 
   const shown = lanes[lane].filter((r) => matchesQuery(r, query));
-  const winners = useMemo(
-    () => new Set((rows ?? []).map((r) => winningRowId(rows ?? [], r.name, meId, SYSTEM_ORG_ID, orgId))),
-    [rows, meId, orgId],
-  );
+  // The row that runs for each name; a row is "Overridden" only when a different row of its name runs.
+  const winnerByName = useMemo(() => {
+    const map = new Map<string, string | null>();
+    for (const r of rows ?? []) if (!map.has(r.name)) map.set(r.name, winningRowId(rows ?? [], r.name, meId, SYSTEM_ORG_ID, orgId));
+    return map;
+  }, [rows, meId, orgId]);
 
   return (
     <Popover open={open} onOpenChange={(o) => !o && onClose()}>
@@ -120,7 +122,7 @@ export function PromptBlockPicker({ open, anchor, initialQuery = "", declared, o
                 {row.label && row.label !== row.name && <span className="block truncate text-[11px] text-muted-foreground">{row.label}</span>}
               </span>
               {declared.has(row.name) && <Check className="h-3.5 w-3.5 text-muted-foreground" aria-label="Declared" />}
-              {!winners.has(row.id) && <Badge>Overridden</Badge>}
+              {winnerByName.get(row.name) && winnerByName.get(row.name) !== row.id && <Badge>Overridden</Badge>}
             </button>
           ))}
         </div>

@@ -135,7 +135,7 @@ export async function agentsUsing(name: string): Promise<UsingAgent[]> {
     .from("definition")
     .select("id, name")
     .is("deleted_at", null)
-    .contains("prompt_blocks", [{ name }])
+    .contains("prompt_blocks", JSON.stringify([{ name }]))
     .limit(200);
   if (error) fail("Could not load the agents using this block", error);
   return (data ?? []) as UsingAgent[];

@@ -38,6 +38,8 @@ interface Shown {
   winner: PromptBlockRow | null;
   variants: PromptBlockVariantRow[];
   variantLabel: string | null;
+  /** The server confirmed which variant runs; when false only the default text is known. */
+  checked: boolean;
   text: string;
 }
 
@@ -59,17 +61,19 @@ export function BlockChipPanel({ target, declared, modelName, creatorId, onDecla
       const variants = winner ? await listVariants(winner.id) : [];
       let text = winner?.content ?? "";
       let variantLabel: string | null = null;
+      let checked = false;
       if (winner && modelName) {
         try {
           const res = await resolveBlocks(dispatch, { names: [name], model: modelName, creator: creatorId ?? undefined });
           const entry = res.report.find((r) => r.name === name);
           if (res.blocks[name]) text = res.blocks[name];
+          checked = !!entry;
           if (entry?.variant_id) variantLabel = variants.find((v) => v.id === entry.variant_id)?.label || "Variant";
         } catch {
           // The server check is optional here: the default text of the winning row stands.
         }
       }
-      setShown({ rows, winner, variants, variantLabel, text });
+      setShown({ rows, winner, variants, variantLabel, checked, text });
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not load the block");
@@ -132,7 +136,7 @@ export function BlockChipPanel({ target, declared, modelName, creatorId, onDecla
           {shown?.winner && <Badge data-testid="prompt-block-panel-level">{BLOCK_LANE_LABEL[laneOf(shown.winner, meId)]}</Badge>}
           {shown?.winner && (
             <Badge tone={shown.variantLabel ? "info" : "neutral"} data-testid="prompt-block-panel-variant">
-              {shown.variantLabel ?? "Default text"}
+              {shown.variantLabel ?? (shown.checked || shown.variants.length === 0 ? "Default text" : "Variant not checked")}
             </Badge>
           )}
         </div>
