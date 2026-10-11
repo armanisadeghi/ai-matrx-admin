@@ -10,7 +10,7 @@
  */
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Copy, RefreshCw } from "lucide-react";
+import { Check, Copy, RefreshCw } from "lucide-react";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { ProTextarea } from "@/components/official/ProTextarea";
@@ -38,6 +38,29 @@ interface ModelViewPanelProps {
   conversationId: string;
 }
 
+function CopyButton({ onCopy, disabled, children = "Copy" }: { onCopy: () => void; disabled?: boolean; children?: string }) {
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    if (!done) return;
+    const t = setTimeout(() => setDone(false), 1500);
+    return () => clearTimeout(t);
+  }, [done]);
+  return (
+    <Button
+      variant="quiet"
+      icon={done ? <Check /> : <Copy />}
+      disabled={disabled}
+      aria-live="polite"
+      onClick={() => {
+        onCopy();
+        setDone(true);
+      }}
+    >
+      {done ? "Copied" : children}
+    </Button>
+  );
+}
+
 export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps) {
   const dispatch = useAppDispatch();
   const store = useAppStore();
@@ -52,13 +75,16 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
   const [loading, setLoading] = useState(true);
   const [nonce, setNonce] = useState(0);
   const seq = useRef(0);
+  const loadedOnce = useRef(false);
 
   // Re-runs on every draft edit, variable edit and Refresh; the previous answer
   // stays on screen until the new one lands, so nothing jumps.
   useEffect(() => {
     const mine = ++seq.current;
     setLoading(true);
+    // The first answer is asked for at once; only later edits are debounced.
     const timer = setTimeout(() => {
+      loadedOnce.current = true;
       requestModelView(dispatch, store.getState() as never, conversationId, edits)
         .then((next) => {
           if (mine !== seq.current) return;
@@ -72,7 +98,7 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
         .finally(() => {
           if (mine === seq.current) setLoading(false);
         });
-    }, REFRESH_DELAY_MS);
+    }, loadedOnce.current ? REFRESH_DELAY_MS : 0);
     return () => clearTimeout(timer);
   }, [dispatch, store, conversationId, edits, draft, nonce]);
 
@@ -118,14 +144,7 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
           {preview?.model ?? ""}
         </span>
         <div className="flex shrink-0 items-center gap-1">
-          <Button
-            variant="quiet"
-            icon={<Copy />}
-            disabled={!preview}
-            onClick={() => preview && copy("All", fullModelText(preview))}
-          >
-            Copy all
-          </Button>
+          <CopyButton disabled={!preview} onCopy={() => preview && copy("All", fullModelText(preview))}>Copy all</CopyButton>
           <Button
             variant="quiet"
             icon={<RefreshCw className={loading ? "animate-spin" : undefined} />}
@@ -206,13 +225,7 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
               <span className="text-[11px] text-muted-foreground">
                 {platformLabel(part.kind)}
               </span>
-              <Button
-                variant="quiet"
-                icon={<Copy />}
-                onClick={() => copy(platformLabel(part.kind), part.text)}
-              >
-                Copy
-              </Button>
+              <CopyButton onCopy={() => copy(platformLabel(part.kind), part.text)} />
             </div>
             <Mono text={part.text} values={[]} platform />
           </div>
@@ -239,9 +252,7 @@ function Block({
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-xs font-semibold text-foreground">{title}</h3>
         {onCopy ? (
-          <Button variant="quiet" icon={<Copy />} onClick={onCopy}>
-            Copy
-          </Button>
+          <CopyButton onCopy={onCopy} />
         ) : null}
       </div>
       {children}
@@ -265,9 +276,7 @@ function MessageBlock({
         <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
           {String(message.role ?? "")}
         </span>
-        <Button variant="quiet" icon={<Copy />} onClick={() => onCopy(text)}>
-          Copy
-        </Button>
+        <CopyButton onCopy={() => onCopy(text)} />
       </div>
       <Mono text={text || "(empty)"} values={values} />
     </div>
