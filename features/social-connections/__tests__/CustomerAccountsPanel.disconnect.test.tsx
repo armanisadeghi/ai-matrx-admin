@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { CustomerAccountsPanel } from "../CustomerAccountsPanel";
-import { disconnectCustomerSocialAccount, discoverCustomerSocialAccount, loadCustomerSocialConnections, loadSocialConfigs, readCustomerSocialAccount, selectCustomerSocialAccount, type CustomerSocialConnection, type SocialProviderConfig } from "../customer-service";
+import { disconnectCustomerSocialAccount, discoverCustomerSocialAccount, loadCustomerSocialConnections, loadSocialConfigs, readCustomerSocialAccount, refreshCustomerSocialAccount, selectCustomerSocialAccount, type CustomerSocialConnection, type SocialProviderConfig } from "../customer-service";
 import { toast } from "@/lib/toast";
 
 jest.mock("../customer-service", () => ({
@@ -10,6 +10,7 @@ jest.mock("../customer-service", () => ({
   loadCustomerSocialConnections: jest.fn(),
   disconnectCustomerSocialAccount: jest.fn(),
   readCustomerSocialAccount: jest.fn(),
+  refreshCustomerSocialAccount: jest.fn(),
   discoverCustomerSocialAccount: jest.fn(),
   selectCustomerSocialAccount: jest.fn(),
 }));
@@ -31,6 +32,26 @@ describe("customer disconnect receipts", () => {
     jest.clearAllMocks();
     jest.mocked(loadSocialConfigs).mockResolvedValue([{ provider: "facebook", status: "available", scopes: [], accessMode: "internal_test" }]);
     jest.mocked(loadCustomerSocialConnections).mockResolvedValue([{ id: "customer-grant", provider: "facebook", status: "connected", accountName: "Customer Page", providerSubject: "subject", issuer: null }]);
+  });
+
+  it("checks Facebook access without claiming token renewal and reloads stored health", async () => {
+    jest.mocked(loadCustomerSocialConnections).mockResolvedValue([{ id: "customer-grant", provider: "facebook", status: "connected", accountName: "Customer Page", providerSubject: "subject", issuer: null, lastVerifiedAt: "2026-10-09T12:00:00Z", tokenExpiresAt: "2026-12-08T12:00:00Z" }]);
+    jest.mocked(refreshCustomerSocialAccount).mockResolvedValue({ refresh_supported: false });
+    const host = document.createElement("div"); document.body.append(host);
+    const root = createRoot(host);
+    try {
+      await act(async () => { root.render(<CustomerAccountsPanel organizationId="customer-org" providers={["facebook"]} />); });
+      expect(host.textContent).toContain("Last checked");
+      expect(host.textContent).toContain("Access expires");
+      expect(host.textContent).not.toContain("Renew access");
+      const button = Array.from(host.querySelectorAll("button")).find((element) => element.textContent === "Check access");
+      if (!button) throw new Error("Facebook access check missing");
+      await act(async () => { button.dispatchEvent(new MouseEvent("click", { bubbles: true })); });
+      expect(refreshCustomerSocialAccount).toHaveBeenCalledWith("facebook", "customer-org", "customer-grant");
+      expect(readCustomerSocialAccount).not.toHaveBeenCalled();
+      expect(loadCustomerSocialConnections).toHaveBeenCalledTimes(2);
+      expect(toast.error).not.toHaveBeenCalled();
+    } finally { await act(async () => { root.unmount(); }); host.remove(); }
   });
 
   it("keeps Connect available while saved accounts are still loading", async () => {

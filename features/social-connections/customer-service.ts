@@ -37,6 +37,9 @@ export interface CustomerSocialConnection {
   accountName: string | null;
   providerSubject: string | null;
   issuer: string | null;
+  lastVerifiedAt?: string | null;
+  tokenExpiresAt?: string | null;
+  lastError?: string | null;
 }
 
 export interface SocialIdentity {
@@ -73,6 +76,11 @@ function issuerFromMetadata(value: unknown): string | null {
     const url = new URL(value.issuer);
     return url.protocol === "https:" && url.pathname === "/" && !url.search && !url.hash ? url.origin : null;
   } catch { return null; }
+}
+
+function expiryFromMetadata(value: unknown): string | null {
+  if (!value || typeof value !== "object" || !("token_expires_at" in value) || typeof value.token_expires_at !== "string") return null;
+  return Number.isFinite(Date.parse(value.token_expires_at)) ? value.token_expires_at : null;
 }
 
 function errorMessage(value: unknown): string {
@@ -201,7 +209,7 @@ export async function loadCustomerSocialConnections(): Promise<
   const result = await supabase
     .schema("users")
     .from("integration_connections")
-    .select("id,provider,status,account_name,provider_subject,metadata")
+    .select("id,provider,status,account_name,provider_subject,metadata,last_verified_at,last_error")
     .eq("owner_type", "user")
     .eq("owner_user_id", user.id)
     .in("provider", [...CUSTOMER_SOCIAL_PROVIDERS])
@@ -218,6 +226,9 @@ export async function loadCustomerSocialConnections(): Promise<
             accountName: row.account_name,
             providerSubject: row.provider_subject,
             issuer: issuerFromMetadata(row.metadata),
+            lastVerifiedAt: row.last_verified_at,
+            tokenExpiresAt: expiryFromMetadata(row.metadata),
+            lastError: row.last_error,
           },
         ]
       : [],

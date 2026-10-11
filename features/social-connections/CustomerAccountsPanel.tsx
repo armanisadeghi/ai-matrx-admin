@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input, RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { toast } from "@/lib/toast";
+import { ErrorNotice } from "@ai-matrx/design-system";
 import {
   CUSTOMER_SOCIAL_PROVIDERS,
   type CustomerSocialConnection,
@@ -164,9 +165,10 @@ export function CustomerAccountsPanel({ organizationId, brandId, returnUrl = "/u
           <div className="flex flex-wrap items-center justify-between gap-2"><span>{connection.accountName ?? connection.providerSubject ?? "Connected account"}</span><div className="flex flex-wrap gap-1">
             <Button variant="outline" disabled={unavailable || action?.connectionId === connection.id} onClick={() => void run(connection, "read")}>Check</Button>
             <Button variant="outline" disabled={unavailable || action?.connectionId === connection.id} onClick={() => void run(connection, "discover")}>Discover</Button>
-            <Button variant="outline" disabled={unavailable || action?.connectionId === connection.id} onClick={() => void run(connection, "refresh")}>Renew access</Button>
+            <Button variant="outline" disabled={unavailable || action?.connectionId === connection.id} onClick={() => void run(connection, "refresh")}>{provider === "facebook" ? "Check access" : "Renew access"}</Button>
             <Button variant="outline" disabled={action?.connectionId === connection.id} onClick={() => void run(connection, "disconnect")} icon={<Unplug className="h-3.5 w-3.5" />}>Disconnect</Button>
           </div></div>
+          {(connection.lastVerifiedAt || connection.tokenExpiresAt) && <div className="text-xs text-muted-foreground">{connection.lastVerifiedAt && <span>Last checked {new Date(connection.lastVerifiedAt).toLocaleString()}</span>}{connection.lastVerifiedAt && connection.tokenExpiresAt && " · "}{connection.tokenExpiresAt && <span>Access expires {new Date(connection.tokenExpiresAt).toLocaleString()}</span>}</div>}
           {receipts[connection.id] && <div className="space-y-2 rounded-md border p-3" aria-label="Account result">
             <div className="font-medium">{receipts[connection.id].subject.display_name}</div>
             {receipts[connection.id].subject.email && <div>{receipts[connection.id].subject.email}</div>}
@@ -185,7 +187,7 @@ export function CustomerAccountsPanel({ organizationId, brandId, returnUrl = "/u
           </div>}
           {provider === "pinterest" && <PinterestDataPanel organizationId={organizationId} connectionId={connection.id} selectionVersion={receipts[connection.id]} />}
         </div>)}
-        {needsAttention.map((connection) => <div className="flex flex-wrap items-center justify-between gap-2 text-sm" key={connection.id}><span className="flex items-center gap-1.5"><AlertCircle className="h-4 w-4" />{connection.accountName ?? connection.providerSubject ?? "Account"} · {connection.status === "disconnected" ? "Disconnected" : "Reconnect required"}</span><div className="flex gap-1">{provider === "bluesky" && connection.status !== "disconnected" && <Button variant="outline" disabled={unavailable || action?.connectionId === connection.id} onClick={() => void run(connection, "read")}>Check</Button>}<Button disabled={unavailable || action?.connectionId === connection.id} onClick={() => connect(provider, provider === "mastodon" ? connection.issuer : undefined, ["linkedin", "bluesky", "facebook", "instagram", "threads"].includes(provider) ? connection.id : undefined)} icon={<Link2 className="h-3.5 w-3.5" />}>Reconnect</Button>{connection.status !== "disconnected" && <Button variant="outline" disabled={action?.connectionId === connection.id} onClick={() => void run(connection, "disconnect")}>Disconnect</Button>}</div></div>)}
+        {needsAttention.map((connection) => <div className="flex flex-wrap items-center justify-between gap-2 text-sm" key={connection.id}><span className="flex items-center gap-1.5"><AlertCircle className="h-4 w-4" />{connection.accountName ?? connection.providerSubject ?? "Account"} · {connection.status === "disconnected" ? "Disconnected" : "Reconnect required"}</span>{connection.lastError && <ErrorNotice size="inline" message={connection.lastError} />}<div className="flex gap-1">{provider === "bluesky" && connection.status !== "disconnected" && <Button variant="outline" disabled={unavailable || action?.connectionId === connection.id} onClick={() => void run(connection, "read")}>Check</Button>}<Button disabled={unavailable || action?.connectionId === connection.id} onClick={() => connect(provider, provider === "mastodon" ? connection.issuer : undefined, ["linkedin", "bluesky", "facebook", "instagram", "threads"].includes(provider) ? connection.id : undefined)} icon={<Link2 className="h-3.5 w-3.5" />}>Reconnect</Button>{connection.status !== "disconnected" && <Button variant="outline" disabled={action?.connectionId === connection.id} onClick={() => void run(connection, "disconnect")}>Disconnect</Button>}</div></div>)}
         {provider === "pinterest" && needsAttention.map((connection) => <PinterestDataPanel key={connection.id} organizationId={organizationId} connectionId={connection.id} selectionVersion={connection.status} />)}
         <Button disabled={unavailable} variant={accounts.length ? "outline" : "primary"} onClick={() => connect(provider as ConnectableProvider, provider === "mastodon" ? issuer : undefined)} icon={<Link2 className="h-3.5 w-3.5" />}>{accounts.length ? "Connect another" : "Connect"}</Button>
       </CardContent></Card>;
