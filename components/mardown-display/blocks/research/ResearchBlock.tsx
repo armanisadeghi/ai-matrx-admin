@@ -2,6 +2,8 @@
 
 // THE SHAPES COME FROM THE REGISTRY, via the parser that produces them —
 // this renderer never re-declares them (`check:kind-type-twins`).
+import { useBlockMakeReal } from "@/features/rich-content-host/block-make-real";
+import { NotebookPen } from "lucide-react";
 import { Button, Badge, Chip } from "@ai-matrx/design-system/controls";
 import type {
   ResearchFinding,
@@ -140,6 +142,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({
   const at = (viewport: string, container: string) => (inCanvas ? container : viewport);
   const blockContentRef = useRef<HTMLDivElement>(null);
   const [isPrinting, setIsPrinting] = useState(false);
+  const makeReal = useBlockMakeReal();
   const handlePrint = useCallback(async () => {
     if (!blockContentRef.current || isPrinting) return;
     setIsPrinting(true);
@@ -298,6 +301,13 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({
                     <div className="flex flex-wrap items-center gap-2">
                       <Button variant="quiet" icon={<ArrowUpRight />} onClick={handleOpenCanvas}>
                         <span>Canvas</span>
+                      </Button>
+                      <Button
+                        variant="quiet"
+                        icon={<NotebookPen />}
+                        onClick={() => makeReal.saveToNotes(research.title, research.rawContent)}
+                      >
+                        <span>Save to notes</span>
                       </Button>
                       <Button variant="quiet" icon={<Printer />} onClick={handlePrint}>
                         <span>Print</span>

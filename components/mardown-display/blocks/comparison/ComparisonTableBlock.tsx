@@ -1,5 +1,8 @@
 "use client";
 
+import { useBlockMakeReal } from "@/features/rich-content-host/block-make-real";
+import { NotebookPen } from "lucide-react";
+import { comparisonToMarkdown } from "@/features/rich-content-host/block-note-markdown";
 import { Button, Badge, Chip, ChipSet } from "@ai-matrx/design-system/controls";
 import type { KIND_KEY } from "@ai-matrx/content-ir";
 // THE SHAPES COME FROM THE REGISTRY (`pnpm shape:types`) — this file never
@@ -98,6 +101,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
   const [isFullScreen, setIsFullScreen] = useState(false);
   const blockContentRef = useRef<HTMLDivElement>(null);
   const [isPrinting, setIsPrinting] = useState(false);
+  const makeReal = useBlockMakeReal();
   const handlePrint = useCallback(async () => {
     if (!blockContentRef.current || isPrinting) return;
     setIsPrinting(true);
@@ -595,6 +599,11 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
 
                   {!isFullScreen && (
                     <div className="flex items-center gap-1 flex-shrink-0">
+                      <IconButton
+                        icon={NotebookPen}
+                        tooltip="Save to notes"
+                        onClick={() => makeReal.saveToNotes(comparison.title, comparisonToMarkdown(comparison))}
+                      />
                       <IconButton
                         icon={Printer}
                         tooltip={isPrinting ? "Saving…" : "Print / Save as PDF"}

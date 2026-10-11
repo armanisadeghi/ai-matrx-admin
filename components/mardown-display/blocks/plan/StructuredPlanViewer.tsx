@@ -1,7 +1,10 @@
 // StructuredPlanViewer.tsx
+import { useBlockMakeReal } from "@/features/rich-content-host/block-make-real";
+import { looksLikeContact } from "@/features/crm/agent-context/parseContactSelection";
+import { NotebookPen, Contact } from "lucide-react";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@ai-matrx/design-system";
@@ -31,6 +34,8 @@ const StructuredPlanViewer: React.FC<StructuredPlanViewerProps> = ({
   hideTitle = false,
   onCopySection = () => {}
 }) => {
+  const makeReal = useBlockMakeReal();
+  const isContact = useMemo(() => looksLikeContact(content), [content]);
   const { copyText } = useClipboard({
     notify: copyNotify,
   });
@@ -102,6 +107,26 @@ const StructuredPlanViewer: React.FC<StructuredPlanViewerProps> = ({
                     </>
                   )}
                 </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => makeReal.saveToNotes("Structured information", content)}
+                    className="h-7 text-xs flex items-center gap-1"
+                  >
+                    <NotebookPen className="h-3.5 w-3.5" /> Save to notes
+                  </Button>
+                  {isContact && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => makeReal.saveAsContact(content)}
+                      className="h-7 text-xs flex items-center gap-1"
+                    >
+                      <Contact className="h-3.5 w-3.5" /> Save as contact
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardTitle>
           )}
