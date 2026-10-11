@@ -1,3 +1,4 @@
+import type { MatrxDataTableContextMenuConfig } from "@ai-matrx/design-system/data-table";
 import type { ResourceType } from "@/utils/permissions/types";
 import type { ServiceResult } from "@/features/data-tables/types";
 import type { FileEntityType } from "./useFileFavorites";
@@ -21,3 +22,8 @@ export type FileKindAdapter<Row extends { id: string; user_id: string }> = {
   restore: (id: string) => Promise<Result<unknown>>;
   downloads: (id: string, name: string) => FileDownload[];
 };
+
+/** What a table hands its right-click menu resolver (the package does not export the name). */
+export type FileMenuPayload<Row> = Parameters<
+  NonNullable<MatrxDataTableContextMenuConfig<Row>["sections"]>
+>[0];

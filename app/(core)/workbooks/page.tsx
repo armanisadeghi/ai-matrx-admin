@@ -167,7 +167,7 @@ export default function WorkbooksLandingPage() {
     void reload();
   }, [reload]);
 
-  const { userId, starredIds, menuFor } = useFileItemActions(
+  const { userId, starredIds, menuFor, sectionsFor, dialogs } = useFileItemActions(
     WORKBOOK_ADAPTER,
     reload,
   );
@@ -602,6 +602,7 @@ export default function WorkbooksLandingPage() {
                 hideSearch={view === "table"}
               />
               <FileScopeBar scope={scope} onChange={setScope} />
+              {dialogs}
             </>
           ) : null}
 
@@ -651,6 +652,7 @@ export default function WorkbooksLandingPage() {
             <WorkbooksHubTable
               workbooks={visibleWorkbooks}
               menuFor={(wb) => menuFor(wb, scope === "trash")}
+                sectionsFor={(payload) => sectionsFor(payload, scope === "trash")}
             />
           )}
 

@@ -13,12 +13,17 @@
 // through `getRowHref` — both from the ONE registry entry, which screams when it has no route.
 
 import type { ReactNode } from "react";
-import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
+import {
+  MatrxDataTable,
+  type MatrxColumnDef,
+  type MatrxTableMenuSection,
+} from "@ai-matrx/design-system/data-table";
 import { Badge } from "@/components/ui/badge";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";
 import { formatAbsoluteDate, formatRelativeTime, toEpochMs } from "@/utils/datetime";
 import type { DocumentRow } from "@/features/data-tables/types";
+import type { FileMenuPayload } from "@/features/file-actions/types";
 import { documentSourceLabel } from "@/features/documents/utils/documentsHubDisplay";
 
 let warnedNoDocumentRoute = false;
@@ -110,9 +115,12 @@ function columnsFor(menuFor: (doc: DocumentRow) => ReactNode): MatrxColumnDef<Do
 export function DocumentsHubTable({
   documents,
   menuFor,
+  sectionsFor,
 }: {
   documents: DocumentRow[];
   menuFor: (doc: DocumentRow) => ReactNode;
+  /** The right-click menu of a row: the same actions as its ⋯ menu. */
+  sectionsFor?: (payload: FileMenuPayload<DocumentRow>) => MatrxTableMenuSection[];
 }) {
   return (
     <MatrxDataTable<DocumentRow>
@@ -124,6 +132,7 @@ export function DocumentsHubTable({
       getRowId={(doc) => doc.id}
       getRowHref={(doc) => documentHref(doc.id)}
       defaultSort={{ id: "updated", direction: "desc" }}
+      {...(sectionsFor ? { contextMenu: { sections: sectionsFor } } : {})}
     />
   );
 }
