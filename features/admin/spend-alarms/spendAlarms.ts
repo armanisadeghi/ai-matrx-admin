@@ -756,7 +756,7 @@ export function providerLabel(p: string): string {
 export function whose(r: Pick<SpendAlarmRecord, "subject_name" | "subject_type" | "refs" | "person" | "kind">): string {
   if (r.subject_type === "source") return r.subject_name ?? "Source (not found)";
   // A refusal's subject_name is "person · handler code"; the person is the answer.
-  if (r.kind === "protected_account_refusal") return r.person ?? r.subject_name?.split(" · ")[0] ?? "A protected account";
+  if (r.kind === "protected_account_refusal" && r.subject_type === "protected_account") return r.person ?? r.subject_name?.split(" · ")[0] ?? "A protected account";
   if (r.subject_name) return r.subject_name;
   if (r.refs.provider) return `${providerLabel(r.refs.provider)}${r.refs.operation ? ` ${r.refs.operation}` : ""}`;
   if (r.refs.mandate_key) return r.refs.mandate_key;
