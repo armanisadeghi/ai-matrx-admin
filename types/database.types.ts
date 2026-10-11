@@ -99034,6 +99034,16 @@ export type Database = {
         Args: { p_depth?: number; p_id: string; p_type: string }
         Returns: boolean
       }
+      home_labels: {
+        Args: { p_scope_ids: string[] }
+        Returns: {
+          is_general: boolean
+          name: string
+          organization_id: string
+          organization_name: string
+          scope_id: string
+        }[]
+      }
       home_scope_org: { Args: { p_scope: string }; Returns: string }
       is_client_channel: { Args: never; Returns: boolean }
       is_general_scope: {
@@ -99546,6 +99556,17 @@ export type Database = {
       my_favorite: {
         Args: { p_entity_id: string; p_entity_type: string }
         Returns: boolean
+      }
+      my_homes: {
+        Args: never
+        Returns: {
+          is_general: boolean
+          name: string
+          organization_id: string
+          organization_name: string
+          scope_id: string
+          scope_type: string
+        }[]
       }
       non_person_account_ids: { Args: never; Returns: string[] }
       normalize_decision_label: {
@@ -106893,10 +106914,6 @@ export type Database = {
         }
       }
       cx_code_history_upsert: { Args: { p_payload: Json }; Returns: Json }
-      cx_fork_conversation: {
-        Args: { p_at_position: number; p_conversation_id: string }
-        Returns: Json
-      }
       cx_message_edit: {
         Args: { p_message_id: string; p_new_content: Json }
         Returns: Database["chat"]["Tables"]["message"]["Row"]
