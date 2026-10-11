@@ -33,6 +33,38 @@ import { defaultTheme } from "@univerjs/themes";
 import { UniverSheetsCorePreset } from "@univerjs/preset-sheets-core";
 import sheetsCoreEnUS from "@univerjs/preset-sheets-core/locales/en-US";
 import "@univerjs/preset-sheets-core/lib/index.css";
+// Free Apache-2.0 add-ons: Google-Sheets-class basics. Their state lives in
+// the workbook snapshot (cells, resources), so autosave/history/collab carry it.
+import { UniverSheetsSortPreset } from "@univerjs/preset-sheets-sort";
+import sheetsSortEnUS from "@univerjs/preset-sheets-sort/locales/en-US";
+import "@univerjs/preset-sheets-sort/lib/index.css";
+import { UniverSheetsFilterPreset } from "@univerjs/preset-sheets-filter";
+import sheetsFilterEnUS from "@univerjs/preset-sheets-filter/locales/en-US";
+import "@univerjs/preset-sheets-filter/lib/index.css";
+import { UniverSheetsTablePreset } from "@univerjs/preset-sheets-table";
+import sheetsTableEnUS from "@univerjs/preset-sheets-table/locales/en-US";
+import "@univerjs/preset-sheets-table/lib/index.css";
+import { UniverSheetsDataValidationPreset } from "@univerjs/preset-sheets-data-validation";
+import sheetsDVEnUS from "@univerjs/preset-sheets-data-validation/locales/en-US";
+import "@univerjs/preset-sheets-data-validation/lib/index.css";
+import { UniverSheetsConditionalFormattingPreset } from "@univerjs/preset-sheets-conditional-formatting";
+import sheetsCFEnUS from "@univerjs/preset-sheets-conditional-formatting/locales/en-US";
+import "@univerjs/preset-sheets-conditional-formatting/lib/index.css";
+import { UniverSheetsFindReplacePreset } from "@univerjs/preset-sheets-find-replace";
+import sheetsFREnUS from "@univerjs/preset-sheets-find-replace/locales/en-US";
+import "@univerjs/preset-sheets-find-replace/lib/index.css";
+import { UniverSheetsHyperLinkPreset } from "@univerjs/preset-sheets-hyper-link";
+import sheetsLinkEnUS from "@univerjs/preset-sheets-hyper-link/locales/en-US";
+import "@univerjs/preset-sheets-hyper-link/lib/index.css";
+import { UniverSheetsDrawingPreset } from "@univerjs/preset-sheets-drawing";
+import sheetsDrawingEnUS from "@univerjs/preset-sheets-drawing/locales/en-US";
+import "@univerjs/preset-sheets-drawing/lib/index.css";
+import { UniverSheetsNotePreset } from "@univerjs/preset-sheets-note";
+import sheetsNoteEnUS from "@univerjs/preset-sheets-note/locales/en-US";
+import "@univerjs/preset-sheets-note/lib/index.css";
+import { UniverSheetsThreadCommentPreset } from "@univerjs/preset-sheets-thread-comment";
+import sheetsCommentEnUS from "@univerjs/preset-sheets-thread-comment/locales/en-US";
+import "@univerjs/preset-sheets-thread-comment/lib/index.css";
 
 import { supabase } from "@/utils/supabase/client";
 import { useThemeMode } from "@/styles/themes/useThemeMode";
@@ -227,7 +259,9 @@ export default function WorkbookEditor({
       try {
         const { univer, univerAPI } = createUniver({
           locale: LocaleType.EN_US,
-          locales: { [LocaleType.EN_US]: merge({}, sheetsCoreEnUS) },
+          locales: {
+            [LocaleType.EN_US]: merge({}, sheetsCoreEnUS, sheetsSortEnUS, sheetsFilterEnUS, sheetsTableEnUS, sheetsDVEnUS, sheetsCFEnUS, sheetsFREnUS, sheetsLinkEnUS, sheetsDrawingEnUS, sheetsNoteEnUS, sheetsCommentEnUS),
+          },
           theme: defaultTheme,
           darkMode: darkModeRef.current,
           presets: [
@@ -239,6 +273,16 @@ export default function WorkbookEditor({
               // phones and short laptop screens.
               ribbonType: "simple",
             }),
+            UniverSheetsSortPreset(),
+            UniverSheetsFilterPreset(),
+            UniverSheetsTablePreset(),
+            UniverSheetsDataValidationPreset(),
+            UniverSheetsConditionalFormattingPreset(),
+            UniverSheetsFindReplacePreset(),
+            UniverSheetsHyperLinkPreset(),
+            UniverSheetsDrawingPreset(),
+            UniverSheetsNotePreset(),
+            UniverSheetsThreadCommentPreset(),
           ],
         });
         if (cancelled) {

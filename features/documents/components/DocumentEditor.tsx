@@ -51,6 +51,12 @@ import {
   HoverManagerService,
 } from "@univerjs/preset-sheets-core";
 import "@univerjs/preset-docs-core/lib/index.css";
+import { UniverDocsHyperLinkPreset } from "@univerjs/preset-docs-hyper-link";
+import docsLinkEnUS from "@univerjs/preset-docs-hyper-link/locales/en-US";
+import "@univerjs/preset-docs-hyper-link/lib/index.css";
+import { UniverDocsDrawingPreset } from "@univerjs/preset-docs-drawing";
+import docsDrawingEnUS from "@univerjs/preset-docs-drawing/locales/en-US";
+import "@univerjs/preset-docs-drawing/lib/index.css";
 import { useRealtimeManager } from "@ai-matrx/realtime/react";
 
 import { supabase } from "@/utils/supabase/client";
@@ -300,7 +306,7 @@ export default function DocumentEditor({
         container.appendChild(host);
         const { univer, univerAPI } = createUniver({
           locale: LocaleType.EN_US,
-          locales: { [LocaleType.EN_US]: merge({}, docsCoreEnUS) },
+          locales: { [LocaleType.EN_US]: merge({}, docsCoreEnUS, docsLinkEnUS, docsDrawingEnUS) },
           theme: defaultTheme,
           darkMode: darkModeRef.current,
           presets: [
@@ -308,6 +314,8 @@ export default function DocumentEditor({
               container: host,
               ribbonType: "simple",
             }),
+            UniverDocsHyperLinkPreset(),
+            UniverDocsDrawingPreset(),
           ],
         });
         if (cancelled) {

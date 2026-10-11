@@ -96,6 +96,10 @@ jest.mock("@univerjs/core", () => ({
 jest.mock("@univerjs/themes", () => ({ defaultTheme: {} }));
 jest.mock("@univerjs/preset-docs-core", () => ({ UniverDocsCorePreset: () => ({}) }));
 jest.mock("@univerjs/preset-docs-core/locales/en-US", () => ({}));
+jest.mock("@univerjs/preset-docs-hyper-link", () => ({ UniverDocsHyperLinkPreset: () => ({}) }));
+jest.mock("@univerjs/preset-docs-hyper-link/locales/en-US", () => ({}));
+jest.mock("@univerjs/preset-docs-drawing", () => ({ UniverDocsDrawingPreset: () => ({}) }));
+jest.mock("@univerjs/preset-docs-drawing/locales/en-US", () => ({}));
 jest.mock("@univerjs/preset-sheets-core", () => ({ DragManagerService: class {}, HoverManagerService: class {} }));
 jest.mock("@ai-matrx/realtime/react", () => ({ useRealtimeManager: () => null, useChannel: () => undefined }));
 jest.mock("@ai-matrx/realtime", () => ({

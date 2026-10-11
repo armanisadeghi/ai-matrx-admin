@@ -13,7 +13,10 @@ describe("DocumentEditor Univer preset contract", () => {
     expect(source).not.toContain(
       'import "@univerjs/preset-sheets-core/lib/index.css";',
     );
-    expect(source).toContain("merge({}, docsCoreEnUS)");
+    expect(source).toContain("merge({}, docsCoreEnUS");
+    // Links and images are free Apache-2.0 add-ons on the same cohort.
+    expect(source).toContain("UniverDocsHyperLinkPreset()");
+    expect(source).toContain("UniverDocsDrawingPreset()");
   });
 
   it("states the page's own colours, not just Univer's chrome", () => {

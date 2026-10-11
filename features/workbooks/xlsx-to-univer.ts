@@ -3,8 +3,9 @@
  * shape suitable for `apiRef.createWorkbook(...)` and for persistence as the
  * initial snapshot of a new workbook.
  *
- * V1 scope: values + types only. No styling/formatting/formulas/merged-cells
- * round-trip. The lossless aspect is preserved separately by storing the
+ * Scope: values + types + formula source + merged ranges (the reader exposes
+ * nothing else a Univer sheet can hold: no column widths, row heights, frozen
+ * panes or cell styles — see FEATURE.md). The lossless aspect is preserved separately by storing the
  * original file id on `udt_workbooks.original_file_id` (P4-b wires that to
  * the universal file handler).
  *
@@ -92,12 +93,22 @@ function convertSheet(
   const rowCount = Math.max(range.e.r + 1, 100);
   const columnCount = Math.max(range.e.c + 1, 26);
 
+  const mergeData = ws.merges
+    .filter((m) => m.e.r > m.s.r || m.e.c > m.s.c)
+    .map((m) => ({
+      startRow: m.s.r,
+      endRow: m.e.r,
+      startColumn: m.s.c,
+      endColumn: m.e.c,
+    }));
+
   return {
     id,
     name: displayName.slice(0, 31), // Excel sheet-name max
     cellData,
-    rowCount,
-    columnCount,
+    rowCount: Math.max(rowCount, ...mergeData.map((m) => m.endRow + 1)),
+    columnCount: Math.max(columnCount, ...mergeData.map((m) => m.endColumn + 1)),
+    ...(mergeData.length ? { mergeData } : {}),
   };
 }
 
