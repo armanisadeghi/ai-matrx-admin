@@ -470,9 +470,9 @@ export function AccountDetail({ platform, profileId }: { platform: string; profi
           <span title={role === "own" ? "One of this brand's own accounts." : undefined}>
             <Badge>{`Tracked · ${TRACKED_ROLE_LABELS[role]}`}</Badge>
           </span>
-        ) : (
+        ) : canEdit ? (
           <Badge tone="warning">Not tracked</Badge>
-        )}
+        ) : null}
         <span className="ml-auto flex flex-wrap items-center gap-1">
           {!canEdit ? null : tracked.data ? (
             <>

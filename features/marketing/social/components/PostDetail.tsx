@@ -680,6 +680,7 @@ export function PostDetailBody({
               format={post.format}
               durationSeconds={post.duration_seconds === null ? null : Number(post.duration_seconds)}
               onRatio={setRatio}
+              canLoadMedia={canEdit}
             />
           </div>
           {actions}

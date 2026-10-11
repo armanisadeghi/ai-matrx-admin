@@ -82,6 +82,7 @@ import { useOpenPost } from "../useOpenPost";
 import { SaveToCollectionDialog } from "./SwipeDialogs";
 import { SocialPostCard } from "./SocialPostCard";
 import { useSocials } from "./SocialsContext";
+import { privateTrackingLine } from "../tracking-privacy";
 import { formatSocialHandle } from "@/features/marketing/lib/social-handle";
 
 interface FeedItem {
@@ -552,7 +553,7 @@ export function OutliersTab() {
   if (accounts.length === 0) {
     return (
       <div className="flex min-h-[40vh] flex-col items-center justify-center gap-2">
-        <p className="text-sm text-foreground">Track accounts first</p>
+        <p className="text-sm text-foreground">{canEdit ? "Track accounts first" : privateTrackingLine(brandName)}</p>
         {canEdit ? (
           <Button variant="primary" icon={<Plus />} onClick={openTrack}>
             Track account

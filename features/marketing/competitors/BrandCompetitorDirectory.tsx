@@ -105,7 +105,7 @@ function RowSocialActions({ row, brand }: { row: BrandCompetitor; brand: { id: s
   if (row.progress || !canEdit) return null;
   const busy = found?.status === "finding" || found?.status === "tracking";
   return (
-    <span className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+    <span className="contents" onClick={(e) => e.stopPropagation()}>
       {row.domain ? (
         <Button
           variant="outline"
@@ -594,7 +594,7 @@ export function BrandCompetitorDirectory() {
                     ))}
                   </div>
                 ) : (
-                  <span onClick={(e) => e.stopPropagation()}>
+                  <span className="inline-flex items-center" onClick={(e) => e.stopPropagation()}>
                     <RowSocialActions row={row} brand={{ id: brand.id, organizationId: brand.organizationId }} />
                   </span>
                 )}
@@ -629,7 +629,7 @@ export function BrandCompetitorDirectory() {
             emptyState={{
               icon: <Swords className="h-8 w-8 text-muted-foreground" />,
               title: rivals.emptyTitle,
-              description: rivals.emptyLine(brand.name),
+              description: canEdit ? rivals.emptyLine(brand.name) : undefined,
             }}
           />
         )}

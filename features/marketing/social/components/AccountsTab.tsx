@@ -77,6 +77,7 @@ import { PlatformMark } from "./PlatformMark";
 import { ConnectAccountMenu, useStartConnection } from "./ConnectAccountMenu";
 import { CONNECTION_RETURN_PARAMS, ManageConnectionsDialog } from "./ManageConnectionsDialog";
 import { useSocials } from "./SocialsContext";
+import { privateTrackingLine } from "../tracking-privacy";
 import { trackableOwn, useTrackOwn } from "./useTrackOwn";
 import { formatSocialHandle } from "@/features/marketing/lib/social-handle";
 import { fetchOutcomeText } from "./FetchLines";
@@ -480,7 +481,7 @@ export function AccountsTab() {
         // One badge says what matters most: tracking first, then a non-own role, then where the connection stands.
         cell: (r) => {
           if (busyRow === r.rowId && !r.trackedAccountId) return <span className="text-primary">{progress ?? "Tracking…"}</span>;
-          if (r.status === "not_tracked") return <Badge tone="warning">Not tracked</Badge>;
+          if (r.status === "not_tracked") return canEdit ? <Badge tone="warning">Not tracked</Badge> : <span title={privateTrackingLine(brand.name)}>—</span>;
           if (r.status !== "active") return r.status;
           if (r.role !== "own") return <Badge tone="neutral">{TRACKED_ROLE_LABELS[r.role]}</Badge>;
           const c = connectionOf(r);

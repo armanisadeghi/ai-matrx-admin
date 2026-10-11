@@ -64,6 +64,7 @@ export function PostMedia({
   durationSeconds,
   onRatio,
   fill,
+  canLoadMedia = true,
 }: {
   postId: string;
   organizationId: string;
@@ -79,6 +80,8 @@ export function PostMedia({
   onRatio?: (ratio: number) => void;
   /** The host sizes the box (a board tile): the frame fills it instead of following the media's ratio. */
   fill?: boolean;
+  /** The media list is the brand organization's own; a viewer outside it would be refused, so the request is not made. */
+  canLoadMedia?: boolean;
 }) {
   const client = useQueryClient();
   const embed = platform === "youtube";
@@ -88,7 +91,7 @@ export function PostMedia({
     queryKey: mediaKey,
     queryFn: ({ signal }) => listPostMedia(postId, { organizationId, signal }),
     staleTime: 60_000,
-    enabled: !embed,
+    enabled: !embed && canLoadMedia,
   });
 
   const [ratio, setRatioState] = useState(() => guessAspect(format, platform));

@@ -566,7 +566,7 @@ export function SwipeFileTab() {
             <EmptyState
               icon={<Bookmark className="h-5 w-5" />}
               title="Nothing saved"
-              line={live.length === 0 ? "Create a collection, or save a link" : "Save a link, or use the extension"}
+              line={!canEdit ? undefined : live.length === 0 ? "Create a collection, or save a link" : "Save a link, or use the extension"}
               action={
                 <div className="flex flex-wrap justify-center gap-2">
                   {brandScope === "brand" && otherCount > 0 ? (

@@ -231,7 +231,7 @@ export function BoardViewport({
       if (checked || items.length === 0) return;
       if (store.getSize().w <= 1) return settleSoon();
       checked = true;
-      if (store.getCamera() === applied && (!cameraShowsContent(applied, store.getSize(), items) || cameraIsUnreadable(applied, store.getSize()))) store.fitOpening();
+      if (store.getCamera() === applied && (!cameraShowsContent(applied, store.getSize(), items) || cameraIsUnreadable(applied, store.getSize()) || store.firstTileOutsideClearArea())) store.fitOpening();
     };
     const settleSoon = () => {
       if (settle) clearTimeout(settle);

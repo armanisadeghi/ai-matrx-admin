@@ -87,6 +87,7 @@ import {
 import { MetricChart } from "./MetricChart";
 import { PlatformMark } from "./PlatformMark";
 import { useSocials } from "./SocialsContext";
+import { privateTrackingLine } from "../tracking-privacy";
 import { brandAccountHref } from "../property-account-href";
 import { useTrackOwn } from "./useTrackOwn";
 import { OwnInsightsTable } from "./OwnInsightsTable";
@@ -348,7 +349,7 @@ export function KpisTab() {
       </div>
 
       {goalRows.length === 0 ? (
-        <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+        !canEdit ? null : <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
           <Target className="h-4 w-4" aria-hidden />
           No goals yet. Set a target to track.
         </p>
@@ -375,9 +376,11 @@ export function KpisTab() {
         own.length === 0 ? (
           <EmptyState
             icon={<Users className="h-5 w-5" />}
-            title="No own accounts tracked"
+            title={canEdit ? "No own accounts tracked" : privateTrackingLine(brandName)}
             line={
-              ownState.kind === "trackable"
+              !canEdit
+                ? undefined
+                : ownState.kind === "trackable"
                 ? `${untrackedOwn.length} own ${untrackedOwn.length === 1 ? "account is" : "accounts are"} not tracked yet`
                 : ownState.kind === "coming"
                   ? `${ownState.platforms.map(platformLabel).join(" and ")} tracking is coming; your ${ownState.platforms.length === 1 ? "account stays" : "accounts stay"} listed on Accounts`

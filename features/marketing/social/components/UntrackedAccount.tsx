@@ -92,7 +92,7 @@ export function UntrackedAccount({ platform, propertyId }: { platform: string; p
           {progress ?? [platformLabel(platform), labels.secondary ? handle : null].filter(Boolean).join(" · ")}
         </span>
       </div>
-      <Badge tone="warning">Not tracked</Badge>
+      {canEdit ? <Badge tone="warning">Not tracked</Badge> : null}
       <span className="ml-auto flex items-center gap-1">
         {!canEdit ? null : trackableOwn(row) ? (
           <Button

@@ -30,6 +30,7 @@ import { type WheelMode, WheelInterpreter } from "./wheel-input";
 import type { BoardTool } from "./tools";
 import { DEFAULT_SNAP_SETTINGS, type SnapSettings } from "./snap-preference";
 import type { SnapOverlay } from "./snapping";
+import { isFrameKey } from "./selection";
 
 type Listener = () => void;
 
@@ -95,8 +96,6 @@ export type TileLife = "live" | "frozen" | "discarded";
 export const PHONE_VIEW_WIDTH = 640;
 /** Below this zoom a tile's text is not readable on a phone; the first view opens on one tile instead. */
 export const PHONE_MIN_READABLE_Z = 0.5;
-/** The zoom the first tile opens at on a phone: just above the card threshold, so its real body shows. */
-export const PHONE_OPEN_Z = 0.7;
 /** On a phone a restored view under this zoom (a 27% fit-all saved at desktop width) is reopened on the first tile. */
 export const PHONE_UNREADABLE_Z = 0.4;
 
@@ -237,11 +236,34 @@ export class BoardCameraStore {
     if (!bounds) return;
     const all = this.fitClear(bounds, padding, 1);
     if (this.size.w >= PHONE_VIEW_WIDTH || all.z >= PHONE_MIN_READABLE_Z) return this.flyTo(all);
-    const first = [...rects].sort((a, b) => a.y - b.y || a.x - b.x)[0];
+    const first = this.firstTile() ?? [...rects].sort((a, b) => a.y - b.y || a.x - b.x)[0];
     const { top, right, left } = this.insets;
     const edge = 16;
-    const z = clampZoom(Math.max(PHONE_OPEN_Z, Math.min((this.size.w - left - right - edge * 2) / first.w, 1)));
+    // Fit the first tile to the width between the side insets: a tile wider than the view at PHONE_OPEN_Z would clip at the right edge.
+    const z = clampZoom(Math.min((this.size.w - left - right - edge * 2) / first.w, 1));
     this.flyTo({ z, x: left + edge - first.x * z, y: top + edge - first.y * z });
+  }
+
+  /** The first tile in reading order: frames (a label band over a group) and drawn marks are not tiles. */
+  private firstTile(): Rect | undefined {
+    const tiles: Rect[] = [];
+    for (const [id, r] of this.items) if (!this.marks.has(id) && !isFrameKey(id)) tiles.push(r);
+    return tiles.sort((a, b) => a.y - b.y || a.x - b.x)[0];
+  }
+
+  /**
+   * On a phone: the first tile (reading order) sits partly outside the clear area — under the floating chrome at the
+   * top or past a side inset — so the restored view is not a first view anyone chose. The caller reopens with `fitOpening`.
+   */
+  firstTileOutsideClearArea(): boolean {
+    if (this.size.w >= PHONE_VIEW_WIDTH) return false;
+    const first = this.firstTile();
+    if (!first) return false;
+    const { z, x, y } = this.camera;
+    const { top, right, left } = this.insets;
+    const sx = first.x * z + x;
+    const sy = first.y * z + y;
+    return sx < left - 1 || sx + first.w * z > this.size.w - right + 1 || sy < top - 1;
   }
 
   fitItem(id: string, padding = 40): void {
@@ -648,7 +670,7 @@ export class BoardCameraStore {
 
   /** Tile ids (frames excluded) in reading order: rows by top edge, then x. */
   readingOrder(): string[] {
-    const tiles = [...this.items.entries()].filter(([id]) => !id.startsWith("frame:") && !this.marks.has(id));
+    const tiles = [...this.items.entries()].filter(([id]) => !isFrameKey(id) && !this.marks.has(id));
     const ROW_SLOP = 80;
     tiles.sort(([, a], [, b]) => (Math.abs(a.y - b.y) <= ROW_SLOP ? a.x - b.x : a.y - b.y));
     return tiles.map(([id]) => id);
