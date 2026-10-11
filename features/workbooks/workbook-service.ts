@@ -27,6 +27,19 @@ import type {
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 // ─── workbooks ────────────────────────────────────────────────────────────────
 
+const WORKBOOK_SOURCE_LABELS: Record<string, string> = {
+  created: "Created",
+  imported_xlsx: "Imported Excel",
+  imported_gsheet: "Imported from Google Sheets",
+  imported_csv: "Imported CSV",
+  linked_gsheet: "Imported from Google Sheets",
+};
+
+/** Honest, human label for `udt_workbooks.source`. */
+export function workbookSourceLabel(source: string): string {
+  return WORKBOOK_SOURCE_LABELS[source] ?? source.replace(/_/g, " ");
+}
+
 export type CreateWorkbookArgs = {
   name: string;
   description?: string | null;
@@ -135,6 +148,27 @@ export async function renameWorkbook(
       .schema("workbench")
       .from("udt_workbooks")
       .update({ workbook_name: name, updated_at: new Date().toISOString() })
+      .eq("id", workbookId)
+      .select("*"),
+    { action: "update", noun: "workbook" },
+  );
+  if (error) return { success: false, error: error.message };
+  return { success: true, data: data as Workbook };
+}
+
+/**
+ * Move the workbook into a project (or out of one with `null`). Sibling of
+ * `renameWorkbook`: the one named setter for `project_id`.
+ */
+export async function moveWorkbook(
+  workbookId: string,
+  projectId: string | null,
+): Promise<ServiceResult<Workbook>> {
+  const { data, error } = await writeOneRow(
+    supabase
+      .schema("workbench")
+      .from("udt_workbooks")
+      .update({ project_id: projectId, updated_at: new Date().toISOString() })
       .eq("id", workbookId)
       .select("*"),
     { action: "update", noun: "workbook" },

@@ -2,9 +2,7 @@
 
 import { useEffect, useState, use } from "react";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { toast } from "@/lib/toast";
 
 import { Input } from "@ai-matrx/design-system/controls";
 import { supabase } from "@/utils/supabase/client";
@@ -19,9 +17,6 @@ import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceR
 import { createWorkbooksScope } from "@/features/surfaces/manifests/workbooks.manifest";
 import { readWorkbookScopeSource } from "@/features/workbooks/workbook-scope-source";
 import {
-  copyWorkbook,
-  deleteWorkbook,
-  restoreWorkbook,
   getWorkbook,
   renameWorkbook,
   updateWorkbookDescription,
@@ -50,7 +45,6 @@ export default function WorkbookPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const router = useRouter();
 
   const [workbook, setWorkbook] = useState<Workbook | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -164,33 +158,6 @@ export default function WorkbookPage({
       setWorkbook(res.data);
     },
   });
-
-  const makeCopy = async () => {
-    if (!workbook) return;
-    const res = await copyWorkbook(id, `Copy of ${workbook.workbook_name}`);
-    if (isServiceFailure(res)) {
-      toast.error("Could not copy this workbook", { description: res.error });
-      return;
-    }
-    toast.success("Copy created");
-    router.push(`/workbooks/${res.data.id}`);
-  };
-
-  const moveToTrash = async () => {
-    if (!workbook) return;
-    const res = await deleteWorkbook(id);
-    if (isServiceFailure(res)) {
-      toast.error("Could not move this workbook to trash", { description: res.error });
-      return;
-    }
-    toast.success(`Moved "${workbook.workbook_name}" to trash`, {
-      action: {
-        label: "Undo",
-        onClick: () => void restoreWorkbook(id).then(() => router.push(`/workbooks/${id}`)),
-      },
-    });
-    router.push("/workbooks");
-  };
 
   if (error) {
     return (
@@ -340,8 +307,10 @@ export default function WorkbookPage({
             workbookName={workbook.workbook_name}
             editable={canEdit}
             collab
-            onMakeCopy={makeCopy}
-            {...(isOwner ? { onTrash: moveToTrash } : {})}
+            record={workbook}
+            onProjectMoved={(projectId) =>
+              setWorkbook((w) => (w ? { ...w, project_id: projectId } : w))
+            }
           />
         ) : (
           <EditorBootSpinner />

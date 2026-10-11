@@ -35,7 +35,7 @@ export type CreateDocumentArgs = {
   name: string;
   description?: string | null;
   /** Origin label for the document itself, mirrors `udt_documents.source`. */
-  source?: "created" | "imported_docx" | "imported_md" | "imported_txt";
+  source?: "created" | "imported_docx" | "imported_md" | "imported_txt" | "linked_gdoc";
   organizationId: string;
   projectId?: string | null;
   taskId?: string | null;
@@ -159,6 +159,27 @@ export async function renameDocument(
       .schema("workbench")
       .from("udt_documents")
       .update({ document_name: name, updated_at: new Date().toISOString() })
+      .eq("id", documentId)
+      .select("*"),
+    { action: "update", noun: "document" },
+  );
+  if (error) return { success: false, error: error.message };
+  return { success: true, data: data as DocumentRow };
+}
+
+/**
+ * Move the document into a project (or out of one with `null`). Sibling of
+ * `renameDocument`: the one named setter for `project_id`.
+ */
+export async function moveDocument(
+  documentId: string,
+  projectId: string | null,
+): Promise<ServiceResult<DocumentRow>> {
+  const { data, error } = await writeOneRow(
+    supabase
+      .schema("workbench")
+      .from("udt_documents")
+      .update({ project_id: projectId, updated_at: new Date().toISOString() })
       .eq("id", documentId)
       .select("*"),
     { action: "update", noun: "document" },
