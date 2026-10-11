@@ -1245,6 +1245,24 @@ export const primaryNavItems: ShellNavItem[] = [
       },
       { label: "E-Signatures", href: "/esign", iconName: "FileSignature", guestHidden: true, group: "Write" },
       { label: "E-Sign Templates", href: "/esign/templates", iconName: "FileSignature", guestHidden: true, group: "Write" },
+      { label: "Notes Window", href: "/notes", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-notes-panel" },
+      // Creates a blank draft note / cloud document in place, then opens it.
+      { label: "New Note", href: "/notes", iconName: "Plus", action: "create-note" },
+      { label: "New Document", href: "/documents", iconName: "Plus", action: "create-document" },
+      { label: "Send for Signature", href: "/esign/new", iconName: "FileSignature", actionItem: true, guestHidden: true },
+    ],
+  },
+  {
+    // utilities: small free text and data tools — their own domain, not part of Content.
+    label: "Utilities",
+    href: "/markdown-studio",
+    iconName: "Wrench",
+    section: "primary",
+    profileMenu: false,
+    dashboard: false,
+    description: "Small text and data tools",
+    color: "orange",
+    children: [
       {
         label: "Markdown Studio",
         href: "/markdown-studio",
@@ -1253,7 +1271,6 @@ export const primaryNavItems: ShellNavItem[] = [
         color: "slate",
         profileMenu: true,
         dashboard: true,
-        group: "Utilities",
       },
       {
         label: "Data Truncator",
@@ -1263,7 +1280,6 @@ export const primaryNavItems: ShellNavItem[] = [
         color: "orange",
         profileMenu: true,
         dashboard: true,
-        group: "Utilities",
       },
       {
         label: "Character Counter",
@@ -1273,7 +1289,6 @@ export const primaryNavItems: ShellNavItem[] = [
         color: "orange",
         profileMenu: true,
         dashboard: true,
-        group: "Utilities",
       },
       {
         label: "UUID Generator",
@@ -1283,7 +1298,6 @@ export const primaryNavItems: ShellNavItem[] = [
         color: "orange",
         profileMenu: true,
         dashboard: true,
-        group: "Utilities",
       },
       {
         label: "Zip Code Heatmap",
@@ -1293,15 +1307,9 @@ export const primaryNavItems: ShellNavItem[] = [
         color: "orange",
         profileMenu: true,
         dashboard: true,
-        group: "Utilities",
       },
-      { label: "Notes Window", href: "/notes", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-notes-panel" },
       { label: "JSON Truncator Window", href: "/free/data-truncator", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-json-truncator-panel" },
       { label: "Character Counter Window", href: "/free/character-counter", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-character-counter-panel" },
-      // Creates a blank draft note / cloud document in place, then opens it.
-      { label: "New Note", href: "/notes", iconName: "Plus", action: "create-note" },
-      { label: "New Document", href: "/documents", iconName: "Plus", action: "create-document" },
-      { label: "Send for Signature", href: "/esign/new", iconName: "FileSignature", actionItem: true, guestHidden: true },
     ],
   },
   {

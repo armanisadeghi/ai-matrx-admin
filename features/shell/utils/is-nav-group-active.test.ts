@@ -80,7 +80,7 @@ describe("shell navigation route ownership", () => {
     expect(owner("/print/qr")).toBe("Publish");
     expect(owner("/legal/ca-wc/cases")).toBe("Industries");
     expect(owner("/free/games/tic-tac-toe")).toBe("Other");
-    expect(owner("/free/data-truncator")).toBe("Content");
+    expect(owner("/free/data-truncator")).toBe("Utilities");
   });
 
   // The corrected domain tree (Arman, 2026-10-04): each moved family lights

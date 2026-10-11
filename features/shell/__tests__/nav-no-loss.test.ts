@@ -261,6 +261,7 @@ const DOMAIN_ORDER = [
   "Knowledge",
   "Web",
   "Content",
+  "Utilities",
   "Data",
   "Files",
   "Media",
