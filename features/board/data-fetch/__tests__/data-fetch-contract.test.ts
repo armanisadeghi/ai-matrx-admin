@@ -5,6 +5,9 @@ import {
   consumeDataFetch,
   countChoices,
   estimateUsd,
+  getMoreCount,
+  parseSpec,
+  refusalOf,
   groupSources,
   matchSourceForUrl,
   parseCatalog,
@@ -165,5 +168,20 @@ describe("tile meta", () => {
     const second = provenanceOf({ ...result, rows_created: 10 }, req, first);
     expect(second.rows).toBe(35);
     expect(readDataFetchMeta(withDataFetchMeta({ other: "x" }, { fetched: second }))?.fetched?.rows).toBe(35);
+  });
+});
+
+describe("server deltas (aidream data_fetch FEATURE.md)", () => {
+  it("Get more quotes the FULL new count (overlap is re-billed), capped at the limit", () => {
+    expect(getMoreCount(25, 25, 500)).toBe(50);
+    expect(getMoreCount(480, 25, 500)).toBe(500);
+  });
+  it("reads a refusal's limit from details", () => {
+    const r = refusalOf({ code: "input_error", user_message: "Too many pages.", details: { limit: { setting: "knowledge.scraper.site_data_max_inputs_per_fetch", value: 10 } } });
+    expect(r.limit).toEqual({ setting: "knowledge.scraper.site_data_max_inputs_per_fetch", value: 10 });
+  });
+  it("parses the table's spec row", () => {
+    expect(parseSpec({ id: "j", source_key: "trustpilot_reviews", max_records: 25, status: "done", rows_created: 25, rows_updated: 0, finished_at: "2026-10-11T20:00:00Z" })).toMatchObject({ jobId: "j", maxRecords: 25 });
+    expect(parseSpec(null)).toBeNull();
   });
 });

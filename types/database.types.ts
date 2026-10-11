@@ -50092,6 +50092,7 @@ export type Database = {
       }
       _session_end_reason: { Args: { p_session: string }; Returns: string }
       _value_problem: { Args: { p_field: Json; p_v: Json }; Returns: string }
+      apply_record_signature: { Args: { p_envelope_id: string }; Returns: Json }
       attach_field_map: {
         Args: { p_envelope_id: string; p_fields: Json }
         Returns: number
@@ -50386,6 +50387,14 @@ export type Database = {
       }
       handoff_phone_open: {
         Args: { p_ip: unknown; p_secret: string; p_ua: string }
+        Returns: Json
+      }
+      link_record_signature: {
+        Args: {
+          p_envelope_id: string
+          p_field_key: string
+          p_render_id: string
+        }
         Returns: Json
       }
       materialize_draft: {
@@ -119568,6 +119577,120 @@ export type Database = {
   }
   scraper: {
     Tables: {
+      data_fetch_job: {
+        Row: {
+          billed_at: string | null
+          cost_usd: number | null
+          created_at: string
+          created_by: string | null
+          dataset_id: string
+          deleted_at: string | null
+          error: string | null
+          error_code: string | null
+          finished_at: string | null
+          id: string
+          inputs: Json
+          key_column: string | null
+          lease_until: string
+          max_records: number
+          metadata: Json
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          records_billed: number
+          result: Json | null
+          rows_created: number
+          rows_updated: number
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          snapshot_id: string | null
+          source_key: string
+          started_at: string | null
+          status: string
+          table_id: string | null
+          table_name: string | null
+          updated_at: string
+          updated_by: string | null
+          values_as_text: number
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          billed_at?: string | null
+          cost_usd?: number | null
+          created_at?: string
+          created_by?: string | null
+          dataset_id: string
+          deleted_at?: string | null
+          error?: string | null
+          error_code?: string | null
+          finished_at?: string | null
+          id?: string
+          inputs?: Json
+          key_column?: string | null
+          lease_until?: string
+          max_records: number
+          metadata?: Json
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          records_billed?: number
+          result?: Json | null
+          rows_created?: number
+          rows_updated?: number
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          snapshot_id?: string | null
+          source_key: string
+          started_at?: string | null
+          status?: string
+          table_id?: string | null
+          table_name?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          values_as_text?: number
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          billed_at?: string | null
+          cost_usd?: number | null
+          created_at?: string
+          created_by?: string | null
+          dataset_id?: string
+          deleted_at?: string | null
+          error?: string | null
+          error_code?: string | null
+          finished_at?: string | null
+          id?: string
+          inputs?: Json
+          key_column?: string | null
+          lease_until?: string
+          max_records?: number
+          metadata?: Json
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          records_billed?: number
+          result?: Json | null
+          rows_created?: number
+          rows_updated?: number
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          snapshot_id?: string | null
+          source_key?: string
+          started_at?: string | null
+          status?: string
+          table_id?: string | null
+          table_name?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          values_as_text?: number
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
       scrape_domain: {
         Row: {
           category: string | null

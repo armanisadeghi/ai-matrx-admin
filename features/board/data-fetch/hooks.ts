@@ -5,7 +5,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { settingDoorHref } from "@/features/settings/doors/settingDoorTarget";
 
-import { estimateUsd, type DataSource } from "./contract";
+import { createClient } from "@/utils/supabase/client";
+
+import { estimateUsd, parseSpec, type DataFetchSpec, type DataSource } from "./contract";
 import { getDataSources } from "./server";
 
 export const dataSourcesKey = (organizationId: string | null) => ["board", "data-sources", organizationId] as const;
@@ -33,4 +35,30 @@ export function useFetchEstimate() {
 export function limitSettingHref(organizationId: string | null, setting: string): string | null {
   if (!organizationId || !setting) return null;
   return settingDoorHref({ scope: "organization", organizationSlugOrId: organizationId, controlId: setting });
+}
+
+export const fetchSpecKey = (tableId: string) => ["board", "data-fetch-spec", tableId] as const;
+
+/**
+ * The table's refresh spec — the newest `scraper.data_fetch_job` row for it, read client-direct
+ * under RLS (aidream `services/data_fetch/FEATURE.md`). Null when the table was never fetched.
+ */
+export function useFetchSpec(tableId: string) {
+  return useQuery({
+    queryKey: fetchSpecKey(tableId),
+    queryFn: async (): Promise<DataFetchSpec | null> => {
+      const { data, error } = await createClient()
+        .schema("scraper")
+        .from("data_fetch_job")
+        .select("id,source_key,max_records,status,rows_created,rows_updated,finished_at")
+        .eq("table_id", tableId)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return parseSpec(data);
+    },
+    staleTime: 60 * 1000,
+  });
 }

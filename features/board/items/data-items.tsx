@@ -171,8 +171,8 @@ function AdoptTableName({ tableId, source, title, onSource }: { tableId: string 
 
 export function TableRecordBody({ id, tileId, source, title, onSource }: ItemBodyProps & { id: string }) {
   const mount = useUnifiedTable({ tableId: id, address: NO_ADDRESS });
-  // A table made by "Get data" says where its rows came from, with Refresh and Get more.
-  const fetched = source.kind === "entity" ? readDataFetchMeta(source.meta)?.fetched : undefined;
+  // A table made by "Get data" (anywhere) says where its rows came from, with Refresh and Get more.
+  const fetched = (source.kind === "entity" ? readDataFetchMeta(source.meta)?.fetched : undefined) ?? null;
   return (
     <div className={mount.mountsTheTable ? "h-full min-h-0 overflow-y-auto px-2 pb-2 pt-1" : "h-full min-h-0 overflow-y-auto p-4"}>
       <UnifiedTableBody
@@ -180,7 +180,7 @@ export function TableRecordBody({ id, tileId, source, title, onSource }: ItemBod
         before={
           <>
             <AdoptTableName tableId={id} source={source} title={title} onSource={onSource} />
-            {fetched && <FetchedSourceBar tileId={tileId} tableId={id} source={source} fetched={fetched} onSource={onSource} />}
+            <FetchedSourceBar tileId={tileId} tableId={id} source={source} fetched={fetched} onSource={onSource} />
           </>
         }
       />

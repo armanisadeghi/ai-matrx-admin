@@ -184,11 +184,49 @@ export function readEvent(evt: unknown): DataFetchEvent {
 }
 
 export function refusalOf(d: Record<string, unknown>): DataFetchRefusal {
+  const details = d.details && typeof d.details === "object" ? (d.details as Record<string, unknown>) : {};
   return new DataFetchRefusal(
-    str(d.code) ?? str(d.error_type) ?? "data_fetch_failed",
-    str(d.user_message) ?? str(d.message) ?? "The data could not be fetched.",
-    limitOf(d.limit),
+    str(d.code) ?? str(details.code) ?? str(d.error_type) ?? "data_fetch_failed",
+    str(d.user_message) ?? str(details.user_message) ?? str(d.message) ?? "The data could not be fetched.",
+    limitOf(d.limit) ?? limitOf(details.limit),
   );
+}
+
+/** A table's refresh spec: the newest `scraper.data_fetch_job` row for it (read client-direct). */
+export interface DataFetchSpec {
+  jobId: string;
+  sourceKey: string;
+  maxRecords: number;
+  status: string;
+  rowsCreated: number;
+  rowsUpdated: number;
+  finishedAt: string | null;
+}
+
+export function parseSpec(row: unknown): DataFetchSpec | null {
+  if (!row || typeof row !== "object") return null;
+  const r = row as Record<string, unknown>;
+  const jobId = str(r.id);
+  const sourceKey = str(r.source_key);
+  if (!jobId || !sourceKey) return null;
+  return {
+    jobId,
+    sourceKey,
+    maxRecords: num(r.max_records) ?? 0,
+    status: str(r.status) ?? "",
+    rowsCreated: num(r.rows_created) ?? 0,
+    rowsUpdated: num(r.rows_updated) ?? 0,
+    finishedAt: str(r.finished_at),
+  };
+}
+
+/**
+ * "Get more" asks for the SAME spec with a larger `max_records` (the server re-fetches from the top
+ * and bills every record it returns — overlap included), so the quote is the FULL new count. Capped
+ * at the organization limit (the server lowers anything above it).
+ */
+export function getMoreCount(currentMax: number, step: number, limit: number | null | undefined): number {
+  return capCount(Math.max(1, currentMax) + Math.max(1, step), limit);
 }
 
 /** Drain a stream: progress to `onProgress`; the result returned; a refusal thrown after the end. */
