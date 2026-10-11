@@ -27,6 +27,9 @@ import { useOpenArtifactInCanvas } from "@/features/canvas/hooks/useOpenArtifact
 import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
 import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-registry";
 import { IconButton } from "@ai-matrx/design-system";
+import { ShoppingCart } from "lucide-react";
+import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
+import { recipeShoppingList } from "./recipe-shopping-list";
 import { useCanvasFit } from "@ai-matrx/rich-content/display/blocks/canvas-fit";
 import { Button } from "@ai-matrx/design-system/controls";
 
@@ -175,6 +178,12 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
   );
   const blockContentRef = useRef<HTMLDivElement>(null);
   const [isPrinting, setIsPrinting] = useState(false);
+  // The ingredients become a real shopping list (tasks), minus what is already ticked as on hand.
+  const [shoppingOpen, setShoppingOpen] = useState(false);
+  const shoppingTasks = useMemo(
+    () => recipeShoppingList(recipe.title, recipe.ingredients, checkedIngredients),
+    [recipe.title, recipe.ingredients, checkedIngredients],
+  );
   const handlePrint = useCallback(async () => {
     if (!blockContentRef.current || isPrinting) return;
     setIsPrinting(true);
@@ -301,6 +310,11 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
                   disabled={isPrinting}
                 />
                 <IconButton
+                  icon={ShoppingCart}
+                  tooltip="Shopping list to tasks"
+                  onClick={() => setShoppingOpen(true)}
+                />
+                <IconButton
                   icon={Minimize2}
                   tooltip="Exit cook mode"
                   onClick={() => setIsFullScreen(false)}
@@ -312,6 +326,12 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
 
           {/* Scrollable Content */}
           <div className={isFullScreen ? "flex-1 overflow-y-auto" : ""}>
+            <ImportTasksModal
+              isOpen={shoppingOpen}
+              onClose={() => setShoppingOpen(false)}
+              tasks={shoppingTasks}
+              checkboxState={{}}
+            />
             <div ref={blockContentRef} className="@container p-2 space-y-3">
               {/* Header Section */}
               <div className="bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-100 dark:from-orange-950/40 dark:via-amber-950/30 dark:to-yellow-950/40 rounded-xl p-2 border border-orange-200 dark:border-orange-800/50">
@@ -337,6 +357,11 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
                         tooltip={isPrinting ? "Saving…" : "Print / Save as PDF"}
                         onClick={handlePrint}
                         disabled={isPrinting}
+                      />
+                      <IconButton
+                        icon={ShoppingCart}
+                        tooltip="Shopping list to tasks"
+                        onClick={() => setShoppingOpen(true)}
                       />
                       <IconButton
                         icon={ExternalLink}

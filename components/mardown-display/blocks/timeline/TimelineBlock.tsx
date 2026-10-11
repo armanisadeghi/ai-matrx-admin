@@ -28,6 +28,10 @@ import type { MenuItem } from "@/components/official/AdvancedMenu";
 import { useCanvasPresentation } from "@ai-matrx/canvas/react";
 import { timelineAxis } from "@ai-matrx/rich-content/display/blocks/canvas-adaptive";
 import { Button, DisclosureHeader } from "@ai-matrx/design-system/controls";
+import { downloadFile } from "@ai-matrx/kit/download";
+import { toast } from "@/lib/toast";
+import { icsFileName } from "@/lib/calendar/eventLinks";
+import { timelineCalendarEvents, timelineIcs } from "./timeline-calendar";
 
 interface TimelinePeriod {
   period: string;
@@ -85,6 +89,20 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({
       setIsPrinting(false);
     }
   }, [timeline.title, isPrinting]);
+  // The dated events become one importable calendar file; vague dates are counted, never guessed.
+  const handleAddToCalendar = useCallback(() => {
+    const { events, skipped } = timelineCalendarEvents(timeline);
+    if (events.length === 0) {
+      toast.error("No event has an exact date, so there is nothing to add to a calendar.");
+      return;
+    }
+    downloadFile(icsFileName(timeline.title), timelineIcs(events), "text/calendar;charset=utf-8");
+    toast.success(
+      skipped > 0
+        ? `${events.length} events saved for your calendar; ${skipped} without an exact date were left out.`
+        : `${events.length} events saved for your calendar.`,
+    );
+  }, [timeline]);
   const [completedEvents, setCompletedEvents] = useState<Set<string>>(
     new Set(),
   );
@@ -303,6 +321,11 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({
               tooltip="Print / Save as PDF"
               onClick={handlePrint}
             />
+            <IconButton
+              icon={Calendar}
+              tooltip="Add to calendar"
+              onClick={handleAddToCalendar}
+            />
             <IconButton glyphTone="primary"
               icon={CheckSquare}
               tooltip="Import into Task Manager"
@@ -317,6 +340,14 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({
             iconColor: "text-slate-500",
             label: "Print / Save as PDF",
             action: handlePrint,
+            showToast: false,
+          } satisfies MenuItem,
+          {
+            key: "add-to-calendar",
+            icon: Calendar,
+            iconColor: "text-primary",
+            label: "Add to calendar",
+            action: handleAddToCalendar,
             showToast: false,
           } satisfies MenuItem,
           {
