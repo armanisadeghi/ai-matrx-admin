@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { HolderDraft } from "@/features/bindings/ScopeHolderBar";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
-import { SetCandidateDialog } from "./SetCandidateDialog";
+import { MandateSetCandidateDialog } from "./MandateSetCandidateDialog";
 import type { LiveCandidate } from "./api";
 import type { CandidateRungChoice } from "./target";
 
@@ -57,7 +57,7 @@ export function TryAsCandidateButton({
         {label}
       </Button>
       {open ? (
-        <SetCandidateDialog
+        <MandateSetCandidateDialog
           mandateKey={mandateKey}
           mandateName={mandateName}
           initialTarget={target}

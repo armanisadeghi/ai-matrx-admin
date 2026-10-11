@@ -57,7 +57,7 @@ import type {
 import { VerdictDetail } from "@/features/mandates/admin/impact-cells";
 import { useImpactAdvance } from "@/features/mandates/admin/impact-advance";
 import { useOpenImpactBatchWindow } from "@/features/overlays/openers/impactBatchWindow";
-import { SetCandidateDialog } from "@/features/mandates/candidate-dialog/SetCandidateDialog";
+import { MandateSetCandidateDialog } from "@/features/mandates/candidate-dialog/MandateSetCandidateDialog";
 import {
   rungOfImpactVerdict,
   targetOfImpactVerdict,
@@ -620,7 +620,7 @@ export function AgentUsagesEngine({ agentId, mode }: AgentUsagesEngineProps) {
         />
       </div>
 
-      {candidateVerdict ? <SetCandidateDialog
+      {candidateVerdict ? <MandateSetCandidateDialog
         mandateKey={storedMandateKey(candidateVerdict.mandate_key)}
         mandateName={mandateDisplayName(storedMandateKey(candidateVerdict.mandate_key), null)}
         initialTarget={targetOfImpactVerdict(candidateVerdict)} rung={rungOfImpactVerdict(candidateVerdict)}
