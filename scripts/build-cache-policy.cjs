@@ -8,8 +8,11 @@
 // the cache — fixed by THE BUILD-CACHE LAW (lib/deployment/build-identity.ts). Lab proof with a new
 // deployment id + commit on every build: warm compiles 74 s and 47 s. VERCEL PROOF (2026-10-11, demos):
 // cold build saved 3.8 GB in 17 s; the next build restored it in 14 s, compiled in 17.6 s, total
-// 2.0 min (was ~7). Main (slim) and admin turned on the same night.
-const BUILD_CACHE_PROFILES = new Set(["demos", "slim", "admin"]);
+// 2.0 min (was ~7). Admin was enabled the same night. Main (slim) is paused:
+// v0.4.3141 and v0.4.3142 OOM-killed the optimized compile with the restored
+// cache; v0.4.3143 compiled and served from a [no-cache] release on the same
+// 60 GB builder. Keep main cold until cache memory is measured and repaired.
+const BUILD_CACHE_PROFILES = new Set(["demos", "admin"]);
 // Minutes between saves. Restores happen every build; a save (pack + upload) only when the stored
 // cache is older than this, so most of ~50 daily releases skip the upload entirely.
 const BUILD_CACHE_SAVE_EVERY_MIN = 120;
