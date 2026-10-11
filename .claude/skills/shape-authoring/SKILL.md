@@ -111,14 +111,16 @@ Libraries:
 "date-fns"
 "lodash"
 "react-katex"
-"react-pdf"
+"react-pdf"          (PDFs from data: URIs or bytes only — never a URL)
 "xlsx"
 "three"
 "@react-three/fiber"
 
-Applets:
+Applets (page only — they do not run inside the sealed frame; do not use in shapes):
 "@/applets"
 "@ai-matrx/applets/react"
+
+Libraries load only when imported. `props_transform` cannot import them.
 </available_imports>
 
 <kit>
@@ -212,9 +214,9 @@ Platform image shortcuts: `c70e1694-9b84-4843-9999-cb5471478bb4` (idea → image
 </media>
 
 <links>
-- Plain `<a href="https://…" target="_blank" rel="noopener noreferrer">` for web, `mailto:` and
-  `tel:` links. Links that arrive inside `data` are allowed; `javascript:` and `data:` links are
-  made inert.
+- Plain `<a href="…">` for web (`https:`), `mailto:`, `tel:` and in-app paths (`/crm/…`). The
+  platform opens them in a new tab, inside the frame too. Links that arrive in `data` are fine;
+  `javascript:`, `data:` and `blob:` links are refused.
 </links>
 
 <frame_rules>
