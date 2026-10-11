@@ -1,6 +1,10 @@
 "use client";
 
 /**
+ * AUTOMATIONS-AIRTABLE (records 0.99.0): also "record updated" (a set of properties), "matches conditions" / "enters
+ * a view" (fires when a row comes to match), "button pressed"; Send email and Slack steps with {Property} tokens; a
+ * Test button that runs one automation now on a picked row; each run says its trigger and why a step failed.
+ *
  * N9 — Notion's database Automations, on the store's automation door (`@ai-matrx/records` 0.77.1
  * `automation.ts`; records FEATURE.md § "Automations on a table"). A trigger (page added, property edited
  * [to a value], form answered; a date arriving at a time of day, N days before or after; every day, week or month), an optional
@@ -9,9 +13,10 @@
  * Nothing here decides access: every call runs as the person and the store refuses in its own words.
  */
 import { useEffect, useState } from "react";
-import { History, Plus, RotateCcw, Trash2, X } from "lucide-react";
+import { FlaskConical, History, Plus, RotateCcw, Trash2, X } from "lucide-react";
 import { Button, Input, Switch } from "@ai-matrx/design-system/controls";
-import type { AutomationAction, AutomationItem, AutomationRun, AutomationSpec, AutomationTrigger, AutomationValue, AutomationWeekday } from "@ai-matrx/records";
+import { isButtonField } from "@ai-matrx/records";
+import type { AutomationAction, AutomationItem, AutomationRun, AutomationSpec, AutomationTrigger, AutomationValue, AutomationWeekday, ReadRow, SavedViewRow } from "@ai-matrx/records";
 import { useRecordsClient, type Field } from "@ai-matrx/records/react";
 
 import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
@@ -32,6 +37,8 @@ type Draft =
   | { kind: "edit"; whereField: string; whereIs: string; field: string; value: ValueKind; text: string; from: string }
   | { kind: "notify"; to: "author" | string; text: string }
   | { kind: "webhook"; url: string }
+  | { kind: "email"; to: "author" | "address" | string; address: string; subject: string; body: string }
+  | { kind: "slack"; url: string; text: string }
   | { kind: "agent"; prompt: string };
 
 function valueOf(kind: ValueKind, text: string, from: string): AutomationValue {
@@ -58,6 +65,15 @@ function toAction(d: Draft, tableId: string, titleField: string): AutomationActi
       return { do: "notify", to: d.to === "author" ? { author: true } : { field: d.to }, text: d.text };
     case "webhook":
       return { do: "webhook", url: d.url };
+    case "email":
+      return {
+        do: "email",
+        to: d.to === "author" ? { author: true } : d.to === "address" ? { address: d.address.trim() } : { field: d.to },
+        subject: d.subject,
+        body: d.body,
+      };
+    case "slack":
+      return { do: "slack", url: d.url.trim(), text: d.text };
     case "agent":
       return { do: "agent", prompt: d.prompt };
   }
@@ -92,6 +108,16 @@ function toDraft(a: AutomationAction, firstField: string): Draft {
       return { kind: "notify", to: "author" in a.to ? "author" : "field" in a.to ? a.to.field : "author", text: a.text };
     case "webhook":
       return { kind: "webhook", url: a.url };
+    case "email":
+      return {
+        kind: "email",
+        to: "author" in a.to ? "author" : "address" in a.to ? "address" : "field" in a.to ? a.to.field : "author",
+        address: "address" in a.to ? a.to.address : "",
+        subject: a.subject,
+        body: a.body,
+      };
+    case "slack":
+      return { kind: "slack", url: a.url, text: a.text };
     case "agent":
       return { kind: "agent", prompt: a.prompt };
   }
@@ -115,6 +141,12 @@ function describeTrigger(t: AutomationTrigger, fields: Field[]): string {
       return "Form answered";
     case "property_edited":
       return `${nameOf(fields, t.field)} edited${t.to !== undefined && t.to !== null && t.to !== "" ? ` to ${String(t.to)}` : ""}`;
+    case "record_updated":
+      return t.fields && t.fields.length > 0 ? `${t.fields.map((id) => nameOf(fields, id)).join(" or ")} updated` : "Page updated";
+    case "record_matches":
+      return t.view_id ? "Enters a view" : "Matches conditions";
+    case "button_pressed":
+      return `${nameOf(fields, t.field)} pressed`;
     case "date_arrives": {
       const n = t.offset_days ?? 0;
       const rel = n === 0 ? "on" : n < 0 ? `${-n}d before` : `${n}d after`;
@@ -131,7 +163,7 @@ function describeTrigger(t: AutomationTrigger, fields: Field[]): string {
 
 export function describeSpec(spec: AutomationSpec, fields: Field[]): string {
   const when = describeTrigger(spec.trigger, fields);
-  const does = spec.actions.map((a) => (a.do === "set" ? `set ${Object.keys(a.values).map((id) => nameOf(fields, id)).join(", ")}` : a.do === "add_row" ? "add page" : a.do === "edit_rows" ? "edit pages" : a.do === "notify" ? "notify" : a.do));
+  const does = spec.actions.map((a) => (a.do === "set" ? `set ${Object.keys(a.values).map((id) => nameOf(fields, id)).join(", ")}` : a.do === "add_row" ? "add page" : a.do === "edit_rows" ? "edit pages" : a.do === "notify" ? "notify" : a.do === "email" ? "email" : a.do === "slack" ? "Slack" : a.do));
   return `${when} → ${does.join(", ")}`;
 }
 
@@ -170,6 +202,88 @@ function ValueEditor({ fields, d, put, noCopy }: { fields: Field[]; d: { value: 
   );
 }
 
+/** What started a run, in the panel's words. */
+const RUN_TRIGGER: Record<string, string> = {
+  row_added: "Page added",
+  property_edited: "Edited",
+  form_answered: "Form",
+  record_updated: "Updated",
+  record_matches: "Matched",
+  button_pressed: "Button",
+  date_arrives: "Date",
+  schedule: "Schedule",
+  test: "Test",
+};
+
+/** The page's name: its first property, as the row holds it. */
+const rowName = (row: ReadRow, key: string | undefined) => {
+  const v = key ? (row.document as unknown as Record<string, unknown>)[key] : undefined;
+  return typeof v === "string" && v.trim() ? v : "Untitled";
+};
+
+/** TEST — Airtable's "Run test": pick a page, run the automation once now on it, show what each step did. */
+function TestRun({ automation, tableId, fields, onRan }: { automation: AutomationItem; tableId: string; fields: Field[]; onRan: () => void }) {
+  const client = useRecordsClient();
+  const scheduled = automation.spec.trigger.on === "schedule";
+  const [search, setSearch] = useState("");
+  const [rows, setRows] = useState<ReadRow[] | null>(null);
+  const [problem, setProblem] = useState<string | null>(null);
+  const [result, setResult] = useState<{ status: string; says: string | null; steps: Array<{ n: number; do: string; status: string; says: string }> } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const titleKey = fields[0]?.key;
+  useEffect(() => {
+    if (scheduled) return;
+    let live = true;
+    void client.listPage({ table_id: tableId as never, search: search.trim() || null, limit: 8 }).then((got) => {
+      if (!live) return;
+      if (got.ok) {
+        setRows(got.data.rows);
+        setProblem(null);
+      } else setProblem(got.error.message || "The pages could not be read.");
+    });
+    return () => {
+      live = false;
+    };
+  }, [client, tableId, search, scheduled]);
+  const run = async (recordId: string | null) => {
+    setBusy(true);
+    const got = await client.automationTest({ automation_id: automation.id, record_id: recordId as never });
+    setBusy(false);
+    if (!got.ok) return setProblem(got.error.message || "The test did not run.");
+    setResult({ status: got.data.status, says: got.data.says, steps: got.data.steps });
+    onRan();
+  };
+  return (
+    <div className="flex flex-col gap-1" data-testid="spaces-automation-test">
+      {scheduled ? (
+        <Button variant="outline" disabled={busy} onClick={() => void run(null)}>Run once now</Button>
+      ) : (
+        <>
+          <Input aria-label="Find a page" placeholder="Test on a page…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <div className="flex flex-wrap gap-1">
+            {(rows ?? []).map((r) => (
+              <Button key={r.id} variant="quiet" disabled={busy} onClick={() => void run(r.id)}>
+                {rowName(r, titleKey)}
+              </Button>
+            ))}
+          </div>
+        </>
+      )}
+      {problem ? <p className="type-secondary text-destructive">{problem}<ErrorAlchemyMenu error={problem} /></p> : null}
+      {result ? (
+        <div className="flex flex-col" data-run-status={result.status}>
+          <span className="type-secondary"><strong className="capitalize">{result.status}</strong>{result.says ? ` · ${result.says}` : ""}</span>
+          {result.steps.map((s) => (
+            <span key={s.n} className="type-secondary text-muted-foreground" data-step-status={s.status}>
+              {s.n}. {s.do} — {s.status}: {s.says}
+            </span>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function RunHistory({ automationId, limit }: { automationId: string; limit: number }) {
   const client = useRecordsClient();
   const [runs, setRuns] = useState<AutomationRun[] | null>(null);
@@ -194,7 +308,7 @@ function RunHistory({ automationId, limit }: { automationId: string; limit: numb
       {runs.map((r) => (
         <li key={r.run_id} className="flex flex-col" data-run-status={r.status}>
           <span className="type-secondary">
-            <strong className="capitalize">{r.status}</strong> · {new Date(r.at).toLocaleString()}
+            <strong className="capitalize">{r.status}</strong> · {RUN_TRIGGER[r.trigger?.on ?? ""] ?? r.trigger?.on ?? "Run"} · {new Date(r.at).toLocaleString()}
             {r.says ? ` · ${r.says}` : ""}
           </span>
           {r.steps.map((s) => (
@@ -216,6 +330,10 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
   const [problem, setProblem] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const [runsOf, setRunsOf] = useState<string | null>(null);
+  const [testOf, setTestOf] = useState<string | null>(null);
+  const [watch, setWatch] = useState<string[]>([]);
+  const [viewId, setViewId] = useState<string | null>(null);
+  const [views, setViews] = useState<SavedViewRow[]>([]);
   const [editing, setEditing] = useState<{ id: string | null } | null>(null);
   const [name, setName] = useState("");
   const [on, setOn] = useState<TriggerOn>("row_added");
@@ -233,6 +351,7 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
   const [said, setSaid] = useState<string | null>(null);
   const firstField = fields[0]?.id ?? "";
   const dateFields = fields.filter(isDateField);
+  const buttonFields = fields.filter((f) => isButtonField(f as never));
   const timed = on === "schedule";
   const [epoch, setEpoch] = useState(0);
   const reread = () => setEpoch((n) => n + 1);
@@ -251,6 +370,16 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
     };
   }, [client, tableId, showArchived, epoch]);
 
+  useEffect(() => {
+    let live = true;
+    void client.views({ table_id: tableId as never }).then((got) => {
+      if (live && got.ok) setViews(got.data);
+    });
+    return () => {
+      live = false;
+    };
+  }, [client, tableId]);
+
   const put = (i: number, patch: Partial<Draft>) => setDrafts(drafts.map((x, j) => (j === i ? ({ ...x, ...patch } as Draft) : x)));
   const startNew = () => {
     setEditing({ id: null });
@@ -266,6 +395,8 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
     setMonthDay("1");
     setCondField(null);
     setCondIs("");
+    setWatch([]);
+    setViewId(null);
     setDrafts([]);
     setSaid(null);
   };
@@ -274,7 +405,9 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
     setEditing({ id: a.id });
     setName(a.spec.name);
     setOn(t.on);
-    setTrigField(t.on === "property_edited" || t.on === "date_arrives" ? t.field : firstField);
+    setTrigField(t.on === "property_edited" || t.on === "date_arrives" || t.on === "button_pressed" ? t.field : firstField);
+    setWatch(t.on === "record_updated" ? (t.fields ?? []) : []);
+    setViewId(t.on === "record_matches" ? (t.view_id ?? null) : null);
     setTrigTo(t.on === "property_edited" && t.to !== undefined && t.to !== null ? String(t.to) : "");
     const n = t.on === "date_arrives" ? (t.offset_days ?? 0) : 2;
     setDateWhen(n < 0 ? "before" : n > 0 ? "after" : "on");
@@ -296,6 +429,9 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
   };
   const triggerSpec = (): AutomationTrigger => {
     if (on === "property_edited") return { on, field: trigField, ...(trigTo ? { to: trigTo } : {}) };
+    if (on === "record_updated") return { on, fields: watch };
+    if (on === "record_matches") return viewId ? { on, view_id: viewId } : { on };
+    if (on === "button_pressed") return { on, field: trigField };
     if (on === "date_arrives") {
       const n = Math.abs(Math.trunc(Number(dateDays) || 0));
       return { on, field: trigField, offset_days: dateWhen === "before" ? -n : dateWhen === "after" ? n : 0, at };
@@ -308,6 +444,7 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
   const pickTrigger = (next: TriggerOn) => {
     setOn(next);
     if (next === "date_arrives") setTrigField(dateFields[0]?.id ?? "");
+    if (next === "button_pressed") setTrigField(buttonFields[0]?.id ?? "");
     if (next === "schedule") setDrafts(drafts.filter((d) => d.kind !== "set"));
   };
   const save = async () => {
@@ -321,7 +458,8 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
     if (!got.ok) return setSaid(got.error.message || "The automation was not saved.");
     if (!got.data.ok) return setSaid(Object.values(got.data._errors)[0] ?? "The automation was not saved.");
     setEditing(null);
-    setSaid(null);
+    // AI on a schedule is saved switched off: the store says so, and the switch on its row turns it on.
+    setSaid(got.data.ai_on_schedule ? (got.data.says ?? "Saved switched off.") : null);
     reread();
   };
 
@@ -338,6 +476,9 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
             <Pill on={on === "row_added"} onClick={() => pickTrigger("row_added")}>Page added</Pill>
             <Pill on={on === "property_edited"} onClick={() => pickTrigger("property_edited")}>Property edited</Pill>
             <Pill on={on === "form_answered"} onClick={() => pickTrigger("form_answered")}>Form answered</Pill>
+            <Pill on={on === "record_updated"} onClick={() => pickTrigger("record_updated")}>Page updated</Pill>
+            <Pill on={on === "record_matches"} onClick={() => pickTrigger("record_matches")}>Matches conditions</Pill>
+            <Pill on={on === "button_pressed"} onClick={() => pickTrigger("button_pressed")} disabledReason={buttonFields.length === 0 ? "Add a button property first" : undefined}>Button pressed</Pill>
             <Pill on={on === "date_arrives"} onClick={() => pickTrigger("date_arrives")} disabledReason={dateFields.length === 0 ? "Add a date property first" : undefined}>Date arrives</Pill>
             <Pill on={on === "schedule"} onClick={() => pickTrigger("schedule")}>Every…</Pill>
           </div>
@@ -369,6 +510,31 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
               <Input aria-label="Time" type="time" className="w-28" value={at} onChange={(e) => setAt(e.target.value)} />
             </div>
           ) : null}
+          {on === "record_updated" ? (
+            <div className="flex flex-wrap items-center gap-1" data-testid="spaces-automation-watch">
+              <Pill on={watch.length === 0} onClick={() => setWatch([])}>Any property</Pill>
+              {fields.map((f) => (
+                <Pill key={f.id} on={watch.includes(f.id)} onClick={() => setWatch(watch.includes(f.id) ? watch.filter((x) => x !== f.id) : [...watch, f.id])}>
+                  {f.label || f.key}
+                </Pill>
+              ))}
+            </div>
+          ) : null}
+          {on === "record_matches" ? (
+            <div className="flex flex-wrap items-center gap-1" data-testid="spaces-automation-match">
+              <Pill on={viewId === null} onClick={() => setViewId(null)}>Conditions below</Pill>
+              {views.map((v) => (
+                <Pill key={v.view_id} on={viewId === v.view_id} onClick={() => setViewId(v.view_id)}>
+                  Enters {v.name}
+                </Pill>
+              ))}
+            </div>
+          ) : null}
+          {on === "button_pressed" ? (
+            <div className="flex flex-wrap items-center gap-1">
+              <FieldPills fields={buttonFields} value={trigField} onPick={setTrigField} />
+            </div>
+          ) : null}
           {on === "property_edited" ? (
             <div className="flex flex-wrap items-center gap-1">
               <FieldPills fields={fields} value={trigField} onPick={setTrigField} />
@@ -379,7 +545,7 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
             <>
               <span className="type-secondary text-muted-foreground">Only if</span>
               <div className="flex flex-wrap items-center gap-1">
-                <Pill on={condField === null} onClick={() => setCondField(null)}>Always</Pill>
+                {on === "record_matches" && viewId === null ? null : <Pill on={condField === null} onClick={() => setCondField(null)}>Always</Pill>}
                 <FieldPills fields={fields} value={condField ?? ""} onPick={setCondField} />
                 {condField ? <Input aria-label="Condition value" placeholder="is" value={condIs} onChange={(e) => setCondIs(e.target.value)} /> : null}
               </div>
@@ -388,6 +554,7 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
           <span className="type-secondary text-muted-foreground">Do</span>
           {drafts.map((d, i) => (
             <div key={i} className="flex flex-wrap items-center gap-1" data-testid="spaces-automation-action">
+              <span className="type-secondary text-muted-foreground">{i + 1}.</span>
               {d.kind === "set" ? (
                 <>
                   <span className="type-secondary">Set</span>
@@ -428,6 +595,28 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
                 </>
               ) : d.kind === "webhook" ? (
                 <Input aria-label="Webhook address" placeholder="https://" value={d.url} onChange={(e) => put(i, { url: e.target.value })} />
+              ) : d.kind === "email" ? (
+                <>
+                  <span className="type-secondary">Email</span>
+                  <Pill on={d.to === "author" } onClick={() => put(i, { to: "author" })}>The author</Pill>
+                  <Pill on={d.to === "address"} onClick={() => put(i, { to: "address" })}>An address</Pill>
+                  {(timed ? [] : fields)
+                    .filter((f) => !isButtonField(f as never))
+                    .map((f) => (
+                      <Pill key={f.id} on={d.to === f.id} onClick={() => put(i, { to: f.id })}>
+                        {f.label}
+                      </Pill>
+                    ))}
+                  {d.to === "address" ? <Input aria-label="Email address" type="email" placeholder="name@company.com" value={d.address} onChange={(e) => put(i, { address: e.target.value })} /> : null}
+                  <Input aria-label="Email subject" placeholder="Subject, {Name} for a property" value={d.subject} onChange={(e) => put(i, { subject: e.target.value })} />
+                  <Input aria-label="Email message" placeholder="Message, {Name} for a property" value={d.body} onChange={(e) => put(i, { body: e.target.value })} />
+                </>
+              ) : d.kind === "slack" ? (
+                <>
+                  <span className="type-secondary">Slack</span>
+                  <Input aria-label="Slack webhook address" placeholder="https://hooks.slack.com/…" value={d.url} onChange={(e) => put(i, { url: e.target.value })} />
+                  <Input aria-label="Slack message" placeholder="Message, {Name} for a property" value={d.text} onChange={(e) => put(i, { text: e.target.value })} />
+                </>
               ) : (
                 <Input aria-label="Agent prompt" placeholder="Ask an agent" value={d.prompt} onChange={(e) => put(i, { prompt: e.target.value })} />
               )}
@@ -439,6 +628,8 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
             <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "add", title: "", dateField: "", inDays: "" }])}>Add page</Button>
             <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "edit", whereField: firstField, whereIs: "", field: firstField, value: "text", text: "", from: firstField }])}>Edit pages</Button>
             <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "notify", to: "author", text: "" }])}>Send notification</Button>
+            <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "email", to: "author", address: "", subject: "", body: "" }])}>Send email</Button>
+            <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "slack", url: "", text: "" }])}>Slack message</Button>
             <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "webhook", url: "" }])}>Webhook</Button>
             <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "agent", prompt: "" }])}>Agent</Button>
           </div>
@@ -469,11 +660,13 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
                 ) : (
                   <>
                     <Switch aria-label="Automation on" checked={a.enabled} onCheckedChange={(v: boolean) => void flip(client.automationSetEnabled({ automation_id: a.id, enabled: v }))} />
+                    <Button variant="quiet" icon={<FlaskConical size={14} />} aria-label="Test automation" onClick={() => setTestOf(testOf === a.id ? null : a.id)} />
                     <Button variant="quiet" icon={<History size={14} />} aria-label="Runs" onClick={() => setRunsOf(runsOf === a.id ? null : a.id)} />
                     <Button variant="quiet" icon={<Trash2 size={14} />} aria-label="Archive automation" onClick={() => void flip(client.automationArchive({ automation_id: a.id }))} />
                   </>
                 )}
               </div>
+              {testOf === a.id ? <TestRun automation={a} tableId={tableId} fields={fields} onRan={() => { setRunsOf(null); reread(); }} /> : null}
               {runsOf === a.id ? <RunHistory automationId={a.id} limit={runsShown} /> : null}
             </div>
           ))}
