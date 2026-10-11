@@ -49,8 +49,10 @@ import {
   edgeKitId,
   kitSourcesFromEdges,
   listKitScopes,
+  readArchivedKitScope,
   readKitScope,
   renameKitScope,
+  isKitSourceEdge,
   type KitSource,
 } from "./kitScope";
 
@@ -573,6 +575,37 @@ export async function listKits(): Promise<StudyKit[]> {
 export async function resolveKit(sourceId: string, sourceType?: string): Promise<StudyKit | null> {
   if (sourceType) return readKit(sourceType, sourceId);
   return (await readScopeKit(sourceId)) ?? (await readKit("file", sourceId));
+}
+
+/** A kit that was archived: what the kit page shows instead of the kit. */
+export interface ArchivedKit {
+  sourceType: typeof KIT_TOKEN;
+  sourceId: string;
+  title: string;
+  organizationId: string;
+  archivedAt: string | null;
+}
+
+/**
+ * The archived kit behind an id the live reads answered nothing for. A kit
+ * scope's own edges outlive its archive and name its organization; that
+ * organization's archive says whether the scope is a kit in it. Null when the
+ * id is no kit at all.
+ */
+export async function readArchivedKit(kitId: string): Promise<ArchivedKit | null> {
+  const result = await associationsService.listForEntity(KIT_TOKEN, kitId);
+  if (!result.ok) throw new Error("Could not read this study kit.");
+  const orgs = new Set<string>();
+  for (const edge of result.data.edges) {
+    if (edge.direction !== "incoming" || !edge.orgId) continue;
+    const kitEdge = isKitSourceEdge({ metadata: edge.metadata as Json, role: edge.role }) || (edge.role === "member" && metaBoolean(edge.metadata as Json, "educationKit"));
+    if (kitEdge) orgs.add(edge.orgId);
+  }
+  for (const orgId of orgs) {
+    const row = await readArchivedKitScope(kitId, orgId);
+    if (row) return { sourceType: KIT_TOKEN, sourceId: row.id, title: row.name, organizationId: row.organizationId, archivedAt: row.archivedAt };
+  }
+  return null;
 }
 
 /** The kit hub route for an anchor. A kit scope's id alone opens it. */

@@ -160,6 +160,27 @@ export async function readKitScope(kitId: string): Promise<KitScopeRow | null> {
   return { id: row.id, name: row.name?.trim() || "Study kit", organizationId: row.organization_id };
 }
 
+export interface ArchivedKitScopeRow extends KitScopeRow {
+  archivedAt: string | null;
+}
+
+/**
+ * An ARCHIVED kit scope in one organization (the live read, `readKitScope`,
+ * never answers for one). Null when the id is not an archived kit there.
+ */
+export async function readArchivedKitScope(kitId: string, orgId: string): Promise<ArchivedKitScopeRow | null> {
+  const types = await scopeDoors().types([orgId]);
+  if (!types.ok) throw new Error("Could not read this study kit.");
+  const kitTypes = types.data.types.filter((t) => sameSlug(t.slug, KIT_SCOPE_TYPE_SLUG) && t.organization_id === orgId);
+  for (const type of kitTypes) {
+    const res = await scopeDoors().archivedScopesOfType(orgId, type.id, new Set([kitId]));
+    if (!res.ok) throw new Error("Could not read this study kit.");
+    const row = res.data.find((r) => r.id === kitId);
+    if (row) return { id: row.id, name: row.name?.trim() || "Study kit", organizationId: orgId, archivedAt: row.archived_at };
+  }
+  return null;
+}
+
 export async function renameKitScope(kitId: string, name: string): Promise<void> {
   const res = await scopeDoors().updateScope(kitId, { name });
   if (!res.ok) throw new Error("Could not rename this study kit.");

@@ -6,6 +6,7 @@ const mockArchiveKitScope = jest.fn();
 const mockRestoreKitScope = jest.fn();
 const mockCreateKitScope = jest.fn();
 const mockListKitScopes = jest.fn();
+const mockReadArchivedKitScope = jest.fn();
 const mockEnsureOrg = jest.fn();
 jest.mock("@/lib/organizations/ensureOrgId", () => ({ ensureOrgId: (...a: unknown[]) => mockEnsureOrg(...a) }));
 
@@ -30,9 +31,10 @@ jest.mock("../kitScope", () => ({
   restoreKitScope: (...a: unknown[]) => mockRestoreKitScope(...a),
   createKitScope: (...a: unknown[]) => mockCreateKitScope(...a),
   listKitScopes: (...a: unknown[]) => mockListKitScopes(...a),
+  readArchivedKitScope: (...a: unknown[]) => mockReadArchivedKitScope(...a),
 }));
 
-import { archiveKit, kitHref, kitMembershipFingerprint, resolveKit, restoreKit } from "../kitService";
+import { archiveKit, kitHref, kitMembershipFingerprint, readArchivedKit, resolveKit, restoreKit } from "../kitService";
 
 const scopeEdges = {
   ok: true,
@@ -116,5 +118,35 @@ describe("archived kit scope visibility", () => {
     expect((await listKits()).some((k) => k.sourceId === "kit-1")).toBe(false);
     live.push({ id: "kit-1", name: "Bio", organizationId: "org" });
     expect((await listKits()).some((k) => k.sourceId === "kit-1")).toBe(true);
+  });
+});
+
+// 2026-10-10: an archived kit's page said "This material has no study kit grouping yet" to its
+// owner — the live read answers nothing for an archived scope, and nothing asked the archive.
+describe("readArchivedKit", () => {
+  const archivedEdges = {
+    ok: true,
+    data: {
+      edges: [
+        { id: "s1", direction: "incoming", role: null, otherType: "processed_document", otherId: "d1", label: null, orgId: "org-a", createdAt: "2026-10-08T00:00:00.000Z", metadata: { kitSource: true, title: "Mitosis" } },
+        { id: "m1", direction: "incoming", role: "member", otherType: "note", otherId: "n1", label: null, orgId: "org-a", createdAt: "2026-10-08T00:00:00.000Z", metadata: { educationKit: true, targetKind: "notes" } },
+      ],
+    },
+  };
+
+  it("names an archived kit scope (live read null) with its title and organization", async () => {
+    mockReadKitScope.mockResolvedValue(null);
+    mockListForEntity.mockImplementation(async (type: string) => (type === "scope" ? archivedEdges : { ok: true, data: { edges: [] } }));
+    mockReadArchivedKitScope.mockResolvedValue({ id: "kit-9", name: "Mitosis and Cell Division", organizationId: "org-a", archivedAt: "2026-10-08T07:20:59Z" });
+    expect(await resolveKit("kit-9")).toBeNull();
+    const archived = await readArchivedKit("kit-9");
+    expect(archived).toEqual({ sourceType: "scope", sourceId: "kit-9", title: "Mitosis and Cell Division", organizationId: "org-a", archivedAt: "2026-10-08T07:20:59Z" });
+    expect(mockReadArchivedKitScope).toHaveBeenCalledWith("kit-9", "org-a");
+  });
+
+  it("answers null for an id with no kit edges, without asking any archive", async () => {
+    mockListForEntity.mockResolvedValue({ ok: true, data: { edges: [] } });
+    expect(await readArchivedKit("file-1")).toBeNull();
+    expect(mockReadArchivedKitScope).not.toHaveBeenCalled();
   });
 });

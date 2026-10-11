@@ -52,6 +52,7 @@ import {
   kitHref,
   kitMembershipFingerprint,
   archiveKit,
+  readArchivedKit,
   readKit,
   resolveKit,
   restoreKit,
@@ -62,6 +63,7 @@ import {
   renameKit,
   type KitArtifactStats,
   type ManualKitSourceType,
+  type ArchivedKit,
   type StudyKit,
 } from "../kitService";
 import { MakeMoreFromKit, type AimedMakeMore } from "./MakeMoreFromKit";
@@ -306,6 +308,13 @@ export function KitHub({
   const statsKey = `education.kit_stats:${sourceTypeProp ?? "auto"}:${sourceId}`;
   const kitRead = useStoreRead<StudyKit | null>(kitKey, () => resolveKit(sourceId, sourceTypeProp));
   const kit = kitRead.data ?? null;
+  // An archived kit is no live kit: ask the archive before saying the id is no kit at all.
+  const archivedKey = `education.kit_archived:${sourceId}`;
+  const archivedRead = useStoreRead<ArchivedKit | null>(archivedKey, () => readArchivedKit(sourceId), {
+    enabled: kitRead.hasData && kit === null && (sourceTypeProp === undefined || sourceTypeProp === KIT_TOKEN),
+  });
+  const archived = kit === null ? (archivedRead.data ?? null) : null;
+  const [restoring, setRestoring] = useState(false);
   // An older kit that was promoted to its own record answers its old link with
   // that record — move the address to the kit's own.
   const movedTo = kit && (kit.sourceId !== sourceId || (sourceTypeProp !== undefined && kit.sourceType !== sourceTypeProp)) ? kitHref(kit.sourceType, kit.sourceId) : null;
@@ -489,7 +498,8 @@ export function KitHub({
       <EducationToolHeader title={title ?? "Study kit"} />
     );
 
-  if (loading) return withSurface(<KitLoading header={header(null)} />);
+  const archiveLoading = kitRead.hasData && kit === null && archivedRead.isLoading;
+  if (loading || archiveLoading) return withSurface(<KitLoading header={header(null)} />);
 
   if (loadError) {
     return withSurface(
@@ -509,6 +519,40 @@ export function KitHub({
             </div>
             <Button onClick={() => reload()}>
               Try again
+            </Button>
+          </div>
+        </KitBody>
+      </>
+    );
+  }
+
+  if (!kit && archived) {
+    const putBack = async () => {
+      setRestoring(true);
+      try {
+        await restoreKit(archived);
+        toast.success(`Put back "${archived.title}".`);
+        // The live kit first, so the page never passes through "no kit" on the way back.
+        await dispatchRead(refreshStoreRead(kitKey, () => resolveKit(sourceId, sourceTypeProp)));
+        await dispatchRead(refreshStoreRead(archivedKey, () => readArchivedKit(sourceId)));
+        reload();
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "It could not be put back.");
+      } finally {
+        setRestoring(false);
+      }
+    };
+    return withSurface(
+      <>
+        {header(archived.title)}
+        <KitBody narrow className="matrx-touch-targets">
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border p-10 text-center">
+            <Archive className="h-8 w-8 text-muted-foreground" />
+            <p className="type-body text-muted-foreground">
+              This study kit is archived.
+            </p>
+            <Button onClick={() => void putBack()} disabled={restoring}>
+              Restore kit
             </Button>
           </div>
         </KitBody>
