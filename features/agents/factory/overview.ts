@@ -27,7 +27,8 @@ export type DoorKey =
   | "masterwork"
   | "node_agent"
   | "people_mcp"
-  | "plan_room";
+  | "plan_room"
+  | "studio";
 
 export interface DoorInfo {
   key: DoorKey;
@@ -37,6 +38,10 @@ export interface DoorInfo {
   href: string | null;
   /** Mandate whose runs are this door's old builder, when attributable. */
   oldBuilderMandate: string | null;
+  /** True when the door always builds through the factory and has no knob (aidream `ALWAYS_PIPELINE_DOORS`). */
+  alwaysFactory?: boolean;
+  /** Not a door code of its own: builds go through this other door (System Builder → studio). */
+  via?: DoorKey;
 }
 
 /** The Generate page's old builder is the generator shortcut; its runs carry this mandate key. */
@@ -45,6 +50,13 @@ export const GENERATOR_SHORTCUT_MANDATE = "shortcut.agent_generator";
 export const HOLDER_DRAFT_MANDATE = "mandates.holder_draft";
 
 export const DOORS: readonly DoorInfo[] = [
+  {
+    key: "studio",
+    place: "Agent Studio",
+    href: "/agents/new/studio",
+    oldBuilderMandate: null,
+    alwaysFactory: true,
+  },
   {
     key: "generate",
     place: "Generate with AI page",
@@ -121,6 +133,20 @@ export const DOORS: readonly DoorInfo[] = [
 
 export const STRUCTURE_BUILDER_MANDATE = "agent_factory.structure_builder";
 
+/**
+ * Rows that are not a door code: System Builder plans several agents and builds each one through
+ * the Agent Studio door, so its builds are counted on the Agent Studio row.
+ */
+export const VIA_STUDIO_PLACES: readonly { id: string; place: string; href: string }[] = [
+  { id: "system_builder", place: "System Builder (builds through Agent Studio)", href: "/agents/system-builder" },
+];
+
+/** The human label of a door code; an unknown code reads as itself so nothing is hidden. */
+export function doorLabel(door: string | null | undefined): string {
+  if (!door) return "Admin page";
+  return DOORS.find((d) => d.key === door)?.place ?? door;
+}
+
 /** Request-metadata key the server stamps on every old-builder run it makes for a door (aidream `door_stamp`). */
 export const FACTORY_DOOR_METADATA = "factory_door";
 /**
@@ -145,6 +171,10 @@ export async function loadDoorBuilders(): Promise<Record<string, Builder>> {
   });
   const out: Record<string, Builder> = {};
   for (const door of DOORS) {
+    if (door.alwaysFactory) {
+      out[door.key] = "factory";
+      continue;
+    }
     const knob = knobs.find((k) => k.key === `door_${door.key}`);
     const value = knob?.effective_value;
     out[door.key] =

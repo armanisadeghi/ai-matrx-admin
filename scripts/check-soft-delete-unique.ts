@@ -121,7 +121,7 @@ interface LiveRow {
  * row's own base-contract `id` (db-rules §2) can never be held by a removed row, because an id is
  * minted once and never re-typed: `(id)` beside a text primary key (platform.retrofit_entity's
  * uuid identity, e.g. extend.wbx_demo) and `(id, organization_id)` (a composite FK target, e.g.
- * workbench.note_folders) are the two live shapes. This is the same reason the query already
+ * a retired notes table) are the two live shapes. This is the same reason the query already
  * excludes primary keys; it was narrower than that reason, and two identity indexes were reported
  * as the name-collision defect they cannot cause. Proven failing-then-passing by `--self-test`.
  */
@@ -223,8 +223,8 @@ const SELF_TEST = process.argv.includes("--self-test");
 function selfTest(): number {
   const fixtures: ReadonlyArray<readonly [string, readonly string[], boolean]> = [
     ["extend_wbx_demo_id_key (id) — retrofit_entity's uuid identity beside a text PK", ["id"], true],
-    ["note_folders_id_organization_unique (id, organization_id) — a composite FK target", ["id", "organization_id"], true],
-    ["note_folders_organization_created_by_name_unique — a NAME a person re-types", ["organization_id", "created_by", "name"], false],
+    ["notes_id_organization_unique (id, organization_id) — a composite FK target", ["id", "organization_id"], true],
+    ["a_organization_created_by_name_unique — a NAME a person re-types", ["organization_id", "created_by", "name"], false],
     ["unique_type_per_org (organization_id, key) — the 2026-09-11 proven defect", ["organization_id", "key"], false],
     ["an expression-only index (no key columns)", [], false],
   ];

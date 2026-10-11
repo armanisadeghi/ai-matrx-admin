@@ -73,6 +73,24 @@ list_any_dev_servers() {
                | awk '{print $1}' \
                | while read -r w; do ps -o pgid= -p "$w" 2>/dev/null; done \
                | tr -d ' ' | sort -u)
+  # A `next build` is not a dev server: its turbopack worker pool
+  # (`.next/build/chunks/pool_entry…`) listens on throwaway ports and matched the
+  # pattern above, so one production build anywhere on the box blocked
+  # `pnpm preview:start` for every agent. Drop any group holding a build process
+  # (`next-build` or a `.next/build/` worker) and no `next dev`.
+  local build_pgids
+  build_pgids=$(ps -Ao pgid=,command= 2>/dev/null \
+                 | awk '/(^|[ \/])next-build|\/\.next\/build\// { print $1 }' | sort -u)
+  local devcmd_pgids
+  devcmd_pgids=$(ps -Ao pgid=,command= 2>/dev/null \
+                 | awk '/next dev/ { print $1 }' | sort -u)
+  dev_pgids=$(printf '%s\n' "$dev_pgids" | while read -r g; do
+      [ -n "$g" ] || continue
+      if printf '%s\n' "$build_pgids" | grep -qx "$g" && ! printf '%s\n' "$devcmd_pgids" | grep -qx "$g"; then
+        continue
+      fi
+      echo "$g"
+    done)
   [ -z "$dev_pgids" ] && return 0
   lsof -nP -iTCP -sTCP:LISTEN 2>/dev/null \
     | awk '$1 ~ /node|next/ { print $2, $9 }' \

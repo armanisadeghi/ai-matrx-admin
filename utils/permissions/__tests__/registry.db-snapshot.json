@@ -160,7 +160,7 @@
     "owner_column": "created_by",
     "is_public_column": null,
     "display_label": "App",
-    "url_path_template": "/applets/manage/{id}",
+    "url_path_template": "/agent-apps/{id}",
     "rls_uses_has_permission": true,
     "is_active": true
   },
@@ -1965,17 +1965,6 @@
     "is_public_column": null,
     "display_label": "Note",
     "url_path_template": "/notes/{id}",
-    "rls_uses_has_permission": true,
-    "is_active": true
-  },
-  {
-    "resource_type": "note_folder",
-    "table_name": "note_folders",
-    "id_column": "id",
-    "owner_column": "created_by",
-    "is_public_column": null,
-    "display_label": "Note Folder",
-    "url_path_template": "/notes?folder={id}",
     "rls_uses_has_permission": true,
     "is_active": true
   },

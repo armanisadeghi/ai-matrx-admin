@@ -12,8 +12,8 @@ keeping `?source=`/`?from=`; constant `NEW_KIT_HREF` in `startRoutes.ts`); `/edu
 ## Architecture (the load-bearing split)
 
 ```
-Source input ─SourceSet─▶ POST /sources/resolve ─useIngest─▶ { text, title, anchor } ─useKitGeneration─▶ convertMany
-                          (server owns raw→text)                                      (converter owns text→artifact)
+Source input ─SourceSet─▶ POST /sources/resolve ─useIngest─▶ { text, title, kit } ─useKitGeneration─▶ education_kit_build (server run)
+                          (server owns raw→text)                                   (server makes AND saves every output)
 ```
 
 - Material enters ONLY through the unified Source input (`features/resource-manager/source-input`);
@@ -24,10 +24,7 @@ Source input ─SourceSet─▶ POST /sources/resolve ─useIngest─▶ { text,
   (storage failure degrades to no lineage, loudly). A Source the server left out or read raw is
   listed on the board (`meta.notes`).
 - `useIngest.ts` clamps to the `education.study_kit.max_source_chars` knob.
-- `useKitGeneration.ts` is a tab-bound run (`lib/wizard-draft/useTabBoundRun`) with a journal
-  (frozen request, anchor, kit name, outputs, section conversation ids): a reload continues by
-  itself (<=30 min, then one Continue), adopts outputs whose lineage edge landed, and reads
-  finished sections back (`convert/sectionJournal.ts`) instead of paying again.
+- **The server builds the outputs** (2026-10-11): `useKitGeneration.ts` reads, names and makes the kit, then starts ONE system-workflow run (`kitBuildService.ts` → aidream `education_kit_build`, subject `kit:<id>`) that makes, merges and saves every output into the kit; the tab only watches (board rows from the run's steps, floating window when left, `kits/components/KitBuildStatus.tsx` on the kit page for any device). Its tab-bound journal keeps the build id, so a reload rejoins the same build and a re-run adopts what already saved. The deck's audio overview is saved by the server too (`audio_overview_for_set`).
 - `kitTitle.ts` names the kit ONCE between ingest and fan-out; that value is every generator's
   `source.title`. Floor `humanizeSourceTitle`; on top the `education.kit_title` mandate (bounded
   20 s, a late answer still renames). Naming never blocks a kit.

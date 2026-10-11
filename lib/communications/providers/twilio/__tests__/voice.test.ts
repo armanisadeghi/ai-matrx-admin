@@ -129,7 +129,7 @@ describe("Twilio Voice provider adapter", () => {
       '<Parameter name="sessionReference" value="owner-beta-one-time-reference"/>',
     );
     expect(twiml).toContain(
-      'welcomeGreeting="Recording has started. How can I help you?"',
+      'welcomeGreeting="Recording has started. To request a transfer to a person, press zero at any time. How can I help you?"',
     );
     expect(twiml).not.toContain("Goodbye");
     expect(twiml).not.toContain("working correctly");

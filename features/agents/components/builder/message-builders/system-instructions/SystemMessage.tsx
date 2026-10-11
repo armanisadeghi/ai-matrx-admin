@@ -844,8 +844,10 @@ export function SystemMessage({
             </div>
           ) : isEditing ? (
             <EditableContextMenu
-              onInsertPromptBlock={blockEditing.insertFromMenu}
+              {...blockEditing.menuProps}
               sourceFeature="agent-builder"
+              menuDesign="global"
+              menuFeatureTitle="Prompt"
               surfaceName="matrx-user/agent-builder"
               contentSource={{ type: "raw" }}
               entity={{

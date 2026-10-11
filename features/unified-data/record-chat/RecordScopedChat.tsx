@@ -38,7 +38,7 @@ import { AgentConversationColumn } from "@ai-matrx/chat/agents/components/shared
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
 import { useComposerMode } from "@ai-matrx/chat/agents/components/inputs/smart-input/composer/useComposerMode";
 import { useCompactInputMaxHeight } from "@ai-matrx/chat/agents/components/inputs/smart-input/composer/useCompactInputMaxHeight";
-import { DEFAULT_NEW_CHAT_MANDATE_KEY } from "@ai-matrx/chat/agents/components/chat/chat-quick-actions.config";
+import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { createClient } from "@/utils/supabase/client";
 import { mayReadAsMember } from "@/features/organizations/organizationsIAmIn";
 import { cn } from "@/lib/utils";
@@ -96,7 +96,8 @@ export function RecordScopedChat({ ctx, organizationId, className }: RecordScope
     !organizationId ? true : membership && membership.organizationId === organizationId ? membership.isMember : null;
   const memberHere = member === true;
   /**
-   * THE MANDATE DOOR, NOT A UUID. `launchMandate` resolves who answers on the server
+   * THE MANDATE DOOR, NOT A UUID. The table page's side chat launches `data.table_chat` (the
+   * table's own expert), never General Chat. `launchMandate` resolves who answers on the server
    * (system default → organization binding → user binding), so a rebind changes the agent
    * with no client deploy. The imperative form is used deliberately: the managed form takes
    * an agent id positionally, and this panel has no agent to paint — the mandate has one.
@@ -114,7 +115,7 @@ export function RecordScopedChat({ ctx, organizationId, className }: RecordScope
     if (!memberHere || openedFor.current === ctx.surfaceKey) return;
     openedFor.current = ctx.surfaceKey;
     let cancelled = false;
-    void launchMandate(DEFAULT_NEW_CHAT_MANDATE_KEY, {
+    void launchMandate(MANDATE_KEYS.data__table_chat, {
       surfaceKey: ctx.surfaceKey,
       // A REGISTERED feature, never a new string: `SOURCE_FEATURES` is generated from the
       // database and this surface IS the chat, opened from a record.

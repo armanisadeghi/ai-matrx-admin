@@ -18,6 +18,7 @@ import { toast } from "@/lib/toast";
 import { claudeCodePrompt } from "./claude-code-prompt";
 import { readDraft, type ClaudeCodeDraft } from "./bring-over-api";
 import { BuildFromImport } from "./BuildFromImport";
+import { BringOverFrame } from "./BringOverFrame";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 export function WithClaudeCode() {
@@ -39,14 +40,11 @@ function PromptToCopy() {
     window.setTimeout(() => setCopied(false), 2000);
   };
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-5 p-4" data-testid="with-claude-code">
-      <header className="space-y-1">
-        <h1 className="text-xl font-semibold">Build it with Claude Code</h1>
-        <p className="text-sm text-muted-foreground">
-          Give this to Claude Code in the project where you do the work. It sends us what defines the job, and you
-          finish here.
-        </p>
-      </header>
+    <BringOverFrame title="Build it with Claude Code" testId="with-claude-code">
+      <p className="text-sm text-muted-foreground">
+        Give this to Claude Code in the project where you do the work. It sends us what defines the job, and you
+        finish here.
+      </p>
       <div className="space-y-1.5">
         <label className="text-sm font-medium" htmlFor="job">
           What should the agent do? (optional)
@@ -63,7 +61,7 @@ function PromptToCopy() {
         {copied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
         {copied ? "Copied" : "Copy the prompt"}
       </Button>
-    </div>
+    </BringOverFrame>
   );
 }
 
@@ -83,18 +81,17 @@ function DraftReview({ draftId }: { draftId: string }) {
 
   if (error) {
     return (
-      <p className="mx-auto max-w-2xl p-4 text-sm text-destructive" role="alert">
-        {error}<ErrorAlchemyMenu error={error} />
-      </p>
+      <BringOverFrame title="What Claude Code sent" testId="claude-code-draft-error">
+        <p className="text-sm text-destructive" role="alert">
+          {error}<ErrorAlchemyMenu error={error} />
+        </p>
+      </BringOverFrame>
     );
   }
   if (!draft) return <RegionSkeleton />;
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-5 p-4" data-testid="claude-code-draft">
-      <header className="space-y-1">
-        <h1 className="text-xl font-semibold">Here is what Claude Code sent</h1>
-        <p className="text-sm text-muted-foreground">Nothing is built yet. Check it, then build.</p>
-      </header>
+    <BringOverFrame title="What Claude Code sent" testId="claude-code-draft">
+      <p className="text-sm text-muted-foreground">Nothing is built yet. Check it, then build.</p>
       <section className="space-y-1">
         <h2 className="text-sm font-medium">The job</h2>
         <p className="whitespace-pre-wrap text-sm">{draft.task}</p>
@@ -114,6 +111,6 @@ function DraftReview({ draftId }: { draftId: string }) {
         </details>
       ))}
       <BuildFromImport source={{ draft_id: draft.draftId }} />
-    </div>
+    </BringOverFrame>
   );
 }

@@ -43546,6 +43546,72 @@ export type Database = {
         }
         Relationships: []
       }
+      note_folders: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          custom_fields: Json
+          deleted_at: string | null
+          id: string
+          metadata: Json
+          name: string
+          organization_id: string
+          parent_id: string | null
+          path: string
+          position: number | null
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          id?: string
+          metadata?: Json
+          name: string
+          organization_id: string
+          parent_id?: string | null
+          path?: string
+          position?: number | null
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          id?: string
+          metadata?: Json
+          name?: string
+          organization_id?: string
+          parent_id?: string | null
+          path?: string
+          position?: number | null
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
       pb_claim_appeals_fd31de: {
         Row: {
           claim_id: string
@@ -99034,6 +99100,16 @@ export type Database = {
         Args: { p_depth?: number; p_id: string; p_type: string }
         Returns: boolean
       }
+      home_labels: {
+        Args: { p_scope_ids: string[] }
+        Returns: {
+          is_general: boolean
+          name: string
+          organization_id: string
+          organization_name: string
+          scope_id: string
+        }[]
+      }
       home_scope_org: { Args: { p_scope: string }; Returns: string }
       is_client_channel: { Args: never; Returns: boolean }
       is_general_scope: {
@@ -99546,6 +99622,17 @@ export type Database = {
       my_favorite: {
         Args: { p_entity_id: string; p_entity_type: string }
         Returns: boolean
+      }
+      my_homes: {
+        Args: never
+        Returns: {
+          is_general: boolean
+          name: string
+          organization_id: string
+          organization_name: string
+          scope_id: string
+          scope_type: string
+        }[]
       }
       non_person_account_ids: { Args: never; Returns: string[] }
       normalize_decision_label: {
@@ -106893,10 +106980,6 @@ export type Database = {
         }
       }
       cx_code_history_upsert: { Args: { p_payload: Json }; Returns: Json }
-      cx_fork_conversation: {
-        Args: { p_at_position: number; p_conversation_id: string }
-        Returns: Json
-      }
       cx_message_edit: {
         Args: { p_message_id: string; p_new_content: Json }
         Returns: Database["chat"]["Tables"]["message"]["Row"]
@@ -108423,7 +108506,7 @@ export type Database = {
         Returns: {
           created_at: string
           created_by: string
-          folder_name: string
+          home_scope_id: string
           id: string
           label: string
           organization_id: string
@@ -143721,80 +143804,6 @@ export type Database = {
         }
         Relationships: []
       }
-      note_folders: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          custom_fields: Json
-          deleted_at: string | null
-          id: string
-          metadata: Json
-          name: string
-          organization_id: string
-          parent_id: string | null
-          path: string
-          position: number | null
-          published_to_web: boolean
-          published_to_web_at: string | null
-          published_to_web_by: string | null
-          shown_to: Database["platform"]["Enums"]["shown_to"] | null
-          updated_at: string
-          updated_by: string | null
-          version: number
-          visibility: Database["platform"]["Enums"]["visibility"]
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          custom_fields?: Json
-          deleted_at?: string | null
-          id?: string
-          metadata?: Json
-          name: string
-          organization_id: string
-          parent_id?: string | null
-          path?: string
-          position?: number | null
-          published_to_web?: boolean
-          published_to_web_at?: string | null
-          published_to_web_by?: string | null
-          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
-          updated_at?: string
-          updated_by?: string | null
-          version?: number
-          visibility?: Database["platform"]["Enums"]["visibility"]
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          custom_fields?: Json
-          deleted_at?: string | null
-          id?: string
-          metadata?: Json
-          name?: string
-          organization_id?: string
-          parent_id?: string | null
-          path?: string
-          position?: number | null
-          published_to_web?: boolean
-          published_to_web_at?: string | null
-          published_to_web_by?: string | null
-          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
-          updated_at?: string
-          updated_by?: string | null
-          version?: number
-          visibility?: Database["platform"]["Enums"]["visibility"]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "note_folders_parent_id_fkey"
-            columns: ["parent_id"]
-            isOneToOne: false
-            referencedRelation: "note_folders"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       notes: {
         Row: {
           content: string | null
@@ -143805,8 +143814,6 @@ export type Database = {
           custom_fields: Json
           deleted_at: string | null
           file_path: string | null
-          folder_id: string | null
-          folder_name: string | null
           home_scope_id: string
           id: string
           label: string
@@ -143837,8 +143844,6 @@ export type Database = {
           custom_fields?: Json
           deleted_at?: string | null
           file_path?: string | null
-          folder_id?: string | null
-          folder_name?: string | null
           home_scope_id?: string
           id?: string
           label?: string
@@ -143869,8 +143874,6 @@ export type Database = {
           custom_fields?: Json
           deleted_at?: string | null
           file_path?: string | null
-          folder_id?: string | null
-          folder_name?: string | null
           home_scope_id?: string
           id?: string
           label?: string
@@ -143892,15 +143895,7 @@ export type Database = {
           version?: number
           visibility?: Database["platform"]["Enums"]["visibility"]
         }
-        Relationships: [
-          {
-            foreignKeyName: "notes_folder_id_fkey"
-            columns: ["folder_id"]
-            isOneToOne: false
-            referencedRelation: "note_folders"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       product_capture_file: {
         Row: {
@@ -144582,17 +144577,6 @@ export type Database = {
       dataset_readable_by: {
         Args: { p_dataset_id: string; p_user: string }
         Returns: boolean
-      }
-      note_folder_counts: {
-        Args: { p_scope?: string }
-        Returns: {
-          folder_name: string
-          note_count: number
-        }[]
-      }
-      note_folder_get_or_create: {
-        Args: { p_name: string; p_organization_id: string }
-        Returns: string
       }
       older_table_moved_to: { Args: { p_id: string }; Returns: Json }
       udt_dataset_access: {

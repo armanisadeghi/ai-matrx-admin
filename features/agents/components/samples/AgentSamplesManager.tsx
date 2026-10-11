@@ -241,14 +241,14 @@ export function AgentSamplesManager({
         key={sample.id}
         className="overflow-hidden rounded-md border border-border bg-card"
       >
-        <div className="flex items-start gap-1 px-1 py-1 pr-1.5">
+        <div className="flex flex-wrap items-start gap-1 px-1 py-1 pr-1.5">
           {/* The whole identity line is the disclosure: a test case is routinely
               pages long, so it opens on purpose and never on arrival. */}
           <button
             type="button"
             onClick={() => setExpandedSampleId(expanded ? null : sample.id)}
             aria-expanded={expanded}
-            className="flex min-w-0 flex-1 items-start gap-1.5 rounded px-1 py-0.5 text-left transition-colors hover:bg-accent/40"
+            className="flex min-w-0 flex-1 basis-40 items-start gap-1.5 rounded px-1 py-0.5 text-left transition-colors hover:bg-accent/40"
           >
             {expanded ? (
               <ChevronDown className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
@@ -308,7 +308,7 @@ export function AgentSamplesManager({
               </span>
             </span>
           </button>
-          <div className="flex shrink-0 items-center gap-1 pt-0.5">
+          <div className="ml-auto flex shrink-0 items-center gap-1 pt-0.5">
             {onUseSample ? (
               <Button
                 variant="outline"
@@ -417,11 +417,11 @@ export function AgentSamplesManager({
       </section>
 
       <section className="space-y-2">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
           <h3 className="type-secondary font-semibold uppercase tracking-wide text-muted-foreground">
             Candidates
           </h3>
-          <div className="flex items-center gap-1">
+          <div className="flex flex-wrap items-center gap-1">
             <Button
               icon={<Plus />}
               variant="outline"
@@ -591,11 +591,11 @@ function BorrowFromRunsSection({
                 key={run.conversationId}
                 className="overflow-hidden rounded-md border border-border bg-card"
               >
-                <div className="flex items-start justify-between gap-1 px-1 py-1 pr-1.5">
+                <div className="flex flex-wrap items-start justify-between gap-1 px-1 py-1 pr-1.5">
                   <button
                     type="button"
                     aria-expanded={expanded}
-                    className="flex min-w-0 flex-1 items-start gap-1.5 rounded px-1 py-0.5 text-left transition-colors hover:bg-accent/40"
+                    className="flex min-w-0 flex-1 basis-40 items-start gap-1.5 rounded px-1 py-0.5 text-left transition-colors hover:bg-accent/40"
                     onClick={() => void toggleExpand(run)}
                   >
                     {expanded ? (
@@ -619,7 +619,7 @@ function BorrowFromRunsSection({
                       </span>
                     </span>
                   </button>
-                  <div className="flex shrink-0 items-center gap-1">
+                  <div className="ml-auto flex shrink-0 items-center gap-1">
                     <Button
                       icon={<ExternalLink />} aria-label="Open the full conversation"
                       variant="quiet"

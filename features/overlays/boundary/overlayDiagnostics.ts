@@ -26,12 +26,13 @@ import {
   collectDeploymentIds,
   getNextBuildId,
 } from "@/lib/deployment/browser-provenance";
+import { currentDeploymentId } from "@/lib/deployment/build-identity";
 
 export interface OverlayDiagnostics {
   deploy: {
     nodeEnv: string | undefined;
     nextBuildId: string | null;
-    /** The deployment id THIS build believes it is (NEXT_PUBLIC_DEPLOYMENT_ID). */
+    /** The deployment id THIS page was served by (root layout <meta>, lib/deployment/build-identity.ts). */
     configuredDeploymentId: string | null;
     /** Distinct `?dpl=` values seen across loaded <script> tags. */
     deploymentIdsOnPage: string[];
@@ -287,7 +288,7 @@ export function collectOverlayDiagnostics(
   reduxState: unknown,
 ): OverlayDiagnostics {
   const scripts = collectLoadedScripts();
-  const configuredDeploymentId = process.env.NEXT_PUBLIC_DEPLOYMENT_ID || null;
+  const configuredDeploymentId = currentDeploymentId();
   const { ids, someMissingDpl, mismatch, inconsistency } = collectDeploymentIds(
     scripts,
     configuredDeploymentId,

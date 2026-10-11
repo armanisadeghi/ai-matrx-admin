@@ -71,6 +71,7 @@ import { KitCoverageSection, KitMemberAddMore, KitOutlineCard } from "./KitOutli
 import { useKitOutline } from "../outline/useKitOutline";
 import { countsOf } from "../outline/coverage";
 import { KitSourcesPanel } from "./KitSourcesPanel";
+import { KitBuildStatus } from "./KitBuildStatus";
 import { AddSavedAidsDialog } from "./AddSavedAidsDialog";
 import { newKitHref } from "@/features/education/onboard/startRoutes";
 import { KIT_TOKEN } from "../kitScope";
@@ -864,6 +865,11 @@ export function KitHub({
             onFinished={() => reload()}
           />
         ) : null}
+        <KitBuildStatus
+          kitId={kit.sourceType === KIT_TOKEN ? kit.sourceId : null}
+          organizationId={kit.organizationId}
+          onSaved={reload}
+        />
         <KitSourcesPanel kit={kit} onChanged={reload} onMoved={(id) => router.replace(kitHref(KIT_TOKEN, id))} />
         <KitOutlineCard outline={outline} onMoved={(id) => router.replace(kitHref(KIT_TOKEN, id))} />
         {outline.coverage && outline.sections && outline.sections.length > 0 ? (

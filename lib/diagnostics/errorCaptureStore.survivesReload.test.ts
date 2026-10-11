@@ -116,14 +116,21 @@ describe("Error Inspector entries survive a reload", () => {
   });
 
   it("a row last seen on an earlier deployment is not restored on a newer one", () => {
-    const saved = process.env.NEXT_PUBLIC_DEPLOYMENT_ID;
+    // The page learns its deployment from the root layout's <meta> (lib/deployment/build-identity.ts).
+    const servedBy = (id: string) => {
+      document.querySelector('meta[name="matrx-deployment-id"]')?.remove();
+      const meta = document.createElement("meta");
+      meta.name = "matrx-deployment-id";
+      meta.content = id;
+      document.head.appendChild(meta);
+    };
     try {
-      process.env.NEXT_PUBLIC_DEPLOYMENT_ID = "dpl_old";
+      servedBy("dpl_old");
       const oldBuild = loadPage();
       oldBuild.captureError({ source: "supabase-postgrest", code: "PGRST202", message: "fixed since" });
       leavePage();
 
-      process.env.NEXT_PUBLIC_DEPLOYMENT_ID = "dpl_new";
+      servedBy("dpl_new");
       const newBuild = loadPage();
       expect(newBuild.getSnapshot()).toHaveLength(0);
       newBuild.captureError({ source: "supabase-postgrest", message: "still broken" });
@@ -132,8 +139,7 @@ describe("Error Inspector entries survive a reload", () => {
       const sameBuild = loadPage();
       expect(sameBuild.getSnapshot().map((e) => e.message)).toEqual(["still broken"]);
     } finally {
-      if (saved === undefined) delete process.env.NEXT_PUBLIC_DEPLOYMENT_ID;
-      else process.env.NEXT_PUBLIC_DEPLOYMENT_ID = saved;
+      document.querySelector('meta[name="matrx-deployment-id"]')?.remove();
     }
   });
 });

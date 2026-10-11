@@ -2,19 +2,25 @@
 //
 // Learn mode — Quizlet Learn parity. Every card climbs two stages in short
 // rounds: RECOGNIZE (multiple choice, the same questions Test builds via
-// buildQuizQuestions) then RECALL (type the answer, graded on meaning by the
-// same grader Write uses, gradeTypedSemantic, with the instant spelling match
-// standing until it lands). A card is mastered only by a correct typed
-// answer; a miss comes back later in the round, and a missed recall drops the
-// card back to multiple choice. Between rounds: the shared RoundComplete with
-// a stage bar. The stage machine is pure (data/learnQueue.ts); every answer is
-// recorded through useFlashcardStudy.grade — the one study write path.
+// buildQuizQuestions) then RECALL (type the answer). A typed answer that
+// matches after normalisation is correct instantly with no AI call; anything
+// else is graded on meaning (gradeTypedSemantic) IN THE BACKGROUND — the
+// learner never waits on it. Continuing before the verdict steps the machine
+// with the spelling grade, and the verdict is applied when it lands
+// (settleTypedVerdict) and shown on the round screen with "I was right".
+// A card is mastered only by a correct typed answer; a miss comes back later
+// in the round, and a missed recall drops the card back to multiple choice.
+// Both stages honor the learner's "Answer with" preference. The session is
+// completed only when every card is mastered. Every answer is recorded once,
+// with its final grade, through useFlashcardStudy.grade.
 //
 // React Compiler is on: no manual useMemo / useCallback / React.memo.
 
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { toast } from "@/lib/toast";
+import { studyService } from "@/features/education/study/service/studyService";
 import { useRouter } from "next/navigation";
 import {
   AlertCircle,
@@ -51,8 +57,8 @@ import {
   type QuizQuestion,
 } from "../../data/quiz/buildQuizQuestions";
 import { gradeTypedSemantic } from "../../data/gradeTypedSemantic";
-import { gradeTypedAnswer } from "../../utils/textSimilarity";
-import { studyFaces } from "../../utils/cardVariants";
+import { answersMatch, gradeTypedAnswer } from "../../utils/textSimilarity";
+import { orientedStudyFaces, type AnswerWith } from "../../utils/cardVariants";
 import {
   clampRoundSize,
   roundSizeChoices,
@@ -65,6 +71,7 @@ import {
   isAllMastered,
   isRoundOver,
   learnCounts,
+  settleTypedVerdict,
   startLearn,
   type LearnState,
 } from "../../data/learnQueue";
@@ -82,6 +89,27 @@ const EDU_BASE = "/education/flashcards";
 /** Cards per Learn round until the learner picks. */
 export const DEFAULT_LEARN_ROUND_SIZE = 10;
 const LEARN_ROUND_SIZE_SETTING = "userPreferences.flashcard.learnRoundSize";
+const ANSWER_WITH_SETTING = "userPreferences.flashcard.answerWith";
+
+type Verdict = { result: ReviewResult; reason: string | null };
+
+/** One typed answer: graded instantly, or checked on meaning in the background. */
+interface TypedCheck {
+  cardId: string;
+  round: number;
+  typed: string;
+  /** Chosen here so a late "I was right" can correct the recorded attempt. */
+  attemptId: string;
+  /** The spelling grade — what the stage machine uses if the learner moves on first. */
+  provisional: ReviewResult;
+  /** Null while the meaning check runs. */
+  verdict: Verdict | null;
+  /** The learner continued before the verdict landed. */
+  moved: boolean;
+  recorded: boolean;
+  /** The learner claimed it ("I was right") — a landing verdict is ignored. */
+  claimed: boolean;
+}
 
 function same(a: string, b: string): boolean {
   return a.trim().toLowerCase() === b.trim().toLowerCase();
@@ -91,9 +119,10 @@ function same(a: string, b: string): boolean {
 function freshRun(
   cards: CardWithDetails[],
   size: number,
+  answerWith: AnswerWith,
 ): { learn: LearnState; questions: Record<string, QuizQuestion> } {
   const questions: Record<string, QuizQuestion> = {};
-  for (const q of buildQuizQuestions(cards)) questions[q.cardId] = q;
+  for (const q of buildQuizQuestions(cards, cards, answerWith)) questions[q.cardId] = q;
   const typedOnly = new Set(
     cards.filter((c) => (questions[c.id]?.options.length ?? 0) < 2).map((c) => c.id),
   );
@@ -104,7 +133,34 @@ function freshRun(
 export function LearnSurface({ setId }: { setId: string }) {
   useFlashcardMandates(["gradeTypedAnswer"]);
   const router = useRouter();
-  const study = useFlashcardStudy({ setId, withSession: true, mode: "learn" });
+  const dispatch = useAppDispatch();
+  const coppa = useAiComplianceGate();
+  const [run, setRun] = useState<{
+    deckKey: string;
+    learn: LearnState;
+    questions: Record<string, QuizQuestion>;
+  } | null>(null);
+  // Typed answers by question key. The ref is the truth the background
+  // verdict reads after an await; the state mirrors it for render.
+  const checksRef = useRef<Record<string, TypedCheck>>({});
+  const [checks, setChecks] = useState<Record<string, TypedCheck>>({});
+
+  // Mastered and settled: a card awaiting its meaning check is not yet
+  // mastered for the session's completion.
+  const unsettled = Object.values(checks).filter(
+    (c) => c.moved && c.verdict === null && !c.claimed && c.provisional === "correct",
+  ).length;
+  const study = useFlashcardStudy({
+    setId,
+    withSession: true,
+    mode: "learn",
+    mastery: run
+      ? {
+          mastered: Math.max(0, learnCounts(run.learn).mastered - unsettled),
+          total: run.learn.order.length,
+        }
+      : { mastered: 0, total: 0 },
+  });
   const title = study.set?.name ?? "";
   const cards = study.cards;
   const deckSize = cards.length;
@@ -112,22 +168,19 @@ export function LearnSurface({ setId }: { setId: string }) {
   const [savedSize, setSavedSize] = useSetting<number>(LEARN_ROUND_SIZE_SETTING);
   const roundSize = clampRoundSize(savedSize, deckSize, DEFAULT_LEARN_ROUND_SIZE);
   const sizeChoices = roundSizeChoices(deckSize);
+  const [answerWithSetting] = useSetting<AnswerWith>(ANSWER_WITH_SETTING);
+  const answerWith: AnswerWith = answerWithSetting === "term" ? "term" : "definition";
 
   // The run is built once per loaded deck (render-time adjustment, no effect).
-  const deckKey = study.loading ? null : cards.map((c) => c.id).join(",");
-  const [run, setRun] = useState<{
-    deckKey: string;
-    learn: LearnState;
-    questions: Record<string, QuizQuestion>;
-  } | null>(null);
+  const deckKey = study.loading ? null : `${answerWith}|${cards.map((c) => c.id).join(",")}`;
   if (deckKey && cards.length > 0 && run?.deckKey !== deckKey) {
-    setRun({ deckKey, ...freshRun(cards, roundSize) });
+    setRun({ deckKey, ...freshRun(cards, roundSize, answerWith) });
   }
 
   const learn = run?.learn ?? null;
   const item = learn ? currentLearnItem(learn) : null;
   const card = item ? cards.find((c) => c.id === item.cardId) ?? null : null;
-  const faces = card ? studyFaces(card) : null;
+  const faces = card ? orientedStudyFaces(card, answerWith) : null;
   const question = item && run ? run.questions[item.cardId] ?? null : null;
   const roundOver = learn ? isRoundOver(learn) : false;
   const mastered = learn ? isAllMastered(learn) : false;
@@ -158,7 +211,11 @@ export function LearnSurface({ setId }: { setId: string }) {
     );
   };
   const restart = (): void => {
-    if (deckKey) setRun({ deckKey, ...freshRun(cards, roundSize) });
+    if (deckKey) setRun({ deckKey, ...freshRun(cards, roundSize, answerWith) });
+  };
+  const leave = (): void => {
+    study.endSession?.();
+    router.push(`${EDU_BASE}/${setId}`);
   };
 
   const record = (
@@ -166,12 +223,114 @@ export function LearnSurface({ setId }: { setId: string }) {
     result: ReviewResult,
     responseKind: "selected" | "typed",
     transcript: string,
+    attemptId?: string,
   ): void => {
     void study.grade(result, {
       cardId,
       responseKind,
       ...(transcript ? { responseTranscript: transcript } : {}),
+      ...(attemptId ? { attemptId } : {}),
     });
+  };
+
+  const patchCheck = (key: string, patch: Partial<TypedCheck>): TypedCheck | null => {
+    const prev = checksRef.current[key];
+    if (!prev) return null;
+    const next = { ...prev, ...patch };
+    checksRef.current = { ...checksRef.current, [key]: next };
+    setChecks(checksRef.current);
+    return next;
+  };
+  const settle = (c: TypedCheck, from: ReviewResult, to: ReviewResult): void => {
+    setRun((r) =>
+      r
+        ? {
+            ...r,
+            learn: settleTypedVerdict(r.learn, {
+              cardId: c.cardId,
+              round: c.round,
+              provisionalCorrect: from === "correct",
+              correct: to === "correct",
+            }),
+          }
+        : r,
+    );
+  };
+
+  /** Grade a typed answer: instant when it matches, else on meaning in the background. */
+  const submitTyped = (key: string, cardId: string, typed: string, front: string, back: string): void => {
+    if (checksRef.current[key] || !learn) return;
+    const blank = typed.trim() === "";
+    const instant: ReviewResult | null = blank
+      ? "incorrect"
+      : answersMatch(typed, back)
+        ? "correct"
+        : coppa.blocked
+          ? gradeTypedAnswer(typed, back)
+          : null;
+    const provisional = instant ?? gradeTypedAnswer(typed, back);
+    checksRef.current = {
+      ...checksRef.current,
+      [key]: {
+        cardId,
+        round: learn.round,
+        typed,
+        attemptId: crypto.randomUUID(),
+        provisional,
+        verdict: instant ? { result: instant, reason: null } : null,
+        moved: false,
+        recorded: false,
+        claimed: false,
+      },
+    };
+    setChecks(checksRef.current);
+    setAnswered({ key, answer: typed });
+    if (instant) return;
+    void dispatch(
+      gradeTypedSemantic({ question: front, expectedAnswer: back, learnerAnswer: typed }),
+    ).then((outcome) => {
+      const c = checksRef.current[key];
+      if (!c || c.claimed) return;
+      const verdict: Verdict =
+        outcome?.kind === "verdict" ? outcome.verdict : { result: c.provisional, reason: null };
+      if (!c.moved) {
+        patchCheck(key, { verdict });
+        return;
+      }
+      // The learner moved on: record the final grade once, then fix the stage.
+      record(c.cardId, verdict.result, "typed", c.typed, c.attemptId);
+      patchCheck(key, { verdict, recorded: true });
+      settle(c, c.provisional, verdict.result);
+    });
+  };
+
+  /** Continue past a typed answer — never waits on the meaning check. */
+  const continueTyped = (key: string, claim: boolean): void => {
+    const c = checksRef.current[key];
+    if (!c) return;
+    if (claim || c.verdict) {
+      const final: ReviewResult = claim ? "correct" : (c.verdict?.result ?? c.provisional);
+      record(c.cardId, final, "typed", c.typed, c.attemptId);
+      patchCheck(key, { recorded: true, claimed: claim });
+      step(final === "correct");
+      return;
+    }
+    patchCheck(key, { moved: true });
+    step(c.provisional === "correct");
+  };
+
+  /** "I was right" after a late verdict was recorded: correct that attempt. */
+  const claimLate = (key: string): void => {
+    const c = checksRef.current[key];
+    if (!c?.verdict || !c.recorded || c.verdict.result === "correct") return;
+    const from = c.verdict.result;
+    patchCheck(key, { claimed: true, verdict: { result: "correct", reason: null } });
+    settle(c, from, "correct");
+    void studyService
+      .overrideAttempt({ attemptId: c.attemptId, result: "correct" })
+      .then((res) => {
+        if (res.error) toast.error("Couldn't save that change — try again.");
+      });
   };
 
   const tutorSeed =
@@ -261,9 +420,15 @@ export function LearnSurface({ setId }: { setId: string }) {
               onSizeChange={(count) => setSavedSize(count)}
               onRetake={mastered ? restart : nextRound}
               retakeLabel={mastered ? "Learn again" : "Continue"}
-              onBack={() => router.push(`${EDU_BASE}/${setId}`)}
+              onBack={leave}
             >
               <StageBar learn={learn} />
+              <LateVerdicts
+                checks={Object.entries(checks).filter(
+                  ([, c]) => c.moved && c.round === learn.round,
+                )}
+                onClaim={claimLate}
+              />
             </RoundComplete>
           ) : item && faces ? (
             <>
@@ -291,11 +456,11 @@ export function LearnSurface({ setId }: { setId: string }) {
                   key={itemKey}
                   front={faces.front}
                   back={faces.back}
-                  onSubmit={(typed) => setAnswered({ key: itemKey, answer: typed })}
-                  onDone={(result, typed) => {
-                    record(item.cardId, result, "typed", typed);
-                    step(result === "correct");
-                  }}
+                  check={checks[itemKey] ?? null}
+                  onSubmit={(typed) =>
+                    submitTyped(itemKey, item.cardId, typed, faces.front, faces.back)
+                  }
+                  onContinue={(claim) => continueTyped(itemKey, claim)}
                 />
               )}
             </>
@@ -434,65 +599,71 @@ const VERDICT_UI: Record<
   },
 };
 
+/** Answers graded after the learner moved on, shown quietly on the round screen. */
+function LateVerdicts({
+  checks,
+  onClaim,
+}: {
+  checks: [string, TypedCheck][];
+  onClaim: (key: string) => void;
+}) {
+  if (checks.length === 0) return null;
+  return (
+    <ul className="w-full divide-y divide-border rounded-xl border border-border text-left text-sm">
+      {checks.map(([key, c]) => {
+        const result = c.verdict?.result ?? null;
+        return (
+          <li key={key} className="flex items-center gap-2 px-3 py-2">
+            {result === null ? (
+              <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground" />
+            ) : result === "correct" ? (
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600 dark:text-green-400" />
+            ) : (
+              <XCircle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
+            )}
+            <span className="min-w-0 flex-1 truncate text-foreground">{c.typed}</span>
+            <span className="shrink-0 text-xs text-muted-foreground">
+              {result === null ? "Checking" : result === "correct" ? "Counted" : "Not counted"}
+            </span>
+            {result !== null && result !== "correct" ? (
+              <Button type="button" variant="quiet" onClick={() => onClaim(key)}>
+                I was right
+              </Button>
+            ) : null}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 function TypedQuestion({
   front,
   back,
+  check,
   onSubmit,
-  onDone,
+  onContinue,
 }: {
   front: string;
   back: string;
+  check: TypedCheck | null;
   onSubmit: (typed: string) => void;
-  onDone: (result: ReviewResult, typed: string) => void;
+  /** `claim` = the learner says they were right ("I was right"). */
+  onContinue: (claim: boolean) => void;
 }) {
-  const dispatch = useAppDispatch();
-  const coppa = useAiComplianceGate();
   const [typed, setTyped] = useState("");
-  const [spelling, setSpelling] = useState<ReviewResult | null>(null);
-  const [meaning, setMeaning] = useState<{ result: ReviewResult; reason: string | null } | null>(null);
-  const [checking, setChecking] = useState(false);
-  const live = useRef(true);
-  useEffect(() => {
-    live.current = true;
-    return () => {
-      live.current = false;
-    };
-  }, []);
-
-  const submitted = spelling !== null;
-  // Graded automatically: the meaning verdict when it lands, else spelling.
-  const result: ReviewResult | null = meaning?.result ?? spelling;
-
-  const submit = (answer: string): void => {
-    if (submitted) return;
-    const instant = gradeTypedAnswer(answer, back);
-    setSpelling(instant);
-    onSubmit(answer);
-    // An exact match needs no second opinion; anything else is judged on
-    // meaning so a correct paraphrase still counts.
-    if (instant === "correct" || answer.trim() === "" || coppa.blocked) return;
-    setChecking(true);
-    void dispatch(
-      gradeTypedSemantic({ question: front, expectedAnswer: back, learnerAnswer: answer }),
-    ).then((outcome) => {
-      if (!live.current) return;
-      setChecking(false);
-      if (outcome?.kind === "verdict") setMeaning(outcome.verdict);
-    });
-  };
-
-  const finish = (override?: ReviewResult): void => {
-    const final = override ?? result;
-    if (final) onDone(final, typed);
-  };
+  const submitted = check !== null;
+  const checking = submitted && check.verdict === null;
+  const result: ReviewResult | null = check?.verdict?.result ?? null;
+  const answer = check?.typed ?? typed;
 
   useEffect(() => {
     if (!submitted) return;
     const onKey = (e: KeyboardEvent): void => {
       if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
-      if (e.key === "Enter" && !checking) {
+      if (e.key === "Enter") {
         e.preventDefault();
-        finish();
+        onContinue(false);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -512,7 +683,7 @@ function TypedQuestion({
           className="mt-3 flex flex-col gap-2 sm:mt-4"
           onSubmit={(e) => {
             e.preventDefault();
-            if (typed.trim().length > 0) submit(typed);
+            if (typed.trim().length > 0) onSubmit(typed);
           }}
         >
           {/* ui-exception: a recall answer is graded against the card; mic and agent actions would answer for the learner. */}
@@ -531,7 +702,7 @@ function TypedQuestion({
               type="button"
               variant="quiet"
               className="flex-1 sm:flex-none"
-              onClick={() => submit("")}
+              onClick={() => onSubmit("")}
             >
               Don&apos;t know
             </Button>
@@ -549,11 +720,11 @@ function TypedQuestion({
       ) : (
         <div className="mt-3 flex flex-col gap-3 sm:mt-4">
           {checking ? (
-            // No verdict until the meaning check lands: a paraphrase that
-            // misses on spelling must never flash "Not quite" first.
-            <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/40 px-4 py-3 text-muted-foreground">
-              <Loader2 className="h-5 w-5 shrink-0 animate-spin" />
-              <span className="text-base font-semibold">Checking meaning</span>
+            // No verdict until the meaning check lands — and no waiting for
+            // it either: Continue works now and the verdict follows.
+            <div className="flex items-center gap-2 px-1 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+              <span>Checking meaning</span>
             </div>
           ) : ui && Icon ? (
             <div className={cn("rounded-xl border px-4 py-3", ui.banner)}>
@@ -561,8 +732,8 @@ function TypedQuestion({
                 <Icon className="h-5 w-5 shrink-0" />
                 <span className="text-base font-semibold">{ui.label}</span>
               </div>
-              {meaning?.reason ? (
-                <p className="mt-1 text-sm opacity-90">{meaning.reason}</p>
+              {check?.verdict?.reason ? (
+                <p className="mt-1 text-sm opacity-90">{check.verdict.reason}</p>
               ) : null}
             </div>
           ) : null}
@@ -571,19 +742,18 @@ function TypedQuestion({
             <CardFaceBlock content={back} align="start" />
             <div className="mt-2.5 border-t border-border pt-2.5">
               <div className="mb-0.5 text-[11px] font-medium text-muted-foreground">You</div>
-              <p className={cn("break-words text-sm", typed ? "text-foreground" : "text-muted-foreground")}>
-                {typed || "—"}
+              <p className={cn("break-words text-sm", answer ? "text-foreground" : "text-muted-foreground")}>
+                {answer || "—"}
               </p>
             </div>
           </div>
           <div className="flex gap-2">
-            {result !== "correct" && typed.trim() !== "" ? (
+            {result !== "correct" && answer.trim() !== "" ? (
               <Button
                 type="button"
                 variant="quiet"
                 className="flex-1 sm:flex-none"
-                disabled={checking}
-                onClick={() => finish("correct")}
+                onClick={() => onContinue(true)}
               >
                 I was right
               </Button>
@@ -592,8 +762,7 @@ function TypedQuestion({
               iconEnd={<ArrowRight />}
               variant="primary"
               className="flex-1"
-              disabled={checking}
-              onClick={() => finish()}
+              onClick={() => onContinue(false)}
             >
               Continue
             </Button>

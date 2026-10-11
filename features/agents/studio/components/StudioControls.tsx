@@ -74,7 +74,7 @@ export function StudioControls({
   const [tab, setTab] = useState<ControlsTab>(initialTab);
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="shrink-0 border-b border-border px-2">
+      <div className="shrink-0 overflow-x-auto border-b border-border px-2" data-testid="studio-controls-tabs">
         <Tabs value={tab} onValueChange={(v) => setTab(v as ControlsTab)} data={TABS} aria-label="Agent controls" />
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-3">

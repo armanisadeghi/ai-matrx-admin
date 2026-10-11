@@ -21,6 +21,7 @@ import {
   GENERATOR_SHORTCUT_MANDATE,
   HOLDER_DRAFT_MANDATE,
   STRUCTURE_BUILDER_MANDATE,
+  VIA_STUDIO_PLACES,
   factoryDoorCounts,
   loadDoorBuilders,
   loadOldBuilderRuns,
@@ -177,6 +178,21 @@ export function FactoryDoorsTable({
         last: lasts.length ? lasts[lasts.length - 1] : null,
       };
     });
+    for (const v of VIA_STUDIO_PLACES) {
+      doorRows.splice(
+        1,
+        0,
+        {
+          id: v.id,
+          place: v.place,
+          href: v.href,
+          builder: "factory",
+          factory: null,
+          old: null,
+          last: null,
+        },
+      );
+    }
     const sb = oldRuns?.byMandate[STRUCTURE_BUILDER_MANDATE];
     doorRows.push({
       id: "__structure_builder",

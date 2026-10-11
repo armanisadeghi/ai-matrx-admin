@@ -35,6 +35,7 @@ import { extractErrorMessage } from "@/utils/errors";
 import { pageIsLeaving } from "@ai-matrx/chat/agents/redux/execution-system/utils/page-leaving";
 import { classifyTier } from "@/lib/diagnostics/errorTierRules";
 import type { ErrorTier } from "@/lib/diagnostics/errorTiers";
+import { currentDeploymentId } from "@/lib/deployment/build-identity";
 
 /** How a captured error reached us. */
 export type CapturedErrorSource =
@@ -697,7 +698,7 @@ function isStoredRow(value: unknown): value is StoredCapturedError {
  * deployment id) every row is kept.
  */
 function lastSeenOnThisDeployment(row: StoredCapturedError): boolean {
-  const current = process.env.NEXT_PUBLIC_DEPLOYMENT_ID || null;
+  const current = currentDeploymentId();
   if (!current) return true;
   return row.browserProvenance?.configuredDeploymentId === current;
 }

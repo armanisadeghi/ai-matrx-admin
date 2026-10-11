@@ -5,31 +5,28 @@
 // its own — ingest owns raw→text, the converter owns text→artifact. It sequences
 // them, surfaces progress, and keeps the run alive across a reload.
 //
-// 🚨 A KIT IS NEVER LOST WITH ITS TAB (2026-10-03). A 6-output build from four
-// Sources ran 14 minutes in the tab; the tab closed and five of six aids were
-// gone with no notice. The agent calls themselves run on the server and finish
-// when the tab closes (every agent stream detaches); what died was the tab's
-// merge and save. So the run is a TAB-BOUND RUN (`useTabBoundRun`) with a
-// JOURNAL written as it goes:
-//   - the request (what was asked: the Sources as a frozen SourceSet, the
-//     outputs, depth/count/focus, the organization) — written before it starts;
-//   - the anchor and the kit's name, once known — a continued kit keeps both,
-//     so its artifacts land in the SAME kit and no `.md` copy is made twice;
-//   - every output that saved (its artifact id and link) — never made twice;
-//   - the conversation each section ran in — a continued output reads finished
-//     sections back from the server (`convert/sectionJournal.ts`) instead of
-//     paying for them again.
-// A continued run also asks the database which outputs already saved for this
-// anchor since the run started (the lineage edges every output writes), so an
-// output that saved in the instant before the tab closed is adopted, not
-// duplicated. A reload continues by itself (StartHero); a run found later is
-// offered with one Continue.
+// 🚨 THE SERVER BUILDS THE KIT (2026-10-11). The outputs — deck, quizzes,
+// notes, summary, mind map, memory aids, audio — are made, merged and SAVED by
+// one server run (`kitBuildService.ts` → aidream `education_kit_build`); this
+// hook only starts it and watches it. Closing the tab or locking the phone no
+// longer loses or orphans anything: the run finishes on its own, and any page
+// (the kit page, another tab, another device) finds it by its kit.
+//
+// What stays here is the short front of the build, kept as a TAB-BOUND RUN
+// (`useTabBoundRun`) with a JOURNAL so a reload continues it:
+//   - the request (the Sources as a frozen SourceSet, the outputs,
+//     depth/count/focus, the organization) — written before it starts;
+//   - the Sources read and the kit's name (`kitTitle.ts`), and the kit itself
+//     (`kits/kitScope.ts`), once known — a continued kit keeps all three;
+//   - the server build's id and run — a continuation REJOINS that build (the
+//     server returns the active run, or a new run of it adopts every output
+//     already saved). A reload continues by itself (StartHero).
 
 "use client";
 
 import { useRef, useState } from "react";
-import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
-import { getGenerator } from "@/features/education/convert/registry";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
+import { TARGET_PRESENTATION } from "@/features/education/convert/targetPresentation";
 import { resolveKitTitle, type KitTitle } from "./kitTitle";
 import type {
   ConvertOptions,
@@ -37,17 +34,26 @@ import type {
 } from "@/features/education/convert/types";
 import { ALL_TARGET_KINDS } from "@/features/education/convert/types";
 import { isCoverageDepth } from "@/features/education/convert/coverage";
-import type { SectionJournal } from "@/features/education/convert/sectionJournal";
-import { useContentConverter } from "@/features/education/convert/useContentConverter";
 import type { ResolvedSourceSet, SourceSet } from "@ai-matrx/agents/sources";
 import { sourcesClient } from "@/features/resource-manager/source-input/sourceSetApi";
 import { toast } from "@/lib/toast";
 import { kitOutlineInputs, startKitOutline } from "@/features/education/kits/outline/outlineService";
-import { announceLineage } from "@/features/education/convert/announceLineage";
-import { recordSourceLineage } from "@/features/education/convert/recordSourceLineage";
 import { useTabBoundRun } from "@/lib/wizard-draft/useTabBoundRun";
 import { readKit, renameKit } from "@/features/education/kits/kitService";
 import { addKitSource, createKitScope, KIT_TOKEN } from "@/features/education/kits/kitScope";
+import { useWorkflowRun } from "@/features/workflow-runtime/hooks/useWorkflowRun";
+import { useFloatingWorkflowRun } from "@/features/workflow-runtime/floating/useFloatingWorkflowRun";
+import {
+  selectRunState,
+  selectRunStatus,
+} from "@/features/workflow-runtime/redux/workflow-runs.selectors";
+import { runIsOver } from "@/features/workflow-runtime/types";
+import {
+  KIT_BUILD_LABEL,
+  kitTargetsFromRun,
+  lookupKitBuildRun,
+  startKitBuild,
+} from "./kitBuildService";
 import { useIngest } from "./useIngest";
 import type {
   IngestProgress,
@@ -71,25 +77,16 @@ export interface KitRunRequest {
   startedAt: number;
 }
 
-/** One output that saved. */
-interface DoneTarget {
-  artifactId: string;
-  resourceType: string;
-  href: string;
-  title: string;
-  detail?: string;
-  pending?: boolean;
-}
-
 /** What the run has done so far (JSON, kept in the run marker). */
 export interface KitRunJournal {
   source?: Omit<NormalizedIngest, "text">;
   title?: KitTitle;
   /** The name the person typed over the derived one. */
   renamedTo?: string;
-  done?: Partial<Record<TargetKind, DoneTarget>>;
-  /** plan key → segment id → conversation id (`convert/sectionJournal.ts`). */
-  sections?: Record<string, Record<string, string>>;
+  /** The server build's identity — a continuation rejoins THIS build. */
+  buildId?: string;
+  /** The server run building the outputs (the page reattaches to it). */
+  runId?: string;
 }
 
 /** The stored request back, or null when it is not one this code can continue. */
@@ -162,7 +159,8 @@ export interface UseKitGeneration {
   stopped: {
     request: KitRunRequest;
     stoppedAt: number;
-    savedCount: number;
+    /** The server was already building it — the page left, the build did not. */
+    building: boolean;
     title: string | null;
   } | null;
   /** Another open tab is building a kit right now. */
@@ -179,7 +177,6 @@ export interface UseKitGeneration {
 
 export function useKitGeneration(): UseKitGeneration {
   const { normalizeSources } = useIngest();
-  const { convertMany } = useContentConverter();
   const dispatch = useAppDispatch();
   const store = useAppStore();
   const tabRun = useTabBoundRun<KitRunRequest>(KIT_RUN_KEY, restoreKitRunRequest);
@@ -198,6 +195,13 @@ export function useKitGeneration(): UseKitGeneration {
   // The running build's journal and its writer — a rename typed mid-build goes
   // into it, so the run applies it at the end and a continuation keeps it.
   const live = useRef<{ journal: KitRunJournal; write: () => void } | null>(null);
+  // The server run building the outputs: adopted for its live state, and
+  // handed to its floating window when this page is left while it runs.
+  const [runId, setRunId] = useState<string | null>(null);
+  const [buildStartedAt, setBuildStartedAt] = useState(0);
+  useWorkflowRun(runId);
+  const runState = useAppSelector(selectRunState(runId ?? ""));
+  useFloatingWorkflowRun({ runId, workflowName: KIT_BUILD_LABEL });
 
   const reset = () => {
     setPhase("idle");
@@ -211,6 +215,7 @@ export function useKitGeneration(): UseKitGeneration {
     setIngestFinishedAt(null);
     setContinued(false);
     setSourcesNotFiled([]);
+    setRunId(null);
   };
 
   const patchTarget = (kind: TargetKind, patch: Partial<KitTargetState>) => {
@@ -229,17 +234,67 @@ export function useKitGeneration(): UseKitGeneration {
     if (kit && kit.title !== title) await renameKit(kit, title);
   };
 
+  /** Resolves once the build run is over (its live state, with a slow lookup as the floor). */
+  const untilBuildEnds = (id: string, kitId: string, orgId: string) =>
+    new Promise<void>((resolve) => {
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        unsubscribe();
+        clearInterval(poll);
+        resolve();
+      };
+      const check = () => {
+        if (runIsOver(selectRunStatus(id)(store.getState()))) finish();
+      };
+      const unsubscribe = store.subscribe(check);
+      const poll = setInterval(() => {
+        lookupKitBuildRun(dispatch, kitId, orgId)
+          .then((found) => {
+            if (found && found.runId === id && !found.active) finish();
+          })
+          .catch((e: unknown) => console.error("[useKitGeneration] could not check the build:", e));
+      }, 15_000);
+      check();
+    });
+
+  /** Start (or rejoin) the server build of this kit, then watch it to the end. */
+  const watchBuild = async (
+    request: KitRunRequest,
+    journal: KitRunJournal,
+    write: () => void,
+    kitId: string,
+    title: string,
+  ) => {
+    setPhase("generating");
+    const began = Date.now();
+    setBuildStartedAt(began);
+    setTargets((prev) => prev.map((t) => ({ ...t, status: "running" as const, startedAt: began })));
+    journal.buildId = journal.buildId ?? crypto.randomUUID();
+    write();
+    const started = await startKitBuild(dispatch, {
+      kitId,
+      organizationId: request.orgId,
+      buildId: journal.buildId,
+      sourceSet: request.sourceSet,
+      targets: request.kinds,
+      options: request.options,
+      title,
+    });
+    journal.runId = started.runId;
+    write();
+    setRunId(started.runId);
+    await untilBuildEnds(started.runId, kitId, request.orgId);
+  };
+
   const execute = async (
     request: KitRunRequest,
     prior: KitRunJournal,
     note: (journal: Record<string, unknown>) => void,
     isContinuation: boolean,
   ): Promise<boolean> => {
-    const journal: KitRunJournal = {
-      ...prior,
-      done: { ...(prior.done ?? {}) },
-      sections: { ...(prior.sections ?? {}) },
-    };
+    const journal: KitRunJournal = { ...prior };
     // A COPY goes to the store, never the object this run keeps writing to:
     // the journal is mutated as the run goes, and a mutated store object is
     // a state mutation (in dev, the invariant check throws on the next
@@ -265,10 +320,27 @@ export function useKitGeneration(): UseKitGeneration {
     setTargets(
       kinds.map((k) => ({
         targetKind: k,
-        label: getGenerator(k)?.label ?? k,
+        label: TARGET_PRESENTATION[k].label,
         status: "pending" as const,
       })),
     );
+
+    // A build the server already runs: rejoin it — nothing is read or named
+    // again; the kit, its name and its Sources are all already saved.
+    const kept = journal.source;
+    if (isContinuation && journal.buildId && kept?.ref.kitId && journal.title) {
+      setSource({ ...kept, text: "" });
+      setIngestFinishedAt(Date.now());
+      setKitTitle(journal.renamedTo ? { ...journal.title, title: journal.renamedTo } : journal.title);
+      await watchBuild(request, journal, write, kept.ref.kitId, journal.renamedTo ?? journal.title.title);
+      if (journal.renamedTo) {
+        await applyRename(kept.ref.kitId, journal.renamedTo).catch((e: unknown) =>
+          console.error("[useKitGeneration] the kit's new name was not applied:", e),
+        );
+      }
+      setPhase("done");
+      return true;
+    }
 
     let normalized: NormalizedIngest;
     try {
@@ -370,132 +442,21 @@ export function useKitGeneration(): UseKitGeneration {
       }
     });
 
-    // Outputs this kit already saved: the journal's, plus any the database
-    // holds for this anchor since the run began (saved in the instant before
-    // the page closed, before the journal heard of it).
-    const anchorId = normalized.ref.kitId;
-    if (isContinuation && anchorId) {
-      try {
-        const since = request.startedAt - 1_000;
-        const made = (await readKit(KIT_TOKEN, anchorId))?.artifacts ?? [];
-        for (const row of made) {
-          const kind = row.targetKind;
-          if (!kind || !kinds.includes(kind) || journal.done?.[kind]) continue;
-          if (Date.parse(row.createdAt) < since) continue;
-          journal.done![kind] = {
-            artifactId: row.artifactId,
-            resourceType: row.artifactType,
-            href: row.href,
-            title: row.title,
-            detail: row.detail ?? undefined,
-            pending: kind === "audio",
-          };
-        }
-        write();
-      } catch (e) {
-        // Loud, and the kit goes on: the journal alone still prevents every
-        // repeat it recorded.
-        console.error("[useKitGeneration] could not read what this kit already saved:", e);
-      }
-    }
-
-    setPhase("generating");
-    const generationStartedAt = Date.now();
-    const remaining = kinds.filter((k) => !journal.done?.[k]);
-    setTargets((prev) =>
-      prev.map((t) => {
-        const saved = journal.done?.[t.targetKind];
-        if (saved) {
-          return {
-            ...t,
-            status: "success" as const,
-            href: saved.href,
-            title: saved.title,
-            detail: saved.detail,
-            artifactId: saved.artifactId,
-            resourceType: saved.resourceType,
-            stillGenerating: saved.pending === true,
-            startedAt: generationStartedAt,
-            finishedAt: saved.pending ? undefined : generationStartedAt,
-          };
-        }
-        return { ...t, status: "running" as const, startedAt: generationStartedAt };
-      }),
-    );
-
-    const sectionsFor = (kind: TargetKind): SectionJournal => ({
-      runScope: anchorId ? `${anchorId}:${request.startedAt}` : undefined,
-      recorded: (planKey) =>
-        planKey.startsWith(`${kind}:`) ? (journal.sections?.[planKey] ?? {}) : {},
-      started: (planKey, segmentId, conversationId) => {
-        const sections = journal.sections ?? {};
-        sections[planKey] = { ...(sections[planKey] ?? {}), [segmentId]: conversationId };
-        journal.sections = sections;
-        write();
-      },
-    });
-
-    if (remaining.length > 0) {
-      await convertMany(
-        {
-          text: normalized.text,
-          // THE kit name — not the raw filename. Every generator reads this.
-          title: journal.renamedTo ?? resolvedTitle.title,
-          ref: normalized.ref,
-        },
-        remaining,
-        options,
-        (outcome) => {
-          if (outcome.status === "success") {
-            const r = outcome.result;
-            journal.done![outcome.targetKind] = {
-              artifactId: r.artifactId,
-              resourceType: r.resourceType,
-              href: r.href,
-              title: r.title,
-              detail: r.detail,
-              pending: r.pending === true,
-            };
-            write();
-            patchTarget(outcome.targetKind, {
-              status: "success",
-              finishedAt: Date.now(),
-              href: r.href,
-              title: r.title,
-              detail: r.detail,
-              artifactId: r.artifactId,
-              resourceType: r.resourceType,
-              stillGenerating: r.pending === true,
-            });
-            // Saved, but not linked to the kit: said, with Retry (law 4).
-            const linkSource = {
-              text: "",
-              title: journal.renamedTo ?? resolvedTitle.title,
-              ref: normalized.ref,
-            };
-            announceLineage(r.lineage, () => recordSourceLineage(r, linkSource, orgId), { inKit: true });
-          } else {
-            patchTarget(outcome.targetKind, {
-              status: "error",
-              finishedAt: Date.now(),
-              error: outcome.error,
-              errorCause: outcome.cause,
-            });
-          }
-        },
-        (kind, requestId) => patchTarget(kind, { requestId }),
-        (kind, progress) => patchTarget(kind, { coverage: progress }),
-        orgId,
-        sectionsFor,
-      );
-    }
+    // THE OUTPUTS ARE BUILT ON THE SERVER (kitBuildService.ts): one run makes
+    // and saves every output into the kit; this page only watches it. The
+    // build's id is kept in the journal, so a continuation rejoins the SAME
+    // build — an active run is returned as is, and a fresh run of it adopts
+    // every output already saved instead of paying again.
+    const kitId = normalized.ref.kitId;
+    if (!kitId) throw new Error("The kit was not made, so nothing can be built into it.");
+    await watchBuild(request, journal, write, kitId, journal.renamedTo ?? resolvedTitle.title);
 
     await linking;
     finished = true;
     const rename = journal.renamedTo;
-    if (rename && anchorId) {
+    if (rename) {
       try {
-        await applyRename(anchorId, rename);
+        await applyRename(kitId, rename);
       } catch (e) {
         console.error("[useKitGeneration] the kit's new name was not applied:", e);
       }
@@ -569,7 +530,9 @@ export function useKitGeneration(): UseKitGeneration {
     startedAt,
     ingestFinishedAt,
     ingestProgress,
-    targets,
+    targets: runId
+      ? kitTargetsFromRun(runState, targets, buildStartedAt, runIsOver(runState?.status ?? null))
+      : targets,
     source,
     kitTitle,
     error,
@@ -582,7 +545,7 @@ export function useKitGeneration(): UseKitGeneration {
       ? {
           request: tabRun.stopped.request,
           stoppedAt: tabRun.stopped.stoppedAt,
-          savedCount: Object.keys(stoppedJournal?.done ?? {}).length,
+          building: Boolean(stoppedJournal?.runId),
           title: stoppedJournal?.renamedTo ?? stoppedJournal?.title?.title ?? null,
         }
       : null,

@@ -4,7 +4,11 @@ export type StepDoer = "agent" | "ai-call" | "decision" | "code" | "human" | "un
 export interface SystemPlanStep {
   n: number;
   title: string;
-  /** What the step does, in the Architect's words (trimmed). */
+  /** The step's full text as the Architect wrote it (markdown), for display. */
+  markdown: string;
+  /** One or two whole sentences of plain prose, for the card. */
+  summary: string;
+  /** What the step does, in the Architect's words, as full plain prose (no markdown). */
   job: string;
   doer: StepDoer;
   /** Model class if the Architect named one (frontier / mid-size / small / decision). */

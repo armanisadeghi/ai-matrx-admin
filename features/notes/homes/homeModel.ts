@@ -17,6 +17,8 @@ export interface NoteHome {
   name: string;
   organizationId: string;
   organizationName: string;
+  /** The organization's slug — the tie-breaker when two organizations share a name. */
+  organizationSlug?: string;
   scopeTypeId: string;
   /** The scope type's singular label ("Client", "Case", "General"). */
   scopeTypeLabel: string;
@@ -42,6 +44,7 @@ export function placeholderGeneralOrganization(scopeId: string): string | null {
 export interface HomeOrganization {
   id: string;
   name: string;
+  slug?: string | null;
   scope_types: readonly ScopeTypeWithScopes[];
 }
 
@@ -61,6 +64,7 @@ export function buildHomes(organizations: readonly HomeOrganization[]): NoteHome
         name: "General",
         organizationId: org.id,
         organizationName: org.name,
+        ...(org.slug ? { organizationSlug: org.slug } : {}),
         scopeTypeId: "",
         scopeTypeLabel: "General",
         isGeneral: true,
@@ -75,6 +79,7 @@ export function buildHomes(organizations: readonly HomeOrganization[]): NoteHome
           name: scope.name,
           organizationId: org.id,
           organizationName: org.name,
+          ...(org.slug ? { organizationSlug: org.slug } : {}),
           scopeTypeId: type.id,
           scopeTypeLabel: isGeneral ? "General" : type.label_singular,
           isGeneral,
@@ -119,6 +124,51 @@ export function collidingHomeNames(homes: readonly NoteHome[]): Set<string> {
   const colliding = new Set<string>();
   for (const [name, orgs] of orgsByName) if (orgs.size > 1) colliding.add(name);
   return colliding;
+}
+
+/**
+ * Every home's label, never two the same. `homeDisplayName` first; then, wherever two
+ * homes still read identically (two organizations with the same name, two same-named
+ * scopes of one organization), each gets a short suffix that tells them apart: the
+ * organization's slug when those differ, else the kind of home, else a short id.
+ */
+export function homeLabels(
+  homes: readonly NoteHome[],
+  options: { notesSpanManyOrganizations: boolean },
+): Map<string, string> {
+  const collidingNames = collidingHomeNames(homes);
+  const labels = new Map<string, string>();
+  const byLabel = new Map<string, NoteHome[]>();
+  for (const home of homes) {
+    const label = homeDisplayName(home, { ...options, collidingNames });
+    labels.set(home.scopeId, label);
+    const key = label.toLocaleLowerCase();
+    const group = byLabel.get(key);
+    if (group) group.push(home);
+    else byLabel.set(key, [home]);
+  }
+  for (const group of byLabel.values()) {
+    if (group.length < 2) continue;
+    const distinct = (pick: (home: NoteHome) => string | undefined) => {
+      const values = group.map(pick);
+      return values.every(Boolean) && new Set(values.map((v) => v!.toLocaleLowerCase())).size === group.length;
+    };
+    const suffix: (home: NoteHome) => string = distinct((h) => h.organizationSlug)
+      ? (h) => h.organizationSlug!
+      : distinct((h) => h.scopeTypeLabel)
+        ? (h) => h.scopeTypeLabel
+        : shortIds(group);
+    for (const home of group) labels.set(home.scopeId, `${labels.get(home.scopeId)} · ${suffix(home)}`);
+  }
+  return labels;
+}
+
+/** The shortest id prefix (at least four characters) that tells each home of the group apart. */
+function shortIds(group: readonly NoteHome[]): (home: NoteHome) => string {
+  const full = new Map(group.map((h) => [h.scopeId, (placeholderGeneralOrganization(h.scopeId) ?? h.scopeId).replace(/-/g, "")]));
+  let size = 4;
+  while (size < 32 && new Set(Array.from(full.values(), (id) => id.slice(0, size))).size < group.length) size += 2;
+  return (h) => full.get(h.scopeId)!.slice(0, size);
 }
 
 export interface HomeSection {

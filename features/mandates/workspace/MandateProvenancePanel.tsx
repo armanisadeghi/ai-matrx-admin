@@ -178,6 +178,14 @@ function OfferedRow({ report }: { report: MandateProvenanceReport }) {
   );
 }
 
+/**
+ * The server's run sentence once ended "The list below shows you the ones you are allowed to
+ * open", but only a link follows. The link's own label says what it opens.
+ */
+export function runsSentence(sentence: string): string {
+  return sentence.replace(/\s*The list below shows you the ones you are allowed to open\.?/, "").trim();
+}
+
 function RunsRow({ report }: { report: MandateProvenanceReport }) {
   const reading = runsReading(report.usage);
   const showLink = reading.kind === "ran";
@@ -193,13 +201,13 @@ function RunsRow({ report }: { report: MandateProvenanceReport }) {
             {reading.text}
           </span>
           <span className="block text-[12.5px] text-muted-foreground">
-            {report.usage.sentence}
+            {runsSentence(report.usage.sentence)}
           </span>
           {/* A link to an EMPTY list is a dead control. It appears only when
               there is something behind it. */}
           {showLink ? (
             <SurfaceLink href={report.usage.runs_href}>
-              See these runs
+              See the runs you can open
             </SurfaceLink>
           ) : null}
         </span>

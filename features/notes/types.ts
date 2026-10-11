@@ -34,9 +34,6 @@ export type NoteStoredRow = Omit<
   | "published_to_web_at"
   | "published_to_web_by"
   | "home_scope_id"
-  // Retired by item homes (a note's home is its scope); the columns are being dropped.
-  | "folder_id"
-  | "folder_name"
 > & {
   /** The note's one home (a scope). Null only on a client draft not yet stored — the
    *  database fills the organization's General on insert. Changed only by `moveNoteToHome`. */

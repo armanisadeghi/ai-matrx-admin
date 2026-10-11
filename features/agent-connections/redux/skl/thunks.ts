@@ -27,7 +27,7 @@ interface ScopedQueryArgs {
 }
 
 /**
- * The scope filter on a Supabase select against platform.categories / skill.render_definition.
+ * The scope filter on a Supabase select against platform.categories / agent.prompt_block.
  *
  * READS IGNORE THE ACTIVE ORGANIZATION (law: common-docs/policies/access-ladder.md).
  * The window's "Organization" view scope resolves to the ACTIVE organization for WRITES
@@ -106,10 +106,10 @@ export const fetchRenderDefinitions = createAsyncThunk(
       const { data: userData } = await getClaimsUser(supabase);
       const userId = userData?.user?.id ?? null;
       let query = supabase
-        .schema("skill")
-        .from("render_definition")
+        .schema("agent")
+        .from("prompt_block")
         .select("*")
-        .is("deleted_at", null)
+        // Archived blocks come back as inactive (the archive is the off switch on a prompt block).
         // VIEW LAW: scope applied immediately below via applyScopeFilter (user/org/task)
         .order("sort_order", { ascending: true })
         .order("label", { ascending: true });
@@ -146,10 +146,14 @@ export const createRenderDefinition = createAsyncThunk(
       scope: args.scope,
       scopeId: args.scopeId,
     });
+    // The stamp carries scope fields prompt blocks do not have (user/project/task); only the row's own columns go.
+    const { user_id: _u, project_id: _p, task_id: _t, ...row0 } = stamped as typeof stamped & {
+      user_id?: unknown; project_id?: unknown; task_id?: unknown;
+    };
     const { data, error } = await supabase
-      .schema("skill")
-      .from("render_definition")
-      .insert(stamped)
+      .schema("agent")
+      .from("prompt_block")
+      .insert(row0)
       .select()
       .single();
     if (error) throw error;
@@ -168,8 +172,8 @@ export const updateRenderDefinition = createAsyncThunk(
     const payload = sklRenderDefinitionToUpdate(args.patch);
     const { data, error } = await writeOneRow(
       supabase
-        .schema("skill")
-        .from("render_definition")
+        .schema("agent")
+        .from("prompt_block")
         .update(payload)
         .eq("id", args.id)
         .select(),
@@ -189,7 +193,7 @@ export const deleteRenderDefinition = createAsyncThunk(
     // `fetchRenderDefinitions` already filters `deleted_at`.
     await writeOne(
       supabase
-        .schema("skill").from("render_definition")
+        .schema("agent").from("prompt_block")
         .update({ deleted_at: new Date().toISOString() })
         .eq("id", args.id)
         .is("deleted_at", null)
@@ -200,7 +204,7 @@ export const deleteRenderDefinition = createAsyncThunk(
         alreadyDone: {
           reread: () =>
             supabase
-              .schema("skill").from("render_definition")
+              .schema("agent").from("prompt_block")
               .select("id, deleted_at")
               .eq("id", args.id)
               .maybeSingle(),

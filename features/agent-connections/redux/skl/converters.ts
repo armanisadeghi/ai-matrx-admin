@@ -7,7 +7,9 @@ import { publishedToWebPatch } from "@/lib/row-access";
 // Resources retired 2026-07-06 → attach code_files/notes to a skill via
 // platform.associations (features/skills/redux/skillsThunks.ts).
 
-type RenderDefRow = Database["skill"]["Tables"]["render_definition"]["Row"];
+// Content blocks / render blocks live in agent.prompt_block (skill.render_definition retired).
+// Field map: block_id -> name, template -> content, is_active -> deleted_at is null (archive is the off switch).
+type RenderDefRow = Database["agent"]["Tables"]["prompt_block"]["Row"];
 
 /**
  * Row shape returned by fetchRenderBlockCategories after the May 2026 migration
@@ -23,7 +25,7 @@ type PlatformCategoryRow = Database["platform"]["Tables"]["categories"]["Row"];
 
 /** Insert payload before scope stamping — organization_id is filled by stampScopeForWrite. */
 type SklRenderDefinitionInsertPayload = Omit<
-  Database["skill"]["Tables"]["render_definition"]["Insert"],
+  Database["agent"]["Tables"]["prompt_block"]["Insert"],
   "organization_id"
 > & { organization_id?: string };
 
@@ -42,21 +44,22 @@ export function rowToSklRenderDefinition(
 ): SklRenderDefinition {
   return {
     id: row.id,
-    blockId: row.block_id,
+    blockId: row.name,
     label: row.label,
     description: row.description,
-    iconName: row.icon_name,
-    template: row.template,
+    iconName: row.icon_name ?? "",
+    template: row.content,
     categoryId: row.category_id,
     skillId: row.skill_id,
     blockType: normalizeBlockType(row.block_type),
-    isActive: row.is_active,
+    isActive: row.deleted_at == null,
     isPublic: row.published_to_web,
     sortOrder: row.sort_order,
     userId: row.created_by,
     organizationId: row.organization_id,
-    projectId: row.project_id,
-    taskId: row.task_id,
+    // Prompt blocks are not scoped to a project or task (none of the migrated rows were).
+    projectId: null,
+    taskId: null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -64,17 +67,19 @@ export function rowToSklRenderDefinition(
 
 export function sklRenderDefinitionToUpdate(
   patch: Partial<SklRenderDefinition>,
-): Database["skill"]["Tables"]["render_definition"]["Update"] {
-  const u: Database["skill"]["Tables"]["render_definition"]["Update"] = {};
-  if (patch.blockId !== undefined) u.block_id = patch.blockId;
+): Database["agent"]["Tables"]["prompt_block"]["Update"] {
+  const u: Database["agent"]["Tables"]["prompt_block"]["Update"] = {};
+  if (patch.blockId !== undefined) u.name = patch.blockId;
   if (patch.label !== undefined) u.label = patch.label;
   if (patch.description !== undefined) u.description = patch.description;
   if (patch.iconName !== undefined) u.icon_name = patch.iconName;
-  if (patch.template !== undefined) u.template = patch.template;
+  if (patch.template !== undefined) u.content = patch.template;
   if (patch.categoryId !== undefined) u.category_id = patch.categoryId;
   if (patch.skillId !== undefined) u.skill_id = patch.skillId;
   if (patch.blockType !== undefined) u.block_type = patch.blockType;
-  if (patch.isActive !== undefined) u.is_active = patch.isActive;
+  // Active <-> archived: the prompt block has no is_active, the archive is the off switch.
+  if (patch.isActive !== undefined)
+    u.deleted_at = patch.isActive ? null : new Date().toISOString();
   if (patch.isPublic !== undefined)
     Object.assign(u, publishedToWebPatch(patch.isPublic, patch.userId ?? null));
   if (patch.sortOrder !== undefined) u.sort_order = patch.sortOrder;
@@ -86,15 +91,17 @@ export function sklRenderDefinitionToInsert(
     Pick<SklRenderDefinition, "blockId" | "label" | "iconName" | "template">,
 ): SklRenderDefinitionInsertPayload {
   return {
-    block_id: def.blockId,
+    name: def.blockId,
     label: def.label,
     icon_name: def.iconName,
-    template: def.template,
+    content: def.template,
     description: def.description ?? null,
     category_id: def.categoryId ?? null,
     skill_id: def.skillId ?? null,
     ...(def.blockType !== undefined ? { block_type: def.blockType } : {}),
-    is_active: def.isActive ?? true,
+    ...(def.isActive === false
+      ? { deleted_at: new Date().toISOString() }
+      : {}),
     ...(def.isPublic
       ? publishedToWebPatch(true, def.userId ?? null)
       : { shown_to: "only_me" as const }),
@@ -103,8 +110,6 @@ export function sklRenderDefinitionToInsert(
     ...(def.organizationId != null
       ? { organization_id: def.organizationId }
       : {}),
-    project_id: def.projectId ?? null,
-    task_id: def.taskId ?? null,
   };
 }
 

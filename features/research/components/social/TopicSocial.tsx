@@ -249,7 +249,7 @@ export default function TopicSocial() {
   );
 
   return (
-    <PageSurfaceMenu sourceFeature="research">
+    <PageSurfaceMenu sourceFeature="research" menuDesign="global">
     <div className="matrx-touch-targets h-full overflow-y-auto px-3 pb-8 pt-3">
       <div className="mx-auto max-w-5xl space-y-4">
         <Section

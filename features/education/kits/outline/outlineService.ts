@@ -7,18 +7,16 @@
 // cited text in `education.study_source_chunk`.
 //
 // - reads: live rows by `kit_scope_id`, ordered by `position`;
-// - start: the system-workflow lane (`POST /workflows/system/education_kit_outline/runs`,
-//   subject `kit:<id>`); the server returns the ACTIVE run for the same subject
-//   instead of starting a second one, so a double press never pays twice;
-// - lookup: `GET …/runs?subject=kit:<id>` — the page reattaches after a refresh;
+// - start / lookup: the system-workflow lane (`../systemRuns.ts`, subject
+//   `kit:<id>`) — a double press never pays twice; the page reattaches after
+//   a refresh;
 // - stale: the outline's `metadata.built_by_run_id` names the run that wrote it;
 //   that run's `input.sources` is compared with what the kit holds NOW (see
 //   `isOutlineStale` for why this, and not the server's content fingerprint).
 
 import { readAllRows } from "@ai-matrx/data/db";
-import type { paths } from "@ai-matrx/agents/generated/api-types";
 import { supabase } from "@/utils/supabase/client";
-import { callApi } from "@/lib/api/call-api";
+import { lookupSystemRun, startSystemRun, type SystemRun } from "../systemRuns";
 import type { AppDispatch } from "@/lib/redux/store";
 import type { Json } from "@/types/database.types";
 import type { KitSource } from "../kitScope";
@@ -28,14 +26,6 @@ import type { OutlineFact, OutlineSection } from "./types";
 export const KIT_OUTLINE_WORKFLOW_KEY = "education_kit_outline";
 /** The run metadata `source_feature` (COPPA gate + metering read it). */
 export const KIT_OUTLINE_SOURCE_FEATURE = "education-kit-outline";
-
-/**
- * 🚨 LOCAL PATH LITERAL — the generated api-types do not carry the system lane
- * yet (aidream half shipped 2026-10-09); the `as keyof paths` cast is the repo
- * precedent (`features/mandates/overrides.ts`) and becomes `satisfies` once
- * `pnpm sync-types` picks the route up.
- */
-const SYSTEM_RUNS_PATH = "/workflows/system/{key}/runs" as keyof paths;
 
 /**
  * How long a started outline run may sit pending with no events before the
@@ -304,18 +294,7 @@ export async function kitOutlineInputs(
 
 // ─── The run ─────────────────────────────────────────────────────────────────
 
-export interface KitOutlineRun {
-  runId: string;
-  status: string;
-  active: boolean;
-}
-
-function parseRun(value: unknown): KitOutlineRun | null {
-  const r = obj(value);
-  return typeof r.run_id === "string" && r.run_id
-    ? { runId: r.run_id, status: String(r.status ?? ""), active: r.active !== false }
-    : null;
-}
+export type KitOutlineRun = SystemRun;
 
 /** The latest (active or finished) outline run for this kit, or null. */
 export async function lookupKitOutlineRun(
@@ -323,20 +302,13 @@ export async function lookupKitOutlineRun(
   kitId: string,
   organizationId: string | undefined,
 ): Promise<KitOutlineRun | null> {
-  // The run lives in the KIT's organization's copy of the workflow, so the
-  // lookup names it (a GET otherwise goes out with no organization and the
-  // server cannot tell which copy to read).
-  const result = await dispatch(
-    callApi({
-      path: SYSTEM_RUNS_PATH,
-      method: "GET",
-      pathParams: { key: KIT_OUTLINE_WORKFLOW_KEY } as never,
-      queryParams: { subject: kitOutlineSubject(kitId) },
-      ...(organizationId ? { scopeOverrides: { organization_id: organizationId } } : {}),
-    }),
+  return lookupSystemRun(
+    dispatch,
+    KIT_OUTLINE_WORKFLOW_KEY,
+    kitOutlineSubject(kitId),
+    organizationId,
+    "Could not check the outline's progress.",
   );
-  if (result.error) throw new Error(result.error.message || "Could not check the outline's progress.");
-  return parseRun(obj(result.data).run);
 }
 
 /**
@@ -353,31 +325,17 @@ export async function startKitOutline(
   },
 ): Promise<{ runId: string; duplicate: boolean }> {
   if (input.sources.length === 0) throw new Error("Add a source to this kit first.");
-  const result = await dispatch(
-    callApi({
-      path: SYSTEM_RUNS_PATH,
-      method: "POST",
-      pathParams: { key: KIT_OUTLINE_WORKFLOW_KEY } as never,
-      scopeOverrides: { organization_id: input.organizationId },
-      body: {
-        subject: kitOutlineSubject(input.kitId),
-        source_feature: KIT_OUTLINE_SOURCE_FEATURE,
-        // "detached": the server runs it in-process. "queued" waits for a workflow
-        // worker that is not deployed, so the run would sit pending forever.
-        mode: "detached",
-        inputs: {
-          kit_id: input.kitId,
-          audience: input.audience ?? "",
-          sources: input.sources,
-        },
-      } as never,
-    }),
+  return startSystemRun(
+    dispatch,
+    KIT_OUTLINE_WORKFLOW_KEY,
+    {
+      subject: kitOutlineSubject(input.kitId),
+      organizationId: input.organizationId,
+      sourceFeature: KIT_OUTLINE_SOURCE_FEATURE,
+      inputs: { kit_id: input.kitId, audience: input.audience ?? "", sources: input.sources },
+    },
+    "The outline did not start. Try again.",
   );
-  if (result.error) throw new Error(result.error.message || "Could not start the outline.");
-  const data = obj(result.data);
-  const runId = typeof data.run_id === "string" ? data.run_id : "";
-  if (!runId) throw new Error("The outline did not start. Try again.");
-  return { runId, duplicate: data.mode === "duplicate" };
 }
 
 // ─── Generation groups (decision 4) ──────────────────────────────────────────

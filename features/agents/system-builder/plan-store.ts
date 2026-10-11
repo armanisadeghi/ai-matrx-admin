@@ -26,7 +26,7 @@ export interface SavedPlanSummary {
 
 function toMarkdown(plan: SystemPlan): string {
   const steps = plan.steps
-    .map((s) => `${s.n}. **${s.title}** — ${s.job}${s.usesAgentName ? ` _(uses ${s.usesAgentName})_` : ""}`)
+    .map((s) => `${s.n}. **${s.title}** — ${s.summary ?? s.job}${s.usesAgentName ? ` _(uses ${s.usesAgentName})_` : ""}`)
     .join("\n");
   return [`# ${plan.title}`, "", `> ${plan.description}`, "", steps ? `${steps}\n` : "", "---", "", plan.answer].join("\n");
 }

@@ -48,6 +48,14 @@ interface NoteSidebarRowProps {
   onToggleSelect: (noteId: string) => void;
 }
 
+/**
+ * While the row (or its Move button) is hovered: the time fades out so Move
+ * can sit where it was, the kebab shows, and the label's fade clears both.
+ * Guard: features/notes/__tests__/sidebar-row-move-fits.test.tsx.
+ */
+export const ROW_HOVER_ACTIONS_CLASS =
+  "group-hover/note-row:[&_.item-shift]:opacity-0 group-hover/note-row:[&_button[aria-haspopup=menu]]:opacity-100 group-hover/note-row:[--item-fade-w:2.75rem]";
+
 // ── One minute tick, for rows whose time label still changes by the minute ──
 let currentMinute = Math.floor(Date.now() / 60_000);
 const minuteListeners = new Set<() => void>();
@@ -142,7 +150,7 @@ export const NoteSidebarRow = memo(function NoteSidebarRow({
       onContextMenuCapture={() => {
         if (note._fetchStatus !== "full") void dispatch(ensureNoteBodiesLoaded([note.id]));
       }}
-      className={cn("group/note-row flex items-center gap-0.5", isDragging && "opacity-40")}
+      className={cn("group/note-row relative flex items-center gap-0.5", isDragging && "opacity-40")}
     >
       {/*
        * Rendered as a SIBLING of ItemRow, not passed via `leading` — ItemRow's
@@ -203,7 +211,11 @@ export const NoteSidebarRow = memo(function NoteSidebarRow({
           // light mode (--accent is zinc-150), so the active note was invisible.
           // Override with a primary tint (visible in BOTH themes) plus a 2px
           // left accent bar drawn as an inset shadow (no layout shift).
+          // On hover the row's Move button takes the time's place beside the
+          // kebab (both overlay the row's end), so the label keeps its width
+          // at any sidebar width; the kebab stays while the pointer is on Move.
           className={cn(
+            !selectionMode && ROW_HOVER_ACTIONS_CLASS,
             isActive
               ? "bg-primary/10 dark:bg-primary/20 font-medium shadow-[inset_2px_0_0_0_hsl(var(--primary))]"
               : isOpenTab && "bg-accent/30",
@@ -243,8 +255,12 @@ export const NoteSidebarRow = memo(function NoteSidebarRow({
               data-note-row-move
               onClick={() => setMoveOpen(true)}
               className={cn(
-                "flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground focus-visible:opacity-100 group-hover/note-row:opacity-100 pointer-coarse:opacity-60",
-                moveOpen && "opacity-100",
+                // Overlays the row's end, just left of the kebab (right-1, 20px):
+                // never a column of its own, so a narrow sidebar keeps its label.
+                "absolute right-[1.625rem] top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-background hover:text-foreground focus-visible:opacity-100 group-hover/note-row:opacity-100",
+                // Touch: the kebab (always shown) carries "Move to…".
+                "pointer-coarse:pointer-events-none pointer-coarse:opacity-0",
+                moveOpen && "opacity-100 pointer-coarse:opacity-100",
               )}
             >
               <House className="h-3 w-3" />

@@ -240,6 +240,9 @@ export function BoardMenu({
   return (
     <NonEditableContextMenu
       sourceFeature="ai-results"
+      // The designed menu; its feature section is named by the heading below ("Board", "Tile",
+      // "Frame", "Selection") — the host passes no fixed title because one menu serves every target.
+      menuDesign="global"
       extraSections={sections}
       resolveContextOnOpen={(el) => {
         const frame = el?.closest<HTMLElement>("[data-board-frame-strip], [data-board-frame-border]")?.closest<HTMLElement>("[data-board-frame]");

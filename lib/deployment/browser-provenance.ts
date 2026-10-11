@@ -1,3 +1,4 @@
+import { currentDeploymentId } from "./build-identity";
 /** Loaded-document evidence shared by every error capture and overlay diagnostics. */
 export function getNextBuildId(): string | null {
   if (typeof window === "undefined") return null;
@@ -55,7 +56,7 @@ export function collectBrowserProvenance() {
   try {
     pageSessionId ??= crypto.randomUUID();
     const configuredDeploymentId =
-      process.env.NEXT_PUBLIC_DEPLOYMENT_ID || null;
+      currentDeploymentId();
     const observed = collectDeploymentIds(
       collectLoadedScripts(),
       configuredDeploymentId,

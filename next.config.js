@@ -1135,13 +1135,9 @@ const nextConfig = {
     // var, which can disagree with what was actually compiled when
     // FORCE_MATRX_PROFILE is set in code.
     NEXT_PUBLIC_MATRX_PROFILE: MATRX_PROFILE,
-    // Expose deployment ID to the client for diagnostics — lets the global
-    // error logger include "this tab is on deployment X" so we can correlate
-    // errors with stale-tab vs. genuinely-broken builds. Reads the REAL
-    // Vercel-injected var (`VERCEL_DEPLOYMENT_ID`); `NEXT_DEPLOYMENT_ID` was
-    // a non-existent variable that always resolved empty (see `deploymentId`
-    // note above). Diagnostics-only — NOT used for asset/chunk URLs.
-    NEXT_PUBLIC_DEPLOYMENT_ID: process.env.VERCEL_DEPLOYMENT_ID,
+    // NO per-build values here (THE BUILD-CACHE LAW, 2026-10-11): NEXT_PUBLIC_DEPLOYMENT_ID changed
+    // on every build and invalidated most of the persistent compile cache. The deployment id and
+    // commit now reach the browser at request time — lib/deployment/build-identity.ts.
     GROQ_API_KEY: process.env.GROQ_API_KEY,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     // ANTHROPIC_API_KEY removed 2026-10-09: nothing in the frontend calls Anthropic (every AI call

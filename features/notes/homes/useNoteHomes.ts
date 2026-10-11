@@ -11,12 +11,7 @@ import { supabase } from "@/utils/supabase/client";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useWholeScopeTree } from "@/features/scopes/hooks/useWholeScopeTree";
 import { selectNoteHomeIds, selectNoteOrganizationIds } from "../redux/selectors";
-import {
-  buildHomes,
-  collidingHomeNames,
-  homeDisplayName,
-  type NoteHome,
-} from "./homeModel";
+import { buildHomes, homeLabels, type NoteHome } from "./homeModel";
 
 export interface UseNoteHomesReturn {
   homes: NoteHome[];
@@ -36,9 +31,11 @@ export function useNoteHomes(): UseNoteHomesReturn {
   const notesSpanManyOrganizations = noteOrganizationIds.length > 1;
   const noteHomeIds = useAppSelector(selectNoteHomeIds);
   // Homes a note lives in that the scope tree does not carry (a scope of an
-  // organization the tree did not load, an archived scope): named by a direct
-  // read so the sidebar never shows a nameless group.
-  const [outsideTree, setOutsideTree] = useState<Record<string, string>>({});
+  // organization the tree did not load, an archived scope): named through
+  // `platform.home_labels` — the door for homes the person meets — so the
+  // sidebar never shows a nameless group. Never a direct read of
+  // custom.context_scopes: people have no SELECT on it.
+  const [outsideTree, setOutsideTree] = useState<Record<string, NoteHome | null>>({});
   useEffect(() => {
     if (tree.status !== "ready") return;
     const known = new Set<string>();
@@ -47,20 +44,26 @@ export function useNoteHomes(): UseNoteHomesReturn {
     if (missing.length === 0) return;
     let cancelled = false;
     void supabase
-      .schema("custom")
-      .from("context_scopes")
-      .select("id, name")
-      .in("id", missing)
+      .schema("platform")
+      .rpc("home_labels", { p_scope_ids: missing })
       .then(({ data, error }) => {
         if (cancelled) return;
         if (error) {
           console.error("[notes homes] could not name homes outside the scope tree", error);
           return;
         }
-        const next: Record<string, string> = {};
-        for (const id of missing) next[id] = "Unavailable home";
-        for (const row of (data ?? []) as { id: string | null; name: string | null }[]) {
-          if (row.id) next[row.id] = row.name ?? "Unavailable home";
+        const next: Record<string, NoteHome | null> = {};
+        for (const id of missing) next[id] = null;
+        for (const row of data ?? []) {
+          next[row.scope_id] = {
+            scopeId: row.scope_id,
+            name: row.is_general ? "General" : row.name,
+            organizationId: row.organization_id,
+            organizationName: row.organization_name,
+            scopeTypeId: "",
+            scopeTypeLabel: row.is_general ? "General" : "",
+            isGeneral: row.is_general,
+          };
         }
         setOutsideTree((prev) => ({ ...prev, ...next }));
       });
@@ -78,12 +81,15 @@ export function useNoteHomes(): UseNoteHomesReturn {
         generalByOrganization.set(home.organizationId, home);
       }
     }
-    const collidingNames = collidingHomeNames(homes);
+    const outside = Object.values(outsideTree).filter((home): home is NoteHome => home !== null);
+    const labels = homeLabels([...homes, ...outside.filter((home) => !byId.has(home.scopeId))], {
+      notesSpanManyOrganizations,
+    });
     const labelOf = (scopeId: string | null | undefined): string | null => {
       if (!scopeId) return null;
-      const home = byId.get(scopeId);
-      if (home) return homeDisplayName(home, { notesSpanManyOrganizations, collidingNames });
-      return outsideTree[scopeId] ?? null;
+      const label = labels.get(scopeId);
+      if (label) return label;
+      return scopeId in outsideTree ? "Unavailable home" : null;
     };
     return {
       homes,

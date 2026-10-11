@@ -106,7 +106,7 @@ export function SocialsShell({ children }: { children: ReactNode }) {
         // The Studio is the Board, exactly as /board/<id>: its workspace header is the page top, full-bleed.
         <div className="h-full min-h-0">{children}</div>
       ) : (
-        <PageSurfaceMenu sourceFeature="marketing">
+        <PageSurfaceMenu sourceFeature="marketing" menuDesign="global">
           <div className="h-full overflow-y-auto overflow-x-hidden pt-[var(--shell-header-h)]">
             <div className="mx-auto w-full max-w-[1600px] px-3 pb-6 pt-3 sm:px-4">{children}</div>
           </div>

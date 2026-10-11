@@ -32,7 +32,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, RotateCcw } from "lucide-react";
 import { Button, EmptyState, Tabs } from "@ai-matrx/design-system/controls";
-import { useIsMobile } from "@ai-matrx/kit/media-query";
+import { useIsMobile, useMediaQuery } from "@ai-matrx/kit/media-query";
 import { useMandate } from "@ai-matrx/chat/mandates/useMandate";
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
 import { DEFAULT_NEW_CHAT_MANDATE_KEY } from "@ai-matrx/chat/agents/components/chat/chat-quick-actions.config";
@@ -48,6 +48,7 @@ import { selectOwnSubmittedFirstTurnValues } from "@ai-matrx/chat/agents/redux/e
 import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { AGENT_BUILDER_CONTEXT_MENU_PROPS } from "@ai-matrx/chat/agents/agent-context/buildAgentBuilderContextData";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { STUDIO_MIN_THREE_PANE_PX, STUDIO_PANE_MIN_PX } from "../studio-layout";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { ProInput } from "@/components/official/ProInput";
 import { BuildProgress } from "@/features/agents/factory/components/BuildProgress";
@@ -139,6 +140,8 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   const store = useAppStore();
   const router = useRouter();
   const isMobile = useIsMobile();
+  // Below the width the three minimums fit in, the panes become tabs (never overlap).
+  const tabbedPanes = useMediaQuery(`(max-width: ${STUDIO_MIN_THREE_PANE_PX - 1}px)`);
   const mode = studioMode(state.mode)!;
   const { mandate, error: mandateError } = useMandate(DEFAULT_NEW_CHAT_MANDATE_KEY);
   // The assistant: the default chat agent, unless the URL names another (`?assistant=`).
@@ -507,7 +510,11 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   );
 
   const header = (
-    <div className="flex h-10 shrink-0 items-center gap-2 border-b border-border px-2" data-testid="studio-header">
+    <div
+      className="flex h-10 shrink-0 items-center gap-2 border-b border-border px-2"
+      data-testid="studio-header"
+      data-assist-dock-slot="header"
+    >
       <Button variant="quiet" icon={<ArrowLeft />} aria-label="Back" onClick={() => router.push(studioHref({}))} />
       {!isMobile && <span className="shrink-0 text-sm font-semibold text-foreground">Agent Studio</span>}
       <span className="min-w-0 truncate text-xs text-muted-foreground">{agentName ?? mode.title}</span>
@@ -537,7 +544,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     </div>
   );
 
-  const body = isMobile ? (
+  const body = isMobile || tabbedPanes ? (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="shrink-0 border-b border-border px-2">
         <Tabs
@@ -559,16 +566,16 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     </div>
   ) : (
     <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
-      <ResizablePanel defaultSize="28%" minSize="18%" collapsible>
-        <div className="h-full min-h-0" data-testid="studio-pane-assistant">{left}</div>
+      <ResizablePanel defaultSize="28%" minSize={`${STUDIO_PANE_MIN_PX.assistant}px`} collapsible>
+        <div className="h-full min-h-0" data-testid="studio-pane-assistant" data-assist-dock-avoid>{left}</div>
       </ResizablePanel>
       <ResizableHandle />
-      <ResizablePanel defaultSize="46%" minSize="30%">
-        <div className="h-full min-h-0" data-testid="studio-pane-agent">{center}</div>
+      <ResizablePanel defaultSize="44%" minSize={`${STUDIO_PANE_MIN_PX.agent}px`}>
+        <div className="h-full min-h-0" data-testid="studio-pane-agent" data-assist-dock-avoid>{center}</div>
       </ResizablePanel>
       <ResizableHandle />
-      <ResizablePanel defaultSize="26%" minSize="18%" collapsible>
-        <div className="h-full min-h-0" data-testid="studio-pane-controls">{right}</div>
+      <ResizablePanel defaultSize="28%" minSize={`${STUDIO_PANE_MIN_PX.controls}px`} collapsible>
+        <div className="h-full min-h-0" data-testid="studio-pane-controls" data-assist-dock-avoid>{right}</div>
       </ResizablePanel>
     </ResizablePanelGroup>
   );

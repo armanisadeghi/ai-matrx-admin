@@ -17,7 +17,7 @@
 // are read by the server resolver (useSourceSet().resolve, inside
 // useKitGeneration → useIngest); the converter owns text→artifact
 // (useContentConverter); this component owns the flow + progressive UI.
-// Targets light up as their generators register (isTargetAvailable).
+// The outputs offered are the ones the server build makes (kitBuildMakes).
 
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -38,7 +38,7 @@ import { cn } from "@/lib/utils";
 import { useEntitlementGuard } from "@/features/entitlements/components/useEntitlementGuard";
 import { useAiComplianceGate } from "@/features/education/compliance/useAiComplianceGate";
 import { EntitlementMeter } from "@/features/entitlements/components/EntitlementMeter";
-import { getGenerator, isTargetAvailable } from "@/features/education/convert/registry";
+import { kitBuildMakes } from "@/features/education/onboard/kitBuildService";
 import { ALL_TARGET_KINDS, type TargetKind } from "@/features/education/convert/types";
 import { TARGET_PRESENTATION } from "@/features/education/convert/targetPresentation";
 import type { CoverageDepth } from "@/features/education/convert/coverage";
@@ -251,7 +251,7 @@ export function StartHero({
     // Canonical guard (P8): server-truth check BEFORE spending; a cap-hit opens
     // the respectful contextual paywall and never starts the kit build.
     await ingestGuard.guard(async () => {
-      const kinds = [...selected].filter(isTargetAvailable);
+      const kinds = [...selected].filter(kitBuildMakes);
       const requested = Number.parseInt(count, 10);
       // Meter only a real ingest; an empty selection / failed ingest burns nothing.
       const ok = await kit.run(set.toSourceSet(), kinds, {
@@ -367,8 +367,8 @@ export function StartHero({
   // ── Surface (matrx-user/education-start) ────────────────────────────────
   const outputOptions = ALL_TARGET_KINDS.map((kind) => ({
     kind,
-    label: getGenerator(kind)?.label ?? kind,
-    available: isTargetAvailable(kind),
+    label: TARGET_PRESENTATION[kind].label,
+    available: kitBuildMakes(kind),
   }));
   const getScope = () =>
     buildEducationStartScope({
@@ -394,7 +394,7 @@ export function StartHero({
     }
     const fields = parseKitRequestDraftValue(
       value,
-      ALL_TARGET_KINDS.filter(isTargetAvailable),
+      ALL_TARGET_KINDS.filter(kitBuildMakes),
     );
     const owned = fields.fileId
       ? await loadOwnedFile(fields.fileId).catch(() =>
@@ -524,11 +524,11 @@ export function StartHero({
           {kit.stopped && !autoContinue && (
             <RunStoppedNotice
               message={
-                kit.stopped.savedCount > 0
-                  ? `${kit.stopped.title ?? "Your kit"} stopped · ${kit.stopped.savedCount} of ${kit.stopped.request.kinds.length} saved`
+                kit.stopped.building
+                  ? `${kit.stopped.title ?? "Your kit"} is still being built`
                   : `${kit.stopped.title ?? "Your kit"} stopped`
               }
-              redoLabel="Continue"
+              redoLabel={kit.stopped.building ? "Show" : "Continue"}
               onRedo={() => void continueKit()}
               onDismiss={kit.dismissStopped}
             />
@@ -665,8 +665,7 @@ function KitPicker(props: {
       </label>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {ALL_TARGET_KINDS.map((kind) => {
-          const gen = getGenerator(kind);
-          const available = isTargetAvailable(kind);
+          const available = kitBuildMakes(kind);
           const Icon = TARGET_PRESENTATION[kind].icon;
           const on = props.selected.has(kind);
           return (
@@ -689,7 +688,7 @@ function KitPicker(props: {
                 )}
               />
               <span className="min-w-0 flex-1 font-medium leading-tight">
-                {gen?.label ?? kind}
+                {TARGET_PRESENTATION[kind].label}
               </span>
               {available ? (
                 on && <CheckCircle2 className="h-4 w-4 text-primary" />

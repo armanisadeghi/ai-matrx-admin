@@ -294,17 +294,27 @@ function OneMandateRecordBody({
     const failed = failure ?? loadFailedFailure("Unknown error.");
     if (failed.kind === "not-a-system-mandate" && "mandateId" in failed) {
       return (
-        <div className="mx-auto flex max-w-md flex-col items-center gap-3 px-6 py-16 text-center">
-          <p className="type-body text-muted-foreground">{failed.message} <ErrorAlchemyMenu error={failed.message} /></p>
-          <div className="flex items-center gap-2">
-            <Button asChild variant="outline">
-              <Link href={adminMandateSupportRecordHref(String(failed.mandateId))}>
-                Open in Mandate support lookup
-              </Link>
-            </Button>
-            <Button asChild variant="quiet">
-              <Link href={listHref}>System mandates</Link>
-            </Button>
+        <div className="p-4">
+          <div
+            role="status"
+            className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-muted/40 px-4 py-3"
+          >
+            <div className="min-w-0">
+              <p className="type-body font-medium">Not a system mandate</p>
+              <p className="type-secondary text-muted-foreground">
+                It belongs to an organization or a person. Open it from Mandate support lookup.
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <Button asChild variant="outline">
+                <Link href={adminMandateSupportRecordHref(String(failed.mandateId))}>
+                  Open in Mandate support lookup
+                </Link>
+              </Button>
+              <Button asChild variant="quiet">
+                <Link href={listHref}>System mandates</Link>
+              </Button>
+            </div>
           </div>
         </div>
       );
