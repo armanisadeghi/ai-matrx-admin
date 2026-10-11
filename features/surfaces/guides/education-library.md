@@ -5,7 +5,7 @@ This guide is for an agent helping the person here. Read it once before your fir
 
 ## What the page is
 
-One list of everything the person studies from, whatever made it. Four record types share it:
+One list of everything the person studies from. Four record types share it:
 
 | `kind` | What it is | `format` values | Opens at |
 |---|---|---|---|
@@ -14,82 +14,56 @@ One list of everything the person studies from, whatever made it. Four record ty
 | `study_media` | generated study media | `audio`, `summary`, `mind_map`, `memory_aid` | `/education/audio-study/<id>`, `/education/summaries/<id>`, `/education/mind-maps/<id>`, `/education/memory/<id>` |
 | `note` | a study note | `notes` | `/education/notes/<id>` |
 
-Three tabs split them by owner: **Mine** (`mine`, the person's own), **Shared with me**
-(`shared`), and **Public** (`public`, anyone's public items). The page shows 25 rows at a time
-by default (cards view), with a search box, a filter panel (type, format, status, visibility)
-and a sort.
+Three tabs split them by owner: **Mine** (`mine`), **Shared with me** (`shared`), **Public**
+(`public`). 25 rows per page, with search, a filter panel (type, format, status, visibility) and a sort.
 
 ## What you can read
 
-- `library_state`: `"ready"`, `"loading"` or `"failed"`. Only when it is `"ready"` do the list
-  values exist. `"loading"` or `"failed"` is never an empty library; say the list has not loaded
-  (and give `library_error` when it failed).
-- `library_list` (shown to you in full, no lookup needed): what is on screen, in the person's
-  current tab, search, filters and sort; the first 25 rows, each
-  `{ id, title, format, items?, due?, accuracy_pct?, last_studied?, mine? }`.
-  - `format` is the type (the table above); the kind follows from it.
-  - Fields with nothing to say are left out: `items` (card or question count) only for formats
-    that have one; `due` (items due for review now) only when above 0; `accuracy_pct` (0-100)
-    and `last_studied` (YYYY-MM-DD) only once studied — a missing accuracy is never 0%;
-    `mine: false` only on someone else's item.
-  - Titles over 60 characters are cut; `library_rows` has them whole.
-- `library_total`: how many items match in all (across pages). If it is larger than the rows
-  you see, say so.
-- `tab_counts`: `{ mine, shared, public }` for the current search and filters.
-- `library_rows`: the same rows with every field (description, topic, difficulty, source
-  material, workspace, owner, dates, and `href`, the item's own page). Look it up ONCE with the
-  `context` tool only when you need those fields.
-- `active_tab`, `search_query`, `active_sort` (e.g. `"updated desc"`), `active_filters`
-  (e.g. `{ "kind": ["assessment"] }`), `list_page` (`{ page, page_size }`).
-- `filter_options`: the filter values the library offers in this tab, with counts.
+- `library_state`: `"ready"`, `"loading"` or `"failed"`. List values exist only when `"ready"`;
+  `"loading"`/`"failed"` is never an empty library (say it has not loaded; give `library_error`).
+- `library_list` (shown in full, no lookup): the first 25 rows of the current tab, search, filters
+  and sort, each `{ id, title, format, items?, due?, accuracy_pct?, last_studied?, mine? }`. Fields
+  with nothing to say are omitted: `items` only for formats that have one; `due` only above 0;
+  `accuracy_pct` (0-100) and `last_studied` (YYYY-MM-DD) only once studied (missing is never 0%);
+  `mine: false` only on someone else's item. Titles over 60 characters are cut.
+- `library_total` (all matches across pages; say so if larger than the rows you see), `tab_counts`
+  `{ mine, shared, public }`, `active_tab`, `search_query`, `active_sort`, `active_filters`,
+  `list_page` `{ page, page_size }`, `filter_options` (the filter values on offer, with counts).
+- `library_rows`: the same rows with every field (description, topic, difficulty, source, workspace,
+  owner, dates, `href`). Look it up ONCE with the `context` tool only when you need those fields.
 
-"What's in my library?" is answered from `library_list`, `library_total` and `tab_counts`
-alone — no lookup. Group by type, name what is due, and mention the tab you are describing.
+"What's in my library?" is answered from `library_list`, `library_total` and `tab_counts` alone:
+group by type, name what is due, say which tab you describe.
 
 ## What you can write
 
-One target, **`library_view`**. It changes what the list shows, exactly like the search box,
-tabs, filter panel, sort and pager. It saves nothing and changes no study item. The person
-approves it on a card. Send only the keys you want to change:
+One target, **`library_view`**: it changes what the list shows (like the search box, tabs, filters,
+sort and pager), saves nothing, and is approved on a card. Send only the keys to change:
 
 ```json
 { "tab": "mine", "kinds": ["assessment"], "formats": ["quiz"], "sort_by": "title", "sort_direction": "asc" }
 ```
 
-- `search_query`: text; `""` clears it.
-- `tab`: `"mine"`, `"shared"` or `"public"`.
-- `kinds`: any of `fc_set`, `assessment`, `study_media`, `note`.
-- `formats`, `statuses`, `visibilities`: values from `filter_options` (`subtype`, `status`,
-  `visibility`).
-- Each array REPLACES that filter; `[]` clears it.
-- `sort_by`: `updated`, `created`, `title`, `kind`, `subtype`, `status`, `visibility`,
-  `organization_name`, `owner_email`.
-- `sort_direction`: `asc` or `desc`.
-- `page`: 1 or more. A change of tab, search or filter goes back to page 1 unless you send
-  `page`.
+- `search_query` (`""` clears), `tab` (`mine|shared|public`), `kinds` (`fc_set|assessment|study_media|note`),
+  `formats` / `statuses` / `visibilities` (values from `filter_options`); each array REPLACES that
+  filter and `[]` clears it.
+- `sort_by`: `updated|created|title|kind|subtype|status|visibility|organization_name|owner_email`;
+  `sort_direction`: `asc|desc`; `page`: 1+ (a change of tab, search or filter resets to page 1 unless you send `page`).
 
-An unknown key or value refuses the whole change, with the reason, before any card is shown.
-After it lands, the values you were given still describe the OLD view (they were captured when
-your run started), so do not report the new list from them. Tell the person what you changed.
+An unknown key or value refuses the whole change, with the reason, before any card. After it lands,
+your values still describe the OLD view; tell the person what you changed instead of reporting the new list.
 
 ## What this page cannot do
 
-The library has no save, rename, archive or delete for any item: its row menu is Open, Study
-(flashcards), Attach to and Share. So there are no write targets for the records themselves,
-on purpose:
+The library has no save, rename, archive or delete (row menu: Open, Study, Attach to, Share), so
+there are no write targets for the records themselves, on purpose:
 
-- To change or delete an item, send the person to its page (`library_rows[].href`). Every one
-  of those pages has its own tools.
-- To create study material, send them to `/education/kits/new` ("Create kit").
-- To browse other people's public decks and save copies, send them to the Community Library,
-  `/education/library/community`.
-
-Never use generic scope, context or database tools to create, edit or delete these items. They
-skip each type's own rules (card membership, study progress, sharing).
+- To change or delete an item, send the person to its page (`library_rows[].href`).
+- To create study material: `/education/kits/new`. To browse and copy public decks: `/education/library/community`.
+- Never use generic scope, context or database tools on these items: they skip each type's own rules.
 
 ## When you are stuck
 
-- Empty `library_list` with `library_state: "ready"`: nothing matches. Check `search_query`
-  and `active_filters` before saying the library is empty, and offer to clear them with
-  `library_view`.
-- Something about the page is wrong or missing: report it with the `surface_feedback` target.
+- Empty `library_list` with `library_state: "ready"`: nothing matches. Check `search_query` and
+  `active_filters` before saying the library is empty, and offer to clear them with `library_view`.
+- Something on this page is missing or wrong: report it with the `surface_feedback` target.

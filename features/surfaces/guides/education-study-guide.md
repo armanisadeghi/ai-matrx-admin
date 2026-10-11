@@ -6,11 +6,9 @@ once before your first write.
 
 ## What the page is
 
-A study guide is a note in the person's "Study Notes" folder, shown in a reader: the guide's text
-in the middle, the guide picker and outline on the left, and three tabs on the right — **Notes &
-comments**, **Resources** (linked flashcards and related study material) and **Key Terms**. The person can mark passages, write private notes, and discuss the
-guide with others in comment threads. Everything you change goes through this page's write
-targets, which run the same code as the page's own buttons.
+A study guide is a note in the person's "Study Notes" folder, shown in a reader with tabs **Notes &
+comments**, **Resources** and **Key Terms**. Everything you change goes through this page's write
+targets, which run the same code as the page's buttons.
 
 ## What you can read
 
@@ -30,10 +28,9 @@ targets, which run the same code as the page's own buttons.
 - `outline`, `available_guides` (the person's guides as `{ id, title, version }`), `reader_mode`,
   `active_details_tab`, `load_error`, `details_error`.
 
-`study_guide`, `personal_annotations` and `guide_comments` together are the record: each is shown
-to you in full up front, so do not look them up. Only when one of them is unusually large (over
-about 10,000 characters) does it arrive as a look-up item; then read it ONCE with the `context`
-tool. Never page through a list item by item.
+`study_guide`, `personal_annotations` and `guide_comments` are the record, shown in full up front. Only
+when one is over about 10,000 characters does it arrive as a look-up item; then read it ONCE with the
+`context` tool, never item by item.
 
 ## Quotes: how a note or comment is pinned to a passage
 
@@ -44,8 +41,8 @@ write, and the error says which.
 
 ## What you can write
 
-Call the write tool with `target` and `value`. Every target asks the person first (one approval
-card per write) and returns what landed, with ids.
+Call the write tool with `target` and `value`. Every target asks the person first (one card per
+write) and returns what landed, with ids.
 
 **`guide_content`** — rewrite or fix the guide's text, saved immediately. Send the complete new
 markdown body as a string, or for one change in a long guide an anchored edit:
@@ -66,17 +63,15 @@ would change, or when someone else saved the guide since the page loaded (reload
 ]
 ```
 
-With `quote` it highlights that passage (`note` optional); without `quote` it is a note on the
-whole guide and `note` is required. Colors: yellow (default), green, blue, pink, purple. A passage
-the person already highlighted is refused — change that one instead. The very first private note
-may ask the person which workspace to file it in.
+With `quote` it highlights that passage (`note` optional); without it, a whole-guide note (`note`
+required). Colors: yellow (default), green, blue, pink, purple. An already-highlighted passage is
+refused — change that one instead. The first private note may ask which workspace to file it in.
 
 **`update_personal_notes`** — `[{ "id": "<from personal_annotations>", "note": "…", "color": "blue" }]`.
 Only the fields you send change; `note: ""` clears a highlight's note. Colors apply to highlights
 only.
 
-**`delete_personal_notes`** — `["<id>", …]`. The mark and its note go to the person's Trash (they
-can restore them there). The guide's text never changes.
+**`delete_personal_notes`** — `["<id>", …]`. Mark and note go to Trash (restorable); the guide's text never changes.
 
 **`create_guide_comments`** — shared comments, replies and suggestions:
 
@@ -88,9 +83,8 @@ can restore them there). The guide's text never changes.
 ]
 ```
 
-Omit `quote` for a comment on the whole guide. A reply takes only `body` and goes under a thread,
-never under another reply. For something only the person should see, use `create_personal_notes`
-instead — comments are visible to everyone who can read the guide.
+Omit `quote` for a whole-guide comment. A reply takes only `body` and goes under a thread, never
+another reply. Comments are visible to everyone who can read the guide; for private ones use `create_personal_notes`.
 
 **`update_guide_comments`** — `[{ "id": "…", "body": "…" }]` edits the person's own comments
 (`mine: true`); `[{ "id": "<thread id>", "resolved": true }]` resolves a thread (`false` reopens
@@ -107,16 +101,13 @@ folder; it asks which organization when none is selected.
 (1-10). `expected_version` is required and must equal that guide's version in `available_guides`;
 a stale version refuses instead of overwriting a later save. This is how you rename a guide.
 
-**`delete_study_guides`** — `["<id>", …]` ids from `available_guides` (1-10). Each guide goes to
-Trash and can be restored; its annotations and comments are not changed.
+**`delete_study_guides`** — `["<id>", …]` ids from `available_guides` (1-10). Each goes to Trash (restorable); annotations and comments are untouched.
 
 ## Rules
 
 - Every list is checked whole before the approval card: any bad entry refuses the whole write and
-  nothing changes. The refusal lists EVERY problem at once, numbered (bad entries first, then
-  repeats, clashes and unknown ids); fix them all and send the whole list again.
-- Your page snapshot was taken when your run started. After a write, trust the ids in the write's
-  result, not the (older) lists.
+  nothing changes. The refusal numbers EVERY problem at once; fix them all and resend the whole list.
+- Your page snapshot is from when your run started. After a write, trust the ids in the result, not the lists.
 - Never change this guide, its notes or its comments with generic note, document, comment or scope
   tools: they skip the page's anchoring, privacy and version checks.
 - You cannot link flashcard decks from here; tell the person to use "Manage linked flashcards".
