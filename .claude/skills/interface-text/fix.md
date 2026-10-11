@@ -55,6 +55,7 @@ You were given one batch: files, findings, and the exact replacement for each. Y
 | A definition hint repeated on every row of a `.map` | Once per list, beside the list or column label |
 | A required prop's text deleted, leaving a type error and an empty element | Make the prop optional or remove it, and drop the empty element |
 | A tooltip as a native `title=` on text | Use `components/official/InfoHint` (hover, keyboard **and** touch); `KpiTile`'s `title` renders through it |
+| Deleting prose and leaving the newcomer nothing | Before deleting, name what a first-time user loses; that goes into an `InfoHint` on the label (one sentence) or a `CompactHelpPopover` for a complex concept. Delete only author-facing text outright (Arman, 2026-10-10: tooltips always) |
 
 ## Recipes
 
