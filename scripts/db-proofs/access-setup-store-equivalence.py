@@ -47,7 +47,8 @@ from aidream.testing.persona import make_persona, build_tag  # noqa: E402
 
 env = dotenv_values('/Users/armanisadeghi/code/aidream/.env')
 SUITE = 'access-setup/store-equivalence'
-LEVELS = [None, 'viewer', 'commenter', 'edit_content', 'editor', 'admin']
+# one ladder (Arman 2026-10-11): edit_content is retired, so no fixture person or rung holds it
+LEVELS = [None, 'viewer', 'commenter', 'editor', 'admin']
 T0 = time.time()
 failures = []
 
@@ -176,7 +177,6 @@ PEOPLE = [
     ('maker', 'owner', None, 'organization owner who made the Table'),
     ('t_admin', 'member', 'admin', 'Table admin by share'),
     ('t_editor', 'member', 'editor', 'Table editor'),
-    ('t_ec', 'member', 'edit_content', 'can edit content'),
     ('t_comm', 'member', 'commenter', 'Table commenter'),
     ('t_view', 'member', 'viewer', 'Table viewer'),
     ('row_up', 'member', 'viewer', 'viewer on the Table, editor share on one row (record share above Table level)'),
@@ -331,7 +331,7 @@ def run_mode1():
                   rows(r) as (select unnest(%(rows)s::uuid[])), cols(c) as (select unnest(%(cols)s::uuid[])),
                   lv as (select k, u, r, custom.effective_level(u, %(org)s::uuid, r, 'record') l from people, rows)
              select lv.k, coalesce(iam._legacy_may_touch_field(lv.u, cols.c, %(org)s::uuid, lv.l, 'edit'), false) as legacy,
-                    coalesce(lv.l >= 'edit_content', false) as rung, iam.part_may_edit(lv.u, lv.r, cols.c) as new
+                    coalesce(lv.l >= 'editor', false) as rung, iam.part_may_edit(lv.u, lv.r, cols.c) as new
                from lv cross join cols""",
           {'keys': [k for k, *_ in PEOPLE], 'uids': [P[k]['uid'] for k, *_ in PEOPLE], 'rows': ROWS,
            'cols': list(F.values()), 'org': ORG})
@@ -365,7 +365,7 @@ def run_masks_and_notices():
     for d in nd[:4]:
         print('   NOTICE DIFF', d)
     check('masks: legacy visible keys == part answer, every person x every rung', not diffs, f'{total} masks, {len(diffs)} differences')
-    live = q("""with people(u) as (select unnest(%(uids)s::uuid[])), lv(l) as (select unnest(array[null,'viewer','commenter','edit_content','editor','admin']::public.permission_level[]))
+    live = q("""with people(u) as (select unnest(%(uids)s::uuid[])), lv(l) as (select unnest(array[null,'viewer','commenter','editor','admin']::public.permission_level[]))
                 select count(*), count(*) filter (where custom.read_mask_for(u, %(org)s::uuid, %(t)s::uuid, l, a) - 'all_key_ids'
                                                    is distinct from custom._legacy_read_mask_for(u, %(org)s::uuid, %(t)s::uuid, l, a) - 'all_key_ids')
                   from people, lv, (values ('read'), ('edit')) x(a)""", {'uids': [P[k]['uid'] for k, *_ in PEOPLE], 'org': ORG, 't': TABLE})[0]
@@ -387,7 +387,7 @@ def run_mode0():
             select count(*), count(*) filter (where iam.may_touch_field(who.u, cols.id, cols.org, l.l::public.permission_level, a.a)
                                                 is distinct from iam._legacy_may_touch_field(who.u, cols.id, cols.org, l.l::public.permission_level, a.a))
               from cols join who on who.org = cols.org
-              cross join (values (null), ('viewer'), ('commenter'), ('edit_content'), ('editor'), ('admin')) l(l)
+              cross join (values (null), ('viewer'), ('commenter'), ('editor'), ('admin')) l(l)
               cross join (values ('read'), ('edit')) a(a)""")[0]
     check('MODE 0 baseline: live iam.may_touch_field == frozen copy (real Tables)', r[1] == 0, f'{r[0]} answers, {r[1]} differences')
     return r
@@ -406,7 +406,7 @@ def run_mode2():
                                     is distinct from coalesce(iam.part_may_touch(who.u, null, cols.id, l.l::public.permission_level, a.a), false)),
                    count(distinct cols.org), count(distinct cols.id)
               from cols join who on who.org = cols.org
-              cross join (values (null), ('viewer'), ('commenter'), ('edit_content'), ('editor'), ('admin')) l(l)
+              cross join (values (null), ('viewer'), ('commenter'), ('editor'), ('admin')) l(l)
               cross join (values ('read'), ('edit')) a(a)""")[0]
     check('MODE 2 real data: legacy == part answer on every live Table with a non-internal column', r[1] == 0,
           f'{r[0]} answers over {r[3]} columns in {r[2]} organizations, {r[1]} differences')
@@ -420,7 +420,7 @@ def run_mode2():
 
 def run_mode3():
     bad = q("""with people(k, u) as (select * from unnest(%(keys)s::text[], %(uids)s::uuid[])),
-                    lv(l) as (select unnest(array['viewer','commenter','edit_content','editor','admin']::public.permission_level[])),
+                    lv(l) as (select unnest(array['viewer','commenter','editor','admin']::public.permission_level[])),
                     cols as (select f.id, f.data from custom.record f where f.table_id = custom.field_kernel_id() and f.deleted_at is null
                               and (f.data ->> 'entity_definition_id')::uuid = %(t)s and coalesce(f.data ->> 'type', '') <> 'formula')
                select people.k, lv.l, cols.data ->> 'key', pv.may_read, iam.part_may_touch(people.u, null, cols.id, lv.l, 'read')
