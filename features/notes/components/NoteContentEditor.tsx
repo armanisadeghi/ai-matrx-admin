@@ -710,6 +710,8 @@ export function NoteContentEditor({
         <EditableContextMenu
           {...NOTES_EDITOR_CONTEXT_MENU_PROPS}
           extraSections={notesExtras}
+          menuDesign="global"
+          menuFeatureTitle="Note"
           getTextarea={() => (richMode ? null : textareaRef.current)}
           insertAtCaret={
             richMode
