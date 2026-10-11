@@ -384,8 +384,8 @@ async function fetchDbGather(): Promise<DbGather> {
       gather<GatherEdgeRow>("edges", "content_ir.kind_edge"),
       gather<GatherSkillRow>("render_block_skills", "skill.definition"),
       // Dataset key "content_blocks" is the RPC's stable label; it reads the
-      // canonical skill.render_definition (public.content_blocks retired).
-      gather<GatherBlockRow>("content_blocks", "skill.render_definition"),
+      // canonical agent.prompt_block (public.shape_doctor_gather reads it since 1473).
+      gather<GatherBlockRow>("content_blocks", "agent.prompt_block"),
     ]);
 
   return {

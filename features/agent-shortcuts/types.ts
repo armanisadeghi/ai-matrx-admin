@@ -14,7 +14,7 @@ export type {
   AgentShortcutCategoryRecord,
 } from "@ai-matrx/chat/agents/redux/agent-shortcut-categories/types";
 
-// Content blocks are canonical `skill.render_definition` rows (skl slice).
+// Content blocks are canonical `agent.prompt_block` rows (skl slice).
 export type {
   AgentContentBlockDef,
   AgentContentBlockRecord,

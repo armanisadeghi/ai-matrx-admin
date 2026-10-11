@@ -1,9 +1,9 @@
 /**
  * Content-block compatibility layer — the bridge from the retired
  * `features/agents/redux/agent-content-blocks` slice onto the canonical
- * `skl` slice (`skill.render_definition`).
+ * `skl` slice (`agent.prompt_block`).
  *
- * "Content blocks" and "render blocks" are the SAME rows: `skill.render_definition`
+ * "Content blocks" and "render blocks" are the SAME rows: `agent.prompt_block`
  * (2026-08 canonicalization; the old public content_blocks table is retired — see
  * scripts/dead-relations.json). Consumers that used the old slice's selectors
  * (the unified agent context menu, agent-shortcuts hooks) read through these

@@ -472,12 +472,12 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
 
       setCategories(rootCategories);
 
-      // Load content blocks (canonical: skill.render_definition)
+      // Load content blocks (canonical: agent.prompt_block). Archived blocks load as
+      // inactive: the archive is the off switch on a prompt block.
       const { data: blockData, error: blockError } = await supabase
-        .schema("skill")
-        .from("render_definition")
+        .schema("agent")
+        .from("prompt_block")
         .select("*")
-        .is("deleted_at", null)
         .order("sort_order", { ascending: true });
 
       if (blockError) throw blockError;
@@ -485,17 +485,17 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
       setContentBlocks(
         (blockData ?? []).map((block) => ({
           id: block.id,
-          block_id: block.block_id,
+          block_id: block.name,
           label: block.label,
           description: block.description,
-          icon_name: block.icon_name,
+          icon_name: block.icon_name ?? "",
           category_id: block.category_id,
           skill_id: block.skill_id,
           block_type: normalizeBlockType(block.block_type),
           published_to_web: block.published_to_web,
-          template: block.template,
+          template: block.content,
           sort_order: block.sort_order ?? 0,
-          is_active: block.is_active ?? true,
+          is_active: block.deleted_at == null,
           created_at: block.created_at ?? "",
           updated_at: block.updated_at ?? "",
         })),
@@ -604,8 +604,8 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
 
       const { error } = await tryWriteOne(
         supabase
-          .schema("skill")
-          .from("render_definition")
+          .schema("agent")
+          .from("prompt_block")
           .update({
             label: editData.label,
             description: editData.description,
@@ -618,9 +618,14 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
               contentBlocks.find((b) => b.id === editData.id)?.published_to_web
               ? publishedToWebPatch(editData.published_to_web, getUserId())
               : {}),
-            template: editData.template,
+            content: editData.template,
             sort_order: editData.sort_order,
-            is_active: editData.is_active,
+            deleted_at:
+              editData.is_active === false
+                ? (contentBlocks.find((b) => b.id === editData.id)?.is_active === false
+                    ? undefined
+                    : new Date().toISOString())
+                : null,
           })
           .eq("id", editData.id)
           .select("id"),
@@ -661,11 +666,11 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
       //   in the admin-gated (admin) route group
       const organizationId = await resolveSystemOrgId();
       const { error } = await supabase
-        .schema("skill")
-        .from("render_definition")
+        .schema("agent")
+        .from("prompt_block")
         .insert([
           {
-            block_id: createFormData.block_id ?? "",
+            name: createFormData.block_id ?? "",
             label: createFormData.label ?? "",
             description: createFormData.description,
             icon_name: createFormData.icon_name ?? "FileText",
@@ -677,9 +682,11 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
               createFormData.published_to_web ?? true,
               getUserId(),
             ),
-            template: createFormData.template ?? "",
+            content: createFormData.template ?? "",
             sort_order: createFormData.sort_order || 0,
-            is_active: createFormData.is_active !== false,
+            ...(createFormData.is_active === false
+              ? { deleted_at: new Date().toISOString() }
+              : {}),
             organization_id: organizationId,
           },
         ]);
@@ -743,9 +750,11 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
       const supabase = createClient();
       await writeOne(
         supabase
-          .schema("skill")
-          .from("render_definition")
-          .update({ is_active: !block.is_active })
+          .schema("agent")
+          .from("prompt_block")
+          .update({
+            deleted_at: block.is_active ? new Date().toISOString() : null,
+          })
           .eq("id", block.id)
           .select("id"),
         { action: "change", noun: "content block" },
@@ -991,13 +1000,12 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
 
       if (type === "block") {
         // Soft delete, never a hard one (owner ruling 2026-09-20; db-rules
-        // §8): `skill.render_definition` carries `deleted_at` and both of its
-        // readers — `fetchRenderDefinitions` and the kind-content-block
-        // service — already filter it.
+        // §8): `agent.prompt_block` carries `deleted_at`; the archived block stays
+        // listed here as inactive and can be activated again.
         await writeOne(
           supabase
-            .schema("skill")
-            .from("render_definition")
+            .schema("agent")
+            .from("prompt_block")
             .update({ deleted_at: new Date().toISOString() })
             .eq("id", item.id)
             .is("deleted_at", null)
@@ -1008,8 +1016,8 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
             alreadyDone: {
               reread: () =>
                 supabase
-                  .schema("skill")
-                  .from("render_definition")
+                  .schema("agent")
+                  .from("prompt_block")
                   .select("id, deleted_at")
                   .eq("id", item.id)
                   .maybeSingle(),

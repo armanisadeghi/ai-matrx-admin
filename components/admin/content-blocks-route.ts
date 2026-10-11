@@ -19,7 +19,7 @@ export const CONTENT_BLOCK_PARAM = "block";
 
 /**
  * @param base  a route that renders `ContentBlocksManager`
- * @param blockRef  `skill.render_definition.id` (uuid) or its `block_id` key
+ * @param blockRef  `agent.prompt_block.id` (uuid) or its `block_id` key
  */
 export function contentBlockHref(base: string, blockRef: string): string {
   return `${base}?${CONTENT_BLOCK_PARAM}=${encodeURIComponent(blockRef)}`;

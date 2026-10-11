@@ -435,19 +435,19 @@ async function fetchDbInputs(): Promise<DoctorDbInputs> {
             .range(from, to),
         { label: "skill.definition" },
       ),
-      // Canonical: render/content blocks now live in skill.render_definition
+      // Canonical: render/content blocks now live in agent.prompt_block
       // (public.content_blocks retired). The shape doctor detects a kind's
       // teaching block by scanning template text either way.
       readAllRows<ContentBlockRow>(
         ({ from, to }) =>
           supabase
-            .schema("skill")
-            .from("render_definition")
-            .select("id,template", { count: "exact" })
+            .schema("agent")
+            .from("prompt_block")
+            .select("id,template:content", { count: "exact" })
             .is("deleted_at", null)
             .order("id", { ascending: true })
             .range(from, to),
-        { label: "skill.render_definition" },
+        { label: "agent.prompt_block" },
       ),
     ]);
 

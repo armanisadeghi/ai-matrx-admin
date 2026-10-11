@@ -196,7 +196,7 @@ const SAMPLE_FULL: Record<string, unknown> = {
   ],
 };
 
-// The live palette template (skill.render_definition `progress-tracker`),
+// The live palette template (agent.prompt_block `progress-tracker`),
 // framed the way the accumulator hands region text to a strategy.
 const SAMPLE_XML = [
   "<progress_tracker>",

@@ -29,9 +29,10 @@ export async function GET() {
         shortcutTable(supabase)
           .select("*", { count: "exact", head: true }),
         supabase
-          .schema("skill")
-          .from("render_definition")
-          .select("*", { count: "exact", head: true }),
+          .schema("agent")
+          .from("prompt_block")
+          .select("*", { count: "exact", head: true })
+          .is("deleted_at", null),
         supabase
           .schema("agent")
           .from("definition")
@@ -67,11 +68,12 @@ export async function GET() {
           )
           .limit(10),
         supabase
-          .schema("skill")
-          .from("render_definition")
+          .schema("agent")
+          .from("prompt_block")
           .select(
-            "id,label,block_id,category_id,is_active,user_id:created_by,organization_id",
+            "id,label,name,category_id,deleted_at,user_id:created_by,organization_id",
           )
+          .is("deleted_at", null)
           .limit(10),
         contextMenuView(supabase).select("*"),
       ]);
@@ -117,7 +119,7 @@ export async function GET() {
         }
         if ((contentBlocksCount.count ?? 0) === 0) {
           notes.push(
-            "skill.render_definition is EMPTY — the Content Blocks submenu will be disabled.",
+            "agent.prompt_block has no live blocks — the Content Blocks submenu will be disabled.",
           );
         }
         if (viewRows.error) {

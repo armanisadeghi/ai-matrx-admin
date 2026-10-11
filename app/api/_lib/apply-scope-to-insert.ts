@@ -7,7 +7,7 @@ import { resolveSystemOrgId } from "@/lib/organizations/systemOrg";
  * Resolves `scope` + `scopeId` from a JSON request body into the four row-level
  * scope foreign keys (`created_by`, `organization_id`, `project_id`, `task_id`)
  * used across the agent-shortcuts / shortcut-categories tables. (Content
- * blocks moved to skill.render_definition, written directly via supabase-js.)
+ * blocks moved to agent.prompt_block, written directly via supabase-js.)
  *
  * 🚨 THE REQUEST CONTEXT IS CARRIED, NEVER REBUILT
  * (common-docs/policies/context-is-carried-never-rebuilt.md).

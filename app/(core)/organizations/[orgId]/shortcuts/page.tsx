@@ -50,7 +50,7 @@ const TILES: Tile[] = [
     count: (c) => c.categories,
   },
   // Content blocks are managed in the canonical render-blocks editor
-  // (/agent-connections/render-blocks — skill.render_definition).
+  // (/agent-connections/render-blocks — agent.prompt_block).
 ];
 
 export default function OrgShortcutsDashboardPage() {

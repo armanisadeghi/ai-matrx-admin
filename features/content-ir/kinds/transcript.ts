@@ -4,7 +4,7 @@
  * The chat TRANSCRIPT render block (fence language `transcript`;
  * components/mardown-display/blocks/transcripts/) — NOT the
  * features/transcripts audio-transcription domain. One kind covers the union
- * of both live palette variants (skill.render_definition rows `transcript`
+ * of both live palette variants (agent.prompt_block rows `transcript`
  * "Transcript With Speakers" and `simple-transcript` "Simple Transcript" —
  * both emit the SAME ```transcript fence): a segment's `speaker` is optional,
  * so timecoded narration and speaker dialogue are the same shape. Bracketed

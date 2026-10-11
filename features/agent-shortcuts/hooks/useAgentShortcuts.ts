@@ -62,7 +62,7 @@ export function useAgentShortcuts({
   const categoriesStatus = useAppSelector(selectCategoriesStatus);
   const categoriesError = useAppSelector(selectCategoriesError);
 
-  // Content blocks are canonical skill.render_definition rows — fetched via
+  // Content blocks are canonical agent.prompt_block rows — fetched via
   // the skl slice. Its Scope has no "global" (a global read is the same
   // unfiltered RLS read as "user").
   const sklScope: ConnectionsScope = scope === "global" ? "user" : scope;

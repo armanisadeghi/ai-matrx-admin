@@ -40,7 +40,7 @@ function getNavItems(orgId: string) {
       icon: Folder,
     },
     // Content blocks are managed in the canonical render-blocks editor
-    // (/agent-connections/render-blocks — skill.render_definition).
+    // (/agent-connections/render-blocks — agent.prompt_block).
   ];
 }
 

@@ -9,7 +9,7 @@
 /**
  * Canonical example — the "Transcript With Speakers" union member: headers,
  * speaker dialogue, a speakerless bracketed sound annotation, a highlighted
- * segment. Mirrors the live `skill.render_definition` palette template.
+ * segment. Mirrors the live `agent.prompt_block` palette template.
  */
 export const TRANSCRIPT_CANONICAL_EXAMPLE = {
   __kind: "transcript",
