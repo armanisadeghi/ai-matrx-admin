@@ -284,7 +284,9 @@ export function FactoryBuildsPage() {
 
   return (
     <div className="flex h-[calc(100dvh-2.5rem)] min-h-0 flex-col gap-3 overflow-y-auto">
-      <FactoryDoorsTable builds={rows} buildsLoaded={!loading && !error} />
+      <div className="flex h-[36rem] shrink-0 flex-col overflow-hidden">
+        <FactoryDoorsTable builds={rows} buildsLoaded={!loading && !error} />
+      </div>
       <div className="flex h-[calc(100dvh-4rem)] min-h-[28rem] shrink-0 flex-col overflow-hidden">
         <MatrxDataTable
           urlState={{ id: "agent-factory-builds" }}

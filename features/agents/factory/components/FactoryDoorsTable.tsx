@@ -133,7 +133,7 @@ export function FactoryDoorsTable({
         id: "place",
         accessorKey: "place",
         header: "Place",
-        width: 300,
+        width: 260,
         cell: (r) =>
           r.href ? (
             <Link
@@ -170,21 +170,21 @@ export function FactoryDoorsTable({
         id: "factory_7",
         accessorFn: (r) => r.factory?.d7 ?? -1,
         header: "Factory 7d",
-        width: 100,
+        width: 85,
         cell: (r) => <Count value={r.factory?.d7} />,
       },
       {
         id: "factory_30",
         accessorFn: (r) => r.factory?.d30 ?? -1,
         header: "Factory 30d",
-        width: 105,
+        width: 90,
         cell: (r) => <Count value={r.factory?.d30} />,
       },
       {
         id: "old_7",
         accessorFn: (r) => (r.old === "not_recorded" ? -1 : r.old.d7),
         header: "Old 7d",
-        width: 90,
+        width: 75,
         cell: (r) =>
           r.old === "not_recorded" ? (
             <span className="type-secondary text-muted-foreground">
@@ -198,7 +198,7 @@ export function FactoryDoorsTable({
         id: "old_30",
         accessorFn: (r) => (r.old === "not_recorded" ? -1 : r.old.d30),
         header: "Old 30d",
-        width: 90,
+        width: 75,
         cell: (r) =>
           r.old === "not_recorded" ? (
             <span className="type-secondary text-muted-foreground">
