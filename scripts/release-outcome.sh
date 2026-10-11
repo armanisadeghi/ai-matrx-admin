@@ -197,6 +197,23 @@ release_outcome_serving() {
     echo ""
 }
 
+# A satellite (admin/demos/lab) that the ignore step skipped ON PURPOSE — its own pages unchanged
+# and built within the hour (scripts/satellite-builds.mjs, Arman 2026-10-11) — shows on Vercel as
+# CANCELED. That is the rule working, not a dead rollout: read the deployment's own build log and
+# look for its "[satellite] SKIP" line. Test seam: RELEASE_OUTCOME_EVENTS_CMD <uid> prints the log.
+release_outcome_satellite_skipped() {
+    local uid="$1" events token
+    [[ -z "$uid" ]] && return 1
+    if [[ -n "${RELEASE_OUTCOME_EVENTS_CMD:-}" ]]; then
+        events="$("$RELEASE_OUTCOME_EVENTS_CMD" "$uid")"
+    else
+        token="$(release_outcome_token)" || return 1
+        events="$(curl -sS -m 30 -H "Authorization: Bearer $token" \
+            "https://api.vercel.com/v3/deployments/${uid}/events?teamId=${RELEASE_OUTCOME_TEAM_ID}&builds=1&limit=-1" 2>/dev/null || true)"
+    fi
+    grep -q '\[satellite\] SKIP' <<< "$events"
+}
+
 # ── The banner ───────────────────────────────────────────────────────────────
 _RO_RED='\033[0;31m'; _RO_GREEN='\033[0;32m'; _RO_YELLOW='\033[1;33m'
 _RO_CYAN='\033[0;36m'; _RO_NC='\033[0m'
@@ -235,7 +252,14 @@ release_outcome_watch() {
             READY)
                 echo -e "${_RO_GREEN}[OK]${_RO_NC}    Vercel ${project_name}: READY after ${elapsed}s (${uid})." >&2
                 printf 'READY\t%s\t%s\t%s\n' "$state" "$uid" "$url"; return 0 ;;
-            ERROR|CANCELED)
+            CANCELED)
+                if [[ "$bt" != "main" ]] && release_outcome_satellite_skipped "$uid"; then
+                    echo -e "${_RO_CYAN}[INFO]${_RO_NC}  Vercel ${project_name}: skipped BY DESIGN (own pages unchanged, built within the hour) — not a failure." >&2
+                    printf 'SKIPPED_BY_DESIGN\t%s\t%s\t%s\n' "$state" "$uid" "$url"; return 0
+                fi
+                echo -e "${_RO_RED}[FAIL]${_RO_NC}  Vercel ${project_name}: ${state} after ${elapsed}s." >&2
+                printf 'DEAD\t%s\t%s\t%s\n' "$state" "$uid" "$url"; return 1 ;;
+            ERROR)
                 echo -e "${_RO_RED}[FAIL]${_RO_NC}  Vercel ${project_name}: ${state} after ${elapsed}s." >&2
                 printf 'DEAD\t%s\t%s\t%s\n' "$state" "$uid" "$url"; return 1 ;;
             NO_TOKEN)
@@ -327,7 +351,7 @@ release_outcome_report() {
 
     # (2) Poll each targeted project to a terminal state.
     local verdict state uid url line
-    local dead=() unverified=() good=() good_ids=()
+    local dead=() unverified=() good=() good_ids=() by_design=()
     for bt in "${will_build[@]}"; do
         line="$(release_outcome_watch "$bt" "$sha")" || true
         IFS=$'\t' read -r verdict state uid url <<< "$line"
@@ -338,6 +362,7 @@ release_outcome_report() {
                 else
                     dead+=("$(release_outcome_project_name "$bt")|READY-NOT-SERVING|${url}")
                 fi ;;
+            SKIPPED_BY_DESIGN) by_design+=("$(release_outcome_project_name "$bt")") ;;
             UNVERIFIED) unverified+=("$(release_outcome_project_name "$bt")") ;;
             *)          dead+=("$(release_outcome_project_name "$bt")|${state}|${url}") ;;
         esac
@@ -381,7 +406,8 @@ release_outcome_report() {
 
     local glines=("Released and LIVE${version:+ — v$version}" "" "  commit: ${sha}")
     local g
-    for g in "${good_ids[@]}"; do glines+=("  READY + serving: ${g}"); done
+    for g in ${good_ids[@]+"${good_ids[@]}"}; do glines+=("  READY + serving: ${g}"); done
+    [[ ${#by_design[@]} -gt 0 ]] && glines+=("  skipped by design (own pages unchanged, built within the hour): ${by_design[*]}") || true
     _ro_box "$_RO_GREEN" "${glines[@]}"
     return 0
 }
@@ -422,6 +448,7 @@ _release_outcome_self_test() {
             export RELEASE_OUTCOME_FETCH_CMD="$tmp/fetch.sh" RELEASE_OUTCOME_SERVED_CMD="$tmp/served.sh"
             export RELEASE_OUTCOME_POLL_SECONDS="$RO_POLL" RELEASE_OUTCOME_WAIT_SECONDS="$RO_WALL"
             export RELEASE_OUTCOME_SERVE_WAIT_SECONDS="$RO_WALL"
+            [[ -n "${RO_EVENTS:-}" ]] && export RELEASE_OUTCOME_EVENTS_CMD="$RO_EVENTS"
             release_outcome_report "$4" "$5" "$SHA" "${6:-}" 2>"$tmp/err"
         )"
         RO_RC=$?
@@ -486,6 +513,17 @@ _release_outcome_self_test() {
     run_case CANCELED dpl_dead dpl_dead main "release: v0.4.9999 - t"
     [[ $RO_RC -ne 0 ]] && grep -q "ai-matrx: CANCELED" <<< "$RO_OUT" && pass "CANCELED → loud red, rc=$RO_RC" \
         || failt "CANCELED produced rc=$RO_RC and: $RO_OUT"
+
+    # ── 3b. A satellite skipped BY DESIGN is not dead; one without the line is ─
+    printf '#!/usr/bin/env bash\necho "[satellite] SKIP demos: own pages unchanged"\n' > "$tmp/events-skip.sh"; chmod +x "$tmp/events-skip.sh"
+    printf '#!/usr/bin/env bash\necho "Error: build failed"\n' > "$tmp/events-dead.sh"; chmod +x "$tmp/events-dead.sh"
+    RO_EVENTS="$tmp/events-skip.sh"; run_case CANCELED dpl_sat dpl_sat demos "release-demos: v0.4.9999 - t"
+    [[ $RO_RC -eq 0 ]] && grep -q "skipped by design" <<< "$RO_OUT" && pass "satellite CANCELED with its [satellite] SKIP line → green, named 'skipped by design'" \
+        || failt "satellite skip produced rc=$RO_RC and: $RO_OUT // stderr: $RO_ERR"
+    RO_EVENTS="$tmp/events-dead.sh"; run_case CANCELED dpl_sat dpl_sat demos "release-demos: v0.4.9999 - t"
+    [[ $RO_RC -ne 0 ]] && grep -q "ROLLOUT FAILED" <<< "$RO_OUT" && pass "satellite CANCELED without the SKIP line → still loud red" \
+        || failt "satellite cancel without SKIP produced rc=$RO_RC and: $RO_OUT"
+    RO_EVENTS=""
 
     # ── 4. A build that never finishes hits a STATED, ANNOUNCED wall ────────
     # A 3s wall at a 1s poll, so the announcement has room to actually print —
