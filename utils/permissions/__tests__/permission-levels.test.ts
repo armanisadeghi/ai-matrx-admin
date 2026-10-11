@@ -61,8 +61,8 @@ describe("the canonical ladder", () => {
 
   it("labels read View / Comment / Edit / Full access", () => {
     expect(PERMISSION_LEVELS.map((l) => PERMISSION_LEVEL_SHORT_LABELS[l])).toEqual(["View", "Comment", "Edit", "Full access"]);
-    expect(PERMISSION_LEVEL_HINTS.editor).toBe("Change values and content");
-    expect(PERMISSION_LEVEL_HINTS.admin).toBe("Edit plus structure and sharing");
+    expect(PERMISSION_LEVEL_HINTS.editor).toBe("Change values and content.");
+    expect(PERMISSION_LEVEL_HINTS.admin).toBe("Edit plus structure and sharing.");
   });
 
   it("a stored edit_content row is tolerated as editor, never crashes", () => {
