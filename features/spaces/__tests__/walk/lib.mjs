@@ -214,7 +214,7 @@ export async function orgWithoutMember() {
   return org;
 }
 
-/** Share the open page with `email` at `level` ("Can edit content", "Can view", …) through Share → Invite. */
+/** Share the open page with `email` at `level` ("Edit", "View", …) through Share → Invite. */
 export async function shareWith(page, email, level) {
   assertOwnPage(page);
   await page.getByRole("button", { name: /^Share$/ }).first().click();

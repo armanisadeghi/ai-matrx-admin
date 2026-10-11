@@ -267,8 +267,8 @@ await act(page, async () => {
   const levels = (await page.getByRole("option").allInnerTexts()).map((t) => t.trim());
   console.log(JSON.stringify({ shareLevels: levels }));
   await page.screenshot({ path: `${SHOT}/share-levels.png` });
-  // Notion's five levels, in Notion's order (round 32: Can edit content).
-  check("Share offers Notion's levels", levels.join(" · ") === "Full access · Can edit · Can edit content · Can comment · Can view", { levels });
+  // ONE-LADDER (2026-10-10): four levels, highest first; Edit is content only, Full access adds structure and sharing.
+  check("Share offers the four levels", levels.join(" · ") === "Full access · Edit · Comment · View", { levels });
   await page.keyboard.press("Escape");
   await page.keyboard.press("Escape");
 });

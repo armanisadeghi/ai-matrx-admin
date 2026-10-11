@@ -1,5 +1,5 @@
 // Round 33 (2): Archive record on an inline database row never fails silently. As the page's owner (admin) and a
-// content editor (test@test.com, "Can edit content" on a page in an organization they are not in): right-click a
+// content editor (test@test.com, "Edit" on a page in an organization they are not in): right-click a
 // row -> Archive record -> the confirm -> the row leaves the table, or a message says why. Exit 1 on failure.
 //   SHOT_DIR=<dir> node features/spaces/__tests__/walk/archive-row.walk.mjs [admin|member|both] [leftover page ids…]
 import { open, newPage, act, slash, trashPage, chromium, loginUrl, orgWithoutMember, shareWith, originOf } from "./lib.mjs";
@@ -110,7 +110,7 @@ if (who !== "member") {
   check("admin: Archive record (open row) never fails silently", viaPeek !== "nothing happened", { outcome: viaPeek });
 }
 if (who !== "admin") {
-  await act(page, () => shareWith(page, "test@test.com", "Can edit content"));
+  await act(page, () => shareWith(page, "test@test.com", "Edit"));
   const b2 = await chromium.launch({ headless: true });
   const p2 = await (await b2.newContext({ viewport: { width: 1440, height: 1000 } })).newPage();
   await p2.goto(loginUrl(`/spaces/${id}`, true), { waitUntil: "domcontentloaded", timeout: 240_000 });

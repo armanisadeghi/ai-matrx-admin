@@ -71,10 +71,14 @@ describe("shareWithUser files its notification in the shared object's organizati
     await settle();
 
     expect(result.success).toBe(true);
-    expect(sendDirectActionMessage).toHaveBeenCalledTimes(1);
-    expect(sendDirectActionMessage).toHaveBeenCalledWith(
-      expect.objectContaining({ recipientId: RECEPTIONIST, organizationId: CEDAR_RIDGE }),
+    // The notice now travels through the notification route (the spine files the paired DM); its
+    // body is the forcing output: the recipient and the TABLE's organization, never the one picked.
+    const calls = (global.fetch as jest.Mock).mock.calls.filter(([url]) => url === "/api/sharing/notify");
+    expect(calls).toHaveLength(1);
+    expect(JSON.parse(String((calls[0][1] as RequestInit).body))).toEqual(
+      expect.objectContaining({ recipientUserId: RECEPTIONIST, organizationId: CEDAR_RIDGE }),
     );
+    expect(sendDirectActionMessage).not.toHaveBeenCalled();
   });
 
   it("with no object organization and none picked, never asks: the DM is skipped and said", async () => {
@@ -90,6 +94,7 @@ describe("shareWithUser files its notification in the shared object's organizati
     expect(result.success).toBe(true);
     // The unnamed call is the door that raised "Which workspace is this for?".
     expect(sendDirectActionMessage).not.toHaveBeenCalled();
-    expect(console.warn).toHaveBeenCalledWith(expect.stringMatching(/not sent[\s\S]*Remedy/));
+    expect((global.fetch as jest.Mock).mock.calls.filter(([url]) => url === "/api/sharing/notify")).toHaveLength(0);
+    expect(console.warn).toHaveBeenCalledWith(expect.stringMatching(/Nobody was told[\s\S]*Remedy/));
   });
 });
