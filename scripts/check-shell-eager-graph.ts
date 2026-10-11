@@ -28,7 +28,7 @@
  *   pnpm check:shell-eager-graph --report     # biggest packages in the eager set
  *   pnpm check:shell-eager-graph --self-test  # proves the guard goes red on a planted edge
  */
-import { readFileSync, existsSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { readFileSync, existsSync, mkdirSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { builtinModules } from "node:module";
 import { join, resolve, dirname, extname } from "node:path";
 import { tmpdir } from "node:os";
@@ -290,7 +290,10 @@ async function selfTest(): Promise<void> {
   // A planted client module that statically imports the Babel compiler, reached from a planted
   // SERVER module through an `import()` (the route-menu-registry shape) — must go RED. The same
   // edge from a CLIENT module's `import()` is a real async chunk — must stay GREEN.
-  const dir = mkdtempSync(join(ROOT, "tmp-eager-selftest-"));
+  // Planted files must live INSIDE the repo (bare-package resolution walks up to node_modules) but
+  // never where git tracks them: `.cache/` is gitignored, so an interrupted run leaves no junk on main.
+  mkdirSync(join(ROOT, ".cache"), { recursive: true });
+  const dir = mkdtempSync(join(ROOT, ".cache", "eager-selftest-"));
   try {
     writeFileSync(join(dir, "heavy.tsx"), `"use client";\nimport { compileSource } from "@ai-matrx/code-runtime";\nexport default function H(){ return String(compileSource); }\n`);
     writeFileSync(join(dir, "server-registry.ts"), `export const load = () => import("./heavy");\n`);
