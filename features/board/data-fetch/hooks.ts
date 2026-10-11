@@ -1,0 +1,36 @@
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
+
+import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { settingDoorHref } from "@/features/settings/doors/settingDoorTarget";
+
+import { estimateUsd, type DataSource } from "./contract";
+import { getDataSources } from "./server";
+
+export const dataSourcesKey = (organizationId: string | null) => ["board", "data-sources", organizationId] as const;
+
+/** The server's catalog + limits for this organization (cached for the session; limits re-read every 5 min). */
+export function useDataSources(organizationId: string | null) {
+  return useQuery({
+    queryKey: dataSourcesKey(organizationId),
+    queryFn: ({ signal }) => getDataSources({ organizationId: organizationId ?? "", signal }),
+    enabled: Boolean(organizationId),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/** "≈ 38 points" for `n` records of `source` (dollars only for an admin who flipped the switch). */
+export function useFetchEstimate() {
+  const { format } = useCostDisplay();
+  return (source: Pick<DataSource, "usd_per_record"> | null | undefined, n: number): string | null => {
+    const usd = estimateUsd(source, n);
+    return usd == null ? null : `≈ ${format(usd)}`;
+  };
+}
+
+/** Where a limit's "change" link goes: the organization's own setting row. */
+export function limitSettingHref(organizationId: string | null, setting: string): string | null {
+  if (!organizationId || !setting) return null;
+  return settingDoorHref({ scope: "organization", organizationSlugOrId: organizationId, controlId: setting });
+}

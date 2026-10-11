@@ -92,7 +92,7 @@ try {
   } else {
     await answer.locator("[data-message-content] :is(p, li)").first().click({ button: "right" });
     await page.waitForTimeout(700);
-    await page.locator('[role="menu"] [data-alchemy-node="edit"], [role="dialog"] [data-alchemy-node="edit"], [role="menuitem"]:text-is("Edit")').first().click({ timeout: 15_000 });
+    await page.locator('[role="menu"] :text-is("Edit content"), [role="menu"] :text-is("Edit")').first().click({ timeout: 15_000 });
   }
   const editorSel = `[data-in-place-editor="${messageId}"]`;
   await page.locator(editorSel).waitFor({ timeout: 60_000 });

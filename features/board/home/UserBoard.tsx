@@ -79,6 +79,7 @@ import { startNewEntries, type BoardItemType, type ItemBasicValues, type PickerP
 import { filesToBoardItems } from "../items/file-drop";
 import { noteSeedEdit } from "../items/work-sources";
 import { intakeText } from "./board-intake";
+import { useDataTableOffer } from "../data-fetch/useDataTableOffer";
 import { type PlacementRun, placeTiles } from "./place-run";
 import { planPlacement } from "../board/plan-placement";
 import { AddMenu, StartPanel } from "./AddMenu";
@@ -496,6 +497,8 @@ export function UserBoard({
     return screenToWorld(store.getCamera(), clientX - box.left, clientY - box.top);
   };
 
+  // A pasted address a data source can read is OFFERED as a data table (never fetched on paste).
+  const offerDataTable = useDataTableOffer((items) => void place(items));
   const placeFiles = async (files: File[], at?: { x: number; y: number }) => {
     const label = files.length === 1 ? `"${files[0].name}"` : `${files.length} files`;
     toast(`Uploading ${label} to your board…`);
@@ -522,6 +525,7 @@ export function UserBoard({
     const text = e.dataTransfer.getData("text/uri-list") || e.dataTransfer.getData("text/plain");
     const items = intakeText(text);
     if (items.length > 0) place(items, near);
+    offerDataTable(text);
   };
 
   const onPaste = (e: ClipboardEvent) => {
@@ -535,10 +539,12 @@ export function UserBoard({
       void placeFiles(files);
       return;
     }
-    const items = intakeText(e.clipboardData?.getData("text/plain") ?? "");
+    const pasted = e.clipboardData?.getData("text/plain") ?? "";
+    const items = intakeText(pasted);
     if (items.length === 0) return;
     e.preventDefault();
     place(items);
+    offerDataTable(pasted);
   };
   const onPasteRef = useRef(onPaste);
   useEffect(() => {

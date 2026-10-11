@@ -21,7 +21,7 @@
  */
 
 import { useEffect, useState, type ReactNode } from "react";
-import { Database, Rows3 } from "lucide-react";
+import { Database, DownloadCloud, Rows3 } from "lucide-react";
 import { Peek, RecordsMount, TablesHome, recordsDataSource, rowName } from "@ai-matrx/records-ui";
 import { useRecords, useTable } from "@ai-matrx/records/react";
 
@@ -47,6 +47,9 @@ import { titleToAdopt } from "./feature-items.logic";
 import { RecordList } from "./feature-items";
 import { tablesToPick } from "@/features/unified-data/hub/tablePicking";
 import { dataHomeTables, findTables } from "./record-finders";
+import { GetDataBody } from "../data-fetch/GetDataBody";
+import { FetchedSourceBar } from "../data-fetch/FetchedSourceBar";
+import { getDataSource, readDataFetchMeta } from "../data-fetch/tile-meta";
 
 const TABLE_ENTITY = "data-table";
 
@@ -166,13 +169,20 @@ function AdoptTableName({ tableId, source, title, onSource }: { tableId: string 
   return null;
 }
 
-export function TableRecordBody({ id, source, title, onSource }: ItemBodyProps & { id: string }) {
+export function TableRecordBody({ id, tileId, source, title, onSource }: ItemBodyProps & { id: string }) {
   const mount = useUnifiedTable({ tableId: id, address: NO_ADDRESS });
+  // A table made by "Get data" says where its rows came from, with Refresh and Get more.
+  const fetched = source.kind === "entity" ? readDataFetchMeta(source.meta)?.fetched : undefined;
   return (
     <div className={mount.mountsTheTable ? "h-full min-h-0 overflow-y-auto px-2 pb-2 pt-1" : "h-full min-h-0 overflow-y-auto p-4"}>
       <UnifiedTableBody
         mount={mount}
-        before={<AdoptTableName tableId={id} source={source} title={title} onSource={onSource} />}
+        before={
+          <>
+            <AdoptTableName tableId={id} source={source} title={title} onSource={onSource} />
+            {fetched && <FetchedSourceBar tileId={tileId} tableId={id} source={source} fetched={fetched} onSource={onSource} />}
+          </>
+        }
       />
     </div>
   );
@@ -180,8 +190,12 @@ export function TableRecordBody({ id, source, title, onSource }: ItemBodyProps &
 
 function TableItemBody(props: ItemBodyProps) {
   const id = tableIdOf(props.source);
-  return id ? <TableRecordBody key={id} id={id} {...props} /> : <TableDraftBody {...props} />;
+  if (id) return <TableRecordBody key={id} id={id} {...props} />;
+  // "Get data": the tile is the fetch panel until the server answers with the table.
+  if (props.source.kind === "entity" && readDataFetchMeta(props.source.meta)) return <GetDataBody {...props} />;
+  return <TableDraftBody {...props} />;
 }
+
 
 // ─── Record ──────────────────────────────────────────────────────────────────
 
@@ -284,7 +298,10 @@ export const DATA_ITEMS: readonly BoardItemType[] = [
     // Wakes with its grid, scroll, selection and open cell intact: the gates keep their answers
     // (lib/kept-answer), so a wake never drops to "Opening the table…" (lane REMOUNT-SAFETY).
     sleeps: true,
-    startNew: { label: "New table", create: () => ({ title: "New table", source: tableSource(null) }) },
+    startNew: [
+      { label: "New table", create: () => ({ title: "New table", source: tableSource(null) }) },
+      { label: "Get data", icon: DownloadCloud, create: () => ({ title: "Get data", source: getDataSource() }) },
+    ],
     bringIn: { label: "Table", Picker: TablePicker },
     // Tables are not in the search projection: the table picker's own list, matched on the name.
     record: {
