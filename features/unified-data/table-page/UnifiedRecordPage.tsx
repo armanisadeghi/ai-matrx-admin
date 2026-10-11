@@ -13,6 +13,7 @@ import { useRecord, useTable } from "@ai-matrx/records/react";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { NO_ADDRESS, UnifiedTableBody, useUnifiedTable } from "@/features/unified-data/table-page/UnifiedTable";
+import { RecordPageMenu } from "@/features/unified-data/table-page/RecordPageMenu";
 
 function RecordCrumbs({ tableId, recordId }: { tableId: string; recordId: string }) {
   const router = useRouter();
@@ -62,7 +63,9 @@ export function UnifiedRecordPage({ tableId, recordId }: { tableId: string; reco
           content={
             <>
               <RecordCrumbs tableId={tableId} recordId={recordId} />
-              <RecordPanel tableId={tableId} recordId={recordId} onPage />
+              <RecordPageMenu tableId={tableId} recordId={recordId}>
+                <RecordPanel tableId={tableId} recordId={recordId} onPage />
+              </RecordPageMenu>
             </>
           }
         />
