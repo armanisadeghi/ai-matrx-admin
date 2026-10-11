@@ -22,6 +22,7 @@ import {
   parseProblems,
   parseReviewDetail,
   parseReviewSummary,
+  parseStartCandidates,
   parseTemplate,
   parseTemplateList,
   type AnswerProblem,
@@ -36,6 +37,7 @@ import {
   type ReviewAnswers,
   type ReviewDetail,
   type ReviewSummary,
+  type StartCandidate,
 } from "./types";
 
 /**
@@ -178,6 +180,24 @@ export async function createCycle(input: NewCycleInput): Promise<StdResult<strin
   });
   if (!made.ok) return made;
   return typeof made.data.cycle_id === "string" ? { ok: true, data: made.data.cycle_id } : unreadable("The new cycle");
+}
+
+/** The people the caller may start one review for: their direct reports, and everyone when they are HR. */
+export async function listStartCandidates(organizationId: string): Promise<StdResult<StartCandidate[]>> {
+  const r = await callDoor("hr_review_start_candidates", { p_organization_id: organizationId });
+  return r.ok ? { ok: true, data: parseStartCandidates(r.data.people) } : r;
+}
+
+/** A manager (or HR) starts one review now, in the employer's Individual reviews cycle. */
+export async function startReview(
+  employmentId: string,
+  organizationId: string,
+): Promise<StdResult<{ reviewId: string; accessSetup: unknown }>> {
+  const r = await callDoor("hr_review_start", { p_employment_id: employmentId, p_organization_id: organizationId });
+  if (!r.ok) return r;
+  return typeof r.data.review_id === "string"
+    ? { ok: true, data: { reviewId: r.data.review_id, accessSetup: r.data.access_setup ?? null } }
+    : unreadable("The new review");
 }
 
 export type LaunchPopulation =
