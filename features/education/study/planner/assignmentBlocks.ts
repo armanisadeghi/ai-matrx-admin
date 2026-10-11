@@ -86,3 +86,47 @@ export function placeAssignments(
 
   return { ...draft, days };
 }
+
+// ── Render-time overlay ─────────────────────────────────────────────────────
+//
+// `placeAssignments` only runs when a plan is GENERATED, so a plan made before
+// a teacher assigned something (or one whose dates have all passed) never
+// carries it. The planner VIEW therefore overlays the learner's open
+// assignments — the same `myAssignments.ts` read `collectPlanSummary` returns —
+// on their due dates at render. Nothing is written and no plan is regenerated:
+// a due date already scheduled as a block (same href) is not shown twice, a due
+// date that falls on a plan day rides on that day, and one with no plan day
+// gets its own dated entry in the agenda.
+
+export interface AssignmentOverlay {
+  /** Plan day date → the open assignments due that day (not already a block). */
+  onPlanDay: Record<string, PlanAssignment[]>;
+  /** Due dates with no plan day, ascending. */
+  offPlan: { date: string; items: PlanAssignment[] }[];
+}
+
+export function assignmentOverlay(
+  planDates: string[],
+  scheduledHrefs: Iterable<string>,
+  assignments: PlanAssignment[] | undefined,
+): AssignmentOverlay {
+  const scheduled = new Set(scheduledHrefs);
+  const onPlan = new Set(planDates.map((d) => d.slice(0, 10)));
+  const onPlanDay: Record<string, PlanAssignment[]> = {};
+  const off = new Map<string, PlanAssignment[]>();
+  for (const a of assignments ?? []) {
+    if (!a.dueDate || !a.href || scheduled.has(a.href)) continue;
+    const due = a.dueDate.slice(0, 10);
+    if (onPlan.has(due)) (onPlanDay[due] ??= []).push(a);
+    else off.set(due, [...(off.get(due) ?? []), a]);
+  }
+  const offPlan = [...off.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, items]) => ({ date, items }));
+  return { onPlanDay, offPlan };
+}
+
+/** True when every day of the plan is before `today` (YYYY-MM-DD). */
+export function planHasEnded(planDates: string[], today: string): boolean {
+  return planDates.length > 0 && planDates.every((d) => d.slice(0, 10) < today);
+}

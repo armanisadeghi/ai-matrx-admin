@@ -47,6 +47,7 @@ import { computePlanStaleness, type PlanStaleness } from "../staleness";
 import { usePlannerAgent } from "../usePlannerAgent";
 import { publishPlannerPlanSnapshot } from "../plannerSnapshot";
 import { PlanAgenda } from "./PlanAgenda";
+import { planHasEnded } from "../assignmentBlocks";
 import { PlanGenerateForm } from "./PlanGenerateForm";
 import type {
   PlanDraft,
@@ -71,6 +72,12 @@ import { Chip } from "@ai-matrx/design-system/controls";
 
 const MS_PER_DAY = 86_400_000;
 const SURFACE_NAME = "matrx-user/education-planner";
+
+/** Today as a local YYYY-MM-DD (plan days are local calendar dates). */
+function localTodayIso(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
 function daysUntil(iso: string | null): number | null {
   if (!iso) return null;
@@ -1052,8 +1059,23 @@ export function StudyPlanView({ seedTitle }: { seedTitle?: string }) {
         </section>
       )}
 
+      {planHasEnded(
+        plan.days.map(({ day }) => day.day_date),
+        localTodayIso(),
+      ) && (
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-3 py-2">
+          <span className="text-sm text-muted-foreground">
+            All of this plan&apos;s days have passed.
+          </span>
+          <Button variant="outline" onClick={() => setForceForm(true)}>
+            New plan
+          </Button>
+        </div>
+      )}
+
       <PlanAgenda
         plan={plan}
+        assignments={liveSummary?.assignments}
         onBlockStatus={handleBlockStatus}
         onAddBlock={openAddBlock}
         onEditBlock={openEditBlock}

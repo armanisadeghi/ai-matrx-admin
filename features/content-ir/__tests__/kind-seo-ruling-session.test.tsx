@@ -32,6 +32,8 @@ import {
 import { componentRegistry } from "../registry/component-registry";
 import { kindRegistry } from "../registry/kind-registry";
 import { resolveBlockDispatch } from "@ai-matrx/rich-content/display/chat-markdown/block-registry/block-dispatch";
+// The host registers its domain blocks (these kinds included) into the package dispatch at load.
+import "@/features/rich-content-host/domain-block-dispatch";
 import {
   envelopeFromCompleteValue,
   IR_ENVELOPE_KEY,

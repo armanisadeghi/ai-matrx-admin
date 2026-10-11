@@ -20,7 +20,7 @@ export function downloadSheetAsCsv(
   options: { sheetId?: string; filename: string },
 ): boolean {
   const grid = univerSnapshotToRows(snapshot, options.sheetId ? { sheetId: options.sheetId } : {});
-  if (!grid) return false;
+  if (!grid || grid.rows.length === 0) return false;
   const name = `${options.filename.replace(/\.csv$/i, "")}.csv`;
   // BOM so Excel reads UTF-8.
   const blob = new Blob(["﻿", rowsToCsv(grid.rows)], { type: "text/csv;charset=utf-8" });
@@ -38,7 +38,7 @@ export function printSheet(
   options: { sheetId?: string; title: string },
 ): boolean {
   const grid = univerSnapshotToRows(snapshot, options.sheetId ? { sheetId: options.sheetId } : {});
-  if (!grid) return false;
+  if (!grid || grid.rows.length === 0) return false;
   const body = grid.rows
     .map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join("")}</tr>`)
     .join("");

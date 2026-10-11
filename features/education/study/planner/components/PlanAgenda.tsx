@@ -13,6 +13,7 @@
 import { useRouter } from "next/navigation";
 import { createElement } from "react";
 import {
+  CalendarClock,
   Check,
   ChevronRight,
   Coffee,
@@ -25,6 +26,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { blockHref, blockIcon, blockKindLabel } from "../blockLinks";
+import {
+  assignmentBlockLabel,
+  assignmentOverlay,
+  type PlanAssignment,
+} from "../assignmentBlocks";
 import type {
   PlanWithDays,
   StudyPlanBlockRow,
@@ -68,6 +74,11 @@ export interface PlanAgendaProps {
   onEditBlock: (block: StudyPlanBlockRow) => void;
   onDeleteBlock: (block: StudyPlanBlockRow) => void;
   busyBlockId?: string | null;
+  /**
+   * The learner's open class assignments (the live `myAssignments` read),
+   * overlaid on their due dates at render — whenever the plan was generated.
+   */
+  assignments?: PlanAssignment[];
 }
 
 export function PlanAgenda({
@@ -77,27 +88,137 @@ export function PlanAgenda({
   onEditBlock,
   onDeleteBlock,
   busyBlockId,
+  assignments,
 }: PlanAgendaProps) {
   const today = todayIso();
   const dailyMinutes = plan.plan.daily_minutes ?? 30;
+  const overlay = assignmentOverlay(
+    plan.days.map(({ day }) => day.day_date),
+    plan.days.flatMap(({ blocks }) =>
+      blocks
+        .map((b) => (b.target_ref as { href?: string } | null)?.href)
+        .filter((h): h is string => !!h),
+    ),
+    assignments,
+  );
+  // Plan days and assignment-only due dates, in one date order.
+  const entries = [
+    ...plan.days.map((entry) => ({ date: entry.day.day_date.slice(0, 10), entry })),
+    ...overlay.offPlan.map((due) => ({ date: due.date, due })),
+  ].sort((a, b) => a.date.localeCompare(b.date));
 
   return (
     <div className="flex flex-col gap-3">
-      {plan.days.map(({ day, blocks }) => (
-        <DayCard
-          key={day.id}
-          day={day}
-          blocks={blocks}
-          isToday={day.day_date === today}
-          isPast={day.day_date < today}
-          dailyMinutes={dailyMinutes}
-          onBlockStatus={onBlockStatus}
-          onAddBlock={onAddBlock}
-          onEditBlock={onEditBlock}
-          onDeleteBlock={onDeleteBlock}
-          busyBlockId={busyBlockId}
-        />
-      ))}
+      {entries.map((e) =>
+        "entry" in e ? (
+          <DayCard
+            key={e.entry.day.id}
+            day={e.entry.day}
+            blocks={e.entry.blocks}
+            due={overlay.onPlanDay[e.date] ?? []}
+            isToday={e.entry.day.day_date === today}
+            isPast={e.entry.day.day_date < today}
+            dailyMinutes={dailyMinutes}
+            onBlockStatus={onBlockStatus}
+            onAddBlock={onAddBlock}
+            onEditBlock={onEditBlock}
+            onDeleteBlock={onDeleteBlock}
+            busyBlockId={busyBlockId}
+          />
+        ) : (
+          <DueDateCard
+            key={`due-${e.date}`}
+            date={e.date}
+            items={e.due.items}
+            isToday={e.date === today}
+            isPast={e.date < today}
+          />
+        ),
+      )}
+    </div>
+  );
+}
+
+/** A due date the plan has no day for — only the assignments due on it. */
+function DueDateCard({
+  date,
+  items,
+  isToday,
+  isPast,
+}: {
+  date: string;
+  items: PlanAssignment[];
+  isToday: boolean;
+  isPast: boolean;
+}) {
+  return (
+    <section
+      className={cn(
+        "rounded-xl border bg-card p-4",
+        isToday ? "border-primary/60 ring-1 ring-primary/30" : "border-border",
+        isPast && !isToday && "opacity-70",
+      )}
+    >
+      <div className="flex items-center gap-3">
+        <DateBadge date={parseLocalDate(date)} isToday={isToday} />
+        <div className="flex items-center gap-2">
+          {isToday && <Chip tone="primary" label="Today" />}
+          <span className="text-xs text-muted-foreground">Class work due</span>
+        </div>
+      </div>
+      <ul className="mt-3 flex flex-col gap-2">
+        {items.map((a) => (
+          <DueRow key={`${a.href}-${a.title}`} assignment={a} />
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/** One open class assignment due on this date; opens the assigned work. */
+function DueRow({ assignment }: { assignment: PlanAssignment }) {
+  const router = useRouter();
+  return (
+    <li className="flex items-center gap-3 rounded-lg border border-border/60 bg-background/40 p-2.5">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+        <CalendarClock className="h-4 w-4" />
+      </div>
+      <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+        {assignmentBlockLabel(assignment)}
+      </span>
+      <Chip label="Due" />
+      {assignment.href && (
+        <Button
+          iconEnd={<ChevronRight />}
+          variant="outline"
+          onClick={() => router.push(assignment.href as string)}
+        >
+          Open
+        </Button>
+      )}
+    </li>
+  );
+}
+
+function DateBadge({ date, isToday }: { date: Date; isToday: boolean }) {
+  return (
+    <div
+      className={cn(
+        "flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg border text-center",
+        isToday
+          ? "border-primary/40 bg-primary/10 text-primary-ink"
+          : "border-border bg-muted/40 text-muted-foreground",
+      )}
+    >
+      <span className="text-[10px] uppercase leading-none">
+        {WEEKDAY[date.getDay()]}
+      </span>
+      <span className="text-base font-semibold leading-tight text-foreground">
+        {date.getDate()}
+      </span>
+      <span className="text-[9px] uppercase leading-none">
+        {MONTH[date.getMonth()]}
+      </span>
     </div>
   );
 }
@@ -105,6 +226,7 @@ export function PlanAgenda({
 function DayCard({
   day,
   blocks,
+  due,
   isToday,
   isPast,
   dailyMinutes,
@@ -116,6 +238,7 @@ function DayCard({
 }: {
   day: StudyPlanDayRow;
   blocks: StudyPlanBlockRow[];
+  due: PlanAssignment[];
   isToday: boolean;
   isPast: boolean;
   dailyMinutes: number;
@@ -141,24 +264,7 @@ function DayCard({
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div
-            className={cn(
-              "flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg border text-center",
-              isToday
-                ? "border-primary/40 bg-primary/10 text-primary-ink"
-                : "border-border bg-muted/40 text-muted-foreground",
-            )}
-          >
-            <span className="text-[10px] uppercase leading-none">
-              {WEEKDAY[date.getDay()]}
-            </span>
-            <span className="text-base font-semibold leading-tight text-foreground">
-              {date.getDate()}
-            </span>
-            <span className="text-[9px] uppercase leading-none">
-              {MONTH[date.getMonth()]}
-            </span>
-          </div>
+          <DateBadge date={date} isToday={isToday} />
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               {isToday && (
@@ -205,6 +311,13 @@ function DayCard({
         )}
       </div>
 
+      {due.length > 0 && (
+        <ul className="mt-3 flex flex-col gap-2">
+          {due.map((a) => (
+            <DueRow key={`${a.href}-${a.title}`} assignment={a} />
+          ))}
+        </ul>
+      )}
       {!day.is_rest_day && (
         <div className="mt-3 flex items-center justify-between">
           <span className="text-xs font-medium text-muted-foreground">
