@@ -768,6 +768,12 @@ export function SystemMessage({
           <PromptFixReview
             text={developerMessage}
             onApply={handleTextChange}
+            // Apply lands IN the showing field as one edit its ⌘Z takes back.
+            applyTo={() =>
+              viewMode === "write"
+                ? writeRef.current
+                : (textareaRefs.current[systemMessageIndex] ?? null)
+            }
             dismissKey={`agent:${agentId}:system`}
             className="mb-2"
           />

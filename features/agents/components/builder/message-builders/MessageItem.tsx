@@ -841,6 +841,10 @@ export function MessageItem({
         <PromptFixReview
           text={currentText}
           onApply={handleTextChange}
+          // Apply lands IN the showing field as one edit its ⌘Z takes back.
+          applyTo={() =>
+            viewMode === "write" ? writeRef.current : textareaRef.current
+          }
           dismissKey={`agent:${agentId}:message:${messageIndex}`}
           className="mb-2"
         />
