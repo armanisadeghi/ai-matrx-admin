@@ -353,17 +353,6 @@ const surfaceSpecific: SurfaceValue[] = [
     sortOrder: 340,
     group: "gain_report",
   },
-  {
-    name: "gain_is_seed",
-    label: "Sample data",
-    description:
-      "True when the report is showing SEED FIXTURES, not the learner's real measurements — because the underlying P1 assessment-engine table isn't live yet or the learner has no real pairs. When true, describe the numbers as illustrative, never as the learner's actual results. Absent while loading; on the dashboard view present only when the learning-gain teaser shows.",
-    valueType: "boolean",
-    alwaysAvailable: false,
-    typicalCharCount: 5,
-    sortOrder: 350,
-    group: "gain_report",
-  },
 ];
 
 export const educationProgressManifest: SurfaceManifest = {
@@ -382,7 +371,7 @@ export const educationProgressManifest: SurfaceManifest = {
 You are on the Progress surface at /education/progress — the learner's own cross-mode study analytics: mastery, accuracy, weak areas, trends, and a pre/post learning-gain report. Everything here is READ-ONLY derived evidence computed from the learner's real attempt history; there is nothing to author on either view.
 Read \`view\` first — it is "dashboard" or "learning_gain".
 On "dashboard": start with \`progress_overview\` — one XML bundle of the whole page, enough for "how am I doing" and "what should I study next" without another lookup. The individual values below hold the full rows: \`overall_stats\` and \`mode_stats\` are the folded totals; \`weak_topics\` names what needs work; \`accuracy_trend\` says whether things are improving; \`current_streak\` and \`total_minutes\`/\`session_count\` round out the picture. \`analytics_has_data\` is false for a brand-new learner — don't describe an empty spine as "struggling". Once there's enough data, an AI narrator runs automatically: \`narrative_headline\`, \`narrative_insights\`, and especially \`narrative_recommendations\` are the surface's own best answer to "what should I study next" — read them before improvising a suggestion, and prefer them over re-deriving your own from the raw stats.
-On "learning_gain": \`gain_pairs\` holds each subject's baseline→post measurement; \`gain_overall_delta\` and \`gain_overall_normalized\` are the headline numbers ("prove it makes you smarter"). Check \`gain_is_seed\` FIRST — while the underlying assessment-engine table isn't live, this report shows labeled SAMPLE data, and you must describe it as illustrative, never as the learner's actual results.
+On "learning_gain": \`gain_pairs\` holds each subject's baseline→post measurement; \`gain_overall_delta\` and \`gain_overall_normalized\` are the headline numbers ("prove it makes you smarter").
 </surface_intro>`,
   groups,
   values: mergeBaselineValues(
@@ -505,7 +494,6 @@ export function createEducationProgressScope(values: {
   gain_pairs?: ProgressGainPair[];
   gain_overall_delta?: number;
   gain_overall_normalized?: number;
-  gain_is_seed?: boolean;
 }): SurfaceScopePayload {
   return values as SurfaceScopePayload;
 }
