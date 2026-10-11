@@ -31,9 +31,9 @@ carried raw uuids.
 | Piece | File | Role |
 |---|---|---|
 | Types | `types.ts` | `AttentionItem` (a decision, not a title), `AttentionSourceState` |
-| Sources (pure) | `sources/schedule-alarms.ts`, `sources/provider-outages.ts` | rows → items; summaries |
-| Sources (live) | `sources/useScheduleAlarmSource.ts`, `sources/useProviderOutageSource.ts` | React Query read + the injected writes |
-| Notice | `build-notice.ts` | live/muted partition, the title, the pill, `null` at zero |
+| Sources (pure) | `sources/schedule-alarms.ts`, `sources/provider-outages.ts`, `sources/dated-changes.ts`, `sources/spend-alarms.ts` | rows → items; summaries |
+| Sources (live) | `sources/useScheduleAlarmSource.ts`, `sources/useProviderOutageSource.ts`, `sources/useDatedChangeSource.ts`, `sources/useSpendAlarmSource.ts` | React Query read + the injected writes |
+| Notice | `build-notice.ts` | live/muted partition, the title, the pill, `null` at zero; `info` counted apart; `SECTION_LIMIT` (8) rows per source, worst first, `hidden` → "+N more" to its review |
 | Row | `AttentionItemRow.tsx` | the same row on the dock AND the review page |
 | Dock | `AdminAttentionDock.tsx` | float, collapse, snooze, note dialog, runway marker |
 | Mutes | `item-mute.ts` + `useLocalMutes.ts` | durations; the LOCAL store (external store, no effects) |
@@ -46,8 +46,11 @@ row"); one honest sentence through `TextWithDoors` (never a bare uuid);
 "Where it shows:" — the product pages the job feeds, each opening in a new
 tab, or the honest "This job has not said which pages it feeds"; the evidence
 ("The run that failed"); the fix beside the complaint (Re-enable, with its
-consequence stated before it runs); and **Mute** — 1 hour … 30 days, or
-30 days with a note.
+consequence stated before it runs); the **fix line** ("What to do: …") when the
+record says; **Copy / Copy for AI** (THE copy door, `CopyButtons`) when the source
+supplies `copy`; and **Mute** — 1 hour … 30 days, or 30 days with a note.
+Severity is critical / warning / **info**: info is listed last, never turns the
+dock red, and the pill counts it apart ("3 things need a person · 2 to know").
 
 **Two mute scopes.** A schedule's mute is a FACT ABOUT THE RECORD: written to
 `sch_task.metadata.alarm_mute {until, reason, by, at}` through RLS
@@ -93,6 +96,22 @@ is reconciled onto `sch_task.metadata.impact` at worker boot (aidream
 `0686` seeded the first five). A job with no declaration shows "has not said
 which pages it feeds" — honest, and the nudge.
 
+## Spend alarms
+
+Source `spend-alarms` (`sources/spend-alarms.ts` + `useSpendAlarmSource.ts`): every unresolved
+`billing.spend_alarm` record, read through `billing.spend_alarms_for_attention` (super-admin
+SECURITY DEFINER, so it answers on every page; the table's RLS answers only inside the admin lane).
+Row: level → severity; record door `/administration/billing/alarms/<id>`; state "1,388 times ·
+last 4:51 PM"; sentence = `detail` with ids swapped for names (`readable`); the blocked records
+(`refLinks`) as "Where it shows"; the latest occurrence as evidence; `fix` (or the fix shipped in
+code) as the fix line; actions from `alarmActions` — Approve / Reject (held approval), Pause /
+Resume / Run once now (task) — plus Resolve, each with its consequence first, through the record
+page's own writes. **Mute is a fact about the record**: `spend_alarm_set_status('snoozed',
+p_snoozed_until, p_note)` stores until + `snooze_note` + `snoozed_by`; Unmute reopens. Review: the
+alarm list `/administration/billing/alarms` (Snoozed filter shows the note). This dock is the ONLY
+in-app surface for spend alarms; aidream e-mails critical ones and nothing else (guard
+`aidream/scripts/check_no_direct_alarm_announcements.py`, `--live`).
+
 ## Dated changes (when they speak)
 
 Quiet until the lead window, loud inside it — decided in the database, rendered here and by
@@ -121,11 +140,21 @@ that fails is already captured by `lib/python-client`.
 `__tests__/build-notice.test.ts` (null at zero, ordering, both mute scopes,
 expiry), `__tests__/mutes-and-snooze.test.ts` (never permanent, garbage-safe),
 `__tests__/schedule-alarm-items.test.ts` (RPC-shaped fixtures → doors,
-actions, mutes), `__tests__/AdminAttentionDock.test.tsx` (real component:
+actions, mutes), `__tests__/spend-alarm-items.test.ts` (record → row, actions,
+mute → record status, Copy for AI, summary), `__tests__/AdminAttentionDock.test.tsx` (real component:
 one card for two sources, doors, local vs server mute, non-admin issues no
 request, loud vs silent failure, never an all-clear, expired mute ignored).
 
 ## Change log
+
+- **2026-10-10** — Spend alarms join the dock (source `spend-alarms`) and the loud in-app notice
+  rail is deleted (`features/notifications/components/LoudNotices*`, `loud/`, `/demos/loud-notices`,
+  `communication.my_loud_notices`). Arman: "I need this thing to be on the proper admin
+  notification system so I can snooze it." Kept from the alarm system and made dock primitives
+  for every source: `info` severity, a fix line, Copy / Copy for AI (schedules and outages supply
+  it too), and a per-section cap with "+N more" for ~30 rows. Tests: `spend-alarm-items.test.ts`,
+  `build-notice.test.ts` (info, cap), `AdminAttentionDock.test.tsx` (spend rows, 1-hour mute →
+  record, +22 more).
 
 - **2026-09-29** — The dock no longer waits for an active organization. Schedule alarms and
   provider outages were gated on `selectOrganizationId`, so a super admin with no organization
