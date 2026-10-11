@@ -51,12 +51,12 @@ export function SendDialog(p: {
               </DialogTitle>
               <DialogDescription>{p.onlyMe ? "Open it and sign." : `${p.result.notified} ${p.result.notified === 1 ? "person has" : "people have"} been told.`}</DialogDescription>
             </DialogHeader>
-            {p.result.warnings.length > 0 && (
-              <p className="flex items-start gap-1.5 type-secondary text-muted-foreground">
+            {sentWarningLines(p.result.warnings, recipients).map((line) => (
+              <p key={line} className="flex items-start gap-1.5 type-secondary text-muted-foreground">
                 <AlertTriangle className="mt-px h-3.5 w-3.5 shrink-0 text-warning" />
-                {p.result.warnings.length} {p.result.warnings.length === 1 ? "recipient has" : "recipients have"} no signature field.
+                {line}
               </p>
-            )}
+            ))}
             <DialogFooter>
               <Button variant="primary" asChild>
                 <Link href={p.onlyMe ? `/sign/e/${p.result.envelope_id}` : `/esign/${p.result.envelope_id}`}>{p.onlyMe ? "Sign now" : "View envelope"}</Link>
@@ -198,4 +198,26 @@ export function PreviewDialog(p: {
       </DialogContent>
     </Dialog>
   );
+}
+
+/** One honest line per kind of warning the send answered with, naming who it is about. */
+function sentWarningLines(
+  warnings: ReadonlyArray<{ code?: string | null; recipient_key?: string | null }>,
+  recipients: ReadonlyArray<{ key: string; full_name?: string | null; email?: string | null }>,
+): string[] {
+  const nameOf = (key: string | null | undefined) => {
+    const r = recipients.find((x) => x.key === key);
+    return r?.full_name || r?.email || "A recipient";
+  };
+  const by = new Map<string, string[]>();
+  for (const w of warnings) {
+    const code = w.code ?? "unknown";
+    by.set(code, [...(by.get(code) ?? []), nameOf(w.recipient_key)]);
+  }
+  return [...by.entries()].map(([code, names]) => {
+    const who = names.join(", ");
+    if (code === "signer_without_signature_field") return `${who}: no signature field.`;
+    if (code === "access_code_not_set") return `${who}: no access code set, so an emailed code is used.`;
+    return `${who}: ${code.replace(/_/g, " ")}.`;
+  });
 }
