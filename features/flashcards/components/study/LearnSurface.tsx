@@ -270,7 +270,8 @@ export function LearnSurface({ setId }: { setId: string }) {
               <RoundProgress
                 position={Math.min(learn.position + 1, learn.queue.length)}
                 total={learn.queue.length}
-                correct={learnCounts(learn).mastered}
+                // Answers right this round: each miss added one question.
+                correct={learn.position - (learn.queue.length - learn.roundCardIds.length)}
               />
               <p className="mb-2 text-xs font-medium text-muted-foreground">
                 {item.stage === "choice" ? "Choose the answer" : "Type the answer"}
@@ -548,17 +549,18 @@ function TypedQuestion({
         </form>
       ) : (
         <div className="mt-3 flex flex-col gap-3 sm:mt-4">
-          {ui && Icon ? (
+          {checking ? (
+            // No verdict until the meaning check lands: a paraphrase that
+            // misses on spelling must never flash "Not quite" first.
+            <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/40 px-4 py-3 text-muted-foreground">
+              <Loader2 className="h-5 w-5 shrink-0 animate-spin" />
+              <span className="text-base font-semibold">Checking meaning</span>
+            </div>
+          ) : ui && Icon ? (
             <div className={cn("rounded-xl border px-4 py-3", ui.banner)}>
               <div className="flex items-center gap-2">
                 <Icon className="h-5 w-5 shrink-0" />
                 <span className="text-base font-semibold">{ui.label}</span>
-                {checking ? (
-                  <span className="ml-auto inline-flex items-center gap-1 text-[11px] font-medium opacity-75">
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    Checking meaning
-                  </span>
-                ) : null}
               </div>
               {meaning?.reason ? (
                 <p className="mt-1 text-sm opacity-90">{meaning.reason}</p>

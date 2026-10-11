@@ -19,7 +19,7 @@ import { parseHttpError } from "@/lib/api/errors";
 import { getAccessTokenOrNull, requestRaw } from "@/lib/python-client";
 import { invalidateProcessedDocumentPages } from "./useProcessedDocumentPages";
 import { markAutoCleanHandled } from "./useAutoCleanOnOpen";
-import { savePdfRunRequest } from "../state/runRequests";
+import { clearPdfRunRequest, savePdfRunRequest } from "../state/runRequests";
 import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
 import { consumeBatchExtractNdjsonStream } from "../service/batchExtractDebugStream";
 import {
@@ -29,10 +29,11 @@ import {
   startBatchExtractDebugSession,
 } from "../state/pdfBatchExtractDebugSlice";
 import {
-  streamPdfClean,
   streamPdfFullPipeline,
   type PdfFullPipelineBody,
 } from "../service/streamPdf";
+import { cleanDocument } from "../service/cleanDocument";
+import { readPdfRunFrame } from "./usePdfDocRun";
 import {
   CLEAN_FAILED_MESSAGE,
   CLEAN_QUEUED_LABEL,
@@ -1129,6 +1130,12 @@ export function usePdfExtractor(options: UsePdfExtractorOptions = {}) {
   // The UI handles both shapes via the smart-pane rule in `PdfStudioReader`.
 
   interface CleanContentCallbacks {
+    /**
+     * `true` (default) = explicit re-clean. The auto-clean-on-open passes
+     * `false`: the server then returns an already-cleaned doc's text without
+     * running the cleaner.
+     */
+    force?: boolean;
     onProgress?: (message: string) => void;
     onTextDelta?: (accumulated: string) => void;
   }
@@ -1136,6 +1143,10 @@ export function usePdfExtractor(options: UsePdfExtractorOptions = {}) {
   /** `queued` = the server parked the clean on the batch queue; text comes later. */
   interface CleanContentResult {
     status: "done" | "queued";
+    /** The server returned existing clean text; no cleaner ran. */
+    alreadyCleaned?: boolean;
+    /** Another clean was live (409); this call rejoined it instead of starting one. */
+    joined?: boolean;
   }
 
   const cleanContent = useCallback(
@@ -1173,12 +1184,57 @@ export function usePdfExtractor(options: UsePdfExtractorOptions = {}) {
       let recordStatus: string | null = null;
       let confirmedUpdate = false;
       let cleanRequestId: string | null = null;
+      const joinedRun: { current: { document: PdfDocument | null } | null } = { current: null };
+      const cleaned = { already: false };
+      const forceClean = opts.force !== false;
       const runStreamOnce = async (): Promise<string | null> => {
         const watchdog = createInactivityWatchdog(90_000, 15 * 60_000);
         try {
-          const result = await streamPdfClean({
+          const outcome = await cleanDocument<PdfDocument>({
             docId,
+            force: forceClean,
             signal: watchdog.signal,
+            transport: () =>
+              createMatrxTransport(store.getState, { source: "pdf-clean-join" }),
+            reload: async () => {
+              invalidateProcessedDocumentCache(docId);
+              return fetchDocument(docId);
+            },
+            // A live clean (409): show ITS progress; the joined run's frames
+            // also prove life, so the stall watchdog is not the judge here.
+            onJoin: (requestId) => {
+              savePdfRunRequest(docId, requestId, "clean");
+              const note = "Cleaning is already running — joined it";
+              opts.onProgress?.(note);
+              setTabs((prev) =>
+                prev.map((tab) =>
+                  tab.id === docId ? { ...tab, progressMessage: note } : tab,
+                ),
+              );
+            },
+            onJoinFrame: (envelope) => {
+              watchdog.bump();
+              const read = readPdfRunFrame(envelope, docId);
+              if (!read) return;
+              if (read.label) {
+                const label = read.label;
+                opts.onProgress?.(label);
+                setTabs((prev) =>
+                  prev.map((tab) =>
+                    tab.id === docId ? { ...tab, progressMessage: label } : tab,
+                  ),
+                );
+              }
+              const text = read.text;
+              if (text !== undefined) {
+                opts.onTextDelta?.(text);
+                setTabs((prev) =>
+                  prev.map((tab) =>
+                    tab.id === docId ? { ...tab, streamingText: text } : tab,
+                  ),
+                );
+              }
+            },
             callbacks: {
               // EVERY event (heartbeat, record_reserved, …) proves the
               // server is alive — only silence trips the watchdog.
@@ -1236,6 +1292,22 @@ export function usePdfExtractor(options: UsePdfExtractorOptions = {}) {
               },
             },
           });
+          if (outcome.kind === "joined") {
+            const { resolution, requestId } = outcome;
+            clearPdfRunRequest(docId, requestId);
+            if (resolution.kind === "failed") throw new Error(resolution.message);
+            if (resolution.kind === "unresolved") {
+              throw new Error(
+                resolution.status === "cancelled"
+                  ? "AI cleanup was stopped"
+                  : "AI cleanup finished with no clean text",
+              );
+            }
+            joinedRun.current = { document: resolution.document };
+            return resolution.document?.cleanContent ?? null;
+          }
+          const result = outcome.result;
+          if (result.alreadyCleaned) cleaned.already = true;
           return result.cleanContent;
         } catch (err) {
           // The watchdog aborts the fetch; the stream parser ends an aborted
@@ -1286,12 +1358,20 @@ export function usePdfExtractor(options: UsePdfExtractorOptions = {}) {
           throw new Error(CLEAN_FAILED_MESSAGE);
         }
 
-        invalidateProcessedDocumentCache(docId);
-        let fresh = await withTimeout(
-          fetchDocument(docId),
-          15_000,
-          "Refreshing the cleaned document",
-        ).catch(() => null);
+        // A joined run was already followed to its end and the saved document
+        // reloaded exactly once there — no second read.
+        const joinedDoc = joinedRun.current;
+        let fresh: PdfDocument | null;
+        if (joinedDoc) {
+          fresh = joinedDoc.document;
+        } else {
+          invalidateProcessedDocumentCache(docId);
+          fresh = await withTimeout(
+            fetchDocument(docId),
+            15_000,
+            "Refreshing the cleaned document",
+          ).catch(() => null);
+        }
 
         const queued =
           classifyRecordUpdateStatus(recordStatus) === "queued" &&
@@ -1301,7 +1381,7 @@ export function usePdfExtractor(options: UsePdfExtractorOptions = {}) {
         // The stream ended with no text and no queue notice: the run record
         // says what really happened — follow the run to its terminal status
         // and reload the saved document once if it completed.
-        if (!queued && !streamedClean && !fresh?.cleanContent) {
+        if (!joinedDoc && !queued && !streamedClean && !fresh?.cleanContent) {
           const ended = await resolveEndedClean<PdfDocument>({
             transport: createMatrxTransport(store.getState, {
               source: "pdf-clean-ended",
@@ -1384,7 +1464,11 @@ export function usePdfExtractor(options: UsePdfExtractorOptions = {}) {
           delete next[docId];
           return next;
         });
-        return { status: "done" };
+        return {
+          status: "done",
+          ...(cleaned.already ? { alreadyCleaned: true } : {}),
+          ...(joinedDoc ? { joined: true } : {}),
+        };
       } catch (err) {
         const msg = err instanceof Error ? err.message : "AI cleanup failed";
         setTabs((prev) =>

@@ -125,6 +125,7 @@ import {
 import { microCoach } from "@/features/education/tutor/lanes/microCoach";
 import { useAiComplianceGate } from "@/features/education/compliance/useAiComplianceGate";
 import { BatchReviewBlock } from "@/features/education/study/components/BatchReviewBlock";
+import { StudyReminderOptIn } from "@/features/education/reminders/StudyReminderOptIn";
 import { useFloatingRunWindow } from "@ai-matrx/chat/agents/hooks/useFloatingAgentRun";
 import {
   buildRecentSessionContext,
@@ -1293,6 +1294,10 @@ export function StudyDeck(props: StudyDeckProps) {
             </div>
           )}
           {review && <BatchReviewBlock review={review} />}
+
+          {/* The one gentle push ask: a signed-in learner's finished session,
+              asked once, never for a younger learner. */}
+          {engagement && !isYoungerLearner && <StudyReminderOptIn />}
 
           <div className="flex w-full flex-col gap-2 sm:flex-row">
             {onRestart && (

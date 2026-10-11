@@ -1,6 +1,6 @@
 /**
- * A NEW note tile shows its editor at once: it never waits for the organization lookup or for the
- * organization. The draft is in the store on the tile's first render; the organization (the
+ * A NEW note tile shows its editor at once: it never waits for the organization lookup.
+ * The draft is in the store on the tile's first render; the organization (the
  * resolver's answer — never one picked for the person) is settled behind it.
  * Red before: the tile showed a skeleton until `resolveOrganization()` returned.
  */

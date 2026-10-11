@@ -58,7 +58,12 @@ export function needsAutoClean(
   const pages = doc.totalPages ?? opts.pageCount ?? 0;
   if (pages > AUTO_CLEAN_MAX_PAGES) return false;
   const hasText = Boolean(doc.content && doc.content.trim());
-  const hasClean = Boolean(doc.cleanContent && doc.cleanContent.trim());
+  // Page rows are the cleaned verdict (see `isDocCleaned`): a doc-level
+  // clean_content beside never-cleaned pages is raw text from an old bug and
+  // is NOT cleaned. Only a doc with no page rows at all falls back to it.
+  const rowCount = opts.pageCount ?? 0;
+  const hasClean =
+    rowCount === 0 && Boolean(doc.cleanContent && doc.cleanContent.trim());
   return hasText && !hasClean;
 }
 
@@ -76,6 +81,9 @@ export function useAutoCleanOnOpen(args: {
   const should = needsAutoClean(doc, rest);
   useEffect(() => {
     if (!should || !doc) return;
+    // Two instances (desktop + mobile shell) can both have computed `should`
+    // this render; only the first to reach here runs.
+    if (handledDocIds.has(doc.id)) return;
     handledDocIds.add(doc.id);
     run();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once per doc

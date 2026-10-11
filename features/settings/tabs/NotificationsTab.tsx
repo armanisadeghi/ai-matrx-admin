@@ -46,6 +46,7 @@ import {
 } from "../notification-display";
 import { OrganizationContextNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
 import { StaleDataNotice } from "@ai-matrx/design-system";
+import { PushDeviceRow } from "@/features/notifications/push/PushDeviceRow";
 
 // The canonical Notification System preferences tab: every event the platform
 // can tell you about, with your per-channel choice. Absence of a choice means
@@ -349,6 +350,7 @@ export default function NotificationsTab() {
         description="Choose which channels each notice reaches you on. A notice follows its default until you change it."
         icon={Bell}
       />
+      <PushDeviceRow />
       {organizationState !== "ready" ? (
         <OrganizationContextNotice
           state={organizationState}

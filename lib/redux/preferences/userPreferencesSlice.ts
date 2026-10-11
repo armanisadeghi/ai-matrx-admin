@@ -354,6 +354,12 @@ export interface FlashcardPreferences {
    * deck (features/education/study/learning-gain/gainOffer.ts).
    */
   learningGainOffers: Record<string, string>;
+  /**
+   * When the study-reminder push ask was answered (yes or not now) → ISO time.
+   * Asked once, after a finished session, never again on any device
+   * (features/education/reminders/StudyReminderOptIn.tsx).
+   */
+  studyRemindersAskedAt: string | null;
 }
 
 /**
@@ -1239,6 +1245,7 @@ export const initializeUserPreferencesState = (
       learnRoundSize: 10,
       answerWith: "definition",
       learningGainOffers: {},
+      studyRemindersAskedAt: null,
     },
     tutor: {
       // Must match DEFAULT_TUTOR_SETTINGS in features/education/tutor/settings.ts.

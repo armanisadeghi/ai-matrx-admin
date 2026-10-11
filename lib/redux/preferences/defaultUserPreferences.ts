@@ -148,6 +148,7 @@ export const defaultUserPreferences: UserPreferences = {
     learnRoundSize: 10,
     answerWith: "definition",
     learningGainOffers: {},
+    studyRemindersAskedAt: null,
   },
   tutor: {
     // Must match DEFAULT_TUTOR_SETTINGS in features/education/tutor/settings.ts.

@@ -67,6 +67,7 @@ import type {
 } from "@ai-matrx/agents/generated/stream-events";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import { requestRaw } from "@/lib/python-client";
+import { BackendApiError } from "@/lib/api/errors";
 import { recordRunStatus } from "./cleanOutcome";
 
 // ─── Shared helpers ──────────────────────────────────────────────────────────
@@ -161,27 +162,79 @@ export interface StreamPdfCleanResult {
   serverConfirmedUpdate: boolean;
   /** `status` of the last `record_update` for this doc, if any. */
   recordStatus: string | null;
+  /** The server said the doc was already fully cleaned (`metadata.already_cleaned`); no cleaner ran. */
+  alreadyCleaned: boolean;
+  /**
+   * HTTP 409 `clean_in_progress`: another clean of this doc is live. Not an
+   * error — the caller rejoins that run by `requestId` and never retries.
+   */
+  inProgress: { requestId: string; executionId: string | null } | null;
+}
+
+/** Read a 409 `clean_in_progress` body (flat, or wrapped in `detail`). */
+export function readCleanInProgress(
+  err: unknown,
+): { requestId: string; executionId: string | null } | null {
+  if (!(err instanceof BackendApiError) || err.status !== 409) return null;
+  const raw = err.details;
+  const layers: Record<string, unknown>[] = [];
+  if (raw && typeof raw === "object") {
+    layers.push(raw as Record<string, unknown>);
+    const inner = (raw as Record<string, unknown>).detail;
+    if (inner && typeof inner === "object") layers.push(inner as Record<string, unknown>);
+  }
+  for (const body of layers) {
+    if (body.code !== "clean_in_progress" && body.error !== "clean_in_progress") continue;
+    const rid = body.request_id;
+    const eid = body.execution_id;
+    const requestId = typeof rid === "string" && rid ? rid : err.requestId;
+    if (!requestId) return null;
+    return { requestId, executionId: typeof eid === "string" && eid ? eid : null };
+  }
+  return null;
 }
 
 export async function streamPdfClean(opts: {
   docId: string;
+  /** `false` = auto-run (the server skips an already-cleaned doc); `true` = explicit re-clean. */
+  force: boolean;
   callbacks?: StreamPdfCleanCallbacks;
   signal?: AbortSignal;
 } & LegacyTransportFields): Promise<StreamPdfCleanResult> {
-  const { docId, callbacks = {}, signal } = opts;
+  const { docId, force, callbacks = {}, signal } = opts;
 
-  // Non-2xx throws a classified BackendApiError (read with getUserMessage).
-  const response = await requestRaw(
-    ENDPOINTS.pdf.cleanContent(docId),
-    { method: "POST" },
-    { signal },
-  );
+  // Non-2xx throws a classified BackendApiError (read with getUserMessage),
+  // except a 409 clean_in_progress, which is the "join the live run" answer.
+  let response: Response;
+  try {
+    response = await requestRaw(
+      ENDPOINTS.pdf.cleanContent(docId),
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ force }),
+      },
+      { signal, expectedErrorStatuses: [409] },
+    );
+  } catch (err) {
+    const inProgress = readCleanInProgress(err);
+    if (!inProgress) throw err;
+    return {
+      cleanContent: null,
+      accumulatedText: "",
+      serverConfirmedUpdate: false,
+      recordStatus: null,
+      alreadyCleaned: false,
+      inProgress,
+    };
+  }
   const requestId = response.headers.get("X-Request-ID");
   if (requestId) callbacks.onRequestId?.(requestId);
 
   let cleanContent: string | null = null;
   let serverConfirmedUpdate = false;
   let recordStatus: string | null = null;
+  let alreadyCleaned = false;
   let firstErrorMessage: string | null = null;
   // Local accumulator so we can fire `onTextDelta` with the running total
   // on every chunk, not just at the end. `consumeStream` exposes the
@@ -229,6 +282,14 @@ export async function streamPdfClean(opts: {
       onRecordUpdate: (data: RecordUpdatePayload) => {
         if (data.table === "processed_documents" && data.record_id === docId) {
           serverConfirmedUpdate = true;
+          const meta = data.metadata;
+          if (
+            meta &&
+            typeof meta === "object" &&
+            (meta as Record<string, unknown>).already_cleaned === true
+          ) {
+            alreadyCleaned = true;
+          }
           // A batch-parked clean arrives as status "active" with
           // metadata.run_status "awaiting_batch"; surface it as one status.
           recordStatus =
@@ -264,7 +325,14 @@ export async function streamPdfClean(opts: {
   if (firstErrorMessage) throw new Error(firstErrorMessage);
   if (signal?.aborted) throw new StreamAbortedError();
 
-  return { cleanContent, accumulatedText, serverConfirmedUpdate, recordStatus };
+  return {
+    cleanContent,
+    accumulatedText,
+    serverConfirmedUpdate,
+    recordStatus,
+    alreadyCleaned,
+    inProgress: null,
+  };
 }
 
 // ─── /pdf/full-pipeline ──────────────────────────────────────────────────────

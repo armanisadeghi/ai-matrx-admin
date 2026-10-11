@@ -65,4 +65,15 @@ describe("needsAutoClean", () => {
     markAutoCleanHandled("d1");
     expect(needsAutoClean(doc(), ok)).toBe(false);
   });
+  it("treats clean_content beside never-cleaned page rows as NOT cleaned (page verdict)", () => {
+    const withRows = { ...ok, pageCount: 48, pagesHaveSectionKind: false };
+    expect(needsAutoClean(doc({ cleanContent: "raw text from an old bug" }), withRows)).toBe(true);
+    // ...but once a page is cleaned, it is cleaned.
+    expect(
+      needsAutoClean(doc({ cleanContent: "x" }), { ...withRows, pagesHaveCleanText: true }),
+    ).toBe(false);
+    expect(
+      needsAutoClean(doc({ cleanContent: "x" }), { ...withRows, pagesHaveSectionKind: true }),
+    ).toBe(false);
+  });
 });

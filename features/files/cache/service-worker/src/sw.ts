@@ -793,3 +793,60 @@ self.addEventListener("message", async (event) => {
 });
 
 export {}; // keep TS treating this as a module
+
+// ---------------------------------------------------------------------------
+// Web push — the browser half of THE one push sender
+// (aidream services/notifications/web_push.py; subscribe/unsubscribe in
+// lib/pwa/push.ts). This is the root-scope worker, so push rides here rather
+// than in a second worker that would replace it at the same scope.
+// Payload: { title, body, url, tag } as JSON.
+// ---------------------------------------------------------------------------
+
+interface PushPayload {
+    title?: string;
+    body?: string;
+    url?: string;
+    tag?: string;
+}
+
+function readPushPayload(event: PushEvent): PushPayload {
+    if (!event.data) return {};
+    try {
+        return event.data.json() as PushPayload;
+    } catch {
+        return { body: event.data.text() };
+    }
+}
+
+self.addEventListener("push", (event) => {
+    const payload = readPushPayload(event);
+    const url = typeof payload.url === "string" && payload.url.startsWith("/") ? payload.url : "/";
+    event.waitUntil(
+        self.registration.showNotification(payload.title || "AI Matrx", {
+            body: payload.body || "",
+            tag: payload.tag || "matrx",
+            icon: "/matrx/apple-touch-icon.png",
+            badge: "/matrx/favicon-32x32.png",
+            data: { url },
+        }),
+    );
+});
+
+self.addEventListener("notificationclick", (event) => {
+    event.notification.close();
+    const data = event.notification.data as { url?: string } | null;
+    const target = new URL(data?.url || "/", self.location.origin).href;
+    event.waitUntil(
+        (async () => {
+            const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+            for (const client of windows) {
+                if (new URL(client.url).origin === self.location.origin && "focus" in client) {
+                    await client.focus();
+                    if ("navigate" in client) await (client as WindowClient).navigate(target);
+                    return;
+                }
+            }
+            await self.clients.openWindow(target);
+        })(),
+    );
+});

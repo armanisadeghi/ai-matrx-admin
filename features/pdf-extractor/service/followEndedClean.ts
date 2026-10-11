@@ -34,9 +34,11 @@ export async function resolveEndedClean<TDoc>(args: {
   /** Re-read the saved document; called once, only on `completed`. */
   reload: () => Promise<TDoc | null>;
   signal?: AbortSignal;
+  /** Every frame of the followed run (live progress / text). */
+  onFrame?: Parameters<typeof followServerJob>[1]["onFrame"];
   follow?: FollowFn;
 }): Promise<EndedCleanResolution<TDoc>> {
-  const { transport, docId, requestId, reload, signal, follow = followServerJob } = args;
+  const { transport, docId, requestId, reload, signal, onFrame, follow = followServerJob } = args;
   const target: ServerJobTarget = requestId
     ? { requestId }
     : { linkKind: "processed_document", linkId: docId };
@@ -44,6 +46,7 @@ export async function resolveEndedClean<TDoc>(args: {
   const outcome = await follow(transport, {
     target,
     signal,
+    onFrame,
     reloadSavedResult: async ({ status }) => {
       if (status === "completed") document = await reload();
     },

@@ -258,7 +258,7 @@ export function PdfStudioMobile({ initialDocumentId }: PdfStudioMobileProps) {
 
   // AI Clean — desktop parity. Routes through `extractor.cleanContent` for
   // the same finalize sequence (invalidate cache → refetch → render).
-  const handleRunAiClean = useCallback(async () => {
+  const handleRunAiClean = useCallback(async (opts?: { force?: boolean }) => {
     if (!activeDoc) return;
     setAiCleanRunning(true);
     setLiveStatus("Starting AI cleanup…");
@@ -267,7 +267,10 @@ export function PdfStudioMobile({ initialDocumentId }: PdfStudioMobileProps) {
     try {
       const openTab = extractor.tabs.find((t) => t.id === activeDoc.id);
       if (!openTab) extractor.openDocument(activeDoc);
+      // Manual buttons (click events carry no `force`) re-clean explicitly; the
+      // auto-run on open passes `force: false` and never replaces clean text.
       const cleaned = await extractor.cleanContent(activeDoc.id, {
+        force: opts?.force === false ? false : true,
         onProgress: setLiveStatus,
         onTextDelta: setStreamingCleanText,
       });
@@ -277,6 +280,8 @@ export function PdfStudioMobile({ initialDocumentId }: PdfStudioMobileProps) {
       docsState.refresh();
       if (cleaned.status === "queued") {
         toast.info("Cleaning queued");
+      } else if (cleaned.alreadyCleaned) {
+        toast.success("Already cleaned");
       } else {
         toast.success("AI cleanup complete");
       }
@@ -326,7 +331,7 @@ export function PdfStudioMobile({ initialDocumentId }: PdfStudioMobileProps) {
     pageCount: pages.length,
     pagesHaveSectionKind: pages.some((p) => Boolean(p.sectionKind)),
     runAnswered: docRun.answered,
-    run: () => void handleRunAiClean(),
+    run: () => void handleRunAiClean({ force: false }),
   });
 
   const handleRunShortcut = useCallback(
