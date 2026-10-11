@@ -20,10 +20,10 @@
 
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { NoteInfoPanel } from "@/features/notes/components/NoteInfoPanel";
-import { noteFolderReference } from "@/features/notes/types";
+import { HomePickerDialog } from "@/features/notes/homes/HomePicker";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type { ContentSource } from "@ai-matrx/rich-content/rich-document/types";
 import { noteIdentityContentSource } from "@/features/notes/richDocumentSource";
@@ -31,12 +31,11 @@ import {
   buildNoteContextSections,
   displayLabel,
 } from "@/features/notes/components/note-actions/noteMenuRegistry";
-import { withAvailability, unavailableHere } from "@ai-matrx/context-menu/engine";
+import { withAvailability } from "@ai-matrx/context-menu/engine";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectNoteById,
   selectNoteContent,
-  selectFolderReferences,
 } from "@/features/notes/redux/selectors";
 import { useOpenNoteKnowledgePanel } from "@/features/notes/canvas/noteKnowledgeKind";
 import { useOpenNotesWindow } from "@/features/overlays/openers/notesWindow";
@@ -75,32 +74,28 @@ function NoteInfoWindowInner({
   const dispatch = useAppDispatch();
   const note = useAppSelector(selectNoteById(noteId));
   const content = useAppSelector(selectNoteContent(noteId));
-  const folderReferences = useAppSelector(selectFolderReferences);
+  const [movePickerOpen, setMovePickerOpen] = useState(false);
   const openKnowledge = useOpenNoteKnowledgePanel();
   const openNotesWindow = useOpenNotesWindow();
 
   const label = title || note?.label || "Untitled";
-  const folder = note ? noteFolderReference(note) : null;
 
   // This window has no notes-tab instance of its own (it's an info-only
   // shell opened from wherever the note already lives), so "Open" spawns
   // the canonical Notes window on this note instead of switching a tab, and
-  // "New folder…" stays in the Folder section above rather than a second
-  // dialog wired here.
+  // "Move to…" opens the one home picker.
   const sections = withAvailability(
     buildNoteContextSections({
       instanceId: "",
       noteId,
       label,
       content,
-      folder,
-      allFolders: folderReferences,
       openKnowledge,
-      onCreateFolder: () => {},
+      onMoveToHome: () => setMovePickerOpen(true),
       dispatch,
       onOpen: () => openNotesWindow({ initialNoteId: noteId }),
     })[0],
-    { "move-new-folder": unavailableHere("the Folder section above") },
+    {},
   );
 
   return (
@@ -137,6 +132,7 @@ function NoteInfoWindowInner({
           <NoteInfoPanel noteId={noteId} />
         </div>
       </NonEditableContextMenu>
+      <HomePickerDialog open={movePickerOpen} onOpenChange={setMovePickerOpen} noteIds={[noteId]} />
     </WindowPanel>
   );
 }

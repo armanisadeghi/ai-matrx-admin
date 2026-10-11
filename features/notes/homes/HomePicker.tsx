@@ -286,7 +286,7 @@ export function HomeChip({ noteId, className }: { noteId: string; className?: st
       <PopoverContent align="start" className="flex w-[320px] flex-col p-0">
         {open ? (
           <HomePickerList
-            currentScopeId={note.home_scope_id}
+            currentScopeId={note.home_scope_id ?? null}
             defaultOrganizationId={note.organization_id}
             onPick={pick}
             busy={busy}

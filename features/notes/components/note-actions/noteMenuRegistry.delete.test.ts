@@ -21,7 +21,6 @@ jest.mock("../../redux/thunks", () => ({
     return deleteNote;
   },
   restoreNote: jest.fn(),
-  moveNoteToFolder: jest.fn(),
   copyNote: jest.fn(),
   ensureNoteBodiesLoaded: (ids: string[]) => ensureNoteBodiesLoaded(ids),
 }));
@@ -34,10 +33,8 @@ function ctx(dispatch: jest.Mock): NoteMenuContext {
     noteId: "n1",
     label: "Chemistry homework",
     content: null, // a preview-only sidebar row
-    folder: null,
-    allFolders: [],
     openKnowledge: jest.fn(),
-    onCreateFolder: jest.fn(),
+    onMoveToHome: jest.fn(),
     dispatch: dispatch as never,
   };
 }

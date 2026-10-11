@@ -37,7 +37,7 @@ import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import notesReducer, { updateNoteLabel, upsertNotesFromServer } from "../redux/slice";
-import { selectAllFolders, selectAllNotesList, selectFolderReferences, selectSidebarNotesList } from "../redux/selectors";
+import { selectNoteHomeIds, selectAllNotesList, selectNoteOrganizationIds, selectSidebarNotesList } from "../redux/selectors";
 import { getReduxSyncDelay, type NoteRecord } from "../redux/notes.types";
 import { NoteSidebarRow } from "../components/NoteSidebarRow";
 import { createCoalescedCommit } from "@/lib/working-copy/coalescedCommit";
@@ -78,8 +78,8 @@ const asRoot = (notes: SliceState) => ({ notes }) as never;
 describe("a save of one note never re-renders the rest of the sidebar", () => {
   it("keeps the folder arrays identical when a save moves updated_at and the label", () => {
     let state = seed(40);
-    const folders = selectAllFolders(asRoot(state));
-    const references = selectFolderReferences(asRoot(state));
+    const folders = selectNoteHomeIds(asRoot(state));
+    const references = selectNoteOrganizationIds(asRoot(state));
 
     for (let i = 0; i < 10; i++) {
       // What a save cycle does to the record: the server's updated_at…
@@ -92,15 +92,15 @@ describe("a save of one note never re-renders the rest of the sidebar", () => {
       // …and the auto-label of a new note following its first line.
       state = notesReducer(state, updateNoteLabel({ id: noteId(7), label: `typed ${i}` }) as Action) as SliceState;
 
-      expect(selectAllFolders(asRoot(state))).toBe(folders);
-      expect(selectFolderReferences(asRoot(state))).toBe(references);
+      expect(selectNoteHomeIds(asRoot(state))).toBe(folders);
+      expect(selectNoteOrganizationIds(asRoot(state))).toBe(references);
     }
   });
 
   it("re-renders only the row whose note changed", async () => {
     let state = seed(20);
     const store = configureStore({ reducer: { notes: notesReducer } });
-    const references = () => selectFolderReferences(asRoot(state));
+    const references = () => selectNoteOrganizationIds(asRoot(state));
     const noop = () => {};
     const formatTime = () => "1h";
 
@@ -114,14 +114,13 @@ describe("a save of one note never re-renders the rest of the sidebar", () => {
               instanceId="sidebar"
               isActive={false}
               isOpenTab={false}
-              allFolders={references()}
               openKnowledge={noop}
               formatTime={formatTime}
               onSelectNote={noop}
               selectionMode={false}
               isSelected={false}
               onToggleSelect={noop}
-              onCreateFolder={noop}
+              onMoveToHome={noop}
             />
           ))}
         </>

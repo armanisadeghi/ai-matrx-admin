@@ -13,9 +13,7 @@
  * sweep, which rows leave the store — is stubbed.
  *
  * Named breaks this suite catches:
- *  - `moveNoteToFolder` trusting the caller's folder name/id instead of the
- *    row RLS admitted, or moving a note across organizations.
- *  - `moveNoteToFolder` mutating the store when admission REFUSES.
+ *  - (moves: covered by homes/__tests__ — moveNoteToHome)
  *  - `restoreNote` clearing the wrong column, or not putting the restored row
  *    back in the store.
  *  - `restoreNote` leaving a note that went to Trash with its folder
@@ -69,8 +67,6 @@ import type { Note } from "../types";
 import { upsertNoteFromServer } from "./slice";
 import {
   fetchSharedNotesList,
-  moveNoteToFolder,
-  moveNoteToNewFolder,
   restoreNote,
   saveNoteField,
 } from "./thunks";
@@ -203,129 +199,6 @@ beforeEach(() => {
       safeCauses: {},
     }),
   );
-});
-
-describe("moveNoteToFolder", () => {
-  it("moves the note onto the folder row RLS admitted, not the name the caller passed", async () => {
-    const configured = store();
-    const admission = query({
-      data: { id: FOLDER_ID, organization_id: ORG, name: "Research" },
-      error: null,
-    });
-    const from = jest.fn().mockReturnValue(admission);
-    schema.mockReturnValue({ from });
-    // The forcing point: what the note looked like at the moment the write
-    // went out. The receipt echoes it back rather than inventing an answer, so
-    // a thunk that trusted the caller's label would show it here.
-    let nameAtWrite: string | null = null;
-    persistNoteUpdate.mockImplementation(async (id: string, updates: Record<string, unknown>) => {
-      nameAtWrite = configured.getState().notes.notes[NOTE_ID].folder_name;
-      return {
-        note: note({ id, ...updates, folder_name: nameAtWrite, version: 8 }),
-        databaseWrite: "saved" as const,
-        succeededFields: [],
-        failedFields: [],
-        safeCauses: {},
-      };
-    });
-
-    const result = await configured.dispatch(
-      moveNoteToFolder({
-        noteId: NOTE_ID,
-        // The caller's label is a REQUEST. The admitted row says "Research".
-        folder: { id: FOLDER_ID, organizationId: ORG, name: "whatever I typed" },
-      }),
-    );
-
-    expect(moveNoteToFolder.fulfilled.match(result)).toBe(true);
-    expect(schema).toHaveBeenCalledWith("workbench");
-    expect(from).toHaveBeenCalledWith("note_folders");
-    expect(admission.select).toHaveBeenCalledWith("id, organization_id, name");
-    expect(admission.eq).toHaveBeenCalledWith("id", FOLDER_ID);
-    expect(admission.eq).toHaveBeenCalledWith("organization_id", ORG);
-    expect(admission.is).toHaveBeenCalledWith("deleted_at", null);
-
-    expect(nameAtWrite).toBe("Research");
-    const moved = configured.getState().notes.notes[NOTE_ID];
-    expect(moved.folder_id).toBe(FOLDER_ID);
-    expect(moved.folder_name).toBe("Research");
-    // The move is only real once it is persisted.
-    expect(persistNoteUpdate).toHaveBeenCalledWith(
-      NOTE_ID,
-      expect.objectContaining({ folder_id: FOLDER_ID }),
-      expect.objectContaining({ expectedOrganizationId: ORG }),
-    );
-  });
-
-  it("refuses a folder RLS does not admit and leaves the note where it was", async () => {
-    const configured = store();
-    const admission = query({ data: null, error: null });
-    schema.mockReturnValue({ from: jest.fn().mockReturnValue(admission) });
-
-    const result = await configured.dispatch(
-      moveNoteToFolder({
-        noteId: NOTE_ID,
-        folder: { id: FOLDER_ID, organizationId: ORG, name: "Research" },
-      }),
-    );
-
-    expect(moveNoteToFolder.rejected.match(result)).toBe(true);
-    const unmoved = configured.getState().notes.notes[NOTE_ID];
-    expect(unmoved.folder_id).toBeNull();
-    expect(unmoved.folder_name).toBe("Draft");
-    expect(persistNoteUpdate).not.toHaveBeenCalled();
-  });
-
-  it("refuses a folder in another organization before it reads anything", async () => {
-    const configured = store();
-    schema.mockImplementation(() => {
-      throw new Error("a cross-organization move must never reach the database");
-    });
-
-    const result = await configured.dispatch(
-      moveNoteToFolder({
-        noteId: NOTE_ID,
-        folder: { id: FOLDER_ID, organizationId: OTHER_ORG, name: "Theirs" },
-      }),
-    );
-
-    expect(moveNoteToFolder.rejected.match(result)).toBe(true);
-    expect(schema).not.toHaveBeenCalled();
-    expect(configured.getState().notes.notes[NOTE_ID].folder_id).toBeNull();
-  });
-});
-
-describe("moveNoteToNewFolder", () => {
-  it("creates the folder in the NOTE's organization and moves the note into the created id", async () => {
-    const configured = store();
-    createFolder.mockResolvedValue(FOLDER_ID);
-    const admission = query({
-      data: { id: FOLDER_ID, organization_id: ORG, name: "Ideas" },
-      error: null,
-    });
-    schema.mockReturnValue({ from: jest.fn().mockReturnValue(admission) });
-
-    const result = await configured.dispatch(
-      moveNoteToNewFolder({ noteId: NOTE_ID, folderName: "  Ideas  " }),
-    );
-
-    expect(moveNoteToNewFolder.fulfilled.match(result)).toBe(true);
-    // Trimmed, and filed under the note's organization — not an active-org
-    // picker value that may have changed while the dialog was open.
-    expect(createFolder).toHaveBeenCalledWith("Ideas", ORG);
-    expect(configured.getState().notes.notes[NOTE_ID].folder_id).toBe(FOLDER_ID);
-  });
-
-  it("refuses a blank folder name without creating anything", async () => {
-    const configured = store();
-
-    const result = await configured.dispatch(
-      moveNoteToNewFolder({ noteId: NOTE_ID, folderName: "   " }),
-    );
-
-    expect(moveNoteToNewFolder.rejected.match(result)).toBe(true);
-    expect(createFolder).not.toHaveBeenCalled();
-  });
 });
 
 describe("saveNoteField", () => {

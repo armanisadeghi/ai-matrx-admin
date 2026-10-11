@@ -30,7 +30,6 @@ jest.mock("@ai-matrx/media/react", () => ({
 jest.mock("@ai-matrx/chat/surfaces/hooks/useSurfaceBoundAgents", () => ({
   useSurfaceBoundAgents: () => ({ sections: [], loading: false, error: null, hasAgents: false, refresh: jest.fn() }),
 }));
-jest.mock("../components/RenameFolderDialog", () => ({ RenameFolderDialog: () => null }));
 jest.mock("../components/NoteSidebarBulkBar", () => ({ NoteSidebarBulkBar: () => null }));
 // The REAL row (its memo is part of what is guarded); its heavy children are
 // stand-ins, and ItemRow counts how often each row actually draws.
