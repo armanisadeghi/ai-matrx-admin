@@ -755,7 +755,7 @@ function OneMandateWorkspace({
                 rungs carry it — the four facts that used to need an engineer
                 and a database session (2026-09-11). See
                 ./MandateProvenancePanel.tsx. */}
-            <MandateProvenancePanel mandateKey={storedMandateKey(data.mandate.mandate_key)} />
+            <MandateProvenancePanel mandateKey={storedMandateKey(data.mandate.mandate_key)} agents={data.agentsById} />
           </div>
           {perspective !== "system" ? (
             <div

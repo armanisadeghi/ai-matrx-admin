@@ -100,6 +100,9 @@ jest.mock("@univerjs/preset-docs-hyper-link", () => ({ UniverDocsHyperLinkPreset
 jest.mock("@univerjs/preset-docs-hyper-link/locales/en-US", () => ({}));
 jest.mock("@univerjs/preset-docs-drawing", () => ({ UniverDocsDrawingPreset: () => ({}) }));
 jest.mock("@univerjs/preset-docs-drawing/locales/en-US", () => ({}));
+jest.mock("@/lib/univer/univerImageStore", () => ({ registerMatrxImageStore: () => undefined }));
+jest.mock("@/lib/univer/matrxImagePorts", () => ({ matrxImagePorts: {} }));
+jest.mock("@/lib/univer/identifyUniverUser", () => ({ identifyUniverUser: async () => undefined }));
 jest.mock("@univerjs/preset-sheets-core", () => ({ DragManagerService: class {}, HoverManagerService: class {} }));
 jest.mock("@ai-matrx/realtime/react", () => ({ useRealtimeManager: () => null, useChannel: () => undefined }));
 jest.mock("@ai-matrx/realtime", () => ({

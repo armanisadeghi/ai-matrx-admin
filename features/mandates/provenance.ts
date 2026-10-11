@@ -182,3 +182,44 @@ export function runsReading(usage: MandateUsageFacts): RunsReading {
     : "";
   return { kind: "ran", text: `${times}${when}`, count };
 }
+
+/**
+ * THE RUNG IS NOT THE AGENT'S TYPE. "System: Get Gemini Image" read as "this is
+ * a system agent" when the agent was a person's own — the rung is where the
+ * binding sits on the ladder, the agent type is what the agent IS. They are
+ * worded apart: the rung gets its own label, the agent gets a type chip.
+ */
+export const HELD_RUNG_LABELS: Record<MandateHolderRow["rung"], string> = {
+  system: "Platform default",
+  organization: "Organization",
+  user: "Personal",
+};
+
+/** Short chip for what the holder agent IS; null when unknown or not an agent. */
+export function agentKindChip(
+  holderType: string | null,
+  agentType: string | null | undefined,
+): string | null {
+  if (holderType !== null && holderType !== "agent") return null;
+  if (!agentType) return null;
+  return agentType === "builtin" ? "System agent" : "User agent";
+}
+
+export interface HeldByPart {
+  rung: string;
+  name: string;
+  chip: string | null;
+}
+
+export function heldByParts(
+  holders: MandateHolderRow[],
+  agentTypeByName: Record<string, string | null>,
+): HeldByPart[] {
+  return holders.map((holder) => ({
+    rung: HELD_RUNG_LABELS[holder.rung],
+    name: holder.holder_name ?? "nobody",
+    chip: holder.holder_name
+      ? agentKindChip(holder.holder_type, agentTypeByName[holder.holder_name])
+      : null,
+  }));
+}

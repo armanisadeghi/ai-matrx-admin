@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminOrganizationPicker } from "@/features/admin/admin-organization/AdminOrganizationPicker";
 import { useState } from "react";
 import {
   IconExternalLink,
@@ -116,6 +117,7 @@ export default function AdminDashboardClient({
           </div>
 
           <div className="flex shrink-0 items-center gap-3">
+            <AdminOrganizationPicker />
             <AppLink
               href={ADMIN_LAUNCHPAD_PATH}
               target="_blank"

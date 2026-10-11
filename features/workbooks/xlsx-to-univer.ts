@@ -3,9 +3,11 @@
  * shape suitable for `apiRef.createWorkbook(...)` and for persistence as the
  * initial snapshot of a new workbook.
  *
- * Scope: values + types + formula source + merged ranges (the reader exposes
- * nothing else a Univer sheet can hold: no column widths, row heights, frozen
- * panes or cell styles — see FEATURE.md). The lossless aspect is preserved separately by storing the
+ * .xlsx files go through the full-fidelity reader (`xlsx-to-univer-excel`:
+ * styles, number formats, widths, heights, frozen panes, merges, validation,
+ * conditional formatting, filter range, notes, links, pictures). CSV, TSV,
+ * .xls and .ods — and an .xlsx the full reader cannot open — fall back to the
+ * values-only reader below, and say so. The lossless aspect is preserved separately by storing the
  * original file id on `udt_workbooks.original_file_id` (P4-b wires that to
  * the universal file handler).
  *
@@ -27,6 +29,7 @@ import { readWorkbook, type WorkbookCell, type WorkbookSheet } from "@ai-matrx/a
 import { CellValueType } from "@univerjs/core";
 import type { ICellData, IWorkbookData, IWorksheetData } from "@univerjs/core";
 import { LocaleType } from "@univerjs/presets";
+import { importXlsxWithExcelJs, type XlsxImportOptions } from "@/features/workbooks/xlsx-to-univer-excel";
 
 // Use Univer's own cell type so the converter output flows straight into
 // IWorksheetData.cellData without coercion.
@@ -36,7 +39,7 @@ type UniverCell = ICellData;
 // IWorkbookData['sheets'] without coercion.
 type UniverSheet = Partial<IWorksheetData>;
 
-export async function xlsxToUniverWorkbook(
+async function valuesOnlyToUniverWorkbook(
   file: File,
 ): Promise<Partial<IWorkbookData>> {
   // `dates` so date cells come back as JS Dates rather than serial-number
@@ -170,4 +173,24 @@ function randomId(prefix: string): string {
     return prefix + crypto.randomUUID();
   }
   return `${prefix}${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+
+/**
+ * Parse a spreadsheet file into a Univer workbook. Whatever could not be
+ * carried is reported through `options.onDropped` (the caller tells the person).
+ */
+export async function xlsxToUniverWorkbook(
+  file: File,
+  options: XlsxImportOptions = {},
+): Promise<Partial<IWorkbookData>> {
+  if (/\.xlsx$/i.test(file.name)) {
+    try {
+      return await importXlsxWithExcelJs(file, options);
+    } catch (err) {
+      console.warn("[workbooks] full xlsx reader failed, importing values only", err);
+      options.onDropped?.("Formatting could not be read from this file; values and formulas were imported");
+    }
+  }
+  return valuesOnlyToUniverWorkbook(file);
 }

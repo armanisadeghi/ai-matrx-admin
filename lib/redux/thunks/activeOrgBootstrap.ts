@@ -16,6 +16,7 @@
 // eslint-disable-next-line no-restricted-syntax -- Surface A: canonical active-org switcher + back-compat bootstrap
 import {
   setOrganization,
+  setAdminOrganization,
   setOrgBootstrapResolved,
   setOrgBootstrapFailure,
 } from "@/lib/redux/slices/appContextSlice";
@@ -106,11 +107,20 @@ export const bootstrapActiveOrganization =
  * every picker. It moves THIS tab only (nothing is broadcast) and saves the
  * choice as the account's last active organization, so the next load — on any
  * device — opens to it (`users.set_last_active_organization`).
+ *
+ * ON AN ADMIN PAGE the switch moves the ADMIN organization only (Arman,
+ * 2026-10-10): the user pages' organization and the saved last active one are
+ * untouched, and the next admin page sets the declared admin organization
+ * back (`lib/organizations/adminOrganization.ts`).
  */
 export const chooseActiveOrganization =
   (org: { id: string | null; name?: string | null }) =>
-  (dispatch: AppDispatch) => {
+  (dispatch: AppDispatch, getState?: () => RootState) => {
     if (!org.id) return; // the active organization is never none
+    if (getState?.().userAuth?.adminLaneOpen === true) {
+      dispatch(setAdminOrganization({ id: org.id, name: org.name ?? null }));
+      return;
+    }
     dispatch(setOrganization({ id: org.id, name: org.name ?? null }));
     // The person's choice answers the question for this tab.
     markOrgBootstrapResolved();

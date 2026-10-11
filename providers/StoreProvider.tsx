@@ -29,6 +29,7 @@ import {
 import { useRef } from "react";
 import { Provider } from "react-redux";
 import { AdminLaneSync } from "@/providers/AdminLaneSync";
+import { AdminOrganizationSeat } from "@/providers/AdminOrganizationSeat";
 import { attachStore } from "@/lib/sync/identity";
 import { resolveThemeMode, themePolicy, writeThemeCookie, type ResolvedThemeMode, type ThemeMode } from "@/styles/themes/themeSlice";
 import { applyPrePaintDescriptors } from "@/lib/sync/engine/applyPrePaint";
@@ -165,6 +166,7 @@ export default function StoreProvider({
           beyond streamed/selective hydration. */}
       <SyncBootstrap />
       <AdminLaneSync />
+      <AdminOrganizationSeat />
       {children}
     </Provider>
   );

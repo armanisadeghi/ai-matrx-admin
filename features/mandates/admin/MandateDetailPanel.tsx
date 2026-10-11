@@ -51,6 +51,7 @@ import { MandateNotesPanel } from "@/features/mandates/components/MandateNotesPa
 import { ProvisionOfferList } from "@/features/mandates/components/ProvisionOfferList";
 import { MandateGoalBlock } from "@/features/mandates/MandateGoalBlock";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
+import { useMandateProvenance } from "@/features/mandates/provenance";
 import { goalOfMandate } from "@/lib/supabase/mandateStorage";
 import {
   fetchProvision,
@@ -103,6 +104,8 @@ import {
   SYSTEM_AGENT_BASE,
   USER_AGENT_BASE,
   agentHref,
+  codeDeclarationSentence,
+  codeDeclarationState,
   resolveDriftRemedy,
   type MandateHealth,
   type MandateRow,
@@ -1199,6 +1202,10 @@ function FactsPanel({
       cancelled = true;
     };
   }, [factProvisionKey]);
+  // The same call-site count the Definition tab prints — one read, one meaning.
+  const { report: provenanceReport, loading: provenanceLoading } = useMandateProvenance(
+    diagnosticsOnly ? storedMandateKey(row.mandate.mandate_key) : null,
+  );
   if (diagnosticsOnly || sourceOnly) {
     const truth = row.codeTruth;
     const declarationFound = truth?.resolution === "code_declaration_found";
@@ -1325,9 +1332,17 @@ function FactsPanel({
     );
     const notMeasured = wave1.provisionKey
       ? "The code comparison does not apply to this job: its inputs come from its provision and are checked on the Binding tab."
-      : !declarationFound
-        ? "No code declaration was found for this job, so its code inputs and variable flow are not measured."
-        : null;
+      : provenanceLoading && !provenanceReport && !declarationFound
+        ? null
+        : codeDeclarationSentence(
+          codeDeclarationState({
+            declarationFound,
+            codeReferenceCount: provenanceReport
+              ? provenanceReport.usage.code_reference_count
+              : null,
+          }),
+          provenanceReport?.usage.code_reference_count ?? null,
+        );
     return (
       <div className="space-y-2">
         {shown.length > 0 ? (

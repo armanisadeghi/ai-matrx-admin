@@ -57,7 +57,7 @@ import { kindValidator } from "@/features/content-ir/registry/kind-schema-source
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import type { RootState } from "@/lib/redux/rootReducer";
 import { selectIsAdmin, selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { alchemyOrganizationId, onAdminLaneChange } from "./alchemy-organization";
+import { alchemyOrganizationId } from "./alchemy-organization";
 import { awaitEffectiveOrganizationId } from "@/features/organizations/awaitWorkspace";
 import type { AppDispatch } from "@/lib/redux/store";
 import {
@@ -161,13 +161,8 @@ export function createIdentityPort(store: AlchemyIdentityStore): IdentityPort {
         last = next;
         listener();
       };
-      // the organization also moves when the admin lane flips (a navigation, not a store change)
-      const offStore = store.subscribe(check);
-      const offLane = onAdminLaneChange(check);
-      return () => {
-        offStore();
-        offLane();
-      };
+      // the admin lane lives in the store too, so one subscription hears every organization move
+      return store.subscribe(check);
     },
   };
 }

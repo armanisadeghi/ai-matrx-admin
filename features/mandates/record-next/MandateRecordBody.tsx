@@ -478,7 +478,7 @@ function OneMandateRecordBody({
             host={host}
           />
         </div>
-        <MandateProvenancePanel mandateKey={storedMandateKey(data.mandate.mandate_key)} />
+        <MandateProvenancePanel mandateKey={storedMandateKey(data.mandate.mandate_key)} agents={data.agentsById} />
       </div>
       {perspective !== "system" ? (
         <div

@@ -44,7 +44,7 @@ import {
 } from "@ai-matrx/agents/matrx";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
-import { AdminLaneWatcher, alchemyOrganizationId, useAdminLaneOrganizationId } from "./alchemy-organization";
+import { alchemyOrganizationId } from "./alchemy-organization";
 import { createMatrxTransport } from "@/lib/api/matrx-transport";
 import { supabase } from "@/utils/supabase/client";
 import { adoptForeignStream } from "@ai-matrx/chat/agents/redux/execution-system/thunks/adopt-foreign-stream";
@@ -158,11 +158,8 @@ export function useAlchemyHostPorts(): AlchemyHostPorts {
 export function AlchemyHost({ children }: { children: ReactNode }) {
   const store = useAppStore();
   const userId = useAppSelector(selectUserId);
-  // Entering or leaving the admin section changes the organization: heard as a lane FLIP
-  // (AdminLaneWatcher, a leaf), never a re-render of this whole-app host per navigation (W2-6).
-  const adminLaneOrgId = useAdminLaneOrganizationId();
-  const selectedOrgId = useAppSelector(selectOrganizationId);
-  const orgId = adminLaneOrgId ?? selectedOrgId;
+  // The active organization — on an admin page the admin organization (selectOrganizationId).
+  const orgId = useAppSelector(selectOrganizationId);
   // Bound once per mount: the identity port reads the live store, so an
   // account or organization switch needs no new ports.
   // PP-01a: a live preparation session opens in a real WindowPanel, several at once.
@@ -189,7 +186,6 @@ export function AlchemyHost({ children }: { children: ReactNode }) {
               <ItemMenuHostBinding>
               {children}
               </ItemMenuHostBinding>
-              <AdminLaneWatcher />
               {/* THE one selection toolbar: every selectable text's passage actions
                   come from this registry (components/selection-toolbar). */}
               <SelectionToolbarRoot />

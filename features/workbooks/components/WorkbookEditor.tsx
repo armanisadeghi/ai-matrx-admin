@@ -85,6 +85,7 @@ import { toast } from "@/components/ui/use-toast";
 
 import { useWorkbookRealtime } from "@/features/workbooks/hooks/useWorkbookRealtime";
 import { useUniverDarkModeSync } from "@/lib/univer/useUniverDarkModeSync";
+import { identifyUniverUser } from "@/lib/univer/identifyUniverUser";
 import { registerMatrxImageStore } from "@/lib/univer/univerImageStore";
 import { matrxImagePorts } from "@/lib/univer/matrxImagePorts";
 import { disposeUniverInstance } from "@/lib/univer/disposeUniverInstance";
@@ -97,6 +98,7 @@ import { registerWorkbookScopeSource } from "@/features/workbooks/workbook-scope
 import { useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { isServiceFailure } from "@/features/data-tables/types";
 import { downloadUniverAsXlsx } from "@/features/workbooks/univer-to-xlsx";
+import { resolveExportImage } from "@/lib/univer/matrxImagePorts";
 import { workbookHistoryToggleInput } from "@/lib/univer/historyKinds";
 import { WorkbookSheetReferenceCopyButton } from "@/features/workbooks/components/WorkbookSheetReferenceCopyButton";
 import { WorkbookTableLink } from "@/features/workbooks/table-link/WorkbookTableLink";
@@ -313,6 +315,9 @@ export default function WorkbookEditor({
         apiRef.current = univerAPI;
         // Pictures go to the file store; the snapshot keeps only a reference.
         registerMatrxImageStore(univer.__getInjector(), matrxImagePorts);
+        void identifyUniverUser(univer.__getInjector()).catch((err) =>
+          console.warn("[univer] could not attribute edits to the signed-in user", err),
+        );
 
         // Hydrate from the latest persisted snapshot, or create empty.
         const res = await getLatestSnapshot(workbookId);
@@ -581,9 +586,17 @@ export default function WorkbookEditor({
     if (!workbook) return;
     try {
       const snapshot = workbook.save();
-      await downloadUniverAsXlsx(snapshot, {
+      const report = await downloadUniverAsXlsx(snapshot, {
         filename: workbookName ?? workbookId,
+        resolveImage: resolveExportImage,
       });
+      // Name whatever the xlsx file could not hold — never drop it silently.
+      if (report.dropped.length) {
+        toast({
+          title: "Exported, with changes",
+          description: report.dropped.join(". "),
+        });
+      }
     } catch (err) {
       toast({
         title: "Could not export workbook",

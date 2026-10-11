@@ -40,6 +40,7 @@ import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { Section } from "./Section";
 import {
   ORIGIN_LABELS,
+  heldByParts,
   PROVENANCE_SECTION_TITLE,
   runsReading,
   useMandateProvenance,
@@ -65,9 +66,16 @@ function SurfaceLink({ href, children }: { href: string; children: string }) {
 
 export function MandateProvenancePanel({
   mandateKey,
+  agents,
 }: {
   mandateKey: AnyMandateKey;
+  /** The workspace's agents by id — names a holder's agent type. */
+  agents?: Record<string, { name: string; agentType: string | null }>;
 }) {
+  const agentTypeByName: Record<string, string | null> = {};
+  for (const agent of Object.values(agents ?? {})) {
+    agentTypeByName[agent.name] = agent.agentType;
+  }
   const { report, loading, error } = useMandateProvenance(mandateKey);
   useMandateAlchemyTabCapture("definition", loading && !report && !error
     ? { status: "loading" }
@@ -116,7 +124,7 @@ export function MandateProvenancePanel({
         <OriginRow report={report} />
         <OfferedRow report={report} />
         <RunsRow report={report} />
-        <HeldByRow report={report} />
+        <HeldByRow report={report} agentTypeByName={agentTypeByName} />
       </div>
     </Section>
   );
@@ -205,22 +213,34 @@ function RunsRow({ report }: { report: MandateProvenanceReport }) {
   );
 }
 
-function HeldByRow({ report }: { report: MandateProvenanceReport }) {
-  const holders = report.held_by;
+function HeldByRow({
+  report,
+  agentTypeByName,
+}: {
+  report: MandateProvenanceReport;
+  agentTypeByName: Record<string, string | null>;
+}) {
+  const parts = heldByParts(report.held_by, agentTypeByName);
   return (
     <PropertyRow
       label="Held by"
       value={
         <span className="space-y-0.5">
           <span className="block font-medium text-foreground">
-            {holders.length === 0
+            {parts.length === 0
               ? "No rung"
-              : holders
-                  .map(
-                    (holder) =>
-                      `${RUNG_WORDS[holder.rung]}: ${holder.holder_name ?? "nobody"}`,
-                  )
-                  .join(" · ")}
+              : parts.map((part, index) => (
+                  <span key={`${part.rung}-${index}`} data-held-rung={part.rung}>
+                    {index > 0 ? " · " : ""}
+                    <span className="text-muted-foreground">{part.rung}</span>{" "}
+                    {part.name}
+                    {part.chip ? (
+                      <span className="ml-1.5 rounded border border-border px-1 py-px text-[11px] font-normal text-muted-foreground">
+                        {part.chip}
+                      </span>
+                    ) : null}
+                  </span>
+                ))}
           </span>
           <span className="block text-[12.5px] text-muted-foreground">
             {report.held_sentence}
@@ -230,10 +250,3 @@ function HeldByRow({ report }: { report: MandateProvenanceReport }) {
     />
   );
 }
-
-/** The platform's own words for the three rungs. Never coined here. */
-const RUNG_WORDS: Record<"system" | "organization" | "user", string> = {
-  system: "System",
-  organization: "Organization",
-  user: "Personal",
-};

@@ -1119,6 +1119,7 @@
     "dexie": "^4.4.6",
     "embla-carousel-react": "latest",
     "emoji-picker-react": "^4.22.2",
+    "exceljs": "^4.4.0",
     "format-duration": "^4.0.0",
     "github-slugger": "^2.0.0",
     "groq-sdk": "1.6.0",

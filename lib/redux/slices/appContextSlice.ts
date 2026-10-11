@@ -52,6 +52,10 @@ import { selectShouldPromptForOrganization } from "@/lib/organizations/shouldPro
 import { markOrgBootstrapResolved } from "@/lib/organizations/orgBootstrapGate";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
 import {
+  activeAdminOrganization,
+  adminOrganizationReplacesUserContext,
+} from "@/lib/organizations/adminOrganization";
+import {
   REHYDRATE_ACTION_TYPE,
   type RehydrateAction,
 } from "@/lib/sync/engine/rehydrate";
@@ -60,6 +64,17 @@ export interface AppContextState {
   /** Currently active organization */
   organization_id: string | null;
   organization_name: string | null;
+
+  /**
+   * THE ADMIN ORGANIZATION (Arman, 2026-10-10) — the organization admin pages
+   * run work in, set by `AdminLaneSync` on every admin page entry from the
+   * declared `userPreferences.organization.adminOrganizationId`. While the
+   * admin lane is open it is what `selectOrganizationId` answers; user pages
+   * never read it. Session-only: never persisted, never the person's choice
+   * for user pages. Rule: `lib/organizations/adminOrganization.ts`.
+   */
+  admin_organization_id: string | null;
+  admin_organization_name: string | null;
 
   /**
    * Scope selections — MULTI-SELECT (2026-06-12). Keyed by scope id; value is
@@ -131,6 +146,8 @@ export interface AppContextState {
 export const appContextInitialState: AppContextState = {
   organization_id: null,
   organization_name: null,
+  admin_organization_id: null,
+  admin_organization_name: null,
   scope_selections: {},
   active_scope_type_ids: [],
   project_id: null,
@@ -184,6 +201,17 @@ const appContextSlice = createSlice({
       // this tab now HOLDS it: the load ladder's later answer never moves it.
       state.orgBootstrapFailure = null;
       if (action.payload.id) state.orgBootstrapResolved = true;
+    },
+    /**
+     * Set (or clear, with null) the ADMIN organization — the admin pages'
+     * active organization. Touches nothing the user pages read.
+     */
+    setAdminOrganization: (
+      state,
+      action: PayloadAction<{ id: string | null; name?: string | null }>,
+    ) => {
+      state.admin_organization_id = action.payload.id;
+      state.admin_organization_name = action.payload.id ? (action.payload.name ?? null) : null;
     },
     /**
      * FIRST organization choice, made to unblock an action already in flight.
@@ -400,17 +428,27 @@ export const {
   setOrgBootstrapFailure,
   setFullContext,
   clearContext,
+  setAdminOrganization,
 } = appContextSlice.actions;
 
 export default appContextSlice.reducer;
 
 // ─── Selectors ────────────────────────────────────────────────────────────────
 
-type StateWithAppContext = { appContext: AppContextState };
+type StateWithAppContext = {
+  appContext: AppContextState;
+  userAuth?: { adminLaneOpen?: boolean } | null;
+};
 
+/**
+ * THE active organization: the admin organization while on an admin page
+ * (`lib/organizations/adminOrganization.ts`), the person's own selection
+ * everywhere else.
+ */
 export const selectOrganizationId = (
   state: StateWithAppContext,
-): string | null => state.appContext.organization_id;
+): string | null =>
+  activeAdminOrganization(state)?.id ?? state.appContext.organization_id;
 
 /**
  * True when the user has EXPLICITLY chosen an active org. False means compute
@@ -419,7 +457,7 @@ export const selectOrganizationId = (
  */
 export const selectHasExplicitOrganization = (
   state: StateWithAppContext,
-): boolean => state.appContext.organization_id != null;
+): boolean => selectOrganizationId(state) != null;
 
 /**
  * True once the active-org bootstrap has finished resolving. Gate the "no org"
@@ -458,9 +496,14 @@ export { selectShouldPromptForOrganization };
  */
 export { selectOrgBootstrapFailure };
 
+const EMPTY_SCOPE_SELECTIONS: Record<string, string | null> = {};
+
 export const selectScopeSelectionsContext = (
   state: StateWithAppContext,
-): Record<string, string | null> => state.appContext.scope_selections;
+): Record<string, string | null> =>
+  adminOrganizationReplacesUserContext(state)
+    ? EMPTY_SCOPE_SELECTIONS
+    : state.appContext.scope_selections;
 
 const EMPTY_ACTIVE_SCOPE_TYPES: string[] = [];
 
@@ -471,15 +514,16 @@ const EMPTY_ACTIVE_SCOPE_TYPES: string[] = [];
 export const selectActiveScopeTypeIds = (
   state: StateWithAppContext,
 ): string[] =>
+  !adminOrganizationReplacesUserContext(state) &&
   state.appContext.active_scope_type_ids.length > 0
     ? state.appContext.active_scope_type_ids
     : EMPTY_ACTIVE_SCOPE_TYPES;
 
 export const selectProjectId = (state: StateWithAppContext): string | null =>
-  state.appContext.project_id;
+  adminOrganizationReplacesUserContext(state) ? null : state.appContext.project_id;
 
 export const selectTaskId = (state: StateWithAppContext): string | null =>
-  state.appContext.task_id;
+  adminOrganizationReplacesUserContext(state) ? null : state.appContext.task_id;
 
 export const selectConversationId = (
   state: StateWithAppContext,
@@ -487,13 +531,16 @@ export const selectConversationId = (
 
 export const selectOrganizationName = (
   state: StateWithAppContext,
-): string | null => state.appContext.organization_name;
+): string | null => {
+  const admin = activeAdminOrganization(state);
+  return admin ? admin.name : state.appContext.organization_name;
+};
 
 export const selectProjectName = (state: StateWithAppContext): string | null =>
-  state.appContext.project_name;
+  adminOrganizationReplacesUserContext(state) ? null : state.appContext.project_name;
 
 export const selectTaskName = (state: StateWithAppContext): string | null =>
-  state.appContext.task_name;
+  adminOrganizationReplacesUserContext(state) ? null : state.appContext.task_name;
 
 /**
  * Returns the full context object reference directly from state.

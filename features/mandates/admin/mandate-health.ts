@@ -554,3 +554,45 @@ export function resolveDriftRemedy(
     newestSavedNumber > pinnedNumber;
   return { newestNumber: newestSavedNumber, newestSavedNumber, pinUpdateHelps };
 }
+
+/**
+ * ONE definition of "does code declare this job". The Definition tab counts
+ * recorded call sites (`usage.code_reference_count`, from `mandate.reference`);
+ * the Health tab reads the code-truth declaration. Read apart they disagreed:
+ * "2 code call sites recorded" beside "No code declaration was found". A job
+ * can be called from code without being declared there, and that is its own
+ * answer, not "no code".
+ */
+export type CodeDeclarationState =
+  | "declared"
+  | "called_not_declared"
+  | "no_code"
+  /** The call-site count could not be read; never guessed as zero. */
+  | "unknown";
+
+export function codeDeclarationState(input: {
+  declarationFound: boolean;
+  /** `null` when the count could not be read. */
+  codeReferenceCount: number | null;
+}): CodeDeclarationState {
+  if (input.declarationFound) return "declared";
+  if (input.codeReferenceCount === null) return "unknown";
+  return input.codeReferenceCount > 0 ? "called_not_declared" : "no_code";
+}
+
+/** The one sentence the Health tab prints for a job code does not declare. */
+export function codeDeclarationSentence(
+  state: CodeDeclarationState,
+  codeReferenceCount: number | null,
+): string | null {
+  switch (state) {
+    case "declared":
+      return null;
+    case "called_not_declared":
+      return `Called from code (${codeReferenceCount} call site${codeReferenceCount === 1 ? "" : "s"}) but not declared there, so its code inputs and variable flow are not measured.`;
+    case "no_code":
+      return "No code declaration and no code call sites were found, so its code inputs and variable flow are not measured.";
+    case "unknown":
+      return "No code declaration was found, and call sites could not be read, so its code inputs and variable flow are not measured.";
+  }
+}

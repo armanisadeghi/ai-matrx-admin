@@ -29,7 +29,6 @@ import { resolve } from "node:path";
 
 import { expect, test, type Page } from "@playwright/test";
 
-// @ts-expect-error — plain-JS helper shared by every walk (scripts/lib/seat-browser.mjs)
 import { signIn } from "../../../../../../scripts/lib/seat-browser.mjs";
 import {
   ADMIN_EMAIL,
@@ -84,12 +83,15 @@ function resumeWhenParked(page: Page): void {
 
 /** The text of the row a label opens ("Undeclared (2) my fake"), read as the person sees it. */
 async function rowText(page: Page, label: string): Promise<string> {
+  // The shared preview hot-reloads when a peer saves a file: a read that lands mid-reload is "not yet", never a verdict.
   return page.evaluate((l) => {
-    const el = Array.from(document.querySelectorAll("span,p,div,label")).find(
-      (e) => e.children.length === 0 && (e.textContent ?? "").trim().startsWith(l),
+    const el = Array.from(document.querySelectorAll("span,p,div,label")).find((e) =>
+      Array.from(e.childNodes).some((n) => n.nodeType === Node.TEXT_NODE && (n.textContent ?? "").trim().startsWith(l)),
     );
-    return (el?.parentElement?.textContent ?? "").replace(/\s+/g, " ").trim();
-  }, label);
+    return Array.from(el?.parentElement?.querySelectorAll("button") ?? [])
+      .map((c) => (c.textContent ?? "").replace(/\s+/g, " ").trim())
+      .join(" ");
+  }, label).catch(() => "");
 }
 
 /** Every rendered occurrence of a token, with the background of the element that directly holds it. */
@@ -107,7 +109,7 @@ async function renderedTokens(page: Page, token: string): Promise<{ text: string
       found.push({ text: n.textContent ?? "", alpha: parts.length > 3 ? parts[3] : 1, border: cs.borderTopWidth });
     }
     return found;
-  }, token);
+  }, token).catch(() => []);
 }
 
 test.describe.serial("THE VARIABLE RULE in the UI", () => {
@@ -156,17 +158,35 @@ test.describe.serial("THE VARIABLE RULE in the UI", () => {
       expect(await instructions.inputValue()).toBe(authoredSystem);
     }).toPass({ timeout: 300_000 });
     await page.getByRole("button", { name: "Create agent" }).click();
-    await page.waitForURL(/\/agents\/[0-9a-f-]{36}\/build/, { timeout: 300_000 });
-    agentId = page.url().match(/\/agents\/([0-9a-f-]{36})\//)![1];
+    // The shared preview can park this host between the press and the redirect (its slot is needed by
+    // another session). The row is created on the press, so find it by name and open it as a person would.
+    await expect
+      .poll(
+        async () => {
+          if (/\/agents\/[0-9a-f-]{36}\/build/.test(page.url())) return page.url().match(/\/agents\/([0-9a-f-]{36})\//)![1];
+          const made = await staleAgentIds(AGENT_NAME);
+          return made[0] ?? "";
+        },
+        { message: "the created agent", timeout: 300_000 },
+      )
+      .toMatch(/^[0-9a-f-]{36}$/);
+    agentId = /\/agents\/[0-9a-f-]{36}\/build/.test(page.url())
+      ? page.url().match(/\/agents\/([0-9a-f-]{36})\//)![1]
+      : (await staleAgentIds(AGENT_NAME))[0];
+    leftovers.push(...(await staleAgentIds(AGENT_NAME)));
+    if (!page.url().includes(`/agents/${agentId}/build`)) await page.goto(`/agents/${agentId}/build`);
 
     // 2. The agent's user message, typed into the builder's own editor.
     await expect(page.getByText(/^Undeclared/).first()).toBeVisible({ timeout: 300_000 });
     await page.waitForTimeout(5000);
-    await page.getByRole("button", { name: "User", exact: true }).click();
-    await page.getByText("User message / example input...").first().click();
-    await page.keyboard.insertText(AUTHORED);
-    await page.keyboard.press("Enter");
-    await page.keyboard.insertText(ESCAPE_AUTHORED);
+    // A reload (a peer's save, a parked host) restores the unsaved draft: type only what is not there.
+    if ((await renderedTokens(page, "{{!slot}}")).length < 2) {
+      await page.getByRole("button", { name: "User", exact: true }).click();
+      await page.getByText("User message / example input...").first().click();
+      await page.keyboard.insertText(AUTHORED);
+      await page.keyboard.press("Enter");
+      await page.keyboard.insertText(ESCAPE_AUTHORED);
+    }
 
     // 3. Editor, nothing declared yet: {{my}} and {{fake}} are listed undeclared; {{!slot}} is not.
     await expect.poll(() => rowText(page, "Undeclared"), { message: "the Undeclared list" }).toMatch(/\bmy\b/);

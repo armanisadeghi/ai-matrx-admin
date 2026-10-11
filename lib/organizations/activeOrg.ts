@@ -5,7 +5,8 @@
 // `utils/auth/getUserId.ts` for org instead of user.
 //
 // Source of truth is Redux ONLY: `appContext.organization_id`, the org the
-// user explicitly selected for the current request context. There is no
+// user explicitly selected for the current request context — or, on an admin
+// page, `appContext.admin_organization_id` (lib/organizations/adminOrganization.ts). There is no
 // fallback organization here (2026-09-17): a null means genuinely unresolved
 // (no selection among several memberships, or none at all) or not yet
 // hydrated.
@@ -34,8 +35,11 @@ import { getStoreSingleton as getStore } from "@/lib/redux/store-singleton";
 // one recogniser (`isOrganizationRequiredError`).
 import { OrganizationContextError } from "@ai-matrx/agents/matrx";
 
+import { activeAdminOrganization } from "@/lib/organizations/adminOrganization";
+
 interface AppContextOrgShape {
   organization_id: string | null;
+  admin_organization_id?: string | null;
 }
 
 /**
@@ -49,10 +53,15 @@ interface AppContextOrgShape {
 export function getActiveOrgId(): string | null {
   const store = getStore();
   if (!store) return null;
-  const appContext = (store.getState() as { appContext?: AppContextOrgShape })
-    .appContext;
+  const state = store.getState() as {
+    appContext?: AppContextOrgShape;
+    userAuth?: { adminLaneOpen?: boolean };
+  };
+  const appContext = state.appContext;
   if (!appContext) return null;
-  return appContext.organization_id ?? null;
+  // On an admin page the admin organization IS the active organization
+  // (lib/organizations/adminOrganization.ts); user pages read their own.
+  return activeAdminOrganization(state)?.id ?? appContext.organization_id ?? null;
 }
 
 /** Alias of `getActiveOrgId` — the two reads became identical when the

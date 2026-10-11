@@ -662,6 +662,14 @@ export interface OrganizationPreferences {
    * one is obeyed.
    */
   switchWhenALinkAsks: boolean;
+  /**
+   * THE ADMIN ORGANIZATION (Arman, 2026-10-10) — one of the person's own
+   * organizations that admin pages make active on every entry, so work run
+   * from the admin section is filed there (never the platform tenant). Null =
+   * admin pages use the current active organization. Never read on user pages.
+   * Rule: `lib/organizations/adminOrganization.ts`.
+   */
+  adminOrganizationId: string | null;
 }
 
 export type ThinkingMode = "none" | "simple" | "deep";
@@ -1394,6 +1402,7 @@ export const initializeUserPreferencesState = (
     organization: {
       // Default ON: a link that names an organization is obeyed.
       switchWhenALinkAsks: true,
+      adminOrganizationId: null,
     },
     scratchpad: {
       // null = no scratchpad yet; the first open/type creates + activates one.

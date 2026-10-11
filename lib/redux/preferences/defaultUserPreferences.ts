@@ -234,6 +234,8 @@ export const defaultUserPreferences: UserPreferences = {
     // answers is a notification deep link landing a person on "Select an
     // organization first" instead of the thing the link named.
     switchWhenALinkAsks: true,
+    // null = admin pages use the current active organization.
+    adminOrganizationId: null,
   },
   // null = no scratchpad yet; the first open/type creates + activates one.
   scratchpad: {

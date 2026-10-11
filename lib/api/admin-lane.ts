@@ -1,40 +1,40 @@
 // lib/api/admin-lane.ts — THE ADMIN SEAT on the Python server.
 //
-// Arman, 2026-09-26: "No one acts as themselves in admin." Work an admin does
-// inside the admin section (AI on a system mandate, a catalog probe, a
-// resilience scenario, an agent review) is PLATFORM work: it is filed and billed
-// to the Matrx System organization, never to the admin's own workspace, and it
-// never asks the admin to "choose a workspace".
+// Arman, 2026-10-10: work an admin RUNS from the admin section (agent runs,
+// mandates, labels, workflows, tests) happens in the admin's OWN declared
+// admin organization — never the Matrx System platform tenant
+// (`lib/organizations/adminOrganization.ts`). Two halves, decided at REQUEST
+// time from the page the person is on (`browserAdminLaneOpen`):
 //
-// Two halves, both decided at REQUEST time from the page the person is on
-// (`browserAdminLaneOpen`, the same rule the Supabase admin lane and
-// `lib/api/adminDoor.ts` use):
-//
-//   1. `adminLaneOrganizationId()` — every place that reads "the selected
-//      organization" to bind a server request reads THIS first. In the admin
-//      section it is the platform tenant; everywhere else it is null and the
-//      selected workspace is used exactly as before. An EXPLICIT organization a
-//      caller passes (a record's own org) always wins over both.
-//   2. `withAdminLaneHeader(headers)` — a request bound to the platform tenant
-//      from the admin section carries `x-matrx-admin-lane: 1`. The server admits
-//      the tenant only when it re-verifies the caller in `admin.admins` and
-//      writes an `admin.admin_audit_log` row (aidream
-//      `aidream/api/middleware/admin_lane_admission.py`); the header alone
-//      grants nothing.
+//   1. `adminLaneOrganizationId()` — on an admin page, the organization admin
+//      work binds to: the active organization there, which IS the admin
+//      organization (or the person's current one when none is declared). Null
+//      on every user page. Non-null also tells shared code "this is the admin
+//      seat". An EXPLICIT organization a caller passes (a record's own org)
+//      always wins.
+//   2. `withAdminLaneHeader(headers)` — every organization-bound server request
+//      from the admin section carries `x-matrx-admin-lane: 1` ("this is the
+//      admin system"). The server re-verifies the caller in `admin.admins` and
+//      audits (aidream `aidream/api/middleware/admin_lane_admission.py`):
+//        - in the admin organization (a membership) the request is filed there
+//          and still reads as the admin lane for admin-reach doors;
+//        - bound to the platform tenant — only PLATFORM-CONTENT work, a request
+//          carrying a Matrx System record's own organization (a built-in agent,
+//          a system mandate, a system kind record) — it is the one admission of
+//          a non-member;
+//        - any other organization is refused exactly as without the header.
+//      The header alone grants nothing.
 
-import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
 import { ADMIN_LANE_HEADER, browserAdminLaneOpen } from "@/utils/supabase/adminLane";
+import { getActiveOrgId } from "@/lib/organizations/activeOrg";
 
-/** The platform tenant on the admin seat; null on every user page. */
+/** The admin organization on the admin seat (never the platform tenant); null on every user page. */
 export function adminLaneOrganizationId(): string | null {
-  return browserAdminLaneOpen() ? SYSTEM_ORGANIZATION_ID : null;
+  return browserAdminLaneOpen() ? getActiveOrgId() : null;
 }
 
-function isPlatformTenant(organizationId: string | null | undefined): boolean {
-  return (
-    typeof organizationId === "string" &&
-    organizationId.trim().toLowerCase() === SYSTEM_ORGANIZATION_ID.toLowerCase()
-  );
+function isOrganization(organizationId: string | null | undefined): boolean {
+  return typeof organizationId === "string" && organizationId.trim().length > 0;
 }
 
 /** The org header name as the transports write it (case varies by call site). */
@@ -46,11 +46,11 @@ function organizationHeaderOf(headers: Record<string, string>): string | undefin
 }
 
 /**
- * Adds `x-matrx-admin-lane: 1` when — and only when — the request is bound to
- * the platform tenant from the admin section. Returns the same object shape.
+ * Adds `x-matrx-admin-lane: 1` when — and only when — an organization-bound
+ * request leaves from the admin section. Returns the same object shape.
  */
 export function withAdminLaneHeader<H extends Record<string, string>>(headers: H): H {
-  if (!browserAdminLaneOpen() || !isPlatformTenant(organizationHeaderOf(headers))) {
+  if (!browserAdminLaneOpen() || !isOrganization(organizationHeaderOf(headers))) {
     return headers;
   }
   return { ...headers, [ADMIN_LANE_HEADER]: "1" };
@@ -60,7 +60,7 @@ export function withAdminLaneHeader<H extends Record<string, string>>(headers: H
 export function adminLaneHeadersFor(
   organizationId: string | null | undefined,
 ): Record<string, string> {
-  return browserAdminLaneOpen() && isPlatformTenant(organizationId)
+  return browserAdminLaneOpen() && isOrganization(organizationId)
     ? { [ADMIN_LANE_HEADER]: "1" }
     : {};
 }

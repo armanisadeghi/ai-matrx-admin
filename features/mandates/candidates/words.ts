@@ -65,10 +65,12 @@ export const RECOMMENDATION_TONE: Record<Recommendation, string> = {
   reject: "bg-red-500/15 text-red-700 dark:text-red-400",
 };
 
-export const DISPOSITION_WORD: Record<"real" | "borrowed" | "stopped", string> = {
+// `contained`: the call started a sub-agent whose own calls were contained.
+export const DISPOSITION_WORD: Record<"real" | "borrowed" | "stopped" | "contained", string> = {
   real: "Ran for real",
   borrowed: "Used the live result",
   stopped: "Stopped here",
+  contained: "Ran contained",
 };
 
 /** How the pair reached its terminal state — the pair's one-word outcome. */

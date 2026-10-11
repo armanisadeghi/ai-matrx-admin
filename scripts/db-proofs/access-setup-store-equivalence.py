@@ -629,6 +629,29 @@ def run_scoped():
     who = one("select custom.store_part_notice(f, 'read') ->> 'who' from custom.record f where id = %s", (F['bonus'],))
     check('notice: who reads Pay, from the setup', who is not None and 'Employee' in who, repr(who))
     check('share of ONE column still opens it on top of the part', reads('share_e', None, 'hourly_rate', 'viewer'))
+    # through the REAL write door (after the swap it asks the per-row form): editor refused on Pay, Table admin allowed
+    def door_write(k, field, value):
+        seat_as = P[k]['uid']
+        cur.execute("reset role")
+        cur.execute("select set_config('request.jwt.claims', %s, true), set_config('request.jwt.claim.sub', %s, true)",
+                    (json.dumps({"sub": seat_as, "role": "authenticated"}), seat_as))
+        cur.execute("set local role authenticated")
+        q("savepoint dw")
+        try:
+            q("select custom.record_update(%s, %s, %s::jsonb, null)", (ORG, ROWS[0], json.dumps({field: value})))
+            ok = True
+        except Exception:
+            ok = False
+        q("rollback to savepoint dw")
+        owner()
+        return ok
+    swapped = one("select pg_get_functiondef('iam.may_touch_field_itself(uuid,uuid,uuid,permission_level,text)'::regprocedure) like '%_store_column_itself%'")
+    if swapped:
+        check('write door (swapped): a Table editor cannot change Pay; Role still', not door_write('t_editor', 'hourly_rate', 50) and door_write('t_editor', 'role', 'Lead'))
+        check('write door (swapped): the Table admin changes Pay', door_write('t_admin', 'bonus', 2000))
+        m = one("select custom.read_mask_for(%s, %s, %s, 'viewer', 'read')", (P['employee']['uid'], ORG, TABLE))
+        check('read mask (swapped): Pay is withheld set-wide from the employee, with its part and who',
+              'hourly_rate' not in m['visible'] and (m['notices'].get('hourly_rate') or {}).get('part') == 'Pay', json.dumps(m['notices'].get('hourly_rate')))
     # plant: per-row cells ignored -> the employee loses Pay on their own row
     body = one("select pg_get_functiondef('custom._store_column_itself(uuid,uuid,uuid,uuid,permission_level,text)'::regprocedure)")
     q("savepoint plant2")
@@ -653,7 +676,7 @@ def run_plants():
     plant('the knob ignored in the preset cells (everything opens at viewer)',
           cells.replace("iam.field_sensitivity_level(coalesce(p_word, 'internal'), 'read', p_org)", "'viewer'"))
     itself = one("select pg_get_functiondef('custom._store_column_itself(uuid,uuid,uuid,uuid,permission_level,text)'::regprocedure)")
-    plant('the share of one column dropped', itself.replace("if v_grant is not null and v_share is not null and v_grant >= v_share then return true; end if;", ""))
+    plant('the share of one column dropped', itself.replace("if v_grant is not null and v_grant >= v_share then return true; end if;", ""))
     touch = one("select pg_get_functiondef('iam.part_may_touch(uuid,uuid,uuid,permission_level,text)'::regprocedure)")
     plant('the worked-out closure dropped', touch.replace("if not custom._store_column_itself(p_person, p_row, v_input.input_id, v_org, p_level, 'read') then return false; end if;", ""))
 

@@ -257,7 +257,12 @@ export default function WorkbooksLandingPage() {
         // BEFORE creating an empty workbook the user would have to delete.
         const { xlsxToUniverWorkbook } =
           await import("@/features/workbooks/xlsx-to-univer");
-        const snapshot = await xlsxToUniverWorkbook(file);
+        const droppedOnImport: string[] = [];
+        const { uploadImportedImage } = await import("@/lib/univer/matrxImagePorts");
+        const snapshot = await xlsxToUniverWorkbook(file, {
+          uploadImage: uploadImportedImage,
+          onDropped: (what) => droppedOnImport.push(what),
+        });
 
         // Stash the lossless original in cld_files so users can download or
         // re-import the source later. Failure here is non-fatal — the workbook
@@ -308,7 +313,9 @@ export default function WorkbooksLandingPage() {
 
         toast({
           title: "Workbook imported",
-          description: cleanName,
+          description: droppedOnImport.length
+            ? `${cleanName}. Not carried: ${droppedOnImport.join("; ")}`
+            : cleanName,
           variant: "success",
         });
         router.push(`/workbooks/${created.data.id}`);
