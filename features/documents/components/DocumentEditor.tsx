@@ -78,6 +78,10 @@ import { useUniverDocSurfaceTheme } from "@/features/documents/hooks/useUniverDo
 import { sanitizeUniverDocSnapshot } from "@/features/documents/utils/sanitizeUniverDocSnapshot";
 import { identifyUniverUser } from "@/lib/univer/identifyUniverUser";
 import { registerMatrxImageStore } from "@/lib/univer/univerImageStore";
+import {
+  routeUniverNotificationsToApp,
+  type NotificationReplaceableInjector,
+} from "@/lib/univer/routeUniverNotificationsToApp";
 import { matrxImagePorts } from "@/lib/univer/matrxImagePorts";
 import { disposeUniverInstance } from "@/lib/univer/disposeUniverInstance";
 import { registerUniverFacadeDependencies } from "@/lib/univer/registerUniverFacadeDependencies";
@@ -329,6 +333,14 @@ export default function DocumentEditor({
         }
         univerRef.current = univer;
         apiRef.current = univerAPI;
+        // ONE toaster per page: Univer's notices ride the app's toast path, and
+        // Univer never mounts its own sonner Toaster (every toast showed twice).
+        const routed = routeUniverNotificationsToApp(
+          univer.__getInjector() as unknown as NotificationReplaceableInjector,
+        );
+        if (!routed.applied) {
+          console.warn(`[univer] notifications not routed to the app toaster (${routed.reason}) — toasts may show twice`);
+        }
         // Pictures go to the file store; the snapshot keeps only a reference.
         registerMatrxImageStore(univer.__getInjector(), matrxImagePorts);
         void identifyUniverUser(univer.__getInjector()).catch((err) =>
