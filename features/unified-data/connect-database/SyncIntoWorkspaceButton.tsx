@@ -40,9 +40,17 @@ export function SyncIntoWorkspaceButton({ tableId, organizationId }: { tableId: 
     });
   }, [client, open, tableId]);
 
-  const orgOptions = organizations.map((o) => ({ value: o.id, label: o.name }));
-  const destination = dest || organizationId || orgOptions[0]?.value || "";
   const sourceOrg = organizationId ?? client.config.organizationId;
+  // NO SILENT DEFAULT: nothing is picked until the person picks. Other workspaces come first; this
+  // table's own workspace is offered last, named as such, for a deliberate same-workspace copy.
+  const others = organizations.filter((o) => o.id !== sourceOrg).map((o) => ({ value: o.id, label: o.name }));
+  const here = organizations.find((o) => o.id === sourceOrg);
+  const orgOptions = [
+    { value: "", label: "Pick a workspace" },
+    ...others,
+    ...(here ? [{ value: here.id, label: `${here.name} (this workspace)` }] : []),
+  ];
+  const destination = dest;
 
   async function sync() {
     if (!destination || !sourceOrg) return;

@@ -97,7 +97,13 @@ export type SyncAutoRefresh = "off" | "hourly" | "daily" | "on_change";
 /** A Google Sheets / CSV link becomes a synced table in this organization. */
 export async function connectSyncedLink(
   organizationId: string,
-  input: { url: string; headerRow?: number; tableName?: string; autoRefresh?: "off" | "hourly" | "daily" },
+  input: {
+    url: string;
+    headerRow?: number;
+    tableName?: string;
+    autoRefresh?: "off" | "hourly" | "daily";
+    mapping?: Record<string, ColumnPick>;
+  },
 ): Promise<SyncAnswer> {
   const { data } = await postJson<SyncAnswer>(
     "/synced-tables/link",
@@ -107,6 +113,7 @@ export async function connectSyncedLink(
       header_row: input.headerRow ?? 1,
       table_name: input.tableName || null,
       auto_refresh: input.autoRefresh ?? "off",
+      mapping: input.mapping && Object.keys(input.mapping).length ? input.mapping : null,
     },
     { organizationId },
   );
@@ -130,4 +137,43 @@ export function syncedFromLabel(provider: string): string {
   if (provider === "csv_url") return "a CSV link";
   if (provider === "matrx_view") return "another table";
   return "outside AI Matrx";
+}
+
+export type ColumnKind = "text" | "number" | "boolean" | "datetime";
+/** The person's column step for one source column. */
+export interface ColumnPick {
+  type?: ColumnKind;
+  skip?: boolean;
+  name?: string;
+}
+
+/** The column step: a link's columns with the kind inferred for each. Writes nothing. */
+export async function previewSyncedLink(
+  organizationId: string,
+  input: { url: string; headerRow?: number },
+): Promise<{ provider: string; columns: { name: string; type: ColumnKind }[]; rows: number }> {
+  const { data } = await postJson<{ provider: string; columns: { name: string; type: ColumnKind }[]; rows: number }>(
+    "/synced-tables/link/preview",
+    { organization_id: organizationId, url: input.url, header_row: input.headerRow ?? 1 },
+    { organizationId },
+  );
+  return data;
+}
+
+/** A synced cell edit: the server writes the connected sheet first, then lands it (CFL-058). */
+export async function writeSyncedCell(
+  organizationId: string,
+  cell: { recordId: string; fieldKey: string; value: unknown; force: boolean },
+): Promise<{ status: "written" | "conflict"; sheet_value: string | null; version: number | null }> {
+  const { data } = await postJson<{ status: "written" | "conflict"; sheet_value: string | null; version: number | null }>(
+    "/synced-tables/cell",
+    { organization_id: organizationId, record_id: cell.recordId, field_key: cell.fieldKey, value: cell.value ?? null, force: cell.force },
+    { organizationId },
+  );
+  return data;
+}
+
+/** Whether a synced table's source can take edits back (a CONNECTED Google Sheet only). */
+export function sourceTakesEdits(source: { provider?: string; access?: string | null } | null | undefined): boolean {
+  return source?.provider === "google_sheets" && source.access !== "link";
 }

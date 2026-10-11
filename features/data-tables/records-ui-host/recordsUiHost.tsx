@@ -24,6 +24,8 @@ import { RecordBodyEditor } from "@/features/data-tables/records-ui-host/RecordB
 import { RecordBodySpace } from "@/features/spaces/embed/RecordBodySpace";
 import { DynamicIcon } from "@ai-matrx/icons";
 import { useCallback, useLayoutEffect, useMemo, type ReactNode } from "react";
+import { writeSyncedCell } from "@/features/unified-data/connect-database/service";
+import { extractErrorMessage } from "@/utils/errors";
 import { usePersonTimeZone } from "@/hooks/usePersonTimeZone";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -170,6 +172,22 @@ export function recordsUiHostFor({ ports, merged, gridContext, rights }: Records
     // Every cost the package shows is points at the platform's rate (records-ui `pointsRate`).
     // Spread as its own object: a records-ui build before the port ignores the key.
     ...{ pointsRate: currentPointsRate() },
+    // WRITE-THROUGH (lane SYNC-AIRTABLE, CFL-058): a synced cell's edit goes to its connected Google
+    // Sheet through the server first; a sheet changed since the last sync comes back as a conflict.
+    // Spread as its own object: a records-ui build before the port ignores the key.
+    ...{
+      writeSyncedCell: async (cell: { tableId: string; recordId: string; fieldKey: string; value: unknown; force: boolean }) => {
+        if (!ports.organizationId) return { ok: false as const, message: "Pick an organization to save this change." };
+        try {
+          const done = await writeSyncedCell(ports.organizationId, cell);
+          return done.status === "conflict"
+            ? { ok: true as const, status: "conflict" as const, sheetValue: done.sheet_value }
+            : { ok: true as const, status: "written" as const, version: done.version };
+        } catch (err) {
+          return { ok: false as const, message: extractErrorMessage(err) };
+        }
+      },
+    },
     share: recordStoreShare,
     // "This organization is archived" on every refusal that names one: an owner (or super admin) gets
     // "Restore organization" (the one iam.organization_restore door), everyone else is told who can.

@@ -19,7 +19,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 
-import { OUTSIDE_DATABASE_PROVIDER, refreshAnySyncedTable, syncedFromLabel, type SyncAutoRefresh } from "./service";
+import { OUTSIDE_DATABASE_PROVIDER, refreshAnySyncedTable, sourceTakesEdits, syncedFromLabel, type SyncAutoRefresh } from "./service";
 import { SyncedBadge } from "./SyncedBadge";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 
@@ -31,6 +31,7 @@ interface SyncSource {
   synced_at?: string | null;
   label?: string | null;
   auto_refresh?: SyncAutoRefresh | null;
+  access?: string | null;
 }
 
 function syncSourceOf(table: unknown): SyncSource | null {
@@ -118,6 +119,12 @@ export function SyncedTableBar({ tableId, organizationId }: { tableId: string; o
       <span className="hidden max-w-[16rem] truncate text-xs text-muted-foreground md:inline" data-synced-table-when="">
         {busy ? "Syncing" : `Synced ${agoText(lastSynced)}`}
       </span>
+      {/* A sheet shared by link, a CSV, an outside database or another table: edits happen at the source. */}
+      {!sourceTakesEdits(source) ? (
+        <span className="hidden text-xs text-muted-foreground lg:inline" data-synced-table-readonly="">
+          Read-only source
+        </span>
+      ) : null}
       <span title={`From ${from}`} data-synced-table-interval="">
         <Select<SyncAutoRefresh>
           aria-label="Auto-refresh"
