@@ -43,6 +43,7 @@ import {
   type SpendAlarmAttentionRow,
 } from "@/features/admin/spend-alarms/spendAlarms";
 import { humanizeRelative } from "@/features/scheduling/utils/triggerHumanize";
+import { HELD_RUN_ALARM_KINDS, heldRunHref } from "@/features/admin/held-runs/heldRuns";
 import type { AttentionAction, AttentionItem } from "../types";
 
 export const SPEND_ALARM_SOURCE_ID = "spend-alarms";
@@ -180,6 +181,22 @@ function actionsOf(row: SpendAlarmAttentionRow, deps: SpendAlarmDeps): Attention
       });
     }
     // open_agent / open_mandate / open_source are doors ("Where it shows"), not actions.
+  }
+  if (HELD_RUN_ALARM_KINDS.has(row.kind)) {
+    // The run this alarm stopped, kept frozen: watch it, edit, replay (features/admin/held-runs).
+    out.push({
+      id: "open_held_run",
+      label: "Open the run",
+      variant: "outline",
+      confirm: {
+        title: "Open the run this alarm stopped?",
+        description: "Shows its inputs and prompt. Nothing runs until you press Replay there.",
+        confirmLabel: "Open the run",
+      },
+      run: async () => {
+        if (typeof window !== "undefined") window.location.assign(heldRunHref(row.id));
+      },
+    });
   }
   out.push({
     id: "resolve",

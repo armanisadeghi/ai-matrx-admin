@@ -6799,6 +6799,135 @@ export type Database = {
         }
         Relationships: []
       }
+      held_run: {
+        Row: {
+          agent_id: string | null
+          agent_name: string | null
+          agent_version_id: string | null
+          agent_version_number: number | null
+          context_entries: Json | null
+          conversation_id: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          door: string | null
+          door_args: Json | null
+          driver: string | null
+          estimated_cost_usd: number | null
+          gate: string
+          id: string
+          input_hash: string
+          is_version: boolean
+          last_seen_at: string
+          mandate_key: string | null
+          messages: Json | null
+          metadata: Json
+          model: string | null
+          occurrence_count: number
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          refs: Json
+          refusal_message: string | null
+          replays: Json
+          request_ids: string[]
+          run_user_id: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          tools: Json | null
+          updated_at: string
+          updated_by: string | null
+          user_input: Json | null
+          variables: Json
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          agent_id?: string | null
+          agent_name?: string | null
+          agent_version_id?: string | null
+          agent_version_number?: number | null
+          context_entries?: Json | null
+          conversation_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          door?: string | null
+          door_args?: Json | null
+          driver?: string | null
+          estimated_cost_usd?: number | null
+          gate: string
+          id?: string
+          input_hash: string
+          is_version?: boolean
+          last_seen_at?: string
+          mandate_key?: string | null
+          messages?: Json | null
+          metadata?: Json
+          model?: string | null
+          occurrence_count?: number
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          refs?: Json
+          refusal_message?: string | null
+          replays?: Json
+          request_ids?: string[]
+          run_user_id?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          tools?: Json | null
+          updated_at?: string
+          updated_by?: string | null
+          user_input?: Json | null
+          variables?: Json
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          agent_id?: string | null
+          agent_name?: string | null
+          agent_version_id?: string | null
+          agent_version_number?: number | null
+          context_entries?: Json | null
+          conversation_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          door?: string | null
+          door_args?: Json | null
+          driver?: string | null
+          estimated_cost_usd?: number | null
+          gate?: string
+          id?: string
+          input_hash?: string
+          is_version?: boolean
+          last_seen_at?: string
+          mandate_key?: string | null
+          messages?: Json | null
+          metadata?: Json
+          model?: string | null
+          occurrence_count?: number
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          refs?: Json
+          refusal_message?: string | null
+          replays?: Json
+          request_ids?: string[]
+          run_user_id?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          tools?: Json | null
+          updated_at?: string
+          updated_by?: string | null
+          user_input?: Json | null
+          variables?: Json
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
       org_plan: {
         Row: {
           created_at: string
@@ -8339,6 +8468,63 @@ export type Database = {
         Returns: {
           id: string
         }[]
+      }
+      held_run_keep: { Args: { p: Json }; Returns: string }
+      held_run_note_replay: {
+        Args: {
+          p_agent_id?: string
+          p_conversation_id: string
+          p_id: string
+          p_version_mode?: string
+        }
+        Returns: {
+          agent_id: string | null
+          agent_name: string | null
+          agent_version_id: string | null
+          agent_version_number: number | null
+          context_entries: Json | null
+          conversation_id: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          door: string | null
+          door_args: Json | null
+          driver: string | null
+          estimated_cost_usd: number | null
+          gate: string
+          id: string
+          input_hash: string
+          is_version: boolean
+          last_seen_at: string
+          mandate_key: string | null
+          messages: Json | null
+          metadata: Json
+          model: string | null
+          occurrence_count: number
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          refs: Json
+          refusal_message: string | null
+          replays: Json
+          request_ids: string[]
+          run_user_id: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          tools: Json | null
+          updated_at: string
+          updated_by: string | null
+          user_input: Json | null
+          variables: Json
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "held_run"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       org_capability_status: { Args: { p_org: string }; Returns: Json }
       org_custom_limit_remove: {
@@ -80017,6 +80203,15 @@ export type Database = {
       }
       has_org_admin: { Args: { p_org: string }; Returns: boolean }
       has_org_owner: { Args: { p_org: string }; Returns: boolean }
+      holds_level_as: {
+        Args: {
+          p_actor: string
+          p_level: Database["public"]["Enums"]["permission_level"]
+          p_resource_id: string
+          p_resource_type: string
+        }
+        Returns: boolean
+      }
       invitation_has_its_own_door: {
         Args: { p_target_type: string }
         Returns: string
@@ -80140,6 +80335,17 @@ export type Database = {
       may_address_user_in_org: {
         Args: { p_org: string; p_user: string }
         Returns: boolean
+      }
+      may_grant_as: {
+        Args: {
+          p_actor: string
+          p_level: Database["public"]["Enums"]["permission_level"]
+          p_resource_id: string
+          p_resource_type: string
+          p_target_id: string
+          p_target_kind: string
+        }
+        Returns: string
       }
       may_manage_sharing_as: {
         Args: {
