@@ -478,6 +478,9 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
         .schema("agent")
         .from("prompt_block")
         .select("*")
+        // Authored blocks only: skill-linked blocks (source_kind 'skill') come from agent skills
+        // and are not rows this manager ever listed.
+        .eq("source_kind", "authored")
         .order("sort_order", { ascending: true });
 
       if (blockError) throw blockError;
