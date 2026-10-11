@@ -148,7 +148,9 @@ export function readMap(fieldMap: unknown): { fields: FieldDefinitionV2[]; group
       y,
       w,
       h,
-      required: v2 ? raw.required !== false : true,
+      // The server's rule (esign._missing_required): a v2 field is required unless it says otherwise,
+      // except a checkbox, which is optional unless it says required.
+      required: v2 ? (typeof raw.required === "boolean" ? raw.required : kind !== "checkbox") : true,
       label: cleanLabel(raw.label) ?? `${KIND_LABEL[kind]} ${counts[kind]}`,
     };
     if (v2) {
@@ -184,7 +186,7 @@ export function readMap(fieldMap: unknown): { fields: FieldDefinitionV2[]; group
         kind: raw.kind,
         signer_id: signerId,
         label: str(raw.label) ?? (raw.kind === "radio" ? "Choose one" : "Choose"),
-        required: raw.required !== false,
+        required: typeof raw.required === "boolean" ? raw.required : raw.kind === "radio",
         min: typeof raw.min === "number" ? raw.min : null,
         max: typeof raw.max === "number" ? raw.max : null,
       });

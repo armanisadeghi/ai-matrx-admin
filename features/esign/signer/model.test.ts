@@ -169,3 +169,24 @@ describe("Autosaver", () => {
     jest.useRealTimers();
   });
 });
+
+describe("readMap — required defaults match the server (esign._missing_required)", () => {
+  const base = { signer_id: "s1", page: 1, x: 0.1, y: 0.1, w: 0.2, h: 0.03 };
+  it("a v2 field is required unless it says otherwise, except a checkbox", () => {
+    const { fields, groups } = readMap({
+      schema_version: 2,
+      fields: [
+        { ...base, id: "a", kind: "full_name" },
+        { ...base, id: "b", kind: "checkbox" },
+        { ...base, id: "c", kind: "email", required: false },
+        { ...base, id: "d", kind: "checkbox", required: true },
+      ],
+      groups: [
+        { id: "g1", kind: "radio", signer_id: "s1" },
+        { id: "g2", kind: "checkbox", signer_id: "s1" },
+      ],
+    });
+    expect(fields.map((x) => [x.id, x.required])).toEqual([["a", true], ["b", false], ["c", false], ["d", true]]);
+    expect(groups.map((g) => [g.id, g.required])).toEqual([["g1", true], ["g2", false]]);
+  });
+});

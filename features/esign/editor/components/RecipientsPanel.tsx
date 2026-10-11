@@ -196,7 +196,7 @@ export function RecipientsPanel({ draft, edit, people, me, setAccessCode, templa
                 {outsider && (
                   <>
                     <Select aria-label="How they open it" value={r.verification} options={VERIFY_OPTIONS} onValueChange={(v) => patch(r.key, { verification: v })} />
-                    {r.verification === "access_code" && <AccessCodeField recipient={r} setAccessCode={setAccessCode} onSet={(has) => patch(r.key, { has_access_code: has })} />}
+                    {r.verification === "access_code" && !templateMode && <AccessCodeField recipient={r} setAccessCode={setAccessCode} onSet={(has) => patch(r.key, { has_access_code: has })} />}
                   </>
                 )}
               </div>

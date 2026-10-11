@@ -34,7 +34,7 @@ type Factor = "none" | "email_code" | "access_code";
 
 type Phase =
   | { kind: "loading" }
-  | { kind: "dead"; message: string }
+  | { kind: "dead"; message: string; retry?: boolean }
   | { kind: "code"; factor: Exclude<Factor, "none">; masked: string | null; sent: boolean }
   | { kind: "taken_over" }
   | { kind: "signing"; door: SignerDoorApi };
@@ -99,10 +99,10 @@ function answerOf(result: ApiCallResult): Record<string, unknown> {
 async function post(dispatch: AppDispatch, path: "open" | "code" | "verify", body: { token: string; code?: string | null }) {
   const result =
     path === "open"
-      ? await dispatch(callApi({ path: "/esign/signing/outsider/open", method: "POST", body: { token: body.token }, expectedErrorStatuses: [409, 422], organizationFreeRead: true }))
+      ? await dispatch(callApi({ path: "/esign/signing/outsider/open", method: "POST", body: { token: body.token }, expectedErrorStatuses: [409, 422, 503], organizationFreeRead: true }))
       : path === "code"
-        ? await dispatch(callApi({ path: "/esign/signing/outsider/code", method: "POST", body: { token: body.token }, expectedErrorStatuses: [409, 422], organizationFreeRead: true }))
-        : await dispatch(callApi({ path: "/esign/signing/outsider/verify", method: "POST", body: { token: body.token, code: body.code ?? null }, expectedErrorStatuses: [409, 422], organizationFreeRead: true }));
+        ? await dispatch(callApi({ path: "/esign/signing/outsider/code", method: "POST", body: { token: body.token }, expectedErrorStatuses: [409, 422, 503], organizationFreeRead: true }))
+        : await dispatch(callApi({ path: "/esign/signing/outsider/verify", method: "POST", body: { token: body.token, code: body.code ?? null }, expectedErrorStatuses: [409, 422, 503], organizationFreeRead: true }));
   return answerOf(result);
 }
 
@@ -199,11 +199,12 @@ export function OutsiderEntry() {
     try {
       a = await post(dispatch, "open", { token });
     } catch {
-      setPhase({ kind: "dead", message: UNREACHABLE });
+      setPhase({ kind: "dead", message: UNREACHABLE, retry: true });
       return;
     }
     if (a.ok !== true) {
-      setPhase({ kind: "dead", message: str(a.message) ?? DEAD });
+      // A busy server (503) says so and offers another try; a dead link does not.
+      setPhase({ kind: "dead", message: str(a.message) ?? DEAD, retry: a.code === "busy" || a.reason === "server_error" });
       return;
     }
     setLanding(landingOf(a));
@@ -266,6 +267,11 @@ export function OutsiderEntry() {
         <div className="flex max-w-md flex-col items-center gap-3 text-center">
           <XCircle className="h-8 w-8 text-muted-foreground" />
           <p className="type-body text-foreground">{phase.message}</p>
+          {phase.retry && secret ? (
+            <Button variant="primary" onClick={() => void open(secret)}>
+              Try again
+            </Button>
+          ) : null}
         </div>
       ) : null}
 
@@ -292,7 +298,7 @@ export function OutsiderEntry() {
             </p>
           )}
           {phase.factor === "access_code" ? (
-            <p className="type-body text-muted-foreground">Enter the access code the sender gave you.</p>
+            <p className="type-body text-muted-foreground">Enter the access code {landing?.senderName ?? "the sender"} gave you.</p>
           ) : !phase.sent ? (
             <p className="type-body text-muted-foreground">
               {phase.masked ? `We will email a code to ${phase.masked}.` : "We will email you a code."}
@@ -322,6 +328,7 @@ export function OutsiderEntry() {
                 value={code}
                 inputMode={phase.factor === "email_code" ? "numeric" : undefined}
                 autoComplete="one-time-code"
+                maxLength={phase.factor === "access_code" ? 32 : undefined}
                 autoFocus
                 onChange={(e) => setCode(phase.factor === "email_code" ? e.target.value.replace(/\D/g, "").slice(0, 6) : e.target.value)}
               />
