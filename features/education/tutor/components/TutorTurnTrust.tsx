@@ -11,9 +11,9 @@
 //
 // It renders the SAME P0 trust primitives every other education surface uses —
 // never a bespoke citation/confidence UI:
-//   • not_in_material → <RefusalNotice/>  (the honest-refusal presentation; the
-//     tutor's prose already offers the general-knowledge choice, so no extra
-//     escape-hatch button is wired here — the student just replies).
+//   • not_in_material → a general-knowledge label (owner ruling 2026-10-11: the
+//     tutor answers from general knowledge right away when the material is
+//     silent; the answer is shown, labelled, never refused).
 //   • grounded / inferred → <ConfidenceBadge/> + <SourceCitations/>.
 //
 // Renders nothing when the turn carries no envelope; the caller then falls back
@@ -23,17 +23,20 @@ import { BookOpen } from "lucide-react";
 import { plainGroundedIn } from "@/features/education/trust/plainWords";
 import { ConfidenceBadge } from "@/features/education/trust/components/ConfidenceBadge";
 import { SourceCitations } from "@/features/education/trust/components/SourceCitations";
-import { RefusalNotice } from "@/features/education/trust/components/RefusalNotice";
 import { isRefusal, type TrustEnvelope } from "@/features/education/trust/types";
 
 export function TutorTurnTrust({ trust }: { trust: TrustEnvelope | null }) {
   if (!trust) return null;
 
-  // Honest refusal — the answer isn't in the learner's material.
+  // Not in the learner's material — answered from general knowledge, labelled.
   if (isRefusal(trust)) {
     return (
       <div className="mx-auto w-full max-w-3xl px-4 pb-2">
-        <RefusalNotice message={null} />
+        <ConfidenceBadge
+          confidence="not_in_material"
+          label="Not from your material"
+          title="Answered from general knowledge, not your material."
+        />
       </div>
     );
   }

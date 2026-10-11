@@ -46,6 +46,16 @@ export interface TutorGroundingSeed {
   studyContext?: TutorStudyContext;
 }
 
+/**
+ * How the tutor answers THIS turn (owner ruling, Arman 2026-10-11):
+ *   material          — supporting material was found; answer from it, cite it.
+ *   general_knowledge — nothing in the learner's material supports the
+ *                       question; answer from general knowledge right away,
+ *                       labelled, with confidence `not_in_material`.
+ * Sent to the agent as the named context entry `grounding_mode`.
+ */
+export type TutorGroundingMode = "material" | "general_knowledge";
+
 export interface TutorLaunchGrounding {
   learner_memory: string;
   study_material: string;
@@ -59,13 +69,15 @@ export interface TutorLaunchGrounding {
    * corpus; a launch envelope can't promise per-claim `grounded`), and drops to
    * `not_in_material` when there's no corpus at all so the surface can show the
    * honest "answers are general knowledge" notice. The agent prompt still does
-   * per-answer inline citation + honest refusal; this is the visible, structured
+   * per-answer inline citation + a labelled general-knowledge answer when the material is silent; this is the visible, structured
    * companion (citations + confidence + refusal) the P0 mandate requires on the
    * tutor surface. Null only if trust derivation itself is impossible.
    */
   trust: TrustEnvelope | null;
   /** Exact same-turn Knowledge result; null when no question was supplied. */
   retrieval: GroundingResult | null;
+  /** Material vs general-knowledge answer for this turn (`grounding_mode`). */
+  grounding_mode: TutorGroundingMode;
 }
 
 export interface AssembleTutorGroundingOptions {
@@ -224,7 +236,14 @@ function deriveGroundingTrust(
   seed: TutorGroundingSeed | undefined,
   weakCards: WeakCard[],
   retrieval: GroundingResult | null,
+  mode: TutorGroundingMode,
 ): TrustEnvelope {
+  // The question was searched and nothing supports it: the answer is general
+  // knowledge, so no citation may stand beside it (contract: not_in_material
+  // carries no citations — weak cards are not evidence for this question).
+  if (mode === "general_knowledge") {
+    return { citations: [], confidence: "not_in_material" };
+  }
   const citations: SourceCitation[] = [...(retrieval?.trust.citations ?? [])];
   if (seed?.material) {
     citations.push({
@@ -252,6 +271,21 @@ function deriveGroundingTrust(
 }
 
 /**
+ * General knowledge when the question was searched and nothing matched (and no
+ * seed item stands in for it), or when there is no material at all.
+ */
+function resolveGroundingMode(
+  seed: TutorGroundingSeed | undefined,
+  weakCards: WeakCard[],
+  retrieval: GroundingResult | null,
+): TutorGroundingMode {
+  if (retrieval?.status === "retrieved") return "material";
+  if (seed?.material) return "material";
+  if (retrieval?.status === "empty") return "general_knowledge";
+  return weakCards.length > 0 ? "material" : "general_knowledge";
+}
+
+/**
  * Assemble the tutor launch grounding (memory + citable material + teaching
  * prefs). Safe to call at conversation start; never throws.
  */
@@ -275,7 +309,7 @@ export async function assembleTutorGrounding(
     materialParts.push(serializeGroundedPassages(retrieval.passages));
   } else if (retrieval?.status === "empty") {
     materialParts.push(
-      "No supporting passage was found in the learner's uploaded materials for this question. Say that plainly; do not silently answer from general knowledge.",
+      "No supporting passage was found in the learner's uploaded materials for this question.",
     );
   }
   if (opts.seed?.material) {
@@ -293,13 +327,16 @@ export async function assembleTutorGrounding(
   const weakDigest = weakCardDigest(weakCards);
   if (weakDigest) materialParts.push(weakDigest);
 
+  const grounding_mode = resolveGroundingMode(opts.seed, weakCards, retrieval);
+
   return {
     learner_memory: memory.summaryText,
     study_material: materialParts.join("\n\n"),
     teaching_mode: settings.teachingMode,
     personality_style: settings.personalityStyle,
     response_language: opts.responseLanguage?.trim() || "English",
-    trust: deriveGroundingTrust(opts.seed, weakCards, retrieval),
+    trust: deriveGroundingTrust(opts.seed, weakCards, retrieval, grounding_mode),
     retrieval,
+    grounding_mode,
   };
 }

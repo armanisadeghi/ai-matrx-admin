@@ -50,6 +50,7 @@ Retrieval contract: IC-3 in `common-docs/systems/education/INTEGRATION_MAP.md`.
 - **Pre-answer only:** `TutorTrustStrip` shows `deriveGroundingTrust` (floored at `inferred`) for a
   fresh conversation. An old or malformed answer with no envelope gets no reconstructed claim.
 - Low-confidence or unverified rerank fails closed.
+- **Not in the material (Arman, 2026-10-11):** no matching passage → `grounding_mode: general_knowledge` (context entry); the tutor answers from general knowledge at once, `not_in_material`, badge "Not from your material" — never a refusal.
 
 ## Voice and inline help
 

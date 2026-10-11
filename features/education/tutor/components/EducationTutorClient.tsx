@@ -434,6 +434,12 @@ function EducationTutorClientInner({
                 label: "Study material",
               },
               {
+                key: "grounding_mode",
+                value: grounding.grounding_mode,
+                type: "text",
+                label: "Grounding mode",
+              },
+              {
                 key: "teaching_mode",
                 value: grounding.teaching_mode,
                 type: "text",
@@ -1017,6 +1023,12 @@ function EducationTutorClientInner({
           value: grounding.study_material,
           type: "text",
           label: "Retrieved study evidence",
+        },
+        {
+          key: "grounding_mode",
+          value: grounding.grounding_mode,
+          type: "text",
+          label: "Grounding mode",
         },
         {
           key: "teaching_mode",

@@ -8,8 +8,8 @@
 // companion the P0 mandate requires on the conversation: it shows WHAT the
 // tutor is grounded in (real citations from `grounding.ts` — the seed item +
 // the learner's weak cards), an honest confidence floor (`inferred`, never a
-// fabricated `grounded`), and — when nothing is loaded — the refusal
-// convention: answers draw on general knowledge and the tutor says so.
+// fabricated `grounded`), and — when nothing supports the question — the
+// general-knowledge label (owner ruling 2026-10-11: answer, labelled).
 //
 // The envelope is DERIVED from known sources, not invented. Per-answer inline
 // citation + honest refusal are still enforced by the agent prompt; this makes
@@ -35,10 +35,7 @@ export function TutorTrustStrip({ trust }: { trust: TrustEnvelope | null }) {
     return (
       <div className="flex items-center gap-1.5 border-b border-border bg-amber-500/5 px-4 py-1.5 text-xs text-muted-foreground">
         <ConfidenceBadge confidence="not_in_material" iconOnly />
-        <span>
-          No study material loaded yet — the tutor answers from general knowledge
-          and will tell you when something isn&apos;t from your material.
-        </span>
+        <span>Not from your material — answers use general knowledge</span>
       </div>
     );
   }
@@ -73,8 +70,7 @@ export function TutorTrustStrip({ trust }: { trust: TrustEnvelope | null }) {
         <div className="pt-2">
           <SourceCitations trust={trust} label={null} />
           <p className="pt-1.5 text-[11px] text-muted-foreground">
-            The tutor cites your material inline and refuses questions outside it
-            rather than guessing.
+            Answers outside your material are labeled.
           </p>
         </div>
       )}

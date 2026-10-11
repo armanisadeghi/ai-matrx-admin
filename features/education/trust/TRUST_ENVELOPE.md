@@ -26,7 +26,7 @@ interface TrustEnvelope { citations: SourceCitation[]; confidence: TrustConfiden
 |---|---|---|
 | `grounded` | every claim traces to a cited passage | show citation chips |
 | `inferred` | reasoned *from* the material, not directly stated | "inferred" badge + any citations |
-| `not_in_material` | **not** supported by the corpus | honest-refusal path + general-knowledge escape hatch as an **explicit** user choice — never silently answer as if grounded |
+| `not_in_material` | **not** supported by the corpus | a clear "not from your material" label on the answer — never presented as if grounded. Grounded *answering* (tutor) answers from general knowledge right away; grounded *generation* drops the item |
 
 ## Consumer rules
 
@@ -59,15 +59,17 @@ Persisted: `study_attempt.score` jsonb is `{ rubric, missing, feedback }`.
 ## Agent-side contract
 
 Every **generation** agent emits `trust` per item; every **grounded** agent (source-generation, tutor)
-**refuses rather than guesses** — `confidence:"not_in_material"` with empty `citations`. Agent
+**never passes general knowledge off as the material** — `confidence:"not_in_material"` with empty `citations`. Agent
 definitions live in the database behind their mandates. Three prompt rules (never a client filter):
 
 - **Grounded generation:** each item cites the exact passage. With `### Chunk <chunk_id>` markers in
   the source, echo that id as `sourceId` (`sourceKind:"chunk"`), the page as `locator`, the supporting
   sentence as `excerpt`. An item the material cannot support is dropped, never invented.
 - **Ungrounded generation** (cards from a bare topic): `citations:[]`, `confidence:"inferred"`, no `groundedIn`.
-- **Grounded answering:** when the material does not support the question, answer `not_in_material`
-  and offer general knowledge as an explicit choice.
+- **Grounded answering** (Arman, 2026-10-11): when the material does not support the question, answer
+  from general knowledge right away, say so in one short line, and mark it `not_in_material` with no
+  citations. The client signals it per turn with the context entry `grounding_mode`
+  (`material` | `general_knowledge`); the surface labels the answer "Not from your material".
 
 Reference retrofits: mandates `flashcards.generate_from_source` (real citations) and
 `flashcards.help_live` (honest refusal).

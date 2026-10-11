@@ -43,15 +43,24 @@ export interface ConfidenceBadgeProps {
   className?: string;
   /** Hide the text label, show only the icon (dense surfaces). */
   iconOnly?: boolean;
+  /** Surface-specific wording for the same confidence (e.g. the tutor's
+   *  general-knowledge answer). Defaults to the shared label/tooltip. */
+  label?: string;
+  title?: string;
 }
 
 export function ConfidenceBadge({
   confidence,
   className,
   iconOnly,
+  label: labelOverride,
+  title: titleOverride,
 }: ConfidenceBadgeProps) {
   if (!confidence) return null;
-  const { label, icon: Icon, className: tone, title } = CONFIG[confidence];
+  const { label: defaultLabel, icon: Icon, className: tone, title: defaultTitle } =
+    CONFIG[confidence];
+  const label = labelOverride ?? defaultLabel;
+  const title = titleOverride ?? defaultTitle;
   return (
     <span
       title={title}
