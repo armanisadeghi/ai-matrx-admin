@@ -21,6 +21,11 @@ import { useQuizStudy } from "../../data/useQuizStudy";
 import { StudyDeckHeader } from "./StudyDeckHeader";
 import CardFaceBlock from "@/components/mardown-display/blocks/flashcards/CardFaceBlock";
 import { useFlashcardMandates } from "../../data/mandate-disclosure";
+import { AskTutorButton } from "@/features/education/tutor/components/AskTutorButton";
+import {
+  missedQuestionTutorSeed,
+  openQuestionTutorSeed,
+} from "@/features/education/tutor/seeds";
 import {
   ROUND_PAGE_CLASS,
   RoundComplete,
@@ -60,13 +65,37 @@ export function TestSurface({ setId }: { setId: string }) {
           title={`Test · ${title}`}
           backHref={`${EDU_BASE}/${setId}`}
           actions={
-            <RoundSizeMenu
-              dealt={study.questionCount}
-              deckSize={study.deckSize}
-              choices={study.questionCountChoices}
-              noun="Questions"
-              onChange={setQuestionCount}
-            />
+            <div className="flex items-center gap-1">
+              {study.current && !completed ? (
+                <AskTutorButton
+                  seed={
+                    study.answered
+                      ? missedQuestionTutorSeed({
+                          question: study.current.aiQuestion || study.current.front,
+                          learnerAnswer: study.selected,
+                          correctAnswer: study.current.correctAnswer,
+                          explanation: study.current.explanation,
+                          wasCorrect:
+                            (study.selected ?? "").trim().toLowerCase() ===
+                            study.current.correctAnswer.trim().toLowerCase(),
+                        })
+                      : openQuestionTutorSeed({
+                          question: study.current.aiQuestion || study.current.front,
+                          options: study.current.options,
+                        })
+                  }
+                  iconOnly
+                  variant="ghost"
+                />
+              ) : null}
+              <RoundSizeMenu
+                dealt={study.questionCount}
+                deckSize={study.deckSize}
+                choices={study.questionCountChoices}
+                noun="Questions"
+                onChange={setQuestionCount}
+              />
+            </div>
           }
         />
       </PageHeader>

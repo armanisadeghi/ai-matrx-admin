@@ -1,4 +1,3 @@
--- draft: access-setup lane — clone rehearsal pending
 -- chair-step: REPLACES the eight person-scoped seat forms of accesssetup_l (hr._review_login_holds_employment, hr._review_org_capable_has, hr.review_seat_{employee,manager,hr,upper,skip_level,peers}_has) with plpgsql bodies: a SECURITY DEFINER SQL function is never inlined and plans its query again on every call, a plpgsql one keeps its plans for the session. The skip-level form asks first whether the person has any current employment (a person with none holds no employment's login). Every answer is unchanged.
 -- lane: access-setup
 -- lock: iam

@@ -26,6 +26,10 @@ import {
   modeReviewHref,
   modeWeakHref,
 } from "../study/dashboard/nextActions";
+import {
+  loadMyAssignments,
+  openAssignments,
+} from "../classes/myAssignments";
 import { planService } from "../study/service/planService";
 import { studyService } from "../study/service/studyService";
 import type { StudyPlanBlockRow } from "../study/planner/types";
@@ -202,6 +206,7 @@ export async function loadEducationSnapshot(
     masteryLane,
     goalsLane,
     streakLane,
+    assignmentsLane,
   ] = await Promise.all([
     lane(
       "library page",
@@ -231,6 +236,7 @@ export async function loadEducationSnapshot(
       error: null,
     }),
     lane("streak", () => studyService.getStreak(), { data: null, error: null }),
+    lane("assignments", () => loadMyAssignments(), []),
   ]);
 
   const recentPage = recentPageLane.data;
@@ -263,7 +269,9 @@ export async function loadEducationSnapshot(
       mastery: resultStatus(masteryLane.status, masteryRes.error),
       goals: resultStatus(goalsLane.status, goalsRes.error),
       streak: resultStatus(streakLane.status, streakRes.error),
+      assignments: assignmentsLane.status,
     },
+    assignments: openAssignments(assignmentsLane.data),
     library: {
       total: recentPage.total,
       recent: recentPage.rows,

@@ -50,7 +50,12 @@ type Source =
   | { kind: "set"; set: FcSetRow }
   | { kind: "due" };
 
-export function HostSetupImpl() {
+export function HostSetupImpl({
+  initialSetId = null,
+}: {
+  /** `?set=<deckId>` — the deck's "Play live" door preselects that deck. */
+  initialSetId?: string | null;
+} = {}) {
   const router = useRouter();
   const { userId } = useCurrentPlayer();
   const activeOrganizationId = useAppSelector(selectActiveOrganizationId);
@@ -66,7 +71,16 @@ export function HostSetupImpl() {
   );
   const sets = setsRead.data ?? [];
   const loading = setsRead.isLoading;
-  const [source, setSource] = useState<Source>({ kind: "due" });
+  // The pick is an id, so a deck named by the URL is selected the moment the
+  // deck list arrives (null = the due queue).
+  const [pickedSetId, setPickedSetId] = useState<string | null>(initialSetId);
+  const pickedSet = pickedSetId ? sets.find((s) => s.id === pickedSetId) : undefined;
+  const source: Source = pickedSet ? { kind: "set", set: pickedSet } : { kind: "due" };
+  const setSource = (next: Source): void =>
+    setPickedSetId(next.kind === "set" ? next.set.id : null);
+  // A named deck that is not in the list is said, never silently swapped.
+  const missingInitialSet =
+    !!initialSetId && !loading && pickedSetId === initialSetId && !pickedSet;
   const [creating, startCreate] = useTransition();
 
   const maxPlayers = roomSize.limit ?? DEFAULT_ROOM_CONFIG.maxPlayers;
@@ -193,6 +207,11 @@ export function HostSetupImpl() {
       {/* Decks */}
       <div>
         <p className="mb-2 text-sm font-medium text-foreground">Or a deck</p>
+        {missingInitialSet && (
+          <p className="mb-2 text-xs text-muted-foreground">
+            That deck isn&apos;t in your list — pick one below.
+          </p>
+        )}
         {loading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" /> Loading decks…

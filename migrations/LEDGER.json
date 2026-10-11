@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-11T01:07:35.206Z",
+  "generated_at": "2026-10-11T01:22:18.254Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -128,11 +128,23 @@
       "checksum": "829b782b53b60f7511d1d98a586deb3fd81074cd2dc73a65a4d977930b23590b",
       "applied_at": "2026-10-11 00:29:32.73706+00"
     },
+    "migrations/campaign/accesssetup_l2_person_forms_keep_their_plans.sql": {
+      "source": "matrx-frontend",
+      "filename": "accesssetup_l2_person_forms_keep_their_plans.sql",
+      "checksum": "d80972b22e1ab1864dcc6a1e31731ced3ef67c7b1e96db601b38689e6a91917a",
+      "applied_at": "2026-10-11 01:13:49.748036+00"
+    },
     "migrations/campaign/accesssetup_l_seats_of_asks_from_the_persons_side.sql": {
       "source": "matrx-frontend",
       "filename": "accesssetup_l_seats_of_asks_from_the_persons_side.sql",
       "checksum": "302da8b2d48b4b40941bb975b1c08a5a06118e84fa361f9af7ccdb4fffdfb54d",
       "applied_at": "2026-10-11 01:07:24.896665+00"
+    },
+    "migrations/campaign/accesssetup_m_cycle_panel_shows_hr_names.sql": {
+      "source": "matrx-frontend",
+      "filename": "accesssetup_m_cycle_panel_shows_hr_names.sql",
+      "checksum": "9aea8d4073988cd31039e5618a9ae782e7c06f090ea9981e7e801b54b136e38d",
+      "applied_at": "2026-10-11 01:22:17.176054+00"
     },
     "migrations/campaign/accesssetup_store_a_the_column_answers_are_frozen_as_the_oracle.sql": {
       "source": "matrx-frontend",

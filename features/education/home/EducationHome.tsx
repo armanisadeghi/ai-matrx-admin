@@ -46,6 +46,7 @@ import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableCo
 import { EDUCATION_OVERVIEW_SURFACE_NAME } from "@/features/surfaces/manifests/education-overview.manifest";
 import { buildEducationOverviewScope } from "./overviewSurfaceScope";
 import { setStudyTodaySnapshot } from "../study/dashboard/studyTodaySnapshot";
+import { AssignedToYouBlock } from "./blocks/AssignedToYouBlock";
 import { DueByModeBlock } from "./blocks/DueByModeBlock";
 import { KitsBlock } from "./blocks/KitsBlock";
 import { RecentBlock } from "./blocks/RecentBlock";
@@ -102,6 +103,25 @@ export const BLOCKS: HomeBlock[] = [
       return hasCommitment ? 900 : null;
     },
     render: (s) => <StudyTodayBlock key="study-today" snapshot={s} />,
+  },
+  {
+    id: "assigned-to-you",
+    // A teacher's assignment is a commitment someone else is waiting on. One
+    // due within two days (or overdue) leads the page; otherwise it sits just
+    // under the learner's own plan. Nothing open → nothing rendered.
+    signal: (s) => {
+      if (s.availability.assignments.state !== "ready") return null;
+      if (s.assignments.length === 0) return null;
+      const soon = new Date();
+      soon.setDate(soon.getDate() + 2);
+      const soonIso = `${soon.getFullYear()}-${String(soon.getMonth() + 1).padStart(2, "0")}-${String(soon.getDate()).padStart(2, "0")}`;
+      return s.assignments.some((a) => a.dueDate && a.dueDate <= soonIso)
+        ? 950
+        : 850;
+    },
+    render: (s) => (
+      <AssignedToYouBlock key="assigned-to-you" assignments={s.assignments} />
+    ),
   },
   {
     id: "kits",

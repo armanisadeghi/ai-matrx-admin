@@ -329,3 +329,27 @@ export function studyFaces(
   }
   return { front: card.front, back: card.back ?? "" };
 }
+
+/** The learner's "Answer with" study preference (userPreferences.flashcard.answerWith). */
+export type AnswerWith = "definition" | "term";
+
+/** True when a card shows its back first for this "Answer with" choice. Only
+ *  basic cards turn around — cloze, matching and formula cards have a natural
+ *  direction (blank → reveal, prompt → pairs, name → formula). */
+export function showsBackFirst(
+  card: Pick<FcCardRow, "card_kind">,
+  answerWith: AnswerWith | null | undefined,
+): boolean {
+  return answerWith === "term" && asCardKind(card.card_kind) === CARD_KIND.basic;
+}
+
+/** studyFaces, oriented for the learner's "Answer with" choice. */
+export function orientedStudyFaces(
+  card: Pick<FcCardRow, "front" | "back" | "card_kind" | "dynamic_content">,
+  answerWith: AnswerWith | null | undefined,
+): { front: string; back: string } {
+  const faces = studyFaces(card);
+  return showsBackFirst(card, answerWith)
+    ? { front: faces.back, back: faces.front }
+    : faces;
+}

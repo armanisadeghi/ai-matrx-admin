@@ -20,6 +20,8 @@ import { ConvertContentDialog } from "@/features/education/convert/ConvertConten
 import { GeneratedFromChips } from "@/features/education/convert/GeneratedFromChips";
 import { MadeFromSource } from "@/features/education/convert/MadeFromSource";
 import { LiveCaptureButton } from "./LiveCaptureButton";
+import { AskTutorButton } from "@/features/education/tutor/components/AskTutorButton";
+import { documentTutorSeed } from "@/features/education/tutor/seeds";
 
 export function EduNoteActionBar({ noteId }: { noteId: string }) {
   const router = useRouter();
@@ -59,6 +61,11 @@ export function EduNoteActionBar({ noteId }: { noteId: string }) {
         <Button icon={<BookOpen />} variant="quiet" onClick={() => router.push(`/education/study-guides/${noteId}`)}>
           Study guide
         </Button>
+        <AskTutorButton
+          seed={documentTutorSeed("notes", label, content)}
+          label="Tutor"
+          variant="ghost"
+        />
         <Button icon={<Boxes />} variant="primary" onClick={openConvert}>
           Convert
         </Button>

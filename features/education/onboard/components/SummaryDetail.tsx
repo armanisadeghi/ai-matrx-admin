@@ -39,6 +39,8 @@ import { SummaryEditor } from "./SummaryEditor";
 import { collectionWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/collection-write-targets";
 import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
 import { parseCreateSummaries, parseSummaryIds, parseUpdateSummaries } from "../summaryWrites";
+import { AskTutorButton } from "@/features/education/tutor/components/AskTutorButton";
+import { documentTutorSeed } from "@/features/education/tutor/seeds";
 
 interface SummaryEnvelope {
   __kind?: string;
@@ -201,6 +203,14 @@ export function SummaryDetail({ id, edit = false }: { id: string; edit?: boolean
           </div>
         </div>
         <ContentFindControl rootRef={contentRef} label="Find in summary" />
+        <AskTutorButton
+          seed={documentTutorSeed(
+            "summary",
+            row.title,
+            [keyPoints.map((k) => `- ${k}`).join("\n"), markdown].filter(Boolean).join("\n\n"),
+          )}
+          label="Tutor"
+        />
         {(access.isOwner || access.level === "admin") ? <ShareButton resourceType="study_media" resourceId={row.id} resourceName={row.title} organizationId={row.organization_id} showStatus={false} size="sm" /> : null}
         <Button icon={<Download />} variant="outline" onClick={onExport}> Markdown
         </Button>

@@ -19,12 +19,16 @@ export default async function PracticeTestDetailPage({
   const start = sp.start === "1" || sp.start === "true";
   const phase = (typeof sp.phase === "string" ? sp.phase : "standalone") as ResultPhase;
   const gain = typeof sp.gain === "string" ? sp.gain : null;
+  // `?items=<id,id>` — retake only these items ("Study what I missed").
+  const onlyItemIds =
+    typeof sp.items === "string" ? sp.items.split(",").filter(Boolean) : null;
   return (
     <AssessmentDetail
       assessmentId={id}
       start={start}
       phase={phase}
       gainGroupId={gain}
+      onlyItemIds={onlyItemIds}
     />
   );
 }

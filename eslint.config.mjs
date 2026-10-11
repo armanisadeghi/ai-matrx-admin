@@ -1498,17 +1498,17 @@ const storageUriEradicationBan = [
 
 // Bundle-splitting fence for the v3 context menu. v3's public API is the
 // LIGHTWEIGHT shell (EditableContextMenu / NonEditableContextMenu) — import
-// those statically. The heavy layer is `AlchemyMenuContent` (the engine hook,
-// the agent fetch, the Alchemy package renderers — ALC-15 S3); the shell
-// reaches it ONLY via `dynamic(() => import('./components/AlchemyMenuContent'))`.
-// A static import drags the whole heavy graph into the importing chunk,
-// defeating the T0/T1 split. Dynamic `import()` is unaffected.
+// those statically from @ai-matrx/context-menu/react. The heavy layer is the
+// package's `./menu-content` (the engine hook, the agent fetch, the Alchemy
+// renderers); the package's ContextMenuV3 reaches it ONLY through its own
+// `import("@ai-matrx/context-menu/menu-content")`. A static import drags the
+// whole heavy graph into the importing chunk. Dynamic `import()` is unaffected.
 const contextMenuV3StaticImportBan = [
   {
     selector:
-      "ImportDeclaration[importKind!='type'][source.value=/context-menu-v3\\/components\\/AlchemyMenuContent$/] > ImportDefaultSpecifier",
+      "ImportDeclaration[importKind!='type'][source.value='@ai-matrx/context-menu/menu-content']",
     message:
-      "Do not statically import AlchemyMenuContent — it's the heavy menu layer (engine + Alchemy renderers) and must stay behind the shell's next/dynamic({ ssr: false }) boundary. Render a surface menu via EditableContextMenu / NonEditableContextMenu from @/features/context-menu-v3 instead.",
+      "Do not statically import @ai-matrx/context-menu/menu-content — it's the heavy menu layer (engine + Alchemy renderers) the menu loads on first open. Render a surface menu via EditableContextMenu / NonEditableContextMenu from @ai-matrx/context-menu/react instead.",
   },
 ];
 

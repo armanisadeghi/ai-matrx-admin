@@ -14,6 +14,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import {
   Trophy,
   CheckCircle2,
@@ -25,6 +26,7 @@ import {
   Layers,
   MicOff,
   TrendingUp,
+  GraduationCap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CardFaceContent from "@/components/mardown-display/blocks/flashcards/CardFaceContent";
@@ -45,6 +47,9 @@ import { parsedSessionReviewFromSummary } from "@/features/education/study/utils
 import { FastFireReviewPlayer } from "./FastFireReviewPlayer";
 import { FastFireReviewPlaylist } from "./FastFireReviewPlaylist";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { AskTutorPanel } from "@/features/education/tutor/components/AskTutorButton";
+import { missedQuestionTutorSeed } from "@/features/education/tutor/seeds";
+import type { TutorGroundingSeed } from "@/features/education/tutor/grounding";
 
 const RESULT_META: Record<
   GradeResult,
@@ -92,6 +97,8 @@ export function FastFireScoreboard({
   const filter = useAppSelector(selectReviewFilter);
   const pending = useAppSelector(selectPendingGradeCount);
   const coachReview = parsedSessionReviewFromSummary(review);
+  // "Ask why" on a missed card: ONE tutor tab, re-seeded per card.
+  const [askWhy, setAskWhy] = useState<{ cardId: string; seed: TutorGroundingSeed } | null>(null);
 
   return (
     // h-full (not min-h-full): the parent route is a fixed-height,
@@ -179,6 +186,30 @@ export function FastFireScoreboard({
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
+                    {(result === "incorrect" || result === "partial") && (
+                      <Button
+                        icon={<GraduationCap />}
+                        variant="quiet"
+                        aria-label="Ask why"
+                        title="Ask why"
+                        aria-pressed={askWhy?.cardId === card.id}
+                        onClick={() =>
+                          setAskWhy((current) =>
+                            current?.cardId === card.id
+                              ? null
+                              : {
+                                  cardId: card.id,
+                                  seed: missedQuestionTutorSeed({
+                                    question: card.front,
+                                    learnerAnswer: grade?.transcript,
+                                    correctAnswer: card.back,
+                                    explanation: grade?.feedback,
+                                  }),
+                                },
+                          )
+                        }
+                      />
+                    )}
                     {grade?.status === "pending" && (
                       <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                     )}
@@ -273,6 +304,16 @@ export function FastFireScoreboard({
           </Link>
         </div>
       </div>
+      {askWhy && (
+        <AskTutorPanel
+          key={askWhy.cardId}
+          seed={askWhy.seed}
+          open
+          onOpenChange={(open) => {
+            if (!open) setAskWhy(null);
+          }}
+        />
+      )}
     </div>
   );
 }

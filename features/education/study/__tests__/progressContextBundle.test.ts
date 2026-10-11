@@ -45,8 +45,7 @@ describe("buildProgressOverviewXml", () => {
       ],
       overallDelta: 0.69,
       overallNormalizedGain: 0.86,
-      contractPending: false,
-      isSeed: false,
+      awaitingPost: [],
     },
     weekly: Array.from({ length: 8 }, (_, i) => ({
       week: `W${i}`,

@@ -1,0 +1,473 @@
+{
+ "_about": "access-setup review equivalence proof: the standard review template (hr.review_template f53d6575) and the template snapshot of cycle 9f4ffa7d, read from live 2026-10-10. The proof inserts them inside its rolled-back transaction when the target (the nightly clone) predates them.",
+ "cycle_template_snapshot": {
+  "__kind": "performance_review_template_snapshot",
+  "frozen_at": "2026-10-10T08:35:40.339256+00:00",
+  "name": "Annual review 2026",
+  "rating_scale": {
+   "__kind": "performance_review_rating_scale",
+   "key": "custom",
+   "points": [
+    {
+     "__kind": "performance_review_rating_point",
+     "key": "unsatisfactory",
+     "label": "Unsatisfactory",
+     "value": 1
+    },
+    {
+     "__kind": "performance_review_rating_point",
+     "key": "needs_improvement",
+     "label": "Needs Improvement",
+     "value": 2
+    },
+    {
+     "__kind": "performance_review_rating_point",
+     "key": "successful",
+     "label": "Successful",
+     "value": 3
+    },
+    {
+     "__kind": "performance_review_rating_point",
+     "key": "exceeds_expectations",
+     "label": "Exceeds Expectations",
+     "value": 4
+    },
+    {
+     "__kind": "performance_review_rating_point",
+     "key": "outstanding",
+     "label": "Outstanding",
+     "value": 5
+    }
+   ]
+  },
+  "sections": [
+   {
+    "__kind": "performance_review_template_section",
+    "description": "How you did against the goals set at the start of the year.",
+    "key": "goals",
+    "questions": [
+     {
+      "__kind": "performance_review_question",
+      "key": "which_goals_did_you_complete_and_what_was_the_re",
+      "label": "Which goals did you complete, and what was the result?",
+      "max_items": 5,
+      "min_items": 2,
+      "required": true,
+      "type": "narrative_list"
+     }
+    ],
+    "title": "Goals"
+   },
+   {
+    "__kind": "performance_review_template_section",
+    "description": "Skills and behaviours expected in your role.",
+    "key": "competencies",
+    "questions": [
+     {
+      "__kind": "performance_review_question",
+      "key": "where_did_you_show_strength_in_your_core_skills",
+      "label": "Where did you show strength in your core skills?",
+      "max_items": 5,
+      "min_items": 2,
+      "required": true,
+      "type": "narrative_list"
+     }
+    ],
+    "title": "Competencies"
+   },
+   {
+    "__kind": "performance_review_template_section",
+    "description": "Your summary of the year.",
+    "key": "overall_rating",
+    "questions": [
+     {
+      "__kind": "performance_review_question",
+      "key": "what_would_you_say_was_the_overall_result_of_you",
+      "label": "What would you say was the overall result of your year?",
+      "max_items": 5,
+      "min_items": 2,
+      "required": true,
+      "type": "narrative_list"
+     }
+    ],
+    "title": "Overall rating"
+   },
+   {
+    "__kind": "performance_review_template_section",
+    "description": "Rate each item on the scale.",
+    "key": "ratings",
+    "questions": [
+     {
+      "__kind": "performance_review_question",
+      "items": [
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "quality_of_work",
+        "label": "Quality of work"
+       },
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "communication",
+        "label": "Communication"
+       },
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "teamwork",
+        "label": "Teamwork"
+       }
+      ],
+      "key": "core_skills",
+      "label": "Core skills",
+      "required": true,
+      "type": "rating"
+     }
+    ],
+    "title": "Ratings"
+   },
+   {
+    "__kind": "performance_review_template_section",
+    "key": "goals_for_next_year",
+    "questions": [
+     {
+      "__kind": "performance_review_question",
+      "key": "goals_for_the_next_period",
+      "label": "Goals for the next period",
+      "required": false,
+      "type": "text"
+     }
+    ],
+    "title": "Goals for next year"
+   }
+  ],
+  "template_id": "72655d94-dcae-4d93-b799-dcc0afd6db20"
+ },
+ "template": {
+  "created_by": "87a6e699-3622-4869-8843-d0867456c0dd",
+  "description": "Responsibilities, accomplishments, strengths, opportunities, ratings, goals and comments.",
+  "id": "f53d6575-9054-4b61-9cfd-6165da1baef5",
+  "is_default": true,
+  "metadata": {},
+  "name": "Standard review",
+  "organization_id": "884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f",
+  "rating_scale": {
+   "__kind": "performance_review_rating_scale",
+   "key": "five_point",
+   "points": [
+    {
+     "__kind": "performance_review_rating_point",
+     "description": "Performance is below job requirements.",
+     "key": "unsatisfactory",
+     "label": "Unsatisfactory",
+     "value": 1
+    },
+    {
+     "__kind": "performance_review_rating_point",
+     "description": "Performance meets some, but not all, job requirements.",
+     "key": "needs_improvement",
+     "label": "Needs Improvement",
+     "value": 2
+    },
+    {
+     "__kind": "performance_review_rating_point",
+     "description": "Performance fully meets job requirements.",
+     "key": "successful",
+     "label": "Successful",
+     "value": 3
+    },
+    {
+     "__kind": "performance_review_rating_point",
+     "description": "Performance consistently meets and frequently exceeds job requirements.",
+     "key": "exceeds",
+     "label": "Exceeds Expectations",
+     "value": 4
+    },
+    {
+     "__kind": "performance_review_rating_point",
+     "description": "Performance consistently far exceeds job requirements.",
+     "key": "outstanding",
+     "label": "Outstanding",
+     "value": 5
+    }
+   ]
+  },
+  "sections": [
+   {
+    "__kind": "performance_review_template_section",
+    "description": "The core responsibilities this role is accountable for.",
+    "key": "responsibilities",
+    "questions": [
+     {
+      "__kind": "performance_review_question",
+      "key": "responsibilities",
+      "label": "Job Responsibilities",
+      "max_items": 12,
+      "min_items": 1,
+      "required": true,
+      "type": "responsibilities"
+     }
+    ],
+    "title": "Job Responsibilities"
+   },
+   {
+    "__kind": "performance_review_template_section",
+    "description": "Concrete wins from this review period.",
+    "key": "accomplishments",
+    "questions": [
+     {
+      "__kind": "performance_review_question",
+      "key": "accomplishments",
+      "label": "Accomplishments",
+      "max_items": 5,
+      "min_items": 2,
+      "required": true,
+      "type": "narrative_list"
+     }
+    ],
+    "title": "Accomplishments"
+   },
+   {
+    "__kind": "performance_review_template_section",
+    "description": "What this person does consistently well.",
+    "key": "strengths",
+    "questions": [
+     {
+      "__kind": "performance_review_question",
+      "key": "strengths",
+      "label": "Strengths",
+      "max_items": 5,
+      "min_items": 2,
+      "required": true,
+      "type": "narrative_list"
+     }
+    ],
+    "title": "Strengths"
+   },
+   {
+    "__kind": "performance_review_template_section",
+    "description": "Where there is the most room to grow.",
+    "key": "opportunities",
+    "questions": [
+     {
+      "__kind": "performance_review_question",
+      "key": "opportunities",
+      "label": "Opportunities for Improvement",
+      "max_items": 5,
+      "min_items": 2,
+      "required": true,
+      "type": "narrative_list"
+     }
+    ],
+    "title": "Opportunities for Improvement"
+   },
+   {
+    "__kind": "performance_review_template_section",
+    "description": "Rate each item on the five-point scale.",
+    "key": "ratings",
+    "questions": [
+     {
+      "__kind": "performance_review_question",
+      "items": [
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "meets_job_requirements",
+        "label": "Meets job requirements"
+       },
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "applies_knowledge_skills",
+        "label": "Applies knowledge/skills to job"
+       },
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "adds_to_knowledge_skills",
+        "label": "Adds to knowledge and skills"
+       }
+      ],
+      "key": "job_knowledge",
+      "label": "Job Knowledge",
+      "required": true,
+      "type": "rating"
+     },
+     {
+      "__kind": "performance_review_question",
+      "items": [
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "completes_tasks_on_time",
+        "label": "Completes tasks on time"
+       },
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "work_quantity",
+        "label": "Work quantity"
+       },
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "work_quality",
+        "label": "Work quality"
+       },
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "productivity",
+        "label": "Productivity"
+       },
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "works_independently",
+        "label": "Works independently"
+       },
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "initiative_creativity",
+        "label": "Initiative and creativity"
+       },
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "individual_judgment",
+        "label": "Individual judgment"
+       },
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "planning_organization",
+        "label": "Planning and organization"
+       }
+      ],
+      "key": "performance",
+      "label": "Performance",
+      "required": true,
+      "type": "rating"
+     },
+     {
+      "__kind": "performance_review_question",
+      "items": [
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "reports_to_supervisor",
+        "label": "Reports to proper supervisor"
+       },
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "understands_instructions",
+        "label": "Understands instructions easily"
+       },
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "verbal_communication",
+        "label": "Verbal communication skills"
+       },
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "written_communication",
+        "label": "Written communication skills"
+       }
+      ],
+      "key": "communication",
+      "label": "Communication",
+      "required": true,
+      "type": "rating"
+     },
+     {
+      "__kind": "performance_review_question",
+      "items": [
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "working_relationship_others",
+        "label": "Working relationship with others"
+       },
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "relationship_customers",
+        "label": "Relationship with customers/clients"
+       },
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "relationship_supervisor",
+        "label": "Relationship with supervisor"
+       }
+      ],
+      "key": "interpersonal_skills",
+      "label": "Interpersonal Skills",
+      "required": true,
+      "type": "rating"
+     },
+     {
+      "__kind": "performance_review_question",
+      "items": [
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "punctuality",
+        "label": "Punctuality"
+       },
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "absenteeism",
+        "label": "Absenteeism"
+       },
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "overall_attendance",
+        "label": "Overall attendance record"
+       }
+      ],
+      "key": "attendance",
+      "label": "Attendance",
+      "required": true,
+      "type": "rating"
+     },
+     {
+      "__kind": "performance_review_question",
+      "items": [
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "safe_condition",
+        "label": "Keeps workplace and workspace in safe condition"
+       },
+       {
+        "__kind": "performance_review_rating_item",
+        "key": "safety_over_production",
+        "label": "Puts safety over production"
+       }
+      ],
+      "key": "safety_compliance",
+      "label": "Safety Compliance",
+      "required": true,
+      "type": "rating"
+     }
+    ],
+    "title": "Ratings"
+   },
+   {
+    "__kind": "performance_review_template_section",
+    "description": "Goals for the next review period.",
+    "key": "goals",
+    "questions": [
+     {
+      "__kind": "performance_review_question",
+      "key": "goals",
+      "label": "Goals",
+      "required": false,
+      "type": "text"
+     }
+    ],
+    "title": "Goals"
+   },
+   {
+    "__kind": "performance_review_template_section",
+    "description": "Anything else worth recording.",
+    "key": "additional_comments",
+    "questions": [
+     {
+      "__kind": "performance_review_question",
+      "key": "additional_comments",
+      "label": "Additional Comments",
+      "required": false,
+      "type": "text"
+     }
+    ],
+    "title": "Additional Comments"
+   }
+  ],
+  "updated_by": "87a6e699-3622-4869-8843-d0867456c0dd",
+  "version": 1
+ }
+}

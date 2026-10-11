@@ -6,10 +6,9 @@
 // the P1 brief: rows keyed (user, topic/deck, phase: baseline|post, score,
 // taken_at).
 //
-// COORDINATION NOTE: until P1 lands its table, `learningGainService` reads
-// defensively (missing relation → `contractPending`) and the report renders
-// seed fixtures so the UI is real and testable now. When P1's table lands,
-// reconcile `LEARNING_GAIN_TABLE` + the row mapping here — nothing else changes.
+// THE HONESTY RULE: every number in a report is the learner's own measurement.
+// There are no sample or seed rows — a learner with nothing measured gets an
+// empty report and an empty-state action, never illustrative figures.
 
 /** The two measurement phases of a learning-gain measurement. */
 export type LearningGainPhase = "baseline" | "post";
@@ -54,8 +53,6 @@ export interface LearningGainReport {
   overallDelta: number | null;
   /** Mean normalized gain across subjects where it's defined (0..1). */
   overallNormalizedGain: number | null;
-  /** True when the underlying P1 table isn't live yet (fixtures shown). */
-  contractPending: boolean;
-  /** True when rows are seed fixtures, not the user's real measurements. */
-  isSeed: boolean;
+  /** Completed baselines still waiting for their post-test (newest first). */
+  awaitingPost: LearningGainRow[];
 }

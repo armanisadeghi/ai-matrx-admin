@@ -7365,6 +7365,11 @@ export default function OverlayController() {
               typeof data?.surfaceName === "string" ? data.surfaceName : ""
             }
             isEditable={data?.isEditable === true}
+            initialSection={
+              data?.initialSection === "actions" || data?.initialSection === "agents"
+                ? data.initialSection
+                : "values"
+            }
           />
         );
       })()}

@@ -9,7 +9,9 @@ import {
   asCardKind,
   CARD_KIND,
   matchingPairs,
-  studyFaces,
+  orientedStudyFaces,
+  showsBackFirst,
+  type AnswerWith,
   type CardKind,
   type MatchingPair,
 } from "@/features/flashcards/utils/cardVariants";
@@ -51,6 +53,8 @@ export function toFlashcardMobileCards(
 
 export function toFlashcardMobileCardsFromStudy(
   cards: CardWithDetails[],
+  /** The learner's "Answer with" choice — "term" turns basic cards around. */
+  answerWith?: AnswerWith,
 ): FlashcardMobileCard[] {
   return cards.map((card) => {
     const kind = asCardKind(card.card_kind);
@@ -69,14 +73,15 @@ export function toFlashcardMobileCardsFromStudy(
     // basic / cloze — flip cards. Cloze faces are occluded/revealed via the
     // SHARED studyFaces (the same source the desktop deck uses), so the front
     // shows blanks instead of raw `{{c1::…}}` markup.
-    const faces = studyFaces(card);
+    const faces = orientedStudyFaces(card, answerWith);
+    const turned = showsBackFirst(card, answerWith);
     return {
       id: card.id,
       kind,
       front: faces.front,
       back: faces.back,
-      frontImage: images.front,
-      backImage: images.back,
+      frontImage: turned ? images.back : images.front,
+      backImage: turned ? images.front : images.back,
     };
   });
 }

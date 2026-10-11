@@ -9,6 +9,8 @@ const OVERLAY_ID = "surfaceContextWindow" as const;
 export interface OpenSurfaceContextWindowOptions {
   surfaceName: string;
   isEditable?: boolean;
+  /** Which tab "This page" lands on. Default "values". */
+  initialSection?: "values" | "actions" | "agents";
 }
 
 export function useOpenSurfaceContextWindow() {
@@ -21,6 +23,7 @@ export function useOpenSurfaceContextWindow() {
           data: {
             surfaceName: options.surfaceName,
             isEditable: options.isEditable === true,
+            initialSection: options.initialSection ?? "values",
           },
         }),
       );
@@ -41,6 +44,6 @@ export function SurfaceContextWindowController(
     return () => {
       handle.close();
     };
-  }, [open, props.isEditable, props.surfaceName]);
+  }, [open, props.initialSection, props.isEditable, props.surfaceName]);
   return null;
 }

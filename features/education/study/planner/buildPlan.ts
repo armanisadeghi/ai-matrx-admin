@@ -15,6 +15,7 @@ import type {
   PlanInput,
   Weekday,
 } from "./types";
+import { placeAssignments, type PlanAssignment } from "./assignmentBlocks";
 
 const MS_PER_DAY = 86_400_000;
 /** Rough pacing constants (minutes per item) used to size blocks. */
@@ -37,6 +38,8 @@ export interface PlanSummary {
   weakTopics?: WeakTopic[];
   /** Total studied items of this type (for a sane "learn new" tail). */
   studiedCount?: number;
+  /** Open class assignments — placed on their due dates by `placeAssignments`. */
+  assignments?: PlanAssignment[];
 }
 
 function toDate(iso: string): Date {
@@ -264,7 +267,7 @@ export function buildPlan(
     Math.round((exam.getTime() - now.getTime()) / MS_PER_DAY),
   );
 
-  return {
+  return placeAssignments({
     title: input.title,
     startDate: input.startDate,
     endDate: input.examDate,
@@ -287,5 +290,5 @@ export function buildPlan(
       ...(reentry ? { recovery: true } : {}),
     },
     days,
-  };
+  }, summary.assignments);
 }

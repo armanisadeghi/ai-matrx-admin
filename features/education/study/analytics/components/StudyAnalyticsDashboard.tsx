@@ -105,7 +105,6 @@ export function StudyAnalyticsDashboard({
                   gain_pairs: gain.pairs,
                   gain_overall_delta: gain.overallDelta ?? undefined,
                   gain_overall_normalized: gain.overallNormalizedGain ?? undefined,
-                  gain_is_seed: gain.contractPending || gain.isSeed,
                 }
               : {}),
           }),

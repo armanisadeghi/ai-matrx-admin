@@ -3,9 +3,10 @@
 // features/education/study/learning-gain/components/LearningGainReportView.tsx
 //
 // The pre/post learning-gain report (P5) — "prove it makes you smarter." Reads
-// P1's baseline/post rows (seed fixtures until P1's table lands, clearly
-// labeled) and renders per-subject deltas + normalized gain, with a print /
-// save-as-PDF export (browser print → PDF; chrome is `print:hidden`).
+// P1's baseline/post rows — only the learner's own completed measurements,
+// never sample data — and renders per-subject deltas + normalized gain, the
+// baselines still waiting for a post-test, and a print / save-as-PDF export
+// (browser print → PDF; chrome is `print:hidden`).
 //
 // React Compiler is on: no manual memo.
 
@@ -18,19 +19,26 @@ import {
   Printer,
   TrendingUp,
   AlertCircle,
-  Info,
+  ClipboardCheck,
 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createEducationProgressScope } from "@/features/surfaces/manifests/education-progress.manifest";
 import { learningGainService } from "../learningGainService";
-import type { LearningGainPair, LearningGainReport } from "../types";
+import type {
+  LearningGainPair,
+  LearningGainReport,
+  LearningGainRow,
+} from "../types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { Chip } from "@ai-matrx/design-system/controls";
 
 const SURFACE_NAME = "matrx-user/education-progress";
+/** Any quiz can be taken as a baseline ("Measure my learning gain"). */
+const TAKE_BASELINE_HREF = "/education/quizzes";
 
 export function LearningGainReportView({
   backHref = "/education/progress",
@@ -54,7 +62,6 @@ export function LearningGainReportView({
             gain_pairs: report.pairs,
             gain_overall_delta: report.overallDelta ?? undefined,
             gain_overall_normalized: report.overallNormalizedGain ?? undefined,
-            gain_is_seed: report.contractPending || report.isSeed,
           }),
     });
 
@@ -121,31 +128,22 @@ export function LearningGainReportView({
             <p className="text-sm text-foreground">Couldn&apos;t load the report <ErrorAlchemyMenu /></p>
             <p className="max-w-md text-xs text-muted-foreground">{error} <ErrorAlchemyMenu error={error} /></p>
           </div>
-        ) : !report || report.pairs.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border bg-card px-6 py-16 text-center">
-            <TrendingUp className="h-6 w-6 text-muted-foreground" />
-            <p className="text-sm font-medium text-foreground">
-              No learning-gain data yet
+        ) : !report ||
+          (report.pairs.length === 0 && report.awaitingPost.length === 0) ? (
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center">
+            <p className="text-sm text-foreground">
+              No baseline yet, so there is no gain to measure.
             </p>
-            <p className="max-w-sm text-xs text-muted-foreground">
-              Take a baseline assessment before you study and a post assessment
-              after, and your measured improvement will be reported here.
-            </p>
+            <Button variant="outline" asChild>
+              <Link href={TAKE_BASELINE_HREF}>
+                <ClipboardCheck className="h-4 w-4" />
+                Take a baseline
+              </Link>
+            </Button>
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            {(report.contractPending || report.isSeed) && (
-              <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-200 print:hidden">
-                <Info className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>
-                  <strong>Sample data.</strong> Your real pre/post scores appear
-                  here once you take baseline and post assessments (the
-                  Assessment Engine). These figures are illustrative.
-                </span>
-              </div>
-            )}
-
-            {/* Headline — the "prove it makes you smarter" number */}
+            {report.pairs.length > 0 && (
             <section className="rounded-xl border border-primary/30 bg-gradient-to-br from-primary/5 to-transparent p-5 text-center">
               <p className="text-xs uppercase tracking-wider text-muted-foreground">
                 Average improvement
@@ -168,12 +166,25 @@ export function LearningGainReportView({
               )}
             </section>
 
+            )}
+
             {/* Per-subject pre → post */}
+            {report.pairs.length > 0 && (
             <section className="flex flex-col gap-3">
               {report.pairs.map((pair) => (
                 <SubjectRow key={pair.subject} pair={pair} />
               ))}
             </section>
+            )}
+
+            {/* Baselines measured, post-test not taken yet */}
+            {report.awaitingPost.length > 0 && (
+              <section className="flex flex-col gap-2">
+                {report.awaitingPost.map((row) => (
+                  <BaselineRow key={row.id} row={row} />
+                ))}
+              </section>
+            )}
 
             <p className="text-[11px] leading-relaxed text-muted-foreground">
               Improvement = post-assessment score − baseline score. Gap closed
@@ -185,6 +196,27 @@ export function LearningGainReportView({
       </div>
     </div>
     </SurfaceRuntimeProvider>
+  );
+}
+
+function BaselineRow({ row }: { row: LearningGainRow }) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
+      <div className="min-w-0">
+        <p className="truncate text-sm font-medium text-foreground">
+          {row.subjectLabel ?? row.subject}
+        </p>
+        <p className="text-[11px] text-muted-foreground">
+          Baseline · {formatDate(row.takenAt)}
+        </p>
+      </div>
+      <div className="flex shrink-0 items-center gap-2">
+        <span className="text-sm font-medium tabular-nums text-foreground">
+          {Math.round(row.score * 100)}%
+        </span>
+        <Chip tone="neutral" label="Post-test pending" />
+      </div>
+    </div>
   );
 }
 

@@ -139,7 +139,6 @@ export function buildProgressOverviewXml({
                 gain.overallDelta == null
                   ? null
                   : Math.round(gain.overallDelta * 100),
-              sample_data: gain.isSeed || gain.contractPending ? true : null,
             },
           },
         )

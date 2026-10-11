@@ -1036,10 +1036,11 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     slug: "surface-context-window",
     overlayId: "surfaceContextWindow",
     kind: "window",
-    label: "Surface Context",
+    label: "This page",
     defaultData: {
       surfaceName: "",
       isEditable: false,
+      initialSection: "values",
     },
     ephemeral: true,
     mobilePresentation: "drawer",

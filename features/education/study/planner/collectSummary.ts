@@ -10,16 +10,22 @@ import { studyService } from "../service/studyService";
 import { displayMasteryPct } from "../utils/masteryFsrs";
 import type { PlanSummary, WeakTopic } from "./buildPlan";
 import type { ItemMasteryRow } from "../types";
+import {
+  loadMyAssignments,
+  openAssignments,
+} from "@/features/education/classes/myAssignments";
+import type { PlanAssignment } from "./assignmentBlocks";
 
 /** Build the study snapshot for one item_type. Never throws — returns zeros on error. */
 export async function collectPlanSummary(
   itemType: string,
 ): Promise<PlanSummary> {
   const now = new Date();
-  const [dueRes, weakRes, masteryRes] = await Promise.all([
+  const [dueRes, weakRes, masteryRes, assignments] = await Promise.all([
     studyService.listDue(itemType, 500),
     studyService.listWeakest(itemType),
     studyService.listMastery(itemType),
+    collectAssignments(),
   ]);
 
   const dueCount = dueRes.data?.length ?? 0;
@@ -32,7 +38,22 @@ export async function collectPlanSummary(
     weakTopics = await resolveWeakTopics(weak, now);
   }
 
-  return { dueCount, weakCount, weakTopics, studiedCount };
+  return { dueCount, weakCount, weakTopics, studiedCount, assignments };
+}
+
+/** Open class assignments across every class the learner is in (never throws). */
+async function collectAssignments(): Promise<PlanAssignment[]> {
+  try {
+    return openAssignments(await loadMyAssignments()).map((a) => ({
+      title: a.title,
+      className: a.className,
+      dueDate: a.dueDate,
+      href: a.href,
+    }));
+  } catch (error) {
+    console.error("[planner] class assignments failed to load:", error);
+    return [];
+  }
 }
 
 /** Group weak fc_card mastery rows into per-topic tallies (weakest-first). */

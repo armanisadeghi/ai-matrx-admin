@@ -145,6 +145,8 @@ export const defaultUserPreferences: UserPreferences = {
     matchPairCount: 8,
     testQuestionCount: 20,
     writeCardCount: 10,
+    answerWith: "definition",
+    learningGainOffers: {},
   },
   tutor: {
     // Must match DEFAULT_TUTOR_SETTINGS in features/education/tutor/settings.ts.

@@ -26,7 +26,7 @@ import type { AssessmentItemRow, AttemptResult, QuestionType } from "../../data/
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 
-function optionsOf(item: AssessmentItemRow): string[] {
+export function optionsOf(item: AssessmentItemRow): string[] {
   const raw = item.options;
   if (Array.isArray(raw))
     return raw.filter((x): x is string => typeof x === "string");

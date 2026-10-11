@@ -26,7 +26,12 @@ import {
   useStudyOrganizationReady,
 } from "@/features/education/study/components/StudyOrganizationGate";
 import { useUserOrganizations } from "@/features/organizations/hooks";
-import { QuestionView } from "./QuestionView";
+import { QuestionView, optionsOf } from "./QuestionView";
+import { AskTutorButton } from "@/features/education/tutor/components/AskTutorButton";
+import {
+  missedQuestionTutorSeed,
+  openQuestionTutorSeed,
+} from "@/features/education/tutor/seeds";
 import { kindConfigFor } from "../kindConfig";
 import type { GradedAnswer } from "../../data/grading";
 import type {
@@ -100,10 +105,14 @@ export function AssessmentTaker({
   assessment,
   items,
   options = {},
+  snapshotKey = assessment.id,
 }: {
   assessment: AssessmentRow;
   items: AssessmentItemRow[];
   options?: TakeOptions;
+  /** Where the reload snapshot lives — a missed-items retake keeps its own,
+   *  so it never resumes (or clobbers) a full taking of the same assessment. */
+  snapshotKey?: string;
 }) {
   const router = useRouter();
   const config = kindConfigFor(assessment.assessment_kind);
@@ -123,7 +132,7 @@ export function AssessmentTaker({
 
   // Reload mid-taking resumes from here instead of restarting the clock and
   // dropping already-graded answers (read once, synchronously, on mount).
-  const [snapshot] = useState<TakingSnapshot | null>(() => loadSnapshot(assessment.id));
+  const [snapshot] = useState<TakingSnapshot | null>(() => loadSnapshot(snapshotKey));
   const restoreRecords: AnswerRecord[] | undefined = snapshot
     ? snapshot.records
         .map((r) => {
@@ -187,7 +196,7 @@ export function AssessmentTaker({
   // Persist progress after every relevant change — the reload safety net.
   useEffect(() => {
     if (!take.started || take.startedAt === null) return;
-    saveSnapshot(assessment.id, {
+    saveSnapshot(snapshotKey, {
       startedAt: take.startedAt,
       sessionId: take.sessionId,
       resultId: take.resultId,
@@ -207,7 +216,7 @@ export function AssessmentTaker({
     take.records,
     index,
     responses,
-    assessment.id,
+    snapshotKey,
   ]);
 
   const current = items[index];
@@ -224,7 +233,7 @@ export function AssessmentTaker({
       toast.error(take.error ?? "Could not save your results");
       return;
     }
-    clearSnapshot(assessment.id);
+    clearSnapshot(snapshotKey);
     startTransition(() => router.push(`${base}/${assessment.id}/results?r=${id}`));
   };
 
@@ -344,9 +353,31 @@ export function AssessmentTaker({
 
               {/* Actions */}
               <div className="mt-4 flex items-center justify-between gap-2">
-                <span className="text-xs text-muted-foreground">
-                  {take.grading ? "Grading…" : ""}
-                </span>
+                <div className="flex min-w-0 items-center gap-2">
+                  {current ? (
+                    <AskTutorButton
+                      seed={
+                        record
+                          ? missedQuestionTutorSeed({
+                              question: current.prompt,
+                              learnerAnswer: record.response,
+                              correctAnswer: current.correct_answer,
+                              explanation: record.graded.explanation || current.explanation,
+                              wasCorrect: record.graded.result === "correct",
+                            })
+                          : openQuestionTutorSeed({
+                              question: current.prompt,
+                              options: optionsOf(current),
+                            })
+                      }
+                      label="Tutor"
+                      variant="ghost"
+                    />
+                  ) : null}
+                  <span className="text-xs text-muted-foreground">
+                    {take.grading ? "Grading…" : ""}
+                  </span>
+                </div>
                 <div className="flex items-center gap-2">
                   {!record ? (
                     <Button

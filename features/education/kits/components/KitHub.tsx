@@ -73,6 +73,8 @@ import { AddSavedAidsDialog } from "./AddSavedAidsDialog";
 import { newKitHref } from "@/features/education/onboard/startRoutes";
 import { KIT_TOKEN } from "../kitScope";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { AskTutorButton } from "@/features/education/tutor/components/AskTutorButton";
+import { documentTutorSeed } from "@/features/education/tutor/seeds";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
@@ -641,6 +643,21 @@ export function KitHub({
   // variant, same size, same shape (the real row mixes primary/outline and
   // default/sm sizes).
   const proposedButton = "min-h-11 gap-1.5 sm:min-h-10";
+  // The kit as the tutor sees it: its outline (what it covers) and its aids.
+  const tutorButton = (
+    <AskTutorButton
+      seed={documentTutorSeed(
+        "study kit",
+        kit.title,
+        [
+          ...(outline.sections ?? []).map((section) => `## ${section.title}\n${section.summary}`),
+          `Study aids: ${ordered.map((artifact) => artifact.title).join(", ")}`,
+        ].join("\n\n"),
+      )}
+      label="Tutor"
+      className={proposedButton}
+    />
+  );
   const actionRow = proposedLayout ? (
     <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
       {studyNotes && (
@@ -695,6 +712,7 @@ export function KitHub({
         {managing ? <X className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
         {managing ? "Close" : "Manage kit"}
       </Button>
+      {tutorButton}
     </div>
   ) : (
         <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
@@ -751,6 +769,7 @@ export function KitHub({
             {managing ? <X className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
             {managing ? "Close" : "Manage kit"}
           </Button>
+          {tutorButton}
         </div>
   );
   const managePanel = managing ? (

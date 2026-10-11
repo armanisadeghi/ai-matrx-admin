@@ -9,6 +9,7 @@
 import type { PlanBlockDraft, PlanBlockKind, PlanDayDraft, PlanDraft, PlanInput } from "./types";
 import type { PlanSummary } from "./buildPlan";
 import { STUDY_MANDATES, restDaysToNames } from "./mandates";
+import { assignmentBlockLabel, placeAssignments } from "./assignmentBlocks";
 
 const BLOCK_KINDS: PlanBlockKind[] = [
   "review",
@@ -59,6 +60,13 @@ export function buildStudySnapshot(
     lines.push("Weak topics (topic name: count):");
     for (const t of summary.weakTopics.slice(0, 12)) {
       lines.push(`- ${t.topic}: ${t.count}`);
+    }
+  }
+  const dated = (summary.assignments ?? []).filter((a) => a.dueDate);
+  if (dated.length > 0) {
+    lines.push("Class assignments (title · class: due date):");
+    for (const a of dated.slice(0, 20)) {
+      lines.push(`- ${assignmentBlockLabel(a)}: ${a.dueDate}`);
     }
   }
   return lines.join("\n");
@@ -155,7 +163,7 @@ export function coercePlanDraft(
     throw new Error("Planner agent returned no usable days");
   }
 
-  return {
+  return placeAssignments({
     title: input.title,
     startDate: input.startDate,
     endDate: input.examDate,
@@ -173,5 +181,5 @@ export function coercePlanDraft(
         : null,
     config: { summary, itemType, generatedFrom: "ai" },
     days,
-  };
+  }, summary.assignments);
 }

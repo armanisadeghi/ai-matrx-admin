@@ -4,8 +4,9 @@
 // phase in baseline|post) via `assessmentService.listGainResults()` +
 // `pairLearningGain` (P1's own contract helpers — see
 // features/education/assessment/data/learningGain.ts) and folds them into the
-// `LearningGainReport` read model. Falls back to seed fixtures only when the
-// user genuinely has no real baseline/post pairs yet, clearly flagged `isSeed`.
+// `LearningGainReport` read model. Only the learner's own completed rows are
+// ever reported — there is no sample/seed fallback (a screen is honest or
+// absent): no measurements means an empty report.
 
 "use client";
 
@@ -20,7 +21,6 @@ import type {
   LearningGainReport,
   LearningGainRow,
 } from "./types";
-import { SEED_LEARNING_GAIN } from "./fixtures";
 
 /** Adapt one side (baseline or post) of P1's row into the P5 read model. */
 function toGainRow(row: AssessmentResultRow): LearningGainRow {
@@ -43,7 +43,7 @@ function normalizedGain(pre: number, post: number): number | null {
 /** Fold a flat list of rows into subject pairs + overall aggregates. */
 export function buildReport(
   rows: LearningGainRow[],
-  opts: { contractPending: boolean; isSeed: boolean },
+  awaitingPost: LearningGainRow[] = [],
 ): LearningGainReport {
   const bySubject = new Map<string, LearningGainRow[]>();
   for (const r of rows) {
@@ -89,37 +89,36 @@ export function buildReport(
     pairs,
     overallDelta,
     overallNormalizedGain,
-    contractPending: opts.contractPending,
-    isSeed: opts.isSeed,
+    awaitingPost,
   };
 }
 
 /**
  * Fold a flat list of P1 `assessment_result` rows (baseline|post) into the
- * `LearningGainReport` read model — pure, no I/O. Falls back to seed fixtures
- * (clearly flagged `isSeed`) only when there is no complete baseline/post pair
- * yet, so the UI is real from day one. Shared by the self report (`getReport`,
- * over the caller's own RLS-scoped rows) AND the guardian dashboard (over a
- * linked student's rows returned by the gated `guardian_student_gain` RPC) — so
- * the learning-gain contract is computed in exactly one place.
+ * `LearningGainReport` read model — pure, no I/O. Only COMPLETED, scored rows
+ * count (an abandoned taking is not a measurement). A baseline with no post yet
+ * is reported in `awaitingPost`; nothing is ever invented — no rows means an
+ * empty report. Shared by the self report (`getReport`, over the caller's own
+ * RLS-scoped rows) AND the guardian dashboard (over a linked student's rows
+ * returned by the gated `guardian_student_gain` RPC) — so the learning-gain
+ * contract is computed in exactly one place.
  */
 export function buildGainReport(
   results: AssessmentResultRow[],
 ): LearningGainReport {
-  const p1Pairs = pairLearningGain(results).filter((p) => p.baseline && p.post);
+  const scored = results.filter(
+    (r) => r.status === "completed" && r.score_value != null,
+  );
+  const p1Pairs = pairLearningGain(scored);
 
-  if (p1Pairs.length === 0) {
-    return buildReport(SEED_LEARNING_GAIN, {
-      contractPending: false,
-      isSeed: true,
-    });
-  }
-
-  const rows: LearningGainRow[] = p1Pairs.flatMap((p) => [
-    toGainRow(p.baseline!),
-    toGainRow(p.post!),
-  ]);
-  return buildReport(rows, { contractPending: false, isSeed: false });
+  const rows: LearningGainRow[] = p1Pairs
+    .filter((p) => p.baseline && p.post)
+    .flatMap((p) => [toGainRow(p.baseline!), toGainRow(p.post!)]);
+  const awaitingPost = p1Pairs
+    .filter((p) => p.baseline && !p.post)
+    .map((p) => toGainRow(p.baseline!))
+    .sort((a, b) => b.takenAt.localeCompare(a.takenAt));
+  return buildReport(rows, awaitingPost);
 }
 
 export const learningGainService = {

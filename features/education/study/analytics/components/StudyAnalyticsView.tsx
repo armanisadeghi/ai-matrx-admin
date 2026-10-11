@@ -387,11 +387,6 @@ function LearningGainTeaser({
       <div className="flex items-center gap-2">
         <TrendingUp className="h-4 w-4 text-primary" />
         <h2 className="text-sm font-medium text-foreground">Learning gain</h2>
-        {gain.isSeed && (
-          <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
-            Sample
-          </span>
-        )}
       </div>
       <p className="mt-0.5 text-xs text-muted-foreground">
         {deltaPct != null

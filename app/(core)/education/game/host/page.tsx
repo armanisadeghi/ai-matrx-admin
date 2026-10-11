@@ -9,10 +9,17 @@ export const metadata: Metadata = {
   title: "Host a Game — Study Games",
 };
 
-export default function HostGamePage() {
+export default async function HostGamePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  // `?set=<deckId>` — "Play live" from a deck preselects that deck.
+  const sp = await searchParams;
+  const setId = typeof sp.set === "string" && sp.set ? sp.set : null;
   return (
     <div className="h-full overflow-hidden">
-      <HostSetupImpl />
+      <HostSetupImpl initialSetId={setId} />
     </div>
   );
 }

@@ -67,7 +67,7 @@
  *               or just above the item.
  *   density   — THE DENSITY LAW: a menu item carrying `description` that is
  *               not a disabled-reason. Labels only, macOS-terse.
- *   registry  — features/context-menu-v3/SECTIONS.md drift: a registered
+ *   registry  — features/context-menu-host/SECTIONS.md drift: a registered
  *               shared builder whose file/export vanished, or whose Consumers
  *               column no longer matches who actually imports it.
  *   naming    — THE NAMING LAW: `use*` calls hooks, `build*` is pure. A
@@ -161,7 +161,7 @@ const SCAN = ["app/**/*.tsx", "components/**/*.tsx", "features/**/*.tsx", "../ai
  */
 const SKIP: Array<{ match: RegExp; reason: string }> = [
   { match: /^app\/\(dev\)\//, reason: "demos — the canonical menu demos live here" },
-  { match: featureRegExp(/^features\/context-menu-v3\//), reason: "the menu system itself" },
+  { match: featureRegExp(/^features\/context-menu-host\//), reason: "the menu system's host" },
   { match: /^components\/ui\//, reason: "primitive library — the caller wraps" },
   { match: /__tests__|\.test\.tsx?$|\.stories\.tsx?$/, reason: "not a surface" },
   { match: /^app\/\(auth-pages\)\//, reason: "login/signup — no records shown" },
@@ -1023,7 +1023,7 @@ function deadItemsInSource(path: string, src: string): DeadItem[] {
 
 function registryFindings(files: Map<string, string>): Finding[] {
   const out: Finding[] = [];
-  const REGISTRY = "features/context-menu-v3/SECTIONS.md";
+  const REGISTRY = "features/context-menu-host/SECTIONS.md";
   let md: string;
   try {
     md = readFileSync(join(ROOT, REGISTRY), "utf8");

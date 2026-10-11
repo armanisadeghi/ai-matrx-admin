@@ -41,6 +41,8 @@ import CardFaceBlock from "@/components/mardown-display/blocks/flashcards/CardFa
 import { useFlashcardMandates } from "../../data/mandate-disclosure";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { AskTutorButton } from "@/features/education/tutor/components/AskTutorButton";
+import { flashcardTutorSeed } from "@/features/education/tutor/seeds";
 import { cn } from "@/lib/utils";
 import { useSetting } from "@/features/settings/hooks/useSetting";
 import { studyFaces } from "../../utils/cardVariants";
@@ -267,13 +269,28 @@ export function WriteSurface({ setId }: { setId: string }) {
           title={`Write · ${title}`}
           backHref={`${EDU_BASE}/${setId}`}
           actions={
-            <RoundSizeMenu
-              dealt={dealtSize}
-              deckSize={deckSize}
-              choices={sizeChoices}
-              noun="Cards"
-              onChange={changeSize}
-            />
+            <div className="flex items-center gap-1">
+              {current && faces && !completed ? (
+                <AskTutorButton
+                  seed={flashcardTutorSeed({
+                    front: faces.front,
+                    back: faces.back,
+                    topic: current.topic,
+                    learnerAnswer: typed,
+                    answered: submitted,
+                  })}
+                  iconOnly
+                  variant="ghost"
+                />
+              ) : null}
+              <RoundSizeMenu
+                dealt={dealtSize}
+                deckSize={deckSize}
+                choices={sizeChoices}
+                noun="Cards"
+                onChange={changeSize}
+              />
+            </div>
           }
         />
       </PageHeader>

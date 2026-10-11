@@ -39,6 +39,7 @@ import {
   Boxes,
   Mic,
   Headphones,
+  Gamepad2,
   Merge,
   MousePointerClick,
   HelpCircle,
@@ -108,7 +109,9 @@ import type { ItemMasteryRow } from "@/features/education/study/types";
 import {
   MasteryTierPill,
   DeckMasteryBar,
+  computeMasteryDistribution,
 } from "@/features/education/study/components/MasteryDisplay";
+import { LearningGainOffer } from "@/features/education/study/learning-gain/components/LearningGainOffer";
 import { FlashcardStudyWindowDevTrigger } from "../study/FlashcardStudyWindowDevTrigger";
 import CardFaceContent from "@/components/mardown-display/blocks/flashcards/CardFaceContent";
 import {
@@ -256,6 +259,13 @@ const STUDY_MODES = [
     description: "Hands-free listen-and-answer loop",
     icon: Headphones,
     href: (setId: string) => `/education/audio-study/review?deck=${setId}`,
+  },
+  {
+    key: "play-live",
+    label: "Play live",
+    description: "Host a live game for a room",
+    icon: Gamepad2,
+    href: (setId: string) => `/education/game/host?set=${setId}`,
   },
 ] as const;
 
@@ -763,6 +773,7 @@ export function SetDetailView({
     | "sessions"
     | "practice-oral"
     | "audio-review"
+    | "play-live"
     | "print-hub"
     | null
   >(null);
@@ -1034,7 +1045,8 @@ export function SetDetailView({
       | "edit"
       | "sessions"
       | "practice-oral"
-      | "audio-review",
+      | "audio-review"
+      | "play-live",
     path: string,
   ) => {
     if (isPending) return;
@@ -1534,6 +1546,24 @@ export function SetDetailView({
                   masteries={data.cards.map((c) => masteryByCard[c.id])}
                 />
               </div>
+            )}
+
+            {/* Learning gain — a skippable baseline on a fresh deck, the
+                post-test once mastery crosses the threshold knob. */}
+            {!deckEmpty && (
+              <LearningGainOffer
+                className="mt-3"
+                deckId={setId}
+                deckName={data.set.name}
+                {...(masteryStatus === "available"
+                  ? (() => {
+                      const dist = computeMasteryDistribution(
+                        data.cards.map((c) => masteryByCard[c.id]),
+                      );
+                      return { studied: dist.studied, masteredPct: dist.masteredPct };
+                    })()
+                  : { studied: null, masteredPct: null })}
+              />
             )}
 
             {/* Power-ups — the deck's AI upgrades, shown off as what they

@@ -35,6 +35,7 @@ import type { Phase } from "@ai-matrx/agents/generated/stream-events";
 import type { useKitGeneration } from "../useKitGeneration";
 import type { KitTargetState } from "../types";
 import { KitAudioRunner } from "./KitAudioRunner";
+import { LearningGainOffer } from "@/features/education/study/learning-gain/components/LearningGainOffer";
 import { formatElapsed } from "./elapsed";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { describeFailure } from "@/lib/failure/transport";
@@ -117,6 +118,9 @@ export function KitBoard({
   // what is ready and the sections done across every output; the clock beside
   // it says how long it has been.
   const headline = kitHeadline(kit.phase, kit.targets, { finished, stillWorking, failed });
+  const kitDeck = kit.targets.find(
+    (t) => t.targetKind === "deck" && t.status === "success" && t.artifactId && !t.stillGenerating,
+  );
   const kitId = kit.source?.ref?.kitId;
   const fileId = kit.source?.ref?.fileId;
   const openKitHref = kitId
@@ -192,6 +196,19 @@ export function KitBoard({
       )}
 
       <SourceStage kit={kit} now={now} />
+
+      {/* The kit's deck just landed: offer the skippable learning-gain
+          baseline before any studying (one card, LearningGainOffer). Only
+          once nothing is still building: taking it leaves this tab, and the
+          run is tab-bound. */}
+      {done && stillWorking === 0 && kitDeck?.artifactId && (
+        <LearningGainOffer
+          deckId={kitDeck.artifactId}
+          deckName={kit.kitTitle?.title ?? kitDeck.title ?? "Study kit"}
+          studied={0}
+          masteredPct={null}
+        />
+      )}
 
       <div className="space-y-2">
         {kit.targets.map((t) => (

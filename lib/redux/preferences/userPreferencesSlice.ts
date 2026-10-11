@@ -342,6 +342,16 @@ export interface FlashcardPreferences {
   testQuestionCount: number;
   /** Cards per Write round; 0 = every card (clamped to the deck). */
   writeCardCount: number;
+  /** Classic study / Learn: "definition" shows a basic card's front first
+   *  (answer with the definition); "term" shows the back first. Cloze,
+   *  matching and formula cards keep their natural direction. */
+  answerWith: "definition" | "term";
+  /**
+   * Learning-gain offers this person answered, keyed `baseline:<deckId>` /
+   * `post:<deckId>` → ISO time. An answered offer never shows again for that
+   * deck (features/education/study/learning-gain/gainOffer.ts).
+   */
+  learningGainOffers: Record<string, string>;
 }
 
 /**
@@ -1216,6 +1226,8 @@ export const initializeUserPreferencesState = (
       matchPairCount: 8,
       testQuestionCount: 20,
       writeCardCount: 10,
+      answerWith: "definition",
+      learningGainOffers: {},
     },
     tutor: {
       // Must match DEFAULT_TUTOR_SETTINGS in features/education/tutor/settings.ts.

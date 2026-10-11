@@ -29,6 +29,8 @@ import { StudyDeckHeader } from "./StudyDeckHeader";
 import { FixGiveawayCardsAction } from "../giveaway/FixGiveawayCardsAction";
 import CardFaceBlock from "@/components/mardown-display/blocks/flashcards/CardFaceBlock";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { AskTutorButton } from "@/features/education/tutor/components/AskTutorButton";
+import { deckTutorSeed } from "@/features/education/tutor/seeds";
 
 const EDU_BASE = "/education/flashcards";
 
@@ -40,6 +42,13 @@ export function MatchSurface({ setId }: { setId: string }) {
     withSession: true,
   });
   const title = game.set?.name ?? "Match";
+  // The deck in play, as front → back pairs, for the tutor's seed.
+  const pairs = new Map<string, { front: string; back: string }>();
+  for (const tile of game.tiles) {
+    const pair = pairs.get(tile.cardId) ?? { front: "", back: "" };
+    pair[tile.side] = tile.text;
+    pairs.set(tile.cardId, pair);
+  }
 
   return (
     <>
@@ -47,7 +56,18 @@ export function MatchSurface({ setId }: { setId: string }) {
         <StudyDeckHeader
           title={`Match — ${title}`}
           backHref={`${EDU_BASE}/${setId}`}
-          actions={<FixGiveawayCardsAction setId={setId} />}
+          actions={
+            <div className="flex items-center gap-1">
+              {game.set && pairs.size > 0 ? (
+                <AskTutorButton
+                  seed={deckTutorSeed(game.set.name, [...pairs.values()])}
+                  iconOnly
+                  variant="ghost"
+                />
+              ) : null}
+              <FixGiveawayCardsAction setId={setId} />
+            </div>
+          }
         />
       </PageHeader>
       <div className="h-full overflow-y-auto overscroll-contain bg-background">

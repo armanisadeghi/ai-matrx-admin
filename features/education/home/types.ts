@@ -15,9 +15,16 @@ import type { EducationLibraryRow } from "../library/types";
 import type { ModeSignal } from "../study/dashboard/nextActions";
 import type { PlanWithDays, StudyPlanBlockRow } from "../study/planner/types";
 import type { StudyGoalRow } from "../study/types";
+import type { MyAssignment } from "../classes/myAssignments";
 
 export type EducationSnapshotLane =
-  "library" | "kits" | "plan" | "mastery" | "goals" | "streak";
+  | "library"
+  | "kits"
+  | "plan"
+  | "mastery"
+  | "goals"
+  | "streak"
+  | "assignments";
 
 export interface EducationSnapshotLaneStatus {
   state: "ready" | "unavailable";
@@ -67,6 +74,8 @@ export interface EducationSnapshot {
     /** True once the learner has recorded any attempt at all. */
     hasStudied: boolean;
   };
+  /** Not-yet-completed class assignments across every class, soonest due first. */
+  assignments: MyAssignment[];
   /** The ranked next actions synthesized from plan + spine + goals. */
   nextActions: NextAction[];
 }

@@ -59,11 +59,14 @@ export function AssessmentDetail({
   start = false,
   phase = "standalone",
   gainGroupId = null,
+  onlyItemIds = null,
 }: {
   assessmentId: string;
   start?: boolean;
   phase?: ResultPhase;
   gainGroupId?: string | null;
+  /** `?items=` — a retake of just these items ("Study what I missed"). */
+  onlyItemIds?: string[] | null;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -217,6 +220,11 @@ export function AssessmentDetail({
 
   // The shareable take URL renders the runner directly.
   if (start) {
+    // A missed-items retake takes only the named items (in their order); an
+    // id that no longer exists is dropped, and none left means the full set.
+    const only = onlyItemIds && onlyItemIds.length > 0 ? new Set(onlyItemIds) : null;
+    const subset = only ? items.filter((item) => only.has(item.id)) : [];
+    const takeItems = subset.length > 0 ? subset : items;
     return (
       <SurfaceRuntimeProvider
         surfaceName="matrx-user/education-assessment"
@@ -224,8 +232,13 @@ export function AssessmentDetail({
       >
         <AssessmentTaker
           assessment={assessment}
-          items={items}
+          items={takeItems}
           options={{ phase, gainGroupId }}
+          snapshotKey={
+            subset.length > 0
+              ? `${assessment.id}:items:${subset.map((i) => i.id).join(",")}`
+              : assessment.id
+          }
         />
       </SurfaceRuntimeProvider>
     );

@@ -21,6 +21,8 @@ import {
   TrendingDown,
   ArrowRight,
   Trophy,
+  Target,
+  GraduationCap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/features/shell/components/header/PageHeader";
@@ -31,6 +33,9 @@ import { coerceTrustEnvelope } from "@/features/education/trust/types";
 import { SourceCitations } from "@/features/education/trust/components/SourceCitations";
 import { VerifyAgainstSourceButton } from "@/features/education/trust/components/VerifyAgainstSourceButton";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AskTutorPanel } from "@/features/education/tutor/components/AskTutorButton";
+import { missedQuestionTutorSeed } from "@/features/education/tutor/seeds";
+import type { TutorGroundingSeed } from "@/features/education/tutor/grounding";
 import { assessmentService } from "../../data/assessmentService";
 import { pairLearningGain } from "../../data/learningGain";
 import { assessmentListDoor, kindConfigFor } from "../kindConfig";
@@ -75,6 +80,8 @@ export function AssessmentResults({
   const [reloadKey, setReloadKey] = useState(0);
   const [questionSearch, setQuestionSearch] = useState("");
   const [isPending, startTransition] = useTransition();
+  // "Ask why" on a wrong item: ONE tutor tab per page, re-seeded per item.
+  const [askWhy, setAskWhy] = useState<{ itemId: string; seed: TutorGroundingSeed } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -164,8 +171,16 @@ export function AssessmentResults({
   const detail = asDetail(result.detail);
   const detailById = new Map(detail.map((d) => [d.itemId, d]));
   const scorePct = Math.round(Number(result.score_value ?? 0) * 100);
+  // A missed-items retake scored only some items: review only those.
+  const reviewedItems =
+    result.total_count < items.length && detail.length > 0
+      ? items.filter((item) => detailById.has(item.id))
+      : items;
+  const missedIds = reviewedItems
+    .filter((item) => (detailById.get(item.id)?.result ?? "incorrect") !== "correct")
+    .map((item) => item.id);
   const filteredItems = filterEducationCollection(
-    items.map((item, index) => ({ item, index, answer: detailById.get(item.id) })),
+    reviewedItems.map((item, index) => ({ item, index, answer: detailById.get(item.id) })),
     questionSearch,
     ({ item, answer }) => [item.prompt, item.correct_answer, item.explanation,
       answer?.response, answer?.explanation, answer?.misconception],
@@ -213,14 +228,36 @@ export function AssessmentResults({
               </p>
             )}
           </div>
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          {missedIds.length > 0 && (
+            <Button
+              icon={<Target />}
+              variant="primary"
+              className="min-h-11 flex-1 sm:min-h-0 sm:flex-none"
+              disabled={isPending}
+              onClick={() =>
+                startTransition(() =>
+                  router.push(
+                    `${base}/${assessmentId}?start=1&items=${missedIds.join(",")}`,
+                  ),
+                )
+              }
+            >
+              Study what I missed ({missedIds.length})
+            </Button>
+          )}
           <Button
             icon={<RotateCcw />}
             variant="outline"
+            className="min-h-11 flex-1 sm:min-h-0 sm:flex-none"
+            disabled={isPending}
             onClick={() =>
               startTransition(() => router.push(`${base}/${assessmentId}?start=1`))
             }
           >
-            Retake
+            Retake all
           </Button>
         </div>
 
@@ -282,7 +319,7 @@ export function AssessmentResults({
             <h2 className="text-sm font-medium text-foreground">Review</h2>
             <EducationCollectionSearch value={questionSearch} onValueChange={setQuestionSearch} label="reviewed questions" />
           </div>
-          {questionSearch.trim() && <span className="text-xs text-muted-foreground">{filteredItems.length} of {items.length} questions match</span>}
+          {questionSearch.trim() && <span className="text-xs text-muted-foreground">{filteredItems.length} of {reviewedItems.length} questions match</span>}
           {filteredItems.length === 0 && questionSearch.trim() && (
             <EducationCollectionNoResults query={questionSearch} label="reviewed questions" onClear={() => setQuestionSearch("")} />
           )}
@@ -337,12 +374,37 @@ export function AssessmentResults({
                       </p>
                     )}
                     <SourceCitations trust={trust} className="mt-2" />
-                    <VerifyAgainstSourceButton
-                      trust={trust}
-                      front={item.prompt}
-                      back={item.correct_answer ?? ""}
-                      className="mt-2"
-                    />
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      {res !== "correct" && (
+                        <Button
+                          icon={<GraduationCap />}
+                          variant="quiet"
+                          aria-pressed={askWhy?.itemId === item.id}
+                          onClick={() =>
+                            setAskWhy((current) =>
+                              current?.itemId === item.id
+                                ? null
+                                : {
+                                    itemId: item.id,
+                                    seed: missedQuestionTutorSeed({
+                                      question: item.prompt,
+                                      learnerAnswer: d?.response,
+                                      correctAnswer: item.correct_answer,
+                                      explanation: d?.explanation || item.explanation,
+                                    }),
+                                  },
+                            )
+                          }
+                        >
+                          Ask why
+                        </Button>
+                      )}
+                      <VerifyAgainstSourceButton
+                        trust={trust}
+                        front={item.prompt}
+                        back={item.correct_answer ?? ""}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -350,6 +412,16 @@ export function AssessmentResults({
           })}
         </div>
       </div>
+      {askWhy && (
+        <AskTutorPanel
+          key={askWhy.itemId}
+          seed={askWhy.seed}
+          open
+          onOpenChange={(open) => {
+            if (!open) setAskWhy(null);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -39,6 +39,11 @@ import { Button } from "@ai-matrx/design-system/controls";
 import { RichCopySplit } from "@ai-matrx/chat/agent-copy/RichCopySplit";
 import { PlainTextView } from "@ai-matrx/rich-content/copy/ContentActions";
 import { usePlainView } from "@ai-matrx/rich-content/copy/content-view-store";
+import {
+  SwipeGradeEdges,
+  useSwipeToGrade,
+  type SwipeGrade,
+} from "@/features/flashcards/components/study/SwipeToGrade";
 
 const ANIM_MS = 320;
 const TEXT_FADE_OUT_MS = 120;
@@ -91,6 +96,15 @@ interface FlashcardMobileViewProps {
    * away without opening the drawer.
    */
   answerStrip?: React.ReactNode;
+  /**
+   * Study swipe-to-grade: while `enabled` (the driver arms it once the answer
+   * is showing), a horizontal swipe on the card grades — right = knew it,
+   * left = again — instead of moving to the next / previous card.
+   */
+  swipeGrade?: {
+    enabled: boolean;
+    onGrade: (grade: SwipeGrade) => void;
+  };
 }
 
 // ─────────────────────────────────────────────
@@ -706,6 +720,7 @@ const FlashcardMobileView: React.FC<FlashcardMobileViewProps> = ({
   bottomBar,
   toolsPanel,
   answerStrip,
+  swipeGrade,
 }) => {
   const isControlledIndex = controlledIndex !== undefined;
   const isControlledFlip = controlledFlipped !== undefined;
@@ -831,13 +846,22 @@ const FlashcardMobileView: React.FC<FlashcardMobileViewProps> = ({
     [index, goTo],
   );
 
+  // Swipe-to-grade (study): armed by the driver once the answer shows; it
+  // takes over the horizontal swipe, so left/right navigation pauses for it.
+  const gradeSwipeArmed =
+    Boolean(swipeGrade?.enabled) && !menuOpen && !scrubOpen && !isAnimating;
+  const gradeSwipe = useSwipeToGrade({
+    enabled: gradeSwipeArmed,
+    onGrade: (grade) => swipeGrade?.onGrade(grade),
+  });
+
   // Swipe handlers on the card area
   const cardHandlers = useSwipeable({
     onSwipedLeft: () => {
-      if (!menuOpen && !scrubOpen) goNext();
+      if (!menuOpen && !scrubOpen && !gradeSwipeArmed) goNext();
     },
     onSwipedRight: () => {
-      if (!menuOpen && !scrubOpen) goPrev();
+      if (!menuOpen && !scrubOpen && !gradeSwipeArmed) goPrev();
     },
     onSwipedUp: () => {
       if (scrubOpen) {
@@ -1040,8 +1064,9 @@ const FlashcardMobileView: React.FC<FlashcardMobileViewProps> = ({
       ) : (
         <div
           {...cardHandlers}
+          {...gradeSwipe.handlers}
           className="flex-1 relative overflow-visible select-none"
-          style={cardAreaStyle}
+          style={{ ...cardAreaStyle, ...gradeSwipe.touchStyle }}
           onClick={(e) => {
             if (anyPanelOpen) {
               setMenuOpen(false);
@@ -1073,10 +1098,13 @@ const FlashcardMobileView: React.FC<FlashcardMobileViewProps> = ({
               <PlainTextView text={`**Front**\n\n${card.front ?? ""}\n\n**Back**\n\n${card.back ?? ""}`} />
             </div>
           ) : null}
+          {gradeSwipeArmed && !plainCard && (
+            <SwipeGradeEdges swipe={gradeSwipe} />
+          )}
           <CardSlide
             card={card}
             isFlipped={isFlipped}
-            style={transition ? incomingEnter : undefined}
+            style={transition ? incomingEnter : gradeSwipe.cardStyle}
             showHints
             canGoPrev={index > 0}
             canGoNext={index < total - 1}
