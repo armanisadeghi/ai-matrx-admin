@@ -95,11 +95,14 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
   );
 
   const preview = result?.preview ?? null;
-  const promptText = (preview?.system_parts ?? [])
-    .filter((p) => p.kind === "prompt")
-    .map((p) => p.text)
-    .join("")
-    .trim();
+  // A server that predates `system_parts` sends only the whole string: show it whole.
+  const promptText = preview?.system_parts
+    ? preview.system_parts
+        .filter((p) => p.kind === "prompt")
+        .map((p) => p.text)
+        .join("")
+        .trim()
+    : (preview?.system_prompt ?? "");
   const platformParts: PreviewPart[] = [
     ...(preview?.system_parts ?? []).filter((p) => p.kind !== "prompt"),
     ...(preview?.turn_blocks ?? []),
