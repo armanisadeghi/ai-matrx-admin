@@ -37,6 +37,7 @@ export interface MyCostRecord {
   organizationName: string | null;
   conversationId: string | null;
   linkKind: string | null;
+  linkId: string | null;
   costUsd: number | null;
   points: number;
   chargedPoints: number;
@@ -76,10 +77,12 @@ export interface MyCostScope {
   feature?: string | null;
   organizationId?: string | null;
   activity?: string | null;
+  /** "unattributed" (admin only): costs with no person on them. */
+  scope?: "mine" | "unattributed";
 }
 
 export async function fetchMyCostBreakdown(period: MyCostPeriod, group: MyCostGroup, scope: MyCostScope = {}): Promise<MyCostGroupRow[]> {
-  const { data, error } = await billingRpc("my_cost_breakdown", { p_from: period.from ?? undefined, p_to: period.to ?? undefined, p_group: group, p_feature: scope.feature ?? undefined, p_organization: scope.organizationId ?? undefined });
+  const { data, error } = await billingRpc("my_cost_breakdown", { p_from: period.from ?? undefined, p_to: period.to ?? undefined, p_group: group, p_feature: scope.feature ?? undefined, p_organization: scope.organizationId ?? undefined, p_scope: scope.scope ?? undefined });
   if (error) throw error;
   return ((data ?? []) as Row[]).map((r) => ({
     key: String(r.group_key ?? ""),
@@ -107,6 +110,7 @@ export async function fetchMyCostRecords(period: MyCostPeriod, filter: MyCostRec
       p_before_at: filter.before?.at ?? undefined,
       p_before_id: filter.before?.id ?? undefined,
       p_activity: filter.activity ?? undefined,
+      p_scope: filter.scope ?? undefined,
   });
   if (error) throw error;
   return ((data ?? []) as Row[]).map((r) => ({
@@ -120,6 +124,7 @@ export async function fetchMyCostRecords(period: MyCostPeriod, filter: MyCostRec
     organizationName: (r.organization_name as string | null) ?? null,
     conversationId: (r.conversation_id as string | null) ?? null,
     linkKind: (r.link_kind as string | null) ?? null,
+    linkId: (r.link_id as string | null) ?? null,
     costUsd: nn(r.cost_usd),
     points: n(r.points),
     chargedPoints: n(r.charged_points),

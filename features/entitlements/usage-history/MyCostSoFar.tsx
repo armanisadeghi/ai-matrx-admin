@@ -33,6 +33,7 @@ import {
   type MyCostPeriodKey,
   type MyCostRecord,
 } from "./myCostService";
+import { NO_DRILL, chargeHref, costDisplay, dayWindow, drillInto, levelFor, type MyCostDrill, type MyCostTab } from "./myCostShaping";
 
 const PERIODS: { key: Exclude<MyCostPeriodKey, "custom">; label: string }[] = [
   { key: "today", label: "Today" },
@@ -40,8 +41,7 @@ const PERIODS: { key: Exclude<MyCostPeriodKey, "custom">; label: string }[] = [
   { key: "month", label: "This month" },
   { key: "all", label: "All time" },
 ];
-type Tab = "feature" | "organization" | "day";
-const TABS: { key: Tab; label: string }[] = [
+const TABS: { key: MyCostTab; label: string }[] = [
   { key: "feature", label: "By activity" },
   { key: "organization", label: "By organization" },
   { key: "day", label: "By day" },
@@ -53,20 +53,15 @@ const dayOnly = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(
 
 /** Dollars (admin only) with the points beside, smaller; members read points alone. */
 function Money({ usd, points, big }: { usd: number | null; points: number; big?: boolean }) {
-  if (usd === null) return <span className="tabular-nums">{formatPoints(points)}</span>;
+  const d = costDisplay(usd, points);
+  if (d.primary === "points") return <span className="tabular-nums">{formatPoints(points)}</span>;
   return (
     <span className="tabular-nums">
-      {formatSpendUsd(usd)} <span className={big ? "text-xs text-muted-foreground" : "text-[0.7em] text-muted-foreground"}>{formatPoints(points)}</span>
+      {formatSpendUsd(d.usd)} <span className={big ? "text-xs text-muted-foreground" : "text-[0.7em] text-muted-foreground"}>{formatPoints(points)}</span>
     </span>
   );
 }
 
-interface Drill {
-  feature: { key: string; label: string } | null;
-  activity: { key: string; label: string } | null;
-  day: string | null;
-}
-const NO_DRILL: Drill = { feature: null, activity: null, day: null };
 
 function sumRows(rows: MyCostGroupRow[] | null) {
   const r = rows ?? [];
@@ -82,9 +77,11 @@ export function MyCostSoFar() {
   const [period, setPeriod] = useState<MyCostPeriod>(() => periodFor("month"));
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
-  const [tab, setTab] = useState<Tab>("feature");
+  const [tab, setTab] = useState<MyCostTab>("feature");
   const [org, setOrg] = useState<{ id: string; label: string } | null>(null);
-  const [drill, setDrill] = useState<Drill>(NO_DRILL);
+  const [drill, setDrill] = useState<MyCostDrill>(NO_DRILL);
+  const [unattributed, setUnattributed] = useState(false);
+  const [unattr, setUnattr] = useState<MyCostGroupRow[] | null>(null);
   const [orgOptions, setOrgOptions] = useState<MyCostGroupRow[]>([]);
   const [summary, setSummary] = useState<Record<"all" | "month" | "today", MyCostGroupRow[] | null>>({ all: null, month: null, today: null });
   const [rows, setRows] = useState<MyCostGroupRow[] | null>(null);
@@ -92,7 +89,8 @@ export function MyCostSoFar() {
   const [retry, setRetry] = useState(0);
 
   const orgId = org?.id ?? null;
-  const level: MyCostGroup = tab === "feature" ? (drill.feature ? "activity" : "feature") : tab;
+  const admin = (summary.all ?? []).some((x) => x.costUsd !== null);
+  const level: MyCostGroup = levelFor(tab, drill);
 
   // Summary row + organization options: always the whole picture for the chosen organization.
   useEffect(() => {
@@ -112,6 +110,14 @@ export function MyCostSoFar() {
     return () => { live = false; };
   }, [retry]);
 
+  // Admin only: costs with no person on them, so the totals reconcile (the door refuses everyone else).
+  useEffect(() => {
+    if (!admin) { setUnattr(null); return; }
+    let live = true;
+    void fetchMyCostBreakdown(period, "feature", { scope: "unattributed" }).then((r) => live && setUnattr(r)).catch(() => live && setUnattr(null));
+    return () => { live = false; };
+  }, [admin, period, retry]);
+
   // The table for the current level.
   useEffect(() => {
     let live = true;
@@ -122,7 +128,6 @@ export function MyCostSoFar() {
     return () => { live = false; };
   }, [period, level, orgId, drill.feature, retry]);
 
-  const admin = (summary.all ?? []).some((x) => x.costUsd !== null);
   const total = useMemo(() => sumRows(rows), [rows]);
 
   const choosePeriod = (p: MyCostPeriod) => { setPeriod(p); setDrill(NO_DRILL); };
@@ -133,17 +138,10 @@ export function MyCostSoFar() {
     choosePeriod({ key: "custom", from: from?.toISOString() ?? null, to: to?.toISOString() ?? null });
   };
   const open = useCallback((r: MyCostGroupRow) => {
-    if (tab === "organization") {
-      setOrg({ id: r.key, label: r.label });
-      setTab("feature");
-      setDrill(NO_DRILL);
-    } else if (tab === "day") {
-      setDrill({ ...NO_DRILL, day: r.key });
-    } else if (!drill.feature) {
-      setDrill({ feature: { key: r.key, label: r.label }, activity: null, day: null });
-    } else {
-      setDrill({ ...drill, activity: { key: r.key, label: r.label } });
-    }
+    const next = drillInto(tab, drill, r);
+    if (next.organization) setOrg(next.organization);
+    setTab(next.tab);
+    setDrill(next.drill);
   }, [tab, drill]);
 
   const columns = useMemo<MatrxColumnDef<MyCostGroupRow>[]>(() => [
@@ -228,7 +226,17 @@ export function MyCostSoFar() {
         </nav>
       ) : null}
 
-      {!drill.activity && !drill.day ? (
+      {admin && unattr && unattr.length > 0 ? (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md border border-dashed border-border p-2 sm:p-3" aria-label="Unattributed">
+          <div>
+            <div className="type-secondary text-muted-foreground">Unattributed · {periodLabel}</div>
+            <div className="font-semibold"><Money usd={sumRows(unattr).usd} points={sumRows(unattr).points} /> <span className="type-secondary font-normal text-muted-foreground">{sumRows(unattr).calls.toLocaleString()} charges</span></div>
+          </div>
+          <Button variant={unattributed ? "primary" : "outline"} onClick={() => setUnattributed((v) => !v)}>{unattributed ? "Back to my costs" : "See records"}</Button>
+        </div>
+      ) : null}
+
+      {!drill.activity && !drill.day && !unattributed ? (
         <div className="mt-2">
           {!rows ? <Skeleton className="h-40 w-full rounded-md" aria-label="Loading your costs" /> : (
             <MatrxDataTable
@@ -239,28 +247,32 @@ export function MyCostSoFar() {
               density="condensed"
               pageSize={50}
               defaultSort={{ id: level === "day" ? "label" : "cost", direction: "desc" }}
+              mobileCardsBreakpoint="md"
+              mobileCards={(r) => (
+                <div className="flex items-center justify-between gap-3 py-1">
+                  <div className="min-w-0"><div className="truncate font-medium">{r.label}</div><button type="button" className="type-secondary text-muted-foreground underline-offset-2 hover:underline" onClick={() => open(r)}>{r.calls.toLocaleString()} charges</button></div>
+                  <div className="shrink-0 text-right"><Money usd={r.costUsd} points={r.points} /></div>
+                </div>
+              )}
               coverage={{ noun: "group", answeredBy: "client", loaded: rows.length, total: rows.length }}
               emptyState={{ title: "No costs here", description: "Nothing you ran in this period had a cost." }}
             />
           )}
         </div>
       ) : null}
-      <MyCostRecords period={period} orgId={orgId} drill={drill} admin={admin} />
+      <MyCostRecords period={period} orgId={orgId} drill={drill} admin={admin} unattributed={unattributed} />
     </SettingsSection>
   );
 }
 
-function MyCostRecords({ period, orgId, drill, admin }: { period: MyCostPeriod; orgId: string | null; drill: Drill; admin: boolean }) {
+function MyCostRecords({ period, orgId, drill, admin, unattributed }: { period: MyCostPeriod; orgId: string | null; drill: MyCostDrill; admin: boolean; unattributed: boolean }) {
   const [records, setRecords] = useState<MyCostRecord[]>([]);
   const [more, setMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
 
   const effective = useMemo<MyCostPeriod>(() => {
-    if (drill.day) {
-      const start = new Date(`${drill.day}T00:00:00Z`);
-      return { key: "custom", from: start.toISOString(), to: new Date(start.getTime() + 86_400_000).toISOString() };
-    }
+    if (drill.day) return { key: "custom", ...dayWindow(drill.day) };
     return period;
   }, [drill.day, period]);
 
@@ -271,7 +283,8 @@ function MyCostRecords({ period, orgId, drill, admin }: { period: MyCostPeriod; 
       const page = await fetchMyCostRecords(effective, {
         feature: drill.feature?.key ?? null,
         activity: drill.activity?.key ?? null,
-        organizationId: orgId,
+        organizationId: unattributed ? null : orgId,
+        scope: unattributed ? "unattributed" : "mine",
         before: before ? { at: before.createdAt, id: before.id } : null,
       });
       setRecords((prev) => (before ? [...prev, ...page] : page));
@@ -281,7 +294,7 @@ function MyCostRecords({ period, orgId, drill, admin }: { period: MyCostPeriod; 
     } finally {
       setLoading(false);
     }
-  }, [effective, drill.feature, drill.activity, orgId]);
+  }, [effective, drill.feature, drill.activity, orgId, unattributed]);
 
   useEffect(() => { void load(null); }, [load]);
 
@@ -292,10 +305,10 @@ function MyCostRecords({ period, orgId, drill, admin }: { period: MyCostPeriod; 
     { id: "org", header: "Organization", accessorFn: (r) => r.organizationName ?? "—", filter: "select", width: 170, mobileHidden: true },
     { id: "cost", header: admin ? "Cost" : "Points used", accessorFn: (r) => r.costUsd ?? r.points, filter: "number", width: 190, align: "right", cell: (r) => <Money usd={r.costUsd} points={r.points} /> },
     { id: "charged", header: "Counted against plan", accessorFn: (r) => r.chargedPoints, filter: "number", width: 150, align: "right", mobileHidden: true, cell: (r) => formatPoints(r.chargedPoints) },
-    { id: "open", header: "", accessorFn: (r) => r.conversationId ?? "", width: 90, cell: (r) => (r.conversationId ? <Link className="underline-offset-2 hover:underline" href={`/chat/${r.conversationId}`}>Open</Link> : null) },
+    { id: "open", header: "", accessorFn: (r) => chargeHref(r) ?? "", width: 80, cell: (r) => { const href = chargeHref(r); return href ? <Link className="underline-offset-2 hover:underline" href={href}>Open</Link> : null; } },
   ], [admin]);
 
-  const title = drill.activity ? `Charges: ${drill.activity.label}` : drill.feature ? `Charges: ${drill.feature.label}` : drill.day ? `Charges on ${drill.day}` : "Every charge, newest first";
+  const title = unattributed ? "Unattributed charges (no person on them)" : drill.activity ? `Charges: ${drill.activity.label}` : drill.feature ? `Charges: ${drill.feature.label}` : drill.day ? `Charges on ${drill.day}` : "Every charge, newest first";
   return (
     <div className="mt-4">
       <div className="mb-1 type-secondary font-medium text-muted-foreground">{title}</div>
@@ -311,6 +324,16 @@ function MyCostRecords({ period, orgId, drill, admin }: { period: MyCostPeriod; 
           density="condensed"
           pageSize={50}
           defaultSort={{ id: "at", direction: "desc" }}
+          mobileCardsBreakpoint="md"
+          mobileCards={(r) => {
+            const href = chargeHref(r);
+            return (
+              <div className="py-1">
+                <div className="flex items-start justify-between gap-3"><div className="min-w-0"><div className="truncate font-medium">{r.detail}</div><div className="type-secondary text-muted-foreground">{when(r.createdAt)}{r.organizationName ? ` · ${r.organizationName}` : ""}</div></div><div className="shrink-0 text-right"><Money usd={r.costUsd} points={r.points} /></div></div>
+                {href ? <Link className="type-secondary underline-offset-2 hover:underline" href={href}>Open</Link> : null}
+              </div>
+            );
+          }}
           coverage={{ noun: "charge", answeredBy: "client", loaded: records.length, total: more ? undefined : records.length }}
           emptyState={{ title: "No charges here", description: "Nothing in this selection had a cost." }}
         />
