@@ -8,7 +8,7 @@ import {
   type WindowPanelProps,
 } from "@/features/window-panels/WindowPanel";
 import { PickListWindowBody } from "@/features/data-tables/pick-lists/components/PickListWindowBody";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface PickListManagerWindowProps extends Omit<
   WindowPanelProps,

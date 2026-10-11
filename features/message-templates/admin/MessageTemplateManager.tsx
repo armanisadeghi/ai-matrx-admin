@@ -57,7 +57,7 @@ import {
   Check,
   Copy,
 } from "lucide-react";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import {
   MessageTemplateDB,

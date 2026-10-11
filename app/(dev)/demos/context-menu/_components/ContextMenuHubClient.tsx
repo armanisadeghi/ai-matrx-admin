@@ -97,7 +97,7 @@ export function ContextMenuHubClient({ pages }: ContextMenuHubClientProps) {
           <p className="text-[11px] text-muted-foreground/80">
             Both renderers (desktop Radix menus, mobile 70dvh drill-down) are
             pure presentation over ONE shared engine:{" "}
-            <Code>features/context-menu-v3/hooks/useContextMenuActions.ts</Code>
+            <Code>@ai-matrx/context-menu (src/engine/hooks/useContextMenuActions.ts)</Code>
             . A behavior change lands there once.
           </p>
         </section>
@@ -191,14 +191,14 @@ export function ContextMenuHubClient({ pages }: ContextMenuHubClientProps) {
             <li>
               Menu wrappers:{" "}
               <Code>
-                features/context-menu-v3/EditableContextMenu.tsx /
+                @ai-matrx/context-menu (src/engine/EditableContextMenu.tsx) /
                 NonEditableContextMenu.tsx
               </Code>
             </li>
             <li>
               Data hook:{" "}
               <Code>
-                features/context-menu-v3/hooks/useUnifiedAgentContextMenu.ts
+                @ai-matrx/context-menu (src/engine/hooks/useUnifiedAgentContextMenu.ts)
               </Code>
             </li>
             <li>

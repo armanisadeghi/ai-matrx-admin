@@ -58,11 +58,11 @@ import { useHrContext } from "../../shared/useHrContext";
 import { useHrSettingsStructure } from "../hooks/useHrSettingsStructure";
 import { HrSettingsShell } from "../HrSettingsShell";
 import type { HrDeductionCode, HrEarningCode } from "../types";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   CONTEXT_MENU_ENTITY_KEY,
   type ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 

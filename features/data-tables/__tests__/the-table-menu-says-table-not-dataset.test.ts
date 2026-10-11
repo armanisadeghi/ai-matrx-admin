@@ -8,7 +8,7 @@
  */
 jest.mock("@/lib/toast", () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
 import { extraSectionActionIds } from "@/features/unified-data/actions/tableActionAdapters";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { tableActionSectionsAwayFromPage } from "../dataset-table-actions";
 
 const HARBOR_DENTAL_INSURANCE = { id: "377b783a-f18a-40c3-bf2b-7617691d0091", name: "Insurance Plan Accounts" };

@@ -63,7 +63,7 @@ import {
   PROJECTS_CONTEXT_MENU_PROPS,
 } from "@/features/projects/agent-context/buildProjectsContextData";
 import { buildProjectWriteHandlers } from "@/features/projects/agent-context/projectWriteHandlers";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { ProjectContextPicker } from "@/features/projects/components/ProjectContextSection";
 import { AssociationCardGrid } from "@ai-matrx/associations/react";
@@ -82,7 +82,7 @@ const EXCLUDE_FROM_RESOURCES = new Set(["task", "project"]);
 // lightweight shell (imported statically); MenuContent lazy-loads on first open.
 // The hero is a read-only identity/overview region → NonEditableContextMenu
 // (the description editor below mounts its own editable Pro "…" menu).
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 
 /**

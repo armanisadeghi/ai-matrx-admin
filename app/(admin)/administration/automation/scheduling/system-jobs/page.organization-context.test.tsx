@@ -46,7 +46,7 @@ jest.mock("@ai-matrx/design-system/data-table", () => ({
   },
 }));
 
-jest.mock("@/features/context-menu-v3/NonEditableContextMenu", () => ({
+jest.mock("@ai-matrx/context-menu/react", () => ({
   NonEditableContextMenu: ({ children }: { children: React.ReactNode }) =>
     children,
 }));

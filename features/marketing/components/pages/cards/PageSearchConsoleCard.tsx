@@ -43,8 +43,8 @@ import type { MarketingPage } from "@/features/marketing/types";
 import { GscClassBar } from "@/features/marketing/search-console/components/ambassador/GscClassBar";
 import { useGscKeywordValueByText } from "@/features/marketing/search-console/hooks/useGscQuery";
 import { buildGscValueColumns } from "@/features/marketing/search-console/lib/columns";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import {
   keywordEntityRef,
   useKeywordAssignSurfaces,

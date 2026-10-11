@@ -18,11 +18,11 @@ import { Ban, CheckCircle2, Clock, ExternalLink, Megaphone, RotateCcw, Users } f
 import {
   type ContextMenuEntityRef,
   type ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import {
   withAvailability,
   type AvailabilityMap,
-} from "@/features/context-menu-v3/utils/availability";
+} from "@ai-matrx/context-menu/engine";
 import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
 import { linkGapReviewLabel } from "@/features/marketing/components/backlinks/lib/link-gap";
 

@@ -6,7 +6,7 @@ import { applySampleToComposer } from "@/features/agents/samples/apply-sample";
 import type { AgentSampleRow } from "@/features/agents/samples/service";
 import { AgentSamplesManager } from "@/features/agents/components/samples/AgentSamplesManager";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildAgentMenuSection, agentEntityRef } from "@ai-matrx/chat/agents/menu/agent-actions";
 import {
   fetchFullAgent,

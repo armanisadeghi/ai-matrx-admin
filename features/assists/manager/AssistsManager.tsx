@@ -43,12 +43,12 @@ import {
 import { toast } from "@/lib/toast";
 import { useTableUrlState } from "@ai-matrx/design-system/data-table/url-state";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   CONTEXT_MENU_ENTITY_KEY,
   type ContextMenuExtraSection,
   type ResolvedContextMenuContext,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import { AssistChip } from "../components/AssistChip";
 import { SNOOZE_WINDOWS, isLowConfidence } from "../constants";
 import { useAssistsQuery } from "./useAssistsQuery";

@@ -55,7 +55,7 @@ import { SettingsSlider } from "@/components/official/settings/primitives/Settin
 import { availableVoices } from "@/lib/cartesia/voices";
 import { LANGUAGE_OPTIONS } from "@/features/settings/agent-writable-settings";
 import { TTS_DEFAULT_SPEED } from "@/lib/cartesia/config";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { SettingDoor } from "@/features/settings/doors/SettingDoor";
 import { VOICE_SETTING_DOORS } from "@/features/settings/tabs/voices/voiceSettingDoors";
 import type { AmbientListenSummaryWindowOffer } from "@ai-matrx/agents/generated/provision-offers";

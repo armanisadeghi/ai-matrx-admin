@@ -54,7 +54,7 @@ jest.mock("@/features/window-panels/WindowPanel", () => ({
     </div>
   ),
 }));
-jest.mock("@/features/context-menu-v3/NonEditableContextMenu", () => ({
+jest.mock("@ai-matrx/context-menu/react", () => ({
   NonEditableContextMenu: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 

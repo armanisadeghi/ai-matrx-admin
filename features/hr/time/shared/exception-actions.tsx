@@ -26,7 +26,7 @@ import type {
   ContextMenuEntityRef,
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import { hrTimesheetHref, type HrOrgRef } from "@/features/hr/routes";
 
 export interface AttendanceExceptionMenuRow {

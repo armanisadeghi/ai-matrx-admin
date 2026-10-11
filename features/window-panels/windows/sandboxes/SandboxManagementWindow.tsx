@@ -11,7 +11,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

@@ -20,6 +20,10 @@ interface DocumentsHubToolbarProps {
   onViewChange: (view: HubViewMode) => void;
   sortKey: DocumentSortKey;
   onSortChange: (key: DocumentSortKey) => void;
+  /** Plural noun for the search placeholder; shared with the Workbooks list. */
+  noun?: string;
+  /** Table view carries its own column search; a second box here is noise. */
+  hideSearch?: boolean;
 }
 
 export function DocumentsHubToolbar({
@@ -29,11 +33,14 @@ export function DocumentsHubToolbar({
   onViewChange,
   sortKey,
   onSortChange,
+  noun = "documents",
+  hideSearch = false,
 }: DocumentsHubToolbarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className="flex w-full items-center gap-[3px]">
+      {hideSearch ? <div className="min-w-0 flex-1" /> : (
       <div className="relative inline-flex h-9 min-w-0 flex-1 items-center">
         <div className="pointer-events-none absolute inset-x-0 top-1/2 h-7 -translate-y-1/2 rounded-full matrx-glass-thin-border" />
         <div className="relative flex min-w-0 flex-1 items-center">
@@ -54,8 +61,8 @@ export function DocumentsHubToolbar({
               type="search"
               value={query}
               onChange={(e) => onQueryChange(e.target.value)}
-              placeholder="Search documents…"
-              aria-label="Search documents"
+              placeholder={`Search ${noun}…`}
+              aria-label={`Search ${noun}`}
               className="min-w-0 flex-1 border-0 bg-transparent px-2 py-0 text-sm text-foreground outline-none placeholder:text-muted-foreground"
               style={{ fontSize: "16px", lineHeight: 1 }}
             />
@@ -73,6 +80,7 @@ export function DocumentsHubToolbar({
           </div>
         </div>
       </div>
+      )}
       <TapTargetButtonGroup surface="solid">
         <LayoutGridTapButton
           variant="group"

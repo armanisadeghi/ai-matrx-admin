@@ -18,7 +18,7 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 import { MediumComponentLoading } from "@/components/matrx/LoadingComponents";
 import { ContentTransferSurfaceProvider } from "@ai-matrx/alchemy/react/workspace";
 import { ContentTransferMenu } from "@ai-matrx/alchemy/react";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ConversationPane } from "@/features/messaging/components/ConversationPane";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectDisplayName, selectUser } from "@/lib/redux/selectors/userSelectors";

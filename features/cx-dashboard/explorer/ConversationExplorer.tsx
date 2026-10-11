@@ -15,7 +15,7 @@ import { useOpenAgentFromChatWindow } from "@/features/overlays/openers/agentFro
 import { formatRelativeTime } from "@/features/cx-dashboard/utils/format";
 import { buildCxSourcePageExportConfig } from "@/features/cx-dashboard/utils/export";
 import { useCxRowMenu, type CxMenuTarget } from "@/features/cx-dashboard/components/cx-row-actions";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import {
   ADMIN_CX_DASHBOARD_SURFACE_NAME,

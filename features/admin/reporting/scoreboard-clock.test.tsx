@@ -18,7 +18,7 @@ jest.mock("@ai-matrx/design-system/data-table", () => ({
 jest.mock("@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext", () => ({
   SurfaceRuntimeProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
-jest.mock("@/features/context-menu-v3/NonEditableContextMenu", () => ({
+jest.mock("@ai-matrx/context-menu/react", () => ({
   NonEditableContextMenu: ({ children }: { children: React.ReactNode }) => children,
 }));
 

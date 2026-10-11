@@ -31,7 +31,7 @@ import { TopicTree, type TopicTreeRow } from "@/components/official/topic-tree/T
 import SuspenseLoader from "@/components/loaders/SuspenseLoader";
 import { ClipboardFallbackDialog } from "@/components/dialogs/clipboard-fallback/ClipboardFallbackDialog";
 import { AssistStrip } from "@/features/assists/components/AssistStrip";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { useOpenTopicPanel } from "@/features/overlays/openers/topicalMapTopicPanel";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useClippedContentGuard } from "@/lib/layout/useClippedContentGuard";

@@ -29,7 +29,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { TopicTree } from "@/components/official/topic-tree/TopicTree";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 // The lazy menu body pulls the whole action engine; the question here is only
 // whether the right-click REACHES the shell.
@@ -87,7 +87,7 @@ describe("the mechanism — a function-component child still hears the right-cli
   // The menu itself now closes this class: it slots onto an intrinsic DOM
   // element only and gives a COMPONENT child its own `display: contents`
   // wrapper (ContextMenuV3 `canSlotChildren`; guard
-  // features/context-menu-v3/__tests__/attach-point.test.tsx). This test used
+  // @ai-matrx/context-menu (src/engine/__tests__/attach-point.test.tsx)). This test used
   // to reproduce the shipped defect (a bare TopicTree never heard the click);
   // it now pins the repair against the real TopicTree.
   it("still hears it when the child is the bare TopicTree", () => {

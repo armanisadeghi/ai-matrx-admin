@@ -67,7 +67,7 @@ import { useComposerMode } from "@ai-matrx/chat/agents/components/inputs/smart-i
 import { setInputPlaceholder } from "@ai-matrx/chat/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 
 import { useMultiFileSmartCodeEditorEmitter } from "./useMultiFileSmartCodeEditorEmitter";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 

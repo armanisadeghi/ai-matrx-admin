@@ -38,8 +38,8 @@ import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { DocumentRulebookNotice } from "@/features/masterwork/components/DocumentRulebookNotice";
 import { canActOn } from "@/features/access-gate/service/canActOn";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
-import { captureDomSelection } from "@/features/context-menu-v3/utils/selection-tracking";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
+import { captureDomSelection } from "@ai-matrx/context-menu/engine";
 
 import {
   getDocument,

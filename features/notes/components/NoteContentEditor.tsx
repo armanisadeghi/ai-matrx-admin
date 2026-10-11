@@ -88,12 +88,12 @@ import { useNotesEditorExtraSections } from "@/features/notes/agent-context/note
 
 // Universal v3 context menu — the SAME menu everywhere. The wrapper is the
 // lightweight shell (imported statically); MenuContent lazy-loads on first open.
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import type { ContentSource } from "@ai-matrx/rich-content/rich-document/types";
 import { UnbindSurfaceContext } from "@/features/canvas/materialization/UnbindSurfaceContext";
 import { useNoteArtifactMaterialization } from "../hooks/useNoteArtifactMaterialization";
 import { noteIdentityContentSource } from "../richDocumentSource";
-import { RECORD_MENU_ATTR } from "@/features/context-menu-v3/record-menu-registry";
+import { RECORD_MENU_ATTR } from "@ai-matrx/context-menu/engine";
 import { noteTabRecordMenuKey } from "./noteRecordMenu";
 import { usePreparedNoteContentSource } from "../usePreparedNoteContentSource";
 import { NoteWorkingCopyAlert } from "./NoteWorkingCopyAlert";

@@ -14,7 +14,7 @@ import { JsonViewer } from "@/components/ui/JsonComponents/JsonViewerComponent";
 import { RichCopySplit } from "@ai-matrx/chat/agent-copy/RichCopySplit";
 import { Button } from "@/components/ui/button";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { updateResultPayloadField } from "@/features/page-extraction/api/runs";
 import {
   emitExtractionCellEditorEvent,

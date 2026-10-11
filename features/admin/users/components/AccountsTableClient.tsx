@@ -86,7 +86,7 @@ import { readUserResearch } from "../service/userResearch";
 import { sendDirectMessage } from "../service/coupons";
 import { RELATIONSHIP_LABELS, CONTACT_STATE_LABELS, feedbackDmKey, type UserResearch } from "../lib/userResearch";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildAdminUserMenuSection } from "./admin-user-menu-section";
 import { pushAppHref } from "@/lib/deployment/navigate";
 import { pushAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";

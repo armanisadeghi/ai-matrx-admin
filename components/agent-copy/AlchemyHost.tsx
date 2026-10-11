@@ -1,6 +1,6 @@
 "use client";
 
-import { ItemMenuHostBinding } from "@/features/context-menu-v3/item/ItemMenuHostBinding";
+import { ItemMenuHostBinding } from "@ai-matrx/context-menu/react";
 import { alchemyReferencePort } from "./alchemy-references";
 import { sendAlchemyEmail } from "./alchemy-email";
 import { alchemyPlainTextFormat } from "./alchemy-plain-text-format";

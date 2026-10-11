@@ -29,7 +29,7 @@ import { loadShapeReadiness } from "@/features/content-ir/studio/shape-readiness
 import { useOpenAgentRunWindow } from "@/features/overlays/openers/agentRunWindow";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { buildKindAuthoringOffer } from "@/features/content-ir/studio/kind-authoring-offer";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { publishedToWebLabel } from "@/lib/row-access";
 

@@ -20,7 +20,7 @@
 
 import { useState } from "react";
 import { NotesDemoPanel } from "../_components/NotesDemoPanel";
-import type { ContextMenuDensity } from "@/features/context-menu-v3/types";
+import type { ContextMenuDensity } from "@ai-matrx/context-menu/engine";
 
 const SAMPLE = `# Q3 launch notes
 

@@ -41,7 +41,7 @@ import {
 
 // Universal v3 context menu — the SAME menu everywhere. The wrapper is the
 // lightweight shell (imported statically); MenuContent lazy-loads on first open.
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";
 import { MessageItemButtons } from "@/features/agents/components/builder/message-builders/MessageItemButtons";
 import {

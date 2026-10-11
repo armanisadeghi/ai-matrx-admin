@@ -34,7 +34,7 @@ import { announceComingSoon } from "@/lib/coming-soon/announce";
 import { toast } from "@/lib/toast";
 import { useListViewPrefs } from "@/lib/list-views/useListViewPrefs";
 import { hrTimePeriodsHref, hrTimesheetHref } from "@/features/hr/routes";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 import { useHrContext } from "@/features/hr/shared/useHrContext";
 

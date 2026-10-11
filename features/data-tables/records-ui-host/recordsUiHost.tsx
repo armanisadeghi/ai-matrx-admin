@@ -56,7 +56,7 @@ import { runRowAgentAction, type RowAgentActionTarget } from "@/features/unified
 import { CALENDAR_FEED_PORT } from "@/features/calendar-feed/calendarFeedPort";
 import { RECORDS_NOTIFY } from "@/features/unified-data/recordsNotify";
 import { RECORDS_FILES } from "@/features/unified-data/recordsFiles";
-import { RECORDS_TEXT } from "@/features/unified-data/recordsCleanText";
+import { RECORDS_TEXT, recordsTextBox } from "@/features/unified-data/recordsCleanText";
 import { RECORDS_REFERENCES } from "@/features/unified-data/recordsReferences";
 import { RECORDS_AGENT_PORTS } from "@/features/data-tables/records-ui-host/recordsAgentPorts";
 import {
@@ -229,6 +229,8 @@ export function recordsUiHostFor({ ports, merged, gridContext, rights }: Records
     // The older Sheet's AI pieces (Sheet retirement): "Help with this…" in the formula box runs
     // data.formula_writing, and the settings panel is the matrx-user/table-settings surface.
     ...RECORDS_AGENT_PORTS,
+    // Long text is edited in the platform's one text box with its "…" menu (records-ui `textBox`).
+    textBox: recordsTextBox,
     // "Subscribe in your calendar…" on a view with a date field (records-ui ≥0.113.36 `calendarFeed`).
     calendarFeed: CALENDAR_FEED_PORT,
     ...(rights ? { rights } : {}),

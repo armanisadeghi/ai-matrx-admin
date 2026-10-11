@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 
 import { useIsMobile } from "@ai-matrx/kit/media-query";
-import { PageSurfaceMenu } from "@/features/context-menu-v3/PageSurfaceMenu";
+import { PageSurfaceMenu } from "@ai-matrx/context-menu/react";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
 import { useAccess } from "@/utils/permissions/access";

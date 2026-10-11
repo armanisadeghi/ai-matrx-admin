@@ -79,14 +79,14 @@ import { cn } from "@/utils/cn";
 import { useRefocusInputAfterAsync } from "@/features/tasks/hooks/useRefocusInputAfterAsync";
 import { useSubtasksRead } from "@/features/tasks/hooks/useSubtasksRead";
 import { ReadFailure } from "@ai-matrx/design-system";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   buildTasksContextData,
   createTasksExtraSections,
   TASKS_CONTEXT_MENU_PROPS,
 } from "@/features/tasks/agent-context/buildTasksContextData";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { useSurfaceBody } from "@ai-matrx/chat/surfaces/runtime/registry";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { useTaskEditorControllerCtx } from "./TaskEditorControllerContext";

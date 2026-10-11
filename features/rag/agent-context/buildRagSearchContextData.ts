@@ -1,4 +1,4 @@
-import type { PlacementMode } from "@/features/context-menu-v3/types";
+import type { PlacementMode } from "@ai-matrx/context-menu/engine";
 import {
   createRagSearchScope,
   type RagDataStoreEntry,

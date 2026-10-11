@@ -27,7 +27,7 @@ import type {
   ContextMenuEntityRef,
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 
 export interface HrTaskStepMenuRow {
   stepId: string;

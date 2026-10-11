@@ -63,14 +63,14 @@ import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { recordToast, toast } from "@/lib/toast";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   AUTOMATION_LEAD_COLUMNS,
   automationCostColumns,
 } from "@/features/scheduling/components/costs/AutomationCostColumns";
 import { useAutomationCosts } from "@/features/scheduling/components/costs/AutomationCostTable";
 import { automationCostDetailHref } from "@/features/scheduling/service/automationCosts";
-import type { ContextMenuExtraItem } from "@/features/context-menu-v3/types";
+import type { ContextMenuExtraItem } from "@ai-matrx/context-menu/engine";
 import {
   listDbJobs,
   listSystemTasks,

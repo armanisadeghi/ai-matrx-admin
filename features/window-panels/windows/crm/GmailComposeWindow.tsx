@@ -17,7 +17,7 @@
 
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { callbackManager } from "@/utils/callbackManager";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { GmailComposePanel } from "@/features/crm/gmail/GmailComposePanel";
 import type { GmailDraftedBy } from "@/features/crm/gmail/types";
 

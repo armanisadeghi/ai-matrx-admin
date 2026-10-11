@@ -14,10 +14,10 @@ import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { ConversationListPane } from "@/features/messaging/components/ConversationListPane";
 import { ConversationPane } from "@/features/messaging/components/ConversationPane";
 import { NewConversationDialog } from "@/features/messaging/components/NewConversationDialog";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { MESSAGES_SURFACE_NAME } from "@/features/messaging/lib/messaging-menu-actions";
 import { useMessagesSurfaceScope } from "@/features/messaging/lib/useMessagesSurfaceScope";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 
 interface MessagesWindowProps {
   isOpen: boolean;

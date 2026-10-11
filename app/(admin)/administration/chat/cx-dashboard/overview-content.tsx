@@ -56,11 +56,11 @@ import {
   ADMIN_CX_DASHBOARD_SURFACE_NAME,
   createAdminCxDashboardScope,
 } from "@/features/surfaces/manifests/admin-cx-dashboard.manifest";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   CONTEXT_MENU_ENTITY_KEY,
   type ContextMenuExtraItem,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import { pushAppHref } from "@/lib/deployment/navigate";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 

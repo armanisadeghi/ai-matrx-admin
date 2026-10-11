@@ -21,11 +21,11 @@ import { openCanvasItem } from "@/features/canvas/host/openCanvasItem";
 import { aiAnswerOpenInput } from "./canvas/aiAnswerKind";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   CONTEXT_MENU_ENTITY_KEY,
   type ResolvedContextMenuContext,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import type { EntityTypeToken } from "@ai-matrx/associations";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Badge } from "@/components/ui/badge";

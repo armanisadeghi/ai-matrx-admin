@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/lib/toast";
 import { BlockStatsCard } from "./BlockStatsCard";
 import { runV2Parser } from "@/components/admin/markdown-tester/utils/run-v2-parser";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import type { ApplicationScope } from "@ai-matrx/chat/agents/types/scope.types";
 import { SourceEditor } from "@ai-matrx/rich-editor/source/SourceEditor";
 import type { EditorViewHandle } from "@ai-matrx/rich-editor/visual/VisualEditor";

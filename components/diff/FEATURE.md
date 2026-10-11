@@ -115,7 +115,7 @@ viewer at `/react`. Its own contract doc is
   prompt results, tool overlays, …). The right-click, phone sheet and palette
   carry the same actions from the one Alchemy registry (the rich-document
   provider, `features/rich-document/actions/provider.ts`, rendered by
-  `features/context-menu-v3/components/AlchemyMenuContent.tsx`).
+  `@ai-matrx/context-menu (src/engine/components/AlchemyMenuContent.tsx)`).
 - **Clipboard compare direction (invariant):** current content is the
   **original** (baseline the user has now); the clipboard is the **modified**
   (incoming version about to be pasted). So clipboard-only text reads as an

@@ -48,11 +48,11 @@ import {
   type UiSurfaceRow,
 } from "@ai-matrx/chat/surfaces/services/surfaces.service";
 import { SurfaceAdminDetailPage } from "@/features/surfaces/admin-detail/SurfaceAdminDetailPage";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   CONTEXT_MENU_ENTITY_KEY,
   type ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
 import { toast } from "@/lib/toast";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

@@ -5,7 +5,7 @@ import { Plus, Minus, Briefcase, MapPin, DollarSign, Calendar, Award, MessageSqu
 import { useIsMobile } from '@ai-matrx/kit/media-query';
 import DefaultErrorFallback from '@/components/mardown-display/markdown-classification/custom-views/common/DefaultErrorFallback';
 import FlexibleLoadingComponent from '@/components/mardown-display/markdown-classification/custom-views/common/DefaultLoadingComponent';
-import { NonEditableContextMenu } from '@/features/context-menu-v3/NonEditableContextMenu';
+import { NonEditableContextMenu } from '@ai-matrx/context-menu/react';
 import { Button } from "@ai-matrx/design-system/controls";
 
 interface CandidateExperience {

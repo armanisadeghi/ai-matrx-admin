@@ -47,10 +47,10 @@ import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { fileIdToMediaRef } from "@/features/files/redux/converters";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import type { ContextMenuEntityRef } from "@/features/context-menu-v3/types";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { ContextMenuEntityRef } from "@ai-matrx/context-menu/engine";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { useMarketingSite } from "@/features/marketing/components/site/MarketingSiteContext";
 import {
   marketingKeys,

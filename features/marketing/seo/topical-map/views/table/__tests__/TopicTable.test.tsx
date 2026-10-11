@@ -55,7 +55,7 @@ jest.mock("@ai-matrx/design-system/data-table", () => ({
 jest.mock("@/components/official/MatrxDataTableHost", () => ({
   MatrxDataTableHost: ({ children }: { children: React.ReactNode }) => children,
 }));
-jest.mock("@/features/context-menu-v3/NonEditableContextMenu", () => ({
+jest.mock("@ai-matrx/context-menu/react", () => ({
   NonEditableContextMenu: ({ children }: { children: React.ReactNode }) => children,
 }));
 jest.mock("@/features/overlays/openers/topicalMapTopicPanel", () => ({

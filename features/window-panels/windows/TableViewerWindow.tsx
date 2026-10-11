@@ -32,11 +32,11 @@ import React, { Suspense, lazy, useState } from "react";
 import { Braces, Rows3, Sheet } from "lucide-react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type {
   ContextMenuExtraSection,
   ResolvedContextMenuContext,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import {
   cleanTableHeaderKey,
   parseMarkdownTable,

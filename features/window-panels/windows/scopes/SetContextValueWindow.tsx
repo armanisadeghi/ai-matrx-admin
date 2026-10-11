@@ -7,7 +7,7 @@ import {
   type PostSaveAction,
 } from "@/features/scopes/actions/quick-assign/SetContextValueCore";
 import type { EditorMode } from "@/features/notes/components/NoteEditorCore";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface SetContextValueWindowProps {
   isOpen: boolean;

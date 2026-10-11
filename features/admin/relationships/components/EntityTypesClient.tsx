@@ -29,8 +29,8 @@ import { Switch } from "@/components/ui/switch";
 import { CanvasPagePanel } from "@/features/canvas/host/pagePanel";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import {
   EntityTypeForm,
   isValidEntityToken,

@@ -39,7 +39,7 @@ import { NotesInstanceProvider } from "@/features/notes/context/NotesInstanceCon
 import { NoteSidebar } from "@/features/notes/components/NoteSidebar";
 import { NoteViewControls } from "@/features/notes/components/NoteViewControls";
 import { NotesWindowView } from "@/features/notes/components/NotesWindowView";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { Plus } from "lucide-react";
 import { ErrorNotice } from "@ai-matrx/design-system";
 
@@ -145,7 +145,7 @@ export function NotesWindow({
          * editor, or the empty-folder picker) opens something Notes-shaped
          * instead of falling through to whatever page hosts this floating
          * window. "New note" is page-local to this composition root, not a
-         * shared identity — see features/context-menu-v3/SECTIONS.md.
+         * shared identity — see features/context-menu-host/SECTIONS.md.
          * context-menu-exempt: surfaceName — no active tab here (this fires
          * only on blank space); the matrx-user/notes scope publishes from
          * NoteContentEditor when a tab IS active, which mounts its own menu.

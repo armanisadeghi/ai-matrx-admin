@@ -1,5 +1,5 @@
 let captured: unknown;
-jest.mock("@/features/context-menu-v3/EditableContextMenu", () => ({ EditableContextMenu: ({ children }: {children: React.ReactNode}) => <>{children}</> }));
+jest.mock("@ai-matrx/context-menu/react", () => ({ EditableContextMenu: ({ children }: {children: React.ReactNode}) => <>{children}</> }));
 jest.mock("./NoteEditorCore", () => ({ NoteEditorCore: (props: { actionsSource: unknown }) => { captured = props.actionsSource; return <div />; }, isRichEditorMode: (mode: string) => mode === "write" || mode === "source" }));
 jest.mock("next/dynamic", () => () => () => null);
 jest.mock("../hooks/useNoteAccess", () => ({ useNoteAccess: () => ({ readOnly: false }) }));

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -8,13 +8,14 @@ import {
   FileSpreadsheet,
   Loader2,
   Plus,
-  Trash,
+  Search,
+  Star,
   Upload,
+  Users,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/components/ui/use-toast";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { TapTargetButton, TapTargetButtonSolid } from "@ai-matrx/design-system/tap-target";
@@ -26,12 +27,32 @@ import {
 import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
 
 import {
+  copyWorkbook,
   createWorkbook,
   deleteWorkbook,
   discardFailedWorkbook,
   listAccessibleWorkbooks,
+  listTrashedWorkbooks,
+  renameWorkbook,
+  restoreWorkbook,
   saveSnapshot,
 } from "@/features/workbooks/workbook-service";
+import {
+  FileScopeBar,
+  filterByScope,
+  type FileScope,
+} from "@/features/file-actions/FileScopeBar";
+import {
+  useFileItemActions,
+  type FileKindAdapter,
+} from "@/features/file-actions/useFileItemActions";
+import { DocumentsHubToolbar } from "@/features/documents/components/DocumentsHubToolbar";
+import { WorkbooksHubTable } from "@/features/workbooks/components/WorkbooksHubTable";
+import {
+  useListViewPrefs,
+} from "@/lib/list-views/useListViewPrefs";
+import type { DocumentSortKey } from "@/features/documents/utils/documentsHubDisplay";
+import { compareTimestamps } from "@/utils/datetime";
 import { isServiceFailure, type Workbook } from "@/features/data-tables/types";
 import { fileHandler } from "@/features/files/handler/handler";
 // xlsx-to-univer (xlsx + @univerjs/*) and smart-importer (xlsx) are heavy —
@@ -82,6 +103,35 @@ function unsupportedFileReason(file: File): string | null {
   return `"${file.name}" doesn't look like a spreadsheet. Supported: .xlsx, .xls, .csv. If you're importing from Google Sheets, use File → Download → Microsoft Excel (.xlsx) first.`;
 }
 
+const WORKBOOK_ADAPTER: FileKindAdapter<Workbook> = {
+  noun: "workbook",
+  resourceType: "workbook",
+  entityType: "workbook",
+  nameOf: (w) => w.workbook_name,
+  hrefFor: (id) => `/workbooks/${id}`,
+  rename: renameWorkbook,
+  copy: copyWorkbook,
+  trash: deleteWorkbook,
+  restore: restoreWorkbook,
+};
+
+function sortWorkbooks(rows: Workbook[], key: DocumentSortKey): Workbook[] {
+  const byName = (a: Workbook, b: Workbook) =>
+    a.workbook_name.localeCompare(b.workbook_name);
+  return [...rows].sort((a, b) => {
+    switch (key) {
+      case "name":
+        return byName(a, b);
+      case "source":
+        return a.source.localeCompare(b.source) || byName(a, b);
+      case "created":
+        return compareTimestamps(b.created_at, a.created_at) || byName(a, b);
+      default:
+        return compareTimestamps(b.updated_at, a.updated_at) || byName(a, b);
+    }
+  });
+}
+
 export default function WorkbooksLandingPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -90,6 +140,13 @@ export default function WorkbooksLandingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [query, setQuery] = useState("");
+  const [scope, setScope] = useState<FileScope>("all");
+  const [sortKey, setSortKey] = useState<DocumentSortKey>("updated");
+  const { prefs, setView } = useListViewPrefs("workbooks-hub", {
+    view: "cards",
+  });
+  const view = prefs.view === "table" ? "table" : "cards";
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -107,7 +164,10 @@ export default function WorkbooksLandingPage() {
 
   const reload = useCallback(async () => {
     setLoading(true);
-    const res = await listAccessibleWorkbooks();
+    const res =
+      scope === "trash"
+        ? await listTrashedWorkbooks()
+        : await listAccessibleWorkbooks();
     if (isServiceFailure(res)) {
       setError(res.error);
       setLoading(false);
@@ -116,11 +176,26 @@ export default function WorkbooksLandingPage() {
     setWorkbooks(res.data);
     setError(null);
     setLoading(false);
-  }, []);
+  }, [scope]);
 
   useEffect(() => {
     void reload();
   }, [reload]);
+
+  const { userId, starredIds, menuFor } = useFileItemActions(
+    WORKBOOK_ADAPTER,
+    reload,
+  );
+  const visibleWorkbooks = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const scoped = filterByScope(workbooks, scope, userId, starredIds).filter(
+      (w) =>
+        !q ||
+        w.workbook_name.toLowerCase().includes(q) ||
+        (w.description?.toLowerCase().includes(q) ?? false),
+    );
+    return sortWorkbooks(scoped, sortKey);
+  }, [workbooks, scope, userId, starredIds, query, sortKey]);
 
   const handleCreate = useCallback(async () => {
     setCreating(true);
@@ -327,30 +402,6 @@ export default function WorkbooksLandingPage() {
     [smartFile, dispatch, organizationId],
   );
 
-  const handleDelete = useCallback(
-    async (wb: Workbook) => {
-      const ok = await confirm({
-        title: "Delete workbook?",
-        description: `"${wb.workbook_name}" and all of its saved snapshots will be moved to the trash.`,
-        confirmLabel: "Delete",
-        variant: "destructive",
-      });
-      if (!ok) return;
-      const res = await deleteWorkbook(wb.id);
-      if (isServiceFailure(res)) {
-        toast({
-          title: "Could not delete workbook",
-          description: res.error,
-          variant: "destructive",
-        });
-        return;
-      }
-      toast({ title: "Workbook deleted", variant: "success" });
-      void reload();
-    },
-    [reload],
-  );
-
   // Surface emitter for `matrx-user/workbooks` on the library route. Built at
   // trigger time from live state; the open-workbook / sheet / editor values
   // belong to /workbooks/[id] and are deliberately absent here.
@@ -538,6 +589,22 @@ export default function WorkbooksLandingPage() {
       </BottomSheet>
       <div className="h-full overflow-y-auto scrollbar-none">
         <div className="w-full space-y-4 px-4 pb-4 pt-[calc(var(--shell-header-h)+1rem)]">
+          {!error && (workbooks.length > 0 || scope !== "all") ? (
+            <>
+              <DocumentsHubToolbar
+                noun="workbooks"
+                query={query}
+                onQueryChange={setQuery}
+                view={view}
+                onViewChange={setView}
+                sortKey={sortKey}
+                onSortChange={setSortKey}
+                hideSearch={view === "table"}
+              />
+              <FileScopeBar scope={scope} onChange={setScope} />
+            </>
+          ) : null}
+
           {loading && (
             <div className="flex h-40 items-center justify-center text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -554,7 +621,20 @@ export default function WorkbooksLandingPage() {
             </Card>
           )}
 
-          {!loading && !error && workbooks.length === 0 && (
+          {!loading && !error && workbooks.length === 0 && scope !== "all" && (
+            <div className="py-12 text-center text-sm text-muted-foreground">
+              {scope === "trash" ? "Trash is empty." : "Nothing here."}
+            </div>
+          )}
+
+          {!loading && !error && workbooks.length > 0 && visibleWorkbooks.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
+              <Search className="mb-3 h-8 w-8 opacity-40" />
+              <p className="text-sm">Nothing here.</p>
+            </div>
+          )}
+
+          {!loading && !error && workbooks.length === 0 && scope === "all" && (
             <Card>
               <CardContent className="flex flex-col items-center gap-2 p-10 text-center text-muted-foreground">
                 <FileSpreadsheet className="size-8" />
@@ -567,11 +647,18 @@ export default function WorkbooksLandingPage() {
             </Card>
           )}
 
-          {!loading && workbooks.length > 0 && (
+          {!loading && view === "table" && visibleWorkbooks.length > 0 && (
+            <WorkbooksHubTable
+              workbooks={visibleWorkbooks}
+              menuFor={(wb) => menuFor(wb, scope === "trash")}
+            />
+          )}
+
+          {!loading && view === "cards" && visibleWorkbooks.length > 0 && (
             // Columns follow the LIST's width, never the window's: beside the
             // canvas a 1440px window left three 180px cards ("Top …").
             <div className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))]">
-              {workbooks.map((wb) => (
+              {visibleWorkbooks.map((wb) => (
                 <Card key={wb.id} className="group/entity-ref">
                   <CardContent className="p-4 space-y-2">
                     <div className="flex items-start justify-between gap-2">
@@ -603,16 +690,16 @@ export default function WorkbooksLandingPage() {
                           id={wb.id}
                           name={wb.workbook_name}
                         />
-                        <Button
-                          icon={<Trash className="text-destructive" />} aria-label="Delete workbook"
-                          variant="quiet"
-                          className="opacity-100 transition-opacity sm:[@media(hover:hover)]:group-hover/entity-ref:opacity-100 focus-visible:opacity-100"
-                          onClick={() => handleDelete(wb)}
-                          title="Delete workbook"
-                        />
+                        {menuFor(wb, scope === "trash")}
                       </span>
                     </div>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      {starredIds.has(wb.id) ? (
+                        <Star className="size-3 shrink-0 fill-current text-amber-500" aria-label="Starred" />
+                      ) : null}
+                      {userId !== null && wb.user_id !== userId ? (
+                        <Users className="size-3 shrink-0" aria-label="Shared with me" />
+                      ) : null}
                       <span className="truncate">
                         Updated {new Date(wb.updated_at).toLocaleString()}
                       </span>

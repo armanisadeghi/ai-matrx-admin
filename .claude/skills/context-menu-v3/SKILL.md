@@ -5,7 +5,7 @@ description: "The universal v3 right-click menu (EditableContextMenu / NonEditab
 
 # context-menu-v3 — wire the universal menu onto a surface
 
-The deep contract is **[`features/context-menu-v3/FEATURE.md`](../../../features/context-menu-v3/FEATURE.md)** — read it once. This skill is the rollout recipe; editing the v3 internals is that FEATURE.md's job, and a worker assigned a shard from `pnpm check:context-menu` follows the `context-menu-rollout` skill on top of this one. The proven reference is **`/demos/context-menu/canonical`** (every panel is a real v3 wiring; copy the one that matches your surface). The v2 menu (`UnifiedAgentContextMenu`) was deleted 2026-07-19 — every surface renders v3.
+The deep contract is **[`features/context-menu-host/FEATURE.md`](../../../features/context-menu-host/FEATURE.md)** — read it once. This skill is the rollout recipe; editing the v3 internals is that FEATURE.md's job, and a worker assigned a shard from `pnpm check:context-menu` follows the `context-menu-rollout` skill on top of this one. The proven reference is **`/demos/context-menu/canonical`** (every panel is a real v3 wiring; copy the one that matches your surface). The v2 menu (`UnifiedAgentContextMenu`) was deleted 2026-07-19 — every surface renders v3.
 
 ## Pick the wrapper
 
@@ -20,18 +20,18 @@ A menu item is a **short verb phrase**: `Edit rule…`, `See its keywords`, `Rev
 
 ## 🚨 CANONICAL SECTIONS — check the registry BEFORE writing any `extraSections`
 
-**[`features/context-menu-v3/SECTIONS.md`](../../../features/context-menu-v3/SECTIONS.md)** is the registry of shared per-identity section builders (keyword, class, level, page, CRM row, …) and THE ADOPTION PROTOCOL. The short form: if the right-clicked thing already has a registered builder, USE it — and grow it with the actions this surface makes obvious (every consumer gains them). If the thing appears on 2+ surfaces and has no builder, extract + register one. Only a truly page-local identity gets inline `extraSections`. Actions impossible on this surface stay visible-but-`disabled` with the reason as the tooltip — the menu is identical everywhere; only availability changes.
+**[`features/context-menu-host/SECTIONS.md`](../../../features/context-menu-host/SECTIONS.md)** is the registry of shared per-identity section builders (keyword, class, level, page, CRM row, …) and THE ADOPTION PROTOCOL. The short form: if the right-clicked thing already has a registered builder, USE it — and grow it with the actions this surface makes obvious (every consumer gains them). If the thing appears on 2+ surfaces and has no builder, extract + register one. Only a truly page-local identity gets inline `extraSections`. Actions impossible on this surface stay visible-but-`disabled` with the reason as the tooltip — the menu is identical everywhere; only availability changes.
 
 ## Wire a surface — the mechanical steps
 
 1. **Import the wrapper statically** — it's the light shell; children render synchronously, and only `MenuContent` lazy-loads on first open. Never wrap it in a per-consumer `next/dynamic` (that re-adds a loading fallback and a layout-collapse null state for zero benefit).
    ```tsx
-   import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
+   import { EditableContextMenu } from "@ai-matrx/context-menu/react";
    ```
 2. **Wrap the region** in `<EditableContextMenu …>` (or `NonEditableContextMenu`).
-3. **Pass the identity + value props:** `sourceFeature` (required), `surfaceName` (registry surface → AI actions + bound agents + value mappings), `getApplicationScope` (live, preferred) / `contextData` (static), `extraSections`, and for editables `getTextarea` + `onTextReplace` / `onTextInsertBefore|After`; history props and `scope` / `scopeId` as the surface needs. Use `placementMode` for per-placement visibility. Types: `@/features/context-menu-v3/types` (`EditableContextMenuProps` / `NonEditableContextMenuProps`).
+3. **Pass the identity + value props:** `sourceFeature` (required), `surfaceName` (registry surface → AI actions + bound agents + value mappings), `getApplicationScope` (live, preferred) / `contextData` (static), `extraSections`, and for editables `getTextarea` + `onTextReplace` / `onTextInsertBefore|After`; history props and `scope` / `scopeId` as the surface needs. Use `placementMode` for per-placement visibility. Types: `@ai-matrx/context-menu/engine` (`EditableContextMenuProps` / `NonEditableContextMenuProps`).
    `sourceFeature` names the actual product, not the nearest allowed label. If it is missing, register the product in `aidream/aidream/services/conversation_context/source_attribution.py`, regenerate the contract with its generator, and deploy the registry before the caller. Never cast or misattribute the caller to satisfy the allow-list.
-4. Build scope through **`buildApplicationScopeFromMenuContext`** (`@/features/context-menu-v3/utils/build-application-scope`) — it guarantees the 5 baselines from the live DOM.
+4. Build scope through **`buildApplicationScopeFromMenuContext`** (`@ai-matrx/context-menu/engine`) — it guarantees the 5 baselines from the live DOM.
 
 ## ONE MENU PER PANE — delegate per row, never nest
 

@@ -19,7 +19,7 @@ import React, { useEffect, useRef } from "react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { ProjectCreatePanel } from "@/features/projects/components/ProjectCreatePanel";
 import type { Project } from "@/features/projects/types";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   emitCreateProjectEvent,
   type CreateProjectWindowData,

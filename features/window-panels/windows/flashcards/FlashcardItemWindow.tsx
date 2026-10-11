@@ -18,13 +18,13 @@ import {
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import type { ReviewResult } from "@/features/flashcards/types";
 import type { FaceImageRef } from "@/components/mardown-display/blocks/flashcards/FlashcardFaceImage";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import {
   buildFlashcardMenuSection,
   flashcardEntityRef,
 } from "@/features/flashcards/components/flashcard-menu";
-import { unavailableHere } from "@/features/context-menu-v3/utils/availability";
+import { unavailableHere } from "@ai-matrx/context-menu/engine";
 
 export interface FlashcardItemWindowProps {
   isOpen: boolean;

@@ -25,7 +25,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   fetchFullAgent,
 } from "@/features/agents/redux/fetch-full-agent.thunk";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildAgentMenuSection, agentEntityRef } from "@ai-matrx/chat/agents/menu/agent-actions";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { useAgentName } from "@ai-matrx/chat/agents/identity/agent-identity";

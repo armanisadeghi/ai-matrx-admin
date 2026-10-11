@@ -54,8 +54,8 @@ import {
 import { GscPeriodStrip } from "@/features/marketing/search-console/components/PeriodStrip";
 import type { RangeCompareValue } from "@/features/marketing/search-console/components/RangeCompareControl";
 import { WatchButton } from "@/features/marketing/search-console/components/watch/WatchButton";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import { useOpenGscDrilldownWindow } from "@/features/overlays/openers/gscDrilldownWindow";
 import {
   keywordEntityRef,

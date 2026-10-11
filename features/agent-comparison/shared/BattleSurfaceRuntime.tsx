@@ -13,7 +13,7 @@
 
 import type { ReactNode } from "react";
 import { useAppStore } from "@/lib/redux/hooks";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createAgentBattleScope } from "@/features/surfaces/manifests/agent-battle.manifest";
 import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";

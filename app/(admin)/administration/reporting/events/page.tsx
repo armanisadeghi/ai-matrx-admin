@@ -36,9 +36,9 @@ import {
   ADMIN_REPORTING_SURFACE_NAME,
   createAdminReportingScope,
 } from "@/features/surfaces/manifests/admin-reporting.manifest";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import type { ContextMenuExtraItem } from "@/features/context-menu-v3/types";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { ContextMenuExtraItem } from "@ai-matrx/context-menu/engine";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import type { EntityTypeToken } from "@ai-matrx/associations";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { readOf } from "@ai-matrx/design-system";

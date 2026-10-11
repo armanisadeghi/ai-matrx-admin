@@ -17,13 +17,13 @@ jest.mock("@/lib/toast", () => ({
 }));
 jest.mock("@ai-matrx/kit/media-query", () => ({ ...jest.requireActual("@ai-matrx/kit/media-query"), useIsMobile: () => false }));
 const menuProps: { onTextReplace?: (text: string) => void } = {};
-jest.mock("@/features/context-menu-v3/EditableContextMenu", () => ({
+jest.mock("@ai-matrx/context-menu/react", () => ({
   EditableContextMenu: (props: { children: React.ReactNode; onTextReplace?: (text: string) => void }) => {
     menuProps.onTextReplace = props.onTextReplace;
     return props.children;
   },
 }));
-jest.mock("@/features/context-menu-v3/utils/build-application-scope", () => ({
+jest.mock("@ai-matrx/context-menu/engine", () => ({
   buildApplicationScopeFromMenuContext: () => ({}),
 }));
 jest.mock("@/features/audio/hooks/useMicField", () => ({

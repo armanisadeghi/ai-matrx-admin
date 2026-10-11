@@ -15,7 +15,7 @@ import {
 } from "@/features/surfaces/manifests/quick-note-save.manifest";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAllFolders } from "@/features/notes/redux/selectors";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface QuickNoteSaveWindowProps {
   isOpen: boolean;

@@ -30,14 +30,14 @@ import KeywordClassificationBatchBlock from "@/components/mardown-display/blocks
 import KeywordResearchBlock from "@/components/mardown-display/blocks/keyword-research/KeywordResearchBlock";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import {
   keywordEntityRef,
   useKeywordAssignSurfaces,
   useKeywordMenuSection,
 } from "@/features/marketing/seo/keyword/keyword-actions";
-import { unavailableHere } from "@/features/context-menu-v3/utils/availability";
+import { unavailableHere } from "@ai-matrx/context-menu/engine";
 import {
   KeywordCompetitionBadge,
   KeywordIntentChip,

@@ -24,7 +24,7 @@ import {
   type TableActionHost,
 } from "@ai-matrx/records-ui";
 import type { ItemMenuConfig, ItemMenuEntry } from "@ai-matrx/chat/ui/item-types";
-import type { ContextMenuExtraItem, ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+import type { ContextMenuExtraItem, ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { toExtraSections, toItemMenuConfig } from "../tableActionAdapters";
 import { tableMenuExtensions } from "../tableMenuExtensions";
 

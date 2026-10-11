@@ -26,8 +26,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { ProInput } from "@/components/official/ProInput";
 import { TaskDescriptionEditor } from "@/features/tasks/components/editor/TaskDescriptionEditor";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import {
   buildTasksContextData,
   TASKS_CONTEXT_MENU_PROPS,

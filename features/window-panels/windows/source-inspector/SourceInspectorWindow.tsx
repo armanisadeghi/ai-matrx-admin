@@ -17,7 +17,7 @@
 
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { SourceInspectorPane } from "@/features/rag/components/source-inspector/SourceInspectorPane";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface SourceInspectorWindowProps {
   isOpen: boolean;

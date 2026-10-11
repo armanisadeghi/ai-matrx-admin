@@ -54,11 +54,11 @@ import {
 import { cn } from "@/styles/themes/utils";
 import { toast } from "@/lib/toast";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   CONTEXT_MENU_ENTITY_KEY,
   type ContextMenuExtraItem,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import { useOpenGscDrilldownWindow } from "@/features/overlays/openers/gscDrilldownWindow";
 import { archiveRule } from "@/features/marketing/search-console/data-class-rules";
 import { extractErrorMessage } from "@/utils/errors";

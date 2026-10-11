@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import type { RegroupAudit, AuditRow } from "@/features/context-menu-v3/regroup/grouping";
+import type { RegroupAudit, AuditRow } from "@ai-matrx/context-menu/engine";
 
 function proposedCell(row: AuditRow) {
   if (!row.proposedPlace) {

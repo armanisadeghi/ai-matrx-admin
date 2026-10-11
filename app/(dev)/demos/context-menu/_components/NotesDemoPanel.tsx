@@ -11,11 +11,11 @@ import {
   buildNotesEditorContextData,
   NOTES_EDITOR_CONTEXT_MENU_PROPS,
 } from "@/features/notes/agent-context/buildNotesEditorContextData";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { createNotesEditorExtraSections } from "@/features/notes/agent-context/notesEditorExtraSections";
 import { toast } from "@/lib/toast";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
-import type { EditableContextMenuProps } from "@/features/context-menu-v3/types";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { EditableContextMenuProps } from "@ai-matrx/context-menu/engine";
 import {
   DEMO_NOTE_FOLDERS,
   DEMO_NOTE_ID,

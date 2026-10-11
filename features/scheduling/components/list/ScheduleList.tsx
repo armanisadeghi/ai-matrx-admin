@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@ai-matrx/design-system";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createSchedulesScope } from "@/features/surfaces/manifests/schedules.manifest";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { useScheduledTasks } from "../../hooks/useScheduledTasks";
 import { useDuplicateSchedules } from "../../hooks/useDuplicateSchedules";
 import { DuplicateScheduleBanner } from "./DuplicateScheduleBanner";

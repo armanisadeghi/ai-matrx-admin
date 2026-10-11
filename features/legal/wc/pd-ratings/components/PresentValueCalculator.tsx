@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { TrendingUp, DollarSign, Percent, CalendarRange } from "lucide-react";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { createLegalCaWcScope } from "@/features/surfaces/manifests/legal-ca-wc.manifest";
 import { legalCaWcManifest } from "@/features/surfaces/manifests/legal-ca-wc.manifest";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";

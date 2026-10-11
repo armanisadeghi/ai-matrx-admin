@@ -11,7 +11,7 @@ menu that identity gets everywhere else in the app.**
 
 Read [`.claude/skills/context-menu-v3/SKILL.md`](../context-menu-v3/SKILL.md)
 once for the wrapper mechanics. This file is the assembly line. Not this contract:
-designing the menu system itself (`context-menu-v3` + `features/context-menu-v3/FEATURE.md`)
+designing the menu system itself (`context-menu-v3` + `features/context-menu-host/FEATURE.md`)
 or a full surface audit (the `surface-check` skill).
 
 ## Your assignment is disjoint — do not wander
@@ -49,7 +49,7 @@ Open the file. Answer two questions before writing anything:
 
 ### 2. 🚨 CHECK THE REGISTRY — this is the step that makes the rollout worth doing
 
-Open [`features/context-menu-v3/SECTIONS.md`](../../../features/context-menu-v3/SECTIONS.md).
+Open [`features/context-menu-host/SECTIONS.md`](../../../features/context-menu-host/SECTIONS.md).
 
 | What you find | What you do |
 |---|---|
@@ -94,7 +94,7 @@ And **THE CONSISTENCY STEP** — for anything the shared section offers that
 genuinely cannot work here:
 
 ```ts
-import { unavailableHere, needs } from "@/features/context-menu-v3/utils/availability";
+import { unavailableHere, needs } from "@ai-matrx/context-menu/engine";
 
 useKeywordMenuSection({
   …,
@@ -146,8 +146,8 @@ it, and say so.
 ### 3. Wrap the pane
 
 ```tsx
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 ```
 
 `EditableContextMenu` for a textarea/editor (it also auto-registers the

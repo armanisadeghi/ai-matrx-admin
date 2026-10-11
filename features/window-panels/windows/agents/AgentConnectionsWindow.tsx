@@ -17,7 +17,7 @@ import {
 } from "@/features/agent-connections/redux/ui/slice";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import type { Scope } from "@/features/agent-connections/types";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 interface AgentConnectionsWindowProps {
   isOpen: boolean;

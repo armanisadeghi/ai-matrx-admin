@@ -26,11 +26,11 @@ import type {
   ContextMenuEntityRef,
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import {
   withAvailability,
   type AvailabilityMap,
-} from "@/features/context-menu-v3/utils/availability";
+} from "@ai-matrx/context-menu/engine";
 
 /** The one thing every capture-item surface can say about a right-clicked row. */
 export interface CaptureItemMenuRow {
@@ -68,7 +68,7 @@ export function buildCaptureItemMenuSection(opts: {
    * THE CONSISTENCY STEP — what THIS surface cannot do, and why. Keyed by
    * item id (`capture-item-view`, `capture-item-capture`,
    * `capture-item-mark-ready`, `capture-item-delete`). Contract:
-   * `features/context-menu-v3/utils/availability.ts`.
+   * `@ai-matrx/context-menu (src/engine/utils/availability.ts)`.
    */
   unavailable?: AvailabilityMap;
 }): ContextMenuExtraSection {

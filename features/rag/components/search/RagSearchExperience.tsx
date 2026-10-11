@@ -112,7 +112,7 @@ import {
   buildRagSearchContextData,
   RAG_SEARCH_CONTEXT_MENU_PROPS,
 } from "@/features/rag/agent-context/buildRagSearchContextData";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import {
   FILTERABLE_SOURCE_KIND_ENUM_TEXT,
@@ -138,8 +138,8 @@ import { ProInput } from "@/components/official/ProInput";
 // open. The search box uses the editable wrapper (text replace on the query),
 // the presentational results use the read-only wrapper (Copy/AI/Export/Convert
 // via the DOM-content fallback).
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { pushAddressOrNavigate } from "@/lib/url-state/addressWithoutNavigating";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { asClause } from "@ai-matrx/kit/text";

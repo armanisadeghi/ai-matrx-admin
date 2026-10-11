@@ -37,7 +37,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 import { upsertHrStructure } from "../../service";
 import { isHrDenied } from "../../types";

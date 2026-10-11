@@ -8,7 +8,7 @@ import { buildAgentPayload } from "@/components/agent-copy/buildAgentPayload";
 import { CopyForAiIcon } from "@/components/agent-copy/CopyForAiIcon";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   allRagAiCopyOptions,
   buildRagAiPayload,

@@ -23,7 +23,7 @@ import { useState } from "react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { WindowPanelShell } from "@/features/files/components/surfaces/WindowPanelShell";
 import type { CloudFilesWindowTab } from "@/features/files/components/surfaces/WindowPanelShell";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface CloudFilesWindowProps {
   isOpen: boolean;

@@ -232,6 +232,59 @@ export async function restoreWorkbook(
   return { success: true, data: true };
 }
 
+/** Trash view: the caller's own archived workbooks (RLS decides what is readable). */
+export async function listTrashedWorkbooks(): Promise<
+  ServiceResult<Workbook[]>
+> {
+  const { data, error } = await supabase
+    .schema("workbench")
+    .from("udt_workbooks")
+    .select("*")
+    .not("deleted_at", "is", null)
+    .order("deleted_at", { ascending: false });
+  if (error) return { success: false, error: error.message };
+  return { success: true, data: (data ?? []) as Workbook[] };
+}
+
+/**
+ * An independent copy of a workbook: its own row in the original's organization
+ * and project, with the latest snapshot copied over. Editing the copy never
+ * touches the original.
+ */
+export async function copyWorkbook(
+  workbookId: string,
+  name?: string,
+): Promise<ServiceResult<Workbook>> {
+  const original = await getWorkbook(workbookId);
+  if (!original.success) return original;
+  const row = original.data;
+  if (!row.organization_id) {
+    return {
+      success: false,
+      error: "This workbook has no organization and cannot be copied.",
+    };
+  }
+  const created = await createWorkbook({
+    name: name ?? `Copy of ${row.workbook_name}`,
+    description: row.description ?? null,
+    organizationId: row.organization_id,
+    projectId: row.project_id ?? null,
+  });
+  if (!created.success) return created;
+  const latest = await getLatestSnapshot(workbookId);
+  if (!latest.success) return latest;
+  if (latest.data) {
+    const saved = await saveSnapshot({
+      workbookId: created.data.id,
+      snapshot: latest.data.snapshot,
+      label: latest.data.label,
+      origin: "autosave",
+    });
+    if (!saved.success) return saved;
+  }
+  return created;
+}
+
 // ─── snapshots (workbook content) ────────────────────────────────────────────
 
 /**

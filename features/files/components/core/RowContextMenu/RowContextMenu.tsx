@@ -38,13 +38,13 @@ import {
   Stars,
   Trash2,
 } from "lucide-react";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type {
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
-import { captureDomSelection } from "@/features/context-menu-v3/utils/selection-tracking";
+} from "@ai-matrx/context-menu/engine";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
+import { captureDomSelection } from "@ai-matrx/context-menu/engine";
 import {
   buildFileRowOverrides,
   buildFolderRowOverrides,

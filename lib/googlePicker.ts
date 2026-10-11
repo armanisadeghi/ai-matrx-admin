@@ -103,6 +103,8 @@ export interface PickedGoogleForm extends PickedGoogleDriveFile {
 
 export interface GooglePickerOptions {
   initialQuery?: string;
+  /** Narrow the Picker to some of the Workspace types (e.g. only Sheets). */
+  mimeTypes?: readonly string[];
 }
 
 /**
@@ -286,7 +288,7 @@ export async function pickGoogleWorkspaceFile(
     .setIncludeFolders(false)
     .setSelectFolderEnabled(false)
     .setMode(picker.DocsViewMode.LIST)
-    .setMimeTypes(GOOGLE_WORKSPACE_MIME_TYPES.join(","));
+    .setMimeTypes((options.mimeTypes ?? GOOGLE_WORKSPACE_MIME_TYPES).join(","));
   const initialQuery = options.initialQuery?.trim();
   if (initialQuery) view.setQuery(initialQuery);
 

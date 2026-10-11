@@ -8,7 +8,7 @@
  * (the standalone share-page render of a single run) and `RunHistoryPanel`
  * (the merged scheduler-run + collection-run execution list) show the same
  * identity and are future adopters — see the registry note in
- * `features/context-menu-v3/SECTIONS.md`.
+ * `features/context-menu-host/SECTIONS.md`.
  *
  * No shared row-actions hook here (yet): the only consumer's table has no
  * per-row action set to converge, so this stays the identity's entity ref +
@@ -17,7 +17,7 @@
  * `useCrmRowMenu`) the day a second row-actions table adopts it.
  */
 
-import type { ContextMenuEntityRef } from "@/features/context-menu-v3/types";
+import type { ContextMenuEntityRef } from "@ai-matrx/context-menu/engine";
 
 export interface CollectionRunLike {
   id: string;

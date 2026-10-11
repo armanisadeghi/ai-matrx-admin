@@ -15,7 +15,7 @@ import { ExternalLink, Users } from "lucide-react";
 import type {
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import type { HrOrgRef } from "@/features/hr/routes";
 import { leavePolicyEnrollmentHref, leavePolicyHref } from "../manager/routes";
 import type { LeavePolicy } from "../manager/api/types";

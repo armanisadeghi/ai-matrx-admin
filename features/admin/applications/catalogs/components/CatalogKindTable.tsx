@@ -32,8 +32,8 @@ import type {
   CellEditsMap,
   MatrxColumnDef,
 } from "@ai-matrx/design-system/data-table/types";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import type { ContextMenuExtraItem } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { ContextMenuExtraItem } from "@ai-matrx/context-menu/engine";
 import { ADMIN_APPLICATIONS_SURFACE_NAME } from "@/features/surfaces/manifests/admin-applications.manifest";
 import {
   APPLICATIONS_ADMIN_LOCATION,

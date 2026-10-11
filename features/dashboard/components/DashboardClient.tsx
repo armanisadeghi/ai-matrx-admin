@@ -16,7 +16,7 @@
 
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createDashboardScope } from "@/features/surfaces/manifests/dashboard.manifest";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { usePinned } from "@/components/favorites/usePinned";
 import { useDashboardMetrics } from "../hooks/useDashboardMetrics";
 import { useDiscoverRotation } from "../hooks/useDiscoverRotation";

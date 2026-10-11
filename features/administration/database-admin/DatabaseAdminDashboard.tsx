@@ -14,7 +14,7 @@ import {
   type DatabasePermission,
 } from "./types";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   ADMIN_DATABASE_SURFACE_NAME,
   createAdminDatabaseScope,

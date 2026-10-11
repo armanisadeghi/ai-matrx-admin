@@ -14,7 +14,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
 import { AlertTriangle, CircleSlash, HardDrive, Wifi } from "lucide-react";
 import { Badge } from "@ai-matrx/design-system";

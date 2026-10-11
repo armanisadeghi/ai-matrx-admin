@@ -157,7 +157,7 @@ any pane); the record pill remains the primary recording pipeline.
 both its `EditableContextMenu` and its `ProTextarea` — a stable callback
 that reads the pane textarea's selection AT CLICK TIME and folds it onto the
 pane's surface scope via `buildApplicationScopeFromMenuContext`
-(`features/context-menu-v3/utils/build-application-scope`). Scope is never
+(`@ai-matrx/context-menuutils/build-application-scope`). Scope is never
 stored in render state (no stale snapshots, no per-keystroke work).
 
 **Scope emitter invariant:** the shared pure builder

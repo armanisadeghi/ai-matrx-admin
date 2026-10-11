@@ -87,8 +87,8 @@ import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import type { ConsoleSiteRow, RunConsoleScope, RunOutcome } from "./types";
 import type { RunPlacementRow } from "./data";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import {
   siteEntityRef,
   buildSiteMenuSection,
@@ -99,7 +99,7 @@ import {
   useKeywordAssignSurfaces,
   useKeywordMenuSection,
 } from "@/features/marketing/seo/keyword/keyword-actions";
-import { unavailableHere } from "@/features/context-menu-v3/utils/availability";
+import { unavailableHere } from "@ai-matrx/context-menu/engine";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { NO_RAW_ROW_WINDOW } from "@/features/marketing/social/row-open";

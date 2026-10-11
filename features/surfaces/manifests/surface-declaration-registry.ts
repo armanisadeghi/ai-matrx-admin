@@ -20,7 +20,7 @@ export function createSurfaceDeclarationRegistry() {
   const registry = createDeclarationRegistry<SurfaceManifest>({
     baselineValues: Object.values(BASELINE_VALUES),
     // ALC-18 (D4): a canonical table can sit on any screen, so its row is a baseline ITEM type of
-    // every surface (`table_row`); `features/context-menu-v3/table-row-item.ts` resolves it.
+    // every surface (`table_row`); `@ai-matrx/context-menu (src/engine/table-row-item.ts)` resolves it.
     baselineItemTypes: [TABLE_ROW_ITEM_TYPE],
     maxInheritanceDepth: MAX_INHERITANCE_DEPTH,
   });

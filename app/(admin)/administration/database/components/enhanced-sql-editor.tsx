@@ -47,7 +47,7 @@ import { toast } from "@/lib/toast";
 import { CategoryNotesModal } from "@/features/notes/actions/CategoryNotesModal";
 import type { Note } from "@/features/notes/types";
 import { validateSqlQueryWrite } from "@/features/administration/lib/sql-editor-write-targets";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { DEFAULT_DATABASE_SCHEMA } from "../config";
 
 // Example queries — schema in snippets is illustrative; swap via the editor.

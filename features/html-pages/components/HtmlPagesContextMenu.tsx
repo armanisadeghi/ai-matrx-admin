@@ -17,7 +17,7 @@ import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import React from "react";
 import { useRouter } from "next/navigation";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { HTML_PAGE_CONTEXT_MENU_PROPS } from "../agent-context/htmlPageContextMenuProps";
 import { buildHtmlPagesListContextData } from "../agent-context/buildHtmlPagesListContextData";
 import { createHtmlPagesListExtraSections } from "../agent-context/htmlPagesListExtraSections";

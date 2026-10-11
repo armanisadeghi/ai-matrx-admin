@@ -35,7 +35,7 @@
 
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { AnswerValueView } from "@/components/official/structured-value/AnswerValueView";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface StructuredValueWindowProps {
   windowInstanceId: string;

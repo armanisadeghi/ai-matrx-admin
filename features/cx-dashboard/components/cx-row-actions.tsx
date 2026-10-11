@@ -25,11 +25,11 @@ import {
   type ContextMenuExtraItem,
   type ContextMenuExtraSection,
   type ResolvedContextMenuContext,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import {
   withAvailability,
   type AvailabilityMap,
-} from "@/features/context-menu-v3/utils/availability";
+} from "@ai-matrx/context-menu/engine";
 import {
   formatTokens,
 } from "@/features/cx-dashboard/utils/format";

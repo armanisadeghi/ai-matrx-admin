@@ -134,7 +134,7 @@ jest.mock("@/components/official/ProTextarea", () => ({
     <textarea {...(props as object)} />
   ),
 }));
-jest.mock("@/features/context-menu-v3/NonEditableContextMenu", () => ({
+jest.mock("@ai-matrx/context-menu/react", () => ({
   NonEditableContextMenu: ({ children }: { children: ReactNode }) => children,
 }));
 // THE ONE opener is observed rather than mounted (host binding lives in

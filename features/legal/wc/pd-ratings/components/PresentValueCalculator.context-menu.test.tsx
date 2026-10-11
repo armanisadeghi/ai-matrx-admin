@@ -1,6 +1,6 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import type { MenuContentProps } from "@/features/context-menu-v3/types";
+import type { MenuContentProps } from "@ai-matrx/context-menu/engine";
 import { normalizeNativeNumberInputValue } from "./FormField";
 import { PresentValueCalculator } from "./PresentValueCalculator";
 

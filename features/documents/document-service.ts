@@ -323,6 +323,7 @@ export async function saveDocumentSnapshot(
  */
 export async function copyDocument(
   documentId: string,
+  name?: string,
 ): Promise<ServiceResult<DocumentRow>> {
   const original = await getDocument(documentId);
   if (!original.success) return original;
@@ -331,7 +332,7 @@ export async function copyDocument(
     return { success: false, error: "This document has no organization and cannot be copied." };
   }
   const created = await createDocument({
-    name: row.document_name,
+    name: name ?? row.document_name,
     description: row.description ?? null,
     organizationId: row.organization_id,
     projectId: row.project_id ?? null,
@@ -350,6 +351,20 @@ export async function copyDocument(
     if (!saved.success) return saved;
   }
   return created;
+}
+
+/** Trash view: the caller's own archived documents (RLS decides what is readable). */
+export async function listTrashedDocuments(): Promise<
+  ServiceResult<DocumentRow[]>
+> {
+  const { data, error } = await supabase
+    .schema("workbench")
+    .from("udt_documents")
+    .select("*")
+    .not("deleted_at", "is", null)
+    .order("deleted_at", { ascending: false });
+  if (error) return { success: false, error: error.message };
+  return { success: true, data: (data ?? []) as DocumentRow[] };
 }
 
 export async function listDocumentSnapshots(

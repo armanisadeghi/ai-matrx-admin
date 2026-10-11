@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { PartyCreateForm } from "@/features/crm/components/PartyCreateForm";
 import type { PartyKind } from "@/features/crm/types";
 import { CRM_CREATE_PARTY_SURFACE_NAME } from "@/features/surfaces/manifests/crm-create-party.manifest";

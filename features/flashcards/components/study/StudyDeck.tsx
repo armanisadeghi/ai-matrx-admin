@@ -58,7 +58,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { RichCopySplit } from "@ai-matrx/chat/agent-copy/RichCopySplit";
 import { ContentView } from "@ai-matrx/rich-content/copy/ContentActions";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import { cn } from "@/lib/utils";

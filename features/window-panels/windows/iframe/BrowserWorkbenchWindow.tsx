@@ -22,7 +22,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { BookMarked, Plus, X } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildBrowserFrameMenuSection } from "@/features/window-panels/windows/iframe/browser-frame-menu";
 
 export type { SiteWorkbenchBookmark };

@@ -43,9 +43,9 @@ import { useHtmlPageSurfaceScope } from "@/features/html-pages/hooks/useHtmlPage
 import { HTML_PAGE_CONTEXT_MENU_PROPS } from "@/features/html-pages/agent-context/htmlPageContextMenuProps";
 import { createHtmlPageExtraSections } from "@/features/html-pages/agent-context/htmlPageExtraSections";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import SmallCodeEditor from "@ai-matrx/rich-content/code-block/SmallCodeEditor";
 import { useThemeMode } from "@/styles/themes/useThemeMode";
 import { useMeasure } from "@ai-matrx/kit/hooks";

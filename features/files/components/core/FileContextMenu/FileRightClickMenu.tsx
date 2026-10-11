@@ -33,8 +33,8 @@ import {
 } from "@/features/files/components/FileContextSection";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAllFilesMap } from "@/features/files/redux/selectors";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { useFileMenuActions } from "./useFileMenuActions";
 import { buildEmbeddedFileContextData } from "@/features/files/agent-context/buildFilesContextData";

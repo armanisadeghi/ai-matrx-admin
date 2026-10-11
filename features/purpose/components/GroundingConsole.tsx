@@ -33,8 +33,8 @@ import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { UntrustedCount } from "@ai-matrx/design-system";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import type { ContextMenuExtraItem } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { ContextMenuExtraItem } from "@ai-matrx/context-menu/engine";
 
 import {
   purposeService,

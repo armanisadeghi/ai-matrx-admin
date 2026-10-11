@@ -67,8 +67,8 @@ import {
 } from "@/features/hr/shared/hrScope";
 import { useHrContext } from "@/features/hr/shared/useHrContext";
 import type { HrDenied, HrFailed } from "@/features/hr/types";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import {
   hrPersonEntityRef,
   buildHrPersonMenuSection,

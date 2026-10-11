@@ -60,7 +60,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { PromoteToStudioButton } from "@/features/transcript-studio/components/conversion/PromoteToStudioButton";
 import { RichDocumentActions } from "@ai-matrx/rich-content/rich-document/RichDocumentActions";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { useTranscriptsSurfaceScope } from "@/features/transcripts/hooks/useTranscriptsSurfaceScope";
 import {
   TRANSCRIPTS_CONTEXT_MENU_PROPS,
@@ -76,8 +76,8 @@ import {
 // lightweight shell (imported statically); MenuContent lazy-loads on first
 // open. The body editor uses the editable wrapper (Cut/Paste/Insert/Save), the
 // presentational viewer uses the read-only wrapper (Copy/AI/Export/Convert).
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { RecordingOriginRef } from "./RecordingOriginRef";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 

@@ -59,7 +59,7 @@ import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useGlobalRecordingOptional } from "@/providers/GlobalRecordingProvider";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { MediaDevicesPanel } from "@/features/audio/components/devices/MediaDevicesPanel";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { CameraControlTab } from "@/features/media-capture/components/CameraControlTab";
 import { AudioLevelIndicator } from "@/features/audio/components/AudioLevelIndicator";
 import { useAudioPlayback } from "@/features/audio/playback/useAudioPlayback";

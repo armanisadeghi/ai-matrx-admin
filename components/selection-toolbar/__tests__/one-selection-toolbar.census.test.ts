@@ -63,11 +63,11 @@ const ALLOW: Record<string, string> = {
   // The board's action bar for picked board OBJECTS (notes, shapes, frames): colour, arrange, delete. It is anchored to the picked objects on the canvas, never to selected text.
   "features/board/components/SelectionToolbar.tsx": "action bar for picked board objects, not a text selection toolbar",
   // The context menu tracks the selection for what its right-click menu acts on; it draws no popup.
-  "features/context-menu-v3/ContextMenuV3.tsx": "selection tracking for the right-click menu; no popup",
+  "@ai-matrx/context-menu (src/engine/ContextMenuV3.tsx)": "selection tracking for the right-click menu; no popup",
   // Its capture helper: reads and measures the selection so the right-click menu knows what it
   // acts on (and anchors the menu at the pointer). It draws nothing; every module that imports it
   // reaches it only through the context-menu hooks.
-  "features/context-menu-v3/utils/selection-tracking.ts": "the right-click menu's selection capture; draws nothing",
+  "@ai-matrx/context-menu (src/engine/utils/selection-tracking.ts)": "the right-click menu's selection capture; draws nothing",
   // Since the chat package move (P17, 2026-10-05) the capture helper's source lives in the chat
   // package; the file above is only its re-export. Same module, same reason.
   "../aidream/apps/shared/chat/src/context-menu/utils/selection-tracking.ts": "the right-click menu's selection capture (package home); draws nothing",

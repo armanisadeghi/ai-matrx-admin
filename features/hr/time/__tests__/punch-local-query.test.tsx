@@ -17,7 +17,7 @@ jest.mock("../api/service", () => ({ getPunchRegister: jest.fn(async () => ({ ro
 jest.mock("../punches/PunchRegisterScopePicker", () => ({ PunchRegisterScopePicker: () => null }));
 jest.mock("../punches/PunchCorrectionDialog", () => ({ PunchCorrectionDialog: () => null }));
 jest.mock("../shared/RefusalNotice", () => ({ HrTimeReadState: ({ children }: { children: React.ReactNode }) => children }));
-jest.mock("@/features/context-menu-v3/NonEditableContextMenu", () => ({ NonEditableContextMenu: ({ children }: { children: React.ReactNode }) => children }));
+jest.mock("@ai-matrx/context-menu/react", () => ({ NonEditableContextMenu: ({ children }: { children: React.ReactNode }) => children }));
 jest.mock("../shared/punch-menu", () => ({ punchMenuContent: jest.fn(), buildPunchMenuSection: jest.fn() }));
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

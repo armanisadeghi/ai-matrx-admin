@@ -26,7 +26,7 @@ import type { StudyAnalytics } from "../computeAnalytics";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createEducationProgressScope } from "@/features/surfaces/manifests/education-progress.manifest";
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildProgressOverviewXml } from "../progressContextBundle";
 import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
 import { STUDY_MANDATES } from "../../planner/mandates";

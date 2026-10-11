@@ -2,7 +2,7 @@
 
 import { ActiveDrillDeck } from "@/features/scopes/components/active-context/drill-deck/ActiveDrillDeck";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface DrillDeckContextWindowProps {
   isOpen: boolean;

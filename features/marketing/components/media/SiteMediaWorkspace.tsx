@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { FolderOpen, ImageIcon, Play, Radio } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { Button } from "@/components/ui/button";
 import { useMarketingSubView } from "@/features/marketing/lib/useMarketingSubView";
 import { useMarketingSite } from "@/features/marketing/components/site/MarketingSiteContext";

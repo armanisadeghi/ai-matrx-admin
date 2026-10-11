@@ -29,12 +29,12 @@ import {
   COLUMN_HEADING,
   StatusIcon,
 } from "@/features/content-ir/admin/KindStatusBoard";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   CONTEXT_MENU_ENTITY_KEY,
   type ContextMenuExtraSection,
   type ResolvedContextMenuContext,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import { ADMIN_KIND_REGISTRY_SURFACE_NAME } from "@/features/surfaces/manifests/admin-kind-registry.manifest";
 import { copyToClipboard } from "@/lib/clipboard/copy";
 

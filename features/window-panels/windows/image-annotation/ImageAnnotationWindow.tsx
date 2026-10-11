@@ -17,7 +17,7 @@ import type {
 } from "@/features/image-studio/modes/shared/types";
 import { CloudFolders } from "@/features/files/utils/folder-conventions";
 import { emitImageAnnotationEvent } from "@/features/overlays/callbacks/imageAnnotationWindow";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface ImageAnnotationWindowProps {
   isOpen: boolean;

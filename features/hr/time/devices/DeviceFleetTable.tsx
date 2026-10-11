@@ -28,9 +28,9 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import type { KioskDeviceRow, KioskTrustState } from "@/features/hr/time/api/types";
 import { recordToast, toast } from "@/lib/toast";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
-import type { ContextMenuExtraItem } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
+import type { ContextMenuExtraItem } from "@ai-matrx/context-menu/engine";
 
 import type { KioskDeviceAdminSource } from "./deviceAdminSource";
 

@@ -6,7 +6,7 @@
  *
  * WHY ATTRIBUTES AND NOT A MENU PER ROW. A list detail pane renders one menu
  * for the whole pane and resolves its target on open (`resolveContextOnOpen`
- * — see `features/context-menu-v3/types.ts`). Wrapping every row in its own
+ * — see `@ai-matrx/context-menu (src/engine/types.ts)`). Wrapping every row in its own
  * `NonEditableContextMenu` would nest Radix context-menu triggers inside the
  * pane's trigger, which is not a shape this repo has anywhere; single-instance
  * delegation is the sanctioned answer and costs one shell instead of N.

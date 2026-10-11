@@ -13,8 +13,8 @@
 // two mounts (`DataHomeList`, `UnifiedTableBody`) lose one wrapper each.
 
 import type { ReactNode } from "react";
-import { MenuRegroupProvider, type MenuRegroupValue } from "@/features/context-menu-v3/regroup/RegroupContext";
-import { proposedArrangement } from "@/features/context-menu-v3/proposed/proposed-arrangement";
+import { MenuRegroupProvider, type MenuRegroupValue } from "@ai-matrx/context-menu/react";
+import { proposedArrangement } from "@ai-matrx/context-menu/engine";
 
 const DATA_MENU: MenuRegroupValue = {
   grouping: null,

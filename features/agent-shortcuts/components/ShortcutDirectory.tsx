@@ -45,8 +45,8 @@ import { csvExportItem, jsonExportItem } from "@/components/agent-copy/export";
 import {
   buildDefaultTableRowMenuDescriptor,
   createTableRowMenuDescriptor,
-} from "@/features/context-menu-v3/table-row-item";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { readOf } from "@ai-matrx/design-system";
 
 export interface ShortcutDirectoryProps {

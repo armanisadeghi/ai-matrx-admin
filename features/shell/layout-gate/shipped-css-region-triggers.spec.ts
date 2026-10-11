@@ -45,7 +45,7 @@ import path from "node:path";
 
 import { expect, test } from "@playwright/test";
 
-import { CONTEXT_REGION_TRIGGER_ATTRS } from "../../context-menu-v3/region-trigger-attrs";
+import { CONTEXT_REGION_TRIGGER_ATTRS } from "@ai-matrx/context-menu/engine";
 
 const ROOT = process.cwd();
 const requireFromRoot = createRequire(path.join(ROOT, "package.json"));

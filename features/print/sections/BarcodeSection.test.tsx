@@ -41,11 +41,8 @@ jest.mock("@/components/official/ProInput", () => {
     };
 });
 
-jest.mock("@/features/context-menu-v3/EditableContextMenu", () => ({
+jest.mock("@ai-matrx/context-menu/react", () => ({
     EditableContextMenu: ({ children }: { children: React.ReactNode }) => children,
-}));
-
-jest.mock("@/features/context-menu-v3/NonEditableContextMenu", () => ({
     NonEditableContextMenu: ({ children }: { children: React.ReactNode }) => children,
 }));
 

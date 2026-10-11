@@ -15,7 +15,7 @@ import {
 import type {
   ContextMenuExtraSection,
   ContextMenuExtraItem,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 
 /**
  * Note-specific menu items injected into the canonical `UnifiedAgentContextMenu`

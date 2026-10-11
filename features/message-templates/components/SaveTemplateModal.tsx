@@ -15,7 +15,7 @@ import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { createTemplate, clearTemplateCache } from "@/features/message-templates/services/message-templates-service";
 import { useToast } from "@/components/ui/use-toast";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 
 interface SaveTemplateModalProps {

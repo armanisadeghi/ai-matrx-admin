@@ -21,4 +21,8 @@ await page.waitForTimeout(6000);
 await page.screenshot({ path: "/private/tmp/claude-501/-Users-armanisadeghi-code/4aca9d01-f3c0-4271-be17-2f948446dfb3/scratchpad/t2.png" });
 console.log("after dup logs:", JSON.stringify(logs, null, 1));
 console.log((await page.innerText("body")).slice(0,200));
+await page.getByText(/^\s*1\s*error/).first().click({ force: true, timeout: 5000 }).catch((e) => console.log("badge click failed", String(e).slice(0,100)));
+await page.waitForTimeout(2500);
+await page.screenshot({ path: SHOT + "t3.png" });
+console.log("PANEL:", (await page.locator("[role=dialog], [data-error-inspector]").allInnerTexts()).join("\n---\n").slice(0, 3500));
 await browser.close();

@@ -68,10 +68,10 @@ import {
   clearTemplateCache,
 } from "@/features/message-templates/services/message-templates-service";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
-import { MenuPresenceProvider } from "@/features/context-menu-v3/menu-presence";
-import { CONTEXT_MENU_HEADING_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
+import { MenuPresenceProvider } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_HEADING_KEY } from "@ai-matrx/context-menu/engine";
 import type { RichDocumentAction } from "@ai-matrx/rich-content/rich-document/types";
 import { useUnsavedChangesGuard } from "@/lib/navigation/useUnsavedChangesGuard";
 import {

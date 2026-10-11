@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { FileText, Loader2, Trash } from "lucide-react";
+import type { ReactNode } from "react";
+import { FileText, Loader2, Star, Users } from "lucide-react";
 
-import { Button } from "@ai-matrx/design-system";
 import { Card, CardContent } from "@/components/ui/card";
 import type { DocumentRow } from "@/features/data-tables/types";
 import { documentSourceLabel } from "@/features/documents/utils/documentsHubDisplay";
@@ -13,13 +13,19 @@ export function DocumentListCard({
   isNavigating,
   isAnyNavigating,
   onNavigate,
-  onDelete,
+  menu,
+  starred,
+  shared,
 }: {
   doc: DocumentRow;
   isNavigating: boolean;
   isAnyNavigating: boolean;
   onNavigate: (id: string, path: string, e?: React.MouseEvent) => void;
-  onDelete: (doc: DocumentRow) => void;
+  /** The shared per-item actions (Share, Rename, Copy, Star, Trash). */
+  menu: ReactNode;
+  starred?: boolean;
+  /** Owned by someone else. */
+  shared?: boolean;
 }) {
   const href = `/documents/${doc.id}`;
   const isDisabled = isNavigating || isAnyNavigating;
@@ -51,20 +57,19 @@ export function DocumentListCard({
               ) : null}
             </div>
           </Link>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7"
-            onClick={() => onDelete(doc)}
-            title="Delete document"
-            disabled={isDisabled}
-          >
-            <Trash className="h-3.5 w-3.5 text-destructive" />
-          </Button>
+          {menu}
         </div>
         <div className="flex min-w-0 items-center justify-between gap-2 text-xs text-muted-foreground">
-          <span className="truncate">
-            Updated {new Date(doc.updated_at).toLocaleString()}
+          <span className="flex min-w-0 items-center gap-1.5 truncate">
+            {starred ? (
+              <Star className="size-3 shrink-0 fill-current text-amber-500" aria-label="Starred" />
+            ) : null}
+            {shared ? (
+              <Users className="size-3 shrink-0" aria-label="Shared with me" />
+            ) : null}
+            <span className="truncate">
+              Updated {new Date(doc.updated_at).toLocaleString()}
+            </span>
           </span>
           <span className="shrink-0 rounded border border-border px-1.5 py-0.5 text-[10px] uppercase tracking-wide">
             {documentSourceLabel(doc.source)}

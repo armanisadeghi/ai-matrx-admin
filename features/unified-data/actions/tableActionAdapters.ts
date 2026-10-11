@@ -63,8 +63,8 @@ import type {
   ItemMenuConfig,
   ItemMenuSection,
 } from "@ai-matrx/chat/ui/item-types";
-import { itemMenuConfigToExtraSections } from "@/features/context-menu-v3/item/itemMenuToV3";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+import { itemMenuConfigToExtraSections } from "@ai-matrx/context-menu/engine";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 
 /** Every icon name the registry can hand out. Exhaustive: a new name fails typecheck here. */
 export const OBJECT_ACTION_ICONS: Record<ObjectActionIcon, LucideIcon> = {

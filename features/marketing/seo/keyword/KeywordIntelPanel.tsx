@@ -70,7 +70,7 @@ import {
 import { normalizeMonthlySearches } from "@/features/marketing/seo/keyword-research/types";
 import type { KeywordWithMarket } from "@/features/marketing/seo/keyword-research/types";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { humanLines, webCopy } from "@/features/marketing/lib/copy-payloads";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { isJsonObject } from "@/types/json";

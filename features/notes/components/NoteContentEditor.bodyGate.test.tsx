@@ -8,7 +8,7 @@
 // any empty document, which also left every NEW note on "Loading editor..."
 // forever. Drop the `bodyLoaded` gate and this goes red.
 let mounted = 0;
-jest.mock("@/features/context-menu-v3/EditableContextMenu", () => ({ EditableContextMenu: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
+jest.mock("@ai-matrx/context-menu/react", () => ({ EditableContextMenu: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 jest.mock("./NoteEditorCore", () => ({ NoteEditorCore: () => { mounted += 1; return <div data-testid="editor" />; }, isRichEditorMode: (mode: string) => mode === "write" || mode === "source" }));
 jest.mock("next/dynamic", () => () => () => null);
 jest.mock("../hooks/useNoteAccess", () => ({ useNoteAccess: () => ({ readOnly: false }) }));

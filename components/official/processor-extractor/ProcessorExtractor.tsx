@@ -9,8 +9,8 @@ import {
 } from "./utils/hidden-path-utils";
 import { extractValueByPath } from "./utils/wildcard-utils";
 import { Button } from "@ai-matrx/design-system";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 
 // Import extracted components
 import NavigationRows from "./NavigationRows";

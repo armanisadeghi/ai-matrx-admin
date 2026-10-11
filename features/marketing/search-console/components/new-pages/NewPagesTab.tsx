@@ -32,8 +32,8 @@ import {
 import { useOpenGscDrilldownWindow } from "@/features/overlays/openers/gscDrilldownWindow";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import { buildPageMenuSection } from "@/features/marketing/search-console/components/insights/insight-row-menu";
 import {
   humanLines,
@@ -381,7 +381,7 @@ export function NewPagesTab({
   // `data-row-id` + STATE (never a ref, so a row-dependent label can never go
   // stale). Every row here is a canonical `web.page` — the same identity the
   // Insights page-dimension tables show — so it gets the SAME shared section
-  // ("Site page" in features/context-menu-v3/SECTIONS.md) rather than a
+  // ("Site page" in features/context-menu-host/SECTIONS.md) rather than a
   // private copy; the launch-tracker-only actions (mark requested, notes,
   // untrack) stay in their own section since no other "page" surface has
   // launch-tracking state to act on.

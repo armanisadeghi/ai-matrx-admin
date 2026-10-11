@@ -21,8 +21,8 @@ import { SegmentedControl } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { cn } from "@/lib/utils";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import type { ContextMenuExtraItem } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { ContextMenuExtraItem } from "@ai-matrx/context-menu/engine";
 import { CoverageScoreboard } from "./CoverageScoreboard";
 import { JobWorkbench } from "./JobWorkbench";
 import {

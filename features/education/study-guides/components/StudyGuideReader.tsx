@@ -39,7 +39,7 @@ import { selectionToolbarHostOf, shownInSelectionMode } from "@ai-matrx/rich-con
 import { annotationHostOf } from "@/features/rich-document/annotations/annotation-actions";
 import { useOpenFlashcardItemWindow } from "@/features/overlays/openers/flashcardItemWindow";
 import { useOpenNoteInWindow } from "@/features/notes/actions/useOpenNoteInWindow";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { noteIdentityContentSource } from "@/features/notes/richDocumentSource";
 import type { Note, NoteListItem } from "@/features/notes/types";
 import { parseNoteOutline, type NoteOutlineItem } from "@/features/notes/utils/noteOutline";

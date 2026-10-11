@@ -16,7 +16,7 @@ import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { StatusPill } from "@/features/scheduling/components/shared/StatusPill";
 import { humanizeRelative } from "@/features/scheduling/utils/triggerHumanize";
 import {

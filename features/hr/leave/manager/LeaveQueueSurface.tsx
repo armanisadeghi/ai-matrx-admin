@@ -70,12 +70,12 @@ import {
   hrTaskStepEntityRef,
   buildHrTaskStepMenuSection,
 } from "@/features/hr/tasks/task-step-actions";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import type {
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import {
   HR_DECISION_VERB,
   isRefusal,

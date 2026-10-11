@@ -49,8 +49,8 @@ import { DeepLinkMissNotice } from "@/components/official/deep-link/DeepLinkMiss
 import { useDeepLinkParam } from "@/components/official/deep-link/useDeepLinkParam";
 import type { Database } from "@/types/database.types";
 import { UserSearchField } from "@/features/user-search/UserSearchField";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import type { ContextMenuExtraItem } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { ContextMenuExtraItem } from "@ai-matrx/context-menu/engine";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import {
   serverTableInitialState,

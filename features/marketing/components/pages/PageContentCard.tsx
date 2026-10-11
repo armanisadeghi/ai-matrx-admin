@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 // The v3 shell is the sanctioned static import (lightweight — only MenuContent
 // lazy-loads behind it; see contextMenuV3StaticImportBan in eslint.config.mjs).
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { useFileBlob } from "@/features/files/hooks/useFileBlob";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { webCopy } from "@/features/marketing/lib/copy-payloads";

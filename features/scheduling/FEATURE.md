@@ -354,7 +354,7 @@ Run: `pnpm exec jest features/scheduling/` and (inside aidream)
   Orphan-leases) share two new registered builders —
   `useScheduledTaskMenuSection` / `useScheduledRunMenuSection` in
   `features/scheduling/components/shared/scheduling-menu-sections.tsx`
-  (registered in `features/context-menu-v3/SECTIONS.md`) — since a
+  (registered in `features/context-menu-host/SECTIONS.md`) — since a
   `scheduler.sch_task` / `sch_run` row is the same identity on every surface
   that shows one; Runs and Orphan-leases previously showed the exact same row
   shape with no shared menu at all. Growth: the task menu adds "Disable

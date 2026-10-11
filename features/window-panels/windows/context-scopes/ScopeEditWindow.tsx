@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { ScopeForm } from "@/features/scopes/components/management/ScopeForm";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   selectScopeById,
   selectScopeTypeById,

@@ -12,7 +12,7 @@
 // state (`useState(reduxContent)` + its own timer), a view's unmount clearing
 // the note's live buffer, or note undo leaving the rich editor alone when the
 // editor has no history of its own.
-jest.mock("@/features/context-menu-v3/EditableContextMenu", () => ({
+jest.mock("@ai-matrx/context-menu/react", () => ({
   EditableContextMenu: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 // The editor body is replaced by a plain field bound exactly like the real one

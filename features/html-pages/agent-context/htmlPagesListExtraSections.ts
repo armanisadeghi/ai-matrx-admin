@@ -2,7 +2,7 @@ import { Plus, FolderOpen, Copy, ExternalLink, ArrowLeft } from "lucide-react";
 import type {
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 
 /**
  * Menu items for the standalone-HTML-page LIST route (`/cms/html-pages`),

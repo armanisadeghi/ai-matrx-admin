@@ -53,8 +53,8 @@ import { getLanguageIconNode } from "@ai-matrx/rich-content/code-block/LanguageD
 import { CodeEditorTabBar } from "@/features/code-editor/multi-file-core/CodeEditorTabBar";
 import { useCodeEditorWindowState } from "@/features/code-editor/multi-file-core/useCodeEditorWindowState";
 import type { CodeFile } from "@/features/code-editor/multi-file-core/types";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 

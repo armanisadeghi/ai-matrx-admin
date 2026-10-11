@@ -27,8 +27,8 @@ import {
   type SeoBudgetRejectionRow,
   type SeoProviderSpendRow,
 } from "@/features/marketing/data/spend";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { EntityOrgFilter } from "@/lib/entity-list/components/EntityOrgFilter";
 import {
   groupSpendByCategory,

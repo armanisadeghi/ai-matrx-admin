@@ -28,12 +28,12 @@ import { openCanvasItem } from "@/features/canvas/host/openCanvasItem";
 import { userJourneyOpenInput } from "../canvas/userJourneyKind";
 import { fmtAcquisitionDate as fmtDate } from "../lib/acquisitionFormat";
 import { AdminUserRef } from "./AdminUserRef";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   buildAdminUserMenuSection,
   type AdminUserMenuRow,
 } from "./admin-user-menu-section";
-import { unavailableHere } from "@/features/context-menu-v3/utils/availability";
+import { unavailableHere } from "@ai-matrx/context-menu/engine";
 import { USERS_ADMIN_LOCATION } from "../constants";
 import type {
   AdminUserAcquisitionRow,

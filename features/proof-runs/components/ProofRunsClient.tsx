@@ -84,8 +84,8 @@ import {
   ADMIN_PROOF_RUNS_SURFACE_NAME,
   createAdminProofRunsScope,
 } from "@/features/surfaces/manifests/admin-proof-runs.manifest";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
 import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

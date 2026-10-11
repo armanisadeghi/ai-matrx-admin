@@ -38,7 +38,7 @@ Cross-repo product plan: [`common-docs/systems/chat/ai-work/projects/ai-work-hub
 
 **Compat layer** — `redux/skl/content-block-compat.ts` re-exports the old `agent-content-blocks` names (`AgentContentBlockDef`, `selectAllContentBlocksArray`, `selectContentBlocksByScope`, …) as thin aliases over skl selectors. External consumers import through it or the skl modules directly:
 
-- `features/context-menu-v3/hooks/useUnifiedAgentContextMenu.ts` — the live context menu.
+- `@ai-matrx/context-menu (src/engine/hooks/useUnifiedAgentContextMenu.ts)` — the live context menu.
 - `features/agent-shortcuts/hooks/useAgentShortcuts.ts` + `types.ts` — shortcut surfaces (maps `"global"` scope → `"user"` before calling skl).
 - `../aidream/apps/shared/chat/src/agents/redux/agent-shortcuts/{thunks,selectors}.ts` — unified-menu hydration + read-through selectors.
 
@@ -153,7 +153,7 @@ Fidelity is a verdict, never an inference: `event_mirror` says native resume is 
 ## Related features
 
 - **`features/agents/`** — agent definitions (AgentsSection's data), MCP slice + service (McpServersSection's data), the unified-menu thunk that hydrates skl, runtime invocation.
-- **`features/agent-shortcuts/`** + **`features/context-menu-v3/`** — the main consumers of skl content blocks.
+- **`features/agent-shortcuts/`** + **`@ai-matrx/context-menu`** — the main consumers of skl content blocks.
 - **`features/skills/`** — skill definitions, categories, and skill resources (all formerly here).
 - **`features/content-ir/`** — the Shape system; `render_kind` blocks bind to `content_ir.kind_component` (SHAPE_SYSTEM R1).
 - **`features/api-integrations/`** — external integrations + credential storage.

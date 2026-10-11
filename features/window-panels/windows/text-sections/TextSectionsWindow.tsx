@@ -37,7 +37,7 @@ import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { RichDocumentActions } from "@ai-matrx/rich-content/rich-document/RichDocumentActions";
 import { formatChars } from "@ai-matrx/kit/tokens";
 import type { OverlayId } from "@/features/overlays/catalogue";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 // context-menu-exempt: entity — a generic "labeled chunks of text" primitive with no identity of its own; each consumer's sections carry whatever record they came from, which is the consumer's menu to wire
 

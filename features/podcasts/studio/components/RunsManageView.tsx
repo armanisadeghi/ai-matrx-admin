@@ -23,13 +23,13 @@ import {
   type DeleteConfirmationAnchorPoint,
 } from "@/components/ui/delete-confirmation-popover";
 import { Skeleton } from "@ai-matrx/design-system";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   CONTEXT_MENU_ENTITY_KEY,
   type ContextMenuExtraSection,
   type ResolvedContextMenuContext,
-} from "@/features/context-menu-v3/types";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+} from "@ai-matrx/context-menu/engine";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { useStudioRuns } from "@/features/podcasts/studio/runs/useStudioRuns";
 import {
   isNonTerminal,

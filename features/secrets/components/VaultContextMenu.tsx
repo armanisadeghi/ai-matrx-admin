@@ -36,11 +36,11 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { KeyRound, PanelRightOpen, Type } from "lucide-react";
 
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type {
   ContextMenuExtraSection,
   ResolvedContextMenuContext,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import type { ApplicationScope } from "@ai-matrx/chat/agents/types/scope.types";
 import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
 import { toast } from "@/lib/toast";

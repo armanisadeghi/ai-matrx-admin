@@ -20,8 +20,8 @@ import { SurfaceRoleAgentButton } from "@ai-matrx/chat/surfaces/components/chrom
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ItemMenu } from "@ai-matrx/design-system/item";
-import { itemMenuConfigToExtraSections } from "@/features/context-menu-v3/item/itemMenuToV3";
-import { buildDefaultTableRowMenuDescriptor, createTableRowMenuDescriptor } from "@/features/context-menu-v3/table-row-item";
+import { itemMenuConfigToExtraSections } from "@ai-matrx/context-menu/engine";
+import { buildDefaultTableRowMenuDescriptor, createTableRowMenuDescriptor } from "@ai-matrx/context-menu/engine";
 import { buildCmsPageMenu } from "@/features/cms/actions/buildCmsPageMenu";
 import {
   CmsPageAiActionDialog,

@@ -137,7 +137,7 @@ jest.mock("../knobs", () => ({
 
 // ── Chrome that is not under test ──────────────────────────────────────────
 
-jest.mock("@/features/context-menu-v3/NonEditableContextMenu", () => ({
+jest.mock("@ai-matrx/context-menu/react", () => ({
   __esModule: true,
   NonEditableContextMenu: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { toast } from "@/lib/toast";
 import { LUCIDE_ICONS_GALLERY_URL } from "@/utils/icons/lucide-gallery-url";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildBrowserFrameMenuSection } from "@/features/window-panels/windows/iframe/browser-frame-menu";
 
 export interface BrowserFrameWindowProps {

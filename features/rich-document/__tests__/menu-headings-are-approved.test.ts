@@ -20,8 +20,8 @@ import { createActionRegistry, createClickTarget, type ActionProvider } from "@a
 import { buildMenuModel, unapprovedHeadings } from "@ai-matrx/alchemy/menu";
 import { richDocumentActionProvider, richDocumentClickTarget, richDocumentTargetHost } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { chatContext } from "../test-utils/chatContext";
-import { contextMenuActionsFromModel } from "@/features/context-menu-v3/alchemy-provider";
-import type { MenuModel, MenuNode, MenuSection } from "@/features/context-menu-v3/model/menu-model";
+import { contextMenuActionsFromModel } from "@ai-matrx/context-menu/model";
+import type { MenuModel, MenuNode, MenuSection } from "@ai-matrx/context-menu/model";
 
 const ports = { diagnostics: { capture: jest.fn() } };
 

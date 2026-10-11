@@ -2,7 +2,7 @@ import { Save, Copy, ExternalLink, ArrowLeft } from "lucide-react";
 import type {
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 
 /**
  * Standalone-HTML-page-specific menu items injected into the canonical v3

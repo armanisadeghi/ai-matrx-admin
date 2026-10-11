@@ -111,7 +111,7 @@ const RULE_C_BASELINE: Record<string, string> = {
     "Rulebook capture: capture.ts passes durableRecordId(messageId)",
   "../aidream/apps/shared/chat/src/agents/components/messages-display/assistant/AssistantMessageFooter.tsx":
     NOT_A_DB_KEY,
-  "features/context-menu-v3/utils/resolveMarkdownContext.ts": NOT_A_DB_KEY,
+  "@ai-matrx/context-menu (src/engine/utils/resolveMarkdownContext.ts)": NOT_A_DB_KEY,
   "features/rich-document/actions/handlers/ask.ts": NOT_A_DB_KEY,
   "features/tasks/widgets/TaskTapButton.tsx": "usage example inside a doc comment",
   "features/crm/gmail/reviewed-send-contract.ts": OTHER_MESSAGE,

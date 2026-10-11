@@ -76,7 +76,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useWizardDraft } from "@/lib/wizard-draft/useWizardDraft";
 import { WizardDraftRestored } from "@/lib/wizard-draft/WizardDraftRestored";
 import TextArrayInput from "@/components/official/TextArrayInput";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import {
   buildResearchContextData,
   RESEARCH_CONTEXT_MENU_PROPS,
@@ -91,7 +91,7 @@ import { SubjectFields } from "./SubjectFields";
 
 // Universal v3 context menu — lightweight shell, imported statically;
 // MenuContent lazy-loads on first open.
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { pushAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 
 // context-menu-exempt: entity — the form that runs BEFORE the research exists — no row has been created yet, so there is no record to name

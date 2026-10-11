@@ -52,7 +52,7 @@ import {
   contextItemBindingOf,
   isCustomDataBinding,
 } from "@ai-matrx/chat/agents/utils/variable-binding";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import {
   AGENT_BUILDER_CONTEXT_MENU_PROPS,
   buildAgentBuilderContextData,

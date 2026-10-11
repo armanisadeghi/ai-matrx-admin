@@ -17,7 +17,7 @@ import type { ReactNode } from "react";
 import type { LaneSupport, ListScopeKind } from "@/lib/list-scope/types";
 import type { ListViewPrefs } from "@/lib/redux/preferences/userPreferencesSlice";
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
-import type { ContextMenuEntityRef } from "@/features/context-menu-v3/types";
+import type { ContextMenuEntityRef } from "@ai-matrx/context-menu/engine";
 import type { SourceFeature } from "@ai-matrx/chat/agents/types/instance.types";
 import type {
   MatrxDataTableCopyConfig,

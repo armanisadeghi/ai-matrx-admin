@@ -1,12 +1,12 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { MATRX_TABLE_MENU_ICON_NAMES } from "@ai-matrx/design-system/data-table/menu-targets";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   createTableRowMenuDescriptor,
   registerTableRowContextResolver,
-} from "@/features/context-menu-v3/table-row-item";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { TABLE_MENU_ICONS, toContextMenuExtraSections } from "./table-menu-sections";
 
 // The menu body is lazy; stand it in with one that prints the sections it was

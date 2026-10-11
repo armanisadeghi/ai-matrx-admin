@@ -12,7 +12,7 @@ import React, { useCallback, useState } from "react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { ContentEditor } from "@/components/official/content-editor/ContentEditor";
 import { useContentEditorEmitter } from "./useContentEditorEmitter";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface ContentEditorWindowProps {
   /** Overlay instanceId — stable across re-renders, unique per window. */

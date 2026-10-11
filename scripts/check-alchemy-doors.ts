@@ -108,7 +108,7 @@ const ALLOW: Record<Rule, string[]> = {
     // ContextMenuV3 and joined into that menu's `extraSections`, which the shell hands to Alchemy.
     // A lookup of owner getters by element key; the rows' actions reach the registry the same way
     // every other extraSections row does. Not an action store.
-    "features/context-menu-v3/record-menu-registry.ts",
+    "@ai-matrx/context-menu (src/engine/record-menu-registry.ts)",
     // AP-2 triage (2026-10-07): each holds ADAPTERS / DATA / HANDLES, no runnable menu or toolbar action.
     // Library tab-source adapters (tab-id prefix -> loader); a data-source lookup.
     "features/code/library-sources/registry.ts",

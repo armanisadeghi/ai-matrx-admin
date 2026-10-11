@@ -12,12 +12,12 @@ import {
 import { setSelectedTaskId } from "@/features/tasks/redux/taskUiSlice";
 import { selectTaskById } from "@/features/agent-context/redux/tasksSlice";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import {
   CONTEXT_MENU_ENTITY_KEY,
   type ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import {
   TASKS_CONTEXT_MENU_PROPS,
   buildTasksListContextData,

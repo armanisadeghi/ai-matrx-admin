@@ -27,8 +27,8 @@ import type { ComponentType } from "react";
 import {
   buildDefaultTableRowMenuDescriptor,
   createTableRowMenuDescriptor,
-} from "@/features/context-menu-v3/table-row-item";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import {

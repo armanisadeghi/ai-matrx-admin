@@ -50,15 +50,15 @@ import {
 } from "@/components/ui/select";
 import { Globe2 } from "lucide-react";
 import { useSiteOptions } from "@/features/marketing/data/hooks";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import {
   keywordEntityRef,
   useKeywordAssignSurfaces,
   useKeywordMenuSection,
   type KeywordMenuRow,
 } from "@/features/marketing/seo/keyword/keyword-actions";
-import { unavailableHere } from "@/features/context-menu-v3/utils/availability";
+import { unavailableHere } from "@ai-matrx/context-menu/engine";
 
 import { useKeywordResearch } from "../useKeywordResearch";
 import {

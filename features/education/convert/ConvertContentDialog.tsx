@@ -63,7 +63,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { Chip, ChipSet, SegmentedControl, Switch } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Label } from "@/components/ui/label";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { KIND_CHOICES } from "@/features/flashcards/components/set-detail/AddMoreCardsButton";
 import { QUESTION_TYPE_LABELS } from "@/features/education/assessment/components/AddMoreQuestionsButton";
 import { QUESTION_TYPES, type QuestionType } from "@/features/education/assessment/data/types";

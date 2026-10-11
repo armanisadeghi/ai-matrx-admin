@@ -126,7 +126,7 @@ import React, {
   Suspense,
 } from "react";
 import type { ContentSource } from "@ai-matrx/rich-content/rich-document/types";
-import { actionsAlreadyHere } from "@/features/context-menu-v3/utils/already-here";
+import { actionsAlreadyHere } from "@ai-matrx/context-menu/engine";
 
 // The ONE action registry rendered as a list inside this field's "…" popover.
 // A React.lazy edge inside the popover (never a new next/dynamic front door —
@@ -155,8 +155,8 @@ const TEXT_AGENT_ACTION_IDS = [
   ["text-help", "help"],
   ["text-custom-agent", "customAgent"],
 ] as const;
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
-import { useIsInsideContextMenu } from "@/features/context-menu-v3/menu-presence";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
+import { useIsInsideContextMenu } from "@ai-matrx/context-menu/react";
 import { Check, Loader2, Send } from "lucide-react";
 import { motion } from "motion/react";
 import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
@@ -375,7 +375,7 @@ export interface ProTextareaProps extends React.TextareaHTMLAttributes<HTMLTextA
    * 🚨 THIS IS A FLOOR, NOT AN OVERRIDE. It only takes effect when NO ancestor
    * already mounts a v3 menu — a surface that wires its own (with its entity,
    * surfaceName and extraSections) always wins, and never has to know this
-   * exists. See `features/context-menu-v3/menu-presence.tsx`.
+   * exists. See `@ai-matrx/context-menu (src/engine/menu-presence.tsx)`.
    *
    * Set false only where a right-click menu is genuinely wrong for the field.
    */

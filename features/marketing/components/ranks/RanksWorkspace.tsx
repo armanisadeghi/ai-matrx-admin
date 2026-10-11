@@ -61,8 +61,8 @@ import {
 import { useMarketingSite } from "@/features/marketing/components/site/MarketingSiteContext";
 import { getGscKeywordValueFor } from "@/features/marketing/search-console/data-insights";
 import { buildGscValueColumns } from "@/features/marketing/search-console/lib/columns";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import {
   keywordEntityRef,
   useKeywordAssignSurfaces,

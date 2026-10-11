@@ -51,13 +51,13 @@ import {
   selectNoteFolder,
   selectNoteById,
 } from "../redux/selectors";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import {
   CONTEXT_MENU_HEADING_KEY,
   type ContextMenuExtraItem,
   type ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import type { ContentSource } from "@ai-matrx/rich-content/rich-document/types";
 import { NOTES_EDITOR_CONTEXT_MENU_PROPS } from "@/features/notes/agent-context/buildNotesEditorContextData";
 import { useNotesSurfaceScope } from "../hooks/useNotesSurfaceScope";
@@ -71,8 +71,8 @@ import { useNoteDelete } from "../hooks/useNoteDelete";
 import { cn } from "@/lib/utils";
 import { toast, toastErrorAlreadyCaptured } from "@/lib/toast";
 import { buildRecordReferenceFence } from "@/features/matrx-envelope/recordReference";
-import { openContextMenuForElement } from "@/features/context-menu-v3/utils/open-context-menu";
-import { openRecordMenu, recordMenuChanged, registerRecordMenu, type RecordMenuRows } from "@/features/context-menu-v3/record-menu-registry";
+import { openContextMenuForElement } from "@ai-matrx/context-menu/engine";
+import { openRecordMenu, recordMenuChanged, registerRecordMenu, type RecordMenuRows } from "@ai-matrx/context-menu/engine";
 import { noteActionsSection, openNotePrintStudio } from "./note-actions/noteActionSet";
 import { noteTabRecordMenuKey } from "./noteRecordMenu";
 import { MoveNoteDialog } from "./MoveNoteDialog";

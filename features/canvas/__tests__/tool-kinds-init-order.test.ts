@@ -20,7 +20,7 @@ describe("the menu path never loads the canvas kind list", () => {
       jest.doMock("@/features/canvas/host/toolKinds", () => {
         throw new Error("toolKinds was loaded by the menu");
       });
-      expect(() => require("@/features/context-menu-v3/components/AlchemyMenuContent")).not.toThrow();
+      expect(() => require("@ai-matrx/context-menu/menu-content")).not.toThrow();
     });
   });
 

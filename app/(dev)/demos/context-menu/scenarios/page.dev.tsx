@@ -22,8 +22,8 @@
 
 import { useRef, useState } from "react";
 import { CodeEditorDemoPanel } from "../_components/CodeEditorDemoPanel";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export default function ContextMenuScenariosPage() {
   // ── Panel 2: Editable content editor — content-editor + general ─────────

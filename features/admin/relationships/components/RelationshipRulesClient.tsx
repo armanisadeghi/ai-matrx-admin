@@ -32,7 +32,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { CanvasPagePanel } from "@/features/canvas/host/pagePanel";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { useRelationshipRuleMenu } from "./relationship-rule-actions";
 import { RuleEditorForm } from "./RuleEditorForm";
 import { ConveyPill, DirectionGlyph } from "./shared";

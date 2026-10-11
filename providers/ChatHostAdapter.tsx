@@ -191,6 +191,8 @@ import {
 import { useOpenConversationDocuments } from "@/features/canvas/host/conversation/documentsKind";
 import { useOpenScratchpadPanel } from "@/features/quick-actions/canvas/scratchpadKind";
 import "@/providers/chatUiRegistrationProfile";
+// The context menu host (@ai-matrx/context-menu): light members now, the rest with the menu body.
+import "@/features/context-menu-host/register";
 // The app data around a rendered message (P29a); the engine itself is @ai-matrx/rich-content.
 import "@/providers/chatAppDataRegistration";
 // Scopes (context sources) and compute targets (P21).

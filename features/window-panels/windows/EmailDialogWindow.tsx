@@ -14,7 +14,7 @@ import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { Loader2, Mail } from "lucide-react";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 interface EmailDialogWindowProps {

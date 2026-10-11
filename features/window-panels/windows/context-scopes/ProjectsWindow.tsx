@@ -3,7 +3,7 @@
 import React from "react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { ProjectsWorkspace } from "@/features/projects/components/ProjectsWorkspace";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 interface ProjectsWindowProps {
   isOpen: boolean;

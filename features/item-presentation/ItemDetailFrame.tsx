@@ -22,8 +22,8 @@ import { Braces, Copy } from "lucide-react";
 import { isEntityTypeToken } from "@ai-matrx/associations";
 
 import type { DetailFrameContext } from "@ai-matrx/detail";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import {
   createItemDetailScope,
   ITEM_DETAIL_SURFACE_NAME,

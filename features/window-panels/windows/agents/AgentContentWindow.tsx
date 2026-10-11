@@ -62,12 +62,12 @@ import { AgentContentTab } from "./agent-content.types";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { AGENT_ADVANCED_EDITOR_SURFACE_NAME } from "./agentAdvancedEditorWrite";
 import { useAgentAdvancedEditorSurface } from "./useAgentAdvancedEditorSurface";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   CONTEXT_MENU_ENTITY_KEY,
   type ContextMenuExtraSection,
   type ResolvedContextMenuContext,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
 import {
   AgentSidebar,

@@ -38,7 +38,7 @@ import {
   type ContextMenuExtraItem,
   type ContextMenuExtraSection,
   type ResolvedContextMenuContext,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import type { ApplicationScope } from "@ai-matrx/chat/agents/types/scope.types";
 import {
   disableTaskAdmin,

@@ -16,11 +16,11 @@ import {
 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type {
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import { FileIcon } from "../../styles/file-icon";
 import {
   ACTIVE_ROW,
@@ -34,7 +34,7 @@ import type {
   SourceEntryField,
 } from "../../library-sources/types";
 import { Button } from "@/components/ui/button";
-import { openContextMenuForElement } from "@/features/context-menu-v3/utils/open-context-menu";
+import { openContextMenuForElement } from "@ai-matrx/context-menu/engine";
 import { copyToClipboard } from "@/lib/clipboard/copy";
 
 interface SourceEntryNodeProps {

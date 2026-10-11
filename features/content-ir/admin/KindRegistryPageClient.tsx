@@ -32,8 +32,8 @@ import KindCatalogTable from "@/features/content-ir/admin/KindCatalogTable";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { ADMIN_KIND_REGISTRY_SURFACE_NAME } from "@/features/surfaces/manifests/admin-kind-registry.manifest";
 import { buildAdminKindCatalogScope } from "@/features/content-ir/admin/kind-registry-scope";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 const KindSchemaExplorer = dynamic(

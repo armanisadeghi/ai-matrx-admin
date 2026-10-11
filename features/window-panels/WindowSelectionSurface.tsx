@@ -19,7 +19,7 @@
 
 import type { ReactNode } from "react";
 import { useContentTransferSurface } from "@ai-matrx/alchemy/react/workspace";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export function WindowSelectionSurface({ children }: { children: ReactNode }) {
   const surfaceName = useContentTransferSurface()?.surfaceName ?? undefined;

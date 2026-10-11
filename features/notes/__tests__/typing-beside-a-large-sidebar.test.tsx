@@ -40,7 +40,7 @@ jest.mock("@ai-matrx/design-system/item", () => ({
     return null;
   },
 }));
-jest.mock("@/features/context-menu-v3/NonEditableContextMenu", () => ({
+jest.mock("@ai-matrx/context-menu/react", () => ({
   NonEditableContextMenu: ({ children }: { children: React.ReactNode }) => children,
 }));
 jest.mock("@/features/commerce-review/components/OrganizationTag", () => ({ OrganizationTag: () => null }));

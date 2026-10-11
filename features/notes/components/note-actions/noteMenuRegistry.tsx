@@ -35,7 +35,7 @@ import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
 import type {
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import type { AppDispatch } from "@/lib/redux/store";
 import { removeInstanceTab } from "../../redux/slice";
 import {

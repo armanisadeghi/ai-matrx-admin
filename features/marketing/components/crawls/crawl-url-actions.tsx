@@ -20,11 +20,11 @@ import type {
   ContextMenuEntityRef,
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import {
   applyAvailability,
   type AvailabilityMap,
-} from "@/features/context-menu-v3/utils/availability";
+} from "@ai-matrx/context-menu/engine";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 
 /** The one thing every run-URL-showing surface can say about a row. */
@@ -52,7 +52,7 @@ export function buildCrawlUrlMenuSection(
   row: CrawlUrlMenuRow | null,
   opts?: {
     label?: string;
-    /** THE CONSISTENCY STEP — see `features/context-menu-v3/utils/availability.ts`. */
+    /** THE CONSISTENCY STEP — see `@ai-matrx/context-menu (src/engine/utils/availability.ts)`. */
     unavailable?: AvailabilityMap;
   },
 ): ContextMenuExtraSection {

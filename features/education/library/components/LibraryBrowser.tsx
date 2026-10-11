@@ -12,7 +12,7 @@ import type { PublicDeck } from "../types";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAuthenticated } from "@/lib/redux/selectors/userSelectors";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { collectionWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/collection-write-targets";
 import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
 import { EDUCATION_LIBRARY_COMMUNITY_SURFACE_NAME } from "@/features/surfaces/manifests/education-library-community.manifest";

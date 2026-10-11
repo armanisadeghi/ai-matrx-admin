@@ -32,7 +32,7 @@ import { Button } from "@/components/ui/button";
 import { Button as SurfaceButton } from "@ai-matrx/design-system";
 import { Chip, ChipSet } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { newBatchId } from "@/features/education/convert/steering";
 import { CARD_KIND, type CardKind } from "@/features/flashcards/utils/cardVariants";
 import { undoCardBatch } from "@/features/flashcards/data/undoCardBatch";

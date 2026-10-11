@@ -15,8 +15,8 @@ import {
 } from "@ai-matrx/print/barcode";
 import { Field, SectionShell, StatusChip, controlClass, svgToImgSrc } from "@/features/print/components/shared";
 import { ProInput } from "@/components/official/ProInput";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import type { SourceFeature } from "@ai-matrx/chat/agents/types/instance.types";
 import {

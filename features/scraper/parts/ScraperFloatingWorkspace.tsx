@@ -43,7 +43,7 @@ import {
 import { buildScraperWriteHandlers } from "@/features/scraper/agent-context/scraperWriteHandlers";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createScraperExtraSections } from "@/features/scraper/agent-context/scraperExtraSections";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { useScraperKeywordSearchForm } from "@/features/scraper/hooks/useScraperKeywordSearchForm";
 import {
   ScraperKeywordSearchCompactControls,
@@ -85,8 +85,8 @@ import {
 // lightweight shell (imported statically); MenuContent lazy-loads on first open.
 // The URL / keyword config inputs are editable → EditableContextMenu; the
 // read-only scraped-results region → NonEditableContextMenu.
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { SOURCES_PATH } from "@/features/knowledge/modulePaths";
 

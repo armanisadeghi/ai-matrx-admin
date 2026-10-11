@@ -26,7 +26,7 @@ This is the pre-handoff gate for `live-ui-iteration`. It does not replace `surfa
 - Copy and Download as Markdown act on whole content without a selection and on selected text with a selection.
 - Console shows no `INERT MENU` or `VALUE MAPPING GAP` diagnostics.
 - Menu items are labels only — no subtext except a `disabled` item's reason (THE DENSITY LAW). `pnpm check:context-menu --population=density` is clean.
-- Any identity with a builder in `features/context-menu-v3/SECTIONS.md` uses that builder rather than a local copy.
+- Any identity with a builder in `features/context-menu-host/SECTIONS.md` uses that builder rather than a local copy.
 
 ## Visual and responsive proof
 

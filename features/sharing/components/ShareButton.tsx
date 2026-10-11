@@ -8,7 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Share2, Globe, Lock } from "lucide-react";
+import { Share2, Globe } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useSharingStatus } from "@/utils/permissions/hooks";
 import type { ResourceType } from "@/utils/permissions/types";
@@ -64,17 +64,18 @@ export function ShareButton({
     showStatus,
   );
 
-  // Only is_public is checked here — single cheap resource-row query.
-  // Showing "Shared with N users" on list buttons would require the expensive
-  // get_resource_permissions RPC per card. Full detail is inside the modal.
+  // The label is always the ACTION ("Share") — a person scanning for the word
+  // must find it. The state rides subtly: the icon (globe once published) and
+  // the hover title. Only is_public is checked here (single cheap row query);
+  // full detail is inside the modal.
   const getButtonContent = () => {
-    if (loading || error) return { icon: Share2, label: "Share" };
-    if (isPublic)
-      return { icon: Globe, label: showStatus ? "Published to the web" : "Share" };
-    return { icon: Lock, label: showStatus ? "Private" : "Share" };
+    if (loading || error) return { icon: Share2, label: "Share", state: "" };
+    if (isPublic && showStatus)
+      return { icon: Globe, label: "Share", state: "Published to the web" };
+    return { icon: Share2, label: "Share", state: "" };
   };
 
-  const { icon: Icon, label } = getButtonContent();
+  const { icon: Icon, label, state } = getButtonContent();
 
   const button = (
     <Button
@@ -82,6 +83,7 @@ export function ShareButton({
       size={size}
       onClick={() => setIsModalOpen(true)}
       className={cn("gap-2", className)}
+      title={state ? `${label} · ${state}` : label}
       // An icon-only share control had NO accessible name: a tooltip describes
       // a button, it never names one, so a screen reader announced "button".
       // The label the tooltip shows is the label the button carries.

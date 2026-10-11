@@ -7,10 +7,10 @@
 // The iframe hosts a page we do not control and cannot read — there is no
 // "content" to act on, only the frame's own URL and title. Copy URL / Open
 // in new tab / Reload are the honest ceiling for a cross-origin frame; see
-// features/context-menu-v3/SECTIONS.md.
+// features/context-menu-host/SECTIONS.md.
 
 import { Copy, ExternalLink, RotateCw } from "lucide-react";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { copyToClipboard } from "@/lib/clipboard/copy";
 
 export interface BrowserFrameMenuContext {

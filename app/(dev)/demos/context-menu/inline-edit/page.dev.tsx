@@ -23,7 +23,7 @@
 
 import { useRef, useState } from "react";
 import { PenLine } from "lucide-react";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { createScratchpadScope } from "@/features/surfaces/manifests/scratchpad.manifest";
 
 const INITIAL = `Teh context menu is teh fastest path to everything teh system can do.

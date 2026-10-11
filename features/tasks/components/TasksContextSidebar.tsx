@@ -71,7 +71,7 @@ import {
 } from "@/features/scopes/redux/selectors/tree";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/utils/cn";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { TASKS_CONTEXT_MENU_PROPS } from "@/features/tasks/agent-context/buildTasksContextData";
 import { useTasksListSurfaceScope } from "@/features/tasks/components/TasksListSurfaceRuntime";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";

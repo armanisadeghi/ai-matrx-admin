@@ -29,7 +29,7 @@ import {
   SHARE_SURFACE_NAME,
   createShareScope,
 } from "@/features/surfaces/manifests/share.manifest";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ExternalLink } from "lucide-react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 

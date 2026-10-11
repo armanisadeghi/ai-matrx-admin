@@ -9,8 +9,8 @@ import {
   Loader2,
   RefreshCw,
 } from "lucide-react";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import { useOpenGscDrilldownWindow } from "@/features/overlays/openers/gscDrilldownWindow";
 import {
   pageEntityRef,

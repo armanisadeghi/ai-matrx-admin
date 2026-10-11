@@ -35,11 +35,11 @@ import {
 import type {
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import {
   withAvailability,
   type AvailabilityMap,
-} from "@/features/context-menu-v3/utils/availability";
+} from "@ai-matrx/context-menu/engine";
 import { usagePersonHref } from "@/features/admin/usage-drill/usageLinks";
 
 /** The one thing every Users & Access table can say about a right-clicked user. */
@@ -53,7 +53,7 @@ export function buildAdminUserMenuSection(
   row: AdminUserMenuRow | null,
   opts?: {
     label?: string;
-    /** THE CONSISTENCY STEP — see `features/context-menu-v3/utils/availability.ts`. */
+    /** THE CONSISTENCY STEP — see `@ai-matrx/context-menu (src/engine/utils/availability.ts)`. */
     unavailable?: AvailabilityMap;
   },
 ): ContextMenuExtraSection {

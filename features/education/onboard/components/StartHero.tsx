@@ -57,7 +57,7 @@ import { filesDb } from "@/features/files/filesDb";
 import { supabase } from "@/utils/supabase/client";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { EDUCATION_START_SURFACE_NAME } from "@/features/surfaces/manifests/education-start.manifest";
 import { parseKitRequestDraftValue } from "../startAgentWrites";
 import { buildEducationStartScope } from "../startSurfaceScope";

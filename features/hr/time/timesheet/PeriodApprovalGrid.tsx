@@ -31,11 +31,11 @@ import { CheckCheck, PanelRightOpen } from "lucide-react";
 
 import { DataRowWindow } from "@ai-matrx/design-system/data-table/data-row-window";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   CONTEXT_MENU_ENTITY_KEY,
   type ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import {
   periodGridRowContent,
   periodGridRowEntityRef,

@@ -1,7 +1,7 @@
 import { toast } from "@/lib/toast";
 import { Copy } from "lucide-react";
 import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 
 export interface TranscriptsExtraSectionsArgs {

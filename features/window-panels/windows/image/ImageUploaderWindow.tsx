@@ -26,7 +26,7 @@ import {
 } from "@/features/surfaces/manifests/image-uploader.manifest";
 import { emitImageUploaderEvent } from "./callbacks";
 import type { AssetPreset } from "@/features/files/types";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { copyToClipboard } from "@/lib/clipboard/copy";
 
 /**

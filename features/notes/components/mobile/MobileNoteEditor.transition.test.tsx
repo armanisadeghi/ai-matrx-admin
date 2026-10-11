@@ -31,9 +31,8 @@ jest.mock("@/hooks/useToastManager", () => ({ useToastManager: () => ({ success:
 jest.mock("@/lib/toast", () => ({ toast: { success: jest.fn(), error: jest.fn() }, toastErrorAlreadyCaptured: jest.fn() }));
 jest.mock("next/dynamic", () => () => () => null);
 jest.mock("@ai-matrx/rich-content/rich-document/RichDocument", () => ({ RichDocument: () => null }));
-jest.mock("@/features/context-menu-v3/NonEditableContextMenu", () => ({ NonEditableContextMenu: () => null }));
 jest.mock("../NoteDraftRecoveryBanner", () => ({ NoteDraftRecoveryBanner: () => null }));
-jest.mock("@/features/context-menu-v3/EditableContextMenu", () => ({ EditableContextMenu: ({ children, contentSource }: {children: React.ReactNode; contentSource?: ContentSource}) => { captured = contentSource; return <>{children}</>; } }));
+jest.mock("@ai-matrx/context-menu/react", () => ({ NonEditableContextMenu: () => null, EditableContextMenu: ({ children, contentSource }: {children: React.ReactNode; contentSource?: ContentSource}) => { captured = contentSource; return <>{children}</>; } }));
 jest.mock("./NoteEditorDock", () => ({ NoteEditorDock: ({onTagsChange}: {onTagsChange: (tags: string[]) => void}) => <button onClick={() => onTagsChange(["local tag"])}>Change local tags</button> }));
 
 const id = "33333333-3333-4333-8333-333333333333";

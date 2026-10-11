@@ -9,7 +9,7 @@
 import { useRef } from "react";
 import { Link2 } from "lucide-react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { SurfaceAgentBindPanel } from "@/features/surfaces/components/bind/SurfaceAgentBindPanel";
 import type { ValueMappingMap } from "@ai-matrx/chat/surfaces/types";
 import {

@@ -56,9 +56,9 @@ import { LibraryPublishPanel } from "@/features/rag/components/library/LibraryPu
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
 import { AssistStrip } from "@/features/assists/components/AssistStrip";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { MASTERWORK_RULEBOOK_SURFACE_NAME } from "@/features/surfaces/manifests/masterwork-rulebook.manifest";
 import {
   SurfaceRuntimeProvider,

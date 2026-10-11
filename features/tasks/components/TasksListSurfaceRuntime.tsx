@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { buildTasksListContextData } from "@/features/tasks/agent-context/buildTasksContextData";
 import {
   selectFilteredTasks,

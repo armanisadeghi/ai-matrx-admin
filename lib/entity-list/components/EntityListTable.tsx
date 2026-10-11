@@ -40,13 +40,13 @@ import { NONE_VALUE, type EntityFacets, type EntityFilters } from "../types";
 import {
   buildDefaultTableRowMenuDescriptor,
   createTableRowMenuDescriptor,
-} from "@/features/context-menu-v3/table-row-item";
+} from "@ai-matrx/context-menu/engine";
 import {
   CONTEXT_MENU_ENTITY_KEY,
   CONTEXT_MENU_HEADING_KEY,
   type ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
-import { itemMenuConfigToExtraSections } from "@/features/context-menu-v3/item/itemMenuToV3";
+} from "@ai-matrx/context-menu/engine";
+import { itemMenuConfigToExtraSections } from "@ai-matrx/context-menu/engine";
 import { resolveItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
 import type { ReadOutcome } from "@ai-matrx/design-system";
 import { fitColumnWidths } from "../columnWidths";

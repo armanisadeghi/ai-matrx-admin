@@ -131,8 +131,8 @@ import {
   FilesSurfaceScopeProvider,
   buildFilesContextDataFromState,
 } from "@/features/files/agent-context/FilesSurfaceScopeContext";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
-import { captureDomSelection } from "@/features/context-menu-v3/utils/selection-tracking";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
+import { captureDomSelection } from "@ai-matrx/context-menu/engine";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { useFileShortcuts } from "./useFileShortcuts";
 import { useFilesSurfaceWriteHandlers } from "./useFilesSurfaceWriteHandlers";
@@ -161,7 +161,7 @@ import type { CloudFilesSection } from "./desktop/section";
 
 // Universal v3 context menu — lightweight shell, imported statically;
 // MenuContent lazy-loads on first open.
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { FilesTreeErrorState, FilesTreeLoadingState } from "./FilesTreeState";
 import { DragCursorMonitor } from "@ai-matrx/design-system";

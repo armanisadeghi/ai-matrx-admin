@@ -39,7 +39,7 @@ import { useMemo, useState } from "react";
 import { ArrowUpRight, Check, Loader2, Pencil } from "lucide-react";
 
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { useCompetitorMenu } from "./competitor-actions";
 import type {
   CellEditsMap,

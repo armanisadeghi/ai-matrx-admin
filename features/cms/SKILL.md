@@ -62,7 +62,7 @@ this means agents see stale flags (e.g. `has_draft="false"` right after a draft 
 
 Follow `surface-authoring` (existing-surface runtime rollout) + `context-menu-v3` for the mechanics. CMS-specific notes:
 
-- Use **v3** (`EditableContextMenu`/`NonEditableContextMenu` from `features/context-menu-v3/`) — the only context menu (v2 was deleted 2026-07-19).
+- Use **v3** (`EditableContextMenu`/`NonEditableContextMenu` from `@ai-matrx/context-menu`) — the only context menu (v2 was deleted 2026-07-19).
 - `getApplicationScope` is a plain function (no `useCallback`) that calls `buildApplicationScopeFromMenuContext` with a live `createXxxScope(...)` built from current component state + `useSiteContext()`.
 - `extraSections` handlers must be the route's **real** save/publish/discard/preview/rollback callbacks — never toast stubs.
 - Monaco-based editors (`HtmlPageEditor`'s HTML tab) have no `HTMLTextAreaElement` ref — pass `contextData.htmlContent` and skip `getTextarea`; Copy/AI actions still work through the content-based fallback.

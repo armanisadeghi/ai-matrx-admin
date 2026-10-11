@@ -16,7 +16,7 @@ jest.mock("../AdminUserRef", () => ({ AdminUserRef: () => null }));
 jest.mock("../CreateAnnouncementDialog", () => ({ __esModule: true, default: () => null }));
 jest.mock("@/components/layout/SystemAnnouncementBanner", () => ({ __esModule: true, default: () => null }));
 jest.mock("../announcement-menu-section", () => ({ buildAnnouncementMenuSection: () => ({}) }));
-jest.mock("@/features/context-menu-v3/NonEditableContextMenu", () => ({
+jest.mock("@ai-matrx/context-menu/react", () => ({
   NonEditableContextMenu: (p: { children: React.ReactNode }) => <>{p.children}</>,
 }));
 jest.mock("@ai-matrx/design-system/data-table", () => ({

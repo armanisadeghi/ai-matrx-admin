@@ -1,4 +1,4 @@
-import type { PlacementMode } from "@/features/context-menu-v3/types";
+import type { PlacementMode } from "@ai-matrx/context-menu/engine";
 import { publishedToWebLabel, shownToLabel } from "@/lib/row-access";
 import { createResearchScope } from "@/features/surfaces/manifests/research.manifest";
 import {

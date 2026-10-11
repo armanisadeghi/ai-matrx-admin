@@ -9,8 +9,8 @@ import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { repositorySourceHref } from "@/features/admin/reporting/source-links";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { ADMIN_REPORTING_SURFACE_NAME, createAdminReportingScope } from "@/features/surfaces/manifests/admin-reporting.manifest";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import type { ContextMenuExtraItem } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { ContextMenuExtraItem } from "@ai-matrx/context-menu/engine";
 import {
   DETECTOR_TITLES,
   type UnwiredFinding,

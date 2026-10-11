@@ -1,7 +1,7 @@
 "use client";
 
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { CharacterCounter } from "@/features/text-counter/CharacterCounter";
 
 export interface CharacterCounterWindowProps {

@@ -121,11 +121,11 @@ import {
 import { NoteSidebarBulkBar } from "./NoteSidebarBulkBar";
 import { NoteSyncStatusStrip } from "./NoteSyncStatusStrip";
 import { SimpleTooltip } from "@/components/matrx/Tooltip";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type {
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import { useOpenNoteKnowledgePanel } from "@/features/notes/canvas/noteKnowledgeKind";
 import { cn } from "@/lib/utils";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
@@ -152,7 +152,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { StaleDataNotice } from "@ai-matrx/design-system";
 import { useUserOrganizations } from "@/features/organizations/hooks";
-import { CONTEXT_MENU_HEADING_KEY } from "@/features/context-menu-v3/types";
+import { CONTEXT_MENU_HEADING_KEY } from "@ai-matrx/context-menu/engine";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 
 // ── Sort field labels ───────────────────────────────────────────────────────

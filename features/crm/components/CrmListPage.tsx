@@ -114,7 +114,7 @@ import {
   PARTY_TEXT_FILTER_KEYS,
 } from "../types";
 import { PARTY_COLUMNS } from "./columns";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { partyMenuTarget, useCrmRowMenu } from "./crm-row-actions";
 import { AddToOutreachListDialog } from "./outreach-lists/AddToOutreachListDialog";
 import { useOpenCrmCreatePartyWindow } from "@/features/overlays/openers/crmCreatePartyWindow";

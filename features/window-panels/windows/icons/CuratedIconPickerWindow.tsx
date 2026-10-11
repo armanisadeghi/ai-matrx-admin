@@ -32,7 +32,7 @@ import { EmbedSiteFrame } from "@/features/window-panels/components/EmbedSiteFra
 import { cn } from "@/lib/utils";
 import { LUCIDE_ICONS_GALLERY_URL } from "@/utils/icons/lucide-gallery-url";
 import { emitCuratedIconPickerEvent } from "./callbacks";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface CuratedIconPickerWindowProps {
   isOpen: boolean;

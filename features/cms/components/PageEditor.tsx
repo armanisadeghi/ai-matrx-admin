@@ -47,9 +47,9 @@ import {
 } from "@/features/cms/utils/pageUrls";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { SurfaceRoleAgentButton } from "@ai-matrx/chat/surfaces/components/chrome/SurfaceRoleAgentButton";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { Button } from "@/components/ui/button";
 import { Input, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { Checkbox } from "@/components/ui/checkbox";

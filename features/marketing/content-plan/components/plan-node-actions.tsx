@@ -23,12 +23,12 @@ import type {
   ContextMenuEntityRef,
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import {
   applyAvailability,
   needs,
   type AvailabilityMap,
-} from "@/features/context-menu-v3/utils/availability";
+} from "@ai-matrx/context-menu/engine";
 import { cmsPageEditorHref } from "@/features/cms/utils/cmsRoutes";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 
@@ -56,7 +56,7 @@ export function buildPlanNodeMenuSection(
   opts?: {
     label?: string;
     onOpenKeyword?: (row: PlanNodeMenuRow) => void;
-    /** THE CONSISTENCY STEP — see `features/context-menu-v3/utils/availability.ts`. */
+    /** THE CONSISTENCY STEP — see `@ai-matrx/context-menu (src/engine/utils/availability.ts)`. */
     unavailable?: AvailabilityMap;
   },
 ): ContextMenuExtraSection {

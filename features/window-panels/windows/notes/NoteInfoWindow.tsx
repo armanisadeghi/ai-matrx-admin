@@ -14,7 +14,7 @@
  *
  * Right-click surface: this window names exactly one identity (the note it
  * inspects), so it wears the SAME note menu the sidebar row and tab use
- * (`buildNoteContextSections`, features/context-menu-v3/SECTIONS.md) rather
+ * (`buildNoteContextSections`, features/context-menu-host/SECTIONS.md) rather
  * than a bespoke set of actions.
  */
 
@@ -24,14 +24,14 @@ import React from "react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { NoteInfoPanel } from "@/features/notes/components/NoteInfoPanel";
 import { noteFolderReference } from "@/features/notes/types";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type { ContentSource } from "@ai-matrx/rich-content/rich-document/types";
 import { noteIdentityContentSource } from "@/features/notes/richDocumentSource";
 import {
   buildNoteContextSections,
   displayLabel,
 } from "@/features/notes/components/note-actions/noteMenuRegistry";
-import { withAvailability, unavailableHere } from "@/features/context-menu-v3/utils/availability";
+import { withAvailability, unavailableHere } from "@ai-matrx/context-menu/engine";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectNoteById,

@@ -47,8 +47,8 @@ import {
   IMAGE_VIEWER_SURFACE_NAME,
   createImageViewerScope,
 } from "@/features/surfaces/manifests/image-viewer.manifest";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { downloadUrl } from "@ai-matrx/kit/download";
 import { Button } from "@ai-matrx/design-system/controls";
 // context-menu-exempt: entity — the fallback viewer for a PLAIN URL image — a durable file_id routes to openFilePreview instead, so a record here does not exist

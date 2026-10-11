@@ -13,7 +13,7 @@
  * RED against the pre-fix shell: `contextMenu` is undefined for a config with
  * no `getRowAgentContext`, and when present its sections hold no row action.
  */
-import { namedHeader } from "@/features/context-menu-v3/alchemy-provider";
+import { namedHeader } from "@ai-matrx/context-menu/model";
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
@@ -35,13 +35,13 @@ jest.mock("@ai-matrx/design-system/data-table", () => ({
 import { EntityListTable } from "../components/EntityListTable";
 import type { EntityListConfig, EntityRowActions } from "../config";
 import { createActionRegistry, createClickTarget } from "@ai-matrx/alchemy/actions";
-import { contextMenuActionsFromModel } from "@/features/context-menu-v3/alchemy-provider";
-import type { MenuModel, MenuNode } from "@/features/context-menu-v3/model/menu-model";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+import { contextMenuActionsFromModel } from "@ai-matrx/context-menu/model";
+import type { MenuModel, MenuNode } from "@ai-matrx/context-menu/model";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import {
   registerTableRowContextResolver,
   resolveTableRowMenuDescriptor,
-} from "@/features/context-menu-v3/table-row-item";
+} from "@ai-matrx/context-menu/engine";
 
 interface Row {
   id: string;

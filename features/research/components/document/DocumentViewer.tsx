@@ -33,7 +33,7 @@ import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { RichDocumentActions } from "@ai-matrx/rich-content/rich-document/RichDocumentActions";
 import { StoppedEarlyNote } from "../shared/StoppedEarlyNote";
 import { deriveReadiness } from "../../readiness";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import {
   buildResearchContextData,
   RESEARCH_CONTEXT_MENU_PROPS,
@@ -44,7 +44,7 @@ import {
 // Actions / Export / Convert still work via the DOM-content fallback). The
 // wrapper is the lightweight shell (imported statically); MenuContent
 // lazy-loads on first open.
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { Cost } from "@/components/cost/Cost";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { downloadFile } from "@ai-matrx/kit/download";

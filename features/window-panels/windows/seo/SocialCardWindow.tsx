@@ -6,7 +6,7 @@ import {
   SocialCardAnalyzer,
   type SocialCardAnalyzerValues,
 } from "@/features/marketing/seo/social/SocialCardAnalyzer";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 /**
  * SocialCardWindow — the canonical Social Card Analyzer in a floating window.

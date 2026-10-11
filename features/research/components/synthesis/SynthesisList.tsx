@@ -31,7 +31,7 @@ import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { AnswerValueView } from "@/components/official/structured-value/AnswerValueView";
 import { RichDocumentActions } from "@ai-matrx/rich-content/rich-document/RichDocumentActions";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import {
   normalizeSynthesisScope,
   TOPIC_SYNTHESIS_WIRE_SCOPE,
@@ -44,7 +44,7 @@ import {
 /** A string with real (non-whitespace) content. */
 // Universal v3 context menu — lightweight shell, imported statically;
 // MenuContent lazy-loads on first open.
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { ExportMenu } from "@/components/agent-copy/ExportMenu";
 import { csvExportItem, jsonExportItem } from "@/components/agent-copy/export";

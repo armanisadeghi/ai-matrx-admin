@@ -13,7 +13,7 @@
  * sheet also renders) list the SAME registry ids in the SAME order and
  * grouping; the agent libraries live inside the AI submenu; nothing repeats.
  */
-jest.mock("@/features/context-menu-v3/hooks/useContextMenuActions", () => ({
+jest.mock("@ai-matrx/context-menu/model", () => ({
   getPlacementIcon: () => null,
   getPlacementLabel: (p: string) => p,
   resolveIcon: () => null,
@@ -45,8 +45,8 @@ import { chatContext } from "../test-utils/chatContext";
 import {
   buildMenuModel,
   type MenuNode,
-} from "@/features/context-menu-v3/model/menu-model";
-import type { ContextMenuActions } from "@/features/context-menu-v3/hooks/useContextMenuActions";
+} from "@ai-matrx/context-menu/model";
+import type { ContextMenuActions } from "@ai-matrx/context-menu/model";
 
 const noop = () => {};
 
@@ -189,7 +189,8 @@ describe("one registry tree behind every menu", () => {
       // The engine's two menu hosts (built modules of @ai-matrx/rich-content) and the app's model.
       require.resolve("@ai-matrx/rich-content/rich-document/variants/RegistryActionMenu"),
       require.resolve("@ai-matrx/rich-content/rich-document/variants/RegistryActionList"),
-      path.join(__dirname, "../../context-menu-v3/model/menu-model.ts"),
+      // The engine's source lives in the package checkout beside this repo (as the census tests read it).
+      path.join(__dirname, "../../../../aidream/apps/shared/context-menu/src/engine/model/menu-model.ts"),
     ];
     for (const file of hosts) {
       const src = fs.readFileSync(file, "utf8");
@@ -198,7 +199,7 @@ describe("one registry tree behind every menu", () => {
     // The phone sheet, the right-click and the palette are the Alchemy
     // package's layouts over ONE model built from the ONE engine (ALC-15 S3).
     const content = fs.readFileSync(
-      path.join(__dirname, "../../context-menu-v3/components/AlchemyMenuContent.tsx"),
+      path.join(__dirname, "../../../../aidream/apps/shared/context-menu/src/engine/components/AlchemyMenuContent.tsx"),
       "utf8",
     );
     expect(content).toMatch(/buildMenuModel\(/);

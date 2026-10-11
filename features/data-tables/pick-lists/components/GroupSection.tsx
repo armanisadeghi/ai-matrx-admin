@@ -14,7 +14,7 @@ import type { ListGroupBookmark } from "../types";
 import { BookmarkCopyButton } from "./BookmarkCopyButton";
 import { ListItem } from "./ListItem";
 import { LIST_GROUP_DOM_ATTR } from "../dom-anchors";
-import { openContextMenuForElement } from "@/features/context-menu-v3/utils/open-context-menu";
+import { openContextMenuForElement } from "@ai-matrx/context-menu/engine";
 
 interface GroupSectionProps {
   groupName: string;

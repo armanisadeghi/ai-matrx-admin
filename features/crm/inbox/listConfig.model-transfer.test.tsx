@@ -5,11 +5,11 @@ import type { MatrxDataTableCopyConfig } from "@ai-matrx/design-system/data-tabl
 import type { EntityRowActions } from "@/lib/entity-list/config";
 import { EntityListTable } from "@/lib/entity-list/components/EntityListTable";
 import { buildEntityListRowContext } from "@/lib/entity-list/components/EntityListPage";
-import { resolveApplicationScope } from "@/features/context-menu-v3/value-resolution";
+import { resolveApplicationScope } from "@ai-matrx/context-menu/model";
 import {
   registerTableRowContextResolver,
   resolveTableRowMenuDescriptor,
-} from "@/features/context-menu-v3/table-row-item";
+} from "@ai-matrx/context-menu/engine";
 import { inboxListConfig } from "./listConfig";
 import type { InboxRow } from "./types";
 

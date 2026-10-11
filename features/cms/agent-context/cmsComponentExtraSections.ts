@@ -2,7 +2,7 @@ import { Save, Trash2, Pencil } from "lucide-react";
 import type {
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 
 /**
  * CMS-component-specific menu items injected into the canonical v3 context

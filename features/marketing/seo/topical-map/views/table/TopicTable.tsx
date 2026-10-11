@@ -40,7 +40,7 @@ import type {
 import { TextInputDialog } from "@ai-matrx/design-system";
 import { MatrxDataTableHost } from "@/components/official/MatrxDataTableHost";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { useOpenTopicPanel } from "@/features/overlays/openers/topicalMapTopicPanel";
 import { useClippedContentGuard } from "@/lib/layout/useClippedContentGuard";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";

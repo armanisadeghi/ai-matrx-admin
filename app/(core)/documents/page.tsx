@@ -10,8 +10,17 @@ import {
 import { useRouter } from "next/navigation";
 import { FileText, Loader2, Plus, Search } from "lucide-react";
 
+import {
+  FileScopeBar,
+  filterByScope,
+  type FileScope,
+} from "@/features/file-actions/FileScopeBar";
+import {
+  useFileItemActions,
+  type FileKindAdapter,
+} from "@/features/file-actions/useFileItemActions";
+
 import { Card, CardContent } from "@/components/ui/card";
-import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/components/ui/use-toast";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { TapTargetButtonSolid } from "@ai-matrx/design-system/tap-target";
@@ -19,9 +28,13 @@ import { DocumentListCard } from "@/features/documents/components/DocumentListCa
 import { DocumentsHubTable } from "@/features/documents/components/DocumentsHubTable";
 import { DocumentsHubToolbar } from "@/features/documents/components/DocumentsHubToolbar";
 import {
+  copyDocument,
   createDocument,
   deleteDocument,
   listAccessibleDocuments,
+  listTrashedDocuments,
+  renameDocument,
+  restoreDocument,
 } from "@/features/documents/document-service";
 import {
   isServiceFailure,
@@ -37,8 +50,8 @@ import {
   DOCUMENTS_SURFACE_NAME,
 } from "@/features/documents/agent-context/buildDocumentsContextData";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
-import { captureDomSelection } from "@/features/context-menu-v3/utils/selection-tracking";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
+import { captureDomSelection } from "@ai-matrx/context-menu/engine";
 import {
   useListViewPrefs,
   type LegacyListViewImport,
@@ -61,6 +74,18 @@ const DOCUMENTS_HUB_LEGACY_VIEW: LegacyListViewImport = {
   map: (raw) => (raw === "table" || raw === "cards" ? { view: raw } : null),
 };
 
+const DOCUMENT_ADAPTER: FileKindAdapter<DocumentRow> = {
+  noun: "document",
+  resourceType: "udt_document",
+  entityType: "udt_document",
+  nameOf: (d) => d.document_name,
+  hrefFor: (id) => `/documents/${id}`,
+  rename: renameDocument,
+  copy: copyDocument,
+  trash: deleteDocument,
+  restore: restoreDocument,
+};
+
 export default function DocumentsLandingPage() {
   const router = useRouter();
   const organizationId = useAppSelector(selectOrganizationId);
@@ -69,6 +94,7 @@ export default function DocumentsLandingPage() {
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [query, setQuery] = useState("");
+  const [scope, setScope] = useState<FileScope>("all");
   const [sortKey, setSortKey] = useState<DocumentSortKey>("updated");
   const [navigatingId, setNavigatingId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -82,7 +108,10 @@ export default function DocumentsLandingPage() {
 
   const reload = useCallback(async () => {
     setLoading(true);
-    const res = await listAccessibleDocuments();
+    const res =
+      scope === "trash"
+        ? await listTrashedDocuments()
+        : await listAccessibleDocuments();
     if (isServiceFailure(res)) {
       setError(res.error);
       setLoading(false);
@@ -91,7 +120,7 @@ export default function DocumentsLandingPage() {
     setDocuments(res.data);
     setError(null);
     setLoading(false);
-  }, []);
+  }, [scope]);
 
   useEffect(() => {
     void reload();
@@ -130,28 +159,9 @@ export default function DocumentsLandingPage() {
     router.push(`/documents/${res.data.id}`);
   }, [organizationId, router]);
 
-  const handleDelete = useCallback(
-    async (doc: DocumentRow) => {
-      const ok = await confirm({
-        title: "Delete document?",
-        description: `"${doc.document_name}" and all of its saved snapshots will be moved to the trash.`,
-        confirmLabel: "Delete",
-        variant: "destructive",
-      });
-      if (!ok) return;
-      const res = await deleteDocument(doc.id);
-      if (isServiceFailure(res)) {
-        toast({
-          title: "Could not delete document",
-          description: res.error,
-          variant: "destructive",
-        });
-        return;
-      }
-      toast({ title: "Document deleted", variant: "success" });
-      void reload();
-    },
-    [reload],
+  const { userId, starredIds, menuFor } = useFileItemActions(
+    DOCUMENT_ADAPTER,
+    reload,
   );
 
   const isAnyNavigating = navigatingId != null || isPending;
@@ -168,15 +178,14 @@ export default function DocumentsLandingPage() {
   );
 
   const filteredDocuments = useMemo(() => {
-    const filtered = documents.filter((doc) =>
-      documentMatchesQuery(doc, query),
-    );
+    const scoped = filterByScope(documents, scope, userId, starredIds);
+    const filtered = scoped.filter((doc) => documentMatchesQuery(doc, query));
     return sortDocuments(filtered, sortKey);
-  }, [documents, query, sortKey]);
+  }, [documents, scope, userId, starredIds, query, sortKey]);
 
   const isSearching = query.trim().length > 0;
   const totalVisible = filteredDocuments.length;
-  const showToolbar = !loading && !error && documents.length > 0;
+  const showToolbar = !loading && !error && (documents.length > 0 || scope !== "all");
 
   // ---- Agent-context surface (matrx-user/documents, library view) ---------
   // Plain function (React Compiler memoizes; never useCallback) so it reads
@@ -224,7 +233,13 @@ export default function DocumentsLandingPage() {
         }
         right={
           <TapTargetButtonSolid
-            icon={<Plus className="h-4 w-4" />}
+            icon={
+              creating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4" />
+              )
+            }
             label="New document"
             onClick={handleCreate}
             disabled={creating}
@@ -245,7 +260,9 @@ export default function DocumentsLandingPage() {
                 onViewChange={setView}
                 sortKey={sortKey}
                 onSortChange={setSortKey}
+                hideSearch={view === "table"}
               />
+              <FileScopeBar scope={scope} onChange={setScope} />
 
               {isSearching ? (
                 <p className="px-1 text-[11px] tabular-nums text-muted-foreground">
@@ -273,7 +290,13 @@ export default function DocumentsLandingPage() {
             </Card>
           )}
 
-          {!loading && !error && documents.length === 0 && (
+          {!loading && !error && documents.length === 0 && scope !== "all" && (
+            <div className="py-12 text-center text-sm text-muted-foreground">
+              {scope === "trash" ? "Trash is empty." : "Nothing here."}
+            </div>
+          )}
+
+          {!loading && !error && documents.length === 0 && scope === "all" && (
             <Card>
               <CardContent className="flex flex-col items-center gap-2 p-10 text-center text-muted-foreground">
                 <FileText className="size-8" />
@@ -297,11 +320,21 @@ export default function DocumentsLandingPage() {
             </div>
           ) : null}
 
+          {!loading &&
+          !error &&
+          documents.length > 0 &&
+          !isSearching &&
+          totalVisible === 0 ? (
+            <div className="py-12 text-center text-sm text-muted-foreground">
+              Nothing here.
+            </div>
+          ) : null}
+
           {!loading && !error && documents.length > 0 && totalVisible > 0 ? (
             view === "table" ? (
               <DocumentsHubTable
                 documents={filteredDocuments}
-                onDelete={handleDelete}
+                menuFor={(doc) => menuFor(doc, scope === "trash")}
               />
             ) : (
               <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -312,7 +345,9 @@ export default function DocumentsLandingPage() {
                     isNavigating={navigatingId === doc.id}
                     isAnyNavigating={isAnyNavigating}
                     onNavigate={handleNavigate}
-                    onDelete={handleDelete}
+                    menu={menuFor(doc, scope === "trash")}
+                    starred={starredIds.has(doc.id)}
+                    shared={userId !== null && doc.user_id !== userId}
                   />
                 ))}
               </div>

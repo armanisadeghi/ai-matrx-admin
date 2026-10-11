@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { GalleryFloatingWorkspace } from "@/features/gallery/components/GalleryFloatingWorkspace";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type { ApplicationScope } from "@ai-matrx/chat/agents/types/scope.types";
 import {
   GALLERY_SURFACE_NAME,

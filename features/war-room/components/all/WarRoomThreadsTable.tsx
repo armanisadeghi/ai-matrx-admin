@@ -21,8 +21,8 @@ import { containerKey } from "@/features/war-room/types";
 import { threadDisplayTitle } from "@/features/war-room/utils/threadDisplayTitle";
 import { formatRelativeTime, formatAbsoluteDate } from "@/utils/datetime";
 import { keyFieldsAiVariant } from "@/features/marketing/lib/copy-payloads";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import {
   threadCopyLines,
   threadEntityRef,

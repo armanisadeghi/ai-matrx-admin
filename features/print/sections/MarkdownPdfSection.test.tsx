@@ -53,7 +53,7 @@ const capturedMenuProps: {
   sourceFeature?: string;
 } = {};
 
-jest.mock("@/features/context-menu-v3/EditableContextMenu", () => ({
+jest.mock("@ai-matrx/context-menu/react", () => ({
   EditableContextMenu: ({
     children,
     extraSections,

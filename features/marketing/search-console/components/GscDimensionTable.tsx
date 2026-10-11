@@ -28,8 +28,8 @@ import {
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { trackPage } from "@/features/marketing/search-console/data-launch";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import { useOpenGscDrilldownWindow } from "@/features/overlays/openers/gscDrilldownWindow";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type {

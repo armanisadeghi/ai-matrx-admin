@@ -15,8 +15,8 @@ import { CrmFoldControl } from "@/features/crm/components/outreach-start/CrmFold
 import { StartOutreachDialog } from "@/features/crm/components/outreach-start/StartOutreachDialog";
 import { isNonProspectDomainVerdict } from "@/features/crm/outreach-start/service";
 import { toast } from "@/lib/toast";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import {
   referringDomainEntityRef,
   buildReferringDomainMenuSection,

@@ -109,7 +109,7 @@ import { fetchUnifiedMenu } from "@ai-matrx/chat/agents/redux/agent-shortcuts/th
 import { resolveRowScope } from "@ai-matrx/chat/agents/redux/shared/scope";
 import type { Scope, ScopeRef } from "@ai-matrx/chat/agents/redux/shared/scope";
 import type { SourceFeature } from "@ai-matrx/chat/agents/types/instance.types";
-import { useUnifiedAgentContextMenu } from "@/features/context-menu-v3/hooks/useUnifiedAgentContextMenu";
+import { useUnifiedAgentContextMenu } from "@ai-matrx/context-menu/model";
 import { getAllManifests } from "@/features/surfaces/manifests/registry";
 import type { SurfaceManifest } from "@ai-matrx/chat/surfaces/types";
 import { supabase } from "@/utils/supabase/client";
@@ -133,11 +133,11 @@ import {
   formatLabContextJson,
   getLabSurfacePreset,
 } from "../_fixtures/lab-surface-presets";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { createNotesEditorExtraSections } from "@/features/notes/agent-context/notesEditorExtraSections";
 import { DemoProTextarea } from "../_components/DemoProTextarea";
 
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { extractErrorMessage } from "@/utils/errors";
 

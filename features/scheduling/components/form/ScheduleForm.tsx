@@ -55,7 +55,7 @@ import { AutomationLimitsSection } from "../limits/AutomationLimitsSection";
 import { VariablesEditor } from "./VariablesEditor";
 import { AgentListDropdown } from "@ai-matrx/agents/catalog/react";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 

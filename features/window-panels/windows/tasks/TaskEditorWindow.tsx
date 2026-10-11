@@ -31,7 +31,7 @@ import {
   TaskMetadataFooter,
 } from "@/features/tasks/components/editor/TaskWindowChrome";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   createTasksExtraSections,
   TASKS_CONTEXT_MENU_PROPS,

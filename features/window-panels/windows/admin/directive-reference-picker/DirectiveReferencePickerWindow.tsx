@@ -2,7 +2,7 @@
 
 import { Search } from "lucide-react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { RecordReferencePicker } from "@/features/matrx-envelope/components/ReferenceTypeAdder";
 import type { ReferenceItem } from "@ai-matrx/agents/envelope";
 import type { EntityTypeToken } from "@ai-matrx/associations";

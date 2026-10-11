@@ -23,7 +23,7 @@ import { GUIDED_CAPTURE_PLATFORMS } from "@/features/marketing/social/gated/guid
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { isJsonObject } from "@/types/json";
 import { useTopicContext } from "../../context/ResearchContext";
-import { PageSurfaceMenu } from "@/features/context-menu-v3/PageSurfaceMenu";
+import { PageSurfaceMenu } from "@ai-matrx/context-menu/react";
 import { useSurfaceScopeContribution } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createResearchScope } from "@/features/surfaces/manifests/research.manifest";
 import { getSources } from "../../service";

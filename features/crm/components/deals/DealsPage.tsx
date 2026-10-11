@@ -30,7 +30,7 @@ import type {
 } from "@ai-matrx/design-system/data-table/types";
 import { ItemMenu } from "@ai-matrx/design-system/item";
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { dealMenuTarget, useCrmRowMenu } from "../crm-row-actions";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { useAppSelector } from "@/lib/redux/hooks";

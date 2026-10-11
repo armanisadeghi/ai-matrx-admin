@@ -41,7 +41,7 @@ import DbKindComponent from "@/features/content-ir/react/db-component/DbKindComp
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { useEnsureKindRenderable } from "@ai-matrx/rich-content/kinds/react/ensure-kind-renderable";
 import { cn } from "@/lib/utils";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface DirectiveItemWindowProps {
   windowInstanceId: string;

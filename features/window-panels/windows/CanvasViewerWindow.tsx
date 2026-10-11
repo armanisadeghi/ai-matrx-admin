@@ -19,7 +19,7 @@ import {
   CANVAS_VIEWER_SURFACE_NAME,
   createCanvasViewerScope,
 } from "@/features/surfaces/manifests/canvas-viewer.manifest";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface CanvasViewerWindowProps {
   isOpen: boolean;

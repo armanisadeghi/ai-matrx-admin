@@ -17,7 +17,7 @@ import {
 } from "@/components/official/content-editor/ContentEditorTabsWithList";
 import { useContentEditorEmitter } from "./useContentEditorEmitter";
 import type { ContentEditorSeedDocument } from "./useOpenContentEditorWindow";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface ContentEditorWorkspaceWindowProps {
   windowInstanceId: string;

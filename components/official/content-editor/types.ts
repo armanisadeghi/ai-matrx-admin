@@ -2,7 +2,7 @@
 
 import type { SourceFeature } from "@ai-matrx/chat/agents/types/instance.types";
 import type { ContentSource } from "@ai-matrx/rich-content/rich-document/types";
-import type { ContextMenuEntityRef } from "@/features/context-menu-v3/types";
+import type { ContextMenuEntityRef } from "@ai-matrx/context-menu/engine";
 import type { ImagePolicyDeclaration } from "@ai-matrx/rich-content/levels/prose/remote-image-policy";
 
 export type EditorMode =

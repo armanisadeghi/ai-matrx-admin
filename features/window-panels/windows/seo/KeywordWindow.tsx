@@ -17,15 +17,15 @@ import {
   type KeywordIntelTab,
 } from "@/features/marketing/seo/keyword/types";
 import { cn } from "@/lib/utils";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import {
   keywordEntityRef,
   useKeywordAssignSurfaces,
   useKeywordMenuSection,
   type KeywordMenuRow,
 } from "@/features/marketing/seo/keyword/keyword-actions";
-import { unavailableHere } from "@/features/context-menu-v3/utils/availability";
+import { unavailableHere } from "@ai-matrx/context-menu/engine";
 
 /**
  * KeywordWindow — the canonical Keyword Intelligence window: everything the

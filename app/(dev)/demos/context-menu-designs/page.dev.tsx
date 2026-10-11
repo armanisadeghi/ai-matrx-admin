@@ -5,13 +5,13 @@
  *
  * Every menu here is the REAL menu: the real wrappers, the real registry, the real agent
  * libraries for each surface. The proposed side only re-arranges what the registry resolved
- * (`features/context-menu-v3/proposed/proposed-arrangement.ts`) and draws it large and header-less.
+ * (`@ai-matrx/context-menu (src/engine/proposed/proposed-arrangement.ts)`) and draws it large and header-less.
  * Each pair is drawn open beside its surface; right-click any surface to try it by hand.
  */
 
 import { useEffect, useRef, useState } from "react";
-import { MenuRegroupProvider, type MenuRegroupValue } from "@/features/context-menu-v3/regroup/RegroupContext";
-import { proposedArrangement } from "@/features/context-menu-v3/proposed/proposed-arrangement";
+import { MenuRegroupProvider, type MenuRegroupValue } from "@ai-matrx/context-menu/react";
+import { proposedArrangement } from "@ai-matrx/context-menu/engine";
 import { NotesDemoPanel } from "../context-menu/_components/NotesDemoPanel";
 import { QuizListPanel } from "../context-menu-regroup/_components/QuizListPanel";
 import { TableRowsPanel } from "./_components/TableRowsPanel";

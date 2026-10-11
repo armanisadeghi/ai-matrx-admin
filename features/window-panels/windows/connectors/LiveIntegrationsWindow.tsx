@@ -2,7 +2,7 @@
 
 import { LiveIntegrationsList } from "@/features/connectors/LiveIntegrationsList";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 interface LiveIntegrationsWindowProps {
   isOpen: boolean;

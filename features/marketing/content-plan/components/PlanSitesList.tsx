@@ -51,12 +51,12 @@ import type {
 import { ItemMenu } from "@ai-matrx/design-system/item";
 import { GovernedActionDialog } from "@/features/access-gate/components/GovernedActionDialog";
 import { isGovernedActionDenial } from "@/features/access-gate/lib/governedActionError";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   CONTEXT_MENU_ENTITY_KEY,
   type ContextMenuExtraItem,
   type ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import {
   siteEntityRef,
   buildSiteMenuSection,

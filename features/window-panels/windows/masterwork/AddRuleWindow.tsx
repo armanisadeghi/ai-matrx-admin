@@ -13,7 +13,7 @@ import React, { useEffect, useRef } from "react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { AddRulePanel } from "@/features/masterwork/components/add-rule/AddRulePanel";
 import { emitAddRuleEvent, type AddRuleWindowData } from "./callbacks";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 
 const OVERLAY_ID = "masterworkAddRuleWindow";
 

@@ -85,7 +85,7 @@ jest.mock("@/features/canvas/hooks/useCanvas", () => ({
 jest.mock("@/features/canvas/hooks/useOpenArtifactInCanvas", () => ({
   useOpenArtifactInCanvas: () => ({ openArtifact: jest.fn() }),
 }));
-jest.mock("@/features/context-menu-v3/NonEditableContextMenu", () => ({
+jest.mock("@ai-matrx/context-menu/react", () => ({
   NonEditableContextMenu: ({ children }: { children: React.ReactNode }) => children,
 }));
 jest.mock("@/features/tasks/components/ImportTasksModal", () => ({ __esModule: true, default: () => null }));

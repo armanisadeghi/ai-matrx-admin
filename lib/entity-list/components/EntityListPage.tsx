@@ -34,7 +34,7 @@ import {
 } from "../columnWidths";
 import { entityListDoorColumnId } from "../doors";
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import { commitUrlParams } from "@ai-matrx/kit/url-state";
 import { useListSearchParams } from "../useListSearchParams";
 import { useListViewPrefs } from "@/lib/list-views/useListViewPrefs";

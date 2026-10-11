@@ -16,13 +16,13 @@
  */
 
 import { useEffect, useEffectEvent, useRef, useState } from "react";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   MenuRegroupProvider,
   type MenuResolutionReport,
-} from "@/features/context-menu-v3/regroup/RegroupContext";
-import { PROPOSED_MENU_GROUPING } from "@/features/context-menu-v3/regroup/proposed-grouping";
-import { auditRegroup, type RegroupAudit } from "@/features/context-menu-v3/regroup/grouping";
+} from "@ai-matrx/context-menu/react";
+import { PROPOSED_MENU_GROUPING } from "@ai-matrx/context-menu/engine";
+import { auditRegroup, type RegroupAudit } from "@ai-matrx/context-menu/engine";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { NotesDemoPanel } from "../context-menu/_components/NotesDemoPanel";
 import { QuizListPanel } from "./_components/QuizListPanel";

@@ -15,11 +15,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type {
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import { formatFileSize } from "@/features/files/utils/format";
 import { formatRelativeTime } from "@/utils/datetime";
 import { FilesystemPropertiesDialog } from "./FilesystemPropertiesDialog";
@@ -38,7 +38,7 @@ import {
 } from "../../styles/tokens";
 import { useDirectoryVersion, useInvalidateDirectory } from "./FileTreeWatcher";
 import { Button } from "@/components/ui/button";
-import { openContextMenuForElement } from "@/features/context-menu-v3/utils/open-context-menu";
+import { openContextMenuForElement } from "@ai-matrx/context-menu/engine";
 import { validateFilesystemEntryName } from "./fileTreePaths";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { copyToClipboard } from "@/lib/clipboard/copy";

@@ -24,7 +24,7 @@ import type {
   CodeFile,
 } from "@/features/code-editor/agent-code-editor/types";
 import { useSmartCodeEditorEmitter } from "./useSmartCodeEditorEmitter";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface SmartCodeEditorWindowProps {
   windowInstanceId: string;

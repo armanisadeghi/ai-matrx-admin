@@ -34,7 +34,7 @@ import type {
   KeywordMarketRow,
   KeywordWithMarket,
 } from "@/features/marketing/seo/keyword-research/types";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import {
   buildKeywordResearchWindowScope,

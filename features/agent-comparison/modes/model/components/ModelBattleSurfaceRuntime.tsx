@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   SurfaceRuntimeProvider,
   type SurfaceWriteHandlers,

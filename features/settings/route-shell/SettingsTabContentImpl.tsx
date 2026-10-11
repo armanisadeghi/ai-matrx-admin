@@ -11,7 +11,7 @@ import { flattenLeaves } from "@/components/official/settings/tree/types";
 import {
   SurfaceRuntimeProvider,
 } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { createSettingsScope } from "@/features/surfaces/manifests/settings.manifest";
 import {
   getSliceBinding,

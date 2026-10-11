@@ -58,7 +58,7 @@ procedure — open it only when you are doing that job or the check fails.
    simple question with the full page list and before/after links (law:
    `common-docs/policies/no-dead-ends.md`); if it suits your page
    and not the others, make it an option for your page, never the new default. Run that
-   component's tests (`npx jest <its dir>`; menus: `npx jest features/context-menu-v3`,
+   component's tests (`npx jest <its dir>`; menus: `npx jest @ai-matrx/context-menu`,
    which runs the heading check). If it belongs on the server (a read wrongly gated,
    a 4xx/5xx the page can't fix), fix it in `../aidream` under that repo's
    CLAUDE.md, same commit rules, and name both commits in your report.

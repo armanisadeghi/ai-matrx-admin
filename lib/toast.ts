@@ -79,7 +79,7 @@ const captured = createMatrxToast({
 
 /**
  * The identity a record-naming toast carries. Deliberately the same shape as
- * `ContextMenuEntityRef` (`features/context-menu-v3/types.ts`,
+ * `ContextMenuEntityRef` (`@ai-matrx/context-menu (src/engine/types.ts)`,
  * `CONTEXT_MENU_ENTITY_KEY`) so a surface that already resolves a row's entity
  * for its context menu passes the SAME object here — one record reference for
  * the platform, not two.

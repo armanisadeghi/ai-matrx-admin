@@ -27,7 +27,7 @@ import {
   updateScheduledTask,
 } from "../../redux/tasks/thunks";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { createSchedulesScope } from "@/features/surfaces/manifests/schedules.manifest";
 import { useTaskDetail } from "../../hooks/useTaskDetail";
 import { useScheduledTasks } from "../../hooks/useScheduledTasks";

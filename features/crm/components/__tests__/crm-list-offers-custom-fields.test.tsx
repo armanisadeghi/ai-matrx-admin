@@ -128,7 +128,7 @@ jest.mock("@/utils/supabase/client", () => (require("@/tests/helpers/emptySupaba
 jest.mock("@/features/crm/components/saved-views/SavedViewBar", () => ({ SavedViewBar: () => null }));
 jest.mock("@/features/crm/components/dedup/CrmAssistStrip", () => ({ CrmAssistStrip: () => null }));
 jest.mock("@/features/crm/components/outreach-lists/AddToOutreachListDialog", () => ({ AddToOutreachListDialog: () => null }));
-jest.mock("@/features/context-menu-v3/NonEditableContextMenu", () => ({
+jest.mock("@ai-matrx/context-menu/react", () => ({
   NonEditableContextMenu: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 jest.mock("@/features/crm/components/crm-row-actions", () => ({

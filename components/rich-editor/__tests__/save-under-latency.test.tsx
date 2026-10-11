@@ -17,10 +17,10 @@ jest.mock("@/lib/toast", () => ({
   toast: { success: jest.fn(), error: jest.fn(), info: jest.fn(), warning: jest.fn() },
 }));
 jest.mock("@ai-matrx/kit/media-query", () => ({ ...jest.requireActual("@ai-matrx/kit/media-query"), useIsMobile: () => false }));
-jest.mock("@/features/context-menu-v3/EditableContextMenu", () => ({
+jest.mock("@ai-matrx/context-menu/react", () => ({
   EditableContextMenu: ({ children }: { children: React.ReactNode }) => children,
 }));
-jest.mock("@/features/context-menu-v3/utils/build-application-scope", () => ({
+jest.mock("@ai-matrx/context-menu/engine", () => ({
   buildApplicationScopeFromMenuContext: () => ({}),
 }));
 jest.mock("@/features/audio/hooks/useMicField", () => ({

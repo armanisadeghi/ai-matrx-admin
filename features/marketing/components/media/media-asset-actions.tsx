@@ -34,11 +34,11 @@ import {
 import type {
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import {
   withAvailability,
   type AvailabilityMap,
-} from "@/features/context-menu-v3/utils/availability";
+} from "@ai-matrx/context-menu/engine";
 import {
   BRAND_ASSET_KIND_LABELS,
   BRAND_ASSET_KINDS,
@@ -67,7 +67,7 @@ export function buildMediaAssetMenuSection(
   actions: MediaAssetMenuActions,
   opts?: {
     label?: string;
-    /** THE CONSISTENCY STEP — see `features/context-menu-v3/utils/availability.ts`. */
+    /** THE CONSISTENCY STEP — see `@ai-matrx/context-menu (src/engine/utils/availability.ts)`. */
     unavailable?: AvailabilityMap;
   },
 ): ContextMenuExtraSection {

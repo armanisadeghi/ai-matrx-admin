@@ -19,7 +19,7 @@
 import { whatYouMayDo } from "@ai-matrx/records-ui";
 import { tableActions, tableLink, type ObjectAction } from "@ai-matrx/records-ui/object-actions";
 
-import type { ContextMenuEntityRef, ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+import type { ContextMenuEntityRef, ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { toExtraSections } from "@/features/unified-data/actions/tableActionAdapters";
 import { copyToClipboard } from "@/lib/clipboard/copy";
 

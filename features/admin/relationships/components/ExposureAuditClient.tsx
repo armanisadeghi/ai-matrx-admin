@@ -39,8 +39,8 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { isEntityTypeToken } from "@ai-matrx/associations";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import type { ExposureAuditRow, ExposureAuditSummary } from "../types";
 import { useTableUrlState } from "@ai-matrx/design-system/data-table/url-state";
 import {

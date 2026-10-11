@@ -27,8 +27,8 @@ import { selectInstanceStatus } from "@ai-matrx/chat/agents/redux/execution-syst
 import { selectConversationRequestIds } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
 import { cn } from "@/lib/utils";
 import { shallowEqual } from "react-redux";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 // Reused menu labeled item shapes: the canonical `buildConversationMenu` needs
 // favorite/archived/excludeFromKg state this debug slice does not carry (it
 // only tracks stream/request status, not conversation-list metadata), so

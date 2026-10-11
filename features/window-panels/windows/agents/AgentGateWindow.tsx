@@ -2,7 +2,7 @@
 
 import { AgentGateBody } from "@ai-matrx/chat/agents/components/agent-widgets/execution-gates/AgentGateInput";
 import type { ChatWindowId } from "@ai-matrx/chat/host";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 interface AgentGateWindowProps {
   instanceId: string;

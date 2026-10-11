@@ -46,7 +46,7 @@ import { useOrganizationLabel } from "@/features/organizations/hooks/useOrganiza
 import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
 import SandboxedHtml from "@ai-matrx/rich-content/display/blocks/common/SandboxedHtml";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ARTIFACTS_SURFACE_NAME } from "@/features/surfaces/manifests/artifacts.manifest";
 import {
   buildArtifactDetailScope,

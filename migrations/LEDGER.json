@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-11T01:22:18.254Z",
+  "generated_at": "2026-10-11T02:17:16.906Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -6818,6 +6818,12 @@
       "checksum": "55dcf9f0be1489430affe0bd1f29708bb9151f1bfda86376b7119c0d53adc319",
       "applied_at": "2026-09-21 22:21:41.026035+00"
     },
+    "migrations/campaign/rowlabel_b_every_naming_path_reads_the_formula.sql": {
+      "source": "matrx-frontend",
+      "filename": "rowlabel_b_every_naming_path_reads_the_formula.sql",
+      "checksum": "c576c38286c0047ff835262cab822fbac06c1cfacc4622ef3f2448d293a21036",
+      "applied_at": "2026-10-11 02:09:21.267242+00"
+    },
     "migrations/campaign/sc1p_a_context_copy_is_written_only_by_its_follow.sql": {
       "source": "matrx-frontend",
       "filename": "sc1p_a_context_copy_is_written_only_by_its_follow.sql",
@@ -8269,6 +8275,12 @@
       "filename": "spacesasks_a_a_notion_formula_is_accepted_as_typed.sql",
       "checksum": "81cbafb4fec62e88bcbe2afe7c7e025cf05eb3fce3810e4b541a6a02b37b9dbc",
       "applied_at": "2026-10-08 16:29:03.157681+00"
+    },
+    "migrations/campaign/splitread_a_a_split_off_record_reads_as_itself.sql": {
+      "source": "matrx-frontend",
+      "filename": "splitread_a_a_split_off_record_reads_as_itself.sql",
+      "checksum": "5f8169de95aa4d07f221e4d16ad6e44f4ceccf086291fa325d5fbd9738aaf50a",
+      "applied_at": "2026-10-11 02:17:15.637952+00"
     },
     "migrations/campaign/stagerules2_a_gate_remembers_what_it_was_asked.sql": {
       "source": "matrx-frontend",

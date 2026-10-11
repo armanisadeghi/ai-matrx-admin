@@ -38,7 +38,7 @@ import {
 
 // Universal v3 context menu — the SAME menu everywhere. The wrapper is the
 // lightweight shell (imported statically); MenuContent lazy-loads on first open.
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 interface CodeReadonlyContextMenuProps {
   children: React.ReactNode;

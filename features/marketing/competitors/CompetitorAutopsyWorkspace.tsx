@@ -23,11 +23,11 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { CellEditsMap, MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   CONTEXT_MENU_ENTITY_KEY,
   type ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import { useCompetitorMenu } from "./competitor-actions";
 import {
   collectionRunContent,

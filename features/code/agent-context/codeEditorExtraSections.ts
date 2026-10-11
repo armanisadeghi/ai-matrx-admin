@@ -14,7 +14,7 @@ import {
   TextSelect,
   WrapText,
 } from "lucide-react";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import type { StandaloneCodeEditor } from "../editor/MonacoEditor";
 
 export interface CodeEditorExtraSectionsConfig {

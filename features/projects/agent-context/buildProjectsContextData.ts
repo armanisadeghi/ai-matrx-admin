@@ -1,7 +1,7 @@
 import { toast } from "@/lib/toast";
 import { Settings, Network } from "lucide-react";
-import type { PlacementMode } from "@/features/context-menu-v3/types";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+import type { PlacementMode } from "@ai-matrx/context-menu/engine";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { createProjectsScope } from "@/features/surfaces/manifests/projects.manifest";
 import type { Project } from "@/features/projects/types";
 

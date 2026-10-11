@@ -31,8 +31,8 @@ import {
 import { cn } from "@/lib/utils";
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
 import { formatJson } from "@ai-matrx/kit/json-format";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
 import { toast } from "@/lib/toast";
 // context-menu-exempt: entity — a Redux state dump of the instanceUIState slice, not a persisted record; the underlying conversation/agent already has its own doors elsewhere

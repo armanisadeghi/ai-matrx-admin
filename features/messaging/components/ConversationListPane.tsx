@@ -20,8 +20,8 @@ import { useMessagePins } from "../lib/useMessagePins";
 import { ConversationList, useConversations } from "@ai-matrx/messaging/react";
 import type { ConversationSummary } from "@ai-matrx/messaging/react";
 import { cn } from "@/lib/utils";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import { NewConversationDialog } from "./NewConversationDialog";
 import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
 import {

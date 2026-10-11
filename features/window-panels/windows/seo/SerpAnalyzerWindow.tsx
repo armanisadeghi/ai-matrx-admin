@@ -6,7 +6,7 @@ import {
   MetadataAnalyzer,
   type MetadataAnalyzerValues,
 } from "@/features/marketing/seo/serp/MetadataAnalyzer";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 /**
  * SerpAnalyzerWindow — the canonical Metadata Analyzer in a floating window.

@@ -44,7 +44,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@ai-matrx/design-system/controls";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { useClippedContentGuard } from "@/lib/layout/useClippedContentGuard";
 import { toast } from "@/lib/toast";

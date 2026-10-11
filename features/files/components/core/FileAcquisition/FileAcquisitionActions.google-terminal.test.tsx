@@ -81,7 +81,7 @@ jest.mock("@/features/marketing/google/hooks", () => ({
 jest.mock("@/features/google-workspace/GoogleAccountSelect", () => ({
   GoogleAccountSelect: () => null,
 }));
-jest.mock("@/features/context-menu-v3/NonEditableContextMenu", () => ({
+jest.mock("@ai-matrx/context-menu/react", () => ({
   NonEditableContextMenu: ({ children }: { children: ReactNode }) => children,
 }));
 jest.mock("@/lib/googlePicker", () => ({

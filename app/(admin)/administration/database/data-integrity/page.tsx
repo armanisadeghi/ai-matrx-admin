@@ -42,8 +42,8 @@ import {
 } from "@/components/official/entity-ref/doors";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { stringUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import type { ContextMenuExtraItem } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { ContextMenuExtraItem } from "@ai-matrx/context-menu/engine";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 type Severity = "error" | "warning" | "info";

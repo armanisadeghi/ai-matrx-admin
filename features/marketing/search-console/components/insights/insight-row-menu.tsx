@@ -33,11 +33,11 @@ import type {
   ContextMenuEntityRef,
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import {
   applyAvailability,
   type AvailabilityMap,
-} from "@/features/context-menu-v3/utils/availability";
+} from "@ai-matrx/context-menu/engine";
 import type { OpenGscDrilldownWindowOptions } from "@/features/overlays/openers/gscDrilldownWindow";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { levelVocabularyHref } from "@/features/marketing/seo/value-system/reason-links";
@@ -192,7 +192,7 @@ export function buildPageMenuSection(opts: {
    * item is then omitted, never a dead entry.
    */
   mapPagesHref?: string | null;
-  /** THE CONSISTENCY STEP — see `features/context-menu-v3/utils/availability.ts`. */
+  /** THE CONSISTENCY STEP — see `@ai-matrx/context-menu (src/engine/utils/availability.ts)`. */
   unavailable?: AvailabilityMap;
 }): ContextMenuExtraSection {
   const { siteId, siteName, url, pageId, openDrilldown } = opts;

@@ -10,7 +10,7 @@
 
 import { useState } from "react";
 import { ShieldCheck, TriangleAlert } from "lucide-react";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { cn } from "@/styles/themes/utils";

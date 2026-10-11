@@ -7,9 +7,9 @@ import { Globe, Lock, Users, Loader2, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { UserList } from "../types";
 import { getListVisibility } from "../types";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { Button } from "@/components/ui/button";
-import { openContextMenuForElement } from "@/features/context-menu-v3/utils/open-context-menu";
+import { openContextMenuForElement } from "@ai-matrx/context-menu/engine";
 import { listCalendarAge } from "@/features/data-tables/pick-lists/calendar-age";
 
 interface ListCardProps {

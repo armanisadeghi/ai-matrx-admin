@@ -32,8 +32,8 @@ import type { ContentEditorProps, EditorMode, EditorModeConfig } from "./types";
 import RichEditor, { type RichEditorController } from "@ai-matrx/rich-editor/editor/RichEditor";
 import { CopyDropdownButton } from "./CopyDropdownButton.lazy";
 import { ContentManagerMenu } from "./ContentManagerMenu.lazy";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 // Mode configurations

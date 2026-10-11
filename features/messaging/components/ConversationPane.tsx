@@ -39,8 +39,8 @@ import {
 import { asConversationId, type Message } from "@ai-matrx/messaging";
 import { MessagesComposerInput } from "./MessagesComposerInput";
 import { cn } from "@/lib/utils";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
 import {
   MESSAGES_SURFACE_NAME,

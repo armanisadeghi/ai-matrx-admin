@@ -83,7 +83,7 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { ApplicationScope } from "@ai-matrx/chat/agents/types/scope.types";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { useOpenImageAnnotationWindow } from "@/features/overlays/openers/imageAnnotationWindow";
 import { CloudFolders } from "@/features/files/utils/folder-conventions";
 import type { FeedbackSubject } from "@/features/overlays/openers/feedbackDialog";

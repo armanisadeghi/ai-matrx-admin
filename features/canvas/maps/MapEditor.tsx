@@ -26,7 +26,7 @@ import { Input } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import {
   MAPS_SURFACE_NAME,

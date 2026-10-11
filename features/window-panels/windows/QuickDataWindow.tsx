@@ -3,7 +3,7 @@
 import React from "react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { QuickDataSheet } from "@/features/quick-actions/components/QuickDataSheet";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { QUICK_DATA_SURFACE_NAME } from "@/features/surfaces/manifests/quick-data.manifest";
 import {
   datasetTableEntityRef,

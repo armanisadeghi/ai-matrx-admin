@@ -18,7 +18,7 @@ import {
   QuickAnswers,
   type QuickAnswersSurfaceHandle,
 } from "@/features/marketing/seo/value-system/workbench/session/QuickAnswers";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import {
   KEYWORD_QUICK_ANSWERS_SURFACE_NAME,

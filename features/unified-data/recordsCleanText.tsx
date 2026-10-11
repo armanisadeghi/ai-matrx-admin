@@ -9,12 +9,15 @@
  *               Clean-cells button uses, never a second stripHtml.
  *   iconPicker  a row action's button icon comes from the platform's one icon picker.
  *   renderText  (below) markdown cells read formatted.
+ *   textBox     (below) long text is edited in the platform's ONE text box, ProTextarea.
  */
 import { cleanValue } from "@/lib/content-cleanup/clean-cells";
 import { DEFAULT_ENABLED_VALUE_OPERATIONS } from "@/lib/content-cleanup/value-operations";
 import { IconInputCompact } from "@/components/official/icons/IconInputWithValidation.dynamic";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import type { ReactNode } from "react";
+import type { TextBoxProps } from "@ai-matrx/records-ui";
+import { ProTextarea } from "@/components/official/ProTextarea";
 
 export function recordsCleanText(text: string): string {
   return cleanValue(text, DEFAULT_ENABLED_VALUE_OPERATIONS).after;
@@ -36,6 +39,32 @@ export function recordsIconPicker({ value, label, onChange }: { value: string; l
 export function recordsRenderText(text: string, where: string): ReactNode {
   if (where !== "cell") return text;
   return <RichContent level="inline" source={text} isStreaming={false} />;
+}
+
+/**
+ * textBox       the long-text cell editor, the whole-text editor and a record form's long-text field
+ *               (records-ui `textBox`) draw ProTextarea, the platform's one text box — so a cell has
+ *               its "…" menu (Clean up, Help with this…, Copy, Save to notes, Share), the same menu
+ *               every other text field gives, exactly as the retired Sheet's cell editor did. The mic
+ *               is off: one icon in the editor, nothing else over a grid cell.
+ */
+export function recordsTextBox(props: TextBoxProps): ReactNode {
+  return (
+    <ProTextarea
+      id={props.id}
+      value={props.value}
+      rows={props.rows}
+      autoFocus={props.autoFocus}
+      readOnly={props.readOnly}
+      disabled={props.disabled}
+      aria-label={props.label}
+      auxiliaryControlsLabel={props.label}
+      onKeyDown={props.onKeyDown}
+      onChange={(e) => props.onChange(e.target.value)}
+      enableVoice={false}
+      data-records-text-box={props.where}
+    />
+  );
 }
 
 export const RECORDS_TEXT = { cleanText: recordsCleanText, iconPicker: recordsIconPicker, renderText: recordsRenderText };

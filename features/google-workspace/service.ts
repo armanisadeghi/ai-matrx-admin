@@ -69,7 +69,7 @@ function nullableString(
  * these calls: the effective organization, or a loud
  * `OrganizationContextError` — never a silent send with no organization.
  */
-function effectiveOrganizationId(): Promise<string> {
+export function effectiveOrganizationId(): Promise<string> {
   // ORG-GATE-AUDIT: THE GATE, never the bare kernel. Each caller is a write the
   // person pressed (register a picked file, create a Doc or Sheet), so with no
   // organization selected it asks, then continues this same request. The
@@ -78,7 +78,7 @@ function effectiveOrganizationId(): Promise<string> {
   return ensureOrgId(null);
 }
 
-async function responseRecord(
+export async function responseRecord(
   response: Response,
 ): Promise<Record<string, unknown>> {
   const payload: unknown = await response.json();
@@ -135,7 +135,7 @@ export function approvalQueueHref(assistId: string): string {
 export const SENT_FOR_APPROVAL_MESSAGE =
   "Sent for approval instead — it is in your approval queue";
 
-async function writeOutcome<T>(
+export async function writeOutcome<T>(
   response: Response,
   build: (body: Record<string, unknown>) => T,
 ): Promise<GoogleWriteOutcome<T>> {
@@ -175,7 +175,7 @@ export async function registerSelectedGoogleFile(
   return selectedFile(await responseRecord(response));
 }
 
-function selectedFile(body: Record<string, unknown>): SelectedGoogleFile {
+export function selectedFile(body: Record<string, unknown>): SelectedGoogleFile {
   const resourceType = requiredString(body, "resource_type");
   // Measured against the ONE record, not a hand-typed pair: a Slides deck the
   // server happily registers used to be answered "unsupported file type" here

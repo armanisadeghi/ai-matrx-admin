@@ -11,9 +11,9 @@ import {
   AGENT_BUILDER_CONTEXT_MENU_PROPS,
   buildAgentBuilderContextData,
 } from "@ai-matrx/chat/agents/agent-context/buildAgentBuilderContextData";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
-import type { EditableContextMenuProps } from "@/features/context-menu-v3/types";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { EditableContextMenuProps } from "@ai-matrx/context-menu/engine";
 import {
   DEMO_AGENT_BUILDER_SCOPE,
   DEMO_AGENT_FIELD_INITIAL,

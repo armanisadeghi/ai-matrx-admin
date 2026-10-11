@@ -42,7 +42,7 @@ import type {
 import type {
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 
 /**
  * Every name the package may send. Typed as a full Record so a name the

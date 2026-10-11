@@ -4,7 +4,7 @@ import { useState } from "react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { QuickMessageTemplateSaveCore } from "@/features/message-templates/quick-save/QuickMessageTemplateSaveCore";
 import type { MessageRole } from "@/features/message-templates/types/message-templates-db";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 // context-menu-exempt: entity — a save-as-template draft; the template does not exist as a record until Save commits it, so there is nothing yet to attach
 
 export interface QuickMessageTemplateSaveWindowProps {

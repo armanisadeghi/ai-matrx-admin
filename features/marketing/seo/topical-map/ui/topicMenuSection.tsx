@@ -2,7 +2,7 @@
 
 /**
  * features/marketing/seo/topical-map/ui/topicMenuSection.tsx — THE right-click
- * section for a map topic (CONTRACTS §4.3; `features/context-menu-v3/SECTIONS.md`
+ * section for a map topic (CONTRACTS §4.3; `features/context-menu-host/SECTIONS.md`
  * listed "SEO topic" as a registered-but-inline candidate — this is its
  * extraction).
  *
@@ -31,8 +31,8 @@ import {
 import type {
   ContextMenuExtraSection,
   ContextMenuExtraItem,
-} from "@/features/context-menu-v3/types";
-import { needs, withAvailability } from "@/features/context-menu-v3/utils/availability";
+} from "@ai-matrx/context-menu/engine";
+import { needs, withAvailability } from "@ai-matrx/context-menu/engine";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 
 /**

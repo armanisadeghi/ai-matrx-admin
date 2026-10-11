@@ -42,11 +42,11 @@ import type {
   ContextMenuEntityRef,
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import {
   withAvailability,
   type AvailabilityMap,
-} from "@/features/context-menu-v3/utils/availability";
+} from "@ai-matrx/context-menu/engine";
 import { useOpenKeywordWindow } from "@/features/overlays/openers/keywordWindow";
 import { useOpenGscDrilldownWindow } from "@/features/overlays/openers/gscDrilldownWindow";
 import { useOpenGscWhyScoreWindow } from "@/features/overlays/openers/gscWhyScoreWindow";
@@ -387,7 +387,7 @@ export function useKeywordMenuSection(opts: {
    * stays visible, in place, DISABLED, with the reason as its tooltip; it is
    * never dropped. Build reasons with `unavailableHere("the Keyword
    * Workbench")` / `needs("a library keyword")`.
-   * Contract: `features/context-menu-v3/utils/availability.ts`.
+   * Contract: `@ai-matrx/context-menu (src/engine/utils/availability.ts)`.
    */
   unavailable?: AvailabilityMap;
   /**

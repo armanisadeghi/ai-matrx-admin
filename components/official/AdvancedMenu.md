@@ -2,7 +2,7 @@
 
 The shared anchored action menu used by message action bars, content blocks,
 editors, and other kebab/button menus. Page and row context menus use
-`features/context-menu-v3`; `AdvancedMenu` is for explicit action-menu triggers.
+`@ai-matrx/context-menu`; `AdvancedMenu` is for explicit action-menu triggers.
 
 ## Features
 

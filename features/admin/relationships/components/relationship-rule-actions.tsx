@@ -7,7 +7,7 @@
  *
  * Today: `RelationshipRulesClient` (the registry table). `EntityRelationshipOrbit`
  * (the orbit diagram card) renders the same identity and is a future adopter —
- * see the registry note in `features/context-menu-v3/SECTIONS.md`.
+ * see the registry note in `features/context-menu-host/SECTIONS.md`.
  *
  * 🚨 NO NEW WRITE PATH LIVES HERE. Edit/Delete delegate to the page's own
  * `openEditInSidePanel` / delete-confirm state — this module only describes
@@ -25,7 +25,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import type {
   ContextMenuExtraSection,
   ResolvedContextMenuContext,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import { label, ruleKey, ruleSentence } from "../utils";
 import type { RelationshipRule } from "../types";
 

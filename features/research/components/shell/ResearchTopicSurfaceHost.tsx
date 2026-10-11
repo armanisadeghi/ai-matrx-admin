@@ -22,7 +22,7 @@ import {
   buildResearchContextData,
   RESEARCH_CONTEXT_MENU_PROPS,
 } from "@/features/research/agent-context/buildResearchContextData";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 
 export function ResearchTopicSurfaceHost({

@@ -19,7 +19,7 @@ import {
   type DiffEngine,
   type DiffView,
 } from "@ai-matrx/diff/react";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface DiffViewerWindowProps {
   windowInstanceId: string;

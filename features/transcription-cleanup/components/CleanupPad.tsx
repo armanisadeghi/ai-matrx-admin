@@ -102,7 +102,7 @@ import {
   type FloatingRunTrackState,
 } from "@ai-matrx/chat/agents/hooks/useFloatingAgentRun";
 import { AgentListDropdown } from "@ai-matrx/agents/catalog/react";
-import { buildApplicationScopeFromMenuContext } from "@/features/context-menu-v3/utils/build-application-scope";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { CleanupOutput } from "./CleanupOutput";
 import {
@@ -161,7 +161,7 @@ import { CLEANUP_OVERLAY_ID, cleanupVoicePadInstanceId } from "../constants";
 // Universal v3 context menu — the SAME menu everywhere. The wrapper is the
 // lightweight shell (imported statically); MenuContent lazy-loads on first open.
 // All three panes (Transcript / Clean / Custom) are editable textareas.
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { cleanedResponseShown } from "../cleaned-response-shown";
 import { kindTextToMarkdown } from "@/features/content-ir/surfaces/kind-text-to-markdown";
 

@@ -32,7 +32,7 @@ import {
   selectQuickTasksSelectedTaskId,
   selectQuickTasksSearchQuery,
 } from "@/features/tasks/redux/quickTasksWindowSlice";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 interface QuickTasksWindowProps {
   isOpen: boolean;

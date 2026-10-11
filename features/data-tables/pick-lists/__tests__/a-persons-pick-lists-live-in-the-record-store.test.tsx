@@ -100,13 +100,13 @@ jest.mock("next/link", () => ({
 jest.mock("@/lib/toast", () => ({ toast: { error: jest.fn(), success: jest.fn() } }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => "11f4e747-c13a-49c7-81a3-66e6391f8a9b" }));
 jest.mock("@/components/official/entity-ref/EntityDoorControls", () => ({ EntityDoorControls: () => null }));
-jest.mock("@/features/context-menu-v3/NonEditableContextMenu", () => ({
+jest.mock("@ai-matrx/context-menu/react", () => ({
   NonEditableContextMenu: ({ children, entity }: { children: React.ReactNode; entity?: unknown }) => {
     mockMenuEntities.push(entity);
     return <>{children}</>;
   },
 }));
-jest.mock("@/features/context-menu-v3/utils/open-context-menu", () => ({ openContextMenuForElement: jest.fn() }));
+jest.mock("@ai-matrx/context-menu/engine", () => ({ openContextMenuForElement: jest.fn() }));
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));
 jest.mock("@/features/data-tables/data-source/where-a-table-is-born", () => ({ whereANewTableIsBorn: jest.fn() }));
 const RECORDS_CLIENT = { listArchived: jest.fn(), recordRestore: jest.fn() };

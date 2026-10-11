@@ -20,8 +20,8 @@ import React, { useSyncExternalStore } from "react";
 import { ExternalLink } from "lucide-react";
 
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { SiteCommandFeed } from "@/features/marketing/components/crawls/SiteCommandFeed";
 import {
   getSiteCommandRun,

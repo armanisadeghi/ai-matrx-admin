@@ -39,8 +39,8 @@ import {
   Trash2,
   type LucideIcon,
 } from "lucide-react";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_HEADING_KEY, type ContextMenuExtraSection } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_HEADING_KEY, type ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { screenToWorld, zoomAt } from "../engine/camera";
 import type { BoardCameraStore } from "../engine/camera-store";
 import { WHEEL_MODE_LABEL, type WheelMode } from "../engine/wheel-input";

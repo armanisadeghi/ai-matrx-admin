@@ -11,9 +11,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import type { ContextMenuExtraSection } from "@/features/context-menu-v3/types";
-import { openContextMenuForElement } from "@/features/context-menu-v3/utils/open-context-menu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
+import { openContextMenuForElement } from "@ai-matrx/context-menu/engine";
 import {
   loadCodeFilesList,
   loadCodeFolders,

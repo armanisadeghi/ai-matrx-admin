@@ -19,7 +19,7 @@ import {
   cxUserRequestMenuTarget,
   useCxRowMenu,
 } from "@/features/cx-dashboard/components/cx-row-actions";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   formatDate,
   formatTokens,

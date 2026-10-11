@@ -8,7 +8,7 @@
  * produces the one `HrPersonMenuTarget` the section renders from — the
  * pattern `features/crm/components/crm-row-actions.tsx` uses for CRM rows.
  *
- * Registered in `features/context-menu-v3/SECTIONS.md`. Consumers today:
+ * Registered in `features/context-menu-host/SECTIONS.md`. Consumers today:
  * `LeaveEnrollmentSurface` (roster + candidates). Future adopters (same
  * identity, not yet touched by this rollout): `HrDirectory`,
  * `HrDirectoryCards`, `directoryColumns`, `EmploymentPicker`,
@@ -23,7 +23,7 @@ import type {
   ContextMenuEntityRef,
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import { hrEmployeeHref, type HrOrgRef } from "@/features/hr/routes";
 import type { HrDirectoryRow } from "@/features/hr/types";
 import { leaveLedgerHrefFrom } from "../leave/manager/routes";

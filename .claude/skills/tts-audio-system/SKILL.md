@@ -298,7 +298,7 @@ The summarizing agent is resolved from the `spoken_summary` surface role,
 falling back to the platform home surface (`LISTENING_HOME_SURFACE`) whose
 `ambient.spoken_summary` mandate holds the default agent — so it works on
 every surface for every user with no personal binding. **Never put an agent
-UUID in code here.** Menu wiring: `features/context-menu-v3/` (`listen`
+UUID in code here.** Menu wiring: `@ai-matrx/context-menu` (`listen`
 submenu role) + `messageActionRegistry.listeningItems`.
 
 ---

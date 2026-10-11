@@ -17,7 +17,7 @@ import { Eraser, ExternalLink, PencilLine } from "lucide-react";
 import type {
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import { hrTimesheetHref, type HrOrgRef } from "@/features/hr/routes";
 import { ACTOR_TYPE_LABELS, PUNCH_KIND_LABELS } from "./vocabulary";
 import { formatStampedTimeWithZone } from "./format";

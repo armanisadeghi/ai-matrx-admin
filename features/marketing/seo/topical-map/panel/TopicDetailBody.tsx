@@ -40,7 +40,7 @@ import { useRef, useState } from "react";
 
 import { ClipboardFallbackDialog } from "@/components/dialogs/clipboard-fallback/ClipboardFallbackDialog";
 import SuspenseLoader from "@/components/loaders/SuspenseLoader";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { useOpenTopicPanel } from "@/features/overlays/openers/topicalMapTopicPanel";
 import { createMarketingTopicalMapScope } from "@/features/surfaces/manifests/marketing-topical-map.manifest";
 import {

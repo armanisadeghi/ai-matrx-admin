@@ -84,11 +84,11 @@ import { useMarketingSite } from "@/features/marketing/components/site/Marketing
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { useOpenFilePreviewWindow } from "@/features/overlays/openers/filePreviewWindow";
 import { useState } from "react";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   CONTEXT_MENU_ENTITY_KEY,
   type ResolvedContextMenuContext,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { Chip } from "@ai-matrx/design-system/controls";

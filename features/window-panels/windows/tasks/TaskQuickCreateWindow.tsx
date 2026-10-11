@@ -15,7 +15,7 @@ import {
   createTaskCreateScope,
   type TaskCreateDraftScope,
 } from "@/features/surfaces/manifests/task-create.manifest";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface TaskQuickCreateWindowProps {
   isOpen: boolean;

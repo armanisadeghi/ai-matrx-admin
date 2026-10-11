@@ -27,7 +27,7 @@
 import { useCallback } from "react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { MatcherReviewBody } from "@/features/marketing/seo/value-system/dimensions/MatcherReviewBody";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface MatcherReviewWindowProps {
   isOpen: boolean;

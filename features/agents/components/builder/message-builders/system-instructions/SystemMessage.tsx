@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 
 // Universal v3 context menu — the SAME menu everywhere. The wrapper is the
 // lightweight shell (imported statically); MenuContent lazy-loads on first open.
-import { EditableContextMenu } from "@/features/context-menu-v3/EditableContextMenu";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 
 import { SystemPromptOptimizer } from "@/features/agents/components/builder/message-builders/system-instructions/SystemPromptOptimizer";
 

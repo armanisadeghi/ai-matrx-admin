@@ -32,7 +32,7 @@ jest.mock("./service", () => ({
   fetchSeoProvisions: jest.fn(),
 }));
 
-jest.mock("@/features/context-menu-v3/NonEditableContextMenu", () => ({
+jest.mock("@ai-matrx/context-menu/react", () => ({
   NonEditableContextMenu: ({ children }: { children: React.ReactNode }) => children,
 }));
 jest.mock("@/features/scheduling/components/shared/scheduling-menu-sections", () => ({

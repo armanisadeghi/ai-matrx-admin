@@ -2,7 +2,7 @@
 
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { ResourcePickerMenu } from "@/features/resource-manager/resource-picker/ResourcePickerMenu";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 import type { WindowPosition } from "@/features/window-panels/hooks/useWindowPanel";
 import type { Resource } from "@ai-matrx/chat/agents/resources/types";

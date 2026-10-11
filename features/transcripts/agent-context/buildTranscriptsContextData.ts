@@ -1,4 +1,4 @@
-import type { PlacementMode } from "@/features/context-menu-v3/types";
+import type { PlacementMode } from "@ai-matrx/context-menu/engine";
 import { formatDurationSeconds } from "@ai-matrx/kit/format";
 import { transcriptDurationSeconds } from "@/features/transcripts/format";
 import { createTranscriptsScope } from "@/features/surfaces/manifests/transcripts.manifest";

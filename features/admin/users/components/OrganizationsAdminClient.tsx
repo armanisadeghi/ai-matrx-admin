@@ -50,14 +50,14 @@ import {
   isOrgRole,
   type OrgRole,
 } from "@/features/organizations/types";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
-import type { ContextMenuExtraItem } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
+import type { ContextMenuExtraItem } from "@ai-matrx/context-menu/engine";
 import { buildAdminUserMenuSection } from "@/features/admin/users/components/admin-user-menu-section";
 import {
   unavailableHere,
   withAvailability,
-} from "@/features/context-menu-v3/utils/availability";
+} from "@ai-matrx/context-menu/engine";
 import { pushAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { readOf } from "@ai-matrx/design-system";
 import { ErrorNotice } from "@ai-matrx/design-system";

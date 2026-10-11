@@ -24,8 +24,8 @@ import type {
   ContextMenuEntityRef,
   ContextMenuExtraSection,
   ResolvedContextMenuContext,
-} from "@/features/context-menu-v3/types";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import type { CompetitorRow } from "./data";
 

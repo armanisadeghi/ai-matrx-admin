@@ -8,9 +8,9 @@
 
 import "@/features/rich-document/actions/handlers";
 import { getAllActions, toAlchemyAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
-import { CONTEXT_MENU_ENGINE_ID_PREFIXES, CONTEXT_MENU_ENGINE_ROWS } from "@/features/context-menu-v3/regroup/engine-rows";
-import { matchRule, type MenuGrouping } from "@/features/context-menu-v3/regroup/grouping";
-import type { RegroupAudit } from "@/features/context-menu-v3/regroup/grouping";
+import { CONTEXT_MENU_ENGINE_ID_PREFIXES, CONTEXT_MENU_ENGINE_ROWS } from "@ai-matrx/context-menu/engine";
+import { matchRule, type MenuGrouping } from "@ai-matrx/context-menu/engine";
+import type { RegroupAudit } from "@ai-matrx/context-menu/engine";
 import type { Action } from "@ai-matrx/alchemy/actions";
 
 interface Item {

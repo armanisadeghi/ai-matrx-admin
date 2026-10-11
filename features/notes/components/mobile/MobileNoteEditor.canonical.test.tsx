@@ -40,8 +40,8 @@ jest.mock("../../hooks/useNoteDelete", () => ({ useNoteDelete: () => ({ isDeleti
 jest.mock("@/hooks/useToastManager", () => ({ useToastManager: () => ({ success: jest.fn(), error: jest.fn() }) }));
 jest.mock("@/lib/toast", () => ({ toast: { success: jest.fn(), error: jest.fn(), warning: jest.fn(), dismiss: jest.fn() }, toastErrorAlreadyCaptured: jest.fn() }));
 jest.mock("@ai-matrx/rich-content/rich-document/RichDocument", () => ({ RichDocument: () => null }));
-jest.mock("@/features/context-menu-v3/NonEditableContextMenu", () => ({ NonEditableContextMenu: () => null }));
-jest.mock("@/features/context-menu-v3/EditableContextMenu", () => ({
+jest.mock("@ai-matrx/context-menu/react", () => ({
+  NonEditableContextMenu: () => null,
   EditableContextMenu: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 jest.mock("./NoteEditorDock", () => ({ NoteEditorDock: () => null }));

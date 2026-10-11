@@ -54,7 +54,7 @@ calculates the value today of future weekly payments without persisting a case.
 
 - `features/surfaces/manifests/legal-ca-wc.manifest.ts` — runtime value
   contract for the CA WC vertical.
-- `features/context-menu-v3/` — canonical surface context menu.
+- `@ai-matrx/context-menu` — canonical surface context menu.
 
 ## Doctrine compliance
 

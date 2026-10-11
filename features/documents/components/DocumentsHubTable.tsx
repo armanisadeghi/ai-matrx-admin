@@ -12,9 +12,8 @@
 // THE DOOR LAW: the name is an `EntityRef` (cmd-click / new tab) and the row opens the document
 // through `getRowHref` — both from the ONE registry entry, which screams when it has no route.
 
-import { Trash } from "lucide-react";
+import type { ReactNode } from "react";
 import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
-import { Button } from "@ai-matrx/design-system";
 import { Badge } from "@/components/ui/badge";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";
@@ -36,7 +35,7 @@ function documentHref(id: string): string | undefined {
   return href;
 }
 
-function columnsFor(onDelete: (doc: DocumentRow) => void): MatrxColumnDef<DocumentRow>[] {
+function columnsFor(menuFor: (doc: DocumentRow) => ReactNode): MatrxColumnDef<DocumentRow>[] {
   return [
     {
       id: "name",
@@ -94,16 +93,14 @@ function columnsFor(onDelete: (doc: DocumentRow) => void): MatrxColumnDef<Docume
       ),
     },
     {
-      id: "delete",
+      id: "actions",
       header: "",
-      label: "Delete",
+      label: "Actions",
       sortable: false,
       filter: false,
       cell: (doc) => (
         <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
-          <Button size="sm" variant="ghost" title="Delete document" aria-label="Delete document" onClick={() => onDelete(doc)}>
-            <Trash className="h-3.5 w-3.5 text-destructive" />
-          </Button>
+          {menuFor(doc)}
         </div>
       ),
     },
@@ -112,10 +109,10 @@ function columnsFor(onDelete: (doc: DocumentRow) => void): MatrxColumnDef<Docume
 
 export function DocumentsHubTable({
   documents,
-  onDelete,
+  menuFor,
 }: {
   documents: DocumentRow[];
-  onDelete: (doc: DocumentRow) => void;
+  menuFor: (doc: DocumentRow) => ReactNode;
 }) {
   return (
     <MatrxDataTable<DocumentRow>
@@ -123,7 +120,7 @@ export function DocumentsHubTable({
       rowToken="udt_document"
       viewTabs={false}
       data={documents}
-      columns={columnsFor(onDelete)}
+      columns={columnsFor(menuFor)}
       getRowId={(doc) => doc.id}
       getRowHref={(doc) => documentHref(doc.id)}
       defaultSort={{ id: "updated", direction: "desc" }}

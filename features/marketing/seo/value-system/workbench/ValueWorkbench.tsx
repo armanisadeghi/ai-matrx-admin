@@ -162,12 +162,12 @@ import {
   SITE_OFFERINGS_KEY,
   useSiteOfferings,
 } from "@/features/marketing/seo/keyword-workbench/hooks/useSiteOfferings";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { KEYWORD_VALUE_WORKBENCH_SURFACE_NAME } from "@/features/surfaces/manifests/keyword-value-workbench.manifest";
 import { useMarketingSiteSurfaceBase } from "@/features/marketing/lib/scopes/site-surface-base";
 import { buildKeywordValueScope } from "@/features/marketing/lib/scopes/keyword-value-scope";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import {
   keywordEntityRef,
   useKeywordAssignSurfaces,

@@ -7,14 +7,14 @@
  * eligible/excluded confirmation lists render the same `PeriodGridRow`
  * identity and are a future adopter if that static preview ever grows its
  * own right-click menu — see the registry note in
- * `features/context-menu-v3/SECTIONS.md`.
+ * `features/context-menu-host/SECTIONS.md`.
  *
  * No shared row-actions hook here (yet): the confirmation dialog is a static
  * preview list, not a browsable pane, so this stays the identity's entity ref
  * + readable text.
  */
 
-import type { ContextMenuEntityRef } from "@/features/context-menu-v3/types";
+import type { ContextMenuEntityRef } from "@ai-matrx/context-menu/engine";
 import type { PeriodGridRow } from "../api/types";
 
 export function periodGridRowEntityRef(

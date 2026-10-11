@@ -125,7 +125,7 @@ import { useBrowseAction } from "@/features/image-manager/browse/BrowseImageProv
 import { useOpenDetail } from "@ai-matrx/detail/react";
 import { openFolderPicker } from "@/features/files/components/pickers/cloudFilesPickerOpeners";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildImagesScope } from "@/features/image-manager/lib/images-surface-scope";
 import { IMAGES_SURFACE_NAME } from "@/features/surfaces/manifests/images.manifest";
 import {

@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { createImageManagerScope } from "@/features/surfaces/manifests/image-manager.manifest";
 
 interface Tile {

@@ -2,7 +2,7 @@ import { Plus, Settings, Puzzle, ExternalLink } from "lucide-react";
 import type {
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 
 /**
  * Site-workspace-specific menu items injected into the canonical v3 context

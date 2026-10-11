@@ -25,7 +25,7 @@ import {
 import { useAppSelector } from "@/lib/redux/hooks";
 import { StudioView } from "@/features/transcript-studio/components/StudioView";
 import { selectActiveSessionId } from "@/features/transcript-studio/redux/selectors";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 const OVERLAY_ID = "transcriptStudioWindow";
 const WINDOW_ID = "transcript-studio-window";

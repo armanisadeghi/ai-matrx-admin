@@ -469,6 +469,11 @@ export function ShareModal({
                 {/* Current user permissions */}
                 <div>
                   <h3 className="text-sm font-medium mb-2">Current Access</h3>
+                  {!isOwner && !loading && userPermissions.length === 0 ? (
+                    <p className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
+                      The list of people with access is visible to Admins.
+                    </p>
+                  ) : (
                   <PermissionsList
                     permissions={userPermissions}
                     isOwner={isOwner}
@@ -484,6 +489,7 @@ export function ShareModal({
                       many: "people outside this organization",
                     }}
                   />
+                  )}
                   <OrgAvailabilityNote
                     permissions={permissions.filter(
                       (p) => p.grantedToOrganizationId,

@@ -13,9 +13,9 @@ import { type ReactNode, useState } from "react";
 import Link from "next/link";
 import { ExternalLink, Globe, Link2, Quote, Users } from "lucide-react";
 import { formatGscDate } from "@/features/marketing/search-console/lib/format";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
-import { unavailableHere } from "@/features/context-menu-v3/utils/availability";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
+import { unavailableHere } from "@ai-matrx/context-menu/engine";
 import {
   referringDomainEntityRef,
   buildReferringDomainMenuSection,

@@ -43,8 +43,8 @@ import type {
 import { InlineQueryError } from "@/features/marketing/components/shared/MarketingUi";
 import { formatCount } from "@/features/marketing/search-console/types";
 import { useOpenGscWhyScoreWindow } from "@/features/overlays/openers/gscWhyScoreWindow";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
-import { CONTEXT_MENU_ENTITY_KEY } from "@/features/context-menu-v3/types";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import {
   keywordEntityRef,
   useKeywordAssignSurfaces,

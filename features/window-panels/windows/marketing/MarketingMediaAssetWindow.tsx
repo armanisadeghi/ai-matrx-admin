@@ -34,7 +34,7 @@ import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { ImageViewer } from "@/features/window-panels/windows/image/ImageViewerWindow";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildMediaAssetMenuSection } from "@/features/marketing/components/media/media-asset-actions";
 import { fileHandler } from "@/features/files/handler/handler";
 import {

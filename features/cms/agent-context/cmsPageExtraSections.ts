@@ -10,7 +10,7 @@ import {
 import type {
   ContextMenuExtraItem,
   ContextMenuExtraSection,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 
 /**
  * CMS-page-specific menu items injected into the canonical v3 context menu

@@ -27,7 +27,7 @@ Every new shortcut caller you build looks like one of two existing files. Open t
 
 | Your situation | Read this file |
 |---|---|
-| Right-click context menu, replaces text inline, output is text | `features/context-menu-v3/` (`EditableContextMenu` / `NonEditableContextMenu`) |
+| Right-click context menu, replaces text inline, output is text | `@ai-matrx/context-menu` (`EditableContextMenu` / `NonEditableContextMenu`) |
 | Mounted component, output is structured JSON / artifact / non-text | `features/agents/agent-creators/interactive-builder/AgentGenerator.tsx` |
 
 This is not optional. Every recurring bug in this section — `jsonExtraction` not flowing, `autoRun: false` misused, `onConversationCreated` skipped, instance leaks on unmount, raw UUIDs at the call site — is a bug that disappears the moment you read the working example first. If you can't articulate why your call site needs to look different from the example, you're probably wrong.
@@ -294,5 +294,5 @@ Three things make the direct-mode pattern work:
 - `../aidream/apps/shared/chat/src/agents/TRIGGER-SHORTCUTS.md` — quick reference, mostly aligned with this section
 - `features/agent-shortcuts/FEATURE.md` — data model, scope-mapping contract, display modes, configuration axes
 - `features/agents/agent-creators/interactive-builder/AgentGenerator.tsx` — direct-mode reference implementation (read this before building a new direct caller)
-- `features/context-menu-v3/` (`EditableContextMenu` / `NonEditableContextMenu`) — non-direct context-menu mount pattern
+- `@ai-matrx/context-menu` (`EditableContextMenu` / `NonEditableContextMenu`) — non-direct context-menu mount pattern
 - `../aidream/apps/shared/chat/src/agents/redux/execution-system/thunks/launch-agent-execution.thunk.ts` — the orchestrator all four trigger APIs dispatch through

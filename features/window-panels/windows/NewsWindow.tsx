@@ -2,7 +2,7 @@
 
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { NewsFloatingWorkspace } from "@/features/news/components/NewsFloatingWorkspace";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 interface NewsWindowProps {
   isOpen: boolean;

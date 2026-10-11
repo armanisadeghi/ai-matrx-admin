@@ -36,7 +36,7 @@ import {
 
 import type { ApplicationScope } from "@ai-matrx/chat/agents/types/scope.types";
 import { toast } from "@/lib/toast";
-import { itemMenuConfigToExtraSections } from "@/features/context-menu-v3/item/itemMenuToV3";
+import { itemMenuConfigToExtraSections } from "@ai-matrx/context-menu/engine";
 import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
 import {
   resolveItemMenuConfig,
@@ -48,7 +48,7 @@ import {
   type ContextMenuExtraItem,
   type ContextMenuExtraSection,
   type ResolvedContextMenuContext,
-} from "@/features/context-menu-v3/types";
+} from "@ai-matrx/context-menu/engine";
 import { copyToClipboard } from "@/lib/clipboard/copy";
 
 // ---------------------------------------------------------------------------
