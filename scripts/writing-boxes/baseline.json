@@ -72,7 +72,6 @@
     "bare-text-field|components/modals/FindReplaceModal.tsx": 2,
     "bare-text-field|components/rich-text-editor/RemirrorEditor.tsx": 4,
     "bare-text-field|components/ssr/route-display/RouteSearchBar.tsx": 1,
-    "bare-text-field|components/user-generated-table-data/ColumnHeaderMenu.tsx": 4,
     "bare-text-field|features/admin/applications/config/components/CredentialMaintenanceEditor.tsx": 1,
     "bare-text-field|features/admin/applications/config/components/NoticeEditor.tsx": 1,
     "bare-text-field|features/admin/assist-control/AssistProducerControl.tsx": 1,

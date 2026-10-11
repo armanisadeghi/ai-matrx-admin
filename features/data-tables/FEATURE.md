@@ -32,9 +32,7 @@ from the code; nothing here reads or writes it.
   gallery, cell editor, row forms, column menu, saved views, clipboard and undo all live in that
   package (its CHANGELOG is the record). Hosts outside the page open a table by id through
   `components/LocatedTableViewer.tsx`, which mounts the same page; `pnpm check:one-store-grid`
-  keeps every custom-table host on it. `components/user-generated-table-data/ColumnHeaderMenu.tsx`
-  is the one older component left (the CMS collection page uses it); it reaches data only
-  through `service.ts`.
+  keeps every custom-table host on it.
 
 ## Column shape — THE COLUMN KNOWS ITSELF
 

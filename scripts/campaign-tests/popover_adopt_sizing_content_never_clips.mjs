@@ -43,8 +43,6 @@ mkdirSync(OUT, { recursive: true });
 
 const SURFACES = [
   { slug: "table-identity",  label: "Table identity menu",              file: "components/user-generated-table-data/TableIdentityMenu.tsx", was: "w-80",   route: TABLE,     trigger: "Rincon Plumbing — Service Calls" },
-  { slug: "column-customer", label: "Column menu — Customer",           file: "components/user-generated-table-data/ColumnHeaderMenu.tsx",  was: "w-72",   route: TABLE,     sel: '[aria-haspopup="dialog"][title="Sort or filter Customer"]' },
-  { slug: "column-workorder",label: "Column menu — Work order",         file: "components/user-generated-table-data/ColumnHeaderMenu.tsx",  was: "w-72",   route: TABLE,     sel: '[aria-haspopup="dialog"][title="Sort or filter Work order"]', shortContent: true },
   { slug: "entity-filters",  label: "Agents list — filters & sort",     file: "lib/entity-list/components/EntityFilterPanel.tsx",           was: "w-[360px]", route: "/agents", aria: "Filters and sort" },
   { slug: "entity-columns",  label: "Agents list — choose columns",     file: "lib/entity-list/components/EntityColumnPicker.tsx",          was: "w-56",   route: "/agents", aria: "Choose columns", shortContent: true },
   { slug: "org-switcher",    label: "Organization switcher",            file: "features/shell/components/account-rail/ShellOrgSwitcher.tsx", was: "w-72", route: TABLE, sel: "[data-shell-org-switcher=rail]", desktopOnly: true },

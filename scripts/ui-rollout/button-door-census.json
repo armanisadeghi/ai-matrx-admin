@@ -348,7 +348,6 @@
   "components/ui/time-picker.tsx",
   "components/user-generated-table-data/AddColumnModal.tsx",
   "components/user-generated-table-data/AddRowModal.tsx",
-  "components/user-generated-table-data/ColumnHeaderMenu.tsx",
   "components/user-generated-table-data/ColumnSettingsDialog.tsx",
   "components/user-generated-table-data/DeleteRowModal.tsx",
   "components/user-generated-table-data/EditRowModal.tsx",

@@ -191,7 +191,6 @@
   "components/ui/file-upload/ImageUploadField.tsx": 1,
   "components/ui/file-upload/PasteImageHandler.tsx": 1,
   "components/ui/JsonComponents/newUitls.ts": 1,
-  "components/user-generated-table-data/ColumnHeaderMenu.tsx": 1,
   "features/access-gate/components/AccessRequestsSurface.tsx": 2,
   "features/access-gate/components/BlindAccessAsk.tsx": 1,
   "features/access-gate/components/GovernedActionDialog.tsx": 1,
