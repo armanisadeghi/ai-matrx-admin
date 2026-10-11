@@ -49,6 +49,7 @@ export default function ErrorInspectorBadge() {
         style={leftStyle}
         onClick={toggle}
         title={`${red} error${red === 1 ? "" : "s"} captured — open Error Inspector`}
+        data-error-inspector-badge=""
         className={cn(
           // Mobile sits ABOVE the bottom band where composers/action bars live
           // — at bottom-4 it covered a composer's controls (2026-08-16).
@@ -82,6 +83,7 @@ export default function ErrorInspectorBadge() {
         onClick={toggle}
         title={`${orange} minor issue${orange === 1 ? "" : "s"} — open Error Inspector`}
         aria-label="Open Error Inspector"
+        data-error-inspector-badge=""
         className="fixed bottom-[calc(6rem+var(--page-bottom-dock-h,0px))] left-3 z-[60] flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card/95 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-card/80 transition-transform hover:scale-110 sm:bottom-[calc(1rem+var(--page-bottom-dock-h,0px))] sm:left-[var(--error-badge-left,1rem)]"
       >
         <span

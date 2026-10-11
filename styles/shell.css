@@ -4021,3 +4021,11 @@ html[data-board-embed] .shell-main {
 [data-header-extra]:not(:has(.matrx-tap-target)) {
   margin-inline: calc(var(--matrx-tap-gap, 0.375rem) / 2);
 }
+
+/* The error badge floats bottom-left; on a phone the expanded attention dock is a bottom sheet
+   (max 45dvh) across the full width, so the badge rides above it instead of sitting on its rows. */
+@media (max-width: 639px) {
+  :root[data-admin-attention="expanded"] [data-error-inspector-badge] {
+    bottom: calc(45dvh + var(--admin-attention-anchor-bottom, 1rem) + 1.5rem);
+  }
+}

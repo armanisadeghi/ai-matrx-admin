@@ -321,8 +321,8 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
       header: "Item",
       accessorFn: (o) => [o.refs.source_kind, o.refs.source_id].filter(Boolean).join(" "),
       cell: (o) => {
-        if (isMigrated(o)) return <span className="text-muted-foreground">{migratedNote()}</span>;
         if (o.refs.mandate_key) return names.get(o.refs.mandate_key) ?? o.refs.mandate_key.replace(/[._]+/g, " ");
+        if (isMigrated(o) && !o.refs.source_id && !o.refs.operation) return <span className="text-muted-foreground">{migratedNote()}</span>;
         if (o.refs.operation) return o.refs.operation;
         if (!o.refs.source_id) return <span className="text-muted-foreground">—</span>;
         const href = o.source && !o.collapsed ? alarmSourceHref({ ...o.source, id: o.refs.source_id, source_kind: o.refs.source_kind ?? "source", times: 1, last_at: o.occurred_at }) : null;
@@ -377,7 +377,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
         status={record ? { label: statusLabel, tone: record.status === "open" ? LEVEL_TONE[record.level] : "neutral" } : undefined}
         actions={headerActions}
       />
-      <div className="h-full overflow-y-auto px-4 pb-16 pt-4 sm:px-6" data-testid="spend-alarm-record">
+      <div className="h-full overflow-y-auto px-4 pt-4 sm:px-6" data-matrx-page-scroll="" data-testid="spend-alarm-record">
         {error ? (
           <div className="mb-3 flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
             {error}
@@ -387,7 +387,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
         {record ? (
           <div className="mx-auto flex max-w-6xl flex-col gap-4">
             <section className="group/x relative rounded-lg border border-border bg-card p-4">
-              <div className="absolute right-2 top-2 flex items-center gap-1">
+              <div className="mb-2 flex items-center justify-end gap-1 sm:absolute sm:right-2 sm:top-2 sm:mb-0">
                 <CopyButtons
                   size="icon"
                   label="Spend alarm"
@@ -396,7 +396,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
                 />
                 <CopyForAiAction label="Spend alarm" agent={agentPayload} />
               </div>
-              <p className="pr-44 text-sm font-medium text-foreground">{alarmSentence({ ...record, names: Object.fromEntries(names) })}</p>
+              <p className="text-sm sm:pr-44 font-medium text-foreground">{alarmSentence({ ...record, names: Object.fromEntries(names) })}</p>
               {record.status === "snoozed" && !isRinging(record) ? (
                 <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-2 text-sm" data-testid="alarm-muted">
                   <BellOff className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
@@ -498,7 +498,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
                 tableId="spend-alarm-occurrences"
                 read={readOf({ loading, error }, { what: "occurrences" })}
                 emptyState={{ title: "No occurrences recorded" }}
-                toolbar={{ title: `Occurrences · ${record.occurrence_count.toLocaleString()} times`, search: true }}
+                toolbar={{ title: `Occurrences · ${record.occurrence_count.toLocaleString()} ${record.occurrence_count === 1 ? "time" : "times"}`, search: true }}
                 copy={{
                   label: "Occurrence",
                   listLabel: "Alarm occurrences",

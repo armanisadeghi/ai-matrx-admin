@@ -294,7 +294,7 @@ export function occurrenceSourceTitle(o: SpendAlarmOccurrence): string | null {
   if (!o.refs.source_id || !o.source) return null;
   if (o.collapsed) {
     const kind = o.source.kind === "source" ? "Source" : o.source.kind;
-    return `${o.collapsed.toLocaleString()} ${kind}${o.collapsed === 1 ? "" : "s"} that no longer exist (deleted)`;
+    return o.collapsed === 1 ? `1 ${kind} that no longer exists (deleted)` : `${o.collapsed.toLocaleString()} ${kind}s that no longer exist (deleted)`;
   }
   return alarmSourceTitle({ ...o.source, id: o.refs.source_id, source_kind: o.refs.source_kind ?? "source", times: o.repeat_count, last_at: o.occurred_at });
 }
@@ -919,6 +919,9 @@ export function alarmTitle(
   if (r.kind === "protected_account_refusal") {
     const person = (r.refs.user_id && names[r.refs.user_id]) || r.person || "a protected account";
     return `${handlerPhrase(r.refs.handler, names, r.refs)} tried to bill ${person}`;
+  }
+  if (r.kind === "external_spend_gate_refused") {
+    return `${providerLabel(r.refs.provider ?? "Paid")} ${r.refs.operation ?? ""} call refused by the usage gate`.replace(/\s+/g, " ");
   }
   let title = r.title;
   for (const [id, name] of Object.entries(names)) title = title.split(id).join(name);
