@@ -115,7 +115,10 @@ export function AgentStudioPage() {
   const router = useRouter();
   const params = useSearchParams();
   const state = readStudioState(new URLSearchParams(params.toString()));
-  const go = (patch: Partial<StudioState>) => router.replace(studioHref({ ...state, ...patch }));
+  // Patches the URL as it stands NOW: the assistant's and the agent's conversations both report
+  // their ids asynchronously, and a patch built on a render's stale state dropped the other's.
+  const go = (patch: Partial<StudioState>) =>
+    router.replace(studioHref({ ...readStudioState(new URLSearchParams(window.location.search)), ...patch }));
   const mode = studioMode(state.mode);
   const planPatch = { planId: state.planId, planStep: state.planStep };
   if (!mode) {
@@ -454,12 +457,16 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     const run = (
       <StudioRun
         agentId={state.agentId}
-        conversationId={mode.id === "improve" ? state.runId : null}
+        conversationId={state.runId}
         surfaceKey={tryKey(state.agentId)}
         seed={seed}
         showVariables
         runKey={runKey}
-        onConversation={setRunConversation}
+        onConversation={(id) => {
+          setRunConversation(id);
+          // The run lives in the URL: a reload reopens it instead of starting (and paying for) a new one.
+          if (id !== state.runId) go({ runId: id });
+        }}
       />
     );
     center = studioCase?.approved ? (
