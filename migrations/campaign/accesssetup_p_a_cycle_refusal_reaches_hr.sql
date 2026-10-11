@@ -53,6 +53,24 @@ begin
 end
 $function$;
 
+-- ── every SECURITY DEFINER function declares its access decision in data ──
+insert into platform.client_callable_door
+  (schema_name, function_name, identity_args, identity_argtypes, declared_by, reason,
+   non_client_lane, signed_in_callers, anonymous_callers)
+values
+  ('hr', 'review_cycle_door_access', 'p_user uuid, p_cycle_id uuid, p_required permission_level',
+   array['uuid'::regtype::oid, 'uuid'::regtype::oid, 'public.permission_level'::regtype::oid],
+   'migrations/campaign/accesssetup_p_a_cycle_refusal_reaches_hr.sql (lane access-setup)',
+   'ACCESS-SETUP §5a: internal; a review cycle''s door rule asked for one person and level.',
+   'server_only: answers for any person and cycle named; only platform.detail_parent_access_for calls it, for the kernel and the access doors', false, false),
+  ('hr', 'review_cycle_request_recipients', 'p_cycle_id uuid', array['uuid'::regtype::oid],
+   'migrations/campaign/accesssetup_p_a_cycle_refusal_reaches_hr.sql (lane access-setup)',
+   'ACCESS-SETUP §5a: internal; who a refused person''s ask about a review cycle reaches.',
+   'server_only: lists the HR people of any cycle named; only iam.access_request_recipients calls it, for the access-request doors', false, false)
+on conflict (schema_name, function_name, identity_argtypes) do update
+  set non_client_lane = excluded.non_client_lane, reason = excluded.reason, declared_by = excluded.declared_by,
+      signed_in_callers = false, anonymous_callers = false;
+
 CREATE OR REPLACE FUNCTION iam.access_request_recipients(p_type text, p_id uuid)
  RETURNS TABLE(user_id uuid, reason text)
  LANGUAGE plpgsql
