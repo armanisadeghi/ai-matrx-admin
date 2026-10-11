@@ -33,6 +33,10 @@ jest.mock("@/components/official/ProTextarea", () => ({
   ),
 }));
 
+jest.mock("@/features/prompt-blocks/service", () => ({
+  listVariants: async () => [{ id: "v1", label: "Latest models", condition: {}, content: "" }],
+}));
+
 import { ModelViewPanel } from "../ModelViewPanel";
 
 const answer = (who: string) => ({
@@ -93,6 +97,35 @@ describe("ModelViewPanel", () => {
     expect(platform.textContent).toContain("<active_context>");
   });
 
+  it("shows which level and variant supplied each prompt block, and the wrapped block in the prompt", async () => {
+    requestModelView.mockImplementation(async () => {
+      const base = answer("Ann Lee");
+      return {
+        ...base,
+        preview: {
+          ...base.preview,
+          system_prompt: "<rules>\nCite sources.\n</rules>",
+          system_parts: [{ kind: "prompt", text: "<rules>\nCite sources.\n</rules>" }],
+          prompt_blocks: [
+            { name: "rules", level: "organization", block_id: "b1", variant_id: "v1" },
+            { name: "tone", level: "system", block_id: "b2", variant_id: null },
+          ],
+        },
+      };
+    });
+    await mount();
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(section("System prompt").textContent).toContain("<rules>");
+    const rules = host.querySelector('[data-testid="model-view-block-rules"]') as HTMLElement;
+    expect(rules.textContent).toContain("Organization");
+    expect(rules.textContent).toContain("Latest models");
+    const tone = host.querySelector('[data-testid="model-view-block-tone"]') as HTMLElement;
+    expect(tone.textContent).toContain("System");
+    expect(tone.textContent).toContain("Default text");
+  });
+
   it("names the empty variables", async () => {
     await mount();
     const variables = section("Variables");
@@ -113,7 +146,7 @@ describe("ModelViewPanel", () => {
     });
     expect(requestModelView).toHaveBeenLastCalledWith(expect.anything(), expect.anything(), "c-1", {
       who: "Maria Soto",
-    });
+    }, "agent-1");
     expect(section("System prompt").textContent).toContain("You help Maria Soto.");
   });
 
