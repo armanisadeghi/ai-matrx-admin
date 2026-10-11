@@ -55,7 +55,13 @@ import {
 import {
   BlockList,
   BlockType,
+  offeredBlockTypes,
 } from "@/features/agents/components/builder/message-builders/AddBlockButton";
+import {
+  agentPromptMenuSections,
+  useAgentBuilderMenuActions,
+} from "@/features/agents/components/builder/message-builders/agentPromptMenu";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import type {
   AgentDefinitionMessage,
   PrimingMessageRole,
@@ -733,6 +739,51 @@ export function MessageItem({
   );
 
   const buildAgentScope = useAgentBuilderSurfaceScope(agentId);
+  const agentMenuActions = useAgentBuilderMenuActions(agentId);
+
+  // The [Prompt] feature section's own rows (agentPromptMenu.ts), built when a menu opens: the
+  // caret is read then, and every row reuses this message's existing handler.
+  const promptMenuSections = (
+    mode: "textarea" | "write",
+    conditionalSections: ContextMenuExtraSection[],
+  ): ContextMenuExtraSection[] => {
+    const textarea = mode === "textarea" ? textareaRef.current : null;
+    const caret = textarea
+      ? { start: textarea.selectionStart, end: textarea.selectionEnd }
+      : null;
+    const role = message?.role === "assistant" ? "assistant" : "user";
+    return agentPromptMenuSections({
+      variableNames,
+      contextItems: insertSources.contextItems,
+      insert: (insert) =>
+        insertPromptText({
+          insert,
+          text: currentText,
+          onChange: handleTextChange,
+          writeController: mode === "write" ? writeRef.current : null,
+          textarea,
+          fallbackCaret: caret,
+        }),
+      onNewVariable: () => goToBuilderSection("variables"),
+      onAddContextItem: () => goToBuilderSection("context"),
+      blockSections: blockEditing.menuSections(),
+      conditionalSections,
+      contentBlockTypes: offeredBlockTypes(
+        role === "user" && modelProducesSpeech(selectedModel) ? ["speech_script"] : [],
+      ),
+      onAddContentBlock: (type) => setPendingAddType(type),
+      roleSwitch: {
+        to: role === "user" ? "assistant" : "user",
+        run: () => handleRoleChange(role === "user" ? "assistant" : "user"),
+      },
+      onOpenFullScreenEditor: onOpenFullScreenEditor
+        ? () => onOpenFullScreenEditor(messageIndex)
+        : undefined,
+      onClear: handleClear,
+      onDelete: handleDelete,
+      agent: agentMenuActions,
+    });
+  };
 
   // Surface scope for `matrx-user/agent-builder`. Agent-level values come from
   // the hook; `content` is the message text being edited. Top-level keys flow
@@ -879,6 +930,7 @@ export function MessageItem({
             variableNames={variableNames}
             contextData={contextMenuData}
             promptBlocks={blockEditing.highlight}
+            menuSections={(conditional) => promptMenuSections("write", conditional)}
             minHeight={80}
             placeholder={
               message.role === "assistant"
@@ -938,14 +990,16 @@ export function MessageItem({
             redoHint={redoHint}
             onViewHistory={handleViewHistory}
             hasHistory={canUndo || canRedo}
-            resolveExtraSectionsOnOpen={() => [
-              ...(promptSectionSections({
-                variableNames,
-                getTextarea: () => textareaRef.current,
-                onChange: handleTextChange,
-              }) ?? []),
-              ...blockEditing.menuSections(),
-            ]}
+            resolveExtraSectionsOnOpen={() =>
+              promptMenuSections(
+                "textarea",
+                promptSectionSections({
+                  variableNames,
+                  getTextarea: () => textareaRef.current,
+                  onChange: handleTextChange,
+                }) ?? [],
+              )
+            }
           >
             <textarea
               ref={handleTextareaRef}

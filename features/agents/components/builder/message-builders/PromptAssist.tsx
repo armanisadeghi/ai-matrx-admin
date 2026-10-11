@@ -143,6 +143,11 @@ export interface PromptWriteBoxProps {
   contextData?: Record<string, unknown>;
   /** Prompt blocks the agent declares / that resolve to nothing; `{{<name>}}` draws as a block chip. */
   promptBlocks?: PromptBlockHost | null;
+  /**
+   * The host's own rows for the menu (agent builder: `agentPromptMenuSections`), given Write's
+   * "Only include when" section to place. Called when the menu opens.
+   */
+  menuSections?: (conditional: ContextMenuExtraSection[]) => ContextMenuExtraSection[];
 }
 
 /** Write: the rich editor over the stored prompt text (see header). */
@@ -156,6 +161,7 @@ export function PromptWriteBox({
   variableNames,
   contextData,
   promptBlocks = null,
+  menuSections,
 }: PromptWriteBoxProps) {
   const declared = useMemo(() => variableNames?.map((name) => ({ name })) ?? null, [variableNames]);
   const box = (
@@ -202,7 +208,9 @@ export function PromptWriteBox({
           hasSelection: () => (controllerRef.current?.selectedText() ?? "").trim() !== "",
           wrap: (name, when) => wrapEditorSelection(controllerRef.current, name, when),
         });
-        return section ? [section as ContextMenuExtraSection] : undefined;
+        const conditional = section ? [section as ContextMenuExtraSection] : [];
+        if (menuSections) return menuSections(conditional);
+        return conditional.length ? conditional : undefined;
       }}
     >
       {box}
