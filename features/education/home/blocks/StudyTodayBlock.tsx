@@ -17,6 +17,7 @@ import Link from "next/link";
 import { ArrowRight, ChevronRight, Coffee, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Button as ControlButton, Chip, ControlRow, RowGroup, SettingRow } from "@ai-matrx/design-system/controls";
+import { InfoHint } from "@/components/official/InfoHint";
 import { MandateDoorLink } from "@/features/mandates/components/MandateDoorLink";
 import { InstallStudyAppButton } from "../../components/InstallStudyAppButton";
 import type { EducationSnapshot } from "../types";
@@ -70,7 +71,7 @@ export function StudyTodayBlock({ snapshot }: { snapshot: EducationSnapshot }) {
               Rest day — you&apos;ve earned it.
             </p>
             <p className="text-xs text-muted-foreground">
-              Your plan protects today for recovery. Rest is part of the plan.
+              Your plan keeps today free for recovery
             </p>
           </div>
         </div>
@@ -81,7 +82,7 @@ export function StudyTodayBlock({ snapshot }: { snapshot: EducationSnapshot }) {
               You&apos;re all caught up.
             </p>
             <p className="text-xs text-muted-foreground">
-              Nothing due right now — get ahead with a new set or a practice quiz.
+              Nothing due — get ahead with a new set or a quiz
             </p>
           </div>
           <Button asChild variant="outline">
@@ -106,10 +107,17 @@ export function StudyTodayBlock({ snapshot }: { snapshot: EducationSnapshot }) {
                     {action.label}
                   </>
                 }
+                // The reason is a definition, not a line: it rides behind an
+                // info icon so every row keeps one short line (interface-text law).
                 line={
-                  action.minutes != null
-                    ? `~${action.minutes} min · ${action.why}`
-                    : action.why
+                  action.minutes != null ? (
+                    <span className="inline-flex items-center gap-1">
+                      ~{action.minutes} min
+                      <InfoHint text={action.why} label="Why this" />
+                    </span>
+                  ) : (
+                    action.why
+                  )
                 }
               >
                 {action.href && (

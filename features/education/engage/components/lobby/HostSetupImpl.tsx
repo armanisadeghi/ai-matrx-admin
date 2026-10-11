@@ -11,6 +11,7 @@
 
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useState, useTransition } from "react";
 import { useRead } from "@ai-matrx/design-system";
 import { ReadFailure } from "@ai-matrx/design-system";
@@ -177,12 +178,8 @@ export function HostSetupImpl({
         > Back
         </Button>
         <h1 className="text-lg font-semibold text-foreground">Host a game</h1>
+        <InfoHint text="Each player gets their own spaced-review questions from the source you pick." />
       </div>
-
-      <p className="text-sm text-muted-foreground">
-        Pick what players will study. Everyone gets their own SRS-biased
-        questions from this source — so every round is real review.
-      </p>
 
       {/* Due-queue option */}
       <button
