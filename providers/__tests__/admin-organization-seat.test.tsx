@@ -18,7 +18,7 @@ jest.mock("next/navigation", () => ({ usePathname: () => mockPathname }));
 jest.mock("@/features/scopes/redux/thunks/ensureScopeTree", () => ({
   ensureScopeTree: () => () => Promise.resolve(),
 }));
-const mockWriteLastActive = jest.fn(async () => undefined);
+const mockWriteLastActive = jest.fn(async (_id: string) => undefined);
 jest.mock("@/lib/organizations/accountOrganizationChoices", () => ({
   writeLastActiveOrganization: (id: string) => mockWriteLastActive(id),
 }));
@@ -131,8 +131,8 @@ describe("the admin organization", () => {
     expect(adminLaneOrganizationId()).not.toBe(SYSTEM_ORGANIZATION_ID);
     // The chat package's org port (agent runs) sees the same organization.
     expect(store.getState().chatHost.org?.id).toBe(ADMIN_ORG);
-    // A run in the admin organization is an ordinary member request: no admin-lane header.
-    expect(adminLaneHeadersFor(ADMIN_ORG)).toEqual({});
+    // The request still says "admin system" (the server re-verifies the admin); the org is the admin org.
+    expect(adminLaneHeadersFor(ADMIN_ORG)).toEqual({ "x-matrx-admin-lane": "1" });
     // Context picked under the user-side organization never rides into it.
     expect(selectProjectId(state(store))).toBeNull();
     // The user side is untouched.
