@@ -90,6 +90,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { InfoHint } from "@/components/official/InfoHint";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 export interface FieldProps {
@@ -108,9 +109,8 @@ export interface FieldProps {
    */
   optional?: boolean;
   /**
-   * Hover-tooltip help content. Inline shadcn Tooltip — keep it short (one or
-   * two sentences). For richer help with a copy-button or AI assistance, use
-   * the standalone `<HelpIcon>` component instead.
+   * Help for the label — one sentence, ≤ 140 chars. A string renders through
+   * `InfoHint` (hover, keyboard and tap); a ReactNode keeps a hover tooltip.
    */
   help?: React.ReactNode;
   /**
@@ -215,7 +215,11 @@ export function Field({
             </span>
           )}
         </Label>
-        {help && (
+        {/* A text hint goes through InfoHint so it opens on tap and keyboard too; rich help keeps the hover tooltip. */}
+        {typeof help === "string" && help && (
+          <InfoHint text={help} label={typeof label === "string" ? `About ${label}` : "Help"} />
+        )}
+        {help && typeof help !== "string" && (
           <TooltipProvider delayDuration={150}>
             <Tooltip>
               <TooltipTrigger asChild>
