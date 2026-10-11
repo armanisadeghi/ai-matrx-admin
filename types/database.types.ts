@@ -1414,6 +1414,7 @@ export type Database = {
       }
       prompt_block: {
         Row: {
+          block_type: string
           bound_tool: string | null
           category_id: string | null
           content: string
@@ -1440,6 +1441,7 @@ export type Database = {
           visibility: Database["platform"]["Enums"]["visibility"]
         }
         Insert: {
+          block_type?: string
           bound_tool?: string | null
           category_id?: string | null
           content?: string
@@ -1466,6 +1468,7 @@ export type Database = {
           visibility?: Database["platform"]["Enums"]["visibility"]
         }
         Update: {
+          block_type?: string
           bound_tool?: string | null
           category_id?: string | null
           content?: string
@@ -7867,6 +7870,7 @@ export type Database = {
       spend_alarm_occurrence: {
         Row: {
           alarm_id: string
+          cost_avoided_usd: number | null
           cost_usd: number | null
           created_at: string
           created_by: string | null
@@ -7885,6 +7889,7 @@ export type Database = {
         }
         Insert: {
           alarm_id: string
+          cost_avoided_usd?: number | null
           cost_usd?: number | null
           created_at?: string
           created_by?: string | null
@@ -7903,6 +7908,7 @@ export type Database = {
         }
         Update: {
           alarm_id?: string
+          cost_avoided_usd?: number | null
           cost_usd?: number | null
           created_at?: string
           created_by?: string | null
@@ -9071,10 +9077,15 @@ export type Database = {
         Args: { p_org_id?: string }
         Returns: number
       }
+      spend_alarm_apply_held_estimates: {
+        Args: { p_request_ids?: string[] }
+        Returns: number
+      }
       spend_alarm_merge_rollups: { Args: { p_kind: string }; Returns: number }
       spend_alarm_occurrence_rows: {
         Args: { p_alarm_id: string }
         Returns: {
+          cost_avoided_usd: number
           cost_usd: number
           detail: string
           execution_id: string
@@ -35955,6 +35966,10 @@ export type Database = {
       }
       _status_group_word: { Args: { p_word: string }; Returns: string }
       _store_cell_per_row: { Args: { p_cell: Json }; Returns: boolean }
+      _store_cells_in: {
+        Args: { p_org: string; p_part: string; p_word: string; s: Json }
+        Returns: Json
+      }
       _store_column_itself: {
         Args: {
           p_action: string
@@ -35979,6 +35994,24 @@ export type Database = {
           p_user_id: string
         }
         Returns: boolean
+      }
+      _store_reach: {
+        Args: {
+          p_action: string
+          p_cells: Json
+          p_level: Database["public"]["Enums"]["permission_level"]
+          p_org: string
+          p_person: string
+        }
+        Returns: string
+      }
+      _store_row_reveals: {
+        Args: { p_person: string; p_table: string }
+        Returns: Json
+      }
+      _store_rung: {
+        Args: { p_level: Database["public"]["Enums"]["permission_level"] }
+        Returns: Database["public"]["Enums"]["permission_level"]
       }
       _store_seat_candidates: { Args: { p_record: string }; Returns: string[] }
       _store_seat_cell_people: { Args: { p_value: Json }; Returns: string[] }
@@ -41731,6 +41764,24 @@ export type Database = {
         Args: { p_action?: string; p_cells: Json }
         Returns: string
       }
+      store_row_visible: {
+        Args: {
+          p_person: string
+          p_row: Record<string, unknown>
+          p_table: string
+          p_visible: string[]
+        }
+        Returns: string[]
+      }
+      store_row_visible_with: {
+        Args: {
+          p_person: string
+          p_reveals: Json
+          p_row: Record<string, unknown>
+          p_visible: string[]
+        }
+        Returns: string[]
+      }
       store_seat_fallback: { Args: { p_org: string }; Returns: string[] }
       store_seat_has: {
         Args: { p_person: string; p_record: string; p_seat: Json }
@@ -41787,6 +41838,24 @@ export type Database = {
           schedule: string
           table_id: string
         }[]
+      }
+      table_access_setup: { Args: { p_table_id: string }; Returns: Json }
+      table_access_setup_preview: {
+        Args: { p_moves?: Json; p_setup: Json; p_table_id: string }
+        Returns: Json
+      }
+      table_access_setup_revert: {
+        Args: { p_audit_id: string; p_table_id: string }
+        Returns: Json
+      }
+      table_access_setup_set: {
+        Args: {
+          p_moves?: Json
+          p_reason?: string
+          p_setup: Json
+          p_table_id: string
+        }
+        Returns: Json
       }
       table_add_rung: {
         Args: { p_organization_id: string; p_table_id: string }
@@ -76672,6 +76741,21 @@ export type Database = {
         }
         Returns: Json
       }
+      review_cycle_door_access: {
+        Args: {
+          p_cycle_id: string
+          p_required: Database["public"]["Enums"]["permission_level"]
+          p_user: string
+        }
+        Returns: boolean
+      }
+      review_cycle_request_recipients: {
+        Args: { p_cycle_id: string }
+        Returns: {
+          reason: string
+          user_id: string
+        }[]
+      }
       review_may_start: {
         Args: { p_employment_id: string; p_user: string }
         Returns: boolean
@@ -77434,18 +77518,24 @@ export type Database = {
         Row: {
           declared_by: string
           entity_type: string
+          scope: Json | null
+          scope_key: Json
           setup: Json
           updated_at: string
         }
         Insert: {
           declared_by: string
           entity_type: string
+          scope?: Json | null
+          scope_key?: Json
           setup: Json
           updated_at?: string
         }
         Update: {
           declared_by?: string
           entity_type?: string
+          scope?: Json | null
+          scope_key?: Json
           setup?: Json
           updated_at?: string
         }
@@ -79354,12 +79444,20 @@ export type Database = {
         Args: { p_ids: string[]; p_org: string; p_type: string; p_user: string }
         Returns: boolean
       }
-      _access_setup_of: { Args: { p_type: string }; Returns: Json }
+      _access_setup_of: {
+        Args: { p_id: string; p_type: string }
+        Returns: Json
+      }
+      _access_setup_of_table: { Args: { p_table: string }; Returns: Json }
       _access_setup_person:
         | { Args: { p_user: string }; Returns: Json }
         | { Args: { p_org: string; p_user: string }; Returns: Json }
       _access_setup_problems: {
         Args: { p_type: string; s: Json }
+        Returns: string[]
+      }
+      _access_setup_problems_store: {
+        Args: { p_scope: Json; s: Json }
         Returns: string[]
       }
       _access_setup_stage_meaning: {
@@ -79803,7 +79901,9 @@ export type Database = {
           token: string
         }[]
       }
-      access_setup_check: { Args: { p_type: string }; Returns: Json }
+      access_setup_check:
+        | { Args: { p_type: string }; Returns: Json }
+        | { Args: { p_scope: Json; p_type: string }; Returns: Json }
       access_shadow_status: { Args: never; Returns: Json }
       accessible_child_parents: {
         Args: { p_child_type: string }
@@ -80620,6 +80720,10 @@ export type Database = {
         Returns: Json
       }
       my_admin_orgs: { Args: never; Returns: string[] }
+      my_grantable_levels: {
+        Args: { p_resource_id: string; p_resource_type: string }
+        Returns: Json
+      }
       my_orgs: { Args: never; Returns: string[] }
       my_orgs_all: { Args: never; Returns: string[] }
       my_team_ids: { Args: { p_organization_id: string }; Returns: string[] }
@@ -105147,6 +105251,7 @@ export type Database = {
           model_tiers: Json
           name: string
           output_schema: Json
+          prompt_blocks: Json
           rag_awareness_mode: string
           settings: Json
           skill_config: Json
@@ -111230,10 +111335,6 @@ export type Database = {
         Args: { p_site_id: string }
         Returns: Json
       }
-      promote_version: {
-        Args: { p_entity_id: string; p_entity_type: string; p_version: number }
-        Returns: Json
-      }
       provider_account_attach_credential: {
         Args: {
           p_account_id: string
@@ -111550,10 +111651,6 @@ export type Database = {
       restore_note_version: {
         Args: { p_note_id: string; p_version_number: number }
         Returns: boolean
-      }
-      restore_version: {
-        Args: { p_entity_id: string; p_entity_type: string; p_version: number }
-        Returns: number
       }
       review_org_share: {
         Args: { p_note?: string; p_permission_id: string; p_status: string }
