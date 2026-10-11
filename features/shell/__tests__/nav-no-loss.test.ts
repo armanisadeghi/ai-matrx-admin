@@ -724,7 +724,7 @@ describe("main menu — nothing is lost", () => {
         return hit;
       })?.label;
     expect(owner("/notes")).toBe("Content");
-    expect(owner("/workbooks")).toBe("Content");
+    expect(owner("/workbooks")).toBe("Data");
     expect(owner("/data")).toBe("Data");
     expect(owner("/shapes/all")).toBe("Data");
     expect(owner("/files/all")).toBe("Files");

@@ -537,8 +537,7 @@ export const WORKSPACES_NAV_GROUP: ShellNavGroupDef = {
 };
 
 /**
- * Tables, Templates and Pick Lists — the record store's rows in the Data domain (Make, Pages and Dashboards left for Workspace, Arman 2026-10-09) (Workbooks are
- * Univer spreadsheets, so they live in Content). NO ROW HERE IS EVER HIDDEN BEHIND A SWITCH
+ * Tables, Templates and Pick Lists — the record store's rows in the Data domain (Make, Pages and Dashboards left for Workspace, Arman 2026-10-09) (Workbooks sit in Data too). NO ROW HERE IS EVER HIDDEN BEHIND A SWITCH
  * (Arman, 2026-10-03: "EVERYTHING IS ON by default … Don't limit what users can do"): the
  * record store is the only data system, so Make and Records always show, with or without an
  * active organization. Guard: features/shell/__tests__/no-nav-row-is-gated.test.ts.
@@ -1203,7 +1202,7 @@ export const primaryNavItems: ShellNavItem[] = [
     ],
   },
   {
-    // content: notes, documents, workbooks, visual-maps, esign, utilities —
+    // content: notes, documents, visual-maps, esign, utilities —
     // authored text and the content store.
     label: "Content",
     href: "/notes",
@@ -1211,7 +1210,7 @@ export const primaryNavItems: ShellNavItem[] = [
     section: "primary",
     profileMenu: false,
     dashboard: false,
-    description: "Notes, documents, workbooks, maps",
+    description: "Notes, documents, maps",
     color: "amber",
     children: [
       {
@@ -1230,16 +1229,6 @@ export const primaryNavItems: ShellNavItem[] = [
         iconName: "FileText",
         description: "Cloud documents — realtime co-editing, full history",
         color: "indigo",
-        profileMenu: true,
-        dashboard: true,
-        group: "Write",
-      },
-      {
-        label: "Workbooks",
-        href: "/workbooks",
-        iconName: "FileSpreadsheet",
-        description: "Lossless spreadsheets — multi-sheet, formulas, formatting",
-        color: "emerald",
         profileMenu: true,
         dashboard: true,
         group: "Write",
@@ -1309,10 +1298,9 @@ export const primaryNavItems: ShellNavItem[] = [
       { label: "Notes Window", href: "/notes", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-notes-panel" },
       { label: "JSON Truncator Window", href: "/free/data-truncator", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-json-truncator-panel" },
       { label: "Character Counter Window", href: "/free/character-counter", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-character-counter-panel" },
-      // Creates a blank draft note / cloud document / workbook in place, then opens it.
+      // Creates a blank draft note / cloud document in place, then opens it.
       { label: "New Note", href: "/notes", iconName: "Plus", action: "create-note" },
       { label: "New Document", href: "/documents", iconName: "Plus", action: "create-document" },
-      { label: "New Workbook", href: "/workbooks", iconName: "Plus", action: "create-workbook" },
       { label: "Send for Signature", href: "/esign/new", iconName: "FileSignature", actionItem: true, guestHidden: true },
     ],
   },
@@ -1326,10 +1314,20 @@ export const primaryNavItems: ShellNavItem[] = [
     section: "primary",
     profileMenu: false,
     dashboard: false,
-    description: "Tables, pick lists, shapes and scopes",
+    description: "Tables, workbooks, pick lists, shapes and scopes",
     color: "cyan",
     children: [
       ...DATA_NAV_CHILDREN,
+      {
+        label: "Workbooks",
+        href: "/workbooks",
+        iconName: "FileSpreadsheet",
+        description: "Lossless spreadsheets — multi-sheet, formulas, formatting",
+        color: "emerald",
+        profileMenu: true,
+        dashboard: true,
+      },
+      { label: "New Workbook", href: "/workbooks", iconName: "Plus", action: "create-workbook" },
       {
         // User-facing Shape System studio (features/content-ir/studio/) —
         // the shape of structured content is designed where data is.

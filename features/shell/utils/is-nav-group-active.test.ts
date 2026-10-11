@@ -93,7 +93,7 @@ describe("shell navigation route ownership", () => {
     expect(owner("/tools/pdf-extractor")).toBe("Files");
     expect(owner("/notes")).toBe("Content");
     expect(owner("/notes/abc")).toBe("Content");
-    expect(owner("/workbooks")).toBe("Content");
+    expect(owner("/workbooks")).toBe("Data");
     expect(owner("/esign")).toBe("Content");
     expect(owner("/data")).toBe("Data");
     expect(owner("/data/some-table")).toBe("Data");
