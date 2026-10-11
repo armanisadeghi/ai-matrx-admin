@@ -17,9 +17,6 @@
   "features/canvas/social/ScoreSubmissionDialog.tsx": [
     "canvas-confetti"
   ],
-  "features/code-editor/config/syntax-themes.ts": [
-    "monaco-editor"
-  ],
   "features/code/agent-context/useDiagnosticHoverActions.ts": [
     "monaco-editor"
   ],
@@ -46,9 +43,6 @@
   ],
   "features/record-change-approvals/__tests__/harness.ts": [
     "undici"
-  ],
-  "lib/code-runtime/__tests__/compile-stored.test.ts": [
-    "sandbox-theme"
   ],
   "lib/redux/selectors/userSelectors.ts": [
     "reselect"

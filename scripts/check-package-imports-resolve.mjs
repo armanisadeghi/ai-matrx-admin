@@ -51,6 +51,7 @@ import { builtinModules } from "node:module";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import ts from "typescript";
 
 const SRC_EXT = /\.(?:[cm]?[jt]sx?)$/;
 // guard scripts and fixtures quote import statements inside strings; they are not app imports
@@ -243,9 +244,6 @@ export function audit({ root, graph = true }) {
 }
 
 // ── 4: DECLARED — a bare specifier must name a package.json dependency (hoisting is not a declaration) ──
-const ANY_FROM_RE = /^[ \t]*(import|export)\s+(type\s+)?(?:[\w$]+\s*,\s*)?(?:\{[^}]*\}|\*\s*(?:as\s+[\w$]+)?|[\w$]+)\s*from\s*["']([^"'\n]+)["']/gm;
-const ANY_DYN_RE = /(?:(?<![\w$.])import|(?<![\w$.])require)\s*\(\s*["']([^"'\n]+)["']\s*\)/g;
-const ANY_BARE_RE = /^[ \t]*import\s*["']([^"'\n]+)["']/gm;
 const BUILTINS = new Set(builtinModules.map((m) => m.replace(/^node:/, "").split("/")[0]));
 
 function stripJsonc(t) {
@@ -286,20 +284,35 @@ export function packageOf(spec) {
 function undeclaredIn(text, ctx) {
   const out = [];
   const lineOf = (i) => text.slice(0, i).split("\n").length;
-  const seen = (spec, index) => {
-    const ls = text.lastIndexOf("\n", index - 1) + 1;
-    const before = text.slice(ls, index);
-    if (/^\s*(?:\*|\/\/|\/\*)/.test(before) || /\/\/|\/\*/.test(before)) return; // quoted inside a comment, not an import
+  const isUndeclared = (spec) => {
     if (spec.startsWith(".") || spec.startsWith("/") || /^[a-z][a-z0-9+.-]*:/i.test(spec) && !spec.startsWith("node:")) return;
     if (spec.startsWith("node:")) return;
     if (ctx.aliases.some((a) => (a.exact ? spec === a.exact : spec.startsWith(a.prefix)))) return;
     const pkg = packageOf(spec);
-    if (!pkg || ctx.declared.has(pkg) || BUILTINS.has(pkg)) return;
-    out.push({ pkg, spec, line: lineOf(index) });
+    return pkg && !ctx.declared.has(pkg) && !BUILTINS.has(pkg) ? pkg : null;
   };
-  for (const m of text.matchAll(ANY_FROM_RE)) if (!m[2]) seen(m[3], m.index);
-  for (const m of text.matchAll(ANY_DYN_RE)) seen(m[1], m.index);
-  for (const m of text.matchAll(ANY_BARE_RE)) seen(m[1], m.index);
+  // TypeScript's lexical import scan skips template text and is much cheaper than
+  // building an AST for every source file. Parse fully only when it finds a possible
+  // undeclared package, so type-only imports and exact locations remain correct.
+  if (!ts.preProcessFile(text, true, true).importedFiles.some((ref) => isUndeclared(ref.fileName))) return out;
+  const seen = (spec, index) => {
+    const pkg = isUndeclared(spec);
+    if (pkg) out.push({ pkg, spec, line: lineOf(index) });
+  };
+  // Parse actual syntax: shape source and test fixtures contain import-looking text in
+  // template literals. Those are data for the runtime compiler, not app dependencies.
+  const source = ts.createSourceFile("imports.tsx", text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const visit = (node) => {
+    if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
+      const module = node.moduleSpecifier;
+      if (module && ts.isStringLiteral(module) && !node.importClause?.isTypeOnly && !node.isTypeOnly) seen(module.text, node.getStart(source));
+    } else if (ts.isCallExpression(node) && node.arguments.length >= 1 && ts.isStringLiteral(node.arguments[0])) {
+      const callee = node.expression;
+      if (callee.kind === ts.SyntaxKind.ImportKeyword || ts.isIdentifier(callee) && callee.text === "require") seen(node.arguments[0].text, node.getStart(source));
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
   return out;
 }
 
@@ -359,6 +372,11 @@ function selfTest() {
       ["declared-red-dynamic", { "package.json": '{"dependencies":{"react":"1"}}', "tsconfig.json": '{"compilerOptions":{"paths":{"@/*":["./*"]}}}', "features/x.ts": 'const m = await import("html-to-image");\n' }, 1, /html-to-image/],
       ["declared-red-static-scoped", { "package.json": '{"dependencies":{}}', "x.ts": 'import { a } from "@scope/pkg/deep/path";\n' }, 1, /@scope\/pkg/],
       ["declared-red-require", { "package.json": '{"dependencies":{}}', "x.js": 'const z = require("left-pad");\n' }, 1, /left-pad/],
+      ["declared-red-multiline-dynamic", { "package.json": '{"dependencies":{}}', "x.ts": 'const z = import(\n  "left-pad"\n);\n' }, 1, /left-pad/],
+      ["declared-red-dynamic-options", { "package.json": '{"dependencies":{}}', "x.ts": 'const z = import("left-pad", { with: { type: "json" } });\n' }, 1, /left-pad/],
+      ["declared-red-multiline-require", { "package.json": '{"dependencies":{}}', "x.js": 'const z = require(\n  "left-pad"\n);\n' }, 1, /left-pad/],
+      ["declared-red-export-from", { "package.json": '{"dependencies":{}}', "x.ts": 'export { a } from "left-pad";\n' }, 1, /left-pad/],
+      ["declared-green-shape-source", { "package.json": '{"dependencies":{}}', "x.ts": 'const shape = String.raw`import * as XLSX from "xlsx";`;\ntype Editor = typeof import("monaco-editor");\n' }, 0, null],
       ["declared-green", { "package.json": '{"dependencies":{"html-to-image":"1","@scope/pkg":"1"},"devDependencies":{"vitest":"1"}}', "tsconfig.json": '// c\n{"compilerOptions":{"paths":{"@/*":["./*"],}}}', "a.ts": 'import { toPng } from "html-to-image";\nimport { b } from "@scope/pkg/deep";\nimport { t } from "vitest";\nimport fs from "node:fs";\nimport path from "path";\nimport fsp from "fs/promises";\nimport x from "@/lib/x";\nimport y from "./y";\nimport type { Q } from "type-only-undeclared";\n// import("in-a-comment")\n' }, 0, null],
     ];
     for (const [label, files, want, re] of declCases) {

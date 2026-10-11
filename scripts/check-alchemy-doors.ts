@@ -57,6 +57,7 @@
  */
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import ts from "typescript";
 
 import { REPO_ROOT, repoFiles } from "./lib/repo-files";
 
@@ -291,6 +292,20 @@ export function scanSource(file: string, src: string): Hit[] {
   const hits: Hit[] = [];
   const stripped = stripComments(src);
   const lines = stripped.split("\n");
+  const source = ts.createSourceFile(file, src, ts.ScriptTarget.Latest, true, file.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+  const libraryImportLines = new Set<number>();
+  const visitImport = (node: ts.Node): void => {
+    const module = (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) ? node.moduleSpecifier
+      : ts.isCallExpression(node) && node.arguments.length >= 1 &&
+        (node.expression.kind === ts.SyntaxKind.ImportKeyword || ts.isIdentifier(node.expression) && node.expression.text === "require")
+        ? node.arguments[0] : undefined;
+    if (module && ts.isStringLiteral(module) && LIB_IMPORT.test(`import "${module.text}"`)) {
+      const start = source.getLineAndCharacterOfPosition(node.getStart(source)).line;
+      libraryImportLines.add(start);
+    }
+    ts.forEachChild(node, visitImport);
+  };
+  visitImport(source);
   const markLines = downloadMarkLines(stripped);
   const base = file.split("/").pop() ?? file;
   const allowed = (rule: Rule) => ALLOW[rule].some((a) => file === a || file.startsWith(a));
@@ -322,7 +337,7 @@ export function scanSource(file: string, src: string): Hit[] {
   lines.forEach((l, i) => {
     if (RAW_CLIPBOARD.test(l)) add("clipboard", i);
     if (markLines.has(i) || (hasDownload && /URL\.createObjectURL\s*\(/.test(l))) add("downloads", i);
-    if (LIB_IMPORT.test(l)) add("formatlibs", i);
+    if (libraryImportLines.has(i)) add("formatlibs", i);
     if (PRINT_PDF_IMPORT.test(l) && !/^\s*(?:import|export)\s+type\b/.test(l)) add("formatlibs", i);
     if (/\b(applySurfaceWrite|loadSurfaceWriteDoor|surfaceWriteDeclarations)\b/.test(l)) add("doorbypass", i);
     if (
@@ -496,6 +511,10 @@ function selfTest(): number {
   // AP-2 fifth check: the row/line STRUCTURE is a delimited writer/reader with no csv/tsv word near,
   // planted in each fixed site's OLD shape; the negatives keep plain list joins out.
   extra.push(
+    { rule: "formatlibs", file: "features/x/Foo.ts", src: "const shape = String.raw`import * as XLSX from \"xlsx\";`;\n", red: false, what: "shape source data is not an app import" },
+    { rule: "formatlibs", file: "features/x/Foo.ts", src: "const x = await import(\n  \"xlsx\"\n);\n", red: true, what: "multiline dynamic library import" },
+    { rule: "formatlibs", file: "features/x/Foo.ts", src: "const x = import(\"xlsx\", { with: { type: \"json\" } });\n", red: true, what: "dynamic library import with options" },
+    { rule: "formatlibs", file: "features/x/Foo.ts", src: "const x = require(\n  \"xlsx\"\n);\n", red: true, what: "multiline require of a library" },
     { rule: "handcsv", file: "features/google-workspace/X.tsx", src: "const values = sheetValues.split(\"\\n\").map((row) => row.split(\"\\t\"));\n", red: true, what: "Google sheet read: split lines then split tabs (no tsv word)" },
     { rule: "handcsv", file: "features/google-workspace/X.tsx", src: "setSheetValues(\n  outcome.result.values.map((row) => row.join(\"\\t\")).join(\"\\n\"),\n);\n", red: true, what: "Google sheet write: rows.map(join tab).join newline" },
     { rule: "handcsv", file: "features/rag/X.tsx", src: "const lines = header.length ? [header.join(\"\\t\")] : [];\nfor (const row of rows) {\n  lines.push((row.cells.length ? row.cells : [row.fallback]).join(\"\\t\"));\n}\nreturn lines.join(\"\\n\");\n", red: true, what: "RAG table group: tab rows pushed then joined by newline" },
