@@ -63,7 +63,6 @@ export function installLinkInterceptor(
                 return;
             }
             a.setAttribute("data-matrx-link-refused", "true");
-            // eslint-disable-next-line no-console
             console.warn(`[kind-sandbox] link not opened: ${result.error ?? "refused"}`);
         });
     };
