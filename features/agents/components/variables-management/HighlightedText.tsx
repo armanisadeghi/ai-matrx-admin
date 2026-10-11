@@ -6,9 +6,14 @@ import {
     type VariableSegment,
 } from "@ai-matrx/chat/agents/utils/variable-utils";
 
+import { BlockChip, type BlockHighlight } from "@/features/prompt-blocks/components/BlockChip";
+import { blockChipState, splitBlockText } from "@/features/prompt-blocks/tokens";
+
 interface HighlightedTextProps {
     text: string;
     validVariables?: string[];
+    /** Prompt blocks: draws `{{<name>}}` as a chip (declared / missing / not declared). */
+    blocks?: BlockHighlight;
 }
 
 // Helper component to render text with highlighted variables.
@@ -27,7 +32,7 @@ const LITERAL_CHIP = "bg-muted text-muted-foreground border border-border rounde
 // is filled / empty. A matched pair of a declared name draws its markers as violet chips and shades
 // the text between them; anything else (undeclared name, no matching end) is sent as written, so it
 // stays neutral.
-export const HighlightedText = ({ text, validVariables = [] }: HighlightedTextProps) => {
+export const HighlightedText = ({ text, validVariables = [], blocks }: HighlightedTextProps) => {
     // `{{!name}}` is the author's example, not a variable: it stays plain text.
     const parts = splitVariableText(text);
 
@@ -50,8 +55,30 @@ export const HighlightedText = ({ text, validVariables = [] }: HighlightedTextPr
         matched.add(close);
     }
 
+    const renderBlocks = (value: string, key: string | number): React.ReactNode =>
+        blocks ? (
+            <React.Fragment key={key}>
+                {splitBlockText(value).map((piece, i) =>
+                    piece.kind === "block" && piece.name ? (
+                        <BlockChip
+                            key={i}
+                            name={piece.name}
+                            state={blockChipState(piece.name, blocks.declared, blocks.missing)}
+                            onOpen={blocks.onOpen}
+                        />
+                    ) : (
+                        <span key={i}>{piece.text}</span>
+                    ),
+                )}
+            </React.Fragment>
+        ) : (
+            <span key={key}>{value}</span>
+        );
+
     const renderVariable = (segment: Extract<VariableSegment, { kind: "variable" }>, idx: number) => {
         const part = segment.text;
+        // `{{<name>}}` is a prompt block, never a variable.
+        if (blocks && part.startsWith("{{<")) return renderBlocks(part, idx);
         const variableName = segment.name;
         if (segment.section) {
             const isMatched = matched.has(idx);
@@ -124,7 +151,7 @@ export const HighlightedText = ({ text, validVariables = [] }: HighlightedTextPr
             } else if (segment.kind === "variable") {
                 out.push(renderVariable(segment, idx));
             } else {
-                out.push(<span key={idx}>{segment.text}</span>);
+                out.push(renderBlocks(segment.text, idx));
             }
         }
         return out;

@@ -43,6 +43,7 @@ import {
 // lightweight shell (imported statically); MenuContent lazy-loads on first open.
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { promptSectionSections, wrapPromptSection } from "./promptSectionMenu";
+import { usePromptBlockEditing } from "@/features/prompt-blocks/usePromptBlockEditing";
 import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";
 import { MessageItemButtons } from "@/features/agents/components/builder/message-builders/MessageItemButtons";
 import {
@@ -278,6 +279,16 @@ export function MessageItem({
     },
     [agentId, messageIndex, allMessages, message, rawBlocks, dispatch],
   );
+
+  const blockEditing = usePromptBlockEditing({
+    agentId,
+    text: currentText,
+    onChange: handleTextChange,
+    textareaRef,
+    writeRef,
+    viewMode,
+    modelName: selectedModel?.name ?? null,
+  });
 
   const handleRoleChange = useCallback(
     (role: PrimingMessageRole) => {
@@ -547,6 +558,7 @@ export function MessageItem({
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      blockEditing.noteTyping(e.target.value, e.target.selectionStart);
       if (!scrollContainerRef?.current) {
         handleTextChange(e.target.value);
         e.target.style.height = "auto";
@@ -568,7 +580,7 @@ export function MessageItem({
       e.target.style.height = e.target.scrollHeight + "px";
       scrollContainer.scrollTop = scrollLockRef.current.scrollTop;
     },
-    [handleTextChange, scrollContainerRef],
+    [handleTextChange, scrollContainerRef, blockEditing],
   );
 
   const handleKeyDown = useCallback(
@@ -745,6 +757,7 @@ export function MessageItem({
 
   return (
     <div className={cn("group rounded-lg bg-muted ")}>
+      {blockEditing.nodes}
       {/* Header */}
       <div className="flex items-center justify-between sticky top-0 z-10 pt-0 pb-1 pr-2 rounded-t-lg bg-muted">
         <div className="flex items-center gap-1">
@@ -775,6 +788,7 @@ export function MessageItem({
           />
         )}
         <div className="flex items-center gap-1">
+{showsTextTools(viewMode) && blockEditing.toolbarButton}
 {showsTextTools(viewMode) && (
         <PromptInsertMenu
           onAddVariable={() => goToBuilderSection("variables")}
@@ -920,13 +934,14 @@ export function MessageItem({
             redoHint={redoHint}
             onViewHistory={handleViewHistory}
             hasHistory={canUndo || canRedo}
-            resolveExtraSectionsOnOpen={() =>
-              promptSectionSections({
+            resolveExtraSectionsOnOpen={() => [
+              ...(promptSectionSections({
                 variableNames,
                 getTextarea: () => textareaRef.current,
                 onChange: handleTextChange,
-              })
-            }
+              }) ?? []),
+              ...blockEditing.menuSections(),
+            ]}
           >
             <textarea
               ref={handleTextareaRef}
@@ -959,6 +974,7 @@ export function MessageItem({
               <HighlightedText
                 text={currentText}
                 validVariables={variableNames}
+                blocks={blockEditing.highlight}
               />
             ) : (
               <span className="italic">

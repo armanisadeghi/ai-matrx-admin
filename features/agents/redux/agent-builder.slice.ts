@@ -335,6 +335,19 @@ export const agentBuilderSlice = createSlice({
       applyFieldEdit(record, "mcpServers", action.payload.mcpServers);
     },
 
+    /** The prompt blocks (`{{<name>}}`) this agent declares; saved with the agent. */
+    setAgentPromptBlocks(
+      state,
+      action: PayloadAction<{
+        id: string;
+        promptBlocks: AgentDefinition["promptBlocks"];
+      }>,
+    ) {
+      const record = state.agents[action.payload.id];
+      if (!record) return;
+      applyFieldEdit(record, "promptBlocks", action.payload.promptBlocks);
+    },
+
     /**
      * Per-agent skill exposure config. The full SkillConfig object is
      * replaced atomically; the picker UI computes the next value and
@@ -603,6 +616,7 @@ export const {
   setAgentTools,
   setAgentCustomTools,
   setAgentMcpServers,
+  setAgentPromptBlocks,
   setAgentSkillConfig,
   setAgentModelTiers,
   setAgentOutputSchema,

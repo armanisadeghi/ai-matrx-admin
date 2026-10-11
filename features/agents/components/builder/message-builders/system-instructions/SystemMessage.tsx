@@ -21,6 +21,9 @@ import type { AgentDefinitionMessage } from "@ai-matrx/chat/agents/types/agent-m
 
 // Module Shared Components
 import { promptSectionSections, wrapPromptSection } from "../promptSectionMenu";
+import { usePromptBlockEditing } from "@/features/prompt-blocks/usePromptBlockEditing";
+import { useModelFull } from "@/features/ai-models/hooks/useModels";
+import { selectAgentModelId as selectSystemAgentModelId } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";
 import { SystemMessageButtons } from "@/features/agents/components/builder/message-builders/system-instructions/SystemMessageButtons";
 import { MessageFlagToggles } from "@ai-matrx/chat/agents/message-flags/MessageFlagToggles";
@@ -495,8 +498,25 @@ export function SystemMessage({
     }
   }, []);
 
+  const systemTextareaRef = useMemo(
+    () => ({ get current() { return textareaRefs.current[systemMessageIndex] ?? null; }, set current(_v: HTMLTextAreaElement | null) {} }),
+    [systemMessageIndex],
+  );
+  const blockModelId = useAppSelector((state) => selectSystemAgentModelId(state, agentId));
+  const blockModel = useModelFull(blockModelId);
+  const blockEditing = usePromptBlockEditing({
+    agentId,
+    text: developerMessage,
+    onChange: handleTextChange,
+    textareaRef: systemTextareaRef,
+    writeRef,
+    viewMode,
+    modelName: blockModel?.name ?? null,
+  });
+
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      blockEditing.noteTyping(e.target.value, e.target.selectionStart);
       if (!scrollContainerRef?.current) {
         handleTextChange(e.target.value);
         e.target.style.height = "auto";
@@ -518,7 +538,7 @@ export function SystemMessage({
       e.target.style.height = e.target.scrollHeight + "px";
       scrollContainer.scrollTop = scrollLockRef.current.scrollTop;
     },
-    [handleTextChange, scrollContainerRef],
+    [handleTextChange, scrollContainerRef, blockEditing],
   );
 
   const handleKeyDown = useCallback(
@@ -708,6 +728,7 @@ export function SystemMessage({
 
   return (
     <div className="space-y-3">
+      {blockEditing.nodes}
       <div className="group border-border rounded-lg bg-gray-50 dark:bg-gray-800">
         {/* Header */}
         <div className="flex items-center justify-between px-2 py-1 sticky top-0 z-10 rounded-t-lg bg-gray-50 dark:bg-gray-800">
@@ -732,6 +753,7 @@ export function SystemMessage({
             />
           )}
           <div className="flex items-center gap-1">
+{showsTextTools(viewMode) && blockEditing.toolbarButton}
 {showsTextTools(viewMode) && (
           <PromptInsertMenu
             variables={insertSources.variables}
@@ -845,13 +867,14 @@ export function SystemMessage({
               redoHint={redoHint}
               onViewHistory={handleViewHistory}
               hasHistory={canUndo || canRedo}
-              resolveExtraSectionsOnOpen={() =>
-                promptSectionSections({
+              resolveExtraSectionsOnOpen={() => [
+                ...(promptSectionSections({
                   variableNames,
                   getTextarea: () => textareaRefs.current[systemMessageIndex] || null,
                   onChange: handleTextChange,
-                })
-              }
+                }) ?? []),
+                ...blockEditing.menuSections(),
+              ]}
             >
               <textarea
                 ref={handleTextareaRef}
@@ -886,6 +909,7 @@ export function SystemMessage({
                 <HighlightedText
                   text={developerMessage}
                   validVariables={variableNames}
+                  blocks={blockEditing.highlight}
                 />
               ) : (
                 <span className="text-gray-500 dark:text-gray-500 italic">

@@ -19,6 +19,7 @@ import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/se
 import { AGENT_BUILDER_CONTEXT_MENU_PROPS } from "@ai-matrx/chat/agents/agent-context/buildAgentBuilderContextData";
 import { toast } from "@/lib/toast";
 import {
+  blockLevelLabel,
   effectiveVariables,
   emptyVariables,
   fullModelText,
@@ -29,6 +30,7 @@ import {
   type ModelViewPreview,
   type PreviewPart,
 } from "./modelViewLogic";
+import { listVariants } from "@/features/prompt-blocks/service";
 import { requestModelView, type ModelViewResult } from "./requestModelView";
 
 const REFRESH_DELAY_MS = 450;
@@ -85,7 +87,7 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
     // The first answer is asked for at once; only later edits are debounced.
     const timer = setTimeout(() => {
       loadedOnce.current = true;
-      requestModelView(dispatch, store.getState() as never, conversationId, edits)
+      requestModelView(dispatch, store.getState() as never, conversationId, edits, agentId)
         .then((next) => {
           if (mine !== seq.current) return;
           setResult(next);
@@ -100,7 +102,7 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
         });
     }, loadedOnce.current ? REFRESH_DELAY_MS : 0);
     return () => clearTimeout(timer);
-  }, [dispatch, store, conversationId, edits, draft, nonce]);
+  }, [dispatch, store, conversationId, agentId, edits, draft, nonce]);
 
   const values = useMemo(
     () => effectiveVariables(result?.baseVariables ?? {}, edits),
@@ -121,6 +123,7 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
   );
 
   const preview = result?.preview ?? null;
+  const variantLabels = useVariantLabels(preview?.prompt_blocks);
   // A server that predates `system_parts` sends only the whole string: show it whole.
   const promptText = preview?.system_parts
     ? preview.system_parts
@@ -197,6 +200,28 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
         </section>
       ) : null}
 
+      {preview?.prompt_blocks && preview.prompt_blocks.length > 0 ? (
+        <Block title={`Prompt blocks (${preview.prompt_blocks.length})`}>
+          <ul className="flex flex-col gap-1" data-testid="model-view-prompt-blocks">
+            {preview.prompt_blocks.map((b) => (
+              <li
+                key={b.name}
+                className="flex items-center justify-between gap-2 rounded-md border border-border px-2 py-1 text-xs"
+                data-testid={`model-view-block-${b.name}`}
+              >
+                <span className="truncate font-mono">{b.name}</span>
+                <span className="flex shrink-0 items-center gap-1">
+                  <Badge>{blockLevelLabel(b.level)}</Badge>
+                  <Badge tone={b.variant_id ? "info" : "neutral"}>
+                    {b.variant_id ? (variantLabels[b.variant_id] ?? "Variant") : "Default text"}
+                  </Badge>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Block>
+      ) : null}
+
       <Block
         title="System prompt"
         onCopy={promptText ? () => copy("System prompt", promptText) : undefined}
@@ -236,6 +261,28 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
       </Block>
     </div>
   );
+}
+
+/** Names of the variants the report points at (the report carries ids only). */
+function useVariantLabels(report: ModelViewPreview["prompt_blocks"]): Record<string, string> {
+  const [labels, setLabels] = useState<Record<string, string>>({});
+  const key = (report ?? []).map((b) => `${b.block_id}:${b.variant_id}`).join("|");
+  useEffect(() => {
+    const wanted = (report ?? []).filter((b) => b.variant_id && b.block_id);
+    if (wanted.length === 0) return;
+    let cancelled = false;
+    void Promise.all(wanted.map((b) => listVariants(b.block_id as string).catch(() => []))).then((lists) => {
+      if (cancelled) return;
+      const next: Record<string, string> = {};
+      for (const v of lists.flat()) next[v.id] = v.label || "Variant";
+      setLabels(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+  return labels;
 }
 
 function Block({

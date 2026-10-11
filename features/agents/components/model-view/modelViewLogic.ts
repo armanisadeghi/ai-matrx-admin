@@ -9,6 +9,29 @@ export interface PreviewPart {
   text: string;
 }
 
+/** One entry of the server's `prompt_blocks` report: which level and variant supplied a block. */
+export interface PreviewBlock {
+  name: string;
+  level: string;
+  block_id?: string | null;
+  variant_id?: string | null;
+  source_kind?: string | null;
+  bound_tool?: string | null;
+  chars?: number | null;
+}
+
+const LEVEL_LABELS: Record<string, string> = {
+  personal: "Mine",
+  mine: "Mine",
+  organization: "Organization",
+  org: "Organization",
+  system: "System",
+};
+
+export function blockLevelLabel(level: string): string {
+  return LEVEL_LABELS[level.toLowerCase()] ?? level;
+}
+
 export interface ModelViewPreview {
   model: string | null;
   system_prompt: string | null;
@@ -16,6 +39,8 @@ export interface ModelViewPreview {
   turn_blocks?: PreviewPart[];
   messages: Array<Record<string, unknown>>;
   tools: string[];
+  /** The blocks the server expanded, with the level and variant that supplied each. */
+  prompt_blocks?: PreviewBlock[];
 }
 
 export interface TextSegment {

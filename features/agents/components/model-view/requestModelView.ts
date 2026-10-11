@@ -2,6 +2,7 @@ import { getUserMessage } from "@ai-matrx/agents/matrx";
 import { callApi } from "@/lib/api/call-api";
 import { assembleManualRequest } from "@ai-matrx/chat/agents/redux/execution-system/thunks/execute-manual-instance.thunk";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
+import { declaredNames } from "@/features/prompt-blocks/tokens";
 import type { ModelViewPreview } from "./modelViewLogic";
 
 export interface ModelViewResult {
@@ -23,6 +24,7 @@ export async function requestModelView(
   state: RootState,
   conversationId: string,
   edits: Record<string, string>,
+  agentId?: string,
 ): Promise<ModelViewResult> {
   const payload = (await assembleManualRequest(
     state as never,
@@ -33,6 +35,12 @@ export async function requestModelView(
   const declared = ((payload.variable_definitions ?? []) as Array<{ name?: string }>)
     .map((d) => d.name)
     .filter((n): n is string => typeof n === "string" && n.length > 0);
+  // The draft's declared prompt blocks ride the manual request; the server expands and reports them.
+  const promptBlocks = agentId
+    ? declaredNames(
+        (state.agentDefinition.agents[agentId] as { promptBlocks?: unknown } | undefined)?.promptBlocks,
+      )
+    : [];
   const result = await dispatch(
     callApi({
       path: "/ai/manual",
@@ -40,6 +48,7 @@ export async function requestModelView(
       body: {
         ...payload,
         variables: { ...baseVariables, ...edits },
+        ...(promptBlocks.length > 0 ? { prompt_blocks: promptBlocks } : {}),
         dry_run: true,
         stream: false,
         store: false,

@@ -303,6 +303,7 @@ export const createAgent = createAsyncThunk<
     uiGates: partial.uiGates ?? {},
     matrxDirectives: partial.matrxDirectives ?? {},
     mcpServers: partial.mcpServers ?? [],
+    promptBlocks: partial.promptBlocks ?? [],
     createdBy: userId,
     // A new agent is saved where the person works: the org the caller names, else the active
     // one through the ONE hold-and-set gate (as duplicate does) — never a refusal while one is set.
