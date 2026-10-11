@@ -141,7 +141,7 @@ import type { Note } from "../types";
 function fullRow(overrides: Partial<Note> = {}): Note {
   const row: Note = {
     id: NOTE_ID, organization_id: ORG_ID, version: 1, content: "the recipe",
-    label: "The Best Chicken Alfredo", folder_name: "Draft", folder_id: null, home_scope_id: "home-1", tags: [],
+    label: "The Best Chicken Alfredo", home_scope_id: "home-1", tags: [],
     metadata: {}, published_to_web: false, position: 0, project_id: null, task_id: null,
     created_at: "2026-09-14T05:55:17.534Z", created_by: "user-1",
     updated_at: "2026-09-14T05:55:17.534Z", updated_by: "user-1", deleted_at: null,
@@ -212,7 +212,7 @@ describe("phantom version bump while editing", () => {
 });
 
 describe("noteEditedFieldsEqual", () => {
-  const base = { content: "c", label: "l", folder_id: null, folder_name: "Draft", tags: ["a"], shown_to: null, published_to_web: false };
+  const base = { content: "c", label: "l", tags: ["a"], shown_to: null, published_to_web: false };
   it("ignores bookkeeping columns", () => {
     expect(noteEditedFieldsEqual({ ...base, file_path: "/x.md", version: 9 } as never, base)).toBe(true);
   });
@@ -221,12 +221,12 @@ describe("noteEditedFieldsEqual", () => {
     expect(noteEditedFieldsEqual({ ...base, tags: ["b"] }, base)).toBe(false);
   });
   it("treats an absent edited field as a difference, never as a match", () => {
-    const { folder_id: _omit, ...missing } = base;
+    const { tags: _omit, ...missing } = base;
     void _omit;
-    expect(noteEditedFieldsEqual(missing, { ...base, folder_id: "f1" })).toBe(false);
+    expect(noteEditedFieldsEqual(missing, base)).toBe(false);
   });
   it("catches every edited field", () => {
-    for (const field of ["content", "label", "folder_id", "folder_name", "shown_to", "published_to_web"] as const) {
+    for (const field of ["content", "label", "shown_to", "published_to_web"] as const) {
       expect(noteEditedFieldsEqual({ ...base, [field]: "changed" }, base)).toBe(false);
     }
   });
@@ -250,21 +250,21 @@ describe("adversarial review 2026-09-13 — holes closed", () => {
   });
 
   it("does not fast-forward from a payload DECLARED full that omits an edited field — completeness is proven from the keys", () => {
-    let state = notesReducer(undefined, upsertNoteFromServer({ note: fullRow({ folder_id: null, folder_name: null }), fetchStatus: "full" }));
+    let state = notesReducer(undefined, upsertNoteFromServer({ note: fullRow(), fetchStatus: "full" }));
     state = notesReducer(state, updateNoteContent({ id: NOTE_ID, content: "draft" }));
-    const partial: Partial<Note> & { id: string } = { ...fullRow({ version: 2, folder_name: null, updated_at: "2026-09-14T05:57:00.000Z" }) };
-    delete (partial as Record<string, unknown>).folder_id; // the server may hold a real folder move here
+    const partial: Partial<Note> & { id: string } = { ...fullRow({ version: 2, updated_at: "2026-09-14T05:57:00.000Z" }) };
+    delete (partial as Record<string, unknown>).tags; // the server may hold other tags here
     state = notesReducer(state, upsertNoteFromServer({ note: partial, fetchStatus: "full" }));
     expect(state.notes[NOTE_ID].version).toBe(1);
     expect(state.notes[NOTE_ID]._remoteObservation?.version).toBe(2);
   });
 
   it("rebuilds the edit base from field history when a record never received a snapshot", () => {
-    let state = notesReducer(undefined, upsertNoteFromServer({ note: { id: NOTE_ID, organization_id: ORG_ID, version: 1, label: "L", content: "the recipe", folder_name: "Draft", tags: [], updated_at: "2026-09-14T05:55:17.534Z" }, fetchStatus: "list" }));
+    let state = notesReducer(undefined, upsertNoteFromServer({ note: { id: NOTE_ID, organization_id: ORG_ID, version: 1, label: "L", content: "the recipe", tags: [], updated_at: "2026-09-14T05:55:17.534Z" }, fetchStatus: "list" }));
     expect(state.notes[NOTE_ID]._acknowledgedPhysicalSnapshot).toBeNull();
     state = notesReducer(state, updateNoteContent({ id: NOTE_ID, content: "the recipe, shorter" }));
     expect(noteEditBaseFromRecord(state.notes[NOTE_ID]).content).toBe("the recipe");
-    state = notesReducer(state, upsertNoteFromServer({ note: fullRow({ version: 2, label: "L", folder_id: null, file_path: "/x.md", updated_at: "2026-09-14T05:55:18.435Z" }), fetchStatus: "full" }));
+    state = notesReducer(state, upsertNoteFromServer({ note: fullRow({ version: 2, label: "L", file_path: "/x.md", updated_at: "2026-09-14T05:55:18.435Z" }), fetchStatus: "full" }));
     expect(state.notes[NOTE_ID].version).toBe(2);
     expect(state.notes[NOTE_ID].content).toBe("the recipe, shorter");
     expect(state.notes[NOTE_ID]._acknowledgedPhysicalSnapshot?.version).toBe(2);

@@ -1,7 +1,7 @@
 /**
  * Item homes — the one move path and the home tree's organization rule.
- * Red before (folders): a move wrote folder_id optimistically and refused any
- * cross-organization target; the sidebar printed organization badges on folders.
+ * Red before (the retired folder model): a move was written optimistically and refused any
+ * cross-organization target; the sidebar printed organization badges on groups.
  */
 import { configureStore } from "@reduxjs/toolkit";
 

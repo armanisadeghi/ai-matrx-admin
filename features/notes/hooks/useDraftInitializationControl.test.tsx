@@ -10,7 +10,6 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { OrganizationContextError } from "@ai-matrx/agents/matrx";
 import { useDraftInitializationControl } from "./useDraftInitializationControl";
-import { NOTE_FOLDER_CROSS_ORG_MESSAGE } from "../utils/writeErrors";
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -40,13 +39,13 @@ describe("useDraftInitializationControl — a failed + is never silent", () => {
   it("announces a rejected thunk even when the surface renders nothing and the handler swallows it", async () => {
     const surface = mountSilentSurface();
     // RTK hands `.unwrap()` callers a serialized PLAIN OBJECT, not an Error.
-    const rejected = { name: "Error", message: "notes_folder_cross_org_legacy_key: reserved in another organization." };
+    const rejected = { name: "Error", message: "The note could not be started: the database refused the new note." };
     await runAndSwallow(surface.get(), async () => { throw rejected; });
     expect(surface.host.textContent).toBe("");
     expect(toastErrorAlreadyCaptured).toHaveBeenCalledTimes(1);
-    expect(toastErrorAlreadyCaptured.mock.calls[0][0]).toBe(NOTE_FOLDER_CROSS_ORG_MESSAGE);
+    expect(toastErrorAlreadyCaptured.mock.calls[0][0]).toBe(rejected.message);
     expect(toastError).not.toHaveBeenCalled();
-    expect(surface.get().error).toBe(NOTE_FOLDER_CROSS_ORG_MESSAGE);
+    expect(surface.get().error).toBe(rejected.message);
     expect(surface.get().pending).toBe(false);
     surface.unmount();
   });

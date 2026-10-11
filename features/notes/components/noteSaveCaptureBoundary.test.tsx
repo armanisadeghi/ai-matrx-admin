@@ -58,8 +58,7 @@ const ID = "33333333-3333-4333-8333-333333333333";
 const ORG = "11111111-1111-4111-8111-111111111111";
 const ACTOR = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const row = (): Note => ({
-  id: ID, organization_id: ORG, version: 4, content: "base", label: "N",
-  folder_name: null, folder_id: null, tags: [], metadata: {}, published_to_web: false,
+  id: ID, organization_id: ORG, version: 4, content: "base", label: "N",tags: [], metadata: {}, published_to_web: false,
   position: 0, project_id: null, task_id: null, created_at: "2026-09-14T00:00:00.000Z",
   created_by: ACTOR, updated_at: "2026-09-14T00:00:00.000Z", updated_by: ACTOR,
   deleted_at: null, content_hash: null, file_path: null, last_device_id: null, custom_fields: {}, sync_version: 0, search_engine_indexed: null, shown_to: null,

@@ -54,8 +54,6 @@ function note(overrides: Partial<Note> = {}): Note {
     custom_fields: {},
     deleted_at: null,
     file_path: null,
-    folder_id: null,
-    folder_name: null,
     label: "Created",
     last_device_id: null,
     metadata: {},

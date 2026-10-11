@@ -53,7 +53,6 @@ export function useActiveNote({ notes, onNoteCreated }: UseActiveNoteOptions) {
                         const newNote = await createNote({
                             label: 'New Note',
                             content: '',
-                            folder_name: 'Draft',
                             organization_id: requireOrganizationContext(organizationId),
                 });
                 setActiveNote(newNote);

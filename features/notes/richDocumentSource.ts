@@ -47,14 +47,14 @@ function freezeSerializable<T>(value: T): T {
 }
 
 export function displayedPhysicalSnapshot(note: Note): NoteDisplayedPhysicalSnapshot {
+  // The published rich-content type still lists the retired folder keys as required
+  // (ai-matrx/rich-content `NoteDisplayedPhysicalSnapshot`); the cast comes off when it drops them.
   return {
     id: note.id,
     organization_id: note.organization_id,
     version: note.version,
     content: note.content ?? "",
     label: note.label,
-    folder_name: note.folder_name,
-    folder_id: note.folder_id,
     tags: freezeSerializable(note.tags),
     metadata: freezeSerializable(note.metadata),
     shown_to: note.shown_to,
@@ -62,7 +62,7 @@ export function displayedPhysicalSnapshot(note: Note): NoteDisplayedPhysicalSnap
     position: note.position,
     project_id: note.project_id,
     task_id: note.task_id,
-  };
+  } as NoteDisplayedPhysicalSnapshot;
 }
 
 /**

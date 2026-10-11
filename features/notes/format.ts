@@ -64,13 +64,12 @@ type AnyNote = NoteListItem | NoteRecord;
 
 /**
  * Human summary of one note as a LIST row — the fields the row renders, plus
- * the folder and tags a compact row may truncate away. No body: see the module
+ * the tags a compact row may truncate away. No body: see the module
  * note above.
  */
 export function noteRowSummary(note: AnyNote): string {
   return humanLines([
     ["Note", noteDisplayLabel(note)],
-    ["Folder", note.folder_name],
     ["Tags", (note.tags ?? []).join(", ")],
     ["Shown to", note.shown_to ?? "default"],
     ["Published to the web", note.published_to_web ? "yes" : "no"],
@@ -84,8 +83,7 @@ export function noteRowData(note: AnyNote) {
   return {
     id: note.id,
     label: noteDisplayLabel(note),
-    folder_name: note.folder_name ?? null,
-    folder_id: note.folder_id ?? null,
+    home_scope_id: note.home_scope_id ?? null,
     tags: note.tags ?? [],
     shown_to: note.shown_to,
     published_to_web: note.published_to_web,
@@ -101,7 +99,7 @@ export function noteRowData(note: AnyNote) {
 export function noteKeyFields(note: AnyNote) {
   return {
     label: noteDisplayLabel(note),
-    folder: note.folder_name ?? null,
+    home_scope_id: note.home_scope_id ?? null,
     tags: note.tags ?? [],
     updated_at: note.updated_at ?? null,
   };
@@ -134,7 +132,7 @@ export function notesCsvRows(notes: AnyNote[]): Array<Record<string, unknown>> {
   return notes.map((n) => ({
     id: n.id,
     label: noteDisplayLabel(n),
-    folder_name: n.folder_name ?? "",
+    home_scope_id: n.home_scope_id ?? "",
     tags: (n.tags ?? []).join("|"),
     shown_to: n.shown_to ?? "",
     published_to_web: n.published_to_web ? "yes" : "no",
@@ -185,8 +183,7 @@ export function noteRecordSummary(view: NoteRecordView): string {
   lines.push(
     humanLines([
       ["Note", noteDisplayLabel(note)],
-      ["Folder", note.folder_name],
-      ["Tags", (note.tags ?? []).join(", ")],
+        ["Tags", (note.tags ?? []).join(", ")],
       ["Shown to", note.shown_to ?? "default"],
       ["Published to the web", note.published_to_web ? "yes" : "no"],
       ["Words", words(view.content)],
@@ -206,8 +203,7 @@ export function noteRecordData(view: NoteRecordView) {
   return {
     id: note.id,
     label: noteDisplayLabel(note),
-    folder_name: note.folder_name ?? null,
-    folder_id: note.folder_id ?? null,
+    home_scope_id: note.home_scope_id ?? null,
     tags: note.tags ?? [],
     shown_to: note.shown_to,
     published_to_web: note.published_to_web,

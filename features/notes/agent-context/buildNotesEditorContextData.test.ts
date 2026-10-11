@@ -59,7 +59,7 @@ describe("notes agent context", () => {
       content: "# Clinic intake checklist\n- Confirm insurance card",
       noteRecord: {
         label: "Clinic intake checklist",
-        folder_name: "Draft",
+        home_label: "Draft",
         tags: ["clinic", "intake"],
         published_to_web: false,
         updated_at: "2026-09-27T04:10:00Z",
@@ -69,10 +69,10 @@ describe("notes agent context", () => {
         "33333333-3333-4333-8333-333333333333": {
           id: "33333333-3333-4333-8333-333333333333",
           label: "Front desk script",
-          folder_name: "Draft",
+          home_label: "Draft",
         },
       },
-      allFolders: ["Draft", "Study Notes"],
+      allHomes: ["Draft", "Study Notes"],
       scopeAssignments: [{ scope_id: "s1", scope_name: "Patient intake", scope_type: "Workflow" }],
     });
     const bundle = String(scope.note_bundle);

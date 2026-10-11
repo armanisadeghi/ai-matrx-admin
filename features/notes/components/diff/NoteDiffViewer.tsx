@@ -51,8 +51,6 @@ function buildNoteAdapterRegistry() {
 
   registry.register("content", NoteContentAdapter);
   registry.register("label", { ...TextFieldAdapter, label: "Title" });
-  registry.register("folder_name", { ...TextFieldAdapter, label: "Folder" });
-  registry.register("folder_id", { ...TextFieldAdapter, label: "Folder ID" });
   registry.register("tags", { ...TagsFieldAdapter, label: "Tags" });
   registry.register("shown_to", { ...TextFieldAdapter, label: "Shown to" });
   registry.register("published_to_web", {
@@ -104,7 +102,7 @@ const TAB_CONFIG: {
 
 /**
  * Notes version compare. Default tab is **Content** — a full-bleed side-by-side
- * text diff of the note body. Structured field diffs (folder, tags, …) live
+ * text diff of the note body. Structured field diffs (tags, …) live
  * under All / Changes / Summary / JSON so they don't steal the first viewport.
  */
 export function NoteDiffViewer({
@@ -129,7 +127,7 @@ export function NoteDiffViewer({
 
   const diffResult = useMemo(() => {
     // Compare like with like: a version snapshot carries only the fields it
-    // saved (label, content, folder, tags…), while the live note carries every
+    // saved (label, content, tags…), while the live note carries every
     // column. Fields the snapshot never had are not changes — counting them
     // printed "+13 added" over a Content tab that (correctly) said "No changes".
     const comparableNew = Object.fromEntries(

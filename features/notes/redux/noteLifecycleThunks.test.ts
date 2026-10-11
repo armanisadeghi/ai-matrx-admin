@@ -8,16 +8,14 @@
  *
  * What is mocked and why: the Supabase client (network), and the two
  * notesService functions the trash thunks delegate to (their own transport is
- * a different SUT with its own boundary). Nothing the thunks own — folder
- * admission, the optimistic field writes, the stale-result guard, the trash
+ * a different SUT with its own boundary). Nothing the thunks own — the optimistic field writes, the stale-result guard, the trash
  * sweep, which rows leave the store — is stubbed.
  *
  * Named breaks this suite catches:
  *  - (moves: covered by homes/__tests__ — moveNoteToHome)
  *  - `restoreNote` clearing the wrong column, or not putting the restored row
  *    back in the store.
- *  - `restoreNote` leaving a note that went to Trash with its folder
- *    outside any live folder (the folder must come back with it).
+ *  - `restoreNote` reaching past the notes table or losing the note's home.
  *  - a hard-delete door (`permanentlyDeleteNoteThunk` / `emptyTrashThunk`)
  *    coming back: delete means archive (Arman, 2026-09-27).
  *  - `fetchSharedNotesList` letting a SLOW earlier fetch overwrite a newer
@@ -31,7 +29,6 @@ const schema = jest.fn();
 const rpc = jest.fn();
 const getSession = jest.fn();
 const persistNoteUpdate = jest.fn();
-const createFolder = jest.fn();
 
 jest.mock("@/utils/supabase/client", () => ({
   // The thunks verify the actor with `getClaimsUser(supabase)` →
@@ -50,7 +47,6 @@ jest.mock("../service/notesService", () => {
   return {
     ...actual,
     persistNoteUpdate: (...args: unknown[]) => persistNoteUpdate(...args),
-    createFolder: (...args: unknown[]) => createFolder(...args),
   };
 });
 jest.mock("@/features/scopes/service/associationsService", () => ({
@@ -79,7 +75,7 @@ const ORG = "11111111-1111-4111-8111-111111111111";
 const OTHER_ORG = "99999999-9999-4999-8999-999999999999";
 const NOTE_ID = "22222222-2222-4222-8222-222222222222";
 const OTHER_NOTE_ID = "77777777-7777-4777-8777-777777777777";
-const FOLDER_ID = "33333333-3333-4333-8333-333333333333";
+const HOME_ID = "33333333-3333-4333-8333-333333333333";
 
 function note(overrides: Partial<Note> = {}): Note {
   return {
@@ -91,8 +87,7 @@ function note(overrides: Partial<Note> = {}): Note {
     custom_fields: {},
     deleted_at: null,
     file_path: null,
-    folder_id: null,
-    folder_name: "Draft",
+    home_scope_id: HOME_ID,
     label: "Original",
     last_device_id: null,
     metadata: {},
@@ -259,40 +254,21 @@ describe("restoreNote", () => {
   });
 });
 
-describe("restoreNote with its folder", () => {
-  it("revives the folder that went to Trash with the note", async () => {
+describe("restoreNote keeps the note's home", () => {
+  it("brings the note back in its own home with one write and no other table touched", async () => {
     const configured = store([]);
-    const restored = note({ deleted_at: null, folder_id: FOLDER_ID });
+    const restored = note({ deleted_at: null, home_scope_id: HOME_ID });
     const noteChain = writtenRows(query({ data: restored, error: null }), [restored]);
-    const folderRead = query({
-      data: {
-        id: FOLDER_ID,
-        name: "Draft",
-        organization_id: ORG,
-        created_by: "user-1",
-        deleted_at: "2026-09-27T00:00:00.000Z",
-      },
-      error: null,
-    });
-    // The revive reports the folder row it brought back; zero rows means the
-    // folder stayed in Trash and the restore says so.
-    const revive = writtenRows(query({ error: null }), [{ id: FOLDER_ID }]);
-    const from = jest
-      .fn()
-      .mockReturnValueOnce(noteChain)
-      .mockReturnValueOnce(folderRead)
-      .mockReturnValueOnce(revive);
+    const from = jest.fn().mockReturnValueOnce(noteChain);
     schema.mockReturnValue({ from });
 
     const result = await configured.dispatch(restoreNote(NOTE_ID));
 
     expect(restoreNote.fulfilled.match(result)).toBe(true);
-    expect(from).toHaveBeenNthCalledWith(2, "note_folders");
-    expect(from).toHaveBeenNthCalledWith(3, "note_folders");
-    expect(revive.update).toHaveBeenCalledWith({ deleted_at: null });
-    expect(revive.eq).toHaveBeenCalledWith("id", FOLDER_ID);
+    expect(from).toHaveBeenCalledTimes(1);
+    expect(from).toHaveBeenCalledWith("notes");
     expect(configured.getState().notes.notes[NOTE_ID]).toMatchObject({
-      folder_id: FOLDER_ID,
+      home_scope_id: HOME_ID,
       deleted_at: null,
     });
   });
@@ -309,7 +285,6 @@ describe("fetchSharedNotesList", () => {
   const sharedRow = (overrides: Record<string, unknown> = {}) => ({
     id: OTHER_NOTE_ID,
     label: "Shared plan",
-    folder_name: "Shared",
     tags: [],
     created_at: "2026-09-12T00:00:00.000Z",
     updated_at: "2026-09-12T00:00:00.000Z",

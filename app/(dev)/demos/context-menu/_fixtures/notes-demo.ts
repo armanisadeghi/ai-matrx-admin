@@ -4,7 +4,7 @@ export const DEMO_NOTE_ID = "00000000-0000-4000-8000-000000000002";
 
 export const DEMO_NOTE_RECORD = {
   label: "Context Menu Demo Note",
-  folder_name: "Inbox",
+  home_label: "Inbox",
   tags: ["demo", "draft"],
   updated_at: "2026-06-22T12:00:00.000Z",
 };
@@ -18,13 +18,13 @@ export const DEMO_NOTES_MAP: Record<string, NotesEditorNotesMapEntry> = {
   [DEMO_NOTE_ID]: {
     id: DEMO_NOTE_ID,
     label: DEMO_NOTE_RECORD.label,
-    folder_name: DEMO_NOTE_RECORD.folder_name,
+    home_label: DEMO_NOTE_RECORD.home_label,
     updated_at: DEMO_NOTE_RECORD.updated_at,
   },
   "00000000-0000-4000-8000-000000000003": {
     id: "00000000-0000-4000-8000-000000000003",
     label: "Meeting Notes",
-    folder_name: "Inbox",
+    home_label: "Inbox",
     updated_at: "2026-06-21T09:00:00.000Z",
   },
 };

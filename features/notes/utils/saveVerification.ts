@@ -6,7 +6,7 @@
 // A note UPDATE is a compare-and-swap on the integer `version`. 0 rows back
 // has always been read as "someone else wrote this row" — but `version` moves
 // on EVERY update of the row (the desktop sync stamping `file_path`, an ingest
-// job writing metadata, a folder move), not only on the fields the editor
+// job writing metadata, a home move), not only on the fields the editor
 // edits. A CAS miss on a row whose EDITED fields still equal the base the edit
 // was made against is bookkeeping, not a conflict, and surfacing it as one is
 // the recurring false "another device is overwriting your note" report on
@@ -28,8 +28,6 @@ import type { NoteUndoableField } from "../redux/notes.types";
 export const NOTE_EDITED_FIELDS = [
   "content",
   "label",
-  "folder_id",
-  "folder_name",
   "tags",
   "shown_to",
   "published_to_web",
@@ -92,8 +90,6 @@ export function noteEditBaseOf(note: NoteEditBase): NoteEditBase {
   return {
     content: note.content,
     label: note.label,
-    folder_id: note.folder_id,
-    folder_name: note.folder_name,
     tags: note.tags === null ? null : [...note.tags],
     shown_to: note.shown_to,
     published_to_web: note.published_to_web,

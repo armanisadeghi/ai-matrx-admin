@@ -28,7 +28,7 @@ const notesScope = withBaselineScope(
     selectionStart,
     selectionEnd: selectionStart + PARAGRAPH.length,
     editorMode: "plain",
-    noteRecord: { label: "Move 4473 — Harlan Ridge walkthrough", folder_name: "Moves", tags: [] },
+    noteRecord: { label: "Move 4473 — Harlan Ridge walkthrough", home_label: "Moves", tags: [] },
   }),
 );
 

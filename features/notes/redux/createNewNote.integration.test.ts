@@ -28,7 +28,6 @@ import { createNote } from "../service/notesService";
 import { NoteContextPartialSaveError } from "../service/noteSaveErrors";
 
 const organizationId = "11111111-1111-4111-8111-111111111111";
-const folderId = "22222222-2222-4222-8222-222222222222";
 const noteId = "33333333-3333-4333-8333-333333333333";
 const projectId = "44444444-4444-4444-8444-444444444444";
 const taskId = "55555555-5555-4555-8555-555555555555";
@@ -65,12 +64,11 @@ describe("createNewNote empty-note reuse integration", () => {
   });
 
   it("surfaces a partial create receipt instead of hydrating it as a full success", async () => {
-    const folder = query({ data: { id: folderId, name: "Draft" }, error: null });
     const inserted = query({ data: {
-      id: noteId, label: "Created", content: "body", folder_id: folderId, folder_name: "Draft",
+      id: noteId, label: "Created", content: "body",
       organization_id: organizationId, version: 1, updated_at: "2026-09-12T00:00:00.000Z",
     }, error: null });
-    schema.mockReturnValue({ from: jest.fn().mockReturnValueOnce(folder).mockReturnValueOnce(inserted) });
+    schema.mockReturnValue({ from: jest.fn().mockReturnValueOnce(inserted) });
     listForSources.mockResolvedValue({ ok: true, data: { edges: [] } });
     setTargets
       .mockResolvedValueOnce({ ok: true, data: null })
@@ -80,7 +78,7 @@ describe("createNewNote empty-note reuse integration", () => {
       reducer: { notes: notesReducer, userAuth: () => ({ id: "user-1" }) },
     });
     const action = await store.dispatch(createNewNote({
-      organization_id: organizationId, folder_id: folderId, folder_name: "Draft", label: "Created", content: "body",
+      organization_id: organizationId, label: "Created", content: "body",
       project_id: projectId, task_id: taskId,
     }));
     expect(createNewNote.rejected.match(action)).toBe(true);
@@ -92,18 +90,17 @@ describe("createNewNote empty-note reuse integration", () => {
   });
 
   it("does not hydrate a durable full create after the authoritative session changes", async () => {
-    const folder = query({ data: { id: folderId, name: "Draft" }, error: null });
     const inserted = query({ data: {
-      id: noteId, label: "Created", content: "body", folder_id: folderId, folder_name: "Draft",
+      id: noteId, label: "Created", content: "body",
       organization_id: organizationId, version: 1, updated_at: "2026-09-12T00:00:00.000Z",
     }, error: null });
-    schema.mockReturnValue({ from: jest.fn().mockReturnValueOnce(folder).mockReturnValueOnce(inserted) });
+    schema.mockReturnValue({ from: jest.fn().mockReturnValueOnce(inserted) });
     listForSources.mockResolvedValue({ ok: true, data: { edges: [] } });
     getSession.mockResolvedValue({ data: { session: { user: { id: "user-2" } } }, error: null });
     const store = configureStore({ reducer: { notes: notesReducer, userAuth: () => ({ id: "user-1" }) } });
 
     const action = await store.dispatch(createNewNote({
-      organization_id: organizationId, folder_id: folderId, folder_name: "Draft", label: "Created", content: "body",
+      organization_id: organizationId, label: "Created", content: "body",
     }));
 
     expect(createNewNote.rejected.match(action)).toBe(true);
@@ -113,19 +110,18 @@ describe("createNewNote empty-note reuse integration", () => {
   });
 
   it("does not hydrate a durable partial create after the authoritative session changes", async () => {
-    const folder = query({ data: { id: folderId, name: "Draft" }, error: null });
     const inserted = query({ data: {
-      id: noteId, label: "Created", content: "body", folder_id: folderId, folder_name: "Draft",
+      id: noteId, label: "Created", content: "body",
       organization_id: organizationId, version: 1, updated_at: "2026-09-12T00:00:00.000Z",
     }, error: null });
-    schema.mockReturnValue({ from: jest.fn().mockReturnValueOnce(folder).mockReturnValueOnce(inserted) });
+    schema.mockReturnValue({ from: jest.fn().mockReturnValueOnce(inserted) });
     listForSources.mockResolvedValue({ ok: true, data: { edges: [] } });
     setTargets.mockResolvedValueOnce({ ok: false, error: { message: "task denied" } });
     getSession.mockResolvedValue({ data: { session: { user: { id: "user-2" } } }, error: null });
     const store = configureStore({ reducer: { notes: notesReducer, userAuth: () => ({ id: "user-1" }) } });
 
     const action = await store.dispatch(createNewNote({
-      organization_id: organizationId, folder_id: folderId, folder_name: "Draft", label: "Created", content: "body", task_id: taskId,
+      organization_id: organizationId, label: "Created", content: "body", task_id: taskId,
     }));
 
     expect(createNewNote.rejected.match(action)).toBe(true);
@@ -136,12 +132,11 @@ describe("createNewNote empty-note reuse integration", () => {
   });
 
   it("does not hydrate a durable create when Redux changes users while the session remains stale", async () => {
-    const folder = query({ data: { id: folderId, name: "Draft" }, error: null });
     const inserted = query({ data: {
-      id: noteId, label: "Created", content: "body", folder_id: folderId, folder_name: "Draft",
+      id: noteId, label: "Created", content: "body",
       organization_id: organizationId, version: 1, updated_at: "2026-09-12T00:00:00.000Z",
     }, error: null });
-    schema.mockReturnValue({ from: jest.fn().mockReturnValueOnce(folder).mockReturnValueOnce(inserted) });
+    schema.mockReturnValue({ from: jest.fn().mockReturnValueOnce(inserted) });
     listForSources.mockResolvedValue({ ok: true, data: { edges: [] } });
     const userAuth = (state = { id: "user-1" }, action: { type: string }) =>
       action.type === "test/switch-user" ? { id: "user-2" } : state;
@@ -152,7 +147,7 @@ describe("createNewNote empty-note reuse integration", () => {
     });
 
     const action = await store.dispatch(createNewNote({
-      organization_id: organizationId, folder_id: folderId, folder_name: "Draft", label: "Created", content: "body",
+      organization_id: organizationId, label: "Created", content: "body",
     }));
 
     expect(createNewNote.rejected.match(action)).toBe(true);
@@ -162,28 +157,24 @@ describe("createNewNote empty-note reuse integration", () => {
   });
 
   it("returns a created note when cache recovery follows durable context settlement", async () => {
-    const folder = query({ data: { id: folderId, name: "Draft" }, error: null });
     const inserted = query({ data: {
-      id: noteId, label: "Created", content: "body", folder_id: folderId, folder_name: "Draft",
+      id: noteId, label: "Created", content: "body",
       organization_id: organizationId, version: 1, updated_at: "2026-09-12T00:00:00.000Z",
     }, error: null });
-    schema.mockReturnValue({ from: jest.fn().mockReturnValueOnce(folder).mockReturnValueOnce(inserted) });
+    schema.mockReturnValue({ from: jest.fn().mockReturnValueOnce(inserted) });
     listForSources.mockResolvedValue({ ok: true, data: { edges: [] } });
     invalidate.mockImplementation(() => { throw new Error("cache offline"); });
 
     await expect(createNote({
-      organization_id: organizationId, folder_id: folderId, folder_name: "Draft", label: "Created", content: "body", project_id: projectId,
+      organization_id: organizationId, label: "Created", content: "body", project_id: projectId,
     })).resolves.toMatchObject({ id: noteId, project_id: projectId });
   });
 
   it("forwards every explicit reuse field through update, association sync, and Redux tab hydration", async () => {
-    const folder = query({ data: { id: folderId, name: "Draft" }, error: null });
     const reused = {
       id: noteId,
       label: "New Note",
       content: "",
-      folder_id: folderId,
-      folder_name: "Draft",
       organization_id: organizationId,
       deleted_at: null,
     };
@@ -201,7 +192,6 @@ describe("createNewNote empty-note reuse integration", () => {
 
     const from = jest
       .fn()
-      .mockReturnValueOnce(folder)
       .mockReturnValueOnce(reuseLookup)
       .mockReturnValueOnce(existingOrganization)
       .mockReturnValueOnce(update);
@@ -226,8 +216,6 @@ describe("createNewNote empty-note reuse integration", () => {
     });
     const action = await store.dispatch(createNewNote({
       organization_id: organizationId,
-      folder_id: folderId,
-      folder_name: "Draft",
       label: "Incident handoff",
       metadata: { source: "war-room" },
       position: 7,
@@ -273,18 +261,15 @@ describe("createNewNote empty-note reuse integration", () => {
   });
 
   it("keeps existing context links untouched when a reused create omits them", async () => {
-    const folder = query({ data: { id: folderId, name: "Draft" }, error: null });
     const reused = {
       id: noteId,
       label: "New Note",
       content: "",
-      folder_id: folderId,
-      folder_name: "Draft",
       organization_id: organizationId,
       deleted_at: null,
     };
     const reuseLookup = query({ data: [reused], error: null });
-    const from = jest.fn().mockReturnValueOnce(folder).mockReturnValueOnce(reuseLookup);
+    const from = jest.fn().mockReturnValueOnce(reuseLookup);
     schema.mockReturnValue({ from });
     listForSources.mockResolvedValue({
       ok: true,
@@ -304,14 +289,12 @@ describe("createNewNote empty-note reuse integration", () => {
 
     const action = await store.dispatch(createNewNote({
       organization_id: organizationId,
-      folder_id: folderId,
-      folder_name: "Draft",
     }));
 
     if (!createNewNote.fulfilled.match(action)) {
       throw new Error("Expected the omitted-field reuse to return the existing note.");
     }
-    expect(from).toHaveBeenCalledTimes(2);
+    expect(from).toHaveBeenCalledTimes(1);
     expect(setTargets).not.toHaveBeenCalled();
     expect(store.getState().notes.notes[noteId]).toMatchObject({
       project_id: projectId,

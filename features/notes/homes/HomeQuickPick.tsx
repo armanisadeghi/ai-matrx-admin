@@ -39,7 +39,6 @@ export function HomeQuickPick({ instanceId, className }: { instanceId: string; c
             userId,
             organizationId,
             instanceId,
-            destination: { kind: "unfiled", organizationId },
             ...(home && !home.isGeneral ? { homeScopeId: home.scopeId } : {}),
           }),
         ).unwrap();

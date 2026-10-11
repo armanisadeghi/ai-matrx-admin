@@ -96,7 +96,7 @@ function isCompleteNotePayload(row: Record<string, unknown>): boolean {
  * client models and nothing else (a table can carry search vectors and
  * embeddings the client never stores). Passing the WHOLE row, not a
  * hand-picked subset, is what lets the reducer (a) compare every user-edited
- * field against the edit base — `folder_id` and the row controls were missing
+ * field against the edit base — the home and the row controls were missing
  * from the old subset, so no realtime row could ever match a base — and (b)
  * advance the base itself when the row is complete.
  */
@@ -121,14 +121,13 @@ let subscribedUserId: string | null = null;
  * every field the autosave path writes and nothing volatile.
  */
 function noteFingerprint(row: Record<string, unknown>): string {
-  // Every user-edited field (NOTE_EDITED_FIELDS). folder_id and the row controls
+  // Every user-edited field (NOTE_EDITED_FIELDS) plus the home. The home and the row controls
   // were once missing: a collaborator changing only those matched our pending
   // write's fingerprint and was dropped as our echo (review, 2026-09-13).
   return JSON.stringify([
     row.label ?? null,
     row.content ?? null,
-    row.folder_name ?? null,
-    row.folder_id ?? null,
+    row.home_scope_id ?? null,
     row.tags ?? null,
     row.shown_to ?? null,
     row.published_to_web ?? null,
@@ -280,7 +279,6 @@ export const notesRealtimeMiddleware: Middleware<
             ...projected,
             label: projected.label ?? "New Note",
             content: projected.content ?? "",
-            folder_name: projected.folder_name ?? "Draft",
             tags: projected.tags ?? [],
             updated_at: projected.updated_at ?? new Date().toISOString(),
           },
@@ -293,7 +291,7 @@ export const notesRealtimeMiddleware: Middleware<
           detail: {
             id: noteId,
             label: newRecord.label ?? "New Note",
-            folder_name: newRecord.folder_name ?? "Draft",
+            home_scope_id: newRecord.home_scope_id ?? null,
           },
         }),
       );

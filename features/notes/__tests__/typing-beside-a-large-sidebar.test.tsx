@@ -103,14 +103,13 @@ const NOTE_COUNT = 520;
 const noteId = (i: number) => `00000000-0000-4000-8000-${String(i).padStart(12, "0")}`;
 
 function serverNote(i: number, updatedAt: string) {
-  const folder = i % 40;
+  const home = i % 40;
   return {
     id: noteId(i),
     created_by: USER,
     label: `Clinic note ${i}`,
     content: `Intake details ${i}`,
-    folder_name: `Practice folder ${folder}`,
-    folder_id: `00000000-0000-4000-9000-${String(folder).padStart(12, "0")}`,
+    home_scope_id: `00000000-0000-4000-9000-${String(home).padStart(12, "0")}`,
     organization_id: ORG,
     tags: [],
     updated_at: updatedAt,

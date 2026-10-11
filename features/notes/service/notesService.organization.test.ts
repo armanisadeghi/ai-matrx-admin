@@ -12,7 +12,6 @@ describe("notes creation organization admission", () => {
       createNote({
         organization_id: "",
         content: "",
-        folder_name: "Draft",
       }),
     ).rejects.toThrow(/organization/i);
 

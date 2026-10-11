@@ -14,7 +14,7 @@ import { updateNote } from "./notesService";
 
 const ORGANIZATION_ID = "11111111-1111-4111-8111-111111111111";
 const NOTE_ID = "22222222-2222-4222-8222-222222222222";
-const FOLDER_ID = "33333333-3333-4333-8333-333333333333";
+const HOME_ID = "33333333-3333-4333-8333-333333333333";
 
 function noteRow(overrides: Partial<Note> = {}): Note {
   return {
@@ -27,8 +27,7 @@ function noteRow(overrides: Partial<Note> = {}): Note {
     custom_fields: {},
     deleted_at: null,
     file_path: null,
-    folder_id: FOLDER_ID,
-    folder_name: "Historical name",
+    home_scope_id: HOME_ID,
     label: "New Note",
     last_device_id: null,
     metadata: {},
@@ -64,7 +63,7 @@ function query(result: unknown) {
   return chain;
 }
 
-describe("notesService persisted-folder boundary", () => {
+describe("notesService persisted-update boundary", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     requireUserId.mockReturnValue("user-1");
@@ -72,61 +71,29 @@ describe("notesService persisted-folder boundary", () => {
     setTargets.mockResolvedValue({ ok: true });
   });
 
-  it("rejects a name-only persisted move before folder creation or note mutation", async () => {
+  it("rejects an organization change before any note read or mutation", async () => {
     const existing = query({ data: { organization_id: ORGANIZATION_ID }, error: null });
     const from = jest.fn().mockReturnValue(existing);
     schema.mockReturnValue({ from });
 
     // External clients can bypass TypeScript, so the service must still reject
     // this malformed persisted relationship at runtime.
-    const untypedUpdate = JSON.parse('{"folder_name":"Same name"}');
-    await expect(updateNote(NOTE_ID, untypedUpdate)).rejects.toThrow(/admitted folder ID/i);
+    const untypedUpdate = JSON.parse('{"organization_id":"44444444-4444-4444-8444-444444444444"}');
+    await expect(updateNote(NOTE_ID, untypedUpdate)).rejects.toThrow(/another organization/i);
 
     expect(from).not.toHaveBeenCalled();
     expect(existing.update).not.toHaveBeenCalled();
   });
 
-  it("uses the admitted folder name and captured organization for a persisted move", async () => {
+  it("writes only the edited fields, scoped to the note's own organization", async () => {
     const existing = query({ data: { organization_id: ORGANIZATION_ID }, error: null });
-    const folder = query({ data: { id: FOLDER_ID, name: "Authoritative name" }, error: null });
-    const write = query({ data: noteRow({ folder_name: "Authoritative name" }), error: null });
-    const from = jest.fn().mockReturnValueOnce(existing).mockReturnValueOnce(folder).mockReturnValueOnce(write);
+    const write = query({ data: noteRow({ label: "Edited" }), error: null });
+    const from = jest.fn().mockReturnValueOnce(existing).mockReturnValueOnce(write);
     schema.mockReturnValue({ from });
 
-    await updateNote(NOTE_ID, { folder_id: FOLDER_ID });
-
-    expect(write.update).toHaveBeenCalledWith({ folder_id: FOLDER_ID, folder_name: "Authoritative name" });
-    expect(write.eq).toHaveBeenCalledWith("organization_id", ORGANIZATION_ID);
-  });
-
-  it("rejects an unavailable folder from another organization without a note write", async () => {
-    const existing = query({ data: { organization_id: ORGANIZATION_ID }, error: null });
-    const unavailable = query({ data: null, error: null });
-    const from = jest.fn().mockReturnValueOnce(existing).mockReturnValueOnce(unavailable);
-    schema.mockReturnValue({ from });
-
-    await expect(updateNote(NOTE_ID, { folder_id: FOLDER_ID })).rejects.toThrow(/unavailable/i);
-
-    expect(from).toHaveBeenCalledTimes(2);
-    expect(unavailable.update).not.toHaveBeenCalled();
-  });
-
-  it("unfiles with a null display name and preserves ordinary edits on historical mismatches", async () => {
-    const existing = query({ data: { organization_id: ORGANIZATION_ID }, error: null });
-    const unfileWrite = query({ data: noteRow({ folder_id: null, folder_name: null }), error: null });
-    const editExisting = query({ data: { organization_id: ORGANIZATION_ID }, error: null });
-    const editWrite = query({ data: noteRow({ label: "Edited" }), error: null });
-    const from = jest.fn()
-      .mockReturnValueOnce(existing)
-      .mockReturnValueOnce(unfileWrite)
-      .mockReturnValueOnce(editExisting)
-      .mockReturnValueOnce(editWrite);
-    schema.mockReturnValue({ from });
-
-    await updateNote(NOTE_ID, { folder_id: null });
     await updateNote(NOTE_ID, { label: "Edited" });
 
-    expect(unfileWrite.update).toHaveBeenCalledWith({ folder_id: null, folder_name: null });
-    expect(editWrite.update).toHaveBeenCalledWith({ label: "Edited" });
+    expect(write.update).toHaveBeenCalledWith({ label: "Edited" });
+    expect(write.eq).toHaveBeenCalledWith("organization_id", ORGANIZATION_ID);
   });
 });

@@ -7,8 +7,6 @@ export type NoteRow = Database["workbench"]["Tables"]["notes"]["Row"];
 export type NoteInsert = Database["workbench"]["Tables"]["notes"]["Insert"];
 export type NoteUpdate = Database["workbench"]["Tables"]["notes"]["Update"];
 
-export type NoteFolderRow =
-  Database["workbench"]["Tables"]["note_folders"]["Row"];
 // note_versions retired -> history.row_versions (use the get_note_versions RPCs).
 // note_shares retired -> canonical permissions table. Neither has a public type row anymore.
 
@@ -31,7 +29,14 @@ export interface NoteContextLinks {
 /** The stored row as the client models it — any full DB row satisfies it. */
 export type NoteStoredRow = Omit<
   NoteRow,
-  "content_preview" | "visibility" | "published_to_web_at" | "published_to_web_by" | "home_scope_id"
+  | "content_preview"
+  | "visibility"
+  | "published_to_web_at"
+  | "published_to_web_by"
+  | "home_scope_id"
+  // Retired by item homes (a note's home is its scope); the columns are being dropped.
+  | "folder_id"
+  | "folder_name"
 > & {
   /** The note's one home (a scope). Null only on a client draft not yet stored — the
    *  database fills the organization's General on insert. Changed only by `moveNoteToHome`. */
@@ -68,8 +73,6 @@ export type NoteListItem = Pick<
   | "id"
   | "created_by"
   | "label"
-  | "folder_name"
-  | "folder_id"
   | "tags"
   | "updated_at"
   | "position"
@@ -105,8 +108,6 @@ export type CreateNoteInput = Pick<
   NoteInsert,
   | "label"
   | "content"
-  | "folder_name"
-  | "folder_id"
   | "tags"
   | "metadata"
   | "custom_fields"
@@ -119,33 +120,6 @@ export type CreateNoteInput = Pick<
   /** The note's home scope (must be in `organization_id`). Absent = that organization's General. */
   home_scope_id?: string | null;
 } & Partial<NoteContextLinks>;
-
-/** Immutable identity for a folder operation; its name is display data only. */
-export interface FolderReference {
-  id: string;
-  organizationId: string;
-  name: string;
-}
-
-/** A persisted folder can be moved to by its stable organization-qualified ID. */
-export function noteFolderReference(
-  note: Pick<Note, "organization_id" | "folder_id" | "folder_name">,
-): FolderReference | null {
-  if (!note.folder_id || !note.organization_id) return null;
-  return {
-    id: note.folder_id,
-    organizationId: note.organization_id,
-    name: note.folder_name ?? "Uncategorized",
-  };
-}
-
-export function noteFolderIdentityKey(
-  note: Pick<Note, "organization_id" | "folder_id" | "folder_name">,
-): string {
-  return note.folder_id
-    ? `folder:${note.organization_id ?? "unassigned"}:${note.folder_id}`
-    : `pending:${note.organization_id ?? "unassigned"}:${note.folder_name ?? "Uncategorized"}`;
-}
 
 export type NoteContentUpdate = Pick<
   NoteUpdate,
@@ -160,19 +134,8 @@ export type NoteContentUpdate = Pick<
 > &
   Partial<NoteContextLinks>;
 
-/**
- * A persisted folder relationship is always changed by its admitted ID. The
- * name is display data supplied by the service after it reads that folder;
- * callers cannot use a name to select or create a persisted relationship.
- */
-type PersistedFolderUpdate = {
-  /** `folder_id` is the only caller-supplied persisted folder relationship. */
-  folder_id?: string | null;
-  folder_name?: never;
-  organization_id?: never;
-};
-
-export type UpdateNoteInput = NoteContentUpdate & PersistedFolderUpdate;
+/** A persisted note never changes organization through an update; its home moves through `moveNoteToHome`. */
+export type UpdateNoteInput = NoteContentUpdate & { organization_id?: never };
 
 /**
  * Captured identity at the editor boundary. A version turns the write into a

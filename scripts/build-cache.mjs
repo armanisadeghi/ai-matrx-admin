@@ -78,7 +78,19 @@ export function signed(s, method, query = {}, extraHeaders = {}, now = new Date(
   };
 }
 
-async function s3(s, method, { query, headers, body } = {}) {
+/** Credentials for a small object in the build-cache bucket; null when this build has none. */
+export function bucketObject(key, e = process.env) {
+  if (!e.MATRX_BUILD_CACHE_BUCKET || !e.MATRX_BUILD_CACHE_AWS_ACCESS_KEY_ID || !e.MATRX_BUILD_CACHE_AWS_SECRET_ACCESS_KEY) return null;
+  return {
+    bucket: e.MATRX_BUILD_CACHE_BUCKET,
+    region: e.MATRX_BUILD_CACHE_REGION || "us-east-1",
+    key,
+    accessKey: e.MATRX_BUILD_CACHE_AWS_ACCESS_KEY_ID,
+    secretKey: e.MATRX_BUILD_CACHE_AWS_SECRET_ACCESS_KEY,
+  };
+}
+
+export async function s3(s, method, { query, headers, body } = {}) {
   const r = signed(s, method, query, headers);
   const res = await fetch(r.url, { method, headers: r.headers, body, ...(body ? { duplex: "half" } : {}) });
   return res;
@@ -183,4 +195,4 @@ async function main(cmd) {
   }
 }
 
-if (process.argv[1] && import.meta.url === `file://${process.argv[1]}`) await main(process.argv[2]);
+if (process.argv[1] && import.meta.url === `file://${process.argv[1]}`) void main(process.argv[2]).catch((e) => { console.error(e); process.exitCode = 1; });

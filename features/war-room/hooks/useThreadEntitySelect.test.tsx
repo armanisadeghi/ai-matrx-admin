@@ -86,8 +86,6 @@ function noteRow(id: string, label: string) {
     custom_fields: {},
     deleted_at: null,
     file_path: null,
-    folder_id: null,
-    folder_name: "War Room",
     id,
     label,
     last_device_id: null,

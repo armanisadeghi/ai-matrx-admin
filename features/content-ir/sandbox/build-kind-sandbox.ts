@@ -50,6 +50,8 @@ import postcss from "postcss";
 import tailwindcss from "@tailwindcss/postcss";
 import { formatFileSize } from "@ai-matrx/kit/format";
 import { createHash } from "node:crypto";
+import { createRequire } from "node:module";
+import { bucketObject, s3 } from "../../../scripts/build-cache.mjs";
 import { FRAME_LIB_CHUNKS, FRAME_LIBS_KEY_NAME, FRAME_SHARED_KEY_NAME } from "./runtime/frame-lib-chunks";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -473,7 +475,108 @@ async function buildJs(
   return { code: await readFile(JS_OUT, "utf8"), meta: result.metafile };
 }
 
+// ───────────────────────────────────────────────────────────────────────────
+// THE DAILY STYLESHEET (Arman, 2026-10-11) — read this before debugging an
+// unstyled element INSIDE A SANDBOXED SHAPE.
+//
+// On Vercel this build REUSES the kind-sandbox.css stored in S3 when (a) it is
+// younger than SANDBOX_CSS_REUSE_HOURS (24) and (b) every style SOURCE file is
+// byte-identical: sandbox.css plus every file it @imports (app/globals.css and
+// its own imports, our packages' style sheets). Compiling Tailwind over the
+// whole app costs ~6 s on every one of ~50 daily builds.
+//
+// THE ONE CONSEQUENCE: a Tailwind utility class used for the FIRST time since
+// the stored sheet was built (e.g. `grid-cols-7` added to a kind component
+// today) is NOT in the sheet, so that element renders unstyled INSIDE the
+// sandbox frame until the next daily rebuild. The main app is unaffected —
+// Next compiles its own CSS on every build. Every build prints exactly one
+// line saying which happened:
+//   [kind-sandbox-css] REUSED stylesheet built <time> by <commit> …
+//   [kind-sandbox-css] BUILT fresh (<reason>) …
+// Fix for one release: put [fresh-css] (or [cold-build]) in the release commit
+// message. Local builds and `pnpm build:kind-sandbox` always build fresh.
+// Policy + switch: scripts/build-cache-policy.cjs (sandboxCssDecision).
+// ───────────────────────────────────────────────────────────────────────────
+const requireFromHere = createRequire(import.meta.url);
+const { sandboxCssDecision } = requireFromHere("../../../scripts/build-cache-policy.cjs") as {
+  sandboxCssDecision: (env?: NodeJS.ProcessEnv) => { reuse: boolean; maxAgeHours: number };
+};
+
+/** sha256 over sandbox.css and every stylesheet it imports (recursively), so a style-SOURCE change always rebuilds. */
+async function styleSourceFingerprint(): Promise<string> {
+  const hash = createHash("sha256");
+  const seen = new Set<string>();
+  const visit = async (file: string, depth: number): Promise<void> => {
+    if (seen.has(file) || depth > 4) return;
+    seen.add(file);
+    const text = await readFile(file, "utf8");
+    hash.update(`${relative(ROOT, file)}\n${text}\n`);
+    for (const m of text.matchAll(/@import\s+["']([^"']+)["']/g)) {
+      const spec = m[1] as string;
+      let target: string | null = null;
+      try {
+        target = spec.startsWith(".") ? resolve(dirname(file), spec) : requireFromHere.resolve(spec, { paths: [dirname(file)] });
+      } catch {
+        hash.update(`unresolved:${spec}\n`);
+      }
+      if (target) await visit(target, depth + 1);
+    }
+  };
+  await visit(CSS_ENTRY, 0);
+  return hash.digest("hex").slice(0, 32);
+}
+
+async function storedCss(key: string): Promise<{ css: string; builtAt: string; commit: string } | null> {
+  const s = bucketObject(key);
+  if (!s) return null;
+  const res = await s3(s, "GET");
+  if (!res.ok) return null;
+  return { css: await res.text(), builtAt: res.headers.get("last-modified") ?? "", commit: res.headers.get("x-amz-meta-commit") ?? "unknown" };
+}
+
 async function buildCss(): Promise<string> {
+  const policy = sandboxCssDecision();
+  const say = (m: string) => console.log(`[kind-sandbox-css] ${m}`); // eslint-disable-line no-console
+  let key: string | null = null;
+  let reason = "local build (always fresh)";
+  if (policy.reuse) {
+    try {
+      key = `kind-sandbox/sandbox-${await styleSourceFingerprint()}.css`;
+      const stored = await storedCss(key);
+      const ageH = stored ? (Date.now() - new Date(stored.builtAt).getTime()) / 3_600_000 : Infinity;
+      if (stored && ageH < policy.maxAgeHours) {
+        await mkdir(dirname(CSS_OUT), { recursive: true });
+        await writeFile(CSS_OUT, stored.css, "utf8");
+        say(
+          `REUSED stylesheet built ${stored.builtAt} by ${stored.commit.slice(0, 9)} (${ageH.toFixed(1)} h old, style sources unchanged). ` +
+            `Tailwind classes first used after that are UNSTYLED inside sandboxed shapes until the daily rebuild; force one with [fresh-css] in the release message.`,
+        );
+        return stored.css;
+      }
+      reason = stored ? `stored sheet is ${ageH.toFixed(1)} h old (≥ ${policy.maxAgeHours})` : "no stored sheet for these style sources";
+    } catch (e) {
+      reason = `could not read the stored sheet (${e instanceof Error ? e.message : String(e)})`;
+    }
+  } else if (process.env.VERCEL) {
+    reason = "[fresh-css]/[cold-build]/[no-cache] in the release message";
+  }
+  const css = await compileCss();
+  if (key) {
+    const s = bucketObject(key);
+    if (s) {
+      const res = await s3(s, "PUT", {
+        headers: { "content-length": Buffer.byteLength(css), "content-type": "text/css", "x-amz-meta-commit": process.env.VERCEL_GIT_COMMIT_SHA ?? "local" },
+        body: css,
+      }).catch((e: unknown) => ({ ok: false, status: String(e) }) as const);
+      say(`BUILT fresh (${reason}); ${res.ok ? `stored for reuse for ${policy.maxAgeHours} h` : `NOT stored (${res.status}) — the next build compiles again`}.`);
+      return css;
+    }
+  }
+  say(`BUILT fresh (${reason}).`);
+  return css;
+}
+
+async function compileCss(): Promise<string> {
   const source = await readFile(CSS_ENTRY, "utf8");
   const result = await postcss([tailwindcss()]).process(source, {
     from: CSS_ENTRY,

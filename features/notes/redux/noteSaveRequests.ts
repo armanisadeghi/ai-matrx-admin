@@ -1,6 +1,6 @@
 // features/notes/redux/noteSaveRequests.ts
 //
-// A note record changed outside its text editor — a rename, a folder move,
+// A note record changed outside its text editor — a rename, a home move,
 // tags, sharing, undo / redo, an agent's or a tool's write — so the note has
 // unsaved work. This middleware only REQUESTS the save; the save itself (and
 // its retry, offline wait, hold until saved and conflict) belongs to the note's
@@ -21,7 +21,6 @@ type StateWithNotes = { notes?: { notes?: Record<string, NoteRecord | undefined>
 const NOTE_FIELD_EDITS = new Set([
   "notes/updateNoteContent",
   "notes/updateNoteLabel",
-  "notes/updateNoteFolder",
   "notes/updateNoteTags",
   "notes/setNoteField",
   "notes/setNoteFields",

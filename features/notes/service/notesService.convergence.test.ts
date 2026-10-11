@@ -35,8 +35,6 @@ function noteRow(overrides: Partial<Note> = {}): Note {
     custom_fields: {},
     deleted_at: null,
     file_path: null,
-    folder_id: null,
-    folder_name: null,
     label: "Original",
     last_device_id: null,
     metadata: {},
@@ -150,12 +148,12 @@ describe("notesService versioned write convergence", () => {
     expect(gone.eq).toHaveBeenCalledWith("id", NOTE_ID);
   });
 
-  it("refuses a captured organization mismatch before folder admission or mutation", async () => {
+  it("refuses a captured organization mismatch before any mutation", async () => {
     const existing = query({ data: noteRow({ organization_id: ORGANIZATION_B }), error: null });
     const from = jest.fn().mockReturnValue(existing);
     schema.mockReturnValue({ from });
 
-    await expect(updateNote(NOTE_ID, { folder_id: PROJECT_ID }, {
+    await expect(updateNote(NOTE_ID, { label: "Mine" }, {
       expectedOrganizationId: ORGANIZATION_A,
     })).rejects.toThrow(/different organization/i);
 

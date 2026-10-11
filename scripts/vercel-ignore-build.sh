@@ -58,6 +58,18 @@ head_subject="${head_subject%%$'\n'*}"
 head_subject="${head_subject%%$'\r'*}"
 
 if targets_this_project "$head_subject"; then
+  # SATELLITES ON release-all (Arman, 2026-10-11): admin/demos/lab build only when their own
+  # pages changed or their last build is over an hour old — scripts/satellite-builds.mjs prints
+  # one "[satellite] BUILD|SKIP <target>: <reason>" line. It never skips when it cannot tell.
+  # `[all-sites]` in the message, or a release-admin:/release-demos:/release-lab: release,
+  # always builds. Rules + constants: scripts/build-cache-policy.cjs.
+  if [[ "$head_subject" == release-all:* && "$target" != "main" ]] && command -v node >/dev/null 2>&1; then
+    VERCEL_GIT_COMMIT_MESSAGE="${VERCEL_GIT_COMMIT_MESSAGE:-$head_subject}" node scripts/satellite-builds.mjs decide "$target"
+    if [[ $? -eq 0 ]]; then
+      echo "[vercel-ignore] Skipping (target=${target}) — satellite unchanged and built within the hour."
+      exit 0
+    fi
+  fi
   echo "[vercel-ignore] Building (target=${target}) — pushed HEAD is a release commit: ${head_subject}"
   exit 1
 fi

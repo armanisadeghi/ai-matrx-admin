@@ -52,8 +52,7 @@ const ACTOR = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const STORED = "Harbor Dental intake\n- confirm insurance\n- x-rays\n- consent form";
 
 const row = (overrides: Partial<Note> = {}): Note => ({
-  id: NOTE_ID, organization_id: ORG, version: 3, content: STORED, label: "Intake checklist",
-  folder_name: null, folder_id: null, tags: [], metadata: {}, published_to_web: false, position: 0,
+  id: NOTE_ID, organization_id: ORG, version: 3, content: STORED, label: "Intake checklist",tags: [], metadata: {}, published_to_web: false, position: 0,
   project_id: null, task_id: null, created_at: "2026-10-01T09:00:00.000Z", created_by: ACTOR,
   updated_at: "2026-10-01T09:00:00.000Z", updated_by: ACTOR,
   deleted_at: null, content_hash: null, file_path: null, last_device_id: null, custom_fields: {},

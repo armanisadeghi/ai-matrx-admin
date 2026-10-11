@@ -46,7 +46,6 @@ import {
   selectNoteContent,
   selectInstanceTabs,
   selectInstancePinnedTabs,
-  selectNoteFolder,
   selectNoteById,
 } from "../redux/selectors";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
@@ -107,7 +106,6 @@ export function NoteTabItem({ noteId, instanceId, standalone = false, showTitle 
   const openTabs = useAppSelector(selectInstanceTabs(instanceId));
   const pinnedTabs = useAppSelector(selectInstancePinnedTabs(instanceId));
   const isPinned = pinnedTabs.includes(noteId);
-  const currentFolder = useAppSelector(selectNoteFolder(noteId)) ?? "Draft";
   const note = useAppSelector(selectNoteById(noteId));
 
   const openNoteInfo = useOpenNoteInfoWindow();

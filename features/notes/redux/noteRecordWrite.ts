@@ -186,7 +186,6 @@ const saveNotePayload = createAsyncThunk<NoteSaveReceipt | undefined, { noteId: 
       Record<NoteUndoableField, Note[NoteUndoableField]>
     > = {};
     const dirtyFields = Array.from(record._dirtyFields);
-    const hasPairedFolderId = dirtyFields.includes("folder_id");
     const hasLabelChange = dirtyFields.includes("label");
 
     for (const field of dirtyFields) {
@@ -198,25 +197,14 @@ const saveNotePayload = createAsyncThunk<NoteSaveReceipt | undefined, { noteId: 
         updates.content = record.content;
       } else if (field === "label") {
         updates.label = record.label;
-      } else if (field === "folder_id") {
-        updates.folder_id = record.folder_id;
       } else if (field === "tags") {
         updates.tags = record.tags;
       } else if (field === "shown_to") {
         updates.shown_to = record.shown_to;
       } else if (field === "published_to_web") {
         updates.published_to_web = record.published_to_web;
-      } else if (field === "folder_name") {
-        if (hasPairedFolderId) {
-          // folder_name is display projection. The admitted folder ID is the
-          // only persisted move input, but both local dirty values settle.
-        } else {
-          const error = new Error("A persisted note can only move through an admitted folder ID and cannot change organization.");
-          failNoteSave(dispatch, getState, noteId, error.message);
-          throw error;
-        }
       } else if (field === "organization_id") {
-        const error = new Error("A persisted note can only move through an admitted folder ID and cannot change organization.");
+        const error = new Error("A persisted note cannot change organization; move it to another home instead.");
         failNoteSave(dispatch, getState, noteId, error.message);
         throw error;
       }
@@ -265,17 +253,12 @@ const saveNotePayload = createAsyncThunk<NoteSaveReceipt | undefined, { noteId: 
 
       clearNoteWriteBlockedToast(noteId);
       const settledBase = receiptBaseSettlement(getState, noteId, receipt);
-      const currentRecord = (getState() as RootState).notes.notes[noteId] as NoteRecord | undefined;
-      const acknowledgedValues = receipt.databaseWrite === "saved" && currentRecord?.folder_id === savedSnapshot.folder_id && currentRecord?.folder_name === savedSnapshot.folder_name
-        ? { ...(savedSnapshot.folder_id !== undefined && savedSnapshot.folder_name !== undefined ? { folder_name: receipt.note.folder_name } : {}) }
-        : {};
       dispatch(
         markNoteSaved({
           id: noteId,
           updatedAt: settledBase.updated_at ?? undefined,
           version: settledBase.version,
           savedSnapshot,
-          acknowledgedValues,
           acknowledgedPhysicalSnapshot: receipt.note,
         }),
       );
@@ -289,16 +272,11 @@ const saveNotePayload = createAsyncThunk<NoteSaveReceipt | undefined, { noteId: 
           delete acknowledgedSnapshot[field];
         }
         const settledBase = receiptBaseSettlement(getState, noteId, error.receipt);
-        const currentRecord = (getState() as RootState).notes.notes[noteId] as NoteRecord | undefined;
-        const acknowledgedValues = error.databaseWrite === "saved" && currentRecord?.folder_id === acknowledgedSnapshot.folder_id && currentRecord?.folder_name === acknowledgedSnapshot.folder_name
-          ? { ...(acknowledgedSnapshot.folder_id !== undefined && acknowledgedSnapshot.folder_name !== undefined ? { folder_name: error.actualStoredNote.folder_name } : {}) }
-          : {};
         dispatch(markNoteSaved({
           id: noteId,
           updatedAt: settledBase.updated_at ?? undefined,
           version: settledBase.version,
           savedSnapshot: acknowledgedSnapshot,
-          acknowledgedValues,
           acknowledgedPhysicalSnapshot: error.receipt.note,
         }));
         if (error.receipt.postSaveRecoveryError) {

@@ -35,7 +35,6 @@ describe("copyNote", () => {
         id: COPY_ID,
         label: "Original (Copy)",
         content: "Body",
-        folder_name: "Draft",
         tags: [],
         organization_id: ORG_ID,
       },
@@ -53,7 +52,6 @@ describe("copyNote", () => {
             id: NOTE_ID,
             label: "Original",
             content: "Body",
-            folder_name: "Draft",
             tags: [],
             organization_id: ORG_ID,
           },
@@ -77,5 +75,33 @@ describe("copyNote", () => {
     expect(dispatch).toHaveBeenCalledWith(
       setInstanceActiveTab({ instanceId: INSTANCE_ID, noteId: COPY_ID }),
     );
+  });
+
+  it("files the duplicate in the original's home and never writes a folder", async () => {
+    const HOME_ID = "55555555-5555-4555-8555-555555555555";
+    const dispatch = jest.fn((action) => action);
+    const getState = () => ({
+      userAuth: { id: USER_ID },
+      notes: {
+        notes: {
+          [NOTE_ID]: {
+            id: NOTE_ID,
+            label: "Original",
+            content: "Body",
+            tags: [],
+            organization_id: ORG_ID,
+            home_scope_id: HOME_ID,
+          },
+        },
+      },
+    });
+
+    await copyNote({ noteId: NOTE_ID, instanceId: INSTANCE_ID })(dispatch, getState, undefined);
+
+    const written = (insert.mock.calls as unknown as Array<[Record<string, unknown>]>)[0][0];
+    expect(written.home_scope_id).toBe(HOME_ID);
+    expect(written.organization_id).toBe(ORG_ID);
+    expect(written).not.toHaveProperty("folder_name");
+    expect(written).not.toHaveProperty("folder_id");
   });
 });

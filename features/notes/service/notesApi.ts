@@ -13,7 +13,6 @@ import {
   fetchNotes,
   fetchNoteListItems,
   fetchNoteById,
-  ensureFolderMaterialized as ensureFolderMaterializedService,
 } from "./notesService";
 import type {
   CreateNoteInput,
@@ -31,7 +30,6 @@ import type {
  * const note = await NotesAPI.create({
  *   label: "My Note",
  *   content: "Some content",
- *   folder_name: "Personal",
  *   tags: ["important"],
  *   organization_id: capturedOrganizationId,
  * });
@@ -132,7 +130,6 @@ export async function quickCreate(
   return createNoteService({
     label: label || "Quick Note",
     content,
-    folder_name: "Draft",
     organization_id: organizationId,
   });
 }
@@ -148,17 +145,6 @@ export async function copy(noteId: string): Promise<Note> {
   return copyNoteService(noteId);
 }
 
-/**
- * Ensure at least one note exists in the folder so the folder appears in UIs
- * that derive folders from notes. No-op if the folder already has notes.
- */
-export async function ensureFolderMaterialized(
-  folderName: string,
-  organizationId: string,
-): Promise<void> {
-  return ensureFolderMaterializedService(folderName, organizationId);
-}
-
 // Default export as namespace
 export const NotesAPI = {
   create,
@@ -170,5 +156,4 @@ export const NotesAPI = {
   listItems,
   getById,
   quickCreate,
-  ensureFolderMaterialized,
 };

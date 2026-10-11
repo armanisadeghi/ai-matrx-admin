@@ -55,8 +55,6 @@ function annotationNote(overrides: Partial<Note> = {}): Note {
     created_at: "2026-09-20T00:00:00.000Z",
     deleted_at: null,
     file_path: null,
-    folder_id: null,
-    folder_name: "Study annotations",
     last_device_id: null,
     metadata: {},
     position: null,
