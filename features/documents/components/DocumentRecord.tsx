@@ -20,7 +20,10 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { toast } from "@/lib/toast";
+import { FileRecordMenu } from "@/features/file-actions/FileRecordMenu";
 
 import { Input } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
@@ -42,6 +45,9 @@ import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/eng
 import { captureDomSelection } from "@ai-matrx/context-menu/engine";
 
 import {
+  copyDocument,
+  deleteDocument,
+  restoreDocument,
   getDocument,
   renameDocument,
   updateDocumentDescription,
@@ -229,6 +235,35 @@ export function DocumentRecord({
   const isOwner =
     doc !== null && currentUserId !== null && doc.user_id === currentUserId;
 
+  const router = useRouter();
+  const makeCopy = async () => {
+    const current = docRef.current;
+    if (!current) return;
+    const res = await copyDocument(id, `Copy of ${current.document_name}`);
+    if (isServiceFailure(res)) {
+      toast.error("Could not copy this document", { description: res.error });
+      return;
+    }
+    toast.success("Copy created");
+    router.push(`/documents/${res.data.id}`);
+  };
+  const moveToTrash = async () => {
+    const current = docRef.current;
+    if (!current) return;
+    const res = await deleteDocument(id);
+    if (isServiceFailure(res)) {
+      toast.error("Could not move this document to trash", { description: res.error });
+      return;
+    }
+    toast.success(`Moved "${current.document_name}" to trash`, {
+      action: {
+        label: "Undo",
+        onClick: () => void restoreDocument(id).then(() => router.push(`/documents/${id}`)),
+      },
+    });
+    router.push("/documents");
+  };
+
   const applyRename = async (name: string) => {
     const current = docRef.current;
     if (!current || name === current.document_name) return;
@@ -404,6 +439,10 @@ export function DocumentRecord({
         isOwner={isOwner}
         variant="ghost"
         size="sm"
+      />
+      <FileRecordMenu
+        onMakeCopy={makeCopy}
+        {...(isOwner ? { onTrash: moveToTrash } : {})}
       />
     </div>
   ) : null;

@@ -20,7 +20,16 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Download, History, Loader2, Save } from "lucide-react";
+import { Copy, Download, FileText, History, Loader2, Printer, Save, Table2, Trash2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { downloadSheetAsCsv, printSheet } from "@/features/workbooks/sheet-output";
 
 import {
   createUniver,
@@ -128,6 +137,10 @@ type Props = {
    * History controls so primary actions stay closest to the canvas.
    */
   toolbarRightSlot?: React.ReactNode;
+  /** File menu: "Make a copy". Omit to hide. */
+  onMakeCopy?: () => void | Promise<void>;
+  /** File menu: "Move to trash" (owner only). Omit to hide. */
+  onTrash?: () => void | Promise<void>;
 };
 
 export default function WorkbookEditor({
@@ -137,6 +150,8 @@ export default function WorkbookEditor({
   collab = false,
   toolbarLeftSlot,
   toolbarRightSlot,
+  onMakeCopy,
+  onTrash,
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const apiRef = useRef<FUniver | null>(null);
@@ -573,6 +588,39 @@ export default function WorkbookEditor({
     }
   }, [workbookId, workbookName]);
 
+  // CSV / Print read the ACTIVE sheet of the live workbook.
+  const withActiveSheet = useCallback(
+    (run: (snapshot: unknown, sheetId: string | undefined, title: string) => boolean) => {
+      const workbook = apiRef.current?.getActiveWorkbook();
+      if (!workbook) return;
+      const sheetId = (
+        workbook as unknown as { getActiveSheet?: () => { getSheetId?: () => string } | null }
+      ).getActiveSheet?.()?.getSheetId?.();
+      const ok = run(workbook.save(), sheetId, workbookName ?? "Workbook");
+      if (!ok) {
+        toast({
+          title: "This sheet has nothing to export",
+          variant: "destructive",
+        });
+      }
+    },
+    [workbookName],
+  );
+  const handleExportCsv = useCallback(
+    () =>
+      withActiveSheet((snapshot, sheetId, title) =>
+        downloadSheetAsCsv(snapshot, { ...(sheetId ? { sheetId } : {}), filename: title }),
+      ),
+    [withActiveSheet],
+  );
+  const handlePrint = useCallback(
+    () =>
+      withActiveSheet((snapshot, sheetId, title) =>
+        printSheet(snapshot, { ...(sheetId ? { sheetId } : {}), title }),
+      ),
+    [withActiveSheet],
+  );
+
   // Surface bridge — publish the live editor state (sheets, snapshot, save
   // status, collab presence) for the `matrx-user/workbooks` emitter on the
   // page above us. Read-on-demand at agent-launch time, never pushed up as
@@ -799,16 +847,59 @@ export default function WorkbookEditor({
             </Button>
           )}
           {bootState === "ready" && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 gap-1 px-2 text-xs"
-              onClick={handleExportXlsx}
-              title="Download as .xlsx"
-            >
-              <Download className="size-3" />
-              <span className="hidden sm:inline">Export</span>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1 px-2 text-xs"
+                  title="Make a copy, download, print"
+                >
+                  <Download className="size-3" />
+                  <span className="hidden sm:inline">File</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[13rem]">
+                {onMakeCopy && (
+                  <DropdownMenuItem onSelect={() => void onMakeCopy()}>
+                    <Copy className="mr-2 size-4" />
+                    Make a copy
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuLabel className="text-[11px] font-normal text-muted-foreground">
+                  Download
+                </DropdownMenuLabel>
+                <DropdownMenuItem onSelect={() => void handleExportXlsx()}>
+                  <Table2 className="mr-2 size-4" />
+                  Excel (.xlsx)
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={handleExportCsv}>
+                  <FileText className="mr-2 size-4" />
+                  CSV (current sheet)
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={handlePrint}>
+                  <FileText className="mr-2 size-4" />
+                  PDF (current sheet)
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={handlePrint}>
+                  <Printer className="mr-2 size-4" />
+                  Print
+                </DropdownMenuItem>
+                {onTrash && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onSelect={() => void onTrash()}
+                    >
+                      <Trash2 className="mr-2 size-4" />
+                      Move to trash
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
           <Button
             variant="ghost"
