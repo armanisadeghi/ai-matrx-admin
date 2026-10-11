@@ -10,6 +10,7 @@ import {
   Smartphone,
   ArrowUpRight,
   Library,
+  Save,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@ai-matrx/design-system";
@@ -21,6 +22,11 @@ import {
   type NormalizedFlashcard,
 } from "./flashcards-set-derive";
 import { useOpenArtifactInCanvas } from "@/features/canvas/hooks/useOpenArtifactInCanvas";
+import {
+  ensureArtifactPersisted,
+  type EnsureArtifactResult,
+} from "@/features/canvas/materialization/ensureArtifactPersisted";
+import { toast } from "@/lib/toast";
 import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
 import type { FlashcardsBlockData } from "@ai-matrx/agents/generated/stream-events";
 import { flashcardsPrinterLazy as flashcardsPrinter } from "@ai-matrx/print/flashcards-lazy";
@@ -81,11 +87,16 @@ export function useFlashcardsSet({
   // The canonical deck this chat set was saved as (null until linked). An
   // "Open in canvas" that persists the link late reports it directly.
   const { href: linkedDeckHref } = useLinkedFlashcardSet(artifactId);
+  // "Save deck": the same canonical deck the canvas makes (education.fc_set + cards), without
+  // opening the canvas — one click from an answer to a deck that is studied, scheduled and kept.
+  const [savingDeck, setSavingDeck] = useState(false);
+  const [savedDeck, setSavedDeck] = useState<EnsureArtifactResult | null>(null);
+  const deckResult = [lastResult, savedDeck].find(
+    (r) => r?.externalSystem === "fc_set" && r.externalId,
+  );
   const deckHref =
     linkedDeckHref ??
-    (lastResult?.externalSystem === "fc_set" && lastResult.externalId
-      ? flashcardSetHref({ id: lastResult.externalId })
-      : null);
+    (deckResult?.externalId ? flashcardSetHref({ id: deckResult.externalId }) : null);
 
   const { flashcards, isComplete } = useMemo(
     () =>
@@ -138,9 +149,43 @@ export function useFlashcardsSet({
     });
   };
 
+  const handleSaveDeck = async () => {
+    if (!rawPayload || savingDeck) return;
+    if (!messageId && !conversationId) {
+      toast.error("Open this answer from its conversation to save it as a deck.");
+      return;
+    }
+    const ownTitle = [
+      serverData?.title,
+      parseFlashcards(content ?? "").title,
+    ].find((candidate) => candidate && !isGenericFlashcardTitle(candidate));
+    setSavingDeck(true);
+    try {
+      const result = await ensureArtifactPersisted({
+        canvasType: "flashcards",
+        title: ownTitle ?? GENERIC_FLASHCARD_TITLE,
+        content: rawPayload,
+        messageId,
+        conversationId,
+        artifactId: isMaterializedArtifactId(artifactId) ? artifactId : undefined,
+        artifactIndex: blockIndex != null ? blockIndex + 1 : 1,
+      });
+      if (result.ok && result.externalSystem === "fc_set") {
+        setSavedDeck(result);
+        toast.success("Saved as a flashcard deck. Open it in Flashcards.");
+      } else {
+        toast.error(result.errors[0] ?? "The deck could not be saved.");
+      }
+    } finally {
+      setSavingDeck(false);
+    }
+  };
+
   return {
     flashcards,
     isComplete,
+    handleSaveDeck,
+    savingDeck,
     completeCount,
     layoutMode,
     setLayoutMode,
@@ -288,6 +333,9 @@ export interface FlashcardsSetControlsProps {
   openingCanvas?: boolean;
   /** The saved deck in Flashcards; the button is absent until the set is linked. */
   deckHref?: string | null;
+  /** Save the set as a real flashcard deck; absent when there is no way to save it here. */
+  onSaveDeck?: () => void;
+  savingDeck?: boolean;
   onFullscreen?: () => void;
   onOpenInWindow?: (e?: React.MouseEvent) => void;
   isAdmin?: boolean;
@@ -306,6 +354,8 @@ export function FlashcardsSetControls({
   onOpenCanvas,
   openingCanvas = false,
   deckHref,
+  onSaveDeck,
+  savingDeck = false,
   onFullscreen,
   onOpenInWindow,
   isAdmin = false,
@@ -333,6 +383,20 @@ export function FlashcardsSetControls({
             <Printer className="h-3 w-3" />
             Print
           </Button>
+          {!deckHref && onSaveDeck && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={onSaveDeck}
+              disabled={savingDeck}
+              aria-label="Save deck"
+              title="Save as a flashcard deck"
+            >
+              <Save className="h-3 w-3" />
+              <span className="hidden sm:inline">Save deck</span>
+            </Button>
+          )}
           {deckHref && (
             <Button
               asChild
@@ -396,6 +460,19 @@ export function FlashcardsSetControls({
           onPrint();
         }}
       />
+      {!deckHref && onSaveDeck && (
+        <ControlButton
+          variant="quiet"
+          icon={<Save />}
+          aria-label="Save deck"
+          title="Save as a flashcard deck"
+          disabled={savingDeck}
+          onClick={(e) => {
+            e.stopPropagation();
+            onSaveDeck();
+          }}
+        />
+      )}
       {deckHref && (
         <ControlButton
           asChild

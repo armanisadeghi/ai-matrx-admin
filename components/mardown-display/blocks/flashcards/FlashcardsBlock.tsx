@@ -201,6 +201,8 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
                   }}
                   onPrint={set.triggerPrint}
                   deckHref={set.deckHref}
+            onSaveDeck={set.handleSaveDeck}
+            savingDeck={set.savingDeck}
                   onOpenCanvas={() => {
                     setIsFullscreen(false);
                     set.handleOpenInCanvas();
@@ -240,6 +242,8 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
                   }}
                   onPrint={set.triggerPrint}
                   deckHref={set.deckHref}
+            onSaveDeck={set.handleSaveDeck}
+            savingDeck={set.savingDeck}
                   onOpenCanvas={() => {
                     setIsFullscreen(false);
                     set.handleOpenInCanvas();
@@ -295,6 +299,8 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
             onMobileView={enterFlashMode}
             onPrint={set.triggerPrint}
             deckHref={set.deckHref}
+            onSaveDeck={set.handleSaveDeck}
+            savingDeck={set.savingDeck}
             onOpenCanvas={set.handleOpenInCanvas}
             openingCanvas={set.openingCanvas}
             onFullscreen={() => setIsFullscreen(true)}
@@ -328,6 +334,8 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
               onMobileView={enterFlashMode}
               onPrint={set.triggerPrint}
               deckHref={set.deckHref}
+            onSaveDeck={set.handleSaveDeck}
+            savingDeck={set.savingDeck}
               onOpenCanvas={set.handleOpenInCanvas}
               onFullscreen={() => setIsFullscreen(true)}
               showFullscreen
