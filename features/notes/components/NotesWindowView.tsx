@@ -11,6 +11,7 @@
 // Takes ONLY instanceId; every value comes from Redux selectors. ZERO PROP
 // DRILLING.
 
+import { HomePickerDialog } from "../homes/HomePicker";
 import React, { useCallback, useEffect, useRef } from "react";
 import { surfaceOwnsKey } from "@ai-matrx/kit/keyboard-scope";
 import { X } from "lucide-react";
@@ -51,6 +52,7 @@ export function NotesWindowView({
   className,
 }: NotesWindowViewProps) {
   const dispatch = useAppDispatch();
+  const [movePickerNoteId, setMovePickerNoteId] = React.useState<string | null>(null);
 
   const activeTabId = useAppSelector(selectInstanceActiveTab(instanceId));
   const openTabs = useAppSelector(selectInstanceTabs(instanceId));
@@ -79,6 +81,12 @@ export function NotesWindowView({
           dispatch(markTabInteraction({ instanceId }));
           dispatch(removeInstanceTab({ instanceId, noteId: activeTabId }));
         }
+        return;
+      }
+      // Ctrl/⌘+Shift+M — move the active note (the home picker).
+      if (mod && e.shiftKey && e.key.toLowerCase() === "m") {
+        e.preventDefault();
+        if (activeTabId) setMovePickerNoteId(activeTabId);
         return;
       }
       if (mod && e.key === "Tab") {
@@ -142,6 +150,11 @@ export function NotesWindowView({
             </div>
             {/* The note's one bottom row (folder · tags … saved · counts · copy). */}
             {activeTabId && <NoteMetadataBar noteId={activeTabId} />}
+        <HomePickerDialog
+          open={movePickerNoteId !== null}
+          onOpenChange={(open) => { if (!open) setMovePickerNoteId(null); }}
+          noteIds={movePickerNoteId ? [movePickerNoteId] : []}
+        />
           </div>
         </div>
       </div>

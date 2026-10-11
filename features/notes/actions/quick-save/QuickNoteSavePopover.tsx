@@ -16,7 +16,7 @@ export interface QuickNoteSavePopoverProps {
   onOpenChange: (open: boolean) => void;
   trigger: React.ReactNode;
   initialContent: string;
-  defaultFolder?: string;
+  bucketTag?: string;
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
   onSaved?: (note?: Note, action?: PostSaveAction) => void;
@@ -27,7 +27,7 @@ export function QuickNoteSavePopover({
   onOpenChange,
   trigger,
   initialContent,
-  defaultFolder = "Scratch",
+  bucketTag,
   side = "bottom",
   align = "end",
   onSaved,
@@ -56,7 +56,7 @@ export function QuickNoteSavePopover({
         <div className="h-full min-h-0">
           <QuickNoteSaveCore
             initialContent={initialContent}
-            defaultFolder={defaultFolder}
+            bucketTag={bucketTag}
             compact
             onSaved={handleSaved}
             onCancel={() => onOpenChange(false)}

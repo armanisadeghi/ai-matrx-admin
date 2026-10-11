@@ -1,7 +1,7 @@
 // Audit N-23 — every keystroke used to re-sort the whole collection.
 //
 // `updateNoteContent` rewrites one record every 200–1000 ms while the user
-// types. `selectAllNotesList`, `selectAllFolders` and `selectFolderReferences`
+// types. `selectAllNotesList`, `selectNoteHomeIds` and `selectNoteOrganizationIds`
 // all recomputed from the notes map, so each sync cost a filter + sort of
 // every note plus a folder-Set and folder-Map rebuild — three times — and
 // handed every consumer brand-new array references to re-render from.
@@ -16,9 +16,9 @@ import { enableMapSet } from "immer";
 import notesReducer from "./slice";
 import { upsertNotesFromServer, updateNoteContent, updateNoteLabel } from "./slice";
 import {
-  selectAllFolders,
+  selectNoteHomeIds,
   selectAllNotesList,
-  selectFolderReferences,
+  selectNoteOrganizationIds,
   selectNotesListProjection,
 } from "./selectors";
 
@@ -58,8 +58,8 @@ describe("notes list projection", () => {
   it("returns the SAME arrays across 50 content updates", () => {
     let state = seed(40);
     const firstList = selectAllNotesList(asRoot(state));
-    const firstFolders = selectAllFolders(asRoot(state));
-    const firstRefs = selectFolderReferences(asRoot(state));
+    const firstFolders = selectNoteHomeIds(asRoot(state));
+    const firstRefs = selectNoteOrganizationIds(asRoot(state));
     const firstProjection = selectNotesListProjection(asRoot(state));
     const firstOrder = firstList.map((n) => n.id);
 
@@ -71,8 +71,8 @@ describe("notes list projection", () => {
 
       // The ordering + folder projection never rebuilds.
       expect(selectNotesListProjection(asRoot(state))).toBe(firstProjection);
-      expect(selectAllFolders(asRoot(state))).toBe(firstFolders);
-      expect(selectFolderReferences(asRoot(state))).toBe(firstRefs);
+      expect(selectNoteHomeIds(asRoot(state))).toBe(firstFolders);
+      expect(selectNoteOrganizationIds(asRoot(state))).toBe(firstRefs);
     }
 
     const after = selectAllNotesList(asRoot(state));
@@ -87,7 +87,7 @@ describe("notes list projection", () => {
   it("rebuilds the projection when a label changes", () => {
     let state = seed(10);
     const before = selectNotesListProjection(asRoot(state));
-    const beforeFolders = selectAllFolders(asRoot(state));
+    const beforeFolders = selectNoteHomeIds(asRoot(state));
 
     state = notesReducer(
       state,
@@ -97,10 +97,10 @@ describe("notes list projection", () => {
     expect(selectNotesListProjection(asRoot(state))).not.toBe(before);
     // The folder set genuinely did not change, but it is rebuilt with the
     // projection — the guarantee is "content edits are free", not deep equality.
-    expect(selectAllFolders(asRoot(state))).toEqual(beforeFolders);
+    expect(selectNoteHomeIds(asRoot(state))).toEqual(beforeFolders);
   });
 
-  it("rebuilds the projection when a note moves folder", () => {
+  it("rebuilds the projection when a note moves home", () => {
     let state = seed(10);
     const before = selectNotesListProjection(asRoot(state));
 
@@ -112,9 +112,8 @@ describe("notes list projection", () => {
             id: "note-2",
             created_by: "user-1",
             label: "Note 2",
-            folder_name: "Somewhere New",
-            folder_id: "folder-new",
-            organization_id: "org-1",
+            home_scope_id: "home-new",
+            organization_id: "org-2",
             updated_at: "2026-09-14T09:00:00Z",
             position: 2,
             version: 1,
@@ -125,9 +124,7 @@ describe("notes list projection", () => {
     ) as SliceState;
 
     expect(selectNotesListProjection(asRoot(state))).not.toBe(before);
-    expect(selectAllFolders(asRoot(state))).toContain("Somewhere New");
-    expect(
-      selectFolderReferences(asRoot(state)).some((f) => f.id === "folder-new"),
-    ).toBe(true);
+    expect(selectNoteHomeIds(asRoot(state))).toContain("home-new");
+    expect(selectNoteOrganizationIds(asRoot(state))).toContain("org-2");
   });
 });

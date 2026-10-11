@@ -30,7 +30,7 @@ import {
   contentForDestination,
   chatStateOf,
 } from "../utils";
-import { CHAT_SAVES_FOLDER } from "@/features/notes/constants/defaultFolders";
+import { NOTE_BUCKET_TAGS } from "@/features/notes/homes/bucketTags";
 import { selectConversationTitle } from "@ai-matrx/chat/agents/redux/execution-system/conversations/conversations.selectors";
 import { selectMessagePosition } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { buildTaskSeedFromMessage } from "@ai-matrx/chat/agents/components/messages-display/message-options/buildTaskSeedFromMessage";
@@ -116,13 +116,12 @@ registerAction({
       return;
     try {
       const organizationId = await ensureOrgId(ctx.organizationId);
-      // Identical to Save to Notes, minus the questions: folder is Scratch,
-      // title auto-derived, saved immediately.
+      // Identical to Save to Notes, minus the questions: the home is General,
+      // tagged Scratch, title auto-derived, saved immediately.
       await NotesAPI.create({
         label: deriveContentTitle(ctx) ?? "New Note",
         content: contentForDestination(ctx),
-        folder_name: "Scratch",
-        tags: [],
+        tags: [NOTE_BUCKET_TAGS.quickSaves],
         organization_id: organizationId,
       });
       toast.success("Saved to Scratch!");
@@ -158,8 +157,8 @@ registerAction({
         overlayId: "quickNoteSaveWindow",
         data: {
           initialContent: contentForDestination(ctx),
-          defaultFolder:
-            ctx.source.type === "chat-message" ? CHAT_SAVES_FOLDER : undefined,
+          bucketTag:
+            ctx.source.type === "chat-message" ? NOTE_BUCKET_TAGS.chatSaves : undefined,
           defaultNoteName: deriveContentTitle(ctx),
           initialEditorMode: undefined,
         },

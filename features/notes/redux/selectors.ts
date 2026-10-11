@@ -7,7 +7,6 @@
 
 import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
-import { noteFolderReference, type FolderReference } from "../types";
 import type {
   NoteRecord,
   NoteFetchStatus,
@@ -58,7 +57,7 @@ const selectInstancesMap = createSelector(
 // (audit N-23). The sort order and the folder sets do not depend on a note's
 // BODY at all, so they are keyed off a per-note STRUCTURAL signature instead:
 // a content edit leaves every signature identical, the projection returns the
-// previous object, and `selectAllFolders` / `selectFolderReferences` hand back
+// previous object, and `selectNoteHomeIds` / `selectNoteOrganizationIds` hand back
 // the very same array they returned last time — no sort, no Set, no rebuild,
 // and no re-render in any of their consumers.
 //
@@ -728,25 +727,4 @@ export const selectNotesGroupedBy = createSelector(
       return map;
     },
   }),
-);
-
-// TEMPORARY (item-homes cutover, 2026-10-10): folder readers outside the
-// cutover still import these; the home-tree lane deletes both with their last
-// reader. Derived from the folder columns that still exist on every note.
-export const selectAllFolders = createSelector(
-  [selectAllNotesList],
-  (notes): string[] =>
-    Array.from(new Set(notes.map((n) => n.folder_name).filter((n): n is string => !!n))).sort(),
-);
-
-export const selectFolderReferences = createSelector(
-  [selectAllNotesList],
-  (notes): FolderReference[] => {
-    const refs = new Map<string, FolderReference>();
-    for (const n of notes) {
-      const ref = noteFolderReference(n);
-      if (ref) refs.set(`${ref.organizationId}:${ref.id}`, ref);
-    }
-    return Array.from(refs.values());
-  },
 );

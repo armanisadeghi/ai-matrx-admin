@@ -23,7 +23,7 @@ export interface QuickNoteSaveDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialContent: string;
-  defaultFolder?: string;
+  bucketTag?: string;
   onSaved?: (note?: Note, action?: PostSaveAction) => void;
 }
 
@@ -31,7 +31,7 @@ export function QuickNoteSaveDialog({
   open,
   onOpenChange,
   initialContent,
-  defaultFolder = "Scratch",
+  bucketTag,
   onSaved,
 }: QuickNoteSaveDialogProps) {
   const isMobile = useIsMobile();
@@ -56,7 +56,7 @@ export function QuickNoteSaveDialog({
           <div className="flex-1 min-h-0 px-3 pb-3">
             <QuickNoteSaveCore
               initialContent={initialContent}
-              defaultFolder={defaultFolder}
+              bucketTag={bucketTag}
               onSaved={handleSaved}
               onCancel={handleCancel}
             />
@@ -78,7 +78,7 @@ export function QuickNoteSaveDialog({
         <div className="flex-1 min-h-0">
           <QuickNoteSaveCore
             initialContent={initialContent}
-            defaultFolder={defaultFolder}
+            bucketTag={bucketTag}
             onSaved={handleSaved}
             onCancel={handleCancel}
           />

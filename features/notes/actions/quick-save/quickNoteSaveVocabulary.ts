@@ -25,5 +25,5 @@ export type UpdateMethod = (typeof UPDATE_METHODS)[number];
  * Fields the `note_draft` surface write target accepts. Anything else is
  * refused by name rather than silently dropped.
  */
-export const NOTE_DRAFT_FIELDS = ["note_name", "folder", "content"] as const;
+export const NOTE_DRAFT_FIELDS = ["note_name", "home", "content"] as const;
 export type NoteDraftField = (typeof NOTE_DRAFT_FIELDS)[number];

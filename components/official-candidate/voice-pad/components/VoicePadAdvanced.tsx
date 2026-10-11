@@ -99,7 +99,7 @@ export default function VoicePadAdvanced({ instanceId }: VoicePadAdvancedProps) 
           instanceId: crypto.randomUUID(),
           data: {
             initialContent: currentText,
-            defaultFolder: "transcripts",
+            bucketTag: "Voice Notes",
           },
         }),
       );

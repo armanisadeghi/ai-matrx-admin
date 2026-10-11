@@ -43,6 +43,8 @@ interface HomePickerListProps {
   defaultOrganizationId: string | null;
   onPick: (home: NoteHome, label: string) => void | Promise<void>;
   busy?: boolean;
+  /** Placement of the scrolling list (height). */
+  listClassName?: string;
 }
 
 export function HomePickerList({
@@ -50,6 +52,7 @@ export function HomePickerList({
   defaultOrganizationId,
   onPick,
   busy = false,
+  listClassName,
 }: HomePickerListProps) {
   const dispatch = useAppDispatch();
   const { homes, organizations, status } = useNoteHomes();
@@ -106,7 +109,7 @@ export function HomePickerList({
   return (
     <Command shouldFilter className="flex min-h-0 flex-1 flex-col">
       <CommandInput placeholder="Find a home" value={query} onValueChange={setQuery} />
-      <CommandList className="max-h-[360px]">
+      <CommandList className={cn("max-h-[360px]", listClassName)}>
         <CommandEmpty>{status === "ready" ? "No home matches" : "Loading homes"}</CommandEmpty>
         {sections.map((section) => (
           <CommandGroup key={section.label} heading={section.label}>

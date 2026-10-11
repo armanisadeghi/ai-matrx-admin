@@ -79,7 +79,7 @@ export function useVoicePadController(
           instanceId: crypto.randomUUID(),
           data: {
             initialContent: currentText,
-            defaultFolder: "transcripts",
+            bucketTag: "Voice Notes",
           },
         }),
       );

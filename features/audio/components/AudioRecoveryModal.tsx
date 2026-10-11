@@ -121,7 +121,7 @@ function RecoveryItem({ item, onDismiss, onClose }: RecoveryItemProps) {
         instanceId: crypto.randomUUID(),
         data: {
           initialContent: localText.trim(),
-          defaultFolder: "Voice Notes",
+          bucketTag: "Voice Notes",
           initialLabel: `Voice Note — ${formatTimestamp(item.createdAt)}`,
         },
       }),

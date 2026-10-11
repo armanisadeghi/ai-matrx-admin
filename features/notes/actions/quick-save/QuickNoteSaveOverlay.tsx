@@ -8,7 +8,7 @@ export interface QuickNoteSaveOverlayProps {
   isOpen: boolean;
   onClose: () => void;
   initialContent: string;
-  defaultFolder?: string;
+  bucketTag?: string;
   title?: string;
   /**
    * Forwards to `QuickNoteSaveCore.initialEditorMode`. Numerous call sites
@@ -22,7 +22,7 @@ export function QuickNoteSaveOverlay({
   isOpen,
   onClose,
   initialContent,
-  defaultFolder = "Scratch",
+  bucketTag,
   title = "Quick Save",
   initialEditorMode = "split",
 }: QuickNoteSaveOverlayProps) {
@@ -44,7 +44,7 @@ export function QuickNoteSaveOverlay({
             <div className="h-full min-h-0 p-3">
               <QuickNoteSaveCore
                 initialContent={initialContent}
-                defaultFolder={defaultFolder}
+                bucketTag={bucketTag}
                 initialEditorMode={initialEditorMode}
                 onSaved={handleSaved}
                 onCancel={onClose}

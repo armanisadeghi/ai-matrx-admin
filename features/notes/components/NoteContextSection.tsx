@@ -23,7 +23,9 @@
 // the scope list and has no save meaning for a note.
 
 import { noteDisplayLabel } from "@/features/notes/format";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
+import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
+import { NoteHomePanel } from "@/features/notes/homes/NoteHomePanel";
 import { ShieldAlert, ShieldCheck, StickyNote } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -35,7 +37,6 @@ import {
   type ContextAssignmentSaveResult,
 } from "@/features/scopes/components/context-assignment/ContextAssignmentField";
 import { KgSuggestionsChip } from "@/features/kg-suggestions/components/KgSuggestionsChip";
-import { ContextAssignmentPopover } from "@/features/scopes/components/context-assignment/ContextAssignmentPopover";
 import { useEntityScopes } from "@/features/scopes/hooks/useEntityScopes";
 import type { AppDispatch } from "@/lib/redux/store";
 
@@ -89,6 +90,7 @@ export function NoteContextSection({
           title: noteDisplayLabel(note),
           icon: StickyNote,
         }}
+        organizationPicker={false}
         sectionHeight={embedded ? 380 : 260}
         onSaved={onSaved}
       />
@@ -103,10 +105,9 @@ export function NoteContextSection({
 }
 
 // Sized/shaped to match the tab strip's other action buttons (`actionBtnClass`
-// in NoteTabItem — w-6 h-6, no border, [&_svg]:w-3.5 h-3.5). Built on
-// ContextAssignmentPopover directly rather than ContextStatusButton: that
-// component's TapTargetButton geometry is fixed at header-icon size (40px
-// pill) and can't be shrunk to a 24px tab-strip icon via a className prop.
+// in NoteTabItem — w-6 h-6, no border, [&_svg]:w-3.5 h-3.5). Opens THE note
+// home panel (NoteHomePanel: Home + Also relates to) — the same panel the
+// bottom-bar home button and the mobile dock open.
 export function NoteContextStatusIcon({
   noteId,
   className,
@@ -114,34 +115,19 @@ export function NoteContextStatusIcon({
   noteId: string;
   className?: string;
 }) {
-  const dispatch = useAppDispatch();
   const note = useAppSelector(useMemo(() => selectNoteById(noteId), [noteId]));
   const es = useEntityScopes({ entityType: "note", entityId: noteId });
-  const onSaved = useMemo(
-    () => noteSaveAdapter(dispatch, noteId),
-    [dispatch, noteId],
-  );
+  const [open, setOpen] = useState(false);
   if (!note) return null;
   const hasFkContext = !!(note.project_id || note.task_id);
   const hasContext = es.scopeIds.length > 0 || hasFkContext;
   const label = hasContext
-    ? "Scopes are set — click to review or change"
-    : "No scopes set — click to assign";
+    ? "Home and related scopes — click to review or change"
+    : "Home — click to move it or relate it to scopes";
 
   return (
-    <ContextAssignmentPopover
-      subject={{
-        entityType: "note",
-        entityId: noteId,
-        title: noteDisplayLabel(note),
-        icon: StickyNote,
-      }}
-      writeMode="live"
-      onSaved={(r) => {
-        onSaved(r);
-        void es.refresh();
-      }}
-      trigger={
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
         <button
           type="button"
           title={label}
@@ -156,7 +142,10 @@ export function NoteContextStatusIcon({
         >
           {hasContext ? <ShieldCheck /> : <ShieldAlert />}
         </button>
-      }
-    />
+      </PopoverTrigger>
+      <PopoverContent align="end" className="max-h-[70dvh] w-[380px] overflow-y-auto p-2">
+        {open ? <NoteHomePanel noteId={noteId} onMoved={() => setOpen(false)} /> : null}
+      </PopoverContent>
+    </Popover>
   );
 }

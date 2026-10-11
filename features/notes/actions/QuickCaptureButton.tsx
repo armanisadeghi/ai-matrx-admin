@@ -15,7 +15,7 @@ import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 
 interface QuickCaptureButtonProps {
   defaultContent?: string;
-  defaultFolder?: string;
+  bucketTag?: string;
   variant?: "default" | "outline" | "ghost" | "secondary";
   size?: "default" | "sm" | "lg" | "icon";
   label?: string;
@@ -28,7 +28,7 @@ interface QuickCaptureButtonProps {
  */
 export function QuickCaptureButton({
   defaultContent = "",
-  defaultFolder = "Scratch",
+  bucketTag,
   variant = "default",
   size = "default",
   label = "Quick Note",
@@ -43,7 +43,7 @@ export function QuickCaptureButton({
         instanceId: crypto.randomUUID(),
         data: {
           initialContent: defaultContent,
-          defaultFolder,
+          bucketTag,
           initialEditorMode: undefined,
         },
       }),

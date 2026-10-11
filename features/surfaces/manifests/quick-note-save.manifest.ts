@@ -6,7 +6,7 @@
  * overlay id `quickNoteSaveWindow`). Each invocation captures a text payload
  * (chat message, selection, generated content, …) into a new or existing
  * note, with a refine editor (strip thinking, trim, edit, preview). The live
- * form state (chosen title, folder, target note, editor mode, refined text)
+ * form state (chosen title, home, target note, editor mode, refined text)
  * lives inside `QuickNoteSaveCore` / `useQuickNoteSave` and is not yet
  * threaded up to the emitter — the window emits its opener payload. The
  * surface only exists while the window is open.
@@ -57,12 +57,12 @@ const surfaceSpecific: SurfaceValue[] = [
     group: "capture_payload",
   },
   {
-    name: "default_folder",
-    label: "Default folder",
+    name: "bucket_tag",
+    label: "Bucket tag",
     description:
-      'Folder the save form starts on (defaults to "Scratch" when the opener did not specify one). Always populated while the window is mounted. The user may pick a different folder before saving.',
+      'A tag the opener stamps on the new note (e.g. "Chat Saves", "Voice Notes"). Absent when the opener named none. The note\'s home is chosen separately (General unless the user picks one).',
     valueType: "string",
-    alwaysAvailable: true,
+    alwaysAvailable: false,
     typicalCharCount: 24,
     sortOrder: 310,
     group: "capture_payload",
@@ -90,13 +90,12 @@ const surfaceSpecific: SurfaceValue[] = [
     group: "capture_payload",
   },
   {
-    // The folder picker's whole vocabulary — declared because the `note_draft`
-    // write target refuses a folder that is not already in this list, so an
-    // agent that cannot read the list can only guess and be refused.
-    name: "all_folder_names",
-    label: "All folder names",
+    // The home picker's whole vocabulary — declared because the `note_draft`
+    // write target refuses a home that is not already in this list.
+    name: "all_homes",
+    label: "All homes",
     description:
-      "Every folder name the save form's Folder picker offers, in display order — the user's note folders plus the opener's default folder when it is not among them. This is the ONLY vocabulary the `folder` field of the `note_draft` write target accepts; a name outside this list is refused rather than created. Always present while the window is open (at minimum the default folder).",
+      "Every home the save form's Home picker offers (each organization's General plus every scope), by displayed name. This is the ONLY vocabulary the `home` field of the `note_draft` write target accepts; a name outside this list is refused rather than created.",
     valueType: "array",
     alwaysAvailable: true,
     typicalCharCount: 160,
@@ -111,7 +110,7 @@ const surfaceSpecific: SurfaceValue[] = [
  * form state).
  *
  * ONE composite target, deliberately. The title, the refined body, and the
- * destination folder are filled in during a SINGLE act of capture and consumed
+ * destination home are filled in during a SINGLE act of capture and consumed
  * by ONE save, which is exactly the case the skill reserves for an object
  * target. Splitting them would also make this form's cross-field rule
  * unenforceable: the save MODE decides which inputs are even rendered, so a
@@ -130,9 +129,9 @@ const surfaceSpecific: SurfaceValue[] = [
  *   dialog.
  *
  * MODE MATTERS, and the handler enforces it:
- * - `note_name` and `folder` describe a NEW note. They are accepted only while
+ * - `note_name` and `home` describe a NEW note. They are accepted only while
  *   the form is in "create" mode. In "update" mode the title input is not
- *   rendered at all and the folder select is a filter over which existing
+ *   rendered at all and the home select is a filter over which existing
  *   notes are listed — changing it there would silently drop the user's chosen
  *   target note.
  * - `content` is accepted in "create" mode and in "update" + "append" (where
@@ -147,19 +146,19 @@ const writeTargets: SurfaceWriteTarget[] = [
     description: [
       "Stages the note this window is about to save — the same fields the user would type into the open form, staged the same way.",
       `Object with any of: ${NOTE_DRAFT_FIELDS.join(", ")} — all strings.`,
-      "Only the keys you send are changed; omit a key to leave the user's value alone. No key may be empty or whitespace-only — send a real title, a real folder, or real body text, or omit the field.",
-      "`note_name` is the new note's title (the single most useful thing to write here: the user captured a blob of text and needs it named). `content` is the refined body — the captured text cleaned up, thinking blocks stripped, trimmed or restructured; it REPLACES the whole body, so read the `content` value first and send back the complete text you want, not a fragment. `folder` files the note and must be an exact, case-sensitive name from `all_folder_names`; a name outside that list is refused rather than created.",
-      `The form has two save modes (${SAVE_MODES.join(" | ")}) and the mode gates what may be written. In "create" (a brand-new note) all three fields are accepted. In "update" (saving into an EXISTING note) \`note_name\` and \`folder\` are refused — the title input is not rendered and the folder select only filters which notes are listed, so writing it would drop the user's chosen target note.`,
+      "Only the keys you send are changed; omit a key to leave the user's value alone. No key may be empty or whitespace-only — send a real title, a real home, or real body text, or omit the field.",
+      "`note_name` is the new note's title (the single most useful thing to write here: the user captured a blob of text and needs it named). `content` is the refined body — the captured text cleaned up, thinking blocks stripped, trimmed or restructured; it REPLACES the whole body, so read the `content` value first and send back the complete text you want, not a fragment. `home` files the note and must be an exact name from `all_homes`; a name outside that list is refused rather than created.",
+      `The form has two save modes (${SAVE_MODES.join(" | ")}) and the mode gates what may be written. In "create" (a brand-new note) all three fields are accepted. In "update" (saving into an EXISTING note) \`note_name\` and \`home\` are refused — the title input is not rendered and the home select only filters which notes are listed, so writing it would drop the user's chosen target note.`,
       `In "update" mode \`content\` depends on the update method (${UPDATE_METHODS.join(" | ")}): with "append" it is accepted, because the text is added after the existing body; with "overwrite" it is REFUSED, because the staged text would replace an existing note's body wholesale. If you need that, ask the user to switch the form rather than working around it.`,
       "Everything is staged only — nothing is written to a note until the user presses Save Note, and once a note has been saved from this window the form is read-only and every write is refused.",
       "You cannot save, choose the save mode, pick the target note, or set the update method — those stay with the user.",
     ].join(" "),
     valueType: "object",
-    // No `updatesValue`: the live form state (chosen title, folder, refined
+    // No `updatesValue`: the live form state (chosen title, home, refined
     // text) is not emitted by this surface yet — see `readinessNote`. The
     // opener-payload values above describe how the capture STARTED, so
     // pointing at one of them would advertise a read twin that never reflects
-    // the write. `all_folder_names` is the vocabulary for one field, not a
+    // the write. `all_homes` is the vocabulary for one field, not a
     // twin of the composite.
     mode: "draft",
     applyPolicy: "ask",
@@ -177,12 +176,12 @@ export const quickNoteSaveManifest: SurfaceManifest = {
     "Quick-note capture overlay",
   readiness: "partial",
   readinessNote:
-    "Opener payload (content + defaults + folder vocabulary) audited and emitted, and the write half (note_draft) is registered and live-verified against a real agent run; live form state inside QuickNoteSaveCore (chosen title/folder/target note/refined text) is still not emitted, so note_draft declares no updatesValue",
+    "Opener payload (content + defaults + home vocabulary) audited and emitted, and the write half (note_draft) is registered and live-verified against a real agent run; live form state inside QuickNoteSaveCore (chosen title/folder/target note/refined text) is still not emitted, so note_draft declares no updatesValue",
   overlayId: "quickNoteSaveWindow",
   label: "Quick Note Save",
   intro: `<surface_intro>
 You are in the Quick Note Save floating window — a capture form for saving a text payload (a chat message, a selection, generated content) into a new or existing note. The baseline content value carries the captured text as the window opened with it; Capture payload also holds the folder and title defaults the opener seeded, plus every folder name the picker offers. The user refines the text and picks a destination before saving — these values describe how the capture STARTED, not necessarily what will be saved.
-You can also WRITE to this surface through the single note_draft target: the note's title, its refined body, and the folder it is filed into. This is the moment those are worth writing — the user has captured a blob of text and needs it named, cleaned up, and filed. Everything you send is STAGED into the open form; the user reviews it and presses Save Note.
+You can also WRITE to this surface through the single note_draft target: the note's title, its refined body, and the home it is filed into. This is the moment those are worth writing — the user has captured a blob of text and needs it named, cleaned up, and filed. Everything you send is STAGED into the open form; the user reviews it and presses Save Note.
 What you write depends on the form's save mode. Creating a new note accepts all three fields. Saving into an EXISTING note accepts only the body, and only when the update method is append — a title and a folder have no meaning there, and replacing an existing note's body is the user's call. You cannot save, switch the mode, pick the target note, or set the update method.
 </surface_intro>`,
   groups,
@@ -196,8 +195,8 @@ What you write depends on the form's save mode. Creating a new note accepts all 
  */
 export function createQuickNoteSaveScope(values: {
   content: string;
-  default_folder: string;
-  all_folder_names: string[];
+  bucket_tag?: string;
+  all_homes: string[];
   default_note_name?: string;
   initial_editor_mode?: string;
   context?: Record<string, unknown>;

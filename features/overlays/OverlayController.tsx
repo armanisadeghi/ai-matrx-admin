@@ -6735,9 +6735,9 @@ export default function OverlayController() {
                 ? data.initialContent
                 : undefined
             }
-            defaultFolder={
-              typeof data?.defaultFolder === "string"
-                ? data.defaultFolder
+            bucketTag={
+              typeof data?.bucketTag === "string"
+                ? data.bucketTag
                 : undefined
             }
             defaultNoteName={
@@ -6912,9 +6912,9 @@ export default function OverlayController() {
                 ? data.initialContent
                 : ""
             }
-            defaultFolder={
-              typeof data?.defaultFolder === "string"
-                ? data.defaultFolder
+            bucketTag={
+              typeof data?.bucketTag === "string"
+                ? data.bucketTag
                 : undefined
             }
             title={typeof data?.title === "string" ? data.title : undefined}
@@ -6991,9 +6991,9 @@ export default function OverlayController() {
                 ? data.initialContent
                 : ""
             }
-            defaultFolder={
-              typeof data?.defaultFolder === "string"
-                ? data.defaultFolder
+            bucketTag={
+              typeof data?.bucketTag === "string"
+                ? data.bucketTag
                 : undefined
             }
             title={typeof data?.title === "string" ? data.title : undefined}

@@ -76,7 +76,6 @@ export function ContentManagerMenu({
         instanceId: crypto.randomUUID(),
         data: {
           initialContent: content,
-          defaultFolder: "Scratch",
           initialEditorMode: undefined,
         },
       }),

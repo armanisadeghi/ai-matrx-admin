@@ -21,7 +21,7 @@ export interface OpenQuickNoteSaveOverlayOptions {
   /** Optional stable instance id. Omit to spawn a fresh instance. */
   instanceId?: string;
   initialContent: string;
-  defaultFolder?: string;
+  bucketTag?: string;
   title?: string;
   /** TODO: tighten to `EditorMode` once that type is imported. */
   initialEditorMode?: unknown;
@@ -43,7 +43,7 @@ export function useOpenQuickNoteSaveOverlay() {
           instanceId,
           data: {
             initialContent: opts.initialContent,
-            defaultFolder: opts.defaultFolder,
+            bucketTag: opts.bucketTag,
             title: opts.title,
             initialEditorMode: opts.initialEditorMode,
           },
@@ -68,6 +68,6 @@ export function QuickNoteSaveOverlayController(props: OpenQuickNoteSaveOverlayOp
   useEffect(() => {
     const handle = open(props);
     return () => handle.close();
-  }, [open, props.initialContent, props.defaultFolder, props.title, props.initialEditorMode]);
+  }, [open, props.initialContent, props.bucketTag, props.title, props.initialEditorMode]);
   return null;
 }

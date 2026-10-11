@@ -51,7 +51,7 @@ export interface FullScreenEditorSchema {
 
 export interface SaveToNotesSchema {
   content: string;
-  defaultFolder: string;
+  bucketTag?: string;
 }
 
 export interface ShareModalSchema {
@@ -89,7 +89,6 @@ export const overlaySchemaRegistry: Partial<Record<string, OverlaySchema>> = {
   saveToNotes: {
     defaults: {
       content: "",
-      defaultFolder: "Scratch",
     } satisfies SaveToNotesSchema,
   },
 

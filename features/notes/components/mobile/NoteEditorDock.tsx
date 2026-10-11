@@ -25,7 +25,7 @@ import {
   MoreHorizontal,
   Copy,
   Loader2,
-  Network,
+  Tag as TagIcon,
 } from "lucide-react";
 import { copyReferenceFence } from "@/features/matrx-envelope/referenceClipboard";
 import { useRouter } from "next/navigation";
@@ -39,8 +39,7 @@ import {
   BottomSheetBody,
 } from "@ai-matrx/design-system";
 import MobileNoteToolbar from "./MobileNoteToolbar";
-import { NoteContextSection } from "../NoteContextSection";
-import { HomePickerDialog } from "../../homes/HomePicker";
+import { NoteHomePanel } from "../../homes/NoteHomePanel";
 import { useNoteHomes } from "../../homes/useNoteHomes";
 import { selectNoteHomeScopeId } from "../../redux/selectors";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -118,7 +117,6 @@ export function NoteEditorDock({
   const { labelOf } = useNoteHomes();
   const homeScopeId = useAppSelector(useMemo(() => selectNoteHomeScopeId(noteId), [noteId]));
   const homeLabel = labelOf(homeScopeId) ?? "General";
-  const [homePickerOpen, setHomePickerOpen] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -147,24 +145,18 @@ export function NoteEditorDock({
   }[] = [
     // Home + tags mutate the note — a viewer's save is RLS-rejected, so
     // don't offer the affordance at all.
-    ...(readOnly
-      ? []
-      : [
-          {
-            // Home and tags live in ONE sheet, so they are ONE dock button.
-            key: "home",
-            label: "Home",
-            tooltip:
-              tags.length > 0
-                ? `Home & tags — ${homeLabel} · ${tags.length} tag${tags.length !== 1 ? "s" : ""}`
-                : `Home & tags — ${homeLabel}`,
-            Icon: House,
-            onPress: (index: number) => {
-              setActiveIndex(index);
-              setSheetOpen("folder-tags");
-            },
-          },
-        ]),
+    {
+      // THE one home control: the note's Home (moving it) and what it also
+      // relates to — the same panel as the desktop bar and the tab shield.
+      key: "home",
+      label: "Home",
+      tooltip: `Home — ${homeLabel}`,
+      Icon: House,
+      onPress: (index: number) => {
+        setActiveIndex(index);
+        setSheetOpen("context");
+      },
+    },
     {
       key: "copy",
       label: "Copy",
@@ -178,16 +170,20 @@ export function NoteEditorDock({
     },
     // Export lives in the More sheet (Export as Markdown) — the dock copy
     // duplicated it and downloaded silently.
-    {
-      key: "context",
-      label: "Scopes",
-      tooltip: "Organization, project and scopes",
-      Icon: Network,
-      onPress: (index: number) => {
-        setActiveIndex(index);
-        setSheetOpen("context");
-      },
-    },
+    ...(readOnly
+      ? []
+      : [
+          {
+            key: "tags",
+            label: "Tags",
+            tooltip: tags.length > 0 ? `Tags — ${tags.length}` : "Tags",
+            Icon: TagIcon,
+            onPress: (index: number) => {
+              setActiveIndex(index);
+              setSheetOpen("folder-tags");
+            },
+          },
+        ]),
     {
       key: "more",
       label: "More",
@@ -426,30 +422,26 @@ export function NoteEditorDock({
           <MobileNoteToolbar
             homeLabel={homeLabel}
             tags={tags}
-            onMoveHome={() => {
-              setSheetOpen(null);
-              setHomePickerOpen(true);
-            }}
+            onMoveHome={() => setSheetOpen("context")}
             onTagsChange={onTagsChange}
             onClose={() => setSheetOpen(null)}
           />
         </BottomSheetBody>
       </BottomSheet>
 
-      <HomePickerDialog open={homePickerOpen} onOpenChange={setHomePickerOpen} noteIds={[noteId]} />
 
       {/* Context assignment sheet */}
       <BottomSheet
         open={sheetOpen === "context"}
         onOpenChange={(open) => setSheetOpen(open ? "context" : null)}
-        title="Note scopes"
+        title="Home"
         // Solid like the More sheet: the note's text showed through the glass.
         surface="solid"
       >
-        <BottomSheetHeader title="Note scopes" />
+        <BottomSheetHeader title="Home" />
         <BottomSheetBody>
           <div className="px-2 py-2">
-            <NoteContextSection noteId={noteId} embedded />
+            <NoteHomePanel noteId={noteId} onMoved={() => setSheetOpen(null)} />
           </div>
         </BottomSheetBody>
       </BottomSheet>
@@ -479,7 +471,7 @@ export function NoteEditorDock({
             {noteActions({
               rename: readOnly ? undefined : () => setRenameOpen(true),
               duplicate: onDuplicate,
-              moveToHome: readOnly ? undefined : () => setHomePickerOpen(true),
+              moveToHome: readOnly ? undefined : () => setSheetOpen("context"),
               knowledge: () => openKnowledge({ noteId }),
               knowledgeIndexed: ingest.state === "ingested",
               exportMarkdown: () => {

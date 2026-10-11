@@ -6,6 +6,7 @@
 // Can be used as full page, floating window, or single-note embed.
 // ZERO PROP DRILLING — each child receives only an instanceId or noteId.
 
+import { HomePickerDialog } from "../homes/HomePicker";
 import React, {
   useEffect,
   useRef,
@@ -156,6 +157,7 @@ export function NotesView({
   sidebarLayouts,
 }: NotesViewProps) {
   const dispatch = useAppDispatch();
+  const [movePickerNoteId, setMovePickerNoteId] = React.useState<string | null>(null);
   const { id: userId } = useAppSelector(selectUser);
   const authReady = useAppSelector(selectAuthReady);
   const isMobile = useIsMobile();
@@ -601,6 +603,12 @@ export function NotesView({
         return;
       }
 
+      // Ctrl/⌘+Shift+M — move the active note (the home picker).
+      if (mod && e.shiftKey && e.key.toLowerCase() === "m") {
+        e.preventDefault();
+        if (activeTabId) setMovePickerNoteId(activeTabId);
+        return;
+      }
       // Ctrl+Tab — cycle to next tab
       if (mod && e.key === "Tab") {
         e.preventDefault();
@@ -676,6 +684,11 @@ export function NotesView({
         ) : (
           <HomeQuickPick instanceId={instanceId} className="scroll-page-end-space" />
         )}
+        <HomePickerDialog
+          open={movePickerNoteId !== null}
+          onOpenChange={(open) => { if (!open) setMovePickerNoteId(null); }}
+          noteIds={movePickerNoteId ? [movePickerNoteId] : []}
+        />
 
         {/* Layer 2: chrome (folder/context/tags) + stats footer (metrics only) */}
         {activeTabId && (

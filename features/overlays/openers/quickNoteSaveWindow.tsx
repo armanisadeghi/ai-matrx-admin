@@ -19,7 +19,7 @@ const OVERLAY_ID = "quickNoteSaveWindow" as const;
 
 export interface OpenQuickNoteSaveWindowOptions {
   initialContent?: string;
-  defaultFolder?: string;
+  bucketTag?: string;
   defaultNoteName?: string;
   /** TODO: tighten to `EditorMode` once that type is imported. */
   initialEditorMode?: unknown;
@@ -38,7 +38,7 @@ export function useOpenQuickNoteSaveWindow() {
           overlayId: OVERLAY_ID,
           data: {
             initialContent: opts.initialContent,
-            defaultFolder: opts.defaultFolder,
+            bucketTag: opts.bucketTag,
             defaultNoteName: opts.defaultNoteName,
             initialEditorMode: opts.initialEditorMode,
           },
@@ -67,7 +67,7 @@ export function QuickNoteSaveWindowController(
   }, [
     open,
     props.initialContent,
-    props.defaultFolder,
+    props.bucketTag,
     props.defaultNoteName,
     props.initialEditorMode,
   ]);

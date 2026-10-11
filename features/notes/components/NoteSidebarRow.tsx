@@ -8,15 +8,18 @@
 // recent, grouped home list) — home-mode drag/drop is preserved via the
 // draggable wrapper props.
 
-import { memo, useSyncExternalStore } from "react";
-import { FileText } from "lucide-react";
+import { memo, useState, useSyncExternalStore } from "react";
+import { FileText, House } from "lucide-react";
+import { Popover, PopoverAnchor, PopoverContent } from "@ai-matrx/design-system";
+import { HomePickerList } from "../homes/HomePicker";
+import { moveNoteToHome } from "../homes/moveNoteToHome";
+import type { NoteHome } from "../homes/homeModel";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { ItemRow } from "@ai-matrx/design-system/item";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { CONTEXT_MENU_HEADING_KEY } from "@ai-matrx/context-menu/engine";
 import { cn } from "@/lib/utils";
-import { OrganizationTag } from "@/features/commerce-review/components/OrganizationTag";
 import type { ContentSource } from "@ai-matrx/rich-content/rich-document/types";
 import { saveNoteField, ensureNoteBodiesLoaded } from "../redux/thunks";
 import {
@@ -43,8 +46,6 @@ interface NoteSidebarRowProps {
   selectionMode: boolean;
   isSelected: boolean;
   onToggleSelect: (noteId: string) => void;
-  /** Opens the home picker for this note (moves go through `moveNoteToHome`). */
-  onMoveToHome: (noteId: string) => void;
 }
 
 // ── One minute tick, for rows whose time label still changes by the minute ──
@@ -95,7 +96,6 @@ export const NoteSidebarRow = memo(function NoteSidebarRow({
   selectionMode,
   isSelected,
   onToggleSelect,
-  onMoveToHome,
 }: NoteSidebarRowProps) {
   const dispatch = useAppDispatch();
   // The sidebar's list keeps a record's previous body while it is typed
@@ -106,13 +106,27 @@ export const NoteSidebarRow = memo(function NoteSidebarRow({
   const editedRecently = note.updated_at ? Date.now() - Date.parse(note.updated_at) < 3_600_000 : false;
   useSyncExternalStore(editedRecently ? subscribeMinute : noTick, readMinute, readMinute);
 
+  // Click-to-move (beside drag): the row's own home picker, anchored here.
+  const [moveOpen, setMoveOpen] = useState(false);
+  const [moving, setMoving] = useState(false);
+  const moveTo = async (home: NoteHome, label: string) => {
+    if (moving) return;
+    setMoving(true);
+    try {
+      const result = await dispatch(moveNoteToHome({ noteId: note.id, scopeId: home.scopeId, homeLabel: label })).unwrap();
+      if (result.ok) setMoveOpen(false);
+    } finally {
+      setMoving(false);
+    }
+  };
+
   const menuCtx = {
     instanceId,
     noteId: note.id,
     label: note.label,
     content: note.content,
     openKnowledge,
-    onMoveToHome: () => onMoveToHome(note.id),
+    onMoveToHome: () => setMoveOpen(true),
     dispatch,
   };
 
@@ -128,7 +142,7 @@ export const NoteSidebarRow = memo(function NoteSidebarRow({
       onContextMenuCapture={() => {
         if (note._fetchStatus !== "full") void dispatch(ensureNoteBodiesLoaded([note.id]));
       }}
-      className={cn("flex items-center gap-0.5", isDragging && "opacity-40")}
+      className={cn("group/note-row flex items-center gap-0.5", isDragging && "opacity-40")}
     >
       {/*
        * Rendered as a SIBLING of ItemRow, not passed via `leading` — ItemRow's
@@ -172,10 +186,6 @@ export const NoteSidebarRow = memo(function NoteSidebarRow({
               {isOpenTab && !isActive && (
                 <span className="h-1 w-1 rounded-full bg-foreground/40" />
               )}
-              <OrganizationTag
-                organizationId={note.organization_id}
-                className="h-4 max-w-[76px] px-1 text-[10px]"
-              />
               <span
                 className="text-xs text-muted-foreground tabular-nums"
                 title={
@@ -223,6 +233,35 @@ export const NoteSidebarRow = memo(function NoteSidebarRow({
           menu={selectionMode ? undefined : () => buildNoteMenu(menuCtx)}
         />
       </div>
+      {!selectionMode && (
+        <Popover open={moveOpen} onOpenChange={setMoveOpen}>
+          <PopoverAnchor asChild>
+            <button
+              type="button"
+              aria-label={`Move ${displayLabel(note.label) || "note"}`}
+              title="Move to…"
+              data-note-row-move
+              onClick={() => setMoveOpen(true)}
+              className={cn(
+                "flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground focus-visible:opacity-100 group-hover/note-row:opacity-100 pointer-coarse:opacity-60",
+                moveOpen && "opacity-100",
+              )}
+            >
+              <House className="h-3 w-3" />
+            </button>
+          </PopoverAnchor>
+          <PopoverContent align="start" side="right" className="flex w-[320px] flex-col p-0">
+            {moveOpen ? (
+              <HomePickerList
+                currentScopeId={note.home_scope_id ?? null}
+                defaultOrganizationId={note.organization_id}
+                onPick={moveTo}
+                busy={moving}
+              />
+            ) : null}
+          </PopoverContent>
+        </Popover>
+      )}
     </div>
   );
 

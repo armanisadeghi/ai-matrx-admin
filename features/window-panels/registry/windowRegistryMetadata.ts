@@ -246,7 +246,7 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     overlayId: "quickNoteSaveWindow",
     kind: "window",
     label: "Quick Save Note",
-    defaultData: { initialContent: "", defaultFolder: "Scratch" },
+    defaultData: { initialContent: "" },
     ephemeral: true,
     mobilePresentation: "drawer",
   },
@@ -2618,7 +2618,7 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     label: "Save to Notes",
     defaultData: {
       initialContent: "",
-      defaultFolder: undefined,
+      bucketTag: undefined,
       initialEditorMode: undefined,
     },
     ephemeral: true,

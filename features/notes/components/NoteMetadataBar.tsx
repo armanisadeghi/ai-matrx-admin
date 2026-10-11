@@ -13,7 +13,8 @@ import React, { useState, useCallback } from "react";
 import {
   X,
   Plus,
-  Network,
+  House,
+  ChevronDown,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { updateNoteTags } from "../redux/slice";
@@ -21,17 +22,11 @@ import {
   selectNoteTags,
   selectNoteById,
 } from "../redux/selectors";
-import {
-  selectProjectName,
-  selectTaskName,
-  selectProjectId,
-  selectTaskId,
-} from "@/lib/redux/slices/appContextSlice";
 import { ScopeTagsDisplay } from "@/features/agent-context/components/ScopeTagsDisplay";
 import TaskChipRow from "@/features/tasks/widgets/TaskChipRow";
 import { cn } from "@/lib/utils";
-import { NoteContextSection } from "./NoteContextSection";
-import { HomeChip } from "../homes/HomePicker";
+import { NoteHomePanel } from "../homes/NoteHomePanel";
+import { useNoteHomes } from "../homes/useNoteHomes";
 import { NoteStatsFooter } from "./NoteStatsFooter";
 import { RichCopySplit } from "@ai-matrx/chat/agent-copy/RichCopySplit";
 import { noteIdentityContentSource } from "@/features/notes/richDocumentSource";
@@ -65,13 +60,9 @@ export function NoteMetadataBar({
   const tags = useAppSelector(selectNoteTags(noteId));
   const note = useAppSelector(selectNoteById(noteId));
 
-  const ctxProjId = useAppSelector(selectProjectId);
-  const ctxProjName = useAppSelector(selectProjectName);
-  const ctxTaskId = useAppSelector(selectTaskId);
-  const ctxTaskName = useAppSelector(selectTaskName);
+  const { labelOf } = useNoteHomes();
+  const homeLabel = labelOf(note?.home_scope_id) ?? "General";
 
-  const noteProjId = note?.project_id ?? null;
-  const noteTaskId = note?.task_id ?? null;
 
   /**
    * The record view for agent-copy, assembled at CLICK time (never memoized on
@@ -120,8 +111,10 @@ export function NoteMetadataBar({
   return (
     <>
       {scopePickerOpen && (
-        <div className="relative z-10 shrink-0 border-t border-border/20 bg-background px-2">
-          <NoteContextSection noteId={noteId} />
+        <div className="relative z-10 max-h-[60dvh] shrink-0 overflow-y-auto border-t border-border/20 bg-background px-2 py-2">
+          {/* THE one place a note's scopes are set: its Home (moves it) and
+              what it also relates to (tags; never moves it). */}
+          <NoteHomePanel noteId={noteId} onMoved={() => setScopePickerOpen(false)} />
           {/* The organization's own fields on this note (lane 7 W5): the note's context panel, the
               info area the notes page already has, on the page and in the notes window alike. */}
           <EntityCustomFields
@@ -141,30 +134,17 @@ export function NoteMetadataBar({
           variant === "chrome" && "border-t border-border/20 bg-background",
         )}
       >
-        <HomeChip noteId={noteId} className="shrink-0" />
-
         <button
           type="button"
           onClick={() => setScopePickerOpen((v) => !v)}
-          className={cn(
-            // Shrinks (label truncates) before the save status ever would.
-            "flex min-w-0 shrink items-center gap-1 overflow-hidden whitespace-nowrap rounded-full px-1.5 py-0 text-xs transition-colors [&_svg]:shrink-0",
-            noteProjId || noteTaskId
-              ? "bg-primary/10 text-primary-ink"
-              : "border border-dashed border-border text-muted-foreground hover:text-primary",
-          )}
-          title="Set scopes for this note"
+          aria-expanded={scopePickerOpen}
+          data-note-home-button
+          className="flex min-w-0 max-w-[220px] shrink items-center gap-1 overflow-hidden whitespace-nowrap rounded px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground [&_svg]:shrink-0"
+          title={`Home: ${homeLabel} — move it or relate it to other scopes`}
         >
-          <Network className="h-3 w-3" />
-          {noteTaskId
-            ? ctxTaskName && noteTaskId === ctxTaskId
-              ? ctxTaskName
-              : "Task"
-            : noteProjId
-              ? ctxProjName && noteProjId === ctxProjId
-                ? ctxProjName
-                : "Project"
-              : "Scopes"}
+          <House className="h-3 w-3" />
+          <span className="truncate">{homeLabel}</span>
+          <ChevronDown className={cn("h-2.5 w-2.5 opacity-60 transition-transform", scopePickerOpen && "rotate-180")} />
         </button>
         <ScopeTagsDisplay
           entityType="note"

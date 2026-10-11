@@ -217,6 +217,11 @@ export interface ContextAssignmentFieldProps {
   writeMode?: "live" | "preview";
   /** Enforced-context default. User can ALWAYS change it afterwards. */
   initialOrganizationId?: string | null;
+  /** Assignment mode: show the organization dropdown (default true). A host
+   *  whose record's organization is set elsewhere (a note's organization is
+   *  its home's) passes false: every organization's scopes are offered and no
+   *  control pretends to change the record's organization. */
+  organizationPicker?: boolean;
   /** Pre-select on mount (e.g. a filter bar restoring state). */
   initialSelection?: Partial<ContextSelection>;
   /** Active mode only: called on every selection change — Surface A host dispatches. */
@@ -728,6 +733,7 @@ export function ContextAssignmentField({
   mode = "assignment",
   writeMode = "live",
   initialOrganizationId,
+  organizationPicker = true,
   initialSelection,
   onApplyActive,
   onClearActive,
@@ -1504,7 +1510,7 @@ export function ContextAssignmentField({
         {/* org-of-record dropdown (assignment only — non-assignment modes
             browse every org in the hierarchy tree below) + search */}
         <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
-          {mode === "assignment" && (
+          {mode === "assignment" && organizationPicker && (
             <Select
               value={orgId ?? ""}
               onValueChange={(v) => {
@@ -1922,7 +1928,7 @@ export function ContextAssignmentField({
                       </span>
                     </span>
                   ))}
-                {mode === "assignment" && org && (
+                {mode === "assignment" && organizationPicker && org && (
                   <span className="inline-flex items-center gap-1 rounded-md border border-dashed border-border px-2 py-1 text-xs text-muted-foreground">
                     {formatOrgDisplayName(org)}
                     <span className="text-[9px] uppercase opacity-70">

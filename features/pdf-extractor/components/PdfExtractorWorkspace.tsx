@@ -179,7 +179,6 @@ export function PdfExtractorFloatingWorkspace({
           : `save-notes-pdf-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         data: {
           initialContent: text,
-          defaultFolder: "Scratch",
           // Large extractions can stall the markdown preview pane on open.
           // Force the plain editor for big payloads — users can still toggle
           // back to split/preview from the toolbar once it's mounted.

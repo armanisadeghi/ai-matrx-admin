@@ -101,7 +101,6 @@ import {
 import { toast } from "@/lib/toast";
 import { useNoteHomes } from "../homes/useNoteHomes";
 import { moveNoteToHome } from "../homes/moveNoteToHome";
-import { HomePickerDialog } from "../homes/HomePicker";
 import { EntityOrgFilter } from "@/lib/entity-list/components/EntityOrgFilter";
 import { useOrgFilterParam } from "@/lib/entity-list/orgFilterUrl";
 import { NoteSidebarRow } from "./NoteSidebarRow";
@@ -217,7 +216,6 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
   const orgNameById = new Map(memberOrgs.map((o) => [o.id, o.name]));
   const homes = useNoteHomes();
   const [orgFilter, setOrgFilter] = useOrgFilterParam([]);
-  const [movePickerNoteId, setMovePickerNoteId] = useState<string | null>(null);
 
   // ── The list shows EVERY note the person can access ─────────────────
   //
@@ -759,7 +757,6 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
     (opts: { noteId: string; title?: string }) => openKnowledgeRef.current(opts),
     [],
   );
-  const openMovePicker = useCallback((noteId: string) => setMovePickerNoteId(noteId), []);
 
   // ── The list as ONE flat run of rows (virtualised: only visible rows mount) ──
   // Home + Default modes are the home tree (drag a note onto a home to move it).
@@ -858,7 +855,6 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
       selectionMode={selectionMode}
       isSelected={selectedIds.has(note.id)}
       onToggleSelect={toggleSelect}
-      onMoveToHome={openMovePicker}
     />
   );
 
@@ -1591,13 +1587,6 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
       </div>
 
       {/* ── Dialogs ────────────────────────────────────────────────────── */}
-      <HomePickerDialog
-        open={movePickerNoteId !== null}
-        onOpenChange={(open) => {
-          if (!open) setMovePickerNoteId(null);
-        }}
-        noteIds={movePickerNoteId ? [movePickerNoteId] : []}
-      />
     </div>
   );
 }

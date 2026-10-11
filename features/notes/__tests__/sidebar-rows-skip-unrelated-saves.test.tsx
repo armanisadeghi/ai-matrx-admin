@@ -120,7 +120,6 @@ describe("a save of one note never re-renders the rest of the sidebar", () => {
               selectionMode={false}
               isSelected={false}
               onToggleSelect={noop}
-              onMoveToHome={noop}
             />
           ))}
         </>

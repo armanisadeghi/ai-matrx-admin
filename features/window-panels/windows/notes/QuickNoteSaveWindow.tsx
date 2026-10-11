@@ -14,14 +14,15 @@ import {
   createQuickNoteSaveScope,
 } from "@/features/surfaces/manifests/quick-note-save.manifest";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectAllFolders } from "@/features/notes/redux/selectors";
+import { useNoteHomes } from "@/features/notes/homes/useNoteHomes";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 export interface QuickNoteSaveWindowProps {
   isOpen: boolean;
   onClose: () => void;
   initialContent?: string;
-  defaultFolder?: string;
+  /** A code-owned bucket ("Chat Saves", "Voice Notes"…), stamped on the new note as a tag. */
+  bucketTag?: string;
   defaultNoteName?: string;
   /** Optional instance id so multiple captures can open concurrently. */
   instanceId?: string;
@@ -40,7 +41,7 @@ export default function QuickNoteSaveWindow({
   isOpen,
   onClose,
   initialContent,
-  defaultFolder,
+  bucketTag,
   defaultNoteName,
   instanceId,
   initialEditorMode,
@@ -55,11 +56,7 @@ export default function QuickNoteSaveWindow({
     <QuickNoteSaveWindowInner
       onClose={onClose}
       initialContent={typeof initialContent === "string" ? initialContent : ""}
-      defaultFolder={
-        typeof defaultFolder === "string" && defaultFolder
-          ? defaultFolder
-          : "Scratch"
-      }
+      bucketTag={typeof bucketTag === "string" && bucketTag ? bucketTag : undefined}
       defaultNoteName={
         typeof defaultNoteName === "string" ? defaultNoteName : undefined
       }
@@ -72,14 +69,14 @@ export default function QuickNoteSaveWindow({
 function QuickNoteSaveWindowInner({
   onClose,
   initialContent,
-  defaultFolder,
+  bucketTag,
   defaultNoteName,
   instanceId,
   initialEditorMode,
 }: {
   onClose: () => void;
   initialContent: string;
-  defaultFolder: string;
+  bucketTag?: string;
   defaultNoteName?: string;
   instanceId?: string;
   initialEditorMode?: EditorMode;
@@ -96,21 +93,17 @@ function QuickNoteSaveWindowInner({
     if (action !== "none") onClose();
   };
 
-  // The folder picker's vocabulary, derived exactly as `useQuickNoteSave`
-  // derives it (Redux folders, plus the opener's default when it is not among
-  // them). Declared because the `note_draft` write target refuses a folder
-  // outside this list — an agent that cannot read the list could only guess.
-  const foldersFromRedux = useAppSelector(selectAllFolders);
-  const allFolderNames = React.useMemo(
-    () =>
-      !defaultFolder || foldersFromRedux.includes(defaultFolder)
-        ? foldersFromRedux
-        : [defaultFolder, ...foldersFromRedux],
-    [foldersFromRedux, defaultFolder],
+  // The home picker's vocabulary (the labels `useQuickNoteSave` offers).
+  // Declared because the `note_draft` write target refuses a home outside
+  // this list — an agent that cannot read the list could only guess.
+  const homes = useNoteHomes();
+  const allHomeNames = React.useMemo(
+    () => homes.homes.map((h) => homes.labelOf(h.scopeId) ?? h.name),
+    [homes],
   );
 
   // Surface emitter (`matrx-user/quick-note-save`): the window's opener
-  // payload plus the folder vocabulary. Live form state lives inside
+  // payload plus the home vocabulary. Live form state lives inside
   // QuickNoteSaveCore and is not emitted yet (manifest readiness: partial) —
   // the core registers the surface's WRITE handler itself, by name. Nested
   // provider out-depths the hosting page's surface while the window is open
@@ -119,15 +112,15 @@ function QuickNoteSaveWindowInner({
     () =>
       createQuickNoteSaveScope({
         content: initialContent,
-        default_folder: defaultFolder,
-        all_folder_names: allFolderNames,
+        bucket_tag: bucketTag,
+        all_homes: allHomeNames,
         default_note_name: defaultNoteName,
         initial_editor_mode: initialEditorMode,
       }),
     [
       initialContent,
-      defaultFolder,
-      allFolderNames,
+      bucketTag,
+      allHomeNames,
       defaultNoteName,
       initialEditorMode,
     ],
@@ -165,7 +158,7 @@ function QuickNoteSaveWindowInner({
          * (RefinableContentEditor) has no text-mutation hooks exposed to this
          * window, so right-clicking the live textarea yields to the native
          * browser menu (cut/copy/paste still work there) — this menu covers
-         * everything else: the title/folder form, the preview pane, blank
+         * everything else: the title/home form, the preview pane, blank
          * space. surfaceName is the manifest this window's own
          * SurfaceRuntimeProvider (above) already publishes.
          * context-menu-exempt: entity — draft has no note id until Save
@@ -179,7 +172,7 @@ function QuickNoteSaveWindowInner({
           <div className="h-full min-h-0 p-3">
             <QuickNoteSaveCore
               initialContent={initialContent}
-              defaultFolder={defaultFolder}
+              bucketTag={bucketTag}
               defaultNoteName={defaultNoteName}
               initialEditorMode={initialEditorMode}
               surfaceName={QUICK_NOTE_SAVE_SURFACE_NAME}
