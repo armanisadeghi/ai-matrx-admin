@@ -491,7 +491,7 @@ describe("POST /api/webhooks/twilio/voice", () => {
     expect(body).toContain(
       'recordingStatusCallback="https://www.aimatrx.com/api/webhooks/twilio/voice/recording"',
     );
-    expect(body).toContain("Recording has started. How can I help you?");
+    expect(body).toContain("Recording has started. To request a transfer to a person, press zero at any time. How can I help you?");
     expect(body).not.toContain("Goodbye");
     expect(body).not.toContain("working correctly");
     expect(body).toContain("<Connect ");

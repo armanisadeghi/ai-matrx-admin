@@ -36,11 +36,13 @@ long-lived media and agent execution stay in aidream.
 
 ## Human transfer continuation
 
-- Exact caller speech in aidream emits the `live-agent-handoff` end control. The signed
+- Exact caller speech or keypad `0` in aidream emits the `live-agent-handoff` end control. The signed
   relay-ended route reuses owner-beta admission and reads `voice_transfer_number` from the
   admitted `communication.sms_phone_numbers.metadata`; no environment toggle or agent-supplied
   destination chooses routing. The target must be a US E.164 number, distinct from caller and
   called line; clone outbound suppression applies.
+- The post-consent ConversationRelay greeting advertises press zero at any time. Other keypad
+  choices remain saved-agent input; zero uses the same interruption and deadline fences as speech.
 - The caller hears a hold message before a 20-second `<Dial>`. Its signed `transfer-ended`
   action handles no-answer/busy/failed/canceled with an honest closing message and hangup;
   completed calls remain silent. No retries, second recording, or raw handoff content is spoken.

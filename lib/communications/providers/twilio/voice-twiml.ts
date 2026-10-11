@@ -30,7 +30,7 @@ export const OWNER_BETA_ACCEPTED_NON_RECORDING_MESSAGE =
   "Thank you. Your consent was received, but recording is not available right now. Nothing was recorded. Goodbye.";
 
 export const OWNER_BETA_CONVERSATION_RELAY_GREETING =
-  "Recording has started. How can I help you?";
+  "Recording has started. To request a transfer to a person, press zero at any time. How can I help you?";
 
 export const OWNER_BETA_CONVERSATION_RELAY_UNAVAILABLE_MESSAGE =
   "Thank you. Your consent was received. Recording has started, but the A.I. assistant could not connect. This call will end now. Goodbye.";
