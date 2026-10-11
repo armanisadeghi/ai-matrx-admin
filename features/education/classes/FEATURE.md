@@ -32,6 +32,7 @@ A course workspace per class: decks, quizzes, notes, media, files, units, tests 
 - **Members see units** (read-only chips, `?unit=`); editing stays with whoever can edit the class. Removing content from a unit archives that edge; removing from the class archives the class edge and every unit edge (`assoc_remove` tombstones).
 - **Deleting a class archives it** (restorable); underlying decks/quizzes/notes/media are never deleted — only the container and its tags.
 - **"Add sources"** (`AddClassSourcesDialog`, THE Source input) files each Source through `POST /sources/{id}/keep` with the class and selected unit as `attach_to` (`sourceFilingTargets` in `classParts.ts`); non-Source records go through the association door like "Add content". A class test's **Make a practice test** (`MakePracticeTestButton`) uses the units' deduped material through the one question generator (`../assessment/FEATURE.md`).
+- **Assignments reach the learner across classes** (`myAssignments.ts` → `loadMyAssignments`: `edu_my_classes` + `edu_class_student_progress(class, self)` per joined active class, owned classes skipped, every org): the Education home's `assigned-to-you` block (hidden when nothing is open) and the study planner (`collectPlanSummary` → `placeAssignments` on either generator's draft, a `custom` block on the due date linking the work).
 - Copy-link buttons that fail fall back to `ClipboardFallbackDialog`, never a bare toast.
 
 ## Where it lives

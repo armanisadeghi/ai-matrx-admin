@@ -42,7 +42,7 @@ import { EDU_TOOL_NAV } from "../lib/education-nav";
 import { EDU_TOOLS } from "../data/tools";
 import { eduHref } from "../constants";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { NonEditableContextMenu } from "@/features/context-menu-v3/NonEditableContextMenu";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { EDUCATION_OVERVIEW_SURFACE_NAME } from "@/features/surfaces/manifests/education-overview.manifest";
 import { buildEducationOverviewScope } from "./overviewSurfaceScope";
 import { setStudyTodaySnapshot } from "../study/dashboard/studyTodaySnapshot";
