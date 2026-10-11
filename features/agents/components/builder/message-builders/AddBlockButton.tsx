@@ -851,6 +851,13 @@ interface AddBlockTriggerProps {
 /** Types offered only when a surface opts them in through `extraTypes`. */
 const GATED_BLOCK_TYPES: ReadonlySet<BlockType> = new Set<BlockType>(["speech_script"]);
 
+/** The block types the add-block button offers (gated types only when named), with their labels. */
+export function offeredBlockTypes(extraTypes: readonly BlockType[] = []): { type: BlockType; label: string }[] {
+  return BLOCK_TYPES.filter(
+    (bt) => !GATED_BLOCK_TYPES.has(bt.type) || extraTypes.includes(bt.type),
+  ).map(({ type, label }) => ({ type, label }));
+}
+
 export function AddBlockTrigger({ onSelectType, extraTypes = [] }: AddBlockTriggerProps) {
   const offered = BLOCK_TYPES.filter(
     (bt) => !GATED_BLOCK_TYPES.has(bt.type) || extraTypes.includes(bt.type),

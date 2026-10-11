@@ -50,7 +50,13 @@ import {
 import {
   BlockList,
   BlockType,
+  offeredBlockTypes,
 } from "@/features/agents/components/builder/message-builders/AddBlockButton";
+import {
+  agentPromptMenuSections,
+  useAgentBuilderMenuActions,
+} from "@/features/agents/components/builder/message-builders/agentPromptMenu";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAgentMessages,
@@ -699,6 +705,43 @@ export function SystemMessage({
   );
 
   const buildAgentScope = useAgentBuilderSurfaceScope(agentId);
+  const agentMenuActions = useAgentBuilderMenuActions(agentId);
+
+  // The [Prompt] feature section's own rows (agentPromptMenu.ts), built when a menu opens: the
+  // caret is read then, and every row reuses this editor's existing handler.
+  const promptMenuSections = (
+    mode: "textarea" | "write",
+    conditionalSections: ContextMenuExtraSection[],
+  ): ContextMenuExtraSection[] => {
+    const textarea =
+      mode === "textarea" ? (textareaRefs.current[systemMessageIndex] ?? null) : null;
+    const caret = textarea
+      ? { start: textarea.selectionStart, end: textarea.selectionEnd }
+      : null;
+    return agentPromptMenuSections({
+      variableNames,
+      contextItems: insertSources.contextItems,
+      insert: (insert) =>
+        insertPromptText({
+          insert,
+          text: developerMessage,
+          onChange: handleTextChange,
+          writeController: mode === "write" ? writeRef.current : null,
+          textarea,
+          fallbackCaret: caret,
+        }),
+      onNewVariable: () => goToBuilderSection("variables"),
+      onAddContextItem: () => goToBuilderSection("context"),
+      blockSections: blockEditing.menuSections(),
+      conditionalSections,
+      onOptimize: () => setIsOptimizerOpen(true),
+      contentBlockTypes: offeredBlockTypes(),
+      onAddContentBlock: (type) => setPendingAddType(type),
+      onOpenFullScreenEditor,
+      onClear: () => handleTextChange(""),
+      agent: agentMenuActions,
+    });
+  };
 
   // Surface scope for `matrx-user/agent-builder`. Agent-level values (model,
   // tools, agent_json, etc.) come from the hook; `content` /
@@ -816,6 +859,7 @@ export function SystemMessage({
               variableNames={variableNames}
               contextData={contextMenuData}
               promptBlocks={blockEditing.highlight}
+              menuSections={(conditional) => promptMenuSections("write", conditional)}
               placeholder="You're a very helpful assistant"
             />
           ) : viewMode === "preview" ? (
@@ -871,14 +915,16 @@ export function SystemMessage({
               redoHint={redoHint}
               onViewHistory={handleViewHistory}
               hasHistory={canUndo || canRedo}
-              resolveExtraSectionsOnOpen={() => [
-                ...(promptSectionSections({
-                  variableNames,
-                  getTextarea: () => textareaRefs.current[systemMessageIndex] || null,
-                  onChange: handleTextChange,
-                }) ?? []),
-                ...blockEditing.menuSections(),
-              ]}
+              resolveExtraSectionsOnOpen={() =>
+                promptMenuSections(
+                  "textarea",
+                  promptSectionSections({
+                    variableNames,
+                    getTextarea: () => textareaRefs.current[systemMessageIndex] || null,
+                    onChange: handleTextChange,
+                  }) ?? [],
+                )
+              }
             >
               <textarea
                 ref={handleTextareaRef}
