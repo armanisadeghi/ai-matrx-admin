@@ -24318,23 +24318,6 @@ export type Database = {
           unseen_updates: number
         }[]
       }
-      my_loud_notices: {
-        Args: { p_limit?: number }
-        Returns: {
-          body: string
-          created_at: string
-          deep_link: string
-          event_key: string
-          id: string
-          payload: Json
-          read_at: string
-          severity: string
-          subject: string
-          target_id: string
-          target_kind: string
-          updated_at: string
-        }[]
-      }
       my_notification_unread_count: { Args: never; Returns: number }
       my_notifications: {
         Args: { p_before?: string; p_limit?: number; p_unread_only?: boolean }
@@ -74456,6 +74439,53 @@ export type Database = {
         Args: { p_scale: Json; p_sections: Json }
         Returns: Json
       }
+      _review_create_one: {
+        Args: {
+          p_cycle_id: string
+          p_employee_id: string
+          p_employee_login: string
+          p_employment_id: string
+          p_manager_due: string
+          p_manager_employment_id: string
+          p_manager_login: string
+          p_organization_id: string
+          p_self_due: string
+        }
+        Returns: Json
+      }
+      _review_individual_cycle: {
+        Args: { p_actor: string; p_organization_id: string }
+        Returns: {
+          closed_at: string | null
+          closed_by: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          launched_at: string | null
+          launched_by: string | null
+          manager_due_on: string | null
+          metadata: Json
+          name: string
+          organization_id: string
+          period_end: string
+          period_start: string
+          self_due_on: string | null
+          share_due_on: string | null
+          status: string
+          template_id: string | null
+          template_snapshot: Json | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "review_cycle"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       _review_lane: {
         Args: { p_review_id: string; p_role: string; p_uid: string }
         Returns: string
@@ -75336,6 +75366,14 @@ export type Database = {
         Returns: Json
       }
       hr_review_share: { Args: { p_review_id: string }; Returns: Json }
+      hr_review_start: {
+        Args: { p_employment_id: string; p_organization_id: string }
+        Returns: Json
+      }
+      hr_review_start_candidates: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
       hr_review_submit_response: {
         Args: { p_review_id: string; p_role: string }
         Returns: Json
@@ -76214,6 +76252,10 @@ export type Database = {
           p_purpose: string
         }
         Returns: Json
+      }
+      review_may_start: {
+        Args: { p_employment_id: string; p_user: string }
+        Returns: boolean
       }
       review_row_facts: {
         Args: { p_id: string; p_token: string }

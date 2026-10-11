@@ -4,21 +4,29 @@
 // I write), and for an HR seat the employer's cycles with "New cycle". The 360 trial is a separate
 // process at /hr/performance/360 and shares nothing with this.
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ClipboardCheck, Plus, Target, Users } from "lucide-react";
 import { Badge, Button, EmptyState } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable, type MatrxColumnDef, type MatrxDataTableCopyConfig } from "@ai-matrx/design-system/data-table";
 
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import { useAfterCreateOpenAccessSetup } from "@/features/access-setup/afterCreate";
 import { HrPageState } from "@/features/hr/shared/HrStates";
 import { useHrContext } from "@/features/hr/shared/useHrContext";
 import { hrPerformance360Href, hrPerformanceCycleHref, hrPerformanceGoalsHref, hrPerformanceReviewHref } from "@/features/hr/routes";
 
 import { useReloadOnReviewsChanged } from "./invalidation";
 import { NewCycleDialog } from "./NewCycleDialog";
-import { listCycles, listMyReviews, myPeerRequests, type PeerRequest } from "./service";
+import { toast } from "@/lib/toast";
+
+import { listCycles, listMyReviews, listStartCandidates, myPeerRequests, startReview, type PeerRequest } from "./service";
 import { dueOn, formatDay, nextStep, periodLabel, statusLabel, statusTone } from "./status";
-import type { CycleSummary, ReviewSummary } from "./types";
+import type { CycleSummary, ReviewSummary, StartCandidate } from "./types";
+
+/** A person the viewer may start a review for, with the employer it would be filed under. */
+type StartRow = StartCandidate & { organizationId: string; employerName: string };
 
 const SEAT_LABEL: Record<string, string> = {
   employee: "Your review",
@@ -34,10 +42,12 @@ const roleLabel = (seats: readonly string[]): string => {
   return SEAT_LABEL[seat] ?? seat;
 };
 
-function useReviewsData(organizationId: string | null) {
+/** `employerKey`: the scope's employers as JSON `[id, name][]` — a string, so the effect re-runs only when the scope changes. */
+function useReviewsData(organizationId: string | null, employerKey: string) {
   const [reviews, setReviews] = useState<ReviewSummary[] | null>(null);
   const [cycles, setCycles] = useState<CycleSummary[] | null>(null);
   const [requests, setRequests] = useState<PeerRequest[]>([]);
+  const [people, setPeople] = useState<StartRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
   const reload = useCallback(() => setTick((t) => t + 1), []);
@@ -55,6 +65,15 @@ function useReviewsData(organizationId: string | null) {
       setReviews(mine.data);
       // Peer requests are a separate door; a failure here must not hide the reviews, and "none" is the common answer.
       void myPeerRequests().then((p) => live && p.ok && setRequests(p.data));
+      // Who this person may start a review for, in every employer the list reads (direct reports;
+      // everyone where they are HR). A list surface reads the scope's employers, never one active org.
+      const employerList = JSON.parse(employerKey) as [string, string][];
+      void Promise.all(
+        employerList.map(async ([id, name]) => {
+          const p = await listStartCandidates(id);
+          return p.ok ? p.data.map((c) => ({ ...c, organizationId: id, employerName: name })) : [];
+        }),
+      ).then((rows) => live && setPeople(rows.flat()));
       if (!organizationId) {
         setCycles(null);
         return;
@@ -69,17 +88,46 @@ function useReviewsData(organizationId: string | null) {
     return () => {
       live = false;
     };
-  }, [organizationId, tick]);
+  }, [organizationId, employerKey, tick]);
 
-  return { reviews, cycles, requests, error, reload };
+  return { reviews, cycles, requests, people, error, reload };
 }
 
 export function StandardHome() {
   const hr = useHrContext();
   const org = hr.active?.organization_id ?? null;
   const orgRef = hr.orgRef;
-  const { reviews, cycles, requests, error, reload } = useReviewsData(org);
+  const employers = hr.scope.employers;
+  const { reviews, cycles, requests, people, error, reload } = useReviewsData(
+    org,
+    JSON.stringify(employers.map((e) => [e.organization_id, e.name])),
+  );
   const [creating, setCreating] = useState(false);
+  const [starting, setStarting] = useState<string | null>(null);
+  const [, startNavigation] = useTransition();
+  const router = useRouter();
+  const afterCreateOpenAccessSetup = useAfterCreateOpenAccessSetup();
+
+  // access-setup PLAN §7: a manager (or HR) starts one review; People involved opens for it (§5b).
+  const start = async (person: StartRow) => {
+    if (starting) return;
+    const ok = await confirm({
+      title: `Start a review for ${person.name}?`,
+      description: "They can begin their self-evaluation right away.",
+      confirmLabel: "Start review",
+    });
+    if (!ok) return;
+    setStarting(person.employmentId);
+    const r = await startReview(person.employmentId, person.organizationId);
+    setStarting(null);
+    if (!r.ok) {
+      toast.error(r.message);
+      return;
+    }
+    toast.success(`Review started for ${person.name}`);
+    startNavigation(() => router.push(hrPerformanceReviewHref(r.data.reviewId, orgRef)));
+    afterCreateOpenAccessSetup(r.data.accessSetup, person.name);
+  };
 
   const reviewColumns: MatrxColumnDef<ReviewSummary>[] = [
     {
@@ -136,6 +184,51 @@ export function StandardHome() {
     { id: "done", header: "Acknowledged", accessorFn: (c) => c.acknowledgedCount, filter: "number", width: 130 },
     { id: "out", header: "Outstanding", accessorFn: (c) => c.outstandingCount, filter: "number", width: 120 },
   ];
+
+  const peopleColumns: MatrxColumnDef<StartRow>[] = [
+    { id: "name", header: "Employee", accessorFn: (p) => p.name, filter: "text", width: 240, frozen: true },
+    ...(employers.length > 1
+      ? [{ id: "employer", header: "Employer", accessorFn: (p: StartRow) => p.employerName, filter: "text" as const, width: 200 }]
+      : []),
+    {
+      id: "relation",
+      header: "Relation",
+      accessorFn: (p) => (p.relation === "report" ? "Direct report" : "Employee"),
+      filter: "select",
+      filterOptions: [
+        { value: "Direct report", label: "Direct report" },
+        { value: "Employee", label: "Employee" },
+      ],
+      width: 140,
+    },
+    {
+      id: "review",
+      header: "Review",
+      accessorFn: (p) => (p.openReviewId ? "Open" : "None"),
+      filter: "text",
+      width: 150,
+      cell: (p) =>
+        p.openReviewId ? (
+          <Link className="hover:underline" href={hrPerformanceReviewHref(p.openReviewId, orgRef)}>
+            Open review
+          </Link>
+        ) : (
+          <Button variant="outline" disabled={starting !== null} onClick={() => void start(p)}>
+            {starting === p.employmentId ? "Starting…" : "Start review"}
+          </Button>
+        ),
+    },
+  ];
+  const peopleCopy: MatrxDataTableCopyConfig<StartRow> = {
+    label: "person to review",
+    listLabel: "people to review (this view)",
+    location: "Performance",
+    rowKind: "review-candidate",
+    listKind: "review-candidate-list",
+    rowDescription: "One person you may start a review for, and whether one is open.",
+    listDescription: "The people you may start a review for, as currently shown.",
+    humanRow: (p) => [`Employee: ${p.name}`, `Relation: ${p.relation === "report" ? "Direct report" : "Employee"}`, `Open review: ${p.openReviewId ? "yes" : "no"}`].join("\n"),
+  };
 
   const requestColumns: MatrxColumnDef<PeerRequest>[] = [
     {
@@ -220,6 +313,24 @@ export function StandardHome() {
               <EmptyState icon={<ClipboardCheck />} title="No reviews yet" line="Reviews you are in, or write, appear here" />
             )}
           </section>
+
+          {people.length > 0 ? (
+            <section aria-label="Start a review">
+              <MatrxDataTable<StartRow>
+                tableId="hr/performance/start-a-review"
+                data={people}
+                columns={peopleColumns}
+                getRowId={(p) => p.employmentId}
+                pageSize={0}
+                density="condensed"
+                viewTabs={false}
+                toolbar={{ title: "Start a review", searchPlaceholder: "Search people" }}
+                detail={{ enabled: false }}
+                copy={peopleCopy}
+                emptyState={{ title: "No one to review" }}
+              />
+            </section>
+          ) : null}
 
           {requests.length > 0 ? (
             <section aria-label="Feedback requested">
