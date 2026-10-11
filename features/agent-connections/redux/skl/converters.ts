@@ -7,7 +7,7 @@ import { publishedToWebPatch } from "@/lib/row-access";
 // Resources retired 2026-07-06 → attach code_files/notes to a skill via
 // platform.associations (features/skills/redux/skillsThunks.ts).
 
-// Content blocks / render blocks live in agent.prompt_block (skill.render_definition retired).
+// Content blocks / render blocks live in agent.prompt_block.
 // Field map: block_id -> name, template -> content, is_active -> deleted_at is null (archive is the off switch).
 type RenderDefRow = Database["agent"]["Tables"]["prompt_block"]["Row"];
 

@@ -7,7 +7,7 @@
 > Two things live here, and the second matters more than the first:
 >
 > 1. **The Agent Connections hub UI** — "what can this agent reach?" (agents, skills, render blocks, MCP servers, …) at `/agent-connections/*` and as the `agentConnectionsWindow` overlay.
-> 2. **`redux/skl` — the canonical Redux store for `skill.render_definition` rows** ("render blocks" = "content blocks"; same rows). The unified agent context menu, agent-shortcuts hooks, and this hub all read and write through it. **Touching skl is touching the context menu**, not just this page.
+> 2. **`redux/skl` — the canonical Redux store for `agent.prompt_block` rows** ("render blocks" = "content blocks"; same rows). The unified agent context menu, agent-shortcuts hooks, and this hub all read and write through it. **Touching skl is touching the context menu**, not just this page.
 
 ---
 
@@ -21,7 +21,8 @@ Cross-repo product plan: [`common-docs/systems/chat/ai-work/projects/ai-work-hub
 
 ## The `skl` store — canonical content-block / render-definition state
 
-**Table:** `skill.render_definition` (schema `skill`; the old `public.content_blocks` is retired — see `scripts/dead-relations.json` and `skl-migration-guide.md`). **One slice** (`redux/skl/`, key `skl` in `lib/redux/rootReducer.ts`) holds these rows; there is no parallel copy anywhere.
+**Table:** `agent.prompt_block` (schema `agent`; the old `public.content_blocks` and the old skill render-definition table are retired — see `scripts/dead-relations.json`). **One slice** (`redux/skl/`, key `skl` in `lib/redux/rootReducer.ts`) holds these rows; there is no parallel copy anywhere.
+
 
 **Row shape** (`redux/skl/types.ts` → `SklRenderDefinition`): `blockId`, `label`, `template`, `categoryId`, plus the classification trio —
 
@@ -31,7 +32,7 @@ Cross-repo product plan: [`common-docs/systems/chat/ai-work/projects/ai-work-hub
 
 **Two hydration paths, one merge discipline:**
 
-1. **Full fetch** — `fetchRenderDefinitions` (`redux/skl/thunks.ts`): Supabase direct on `skill.render_definition`, `deleted_at IS NULL`, scope-checked via `applyScopeFilter` (VIEW LAW satisfied in-thunk; it no longer narrows by the active org — reads ignore it, the Organization scope only names where a new block is filed), → `renderDefinitionsReceived` (replaces the set).
+1. **Full fetch** — `fetchRenderDefinitions` (`redux/skl/thunks.ts`): Supabase direct on `agent.prompt_block`, `deleted_at IS NULL`, scope-checked via `applyScopeFilter` (VIEW LAW satisfied in-thunk; it no longer narrows by the active org — reads ignore it, the Organization scope only names where a new block is filed), → `renderDefinitionsReceived` (replaces the set).
 2. **Context-menu hydration** — `fetchUnifiedMenu` (`../aidream/apps/shared/chat/src/agents/redux/agent-shortcuts/thunks.ts`) hits `GET /api/agent-context-menu`, backed by the **`agent.context_menu_view`** DB view, and dispatches `sklActions.renderDefinitionsMerged` with partial rows. Since **2026-08-08** the view emits `block_type` / `skill_id` / `visibility`, so wire rows are near-complete. The merge is `Object.assign`-based and **partial-safe**: the thunk OMITS (never nulls) classification fields absent from a stale cached payload, and the slice's defaults (`markdown`/`public`) apply only to rows never seen by any fetch. **Never turn an omitted field into an explicit null on this path** — that would erase a fetched row's real classification.
 
 **Writes** — `createRenderDefinition` / `updateRenderDefinition` / `deleteRenderDefinition` (skl thunks), Supabase direct. `stampScopeForWrite` stamps ownership from the caller's scope and **never writes a NULL `organization_id`** (falls back to `ensureOrgId` → the selected organization, held and asked when none). Converters (`redux/skl/converters.ts`) own the row↔state mapping including the `visibility`/`isPublic` reconciliation — explicit `visibility` wins.
@@ -131,7 +132,7 @@ Fidelity is a verdict, never an inference: `event_mirror` says native resume is 
 
 ## Invariants & gotchas
 
-- **One content-block store.** Every consumer of `skill.render_definition` rows goes through `redux/skl` (directly or via `content-block-compat`). A second slice, local cache, or bespoke fetch of these rows is a defect.
+- **One content-block store.** Every consumer of `agent.prompt_block` rows goes through `redux/skl` (directly or via `content-block-compat`). A second slice, local cache, or bespoke fetch of these rows is a defect.
 - **The merge path must stay partial-safe.** `renderDefinitionsMerged` may receive stale cached payloads missing the classification trio; senders omit those keys, never null them. The slice's `markdown`/`public` defaults are for never-fetched rows only.
 - **`visibility` is authoritative; `isPublic` is derived.** Converters and the unified-menu hydration both maintain `isPublic = visibility === "public"`. Never set one without the other.
 - **No NULL `organization_id` on writes** — `stampScopeForWrite` + `ensureOrgId` guarantee it; keep that guarantee on any new write path.
@@ -159,7 +160,6 @@ Fidelity is a verdict, never an inference: `event_mirror` says native resume is 
 - **`features/api-integrations/`** — external integrations + credential storage.
 - **Coding Session Bridge** — cross-repo contract: `/Users/armanisadeghi/code/common-docs/systems/code/coding-session-bridge/FEATURE.md`.
 - **`features/window-panels/` / `features/overlays/`** — the overlay surface (`agentConnectionsWindow`).
-- `skl-migration-guide.md` (this folder) — the 2026-04 `skl_` namespace migration rationale; historical context, superseded on table names by the live schema (`skill.render_definition`, `platform.categories`).
 
 ---
 

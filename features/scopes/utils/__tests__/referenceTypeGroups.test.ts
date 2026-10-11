@@ -80,7 +80,6 @@ describe("the types a person is offered", () => {
       "flexible_data",
       "surface",
       "agent_surface_binding",
-      "skill_render_definition",
       "study_plan_block",
       "workflow_plan",
     ]) {

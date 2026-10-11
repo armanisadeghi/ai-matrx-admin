@@ -1,4 +1,4 @@
-// skill.render_definition is retired: the render-blocks section reads and writes agent.prompt_block and keeps
+// The render-blocks section reads and writes agent.prompt_block and keeps
 // every field it showed (block id, template, skill link, active flag, public flag).
 const calls: Array<[string, string]> = [];
 const builder: Record<string, unknown> = {};
@@ -55,7 +55,7 @@ it("reads the block table, not the retired render definition", async () => {
     undefined,
   );
   expect(calls).toContainEqual(["agent", "prompt_block"]);
-  expect(calls.some(([, t]) => t === "render_definition")).toBe(false);
+  expect(calls.filter(([schema]) => schema === "skill")).toEqual([]);
 });
 
 it("maps every field the section shows", () => {

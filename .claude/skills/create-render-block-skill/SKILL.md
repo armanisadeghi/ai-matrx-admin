@@ -7,7 +7,7 @@ description: "Platform agent skill and content blocks that teach agents a render
 
 Given a render block, produce the two things that make agents actually USE it:
 
-1. **A platform skill** — a `skl_definitions` row (`skill_type='render_block'`, `is_system=true`) whose **body** is the teaching doc injected into an agent's system prompt when the agent includes it. Optionally the render registry (`skl_render_definitions` + per-platform `skl_render_components`).
+1. **A platform skill** — a `skl_definitions` row (`skill_type='render_block'`, `is_system=true`) whose **body** is the teaching doc injected into an agent's system prompt when the agent includes it. Optionally the render registry (`agent.prompt_block` + per-platform `skl_render_components`).
 2. **Content blocks** — `content_blocks` rows: the lightweight prompt snippets a user injects into ONE agent's instructions from the right-click context menu ("a couple of clicks"). Grouped in a `shortcut_categories` (placement `content-block`) category.
 
 Both ship in **ONE idempotent migration**, applied AND live-verified. That's the whole job for an existing block. For a NEW block type you first build the block end-to-end (Part 2), then do Part 1. This is the dispatchable recipe for the 40-50 existing blocks that still need skills and for any new block; Mermaid is the paved worked example throughout.
@@ -49,9 +49,9 @@ Structure that works (mermaid's body is the template):
 
 Row fields: `skill_id` (kebab business key, UNIQUE), `skill_type='render_block'`, `is_system=true`, `is_public=true`, scope columns (`user_id`/`organization_id`/`project_id`/`task_id`) **NULL** = global, `category_id` → the `skl_categories` `render-blocks` row (create with `ON CONFLICT (category_key) DO NOTHING` if absent), `platform_targets='["web"]'::jsonb`, `version`. **Pre-check live**: existing `is_system=true` rows' `user_id` convention; `skl_definitions.skill_id` is UNIQUE per `(skill_id,user_id,org,project)` composite → use `INSERT … SELECT … WHERE NOT EXISTS` (NOT `ON CONFLICT (skill_id)` — that errors on the composite key).
 
-### 3. (Render registry, optional) `skl_render_definitions` + `skl_render_components`
-- `skl_render_definitions`: `block_id` (no unique constraint → `WHERE NOT EXISTS`), linked to the skill.
-- `skl_render_components`: one `web` row `is_active=true` with the real `import_path`; `chrome-extension`/`desktop`/`mobile` rows `is_active=false` — the explicit notation that those clients await the server-side processing switch. UNIQUE `(render_definition_id, platform)` → `ON CONFLICT DO UPDATE`. **Pre-check** `SELECT DISTINCT platform FROM skl_render_components` for the vocabulary.
+### 3. (Render registry, optional) `agent.prompt_block` + `skl_render_components`
+- `agent.prompt_block`: `block_id` (no unique constraint → `WHERE NOT EXISTS`), linked to the skill.
+- `skl_render_components`: one `web` row `is_active=true` with the real `import_path`; `chrome-extension`/`desktop`/`mobile` rows `is_active=false` — the explicit notation that those clients await the server-side processing switch. UNIQUE `(block_id, platform)` → `ON CONFLICT DO UPDATE`. **Pre-check** `SELECT DISTINCT platform FROM skl_render_components` for the vocabulary.
 
 ### 4. Write the content blocks (`content_blocks` rows)
 - A category in `shortcut_categories` (`placement_type='content-block'`, global NULL scope). Name it for the family ("Diagrams", "Education", "Timeline"…). `WHERE NOT EXISTS` (no business-key unique).

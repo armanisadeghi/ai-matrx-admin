@@ -44,7 +44,7 @@ and the `list_change_proposal` entry in `block-dispatch.tsx`.
 
 The kind is taught by the render-block skill `kind_list_change_proposal` (a `skill.definition`
 row, opt-in per agent — agents are never auto-attached) plus four content blocks under **Agent
-Skills** (`list-change-proposals-*` in `skill.render_definition`). Both ship in
+Skills** (`list-change-proposals-*` in `agent.prompt_block`). Both ship in
 `migrations/list_change_proposal_kind.sql`. **Never author or modify an agent's prompt to use
 this** — the block is offered, the owner decides.
 

@@ -104,7 +104,6 @@ SECURITY DEFINER, **hardcoded to `public` schema** (`format('public.%I', p_table
 Real calls:
 ```sql
 select platform.retrofit_entity('skl_categories','skill_category','personal','user_id',null,null,'trg_skl_categories_updated');
-select platform.retrofit_entity('skl_render_components','render_component','parent',null,'skl_render_definitions','render_definition_id',null);
 ```
 
 ### `iam.apply_rls(p_schema, p_table, p_token, p_variant='entity') → void`
