@@ -2,19 +2,19 @@
 
 /**
  * NotePickerPopover — lazy-loaded, searchable note picker with a collapsible
- * folder tree (same browse pattern as NotesTreeView on /notes).
+ * tree of homes (same browse pattern as NotesTreeView on /notes).
  *
- * Fetches lightweight list items (id + label + folder, no content) only when
+ * Fetches lightweight list items (id + label + home, no content) only when
  * the popover opens. The parent receives a note id and should fetch full
  * content via NotesAPI.getById (or fetchNoteContent) on selection.
  *
- * Browse: folders collapsed by default with counts — expand one folder at a time.
- * Search: flat results across all notes (label, folder, id).
+ * Browse: homes collapsed by default with counts — expand one home at a time.
+ * Search: flat results across all notes (label, home, id).
  */
 
 import { noteDisplayLabel } from "@/features/notes/format";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronRight, FileText, Loader2, Search } from "lucide-react";
+import { Box, ChevronRight, FileText, House, Loader2, Search } from "lucide-react";
 import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { cn } from "@/lib/utils";
@@ -31,8 +31,8 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { NotesAPI } from "@/features/notes/service/notesApi";
-import { getFolderIconAndColor } from "@/features/notes/utils/folderUtils";
-import { noteFolderIdentityKey, type NoteListItem } from "@/features/notes/types";
+import { useNoteHomes } from "@/features/notes/homes/useNoteHomes";
+import type { NoteListItem } from "@/features/notes/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 // ── Shared list cache (names only — invalidated after creates/deletes) ───────
@@ -72,8 +72,6 @@ export interface NotePickerAction {
 export interface NotePickerPopoverProps {
   trigger: React.ReactNode;
   onSelectNote: (noteId: string) => void | Promise<void>;
-  /** When set, only notes in this folder are listed */
-  folderFilter?: string;
   extraActions?: NotePickerAction[];
   align?: "start" | "center" | "end";
   side?: "top" | "right" | "bottom" | "left";
@@ -88,7 +86,6 @@ interface NotePickerBodyProps {
   items: NoteListItem[];
   isLoading: boolean;
   error: string | null;
-  folderFilter?: string;
   extraActions?: NotePickerAction[];
   onSelectNote: (noteId: string) => void | Promise<void>;
   onClose: () => void;
@@ -98,20 +95,20 @@ function NotePickerBody({
   items,
   isLoading,
   error,
-  folderFilter,
   extraActions,
   onSelectNote,
   onClose,
 }: NotePickerBodyProps) {
   const [search, setSearch] = useState("");
-  const [expandedFolder, setExpandedFolder] = useState<string | null>(
-    folderFilter ?? null,
+  const [expandedHome, setExpandedHome] = useState<string | null>(null);
+  const noteHomes = useNoteHomes();
+  const homeLabel = useCallback(
+    (note: Pick<NoteListItem, "home_scope_id">) => noteHomes.labelOf(note.home_scope_id) ?? "Home",
+    [noteHomes],
   );
+  const homeIcon = (scopeId: string) => (noteHomes.byId.get(scopeId)?.isGeneral ? House : Box);
 
-  const scopedItems = useMemo(() => {
-    if (!folderFilter) return items;
-    return items.filter((n) => n.folder_name === folderFilter);
-  }, [items, folderFilter]);
+  const scopedItems = items;
 
   const filteredItems = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -119,43 +116,42 @@ function NotePickerBody({
     return scopedItems.filter(
       (n) =>
         n.label.toLowerCase().includes(q) ||
-        n.folder_name?.toLowerCase().includes(q) ||
+        homeLabel(n).toLowerCase().includes(q) ||
         idMatchesQuery(n, q),
     );
-  }, [scopedItems, search]);
+  }, [scopedItems, search, homeLabel]);
 
-  const notesByFolder = useMemo(() => {
+  const notesByHome = useMemo(() => {
     const grouped: Record<string, NoteListItem[]> = {};
     for (const note of scopedItems) {
-      const folder = noteFolderIdentityKey(note);
-      (grouped[folder] ??= []).push(note);
+      const home = note.home_scope_id;
+      (grouped[home] ??= []).push(note);
     }
-    for (const folder of Object.keys(grouped)) {
-      grouped[folder].sort((a, b) =>
+    for (const home of Object.keys(grouped)) {
+      grouped[home].sort((a, b) =>
         (b.updated_at ?? "").localeCompare(a.updated_at ?? ""),
       );
     }
     return grouped;
   }, [scopedItems]);
 
-  const treeFolders = useMemo(() => {
-    return Object.keys(notesByFolder);
-  }, [scopedItems, notesByFolder]);
+  const treeHomes = useMemo(() => {
+    return Object.keys(notesByHome);
+  }, [scopedItems, notesByHome]);
 
-  const filteredFoldersForSearch = useMemo(() => {
+  const filteredHomesForSearch = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return [];
-    return treeFolders.filter(
-      (folder) =>
-        (notesByFolder[folder]?.[0]?.folder_name ?? "").toLowerCase().includes(q) ||
-        (notesByFolder[folder] ?? []).some(
+    return treeHomes.filter(
+      (home) =>
+        (notesByHome[home]?.[0] ? homeLabel(notesByHome[home][0]) : "").toLowerCase().includes(q) ||
+        (notesByHome[home] ?? []).some(
           (n) =>
             n.label.toLowerCase().includes(q) ||
-            n.folder_name?.toLowerCase().includes(q) ||
             idMatchesQuery(n, q),
         ),
     );
-  }, [treeFolders, notesByFolder, search]);
+  }, [treeHomes, notesByHome, search, homeLabel]);
 
   const isSearching = search.trim().length > 0;
 
@@ -164,9 +160,9 @@ function NotePickerBody({
       await onSelectNote(noteId);
       onClose();
       setSearch("");
-      setExpandedFolder(folderFilter ?? null);
+      setExpandedHome(null);
     },
-    [onSelectNote, onClose, folderFilter],
+    [onSelectNote, onClose],
   );
 
   const handleAction = useCallback(
@@ -178,8 +174,8 @@ function NotePickerBody({
     [onClose],
   );
 
-  const handleToggleFolder = useCallback((folder: string) => {
-    setExpandedFolder((prev) => (prev === folder ? null : folder));
+  const handleToggleHome = useCallback((home: string) => {
+    setExpandedHome((prev) => (prev === home ? null : home));
   }, []);
 
   if (isLoading) {
@@ -217,41 +213,39 @@ function NotePickerBody({
       <div className="max-h-[300px] overflow-y-auto scrollbar-thin">
         {isSearching ? (
           <div className="py-0.5">
-            {filteredFoldersForSearch.length === 0 &&
+            {filteredHomesForSearch.length === 0 &&
             filteredItems.length === 0 ? (
               <div className="px-3 py-6 text-center text-muted-foreground">
                 No results found
               </div>
             ) : (
               <>
-                {filteredFoldersForSearch.length > 0 && (
+                {filteredHomesForSearch.length > 0 && (
                   <div className="pb-0.5">
                     <div className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/70">
-                      Folders
+                      Homes
                     </div>
-                    {filteredFoldersForSearch.map((folder) => {
-                      const folderLabel = notesByFolder[folder]?.[0]?.folder_name ?? "Draft";
-                      const { icon: FolderIcon, color: folderColor } = getFolderIconAndColor(folderLabel);
-                      const folderNotes = notesByFolder[folder] ?? [];
+                    {filteredHomesForSearch.map((home) => {
+                      const homeNotes = notesByHome[home] ?? [];
+                      const homeNameLabel = homeNotes[0] ? homeLabel(homeNotes[0]) : "Home";
+                      const HomeIcon = homeIcon(home);
 
                       return (
                         <button
-                          key={folder}
+                          key={home}
                           type="button"
                           onClick={() => {
                             setSearch("");
-                            setExpandedFolder(folder);
+                            setExpandedHome(home);
                           }}
                           className="flex w-full items-center gap-2 px-2.5 py-1.5 text-left hover:bg-accent/50 transition-colors"
                         >
-                          <FolderIcon
-                            className={cn("h-3.5 w-3.5 shrink-0", folderColor)}
-                          />
+                          <HomeIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                           <span className="min-w-0 flex-1 truncate font-medium">
-                            {folderLabel}
+                            {homeNameLabel}
                           </span>
                           <span className="shrink-0 text-[9px] tabular-nums text-muted-foreground/50">
-                            {folderNotes.length}
+                            {homeNotes.length}
                           </span>
                         </button>
                       );
@@ -277,11 +271,9 @@ function NotePickerBody({
                         <span className="min-w-0 flex-1 truncate">
                           {noteDisplayLabel(note)}
                         </span>
-                        {note.folder_name && (
-                          <span className="shrink-0 truncate text-[0.5625rem] text-muted-foreground/50 max-w-[72px]">
-                            {note.folder_name}
-                          </span>
-                        )}
+                        <span className="shrink-0 truncate text-[0.5625rem] text-muted-foreground/50 max-w-[72px]">
+                          {homeLabel(note)}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -291,26 +283,26 @@ function NotePickerBody({
           </div>
         ) : (
           <div className="select-none py-0.5">
-            {treeFolders.length === 0 ? (
+            {treeHomes.length === 0 ? (
               <div className="px-3 py-6 text-center text-muted-foreground">
                 No notes yet
               </div>
             ) : (
-              treeFolders.map((folder) => {
-                const isExpanded = expandedFolder === folder;
-                const folderNotes = notesByFolder[folder] ?? [];
-                const folderLabel = folderNotes[0]?.folder_name ?? "Draft";
-                const { icon: FolderIcon, color: folderColor } = getFolderIconAndColor(folderLabel);
+              treeHomes.map((home) => {
+                const isExpanded = expandedHome === home;
+                const homeNotes = notesByHome[home] ?? [];
+                const homeNameLabel = homeNotes[0] ? homeLabel(homeNotes[0]) : "Home";
+                const HomeIcon = homeIcon(home);
 
                 return (
-                  <div key={folder}>
+                  <div key={home}>
                     <button
                       type="button"
                       className={cn(
                         "flex w-full items-center gap-1 px-2 py-1 hover:bg-accent/50 transition-colors",
                         isExpanded && "bg-accent/30",
                       )}
-                      onClick={() => handleToggleFolder(folder)}
+                      onClick={() => handleToggleHome(home)}
                     >
                       <ChevronRight
                         className={cn(
@@ -318,18 +310,16 @@ function NotePickerBody({
                           isExpanded && "rotate-90",
                         )}
                       />
-                      <FolderIcon
-                        className={cn("h-3 w-3 shrink-0", folderColor)}
-                      />
-                      <span className="truncate font-medium">{folderLabel}</span>
+                      <HomeIcon className="h-3 w-3 shrink-0 text-muted-foreground" />
+                      <span className="truncate font-medium">{homeNameLabel}</span>
                       <span className="ml-auto pr-0.5 text-[9px] tabular-nums text-muted-foreground/50">
-                        {folderNotes.length}
+                        {homeNotes.length}
                       </span>
                     </button>
 
                     {isExpanded && (
                       <div>
-                        {folderNotes.map((note) => (
+                        {homeNotes.map((note) => (
                           <button
                             key={note.id}
                             type="button"
@@ -379,17 +369,15 @@ function NotePickerBody({
 // ── Inline form (a host that already owns the frame: a dialog, a menu page) ──
 
 export interface NotePickerInlineProps {
-  /** The picked note, with its list row (label, folder) when known. */
+  /** The picked note, with its list row (label, home) when known. */
   onSelectNote: (noteId: string, note: NoteListItem | null) => void | Promise<void>;
-  /** When set, only notes in this folder are listed */
-  folderFilter?: string;
 }
 
 /**
  * The same picker body, rendered in place — for hosts that are already a
  * dialog or panel and must not stack a popover on top (the board's Add menu).
  */
-export function NotePickerInline({ onSelectNote, folderFilter }: NotePickerInlineProps) {
+export function NotePickerInline({ onSelectNote }: NotePickerInlineProps) {
   const [state, setState] = useState<{
     items: NoteListItem[];
     isLoading: boolean;
@@ -422,7 +410,6 @@ export function NotePickerInline({ onSelectNote, folderFilter }: NotePickerInlin
       items={state.items}
       isLoading={state.isLoading}
       error={state.error}
-      folderFilter={folderFilter}
       onSelectNote={(noteId) =>
         onSelectNote(noteId, state.items.find((n) => n.id === noteId) ?? null)
       }
@@ -434,7 +421,6 @@ export function NotePickerInline({ onSelectNote, folderFilter }: NotePickerInlin
 export function NotePickerPopover({
   trigger,
   onSelectNote,
-  folderFilter,
   extraActions,
   align = "start",
   side = "bottom",
@@ -482,7 +468,6 @@ export function NotePickerPopover({
       items={items}
       isLoading={isLoading}
       error={error}
-      folderFilter={folderFilter}
       extraActions={extraActions}
       onSelectNote={onSelectNote}
       onClose={handleClose}

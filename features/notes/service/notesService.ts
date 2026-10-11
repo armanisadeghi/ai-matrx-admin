@@ -91,7 +91,7 @@ export async function fetchNoteListItems(
     .schema("workbench")
     .from("notes")
     .select(
-      "id, created_by, label, folder_name, folder_id, home_scope_id, tags, updated_at, position, organization_id, shown_to, published_to_web, version",
+      "id, created_by, label, home_scope_id, tags, updated_at, position, organization_id, shown_to, published_to_web, version",
     )
     .is("deleted_at", null);
   query = listScope.apply(query);
@@ -115,11 +115,11 @@ export async function fetchNoteListItems(
 /** One picker row: never the body — the database-maintained 240-char preview. */
 export type NotePickerRow = Pick<
   NoteRow,
-  "id" | "label" | "folder_name" | "tags" | "updated_at" | "content_preview"
+  "id" | "label" | "home_scope_id" | "tags" | "updated_at" | "content_preview"
 >;
 
 const NOTE_PICKER_COLUMNS =
-  "id, label, folder_name, tags, updated_at, content_preview";
+  "id, label, home_scope_id, tags, updated_at, content_preview";
 
 /** The `limit` most recently changed notes the list opens on. */
 export async function fetchRecentNotePickerRows(
@@ -142,24 +142,11 @@ export async function fetchRecentNotePickerRows(
   return data ?? [];
 }
 
-/** Folder names with their note counts, counted by the database. */
-export async function fetchNoteFolderCounts(
-  scope?: ListScopeWord,
-): Promise<Array<{ folder_name: string; note_count: number }>> {
-  const word = scope ?? (await resolveListScope("note"));
-  const { data, error } = await supabase
-    .schema("workbench")
-    .rpc("note_folder_counts", { p_scope: word });
-  if (error) throw operationFailed("load your note folders", error);
-  return (data ?? []).map((row) => ({
-    folder_name: row.folder_name,
-    note_count: Number(row.note_count),
-  }));
-}
-
-/** Every note in one folder — a list the person treats as complete. */
-export async function fetchNotePickerRowsInFolder(
-  folderName: string,
+/**
+ * Every note the list would show, as picker rows (no bodies). The picker
+ * groups them by home on the client — a list the person treats as complete.
+ */
+export async function fetchAllNotePickerRows(
   scope?: ListScopeWord,
 ): Promise<NotePickerRow[]> {
   const userId = requireUserId();
@@ -170,20 +157,19 @@ export async function fetchNotePickerRowsInFolder(
         .schema("workbench")
         .from("notes")
         .select(NOTE_PICKER_COLUMNS, { count: "exact" })
-        .is("deleted_at", null)
-        .eq("folder_name", folderName);
+        .is("deleted_at", null);
       q = listScope.apply(q);
       return q
         .order("updated_at", { ascending: false })
         .order("id", { ascending: true })
         .range(from, to);
     },
-    { label: "workbench.notes (picker folder)" },
+    { label: "workbench.notes (picker)" },
   );
 }
 
 /**
- * Search every note the list would show — title, body and folder name — in
+ * Search every note the list would show — title and body — in
  * the database, newest first. The body half is the same ILIKE the notes
  * sidebar's body search runs (`useNoteContentSearch`, same escaping).
  */
@@ -204,7 +190,7 @@ export async function searchNotePickerRows(
     .select(NOTE_PICKER_COLUMNS)
     .is("deleted_at", null)
     .or(
-      `label.ilike.${pattern},content.ilike.${pattern},folder_name.ilike.${pattern}`,
+      `label.ilike.${pattern},content.ilike.${pattern}`,
     );
   q = listScope.apply(q);
   const { data, error } = await q

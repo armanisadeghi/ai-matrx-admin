@@ -14,24 +14,6 @@
 import type { ComingSoonEntry } from "./types";
 
 export const COMING_SOON: Record<string, ComingSoonEntry> = {
-  "agents.studio-improve-existing": {
-    id: "agents.studio-improve-existing",
-    label: "Agent Studio: improve an agent I have",
-    owner: "agents",
-    promise: "Open one of your agents in the Studio, try it, give feedback and save a better version.",
-    stage: "planned",
-    // Needs the /agents/<id>/studio re-entry route (DESIGN.md §11 cut-lines).
-    surfaces: ["/agents/new/studio start screen"],
-  },
-  "agents.studio-from-examples": {
-    id: "agents.studio-from-examples",
-    label: "Agent Studio: from examples I already have",
-    owner: "agents",
-    promise: "Bring finished examples of the job and get an agent that reproduces them, proven on them.",
-    stage: "planned",
-    // Needs a person-facing case intake that feeds the factory's proof cases (DESIGN.md §11).
-    surfaces: ["/agents/new/studio start screen"],
-  },
   "agents.admin-masterwork-from-chat": {
     id: "agents.admin-masterwork-from-chat",
     label: "Masterwork from a person's chat",

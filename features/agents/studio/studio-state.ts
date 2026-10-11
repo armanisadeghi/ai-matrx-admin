@@ -15,6 +15,13 @@ export interface StudioState {
   /** Opened from a System Builder plan step: the plan (a Note id) and the step number. */
   planId: string | null;
   planStep: string | null;
+  /** Mode "Improve": the agent's run shown in the center (its latest real run, preloaded). */
+  runId: string | null;
+  /**
+   * The assistant on the LEFT, when it is not the default chat agent (the `chat.default_new_chat`
+   * mandate's holder). Any agent the person can run; the URL carries it so a reload keeps it.
+   */
+  assistantId: string | null;
 }
 
 const KEYS = {
@@ -24,6 +31,8 @@ const KEYS = {
   chatId: "chat",
   planId: "plan",
   planStep: "step",
+  runId: "run",
+  assistantId: "assistant",
 } as const;
 
 /** The job a System Builder step hands the Studio (`?job=`), prefilled into "Describe it". */
@@ -43,6 +52,8 @@ export function readStudioState(params: URLSearchParams): StudioState {
     chatId: get(KEYS.chatId),
     planId: get(KEYS.planId),
     planStep: get(KEYS.planStep),
+    runId: get(KEYS.runId),
+    assistantId: get(KEYS.assistantId),
   };
 }
 
@@ -84,11 +95,19 @@ export interface StudioCase {
   approved: string;
 }
 
+/** The source the Studio stamps on a person's own finished example ("From examples I already have"). */
+export const EXAMPLES_CASE_SOURCE = "studio.examples";
+
 /**
- * The original request the Studio sent the factory as the agent's first proof case (mode 2): read
- * back from the build's own record (`request.spec.sample_inputs`), never kept anywhere else.
+ * The case the Studio sent the factory with the person's own answer as its baseline, read back
+ * from the build's own record (`request.spec.sample_inputs`), never kept anywhere else:
+ * mode 2's original request + approved answer (`CHAT_CASE_SOURCE`), or "From examples"'s first
+ * example that came with the input behind it (else the first example) (`EXAMPLES_CASE_SOURCE`).
  */
-export function studioCaseFromBuild(state: FactoryBuildState | null | undefined): StudioCase | null {
+export function studioCaseFromBuild(
+  state: FactoryBuildState | null | undefined,
+  source: string = CHAT_CASE_SOURCE,
+): StudioCase | null {
   const raw = state?.request?.spec?.["sample_inputs"];
   if (typeof raw !== "string" || !raw.trim()) return null;
   let cases: unknown;
@@ -98,10 +117,14 @@ export function studioCaseFromBuild(state: FactoryBuildState | null | undefined)
     return null;
   }
   if (!Array.isArray(cases)) return null;
-  const found = cases.find(
+  const mine = cases.filter(
     (c): c is Record<string, unknown> =>
-      typeof c === "object" && c !== null && (c as Record<string, unknown>).source === CHAT_CASE_SOURCE,
+      typeof c === "object" && c !== null && (c as Record<string, unknown>).source === source,
   );
+  const hasInput = (c: Record<string, unknown>) =>
+    (typeof c.user_input === "string" && c.user_input.trim() !== "") ||
+    (!!c.variables && typeof c.variables === "object" && Object.keys(c.variables as object).length > 0);
+  const found = mine.find(hasInput) ?? mine[0];
   if (!found) return null;
   const variables: Record<string, string> = {};
   const vars = found.variables;
@@ -114,6 +137,63 @@ export function studioCaseFromBuild(state: FactoryBuildState | null | undefined)
     variables,
     userInput: typeof found.user_input === "string" ? found.user_input : "",
     approved: typeof found.baseline_output === "string" ? found.baseline_output : "",
+  };
+}
+
+/** One finished thing the person made, and (optionally) what it was made from. */
+export interface StudioExample {
+  output: string;
+  input: string;
+}
+
+export const EXAMPLES_MIN = 2;
+export const EXAMPLES_MAX = 5;
+/** How much of each example rides in the job text (the full example rides as its proof case). */
+const EXAMPLE_EXCERPT_CHARS = 1500;
+
+export function filledStudioExamples(examples: readonly StudioExample[]): StudioExample[] {
+  return examples
+    .map((e) => ({ output: e.output.trim(), input: e.input.trim() }))
+    .filter((e) => e.output !== "")
+    .slice(0, EXAMPLES_MAX);
+}
+
+/**
+ * "From examples I already have" → the Agent Factory's own intake (no new builder): the job is to
+ * produce work like the examples; each example is a proof case whose baseline is the person's own
+ * work (`baseline_output`, the same shape the from-chat door sends), so the factory's blind proof
+ * compares the new agent against them; the excerpts ride in the job text so the instruction writer
+ * sees them even when no input came with them.
+ */
+export function examplesBuildSpec(
+  examples: readonly StudioExample[],
+  job: string,
+): { name: string; purpose: string; sample_inputs: string; grading_rubric: string } {
+  const given = filledStudioExamples(examples);
+  const said = job.trim();
+  const lines = [
+    said || "Produce new work exactly like the examples below, which this person made themselves.",
+    said ? "These are finished examples this person made themselves; the agent's job is to produce work like them." : "",
+    "Match their structure, length, tone and level of detail. Where an example came with the input it was made from, that input shows what the agent will be given.",
+    ...given.flatMap((e, i) => [
+      "",
+      `Example ${i + 1}${e.input ? " — made from:" : ":"}`,
+      ...(e.input ? [e.input.slice(0, EXAMPLE_EXCERPT_CHARS), "", "The finished result:"] : []),
+      e.output.slice(0, EXAMPLE_EXCERPT_CHARS),
+    ]),
+  ].filter((l, i) => i > 1 || l !== "");
+  const cases = given.map((e, i) => ({
+    source: EXAMPLES_CASE_SOURCE,
+    turn: i + 1,
+    baseline_output: e.output,
+    ...(e.input ? { user_input: e.input } : {}),
+  }));
+  return {
+    name: buildNameFrom(said || `like my examples ${given[0]?.output.slice(0, 40) ?? ""}`),
+    purpose: lines.join("\n"),
+    sample_inputs: JSON.stringify(cases),
+    grading_rubric:
+      "A run passes when its result could pass for one of the person's own examples: the same structure, length, tone and level of detail, with the facts of its own input.",
   };
 }
 

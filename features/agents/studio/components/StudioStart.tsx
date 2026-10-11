@@ -3,12 +3,15 @@
 /**
  * The Studio's start screen: one card per way in (`STUDIO_MODES`). "Describe it" opens its box
  * here and starts an Agent Factory build through the `studio` door (always the factory, no knob);
- * "Just do it with me" opens the workspace with the doer; the rest announce tracked promises.
+ * "Just do it with me" opens the workspace with the doer; "Improve an agent I have" picks one of
+ * the person's editable agents with THE agent picker; "From examples I already have" opens the
+ * examples box (`ExamplesStart`); bring-over modes are their own pages.
  */
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, ChevronDown, Plus } from "lucide-react";
+import { AgentListDropdown } from "@ai-matrx/agents/catalog/react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ExamplesField, filledExamples } from "@/features/agents/factory/components/ExamplesField";
@@ -19,6 +22,8 @@ import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { STUDIO_MODES, type StudioMode } from "../modes";
 import { buildNameFrom, type StudioState } from "../studio-state";
+import { canEditAgent } from "../improve";
+import { ExamplesStart } from "./ExamplesStart";
 
 interface StudioStartProps {
   onStart: (patch: Partial<StudioState>) => void;
@@ -47,8 +52,8 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
       router.push(mode.href);
       return;
     }
-    if (mode.id === "describe") {
-      setOpen("describe");
+    if (mode.id === "describe" || mode.id === "improve" || mode.id === "from-examples") {
+      setOpen(mode.id);
       return;
     }
     onStart({ mode: mode.id });
@@ -112,6 +117,25 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
             );
           })}
         </div>
+        {open === "improve" && (
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-card p-4" data-testid="studio-improve">
+            <AgentListDropdown
+              consumerId="agent-studio-improve"
+              onSelect={(agentId: string) => {
+                if (agentId) onStart({ mode: "improve", agentId });
+              }}
+              label="Choose one of your agents"
+              visibleTabs={["mine", "shared"]}
+              agentFilter={{ label: "You can edit", test: canEditAgent }}
+              triggerSlot={
+                <Button variant="outline" iconEnd={<ChevronDown className="text-muted-foreground" />} className="w-full justify-between">
+                  Choose one of your agents
+                </Button>
+              }
+            />
+          </div>
+        )}
+        {open === "from-examples" && <ExamplesStart onStart={onStart} />}
         {open === "describe" && (
           <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4" data-testid="studio-describe">
             <ProTextarea

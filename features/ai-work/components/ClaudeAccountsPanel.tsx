@@ -228,7 +228,10 @@ export function ClaudeAccountsPanel() {
   };
 
   const copyUrl = async () => {
-    if (!(await copyText(connectorUrl))) return;
+    if (!(await copyText(connectorUrl))) {
+      toast.error("Couldn't copy the connector URL");
+      return;
+    }
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1500);
   };

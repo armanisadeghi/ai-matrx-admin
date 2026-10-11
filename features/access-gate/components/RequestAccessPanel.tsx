@@ -68,9 +68,13 @@ export function RequestAccessPanel({
   const cmsToken = isCmsAccessGateToken(context.entity.token)
     ? context.entity.token
     : null;
+  // A review cycle is decided by the organization's HR, never by whoever created it: the ask names that group.
+  const hrToken = context.entity.token === "hr_review_cycle";
   const requestRecipientName = cmsToken
     ? (context.organization?.name ?? "the organization’s admins")
-    : ownerName(context);
+    : hrToken
+      ? "HR"
+      : ownerName(context);
 
   async function send() {
     setBusy(true);
@@ -104,7 +108,7 @@ export function RequestAccessPanel({
       } else {
         toast.success(
           `Request sent to ${
-            result.recipients[0]?.displayName ?? requestRecipientName
+            (hrToken ? null : result.recipients[0]?.displayName) ?? requestRecipientName
           }.`,
         );
       }

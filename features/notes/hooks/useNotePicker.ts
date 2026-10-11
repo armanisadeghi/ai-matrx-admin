@@ -6,8 +6,8 @@
 // open the picker (Arman, 2026-09-29: "When I clicked 'Note' it took a long
 // time … fetch the last 10 most active plus some counts"). On open it reads:
 //   - the N most recently changed notes (N = knob resource_picker.notes_recent_count),
-//   - folder names with counts, counted by the database (workbench.note_folder_counts).
-// A folder's notes load when the folder is opened; a search asks the database
+//   - every note as a body-less row, grouped by home (home_scope_id) on the client.
+// A home's notes are those rows; a search asks the database
 // (knob resource_picker.notes_search_limit caps the list); a body is read only
 // for a note whose preview is expanded or that is picked (`fetchNoteById`).
 //
@@ -22,8 +22,7 @@ import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 import { knobInt } from "@/lib/knobs/featureKnobs";
 import {
   fetchNoteById,
-  fetchNoteFolderCounts,
-  fetchNotePickerRowsInFolder,
+  fetchAllNotePickerRows,
   fetchRecentNotePickerRows,
   searchNotePickerRows,
   type NotePickerRow,
@@ -40,8 +39,8 @@ export const NOTE_PICKER_SEARCH_KNOB = {
   key: "notes_search_limit",
 } as const;
 
-export interface NoteFolderCount {
-  folder_name: string;
+export interface NoteHomeCount {
+  scopeId: string;
   note_count: number;
 }
 
@@ -92,10 +91,10 @@ function usePickerKnob(ref: { feature: string; key: string }): {
 
 export interface NotePicker {
   recent: Loadable<NotePickerRow[]>;
-  folders: Loadable<NoteFolderCount[]>;
-  /** Rows of an opened folder, keyed by folder name. */
-  folderRows: (folder: string) => Loadable<NotePickerRow[]> | undefined;
-  openFolder: (folder: string) => void;
+  /** Homes holding notes, with counts. */
+  homes: Loadable<NoteHomeCount[]>;
+  /** Rows of one home. */
+  homeRows: (scopeId: string) => Loadable<NotePickerRow[]>;
   /** Server search for `query` (empty = idle). `capped` = more matches exist. */
   search: Loadable<NotePickerRow[]> & { query: string; capped: boolean };
   /** Full body of a previewed note (loaded on demand). */
@@ -114,8 +113,7 @@ export function useNotePicker(searchQuery: string): NotePicker {
   const [attempt, setAttempt] = useState(0);
 
   const [recent, setRecent] = useState<Loadable<NotePickerRow[]>>({ data: [], loading: true, error: null });
-  const [folders, setFolders] = useState<Loadable<NoteFolderCount[]>>({ data: [], loading: true, error: null });
-  const [folderMap, setFolderMap] = useState<Record<string, Loadable<NotePickerRow[]>>>({});
+  const [all, setAll] = useState<Loadable<NotePickerRow[]>>({ data: [], loading: true, error: null });
   const [bodies, setBodies] = useState<Record<string, Loadable<string | null>>>({});
   const [search, setSearch] = useState<NotePicker["search"]>(IDLE_SEARCH);
 
@@ -141,10 +139,10 @@ export function useNotePicker(searchQuery: string): NotePicker {
 
   useEffect(() => {
     let cancelled = false;
-    setFolders((prev) => ({ ...prev, loading: true, error: null }));
-    fetchNoteFolderCounts().then(
-      (data) => !cancelled && setFolders({ data, loading: false, error: null }),
-      (err: unknown) => !cancelled && setFolders({ data: [], loading: false, error: asError(err) }),
+    setAll((prev) => ({ ...prev, loading: true, error: null }));
+    fetchAllNotePickerRows().then(
+      (data) => !cancelled && setAll({ data, loading: false, error: null }),
+      (err: unknown) => !cancelled && setAll({ data: [], loading: false, error: asError(err) }),
     );
     return () => {
       cancelled = true;
@@ -188,17 +186,6 @@ export function useNotePicker(searchQuery: string): NotePicker {
     };
   }, [trimmed, searchLimit, searchKnobError, attempt]);
 
-  const openFolder = (folder: string) => {
-    const existing = folderMap[folder];
-    if (existing && (existing.loading || !existing.error)) return;
-    setFolderMap((prev) => ({ ...prev, [folder]: { data: [], loading: true, error: null } }));
-    fetchNotePickerRowsInFolder(folder).then(
-      (data) => setFolderMap((prev) => ({ ...prev, [folder]: { data, loading: false, error: null } })),
-      (err: unknown) =>
-        setFolderMap((prev) => ({ ...prev, [folder]: { data: [], loading: false, error: asError(err) } })),
-    );
-  };
-
   const loadBody = (id: string) => {
     const existing = bodies[id];
     if (existing && (existing.loading || !existing.error)) return;
@@ -216,16 +203,26 @@ export function useNotePicker(searchQuery: string): NotePicker {
     return note;
   };
 
+  const homeCounts = new Map<string, number>();
+  for (const row of all.data) homeCounts.set(row.home_scope_id, (homeCounts.get(row.home_scope_id) ?? 0) + 1);
+  const homes: Loadable<NoteHomeCount[]> = {
+    data: [...homeCounts].map(([scopeId, note_count]) => ({ scopeId, note_count })),
+    loading: all.loading,
+    error: all.error,
+  };
+
   const retry = () => {
-    setFolderMap({});
     setAttempt((n) => n + 1);
   };
 
   return {
     recent,
-    folders,
-    folderRows: (folder) => folderMap[folder],
-    openFolder,
+    homes,
+    homeRows: (scopeId) => ({
+      data: all.data.filter((row) => row.home_scope_id === scopeId),
+      loading: all.loading,
+      error: all.error,
+    }),
     search,
     body: (id) => bodies[id],
     loadBody,

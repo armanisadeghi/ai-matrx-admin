@@ -27,7 +27,7 @@ import { NOTES_MANDATES } from "./mandates";
 import { recordSourceLineage } from "@/features/education/convert/recordSourceLineage";
 // Folder generated study notes land in, so they group in the sidebar and
 // form the study-guide library.
-import { STUDY_NOTES_FOLDER } from "./study-notes-folder";
+import { withStudyNotesTag } from "./education-notes";
 import {
   looseKey,
   segmentedGenerate,
@@ -153,7 +153,7 @@ async function run(
     {
       label: finalTitle,
       content,
-      folder_name: STUDY_NOTES_FOLDER,
+      tags: withStudyNotesTag(),
       organization_id: requireOrganizationContext(ctx.orgId),
     },
     covered.runKey,

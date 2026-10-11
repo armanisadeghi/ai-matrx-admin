@@ -735,7 +735,7 @@ def run_scoped():
         check('door preview: who loses sight is counted before saving', ok and pv['ok'] and pv['loses_sight'] > 0 and pv['problems'] == [], json.dumps({k: pv.get(k) for k in ('loses_sight', 'gains_sight', 'problems')}) if ok else pv)
         ok, r1 = door('t_admin', "select custom.table_access_setup_set(%s, %s::jsonb, %s::jsonb, 'Pay to org admins')", (TABLE, json.dumps(narrow), json.dumps(moves)))
         check('door: a table admin writes the setup and moves the columns', ok and r1['ok'], str(r1)[:160])
-        meta = one("select metadata from iam.access_audit where id = %s", (r1['audit_id'],)) if ok else None
+        meta = one("select request_context from iam.access_audit where id = %s", (r1['audit_id'],)) if ok else None
         check('door: audited with before and after', meta is not None and 'before' in meta and meta['after']['setup'] == narrow)
         check('door: the Table admin (not an org admin) no longer reads Pay', not reads('t_admin', ROWS[2], 'bonus'))
         widen = {**narrow, 'seats': narrow['seats'] + [setup['seats'][0]], 'grid': {**narrow['grid'], 'table_admin': {'part:pay': {'level': 'editor'}}}}

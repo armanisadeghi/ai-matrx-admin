@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, ChevronDown, StickyNote } from "lucide-react";
+import { Box, ChevronDown, House, Loader2, StickyNote } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useNotePicker } from "@/features/notes/hooks/useNotePicker";
-import { getFolderIconAndColor } from "@/features/notes/utils/folderUtils";
+import { useNoteHomes } from "@/features/notes/homes/useNoteHomes";
 import type { NotePickerRow } from "@/features/notes/service/notesService";
 import type { Note } from "@/features/notes/types";
 import { toast } from "@/lib/toast";
@@ -29,23 +29,23 @@ interface NotesResourcePickerProps {
 /**
  * The Notes view of the canonical resource picker ("+" → Notes, the Source
  * input's "A note"). Opens on the most recently changed notes (a knob) and the
- * folders with database-counted totals; folders load when opened, search asks
- * the database, and a body is read only when a note is previewed or picked.
+ * homes holding notes, with counts; search asks the database, and a body is
+ * read only when a note is previewed or picked.
  */
 export function NotesResourcePicker({ onBack, onSelect }: NotesResourcePickerProps) {
   const searchInputRef = usePickerInputFocus();
-  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+  const [selectedHome, setSelectedHome] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
   const [pickingId, setPickingId] = useState<string | null>(null);
   const picker = useNotePicker(searchQuery);
+  const noteHomes = useNoteHomes();
 
   const isSearching = searchQuery.trim().length > 0;
 
-  const openFolder = (folder: string) => {
+  const openHome = (scopeId: string) => {
     setExpandedNoteId(null);
-    setSelectedFolder(folder);
-    picker.openFolder(folder);
+    setSelectedHome(scopeId);
   };
 
   const pick = async (row: NotePickerRow) => {
@@ -71,7 +71,7 @@ export function NotesResourcePicker({ onBack, onSelect }: NotesResourcePickerPro
     picker.loadBody(id);
   };
 
-  const renderNote = (row: NotePickerRow, showFolder: boolean) => {
+  const renderNote = (row: NotePickerRow, showHome: boolean) => {
     const isExpanded = expandedNoteId === row.id;
     const body = picker.body(row.id);
     const isPicking = pickingId === row.id;
@@ -84,8 +84,8 @@ export function NotesResourcePicker({ onBack, onSelect }: NotesResourcePickerPro
               iconClassName="text-yellow-600 dark:text-yellow-400"
               label={row.label}
               secondary={
-                showFolder && row.folder_name
-                  ? row.folder_name
+                showHome && noteHomes.labelOf(row.home_scope_id)
+                  ? noteHomes.labelOf(row.home_scope_id)
                   : row.content_preview || "Empty note"
               }
               busy={isPicking}
@@ -137,30 +137,33 @@ export function NotesResourcePicker({ onBack, onSelect }: NotesResourcePickerPro
     </div>
   );
 
-  const renderFolders = () => {
-    const { folders } = picker;
-    if (folders.loading && folders.data.length === 0) return spinner;
-    if (folders.error) {
-      return <ReadFailure error={folders.error} what="your note folders" onRetry={picker.retry} />;
+  const renderHomes = () => {
+    const { homes } = picker;
+    if (homes.loading && homes.data.length === 0) return spinner;
+    if (homes.error) {
+      return <ReadFailure error={homes.error} what="your notes" onRetry={picker.retry} />;
     }
-    if (folders.data.length === 0) return null;
+    if (homes.data.length === 0) return null;
+    const named = homes.data
+      .map((h) => ({ ...h, label: noteHomes.labelOf(h.scopeId) ?? "Home" }))
+      .sort((a, b) => a.label.localeCompare(b.label));
     return (
       <div>
-        <PickerSectionLabel>Folders</PickerSectionLabel>
-        {folders.data.map(({ folder_name: folder, note_count: count }) => {
-          const { icon: Icon, color } = getFolderIconAndColor(folder);
+        <PickerSectionLabel>Homes</PickerSectionLabel>
+        {named.map(({ scopeId, label, note_count: count }) => {
+          const Icon = noteHomes.byId.get(scopeId)?.isGeneral ? House : Box;
           return (
             <PickerRow
-              key={folder}
+              key={scopeId}
               leading={
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted">
-                  <Icon className="h-4 w-4" style={{ color: color || undefined }} />
+                  <Icon className="h-4 w-4 text-muted-foreground" />
                 </span>
               }
-              label={folder}
+              label={label}
               trailing={<span className="shrink-0 text-xs tabular-nums text-muted-foreground">{count}</span>}
               chevron
-              onClick={() => openFolder(folder)}
+              onClick={() => openHome(scopeId)}
             />
           );
         })}
@@ -190,24 +193,19 @@ export function NotesResourcePicker({ onBack, onSelect }: NotesResourcePickerPro
       );
     }
 
-    if (selectedFolder) {
-      const rows = picker.folderRows(selectedFolder);
-      if (!rows || (rows.loading && rows.data.length === 0)) return spinner;
+    if (selectedHome) {
+      const rows = picker.homeRows(selectedHome);
+      const homeLabel = noteHomes.labelOf(selectedHome) ?? "Home";
+      if (rows.loading && rows.data.length === 0) return spinner;
       if (rows.error) {
-        return (
-          <ReadFailure
-            error={rows.error}
-            what={`the notes in ${selectedFolder}`}
-            onRetry={() => picker.openFolder(selectedFolder)}
-          />
-        );
+        return <ReadFailure error={rows.error} what={`the notes in ${homeLabel}`} onRetry={picker.retry} />;
       }
       if (rows.data.length === 0) {
-        return <PickerEmpty>No notes in this folder</PickerEmpty>;
+        return <PickerEmpty>No notes in this home</PickerEmpty>;
       }
       return (
         <div>
-          <PickerSectionLabel>{selectedFolder}</PickerSectionLabel>
+          <PickerSectionLabel>{homeLabel}</PickerSectionLabel>
           {rows.data.map((row) => renderNote(row, false))}
         </div>
       );
@@ -228,7 +226,7 @@ export function NotesResourcePicker({ onBack, onSelect }: NotesResourcePickerPro
             {recent.data.map((row) => renderNote(row, true))}
           </div>
         )}
-        {renderFolders()}
+        {renderHomes()}
       </div>
     );
   };
@@ -236,7 +234,7 @@ export function NotesResourcePicker({ onBack, onSelect }: NotesResourcePickerPro
   return (
     <PickerView>
       <ResourcePickerSubViewHeader
-        onBack={selectedFolder ? () => setSelectedFolder(null) : onBack}
+        onBack={selectedHome ? () => setSelectedHome(null) : onBack}
         search={
           <PickerSearchField
             ref={searchInputRef}

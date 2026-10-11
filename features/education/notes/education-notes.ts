@@ -3,13 +3,13 @@
 // THE ONE ANSWER TO "which notes belong to Education?"
 //
 // Notes are platform notes (workbench.notes) — the Notes app lists every one of
-// them. Education lists ONLY the notes explicitly marked for it: the ones in the
-// Study Notes folder. Both writers stamp that mark (the converter's
+// them. Education lists ONLY the notes explicitly marked for it: the ones
+// carrying the "Study Notes" tag (notes have homes, not folders; a feature's
+// bucket is a tag). Both writers stamp that mark (the converter's
 // notesGenerator here and aidream's graph_actions/education/persist.py), a note
-// created from an Education surface is created there, and a person puts any
-// other note into Education from the Notes app with "Move to Folder" → Study
-// Notes. A plain draft, chat save or quick note is a note, never Education
-// material.
+// created from an Education surface is created with it, and a person puts any
+// other note into Education from the Notes app by tagging it Study Notes. A
+// plain draft, chat save or quick note is a note, never Education material.
 //
 // Every Education surface that lists notes reads through here — the Smart Notes
 // home and the study-guide library in the client, and the Education Library RPC
@@ -24,21 +24,26 @@ import { requireUserId } from "@/utils/auth/getUserId";
 import { defaultListFilter } from "@/lib/list-scope";
 import { hydrateNoteContextLinks } from "@/features/notes/service/noteContextAssociations";
 import type { NoteListItem } from "@/features/notes/types";
-import { STUDY_NOTES_FOLDER } from "./study-notes-folder";
+import { NOTE_BUCKET_TAGS, noteHasBucketTag } from "@/features/notes/homes/bucketTags";
 
-/** The folder a note must be in to belong to Education. */
-export const EDUCATION_NOTES_FOLDER = STUDY_NOTES_FOLDER;
+/** The tag a note must carry to belong to Education. */
+export const EDUCATION_NOTES_TAG = NOTE_BUCKET_TAGS.studyNotes;
 
 /** True only for a note explicitly marked for Education. */
-export function isEducationNote(note: { folder_name: string | null | undefined }): boolean {
-  return note.folder_name === EDUCATION_NOTES_FOLDER;
+export function isEducationNote(note: { tags?: readonly string[] | null }): boolean {
+  return noteHasBucketTag(note, EDUCATION_NOTES_TAG);
+}
+
+/** A note's tags plus the Study Notes mark — what a note made from an Education surface carries. */
+export function withStudyNotesTag(tags?: readonly string[] | null): string[] {
+  return [...new Set([...(tags ?? []), EDUCATION_NOTES_TAG])];
 }
 
 /** The create fields that mark a note created from an Education surface. */
-export const EDUCATION_NOTE_CREATE_FIELDS = { folder_name: EDUCATION_NOTES_FOLDER } as const;
+export const EDUCATION_NOTE_CREATE_FIELDS = { tags: withStudyNotesTag() } as const;
 
 const EDUCATION_NOTE_LIST_COLUMNS =
-  "id,created_by,label,folder_name,folder_id,tags,updated_at,position,organization_id,shown_to,published_to_web,version";
+  "id,created_by,label,home_scope_id,tags,updated_at,position,organization_id,shown_to,published_to_web,version";
 
 export interface ListEducationNotesOptions {
   /**
@@ -65,7 +70,7 @@ export async function listEducationNotes(
         .from("notes")
         .select(EDUCATION_NOTE_LIST_COLUMNS, { count: "exact" })
         .is("deleted_at", null)
-        .eq("folder_name", EDUCATION_NOTES_FOLDER);
+        .contains("tags", [EDUCATION_NOTES_TAG]);
       query = listScope.apply(query);
       return query.order("updated_at", { ascending: false }).order("id").range(from, to);
     },

@@ -38,14 +38,12 @@ export const STUDIO_MODES: readonly StudioMode[] = [
     title: "Improve an agent I have",
     line: "Try, give feedback, save a better version",
     icon: Wrench,
-    comingSoonId: "agents.studio-improve-existing",
   },
   {
     id: "from-examples",
     title: "From examples I already have",
-    line: "Finished examples in, a proven agent out",
+    line: "Paste 2–5 you made; get an agent that makes them",
     icon: Files,
-    comingSoonId: "agents.studio-from-examples",
   },
   {
     id: "from-claude-account",

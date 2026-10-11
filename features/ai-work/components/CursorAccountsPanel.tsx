@@ -94,7 +94,10 @@ export function CursorAccountsPanel() {
   };
 
   const copyUrl = async () => {
-    if (!(await copyText(mcpUrl))) return;
+    if (!(await copyText(mcpUrl))) {
+      toast.error("Couldn't copy the MCP URL");
+      return;
+    }
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1500);
   };

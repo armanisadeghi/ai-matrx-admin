@@ -24,7 +24,6 @@ import {
   Clock,
   AlertCircle,
   NotebookPen,
-  Folder,
   Copy,
   Pencil,
   Trash2,
@@ -37,6 +36,7 @@ import { cn } from "@/lib/utils";
 import { NotesAPI } from "@/features/notes/service/notesApi";
 import {
   EDUCATION_NOTE_CREATE_FIELDS,
+  withStudyNotesTag,
   listEducationNotes,
 } from "@/features/education/notes/education-notes";
 import type { NoteListItem } from "@/features/notes/types";
@@ -100,7 +100,7 @@ function relativeTime(iso: string | null): string {
 
 function matchesQuery(n: NoteListItem, q: string): boolean {
   if (!q) return true;
-  return [n.label, n.folder_name, ...(n.tags ?? [])]
+  return [n.label, ...(n.tags ?? [])]
     .filter(Boolean)
     .join(" ")
     .toLowerCase()
@@ -267,8 +267,7 @@ export function EduNotesHome() {
             const note = await NotesAPI.create({
               label: plan.title,
               content: plan.content,
-              tags: plan.tags,
-              ...EDUCATION_NOTE_CREATE_FIELDS,
+              tags: withStudyNotesTag(plan.tags),
               organization_id: capturedOrganizationId,
             });
             const items = await listEducationNotes();
@@ -484,12 +483,6 @@ export function EduNotesHome() {
                         )}
                       </div>
                       <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] text-muted-foreground">
-                        {n.folder_name && (
-                          <span className="inline-flex items-center gap-1 truncate">
-                            <Folder className="h-3 w-3" />
-                            {n.folder_name}
-                          </span>
-                        )}
                         <span className="inline-flex shrink-0 items-center gap-1">
                           <Clock className="h-3 w-3" />
                           {relativeTime(n.updated_at)}

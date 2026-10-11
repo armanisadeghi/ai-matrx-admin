@@ -10,10 +10,11 @@ import React, {
   useState,
 } from "react";
 import {
+  Box,
   ChevronRight,
   FileText,
+  House,
   Plus,
-  FolderPlus,
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,46 +22,39 @@ import { toast } from "@/lib/toast";
 import { noteCreateErrorMessage } from "../utils/writeErrors";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { useNotesRedux } from "../hooks/useNotesRedux";
-import { useAllFolders, getFolderIconAndColor } from "../utils/folderUtils";
+import { useNoteHomes } from "../homes/useNoteHomes";
 import { NotesAPI } from "../service/notesApi";
 import type { Note } from "../types";
 
 export interface NotesTreeViewProps {
   onSelectNote?: (note: Note) => void;
-  onSelectFolder?: (folderName: string) => void;
+  onSelectHome?: (scopeId: string) => void;
   activeNoteId?: string | null;
   className?: string;
 }
 
 export function NotesTreeView({
   onSelectNote,
-  onSelectFolder,
+  onSelectHome,
   activeNoteId,
   className,
 }: NotesTreeViewProps) {
-  const { notes, isLoading, error: notesError, findOrCreateEmptyNote } = useNotesRedux();
+  const { notes, isLoading, error: notesError } = useNotesRedux();
   // ORG-GATE-AUDIT: the new-note resolver (waits for boot, then ASKS), never
   // the bare kernel on the active selection — creating a note or folder with
   // no organization selected opens the picker and continues this same create.
-  const allFolders = useAllFolders(notes);
+  const noteHomes = useNoteHomes();
   const [expandedFolder, setExpandedFolder] = useState<string | null>(null);
   const [creatingNoteIn, setCreatingNoteIn] = useState<string | null>(null);
   const [newNoteLabel, setNewNoteLabel] = useState("");
-  const [creatingFolder, setCreatingFolder] = useState(false);
-  const [newFolderName, setNewFolderName] = useState("");
   const [busyAction, setBusyAction] = useState<string | null>(null);
 
   const noteInputRef = useRef<HTMLInputElement>(null);
-  const folderInputRef = useRef<HTMLInputElement>(null);
 
   const notesByFolder = useMemo(() => {
     const grouped: Record<string, Note[]> = {};
-    for (const folder of allFolders) {
-      grouped[folder] = [];
-    }
     for (const note of notes) {
-      const folder = note.folder_name || "Draft";
-      (grouped[folder] ??= []).push(note);
+      (grouped[note.home_scope_id] ??= []).push(note);
     }
     for (const folder of Object.keys(grouped)) {
       grouped[folder].sort((a, b) => {
@@ -70,14 +64,23 @@ export function NotesTreeView({
       });
     }
     return grouped;
-  }, [notes, allFolders]);
+  }, [notes]);
+
+  // Only homes that hold a note; a home is a scope, not something made here.
+  const allFolders = useMemo(
+    () =>
+      Object.keys(notesByFolder).sort((a, b) =>
+        (noteHomes.labelOf(a) ?? "").localeCompare(noteHomes.labelOf(b) ?? ""),
+      ),
+    [notesByFolder, noteHomes],
+  );
 
   // Auto-expand the folder containing the active note
   useEffect(() => {
     if (!activeNoteId) return;
     const note = notes.find((n) => n.id === activeNoteId);
-    if (note && note.folder_name !== expandedFolder) {
-      setExpandedFolder(note.folder_name);
+    if (note && note.home_scope_id !== expandedFolder) {
+      setExpandedFolder(note.home_scope_id);
     }
   }, [activeNoteId]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -85,10 +88,10 @@ export function NotesTreeView({
     (folder: string) => {
       const next = expandedFolder === folder ? null : folder;
       setExpandedFolder(next);
-      if (next) onSelectFolder?.(next);
+      if (next) onSelectHome?.(next);
       setCreatingNoteIn(null);
     },
-    [expandedFolder, onSelectFolder],
+    [expandedFolder, onSelectHome],
   );
 
   const handleNoteClick = useCallback(
@@ -118,11 +121,11 @@ export function NotesTreeView({
       }
       setBusyAction(`note-${folder}`);
       try {
-        const capturedOrganizationId = await ensureOrgId(null);
+        const capturedOrganizationId = await ensureOrgId(noteHomes.byId.get(folder)?.organizationId ?? null);
         const note = await NotesAPI.create({
           label,
           content: "",
-          folder_name: folder,
+          home_scope_id: folder,
           organization_id: capturedOrganizationId,
         });
         onSelectNote?.(note);
@@ -136,7 +139,7 @@ export function NotesTreeView({
         setNewNoteLabel("");
       }
     },
-    [newNoteLabel, onSelectNote],
+    [newNoteLabel, onSelectNote, noteHomes],
   );
 
   const handleNoteInputKeyDown = useCallback(
@@ -149,48 +152,6 @@ export function NotesTreeView({
       }
     },
     [handleConfirmCreateNote],
-  );
-
-  // Inline folder creation
-  const handleStartCreateFolder = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCreatingFolder(true);
-    setNewFolderName("");
-    setTimeout(() => folderInputRef.current?.focus(), 30);
-  }, []);
-
-  const handleConfirmCreateFolder = useCallback(async () => {
-    const name = newFolderName.trim();
-    if (!name) {
-      setCreatingFolder(false);
-      return;
-    }
-      setBusyAction("folder");
-      try {
-      const capturedOrganizationId = await ensureOrgId(null);
-      await NotesAPI.ensureFolderMaterialized(name, capturedOrganizationId);
-      const note = await findOrCreateEmptyNote();
-      setExpandedFolder(name);
-      onSelectNote?.(note);
-    } catch (cause) {
-      toast.error(noteCreateErrorMessage(cause));
-    } finally {
-      setBusyAction(null);
-      setCreatingFolder(false);
-      setNewFolderName("");
-    }
-  }, [newFolderName, findOrCreateEmptyNote, onSelectNote]);
-
-  const handleFolderInputKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        handleConfirmCreateFolder();
-      } else if (e.key === "Escape") {
-        setCreatingFolder(false);
-      }
-    },
-    [handleConfirmCreateFolder],
   );
 
   if (isLoading) {
@@ -211,8 +172,8 @@ export function NotesTreeView({
       {allFolders.map((folder) => {
         const isExpanded = expandedFolder === folder;
         const folderNotes = notesByFolder[folder] ?? [];
-        const { icon: FolderIcon, color: folderColor } =
-          getFolderIconAndColor(folder);
+        const folderLabel = noteHomes.labelOf(folder) ?? "Home";
+        const FolderIcon = noteHomes.byId.get(folder)?.isGeneral ? House : Box;
 
         return (
           <div key={folder}>
@@ -231,10 +192,10 @@ export function NotesTreeView({
                   isExpanded && "rotate-90",
                 )}
               />
-              <FolderIcon className={cn("h-3 w-3 shrink-0", folderColor)} />
-              <span className="truncate font-medium">{folder}</span>
+              <FolderIcon className="h-3 w-3 shrink-0 text-muted-foreground" />
+              <span className="truncate font-medium">{folderLabel}</span>
               <span className="ml-auto text-[9px] text-muted-foreground/50 tabular-nums pr-0.5">
-                <UntrustedCount value={folderNotes.length} trustworthy={!notesError} label="Notes in folder" />
+                <UntrustedCount value={folderNotes.length} trustworthy={!notesError} label="Notes in home" />
               </span>
             </button>
 
@@ -296,39 +257,6 @@ export function NotesTreeView({
           </div>
         );
       })}
-
-      {/* ── Inline create folder ────────────────────────── */}
-      <div className="mt-0.5 border-t border-border/30">
-        {creatingFolder ? (
-          <div className="flex items-center gap-1 px-1.5 py-[3px]">
-            <FolderPlus className="h-3 w-3 shrink-0 text-muted-foreground/40" />
-            <input
-              ref={folderInputRef}
-              type="text"
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
-              onKeyDown={handleFolderInputKeyDown}
-              onBlur={handleConfirmCreateFolder}
-              placeholder="Folder name..."
-              className="flex-1 min-w-0 bg-transparent text-xs focus:outline-none placeholder:text-muted-foreground/40 border-b border-primary/40"
-              style={{ fontSize: "16px" }}
-              disabled={busyAction === "folder"}
-            />
-            {busyAction === "folder" && (
-              <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
-            )}
-          </div>
-        ) : (
-          <button
-            type="button"
-            className="flex items-center gap-1 w-full px-1.5 py-[3px] text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/30 transition-colors"
-            onClick={handleStartCreateFolder}
-          >
-            <FolderPlus className="h-3 w-3 shrink-0" />
-            <span className="text-[10px]">New folder</span>
-          </button>
-        )}
-      </div>
     </div>
   );
 }

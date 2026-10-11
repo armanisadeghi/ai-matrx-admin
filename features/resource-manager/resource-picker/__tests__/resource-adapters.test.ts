@@ -6,7 +6,6 @@ describe("chat resource DTO adapters", () => {
       id: "1de15f18-6002-4c73-8381-2fe90b6fab47",
       label: "Harbor Dental intake follow-up",
       content: "Confirm the insurance card before the appointment.",
-      folder_name: "Patient intake",
       tags: ["follow-up"],
     } satisfies Parameters<typeof noteResourceData>[0];
 
@@ -14,7 +13,6 @@ describe("chat resource DTO adapters", () => {
       id: note.id,
       label: note.label,
       content: note.content,
-      folder_name: note.folder_name,
       tags: note.tags,
     });
   });

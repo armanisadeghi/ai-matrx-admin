@@ -6,7 +6,7 @@ import type {
   TaskResourceData,
 } from "@ai-matrx/chat/agents/resources/types";
 
-type NoteResourceInput = Pick<Note, "id" | "label" | "content" | "folder_name" | "tags">;
+type NoteResourceInput = Pick<Note, "id" | "label" | "content" | "tags">;
 type TaskResourceInput = Pick<
   DatabaseTask,
   "id" | "title" | "status" | "priority" | "due_date" | "project_id" | "description"
@@ -23,7 +23,6 @@ export function noteResourceData(note: NoteResourceInput): NoteResourceData {
     id: note.id,
     label: note.label,
     content: note.content,
-    folder_name: note.folder_name,
     tags: note.tags,
   };
 }

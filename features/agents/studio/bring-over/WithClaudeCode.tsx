@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { RegionSkeleton } from "@ai-matrx/design-system/controls";
+import { useClipboard } from "@ai-matrx/kit/clipboard";
+import { toast } from "@/lib/toast";
 import { claudeCodePrompt } from "./claude-code-prompt";
 import { readDraft, type ClaudeCodeDraft } from "./bring-over-api";
 import { BuildFromImport } from "./BuildFromImport";
@@ -23,11 +25,15 @@ export function WithClaudeCode() {
 }
 
 function PromptToCopy() {
+  const { copyText } = useClipboard();
   const [job, setJob] = useState("");
   const [copied, setCopied] = useState(false);
   const prompt = claudeCodePrompt(job);
   const copy = async () => {
-    await navigator.clipboard.writeText(prompt);
+    if (!(await copyText(prompt))) {
+      toast.error("Couldn't copy the Claude Code prompt");
+      return;
+    }
     setCopied(true);
     window.setTimeout(() => setCopied(false), 2000);
   };

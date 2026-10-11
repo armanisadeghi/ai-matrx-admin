@@ -31,7 +31,6 @@ import {
   loadStudyGuideIndex,
   updateStudyGuide,
 } from "./service";
-import { STUDY_NOTES_FOLDER } from "@/features/education/notes/study-notes-folder";
 import type { Note } from "@/features/notes/types";
 
 interface RecordedQuery {
@@ -85,6 +84,7 @@ function queryRecorder(rows: unknown[] = []) {
     eq: (...args) => { calls.push({ method: "eq", args }); return query; },
     is: (...args) => { calls.push({ method: "is", args }); return query; },
     not: (...args) => { calls.push({ method: "not", args }); return query; },
+    contains: (...args) => { calls.push({ method: "contains", args }); return query; },
     order: (...args) => { calls.push({ method: "order", args }); return query; },
     range: async (...args) => {
       calls.push({ method: "range", args });
@@ -110,24 +110,24 @@ beforeEach(() => {
 });
 
 describe("study guide library", () => {
-  it("lists only my study-folder notes — an ordinary draft is not a study guide", async () => {
+  it("lists only my Study Notes-tagged notes — an ordinary draft is not a study guide", async () => {
     const recorded = queryRecorder([]);
     schema.mockReturnValue({ from: jest.fn(() => recorded.query) });
 
     await loadStudyGuideIndex();
 
     expect(recorded.calls).toContainEqual({ method: "eq", args: ["created_by", "learner-1"] });
-    expect(recorded.calls).toContainEqual({ method: "eq", args: ["folder_name", STUDY_NOTES_FOLDER] });
+    expect(recorded.calls).toContainEqual({ method: "contains", args: ["tags", ["Study Notes"]] });
   });
 });
 
 describe("study-guide writes", () => {
-  it("creates through the Education folder marker and updates with a Notes compare-and-swap", async () => {
+  it("creates through the Education tag marker and updates with a Notes compare-and-swap", async () => {
     await createStudyGuide({ title: "Cell biology", content: "", organizationId: "org-1" });
     expect(notesCreate).toHaveBeenCalledWith(expect.objectContaining({
       label: "Cell biology",
       content: "# Cell biology\n\n",
-      folder_name: STUDY_NOTES_FOLDER,
+      tags: ["Study Notes"],
       organization_id: "org-1",
     }));
 
