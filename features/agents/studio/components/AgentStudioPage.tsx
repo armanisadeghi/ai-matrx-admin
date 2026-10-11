@@ -68,6 +68,8 @@ import { loadMakeDraft, saveMakeDraft } from "../make-draft";
 import { StudioStart } from "./StudioStart";
 import { StudioRun } from "./StudioRun";
 import { StudioControls } from "./StudioControls";
+import { StudioCost } from "./StudioCost";
+import { StudioPath } from "./StudioEmpty";
 import { PlanBackLink, writeAgentToPlanStep } from "./PlanBackLink";
 
 const ASSISTANT_SURFACE = "agent-studio:assistant";
@@ -119,6 +121,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   const [runConversation, setRunConversation] = useState<string | null>(null);
   const [phase, setPhase] = useState<MakePhase>({ kind: "idle" });
   const [paneTab, setPaneTab] = useState<"assistant" | "agent" | "controls">("assistant");
+  const hasAnswer = useAppSelector((s) => (state.chatId ? selectLatestAnswerText(state.chatId)(s).trim().length > 0 : false));
   const agentName = useAppSelector((s) => (state.agentId ? selectAgentById(s, state.agentId)?.name : undefined));
 
   // The agent the build kept: load it into the builder record (settings, save path, write targets).
@@ -364,13 +367,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       </div>
     );
   } else {
-    center = (
-      <EmptyState
-        icon={<AGENT_ICON className="h-5 w-5" />}
-        title="Your agent appears here"
-        line={mode.id === "do-with-me" ? "Get a result you like, then make it an agent" : "Describe it to start"}
-      />
-    );
+    center = <StudioPath mode={mode.id === "do-with-me" ? "do-with-me" : "describe"} current={hasAnswer ? 1 : 0} />;
   }
 
   const right = (
@@ -388,7 +385,12 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       <span className="text-sm font-semibold text-foreground">Agent Studio</span>
       <span className="truncate text-xs text-muted-foreground">{agentName ?? mode.title}</span>
       <PlanBackLink state={state} />
-      <div className="ml-auto flex items-center gap-1">
+      <div className="ml-auto flex items-center gap-2">
+        <StudioCost
+          buildId={state.buildId}
+          buildDone={Boolean(state.agentId) || Boolean(build?.outcome)}
+          runConversationId={state.agentId ? runConversation : null}
+        />
         {mode.id === "do-with-me" && !state.buildId && (
           <Button
             variant="primary"

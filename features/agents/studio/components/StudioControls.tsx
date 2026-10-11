@@ -28,6 +28,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { StudioControlsPreview } from "./StudioEmpty";
 
 type ControlsTab = "settings" | "versions" | "battle" | "debrief";
 const TABS: { value: ControlsTab; label: string }[] = [
@@ -56,7 +57,7 @@ export function StudioControls({ agentId, runConversationId, onFeedback, onSaved
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
         {!agentId ? (
-          <EmptyState icon={<AGENT_ICON className="h-5 w-5" />} title="No agent yet" line="Settings appear once the agent is built" />
+          <StudioControlsPreview />
         ) : tab === "settings" ? (
           <SettingsTab agentId={agentId} onFeedback={onFeedback} onSaved={onSaved} />
         ) : tab === "versions" ? (
