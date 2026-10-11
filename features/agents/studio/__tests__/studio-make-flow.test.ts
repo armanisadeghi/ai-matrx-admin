@@ -51,3 +51,21 @@ describe("readMakeDraft", () => {
     expect(readMakeDraft({ [MAKE_DRAFT_KEY]: { approved: "Hi" } })).toBeNull();
   });
 });
+
+import { rerunSeedFrom } from "../studio-state";
+
+describe("rerunSeedFrom", () => {
+  it("re-runs the last run's own inputs and first typed message", () => {
+    expect(
+      rerunSeedFrom({ address: "1427 Alder Creek Lane", bedrooms: 4, empty: "" }, [
+        { role: "user", content: [{ type: "text", text: "Make it punchy" }] },
+        { role: "assistant", content: [{ type: "text", text: "Sunlight pours…" }] },
+      ]),
+    ).toEqual({ variables: { address: "1427 Alder Creek Lane", bedrooms: "4" }, userInput: "Make it punchy" });
+  });
+
+  it("is null when the last run had no inputs at all", () => {
+    expect(rerunSeedFrom({}, [])).toBeNull();
+    expect(rerunSeedFrom(undefined, undefined)).toBeNull();
+  });
+});

@@ -211,3 +211,23 @@ export function readMakeDraft<Brief>(metadata: unknown): StudioMakeDraft<Brief> 
   if (typeof d.approved !== "string" || !d.approved.trim() || !d.brief || typeof d.brief !== "object") return null;
   return { approved: d.approved, capture: typeof d.capture === "string" ? d.capture : "", brief: d.brief as Brief };
 }
+
+/**
+ * "Run again, fresh every time" re-runs the SAME inputs on a new conversation: the values the
+ * last run's first turn was sent with, and what the person typed on it. Without this a re-run
+ * opened blank and the person had to re-enter the case before they could compare versions.
+ */
+export function rerunSeedFrom(
+  firstTurnValues: Record<string, unknown> | undefined,
+  messages: readonly StudioMessageRecord[] | undefined,
+): { variables: Record<string, string>; userInput: string } | null {
+  const variables: Record<string, string> = {};
+  for (const [k, v] of Object.entries(firstTurnValues ?? {})) {
+    if (v === undefined || v === null || v === "") continue;
+    variables[k] = typeof v === "string" ? v : JSON.stringify(v);
+  }
+  const firstUser = (messages ?? []).find((m) => m.role === "user");
+  const userInput = firstUser ? recordText(firstUser) : "";
+  if (Object.keys(variables).length === 0 && !userInput) return null;
+  return { variables, userInput };
+}

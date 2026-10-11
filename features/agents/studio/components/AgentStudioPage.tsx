@@ -31,9 +31,11 @@ import { selectInstanceStatus } from "@ai-matrx/chat/agents/redux/execution-syst
 import {
   selectLatestAnswerText,
   selectLatestAssistantMessageId,
+  selectConversationMessages,
   selectMessageById,
   selectOrderedMessageIds,
 } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
+import { selectOwnSubmittedFirstTurnValues } from "@ai-matrx/chat/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
 import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { AGENT_BUILDER_CONTEXT_MENU_PROPS } from "@ai-matrx/chat/agents/agent-context/buildAgentBuilderContextData";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
@@ -57,6 +59,7 @@ import {
   DOER_NOTE,
   approvedAnswerFrom,
   readStudioState,
+  rerunSeedFrom,
   studioJobParam,
   studioCaseFromBuild,
   studioHref,
@@ -119,6 +122,8 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   const [build, setBuild] = useState<FactoryBuildState | null>(null);
   const [runKey, setRunKey] = useState(0);
   const [runConversation, setRunConversation] = useState<string | null>(null);
+  /** Mode 1's "Run again": the last run's own inputs, re-sent on a fresh conversation. */
+  const [rerunSeed, setRerunSeed] = useState<{ variables: Record<string, string>; userInput: string } | null>(null);
   const [phase, setPhase] = useState<MakePhase>({ kind: "idle" });
   const [paneTab, setPaneTab] = useState<"assistant" | "agent" | "controls">("assistant");
   const hasAnswer = useAppSelector((s) => (state.chatId ? selectLatestAnswerText(state.chatId)(s).trim().length > 0 : false));
@@ -297,6 +302,17 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     if (s.agent_id && s.outcome && KEPT_OUTCOMES.has(s.outcome)) go({ agentId: s.agent_id });
   };
 
+  /** Fresh every time: a NEW conversation on the same inputs (mode 2's original request, or the last run's). */
+  const runAgain = () => {
+    if (!studioCase && runConversation) {
+      const s = store.getState();
+      const values = selectOwnSubmittedFirstTurnValues(runConversation)(s) as Record<string, unknown> | undefined;
+      const messages = selectConversationMessages(runConversation)(s) as StudioMessageRecord[];
+      setRerunSeed(rerunSeedFrom(values, messages));
+    }
+    setRunKey((k) => k + 1);
+  };
+
   // ── panes ──
   const left = doerError ? (
     <EmptyState icon={<AGENT_ICON className="h-5 w-5" />} title="The assistant is unavailable" line={doerError} />
@@ -338,12 +354,12 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       />
     );
   } else if (state.agentId) {
-    const seed = studioCase ? { variables: studioCase.variables, userInput: studioCase.userInput } : null;
+    const seed = studioCase ? { variables: studioCase.variables, userInput: studioCase.userInput } : rerunSeed;
     const run = (
       <StudioRun
         agentId={state.agentId}
         surfaceKey={tryKey(state.agentId)}
-        seed={runKey === 0 ? seed : null}
+        seed={seed}
         showVariables
         runKey={runKey}
         onConversation={setRunConversation}
@@ -375,7 +391,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       agentId={state.agentId}
       runConversationId={runConversation}
       onFeedback={(text) => void sendToAssistant(text)}
-      onSaved={() => setRunKey((k) => k + 1)}
+      onSaved={runAgain}
     />
   );
 
@@ -402,7 +418,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
           </Button>
         )}
         {state.agentId && (
-          <Button variant="outline" icon={<RotateCcw />} onClick={() => setRunKey((k) => k + 1)}>
+          <Button variant="outline" icon={<RotateCcw />} onClick={runAgain}>
             Run again
           </Button>
         )}
