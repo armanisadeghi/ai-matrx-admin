@@ -107,8 +107,9 @@ describe("FindingEffectivenessPanel canonical columns", () => {
         <>{rate.cell?.({ ...measuredZeroRow, revert_rate: 0.5 }, 0)}</>,
       ),
     ).toContain("50%");
-    expect(renderToStaticMarkup(<>{rate.cell?.(noSignalRow, 0)}</>)).toContain(
-      "No signal: nothing has been applied",
-    );
+    // No signal renders a dash, never a measured 0%; its definition lives once on the header.
+    const noSignal = renderToStaticMarkup(<>{rate.cell?.(noSignalRow, 0)}</>);
+    expect(noSignal).toContain("—");
+    expect(noSignal).not.toContain("0%");
   });
 });
