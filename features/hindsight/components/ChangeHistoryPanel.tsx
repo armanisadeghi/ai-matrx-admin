@@ -100,11 +100,10 @@ function VersionMove({ row }: { row: ChangeHistoryRow }) {
   const inferred = versionFromIsInferred(row);
   return (
     <span className="inline-flex items-center gap-1 font-mono text-xs tabular-nums">
+      {/* A dash means the first recorded version. Only the inferred case carries a hint:
+          the recorded case is the normal row, and a hint on every row is noise. */}
       {row.version_from == null ? (
-        <>
-          <span className="text-muted-foreground">—</span>
-          <InfoHint text="No earlier version exists; this is the unit's first recorded version." label="About no earlier version" />
-        </>
+        <span className="text-muted-foreground">—</span>
       ) : (
         <>
         <span
@@ -112,14 +111,12 @@ function VersionMove({ row }: { row: ChangeHistoryRow }) {
         >
           {inferred ? "~" : ""}v{row.version_from}
         </span>
-        <InfoHint
-          text={
-            inferred
-              ? "Inferred from the previous version row; the version actually live may differ. Not a recorded fact."
-              : "Recorded at the moment of the change: what was live just before."
-          }
-          label="About the previous version"
-        />
+        {inferred ? (
+          <InfoHint
+            text="Inferred from the previous version row; the version actually live may differ."
+            label="About the previous version"
+          />
+        ) : null}
         </>
       )}
       <ArrowRight className="h-3 w-3 text-muted-foreground" />

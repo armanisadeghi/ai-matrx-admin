@@ -115,7 +115,13 @@ export function OvertimeQueueTable({ rows, isLoading, hrefFor, read, query, sour
     {
       id: "approvedHours",
       accessorKey: "approvedHours",
-      header: "Cap",
+      header: (
+        <span className="inline-flex items-center gap-1">
+          Cap
+          <InfoHint text="Overtime beyond the approved cap is still paid, and is flagged for review." label="About the cap" />
+        </span>
+      ),
+      label: "Cap",
       align: "right",
       width: 90,
       mobileHidden: true,
@@ -123,10 +129,7 @@ export function OvertimeQueueTable({ rows, isLoading, hrefFor, read, query, sour
         row.approvedHours === null ? (
           <span className="text-muted-foreground">—</span>
         ) : (
-          <span className="inline-flex items-center gap-1 tabular-nums text-foreground">
-            {formatHours(row.approvedHours)}
-            <InfoHint text="Approved with a cap. Overtime beyond the cap is still paid, and is flagged for review." label="About approved hours" />
-          </span>
+          <span className="tabular-nums text-foreground">{formatHours(row.approvedHours)}</span>
         ),
     },
     {

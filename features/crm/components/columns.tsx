@@ -299,7 +299,13 @@ export const PARTY_COLUMNS: MatrxColumnDef<PartyListRow>[] = [
     // never mean unreachable.
     id: "record_class",
     accessorKey: "record_class",
-    header: "Record",
+    header: (
+      <span className="inline-flex items-center gap-1">
+        Record
+        <InfoHint text="Found means the platform found it; it is not one of your contacts until you say so." label="About Found" />
+      </span>
+    ),
+    label: "Record",
     sortable: false,
     filter: "select",
     // The three options are exclusive VIEWS of the list, not OR-able tags —
@@ -312,11 +318,8 @@ export const PARTY_COLUMNS: MatrxColumnDef<PartyListRow>[] = [
     width: 120,
     cell: (row) =>
       row.record_class === "discovered" ? (
-        <span className="inline-flex items-center gap-1">
-          <span className="rounded bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground">
-            Found
-          </span>
-          <InfoHint text="Found by the platform, not one of your contacts until you say so." label="About Found" />
+        <span className="rounded bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground">
+          Found
         </span>
       ) : (
         <span className="text-xs text-muted-foreground">—</span>

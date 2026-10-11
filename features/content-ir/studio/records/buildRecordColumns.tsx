@@ -17,6 +17,7 @@ import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { timeCell, Muted } from "@/lib/entity-list/columns";
 import { shapeInstancePermalink } from "@/features/content-ir/studio/constants";
 import { ConfirmationBadge } from "@/features/content-ir/records/ConfirmationBadge";
+import { InfoHint } from "@/components/official/InfoHint";
 import type { KindRecordRow } from "./types";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
@@ -272,7 +273,13 @@ export function buildRecordColumns(
     {
       id: "title",
       label: "Title",
-      header: "Title",
+      // The Unconfirmed definition sits once on the header, never on every row's chip.
+      header: (
+        <span className="inline-flex items-center gap-1">
+          Title
+          <InfoHint text="Unconfirmed means nobody has confirmed the record yet; confirm it, or edit a value, which confirms it." label="About Unconfirmed" />
+        </span>
+      ),
       accessorKey: "title",
       href: (row) => shapeInstancePermalink(row.id),
       // `min-w-[13rem]` is a declared minimum so the name and its standing sit

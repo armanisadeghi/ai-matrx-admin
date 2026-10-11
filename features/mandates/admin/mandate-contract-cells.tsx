@@ -120,7 +120,7 @@ export function MandateInputsCell({
         >
           <span className="type-meta">Declared by its provision</span>
           <InfoHint
-            text={`Inputs are declared by the Provision "${row.provisionKey}". Open the mandate to see every offered value.`}
+            text="Its provision declares the inputs; open the mandate to see every offered value."
             label="About declared inputs"
           />
         </span>

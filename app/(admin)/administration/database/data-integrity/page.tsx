@@ -609,10 +609,7 @@ export default function DataIntegrityPage() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 px-4 pt-4 pb-0 sm:px-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <ShieldAlert className="h-5 w-5 text-primary" />
-        </div>
+      <div className="flex flex-wrap items-start justify-end gap-3">
         <div className="flex items-center gap-2">
           {report && (
             <Button icon={<Copy />} variant="outline" onClick={copyReport}> Copy report

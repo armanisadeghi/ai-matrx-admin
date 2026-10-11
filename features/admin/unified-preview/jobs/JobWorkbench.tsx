@@ -276,10 +276,13 @@ export function JobWorkbench({
                     ? "bg-amber-500/15 font-semibold text-amber-700 ring-amber-500/40 dark:text-amber-400"
                     : "bg-card text-muted-foreground ring-border/40",
                 )}
-                title="A mandate may name another mandate as its fallback. It self-dissolves the moment a real intelligence is assigned."
               >
                 Fallback
               </span>
+              <InfoHint
+                text="A mandate can name another mandate as its fallback; it stops applying once a real intelligence is assigned."
+                label="About the fallback"
+              />
               {leader ? (
                 <Button
                   iconEnd={<ArrowRight />}

@@ -1,5 +1,6 @@
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -140,11 +141,12 @@ function ValuesCell({ row }: { row: SurfaceWithStats }) {
   const declared = declaredValueCount(row.name);
   if (declared === null) {
     return row.surfaceValueCount > 0 ? (
-      <span
-        className="tabular-nums text-muted-foreground"
-        title={`No code manifest declares this surface; ${row.surfaceValueCount} values are saved in the database`}
-      >
+      <span className="inline-flex items-center gap-1 tabular-nums text-muted-foreground">
         {row.surfaceValueCount} in DB
+        <InfoHint
+          text="No code manifest declares this surface, but these values are saved in the database."
+          label="About values in DB"
+        />
       </span>
     ) : (
       EMPTY

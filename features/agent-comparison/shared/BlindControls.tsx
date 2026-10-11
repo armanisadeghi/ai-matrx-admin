@@ -1,5 +1,7 @@
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
+
 /**
  * BlindControls
  *
@@ -76,6 +78,7 @@ export function BlindControls({
 
   // Idle → the pre-submit checkbox.
   return (
+    <span className="inline-flex items-center gap-1">
     <button
       type="button"
       onClick={() => dispatch(setBlindEnabled(!enabled))}
@@ -102,5 +105,10 @@ export function BlindControls({
         {enabled && <Check className="w-2.5 h-2.5" strokeWidth={3} />}
       </span>
     </button>
+    <InfoHint
+      text="On Submit, columns shuffle and model, settings and cost stay hidden until you reveal, so you judge without bias."
+      label="About blind test"
+    />
+    </span>
   );
 }

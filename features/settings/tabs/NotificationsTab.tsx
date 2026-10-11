@@ -20,6 +20,7 @@ import {
 } from "@ai-matrx/design-system";
 import { ResetTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { SearchInput } from "@/components/official/SearchInput";
+import { InfoHint } from "@/components/official/InfoHint";
 import { cn } from "@/lib/utils";
 import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
 import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
@@ -425,7 +426,12 @@ export default function NotificationsTab() {
               <div className="sticky top-[var(--shell-header-h)] z-10 hidden grid-cols-[minmax(0,1fr)_repeat(4,4.5rem)_calc(var(--matrx-tap-pill-size)+var(--matrx-tap-gap))] items-center border-b border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground sm:grid">
                 <span>Notice</span>
                 {channelColumns.map((c) => (
-                  <span key={c.key} className="text-center">{c.short}</span>
+                  <span key={c.key} className="inline-flex items-center justify-center gap-1">
+                    {c.short}
+                    {c.key === "email" ? (
+                      <InfoHint text="For most notices email needs Message: it stays off while Message is off, and turning it on turns Message on." label="About email notices" />
+                    ) : null}
+                  </span>
                 ))}
                 <span className="sr-only">Reset</span>
               </div>
@@ -497,7 +503,7 @@ export default function NotificationsTab() {
                                       : lastRequired
                                         ? "Required notice: turn another channel on first."
                                         : needsMessage
-                                          ? "Off because Message is off. Turning email on turns Message on."
+                                          ? "Off because Message is off"
                                           : `${label}, default ${event.defaults[key] ? "on" : "off"}`
                                   }
                                 >

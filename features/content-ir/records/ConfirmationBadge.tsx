@@ -22,7 +22,6 @@
  *   a table cell is the one place both marks are shown side by side.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
 import { BadgeCheck, CheckCircle2, CircleDashed, Archive } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -74,7 +73,6 @@ export function ConfirmationBadge({
           >
             <CircleDashed className="h-3 w-3" />
             Unconfirmed
-            <InfoHint text="Nobody has confirmed this record yet. Confirm it, or edit a value; editing confirms it." label="About Unconfirmed" />
           </span>
         )}
         {archivedAt ? (

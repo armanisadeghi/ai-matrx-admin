@@ -100,7 +100,6 @@ function TierPill({
   tier: NonNullable<FeatureAdminComponent["tier"]>;
 }) {
   return (
-    <>
     <span
       className={cn(
         "shrink-0 inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0 text-[10px] font-medium uppercase tracking-wider leading-4",
@@ -110,17 +109,6 @@ function TierPill({
       {tier === "official" && <ShieldCheck className="h-2.5 w-2.5" />}
       {tier}
     </span>
-    <InfoHint
-      text={
-        tier === "official"
-          ? "Registered in the official-components registry."
-          : tier === "candidate"
-            ? "Promoted by use but not yet in the official registry."
-            : "A feature-local file path readout."
-      }
-      label={`About the ${tier} tier`}
-    />
-    </>
   );
 }
 
@@ -128,10 +116,13 @@ function SectionHeading({
   icon: Icon,
   title,
   count,
+  definition,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   title: string;
   count: number;
+  /** One-sentence definition shown once beside the heading, never per row. */
+  definition?: string;
 }) {
   return (
     <div className="flex items-baseline gap-2 mb-2 border-b border-border pb-1">
@@ -142,6 +133,7 @@ function SectionHeading({
       <span className="text-[10px] text-muted-foreground/70 tabular-nums">
         {count}
       </span>
+      {definition ? <InfoHint text={definition} label={`About ${title}`} className="self-center" /> : null}
     </div>
   );
 }
@@ -492,6 +484,7 @@ export default async function FeatureAdminPage({ map }: FeatureAdminPageProps) {
               icon={Component}
               title="Components"
               count={map.components.length}
+              definition="Official is in the official-components registry, candidate is promoted by use but not yet in it, internal is local to this feature."
             />
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-1.5">
               {map.components.map((c) => {

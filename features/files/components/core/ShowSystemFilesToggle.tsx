@@ -39,7 +39,8 @@ export function ShowSystemFilesToggle({ className }: { className?: string }) {
       type="button"
       aria-pressed={showSystemFiles}
       aria-label={label}
-      title={label}
+      // System files: page captures, provider payloads, crawl output; never listed in Recents.
+      title={`${label} (files AI Matrx makes itself)`}
       disabled={saving}
       onClick={() => void onClick()}
       className={cn(

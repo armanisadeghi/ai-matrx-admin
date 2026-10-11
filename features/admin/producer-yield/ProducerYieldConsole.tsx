@@ -27,6 +27,7 @@
  * server page. It is a table and some cards.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import React, { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import AppLink from "@/components/navigation/AppLink";
@@ -333,15 +334,18 @@ export function ProducerYieldConsole() {
       )}
 
       {floors && (
-        <p
-          className="text-xs text-muted-foreground"
-          title={`Yield alarms only after ${floors.min_produced_for_verdict} outcomes; below that there is no verdict.`}
-        >
+        <p className="flex flex-wrap items-center gap-x-1 text-xs text-muted-foreground">
           {/* Hourly task producer_yield_floor. */}
-          Alarms: yield &lt; <strong>{formatRate(floors.yield_floor)}</strong> ·
-          undecided <strong>{floors.never_decided_min_age_days}d</strong> ·
-          unmeasured ≥{" "}
-          <strong>{formatCostDisplay(floors.no_signal_min_cost_usd)}</strong>
+          <span>
+            Alarms: yield &lt; <strong>{formatRate(floors.yield_floor)}</strong> ·
+            undecided <strong>{floors.never_decided_min_age_days}d</strong> ·
+            unmeasured ≥{" "}
+            <strong>{formatCostDisplay(floors.no_signal_min_cost_usd)}</strong>
+          </span>
+          <InfoHint
+            text={`Yield alarms only after ${floors.min_produced_for_verdict} outcomes; below that there is no verdict.`}
+            label="About alarms"
+          />
         </p>
       )}
 

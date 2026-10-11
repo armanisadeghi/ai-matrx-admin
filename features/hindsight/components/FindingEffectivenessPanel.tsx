@@ -78,7 +78,6 @@ function CostDelta({ row }: { row: FindingEffectiveness }) {
         <TrendingUp className="h-3 w-3" />
       )}
       {cheaper ? "-" : "+"}{formatAdminUsd(Math.abs(delta))}
-      <InfoHint text={`Mean spend per request after the change minus before it, across ${row.cost_signal_findings} finding(s) with traffic on both versions.`} label="About cost change" />
     </span>
   );
 }
@@ -246,7 +245,16 @@ export const FINDING_EFFECTIVENESS_COLUMNS: MatrxColumnDef<FindingEffectiveness>
     },
     {
       id: "revert-rate",
-      header: "Revert rate",
+      header: (
+        <span className="inline-flex items-center gap-1">
+          Revert rate
+          <InfoHint
+            text="Of the changes applied on this lever, the share a human undid; a dash means nothing was applied yet."
+            label="About revert rate"
+          />
+        </span>
+      ),
+      label: "Revert rate",
       accessorFn: (row) =>
         row.revert_rate === null || row.revert_rate === undefined
           ? null
@@ -254,19 +262,7 @@ export const FINDING_EFFECTIVENESS_COLUMNS: MatrxColumnDef<FindingEffectiveness>
       filter: "number",
       width: 112,
       className: "text-right tabular-nums",
-      cell: (row) => (
-        <span className="inline-flex items-center gap-1">
-          {effectivenessPercent(row.revert_rate)}
-          <InfoHint
-            text={
-              hasSignal(row.revert_rate)
-                ? "Of the changes actually applied on this lever, the share a human undid."
-                : "No signal: nothing has been applied on this lever yet."
-            }
-            label="About revert rate"
-          />
-        </span>
-      ),
+      cell: (row) => effectivenessPercent(row.revert_rate),
     },
     {
       id: "time-to-decision",
@@ -279,7 +275,16 @@ export const FINDING_EFFECTIVENESS_COLUMNS: MatrxColumnDef<FindingEffectiveness>
     },
     {
       id: "cost-move",
-      header: "Cost move",
+      header: (
+        <span className="inline-flex items-center gap-1">
+          Cost move
+          <InfoHint
+            text="Mean spend per request after the change minus before it, over findings with traffic on both versions."
+            label="About cost move"
+          />
+        </span>
+      ),
+      label: "Cost move",
       accessorKey: "cost_delta_usd_avg",
       filter: "number",
       width: 118,

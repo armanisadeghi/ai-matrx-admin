@@ -436,12 +436,10 @@ export default function SystemJobsPage() {
       width: 120,
       cell: (r) =>
         r.handler_registered === false ? (
-          <>
-            <span className="inline-flex items-center gap-1 whitespace-nowrap type-secondary text-destructive">
-              <AlertTriangle className="h-3 w-3" /> Missing
-            </span>
+          <span className="inline-flex items-center gap-1 whitespace-nowrap type-secondary text-destructive">
+            <AlertTriangle className="h-3 w-3" /> Missing
             <InfoHint text="No handler is registered on the server for this tool, so enabling it is refused." label="About a missing handler" />
-          </>
+          </span>
         ) : r.handler_gate_pending ? (
           <span className="whitespace-nowrap type-secondary text-warning" title="Registered, waiting on a pending approval gate.">
             Gate pending

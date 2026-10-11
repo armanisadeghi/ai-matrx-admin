@@ -234,7 +234,7 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({
             <button
               onClick={handleToggleSnapshot}
               className={`p-1 rounded transition-colors ${isSnapshot ? "bg-purple-700 text-purple-200" : "text-slate-400 hover:bg-slate-700"}`}
-              title={isSnapshot ? "Snapshot mode on" : "Turn on snapshot mode"}
+              title={isSnapshot ? "Snapshot mode on: every request is captured" : "Capture a server snapshot of every request"}
               aria-label="Toggle snapshot mode"
             >
               <Camera size={14} />
