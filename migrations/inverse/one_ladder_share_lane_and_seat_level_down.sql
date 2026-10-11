@@ -1,4 +1,6 @@
 -- lane: ONE-LADDER
+-- based-on: custom.share_lane_set(uuid, uuid, text, permission_level) 13d309ac8a4272ab16e342c97fc300a492b93e9cdf5fbe292db412529cfd5828
+-- based-on: custom.entity_seat_level(uuid, text, uuid) dbc84fcbb91a5d8f35f075ba70a8ac70cf6d64c9581e87df8c5b0fec8a02356d
 -- Inverse of one_ladder_share_lane_and_seat_level.sql: restores both bodies verbatim.
 
 CREATE OR REPLACE FUNCTION custom.share_lane_set(p_organization_id uuid, p_subject_id uuid, p_choice text, p_level permission_level DEFAULT NULL::permission_level)

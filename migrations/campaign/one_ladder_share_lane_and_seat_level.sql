@@ -1,5 +1,5 @@
 -- lane: ONE-LADDER
--- chair-step: finishes the one access ladder: custom.share_lane_set now asks the one sharing check (iam.may_grant_as) like every other share door, and custom.entity_seat_level drops its dead edit_content branch (no grant holds that level after one_ladder_edit_is_content_full_is_structure.sql); Arman 2026-10-10 "Edit = Edit content, never structure", all data is test data.
+-- purpose: finishes the one access ladder: custom.share_lane_set now asks the one sharing check (iam.may_grant_as) like every other share door, and custom.entity_seat_level drops its dead edit_content branch (no grant holds that level after one_ladder_edit_is_content_full_is_structure.sql); Arman 2026-10-10 "Edit = Edit content, never structure", all data is test data.
 -- based-on: custom.share_lane_set(uuid, uuid, text, permission_level) 5863cdb3ee0de0afc2904514d5088e3a76adabbde6af31a4f3e1230a1542363d
 -- based-on: custom.entity_seat_level(uuid, text, uuid) ccf24b19ac0938a64df7d9447ab20da7574fc8f7c0b6bc1a14eb7c24d840c15a
 -- Needs one_ladder_edit_is_content_full_is_structure.sql applied first (iam.may_grant_as).
