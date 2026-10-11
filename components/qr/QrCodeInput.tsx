@@ -70,6 +70,7 @@ export function QrCodeInput({
   const [busy, setBusy] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [scanning, setScanning] = useState(false);
+  const [cameraPending, setCameraPending] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
 
   const fail = useCallback(
@@ -85,6 +86,7 @@ export function QrCodeInput({
     leaseRef.current = null;
     setStream(null);
     setScanning(false);
+    setCameraPending(false);
   }, []);
 
   // Release the camera on unmount — a lease that outlives its surface leaves
@@ -106,7 +108,9 @@ export function QrCodeInput({
         stopScan();
         onDecoded(text);
       } catch (err) {
-        fail(err instanceof Error ? err.message : "That image could not be read.");
+        fail(
+          err instanceof Error ? err.message : "That image could not be read.",
+        );
       } finally {
         setBusy(false);
       }
@@ -138,9 +142,9 @@ export function QrCodeInput({
 
   // ── Live camera scan: the phone path.
   const startScan = useCallback(async () => {
-    if (disabled || scanning) return;
+    if (disabled || scanning || cameraPending) return;
     const generation = ++scanGeneration.current;
-    setBusy(true);
+    setCameraPending(true);
     try {
       const lease = await acquireCameraLease({
         facingMode: "environment",
@@ -154,6 +158,7 @@ export function QrCodeInput({
       setStream(lease.stream);
       setScanning(true);
     } catch (err) {
+      if (generation !== scanGeneration.current) return;
       const name = err instanceof Error ? err.name : "";
       fail(
         name === "NotAllowedError"
@@ -161,9 +166,9 @@ export function QrCodeInput({
           : "No camera available here. Paste or upload a picture of the QR code instead.",
       );
     } finally {
-      setBusy(false);
+      if (generation === scanGeneration.current) setCameraPending(false);
     }
-  }, [disabled, fail, scanning]);
+  }, [disabled, fail, scanning, cameraPending]);
 
   useEffect(() => {
     if (!autoStartCamera || autoStarted.current) return;
@@ -203,34 +208,34 @@ export function QrCodeInput({
   }, [scanning, onDecoded, stopScan]);
 
   const camera = scanning ? (
-      <div
-        className={cn(
-          "relative overflow-hidden rounded-lg border border-border bg-black",
-          className,
-        )}
-      >
-        <div className="aspect-[4/3] w-full">
-          <CameraPreview
-            stream={stream}
-            framing="viewport-crop"
-            videoRef={videoRef}
-            className="h-full w-full"
-          />
-        </div>
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="h-40 w-40 rounded-lg border-2 border-white/80 shadow-[0_0_0_9999px_rgba(0,0,0,0.35)]" />
-        </div>
-        <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-black/60 p-2">
-          <span className="inline-flex items-center gap-1.5 text-xs text-white">
-            <ScanLine className="h-3.5 w-3.5" />
-            Point at the QR code
-          </span>
-          <Button icon={<X />} variant="outline" onClick={stopScan}>
-            Stop
-          </Button>
-        </div>
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-lg border border-border bg-black",
+        className,
+      )}
+    >
+      <div className="aspect-[4/3] w-full">
+        <CameraPreview
+          stream={stream}
+          framing="viewport-crop"
+          videoRef={videoRef}
+          className="h-full w-full"
+        />
       </div>
-    ) : null;
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <div className="h-40 w-40 rounded-lg border-2 border-white/80 shadow-[0_0_0_9999px_rgba(0,0,0,0.35)]" />
+      </div>
+      <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-black/60 p-2">
+        <span className="inline-flex items-center gap-1.5 text-xs text-white">
+          <ScanLine className="h-3.5 w-3.5" />
+          Point at the QR code
+        </span>
+        <Button icon={<X />} variant="outline" onClick={stopScan}>
+          Stop
+        </Button>
+      </div>
+    </div>
+  ) : null;
 
   return (
     <div
@@ -258,52 +263,59 @@ export function QrCodeInput({
       )}
     >
       {camera}
+      {cameraPending && (
+        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          Allow camera access, or use an image or setup key.
+          <Button type="button" variant="quiet" onClick={stopScan}>
+            Cancel camera
+          </Button>
+        </div>
+      )}
       {busy ? (
         <div className="flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
           Reading the code…
         </div>
-      ) : (
-        <>
-          <p className="text-sm font-medium text-foreground">
-            {isMobile ? "Scan the QR code" : "Paste or drop the QR code"}
-          </p>
-          {hint ? (
-            <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>
-          ) : null}
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-            <Button
-              icon={<Camera />}
-              type="button"
-              variant={isMobile ? "primary" : "outline"}
-              disabled={disabled}
-              onClick={() => void startScan()}
-            >
-              {scanning ? "Camera on" : "Scan with camera"}
-            </Button>
-            <Button
-              icon={<ImageUp />}
-              type="button"
-              variant="outline"
-              disabled={disabled}
-              onClick={() => fileRef.current?.click()}
-            >
-              Choose an image
-            </Button>
-          </div>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="sr-only"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              e.target.value = "";
-              if (file) void handleImage(file);
-            }}
-          />
-        </>
-      )}
+      ) : null}
+      <>
+        <p className="text-sm font-medium text-foreground">
+          {isMobile ? "Scan the QR code" : "Paste or drop the QR code"}
+        </p>
+        {hint ? (
+          <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>
+        ) : null}
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+          <Button
+            icon={<Camera />}
+            type="button"
+            variant={isMobile ? "primary" : "outline"}
+            disabled={disabled || cameraPending || scanning}
+            onClick={() => void startScan()}
+          >
+            {scanning ? "Camera on" : "Scan with camera"}
+          </Button>
+          <Button
+            icon={<ImageUp />}
+            type="button"
+            variant="outline"
+            disabled={disabled}
+            onClick={() => fileRef.current?.click()}
+          >
+            Choose an image
+          </Button>
+        </div>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            e.target.value = "";
+            if (file) void handleImage(file);
+          }}
+        />
+      </>
     </div>
   );
 }

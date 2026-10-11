@@ -77,7 +77,16 @@ import {
   useVaultGrants,
   type VaultActions,
 } from "../vault-hooks";
-import { checkVaultDestination, resolveVaultFields } from "../vault-service";
+import {
+  AuthenticatorSetupDialog,
+  authenticatorName,
+} from "./authenticator/AuthenticatorSetupDialog";
+import { AuthenticatorCode } from "./authenticator/AuthenticatorCode";
+import {
+  checkVaultDestination,
+  resolveVaultFields,
+  updateVaultItem,
+} from "../vault-service";
 import {
   deleteAuthenticator,
   enrollAuthenticator,
@@ -209,7 +218,7 @@ export function VaultItemDetail({
     try {
       await actions.updateItem(item.id, body);
       setEditSessionBaseline(submittedSnapshot);
-    // read-gate-exempt: a write, and useVault's run() already toasts its failure; drafts stay in place for a retry
+      // read-gate-exempt: a write, and useVault's run() already toasts its failure; drafts stay in place for a retry
     } catch {
       // `useVault` already reports the failure. Keep every draft in place so
       // the person can correct the issue and retry without re-entering it.
@@ -357,7 +366,9 @@ export function VaultItemDetail({
             )}
           </div>
           {item.description && !editingCredential && (
-            <div className="mt-2 break-words text-sm leading-5 text-muted-foreground"><RichContent source={item.description ?? ""} level="standard" /></div>
+            <div className="mt-2 break-words text-sm leading-5 text-muted-foreground">
+              <RichContent source={item.description ?? ""} level="standard" />
+            </div>
           )}
           {item.tags.length > 0 && !editingCredential && (
             <div
@@ -378,11 +389,7 @@ export function VaultItemDetail({
         </div>
         {caps.can_edit && (
           <Button
-            icon={editingCredential ? (
-              <Check />
-            ) : (
-              <Pencil />
-            )}
+            icon={editingCredential ? <Check /> : <Pencil />}
             variant={editingCredential ? "primary" : "outline"}
             className="shrink-0"
             disabled={metadataBusy}
@@ -564,7 +571,7 @@ export function VaultItemDetail({
       />
 
       {/* Two-factor — the other half of the sign-in recipe, on the same item */}
-      <AuthenticatorSection item={item} />
+      <AuthenticatorSection item={item} onItemChanged={onItemChanged} />
 
       <RecoveryCodesSection
         item={item}
@@ -847,11 +854,7 @@ function AttachmentsSection({
           </div>
           <div className="flex justify-end">
             <Button
-              icon={busy ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <Upload />
-              )}
+              icon={busy ? <Loader2 className="animate-spin" /> : <Upload />}
               variant="primary"
               disabled={busy || !file || !label.trim()}
               onClick={() => void add()}
@@ -913,17 +916,16 @@ function AttachmentRow({
             <>
               <dt className="font-medium text-muted-foreground">Purpose</dt>
               <dd className="break-words text-foreground">
-                <RichContent source={attachment.description ?? ""} level="standard" />
+                <RichContent
+                  source={attachment.description ?? ""}
+                  level="standard"
+                />
               </dd>
             </>
           )}
         </dl>
         <Button
-          icon={attachment.handling === "sealed" ? (
-            <Lock />
-          ) : (
-            <Download />
-          )}
+          icon={attachment.handling === "sealed" ? <Lock /> : <Download />}
           variant="outline"
           disabled={busy || !canDownload}
           title={
@@ -1310,7 +1312,12 @@ function FieldRow({
               </span>
             )}
             {field.description && (
-              <div className="min-w-0 break-words"><RichContent source={field.description ?? ""} level="standard" /></div>
+              <div className="min-w-0 break-words">
+                <RichContent
+                  source={field.description ?? ""}
+                  level="standard"
+                />
+              </div>
             )}
           </div>
         )}
@@ -1551,11 +1558,7 @@ function AddFieldPanel({
             />
           </label>
           <Button
-            icon={busy ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              <Plus />
-            )}
+            icon={busy ? <Loader2 className="animate-spin" /> : <Plus />}
             variant="primary"
             disabled={busy || !valid}
             onClick={() =>
@@ -1627,7 +1630,8 @@ function RecoveryCodesSection({
           explicitly reveal them.
         </p>
       </div>
-      <Textarea mono
+      <Textarea
+        mono
         value={newCodes}
         onChange={(event) => setNewCodes(event.target.value)}
         rows={5}
@@ -1682,7 +1686,11 @@ function StoredRecoveryCodes({
     .filter(Boolean);
 
   const copyCode = async (code: string) => {
-    await copyText(code, "Recovery code copied.", "Your browser blocked clipboard access.");
+    await copyText(
+      code,
+      "Recovery code copied.",
+      "Your browser blocked clipboard access.",
+    );
   };
 
   const markUsed = async (index: number) => {
@@ -1709,11 +1717,7 @@ function StoredRecoveryCodes({
           <Badge variant="outline">Automation only</Badge>
         ) : (
           <Button
-            icon={secret.value === null ? (
-              <Eye />
-            ) : (
-              <EyeOff />
-            )}
+            icon={secret.value === null ? <Eye /> : <EyeOff />}
             variant="outline"
             disabled={busy || secret.working || !secret.allowed}
             onClick={() => secret.toggle()}
@@ -1767,7 +1771,8 @@ function StoredRecoveryCodes({
           <Label htmlFor={`replace-recovery-codes-${field.id}`}>
             Replace all recovery codes
           </Label>
-          <Textarea mono
+          <Textarea
+            mono
             id={`replace-recovery-codes-${field.id}`}
             value={replacement}
             onChange={(event) => setReplacement(event.target.value)}
@@ -1807,12 +1812,19 @@ function StoredRecoveryCodes({
  * the recorded non-app method (SMS/push) that tells Matrx to hand control
  * back at the verification step. Website logins only.
  */
-function AuthenticatorSection({ item }: { item: VaultItem }) {
+function AuthenticatorSection({
+  item,
+  onItemChanged,
+}: {
+  item: VaultItem;
+  onItemChanged?: () => Promise<void>;
+}) {
   const isWebsiteLogin = item.definition_key === WEBSITE_LOGIN_DEFINITION_KEY;
   const [entry, setEntry] = useState<AuthenticatorEntry | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [working, setWorking] = useState(false);
-  const [setupKey, setSetupKey] = useState("");
+  const [setupOpen, setSetupOpen] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [confirmRemove, setConfirmRemove] = useState(false);
 
   useEffect(() => {
@@ -1824,8 +1836,15 @@ function AuthenticatorSection({ item }: { item: VaultItem }) {
         setEntry(list.find((e) => e.credential_item_id === item.id) ?? null);
         setLoaded(true);
       })
-      .catch(() => {
-        if (mounted) setLoaded(true);
+      .catch((cause: unknown) => {
+        if (mounted) {
+          setLoadError(
+            cause instanceof Error
+              ? cause.message
+              : "Could not load the authenticator.",
+          );
+          setLoaded(true);
+        }
       });
     return () => {
       mounted = false;
@@ -1836,24 +1855,6 @@ function AuthenticatorSection({ item }: { item: VaultItem }) {
 
   const mfaMethod =
     item.non_secret_fields?.find((f) => f.key === "mfa_method")?.value ?? null;
-
-  const enroll = async () => {
-    setWorking(true);
-    try {
-      const created = await enrollAuthenticator(item.id, setupKey.trim());
-      setEntry(created);
-      setSetupKey("");
-      toast.success(
-        "Authenticator on — Matrx signs in to this account fully automatically.",
-      );
-    } catch {
-      toast.error(
-        "That setup key could not be enrolled. Paste the otpauth:// link or the manual key from the site's authenticator step.",
-      );
-    } finally {
-      setWorking(false);
-    }
-  };
 
   const toggle = async (enabled: boolean) => {
     setWorking(true);
@@ -1928,47 +1929,66 @@ function AuthenticatorSection({ item }: { item: VaultItem }) {
           />
         </div>
       ) : (
-        <div className="space-y-1.5">
-          {mfaMethod ? (
-            <p className="text-xs text-muted-foreground">
-              {mfaMethod === "sms"
-                ? "Verification by text message (SMS) — Matrx hands control back to you at that step."
-                : "Verification by push notification or another method — Matrx hands control back to you at that step."}{" "}
-              If this account also offers an authenticator app, enrolling it
-              below makes sign-in fully automatic.
-            </p>
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              No authenticator enrolled. Paste the setup key from the
-              site&apos;s &ldquo;authenticator app&rdquo; step and sign-in
-              becomes fully automatic.
+        <div className="space-y-2">
+          {loadError && (
+            <p role="alert" className="text-sm text-destructive">
+              {loadError} <ErrorAlchemyMenu error={loadError} />
             </p>
           )}
-          {item.capabilities.can_manage ? (
-          <div className="flex items-center gap-2">
-            <Input
-              value={setupKey}
-              onChange={(e) => setSetupKey(e.target.value)}
-              placeholder="otpauth:// link or manual setup key"
-              autoComplete="off"
-              spellCheck={false}
-              className="h-7 flex-1 font-mono text-xs"
-            />
-            <Button
-              variant="primary"
-              disabled={working || setupKey.trim().length === 0}
-              onClick={enroll}
-            >
-              Turn on codes
-            </Button>
-          </div>
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              Only this credential&apos;s owner can turn on codes.
+          {mfaMethod && (
+            <p className="text-sm text-muted-foreground">
+              {mfaMethod === "sms"
+                ? "Text message verification"
+                : "Other verification method"}
             </p>
+          )}
+          {item.capabilities.can_manage && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setSetupOpen(true)}
+            >
+              Add authenticator
+            </Button>
           )}
         </div>
       )}
+      {entry && (
+        <AuthenticatorCode
+          credentialItemId={item.id}
+          enabled={entry.enabled}
+          period={entry.period}
+        />
+      )}
+      <AuthenticatorSetupDialog
+        open={setupOpen}
+        onOpenChange={setSetupOpen}
+        name={item.display_name}
+        onEnroll={async (input, parsed, context) => {
+          const name = authenticatorName(item.display_name, parsed);
+          const saved = await enrollAuthenticator(item.id, input, context);
+          setEntry(saved);
+          setLoadError(null);
+          if (name !== item.display_name) {
+            try {
+              await updateVaultItem(item.id, { display_name: name });
+              saved.display_name = name;
+              await onItemChanged?.();
+            } catch (cause) {
+              toast.error(
+                "Authenticator saved. The login name could not be updated.",
+                {
+                  description:
+                    cause instanceof Error
+                      ? cause.message
+                      : "Try renaming it in Vault.",
+                },
+              );
+            }
+          }
+          return saved;
+        }}
+      />
     </div>
   );
 }
@@ -2269,16 +2289,21 @@ function DestinationSection({
             >
               <p className="text-muted-foreground">
                 This item stores its address in the encrypted field{" "}
-                <span className="font-medium">{humanizeIdentifier(field.field_key)}</span>, which the
-                browser matcher cannot read. Use it as a login URL to make it
-                fillable — the address becomes visible, unencrypted metadata.
+                <span className="font-medium">
+                  {humanizeIdentifier(field.field_key)}
+                </span>
+                , which the browser matcher cannot read. Use it as a login URL
+                to make it fillable — the address becomes visible, unencrypted
+                metadata.
               </p>
               <Button
-                icon={promoting === field.id ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  <Globe />
-                )}
+                icon={
+                  promoting === field.id ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <Globe />
+                  )
+                }
                 variant="outline"
                 className="mt-1.5"
                 disabled={busy || promoting === field.id}
@@ -2516,7 +2541,9 @@ function NotEncryptedSection({
             <p className="text-xs font-medium text-muted-foreground">
               {VAULT_LABELS.notes}
             </p>
-            <div className="mt-1 break-words rounded border border-border bg-background p-2 text-xs"><RichContent source={item.notes ?? ""} level="standard" /></div>
+            <div className="mt-1 break-words rounded border border-border bg-background p-2 text-xs">
+              <RichContent source={item.notes ?? ""} level="standard" />
+            </div>
           </div>
         )
       )}
@@ -2614,7 +2641,9 @@ function SharePanel({
 
       {!isOrg && item.capabilities.can_manage && organizations.length > 0 && (
         <div className="space-y-1.5">
-          <Label className="text-xs">Share into an organization&apos;s vault</Label>
+          <Label className="text-xs">
+            Share into an organization&apos;s vault
+          </Label>
           <div className="flex flex-wrap items-center gap-2">
             <Select value={orgTarget} onValueChange={setOrgTarget}>
               <SelectTrigger
@@ -2761,7 +2790,11 @@ function SharePanel({
                         }
                       }}
                     />
-                    {grant.organization_id ? "Editor" : <>Can reveal &amp; edit</>}
+                    {grant.organization_id ? (
+                      "Editor"
+                    ) : (
+                      <>Can reveal &amp; edit</>
+                    )}
                   </label>
                   <button
                     type="button"
@@ -2851,11 +2884,9 @@ function GiveOwnershipPanel({
       </div>
       <div className="flex justify-end">
         <Button
-          icon={busy ? (
-            <Loader2 className="animate-spin" />
-          ) : (
-            <ArrowLeftRight />
-          )}
+          icon={
+            busy ? <Loader2 className="animate-spin" /> : <ArrowLeftRight />
+          }
           variant="danger"
           disabled={busy || !email.trim()}
           onClick={() => setConfirming(true)}
@@ -2907,10 +2938,7 @@ function PrincipalPicker({
       <p className="text-xs text-muted-foreground">{note}</p>
       <div className="flex flex-wrap items-center gap-2">
         <Select value={target} onValueChange={setTarget}>
-          <SelectTrigger
-            className="min-w-48 flex-1"
-            aria-label="Destination"
-          >
+          <SelectTrigger className="min-w-48 flex-1" aria-label="Destination">
             <SelectValue
               placeholder={loading ? "Loading…" : "Choose a destination"}
             />
@@ -2925,7 +2953,9 @@ function PrincipalPicker({
                 {organizations.some(
                   (other) => other.id !== org.id && other.name === org.name,
                 ) && (
-                  <span className="ml-1 text-muted-foreground">({org.slug})</span>
+                  <span className="ml-1 text-muted-foreground">
+                    ({org.slug})
+                  </span>
                 )}
               </SelectItem>
             ))}

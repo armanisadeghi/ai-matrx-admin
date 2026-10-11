@@ -112,8 +112,12 @@ describe("shared vault UI contract", () => {
     expect(typesSource).toContain("wire.execution_purpose");
     expect(typesSource).toContain('=== "passkey_private"');
     expect(valueSource).toContain("Native provider only");
-    expect(valueSource).toContain("if (isProtectedExecutionField(field)) return false");
-    expect(valueSource).toContain("if (isProtectedExecutionField(field)) return null");
+    expect(valueSource).toContain(
+      "if (isProtectedExecutionField(field)) return false",
+    );
+    expect(valueSource).toContain(
+      "if (isProtectedExecutionField(field)) return null",
+    );
     expect(detailSource).toContain("!protectedExecution");
     expect(detailSource).toContain("!hasProtectedExecutionField");
     expect(detailSource).toContain("Moving, giving ownership, and copying are");
@@ -253,11 +257,18 @@ describe("shared vault UI contract", () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { legacySettingsRedirects } = require(
       join(process.cwd(), "utils/next-config/legacySettingsRedirects.js"),
-    ) as { legacySettingsRedirects: { source: string; destination: string; has?: unknown }[] };
+    ) as {
+      legacySettingsRedirects: {
+        source: string;
+        destination: string;
+        has?: unknown;
+      }[];
+    };
 
     expect(
-      legacySettingsRedirects.find((rule) => rule.source === "/settings/secrets" && !rule.has)
-        ?.destination,
+      legacySettingsRedirects.find(
+        (rule) => rule.source === "/settings/secrets" && !rule.has,
+      )?.destination,
     ).toBe("/vault");
   });
 
@@ -330,7 +341,7 @@ describe("shared vault UI contract", () => {
     expect(hooksSource).toContain("requestId !== requestIdRef.current");
   });
 
-  test("uses the canonical Vault form for authenticator login creation", () => {
+  test("uses one authenticator intake across direct and Vault creation", () => {
     const workspaceSource = readFileSync(
       join(
         process.cwd(),
@@ -343,12 +354,15 @@ describe("shared vault UI contract", () => {
       "utf8",
     );
 
-    expect(workspaceSource).toContain("<VaultCreateDialog");
-    expect(workspaceSource).toContain(
-      "initialDefinitionKey={WEBSITE_LOGIN_DEFINITION_KEY}",
+    const detailSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/VaultItemDetail.tsx"),
+      "utf8",
     );
-    expect(createSource).toContain("Authenticator setup key");
-    expect(createSource).toContain("can leave this blank");
+    for (const source of [workspaceSource, createSource, detailSource]) {
+      expect(source).toContain("<AuthenticatorSetupDialog");
+    }
+    expect(workspaceSource).not.toContain("<VaultCreateDialog");
+    expect(workspaceSource).toContain("fields: []");
   });
 
   test("supports partial login saves and first-class protected additions", () => {

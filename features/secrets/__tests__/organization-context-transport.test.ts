@@ -1,5 +1,8 @@
 import { setStoreSingleton } from "@/lib/redux/store-singleton";
-import { fetchAuthenticators } from "../authenticator-service";
+import {
+  enrollAuthenticator,
+  fetchAuthenticators,
+} from "../authenticator-service";
 import {
   checkVaultDestination,
   createVaultItem,
@@ -15,7 +18,7 @@ import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
 const ACCESS_TOKEN = "test-access-token";
 const ORGANIZATION_ID = "11111111-1111-4111-8111-111111111111";
 const mockGetSession = jest.fn(async () => ({
-  data: { session: { access_token: ACCESS_TOKEN } },
+  data: { session: { access_token: ACCESS_TOKEN, user: { id: "user-1" } } },
 }));
 const mockGetClaims = jest.fn<
   Promise<{
@@ -109,6 +112,22 @@ describe("Vault and Authenticator organization transport", () => {
       "X-Organization-Id": ORGANIZATION_ID,
     });
   });
+
+  test.each([
+    { userId: "another-user", organizationId: ORGANIZATION_ID },
+    {
+      userId: "user-1",
+      organizationId: "22222222-2222-4222-8222-222222222222",
+    },
+  ])(
+    "enrollment refuses a changed actor or organization before sending",
+    async (expectedContext) => {
+      await expect(
+        enrollAuthenticator("item-1", "JBSWY3DPEHPK3PXP", expectedContext),
+      ).rejects.toThrow("Your account or organization changed");
+      expect(fetchMock).not.toHaveBeenCalled();
+    },
+  );
 
   test("export verifies the exact bearer token it sends", async () => {
     fetchMock.mockResolvedValueOnce(
@@ -253,9 +272,9 @@ describe("Vault and Authenticator organization transport", () => {
       ...errorResponse(401),
       json: async () => ({ detail: { code: "recent_auth_required" } }),
     } as Response);
-    await expect(
-      revealVaultField("item-1", "password"),
-    ).rejects.toBeInstanceOf(VaultRecentAuthRequiredError);
+    await expect(revealVaultField("item-1", "password")).rejects.toBeInstanceOf(
+      VaultRecentAuthRequiredError,
+    );
     fetchMock.mockResolvedValueOnce({
       ...errorResponse(401),
       json: async () => ({

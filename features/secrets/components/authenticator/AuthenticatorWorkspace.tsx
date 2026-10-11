@@ -42,8 +42,12 @@ import { useAuthenticator } from "../../hooks/use-authenticator";
 import { useVault } from "../../vault-hooks";
 import { WEBSITE_LOGIN_DEFINITION_KEY } from "../../types";
 import type { AuthenticatorEntry } from "../../authenticator-types";
-import { safeVaultLoginUrl } from "../../utils";
-import { AuthenticatorSetupDialog, authenticatorName } from "./AuthenticatorSetupDialog";
+import { safeVaultLoginUrl, normalizeVaultLoginUrlInput } from "../../utils";
+import {
+  AuthenticatorSetupDialog,
+  authenticatorName,
+} from "./AuthenticatorSetupDialog";
+import { updateVaultItem } from "../../vault-service";
 import { enrollAuthenticator } from "../../authenticator-service";
 import type { VaultItem } from "../../types";
 import { AuthenticatorCode } from "./AuthenticatorCode";
@@ -212,6 +216,7 @@ export function AuthenticatorWorkspace() {
   } = useAuthenticator();
   const vault = useVault({ kind: "mine" });
   const pendingItem = useRef<VaultItem | null>(null);
+  const pendingContext = useRef("");
   const busy = authenticatorBusy || vault.busy;
   const [enrollOpen, setEnrollOpen] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<AuthenticatorEntry | null>(
@@ -237,7 +242,8 @@ export function AuthenticatorWorkspace() {
           <div className="flex min-h-16 items-center gap-3 border-b border-border px-4 py-2 sm:rounded-t-xl sm:border sm:bg-card sm:px-5">
             {entries.length >= 5 ? (
               <div className="relative min-w-0 flex-1">
-                <Input adornment="start"
+                <Input
+                  adornment="start"
                   type="search"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
@@ -288,8 +294,8 @@ export function AuthenticatorWorkspace() {
               <AuthenticatorListSkeleton />
             </div>
           ) : error ? (
-<ReadFailure error={error} what="this list" />
-) : entries.length === 0 ? (
+            <ReadFailure error={error} what="this list" />
+          ) : entries.length === 0 ? (
             <div className="px-5 py-14 text-center sm:rounded-b-xl sm:border-x sm:border-b sm:bg-card">
               <p className="font-medium text-foreground">No codes yet</p>
               <Button
@@ -325,24 +331,50 @@ export function AuthenticatorWorkspace() {
         </div>
       </div>
 
-        <AuthenticatorSetupDialog
-          open={enrollOpen}
-          onOpenChange={(open) => { setEnrollOpen(open); if (!open && pendingItem.current?.non_secret_fields?.some((field) => field.key === "totp_enabled")) pendingItem.current = null; }}
-          onEnroll={async (input, parsed) => {
-            const item = pendingItem.current ?? await vault.actions.createItem({
+      <AuthenticatorSetupDialog
+        standalone
+        open={enrollOpen}
+        onOpenChange={setEnrollOpen}
+        onEnroll={async (input, parsed, details) => {
+          const context = `${details.userId}:${details.organizationId}`;
+          if (pendingContext.current !== context) pendingItem.current = null;
+          pendingContext.current = context;
+          const loginUrl = details.loginUrl.trim()
+            ? normalizeVaultLoginUrlInput(details.loginUrl)
+            : null;
+          if (details.loginUrl.trim() && !loginUrl)
+            throw new Error("Enter a valid website address.");
+          const item =
+            pendingItem.current ??
+            (await vault.actions.createItem({
               principal: { type: "user" },
               definition_key: WEBSITE_LOGIN_DEFINITION_KEY,
               definition_version: 1,
-              display_name: authenticatorName("", parsed),
+              display_name: authenticatorName(details.displayName, parsed),
+              login_urls: loginUrl ? [loginUrl] : [],
+              browser_fill_enabled: Boolean(loginUrl),
+              uri_match_mode: "host",
               fields: [],
               source: "manual",
+            }));
+          pendingItem.current = item;
+          const desiredName = authenticatorName(details.displayName, parsed);
+          if (
+            item.display_name !== desiredName ||
+            item.login_urls.join() !== (loginUrl ?? "")
+          ) {
+            pendingItem.current = await updateVaultItem(item.id, {
+              display_name: desiredName,
+              login_urls: loginUrl ? [loginUrl] : [],
+              browser_fill_enabled: Boolean(loginUrl),
             });
-            pendingItem.current = item;
-            const entry = await enrollAuthenticator(item.id, input);
-            void refresh();
-            return entry;
-          }}
-        />
+          }
+          const entry = await enrollAuthenticator(item.id, input, details);
+          pendingItem.current = null;
+          void refresh();
+          return entry;
+        }}
+      />
 
       <ConfirmDialog
         open={pendingDelete !== null}

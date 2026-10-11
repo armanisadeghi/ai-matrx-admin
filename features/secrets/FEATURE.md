@@ -79,10 +79,10 @@ filter. **None of them is a bare RLS-filtered read** — that is the defect THE
 VIEW LAW exists to prevent, and RLS widening must never silently flood a
 personal vault:
 
-| Scope          | Query                                                                                      | Notes                                                                                                   |
-| -------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
-| `mine`         | `eq(user_id, me)`                                                                          | Keeps the explicit owner filter.                                                                        |
-| `shared`       | my own `user_secret_grants` rows (`can_use`) → `in(id, thoseItemIds)` + `neq(user_id, me)` | Items OTHER people shared with me. Create/import are hidden here — the items are owned by someone else. |
+| Scope          | Query                                                                                                       | Notes                                                                                                                                     |
+| -------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `mine`         | `eq(user_id, me)`                                                                                           | Keeps the explicit owner filter.                                                                                                          |
+| `shared`       | my own `user_secret_grants` rows (`can_use`) → `in(id, thoseItemIds)` + `neq(user_id, me)`                  | Items OTHER people shared with me. Create/import are hidden here — the items are owned by someone else.                                   |
 | `organization` | `eq(organization_id, org)` OR `id in` the org's own grant rows (`user_secret_grants.organization_id = org`) | The org's vault: its own items plus personal items shared into it (row badge "Shared in"). A member with vault access none reads nothing. |
 
 The personal surface shows My credentials / Shared with me / Organization.
@@ -320,19 +320,19 @@ Personal and organization credentials render through the same
 | [`components/VaultContextMenu.tsx`](./components/VaultContextMenu.tsx)             | THE right-click menu for the vault (v3 `NonEditableContextMenu`), mounted once by `VaultWorkspace` so `/vault` and the floating Vault window share it. Builds the menu payload by hand from non-secret metadata and passes it as `getApplicationScope`, which bypasses the shell's DOM-text fallback; `selection` is forced empty. See invariant 8. |
 | [`components/VaultHandlingControl.tsx`](./components/VaultHandlingControl.tsx)     | Shared Standard / Restricted / Automation-only protection selector and current-state presentation for fields and protected files.                                                                                                                                                                                                                   |
 | [`components/SecretValue.tsx`](./components/SecretValue.tsx)                       | Canonical masked value row with audited reveal, direct copy, compact icon actions, and transient plaintext countdown/auto-clear.                                                                                                                                                                                                                    |
-| [`components/VaultCreateDialog.tsx`](./components/VaultCreateDialog.tsx)           | The one create form for Vault and Authenticator: basic-purpose picker/full catalog, progressive website login parts, TOTP, recovery codes, secure notes, protected files, local password generation, and Custom builder.                                                                                                                            |
+| [`components/VaultCreateDialog.tsx`](./components/VaultCreateDialog.tsx)           | The credential create form: basic-purpose picker/full catalog, progressive website login parts, TOTP, recovery codes, secure notes, protected files, local password generation, and Custom builder.                                                                                                                                                 |
 | [`components/VaultPasswordGenerator.tsx`](./components/VaultPasswordGenerator.tsx) | Shared staged password/passphrase controls using the published engine; explicit reveal/copy/use and candidate expiry.                                                                                                                                                                                                                               |
 | [`generator-limits.ts`](./generator-limits.ts)                                     | Validated effective generator limits through the canonical settings client.                                                                                                                                                                                                                                                                         |
 | [`components/VaultItemDetail.tsx`](./components/VaultItemDetail.tsx)               | Labeled fields with hidden/full reveal and one credential edit mode, including authenticator, protected files, and first-class recovery-code copy/Mark-used behavior, plus share, transfer, fork, soft delete, and audit trail.                                                                                                                     |
 | [`components/VaultEnvImportDialog.tsx`](./components/VaultEnvImportDialog.tsx)     | Bulk `.env` paste/upload → `POST /api/vault/items/import-env`.                                                                                                                                                                                                                                                                                      |
-| [`csv-import.worker.ts`](./csv-import.worker.ts) | A CSV FILE parses in this worker (Alchemy's `parseDelimited`; 5 MB ≈ 290 ms on the main thread); pasted text and tests with no `Worker` parse inline through the same `parseCsvText`. |
-| [`csv-import-file.ts`](./csv-import-file.ts) | `parseCsvFile` — the only code that STARTS the CSV worker. The worker imports `csv-import.ts` and must never reach this file: a worker that reaches its own starter hangs the Turbopack build (`pnpm check:worker-cycles`). |
+| [`csv-import.worker.ts`](./csv-import.worker.ts)                                   | A CSV FILE parses in this worker (Alchemy's `parseDelimited`; 5 MB ≈ 290 ms on the main thread); pasted text and tests with no `Worker` parse inline through the same `parseCsvText`.                                                                                                                                                               |
+| [`csv-import-file.ts`](./csv-import-file.ts)                                       | `parseCsvFile` — the only code that STARTS the CSV worker. The worker imports `csv-import.ts` and must never reach this file: a worker that reaches its own starter hangs the Turbopack build (`pnpm check:worker-cycles`).                                                                                                                         |
 | [`components/VaultCsvImportDialog.tsx`](./components/VaultCsvImportDialog.tsx)     | Local CSV, plain-Bitwarden-JSON, and 1Password 1PUX import session: bounded worker parsing with required request IDs, masked preflight, frozen idempotent commands, and truthful partial-result accounting.                                                                                                                                         |
 | [`components/VaultLoginExportDialog.tsx`](./components/VaultLoginExportDialog.tsx) | Mine-only selected-login CSV preview, plaintext warning, current-password confirmation, and short-lived browser download.                                                                                                                                                                                                                           |
 | [`../trash/VaultTrashRestoreDialog.tsx`](../trash/VaultTrashRestoreDialog.tsx)     | Trash-owned metadata-only Vault aggregate recovery preview, quarantine warning, current-password retry, and actor/request-organization fencing.                                                                                                                                                                                                     |
 | [`authenticator-service.ts`](./authenticator-service.ts)                           | `/api/authenticator/*` client — metadata plus the signed-in owner's short-lived current-code request; never a seed.                                                                                                                                                                                                                                 |
 | [`authenticator-otpauth.ts`](./authenticator-otpauth.ts)                           | Pure client parse of a setup key / `otpauth://` URI, kept in lockstep with aidream's `otpauth.py`, for the instant enrollment preview.                                                                                                                                                                                                              |
-| [`hooks/use-authenticator.ts`](./hooks/use-authenticator.ts)                       | Authenticator metadata/manage hook: list, rename, enable/disable, and remove. Login creation/enrollment stays in the canonical Vault form.                                                                                                                                                                                                          |
+| [`hooks/use-authenticator.ts`](./hooks/use-authenticator.ts)                       | Authenticator metadata/manage hook: list, rename, enable/disable, and remove. Enrollment uses the shared AuthenticatorSetupDialog.                                                                                                                                                                                                                  |
 | [`components/authenticator/`](./components/authenticator/)                         | The `/vault/authenticator` code-first workspace; Add opens `VaultCreateDialog` directly at Website login, and saved rows expose rotating codes plus Vault/rename/enable/remove actions.                                                                                                                                                             |
 | [`utils.ts`](./utils.ts)                                                           | `parseEnvAssignment` (single dotenv-line paste-to-fill); credential generation comes from the published shared engine.                                                                                                                                                                                                                              |
 
@@ -343,34 +343,32 @@ Personal and organization credentials render through the same
 **enroll + use + manage** — the signed-in owner sees the current rotating code;
 the sealed setup seed has no reveal path at any privilege.
 
-- **One add process.** Authenticator's Add action opens the same
-  `VaultCreateDialog` used by Vault, directly at Website login. Name, URL,
-  username, password, 2FA method/setup key, recovery codes, secure notes, and
-  protected files are parts of one item instead of separate records or forms.
-- **Save progress at any point.** Website fields override catalog-required
-  presentation: any meaningful known value can be saved. Selecting
-  Authenticator app without having its setup key does not block save; the key
-  can be added later from the saved item's Two-factor section.
-- **Every TOTP intake route stays available.** The canonical form reuses
-  `<QrCodeInput>` for pasted/dropped/chosen QR images and live camera scan,
-  plus a manual setup-key field. QR images decode locally and are never
-  uploaded.
-- **Enrollment is additive.** A valid setup key is enrolled after the login is
-  created. If enrollment fails, the login and every other protected part stay
-  saved, and the error points back to that item's Two-factor section.
-- **Existing logins are completed in place.** Open the item from Authenticator
-  or Vault and use its Two-factor section; never create a sibling
-  authenticator-only credential.
+- **One authenticator intake.** `AuthenticatorSetupDialog` serves direct
+  Authenticator Add, a new Website login's Add authenticator button, and an
+  existing credential's Two-factor section. Direct Add skips the login form.
+- **Camera and alternatives together.** Camera starts on open; manual setup
+  key, image selection, paste, and drop remain available while permission is
+  pending. Cancel camera releases the pending attempt. Images decode locally.
+- **Code immediately after save.** Valid intake saves and enrolls once, then
+  displays the current server-generated code for confirmation on the provider.
+  A TOTP-only credential needs no username, password, or URL.
+- **Names come from the QR metadata.** Blank and default names become the
+  issuer or account label. A custom name remains unchanged.
+- **Retries retain the credential.** Creation is saved before enrollment.
+  Enrollment failure retains that ID and the setup input; retry does not create
+  another login. Actor and organization changes invalidate the pending setup.
+  Recent-authentication refusals offer the existing password confirmation flow.
+- **Existing logins are completed in place.** Adding an authenticator updates
+  that credential. A failed metadata rename does not discard successful 2FA.
 - **Every entry is a door.** The account name and its row menu open THAT
-  credential via `/vault/[itemId]` (the deep link `VaultPage` now owns); the
+  credential via `/vault/[itemId]`; the
   menu also offers Rename login and a new-tab door without cluttering the
   code-first list. Renaming updates the credential item's `display_name`, so the
   Authenticator and Vault never diverge.
 - **Organization hydration is explicit.** The Authenticator hook waits for the
   shell's active-organization bootstrap, reloads whenever that organization
   changes, and discards superseded requests. If bootstrap resolves without a
-  selection, the page renders the canonical organization picker instead of a
-  dead Retry error beside a false empty state.
+  selection, the page renders the canonical organization picker.
 
 ## Invariants
 

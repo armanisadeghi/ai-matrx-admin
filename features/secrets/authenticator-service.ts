@@ -16,6 +16,7 @@ import type {
 } from "./authenticator-types";
 import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
 import {
+  BackendApiError,
   buildMatrxRequestUrl,
   readMatrxJsonResponse,
   sendMatrxRequest,
@@ -32,6 +33,7 @@ async function authHeaders(
 ): Promise<{
   organizationId: string;
   headers: Record<string, string>;
+  userId: string;
 }> {
   // ORG-GATE-AUDIT: THE GATE, never the bare kernel. Enrolling or removing an
   // authenticator with no organization selected asks, then continues this
@@ -46,15 +48,30 @@ async function authHeaders(
     Authorization: `Bearer ${session.access_token}`,
   };
   if (json) headers["Content-Type"] = "application/json";
-  return { organizationId, headers };
+  return { organizationId, headers, userId: session.user.id };
 }
 
-async function authFetch<T>(path: string, init?: RequestInit): Promise<T> {
+async function authFetch<T>(
+  path: string,
+  init?: RequestInit,
+  expectedContext?: { organizationId: string; userId: string },
+): Promise<T> {
   const isForm = init?.body instanceof FormData;
-  const { organizationId, headers: auth } = await authHeaders(
-    !isForm,
-    init?.method ?? "GET",
-  );
+  const {
+    organizationId,
+    headers: auth,
+    userId,
+  } = await authHeaders(!isForm, init?.method ?? "GET");
+  if (expectedContext) {
+    if (
+      expectedContext.organizationId !== organizationId ||
+      expectedContext.userId !== userId
+    ) {
+      throw new Error(
+        "Your account or organization changed. Reopen authenticator setup.",
+      );
+    }
+  }
   const suppliedHeaders = Object.fromEntries(
     new Headers(init?.headers).entries(),
   );
@@ -73,8 +90,34 @@ async function authFetch<T>(path: string, init?: RequestInit): Promise<T> {
       "Authenticator service unreachable — enrollment needs the backend online",
     );
   }
-  // A non-2xx becomes the one classified BackendApiError (its message is the
+  // A non-2xx becomes the shared classified transport error (its message is the
   // server's user sentence); a 204 has no body.
+  // Older authenticator servers send these two recent-auth refusals as plain
+  // detail strings. Classify only their exact contract; other 401s stay errors.
+  if (resp.status === 401) {
+    const body: unknown = await resp
+      .clone()
+      .json()
+      .catch(() => null);
+    const detail =
+      body && typeof body === "object" && "detail" in body ? body.detail : null;
+    if (
+      typeof detail === "string" &&
+      (detail ===
+        "recent authentication is required and the session's auth time (amr claim) could not be established — re-authenticate and retry" ||
+        /^authentication within the last \d+s is required — re-authenticate and retry$/.test(
+          detail,
+        ))
+    ) {
+      throw new BackendApiError({
+        code: "recent_auth_required",
+        detail,
+        userMessage:
+          "Confirm your identity, then try saving the authenticator again.",
+        status: 401,
+      });
+    }
+  }
   if (resp.status === 204) return undefined as T;
   return readMatrxJsonResponse<T>(resp);
 }
@@ -103,14 +146,19 @@ export function fetchAuthenticatorCode(
 export function enrollAuthenticator(
   credentialItemId: string,
   enrollmentInput: string,
+  expectedContext?: { organizationId: string; userId: string },
 ): Promise<AuthenticatorEntry> {
-  return authFetch<AuthenticatorEntry>("/enroll", {
-    method: "POST",
-    body: JSON.stringify({
-      credential_item_id: credentialItemId,
-      enrollment_input: enrollmentInput,
-    }),
-  });
+  return authFetch<AuthenticatorEntry>(
+    "/enroll",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        credential_item_id: credentialItemId,
+        enrollment_input: enrollmentInput,
+      }),
+    },
+    expectedContext,
+  );
 }
 
 /** Per-account consent toggle — effective on the next code generation. */
