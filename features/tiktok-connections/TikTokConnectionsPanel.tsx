@@ -8,6 +8,7 @@ import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
@@ -15,7 +16,17 @@ import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 import { attachTikTokAccount, discoverTikTokAccount, disconnectTikTokConnection, finishTikTokAuthorization,
-  listTikTokConnections, refreshTikTokConnection, startTikTokAuthorization } from "./service";
+  listTikTokConnections, listTikTokVideos, refreshTikTokConnection, startTikTokAuthorization } from "./service";
+
+function tikTokLink(value: string | null | undefined): string | undefined {
+  if (!value) return undefined;
+  try {
+    const url = new URL(value);
+    if (url.protocol === "https:" && !url.username && !url.password &&
+        (url.hostname === "tiktok.com" || url.hostname.endsWith(".tiktok.com"))) return url.href;
+  } catch { /* A malformed provider link is not navigable. */ }
+  return undefined;
+}
 
 export function TikTokConnectionsPanel() {
   const userId = useAppSelector(selectUserId);
@@ -35,6 +46,7 @@ function TikTokConnectionContents() {
   });
   const [busy, setBusy] = useState(false);
   const [discovery, setDiscovery] = useState<{ connectionId: string; account: components["schemas"]["TikTokDiscoveryResponse"] } | null>(null);
+  const [videos, setVideos] = useState<components["schemas"]["TikTokVideosResponse"] | null>(null);
   const finishing = useRef<string | null>(null);
   const load = useCallback(async () => {
     try { setConnections(await listTikTokConnections()); setFailure(null); }
@@ -91,21 +103,61 @@ function TikTokConnectionContents() {
       <div className="flex justify-between gap-2"><span>{connection.account_name ?? "TikTok account"}</span><Badge variant="outline">{connection.status}</Badge></div>
       {connection.last_error && <ErrorNotice error={connection.last_error} size="compact" />}
       <div className="flex flex-wrap gap-2">
-        <Button variant="outline" disabled={busy || connection.status !== "connected"} onClick={() => void act(async () => setDiscovery({ connectionId: connection.id, account: await discoverTikTokAccount(connection.id) }))}>Select account</Button>
+        <Button variant="outline" disabled={busy || connection.status !== "connected"} onClick={() => void act(async () => {
+          setDiscovery(null); setVideos(null);
+          setDiscovery({ connectionId: connection.id, account: await discoverTikTokAccount(connection.id) });
+        })}>Select account</Button>
         <Button variant="outline" disabled={busy} onClick={() => void act(() => refreshTikTokConnection(connection.id))}>Refresh access</Button>
         <Button variant="outline" disabled={busy} onClick={() => void act(async () => {
           if (!await confirm({ title: "Disconnect TikTok?", description: "Access stops. Collected history stays.", confirmLabel: "Disconnect", variant: "destructive" })) return;
-          await disconnectTikTokConnection(connection.id); setDiscovery(null);
+          await disconnectTikTokConnection(connection.id); setDiscovery(null); setVideos(null);
         })}>Disconnect</Button>
       </div>
     </div>)}
     {discovery && <div className="rounded-md border p-3 space-y-2">
-      <p>{discovery.account.profile.username ? `@${discovery.account.profile.username}` : discovery.account.display_name ?? "TikTok account"}</p>
+      <div className="flex items-center gap-3">
+        <Avatar><AvatarImage src={discovery.account.profile.avatar_url ?? undefined} alt="" /><AvatarFallback>TT</AvatarFallback></Avatar>
+        <div className="min-w-0">
+          <p className="font-medium">{discovery.account.display_name ?? "TikTok account"}</p>
+          {discovery.account.profile.username && <p className="text-sm text-muted-foreground">@{discovery.account.profile.username}</p>}
+        </div>
+        {discovery.account.profile.is_verified === true && <Badge variant="secondary">Verified</Badge>}
+      </div>
+      {discovery.account.profile.bio_description && <p className="text-sm whitespace-pre-wrap break-words">{discovery.account.profile.bio_description}</p>}
+      {tikTokLink(discovery.account.profile.profile_deep_link) && <a className="text-sm underline" href={tikTokLink(discovery.account.profile.profile_deep_link)} target="_blank" rel="noopener noreferrer">View on TikTok</a>}
+      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-sm">
+        {([
+          ["Followers", discovery.account.profile.follower_count],
+          ["Following", discovery.account.profile.following_count],
+          ["Likes", discovery.account.profile.likes_count],
+          ["Videos", discovery.account.profile.video_count],
+        ] as const).map(([label, value]) => <div key={label}><dt className="text-muted-foreground">{label}</dt><dd className="font-medium">{value == null ? "—" : value.toLocaleString()}</dd></div>)}
+      </dl>
       <p className="text-sm text-muted-foreground">Updates automatically after you select Track account.</p>
-      <Button disabled={busy} onClick={() => void act(async () => {
-        await attachTikTokAccount(discovery.connectionId, discovery.account.resource_ref);
-        setDiscovery(null); toast.success("Account added to Social Accounts.");
-      })}>Track account</Button>
+      <div className="flex flex-wrap gap-2">
+        <Button disabled={busy} onClick={() => void act(async () => {
+          await attachTikTokAccount(discovery.connectionId, discovery.account.resource_ref);
+          toast.success("Account added to Social Accounts.");
+        })}>Track account</Button>
+        <Button variant="outline" disabled={busy || !discovery.account.granted_scopes.includes("video.list")} onClick={() => void act(async () => {
+          setVideos(await listTikTokVideos(discovery.connectionId));
+        })}>Public videos</Button>
+      </div>
+      {videos && <div className="space-y-3 border-t pt-3">
+        {videos.videos.length === 0 && <p className="text-sm text-muted-foreground">No public videos</p>}
+        {videos.videos.map(video => <div key={video.id} className="space-y-1">
+          {tikTokLink(video.share_url)
+            ? <a className="text-sm font-medium underline" href={tikTokLink(video.share_url)} target="_blank" rel="noopener noreferrer">{video.title || video.video_description || "Untitled video"}</a>
+            : <p className="text-sm font-medium">{video.title || video.video_description || "Untitled video"}</p>}
+          <dl className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            {([["Views", video.view_count], ["Likes", video.like_count], ["Comments", video.comment_count], ["Shares", video.share_count]] as const).map(([label, value]) => <div key={label} className="flex gap-1"><dt>{label}</dt><dd>{value == null ? "—" : value.toLocaleString()}</dd></div>)}
+          </dl>
+        </div>)}
+        {videos.has_more && videos.cursor != null && <Button variant="outline" disabled={busy} onClick={() => void act(async () => {
+          const next = await listTikTokVideos(discovery.connectionId, videos.cursor ?? undefined);
+          setVideos({ ...next, videos: [...videos.videos, ...next.videos] });
+        })}>Load more</Button>}
+      </div>}
     </div>}
   </div>;
 }
