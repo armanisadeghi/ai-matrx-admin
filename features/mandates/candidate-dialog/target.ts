@@ -150,6 +150,22 @@ export const RUNG_COLLECTS: Record<CandidateRung, string> = {
 };
 
 /**
+ * The rung's label for THIS mandate. A mandate homed in one organization only
+ * runs there, so its "Everyone" level covers that organization — the label says
+ * so (`homeBound` from `mandateHomeBound`; null = system-homed, truly everyone).
+ */
+export function rungLabelFor(rung: CandidateRung, homeBound: string | null): string {
+  return rung === "global" && homeBound ? `Everyone in ${homeBound}` : RUNG_LABEL[rung];
+}
+
+/** What a candidate at this rung collects, bounded the same way as its label. */
+export function rungCollectsFor(rung: CandidateRung, homeBound: string | null): string {
+  return rung === "global" && homeBound
+    ? `Runs in ${homeBound} that use the default setting`
+    : RUNG_COLLECTS[rung];
+}
+
+/**
  * The rung the live holder sits at, from the resolution verdict's provenance
  * (`GET /mandates/{key}/resolution`). `run` (a caller-supplied holder) and an
  * unanswered verdict name no rung.

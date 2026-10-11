@@ -108,7 +108,7 @@ import { useMandateHolder } from "@ai-matrx/chat/mandates/useMandateHolder";
 import { useCopyMandateWorkflow } from "../useCopyMandateWorkflow";
 import { MANDATE_WORKSPACE_SURFACE_NAME } from "@/features/surfaces/manifests/mandate-workspace.manifest";
 import { normalizeTransferJson } from "@ai-matrx/alchemy/operate";
-import { mandateScopeLabel } from "../mandate-home";
+import { mandateHomeBound, mandateScopeLabel } from "../mandate-home";
 import { useMandateAlchemyTabCapture, MandateAlchemy, MandateAlchemyCaptureProvider, buildMandateDefinitionCore, type MandateAlchemyCapture } from "./MandateAlchemy";
 import type { ResolvedMandateHolder } from "@ai-matrx/chat/mandates/service";
 import {
@@ -869,6 +869,10 @@ function OneMandateWorkspace({
                   data.mandate.label,
                 )}
                 outputKind={data.mandate.output_kind ?? null}
+                homeName={mandateHomeBound(
+                  data.mandate.organization_id,
+                  nameOfOrg(data.mandate.organization_id ?? ""),
+                )}
                 rung={
                   perspective === "system"
                     ? { rung: "global", principalId: null }

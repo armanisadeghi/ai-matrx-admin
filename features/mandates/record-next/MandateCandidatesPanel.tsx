@@ -56,7 +56,7 @@ import {
 } from "@/features/mandates/candidate-dialog/api";
 import { SetCandidateDialog } from "@/features/mandates/candidate-dialog/SetCandidateDialog";
 import {
-  RUNG_LABEL,
+  rungLabelFor,
   doorLabel,
   skipLabel,
   type CandidateRungChoice,
@@ -72,7 +72,7 @@ import {
   useCandidatePollMs,
   useHeartbeat,
 } from "@/features/mandates/candidates/live";
-import { CandidateHolderName } from "@/features/mandates/candidates/components/CandidateHolderName";
+import { CandidateHolderName, useCandidateHolderLabel } from "@/features/mandates/candidates/components/CandidateHolderName";
 import {
   attemptWord,
   discardConfirmation,
@@ -117,6 +117,8 @@ export interface MandateCandidatesPanelProps {
   rung: CandidateRungChoice;
   /** A seat that may look but not change. */
   readOnly?: boolean;
+  /** The organization bounding "Everyone" (`mandateHomeBound`); null when system-homed. */
+  homeName?: string | null;
 }
 
 export function MandateCandidatesPanel({
@@ -125,6 +127,7 @@ export function MandateCandidatesPanel({
   outputKind = null,
   rung,
   readOnly = false,
+  homeName = null,
 }: MandateCandidatesPanelProps) {
   const dispatch = useAppDispatch();
   const [state, setState] = useState<LiveCandidatesResponse | null>(null);
@@ -252,7 +255,7 @@ export function MandateCandidatesPanel({
       </div>
 
       {active ? (
-        <CandidateCard candidate={active} onChanged={changed} />
+        <CandidateCard candidate={active} homeName={homeName} onChanged={changed} />
       ) : null}
 
       {active ? (
@@ -272,7 +275,7 @@ export function MandateCandidatesPanel({
         <section className="space-y-1.5">
           <h3 className="type-secondary font-semibold">Also open at other levels</h3>
           {others.map((candidate) => (
-            <CandidateCard key={candidate.id} candidate={candidate} compact onChanged={changed} />
+            <CandidateCard key={candidate.id} candidate={candidate} homeName={homeName} compact onChanged={changed} />
           ))}
         </section>
       ) : null}
@@ -281,7 +284,7 @@ export function MandateCandidatesPanel({
 
       <section className="space-y-1.5">
         <h3 className="type-secondary font-semibold">History</h3>
-        <HistoryTable history={state.history ?? []} onChanged={changed} />
+        <HistoryTable history={state.history ?? []} homeName={homeName} onChanged={changed} />
       </section>
 
       {dialogOpen ? (
@@ -291,6 +294,7 @@ export function MandateCandidatesPanel({
           outputKind={outputKind}
           rung={rung}
           followLiveRung
+          homeName={homeName}
           onClose={() => setDialogOpen(false)}
           onSet={changed}
         />
@@ -303,10 +307,12 @@ export function MandateCandidatesPanel({
 function CandidateCard({
   candidate,
   compact = false,
+  homeName,
   onChanged,
 }: {
   candidate: LiveCandidate;
   compact?: boolean;
+  homeName: string | null;
   onChanged: () => void;
 }) {
   const counts = countsOf(candidate);
@@ -339,7 +345,7 @@ function CandidateCard({
           <span className="type-secondary text-muted-foreground">nothing</span>
         )}
         <Badge variant="outline" className="text-[11px]">
-          {RUNG_LABEL[candidate.rung]}
+          {rungLabelFor(candidate.rung, homeName)}
         </Badge>
         <Badge variant="secondary" className="text-[11px]">
           {STATUS_WORD[candidate.status]}
@@ -432,6 +438,16 @@ function DecisionButtons({
   const [pending, setPending] = useState<"promote" | "put-back" | "discard" | null>(null);
   // Read once per mount — the Put back window is hours long.
   const [now] = useState(() => Date.now());
+  const candidateName = useCandidateHolderLabel(
+    candidate.holder_type,
+    candidate.holder_version_id,
+    candidate.holder_name,
+  );
+  const baselineName = useCandidateHolderLabel(
+    candidate.baseline_holder_type,
+    candidate.baseline_holder_version_id,
+    candidate.baseline_holder_name ?? null,
+  );
 
   if (!candidate.can_decide) return null;
   const open = candidate.status === "collecting" || candidate.status === "ready";
@@ -459,8 +475,8 @@ function DecisionButtons({
   // says a Reject / Hold recommendation plainly.
   const verdicts = candidate.counts.verdicts ?? {};
   const subject = {
-    candidateName: candidate.holder_name,
-    baselineName: candidate.baseline_holder_name ?? null,
+    candidateName: candidateName ?? candidate.holder_name,
+    baselineName,
     recommendation: candidate.recommendation,
     judged: Object.values(verdicts).reduce((sum, n) => sum + (n ?? 0), 0),
   };
@@ -777,9 +793,11 @@ function CoverageFacts({
 
 function HistoryTable({
   history,
+  homeName,
   onChanged,
 }: {
   history: LiveCandidate[];
+  homeName: string | null;
   onChanged: () => void;
 }) {
   const openSummary = useOpenCandidateSummary();
@@ -842,8 +860,12 @@ function HistoryTable({
         header: "Level",
         width: 110,
         filter: "select",
-        accessorFn: (c) => RUNG_LABEL[c.rung],
-        cell: (c) => <span className="type-secondary">{RUNG_LABEL[c.rung]}</span>,
+        accessorFn: (c) => rungLabelFor(c.rung, homeName),
+        cell: (c) => (
+          <span className="block truncate type-secondary" title={rungLabelFor(c.rung, homeName)}>
+            {rungLabelFor(c.rung, homeName)}
+          </span>
+        ),
       },
       {
         id: "decided",
@@ -870,7 +892,7 @@ function HistoryTable({
         ),
       },
     ],
-    [onChanged],
+    [onChanged, homeName],
   );
   return (
     <MatrxDataTable<LiveCandidate>

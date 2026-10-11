@@ -45,7 +45,7 @@ import {
   promoteConfirmation,
   putBackConfirmation,
 } from "../words";
-import { CandidateHolderName } from "./CandidateHolderName";
+import { CandidateHolderName, useCandidateHolderLabel } from "./CandidateHolderName";
 import { Chip, NewTabLink, StateLine, detailPageHref } from "./parts";
 
 export interface CandidateSummaryRow extends Record<string, unknown> {
@@ -237,6 +237,16 @@ function Decisions({
   const [busy, setBusy] = useState(false);
   const [versions, setVersions] = useState<LiveCandidateVersionChoice[] | null>(null);
   const [chosenVersion, setChosenVersion] = useState<string | null>(null);
+  const candidateName = useCandidateHolderLabel(
+    candidate.holder_type,
+    candidate.holder_version_id,
+    candidate.holder_name,
+  );
+  const baselineName = useCandidateHolderLabel(
+    candidate.baseline_holder_type,
+    candidate.baseline_holder_version_id,
+    candidate.baseline_holder_name ?? null,
+  );
 
   if (!candidate.can_decide) return null;
   const open = isOpenForDecision(candidate);
@@ -246,8 +256,8 @@ function Decisions({
   const mandate = mandateDisplayName(storedMandateKey(candidate.mandate_key));
   const judged = runs.filter((r) => r.status === "completed" && r.verdict).length;
   const subject = {
-    candidateName: candidate.holder_name,
-    baselineName: candidate.baseline_holder_name ?? null,
+    candidateName: candidateName ?? candidate.holder_name,
+    baselineName,
     recommendation: candidate.recommendation,
     judged,
     mandateName: mandate,
