@@ -145,6 +145,10 @@ describe("evaluateRule", () => {
       "gte",
       "lt",
       "lte",
+      "is_overdue",
+      "is_today",
+      "is_this_week",
+      "in_next_days",
     ]);
   });
 
