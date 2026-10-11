@@ -479,6 +479,12 @@ importers:
       '@univerjs/core':
         specifier: 1.0.4
         version: 1.0.4(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/docs-find-replace':
+        specifier: 1.0.4
+        version: 1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/find-replace':
+        specifier: 1.0.4
+        version: 1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)
       '@univerjs/preset-docs-core':
         specifier: 1.0.4
         version: 1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)
@@ -486,6 +492,9 @@ importers:
         specifier: 1.0.4
         version: 1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)
       '@univerjs/preset-docs-hyper-link':
+        specifier: 1.0.4
+        version: 1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/preset-docs-thread-comment':
         specifier: 1.0.4
         version: 1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)
       '@univerjs/preset-sheets-conditional-formatting':
@@ -6395,6 +6404,12 @@ packages:
   '@univerjs/docs-drawing@1.0.4':
     resolution: {integrity: sha512-b3i/bsK+cpcT4IbV/b6gDN6Wyh0FkFdwecl4y8eRQdfCmH+mkkGXTYHzZTNmKDcv0suFMQ36T5bxfxR+QHbzZA==}
 
+  '@univerjs/docs-find-replace@1.0.4':
+    resolution: {integrity: sha512-ziWGLlA3VM6sxKIU8s7XI1PR64/YN0dorpe+GAHYp98Rz+aTgkqApaVeij9r67dcF13l5bditIXp4D1L4EwUjA==}
+    peerDependencies:
+      react: ^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+      rxjs: '>=7.0.0'
+
   '@univerjs/docs-hyper-link-ui@1.0.4':
     resolution: {integrity: sha512-+UKrOYd1/1EePKwEQZ451x7Q7jivaOKuDwfND+317UfAc1Q06QvnlUjyLtSy91kIsWN3eOXFve13WVXvLTKjnw==}
     peerDependencies:
@@ -6403,6 +6418,15 @@ packages:
 
   '@univerjs/docs-hyper-link@1.0.4':
     resolution: {integrity: sha512-DWEOJ/Hl63oMq17lDCw7EjiJ1iBlN8yxq0WvcJVNgjxVoAFcVMQzngWAi9nq3lwCoK5x0kqr1nVVfOjfiRU0rQ==}
+
+  '@univerjs/docs-thread-comment-ui@1.0.4':
+    resolution: {integrity: sha512-Krs82dF9XccrYg/scWnr1scCagRnjqPw/tZUgcCXc1UJXRkT+xh5kh5hkk3Mxjy+aG8qLPE3SuaUhMvA7PFA6g==}
+    peerDependencies:
+      react: ^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+      rxjs: '>=7.0.0'
+
+  '@univerjs/docs-thread-comment@1.0.4':
+    resolution: {integrity: sha512-LNyl4ZpuflUBMqTk/BiofnQqYd3Oo05h/LvkwBZ6LbNK2ipRR+9qfBOj7IfwpqZQQjswUcy6vPSv00IwC6MNtg==}
 
   '@univerjs/docs-ui@1.0.4':
     resolution: {integrity: sha512-NF4G0YTbelolkMM8wFuy5/WhxoRrfz6XnJyoQbttS86l3b8eALP4mnMTZOcs0QTmqX+VepW83LYTy3ZOVLJoNQ==}
@@ -6469,6 +6493,13 @@ packages:
 
   '@univerjs/preset-docs-hyper-link@1.0.4':
     resolution: {integrity: sha512-MfkezSLHEd4J3mNOHLnDXtM509FpIPR11mIFV0V4DLGcpCcFiWZGAKAYJAUgOAa7Erf454dboFRnjQ2YE6VMiA==}
+    peerDependencies:
+      react: ^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+      react-dom: ^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+      rxjs: '>=7.0.0'
+
+  '@univerjs/preset-docs-thread-comment@1.0.4':
+    resolution: {integrity: sha512-S/Mu+ptcEbRBP8sg/73izL+3shNEH9V7j/wt/oXLmgLS6xar2pDJEMK4bTLz5c1mAso/l7ho2FQ08czAE1eh3w==}
     peerDependencies:
       react: ^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
       react-dom: ^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
@@ -20183,6 +20214,21 @@ snapshots:
       - react
       - rxjs
 
+  '@univerjs/docs-find-replace@1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)':
+    dependencies:
+      '@univerjs/core': 1.0.4(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/docs': 1.0.4(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/docs-ui': 1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/engine-render': 1.0.4(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/find-replace': 1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/ui': 1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)
+      react: 19.3.0
+      rxjs: 7.8.2
+    transitivePeerDependencies:
+      - '@types/react'
+      - '@types/react-dom'
+      - react-dom
+
   '@univerjs/docs-hyper-link-ui@1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)':
     dependencies:
       '@univerjs/core': 1.0.4(react@19.3.0)(rxjs@7.8.2)
@@ -20204,6 +20250,35 @@ snapshots:
   '@univerjs/docs-hyper-link@1.0.4(react@19.3.0)(rxjs@7.8.2)':
     dependencies:
       '@univerjs/core': 1.0.4(react@19.3.0)(rxjs@7.8.2)
+    transitivePeerDependencies:
+      - react
+      - rxjs
+
+  '@univerjs/docs-thread-comment-ui@1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)':
+    dependencies:
+      '@univerjs/core': 1.0.4(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/docs': 1.0.4(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/docs-thread-comment': 1.0.4(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/docs-ui': 1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/drawing': 1.0.4(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/engine-render': 1.0.4(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/icons': 1.43.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@univerjs/protocol': 1.0.4
+      '@univerjs/thread-comment': 1.0.4(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/thread-comment-ui': 1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/ui': 1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)
+      react: 19.3.0
+      rxjs: 7.8.2
+    transitivePeerDependencies:
+      - '@types/react'
+      - '@types/react-dom'
+      - react-dom
+
+  '@univerjs/docs-thread-comment@1.0.4(react@19.3.0)(rxjs@7.8.2)':
+    dependencies:
+      '@univerjs/core': 1.0.4(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/docs': 1.0.4(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/thread-comment': 1.0.4(react@19.3.0)(rxjs@7.8.2)
     transitivePeerDependencies:
       - react
       - rxjs
@@ -20337,6 +20412,18 @@ snapshots:
     dependencies:
       '@univerjs/docs-hyper-link': 1.0.4(react@19.3.0)(rxjs@7.8.2)
       '@univerjs/docs-hyper-link-ui': 1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)
+      react: 19.3.0
+      react-dom: 19.3.0(react@19.3.0)
+      rxjs: 7.8.2
+    transitivePeerDependencies:
+      - '@types/react'
+      - '@types/react-dom'
+
+  '@univerjs/preset-docs-thread-comment@1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)':
+    dependencies:
+      '@univerjs/docs-thread-comment-ui': 1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/thread-comment': 1.0.4(react@19.3.0)(rxjs@7.8.2)
+      '@univerjs/thread-comment-ui': 1.0.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rxjs@7.8.2)
       react: 19.3.0
       react-dom: 19.3.0(react@19.3.0)
       rxjs: 7.8.2

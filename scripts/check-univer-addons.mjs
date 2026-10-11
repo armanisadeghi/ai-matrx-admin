@@ -7,6 +7,8 @@
  *
  *   1. Every @univerjs/preset-sheets-* / preset-docs-* dependency is registered
  *      (`Univer…Preset()`) in the editor that owns it.
+ *      The docs add-ons that ship as plain plugins (no preset at 1.0.4: find &
+ *      replace) are named below and must be registered in `plugins: [...]`.
  *   2. A real Univer (the add-on model plugins at the installed version) loads
  *      a snapshot carrying validation, conditional formatting, filter and notes
  *      resources and hands the SAME data back on save. The workbook snapshot is
@@ -39,7 +41,14 @@ for (const dep of presets) {
   if (!owner[kind].includes(`import { ${cls} } from "${dep}"`)) fail(`${dep} is a dependency but ${cls} is not imported`);
   else if (!owner[kind].includes(`${cls}(`)) fail(`${cls} is imported but never registered`);
 }
-if (presets.length < 12) fail(`expected 12 add-on presets in package.json, found ${presets.length}`);
+if (presets.length < 13) fail(`expected 13 add-on presets in package.json, found ${presets.length}`);
+// Docs add-ons with no preset at the installed version: imported AND in the editor's plugins list.
+const docsPlugins = { "@univerjs/find-replace": "UniverFindReplacePlugin", "@univerjs/docs-find-replace": "UniverDocsFindReplacePlugin" };
+for (const [dep, cls] of Object.entries(docsPlugins)) {
+  if (!pkg.dependencies?.[dep]) fail(`${dep} is not a dependency (the documents editor's ${cls})`);
+  if (!owner.docs.includes(`import { ${cls} } from "${dep}"`)) fail(`${cls} is not imported in the documents editor`);
+  else if (!new RegExp(`plugins:\\s*\\[[^\\]]*\\b${cls}\\b`).test(owner.docs)) fail(`${cls} is imported but not in the documents editor's plugins list`);
+}
 
 // ── 2. survives save -> load ────────────────────────────────────────────────
 const core = await import("@univerjs/core");
@@ -80,6 +89,23 @@ for (const [name, needle] of Object.entries(needles)) {
   if (!data.includes(needle)) fail(`${name}: what was loaded did not come back on save`);
 }
 
+// ── 2b. a document's comments survive save -> load ─────────────────────────
+{
+  const docs = new Univer({ locale: LocaleType.EN_US, locales: {} });
+  docs.registerPlugin((await import("@univerjs/docs")).UniverDocsPlugin);
+  docs.registerPlugin((await import("@univerjs/thread-comment")).UniverThreadCommentPlugin);
+  if (breakArg !== "docsThreadComment") docs.registerPlugin((await import("@univerjs/docs-thread-comment")).UniverDocsThreadCommentPlugin);
+  const comment = { id: "c1", threadId: "c1", ref: "Launch", dT: "2026/10/11 10:00", personId: "p1", text: { dataStream: "Check the budget with finance\r\n" }, unitId: "doc", subUnitId: "default_doc" };
+  docs.createUnit(UniverInstanceType.UNIVER_DOC, {
+    id: "doc",
+    body: { dataStream: "Launch plan\r\n" },
+    resources: [{ name: "DOC_UNIVER_THREAD_COMMENT_PLUGIN", data: JSON.stringify({ default_doc: [comment] }) }],
+  });
+  const savedDoc = docs.__getInjector().get(IResourceManagerService).getResources("doc") ?? [];
+  const data = savedDoc.find((r) => r.name === "DOC_UNIVER_THREAD_COMMENT_PLUGIN")?.data ?? "";
+  if (!data.includes("Check the budget with finance")) fail("DOC_UNIVER_THREAD_COMMENT_PLUGIN: a document comment did not come back on save");
+}
+
 // ── 3. a signed-in person can still edit ───────────────────────────────────
 // identifyUniverUser hands Univer the signed-in id. Univer's local authz
 // grants Owner/Editor by id PREFIX, so a bare uuid refuses every edit
@@ -110,5 +136,5 @@ if (failures.length) {
   console.error("[check:univer-addons] FAIL\n - " + failures.join("\n - "));
   process.exit(1);
 }
-console.log(`[check:univer-addons] OK — ${presets.length - 2} add-on presets registered; validation, conditional formatting, filter and notes survive save -> load; a signed-in person can edit`);
+console.log(`[check:univer-addons] OK — ${presets.length - 2} add-on presets + docs find & replace registered; validation, conditional formatting, filter, notes and document comments survive save -> load; a signed-in person can edit`);
 process.exit(0);

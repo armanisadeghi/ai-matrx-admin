@@ -37,6 +37,8 @@ export interface DocumentBodyPort {
   deleteRange: (start: number, end: number) => boolean;
   /** Insert plain text (a `\n` starts a new paragraph) at a stream index. */
   insertText: (at: number, text: string) => boolean;
+  /** Run a Univer command in the open editor (File menu: find and replace, comments). */
+  runCommand?: (commandId: string) => Promise<void>;
 }
 
 export interface BodyText {

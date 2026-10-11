@@ -17,7 +17,7 @@ describe("univer add-ons", () => {
     expect(r.status).toBe(0);
   });
 
-  it.each(["filter", "conditionalFormatting", "note"])("goes red when %s is missing", (plugin) => {
+  it.each(["filter", "conditionalFormatting", "note", "docsThreadComment"])("goes red when %s is missing", (plugin) => {
     const r = run(`--break=${plugin}`);
     expect(r.status).toBe(1);
     expect(r.stderr).toContain("did not come back on save");

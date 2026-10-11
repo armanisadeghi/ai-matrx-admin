@@ -57,6 +57,15 @@ import "@univerjs/preset-docs-hyper-link/lib/index.css";
 import { UniverDocsDrawingPreset } from "@univerjs/preset-docs-drawing";
 import docsDrawingEnUS from "@univerjs/preset-docs-drawing/locales/en-US";
 import "@univerjs/preset-docs-drawing/lib/index.css";
+// Free Apache-2.0 docs add-ons: comments (thread state lives in the snapshot's
+// resources) and find & replace. The File menu opens both.
+import { UniverDocsThreadCommentPreset } from "@univerjs/preset-docs-thread-comment";
+import docsCommentEnUS from "@univerjs/preset-docs-thread-comment/locales/en-US";
+import "@univerjs/preset-docs-thread-comment/lib/index.css";
+import { UniverFindReplacePlugin } from "@univerjs/find-replace";
+import { UniverDocsFindReplacePlugin } from "@univerjs/docs-find-replace";
+import findReplaceEnUS from "@univerjs/find-replace/locale/en-US";
+import "@univerjs/find-replace/lib/index.css";
 import { useRealtimeManager } from "@ai-matrx/realtime/react";
 
 import { supabase } from "@/utils/supabase/client";
@@ -216,6 +225,11 @@ export default function DocumentEditor({
       deleteRange: (start, end) =>
         liveDocument().deleteRange({ startOffset: start, endOffset: end }),
       insertText: (at, text) => liveDocument().insertText(at, text),
+      runCommand: async (commandId) => {
+        const api = apiRef.current as unknown as { executeCommand?: (id: string) => Promise<unknown> | unknown } | null;
+        if (!api?.executeCommand) throw new Error("The document editor is still opening. Try again in a moment.");
+        await api.executeCommand(commandId);
+      },
     });
     return () => onBodyPort(null);
   }, [onBodyPort, bodyReady]);
@@ -314,7 +328,7 @@ export default function DocumentEditor({
         container.appendChild(host);
         const { univer, univerAPI } = createUniver({
           locale: LocaleType.EN_US,
-          locales: { [LocaleType.EN_US]: merge({}, docsCoreEnUS, docsLinkEnUS, docsDrawingEnUS) },
+          locales: { [LocaleType.EN_US]: merge({}, docsCoreEnUS, docsLinkEnUS, docsDrawingEnUS, docsCommentEnUS, findReplaceEnUS) },
           theme: defaultTheme,
           darkMode: darkModeRef.current,
           presets: [
@@ -324,7 +338,9 @@ export default function DocumentEditor({
             }),
             UniverDocsHyperLinkPreset(),
             UniverDocsDrawingPreset(),
+            UniverDocsThreadCommentPreset(),
           ],
+          plugins: [UniverFindReplacePlugin, UniverDocsFindReplacePlugin],
         });
         if (cancelled) {
           host.remove();

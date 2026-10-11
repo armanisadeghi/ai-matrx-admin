@@ -20,7 +20,8 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
-import { Loader2, Printer } from "lucide-react";
+import { Loader2, MessageSquare, Printer, Search } from "lucide-react";
+import { toast } from "@/lib/toast";
 import { useFileRecordMenu } from "@/features/file-actions/useFileRecordMenu";
 import { useLiveGoogleAdapter } from "@/features/google-workspace/linked/EditorGoogleLinks";
 import { DOCUMENT_ADAPTER } from "@/features/file-actions/adapters";
@@ -306,6 +307,16 @@ export function DocumentRecord({
     return markdown || bodyTextOf(port.getDataStream()).text;
   };
 
+  // Find and replace / comments are Univer commands; the File menu is the visible door to them.
+  const runEditorCommand = (commandId: string) => {
+    const run = bodyPortRef.current?.runCommand;
+    if (!run) {
+      toast.error("The document editor is still opening. Try again in a moment.");
+      return;
+    }
+    void run(commandId).catch((err: unknown) => toast.error(err instanceof Error ? err.message : String(err)));
+  };
+
   const liveGoogle = useLiveGoogleAdapter("document", id);
   const fileMenu = useFileRecordMenu(DOCUMENT_ADAPTER, doc, {
     listHref: "/documents",
@@ -329,6 +340,7 @@ export function DocumentRecord({
       },
     })),
     extra: (
+      <>
       <DropdownMenuItem
         onSelect={() =>
           void import("@ai-matrx/rich-content/copy/content-export").then((m) =>
@@ -339,6 +351,15 @@ export function DocumentRecord({
         <Printer className="mr-2 size-4" />
         Print
       </DropdownMenuItem>
+      <DropdownMenuItem onSelect={() => runEditorCommand("ui.operation.open-find-dialog")}>
+        <Search className="mr-2 size-4" />
+        Find and replace
+      </DropdownMenuItem>
+      <DropdownMenuItem onSelect={() => runEditorCommand("docs.operation.toggle-comment-panel")}>
+        <MessageSquare className="mr-2 size-4" />
+        Comments
+      </DropdownMenuItem>
+      </>
     ),
   });
 
