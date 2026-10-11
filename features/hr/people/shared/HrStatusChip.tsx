@@ -1,5 +1,6 @@
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 // features/hr/people/shared/HrStatusChip.tsx
 //
@@ -139,14 +140,12 @@ export function HrRowBasisNote({
 
   return (
     <span
-      className={cn("text-[0.6875rem] text-muted-foreground", className)}
-      title={
-        rowBasis === "upcoming"
-          ? "These job details come from their incoming assignment, not a current one."
-          : undefined
-      }
+      className={cn("text-[0.6875rem] text-muted-foreground", rowBasis === "upcoming" && "inline-flex items-center gap-1", className)}
     >
       {text}
+      {rowBasis === "upcoming" ? (
+        <InfoHint text="These job details come from their incoming assignment, not a current one." label="About these job details" />
+      ) : null}
     </span>
   );
 }

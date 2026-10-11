@@ -69,7 +69,7 @@ function RefusedUrl({
             data-matrx-refused={label}
             title={
                 REFUSAL_SENTENCE[label] ??
-                `This ${label} was blocked because the sandbox does not allow that kind of address.`
+                `This ${label} was blocked by the sandbox.`
             }
         >
             {children}

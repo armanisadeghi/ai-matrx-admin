@@ -25,6 +25,7 @@
 
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Loader2, UserPlus, Users } from "lucide-react";
@@ -342,9 +343,9 @@ export function LeaveEnrollmentSurface({ policyId }: { policyId: string }) {
               Back to the policy
             </Link>
           </Button>
-          <h1 title="An enrolment is effective-dated and there is exactly one live enrolment per person per policy." className="text-base font-semibold text-foreground">
+          <div className="flex items-center gap-1.5"><h1 className="text-base font-semibold text-foreground">
             Who is on {policy?.name ?? "this policy"}
-          </h1>
+          </h1><InfoHint text="An enrolment is effective-dated; each person has exactly one live enrolment per policy." label="About enrolments" /></div>
         </div>
 
         {/* ── The roster ───────────────────────────────────────────────── */}

@@ -1,3 +1,4 @@
+import { InfoHint } from "@/components/official/InfoHint";
 import { Label } from "@ai-matrx/design-system";
 import { Switch } from "@ai-matrx/chat/ui/switch";
 import {
@@ -282,6 +283,7 @@ export function TesterSettingsPanel({
           className="text-[9.5px] font-semibold uppercase tracking-wider text-primary cursor-pointer"
         >
           Editor Context
+          <InfoHint text="Turn on the Editor Context switch to include these values in the request." label="About Editor Context" className="ml-1" />
         </Label>
         <Switch
           id={`${idPrefix}-include-editor-context`}
@@ -294,11 +296,6 @@ export function TesterSettingsPanel({
       <div
         className={`space-y-1.5 ${c.includeEditorContext ? "" : "opacity-50"}`}
         aria-disabled={!c.includeEditorContext}
-        title={
-          c.includeEditorContext
-            ? undefined
-            : "Turn on the Editor Context switch to include these values in the request"
-        }
       >
         <EditorContextField
           id={`${idPrefix}-editor-selection`}

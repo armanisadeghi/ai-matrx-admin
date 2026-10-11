@@ -31,6 +31,7 @@
  * NO CLIENT COMPUTES ANYTHING: every count and classification is the server's.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { AlertTriangle, CheckCircle2, CircleDashed, Clock, ShieldAlert, UserX } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -244,14 +245,17 @@ export function WorkflowHealthPanel({ workflow, hrefForEmployment }: WorkflowHea
                 */}
                 {row.attestationOutcome === "not_attested" || isNotAttestedTerminal(row) ? (
                   <span
-                    title={
-                      row.attestationReason === "no_reach"
-                        ? "Closed without a confirmation. This employee holds no platform login, so they were never asked. Nothing attested on their behalf."
-                        : "Closed without the employee confirming these hours. Nothing attested on their behalf."
-                    }
-                    className="inline-flex items-center rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-800 dark:text-amber-300"
+                    className="inline-flex items-center gap-1 rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-800 dark:text-amber-300"
                   >
                     Not attested
+                    <InfoHint
+                      text={
+                        row.attestationReason === "no_reach"
+                          ? "Closed unconfirmed: this employee has no platform login, so was never asked. Nothing attested for them."
+                          : "Closed without the employee confirming these hours. Nothing attested on their behalf."
+                      }
+                      label="About Not attested"
+                    />
                   </span>
                 ) : null}
 

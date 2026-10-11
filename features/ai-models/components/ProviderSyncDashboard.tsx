@@ -1,5 +1,6 @@
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
@@ -385,11 +386,9 @@ function StatusBadge({
 function PriceCell({ pricing }: { pricing: ProviderSyncRowPricing }) {
   if (pricing.state === "no_offering") {
     return (
-      <span
-        className="text-[10px] text-muted-foreground italic whitespace-nowrap"
-        title="This provider model has no ai.offering row, so nothing prices it."
-      >
-        no offering
+      <span className="inline-flex items-center gap-1">
+        <span className="text-[10px] text-muted-foreground italic whitespace-nowrap">no offering</span>
+        <InfoHint text="This provider model has no offering, so nothing prices it." label="About no offering" />
       </span>
     );
   }
@@ -466,11 +465,9 @@ function PriceValueCell({
 }) {
   if (pricing.state === "no_offering") {
     return (
-      <span
-        className="whitespace-nowrap text-[10px] italic text-muted-foreground"
-        title="This provider model has no ai.offering row, so nothing prices it."
-      >
-        no offering
+      <span className="inline-flex items-center gap-1">
+        <span className="whitespace-nowrap text-[10px] italic text-muted-foreground">no offering</span>
+        <InfoHint text="This provider model has no offering, so nothing prices it." label="About no offering" />
       </span>
     );
   }

@@ -2,6 +2,7 @@
 
 // Shared interactive surface for the retained demo and organization route.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Input } from "@ai-matrx/design-system/controls";
@@ -592,9 +593,9 @@ export default function PerformanceReviewApp({
               <div className="mx-auto max-w-[920px] p-3 pb-16 sm:p-6">
                 <div className="mb-4 flex items-center justify-between gap-4 rounded-xl border border-border bg-card px-4 py-3">
                   <div>
-                    <h1 title="The print view and downloaded PDF use this same two-page layout." className="text-base font-semibold">
+                    <div className="flex items-center gap-1.5"><h1 className="text-base font-semibold">
                       Finished report preview
-                    </h1>
+                    </h1><InfoHint text="The print view and downloaded PDF use this same two-page layout." label="About the report preview" /></div>
                   </div>
                   <span className="hidden rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary-ink sm:inline-flex">
                     Letter · 2 pages

@@ -1,5 +1,6 @@
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import CardFaceContent from "@/components/mardown-display/blocks/flashcards/CardFaceContent";
 // features/education/media/audio/components/AudioReviewSession.tsx
 //
@@ -374,9 +375,9 @@ export function AudioReviewSession({
             aria-label="Back"
           />
           <div>
-            <h1 title="Questions read aloud — you answer by voice, graded on meaning." className="text-lg font-semibold text-foreground">
+            <div className="flex items-center gap-1.5"><h1 className="text-lg font-semibold text-foreground">
               Audio review
-            </h1>
+            </h1><InfoHint text="Questions are read aloud; you answer by voice and are graded on meaning." label="About Audio review" /></div>
           </div>
         </div>
         <select

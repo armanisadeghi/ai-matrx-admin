@@ -18,6 +18,7 @@
  * component's own org-wide mode; this lane mounts it and owns no second copy.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useState } from "react";
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
 import { useSearchParams } from "next/navigation";
@@ -55,7 +56,7 @@ export function PayPeriodsPage() {
     <div className="h-full overflow-y-auto bg-textured pt-[var(--shell-header-h)]">
       <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
         <header className="mb-4">
-          <h1 title="Every pay group's periods, and where each one is in its lifecycle." className="text-base font-semibold text-foreground">Pay periods</h1>
+          <div className="flex items-center gap-1.5"><h1 className="text-base font-semibold text-foreground">Pay periods</h1><InfoHint text="Every pay group's periods, and where each one is in its lifecycle." label="About pay periods" /></div>
         </header>
 
         {/*

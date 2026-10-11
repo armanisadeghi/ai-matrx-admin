@@ -201,7 +201,7 @@ export function StudioFileCard({
                                 )}
                                 title={
                                     needsRename
-                                        ? "Auto-generated name — click to rename before generating variants"
+                                        ? "Auto-generated name: click to rename"
                                         : "Rename filename base"
                                 }
                             >

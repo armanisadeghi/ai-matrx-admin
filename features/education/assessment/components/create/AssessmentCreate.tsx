@@ -13,6 +13,7 @@
 
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -346,13 +347,13 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
             <Icon className="h-6 w-6" />
           </div>
           <div>
-            <h1 title="Generate graded questions from a topic, a deck, or a document." className="flex items-center gap-2 text-xl font-semibold tracking-tight text-foreground">
+            <div className="flex items-center gap-1.5"><h1 className="flex items-center gap-2 text-xl font-semibold tracking-tight text-foreground">
               New {config.label.toLowerCase()}
               <IntelligenceIndicator
                 feature="education"
                 mandateKeys={[ASSESSMENT_MANDATES.generateQuiz, ASSESSMENT_MANDATES.generateQuizFromSource]}
               />
-            </h1>
+            </h1><InfoHint text="Generate graded questions from a topic, a deck, or a document." label="About this page" /></div>
           </div>
         </div>
 

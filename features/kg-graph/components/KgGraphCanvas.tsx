@@ -536,8 +536,8 @@ export function KgGraphCanvas({
                 aria-pressed={hideNoise}
                 title={
                   hideNoise
-                    ? `Hiding ${noiseCount} low-value node${noiseCount === 1 ? "" : "s"} (phone/email/url/address). Click to show them.`
-                    : "Hide low-value scaffolding kinds (phone/email/url/address)."
+                    ? `Hiding ${noiseCount} low-value node${noiseCount === 1 ? "" : "s"}. Click to show.`
+                    : "Hide low-value nodes (phone, email, url, address)"
                 }
                 className={cn(
                   "inline-flex h-8 shrink-0 items-center gap-1 rounded-md border px-2 text-xs disabled:opacity-50",

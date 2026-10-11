@@ -35,6 +35,7 @@
  * this module collapses into `MoneyAmount` and this comment is deleted rather than reconciled.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -81,10 +82,10 @@ export function ExportAmount({
     return (
       <span
         className={cn("inline-flex items-center gap-1 text-xs font-medium", WITHHELD_TONE, className)}
-        title={AMOUNT_WITHHELD_SENTENCE}
       >
         <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden />
         Not calculated
+        <InfoHint text="The hours are payable. No amount is shown because a rule it depends on is still awaiting verification." label="About Not calculated" />
       </span>
     );
   }

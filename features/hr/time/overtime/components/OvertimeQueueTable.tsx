@@ -14,6 +14,7 @@
  * all arrive computed and snapshot-backed; this file formats them and nothing else.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useState } from "react";
 import { HR_TIME_PAGE_SIZES } from "../../api/timePage";
 import { useRouter } from "next/navigation";
@@ -122,11 +123,9 @@ export function OvertimeQueueTable({ rows, isLoading, hrefFor, read, query, sour
         row.approvedHours === null ? (
           <span className="text-muted-foreground">—</span>
         ) : (
-          <span
-            className="tabular-nums text-foreground"
-            title="Approved with a cap. Overtime beyond the cap is still paid, and is flagged for review."
-          >
+          <span className="inline-flex items-center gap-1 tabular-nums text-foreground">
             {formatHours(row.approvedHours)}
+            <InfoHint text="Approved with a cap. Overtime beyond the cap is still paid, and is flagged for review." label="About approved hours" />
           </span>
         ),
     },

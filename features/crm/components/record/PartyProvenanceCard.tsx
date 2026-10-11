@@ -19,6 +19,7 @@
 // the payload is a snapshot ("observed_at"), the row is the current verdict,
 // priority and pitch angle, and every id becomes a real door.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
@@ -299,7 +300,7 @@ export function PartyProvenanceCard({
                 the platform on YouTube" / "From YouTube", then "Open on
                 YouTube" — the phone once read a different sentence. */}
             {discovered ? (
-              <span title="Not in your contact list yet, so it stays out of pickers and searches.">
+              <span>
                 Found by the platform{party.source ? " on " : ""}
               </span>
             ) : null}
@@ -337,6 +338,7 @@ export function PartyProvenanceCard({
               </>
             ) : null}
             </> : null}
+            {discovered ? <InfoHint text="Not in your contact list yet, so it stays out of pickers and searches." label="About found records" className="ml-1" /> : null}
           </p>
         )}
 

@@ -14,6 +14,7 @@
  * measure is to tell them apart — so every number here goes through `hasSignal`
  * and renders "—" rather than a fabricated 0.
  */
+import { InfoHint } from "@/components/official/InfoHint";
 import { useQuery } from "@tanstack/react-query";
 import { TrendingDown, TrendingUp } from "lucide-react";
 
@@ -54,11 +55,9 @@ export function effectivenessDuration(
 function CostDelta({ row }: { row: FindingEffectiveness }) {
   if (!hasSignal(row.cost_delta_usd_avg)) {
     return (
-      <span
-        className="text-muted-foreground"
-        title="No signal: no applied finding on this lever had real traffic on BOTH the pre-apply and post-apply versions. Not zero — unmeasured."
-      >
+      <span className="inline-flex items-center gap-1 text-muted-foreground">
         —
+        <InfoHint text="No signal: no applied finding had traffic both before and after the change. Not zero, unmeasured." label="About no signal" />
       </span>
     );
   }
@@ -72,7 +71,6 @@ function CostDelta({ row }: { row: FindingEffectiveness }) {
           ? "text-emerald-600 dark:text-emerald-400"
           : "text-amber-600 dark:text-amber-400",
       )}
-      title={`Mean spend per request after the change minus before it, across ${row.cost_signal_findings} finding(s) with traffic on both versions.`}
     >
       {cheaper ? (
         <TrendingDown className="h-3 w-3" />
@@ -80,6 +78,7 @@ function CostDelta({ row }: { row: FindingEffectiveness }) {
         <TrendingUp className="h-3 w-3" />
       )}
       {cheaper ? "-" : "+"}{formatAdminUsd(Math.abs(delta))}
+      <InfoHint text={`Mean spend per request after the change minus before it, across ${row.cost_signal_findings} finding(s) with traffic on both versions.`} label="About cost change" />
     </span>
   );
 }
@@ -256,14 +255,16 @@ export const FINDING_EFFECTIVENESS_COLUMNS: MatrxColumnDef<FindingEffectiveness>
       width: 112,
       className: "text-right tabular-nums",
       cell: (row) => (
-        <span
-          title={
-            hasSignal(row.revert_rate)
-              ? "Of the changes actually applied on this lever, the share a human undid."
-              : "No signal: nothing has been applied on this lever yet."
-          }
-        >
+        <span className="inline-flex items-center gap-1">
           {effectivenessPercent(row.revert_rate)}
+          <InfoHint
+            text={
+              hasSignal(row.revert_rate)
+                ? "Of the changes actually applied on this lever, the share a human undid."
+                : "No signal: nothing has been applied on this lever yet."
+            }
+            label="About revert rate"
+          />
         </span>
       ),
     },

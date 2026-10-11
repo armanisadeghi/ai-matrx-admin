@@ -10,6 +10,7 @@
 // (`study_session.aggregate_score` is never written today, so nothing here
 // trusts it).
 
+import { InfoHint } from "@/components/official/InfoHint";
 import {
   Trophy,
   Flame,
@@ -119,12 +120,12 @@ export function SessionScorecard({
               )}
               {editedCount > 0 && (
                 <span
-                  title="These scores reflect manual corrections — the original AI grades are kept on record."
                   className="inline-flex items-center gap-1 rounded-full border border-dashed border-border bg-muted/50 px-2 py-0.5 text-[11px] font-medium italic text-muted-foreground"
                 >
                   <Pencil className="h-3 w-3" />
                   {editedCount} {editedCount === 1 ? "answer" : "answers"}{" "}
                   edited
+                  <InfoHint text="These scores reflect manual corrections; the original AI grades are kept on record." label="About edited answers" />
                 </span>
               )}
             </div>

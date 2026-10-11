@@ -427,7 +427,7 @@ export default function AssistsDock() {
             )
           }
           aria-label="Quiet assists for the rest of today"
-          title="Quiet assists for the rest of today — nothing new is suggested until then"
+          title="Quiet assists for the rest of today"
           className="rounded-full p-1 text-muted-foreground opacity-0 hover:bg-accent hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
         >
           <X className="h-3 w-3" />

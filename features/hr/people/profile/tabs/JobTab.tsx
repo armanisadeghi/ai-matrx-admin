@@ -1,5 +1,6 @@
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 // features/hr/people/profile/tabs/JobTab.tsx — SPEC-EMPLOYEES §2.3.3, §6
 //
@@ -493,8 +494,9 @@ function ClassificationLine({ row }: { row: Row }) {
       ))}
       {fte !== null ? <span>FTE {fte}</span> : null}
       {eeo ? (
-        <span title="Recorded when this assignment was written. Re-mapping the job title later does not rewrite it.">
+        <span className="inline-flex items-center gap-1">
           EEO-1: {eeo}
+          <InfoHint text="Recorded when this assignment was written; re-mapping the job title later does not rewrite it." label="About EEO-1" />
         </span>
       ) : null}
     </div>

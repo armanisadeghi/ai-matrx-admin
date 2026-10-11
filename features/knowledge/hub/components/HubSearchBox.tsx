@@ -142,7 +142,6 @@ export const HubSearchBox = forwardRef<HTMLInputElement, HubSearchBoxProps>(func
             }
           }}
           placeholder={placeholder}
-          title="Search — or narrow with type:note, @Ava, #grant-2026, last week"
           aria-label={placeholder}
           className="h-9 min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground md:text-sm"
         />

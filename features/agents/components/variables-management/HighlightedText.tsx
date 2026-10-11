@@ -97,7 +97,7 @@ export const HighlightedText = ({ text, validVariables = [], blocks }: Highlight
                             ? when
                             : validVariables.includes(variableName)
                               ? `No matching end — sent to the model as written`
-                              : `Not a section — "${variableName}" is not declared, so this is sent to the model as written`
+                              : `Plain text: "${variableName}" is not declared`
                     }
                 >
                     {part}
@@ -121,7 +121,7 @@ export const HighlightedText = ({ text, validVariables = [], blocks }: Highlight
                     isValid
                         ? `Variable: ${variableName}`
                         : isLiteral
-                          ? `Literal text — "${variableName}" is not a valid variable name, so it is sent to the model as written`
+                          ? `Plain text: "${variableName}" is not a valid name`
                           : `Undefined variable: ${variableName}`
                 }
             >

@@ -677,7 +677,7 @@ export function AgentsGrid() {
                     onClick={() => setDeepSearch(!deepSearch)}
                     title={
                       deepSearch
-                        ? "Searching inside agent prompts — click to search names and tags only"
+                        ? "Searching prompts too; click for names and tags only"
                         : "Also search inside agent prompts"
                     }
                     aria-pressed={deepSearch}

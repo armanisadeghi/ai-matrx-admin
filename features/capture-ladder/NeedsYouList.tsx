@@ -31,6 +31,7 @@
  * this file never invents an explanation for a page.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { OrganizationTag } from "@/features/commerce-review/components/OrganizationTag";
 import {
   AlertTriangle,
@@ -94,15 +95,16 @@ export function NeedsYouRow({ handoff }: { handoff: CaptureHandoff }) {
               pages — which is exactly what this list did until 2026-09-20.
               One word, no chip: the row already carries enough. */}
           {handoff.handoff_kind !== "web_page" && (
-            <span
-              className="shrink-0 text-xs text-muted-foreground"
-              title={
-                handoff.handoff_kind
-                  ? HANDOFF_KIND_EXPLANATION[handoff.handoff_kind]
-                  : "We do not recognise what kind of thing this is — your extension does, and can still read it."
-              }
-            >
+            <span className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
               {noun}
+              <InfoHint
+                text={
+                  handoff.handoff_kind
+                    ? HANDOFF_KIND_EXPLANATION[handoff.handoff_kind]
+                    : "We do not recognise this kind of item; your extension does and can still read it."
+                }
+                label={`About ${noun}`}
+              />
             </span>
           )}
           <OrganizationTag organizationId={handoff.organization_id} />

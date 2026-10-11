@@ -164,7 +164,7 @@ export const MessageFilesStrip: React.FC<MessageFilesStripProps> = ({
               <button
                 type="button"
                 onClick={() => handleOpen(snap)}
-                title={`Open triple view: Before / With updates / Modifications since ${name}`}
+                title={`Open before, with-updates and changes view of ${name}`}
                 className={cn(
                   "flex w-full items-center gap-1.5 rounded px-1.5 py-0.5 text-left",
                   "hover:bg-blue-100/70 dark:hover:bg-blue-900/40",

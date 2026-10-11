@@ -9,6 +9,7 @@
  * certification wizard printed.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useState } from "react";
 
 import {
@@ -28,11 +29,9 @@ export function TemplatePreviewButton({ templateId }: { templateId: string }) {
   if (!template) {
     // Honest, never dead: a custom/unknown stock has no registry geometry.
     return (
-      <span
-        className="text-muted-foreground"
-        title="Custom stock — geometry was supplied at print time, so there is no registry preview."
-      >
+      <span className="inline-flex items-center gap-1 text-muted-foreground">
         {templateId} (custom)
+        <InfoHint text="Custom stock: its size was supplied at print time, so there is no preview." label="About custom stock" />
       </span>
     );
   }

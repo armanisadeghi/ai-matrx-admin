@@ -129,7 +129,7 @@ export function UsageNameCell({ row }: { row: UnifiedUsageRow }) {
     return (
       <span
         className="truncate type-body text-foreground"
-        title={`${row.name} — this kind of usage has no page of its own in the app yet, so there is nothing to open.`}
+        title={row.name}
       >
         {row.name}
       </span>

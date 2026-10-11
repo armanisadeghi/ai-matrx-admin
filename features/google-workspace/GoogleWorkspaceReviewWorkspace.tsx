@@ -1,5 +1,6 @@
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -748,9 +749,9 @@ export function GoogleWorkspaceReviewWorkspace({
   return (
     <div className="mx-auto w-full max-w-6xl space-y-3 p-3 sm:p-4">
       <header>
-        <h1 title="Manage connected accounts and the Google access each one has." className="text-2xl font-semibold tracking-tight">
+        <div className="flex items-center gap-1.5"><h1 className="text-2xl font-semibold tracking-tight">
           Google Workspace
-        </h1>
+        </h1><InfoHint text="Manage connected accounts and the Google access each one has." label="About Google Workspace" /></div>
       </header>
 
       {error && (

@@ -10,6 +10,7 @@
  * *"the renderer reads them; it never re-derives them from arithmetic."*
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { CalendarClock, MoveRight, Scissors, SunMoon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -45,13 +46,15 @@ export function StampedTime({
   return (
     <span
       className={cn("tabular-nums", className)}
-      title={
-        differs
-          ? `${formatTimeInViewerZone(at)} in your time zone — the time shown is where the work was recorded (${tz.replace(/_/g, " ")}).`
-          : undefined
-      }
     >
       {formatStampedTimeWithZone(at, tz)}
+      {differs ? (
+        <InfoHint
+          text={`${formatTimeInViewerZone(at)} in your time zone; the time shown is where the work was recorded.`}
+          label="About this time zone"
+          className="ml-1"
+        />
+      ) : null}
     </span>
   );
 }

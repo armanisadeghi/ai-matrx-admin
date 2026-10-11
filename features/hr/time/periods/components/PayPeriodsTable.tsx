@@ -15,6 +15,7 @@
  * no dates and derives no totals.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useState } from "react";
 import { HR_TIME_PAGE_SIZES } from "../../api/timePage";
 import { useRouter } from "next/navigation";
@@ -114,10 +115,10 @@ export function PayPeriodsTable({ rows, isLoading, hrefFor, read, query, sourceT
           <span
             className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-400"
             // Approving over a disagreement is legitimate AND recorded. This is not a blocker.
-            title="Approving over a preserved disagreement is allowed. The disagreement travels to the export as evidence."
           >
             <AlertTriangle className="h-3.5 w-3.5" aria-hidden />
             {row.counts.disputed}
+            <InfoHint text="Approving over a preserved disagreement is allowed. The disagreement travels to the export as evidence." label="About disagreements" />
           </span>
         ) : (
           <span className="text-muted-foreground">—</span>

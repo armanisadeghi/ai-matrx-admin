@@ -334,7 +334,7 @@ export function ExportPanel({
             title={
               filesCount === 0
                 ? "Drop an image first"
-                : "Run the describe agent on every file — generates filename, alt text, caption, SEO copy, and dominant colours per file"
+                : "Describe every file: name, alt text, caption, SEO copy"
             }
           >
             {isDescribing ? (

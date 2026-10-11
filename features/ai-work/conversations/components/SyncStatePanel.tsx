@@ -139,7 +139,6 @@ export function SyncNowDoor({ compact = false }: { compact?: boolean }) {
           href={MATRX_LOCAL_DOWNLOAD_PATH}
           target="_blank"
           rel="noopener noreferrer"
-          title={SYNC_NOW_UNAVAILABLE_REASON}
         >
           <Download className="h-3.5 w-3.5" />
           Sync now in Matrx Local

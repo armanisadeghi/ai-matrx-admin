@@ -100,23 +100,26 @@ function VersionMove({ row }: { row: ChangeHistoryRow }) {
   return (
     <span className="inline-flex items-center gap-1 font-mono text-xs tabular-nums">
       {row.version_from == null ? (
-        <span
-          className="text-muted-foreground"
-          title="No earlier version exists — this is the unit's first recorded version."
-        >
-          —
-        </span>
+        <>
+          <span className="text-muted-foreground">—</span>
+          <InfoHint text="No earlier version exists; this is the unit's first recorded version." label="About no earlier version" />
+        </>
       ) : (
+        <>
         <span
           className={cn(inferred && "text-muted-foreground underline decoration-dotted")}
-          title={
-            inferred
-              ? "Inferred: this is the previous version ROW. A version promote can roll a definition back without writing a row, so the version that was actually live may differ. Not a recorded fact."
-              : "Recorded at the moment of the change — this is what was live immediately before."
-          }
         >
           {inferred ? "~" : ""}v{row.version_from}
         </span>
+        <InfoHint
+          text={
+            inferred
+              ? "Inferred from the previous version row; the version actually live may differ. Not a recorded fact."
+              : "Recorded at the moment of the change: what was live just before."
+          }
+          label="About the previous version"
+        />
+        </>
       )}
       <ArrowRight className="h-3 w-3 text-muted-foreground" />
       <span className="font-medium">v{row.version_to}</span>

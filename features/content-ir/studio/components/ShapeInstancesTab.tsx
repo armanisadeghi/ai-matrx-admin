@@ -584,7 +584,7 @@ export default function ShapeInstancesTab({
                       onClick={() => void handleRepin()}
                       disabled={repinning}
                       className="flex h-7 items-center gap-1.5 rounded-md border border-amber-500/40 bg-amber-500/10 px-2 text-xs font-medium text-amber-800 transition-colors hover:bg-amber-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:text-amber-200"
-                      title={`Revalidate against v${currentVersion} and repin (refused if the data does not validate)`}
+                      title={`Repin to v${currentVersion} if the data validates`}
                     >
                       {repinning ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />

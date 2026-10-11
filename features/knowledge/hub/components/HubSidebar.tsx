@@ -196,7 +196,7 @@ function SavedViewRow({
         className={cn(ROW, "hover:bg-transparent", active && "font-medium text-foreground")}
         aria-current={active ? "page" : undefined}
         onClick={onSelect}
-        title={v.builtIn ? `${v.name} — built-in view, installed for everyone the next time a platform admin opens the hub` : v.name}
+        title={v.builtIn ? `${v.name} (built-in view)` : v.name}
       >
         {v.pinned ? (
           <Pin className={cn("h-4 w-4 shrink-0", active ? "text-primary" : "text-muted-foreground")} />
@@ -507,7 +507,7 @@ export function HubSidebar({
           className={cn(ROW, sameView(view, CATALOG_GROUP) && ROW_ACTIVE)}
           aria-current={sameView(view, CATALOG_GROUP) ? "page" : undefined}
           onClick={() => onSelect(CATALOG_GROUP)}
-          title="Browse, subscribe to and unsubscribe from shared knowledge libraries"
+          title="Browse and manage shared libraries"
         >
           <Library className={cn("h-4 w-4 shrink-0", sameView(view, CATALOG_GROUP) ? "text-primary" : "text-muted-foreground")} />
           <span className="min-w-0 flex-1 truncate text-left">Library catalog</span>

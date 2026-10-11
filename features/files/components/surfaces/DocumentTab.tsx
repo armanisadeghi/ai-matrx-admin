@@ -209,7 +209,7 @@ export function DocumentTab({
                 await ingest.run({ force: true });
               })();
             }}
-            title="Force the full Knowledge pipeline to re-run end-to-end (streaming progress fills this panel below)."
+            title="Re-run the full Knowledge pipeline"
             className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-0.5 text-[11px] font-medium hover:bg-accent"
           >
             <RotateCw className="h-3 w-3" />

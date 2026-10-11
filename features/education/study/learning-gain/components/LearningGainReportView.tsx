@@ -10,6 +10,7 @@
 //
 // React Compiler is on: no manual memo.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { printLivePage } from "@ai-matrx/rich-content/mermaid/lazy-draw";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -191,10 +192,10 @@ export function LearningGainReportView({
                 learn that was learned. */}
             {report.pairs.length > 0 && (
               <p
-                className="text-[11px] text-muted-foreground"
-                title="Gap closed is (post − pre) ÷ (1 − pre), the share of what was left to learn."
+                className="flex items-center gap-1 text-[11px] text-muted-foreground"
               >
                 Gap closed uses normalized gain (Hake&apos;s g)
+                <InfoHint text="Gap closed is (post − pre) ÷ (1 − pre), the share of what was left to learn." label="About gap closed" />
               </p>
             )}
           </div>

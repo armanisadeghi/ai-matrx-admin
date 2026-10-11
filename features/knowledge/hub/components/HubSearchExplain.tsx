@@ -6,6 +6,7 @@
  * the lab use the same words and the same math.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import type { KnowledgeHit } from "@/features/knowledge/api/knowledgeSearch";
 import type { SectionState } from "@/features/knowledge/hub/hooks/useKnowledgeResults";
@@ -34,9 +35,8 @@ export function SearchExplainHeader({ text, sections }: { text: string; sections
   const skipped = sec.rerank_status ? RERANK_SKIPPED[sec.rerank_status] : undefined;
   return (
     <p
-      className="px-2 pb-3 text-xs tabular-nums text-muted-foreground"
+      className="flex flex-wrap items-center gap-x-0 px-2 pb-3 text-xs tabular-nums text-muted-foreground"
       data-testid="search-explain-header"
-      title="Passages the search returned, how many it looked at before keeping the best, and how many of the passages contain each of your words."
     >
       <SearchSummaryText
         summary={{
@@ -48,6 +48,7 @@ export function SearchExplainHeader({ text, sections }: { text: string; sections
       {skipped ? <span className="text-amber-600 dark:text-amber-500"> · {skipped}</span> : null}
       {coverage ? <span> · {termCoverageText(coverage)}</span> : null}
       {others > 0 ? <span> · plus {others} in other sections</span> : null}
+      <InfoHint text="Passages returned, how many were considered before keeping the best, and how many contain each of your words." label="About these counts" className="ml-1" />
     </p>
   );
 }

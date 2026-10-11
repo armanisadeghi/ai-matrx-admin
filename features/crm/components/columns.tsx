@@ -5,6 +5,7 @@
 // render at all. Sorting is on the DB column, never the rendered cell —
 // which is why Employer (an embed) deliberately declares neither.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import {
   BadgeCheck,
   Building2,
@@ -311,11 +312,11 @@ export const PARTY_COLUMNS: MatrxColumnDef<PartyListRow>[] = [
     width: 120,
     cell: (row) =>
       row.record_class === "discovered" ? (
-        <span
-          className="rounded bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground"
-          title="Found by the platform (SEO prospect, media outlet, expert or channel) — not one of your contacts until you say so."
-        >
-          Found
+        <span className="inline-flex items-center gap-1">
+          <span className="rounded bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground">
+            Found
+          </span>
+          <InfoHint text="Found by the platform, not one of your contacts until you say so." label="About Found" />
         </span>
       ) : (
         <span className="text-xs text-muted-foreground">—</span>

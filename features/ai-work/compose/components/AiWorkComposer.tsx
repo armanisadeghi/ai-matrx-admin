@@ -34,6 +34,7 @@
  * reading), and the conversation stays reachable at `/chat/<id>`.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
@@ -606,7 +607,7 @@ function ComposerBody({
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-3 px-4 py-4">
       <header>
-        <h1 title="Say what you want done, choose who does it and what they should know, then run it now or save it to run again." className="text-lg font-semibold text-foreground">Start work</h1>
+        <div className="flex items-center gap-1.5"><h1 className="text-lg font-semibold text-foreground">Start work</h1><InfoHint text="Say what you want done, choose who does it and what they should know, then run it now or save it." label="About starting work" /></div>
       </header>
 
       <ComposerSection

@@ -15,6 +15,7 @@
 //
 // React Compiler is on: no manual useMemo / useCallback / React.memo.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -177,9 +178,9 @@ export function FamilyDashboard() {
     <SurfaceRuntimeProvider surfaceName="matrx-user/education-family" getScope={getScope} getWriteHandlers={getWriteHandlers}>
     <div className="scroll-page-end-space mx-auto flex h-full w-full max-w-3xl flex-col gap-5 overflow-y-auto p-4">
       <header>
-        <h1 title="Follow a learner's progress — study time, mastery, and learning gain." className="flex items-center gap-2 text-xl font-bold text-foreground">
+        <div className="flex items-center gap-1.5"><h1 className="flex items-center gap-2 text-xl font-bold text-foreground">
           <Users className="h-5 w-5 text-primary" /> Family
-        </h1>
+        </h1><InfoHint text="Follow a learner's progress: study time, mastery, and learning gain." label="About Family" /></div>
       </header>
 
       {error && (

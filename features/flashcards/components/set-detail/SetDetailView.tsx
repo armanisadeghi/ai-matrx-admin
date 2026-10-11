@@ -572,7 +572,7 @@ function CardPeek({
           )}
           {layerCount > 0 && (
             <span
-              title={`${layerCount} detail layer${layerCount === 1 ? "" : "s"} — read them under "More on this card" while studying`}
+              title={`${layerCount} detail layer${layerCount === 1 ? "" : "s"} on this card`}
               className="inline-flex items-center gap-0.5 rounded border border-primary/40 bg-primary/10 px-1 py-0 text-xs font-medium text-primary-ink"
             >
               <Layers className="h-3 w-3" />

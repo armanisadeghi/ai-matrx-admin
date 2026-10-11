@@ -25,6 +25,7 @@
  * manager whether the person was short or long.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useState } from "react";
 import Link from "next/link";
 import { CheckCheck, PanelRightOpen } from "lucide-react";
@@ -624,7 +625,7 @@ function NoPeriodChosen({ org }: { org: HrOrgRef }) {
   return (
     <div className="px-4 py-6">
       <section className="rounded-lg border border-border bg-card p-6">
-        <h1 title="This grid approves one pay group's timecards for one pay period." className="text-base font-semibold">Choose a pay period</h1>
+        <div className="flex items-center gap-1.5"><h1 className="text-base font-semibold">Choose a pay period</h1><InfoHint text="This grid approves one pay group's timecards for one pay period." label="About this grid" /></div>
         <Link
           href={hrTimePeriodsHref(org)}
           className="mt-3 inline-flex text-sm font-medium underline underline-offset-4"

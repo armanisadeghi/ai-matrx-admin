@@ -15,6 +15,7 @@
 
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { Lightbulb, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -30,11 +31,9 @@ export function RagStatusCell({ fileId, className }: RagStatusCellProps) {
 
   if (!status || status === "unknown") {
     return (
-      <span
-        className={cn("text-xs text-muted-foreground/60", className)}
-        title="Knowledge status not yet checked — toggle the column on or click Refresh."
-      >
+      <span className={cn("inline-flex items-center gap-1 text-xs text-muted-foreground/60", className)}>
         —
+        <InfoHint text="Knowledge status has not been checked yet; turn on the column or click Refresh." label="About knowledge status" />
       </span>
     );
   }
