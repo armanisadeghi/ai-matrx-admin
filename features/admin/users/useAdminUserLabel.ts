@@ -15,6 +15,19 @@ export interface AdminUserLabel {
   email: string | null;
 }
 
+/**
+ * `users.profiles.display_name` defaults to the word "User" until a person sets a name, and the
+ * lookup returns it ahead of the email — so every unnamed account read "User". That word is a
+ * placeholder, never a name: the email stands in.
+ */
+const PLACEHOLDER_NAMES = new Set(["user"]);
+
+export function usableLabel(label: string | null, email: string | null): string | null {
+  const trimmed = label?.trim() ?? "";
+  if (!trimmed || PLACEHOLDER_NAMES.has(trimmed.toLowerCase())) return email?.trim() || null;
+  return trimmed;
+}
+
 const cache = new Map<string, AdminUserLabel>();
 const waiting = new Map<string, Array<(value: AdminUserLabel) => void>>();
 let scheduled = false;
@@ -33,7 +46,7 @@ async function flush(): Promise<void> {
     // A refused or failed lookup leaves the id on screen (the honest fallback) and says why here.
     console.error("[admin-user-label] could not resolve people by id", error);
   }
-  const byId = new Map(rows.map((r) => [r.id, { label: r.label, email: r.email }]));
+  const byId = new Map(rows.map((r) => [r.id, { label: usableLabel(r.label, r.email), email: r.email }]));
   for (const id of ids) {
     const value = byId.get(id) ?? { label: null, email: null };
     cache.set(id, value);

@@ -23,6 +23,7 @@ import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { readOf } from "@ai-matrx/design-system";
 import {
   outcomeChip,
+  outcomeLabel,
   verdictChip,
 } from "@/components/mardown-display/blocks/agent-factory-kinds/AgentFactoryKindBlocks";
 import { FACTORY_BUILD_LIST_CAP, listFactoryBuilds } from "../service";
@@ -139,6 +140,47 @@ export function FactoryBuildsPage() {
         ),
       },
       {
+        id: "outcome",
+        accessorFn: (r) => (r.outcome ? outcomeLabel(r.outcome) : ""),
+        header: "Outcome",
+        filter: "select",
+        width: 175,
+        cell: (r) =>
+          outcomeChip(r.outcome) ?? (
+            <span className="type-secondary text-muted-foreground">—</span>
+          ),
+      },
+      {
+        id: "cost",
+        accessorFn: (r) => r.cost ?? 0,
+        header: costError ? "Cost (not loaded)" : "Cost",
+        filter: "number",
+        format: { id: "currency", options: { precision: 2 } },
+        width: 100,
+        cell: (r) => (
+          <span className="type-secondary tabular-nums">
+            {formatDollars(r.cost)}
+          </span>
+        ),
+      },
+      {
+        id: "agent",
+        accessorFn: (r) => r.agentId ?? "",
+        header: "Agent",
+        width: 130,
+        cell: (r) =>
+          r.agentId ? (
+            <EntityRef
+              token="agent"
+              id={r.agentId}
+              name={r.agentId.slice(0, 8)}
+              showIcon={false}
+            />
+          ) : (
+            <span className="type-secondary text-muted-foreground">—</span>
+          ),
+      },
+      {
         id: "engine",
         accessorKey: "engine",
         header: "Engine",
@@ -192,17 +234,6 @@ export function FactoryBuildsPage() {
         ),
       },
       {
-        id: "outcome",
-        accessorFn: (r) => r.outcome ?? "",
-        header: "Outcome",
-        filter: "select",
-        width: 175,
-        cell: (r) =>
-          outcomeChip(r.outcome) ?? (
-            <span className="type-secondary text-muted-foreground">—</span>
-          ),
-      },
-      {
         id: "send_backs",
         accessorKey: "sendBacks",
         header: "Send-backs",
@@ -222,36 +253,6 @@ export function FactoryBuildsPage() {
           verdictChip(r.verdict) ?? (
             <span className="type-secondary text-muted-foreground">—</span>
           ),
-      },
-      {
-        id: "agent",
-        accessorFn: (r) => r.agentId ?? "",
-        header: "Agent",
-        width: 130,
-        cell: (r) =>
-          r.agentId ? (
-            <EntityRef
-              token="agent"
-              id={r.agentId}
-              name={r.agentId.slice(0, 8)}
-              showIcon={false}
-            />
-          ) : (
-            <span className="type-secondary text-muted-foreground">—</span>
-          ),
-      },
-      {
-        id: "cost",
-        accessorFn: (r) => r.cost ?? 0,
-        header: costError ? "Cost (not loaded)" : "Cost",
-        filter: "number",
-        format: { id: "currency", options: { precision: 2 } },
-        width: 100,
-        cell: (r) => (
-          <span className="type-secondary tabular-nums">
-            {formatDollars(r.cost)}
-          </span>
-        ),
       },
       {
         id: "duration",
@@ -339,7 +340,7 @@ export function FactoryBuildsPage() {
             humanRow: (r) =>
               [
                 `Build ${r.id} — ${r.mandateKey ?? "new agent"}`,
-                `Status: ${r.spineStatus}; step: ${r.currentStep ?? "—"}; outcome: ${r.outcome ?? "—"}`,
+                `Status: ${r.spineStatus}; step: ${r.currentStep ?? "—"}; outcome: ${r.outcome ? `${outcomeLabel(r.outcome)} (${r.outcome})` : "—"}`,
                 `Door: ${r.door ?? "admin page"}; engine: ${r.engine}; cost: ${formatDollars(r.cost)}`,
                 `Send-backs: ${r.sendBacks}; judge: ${r.verdict ?? "—"}; agent: ${r.agentId ?? "—"}`,
                 r.error ? `Error: ${r.error}` : "",

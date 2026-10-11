@@ -3,8 +3,10 @@
 /**
  * "Ways to make an agent" — one row per agent-creating door: where a person goes, which builder
  * runs there right now (the door's platform knob), and what it made lately. Factory counts come
- * from the builds themselves; old-builder counts from the mandate runs the old path records
- * (only "from chat" is attributable to one door; the structure builder row covers the rest).
+ * from the builds themselves, split into real people and our own test/admin accounts (a door set
+ * to the old builder can still show factory builds when only our tests forced it). Old-builder
+ * counts come from the runs the old path records: browser doors by their mandate key, server
+ * doors by the door the server stamps on each run (recorded since FACTORY_DOOR_STAMP_SINCE).
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -15,11 +17,18 @@ import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { readOf } from "@ai-matrx/design-system";
 import {
   DOORS,
+  FACTORY_DOOR_STAMP_SINCE,
+  GENERATOR_SHORTCUT_MANDATE,
+  HOLDER_DRAFT_MANDATE,
   STRUCTURE_BUILDER_MANDATE,
   factoryDoorCounts,
   loadDoorBuilders,
-  loadMandateRunCounts,
+  loadOldBuilderRuns,
+  loadTestUserIds,
+  oldCountsForDoor,
   type Builder,
+  type DoorFactoryCounts,
+  type OldRunCounts,
   type RunCounts,
 } from "../overview";
 import type { FactoryBuildRow } from "../types";
@@ -29,9 +38,39 @@ interface DoorRow {
   place: string;
   href: string | null;
   builder: Builder | "mixed";
-  factory: RunCounts | null;
-  old: RunCounts | "not_recorded";
+  factory: DoorFactoryCounts | null;
+  old: { counts: RunCounts; recordedSince: string | null } | null;
   last: string | null;
+}
+
+const SINCE_LABEL = new Date(`${FACTORY_DOOR_STAMP_SINCE}T00:00:00`).toLocaleDateString(
+  undefined,
+  { month: "short", day: "numeric" },
+);
+
+/** An old-builder count; a window that starts before the door stamp says "since <date>". */
+function OldCount({
+  old,
+  days,
+}: {
+  old: DoorRow["old"];
+  days: 7 | 30;
+}) {
+  if (!old) {
+    return <span className="type-secondary text-muted-foreground">—</span>;
+  }
+  const n = days === 7 ? old.counts.d7 : old.counts.d30;
+  const partial =
+    old.recordedSince !== null &&
+    Date.now() - days * 86_400_000 < new Date(`${old.recordedSince}T00:00:00`).getTime();
+  return (
+    <span className="type-secondary tabular-nums">
+      {n}
+      {partial ? (
+        <span className="text-muted-foreground"> since {SINCE_LABEL}</span>
+      ) : null}
+    </span>
+  );
 }
 
 const BUILDER_LABEL: Record<DoorRow["builder"], string> = {
@@ -59,9 +98,8 @@ export function FactoryDoorsTable({
   const [builders, setBuilders] = useState<Record<string, Builder> | null>(
     null,
   );
-  const [oldRuns, setOldRuns] = useState<Record<string, RunCounts> | null>(
-    null,
-  );
+  const [oldRuns, setOldRuns] = useState<OldRunCounts | null>(null);
+  const [testUserIds, setTestUserIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -69,9 +107,11 @@ export function FactoryDoorsTable({
     try {
       const [b, r] = await Promise.all([
         loadDoorBuilders(),
-        loadMandateRunCounts([
+        loadOldBuilderRuns([
           STRUCTURE_BUILDER_MANDATE,
           "agent_studio.chat_brief",
+          HOLDER_DRAFT_MANDATE,
+          GENERATOR_SHORTCUT_MANDATE,
         ]),
       ]);
       setBuilders(b);
@@ -92,16 +132,39 @@ export function FactoryDoorsTable({
     void load();
   }, [load]);
 
+  const buildUserKey = useMemo(
+    () =>
+      [...new Set(builds.map((b) => b.userId).filter((u): u is string => !!u))]
+        .sort()
+        .join(","),
+    [builds],
+  );
+  useEffect(() => {
+    if (!buildUserKey) return;
+    let live = true;
+    loadTestUserIds(buildUserKey.split(","))
+      .then((ids) => {
+        if (live) setTestUserIds(ids);
+      })
+      .catch((e) => {
+        console.error("[agent-factory] could not tell test accounts apart", e);
+      });
+    return () => {
+      live = false;
+    };
+  }, [buildUserKey]);
+
   const rows = useMemo((): DoorRow[] => {
-    const factory = factoryDoorCounts(builds);
+    const factory = factoryDoorCounts(builds, testUserIds);
     const doorRows: DoorRow[] = DOORS.map((d) => {
       const f = buildsLoaded
-        ? (factory[d.key] ?? { d7: 0, d30: 0, last: null })
+        ? (factory[d.key] ?? {
+            people: { d7: 0, d30: 0, last: null },
+            test: { d7: 0, d30: 0, last: null },
+          })
         : null;
-      const o = d.oldBuilderMandate
-        ? (oldRuns?.[d.oldBuilderMandate] ?? null)
-        : null;
-      const lasts = [f?.last, o?.last]
+      const o = oldCountsForDoor(d, oldRuns);
+      const lasts = [f?.people.last, f?.test.last, o?.counts.last]
         .filter((x): x is string => Boolean(x))
         .sort();
       return {
@@ -110,22 +173,22 @@ export function FactoryDoorsTable({
         href: d.href,
         builder: builders?.[d.key] ?? "unknown",
         factory: f,
-        old: d.oldBuilderMandate ? (o ?? "not_recorded") : "not_recorded",
+        old: o,
         last: lasts.length ? lasts[lasts.length - 1] : null,
       };
     });
-    const sb = oldRuns?.[STRUCTURE_BUILDER_MANDATE];
+    const sb = oldRuns?.byMandate[STRUCTURE_BUILDER_MANDATE];
     doorRows.push({
       id: "__structure_builder",
       place: "Old builder runs, all places",
       href: null,
       builder: "mixed",
       factory: null,
-      old: sb ?? "not_recorded",
+      old: sb ? { counts: sb, recordedSince: null } : null,
       last: sb?.last ?? null,
     });
     return doorRows;
-  }, [builds, buildsLoaded, builders, oldRuns]);
+  }, [builds, buildsLoaded, builders, oldRuns, testUserIds]);
 
   const columns = useMemo(
     (): MatrxColumnDef<DoorRow>[] => [
@@ -168,45 +231,38 @@ export function FactoryDoorsTable({
       },
       {
         id: "factory_7",
-        accessorFn: (r) => r.factory?.d7 ?? -1,
-        header: "Factory 7d",
-        width: 85,
-        cell: (r) => <Count value={r.factory?.d7} />,
+        accessorFn: (r) => r.factory?.people.d7 ?? -1,
+        header: "People on factory 7d",
+        width: 110,
+        cell: (r) => <Count value={r.factory?.people.d7} />,
       },
       {
         id: "factory_30",
-        accessorFn: (r) => r.factory?.d30 ?? -1,
-        header: "Factory 30d",
-        width: 90,
-        cell: (r) => <Count value={r.factory?.d30} />,
+        accessorFn: (r) => r.factory?.people.d30 ?? -1,
+        header: "People on factory 30d",
+        width: 115,
+        cell: (r) => <Count value={r.factory?.people.d30} />,
+      },
+      {
+        id: "factory_test_30",
+        accessorFn: (r) => r.factory?.test.d30 ?? -1,
+        header: "Our test runs 30d",
+        width: 110,
+        cell: (r) => <Count value={r.factory?.test.d30} />,
       },
       {
         id: "old_7",
-        accessorFn: (r) => (r.old === "not_recorded" ? -1 : r.old.d7),
-        header: "Old 7d",
-        width: 75,
-        cell: (r) =>
-          r.old === "not_recorded" ? (
-            <span className="type-secondary text-muted-foreground">
-              Not recorded
-            </span>
-          ) : (
-            <Count value={r.old.d7} />
-          ),
+        accessorFn: (r) => r.old?.counts.d7 ?? -1,
+        header: "Old builder 7d",
+        width: 120,
+        cell: (r) => <OldCount old={r.old} days={7} />,
       },
       {
         id: "old_30",
-        accessorFn: (r) => (r.old === "not_recorded" ? -1 : r.old.d30),
-        header: "Old 30d",
-        width: 75,
-        cell: (r) =>
-          r.old === "not_recorded" ? (
-            <span className="type-secondary text-muted-foreground">
-              Not recorded
-            </span>
-          ) : (
-            <Count value={r.old.d30} />
-          ),
+        accessorFn: (r) => r.old?.counts.d30 ?? -1,
+        header: "Old builder 30d",
+        width: 120,
+        cell: (r) => <OldCount old={r.old} days={30} />,
       },
       {
         id: "last",
@@ -252,7 +308,7 @@ export function FactoryDoorsTable({
         listDescription:
           "One row per agent-creating door, with the builder it runs on now.",
         humanRow: (r) =>
-          `${r.place}: ${BUILDER_LABEL[r.builder]}; factory ${r.factory?.d7 ?? "—"}/7d ${r.factory?.d30 ?? "—"}/30d`,
+          `${r.place}: ${BUILDER_LABEL[r.builder]}; people on factory ${r.factory?.people.d7 ?? "—"}/7d ${r.factory?.people.d30 ?? "—"}/30d; our test runs ${r.factory?.test.d30 ?? "—"}/30d; old builder ${r.old?.counts.d7 ?? "—"}/7d ${r.old?.counts.d30 ?? "—"}/30d`,
         rowAttributes: (r) => ({ id: r.id }),
       }}
     />
