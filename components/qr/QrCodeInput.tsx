@@ -47,6 +47,8 @@ export interface QrCodeInputProps {
   /** Single line under the title. Keep it to one sentence. */
   hint?: string;
   className?: string;
+  /** Start the camera when the caller opens a dedicated scan screen. */
+  autoStartCamera?: boolean;
 }
 
 export function QrCodeInput({
@@ -55,12 +57,15 @@ export function QrCodeInput({
   disabled = false,
   hint,
   className,
+  autoStartCamera = false,
 }: QrCodeInputProps) {
   const isMobile = useIsMobile();
   const rootRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const leaseRef = useRef<CameraLease | null>(null);
+  const scanGeneration = useRef(0);
+  const autoStarted = useRef(false);
 
   const [busy, setBusy] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -75,6 +80,7 @@ export function QrCodeInput({
   );
 
   const stopScan = useCallback(() => {
+    scanGeneration.current += 1;
     leaseRef.current?.release();
     leaseRef.current = null;
     setStream(null);
@@ -133,12 +139,17 @@ export function QrCodeInput({
   // ── Live camera scan: the phone path.
   const startScan = useCallback(async () => {
     if (disabled || scanning) return;
+    const generation = ++scanGeneration.current;
     setBusy(true);
     try {
       const lease = await acquireCameraLease({
         facingMode: "environment",
         profile: "1080p",
       });
+      if (generation !== scanGeneration.current) {
+        lease.release();
+        return;
+      }
       leaseRef.current = lease;
       setStream(lease.stream);
       setScanning(true);
@@ -153,6 +164,12 @@ export function QrCodeInput({
       setBusy(false);
     }
   }, [disabled, fail, scanning]);
+
+  useEffect(() => {
+    if (!autoStartCamera || autoStarted.current) return;
+    autoStarted.current = true;
+    void startScan();
+  }, [autoStartCamera, startScan]);
 
   // Decode the live preview on a tick until a code appears.
   useEffect(() => {
@@ -185,8 +202,7 @@ export function QrCodeInput({
     };
   }, [scanning, onDecoded, stopScan]);
 
-  if (scanning) {
-    return (
+  const camera = scanning ? (
       <div
         className={cn(
           "relative overflow-hidden rounded-lg border border-border bg-black",
@@ -214,8 +230,7 @@ export function QrCodeInput({
           </Button>
         </div>
       </div>
-    );
-  }
+    ) : null;
 
   return (
     <div
@@ -242,6 +257,7 @@ export function QrCodeInput({
         className,
       )}
     >
+      {camera}
       {busy ? (
         <div className="flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -263,7 +279,7 @@ export function QrCodeInput({
               disabled={disabled}
               onClick={() => void startScan()}
             >
-              Scan with camera
+              {scanning ? "Camera on" : "Scan with camera"}
             </Button>
             <Button
               icon={<ImageUp />}

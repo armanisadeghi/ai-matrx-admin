@@ -125,6 +125,7 @@ export function InfoHint({ text, label = "More info", className, side = "top" }:
           // press would start a column drag. Found 2026-10-11 on MatrxDataTable headers.
           onPointerMove={(e) => e.stopPropagation()}
           onPointerDown={(e) => e.stopPropagation()}
+          onFocus={(e) => e.stopPropagation()}
         >
           {glyph}
         </button>
