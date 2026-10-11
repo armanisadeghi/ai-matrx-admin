@@ -36,6 +36,7 @@ import {
   connectClaudeAccount,
   redeemClaudeCode,
 } from "@/features/ai-work/lib/connectClaudeAccount";
+import { claudeAnswerAt } from "@/features/ai-work/lib/claudeConnectFlow";
 import { SandboxCapacityList } from "@/features/ai-work/components/SandboxCapacityList";
 import {
   cancelOwnPlanSignIn,
@@ -360,7 +361,18 @@ export function ClaudeAccountsPanel() {
               />
             </div>
             {pending.status.detail && pending.status.sign_in_url && (
-              <p className="text-xs text-muted-foreground">{pending.status.detail}</p>
+              <p className="text-xs text-muted-foreground">
+                {pending.status.detail}
+                {claudeAnswerAt(pending.status) && (
+                  <>
+                    {" "}
+                    <span className="whitespace-nowrap">
+                      (Claude said this at{" "}
+                      {new Date(claudeAnswerAt(pending.status) as string).toLocaleTimeString()})
+                    </span>
+                  </>
+                )}
+              </p>
             )}
           </div>
         )}

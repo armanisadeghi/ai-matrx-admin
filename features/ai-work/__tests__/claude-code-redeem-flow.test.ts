@@ -8,6 +8,7 @@
  */
 
 import {
+  claudeAnswerAt,
   NO_WORD_FROM_CLAUDE_MESSAGE,
   OFFLINE_MESSAGE,
   REDEEM_TIMEOUT_MESSAGE,
@@ -118,6 +119,17 @@ it("no word from Claude is said as that, never as a guessed refusal or a silent 
 it("Claude's own refusal, settled on the status door, is shown in Claude's words", async () => {
   const { deps } = harness({ submit: NEVER, statuses: [refusedOnStatus] });
   expect(await runClaudeCodeRedeem(deps)).toEqual({ kind: "settled", status: refusedOnStatus });
+});
+
+it("a refusal that reaches the app only through a status poll keeps Claude's words and time", async () => {
+  const at = "2026-10-11T23:30:00+00:00";
+  const polled = { ...refusedOnStatus, answer_to_code_at: at } as OwnPlanStatus;
+  const { deps } = harness({ submit: redeeming, statuses: [redeeming, polled] });
+  const outcome = await runClaudeCodeRedeem(deps);
+  expect(outcome).toEqual({ kind: "settled", status: polled });
+  if (outcome.kind !== "settled") throw new Error("expected settled");
+  expect(claudeAnswerAt(outcome.status)).toBe(at);
+  expect(claudeAnswerAt(refused)).toBeNull();
 });
 
 it("'Failed to fetch' on every call ends offline, never spins", async () => {

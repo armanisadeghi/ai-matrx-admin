@@ -222,6 +222,14 @@ export function claudeAnswerToCode(status: OwnPlanStatus): string | null {
   return typeof answer === "string" && answer.trim() ? answer : null;
 }
 
+/** When Claude gave that answer (server field, ISO-8601), or null. Kept with the
+ * sign-in on the server, so a status poll shows the same words and time as the
+ * code's own response did. */
+export function claudeAnswerAt(status: OwnPlanStatus): string | null {
+  const at = (status as { answer_to_code_at?: unknown }).answer_to_code_at;
+  return typeof at === "string" && at ? at : null;
+}
+
 export async function runClaudeCodeRedeem(deps: RedeemDeps): Promise<RedeemOutcome> {
   const deadline = deps.now() + (deps.timeoutMs ?? REDEEM_TIMEOUT_MS);
   const callMs = deps.callTimeoutMs ?? CONNECT_CALL_TIMEOUT_MS;
