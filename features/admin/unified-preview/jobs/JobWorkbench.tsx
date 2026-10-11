@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { InfoHint } from "@/components/official/InfoHint";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { MandateResolutionRibbon } from "@/features/mandates/components/MandateResolutionRibbon";
@@ -435,6 +436,16 @@ export function JobWorkbench({
                   {place}
                 </Badge>
               ))}
+              <InfoHint
+                label="How this job meets a place"
+                text={
+                  job.discovery === "referenced"
+                    ? "Code or a page slot names this job, so it runs from that place with no user input."
+                    : job.discovery === "discovered"
+                      ? "Nothing names this job; it shows up wherever the values it needs exist."
+                      : "Code names this job, and it also shows up wherever the values it needs exist."
+                }
+              />
             </div>
             {/* Discovery modes: REFERENCED / DISCOVERED / BOTH — keep the three definitions here.
                 REFERENCED — a position in code or a surface slot names this key; the provision is

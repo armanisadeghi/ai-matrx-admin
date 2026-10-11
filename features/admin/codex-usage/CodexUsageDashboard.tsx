@@ -20,6 +20,7 @@ import {
 } from "@/features/admin/codex-usage/service";
 import { useDesktopPresence } from "@ai-matrx/chat/agents/hooks/useDesktopPresence";
 import { Button } from "@/components/ui/button";
+import { InfoHint } from "@/components/official/InfoHint";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { formatCount, formatPercent } from "@ai-matrx/kit/format";
@@ -401,6 +402,12 @@ export function CodexUsageDashboard() {
             >
               Continue collection
             </Button>
+          ) : null}
+          {canResume ? (
+            <InfoHint
+              label="About Continue collection"
+              text="Keeps reading the same date range as the partial totals, even if the selected dates have moved on."
+            />
           ) : null}
         </div>
       </section>

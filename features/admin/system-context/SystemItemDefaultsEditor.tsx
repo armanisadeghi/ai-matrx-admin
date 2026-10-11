@@ -19,6 +19,7 @@ import { Plus, RotateCcw, X } from "lucide-react";
 
 import { Input } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
+import { InfoHint } from "@/components/official/InfoHint";
 import { toast } from "@/lib/toast";
 import { createClient } from "@/utils/supabase/client";
 import { setFeatureKnob } from "@/features/admin/limits/service";
@@ -164,7 +165,13 @@ export function SystemItemDefaultsEditor({
       aria-label="System items every agent receives"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-sm font-semibold">System items every agent receives</h2>
+        <h2 className="inline-flex items-center gap-1 text-sm font-semibold">
+          System items every agent receives
+          <InfoHint
+            label="About System items every agent receives"
+            text="Any other System item reaches an agent only when the agent names it."
+          />
+        </h2>
         <div className="flex items-center gap-2">
           {!isDefault && (
             <Button

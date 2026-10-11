@@ -9,6 +9,7 @@
 import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { InfoHint } from "@/components/official/InfoHint";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Loader2, Save } from "lucide-react";
 import { toast } from "@/lib/toast";
@@ -40,7 +41,13 @@ export function PackGuidelinesSection({ detail, onChanged }: { detail: AdminPack
         placeholder="Who buys… [BLANK: the business's service area]"
       />
       <div className="flex items-center justify-between">
-        <span className="text-[11px] tabular-nums text-muted-foreground">{words} words</span>
+        <span className="inline-flex items-center gap-1 text-[11px] tabular-nums text-muted-foreground">
+          {words} words
+          <InfoHint
+            label="About guidelines"
+            text="Becomes an adopting site's keyword guidelines if it has none; mark what only the business can answer as [BLANK]."
+          />
+        </span>
         {canAuthor ? (
           <Button icon={save.isPending ? <Loader2 className="animate-spin" /> : <Save />} variant="primary" onClick={() => save.mutate()} disabled={!dirty || save.isPending}>
             Save guidelines

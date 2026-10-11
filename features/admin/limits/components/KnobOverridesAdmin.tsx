@@ -21,6 +21,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { InfoHint } from "@/components/official/InfoHint";
 import {
   Command,
   CommandEmpty,
@@ -442,7 +443,16 @@ export function KnobOverridesAdmin({
         Platform default <span className="font-medium text-foreground">{knobValueWords(knob, knob.platform_default)}</span>
         {" · "}
         {overrideCountWords(rows)}
-        {platformLocked && " · platform-only"}
+        {platformLocked && (
+          <>
+            {" · platform-only"}
+            <InfoHint
+              label="About platform-only"
+              text="No organization or person can set their own value for this setting."
+              className="ml-1 align-middle"
+            />
+          </>
+        )}
       </p>
 
       {rows.length > 0 && (

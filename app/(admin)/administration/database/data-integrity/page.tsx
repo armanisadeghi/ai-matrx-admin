@@ -24,6 +24,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { InfoHint } from "@/components/official/InfoHint";
 import {
   Tooltip,
   TooltipContent,
@@ -642,6 +643,10 @@ export default function DataIntegrityPage() {
           >
             Run all checks
           </Button>
+          <InfoHint
+            label="About running checks"
+            text="Running checks only reads data; a row's repair button is the one thing here that changes it."
+          />
         </div>
       </div>
 
