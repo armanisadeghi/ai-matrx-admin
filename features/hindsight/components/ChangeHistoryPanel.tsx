@@ -40,6 +40,7 @@ import { DoorLink } from "./DoorLink";
 import { fmtDate, KIND_COLOR, KIND_ICON, LEVER_LABEL } from "./tokens";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { InfoHint } from "@/components/official/InfoHint";
 
 const PAGE_SIZE = 25;
 
