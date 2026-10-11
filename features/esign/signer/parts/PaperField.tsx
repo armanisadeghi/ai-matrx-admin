@@ -107,6 +107,16 @@ export function PaperField(props: PaperFieldProps) {
           </span>
         ) : null}
       </div>
+      {isChoice && optionText(field) ? (
+        // A box too narrow for its words keeps them just outside its right edge, on the page.
+        <span
+          aria-hidden
+          className="pointer-events-none absolute left-full top-1/2 z-10 ml-1 block max-w-[9rem] -translate-y-1/2 truncate rounded px-1 text-[11px] leading-tight @[72px]:hidden"
+          style={{ color: PAPER.ink, background: "rgba(255,255,255,0.85)" }}
+        >
+          {optionText(field)}
+        </span>
+      ) : null}
       {active && !compact && !locked ? <Callout {...props} filled={filled} color={color} /> : null}
     </div>
   );
