@@ -20,6 +20,8 @@ Registry rows compose one primary control with a labelled options popover for so
 
 ## Entry points
 
+The social OAuth browser bridge admits the exact `https://localhost:3000` origin only for Facebook, matching its HTTPS loopback callback. Provider portal and Vault registration remain separate requirements.
+
 **Routes**
 
 - `/user-settings/[[...path]]` — THE settings route; the window (`userPreferencesWindow`) and the phone drawer render the same core (registry + `SettingsTabHost`).

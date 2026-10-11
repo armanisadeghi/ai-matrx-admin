@@ -6,6 +6,7 @@ export const SOCIAL_SETTINGS_RETURN = "/user-settings/integrations";
 
 /** Production and agent-owned localhost previews are the only OAuth callback mounts. */
 export function isSocialCallbackOrigin(origin: string, provider?: SocialProvider): boolean {
+  if (provider === "facebook" && origin === "https://localhost:3000") return true;
   if (provider === "pinterest") return ["https://www.aimatrx.com", "http://localhost:3000", "http://localhost:3001"].includes(origin);
   try {
     const url = new URL(origin);
