@@ -121,7 +121,7 @@ importers:
         version: 0.2.132(8199c4c0cc1e374bc5d7dbc40ef033d4)
       '@ai-matrx/rich-editor':
         specifier: latest
-        version: 0.5.87(4a7296d0727648a5c52f35bd432d655d)
+        version: 0.5.88(4a7296d0727648a5c52f35bd432d655d)
       '@ai-matrx/terminal':
         specifier: latest
         version: 0.1.23(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -1428,8 +1428,8 @@ packages:
       react: '>=19.0.0'
       react-dom: '>=19.0.0'
 
-  '@ai-matrx/rich-editor@0.5.87':
-    resolution: {integrity: sha512-Ceiw0tSI0jtmZFwkvFRF6dxrEZMbglDFTTlCC5CIi+vvJLtZcAawKWdtIoEuNv8xsW+6WiVDx7oWySEOcKT9xw==}
+  '@ai-matrx/rich-editor@0.5.88':
+    resolution: {integrity: sha512-0Wf983/wp240NvX9guhidA2IGVnBEhdNT26LiT3GTcjcJm8PAxVShdMVzVSi+wcfBg4wBnjgYVLSzOEH4wcTdA==}
     engines: {node: '>=20'}
     peerDependencies:
       react: '>=19.0.0'
@@ -13856,7 +13856,7 @@ snapshots:
       - vue
       - ws
 
-  '@ai-matrx/rich-editor@0.5.87(4a7296d0727648a5c52f35bd432d655d)':
+  '@ai-matrx/rich-editor@0.5.88(4a7296d0727648a5c52f35bd432d655d)':
     dependencies:
       '@ai-matrx/agents': 0.59.57(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react-is@19.3.0)(react@19.3.0)(redux@5.0.1))
       '@ai-matrx/alchemy': 0.23.31(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react-is@19.3.0)(react@19.3.0)(redux@5.0.1))
