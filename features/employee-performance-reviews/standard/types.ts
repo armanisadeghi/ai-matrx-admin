@@ -464,6 +464,29 @@ export function parseLaunch(raw: Rec): LaunchResult {
   };
 }
 
+/** One person the caller may start a single review for (hr_review_start_candidates). */
+export interface StartCandidate {
+  employmentId: string;
+  name: string;
+  /** "report": the caller manages them by position; "employee": reachable because the caller is HR. */
+  relation: "report" | "employee";
+  /** Their open review in the organization's Individual reviews cycle, if any. */
+  openReviewId: string | null;
+}
+
+export function parseStartCandidates(raw: unknown): StartCandidate[] {
+  return recs(raw).flatMap((p) => {
+    const employmentId = str(p.employment_id);
+    if (!employmentId) return [];
+    return [{
+      employmentId,
+      name: str(p.name) ?? "Unnamed employee",
+      relation: p.relation === "report" ? "report" : "employee",
+      openReviewId: str(p.open_review_id),
+    }];
+  });
+}
+
 export function parseProblems(raw: unknown): AnswerProblem[] {
   return recs(raw).map((p) => ({
     question: str(p.question) ?? str(p.at),
