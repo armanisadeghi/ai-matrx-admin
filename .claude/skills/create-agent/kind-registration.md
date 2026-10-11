@@ -36,5 +36,5 @@ timestamp: 2026-09-10T00:00:00Z
   by definition. Expect to iterate with the builder agent several times — first output is
   never the final component.
 - A component that needs a button which runs another agent on a piece of its data, or
-  that shows a result back on the item (a brief, a generated image): the `kind-actions`
+  that shows a result back on the item (a brief, a generated image): the `shape-authoring`
   skill (`runAction("run_shortcut", …)`, `itemState`, `KindActionButton`).

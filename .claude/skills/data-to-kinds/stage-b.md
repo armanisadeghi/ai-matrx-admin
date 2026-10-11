@@ -39,7 +39,7 @@ timestamp: 2026-09-10T00:00:00Z
    full payload as the automatic "Everything" escape hatch. Put the pair on the card header AND on
    every section, each scoped to that section's data.
    **Buttons that run AI on an item, or results shown back on it** (a brief, an image, a
-   score): the `kind-actions` skill — `runAction("run_shortcut", …)`, `itemState`,
+   score): the `shape-authoring` skill — `runAction("run_shortcut", …)`, `itemState`,
    `KindActionButton`. A component can always trigger work; never tell anyone it can't.
 5. **Build the components** in `components/mardown-display/blocks/<family>/` — one per kind,
    defensive readers (a half-arrived value is a NORMAL state), the collection delegating every

@@ -35,7 +35,7 @@ description: "The Shape System — the content_ir kind registry for structured c
 
 A kind component receives `runAction` and `itemState` beside `data`: it can run a shortcut
 on one item (in a window, or in the background saving the result onto the item), keep a
-person's pick, and show saved results and generated images. How: the **`kind-actions`**
+person's pick, and show saved results and generated images. How: the **`shape-authoring`**
 skill. Never answer "a shape can't trigger an agent."
 
 ## Hard rules
