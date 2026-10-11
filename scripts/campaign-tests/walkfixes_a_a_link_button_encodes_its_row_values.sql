@@ -53,19 +53,19 @@ begin
      and f.data ->> 'entity_definition_id' = v_tasks::text and f.data ->> 'key' = 'title';
   perform set_config('role', 'authenticated', true);
   v_task := custom.record_write(v_org, v_tasks, jsonb_build_object('title','Demolish old cabinets & trim',
-              'supplier_site','https://supplier.example.com/orders?id=7','parent_id',v_home::text));
+              'supplier_site','https://orders.lakesidefootcare.com/orders?id=7','parent_id',v_home::text));
 
   begin
     b_search := custom.field_declare(v_org, v_tasks, jsonb_build_object('key','search_supplier','label','Search supplier','type','button',
-      'button', jsonb_build_object('do','open_url','url','https://example.com/search?q={{' || f_title || '}}')));
+      'button', jsonb_build_object('do','open_url','url','https://search.lakesidefootcare.com/search?q={{' || f_title || '}}')));
     v_res := custom.button_press(v_org, v_task, b_search);
-    if v_res ->> 'url' is distinct from 'https://example.com/search?q=Demolish%20old%20cabinets%20%26%20trim' then
+    if v_res ->> 'url' is distinct from 'https://search.lakesidefootcare.com/search?q=Demolish%20old%20cabinets%20%26%20trim' then
       v_fail := v_fail || ('1 a value inside the link answered ' || coalesce(v_res ->> 'url', 'null'));
     end if;
     b_site := custom.field_declare(v_org, v_tasks, jsonb_build_object('key','open_site','label','Open site','type','button',
       'button', jsonb_build_object('do','open_url','url','{{' || f_site || '}}')));
     v_res := custom.button_press(v_org, v_task, b_site);
-    if v_res ->> 'url' is distinct from 'https://supplier.example.com/orders?id=7' then
+    if v_res ->> 'url' is distinct from 'https://orders.lakesidefootcare.com/orders?id=7' then
       v_fail := v_fail || ('2 a whole-link value answered ' || coalesce(v_res ->> 'url', 'null'));
     end if;
   exception when others then

@@ -63,7 +63,7 @@ export const CREW_TIMESHEET_DEMO: PlaygroundDemo = {
   sample: {
     week: "Week of June 8 — Elm Street remodel",
     rows: [
-      { name: "Dana Whitfield", role: "Lead carpenter", hours: 42 },
+      { name: "Marisol Quintero", role: "Lead carpenter", hours: 42 },
       { name: "Marco Ruiz", role: "Electrician", hours: 31.5 },
       { name: "Priya Natarajan", role: "Tile setter", hours: 28 },
       { name: "Sam Okafor", role: "Apprentice", hours: 40 },

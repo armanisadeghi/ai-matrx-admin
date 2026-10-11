@@ -131,7 +131,7 @@ begin
          'clinic_address', jsonb_build_object('street', '1420 Cedar Ridge Pkwy, Suite 200', 'city', 'Boulder', 'region', 'CO',
                                               'postal_code', '80301', 'country', 'US'),
          'wristband', '4006381333931',
-         'treatment_notes', E'**Quad sets** 3×10, _heel slides_ to 95°.\n- ice 15 min\n- see [home program](https://cedarridgept.example/hep)',
+         'treatment_notes', E'**Quad sets** 3×10, _heel slides_ to 95°.\n- ice 15 min\n- see [home program](https://cedarridgept.com/hep)',
          'plan_status', 'in_progress',
          'visits_booked', case when v_visit is null then '[]'::jsonb else jsonb_build_array(v_visit) end));
   perform set_config('t.rec', r::text, true);
@@ -218,7 +218,7 @@ insert into rich values
   ('raw tag',                'Plain <b>bold</b>',                          'it was given HTML'),
   ('a few degrees',          'flexion <a few degrees, then rest',          ''),
   ('less than',              'pain 3 < yesterday''s 5',                    ''),
-  ('safe links',             '[hep](https://cedarridgept.example/hep) · [call](tel:+18055550142) · [mail](mailto:front@cedarridgept.example)', '');
+  ('safe links',             '[hep](https://cedarridgept.com/hep) · [call](tel:+18055550142) · [mail](mailto:front@cedarridgept.com)', '');
 do $$
 declare b record; m text;
 begin

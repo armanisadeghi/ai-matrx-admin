@@ -1,6 +1,6 @@
 -- LANE AUTOMATION-TIME — THE GREEN SUITE. A table acts when a date arrives, and on a schedule.
 --
--- THE USE CASE. Dana Whitfield runs a small agency. Her "Client content calendar" lists each post with a post date and
+-- THE USE CASE. Dana Okafor runs a small agency. Her "Client content calendar" lists each post with a post date and
 -- an owner; she wants the owner reminded two days before the post date, and a "Monday planning" row to appear every
 -- Monday. The suite takes the seat of admin@admin.com (editor of the table); the tick runs as the store's own role,
 -- exactly as pg_cron runs it, on an injected clock (custom.automation_clock).
@@ -77,10 +77,10 @@ begin
 
   -- ══ PART 1 — THE TRIGGERS, JUDGED WHOLE ═══════════════════════════════════════════════
   v_res := custom.automation_declare(v_org, v_posts, jsonb_build_object('name', 'Bad field',
-    'trigger', jsonb_build_object('on', 'date_arrives', 'field', f_title), 'actions', jsonb_build_array(jsonb_build_object('do', 'webhook', 'url', 'https://example.com/h'))));
+    'trigger', jsonb_build_object('on', 'date_arrives', 'field', f_title), 'actions', jsonb_build_array(jsonb_build_object('do', 'webhook', 'url', 'https://hooks.whitfieldcontent.com/h'))));
   if (v_res ->> 'ok')::boolean or v_res -> '_errors' -> 'trigger.field' is null then raise exception '1a: a date trigger on a text property was stored: %', v_res; end if;
   v_res := custom.automation_declare(v_org, v_posts, jsonb_build_object('name', 'Bad time',
-    'trigger', jsonb_build_object('on', 'date_arrives', 'field', f_date, 'at', '25:61'), 'actions', jsonb_build_array(jsonb_build_object('do', 'webhook', 'url', 'https://example.com/h'))));
+    'trigger', jsonb_build_object('on', 'date_arrives', 'field', f_date, 'at', '25:61'), 'actions', jsonb_build_array(jsonb_build_object('do', 'webhook', 'url', 'https://hooks.whitfieldcontent.com/h'))));
   if (v_res ->> 'ok')::boolean or v_res -> '_errors' -> 'trigger.at' is null then raise exception '1b: a bad time of day was stored: %', v_res; end if;
   v_res := custom.automation_declare(v_org, v_tasks, jsonb_build_object('name', 'No every',
     'trigger', jsonb_build_object('on', 'schedule'), 'actions', jsonb_build_array(jsonb_build_object('do', 'add_row', 'table_id', v_tasks, 'values', jsonb_build_object(f_t_title, 'x')))));

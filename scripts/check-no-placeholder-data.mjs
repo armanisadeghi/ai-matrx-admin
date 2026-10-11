@@ -185,7 +185,7 @@ const SKIP_DIRECTORY = new Set([
 ]);
 
 /** A named build output (`dist-demo`, `dist-storybook`): generated bundle text, never authored data, and usually git-ignored. */
-const BUILD_OUTPUT_DIRECTORY = /^dist-[\w.-]+$/;
+const BUILD_OUTPUT_DIRECTORY = /^(?:dist-[\w.-]+|\.next-[\w.-]+)$/;
 
 const TEXT = /\.(ts|tsx|js|jsx|mjs|cjs|py|sql|json|md|yaml|yml|csv)$/;
 

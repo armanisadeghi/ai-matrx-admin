@@ -14,6 +14,7 @@ import path from "path";
 import {
   LOOPBACK_TEST_HANDSETS,
   PRODUCTION_REF,
+  SUPPRESSED_FIXTURE_RECIPIENT,
   SUPPRESSED_ON_CLONE,
   serverDatabase,
 } from "./outbound-guard";
@@ -117,6 +118,18 @@ test.each([REAL_EMAIL, "test@test.com"])("email on the clone to %s is refused be
   const result = await sendEmail({ to, subject: "s", html: "<p>b</p>" });
   expect(resendSend).not.toHaveBeenCalled();
   expect(result).toMatchObject({ success: false, suppressed: true, error: { code: SUPPRESSED_ON_CLONE } });
+});
+
+test.each([PROD_URL, CLONE_URL])("email to a fixture persona is refused by name on %s", async (url) => {
+  wire(url);
+  const { sendEmail } = await import("@/lib/email/client");
+  const result = await sendEmail({ to: "marisol.quintero@fixtures.aimatrx.com", subject: "s", html: "<p>b</p>" });
+  expect(resendSend).not.toHaveBeenCalled();
+  expect(result).toMatchObject({
+    success: false,
+    suppressed: true,
+    error: { code: SUPPRESSED_FIXTURE_RECIPIENT, message: expect.stringContaining("fixtures.aimatrx.com") },
+  });
 });
 
 test("email on production reaches Resend", async () => {

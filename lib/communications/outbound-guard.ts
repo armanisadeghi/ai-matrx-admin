@@ -46,6 +46,16 @@ export const LOOPBACK_TEST_HANDSETS: ReadonlySet<string> = new Set([
 
 export const SUPPRESSED_ON_CLONE = "suppressed_on_clone";
 
+/** Persona factory mailboxes live under this suffix; they are not people and have no inbox. */
+export const FIXTURE_EMAIL_SUFFIX = "fixtures.aimatrx.com";
+export const SUPPRESSED_FIXTURE_RECIPIENT = "suppressed_fixture_recipient";
+
+/** True for an address on the fixture persona domain (`name@fixtures.aimatrx.com`, any subdomain). */
+export function isFixtureEmail(address: string | null | undefined): boolean {
+  const host = (address ?? "").trim().toLowerCase().replace(/>$/, "").split("@").pop() ?? "";
+  return host === FIXTURE_EMAIL_SUFFIX || host.endsWith(`.${FIXTURE_EMAIL_SUFFIX}`);
+}
+
 export type OutboundChannel = "email" | "sms" | "voice" | "slack" | "provider_write";
 
 export interface ServerDatabase {
@@ -55,7 +65,7 @@ export interface ServerDatabase {
 }
 
 export interface OutboundSuppression {
-  code: typeof SUPPRESSED_ON_CLONE;
+  code: typeof SUPPRESSED_ON_CLONE | typeof SUPPRESSED_FIXTURE_RECIPIENT;
   channel: OutboundChannel;
   database: ServerDatabase;
   message: string;
@@ -99,6 +109,14 @@ export function outboundSuppression(
   env: OutboundEnv = process.env,
 ): OutboundSuppression | null {
   const database = serverDatabase(env);
+  // A fixture persona is refused on EVERY database, production included: it is not a person.
+  if (channel === "email" && isFixtureEmail(address)) {
+    const message =
+      `Not sent: ${address} is on ${FIXTURE_EMAIL_SUFFIX}, the fixture persona domain. Fixture personas are ` +
+      "test accounts, not people, and have no mailbox. Nothing was handed to the provider.";
+    console.warn(`OUTBOUND SUPPRESSED (${SUPPRESSED_FIXTURE_RECIPIENT}) channel=${channel} recipient=${address}`);
+    return { code: SUPPRESSED_FIXTURE_RECIPIENT, channel, database, message };
+  }
   if (database.isProduction) return null;
   if ((channel === "sms" || channel === "voice") && LOOPBACK_TEST_HANDSETS.has((address ?? "").trim())) {
     return null;

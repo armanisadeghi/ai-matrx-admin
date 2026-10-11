@@ -43,7 +43,7 @@ begin
       ('unchanged: bare numbers',                '["4.87", "12", "-3"]'::jsonb,                        'number'),
       ('unchanged: a tick box of 1 and 0',       '["1", "0", "1"]'::jsonb,                             'checkbox'),
       ('unchanged: dates',                       '["2026-10-03", "2026-11-01"]'::jsonb,                'date'),
-      ('unchanged: emails',                      '["front@lakesidefootcare.com", "rosa@example.com"]'::jsonb, 'email'),
+      ('unchanged: emails',                      '["front@lakesidefootcare.com", "rosa@lakesidefootcare.com"]'::jsonb, 'email'),
       ('unchanged: words',                       '["Received", "Shipped"]'::jsonb,                     'text'),
       ('unchanged: nothing at all',              '[]'::jsonb,                                          'text')
     ) as c(name, samples, want)

@@ -217,7 +217,7 @@ with conn() as c:
     record('DEFECT', 'overwrite', 'member overwrites a confidential field through entity_value_write', o, refused)
     o = step(cur, "select custom.entity_value_write(%s,'party',%s,'{\"intake_notes\":\"x\",\"made_up_key\":\"x\"}'::jsonb)", (ORG, PID))
     record('DEFECT', 'undeclared', 'member writes an undeclared key through entity_value_write', o, refused)
-    o = step(cur, "update crm.party set custom_fields = custom_fields || '{\"zz_undeclared\":\"x\"}'::jsonb where id=%s returning id", (PID,))
+    o = step(cur, "update crm.party set custom_fields = custom_fields || '{\"undeclared_note\":\"x\"}'::jsonb where id=%s returning id", (PID,))
     record('DEFECT', 'undeclared', 'member direct UPDATE adds an undeclared key (supabase-js shape)', o, refused)
     o = step(cur, "update crm.party set custom_fields = custom_fields || '{\"preferred_clinic_location\":\"Harbor\"}'::jsonb where id=%s returning id", (PID,))
     record('DEFECT', 'overwrite', 'member direct UPDATE overwrites a confidential field', o, refused)

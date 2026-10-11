@@ -1,7 +1,7 @@
 -- LANE SN-SCOPES (2026-10-01) — WHO MAY OPEN AND EDIT A SCOPE IN THE RECORD STORE, ITEM BY ITEM.
 --
 -- THE USE CASE. Cedar Ridge Physical Therapy keeps each patient as a scope (Patients → Dana
--- Whitfield). Dana Okafor (test@test.com) is a plain member of the clinic; admin@admin.com owns it.
+-- Quintero). Dana Okafor (test@test.com) is a plain member of the clinic; admin@admin.com owns it.
 -- After the switch the scope screens read the store, so what she may open and edit is the store's
 -- answer: the organization wall (iam.has_org_access / custom.portal_admits), then the one ladder
 -- (custom.has_visibility). The four rulings of SCOPES-READS-ACCESS (2026-09-29) the switch must keep:
@@ -38,7 +38,7 @@ do $sn$
 declare
   c_org    constant uuid := '0a54df90-eab8-4d07-ab29-81a45fb41e04';   -- Cedar Ridge Physical Therapy
   c_table  constant uuid := 'bed86cb8-e32e-4cae-a9b3-0b7918791996';   -- Patients
-  c_scope  constant uuid := 'f3cf712a-d07b-41cd-b6bc-5dd3fb662ae4';   -- Dana Whitfield
+  c_scope  constant uuid := 'f3cf712a-d07b-41cd-b6bc-5dd3fb662ae4';   -- Marisol Quintero
   c_member constant uuid := '4060701e-706a-4c76-b3ca-0bbc69fa5a14';   -- test@test.com
   c_owner  constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';   -- admin@admin.com
   v_open boolean; v_edit boolean; v_owner_open boolean; v_level text; v_fails text[] := '{}';
@@ -47,7 +47,7 @@ declare
 begin
   -- fixture
   if not exists (select 1 from custom.record where id = c_scope and table_id = c_table and deleted_at is null) then
-    raise exception 'fixture: Dana Whitfield is not a live Record of Cedar Ridge''s Patients on this database';
+    raise exception 'fixture: Marisol Quintero is not a live Record of Cedar Ridge''s Patients on this database';
   end if;
   if not exists (select 1 from iam.memberships where container_type = 'organization' and container_id = c_org
                   and user_id = c_member and status = 'active' and deleted_at is null) then
@@ -70,7 +70,7 @@ begin
     v_n := 1; v_err := null;
     perform set_config('role', 'authenticated', true);
     begin
-      perform custom.context_scope_write(c_org, c_scope, c_table, jsonb_build_object('name', 'Dana Whitfield'));
+      perform custom.context_scope_write(c_org, c_scope, c_table, jsonb_build_object('name', 'Marisol Quintero'));
     exception when others then v_n := 0; v_err := sqlerrm; end;
     perform set_config('role', 'none', true);
     raise exception using errcode = 'P0001', message = '__undo__';
@@ -105,7 +105,7 @@ begin
     v_err := null; v_n := 1;
     perform set_config('role', 'authenticated', true);
     begin
-      perform custom.context_scope_write(c_org, c_scope, c_table, jsonb_build_object('name', 'Dana Whitfield'));
+      perform custom.context_scope_write(c_org, c_scope, c_table, jsonb_build_object('name', 'Marisol Quintero'));
     exception when others then v_n := 0; v_err := sqlerrm; end;
     perform set_config('role', 'none', true);
     raise exception using errcode = 'P0001', message = '__undo__';

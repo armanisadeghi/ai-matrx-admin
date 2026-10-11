@@ -6,7 +6,7 @@
 -- COMMITTED); the writer runs as postgres between the pages. Rolled back: nothing a soak writes survives.
 --   ap3.part = 'renames'  sort [priority desc, title asc], pages of 100. Before every page the writer renames
 --                         3 unread rows to sort BEFORE the cursor ("Aaa …"), 3 read rows to sort AFTER it
---                         ("Zzz …") and 2 unread rows in place (" (edited)").
+--                         ("Revised: …") and 2 unread rows in place (" (edited)").
 --                         Expect unchanged_not_once = 0 (every row whose sort values never changed: exactly once);
 --                         the renamed rows' fates are reported (0, 1 or 2 appearances), not asserted.
 --   ap3.part = 'inserts'  the default order (newest first), pages of 100. Before every page the writer inserts one
@@ -55,7 +55,7 @@ begin
           insert into _changed values (v_id, 'unread, moved before the cursor');
         end loop;
         for v_id in select s.id from _seen s where s.id not in (select id from _changed) order by md5(s.id::text || v_n) limit 3 loop
-          update projects.tasks set title = 'Zzz ' || title where id = v_id;
+          update projects.tasks set title = 'Revised: ' || title where id = v_id;
           insert into _changed values (v_id, 'read, moved after the cursor');
         end loop;
         for v_id in select t.id from projects.tasks t where t.id = any (v_start) and t.id not in (select id from _seen)
