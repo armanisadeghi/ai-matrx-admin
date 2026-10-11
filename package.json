@@ -672,6 +672,8 @@
     "check:matrx-dist-integrity:resolved": "node scripts/check-matrx-dist-integrity.mjs --resolved-only",
     "check:matrx-dist-integrity:self-test": "node scripts/check-matrx-dist-integrity.mjs --self-test",
     "check:matrx-imports": "node scripts/check-matrx-imports.mjs",
+    "check:matrx-deps-declared": "node scripts/check-matrx-deps-declared.mjs",
+    "check:matrx-deps-declared:self-test": "node scripts/check-matrx-deps-declared.mjs --self-test",
     "check:scopes-data-layer": "node scripts/check-scopes-data-layer.mjs",
     "check:scopes-data-layer:self-test": "node scripts/check-scopes-data-layer.mjs --self-test",
     "check:db-doors": "node ../aidream/apps/shared/scripts/check-db-doors.mjs --repo matrx-frontend --strict",
