@@ -134,12 +134,12 @@ export function NewTableDialog({
         <div className="flex shrink-0 flex-col gap-0.5 border-b py-3 pl-5 pr-14">
           <DialogTitle className="text-base font-semibold">New table</DialogTitle>
           {organization ? (
-            <span className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground" data-make-saves-to="record">
+            <span className="flex h-8 min-w-0 items-center gap-1.5 text-sm text-muted-foreground" data-make-saves-to="record">
               <Building2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
               <span className="truncate">Saves to {organization.name}</span>
             </span>
           ) : (
-            <div className="-ml-2 flex min-w-0">
+            <div className="-ml-2 flex h-8 min-w-0 items-center">
               <SavesTo />
             </div>
           )}
