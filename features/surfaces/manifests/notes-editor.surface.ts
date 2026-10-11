@@ -11,7 +11,7 @@ import type { PermissionLevel } from "@/utils/permissions/types";
 export interface NotesOpenTabSummaryEntry {
   id: string;
   title: string;
-  folder: string;
+  home: string;
   updated_at: string;
 }
 
@@ -35,7 +35,7 @@ export function createNotesScope(values: {
   active_scope_kind: "selection" | "note" | "empty";
   open_note_ids: string[];
   open_notes_summary: NotesOpenTabSummaryEntry[];
-  all_folder_names: string[];
+  all_homes: string[];
   note_scope_assignments: NotesScopeAssignmentEntry[];
   editor_mode: "write" | "plain" | "split" | "preview";
   is_split_pane_visible: boolean;
@@ -58,7 +58,7 @@ export function createNotesScope(values: {
   };
   current_note_id?: string;
   current_note_title?: string;
-  current_note_folder?: string;
+  current_note_home?: string;
   current_note_tags?: string[];
   current_note_shown_to?: string;
   current_note_published_to_web?: boolean;
@@ -68,7 +68,7 @@ export function createNotesScope(values: {
   current_note_summary?: {
     id: string;
     title: string;
-    folder: string;
+    home: string;
     tags: string[];
     shown_to: string | null;
     published_to_web: boolean;
@@ -82,7 +82,7 @@ export function createNotesScope(values: {
     permission_level: PermissionLevel;
     owner_email: string | null;
   };
-  current_folder_note_ids?: string[];
+  current_home_note_ids?: string[];
   is_new_note?: boolean;
   split_note_id?: string;
   find_replace?: {

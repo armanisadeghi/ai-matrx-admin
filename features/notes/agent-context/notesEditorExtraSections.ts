@@ -4,9 +4,7 @@ import {
   Download,
   Link2,
   ClipboardCopy,
-  FolderInput,
-  FolderClosed,
-  FolderPlus,
+  House,
   Shapes,
   StickyNote,
   X,
@@ -28,10 +26,6 @@ import type {
 export interface NotesEditorExtraSectionsConfig {
   /** Disables "Save" when the note has no unsaved changes. */
   isDirty?: boolean;
-  /** Every folder the user has — used to build the "Move to Folder" submenu. */
-  allFolders?: string[];
-  /** The note's current folder (that entry is disabled in the submenu). */
-  currentFolder?: string;
   /** Open-tab count — gates "Close Other Tabs" / "Close All Tabs". */
   openTabCount?: number;
   onSave: () => void;
@@ -39,12 +33,8 @@ export interface NotesEditorExtraSectionsConfig {
   onExport: () => void;
   onShareLink: () => void;
   onShareClipboard: () => void;
-  /** Direct move to a specific folder (one click, no dialog). */
-  onMoveToFolder: (folder: string) => void;
-  /** Open the full move dialog (new-folder creation, etc.). */
-  onMoveDialog: () => void;
-  /** Open folder creation directly. Falls back to the full move dialog. */
-  onCreateFolder?: () => void;
+  /** Open the home picker (the one move path: `moveNoteToHome`). */
+  onMoveToHome: () => void;
   onCloseTab: () => void;
   onCloseOtherTabs: () => void;
   onCloseAllTabs: () => void;
@@ -69,17 +59,13 @@ export function createNotesEditorExtraSections(
 ): ContextMenuExtraSection[] {
   const {
     isDirty,
-    allFolders = [],
-    currentFolder,
     openTabCount = 1,
     onSave,
     onDuplicate,
     onExport,
     onShareLink,
     onShareClipboard,
-    onMoveToFolder,
-    onMoveDialog,
-    onCreateFolder,
+    onMoveToHome,
     onCloseTab,
     onCloseOtherTabs,
     onCloseAllTabs,
@@ -87,34 +73,6 @@ export function createNotesEditorExtraSections(
     onDelete,
     noteActionsFromTab = false,
   } = config;
-
-  // Move-to-Folder submenu: one item per folder (current disabled) + the full
-  // dialog for new-folder creation.
-  const moveChildren: ContextMenuExtraItem[] = allFolders.map((folder) => ({
-    kind: "item",
-    id: `move-${folder}`,
-    label: folder,
-    icon: FolderClosed,
-    disabled: folder === currentFolder,
-    onSelect: () => onMoveToFolder(folder),
-  }));
-  if (moveChildren.length > 0) {
-    moveChildren.push({ kind: "separator", id: "move-sep" });
-  }
-  moveChildren.push({
-    kind: "item",
-    id: "move-create",
-    label: "New folder…",
-    icon: FolderPlus,
-    onSelect: onCreateFolder ?? onMoveDialog,
-  });
-  moveChildren.push({
-    kind: "item",
-    id: "move-choose",
-    label: "Choose folder…",
-    icon: FolderInput,
-    onSelect: onMoveDialog,
-  });
 
   // Tabs submenu (notes is multi-tab; the canonical menu has no concept of it).
   const tabChildren: ContextMenuExtraItem[] = [
@@ -191,11 +149,11 @@ export function createNotesEditorExtraSections(
         ] as ContextMenuExtraItem[])
       : []),
     {
-      kind: "submenu",
+      kind: "item",
       id: "move",
-      label: "Move to folder…",
-      icon: FolderInput,
-      children: moveChildren,
+      label: "Move to…",
+      icon: House,
+      onSelect: onMoveToHome,
     },
     {
       kind: "submenu",

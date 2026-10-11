@@ -1,7 +1,7 @@
 "use client";
 
-// Layer 2: NoteMetadataBar — THE bottom row of every note host: folder,
-// context, tags … save status + counts (NoteStatsFooter, rendered here) … the
+// Layer 2: NoteMetadataBar — THE bottom row of every note host: the note's
+// home chip (where it lives; click to move it), scopes, tags … save status + counts (NoteStatsFooter, rendered here) … the
 // note's copy pair. ONE row in every host (/notes, the notes window, a Board
 // tile, education): a host never adds a second stats strip below it (two
 // stacked rows cost ~35px of writing space and drew the same facts twice).
@@ -9,40 +9,29 @@
 // Props: noteId only (+ optional variant). Everything from Redux.
 
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
-import React, { useState, useCallback, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
+import React, { useState, useCallback } from "react";
 import {
-  FolderOpen,
-  FolderPlus,
-  ChevronDown,
   X,
   Plus,
   Network,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { updateNoteTags } from "../redux/slice";
-import { moveNoteToFolder, moveNoteToNewFolder } from "../redux/thunks";
 import {
-  selectNoteFolder,
   selectNoteTags,
-  selectFolderReferences,
   selectNoteById,
 } from "../redux/selectors";
-import type { FolderReference } from "../types";
 import {
-  selectOrganizationName,
   selectProjectName,
   selectTaskName,
-  selectOrganizationId,
   selectProjectId,
   selectTaskId,
 } from "@/lib/redux/slices/appContextSlice";
 import { ScopeTagsDisplay } from "@/features/agent-context/components/ScopeTagsDisplay";
 import TaskChipRow from "@/features/tasks/widgets/TaskChipRow";
 import { cn } from "@/lib/utils";
-import { useUserOrganizations } from "@/features/organizations/hooks";
 import { NoteContextSection } from "./NoteContextSection";
-import { CreateFolderDialog } from "./CreateFolderDialog";
+import { HomeChip } from "../homes/HomePicker";
 import { NoteStatsFooter } from "./NoteStatsFooter";
 import { RichCopySplit } from "@ai-matrx/chat/agent-copy/RichCopySplit";
 import { noteIdentityContentSource } from "@/features/notes/richDocumentSource";
@@ -73,22 +62,14 @@ export function NoteMetadataBar({
 }: NoteMetadataBarProps) {
   const dispatch = useAppDispatch();
 
-  const folder = useAppSelector(selectNoteFolder(noteId)) ?? "Draft";
   const tags = useAppSelector(selectNoteTags(noteId));
-  const folderReferences = useAppSelector(selectFolderReferences);
   const note = useAppSelector(selectNoteById(noteId));
 
-  const ctxOrgId = useAppSelector(selectOrganizationId);
-  const ctxOrgName = useAppSelector(selectOrganizationName);
-  // The chip names the note's organization even when it is not the active one
-  // (it read a bare "Org" whenever no organization was selected).
-  const { organizations: memberOrgs } = useUserOrganizations();
   const ctxProjId = useAppSelector(selectProjectId);
   const ctxProjName = useAppSelector(selectProjectName);
   const ctxTaskId = useAppSelector(selectTaskId);
   const ctxTaskName = useAppSelector(selectTaskName);
 
-  const noteOrgId = note?.organization_id ?? null;
   const noteProjId = note?.project_id ?? null;
   const noteTaskId = note?.task_id ?? null;
 
@@ -114,78 +95,9 @@ export function NoteMetadataBar({
     };
   }, [note]);
 
-  const [folderOpen, setFolderOpen] = useState(false);
-  const [createFolderOpen, setCreateFolderOpen] = useState(false);
   const [addingTag, setAddingTag] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [scopePickerOpen, setScopePickerOpen] = useState(false);
-
-  const folderBtnRef = useRef<HTMLButtonElement>(null);
-  const folderMenuRef = useRef<HTMLDivElement>(null);
-  const [folderMenuPos, setFolderMenuPos] = useState<{
-    left: number;
-    bottom: number;
-  } | null>(null);
-
-  const recomputeFolderMenuPos = useCallback(() => {
-    const rect = folderBtnRef.current?.getBoundingClientRect();
-    if (rect) {
-      setFolderMenuPos({
-        left: rect.left,
-        bottom: window.innerHeight - rect.top + 4,
-      });
-    }
-  }, []);
-
-  const toggleFolderMenu = useCallback(() => {
-    setFolderOpen((open) => {
-      if (open) return false;
-      recomputeFolderMenuPos();
-      return true;
-    });
-  }, [recomputeFolderMenuPos]);
-
-  useEffect(() => {
-    if (!folderOpen) return undefined;
-    const onPointerDown = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (
-        folderMenuRef.current?.contains(target) ||
-        folderBtnRef.current?.contains(target)
-      ) {
-        return;
-      }
-      setFolderOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setFolderOpen(false);
-    };
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onKey);
-    window.addEventListener("scroll", recomputeFolderMenuPos, true);
-    window.addEventListener("resize", recomputeFolderMenuPos);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKey);
-      window.removeEventListener("scroll", recomputeFolderMenuPos, true);
-      window.removeEventListener("resize", recomputeFolderMenuPos);
-    };
-  }, [folderOpen, recomputeFolderMenuPos]);
-
-  const handleFolderChange = useCallback(
-    (f: FolderReference) => {
-      dispatch(moveNoteToFolder({ noteId, folder: f }));
-      setFolderOpen(false);
-    },
-    [dispatch, noteId],
-  );
-
-  const handleCreateFolder = useCallback(
-    async (folderName: string) => {
-      await dispatch(moveNoteToNewFolder({ noteId, folderName })).unwrap();
-    },
-    [dispatch, noteId],
-  );
 
   const handleRemoveTag = useCallback(
     (tag: string) => {
@@ -229,18 +141,7 @@ export function NoteMetadataBar({
           variant === "chrome" && "border-t border-border/20 bg-background",
         )}
       >
-        <div className="shrink-0">
-          <button
-            type="button"
-            ref={folderBtnRef}
-            onClick={toggleFolderMenu}
-            className="flex cursor-pointer items-center gap-1 text-xs text-foreground transition-colors hover:text-primary [&_svg]:h-3 [&_svg]:w-3"
-          >
-            <FolderOpen />
-            <span className="max-w-[100px] truncate">{folder}</span>
-            <ChevronDown className="!h-2.5 !w-2.5 opacity-60" />
-          </button>
-        </div>
+        <HomeChip noteId={noteId} className="shrink-0" />
 
         <button
           type="button"
@@ -248,7 +149,7 @@ export function NoteMetadataBar({
           className={cn(
             // Shrinks (label truncates) before the save status ever would.
             "flex min-w-0 shrink items-center gap-1 overflow-hidden whitespace-nowrap rounded-full px-1.5 py-0 text-xs transition-colors [&_svg]:shrink-0",
-            noteOrgId || noteProjId || noteTaskId
+            noteProjId || noteTaskId
               ? "bg-primary/10 text-primary-ink"
               : "border border-dashed border-border text-muted-foreground hover:text-primary",
           )}
@@ -263,12 +164,7 @@ export function NoteMetadataBar({
               ? ctxProjName && noteProjId === ctxProjId
                 ? ctxProjName
                 : "Project"
-              : noteOrgId
-                ? ctxOrgName && noteOrgId === ctxOrgId
-                  ? ctxOrgName
-                  : (memberOrgs.find((o) => o.id === noteOrgId)?.name ??
-                    "Organization")
-                : "Context"}
+              : "Scopes"}
         </button>
         <ScopeTagsDisplay
           entityType="note"
@@ -369,7 +265,7 @@ export function NoteMetadataBar({
                 attributes: {
                   id: view.note.id,
                   label: noteDisplayLabel(view.note),
-                  folder: view.note.folder_name ?? undefined,
+                  home: view.note.home_scope_id ?? undefined,
                   words: noteRecordData(view).word_count,
                   unsaved: view.dirtyFields.length > 0,
                   save_error: view.error ?? undefined,
@@ -386,7 +282,7 @@ export function NoteMetadataBar({
               {
                 id: "note-metadata",
                 label: "Metadata only",
-                hint: "Folder, tags, context and save state — no body",
+                hint: "Home, tags, scopes and save state — no body",
                 build: () => {
                   const view = buildRecordView();
                   return {
@@ -409,57 +305,6 @@ export function NoteMetadataBar({
         )}
       </div>
 
-      {folderOpen &&
-        folderMenuPos &&
-        typeof document !== "undefined" &&
-        createPortal(
-          <div
-            ref={folderMenuRef}
-            className="fixed z-[10000] max-h-[240px] min-w-[120px] overflow-auto rounded-lg border border-border bg-card/95 py-1 shadow-lg backdrop-blur-2xl"
-            style={{ left: folderMenuPos.left, bottom: folderMenuPos.bottom }}
-          >
-            <button
-              type="button"
-              className="flex w-full cursor-pointer items-center gap-2 border-b border-border/60 px-3 py-2 text-left text-xs font-medium text-primary-ink transition-colors hover:bg-primary/10"
-              onClick={() => {
-                setFolderOpen(false);
-                setCreateFolderOpen(true);
-              }}
-            >
-              <FolderPlus className="h-3.5 w-3.5" />
-              New folder…
-            </button>
-            {folderReferences
-              .filter((candidate) => candidate.organizationId === noteOrgId)
-              .map((f) => (
-              <button
-                key={`${f.organizationId}:${f.id}`}
-                type="button"
-                className={cn(
-                  "w-full cursor-pointer px-3 py-1.5 text-left text-xs transition-colors",
-                  f.id === note?.folder_id
-                    ? "bg-primary/10 font-medium text-primary-ink"
-                    : "text-foreground hover:bg-accent",
-                )}
-                onClick={() => handleFolderChange(f)}
-              >
-                {f.name}
-              </button>
-              ))}
-          </div>,
-          document.body,
-        )}
-
-      {createFolderOpen && <CreateFolderDialog
-        open={createFolderOpen}
-        onOpenChange={setCreateFolderOpen}
-        onConfirm={handleCreateFolder}
-        existingFolders={folderReferences
-          .filter((candidate) => candidate.organizationId === noteOrgId)
-          .map((candidate) => candidate.name)}
-        description="Create a folder and assign this note to it immediately."
-        confirmLabel="Create & Assign"
-      />}
     </>
   );
 }

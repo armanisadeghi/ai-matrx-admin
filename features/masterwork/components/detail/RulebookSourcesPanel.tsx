@@ -30,6 +30,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { readFileSizesByIds } from "@/features/files/filesDb";
+import { asMatrxPackageClient } from "@/lib/supabase/matrxPackageClient";
 import {
   fileSourceSizeLabel,
   EMPTY_FILE_SIZE_LABEL,
@@ -561,7 +562,7 @@ export function RulebookSourcesPanel({
     const missing = fileSourceIds.filter((id) => !fileSizesById.has(id));
     if (missing.length === 0) return;
     let cancelled = false;
-    void readFileSizesByIds(supabase, missing).then((sizes) => {
+    void readFileSizesByIds(asMatrxPackageClient(supabase), missing).then((sizes) => {
       if (cancelled) return;
       setFileSizesById((prev) => {
         const next = new Map(prev);

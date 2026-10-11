@@ -9,7 +9,7 @@ import { selectNotesListError, selectNotesListStatus } from "../../redux/selecto
 import { useNoteContentSearch } from "../../hooks/useNoteContentSearch";
 import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";
 import {
-  FolderOpen,
+  House,
   Clock,
   Tag,
   Plus,
@@ -42,7 +42,7 @@ import {
 import { MobileActionBar } from "@/components/official/mobile-action-bar/MobileActionBar";
 import NotesFilterSheet, { NotesFilterState } from "./NotesFilterSheet";
 import type { Note } from "@/features/notes/types";
-import { OrganizationTag } from "@/features/commerce-review/components/OrganizationTag";
+import { useNoteHomes } from "../../homes/useNoteHomes";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ReadFailure } from "@ai-matrx/design-system";
 
@@ -59,6 +59,7 @@ export default function MobileNotesList({
 }: MobileNotesListProps) {
   const dispatch = useAppDispatch();
   const { notes, findOrCreateEmptyNote, isLoading } = useNotesRedux();
+  const homes = useNoteHomes();
   const listStatus = useAppSelector(selectNotesListStatus);
   const listError = useAppSelector(selectNotesListError);
   const sharedNotes = useAppSelector(selectSharedWithMeNotes);
@@ -91,13 +92,10 @@ export default function MobileNotesList({
   const filteredNotes = useMemo(() => {
     let result = filters.sharedOnly ? sharedNotes : uniqueNotes;
 
-    // Shared rows carry the OWNER's folder_name and the folder picker only
-    // lists MY folders — combining them would reliably show "no notes match"
-    // with no hint why. Folder filtering applies to owned notes only.
+    // The home filter (`filters.folder` holds a home's scope id) applies to
+    // owned notes only — a shared note lives in its owner's home.
     if (!filters.sharedOnly && filters.folder !== "all") {
-      result = result.filter(
-        (n) => (n.folder_name || "Draft") === filters.folder,
-      );
+      result = result.filter((n) => n.home_scope_id === filters.folder);
     }
 
     if (filters.tags.length > 0) {
@@ -128,8 +126,11 @@ export default function MobileNotesList({
 
   const handleCreateNote = async () => {
     try {
-      const folder = filters.folder === "all" ? "Draft" : filters.folder;
-      const note = await findOrCreateEmptyNote(folder);
+      // A filtered home gets the new note; otherwise the active organization's General.
+      const home = filters.folder === "all" ? undefined : homes.byId.get(filters.folder);
+      const note = await findOrCreateEmptyNote(
+        home && !home.isGeneral ? { homeScopeId: home.scopeId, organizationId: home.organizationId } : home ? { organizationId: home.organizationId } : undefined,
+      );
       if (note) onNoteSelect(note);
     } catch (error) {
       // A tap that does nothing is a lying screen: say why, in words.
@@ -310,14 +311,10 @@ export default function MobileNotesList({
                           <Clock size={10} />
                           <span>{formatDate(note.updated_at)}</span>
                         </div>
-                        <OrganizationTag
-                          organizationId={note.organization_id}
-                          className="h-4 max-w-[120px] px-1 text-[10px]"
-                        />
-                        {filters.folder === "all" && note.folder_name && (
+                        {filters.folder === "all" && homes.labelOf(note.home_scope_id) && (
                           <div className="flex items-center gap-1">
-                            <FolderOpen size={10} />
-                            <span>{note.folder_name}</span>
+                            <House size={10} />
+                            <span>{homes.labelOf(note.home_scope_id)}</span>
                           </div>
                         )}
                         {note.tags && note.tags.length > 0 && (

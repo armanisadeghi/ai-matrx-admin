@@ -11,7 +11,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   Pencil,
   CopyPlus,
-  FolderInput,
+  House,
   Database,
   Download,
   Printer,
@@ -29,7 +29,7 @@ import type {
 export interface NoteActionHandlers {
   rename?: () => void;
   duplicate?: () => void;
-  moveToFolder?: () => void;
+  moveToHome?: () => void;
   knowledge?: () => void;
   /** "Knowledge base" once the note is indexed, else "Add to knowledge base". */
   knowledgeIndexed?: boolean;
@@ -58,7 +58,7 @@ export function noteActions(h: NoteActionHandlers): NoteAction[] {
   const all: (NoteAction | null)[] = [
     h.rename ? { id: "rename", label: "Rename", icon: Pencil, run: h.rename } : null,
     h.duplicate ? { id: "duplicate", label: "Duplicate", icon: CopyPlus, run: h.duplicate } : null,
-    h.moveToFolder ? { id: "move-to-folder", label: "Move to folder…", icon: FolderInput, run: h.moveToFolder } : null,
+    h.moveToHome ? { id: "move-to-home", label: "Move to…", icon: House, run: h.moveToHome } : null,
     h.knowledge
       ? {
           id: "knowledge",

@@ -30,9 +30,7 @@ import {
   selectNoteContent,
   selectNoteEditor,
   selectNoteIsDirtyById,
-  selectNoteFolder,
   selectNoteLabel,
-  selectFolderReferences,
   selectInstanceTabs,
 } from "../redux/selectors";
 import { editorDisplayName } from "../utils/editorDisplayName";
@@ -41,8 +39,6 @@ import {
   fetchNoteContent,
   copyNote,
   deleteNote,
-  moveNoteToFolder,
-  moveNoteToNewFolder,
 } from "../redux/thunks";
 import { useNotesInstanceId } from "../context/NotesInstanceContext";
 import { useNoteAccess } from "../hooks/useNoteAccess";
@@ -67,14 +63,12 @@ import { NoteDraftRecoveryBanner } from "./NoteDraftRecoveryBanner";
 import { FindReplaceBar } from "./FindReplaceBar";
 import { FindMatchOverlay } from "./FindMatchOverlay";
 import { RecentChangeOverlay } from "./RecentChangeOverlay";
-import { MoveNoteDialog } from "./MoveNoteDialog";
-import { CreateFolderDialog } from "./CreateFolderDialog";
+import { HomePickerDialog } from "../homes/HomePicker";
 import { ShareModal } from "@/features/sharing/components/ShareModal";
 import { selectFindReplaceState } from "../redux/selectors";
 import { computeMatches } from "../utils/findMatches";
 import { usePreviewFindHighlight } from "../hooks/usePreviewFindHighlight";
 import { getDiffRange, type DiffRange } from "../utils/diffRange";
-import { noteFolderReference, type FolderReference } from "../types";
 import { downloadFile } from "@ai-matrx/kit/download";
 
 // The docked outline column — loaded only while open (it is beside the note,
@@ -189,8 +183,6 @@ export function NoteContentEditor({
   }, [bodyLoaded, contentLoadStatus, noteId]);
 
   const isDirty = useAppSelector(selectNoteIsDirtyById(noteId));
-  const folderReferences = useAppSelector(selectFolderReferences);
-  const currentFolder = useAppSelector(selectNoteFolder(noteId)) ?? "Draft";
   const noteLabel = useAppSelector(selectNoteLabel(noteId)) ?? "Untitled";
   const openTabs = useAppSelector(selectInstanceTabs(instanceId));
 
@@ -226,7 +218,6 @@ export function NoteContentEditor({
 
   // ── Dialog state ──────────────────────────────────────────────────
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
-  const [createFolderOpen, setCreateFolderOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   const conflictActorId = useAppSelector((state) => state.userAuth.id);
@@ -472,40 +463,6 @@ export function NoteContentEditor({
     setMoveDialogOpen(true);
   }, []);
 
-  const handleMoveConfirm = useCallback(
-    async (targetFolder: FolderReference) => {
-      await dispatch(
-        moveNoteToFolder({
-          noteId,
-          folder: targetFolder,
-        }),
-      ).unwrap();
-    },
-    [dispatch, noteId],
-  );
-
-  const availableFolderReferences = folderReferences.filter(
-    (folder) => folder.organizationId === noteExists?.organization_id,
-  );
-
-  const handleMoveByName = useCallback(
-    (folderName: string) => {
-      const folder = availableFolderReferences.find(
-        (candidate) => candidate.name === folderName,
-      );
-      if (!folder) throw new Error("Selected folder is no longer available.");
-      return handleMoveConfirm(folder);
-    },
-    [availableFolderReferences, handleMoveConfirm],
-  );
-
-  const handleCreateFolder = useCallback(
-    async (folderName: string) => {
-      await dispatch(moveNoteToNewFolder({ noteId, folderName })).unwrap();
-    },
-    [dispatch, noteId],
-  );
-
   const handleCloseTab = useCallback(() => {
     dispatch(markTabInteraction({ instanceId }));
     dispatch(removeInstanceTab({ instanceId, noteId }));
@@ -607,17 +564,13 @@ export function NoteContentEditor({
   const notesExtras = useNotesEditorExtraSections({
     noteActionsFromTab: tabCarriesActions,
     isDirty,
-    allFolders: availableFolderReferences.map((folder) => folder.name),
-    currentFolder,
     openTabCount: openTabs?.length ?? 1,
     onSave: handleSave,
     onDuplicate: handleDuplicate,
     onExport: handleExport,
     onShareLink: handleShareLink,
     onShareClipboard: handleShareClipboard,
-    onMoveToFolder: handleMoveByName,
-    onMoveDialog: handleMove,
-    onCreateFolder: () => setCreateFolderOpen(true),
+    onMoveToHome: handleMove,
     onCloseTab: handleCloseTab,
     onCloseOtherTabs: handleCloseOtherTabs,
     onCloseAllTabs: handleCloseAllTabs,
@@ -872,24 +825,10 @@ export function NoteContentEditor({
 
       {/* Mounted only while open: the editor re-renders as the person types,
           and a closed dialog (its folder list included) re-rendered with it. */}
-      {moveDialogOpen && <MoveNoteDialog
+      {moveDialogOpen && <HomePickerDialog
         open={moveDialogOpen}
         onOpenChange={setMoveDialogOpen}
-        onConfirm={handleMoveConfirm}
-        onCreateFolder={handleCreateFolder}
-        noteId={noteId}
-        noteName={noteLabel}
-        currentFolder={noteExists ? noteFolderReference(noteExists) : null}
-        availableFolders={availableFolderReferences}
-      />}
-
-      {createFolderOpen && <CreateFolderDialog
-        open={createFolderOpen}
-        onOpenChange={setCreateFolderOpen}
-        onConfirm={handleCreateFolder}
-        existingFolders={availableFolderReferences.map((folder) => folder.name)}
-        description="Create a folder and move this note into it immediately."
-        confirmLabel="Create & Move"
+        noteIds={[noteId]}
       />}
 
       {shareDialogOpen && <ShareModal

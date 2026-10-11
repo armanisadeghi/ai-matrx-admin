@@ -17,8 +17,10 @@
 //     applied from the SAME selection on save — both entry points share
 //     `noteSaveAdapter` so behavior can never drift.
 //
-// Org semantics: the note's organization_id is set from the EXPLICIT picks
-// only — never inferred from which org the user happened to browse scopes in.
+// Organization: never set here. A note's organization IS its home's
+// organization and changes only by moving the note (the home chip →
+// `moveNoteToHome`). The field's organization dropdown is a browse filter for
+// the scope list and has no save meaning for a note.
 
 import { noteDisplayLabel } from "@/features/notes/format";
 import React, { useMemo } from "react";
@@ -87,7 +89,6 @@ export function NoteContextSection({
           title: noteDisplayLabel(note),
           icon: StickyNote,
         }}
-        initialOrganizationId={note.organization_id ?? undefined}
         sectionHeight={embedded ? 380 : 260}
         onSaved={onSaved}
       />
@@ -121,11 +122,7 @@ export function NoteContextStatusIcon({
     [dispatch, noteId],
   );
   if (!note) return null;
-  const hasFkContext = !!(
-    note.organization_id ||
-    note.project_id ||
-    note.task_id
-  );
+  const hasFkContext = !!(note.project_id || note.task_id);
   const hasContext = es.scopeIds.length > 0 || hasFkContext;
   const label = hasContext
     ? "Scopes are set — click to review or change"

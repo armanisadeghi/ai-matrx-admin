@@ -1,12 +1,13 @@
 "use client";
 
+import { useNoteHomes } from "../../homes/useNoteHomes";
 import { noteDisplayLabel } from "@/features/notes/format";
 import React, { useState, useCallback, useMemo } from "react";
 import {
   Save,
   Loader2,
   Check,
-  FolderOpen,
+  House,
   Layers,
   ChevronDown,
 } from "lucide-react";
@@ -89,12 +90,13 @@ export default function MobileNotesView({
     void dispatch(fetchNoteContent(singleNoteId));
   }, [dispatch, singleNoteId]);
 
-  // Unique folder names derived from all notes
+  // The homes the person's notes live in (scope ids), by their home-tree label.
+  const homes = useNoteHomes();
   const folderNames = useMemo(() => {
     const seen = new Set<string>();
-    notes.forEach((n) => seen.add(n.folder_name || "Draft"));
-    return Array.from(seen).sort();
-  }, [notes]);
+    notes.forEach((n) => { if (n.home_scope_id) seen.add(n.home_scope_id); });
+    return Array.from(seen).sort((a, b) => (homes.labelOf(a) ?? "").localeCompare(homes.labelOf(b) ?? ""));
+  }, [notes, homes]);
 
   // Shared-with-me notes are excluded from the owner list — look them up too.
   const selectedNote = selectedNoteId
@@ -171,6 +173,7 @@ export default function MobileNotesView({
             <FolderFilterPill
               folder={filters.folder}
               folderNames={folderNames}
+              labelOf={(id) => homes.labelOf(id) ?? "Home"}
               open={folderDropdownOpen}
               setOpen={setFolderDropdownOpen}
               onPick={(folder) => setFilters((f) => ({ ...f, folder }))}
@@ -307,19 +310,22 @@ export default function MobileNotesView({
 }
 
 /**
- * The notes list's header control — the folder it is showing, and the switch
+ * The notes list's header control — the home it is showing, and the switch
  * to another. It is the header's identity (a selector, like a record-name
  * dropdown), not an action, so it keeps the row on a phone.
  */
 function FolderFilterPill({
   folder,
   folderNames,
+  labelOf,
   open,
   setOpen,
   onPick,
 }: {
   folder: string;
+  /** Home scope ids. */
   folderNames: string[];
+  labelOf: (homeScopeId: string) => string;
   open: boolean;
   setOpen: (open: boolean) => void;
   onPick: (folder: string) => void;
@@ -338,10 +344,10 @@ function FolderFilterPill({
         {folder === "all" ? (
           <Layers size={12} />
         ) : (
-          <FolderOpen size={12} />
+          <House size={12} />
         )}
         <span className="max-w-[90px] truncate">
-          {folder === "all" ? "All" : folder}
+          {folder === "all" ? "All" : labelOf(folder)}
         </span>
         <ChevronDown
           size={11}
@@ -390,28 +396,28 @@ function FolderFilterPill({
               <div className="h-px bg-border/40 mx-2 my-0.5" />
             )}
 
-            {folderNames.map((folder) => (
+            {folderNames.map((home) => (
               <button
-                key={folder}
+                key={home}
                 onClick={() => {
-                  onPick(folder);
+                  onPick(home);
                   setOpen(false);
                 }}
                 className={cn(
                   "flex items-center gap-2.5 w-full px-3 py-2.5 text-sm transition-colors",
-                  folder === folder
+                  folder === home
                     ? "text-primary bg-primary/8"
                     : "text-foreground hover:bg-muted/60",
                 )}
               >
-                <FolderOpen
+                <House
                   size={14}
                   className="flex-shrink-0 text-muted-foreground"
                 />
                 <span className="flex-1 text-left truncate">
-                  {folder}
+                  {labelOf(home)}
                 </span>
-                {folder === folder && (
+                {folder === home && (
                   <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
                 )}
               </button>

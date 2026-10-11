@@ -102,7 +102,7 @@ import { NoteCleanupButton } from "./cleanup/NoteCleanupButton";
 import { NoteMetadataBar } from "./NoteMetadataBar";
 import { NoteTabBar } from "./NoteTabBar";
 import { NoteSidebar } from "./NoteSidebar";
-import { FolderQuickPick } from "./FolderQuickPick";
+import { HomeQuickPick } from "../homes/HomeQuickPick";
 import { cn } from "@/lib/utils";
 import { FormatButtons } from "@ai-matrx/rich-editor/format/FormatButtons";
 import { formatTargetWithin } from "@ai-matrx/rich-editor/format/format-target";
@@ -674,7 +674,7 @@ export function NotesView({
             <NoteContentEditor noteId={activeTabId} tabCarriesActions={showTabs && !singleNote} />
           )
         ) : (
-          <FolderQuickPick instanceId={instanceId} className="scroll-page-end-space" />
+          <HomeQuickPick instanceId={instanceId} className="scroll-page-end-space" />
         )}
 
         {/* Layer 2: chrome (folder/context/tags) + stats footer (metrics only) */}

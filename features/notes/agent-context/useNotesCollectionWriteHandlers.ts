@@ -36,8 +36,14 @@ import {
 } from "@/features/notes/redux/thunks";
 import { upsertNoteFromServer } from "@/features/notes/redux/slice";
 import { updateNote } from "@/features/notes/service/notesService";
-import { resolveNewNoteOrganization } from "@/features/notes/hooks/useNewNoteOrganization";
-import type { FolderReference } from "@/features/notes/types";
+import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+/** A home an agent may name (by its displayed label). */
+export interface NotesWriteHome {
+  scopeId: string;
+  organizationId: string;
+  label: string;
+  isGeneral: boolean;
+}
 import type { NoteRecord } from "@/features/notes/redux/notes.types";
 import { scopesService } from "@/features/scopes/service/scopesService";
 import { setEntityScopes } from "@/features/scopes/redux/thunks/setEntityScopes";
@@ -71,7 +77,7 @@ function checkTitle(title: string): string {
 }
 
 type CreatePlan =
-  | { kind: "new"; title: string; content: string; tags: string[]; folder: FolderReference | null }
+  | { kind: "new"; title: string; content: string; tags: string[]; home: NotesWriteHome | null }
   | { kind: "copy"; copyOf: string; name: string };
 
 interface UpdatePlan {
@@ -89,9 +95,9 @@ interface DeletePlan {
 
 export interface NotesCollectionWriteOptions {
   instanceId: string;
-  /** The folders the page offers (the folder picker's list). */
-  folders: FolderReference[];
-  /** The open note — its organization disambiguates same-name folders. */
+  /** The homes the page offers (the home picker's list, by displayed label). */
+  homes: NotesWriteHome[];
+  /** The open note. */
   activeNoteId: string;
   activeOrganizationId: string | null;
   /** The open note is view-only for this person: no tag writes. */
@@ -105,7 +111,7 @@ export function useNotesCollectionWriteHandlers(
   const store = useAppStore();
 
   return () => {
-    const { instanceId, folders, activeNoteId, activeOrganizationId, readOnly } = options;
+    const { instanceId, homes, activeNoteId, activeOrganizationId, readOnly } = options;
     const notes = () => (store.getState() as RootState).notes.notes as Record<string, NoteRecord>;
 
     const noteFor = (target: string, id: unknown): NoteRecord => {
@@ -117,18 +123,16 @@ export function useNotesCollectionWriteHandlers(
       return rec;
     };
 
-    const folderFor = (name: string): FolderReference => {
-      const matches = folders.filter((f) => f.name === name.trim());
+    const homeFor = (name: string): NotesWriteHome => {
+      const matches = homes.filter((h) => h.label === name.trim());
       if (matches.length === 0)
         throw new Error(
-          `folder "${name}" does not exist — use one of: ${Array.from(new Set(folders.map((f) => f.name))).join(" | ")}. Folders are created by the person, not by an agent.`,
+          `home "${name}" does not exist — use one of: ${homes.map((h) => h.label).join(" | ")}. Homes are created by the person, not by an agent.`,
         );
       if (matches.length === 1) return matches[0];
-      const inOrg = matches.find((f) => f.organizationId === activeOrganizationId);
+      const inOrg = matches.find((h) => h.organizationId === activeOrganizationId);
       if (inOrg) return inOrg;
-      throw new Error(
-        `folder "${name}" exists in ${matches.length} organizations; open a note in the one you mean first.`,
-      );
+      throw new Error(`home "${name}" is ambiguous; open a note in the one you mean first.`);
     };
 
     const handlers = collectionWriteHandlers(
@@ -146,19 +150,19 @@ export function useNotesCollectionWriteHandlers(
                 const copyOf = optionalString(raw, "copy_of");
                 if (copyOf !== undefined) {
                   const rec = noteFor("create_notes", copyOf);
-                  const extra = ["title", "content", "tags", "folder"].filter((k) => raw[k] !== undefined);
+                  const extra = ["title", "content", "tags", "home"].filter((k) => raw[k] !== undefined);
                   if (extra.length)
                     throw new Error(`a copy takes only "copy_of"; drop ${extra.join(", ")} (edit the copy afterwards with update_notes).`);
                   return { kind: "copy", copyOf, name: `${rec.label} (Copy)` };
                 }
                 const title = checkTitle(optionalString(raw, "title") ?? "");
-                const folderName = optionalString(raw, "folder");
+                const homeName = optionalString(raw, "home");
                 return {
                   kind: "new",
                   title,
                   content: optionalString(raw, "content") ?? "",
                   tags: optionalTags(raw) ?? [],
-                  folder: folderName ? folderFor(folderName) : null,
+                  home: homeName ? homeFor(homeName) : null,
                 };
               },
               {
@@ -178,14 +182,14 @@ export function useNotesCollectionWriteHandlers(
               const note = await dispatch(copyNote({ noteId: plan.copyOf, instanceId })).unwrap();
               return { id: note.id, name: note.label };
             }
-            const organizationId = plan.folder?.organizationId ?? (await resolveNewNoteOrganization(store));
+            const organizationId = plan.home?.organizationId ?? (await ensureOrgId(null));
             const note = await dispatch(
               createNewNote({
                 label: plan.title,
                 content: plan.content,
                 tags: plan.tags,
                 organization_id: organizationId,
-                ...(plan.folder ? { folder_id: plan.folder.id, folder_name: plan.folder.name } : {}),
+                ...(plan.home && !plan.home.isGeneral ? { home_scope_id: plan.home.scopeId } : {}),
               }),
             ).unwrap();
             return { id: note.id, name: note.label };

@@ -5,7 +5,7 @@
  *
  * `buildNoteMenu(ctx)` returns the full "..." menu (Rename / Duplicate /
  * Share / Add to knowledge base / Export as Markdown / Print or export as
- * document / Move to Folder /
+ * document / Move to… /
  * Delete) consumed by `<ItemRow menu={…}>` in the notes sidebar — the same
  * kebab + right-click primitive the chat sidebar uses for conversations
  * (see conversationActionRegistry.tsx). Rename is an `intent: "rename"`
@@ -23,8 +23,7 @@ import {
   Copy,
   Share2,
   Download,
-  FolderInput,
-  FolderPlus,
+  House,
   Database,
   Trash2,
   Printer,
@@ -42,28 +41,22 @@ import {
   copyNote,
   deleteNote,
   restoreNote,
-  moveNoteToFolder,
   ensureNoteBodiesLoaded,
 } from "../../redux/thunks";
 import { isNoteContentEmpty } from "../../utils/noteUtils";
 import { downloadNoteAsMarkdown } from "../../utils/exportNotesMarkdown";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import type { FolderReference } from "../../types";
 
 export interface NoteMenuContext {
   instanceId: string;
   noteId: string;
   label: string;
   content: string | null | undefined;
-  /** Current persisted folder identity, excluded from the move submenu. */
-  folder: FolderReference | null;
-  /** All known folders, used to build the "Move to Folder" submenu. */
-  allFolders: FolderReference[];
   /** Opens the note's knowledge-base (Knowledge) side panel. */
   openKnowledge: (opts: { noteId: string; title?: string }) => void;
-  /** Creates a folder, then moves this note into it. */
-  onCreateFolder: () => void;
+  /** Opens the home picker for this note (the one move path: `moveNoteToHome`). */
+  onMoveToHome: () => void;
   dispatch: AppDispatch;
 }
 
@@ -170,10 +163,6 @@ export async function deleteNoteAction(ctx: NoteMenuContext): Promise<void> {
 export function buildNoteContextSections(
   ctx: NoteMenuContext & { onOpen: () => void },
 ): ContextMenuExtraSection[] {
-  const moveTargets = ctx.allFolders.filter(
-    (candidate) => candidate.organizationId === ctx.folder?.organizationId && candidate.id !== ctx.folder?.id,
-  );
-
   const items: ContextMenuExtraItem[] = [
     {
       kind: "item",
@@ -199,30 +188,12 @@ export function buildNoteContextSections(
     },
   ];
 
-  const moveChildren: ContextMenuExtraItem[] = moveTargets.map((folder) => ({
-    kind: "item" as const,
-    id: `move-${folder.organizationId}-${folder.id}`,
-    label: folder.name,
-    onSelect: () => {
-      ctx.dispatch(moveNoteToFolder({ noteId: ctx.noteId, folder }));
-    },
-  }));
-  if (moveChildren.length > 0) {
-    moveChildren.push({ kind: "separator", id: "move-new-sep" });
-  }
-  moveChildren.push({
-    kind: "item",
-    id: "move-new-folder",
-    label: "New folder…",
-    icon: FolderPlus,
-    onSelect: ctx.onCreateFolder,
-  });
   items.push({
-    kind: "submenu",
+    kind: "item",
     id: "move",
-    label: "Move to folder…",
-    icon: FolderInput,
-    children: moveChildren,
+    label: "Move to…",
+    icon: House,
+    onSelect: ctx.onMoveToHome,
   });
 
   items.push(
@@ -243,10 +214,6 @@ export function buildNoteContextSections(
 }
 
 export function buildNoteMenu(ctx: NoteMenuContext): ItemMenuConfig {
-  const moveTargets = ctx.allFolders.filter(
-    (candidate) => candidate.organizationId === ctx.folder?.organizationId && candidate.id !== ctx.folder?.id,
-  );
-
   return {
     header: { title: displayLabel(ctx.label) },
     sections: [
@@ -326,31 +293,9 @@ export function buildNoteMenu(ctx: NoteMenuContext): ItemMenuConfig {
           },
           {
             id: "move",
-            kind: "submenu" as const,
-            label: "Move to folder…",
-            icon: FolderInput,
-            sections: [
-              {
-                id: "folders",
-                items: [
-                  ...moveTargets.map((folder) => ({
-                    id: `move-${folder.organizationId}-${folder.id}`,
-                    label: folder.name,
-                    onSelect: () => {
-                      ctx.dispatch(
-                        moveNoteToFolder({ noteId: ctx.noteId, folder }),
-                      );
-                    },
-                  })),
-                  {
-                    id: "move-new-folder",
-                    label: "New folder…",
-                    icon: FolderPlus,
-                    onSelect: ctx.onCreateFolder,
-                  },
-                ],
-              },
-            ],
+            label: "Move to…",
+            icon: House,
+            onSelect: ctx.onMoveToHome,
           },
         ],
       },

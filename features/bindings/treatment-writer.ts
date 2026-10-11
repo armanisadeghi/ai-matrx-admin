@@ -38,7 +38,7 @@ import { getResourceAccess } from "@/utils/permissions/access";
 import type { ResourceAccess } from "@/utils/permissions/access-core";
 import { isJsonObject } from "@/types/json";
 import {
-  mandateTreatments,
+  mandateTreatmentsForApp,
   type MandateTreatmentRow,
 } from "@/lib/supabase/mandateStorage";
 
@@ -80,7 +80,7 @@ export async function readPresentation(
   mandateId: string,
 ): Promise<StoredPresentation> {
   const supabase = createClient();
-  const { data, error } = await mandateTreatments(supabase)
+  const { data, error } = await mandateTreatmentsForApp(supabase)
     .select("id, config, is_enabled, version")
     .eq("mandate_id", mandateId)
     .eq("tier", TREATMENT_TIER_WIDGET)
@@ -142,7 +142,7 @@ export async function writePresentation({
   if (!treatmentId) {
     if (presentationIsDefault(presentation) && enabled)
       return { treatmentId: null, version: null };
-    const { data, error } = await mandateTreatments(supabase)
+    const { data, error } = await mandateTreatmentsForApp(supabase)
       .insert({
         mandate_id: owner.mandateId,
         organization_id: owner.organizationId,
@@ -172,7 +172,7 @@ export async function writePresentation({
   const result = await guardedUpdate({
     expectedVersion,
     applyUpdate: ({ expectedVersion: expected, nextVersion }) =>
-      mandateTreatments(supabase)
+      mandateTreatmentsForApp(supabase)
         .update({
           config,
           is_enabled: enabled,
@@ -186,7 +186,7 @@ export async function writePresentation({
         .select("id, version")
         .maybeSingle(),
     fetchCurrent: () =>
-      mandateTreatments(supabase)
+      mandateTreatmentsForApp(supabase)
         .select("id, version")
         .eq("id", treatmentId)
         .eq("organization_id", owner.organizationId)

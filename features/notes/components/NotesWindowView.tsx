@@ -33,7 +33,7 @@ import { NoteContentEditor } from "./NoteContentEditor";
 import { NoteTabBar } from "./NoteTabBar";
 import { NotePresenceBanner } from "./NotePresenceBanner";
 import { NoteMetadataBar } from "./NoteMetadataBar";
-import { FolderQuickPick } from "./FolderQuickPick";
+import { HomeQuickPick } from "../homes/HomeQuickPick";
 import { cn } from "@/lib/utils";
 
 export interface NotesWindowViewProps {
@@ -137,7 +137,7 @@ export function NotesWindowView({
                   <NoteContentEditor noteId={activeTabId} embedded />
                 )
               ) : (
-                <FolderQuickPick instanceId={instanceId} />
+                <HomeQuickPick instanceId={instanceId} />
               )}
             </div>
             {/* The note's one bottom row (folder · tags … saved · counts · copy). */}

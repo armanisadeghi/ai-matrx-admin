@@ -6,7 +6,7 @@
 // metadata bar into one place:
 //   - Content stats (words, characters, lines, paragraphs, reading time)
 //   - Timestamps + version info
-//   - Folder (editable)
+//   - Home (the home chip — click to move the note)
 //   - Full hierarchy context (org → scopes → project → task) via the
 //     canonical NoteContextPicker
 //   - Tags (read-only here; editing stays in the metadata bar)
@@ -21,9 +21,7 @@ import { noteDisplayLabel } from "@/features/notes/format";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FileText,
-  FolderOpen,
-  FolderPlus,
-  ChevronDown,
+  House,
   Hash,
   Clock,
   Copy,
@@ -32,20 +30,18 @@ import {
   Users,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { fetchNoteContent, moveNoteToFolder, moveNoteToNewFolder } from "../redux/thunks";
+import { fetchNoteContent } from "../redux/thunks";
 import {
   selectNoteById,
   selectNoteContent,
   selectNoteTags,
-  selectFolderReferences,
   selectNoteFetchStatus,
 } from "../redux/selectors";
 import { noteContentIsKnown } from "../utils/noteStats";
-import type { FolderReference } from "../types";
 import { cn } from "@/lib/utils";
 import { computeNoteStats, formatStatNumber } from "../utils/noteStats";
 import { NoteContextSection } from "./NoteContextSection";
-import { CreateFolderDialog } from "./CreateFolderDialog";
+import { HomeChip } from "../homes/HomePicker";
 import { notesEditorManifest } from "@/features/surfaces/manifests/notes-editor.manifest";
 import { AccessSummaryPanel } from "@/features/sharing/components/AccessSummaryPanel";
 import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
@@ -177,7 +173,6 @@ export function NoteInfoPanel({ noteId, className }: NoteInfoPanelProps) {
   const note = useAppSelector(selectNoteById(noteId));
   const content = useAppSelector(selectNoteContent(noteId)) ?? "";
   const tags = useAppSelector(selectNoteTags(noteId));
-  const folderReferences = useAppSelector(selectFolderReferences);
 
   // Self-hydrate the FULL note. The panel is opened from surfaces that never
   // load the notes list (a reference chip, a search hit) AND from surfaces
@@ -194,30 +189,12 @@ export function NoteInfoPanel({ noteId, className }: NoteInfoPanelProps) {
     }
   }, [dispatch, contentKnown, noteId]);
 
-  const [folderOpen, setFolderOpen] = useState(false);
-  const [createFolderOpen, setCreateFolderOpen] = useState(false);
 
   // Single memo keyed on content — only recomputes when the note text
   // changes, never on unrelated re-renders.
   const stats = useMemo(() => computeNoteStats(content), [content]);
 
-  const folder = note?.folder_name ?? "Draft";
   const isPublic = note?.published_to_web === true;
-
-  const handleFolderChange = useCallback(
-    (f: FolderReference) => {
-      dispatch(moveNoteToFolder({ noteId, folder: f }));
-      setFolderOpen(false);
-    },
-    [dispatch, noteId],
-  );
-
-  const handleCreateFolder = useCallback(
-    async (folderName: string) => {
-      await dispatch(moveNoteToNewFolder({ noteId, folderName })).unwrap();
-    },
-    [dispatch, noteId],
-  );
 
   // Never print stats computed from content we have not read.
   if (!note || !contentKnown) {
@@ -276,51 +253,13 @@ export function NoteInfoPanel({ noteId, className }: NoteInfoPanelProps) {
         />
       </div>
 
-      {/* ── Folder ────────────────────────────────────────────────────── */}
-      <SectionHeader icon={FolderOpen} label={L.current_note_folder} />
-      <div className="relative px-3 pb-1" data-surface-value="current_note_folder">
-        <button
-          onClick={() => setFolderOpen((v) => !v)}
-          className="flex items-center gap-1.5 w-full px-2.5 py-1.5 text-xs rounded-md border border-border/50 bg-muted/30 hover:bg-accent/50 transition-colors cursor-pointer"
-        >
-          <FolderOpen className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="truncate">{folder}</span>
-          <ChevronDown className="w-3 h-3 opacity-50 ml-auto" />
-        </button>
-        {folderOpen && (
-          <div className="absolute left-3 right-3 top-full z-50 mt-1 max-h-[200px] overflow-auto py-1 bg-card/95 backdrop-blur-2xl border border-border rounded-lg shadow-lg">
-            <button
-              type="button"
-              className="flex w-full items-center gap-2 border-b border-border/60 px-3 py-2 text-left text-xs font-medium text-primary-ink transition-colors hover:bg-primary/10"
-              onClick={() => {
-                setFolderOpen(false);
-                setCreateFolderOpen(true);
-              }}
-            >
-              <FolderPlus className="h-3.5 w-3.5" />
-              New folder…
-            </button>
-            {folderReferences
-              .filter((candidate) => candidate.organizationId === note.organization_id)
-              .map((f) => (
-              <button
-                key={`${f.organizationId}:${f.id}`}
-                className={cn(
-                  "w-full text-left px-3 py-1.5 text-xs cursor-pointer transition-colors",
-                  f.id === note.folder_id
-                    ? "bg-primary/10 text-primary-ink font-medium"
-                    : "text-foreground hover:bg-accent",
-                )}
-                onClick={() => handleFolderChange(f)}
-              >
-                {f.name}
-              </button>
-              ))}
-          </div>
-        )}
+      {/* ── Home ──────────────────────────────────────────────────────── */}
+      <SectionHeader icon={House} label={L.current_note_home} />
+      <div className="px-3 pb-1" data-surface-value="current_note_home">
+        <HomeChip noteId={noteId} />
       </div>
 
-      {/* ── Context (org → scopes → project → task) ──────────────────── */}
+      {/* ── Context (scopes → project → task) ──────────────────── */}
       <SectionHeader icon={Hash} label="Scopes" />
       <div className="px-1" data-surface-value="note_scope_assignments">
         <NoteContextSection noteId={noteId} />
@@ -407,16 +346,6 @@ export function NoteInfoPanel({ noteId, className }: NoteInfoPanelProps) {
         )}
       </div>
 
-      <CreateFolderDialog
-        open={createFolderOpen}
-        onOpenChange={setCreateFolderOpen}
-        onConfirm={handleCreateFolder}
-        existingFolders={folderReferences
-          .filter((candidate) => candidate.organizationId === note.organization_id)
-          .map((candidate) => candidate.name)}
-        description="Create a folder and assign this note to it immediately."
-        confirmLabel="Create & Assign"
-      />
     </div>
   );
 }

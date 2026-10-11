@@ -1,5 +1,6 @@
 "use client";
 
+import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import React, {
   useCallback,
@@ -23,7 +24,6 @@ import { useNotesRedux } from "../hooks/useNotesRedux";
 import { useAllFolders, getFolderIconAndColor } from "../utils/folderUtils";
 import { NotesAPI } from "../service/notesApi";
 import type { Note } from "../types";
-import { useNewNoteOrganization } from "../hooks/useNewNoteOrganization";
 
 export interface NotesTreeViewProps {
   onSelectNote?: (note: Note) => void;
@@ -42,7 +42,6 @@ export function NotesTreeView({
   // ORG-GATE-AUDIT: the new-note resolver (waits for boot, then ASKS), never
   // the bare kernel on the active selection — creating a note or folder with
   // no organization selected opens the picker and continues this same create.
-  const resolveNewNoteOrganization = useNewNoteOrganization();
   const allFolders = useAllFolders(notes);
   const [expandedFolder, setExpandedFolder] = useState<string | null>(null);
   const [creatingNoteIn, setCreatingNoteIn] = useState<string | null>(null);
@@ -119,7 +118,7 @@ export function NotesTreeView({
       }
       setBusyAction(`note-${folder}`);
       try {
-        const capturedOrganizationId = await resolveNewNoteOrganization();
+        const capturedOrganizationId = await ensureOrgId(null);
         const note = await NotesAPI.create({
           label,
           content: "",
@@ -137,7 +136,7 @@ export function NotesTreeView({
         setNewNoteLabel("");
       }
     },
-    [newNoteLabel, onSelectNote, resolveNewNoteOrganization],
+    [newNoteLabel, onSelectNote],
   );
 
   const handleNoteInputKeyDown = useCallback(
@@ -168,9 +167,9 @@ export function NotesTreeView({
     }
       setBusyAction("folder");
       try {
-      const capturedOrganizationId = await resolveNewNoteOrganization();
+      const capturedOrganizationId = await ensureOrgId(null);
       await NotesAPI.ensureFolderMaterialized(name, capturedOrganizationId);
-      const note = await findOrCreateEmptyNote(name);
+      const note = await findOrCreateEmptyNote();
       setExpandedFolder(name);
       onSelectNote?.(note);
     } catch (cause) {
@@ -180,7 +179,7 @@ export function NotesTreeView({
       setCreatingFolder(false);
       setNewFolderName("");
     }
-  }, [newFolderName, findOrCreateEmptyNote, onSelectNote, resolveNewNoteOrganization]);
+  }, [newFolderName, findOrCreateEmptyNote, onSelectNote]);
 
   const handleFolderInputKeyDown = useCallback(
     (e: React.KeyboardEvent) => {

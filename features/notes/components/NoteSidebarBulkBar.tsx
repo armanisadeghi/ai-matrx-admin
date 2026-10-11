@@ -10,14 +10,12 @@
  * sized to fit a narrow sidebar column.
  */
 
-import { noteCreateErrorMessage } from "../utils/writeErrors";
 import { useState } from "react";
 import {
   CheckSquare,
   Database,
   Download,
-  FolderInput,
-  FolderPlus,
+  House,
   Loader2,
   Share2,
   Square,
@@ -25,19 +23,12 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "@/lib/toast";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
 import { SimpleTooltip } from "@/components/matrx/Tooltip";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { removeInstanceTab } from "../redux/slice";
-import { deleteNote, moveNoteToFolder, moveNoteToNewFolder, restoreNote, ensureNoteBodiesLoaded } from "../redux/thunks";
+import { deleteNote, restoreNote, ensureNoteBodiesLoaded } from "../redux/thunks";
 import { ingestSource } from "@/features/rag/api/ingest";
 import { isNoteContentEmpty } from "../utils/noteUtils";
 import { runWithConcurrency } from "@ai-matrx/kit/concurrency";
@@ -47,15 +38,13 @@ import {
 } from "../utils/exportNotesMarkdown";
 import { openNoteShareModal } from "./note-actions/noteMenuRegistry";
 import type { NoteRecord } from "../redux/notes.types";
-import type { FolderReference } from "../types";
-import { CreateFolderDialog } from "./CreateFolderDialog";
+import { HomePickerDialog } from "../homes/HomePicker";
 
 const MAX_PARALLEL = 4;
 
 interface NoteSidebarBulkBarProps {
   instanceId: string;
   selectedNotes: NoteRecord[];
-  allFolders: FolderReference[];
   openTabIds: string[] | undefined;
   /** Exit selection mode entirely (clears selection). */
   onClear: () => void;
@@ -70,7 +59,6 @@ interface NoteSidebarBulkBarProps {
 export function NoteSidebarBulkBar({
   instanceId,
   selectedNotes,
-  allFolders,
   openTabIds,
   onClear,
   allVisibleSelected,
@@ -79,46 +67,13 @@ export function NoteSidebarBulkBar({
 }: NoteSidebarBulkBarProps) {
   const dispatch = useAppDispatch();
   const [busyKind, setBusyKind] = useState<
-    "move" | "knowledge" | "delete" | null
+    "knowledge" | "delete" | null
   >(null);
-  const [createFolderOpen, setCreateFolderOpen] = useState(false);
+  const [moveOpen, setMoveOpen] = useState(false);
 
   const count = selectedNotes.length;
   const hasAny = count > 0;
   const singleNote = count === 1 ? selectedNotes[0] : null;
-
-  const selectedOrganizationId = hasAny
-    ? selectedNotes[0].organization_id
-    : null;
-  const selectionHasOneOrganization = selectedNotes.every(
-    (note) => note.organization_id === selectedOrganizationId,
-  );
-
-  const handleMove = async (folder: FolderReference) => {
-    if (!hasAny || busyKind) return;
-    setBusyKind("move");
-    try {
-      const { succeeded, failed } = await runWithConcurrency(
-        selectedNotes,
-        MAX_PARALLEL,
-        async (note) => {
-          await dispatch(
-            moveNoteToFolder({ noteId: note.id, folder }),
-          ).unwrap();
-        },
-      );
-      if (failed > 0) {
-        toast.error(`Moved ${succeeded}, ${failed} failed`);
-      } else {
-        toast.success(
-          `Moved ${succeeded} note${succeeded === 1 ? "" : "s"} to ${folder.name}`,
-        );
-      }
-      onClear();
-    } finally {
-      setBusyKind(null);
-    }
-  };
 
   const handleKnowledge = async () => {
     if (!hasAny || busyKind) return;
@@ -140,31 +95,6 @@ export function NoteSidebarBulkBar({
           `Added ${succeeded} note${succeeded === 1 ? "" : "s"} to knowledge base`,
         );
       }
-    } finally {
-      setBusyKind(null);
-    }
-  };
-
-  const handleCreateFolder = async (folderName: string) => {
-    if (!hasAny || busyKind) return;
-    setBusyKind("move");
-    let firstFailure: unknown = null;
-    try {
-      const { succeeded, failed } = await runWithConcurrency(
-        selectedNotes,
-        MAX_PARALLEL,
-        async (note) => {
-          try {
-            await dispatch(moveNoteToNewFolder({ noteId: note.id, folderName })).unwrap();
-          } catch (cause) {
-            firstFailure ??= cause;
-            throw cause;
-          }
-        },
-      );
-      if (failed > 0) toast.error(`Moved ${succeeded}, ${failed} failed. ${noteCreateErrorMessage(firstFailure)}`);
-      else toast.success(`Created ${folderName} and moved ${succeeded} note${succeeded === 1 ? "" : "s"}`);
-      onClear();
     } finally {
       setBusyKind(null);
     }
@@ -288,42 +218,13 @@ export function NoteSidebarBulkBar({
         </span>
         <span className="h-4 w-px bg-border" />
 
-        <DropdownMenu>
-          <SimpleTooltip text="Move to folder">
-            <DropdownMenuTrigger asChild>
-              <button type="button" disabled={actionsDisabled} className={btn}>
-                {busyKind === "move" ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  <FolderInput />
-                )}
-              </button>
-            </DropdownMenuTrigger>
-          </SimpleTooltip>
-          <DropdownMenuContent
-            align="start"
-            className="max-h-[220px] overflow-auto"
-          >
-            <DropdownMenuItem
-              onSelect={() => setCreateFolderOpen(true)}
-              className="text-primary"
-            >
-              <FolderPlus className="mr-2 h-3.5 w-3.5" />
-              New folder…
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            {selectionHasOneOrganization && allFolders
-              .filter((folder) => folder.organizationId === selectedOrganizationId)
-              .map((folder) => (
-              <DropdownMenuItem
-                key={`${folder.organizationId}:${folder.id}`}
-                onSelect={() => void handleMove(folder)}
-              >
-                {folder.name}
-              </DropdownMenuItem>
-              ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Move to… — one home picker; a selection spanning organizations
+            moves each note through moveNoteToHome (organization follows). */}
+        <SimpleTooltip text="Move to…">
+          <button type="button" disabled={actionsDisabled} className={btn} onClick={() => setMoveOpen(true)}>
+            <House />
+          </button>
+        </SimpleTooltip>
 
         <SimpleTooltip text="Add to knowledge base">
           <button
@@ -399,17 +300,11 @@ export function NoteSidebarBulkBar({
           </button>
         </SimpleTooltip>
       </div>
-      <CreateFolderDialog
-        open={createFolderOpen}
-        onOpenChange={setCreateFolderOpen}
-        onConfirm={handleCreateFolder}
-        existingFolders={selectionHasOneOrganization
-          ? allFolders
-              .filter((folder) => folder.organizationId === selectedOrganizationId)
-              .map((folder) => folder.name)
-          : []}
-        description={`Create a folder and move ${count} selected note${count === 1 ? "" : "s"} into it.`}
-        confirmLabel="Create & Move"
+      <HomePickerDialog
+        open={moveOpen}
+        onOpenChange={setMoveOpen}
+        noteIds={selectedNotes.map((note) => note.id)}
+        onMoved={onClear}
       />
     </>
   );

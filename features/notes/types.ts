@@ -31,8 +31,11 @@ export interface NoteContextLinks {
 /** The stored row as the client models it — any full DB row satisfies it. */
 export type NoteStoredRow = Omit<
   NoteRow,
-  "content_preview" | "visibility" | "published_to_web_at" | "published_to_web_by"
+  "content_preview" | "visibility" | "published_to_web_at" | "published_to_web_by" | "home_scope_id"
 > & {
+  /** The note's one home (a scope). Null only on a client draft not yet stored — the
+   *  database fills the organization's General on insert. Changed only by `moveNoteToHome`. */
+  home_scope_id?: string | null;
   content_preview?: string | null;
   published_to_web_at?: string | null;
   published_to_web_by?: string | null;
@@ -71,6 +74,7 @@ export type NoteListItem = Pick<
   | "updated_at"
   | "position"
   | "organization_id"
+  | "home_scope_id"
   | "shown_to"
   | "published_to_web"
   | "version"
@@ -79,7 +83,7 @@ export type NoteListItem = Pick<
 
 // ── Group-by modes for the sidebar ──────────────────────────────────────────
 export type NoteGroupBy =
-  "folder" | "project" | "task" | "scope";
+  "home" | "organization" | "project" | "task" | "scope";
 
 // ── View modes for the editor ────────────────────────────────────────────────
 export type NoteViewMode =
@@ -112,6 +116,8 @@ export type CreateNoteInput = Pick<
 > & {
   /** Captured at the initiating edge. The note writer never resolves it. */
   organization_id: string;
+  /** The note's home scope (must be in `organization_id`). Absent = that organization's General. */
+  home_scope_id?: string | null;
 } & Partial<NoteContextLinks>;
 
 /** Immutable identity for a folder operation; its name is display data only. */

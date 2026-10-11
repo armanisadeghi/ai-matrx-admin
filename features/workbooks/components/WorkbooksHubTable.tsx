@@ -28,12 +28,26 @@ function columnsFor(menuFor: (wb: Workbook) => ReactNode): MatrxColumnDef<Workbo
       ),
     },
     {
+      id: "actions",
+      header: "",
+      label: "Actions",
+      sortable: false,
+      filter: false,
+      width: 84,
+      hideable: false,
+      cell: (wb) => (
+        <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
+          {menuFor(wb)}
+        </div>
+      ),
+    },
+    {
       id: "description",
       header: "Description",
       accessorFn: (wb) => wb.description ?? "",
       filter: "text",
       cell: (wb) => (
-        <span className="line-clamp-2 break-words text-xs text-muted-foreground">{wb.description || "—"}</span>
+        <span className="line-clamp-2 max-w-[22rem] break-words text-xs text-muted-foreground">{wb.description || "—"}</span>
       ),
     },
     {
@@ -58,18 +72,6 @@ function columnsFor(menuFor: (wb: Workbook) => ReactNode): MatrxColumnDef<Workbo
         <span className="whitespace-nowrap text-xs text-muted-foreground" title={formatAbsoluteDate(wb.updated_at)}>
           {formatRelativeTime(wb.updated_at, { style: "long" })}
         </span>
-      ),
-    },
-    {
-      id: "actions",
-      header: "",
-      label: "Actions",
-      sortable: false,
-      filter: false,
-      cell: (wb) => (
-        <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
-          {menuFor(wb)}
-        </div>
       ),
     },
   ];

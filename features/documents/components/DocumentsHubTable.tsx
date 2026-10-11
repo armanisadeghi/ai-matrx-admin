@@ -52,12 +52,26 @@ function columnsFor(menuFor: (doc: DocumentRow) => ReactNode): MatrxColumnDef<Do
       ),
     },
     {
+      id: "actions",
+      header: "",
+      label: "Actions",
+      sortable: false,
+      filter: false,
+      width: 84,
+      hideable: false,
+      cell: (doc) => (
+        <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
+          {menuFor(doc)}
+        </div>
+      ),
+    },
+    {
       id: "description",
       header: "Description",
       accessorFn: (doc) => doc.description ?? "",
       filter: "text",
       cell: (doc) => (
-        <span className="line-clamp-2 break-words text-xs text-muted-foreground">{doc.description || "—"}</span>
+        <span className="line-clamp-2 max-w-[22rem] break-words text-xs text-muted-foreground">{doc.description || "—"}</span>
       ),
     },
     {
@@ -95,18 +109,6 @@ function columnsFor(menuFor: (doc: DocumentRow) => ReactNode): MatrxColumnDef<Do
         <span className="whitespace-nowrap text-xs text-muted-foreground" title={formatAbsoluteDate(doc.updated_at)}>
           {formatRelativeTime(doc.updated_at, { style: "long" })}
         </span>
-      ),
-    },
-    {
-      id: "actions",
-      header: "",
-      label: "Actions",
-      sortable: false,
-      filter: false,
-      cell: (doc) => (
-        <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
-          {menuFor(doc)}
-        </div>
       ),
     },
   ];

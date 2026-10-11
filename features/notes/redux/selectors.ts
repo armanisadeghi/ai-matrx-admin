@@ -7,6 +7,7 @@
 
 import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
+import { noteFolderReference, type FolderReference } from "../types";
 import type {
   NoteRecord,
   NoteFetchStatus,
@@ -14,8 +15,6 @@ import type {
   NotesSliceState,
   FindReplaceState,
 } from "./notes.types";
-import { DEFAULT_FOLDER_NAMES } from "../constants/defaultFolders";
-import { noteFolderIdentityKey, type FolderReference } from "../types";
 
 // ── Selector cache to prevent re-creation on every render ───────────────────
 
@@ -27,10 +26,6 @@ function cached<T>(key: string, factory: () => T): T {
   }
   return selectorCache.get(key) as T;
 }
-
-// ── Default folder ordering (single source: `constants/defaultFolders.ts`) ──
-
-const DEFAULT_FOLDER_ORDER: readonly string[] = DEFAULT_FOLDER_NAMES;
 
 const EMPTY_NOTE_TAGS: string[] = [];
 
@@ -86,8 +81,7 @@ function structureSignature(note: NoteRecord): string {
     note.position ?? "",
     note.updated_at ?? "",
     note.label ?? "",
-    note.folder_name ?? "",
-    note.folder_id ?? "",
+    note.home_scope_id ?? "",
     note.organization_id ?? "",
     note.deleted_at ?? "",
     note._sharedWithMe ? "1" : "0",
@@ -102,21 +96,13 @@ function sameStrings(a: readonly string[], b: readonly string[]): boolean {
   return true;
 }
 
-function sameFolderReferences(a: readonly FolderReference[], b: readonly FolderReference[]): boolean {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    if (a[i].id !== b[i].id || a[i].organizationId !== b[i].organizationId || a[i].name !== b[i].name) return false;
-  }
-  return true;
-}
-
 export interface NotesListProjection {
   /** Owner-visible note ids in sidebar order. */
   readonly orderedIds: readonly string[];
-  /** Display-only folder names, default folders first. */
-  readonly folders: string[];
-  /** Folder identity for mutations. */
-  readonly folderReferences: FolderReference[];
+  /** Every home (scope id) that holds at least one owner-visible note, sorted. */
+  readonly homeIds: readonly string[];
+  /** Every organization the owner-visible notes belong to, sorted. */
+  readonly organizationIds: readonly string[];
 }
 
 let listProjectionCache:
@@ -155,45 +141,26 @@ export const selectNotesListProjection = createSelector(
       return (b.updated_at ?? "").localeCompare(a.updated_at ?? "");
     });
 
-    const folderSet = new Set<string>(DEFAULT_FOLDER_ORDER);
-    const folderReferences = new Map<string, FolderReference>();
+    const homes = new Set<string>();
+    const organizations = new Set<string>();
     for (const note of visible) {
-      if (note.folder_name) folderSet.add(note.folder_name);
-      if (!note.folder_id || !note.organization_id) continue;
-      const folder = {
-        id: note.folder_id,
-        organizationId: note.organization_id,
-        name: note.folder_name ?? "Uncategorized",
-      };
-      folderReferences.set(`${folder.organizationId}:${folder.id}`, folder);
+      if (note.home_scope_id) homes.add(note.home_scope_id);
+      if (note.organization_id) organizations.add(note.organization_id);
     }
 
     const previous = listProjectionCache?.value;
     const orderedIds = visible.map((note) => note.id);
-    const nextFolderReferences = Array.from(folderReferences.values());
+    const homeIds = Array.from(homes).sort();
+    const organizationIds = Array.from(organizations).sort();
+    // A save moves `updated_at` (a structural field), which rebuilds the
+    // projection — hand back the previous arrays when their contents match so
+    // a save never re-renders every row (the Write-mode typing freeze, 2026-10-10).
     const value: NotesListProjection = {
       orderedIds: previous && sameStrings(previous.orderedIds, orderedIds) ? previous.orderedIds : orderedIds,
-      folders: Array.from(folderSet).sort((a, b) => {
-        const aIdx = DEFAULT_FOLDER_ORDER.indexOf(a);
-        const bIdx = DEFAULT_FOLDER_ORDER.indexOf(b);
-        if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
-        if (aIdx !== -1) return -1;
-        if (bIdx !== -1) return 1;
-        return a.localeCompare(b);
-      }),
-      folderReferences:
-        previous && sameFolderReferences(previous.folderReferences, nextFolderReferences)
-          ? previous.folderReferences
-          : nextFolderReferences,
+      homeIds: previous && sameStrings(previous.homeIds, homeIds) ? previous.homeIds : homeIds,
+      organizationIds:
+        previous && sameStrings(previous.organizationIds, organizationIds) ? previous.organizationIds : organizationIds,
     };
-    // A save moves `updated_at` (a structural field), which rebuilds the
-    // projection — but the folder lists almost never change. Hand back the
-    // previous arrays when their contents match: every sidebar row receives
-    // `folderReferences`, and a fresh-but-equal array re-rendered every row on
-    // every save (the Write-mode typing freeze, 2026-10-10).
-    if (previous && sameStrings(previous.folders, value.folders)) {
-      (value as { folders: string[] }).folders = previous.folders;
-    }
     listProjectionCache = { signatures, value };
     return value;
   },
@@ -223,7 +190,7 @@ export const selectAllNotesList = createSelector(
 const SIDEBAR_LIST_FIELDS = [
   // NOT the label: a new note's auto-label moves while its first line is
   // typed; rows show the live label, and name order reads the live list.
-  "id", "folder_name", "folder_id", "organization_id", "position",
+  "id", "home_scope_id", "organization_id", "position",
   "deleted_at", "_sharedWithMe", "_sharedMeta", "_isAutogenerated", "created_by", "tags",
 ] as const;
 
@@ -275,15 +242,16 @@ export const selectSidebarNotesList = createSelector(
   { devModeChecks: { identityFunctionCheck: "never" } },
 );
 
-export const selectAllFolders = createSelector(
+/** Every home that holds one of the owner's notes (scope ids, sorted). */
+export const selectNoteHomeIds = createSelector(
   [selectNotesListProjection],
-  (projection): string[] => projection.folders,
+  (projection): readonly string[] => projection.homeIds,
 );
 
-/** Folder identity for mutations. `selectAllFolders` remains display-only. */
-export const selectFolderReferences = createSelector(
+/** Every organization the owner's notes belong to (sorted). */
+export const selectNoteOrganizationIds = createSelector(
   [selectNotesListProjection],
-  (projection): FolderReference[] => projection.folderReferences,
+  (projection): readonly string[] => projection.organizationIds,
 );
 
 export const selectDeletedNotesList = createSelector(
@@ -469,6 +437,15 @@ export const selectNoteFolder = (noteId: string) =>
     createSelector(
       selectNotesMap,
       (notes): string | undefined => notes[noteId]?.folder_name ?? undefined,
+    ),
+  );
+
+/** The note's home (scope id); null only on a draft not yet stored. */
+export const selectNoteHomeScopeId = (noteId: string) =>
+  cached(`noteHome:${noteId}`, () =>
+    createSelector(
+      selectNotesMap,
+      (notes): string | null => notes[noteId]?.home_scope_id ?? null,
     ),
   );
 
@@ -711,10 +688,10 @@ export const selectNotesGroupedByScope = createSelector(
 export const selectNotesGroupedBy = createSelector(
   [selectAllNotesList],
   (notes) => ({
-    byFolder: () => {
+    byHome: () => {
       const map = new Map<string, NoteRecord[]>();
       for (const n of notes) {
-        const key = noteFolderIdentityKey(n);
+        const key = n.home_scope_id ?? "__none__";
         let bucket = map.get(key);
         if (!bucket) {
           bucket = [];
@@ -751,4 +728,25 @@ export const selectNotesGroupedBy = createSelector(
       return map;
     },
   }),
+);
+
+// TEMPORARY (item-homes cutover, 2026-10-10): folder readers outside the
+// cutover still import these; the home-tree lane deletes both with their last
+// reader. Derived from the folder columns that still exist on every note.
+export const selectAllFolders = createSelector(
+  [selectAllNotesList],
+  (notes): string[] =>
+    Array.from(new Set(notes.map((n) => n.folder_name).filter((n): n is string => !!n))).sort(),
+);
+
+export const selectFolderReferences = createSelector(
+  [selectAllNotesList],
+  (notes): FolderReference[] => {
+    const refs = new Map<string, FolderReference>();
+    for (const n of notes) {
+      const ref = noteFolderReference(n);
+      if (ref) refs.set(`${ref.organizationId}:${ref.id}`, ref);
+    }
+    return Array.from(refs.values());
+  },
 );

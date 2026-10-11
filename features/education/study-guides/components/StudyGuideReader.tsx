@@ -1,5 +1,6 @@
 "use client";
 
+import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { toast } from "@/lib/toast";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import Link from "next/link";
@@ -51,7 +52,6 @@ import { EditInPlaceText } from "@ai-matrx/rich-editor/in-place/EditInPlaceText"
 import { NoteWorkspace } from "@/features/notes/components/NoteWorkspace";
 import { deleteNote, saveNote } from "@/features/notes/redux/thunks";
 import { setNoteEditorMode, updateNoteLabel } from "@/features/notes/redux/slice";
-import { useNewNoteOrganization } from "@/features/notes/hooks/useNewNoteOrganization";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createEducationStudyGuidesScope } from "@/features/surfaces/manifests/education-study-guides.manifest";
 import { createEducationStudyGuideScope, EDUCATION_STUDY_GUIDE_SURFACE_NAME } from "@/features/surfaces/manifests/education-study-guide.manifest";
@@ -338,7 +338,6 @@ function guideSource(guide: Note, onSaved: () => void): AnnotationSource {
 function StudyGuideReaderInner({ initialGuideId, startInEdit = false, defaultLayout }: StudyGuideReaderProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const resolveNewNoteOrganization = useNewNoteOrganization();
   const isMobile = useIsMobile();
   const userId = useAppSelector(selectUserId);
   const [guides, setGuides] = useState<NoteListItem[]>([]);
@@ -413,7 +412,7 @@ function StudyGuideReaderInner({ initialGuideId, startInEdit = false, defaultLay
   };
 
   const persistGuide = async (plan: { title: string; content: string }) => {
-    const organizationId = await resolveNewNoteOrganization();
+    const organizationId = await ensureOrgId(null);
     return createStudyGuide({ ...plan, organizationId });
   };
 

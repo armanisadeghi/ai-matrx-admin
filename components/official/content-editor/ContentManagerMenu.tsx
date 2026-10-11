@@ -1,6 +1,7 @@
 // components/content-editor/ContentManagerMenu.tsx
 "use client";
 
+import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import React, { useState } from "react";
 import {
   MoreVertical,
@@ -24,7 +25,6 @@ import { useHtmlPreviewState } from "@/features/html-pages/hooks/useHtmlPreviewS
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
-import { useNewNoteOrganization } from "@/features/notes/hooks/useNewNoteOrganization";
 
 interface ContentManagerMenuProps {
   content: string;
@@ -44,7 +44,6 @@ export function ContentManagerMenu({
   const user = useAppSelector(selectUser);
   // ORG-GATE-AUDIT: "Save to Scratch" with no organization selected asks (the
   // new-note resolver), then saves — never the bare kernel's refusal.
-  const resolveNewNoteOrganization = useNewNoteOrganization();
 
   // HTML Preview Editor state
   const htmlPreviewState = useHtmlPreviewState({
@@ -60,7 +59,7 @@ export function ContentManagerMenu({
 
   // Notes handlers
   const handleSaveToScratch = async () => {
-    const capturedOrganizationId = await resolveNewNoteOrganization();
+    const capturedOrganizationId = await ensureOrgId(null);
     await NotesAPI.create({
       label: "New Note",
       content: content,

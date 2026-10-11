@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@ai-matrx/design-system";
 import { Input } from "@ai-matrx/design-system/controls";
 import {
@@ -178,10 +178,8 @@ export function ShareLinkPanel({
     [copyMessage, refresh, toast],
   );
 
-  const handleCreate = useCallback(async () => {
-    setCreating(true);
+  const createLinkOnce = useCallback(async () => {
     const result = await createShareLink({ resourceType, resourceId });
-    setCreating(false);
     if (result.success && result.url) {
       const freshLinks = await refresh();
       const createdLink =
@@ -206,6 +204,21 @@ export function ShareLinkPanel({
       });
     }
   }, [resourceType, resourceId, refresh, copyLink, toast]);
+
+  // A ref, not the `creating` state: two clicks in one frame both read the stale state and each
+  // created a link. The ref holds until the link is made AND copied.
+  const creatingRef = useRef(false);
+  const handleCreate = useCallback(async () => {
+    if (creatingRef.current) return;
+    creatingRef.current = true;
+    setCreating(true);
+    try {
+      await createLinkOnce();
+    } finally {
+      creatingRef.current = false;
+      setCreating(false);
+    }
+  }, [createLinkOnce]);
 
   const handleRevoke = useCallback(async () => {
     if (!revokeTarget) return;

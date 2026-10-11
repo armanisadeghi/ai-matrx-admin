@@ -91,7 +91,7 @@ export async function fetchNoteListItems(
     .schema("workbench")
     .from("notes")
     .select(
-      "id, created_by, label, folder_name, folder_id, tags, updated_at, position, organization_id, shown_to, published_to_web, version",
+      "id, created_by, label, folder_name, folder_id, home_scope_id, tags, updated_at, position, organization_id, shown_to, published_to_web, version",
     )
     .is("deleted_at", null);
   query = listScope.apply(query);
@@ -351,6 +351,8 @@ export async function materializeNote(input: Note): Promise<Note> {
       folder_name: input.folder_name,
       folder_id: input.folder_id,
       organization_id: organizationId,
+      // The draft's chosen home; absent = the organization's General (the database fills it).
+      ...(input.home_scope_id ? { home_scope_id: input.home_scope_id } : {}),
       tags: input.tags,
       // NOT NULL with a '{}' default: an absent value is the default, never null.
       metadata: input.metadata ?? {},
@@ -602,6 +604,8 @@ export async function createNote(input: CreateNoteInput): Promise<Note> {
       shown_to: input.shown_to ?? "only_me",
       published_to_web: input.published_to_web ?? false,
       organization_id: organizationId,
+      // The note's home. Absent = the organization's General (the database fills it).
+      ...(input.home_scope_id ? { home_scope_id: input.home_scope_id } : {}),
     })
     .select()
     .single();

@@ -1,33 +1,29 @@
 "use client";
 
 import React, { useState } from "react";
-import { FolderOpen, FolderPlus, Tag as TagIcon, X, Plus } from "lucide-react";
+import { ChevronRight, House, X, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Badge } from "@/components/ui/badge";
-import type { FolderReference } from "../../types";
 
 interface MobileNoteToolbarProps {
-  folder: string;
+  /** The note's home, as shown (General / a scope's name). */
+  homeLabel: string;
   tags: string[];
-  availableFolders: FolderReference[];
-  onFolderChange: (folder: FolderReference) => void;
+  /** Opens the home picker (the one move path: moveNoteToHome). */
+  onMoveHome: () => void;
   onTagsChange: (tags: string[]) => void;
-  onCreateFolder: () => void;
   onClose: () => void;
 }
 
 export default function MobileNoteToolbar({
-  folder,
+  homeLabel,
   tags,
-  availableFolders,
-  onFolderChange,
+  onMoveHome,
   onTagsChange,
-  onCreateFolder,
   onClose,
 }: MobileNoteToolbarProps) {
   const [newTag, setNewTag] = useState("");
-  const [showFolders, setShowFolders] = useState(true);
 
   const handleAddTag = () => {
     const trimmedTag = newTag.trim();
@@ -43,79 +39,18 @@ export default function MobileNoteToolbar({
 
   return (
     <div className="h-full flex flex-col">
-      {/* Tabs */}
-      <div className="flex-shrink-0 flex border-b border-border">
-        <button
-          onClick={() => setShowFolders(true)}
-          className={`flex-1 py-3 text-sm font-medium transition-colors ${
-            showFolders
-              ? "text-primary border-b-2 border-primary"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <div className="flex items-center justify-center gap-2">
-            <FolderOpen size={16} />
-            Folder
-          </div>
-        </button>
-        <button
-          onClick={() => setShowFolders(false)}
-          className={`flex-1 py-3 text-sm font-medium transition-colors ${
-            !showFolders
-              ? "text-primary border-b-2 border-primary"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <div className="flex items-center justify-center gap-2">
-            <TagIcon size={16} />
-            Tags
-          </div>
-        </button>
-      </div>
-
-      {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
-        {showFolders ? (
-          /* Folders View */
-          <div className="space-y-2">
-            <button
-              onClick={onCreateFolder}
-              className="w-full flex items-center gap-3 p-3 rounded-lg border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-border/80 transition-colors"
-            >
-              <FolderPlus size={18} />
-              <span className="flex-1 text-left font-medium">New folder…</span>
-            </button>
-            {availableFolders.map((candidate) => (
-              <button
-                key={`${candidate.organizationId}:${candidate.id}`}
-                onClick={() => {
-                  onFolderChange(candidate);
-                  onClose();
-                }}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-colors ${
-                  folder === candidate.name
-                    ? "bg-primary/10 border-primary/30"
-                    : "bg-card border-border hover:border-border/80"
-                }`}
-              >
-                <FolderOpen
-                  size={18}
-                  className={
-                    folder === candidate.name
-                      ? "text-primary"
-                      : "text-muted-foreground"
-                  }
-                />
-                <span className="flex-1 text-left font-medium">
-                  {candidate.name}
-                </span>
-                {folder === candidate.name && (
-                  <div className="w-2 h-2 bg-primary rounded-full" />
-                )}
-              </button>
-            ))}
-          </div>
-        ) : (
+        <button
+          type="button"
+          onClick={onMoveHome}
+          className="mb-4 flex w-full items-center gap-3 rounded-lg border border-border px-3 py-3 text-left text-base"
+        >
+          <House size={18} className="text-muted-foreground" />
+          <span className="flex-1 truncate">{homeLabel}</span>
+          <span className="text-sm text-muted-foreground">Move</span>
+          <ChevronRight size={16} className="text-muted-foreground" />
+        </button>
+        {(
           /* Tags View */
           <div className="space-y-4">
             {/* Current Tags */}

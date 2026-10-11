@@ -18,8 +18,8 @@
  *
  * Writes are NOT a parallel path: content goes through the caller's
  * `applyContent` (its own flush into `updateNoteContent`), title/tags through
- * the slice actions the person's typing dispatches, the folder through
- * `moveNoteToFolder`. Every handler validates and THROWS on a bad shape — the
+ * the slice actions the person's typing dispatches, the home through
+ * `moveNoteToHome`. Every handler validates and THROWS on a bad shape — the
  * writeback seam turns a throw into an error envelope the agent can correct.
  * A read-only note (viewer-level sharee, or access still loading) registers
  * no note-body handlers, so the seam never advertises a write RLS rejects.
@@ -34,9 +34,10 @@ import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/eng
 import type { EditorMode } from "@/features/notes/components/NoteEditorCore";
 import { useNotesSurfaceScope } from "@/features/notes/hooks/useNotesSurfaceScope";
 import { useNotesCollectionWriteHandlers } from "@/features/notes/agent-context/useNotesCollectionWriteHandlers";
-import { selectFolderReferences, selectNoteById } from "@/features/notes/redux/selectors";
+import { selectNoteById } from "@/features/notes/redux/selectors";
 import { updateNoteLabel, updateNoteTags } from "@/features/notes/redux/slice";
-import { moveNoteToFolder } from "@/features/notes/redux/thunks";
+import { moveNoteToHome } from "@/features/notes/homes/moveNoteToHome";
+import { useNoteHomes } from "@/features/notes/homes/useNoteHomes";
 
 export interface UseNotesSurfaceRuntimeParams {
   /** NotesView instance id — tabs / split / find state. Optional off-view. */
@@ -74,7 +75,7 @@ export function useNotesSurfaceRuntime({
 }: UseNotesSurfaceRuntimeParams) {
   const dispatch = useAppDispatch();
   const record = useAppSelector(selectNoteById(noteId));
-  const folderReferences = useAppSelector(selectFolderReferences);
+  const homes = useNoteHomes();
   const organizationId = record?.organization_id ?? null;
 
   const buildSurfaceScope = useNotesSurfaceScope({
@@ -117,15 +118,16 @@ export function useNotesSurfaceRuntime({
 
   const getCollectionWriteHandlers = useNotesCollectionWriteHandlers({
     instanceId: instanceId ?? "",
-    folders: folderReferences,
+    homes: homes.homes.map((home) => ({
+      scopeId: home.scopeId,
+      organizationId: home.organizationId,
+      label: homes.labelOf(home.scopeId) ?? home.name,
+      isGeneral: home.isGeneral,
+    })),
     activeNoteId: noteId,
     activeOrganizationId: organizationId,
     readOnly: accessLoading || readOnly,
   });
-
-  const availableFolders = folderReferences.filter(
-    (folder) => folder.organizationId === organizationId,
-  );
 
   const getWriteHandlers = (): SurfaceWriteHandlers => {
     if (accessLoading) return {};
@@ -167,22 +169,21 @@ export function useNotesSurfaceRuntime({
           }),
         );
       },
-      note_folder: async (value: unknown) => {
+      note_home: async (value: unknown) => {
         if (typeof value !== "string" || !value.trim())
-          throw new Error("note_folder expects a folder name string.");
-        const folder = value.trim();
-        // Refuse an unknown name: `moveNoteToFolder` creates-or-gets, so an
-        // invented name would silently add a folder. Creating folders is the
-        // person's decision.
-        const targetFolder = availableFolders.find(
-          (candidate) => candidate.name === folder,
-        );
-        if (!targetFolder)
+          throw new Error("note_home expects a home name string from all_homes.");
+        const name = value.trim();
+        // Only an existing home: creating scopes is the person's decision.
+        const target = homes.homes.find((home) => (homes.labelOf(home.scopeId) ?? home.name) === name);
+        if (!target)
           throw new Error(
-            // access-errors: ok — AI tool-call validation against the loaded folder list; the name is verifiably absent from it
-            `note_folder expects an existing folder. "${folder}" does not exist — choose one of: ${availableFolders.map((candidate) => candidate.name).join(" | ")}.`,
+            // access-errors: ok — AI tool-call validation against the loaded home list; the name is verifiably absent from it
+            `note_home expects an existing home. "${name}" is not one — choose one of: ${homes.homes.map((home) => homes.labelOf(home.scopeId) ?? home.name).join(" | ")}.`,
           );
-        await dispatch(moveNoteToFolder({ noteId, folder: targetFolder })).unwrap();
+        const result = await dispatch(
+          moveNoteToHome({ noteId, scopeId: target.scopeId, homeLabel: name }),
+        ).unwrap();
+        if (!result.ok) throw new Error(result.message);
       },
     };
   };

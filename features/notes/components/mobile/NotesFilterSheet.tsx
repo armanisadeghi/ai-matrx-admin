@@ -1,8 +1,9 @@
 'use client';
 
+import { useNoteHomes } from "../../homes/useNoteHomes";
 import React, { useState, useEffect } from 'react';
 import {
-  FolderOpen,
+  House,
   Layers,
   Tag,
   Clock,
@@ -16,7 +17,7 @@ import {
 import type { Note } from '@/features/notes/types';
 
 export interface NotesFilterState {
-  folder: string;        // 'all' or folder name
+  folder: string;        // 'all' or a home's scope id
   tags: string[];        // selected tag filters (AND logic)
   sortField: 'updated_at' | 'created_at' | 'label';
   sortOrder: 'asc' | 'desc';
@@ -63,12 +64,13 @@ export default function NotesFilterSheet({
     if (isOpen) setLocal(filters);
   }, [isOpen, filters]);
 
-  // Derived folder list
+  // The homes the person's notes live in (scope ids), labelled by the home tree.
+  const homes = useNoteHomes();
   const folders = React.useMemo(() => {
     const s = new Set<string>();
-    notes.forEach(n => s.add(n.folder_name || 'Draft'));
-    return Array.from(s).sort();
-  }, [notes]);
+    notes.forEach(n => { if (n.home_scope_id) s.add(n.home_scope_id); });
+    return Array.from(s).sort((a, b) => (homes.labelOf(a) ?? '').localeCompare(homes.labelOf(b) ?? ''));
+  }, [notes, homes]);
 
   // Derived tag list (all unique tags across notes)
   const allTags = React.useMemo(() => {
@@ -163,8 +165,8 @@ export default function NotesFilterSheet({
             })}
           </div>
 
-          {/* ── FOLDERS ── */}
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">Folder</p>
+          {/* ── HOMES ── */}
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">Home</p>
           <div className="flex flex-wrap gap-2 mb-5">
             {/* All chip */}
             <button
@@ -191,8 +193,8 @@ export default function NotesFilterSheet({
                       : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground'
                   }`}
                 >
-                  <FolderOpen size={13} />
-                  {folder}
+                  <House size={13} />
+                  {homes.labelOf(folder) ?? 'Home'}
                 </button>
               );
             })}

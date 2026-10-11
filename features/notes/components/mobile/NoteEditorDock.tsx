@@ -10,7 +10,7 @@
 
 import { FormatButtons } from "@ai-matrx/rich-editor/format/FormatButtons";
 import type { FormatTarget } from "@ai-matrx/rich-editor/format/format-target";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import type { LucideIcon } from "lucide-react";
 import type { ContentTransferController } from "@ai-matrx/alchemy/react/workspace";
 import { ExportPaletteAnchor, openExportPalette, useExportPaletteKey } from "@ai-matrx/rich-content/copy/ExportPalette";
@@ -21,7 +21,7 @@ import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { noteRecordData, type NoteRecordView } from "@/features/notes/format";
 import { selectNoteById } from "../../redux/selectors";
 import {
-  FolderOpen,
+  House,
   MoreHorizontal,
   Copy,
   Loader2,
@@ -40,10 +40,10 @@ import {
 } from "@ai-matrx/design-system";
 import MobileNoteToolbar from "./MobileNoteToolbar";
 import { NoteContextSection } from "../NoteContextSection";
-import { CreateFolderDialog } from "../CreateFolderDialog";
-import { selectFolderReferences } from "../../redux/selectors";
+import { HomePickerDialog } from "../../homes/HomePicker";
+import { useNoteHomes } from "../../homes/useNoteHomes";
+import { selectNoteHomeScopeId } from "../../redux/selectors";
 import { useAppSelector } from "@/lib/redux/hooks";
-import type { FolderReference } from "../../types";
 import { useToastManager } from "@/hooks/useToastManager";
 import { useOpenNoteKnowledgePanel } from "@/features/notes/canvas/noteKnowledgeKind";
 import { useNoteIngestStatus } from "../../hooks/useNoteIngestStatus";
@@ -57,12 +57,9 @@ import { copyNotify } from "@/lib/clipboard/copy-notify";
 interface NoteEditorDockProps {
   noteId: string;
   noteLabel?: string;
-  folder: string;
   organizationId: string;
   tags: string[];
   content: string;
-  onFolderChange: (folder: FolderReference) => void;
-  onCreateFolder: (folderName: string) => void;
   onTagsChange: (tags: string[]) => void;
   onDuplicate: () => void;
   onExport: () => void;
@@ -70,7 +67,7 @@ interface NoteEditorDockProps {
   /** Rename the note (the More sheet's Rename). */
   onRename?: (label: string) => void;
   isDeleting?: boolean;
-  /** Viewer-level sharee: hide the folder/tags mutators (their saves are
+  /** Viewer-level sharee: hide the home/tags mutators (their saves are
    *  RLS-rejected); copy/export/context/more stay available. */
   readOnly?: boolean;
   /** The editor the dock's formatting strip acts on — set in the editing modes, null in Read. */
@@ -87,12 +84,9 @@ const PILL_INSET_Y = 4;
 export function NoteEditorDock({
   noteId,
   noteLabel = "Note",
-  folder,
   organizationId,
   tags,
   content,
-  onFolderChange,
-  onCreateFolder,
   onTagsChange,
   onDuplicate,
   onExport,
@@ -121,17 +115,16 @@ export function NoteEditorDock({
           consecutiveSaveFailures: exportNote._consecutiveSaveFailures ?? 0,
         }
       : null;
-  const folderReferences = useAppSelector(selectFolderReferences);
-  const availableFolders = folderReferences.filter(
-    (candidate) => candidate.organizationId === organizationId,
-  );
+  const { labelOf } = useNoteHomes();
+  const homeScopeId = useAppSelector(useMemo(() => selectNoteHomeScopeId(noteId), [noteId]));
+  const homeLabel = labelOf(homeScopeId) ?? "General";
+  const [homePickerOpen, setHomePickerOpen] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const [shareOpen, setShareOpen] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
   const router = useRouter();
-  const [createFolderOpen, setCreateFolderOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [pill, setPill] = useState<{
     x: number;
@@ -152,21 +145,20 @@ export function NoteEditorDock({
     Icon: LucideIcon;
     onPress: (index: number) => void;
   }[] = [
-    // Folder + tags mutate the note — a viewer's save is RLS-rejected, so
+    // Home + tags mutate the note — a viewer's save is RLS-rejected, so
     // don't offer the affordance at all.
     ...(readOnly
       ? []
       : [
           {
-            // Folder and tags live in ONE sheet, so they are ONE dock button
-            // (two buttons opened the same sheet).
-            key: "folder",
-            label: "Folder",
+            // Home and tags live in ONE sheet, so they are ONE dock button.
+            key: "home",
+            label: "Home",
             tooltip:
               tags.length > 0
-                ? `Folder & tags — ${folder} · ${tags.length} tag${tags.length !== 1 ? "s" : ""}`
-                : `Folder & tags — ${folder}`,
-            Icon: FolderOpen,
+                ? `Home & tags — ${homeLabel} · ${tags.length} tag${tags.length !== 1 ? "s" : ""}`
+                : `Home & tags — ${homeLabel}`,
+            Icon: House,
             onPress: (index: number) => {
               setActiveIndex(index);
               setSheetOpen("folder-tags");
@@ -420,45 +412,31 @@ export function NoteEditorDock({
         />
       </nav>
 
-      {/* Folder + Tags sheet */}
+      {/* Home + Tags sheet */}
       <BottomSheet
         open={sheetOpen === "folder-tags"}
         onOpenChange={(open) => setSheetOpen(open ? "folder-tags" : null)}
-        title="Folder & Tags"
+        title="Home & Tags"
         // Solid: the glass blurred the floating assist button behind it into a
         // smudge across the sheet.
         surface="solid"
       >
-        <BottomSheetHeader title="Folder &amp; Tags" />
+        <BottomSheetHeader title="Home &amp; Tags" />
         <BottomSheetBody>
           <MobileNoteToolbar
-            folder={folder}
+            homeLabel={homeLabel}
             tags={tags}
-            availableFolders={availableFolders}
-            onFolderChange={(f) => {
-              onFolderChange(f);
+            onMoveHome={() => {
               setSheetOpen(null);
+              setHomePickerOpen(true);
             }}
             onTagsChange={onTagsChange}
-            onCreateFolder={() => {
-              setSheetOpen(null);
-              setCreateFolderOpen(true);
-            }}
             onClose={() => setSheetOpen(null)}
           />
         </BottomSheetBody>
       </BottomSheet>
 
-      <CreateFolderDialog
-        open={createFolderOpen}
-        onOpenChange={setCreateFolderOpen}
-        existingFolders={availableFolders.map((folder) => folder.name)}
-        onConfirm={async (folderName) => {
-          onCreateFolder(folderName);
-        }}
-        description="Create a folder and move this note into it immediately."
-        confirmLabel="Create & Move"
-      />
+      <HomePickerDialog open={homePickerOpen} onOpenChange={setHomePickerOpen} noteIds={[noteId]} />
 
       {/* Context assignment sheet */}
       <BottomSheet
@@ -501,7 +479,7 @@ export function NoteEditorDock({
             {noteActions({
               rename: readOnly ? undefined : () => setRenameOpen(true),
               duplicate: onDuplicate,
-              moveToFolder: readOnly ? undefined : () => setSheetOpen("folder-tags"),
+              moveToHome: readOnly ? undefined : () => setHomePickerOpen(true),
               knowledge: () => openKnowledge({ noteId }),
               knowledgeIndexed: ingest.state === "ingested",
               exportMarkdown: () => {
@@ -527,7 +505,7 @@ export function NoteEditorDock({
                     type="button"
                     disabled={action.id === "delete" && isDeleting}
                     onClick={() => {
-                      if (action.id !== "move-to-folder") setSheetOpen(null);
+                      setSheetOpen(null);
                       action.run();
                     }}
                     className={cn(

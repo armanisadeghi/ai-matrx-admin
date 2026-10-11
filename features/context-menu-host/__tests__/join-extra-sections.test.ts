@@ -21,8 +21,7 @@ function editorSections(noteActionsFromTab: boolean): ContextMenuExtraSection[] 
     onExport: noop,
     onShareLink: noop,
     onShareClipboard: noop,
-    onMoveToFolder: noop,
-    onMoveDialog: noop,
+    onMoveToHome: noop,
     onCloseTab: noop,
     onCloseOtherTabs: noop,
     onCloseAllTabs: noop,
@@ -32,7 +31,7 @@ function editorSections(noteActionsFromTab: boolean): ContextMenuExtraSection[] 
 
 /** The rows NoteTabItem registers for the note's content (record-menu-registry). */
 const tabRecordSections: ContextMenuExtraSection[] = [
-  noteActionsSection({ duplicate: noop, moveToFolder: noop, exportMarkdown: noop, share: noop, moveToTrash: noop }),
+  noteActionsSection({ duplicate: noop, moveToHome: noop, exportMarkdown: noop, share: noop, moveToTrash: noop }),
   {
     id: "note-buffer",
     anchor: "after-compare",

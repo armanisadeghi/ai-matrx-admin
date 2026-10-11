@@ -14,14 +14,14 @@
  * - Notes is many small/medium plaintext-markdown resources with live editor
  *   state. Persisted note CONTENT is represented once by `current_note` (a
  *   resource_ref the server resolves on demand); the note's lightweight
- *   metadata (title, folder, tags, shown to, published to the web, timestamps) is emitted inline
+ *   metadata (title, home, tags, shown to, published to the web, timestamps) is emitted inline
  *   because the page already holds it.
  *
  * Curated groups (band 0-899):
  *
  *   active_scope    Selection / cursor mirror (the runtime cut)
  *   note_identity   The active note's metadata + canonical resource reference
- *   workspace       Open tabs, folder tree, scope assignments
+ *   workspace       Open tabs, home tree, scope assignments
  *   editor_state    Mode, panes, find/replace
  *
  * Plus the cross-surface baseline (`selection`, `text_before`, `text_after`,
@@ -66,7 +66,7 @@ const groups: SurfaceValueGroup[] = [
     label: "Workspace",
     sortOrder: 300,
     description:
-      "The surrounding Notes workspace: open tabs, the folder tree, and scope assignments.",
+      "The surrounding Notes workspace: open tabs, the home tree, and scope assignments.",
   },
   {
     key: "editor_state",
@@ -140,7 +140,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "note_bundle",
     label: "Note and workspace",
     description:
-      "One XML bundle of what an agent needs up front: <note> with the open note's title, folder, tags, Shown to, Published to the web, last update, word count and unsaved/shared flags, its <body> (the live editor text, up to 7,000 characters — marked clipped=\"true\" total_chars=\"N\" when cut; resolve `current_note` for the rest), and its <scopes>; then the other <open_tabs> and the person's <folders>. Absent when no note is open.",
+      "One XML bundle of what an agent needs up front: <note> with the open note's title, home, tags, Shown to, Published to the web, last update, word count and unsaved/shared flags, its <body> (the live editor text, up to 7,000 characters — marked clipped=\"true\" total_chars=\"N\" when cut; resolve `current_note` for the rest), and its <scopes>; then the other <open_tabs> and the person's <folders>. Absent when no note is open.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 7500,
@@ -157,7 +157,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "current_note",
     label: "Active note resource",
     description:
-      "Canonical resource reference for the active persisted note. The server resolves its title, folder, tags, content, timestamps, permissions, and other available fields. When the editor is dirty, the same reference carries a request-scoped content overlay so the unsaved buffer remains authoritative. Absent when no note is open or the note is a client-only draft.",
+      "Canonical resource reference for the active persisted note. The server resolves its title, home, tags, content, timestamps, permissions, and other available fields. When the editor is dirty, the same reference carries a request-scoped content overlay so the unsaved buffer remains authoritative. Absent when no note is open or the note is a client-only draft.",
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 180,
@@ -187,10 +187,10 @@ const surfaceSpecific: SurfaceValue[] = [
     group: "note_identity",
   },
   {
-    name: "current_note_folder",
-    label: "Folder",
+    name: "current_note_home",
+    label: "Home",
     description:
-      "Name of the folder the active note lives in (e.g. Draft, Inbox). Empty when no note is open or the note has no folder.",
+      "The active note's home: \"General\" (its organization's catch-all, named \"General · <Org>\" when notes span organizations) or the scope it lives in. Absent when no note is open.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 24,
@@ -267,7 +267,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "current_note_summary",
     label: "Active note summary",
     description:
-      "Composite of the active note's metadata as one object: { id, title, folder, tags, shown_to, published_to_web, word_count, updated_at, is_dirty }. Mirrors the individual note-identity values (completeness law). Absent when no note is open.",
+      "Composite of the active note's metadata as one object: { id, title, home, tags, shown_to, published_to_web, word_count, updated_at, is_dirty }. Mirrors the individual note-identity values (completeness law). Absent when no note is open.",
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 300,
@@ -302,7 +302,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "open_notes_summary",
     label: "Open tabs summary",
     description:
-      "One entry per open tab with { id, title, folder, updated_at }, in tab order. Always populated — empty array when no tabs are open. Richer sibling of `open_note_ids` for agents that reason about the whole tab strip.",
+      "One entry per open tab with { id, title, home, updated_at }, in tab order. Always populated — empty array when no tabs are open. Richer sibling of `open_note_ids` for agents that reason about the whole tab strip.",
     valueType: "array",
     alwaysAvailable: true,
     typicalCharCount: 800,
@@ -310,10 +310,10 @@ const surfaceSpecific: SurfaceValue[] = [
     group: "workspace",
   },
   {
-    name: "all_folder_names",
-    label: "All folders",
+    name: "all_homes",
+    label: "All homes",
     description:
-      "Every folder name in the user's Notes sidebar (defaults + custom), sorted as displayed. Always populated — empty array only in embedded/demo contexts before the notes list loads. Useful for 'move/file this note' style actions.",
+      "Every home a note can move to, by its displayed name: each organization's General plus every scope. Moving a note to a home in another organization moves the note to that organization. Empty only before the scope tree loads.",
     valueType: "array",
     alwaysAvailable: true,
     typicalCharCount: 150,
@@ -322,10 +322,10 @@ const surfaceSpecific: SurfaceValue[] = [
     group: "workspace",
   },
   {
-    name: "current_folder_note_ids",
-    label: "Folder sibling note IDs",
+    name: "current_home_note_ids",
+    label: "Home sibling note IDs",
     description:
-      "UUIDs of the other (non-deleted) notes in the active note's folder — the siblings, excluding the active note itself. Absent when no note is open or the folder has no other notes. Resolvable from ids, so bindable-only by default.",
+      "UUIDs of the other (non-deleted) notes in the active note's home — the siblings, excluding the active note itself. Absent when no note is open or the home holds no other notes. Resolvable from ids, so bindable-only by default.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 380,
@@ -420,7 +420,7 @@ const surfaceSpecific: SurfaceValue[] = [
  *
  * A note is the user's own prose, so the bar is deliberately narrow: only the
  * four things an agent can plausibly author better than a blank cursor (the
- * body, an appended block, the title, the tags) plus filing it into a folder
+ * body, an appended block, the title, the tags) plus moving it to a home
  * that ALREADY exists. Everything else on this surface stays human — ids,
  * ownership, sharing/permissions, web publishing, version history, and every
  * destructive action (delete, empty trash, permanent delete).
@@ -431,8 +431,8 @@ const surfaceSpecific: SurfaceValue[] = [
  *   `updateNoteTags` → `applyFieldEdit`), so each lands on the note's undo
  *   stack, marks the field dirty, and rides the canonical autosave. The user
  *   sees the change in the editor and can Cmd+Z it like their own keystroke.
- * - `entity` for the folder: a move is only correct when `folder_name` and
- *   `folder_id` change together, which is the `moveNoteToFolder` thunk's job
+ * - `entity` for the home: a move changes the home and the organization in one
+ *   write, which is `platform.set_home` through the `moveNoteToHome` thunk
  *   (resolve id → set both → save). There is no draft form of it.
  *
  * All targets are `ask`: a note is the user's writing, so an agent-originated
@@ -502,12 +502,12 @@ const writeTargets: SurfaceWriteTarget[] = [
     sortOrder: 130,
   },
   {
-    name: "note_folder",
-    label: "Note folder",
+    name: "note_home",
+    label: "Note home",
     description:
-      "Files the open note into an EXISTING folder, by exact name (case-sensitive) from `all_folder_names` — a name that is not already in that list is refused rather than creating a new folder. Moves the note immediately through the canonical move path and saves it; this one is not staged.",
+      "Moves the open note to an EXISTING home, by exact name from `all_homes` — any other name is refused. The note's organization follows its home. Moves immediately through the canonical move path (platform.set_home); this one is not staged.",
     valueType: "string",
-    updatesValue: "current_note_folder",
+    updatesValue: "current_note_home",
     mode: "entity",
     applyPolicy: "ask",
     group: "note_identity",
@@ -529,7 +529,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     name: "create_notes",
     label: "Create notes",
     description:
-      'Creates one or more notes, saved immediately, exactly as "New Note" does — or DUPLICATES existing ones, exactly as "Duplicate" does. Value: a JSON ARRAY (not a string) of 1-10 objects, each either { title: string (one line), content?: markdown string, tags?: string[], folder?: an EXISTING folder name from `all_folder_names` } or { copy_of: <note id> } (the copy is named "<title> (Copy)", private, in the same folder). A note with a folder lands in that folder\'s organization; without one, in the person\'s active organization (they are asked to pick one if none is active). An unknown folder, an empty or repeated title, or a copy_of id not on the page refuses the whole list with nothing created. Each new note opens as a tab. Returns the new notes\' ids.',
+      'Creates one or more notes, saved immediately, exactly as "New Note" does — or DUPLICATES existing ones, exactly as "Duplicate" does. Value: a JSON ARRAY (not a string) of 1-10 objects, each either { title: string (one line), content?: markdown string, tags?: string[], home?: an EXISTING home name from `all_homes` } or { copy_of: <note id> } (the copy is named "<title> (Copy)", private, in the same home). A note with a home lands in that home and its organization; without one, in the General of the person\'s active organization. An unknown home, an empty or repeated title, or a copy_of id not on the page refuses the whole list with nothing created. Each new note opens as a tab. Returns the new notes\' ids.',
     valueType: "array",
     updatesValue: "open_notes_summary",
     mode: "entity",
@@ -541,7 +541,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     name: "update_notes",
     label: "Update notes",
     description:
-      'Changes one or more saved notes by id (from `open_note_ids`, `current_folder_note_ids`, or ids a create_notes result returned), saved immediately. Value: a JSON ARRAY of 1-10 objects { id, title?, content?, tags? } — content REPLACES the whole body, tags REPLACES the whole tag set; only the fields sent change. For the note open in the editor prefer note_content / note_title / note_tags (they stage into the editor with undo). A note with unsaved typing, a view-only shared note, an unknown or repeated id, or an item with nothing to change refuses the whole list with nothing changed.',
+      'Changes one or more saved notes by id (from `open_note_ids`, `current_home_note_ids`, or ids a create_notes result returned), saved immediately. Value: a JSON ARRAY of 1-10 objects { id, title?, content?, tags? } — content REPLACES the whole body, tags REPLACES the whole tag set; only the fields sent change. For the note open in the editor prefer note_content / note_title / note_tags (they stage into the editor with undo). A note with unsaved typing, a view-only shared note, an unknown or repeated id, or an item with nothing to change refuses the whole list with nothing changed.',
     valueType: "array",
     updatesValue: "open_notes_summary",
     mode: "entity",
@@ -576,10 +576,10 @@ export const notesEditorManifest: SurfaceManifest = {
   label: "Notes",
   urlPattern: "/notes/[id]",
   intro: `<surface_intro>
-You are on the Notes editor: the user's markdown workspace of many small-to-medium notes, organized into folders and opened as tabs. One note is active in the editor at a time; a second may sit in a split pane.
-Start from note_bundle: one XML element holding the open note (metadata, body up to 7,000 characters, scopes), the other open tabs, and the folders — enough for most jobs without a lookup. Read the values in tiers: the Selection & cursor group is the live runtime cut (what is highlighted, where the cursor is); the Active note group identifies the persisted note and its metadata — its full content resolves through the current_note resource reference (with an unsaved-buffer overlay when dirty); the Workspace group describes the surrounding tabs, folders, and scope assignments; Editor state tells you what the UI can currently do (mode, panes, find bar).
+You are on the Notes editor: the user's markdown workspace of many small-to-medium notes, organized into homes (General or a scope) and opened as tabs. One note is active in the editor at a time; a second may sit in a split pane.
+Start from note_bundle: one XML element holding the open note (metadata, body up to 7,000 characters, scopes), the other open tabs, and the homes — enough for most jobs without a lookup. Read the values in tiers: the Selection & cursor group is the live runtime cut (what is highlighted, where the cursor is); the Active note group identifies the persisted note and its metadata — its full content resolves through the current_note resource reference (with an unsaved-buffer overlay when dirty); the Workspace group describes the surrounding tabs, folders, and scope assignments; Editor state tells you what the UI can currently do (mode, panes, find bar).
 When shared_access.shared_with_me is true the note belongs to someone else — respect its permission_level before proposing writes. When is_new_note is true the note has no server row yet; actions needing a stable id should save first or refuse.
-You can also WRITE to this surface. On the open note: note_content (a small edit as str_replace; the whole body only for a rewrite) or append_to_note, note_title, note_tags, note_folder (an existing folder), note_scopes (its scope set). Across notes: create_notes (new notes, or copies with copy_of), update_notes (title/body/tags by id), delete_notes (archives to Trash — restorable). These edit the user's own writing, so each one is confirmed with the user before it lands — read the matching value first (a replace or a tag set overwrites what is there), change only what was asked for, and leave the rest of the note alone.
+You can also WRITE to this surface. On the open note: note_content (a small edit as str_replace; the whole body only for a rewrite) or append_to_note, note_title, note_tags, note_home (an existing home from all_homes), note_scopes (its scope set). Across notes: create_notes (new notes, or copies with copy_of), update_notes (title/body/tags by id), delete_notes (archives to Trash — restorable). These edit the user's own writing, so each one is confirmed with the user before it lands — read the matching value first (a replace or a tag set overwrites what is there), change only what was asked for, and leave the rest of the note alone.
 </surface_intro>`,
   groups,
   values: mergeBaselineValues(
@@ -592,7 +592,7 @@ You can also WRITE to this surface. On the open note: note_content (a small edit
     pickBaseline("selection", "text_before", "text_after", "content"),
     surfaceSpecific,
   ),
-  // Which note, at a glance: its title, first line and word count, folder.
-  briefValues: ["current_note_title", "content", "current_note_folder"],
+  // Which note, at a glance: its title, first line and word count, home.
+  briefValues: ["current_note_title", "content", "current_note_home"],
   writeTargets,
 };

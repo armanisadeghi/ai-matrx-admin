@@ -5,7 +5,7 @@
 // same hover kebab + right-click "..." menu the chat sidebar uses for
 // conversations. Replaces the 3 near-identical inline <button> blocks that
 // used to live directly in NoteSidebar.tsx (recent flat list, default-mode
-// recent, grouped folder list) — folder-mode drag/drop is preserved via the
+// recent, grouped home list) — home-mode drag/drop is preserved via the
 // draggable wrapper props.
 
 import { memo, useSyncExternalStore } from "react";
@@ -25,7 +25,6 @@ import {
   displayLabel,
 } from "./note-actions/noteMenuRegistry";
 import type { NoteRecord } from "../redux/notes.types";
-import { noteFolderReference, type FolderReference } from "../types";
 import { noteIdentityContentSource } from "../richDocumentSource";
 
 interface NoteSidebarRowProps {
@@ -33,7 +32,6 @@ interface NoteSidebarRowProps {
   instanceId: string;
   isActive: boolean;
   isOpenTab: boolean;
-  allFolders: FolderReference[];
   openKnowledge: (opts: { noteId: string; title?: string }) => void;
   formatTime: (dateStr: string | null | undefined) => string;
   draggable?: boolean;
@@ -45,8 +43,8 @@ interface NoteSidebarRowProps {
   selectionMode: boolean;
   isSelected: boolean;
   onToggleSelect: (noteId: string) => void;
-  /** Opens the shared create-folder flow and moves this note on success. */
-  onCreateFolder: (noteId: string) => void;
+  /** Opens the home picker for this note (moves go through `moveNoteToHome`). */
+  onMoveToHome: (noteId: string) => void;
 }
 
 // ── One minute tick, for rows whose time label still changes by the minute ──
@@ -87,7 +85,6 @@ export const NoteSidebarRow = memo(function NoteSidebarRow({
   instanceId,
   isActive,
   isOpenTab,
-  allFolders,
   openKnowledge,
   formatTime,
   draggable = false,
@@ -98,7 +95,7 @@ export const NoteSidebarRow = memo(function NoteSidebarRow({
   selectionMode,
   isSelected,
   onToggleSelect,
-  onCreateFolder,
+  onMoveToHome,
 }: NoteSidebarRowProps) {
   const dispatch = useAppDispatch();
   // The sidebar's list keeps a record's previous body while it is typed
@@ -114,10 +111,8 @@ export const NoteSidebarRow = memo(function NoteSidebarRow({
     noteId: note.id,
     label: note.label,
     content: note.content,
-    folder: noteFolderReference(note),
-    allFolders,
     openKnowledge,
-    onCreateFolder: () => onCreateFolder(note.id),
+    onMoveToHome: () => onMoveToHome(note.id),
     dispatch,
   };
 

@@ -124,15 +124,37 @@ test.describe.serial("THE VARIABLE RULE in the UI", () => {
     const context = await browser.newContext({ storageState: undefined, viewport: { width: 1600, height: 1000 } });
     page = await context.newPage();
     resumeWhenParked(page);
-    // Mark this browser as our agent traffic the way every walk does (cookie), then sign in as a person.
-    // The shared preview is slow under load: the sign-in is retried, never assumed.
+    // The shared preview is slow under load and parks hosts: sign in as a person does and CHECK who the
+    // app says is signed in, again and again, instead of assuming a press took (or did not).
+    const whoami = (): Promise<string | null> =>
+      page
+        .evaluate(async () => {
+          try {
+            return ((await (await fetch("/api/whoami")).json()) as { email?: string }).email ?? null;
+          } catch {
+            return null;
+          }
+        })
+        .catch(() => null);
     let signedIn: string | null = null;
-    for (let attempt = 1; attempt <= 3 && !signedIn; attempt += 1) {
-      try {
-        signedIn = await signIn(page, baseURL as string, ADMIN_EMAIL, ADMIN_PASSWORD, "admin");
-      } catch (error) {
-        if (attempt === 3) throw error;
+    for (let attempt = 1; attempt <= 12 && !signedIn; attempt += 1) {
+      await page.goto(`${baseURL}/login`, { waitUntil: "load" }).catch(() => undefined);
+      signedIn = await whoami();
+      console.log(`[variable-rule] sign-in attempt ${attempt}: ${new URL(page.url()).pathname} signedIn=${signedIn}`);
+      if (signedIn) break;
+      if (page.url().includes("__dev-walk")) {
+        // Parked: another session needed this host's slot. Resume, as a person would, and look again.
+        await page.getByRole("button", { name: /Resume/ }).first().click().catch(() => undefined);
+        await page.waitForTimeout(8000);
+        continue;
       }
+      // The form paints late on a cold route (first compile): wait for it here, never re-navigate.
+      if (!(await page.locator("#email").waitFor({ timeout: 150_000 }).then(() => true, () => false))) continue;
+      await page.waitForTimeout(4000); // the form only accepts input once its bundle attaches
+      await page.fill("#email", ADMIN_EMAIL);
+      await fillSecret(page, "#password", ADMIN_PASSWORD);
+      await page.click('button:has-text("Sign in")');
+      signedIn = (await until("admin sign-in", whoami, 90_000)).v;
     }
     expect(signedIn, "the app must say admin@admin.com is signed in").toBe("admin@admin.com");
   });

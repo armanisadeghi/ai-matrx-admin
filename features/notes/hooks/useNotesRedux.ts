@@ -7,7 +7,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { unwrapResult } from "@reduxjs/toolkit";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import type { Note, CreateNoteInput, FolderReference, UpdateNoteInput } from "../types";
+import type { Note, CreateNoteInput, UpdateNoteInput } from "../types";
 import {
   setActiveNote as setActiveNoteAction,
   addTab,
@@ -32,8 +32,6 @@ import {
   copyNote as copyNoteThunk,
   findOrCreateEmptyNote as findOrCreateEmptyNoteThunk,
   saveNoteField,
-  moveNoteToFolder,
-  moveNoteToNewFolder as moveNoteToNewFolderThunk,
 } from "../redux/thunks";
 import {
   NoteContextPartialSaveError,
@@ -187,30 +185,8 @@ export function useNotesRedux() {
   }, [dispatch]);
 
   const findOrCreateEmptyNote = useCallback(
-    async (folderName?: string): Promise<Note> => {
-      return await dispatch(
-        findOrCreateEmptyNoteThunk(folderName ?? "Draft"),
-      ).unwrap();
-    },
-    [dispatch],
-  );
-
-  const moveNote = useCallback(
-    async (noteId: string, folder: FolderReference): Promise<void> => {
-      await dispatch(
-        moveNoteToFolder({
-          noteId,
-          folder,
-        }),
-      ).unwrap();
-    },
-    [dispatch],
-  );
-
-  /** A name is accepted only while creating a folder that is not persisted yet. */
-  const moveNoteToNewFolder = useCallback(
-    async (noteId: string, folderName: string): Promise<void> => {
-      await dispatch(moveNoteToNewFolderThunk({ noteId, folderName })).unwrap();
+    async (target?: { homeScopeId?: string | null; organizationId?: string | null }): Promise<Note> => {
+      return await dispatch(findOrCreateEmptyNoteThunk(target)).unwrap();
     },
     [dispatch],
   );
@@ -254,8 +230,6 @@ export function useNotesRedux() {
     copyNote: copyNoteFn,
     refreshNotes,
     findOrCreateEmptyNote,
-    moveNote,
-    moveNoteToNewFolder,
     openTabs,
     openNoteInTab,
     closeTab,

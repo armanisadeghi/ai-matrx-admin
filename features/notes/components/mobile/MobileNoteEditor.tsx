@@ -33,7 +33,6 @@ import { saveNote } from "../../redux/thunks";
 import {
   selectNoteById,
   selectNoteContent,
-  selectNoteFolder,
   selectNoteIsDirtyById,
   selectNoteIsSavingById,
   selectNoteLabel,
@@ -81,7 +80,7 @@ export default function MobileNoteEditor({
 }: MobileNoteEditorProps) {
   const noteId = note.id;
   const dispatch = useAppDispatch();
-  const { copyNote, moveNote, moveNoteToNewFolder, setActiveNoteDirty } =
+  const { copyNote, setActiveNoteDirty } =
     useNotesRedux();
   const toast = useToastManager("notes");
 
@@ -97,7 +96,7 @@ export default function MobileNoteEditor({
   const rememberEditedMode = useRememberNoteEditorMode();
 
   // ── THE RECORD IS THE TRUTH ────────────────────────────────────────
-  // This editor used to keep label/content/folder/tags in React state with a
+  // This editor used to keep label/content/home/tags in React state with a
   // bespoke 2s timer and its own baseline/dirty/failed bookkeeping. It is now
   // the same machine as `NoteContentEditor`: every change goes to Redux
   // (the note's working copy, whose save is the note's ONE save door), and
@@ -112,7 +111,6 @@ export default function MobileNoteEditor({
   const noteMenuHeading = () => ({
     [CONTEXT_MENU_HEADING_KEY]: { label: "Note", text: noteLabel || "Untitled note" },
   });
-  const folder = useAppSelector(selectNoteFolder(noteId)) ?? "Draft";
   const tags = useAppSelector(selectNoteTags(noteId));
   const isDirty = useAppSelector(selectNoteIsDirtyById(noteId));
   const isSaving = useAppSelector(selectNoteIsSavingById(noteId));
@@ -507,16 +505,9 @@ export default function MobileNoteEditor({
         noteId={noteId}
         noteLabel={noteLabel}
         readOnly={readOnly}
-        folder={folder}
         organizationId={note.organization_id}
         tags={tags}
         content={localContent}
-        onFolderChange={async (nextFolder) => {
-          await moveNote(noteId, nextFolder);
-        }}
-        onCreateFolder={async (folderName) => {
-          await moveNoteToNewFolder(noteId, folderName);
-        }}
         onTagsChange={(nextTags) =>
           dispatch(updateNoteTags({ id: noteId, tags: nextTags }))
         }

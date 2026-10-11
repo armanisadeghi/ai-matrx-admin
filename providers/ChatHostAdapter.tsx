@@ -66,6 +66,7 @@ import type {
   ChatWindowsPort,
 } from "@ai-matrx/chat/host";
 import { supabase } from "@/utils/supabase/client";
+import { asMatrxPackageClient } from "@/lib/supabase/matrxPackageClient";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import type { AppStore } from "@/lib/redux/store";
 import { selectAccessToken } from "@/lib/redux/selectors/userSelectors";
@@ -451,7 +452,7 @@ export function ChatHostAdapter({ children }: { children: ReactNode }) {
   const org = reduxOrg(store);
   const prefs = reduxPrefs(store);
   const host: ChatHost = {
-    db: supabase,
+    db: asMatrxPackageClient(supabase),
     sourceApp: "matrx-frontend",
     // What this app is called on the conversations it starts (each screen keeps its own feature).
     app: { sourceApp: "matrx-frontend" },

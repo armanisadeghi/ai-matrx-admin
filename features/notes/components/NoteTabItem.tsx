@@ -5,7 +5,7 @@
 // - Editable title on active tab (debounced save)
 // - Dirty indicator (amber dot)
 // - Active tab action buttons: Save, Duplicate, Share, Info, Delete, Voice
-//   (Info opens the Note Info window — note metadata + context + folder)
+//   (Info opens the Note Info window — note metadata + context + home)
 // - Close button on all tabs
 // - Right-click context menu — the universal v3 menu (NonEditableContextMenu)
 //   with the tab's own actions riding along as ONE "Tab" extraSections group.
@@ -46,8 +46,6 @@ import {
   selectNoteContent,
   selectInstanceTabs,
   selectInstancePinnedTabs,
-  selectAllFolders,
-  selectFolderReferences,
   selectNoteFolder,
   selectNoteById,
 } from "../redux/selectors";
@@ -62,7 +60,7 @@ import type { ContentSource } from "@ai-matrx/rich-content/rich-document/types";
 import { NOTES_EDITOR_CONTEXT_MENU_PROPS } from "@/features/notes/agent-context/buildNotesEditorContextData";
 import { useNotesSurfaceScope } from "../hooks/useNotesSurfaceScope";
 import { useNoteEditorMode } from "../hooks/usePreferredDefaultEditorMode";
-import { saveNote, copyNote, moveNoteToFolder, moveNoteToNewFolder } from "../redux/thunks";
+import { saveNote, copyNote } from "../redux/thunks";
 import { ShareModal } from "@/features/sharing/components/ShareModal";
 import { useOpenNoteInfoWindow } from "@/features/overlays/openers/noteInfoWindow";
 import { useOpenNoteKnowledgePanel } from "@/features/notes/canvas/noteKnowledgeKind";
@@ -75,8 +73,7 @@ import { openContextMenuForElement } from "@ai-matrx/context-menu/engine";
 import { openRecordMenu, recordMenuChanged, registerRecordMenu, type RecordMenuRows } from "@ai-matrx/context-menu/engine";
 import { noteActionsSection, openNotePrintStudio } from "./note-actions/noteActionSet";
 import { noteTabRecordMenuKey } from "./noteRecordMenu";
-import { MoveNoteDialog } from "./MoveNoteDialog";
-import { noteFolderReference, type FolderReference } from "../types";
+import { HomePickerDialog } from "../homes/HomePicker";
 import { noteIdentityContentSource } from "../richDocumentSource";
 import { downloadFile } from "@ai-matrx/kit/download";
 import { copyRichContent } from "@ai-matrx/rich-content/copy/copy-commands";
@@ -110,8 +107,6 @@ export function NoteTabItem({ noteId, instanceId, standalone = false, showTitle 
   const openTabs = useAppSelector(selectInstanceTabs(instanceId));
   const pinnedTabs = useAppSelector(selectInstancePinnedTabs(instanceId));
   const isPinned = pinnedTabs.includes(noteId);
-  const allFolders = useAppSelector(selectAllFolders);
-  const folderReferences = useAppSelector(selectFolderReferences);
   const currentFolder = useAppSelector(selectNoteFolder(noteId)) ?? "Draft";
   const note = useAppSelector(selectNoteById(noteId));
 
@@ -285,24 +280,6 @@ export function NoteTabItem({ noteId, instanceId, standalone = false, showTitle 
     void copyToClipboard(buildRecordReferenceFence({ type: "note", id: noteId, label }), "Reference copied");
   }, [noteId, label]);
 
-  const handleMoveToFolder = useCallback(
-    async (folder: FolderReference) => {
-      bumpTabInteraction();
-      await dispatch(moveNoteToFolder({ noteId, folder })).unwrap();
-      toast.success(`Moved to ${folder.name}`);
-    },
-    [bumpTabInteraction, dispatch, noteId],
-  );
-
-  const handleCreateFolder = useCallback(
-    async (folder: string) => {
-      bumpTabInteraction();
-      await dispatch(moveNoteToNewFolder({ noteId, folderName: folder })).unwrap();
-      toast.success(`Moved to ${folder}`);
-    },
-    [bumpTabInteraction, dispatch, noteId],
-  );
-
   // ── Universal v3 context-menu scope ────────────────────────────────
   // Same surface + scope shape as the editor wiring (NoteContentEditor):
   // `matrx-user/notes` with the full manifest scope built at open time for
@@ -430,7 +407,7 @@ export function NoteTabItem({ noteId, instanceId, standalone = false, showTitle 
         setTitleEditing(true);
       },
       duplicate: () => void handleDuplicate(),
-      moveToFolder: () => {
+      moveToHome: () => {
         bumpTabInteraction();
         setMoveDialogOpen(true);
       },
@@ -706,17 +683,13 @@ export function NoteTabItem({ noteId, instanceId, standalone = false, showTitle 
         resourceName={label}
       />
 
-      <MoveNoteDialog
+      <HomePickerDialog
         open={moveDialogOpen}
-        onOpenChange={setMoveDialogOpen}
-        onConfirm={handleMoveToFolder}
-        onCreateFolder={handleCreateFolder}
-        noteId={noteId}
-        noteName={label}
-        currentFolder={note ? noteFolderReference(note) : null}
-        availableFolders={folderReferences.filter(
-          (folder) => folder.organizationId === note?.organization_id,
-        )}
+        onOpenChange={(open) => {
+          if (open) bumpTabInteraction();
+          setMoveDialogOpen(open);
+        }}
+        noteIds={[noteId]}
       />
 
       {/* NO DELETE DIALOG HERE, ON PURPOSE. It used to be hand-assembled from
