@@ -6,6 +6,9 @@
  *  - a Source in an alarm opens its own page, or reads "(deleted)".
  */
 import {
+  alarmAgentData,
+  alarmCostLine,
+  costLabel,
   alarmSentence,
   alarmSourceHref,
   alarmSourceTitle,
@@ -164,5 +167,25 @@ describe("a Source opens its own page or says it is gone", () => {
     expect(alarmSourceHref({ ...base, id: "n2", kind: "note", title: "Old", deleted: true })).toBeNull();
     expect(alarmSourceTitle({ ...base, id: "n2", kind: "note", title: "Old", deleted: true })).toBe("Old (deleted)");
     expect(alarmSourceTitle({ ...base, id: "x", kind: "message", title: null, missing: true })).toMatch(/\(deleted\)$/);
+  });
+});
+
+describe("avoided cost comes from the held run's estimate", () => {
+  it("a refusal with a held-run estimate reads '$X avoided (est.)' and Copy for AI says it was measured", () => {
+    const r = rec({ cost_avoided_usd: 0.172128 });
+    expect(costLabel(r, (n) => `$${n.toFixed(2)}`)).toBe("$0.17 avoided (est.)");
+    expect(alarmCostLine(null, 0.172128, (n) => `$${n.toFixed(2)}`)).toBe("$0.17 avoided (est.)");
+    const occ = [{ id: "o", occurred_at: "2026-10-11T04:00:00Z", repeat_count: 1, run_id: null, execution_id: null, refs: {}, detail: null, cost_usd: null, cost_avoided_usd: 0.172128 }];
+    const data = alarmAgentData(r, occ) as { alarm: { cost_avoided_usd: number; cost_avoided_measured: boolean }; occurrences: { cost_avoided_usd: number | null }[] };
+    expect(data.alarm.cost_avoided_usd).toBeCloseTo(0.172128);
+    expect(data.alarm.cost_avoided_measured).toBe(true);
+    expect(data.occurrences[0].cost_avoided_usd).toBeCloseTo(0.172128);
+  });
+
+  it("without an estimate it stays $0 refused and not measured", () => {
+    const r = rec({ cost_avoided_usd: null });
+    expect(costLabel(r, (n) => `$${n.toFixed(2)}`)).toBe("$0.00 · refused");
+    const data = alarmAgentData(r, []) as { alarm: { cost_avoided_measured: boolean } };
+    expect(data.alarm.cost_avoided_measured).toBe(false);
   });
 });

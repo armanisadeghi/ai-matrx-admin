@@ -338,6 +338,12 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
     },
     { id: "organization", header: "Organization", accessorFn: (o) => (o.refs.organization_id ? names.get(o.refs.organization_id) ?? "" : "") },
     { id: "cost_usd", accessorKey: "cost_usd", header: "Cost", cell: (o) => (o.cost_usd == null ? "—" : formatAdminUsd(o.cost_usd)) },
+    {
+      id: "cost_avoided_usd",
+      header: "Avoided (est.)",
+      accessorFn: (o) => o.cost_avoided_usd ?? "",
+      cell: (o) => (o.cost_avoided_usd == null ? "—" : formatAdminUsd(o.cost_avoided_usd)),
+    },
   ];
 
   const shippedFix = record ? fixFor(record) : null;

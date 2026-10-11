@@ -125,6 +125,8 @@ export interface SpendAlarmOccurrence {
   refs: AlarmRefs;
   detail: string | null;
   cost_usd: number | null;
+  /** What this refusal would have cost, from its held run's estimate; null when none was captured. */
+  cost_avoided_usd?: number | null;
 }
 
 const RECORD_COLUMNS =
@@ -256,6 +258,7 @@ export async function fetchSpendAlarmOccurrences(alarmId: string): Promise<Spend
         ...(row as unknown as SpendAlarmOccurrence),
         refs: asRefs(row.refs),
         cost_usd: row.cost_usd == null ? null : Number(row.cost_usd),
+        cost_avoided_usd: row.cost_avoided_usd == null ? null : Number(row.cost_avoided_usd),
         source: row.source && typeof row.source === "object" ? (row.source as SpendAlarmOccurrence["source"]) : null,
       });
     }
@@ -681,6 +684,7 @@ export function alarmAgentData(record: SpendAlarmRecord, occurrences: SpendAlarm
         .filter((l) => l.href)
         .map((l) => ({ what: l.label, id: l.value, link: `${origin}${l.href}` })),
       cost_usd: o.cost_usd,
+      cost_avoided_usd: o.cost_avoided_usd ?? null,
     })),
   };
 }
@@ -717,7 +721,7 @@ export function hasRawId(text: string): boolean {
 /** What it cost, or would have cost, in one short phrase; null when nothing was measured. */
 export function alarmCostLine(cost: number | null | undefined, avoided: number | null | undefined, fmt: (n: number) => string): string | null {
   if (cost != null) return `${fmt(cost)} spent`;
-  if (avoided != null) return `${fmt(avoided)} kept from spending`;
+  if (avoided != null) return `${fmt(avoided)} avoided (est.)`;
   return null;
 }
 
@@ -745,7 +749,8 @@ export function costLabel(
   fmt: (n: number) => string,
 ): string {
   if (r.cost_usd != null) return `${fmt(r.cost_usd)} spent`;
-  if (r.cost_avoided_usd != null) return `${fmt(r.cost_avoided_usd)} kept from spending`;
+  // The estimate the held run captured at the refusal (billing.held_run.estimated_cost_usd).
+  if (r.cost_avoided_usd != null) return `${fmt(r.cost_avoided_usd)} avoided (est.)`;
   if (r.refused) return `${fmt(0)} · refused`;
   return "Not measured";
 }

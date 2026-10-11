@@ -174,7 +174,7 @@ describe("spendAlarmItems", () => {
     expect(payload.kind).toBe("spend-alarm");
     const data = payload.data as { occurrences: unknown[]; alarm: { cost: string } };
     expect(data.occurrences).toHaveLength(1);
-    expect(data.alarm.cost).toBe("$3.20 kept from spending");
+    expect(data.alarm.cost).toBe("$3.20 avoided (est.)");
     expect(payload.location).toBe(`/administration/billing/alarms/${ALARM}`);
     expect(item.copy!.human()).toContain("Nightly SEO crawl");
   });
