@@ -49,6 +49,8 @@ import { gzipSync } from "node:zlib";
 import postcss from "postcss";
 import tailwindcss from "@tailwindcss/postcss";
 import { formatFileSize } from "@ai-matrx/kit/format";
+import { createHash } from "node:crypto";
+import { FRAME_LIB_CHUNKS, FRAME_LIBS_KEY_NAME, FRAME_SHARED_KEY_NAME } from "./runtime/frame-lib-chunks";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // features/content-ir/sandbox → repo root: 3 levels up.
@@ -58,6 +60,8 @@ const JS_ENTRY = resolve(__dirname, "runtime/entry.tsx");
 const CSS_ENTRY = resolve(__dirname, "runtime/sandbox.css");
 const JS_OUT = resolve(ROOT, "public/kind-sandbox.js");
 const CSS_OUT = resolve(ROOT, "public/kind-sandbox.css");
+/** On-demand library chunks (runtime/frame-lib-chunks.ts), content-hashed. */
+const LIB_DIR = resolve(ROOT, "public/kind-sandbox-lib");
 
 const FRAME_DESIGN_SYSTEM_ROOT = resolve(
   __dirname,
@@ -198,7 +202,245 @@ function importChain(meta: Metafile, entry: string, target: string): string[] {
   return [target];
 }
 
-async function buildJs(): Promise<{ code: string; meta: Metafile }> {
+
+const FRAME_INJECT = [
+  resolve(__dirname, "runtime/frame-storage.ts"),
+  resolve(__dirname, "runtime/frame-network.ts"),
+];
+
+// THE FRAME HAS NO STORAGE (V-27 finding D) and NO NETWORK (CSP connect-src
+// 'none'): both are replaced with announcing stand-ins in the main bundle and
+// in every on-demand chunk, so the audit below can refuse the real names.
+const FRAME_DEFINE: Record<string, string> = {
+  "process.env.NODE_ENV": '"production"',
+  localStorage: "__matrxFrameStorage",
+  sessionStorage: "__matrxFrameStorage",
+  "window.localStorage": "__matrxFrameStorage",
+  "window.sessionStorage": "__matrxFrameStorage",
+  "globalThis.localStorage": "__matrxFrameStorage",
+  "globalThis.sessionStorage": "__matrxFrameStorage",
+  fetch: "__matrxFrameFetch",
+  "window.fetch": "__matrxFrameFetch",
+  "globalThis.fetch": "__matrxFrameFetch",
+  XMLHttpRequest: "__matrxFrameXhr",
+  "window.XMLHttpRequest": "__matrxFrameXhr",
+  "globalThis.XMLHttpRequest": "__matrxFrameXhr",
+};
+
+// ───────────────────────────────────────────────────────────────────────────
+// ON-DEMAND LIBRARY CHUNKS (runtime/frame-lib-chunks.ts). Each is its own
+// classic-script IIFE, loaded by the frame only when a component imports it,
+// so the main bundle does not carry three / xlsx / pdf / motion for everyone.
+// They are built with the SAME inject/define stand-ins and pass the SAME
+// artifact audit as the main bundle — a chunk that reaches the network or
+// another document fails the build, it is never shipped.
+// React / ReactDOM / the JSX runtime are EXTERNAL: they resolve to the
+// frame's one copy (runtime/frame-shared.ts).
+// ───────────────────────────────────────────────────────────────────────────
+
+const SHARED_SPECIFIERS = /^(react|react-dom|react-dom\/client|react\/jsx-runtime|react\/jsx-dev-runtime)$/;
+
+const frameSharedReact: Plugin = {
+  name: "frame-shared-react",
+  setup(b) {
+    b.onResolve({ filter: SHARED_SPECIFIERS }, (args) => ({
+      path: args.path,
+      namespace: "frame-shared",
+    }));
+    b.onLoad({ filter: /.*/, namespace: "frame-shared" }, (args) => ({
+      contents: `module.exports = globalThis[Symbol.for(${JSON.stringify(FRAME_SHARED_KEY_NAME)})][${JSON.stringify(args.path)}];`,
+      loader: "js",
+    }));
+  },
+};
+
+/** KaTeX's stylesheet lists woff2 + woff + ttf per font; the frame only needs woff2 (inlined). */
+const katexWoff2Only: Plugin = {
+  name: "katex-woff2-only",
+  setup(b) {
+    b.onLoad({ filter: /katex\.min\.css$/ }, async (args) => {
+      const css = await readFile(args.path, "utf8");
+      return {
+        contents: css
+          .replace(/,url\([^)]*\.woff\)\s*format\("woff"\)/g, "")
+          .replace(/,url\([^)]*\.ttf\)\s*format\("truetype"\)/g, ""),
+        loader: "css",
+        resolveDir: dirname(args.path),
+      };
+    });
+  },
+};
+
+
+/**
+ * pdf.js can only start a Worker (or its form-scripting sandbox) from a URL by
+ * a dynamic `import()`, and the frame can do neither (opaque origin, no
+ * `worker-src`, no fetch). It runs its worker IN-PAGE when
+ * `globalThis.pdfjsWorker` is present (the pdf chunk sets it). The dynamic
+ * `import()` shapes that remain are the by-URL paths that can never run here;
+ * they become named refusals instead of `import(` in the served bytes. A
+ * pdf.js upgrade that moves them fails this build, loudly.
+ */
+const REFUSE_BY_URL = (what: string) =>
+  `Promise.reject(new Error("${what} cannot start inside the sandbox frame"))`;
+
+const PDFJS_PATCHES: ReadonlyArray<{ file: RegExp; find: RegExp; replace: string }> = [
+  {
+    file: /pdfjs-dist[\\/]build[\\/]pdf\.mjs$/,
+    find: /const wrapper = `await import\("\$\{url\}"\);`;/,
+    replace: 'const wrapper = "";',
+  },
+  {
+    file: /pdfjs-dist[\\/]build[\\/]pdf\.mjs$/,
+    find: /await import\(\s*\/\*webpackIgnore: true\*\/\s*\/\*@vite-ignore\*\/\s*this\.workerSrc\)/,
+    replace: `await ${REFUSE_BY_URL("A pdf.js worker")}`,
+  },
+  {
+    file: /pdfjs-dist[\\/]build[\\/]pdf\.worker\.mjs$/,
+    find: /await import\(\s*\/\*webpackIgnore: true\*\/\s*\/\*@vite-ignore\*\/\s*`\$\{WasmImage\.#wasmUrl\}\$\{this\._noWasmFilename\}`\)/,
+    replace: `await ${REFUSE_BY_URL("The pdf.js image decoder")}`,
+  },
+  {
+    file: /pdfjs-dist[\\/]web[\\/]pdf_viewer\.mjs$/,
+    find: /import\(\s*\/\*webpackIgnore: true\*\/\s*\/\*@vite-ignore\*\/\s*sandboxBundleSrc\)/,
+    replace: REFUSE_BY_URL("PDF form scripting"),
+  },
+];
+
+const pdfjsNoWorkerUrl: Plugin = {
+  name: "pdfjs-no-worker-url",
+  setup(b) {
+    b.onLoad({ filter: /pdfjs-dist[\\/](build[\\/]pdf|build[\\/]pdf\.worker|web[\\/]pdf_viewer)\.mjs$/ }, async (args) => {
+      let text = await readFile(args.path, "utf8");
+      for (const patch of PDFJS_PATCHES) {
+        if (!patch.file.test(args.path)) continue;
+        if (!patch.find.test(text)) {
+          throw new Error(
+            "pdfjs-dist moved a by-URL import(); update PDFJS_PATCHES in build-kind-sandbox.ts",
+          );
+        }
+        text = text.replace(patch.find, () => patch.replace);
+      }
+      return { contents: text, loader: "js", resolveDir: dirname(args.path) };
+    });
+  },
+};
+
+const REG = `const L = (globalThis[Symbol.for(${JSON.stringify(FRAME_LIBS_KEY_NAME)})] ??= {});\n`;
+
+const CHUNK_SOURCES: Record<string, string> = {
+  "date-fns": `import * as m from "date-fns";\n${REG}L["date-fns"] = Promise.resolve({ "date-fns": m });`,
+  lodash: `import lodash from "lodash";\n${REG}L.lodash = Promise.resolve({ lodash: Object.assign({ __esModule: true, default: lodash }, lodash) });`,
+  motion: `import * as m from "motion/react";\n${REG}L.motion = Promise.resolve({ "motion/react": m });`,
+  katex: `import * as m from "${resolve(__dirname, "runtime/libs/react-katex-frame.tsx")}";\nimport "katex/dist/katex.min.css";\n${REG}L.katex = Promise.resolve({ "react-katex": m });`,
+  xlsx: `import { loadSheetJs } from "@ai-matrx/print/xlsx";\n${REG}L.xlsx = loadSheetJs().then((m) => ({ xlsx: m }));`,
+  three: `import * as THREE from "three";\nimport * as fiber from "@react-three/fiber";\n${REG}L.three = Promise.resolve({ three: THREE, "@react-three/fiber": fiber });`,
+  pdf: `import * as rp from "react-pdf";\nimport { WorkerMessageHandler } from "pdfjs-dist/build/pdf.worker.mjs";\n// The frame cannot start a Worker (opaque origin, no worker-src): pdf.js runs its\n// worker in-page when this global is present.\nglobalThis.pdfjsWorker = { WorkerMessageHandler };\n${REG}L.pdf = Promise.resolve({ "react-pdf": rp });`,
+};
+
+
+/**
+ * The two shapes the artifact audit's `fetch(` rule cannot tell from a call:
+ * a METHOD DEFINITION (`fetch(url){…}` — KaTeX's parser, pdf.js's CMap
+ * factory) and one library's warning TEXT (three: "ImageBitmapLoader:
+ * fetch() not supported."). Neither can reach the network; real calls were
+ * already rewritten to the announcing stand-in by `define`, so they never
+ * look like this. Nothing else is excused.
+ */
+function auditableChunkText(code: string): string {
+  return code
+    .replace(/(^|[^.\w$"'`])(async\s+)?fetch(\s*\([^()]*\)\s*\{)/g, "$1$2__definedMethod$3")
+    .replace("ImageBitmapLoader: fetch() not supported.", "ImageBitmapLoader: unsupported.");
+}
+
+interface ChunkBuild {
+  files: { js: string; css?: string };
+  code: string;
+  cssBytes: number;
+  failures: string[];
+}
+
+async function buildChunk(name: string, source: string): Promise<ChunkBuild> {
+  const outfile = resolve(LIB_DIR, `${name}.js`);
+  const result = await build({
+    stdin: { contents: source, resolveDir: ROOT, sourcefile: `chunk-${name}.ts`, loader: "ts" },
+    outfile,
+    write: false,
+    bundle: true,
+    minify: true,
+    sourcemap: false,
+    target: "es2020",
+    format: "iife",
+    platform: "browser",
+    legalComments: "none",
+    metafile: true,
+    absWorkingDir: ROOT,
+    tsconfig: resolve(ROOT, "tsconfig.json"),
+    loader: {
+      ".svg": "dataurl",
+      ".png": "dataurl",
+      ".woff2": "dataurl",
+      ".woff": "dataurl",
+      ".ttf": "dataurl",
+    },
+    alias: ALIAS,
+    plugins: [frameSharedReact, katexWoff2Only, pdfjsNoWorkerUrl],
+    inject: FRAME_INJECT,
+    define: FRAME_DEFINE,
+    logLevel: "warning",
+  });
+  const jsFile = result.outputFiles.find((f) => f.path.endsWith(".js"))!;
+  const cssFile = result.outputFiles.find((f) => f.path.endsWith(".css"));
+  const code = jsFile.text;
+  const failures = auditArtifact(auditableChunkText(code)).map((f) => `[chunk ${name}] ${f}`);
+  const hash = (text: string) => createHash("sha256").update(text).digest("hex").slice(0, 10);
+  const jsName = `${name}.${hash(code)}.js`;
+  await writeFile(resolve(LIB_DIR, jsName), code, "utf8");
+  let cssName: string | undefined;
+  if (cssFile) {
+    cssName = `${name}.${hash(cssFile.text)}.css`;
+    await writeFile(resolve(LIB_DIR, cssName), cssFile.text, "utf8");
+  }
+  return {
+    files: { js: jsName, ...(cssName ? { css: cssName } : {}) },
+    code,
+    cssBytes: cssFile ? Buffer.byteLength(cssFile.text, "utf8") : 0,
+    failures,
+  };
+}
+
+async function buildChunks(): Promise<{
+  files: Record<string, { js: string; css?: string }>;
+  report: string[];
+  failures: string[];
+}> {
+  await rm(LIB_DIR, { recursive: true, force: true });
+  await mkdir(LIB_DIR, { recursive: true });
+  const files: Record<string, { js: string; css?: string }> = {};
+  const report: string[] = [];
+  const failures: string[] = [];
+  for (const name of Object.keys(FRAME_LIB_CHUNKS)) {
+    const source = CHUNK_SOURCES[name];
+    if (!source) throw new Error(`No chunk source for the frame library chunk "${name}".`);
+    try {
+      const built = await buildChunk(name, source);
+      files[name] = built.files;
+      failures.push(...built.failures);
+      const bytes = Buffer.byteLength(built.code, "utf8");
+      report.push(
+        `  ${name.padEnd(8)} ${formatFileSize(bytes)} raw / ${formatFileSize(gzipSync(Buffer.from(built.code)).length)} gz` +
+          (built.cssBytes ? `  + css ${formatFileSize(built.cssBytes)}` : ""),
+      );
+    } catch (err) {
+      failures.push(`[chunk ${name}] failed to build: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+  return { files, report, failures };
+}
+
+async function buildJs(
+  libFiles: Record<string, { js: string; css?: string }>,
+): Promise<{ code: string; meta: Metafile }> {
   const result = await build({
     entryPoints: [JS_ENTRY],
     outfile: JS_OUT,
@@ -223,27 +465,8 @@ async function buildJs(): Promise<{ code: string; meta: Metafile }> {
     // ones throw a SecurityError, and durable state in an invisible place
     // is not something a Shape component may have. After this the audit
     // below can refuse the real names outright.
-    inject: [
-      resolve(__dirname, "runtime/frame-storage.ts"),
-      resolve(__dirname, "runtime/frame-network.ts"),
-    ],
-    define: {
-      "process.env.NODE_ENV": '"production"',
-      localStorage: "__matrxFrameStorage",
-      sessionStorage: "__matrxFrameStorage",
-      "window.localStorage": "__matrxFrameStorage",
-      "window.sessionStorage": "__matrxFrameStorage",
-      "globalThis.localStorage": "__matrxFrameStorage",
-      "globalThis.sessionStorage": "__matrxFrameStorage",
-      // THE FRAME HAS NO NETWORK (CSP connect-src 'none'): library code that
-      // would call out gets the announcing stand-in (runtime/frame-network.ts).
-      fetch: "__matrxFrameFetch",
-      "window.fetch": "__matrxFrameFetch",
-      "globalThis.fetch": "__matrxFrameFetch",
-      XMLHttpRequest: "__matrxFrameXhr",
-      "window.XMLHttpRequest": "__matrxFrameXhr",
-      "globalThis.XMLHttpRequest": "__matrxFrameXhr",
-    },
+    inject: FRAME_INJECT,
+    define: { ...FRAME_DEFINE, __FRAME_LIB_FILES__: JSON.stringify(libFiles) },
     logLevel: "info",
   });
 
@@ -298,9 +521,10 @@ function auditArtifact(code: string): string[] {
 }
 
 async function main(): Promise<void> {
-  const { code, meta } = await buildJs();
+  const chunks = await buildChunks();
+  const { code, meta } = await buildJs(chunks.files);
 
-  const failures = [...auditGraph(meta), ...auditArtifact(code)];
+  const failures = [...auditGraph(meta), ...auditArtifact(code), ...chunks.failures];
   if (failures.length > 0) {
     // A REJECTED ARTIFACT NEVER SURVIVES THE RUN (V-27 finding B,
     // 2026-09-12). esbuild has already written `public/kind-sandbox.js` by
@@ -309,6 +533,7 @@ async function main(): Promise<void> {
     // ships is worse than no audit at all.
     await rm(JS_OUT, { force: true });
     await rm(CSS_OUT, { force: true });
+    await rm(LIB_DIR, { recursive: true, force: true });
     throw new Error(
       "The kind sandbox bundle contains things the frame may not have.\n\n" +
         failures.join("\n\n") +
@@ -331,7 +556,8 @@ async function main(): Promise<void> {
   // eslint-disable-next-line no-console
   console.log(
     `✓ kind-sandbox.js  ${formatFileSize(jsBytes)} raw / ${formatFileSize(jsGz)} gz → ${JS_OUT}\n` +
-      `✓ kind-sandbox.css ${formatFileSize(cssBytes)} raw / ${formatFileSize(cssGz)} gz → ${CSS_OUT}`,
+      `✓ kind-sandbox.css ${formatFileSize(cssBytes)} raw / ${formatFileSize(cssGz)} gz → ${CSS_OUT}\n` +
+      `✓ on-demand library chunks → ${LIB_DIR}\n${chunks.report.join("\n")}`,
   );
 }
 

@@ -30,6 +30,7 @@ const ctx: KindActionContext = {
   itemState: null,
   openFile: () => undefined,
   shareFile: () => undefined,
+  openUrl: () => undefined,
 };
 
 function live(surfaceName: string, name: string, hasHandler: boolean) {

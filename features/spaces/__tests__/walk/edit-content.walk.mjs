@@ -1,3 +1,4 @@
+// HISTORICAL: edit_content was retired 2026-10-10 (ONE-LADDER); this file is kept for the record, do not run or extend it.
 // "Can edit content" (edit_content) on a Space (round 32). The admin makes a scratch page with a line and an inline
 // database, opens Share -> Invite: the level picker reads Full access · Can edit · Can edit content · Can comment ·
 // Can view (Notion's order); shares with test@test.com at Can edit content. As test@test.com: the page body is editable

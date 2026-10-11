@@ -15,6 +15,11 @@
 import { describeUnresolved, executeGraph, type UnresolvedImport } from "@ai-matrx/code-runtime/execute";
 import { provideStoredComponentScopeModules } from "@/lib/code-runtime/stored-scope";
 import type { SandboxBodyPayload } from "../transform/transform-kind-body";
+import {
+    LAZY_SPECIFIERS,
+    neededLazySpecifiers,
+    provideFrameLazyModules,
+} from "./frame-lazy-modules";
 
 export interface ExecuteKindBodyResult {
     Component: React.ComponentType<Record<string, unknown>> | null;
@@ -38,9 +43,17 @@ export function executeKindBody(payload: SandboxBodyPayload): ExecuteKindBodyRes
         };
     }
     provideStoredComponentScopeModules();
+    provideFrameLazyModules();
+    // The heavy libraries load on demand (frame-lazy-modules.ts): only the ones
+    // THIS body reaches for enter the scope, and the caller has awaited
+    // `prepareFrameLazyModules` for exactly those before calling here.
+    const needed = new Set(neededLazySpecifiers(payload));
+    const entries = (payload.allowedImports ?? []).filter(
+        (path) => !LAZY_SPECIFIERS.includes(path) || needed.has(path),
+    );
     const result = executeGraph(
         payload.graph,
-        { entries: payload.allowedImports ?? [], shadowDangerousGlobals: true },
+        { entries, shadowDangerousGlobals: true },
         // The frame reports through its own channel (the mount's onError).
         { origin: "kind-sandbox", onUnresolved: () => undefined },
     );

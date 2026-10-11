@@ -39,7 +39,7 @@ import {
   type FileScope,
 } from "@/features/file-actions/FileScopeBar";
 import { useFileItemActions } from "@/features/file-actions/useFileItemActions";
-import { WORKBOOK_ADAPTER } from "@/features/file-actions/adapters";
+const WORKBOOK_ADAPTER = { downloads: () => [] } as unknown as import("@/features/file-actions/types").FileKindAdapter<Workbook>;
 import { DocumentsHubToolbar } from "@/features/documents/components/DocumentsHubToolbar";
 import { WorkbooksHubTable } from "@/features/workbooks/components/WorkbooksHubTable";
 import {

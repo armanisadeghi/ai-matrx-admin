@@ -238,3 +238,34 @@ export function useKindSandboxSettings(
 export function useKindSandboxEnabled(): boolean {
     return useKindSandboxSettings().enabled;
 }
+
+/**
+ * The frame's message ceiling WITHOUT the gate, for a surface that dictates the
+ * frame itself (the Shape Playground's frame / in-page switch). Same register
+ * read, same refusals; `ceilings` is null with the reason when it cannot resolve.
+ */
+export function resolveKindSandboxCeilings(
+    knobs: readonly ScopedKnob[],
+): { ceilings: KindSandboxCeilings | null; refusal: string | null } {
+    const message = readCeiling(
+        knobs.find((knob) => knob.key === "sandbox_message_bytes"),
+        "sandbox_message_bytes",
+    );
+    if (!message.ok) return { ceilings: null, refusal: message.refusal };
+    return { ceilings: { messageBytes: message.value }, refusal: null };
+}
+
+export function useKindSandboxCeilings(): {
+    ceilings: KindSandboxCeilings | null;
+    refusal: string | null;
+    loading: boolean;
+} {
+    const organizationId = useActiveOrganizationId();
+    const { knobs, isLoading, error } = useScopedKnobs({
+        organizationId,
+        featurePrefix: "custom",
+    });
+    if (error) return { ceilings: null, refusal: `the settings resolver failed: ${error}`, loading: false };
+    if (isLoading || !organizationId) return { ceilings: null, refusal: null, loading: true };
+    return { ...resolveKindSandboxCeilings(knobs), loading: false };
+}

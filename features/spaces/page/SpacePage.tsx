@@ -70,7 +70,7 @@ import { contentKey } from "./content-key";
 import { usePageReminders } from "../editor/reminders";
 import { markNewSource, useSyncedEdges } from "../state/synced-sources";
 import { setSuggestAuthor, setSuggestName, setSuggestPage } from "../editor/suggest";
-import { useContentEditOnly } from "./content-edit";
+import { isContentEditOnly } from "./content-edit";
 import { StructureProvider } from "./structure";
 import { copyToClipboard } from "@/lib/clipboard/copy";
 
@@ -214,10 +214,10 @@ function SpacePageScreen({ spaceId, initialDoc }: { spaceId: string; initialDoc?
   // H5 — what this person may do here: the database decides (get_resource_access); a viewer or
   // commenter never gets editing affordances, never writes, and sees the room read-only.
   const access = useAccess("document", spaceId);
-  // Full editing (structure, sharing, settings) vs "Can edit content" (edit_content: the page's text and rows only);
+  // ONE-LADDER: Full access (admin) = structure, sharing, settings; Edit = the page's text and rows only;
   // the database refuses the rest, so the page only stops offering it.
-  const fullEdit = access.level === "edit" || access.level === "admin";
-  const contentOnly = useContentEditOnly(spaceId, access.level === "view");
+  const fullEdit = access.level === "admin";
+  const contentOnly = isContentEditOnly(access.level);
   const canEdit = fullEdit || contentOnly;
   // A page in Trash (its own row or an ancestor's, by the store's read or the list) takes no edits and no
   // saves, and this member gives up the room's host role at once; Restore brings both back.

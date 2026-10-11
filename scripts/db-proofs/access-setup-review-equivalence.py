@@ -965,7 +965,10 @@ def mode1_class(d, known, opening_pairs, upper_in, cycle_org):
             classes |= cls
         # no entry differs: only the order of entries whose sort keys tie (fixture rows share due dates) moved
         return 'opening: ' + ' + '.join(sorted(classes)) if classes else 'same entries; order among equal sort keys differs'
-    if door == 'hr_review_calibration' and _refused(L) and (caller, cycle_org.get(target)) in upper_in:
+    # upper management reads the calibration board, the cycles list and a cycle (read_only) through the
+    # organization-level seat form hr.review_seat_upper_in_org; cycle_list's target is the organization itself
+    if door in ('hr_review_calibration', 'hr_review_cycle_get', 'hr_review_cycle_list') and _refused(L) \
+            and (caller, cycle_org.get(target, target)) in upper_in:
         return 'opening: ' + OPENING_LIST[1]
     return None
 

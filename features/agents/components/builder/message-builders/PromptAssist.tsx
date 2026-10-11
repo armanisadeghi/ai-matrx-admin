@@ -17,7 +17,10 @@
  * PromptFixReview (rich-editor) and apply only on Apply.
  */
 
-import { useRef, useState, type RefObject } from "react";
+import { useMemo, useRef, useState, type RefObject } from "react";
+import { EditableContextMenu } from "@ai-matrx/context-menu/react";
+import { sectionMenuSection, wrapEditorSelection } from "@ai-matrx/rich-editor/core/section-menu";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import RichEditor, { type RichEditorController } from "@ai-matrx/rich-editor/editor/RichEditor";
 import { FormatButtons } from "@ai-matrx/rich-editor/format/FormatButtons";
 import { textareaFormatTarget } from "@ai-matrx/rich-editor/format/format-target";
@@ -133,6 +136,10 @@ export interface PromptWriteBoxProps {
   surfaceName: string;
   placeholder?: string;
   minHeight?: number;
+  /** The agent's variable names: undeclared names are flagged, and a selection can become a section. */
+  variableNames?: readonly string[];
+  /** The surface scope the right-click menu acts on. */
+  contextData?: Record<string, unknown>;
 }
 
 /** Write: the rich editor over the stored prompt text (see header). */
@@ -143,8 +150,11 @@ export function PromptWriteBox({
   surfaceName,
   placeholder,
   minHeight = 240,
+  variableNames,
+  contextData,
 }: PromptWriteBoxProps) {
-  return (
+  const declared = useMemo(() => variableNames?.map((name) => ({ name })) ?? null, [variableNames]);
+  const box = (
     <div
       data-testid="prompt-write-box"
       className="relative w-full [&_.ProseMirror]:min-h-0! [&_.ProseMirror]:px-0! [&_.ProseMirror]:py-0! [&_.ProseMirror]:font-sans [&_.ProseMirror]:text-xs!"
@@ -156,6 +166,7 @@ export function PromptWriteBox({
         view="visual"
         chrome="bare"
         hostContextMenu
+        variables={declared}
         controllerRef={controllerRef}
         placeholder={placeholder}
         surfaceName={surfaceName}
@@ -165,6 +176,30 @@ export function PromptWriteBox({
         className="h-full"
       />
     </div>
+  );
+  return (
+    <EditableContextMenu
+      sourceFeature="agent-builder"
+      surfaceName={surfaceName}
+      contentSource={{ type: "raw" }}
+      contextData={contextData}
+      insertAtCaret={(text: string) => {
+        if (!controllerRef.current) return false;
+        controllerRef.current.replaceSelection(text);
+        return true;
+      }}
+      onTextReplace={onChange}
+      resolveExtraSectionsOnOpen={() => {
+        const section = sectionMenuSection({
+          variables: declared,
+          hasSelection: () => (controllerRef.current?.selectedText() ?? "").trim() !== "",
+          wrap: (name, when) => wrapEditorSelection(controllerRef.current, name, when),
+        });
+        return section ? [section as ContextMenuExtraSection] : undefined;
+      }}
+    >
+      {box}
+    </EditableContextMenu>
   );
 }
 

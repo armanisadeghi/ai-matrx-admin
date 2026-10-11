@@ -23,6 +23,7 @@ import { listSurfaceWriteTargetsAction } from "./handlers/list-surface-write-tar
 import { runShortcutAction } from "./handlers/run-shortcut";
 import { saveItemStateAction } from "./handlers/save-item-state";
 import { openFileAction, shareFileAction } from "./handlers/open-file";
+import { openUrlAction } from "./handlers/open-url";
 
 export const KIND_ACTIONS_PROVIDER_ID = "content-ir.kind-actions";
 
@@ -35,6 +36,7 @@ export const KIND_ACTIONS: readonly KindActionDefinition[] = [
   saveItemStateAction,
   openFileAction,
   shareFileAction,
+  openUrlAction,
 ];
 
 /** The registry id of the action a component names by `key`. */

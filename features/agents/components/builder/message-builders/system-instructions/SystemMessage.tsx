@@ -20,7 +20,7 @@ import { SystemPromptOptimizer } from "@/features/agents/components/builder/mess
 import type { AgentDefinitionMessage } from "@ai-matrx/chat/agents/types/agent-message-types";
 
 // Module Shared Components
-import { promptSectionSections } from "../promptSectionMenu";
+import { promptSectionSections, wrapPromptSection } from "../promptSectionMenu";
 import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";
 import { SystemMessageButtons } from "@/features/agents/components/builder/message-builders/system-instructions/SystemMessageButtons";
 import { MessageFlagToggles } from "@ai-matrx/chat/agents/message-flags/MessageFlagToggles";
@@ -739,6 +739,13 @@ export function SystemMessage({
             kindSchema={insertSources.kindSchema}
             contextItems={insertSources.contextItems}
             onInsert={handlePromptInsert}
+            onWrapSection={(name, when) =>
+              wrapPromptSection({
+                write: viewMode === "write" ? writeRef.current : null,
+                textarea: textareaRefs.current[systemMessageIndex] ?? null,
+                onChange: handleTextChange,
+              })(name, when)
+            }
             onOpenChange={handleInsertMenuOpen}
             onAddVariable={() => goToBuilderSection("variables")}
             onAddContextItem={() => goToBuilderSection("context")}
@@ -784,6 +791,8 @@ export function SystemMessage({
               onChange={handleTextChange}
               controllerRef={writeRef}
               surfaceName="matrx-user/agent-builder"
+              variableNames={variableNames}
+              contextData={contextMenuData}
               placeholder="You're a very helpful assistant"
             />
           ) : viewMode === "preview" ? (

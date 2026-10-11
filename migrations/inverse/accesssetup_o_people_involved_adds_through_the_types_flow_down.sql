@@ -1,6 +1,7 @@
 -- chair-step: inverse of accesssetup_o — restores iam._access_setup_problems, iam.record_access_setup, iam.record_seat_set, hr.hr_review_cycle_list, hr.hr_review_cycle_get, public.hr_role_assign and hr.hr_review_start_candidates to their bodies before it; removes add_via from the peer seat and stage_meaning_fn from the hr_review setup; drops iam.record_seat_add_via, hr.review_seat_add_peer, iam._access_setup_stage_meaning and hr.review_stage_meaning with their platform.client_callable_door rows. Peer nominations made through the panel stay (they are ordinary nominations).
 -- lane: access-setup
 -- lock: hr
+-- ground-standing-ok: b - the restored bodies (iam._access_setup_problems, iam.record_access_setup) call iam._access_setup_stages, which accesssetup_b_the_seat_and_part_answers_down.sql drops; that sibling runs AFTER this inverse (inverses run in reverse order: o, n, m ... b), so the callee still stands when this one runs.
 
 update iam.access_setup
    set setup = jsonb_set(setup, '{seats}',

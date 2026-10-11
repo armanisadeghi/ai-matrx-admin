@@ -261,18 +261,13 @@ export function OrgModuleSettings({
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="viewer">Viewer</SelectItem>
+                                <SelectItem value="viewer" title={PERMISSION_LEVEL_HINTS.viewer}>{PERMISSION_LEVEL_SHORT_LABELS.viewer}</SelectItem>
                                 {/* `commenter` joined `public.permission_level` and the generated
                                     `Constants` on 2026-09-18 (30e05dbd80). A level the database
                                     accepts and no picker offers is a capability nobody can grant. */}
-                                <SelectItem value="commenter">Commenter</SelectItem>
-                                {/* `edit_content` — Notion's "Can edit content": rows and page content, never structure or sharing.
-                                    Label and tooltip come from the one ladder (utils/permissions/levels.ts). */}
-                                <SelectItem value="edit_content" title={PERMISSION_LEVEL_HINTS.edit_content}>
-                                  {PERMISSION_LEVEL_SHORT_LABELS.edit_content}
-                                </SelectItem>
-                                <SelectItem value="editor">Editor</SelectItem>
-                                <SelectItem value="admin">Admin</SelectItem>
+                                <SelectItem value="commenter" title={PERMISSION_LEVEL_HINTS.commenter}>{PERMISSION_LEVEL_SHORT_LABELS.commenter}</SelectItem>
+                                <SelectItem value="editor" title={PERMISSION_LEVEL_HINTS.editor}>{PERMISSION_LEVEL_SHORT_LABELS.editor}</SelectItem>
+                                <SelectItem value="admin" title={PERMISSION_LEVEL_HINTS.admin}>{PERMISSION_LEVEL_SHORT_LABELS.admin}</SelectItem>
                               </SelectContent>
                             </Select>
                           </td>

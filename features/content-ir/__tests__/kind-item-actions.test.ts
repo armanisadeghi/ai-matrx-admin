@@ -45,6 +45,7 @@ function ctx(over: Partial<KindActionContext> = {}): KindActionContext & { saved
     },
     openFile: (fileId) => Object.assign(saved, { opened: fileId }),
     shareFile: (fileId, name) => Object.assign(saved, { shared: `${fileId}:${name}` }),
+    openUrl: () => undefined,
     ...over,
   };
 }

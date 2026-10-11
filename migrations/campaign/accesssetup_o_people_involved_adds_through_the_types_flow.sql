@@ -1,4 +1,3 @@
--- draft: access-setup verifier fixes — not yet rehearsed on the clone
 -- chair-step: verifier fixes on the standard review's access setup. (1) Upper management READS the review cycles list and a cycle (hr_review_cycle_list / hr_review_cycle_get admit hr.review_seat_upper_in_org, the same organization-level seat form hr_review_calibration already answers; the answer carries read_only: true for them; launch, close, template and calibrate doors are unchanged). (2) A seat may declare add_via {fn, action}: iam.record_seat_set refuses a direct add on it (reason add_via) and the new door iam.record_seat_add_via runs the type's own flow as the caller; the hr_review peer seat declares hr.review_seat_add_peer (hr_review_peer_nominate: employee -> pending, manager -> approved). Exclude through record_seat_set is held by admin-seat holders and organization owners/admins only. (3) A setup may declare stage_meaning_fn; iam.record_access_setup returns opens_at per cell (hr.review_stage_meaning resolves manager_may_see_self through the organization's standard_review_manager_sees_self knob) plus may_add / may_exclude / add_via per seat and may_confirm. (4) public.hr_role_assign refuses a scope that does not fit its kind by name (scope_kind_unknown / scope_shape_invalid) instead of a raw check violation. (5) hr_review_start_candidates adds employee_id to each person. The setup check validates add_via and stage_meaning_fn. No review door's answer changes for anyone who reached it before.
 -- lane: access-setup
 -- lock: hr
@@ -184,8 +183,8 @@ begin
     if to_regprocedure(coalesce(v_seat #>> '{add_via,fn}', '')) is null then
       p := p || ('add_via_fn_missing: ' || (v_seat ->> 'key'));
     elsif (select pr.prorettype from pg_proc pr where pr.oid = to_regprocedure(v_seat #>> '{add_via,fn}')) <> 'jsonb'::regtype
-       or (select pr.proargtypes::oid[] from pg_proc pr where pr.oid = to_regprocedure(v_seat #>> '{add_via,fn}'))
-          <> array['uuid'::regtype::oid, 'uuid'::regtype::oid] then
+       or not (select pr.pronargs = 2 and pr.proargtypes[0] = 'uuid'::regtype and pr.proargtypes[1] = 'uuid'::regtype
+                 from pg_proc pr where pr.oid = to_regprocedure(v_seat #>> '{add_via,fn}')) then
       p := p || ('add_via_not_uuid_uuid_jsonb: ' || (v_seat ->> 'key'));
     end if;
     if v_seat #>> '{add_via,action}' is not null and not coalesce(s -> 'actions', '{}'::jsonb) ? (v_seat #>> '{add_via,action}') then

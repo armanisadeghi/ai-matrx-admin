@@ -64,8 +64,8 @@ async function main() {
     pages.push(linkedPage.id);
 
     for (const id of [page.id, linkedPage.id]) {
-      const { error } = await admin.db.rpc("share_resource_with_user", { p_resource_type: "document", p_resource_id: id, p_target_user_id: second.userId, p_permission_level: "edit_content" });
-      check(`share ${id === page.id ? "the page" : "the linked-view page"} with test@test.com at Can edit content`, !error, error?.message ?? "");
+      const { error } = await admin.db.rpc("share_resource_with_user", { p_resource_type: "document", p_resource_id: id, p_target_user_id: second.userId, p_permission_level: "editor" });
+      check(`share ${id === page.id ? "the page" : "the linked-view page"} with test@test.com at Edit`, !error, error?.message ?? "");
     }
 
     const read = await second.records.list({ table_id: own.data });
@@ -79,10 +79,10 @@ async function main() {
     check("test@test.com adds a row", added.ok, added.ok ? "" : added.error.message);
 
     const del = rows[0] ? await second.records.recordDelete({ record_id: rows[0].id }) : null;
-    check("test@test.com cannot delete a row at Can edit content", Boolean(del && !del.ok), del && !del.ok ? del.error.message : "deleted");
+    check("test@test.com cannot delete a row at Edit", Boolean(del && !del.ok), del && !del.ok ? del.error.message : "deleted");
 
     const col = await second.records.fieldDeclare({ table_id: own.data, spec: { key: "groomer", label: "Groomer", type: "text" } as never });
-    check("test@test.com cannot add a property at Can edit content", !col.ok, col.ok ? "added" : col.error.message);
+    check("test@test.com cannot add a property at Edit", !col.ok, col.ok ? "added" : col.error.message);
 
     const outsideRead = await second.records.list({ table_id: outside.data });
     const outsideRows = outsideRead.ok ? outsideRead.data.rows : [];
@@ -91,7 +91,7 @@ async function main() {
     const claim = await (second.db.rpc as never as (fn: string, a: object) => Promise<{ error: { message: string } | null }>)("assoc_link", {
       p_source_type: "document", p_source_id: linkedPage.id, p_target_type: "record", p_target_id: outside.data, p_role: "page_database", p_label: "page_database",
     });
-    check("test@test.com cannot claim the outside table for a page shared at Can edit content", Boolean(claim.error), claim.error?.message ?? "claimed");
+    check("test@test.com cannot claim the outside table for a page shared at Edit", Boolean(claim.error), claim.error?.message ?? "claimed");
 
     await store.archive(page.id);
     const gone = await admin.records.tableArchived({ table_id: own.data });

@@ -47,6 +47,7 @@ const ctx: KindActionContext = {
   itemState: null,
   openFile: () => undefined,
   shareFile: () => undefined,
+  openUrl: () => undefined,
 };
 
 describe("kind actions on the one action registry", () => {
@@ -59,6 +60,7 @@ describe("kind actions on the one action registry", () => {
       "save_item_state",
       "open_file",
       "share_file",
+      "open_url",
     ]);
     expect(kindActionProvider.id).toBe(KIND_ACTIONS_PROVIDER_ID);
     expect(kindActionProvider.declaredIds?.()).toEqual([
@@ -69,6 +71,7 @@ describe("kind actions on the one action registry", () => {
       "kind.save_item_state",
       "kind.open_file",
       "kind.share_file",
+      "kind.open_url",
     ]);
     for (const def of KIND_ACTIONS) {
       expect(def.label.trim()).not.toBe("");
@@ -100,7 +103,7 @@ describe("kind actions on the one action registry", () => {
       registry,
       kindActionId("trigger_agent"),
       { agentId: "agent-1", variables: { prompt: "hi" } },
-      { ports, context: { launchAgent, userId: "u1", openShortcut: async () => ({ conversationId: "c2" }), runShortcut: async () => ({ ok: true, data: null }), itemState: null, openFile: () => undefined, shareFile: () => undefined } satisfies KindActionContext },
+      { ports, context: { launchAgent, userId: "u1", openShortcut: async () => ({ conversationId: "c2" }), runShortcut: async () => ({ ok: true, data: null }), itemState: null, openFile: () => undefined, shareFile: () => undefined, openUrl: () => undefined } satisfies KindActionContext },
     );
     expect(ran).toEqual({ ok: true, data: expect.objectContaining({ ok: true }) });
     expect(launchAgent).toHaveBeenCalledWith(
@@ -117,6 +120,31 @@ describe("kind actions on the one action registry", () => {
       ok: true,
       data: { ok: false, error: expect.stringContaining("agentId") },
     });
+  });
+
+  it("open_url opens web/mail/tel/app links and refuses javascript:/data: with a sentence", async () => {
+    const { registry, ports } = setup();
+    ensureInvokedProvider(registry, kindActionProvider);
+    const openUrl = jest.fn();
+    const run = (url: unknown) =>
+      invokeAction(registry, kindActionId("open_url"), { url }, { ports, context: { ...ctx, openUrl } });
+
+    for (const url of ["https://example.com/a?b=1", "http://example.com", "mailto:a@b.co", "tel:+19497027626"]) {
+      await expect(run(url)).resolves.toEqual({ ok: true, data: { ok: true, result: { opened: true, url } } });
+    }
+    // A relative in-app path resolves against the app origin.
+    await expect(run("/notes")).resolves.toEqual({
+      ok: true,
+      data: { ok: true, result: { opened: true, url: `${window.location.origin}/notes` } },
+    });
+    expect(openUrl).toHaveBeenCalledTimes(5);
+
+    openUrl.mockClear();
+    for (const url of ["javascript:alert(1)", " JaVa\nScript:alert(1)", "data:text/html,<b>x</b>", "blob:abc", "//evil.test/x", "", 5]) {
+      const out = await run(url);
+      expect(out).toEqual({ ok: true, data: { ok: false, error: expect.stringMatching(/\S/) } });
+    }
+    expect(openUrl).not.toHaveBeenCalled();
   });
 
   it("an unknown id is not_registered, never a throw", async () => {

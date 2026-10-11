@@ -37,6 +37,7 @@ import type { SandboxBodyPayload } from "../transform/transform-kind-body";
 import { executeKindBody } from "./execute-kind-body";
 import { installHostActionDispatcher } from "./host-action-relay";
 import { installPointerExit } from "./pointer-exit";
+import { installLinkInterceptor } from "./link-interceptor";
 import { installVisibleColumn } from "./visible-column";
 
 export interface FrameMountApi {
@@ -189,6 +190,9 @@ function startInstance(
 
     // ── the pointer leaving the frame closes what it opened (pointer-exit.ts)
     installPointerExit();
+
+    // ── plain <a href> opens on the page's side (link-interceptor.ts) ─────
+    installLinkInterceptor();
 
     // ── the reader's viewport, not the frame's box (S5b) ──────────────────
     //

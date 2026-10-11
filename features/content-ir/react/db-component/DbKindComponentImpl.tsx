@@ -41,12 +41,13 @@ import {
 import { DbKindComponentErrorBoundary } from "./DbKindComponentErrorBoundary";
 import { KindHtmlFrame } from "./KindHtmlFrame";
 import { KindSandboxFrame } from "./KindSandboxFrame";
-import { useKindSandboxSettings } from "./useKindSandboxKnob";
+import { useKindSandboxSettings, type KindSandboxSettings } from "./useKindSandboxKnob";
 import type { RunKindAction } from "../actions/useKindActionRunner";
 import type {
   KindComponentUiOptions,
   ResolveKindValue,
 } from "./dbKindComponentCache";
+import type { ComponentResolution } from "@ai-matrx/content-ir-react";
 import { useContentIrKindVersion } from "@ai-matrx/rich-content/kinds/react/use-registry-repaint";
 import { readAtVersionForKey } from "@ai-matrx/rich-content/kinds/react/registry-versioned";
 import { resolveLoadingSlugForKind } from "@ai-matrx/rich-content/kinds/react/loading/resolve-loading-slug";
@@ -105,6 +106,18 @@ export interface DbKindComponentImplProps {
    * to the person's active organization (a record-less proposal).
    */
   organizationId?: string | null;
+  /**
+   * A component the mounting surface supplies directly, instead of the one the
+   * registry resolves for the kind (the Shape Playground renders versioned demo
+   * sources this way). Same compile, same frame, same boundary — only where the
+   * row came from differs.
+   */
+  resolution?: ComponentResolution | null;
+  /**
+   * The sandbox decision, when the mounting surface dictates it (the playground's
+   * frame / in-page switch). Absent, the organization's setting decides.
+   */
+  sandbox?: KindSandboxSettings | null;
 }
 
 /** One empty item state, so an unsaved item never looks "changed". */
@@ -196,6 +209,8 @@ const DbKindComponentBody: React.FC<DbKindComponentImplProps> = ({
   organizationId,
   itemState = null,
   itemStateImages,
+  resolution: suppliedResolution = null,
+  sandbox: dictatedSandbox = null,
 }) => {
   const generic = (
     <GenericStructuredBlock
@@ -214,10 +229,11 @@ const DbKindComponentBody: React.FC<DbKindComponentImplProps> = ({
     value !== null && typeof value === "object" && !Array.isArray(value)
       ? (value as Record<string, unknown>).organization_id
       : null;
-  const sandbox = useKindSandboxSettings(
+  const organizationSandbox = useKindSandboxSettings(
     organizationId ||
       (typeof valueOrganizationId === "string" ? valueOrganizationId : null),
   );
+  const sandbox = dictatedSandbox ?? organizationSandbox;
   // 🚨 THE VERSION IS AN ARGUMENT, NEVER A DEPENDENCY (DD-215c). `void
   // registryVersion;` left this read's freshness to whether the React Compiler
   // happened not to memoize `resolveComponent(kind, …)` — and the compiler IS
@@ -226,12 +242,13 @@ const DbKindComponentBody: React.FC<DbKindComponentImplProps> = ({
   // the cache key here, so the answer follows every arrival by construction.
   // Rule: `react/registry-versioned.ts`. Guard: `pnpm check:registry-repaint`.
   const registryVersion = useContentIrKindVersion(kind);
-  const resolution = readAtVersionForKey(
+  const registryResolution = readAtVersionForKey(
     resolutionCache,
     kind ?? "",
     registryVersion,
     () => (kind ? resolveComponent(kind, "web", "output") : null),
   );
+  const resolution = suppliedResolution ?? registryResolution;
   const bodyPending = Boolean(
     resolution &&
       resolution.resolvedBy === "db" &&

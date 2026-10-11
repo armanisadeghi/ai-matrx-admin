@@ -11,6 +11,7 @@ import type { FeatureAdminMap } from "@/features/admin/types/featureAdminMap";
 import {
   SHAPES_ALL_HREF,
   SHAPES_NEW_HREF,
+  SHAPES_PLAYGROUND_HREF,
   SHAPES_ROUTE_BASE,
 } from "@/features/content-ir/studio/constants";
 
@@ -43,6 +44,14 @@ const SHAPES_ADMIN_MAP: FeatureAdminMap = {
       description:
         "Canonical EntityListPage: mine, organizations, shared, and public scopes with true counts, ranked search, server sort/filter/pagination, URL state, column controls, copy, row menus, and entity actions.",
       filePath: "app/(core)/shapes/(workspace)/all/page.tsx",
+      status: "Live",
+    },
+    {
+      url: SHAPES_PLAYGROUND_HREF,
+      label: "Shape Playground",
+      description:
+        "Versioned demo shapes covering every shape-authoring capability, rendered through the stored-component compile + frame path, each running a live pass/fail check. Linked from here only until it opens to users.",
+      filePath: "app/(core)/shapes/(workspace)/playground/page.tsx",
       status: "Live",
     },
     {

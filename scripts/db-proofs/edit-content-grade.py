@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# HISTORICAL: edit_content was retired 2026-10-10 (ONE-LADDER); this file is kept for the record, do not run or extend it.
 """
 GUARD for the `edit_content` share level ("Can edit content", lane SHARE-EDIT-CONTENT, 2026-10-07).
 

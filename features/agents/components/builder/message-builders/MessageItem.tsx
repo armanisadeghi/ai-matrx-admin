@@ -42,7 +42,7 @@ import {
 // Universal v3 context menu — the SAME menu everywhere. The wrapper is the
 // lightweight shell (imported statically); MenuContent lazy-loads on first open.
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
-import { promptSectionSections } from "./promptSectionMenu";
+import { promptSectionSections, wrapPromptSection } from "./promptSectionMenu";
 import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";
 import { MessageItemButtons } from "@/features/agents/components/builder/message-builders/MessageItemButtons";
 import {
@@ -783,6 +783,13 @@ export function MessageItem({
           kinds={insertSources.kinds}
           kindSchema={insertSources.kindSchema}
           contextItems={insertSources.contextItems}
+          onWrapSection={(name, when) =>
+            wrapPromptSection({
+              write: viewMode === "write" ? writeRef.current : null,
+              textarea: textareaRef.current,
+              onChange: handleTextChange,
+            })(name, when)
+          }
           onInsert={(insert: PromptInsert) => {
             const textarea = textareaRef.current;
             insertPromptText({
@@ -855,6 +862,8 @@ export function MessageItem({
             onChange={handleTextChange}
             controllerRef={writeRef}
             surfaceName="matrx-user/agent-builder"
+            variableNames={variableNames}
+            contextData={contextMenuData}
             minHeight={80}
             placeholder={
               message.role === "assistant"

@@ -5,12 +5,15 @@
  * so the Univer workbook converters load ExcelJS here and nowhere else.
  * scripts/check-alchemy-doors.ts names this file as the single exemption;
  * it moves into @ai-matrx/print/xlsx when that package grows a styles engine.
- * Loaded on demand — nothing pays for it until a person imports or exports.
+ * Loaded on demand from ExcelJS's browser bundle. Its Node entry pulls in
+ * unzipper/fstream, whose dynamic filesystem scan makes Next trace the entire
+ * repository into every server route that can render a workbook action.
+ * Nothing pays for the browser bundle until a person imports or exports.
  */
 import type ExcelJSModule from "exceljs";
 
 export type * as ExcelJSTypes from "exceljs";
 
 export async function loadExcelJs(): Promise<typeof ExcelJSModule> {
-  return (await import("exceljs")).default;
+  return (await import("exceljs/dist/exceljs.min.js")).default;
 }

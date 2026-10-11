@@ -46,7 +46,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 interface ShareModalProps {
-  /** The level picker's words: "notion" = Full access · Can edit · Can edit content · Can comment · Can view. */
+  /** The level picker's words: "notion" = Full access · Edit · Comment · View. */
   levelWording?: "roles" | "notion";
   isOpen: boolean;
   onClose: () => void;

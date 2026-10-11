@@ -10,6 +10,8 @@ import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 
 export const SHAPES_ROUTE_BASE = "/shapes";
 export const SHAPES_ALL_HREF = `${SHAPES_ROUTE_BASE}/all`;
+/** Live demo shapes for every shape capability, each testing itself. */
+export const SHAPES_PLAYGROUND_HREF = `${SHAPES_ROUTE_BASE}/playground`;
 
 export const SHAPES_FEATURE_LABEL = "Shapes";
 
@@ -50,6 +52,7 @@ export const RESERVED_SHAPE_SLUGS: ReadonlySet<string> = new Set([
   "admin",
   "all",
   "id",
+  "playground",
 ]);
 
 export function shapeDetailHref(kind: string): string {

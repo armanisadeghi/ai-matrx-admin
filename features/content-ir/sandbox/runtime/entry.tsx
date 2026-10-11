@@ -28,6 +28,8 @@ import {
     executeKindBody,
 } from "./execute-kind-body";
 import { frameRefusals, installFrameBridge } from "./frame-bridge";
+import { neededLazySpecifiers, prepareFrameLazyModules } from "./frame-lazy-modules";
+import { installSharedForChunks } from "./frame-shared";
 import type { SandboxBodyPayload } from "../transform/transform-kind-body";
 
 /** Bumped whenever the mount contract changes. The host asserts on it. */
@@ -191,44 +193,63 @@ export function mountKindComponent(
     applyTheme(options.themeTokens, options.colorScheme);
 
     const root = createRoot(container);
-    const { Component, error, unresolvedImports } = executeKindBody(payload);
-
-    if (!Component) {
-        return renderFailure(
-            root,
-            error ?? "The component could not be compiled inside the sandbox.",
-            options.onError,
-        );
-    }
-
-    // Renders anyway (each gap is a visible stand-in), but the host hears it:
-    // `onError` becomes a sandbox error, i.e. captureError + the kind's
-    // incident row — the same queue every other component failure reaches.
-    if (unresolvedImports.length > 0) {
-        options.onError?.(describeUnresolvedImports(unresolvedImports));
-    }
 
     let props = options.props ?? {};
+    let Component: React.ComponentType<Record<string, unknown>> | null = null;
+    let disposed = false;
+    let failure: SandboxHandle | null = null;
 
     const paint = () => {
+        if (disposed || !Component) return;
+        const Mounted = Component;
         root.render(
             <FrameErrorBoundary onError={options.onError}>
-                <Component {...props} />
+                <Mounted {...props} />
             </FrameErrorBoundary>,
         );
     };
 
-    paint();
+    // The heavy libraries (three, xlsx, motion…) load on demand. When this body
+    // needs none the whole thing runs synchronously, exactly as before.
+    const start = () => {
+        if (disposed) return;
+        const built = executeKindBody(payload);
+        if (!built.Component) {
+            failure = renderFailure(
+                root,
+                built.error ?? "The component could not be compiled inside the sandbox.",
+                options.onError,
+            );
+            return;
+        }
+        Component = built.Component;
+        // Renders anyway (each gap is a visible stand-in), but the host hears it:
+        // `onError` becomes a sandbox error, i.e. captureError + the kind's
+        // incident row — the same queue every other component failure reaches.
+        if (built.unresolvedImports.length > 0) {
+            options.onError?.(describeUnresolvedImports(built.unresolvedImports));
+        }
+        paint();
+    };
+
+    const needsLibraries = neededLazySpecifiers(payload).length > 0;
+    if (needsLibraries) {
+        void prepareFrameLazyModules(payload).then(start, start);
+    } else {
+        start();
+    }
 
     return {
         update(next) {
             props = next ?? {};
+            if (failure) return;
             paint();
         },
         setTheme(tokens, colorScheme) {
             applyTheme(tokens, colorScheme);
         },
         unmount() {
+            disposed = true;
             root.unmount();
         },
     };
@@ -251,6 +272,7 @@ const api: MatrxKindSandboxGlobal = {
 
 // S2: open the ONE door to the host page. Harmless in the bare harness — with
 // no host there is no init message and nothing ever arrives.
+installSharedForChunks();
 installFrameBridge(mountKindComponent);
 
 // The frame's only entry point. `globalThis` (not `window`) so nothing in this

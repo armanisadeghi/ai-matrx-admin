@@ -87,7 +87,7 @@ export function PageMenu({
   counts: { words: number; characters: number };
   /** N3 — the page whose "Suggest edits" switch this menu shows (absent: the person cannot edit). */
   suggestPageId?: string;
-  /** "Can edit content": page settings, duplicate, move and trash are not theirs (the database refuses them). */
+  /** Edit (not Full access): page settings, duplicate, move and trash are not theirs (the database refuses them). */
   contentOnly?: boolean;
 }) {
   const [open, setOpen] = useState(false);

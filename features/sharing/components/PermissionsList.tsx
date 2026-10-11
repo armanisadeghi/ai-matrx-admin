@@ -493,22 +493,17 @@ export function PermissionsList({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="viewer">Viewer</SelectItem>
+                        <SelectItem value="viewer" title={PERMISSION_LEVEL_HINTS.viewer}>{PERMISSION_LEVEL_SHORT_LABELS.viewer}</SelectItem>
                         {/* VIS-17b: `commenter` is the FOURTH rung of the one ladder — it has been in
                             `public.permission_level` since G0 and every policy and RPC accepts it, and
                             this picker was the one place a person could not choose it (lane SHARE,
                             2026-09-19). A ladder with a rung nobody can reach is not one ladder. */}
-                        <SelectItem value="commenter">Commenter</SelectItem>
-                        {/* `edit_content` — Notion's "Can edit content": rows and page content, never structure or sharing.
-                            Label and tooltip come from the one ladder (utils/permissions/levels.ts). */}
-                        <SelectItem value="edit_content" title={PERMISSION_LEVEL_HINTS.edit_content}>
-                          {PERMISSION_LEVEL_SHORT_LABELS.edit_content}
-                        </SelectItem>
-                        <SelectItem value="editor">Editor</SelectItem>
+                        <SelectItem value="commenter" title={PERMISSION_LEVEL_HINTS.commenter}>{PERMISSION_LEVEL_SHORT_LABELS.commenter}</SelectItem>
+                        <SelectItem value="editor" title={PERMISSION_LEVEL_HINTS.editor}>{PERMISSION_LEVEL_SHORT_LABELS.editor}</SelectItem>
                         {/* THE SCOPE-QUALIFIED ADMIN RULE (access/DECISIONS.md 2026-09-10):
                             this control's own heading is the grant-list label, which does not
                             name the item, so the bare "Admin" is qualified here. */}
-                        <SelectItem value="admin">Admin (this item)</SelectItem>
+                        <SelectItem value="admin" title={PERMISSION_LEVEL_HINTS.admin}>{PERMISSION_LEVEL_SHORT_LABELS.admin}</SelectItem>
                       </SelectContent>
                     </Select>
 

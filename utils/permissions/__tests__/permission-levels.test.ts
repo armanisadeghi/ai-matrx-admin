@@ -21,11 +21,14 @@ import path from "node:path";
 import {
   DB_PERMISSION_LEVELS,
   PERMISSION_LEVELS,
+  OFFERED_DB_PERMISSION_LEVELS,
+  PERMISSION_LEVEL_HINTS,
   PERMISSION_LEVEL_LABELS,
   PERMISSION_LEVEL_RANK,
   PERMISSION_LEVEL_SHORT_LABELS,
   isDbPermissionLevel,
   isPermissionLevel,
+  normalizePermissionLevel,
   parsePermissionLevel,
   permissionLevelRank,
   toDbPermissionLevel,
@@ -43,33 +46,31 @@ function readRepoFile(relativePath: string): string {
 }
 
 describe("the canonical ladder", () => {
-  it("carries the doctrine levels in authority order", () => {
-    // AI Matrx Data Doctrine R18 (2026-09-10): viewer · commenter · editor · admin, plus
-    // `edit_content` ("Can edit content", lane SHARE-EDIT-CONTENT 2026-10-07) between commenter and editor.
-    expect([...PERMISSION_LEVELS]).toEqual([
-      "viewer",
-      "commenter",
-      "edit_content",
-      "editor",
-      "admin",
-    ]);
+  it("carries the four ONE-LADDER levels in authority order", () => {
+    // ONE-LADDER (Arman 2026-10-10): View · Comment · Edit · Full access. `edit_content` is retired.
+    expect([...PERMISSION_LEVELS]).toEqual(["viewer", "commenter", "editor", "admin"]);
+    expect(PERMISSION_LEVELS).not.toContain("edit_content");
   });
 
-  it("places edit_content between commenter and editor", () => {
+  it("ranks the four levels in order", () => {
     expect(PERMISSION_LEVEL_RANK.viewer).toBe(1);
     expect(PERMISSION_LEVEL_RANK.commenter).toBe(2);
-    expect(PERMISSION_LEVEL_RANK.edit_content).toBe(3);
-    expect(PERMISSION_LEVEL_RANK.editor).toBe(4);
-    expect(PERMISSION_LEVEL_RANK.admin).toBe(5);
+    expect(PERMISSION_LEVEL_RANK.editor).toBe(3);
+    expect(PERMISSION_LEVEL_RANK.admin).toBe(4);
   });
 
-  it("edit_content satisfies commenter and viewer, never editor or admin", () => {
-    expect(satisfiesPermissionLevel("edit_content", "viewer")).toBe(true);
-    expect(satisfiesPermissionLevel("edit_content", "commenter")).toBe(true);
-    expect(satisfiesPermissionLevel("edit_content", "edit_content")).toBe(true);
-    expect(satisfiesPermissionLevel("edit_content", "editor")).toBe(false);
-    expect(satisfiesPermissionLevel("edit_content", "admin")).toBe(false);
-    expect(satisfiesPermissionLevel("editor", "edit_content")).toBe(true);
+  it("labels read View / Comment / Edit / Full access", () => {
+    expect(PERMISSION_LEVELS.map((l) => PERMISSION_LEVEL_SHORT_LABELS[l])).toEqual(["View", "Comment", "Edit", "Full access"]);
+    expect(PERMISSION_LEVEL_HINTS.editor).toBe("Change values and content");
+    expect(PERMISSION_LEVEL_HINTS.admin).toBe("Edit plus structure and sharing");
+  });
+
+  it("a stored edit_content row is tolerated as editor, never crashes", () => {
+    expect(PERMISSION_LEVEL_RANK.edit_content).toBe(PERMISSION_LEVEL_RANK.editor);
+    expect(parsePermissionLevel("edit_content", "test")).toBe("editor");
+    expect(normalizePermissionLevel("edit_content")).toBe("editor");
+    expect(isDbPermissionLevel("editor")).toBe(true);
+    expect(OFFERED_DB_PERMISSION_LEVELS).not.toContain("edit_content");
   });
 });
 
@@ -103,8 +104,9 @@ describe("every derived structure covers every level", () => {
     const ranks = PERMISSION_LEVELS.map((level) => PERMISSION_LEVEL_RANK[level]);
     expect(new Set(ranks).size).toBe(PERMISSION_LEVELS.length);
     expect(ranks).toEqual([...ranks].sort((a, b) => a - b));
+    // the rank map also tolerates the retired `edit_content` (as editor's rank)
     expect(Object.keys(PERMISSION_LEVEL_RANK).sort()).toEqual(
-      [...PERMISSION_LEVELS].sort(),
+      [...PERMISSION_LEVELS, "edit_content"].sort(),
     );
   });
 
@@ -201,8 +203,8 @@ describe("an unknown level is announced, never swallowed", () => {
 });
 
 describe("the code ladder is a superset of the database enum", () => {
-  it("contains every value the database enum currently holds", () => {
-    for (const dbLevel of DB_PERMISSION_LEVELS) {
+  it("contains every value the database enum currently holds (bar the retired edit_content)", () => {
+    for (const dbLevel of OFFERED_DB_PERMISSION_LEVELS) {
       expect(PERMISSION_LEVELS).toContain(dbLevel);
     }
   });
@@ -280,6 +282,6 @@ describe("every permission picker offers exactly what the database accepts", () 
     for (const match of source.matchAll(/<SelectItem value="([^"]+)"/g)) {
       if (isPermissionLevel(match[1])) offered.add(match[1]);
     }
-    expect([...offered].sort()).toEqual([...DB_PERMISSION_LEVELS].sort());
+    expect([...offered].sort()).toEqual([...OFFERED_DB_PERMISSION_LEVELS].sort());
   });
 });

@@ -112,6 +112,27 @@ async function renderedTokens(page: Page, token: string): Promise<{ text: string
   }, token).catch(() => []);
 }
 
+/** Editor chips whose whole text is `name` (the editor draws `{{name}}` as a chip reading `name`), coloured. */
+async function chipsNamed(page: Page, name: string): Promise<number> {
+  return page
+    .evaluate((n) => {
+      let count = 0;
+      for (const el of Array.from(document.querySelectorAll("[contenteditable=true] *"))) {
+        if ((el.textContent ?? "").trim() !== n && (el.textContent ?? "").trim() !== `{{${n}}}`) continue;
+        for (let cur: Element | null = el, i = 0; cur && i < 3; cur = cur.parentElement, i += 1) {
+          const m = getComputedStyle(cur).backgroundColor.match(/rgba?\(([^)]+)\)/);
+          const parts = m ? m[1].split(",").map((x) => parseFloat(x)) : [0, 0, 0, 0];
+          if ((parts.length > 3 ? parts[3] : 1) > 0) {
+            count += 1;
+            break;
+          }
+        }
+      }
+      return count;
+    }, name)
+    .catch(() => 0);
+}
+
 test.describe.serial("THE VARIABLE RULE in the UI", () => {
   let page: Page;
   let agentId = "";
@@ -208,7 +229,8 @@ test.describe.serial("THE VARIABLE RULE in the UI", () => {
     // A reload (a peer's save, a parked host) restores the unsaved draft: type only what is not there.
     if ((await renderedTokens(page, "{{!slot}}")).length < 2) {
       await page.getByRole("button", { name: "User", exact: true }).click();
-      await page.getByText("User message / example input...").first().click();
+      // The user-message editor is the builder's second rich editor (the system prompt is the first).
+      await page.locator("[contenteditable=true]").nth(1).click();
       await page.keyboard.insertText(AUTHORED);
       await page.keyboard.press("Enter");
       await page.keyboard.insertText(ESCAPE_AUTHORED);
@@ -228,8 +250,8 @@ test.describe.serial("THE VARIABLE RULE in the UI", () => {
     for (const s of slots) {
       expect(s.alpha, `{{!slot}} is plain text, not a coloured chip (${JSON.stringify(s)})`).toBe(0);
     }
-    const mine = await renderedTokens(page, "{{my}}");
-    expect(mine.some((s) => s.text.trim() === "{{my}}" && s.alpha > 0), "{{my}} is drawn as an undeclared chip").toBe(true);
+    expect(await chipsNamed(page, "my"), "{{my}} is drawn as a variable chip in the editor").toBeGreaterThan(0);
+    expect(await chipsNamed(page, "slot"), "{{!slot}} never becomes a chip").toBe(0);
 
     // 4. Declare ONLY fake, with the chip's one click.
     await page.locator("button", { hasText: /^fake\s*$/i }).filter({ has: page.locator("svg") }).first().click();
@@ -238,8 +260,7 @@ test.describe.serial("THE VARIABLE RULE in the UI", () => {
     expect(after, "{{my}} stays undeclared").toMatch(/\bmy\b/);
     expect(after, "{{fake}} is declared now").not.toMatch(/\bfake\b/);
     expect(after).not.toMatch(/slot/);
-    const fakeChips = await renderedTokens(page, "{{fake}}");
-    expect(fakeChips.some((s) => s.text.trim() === "{{fake}}" && s.alpha > 0), "{{fake}} is drawn as a declared chip").toBe(true);
+    expect(await chipsNamed(page, "fake"), "{{fake}} is drawn as a variable chip in the editor").toBeGreaterThan(0);
 
     // 5. The cheapest plumbing model, chosen as a person chooses it.
     await page.locator("button[aria-haspopup=dialog]").filter({ hasText: /Claude|GPT|Gemini|Llama|Grok/ }).first().click();

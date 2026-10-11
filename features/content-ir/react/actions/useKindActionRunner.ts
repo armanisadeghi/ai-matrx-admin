@@ -233,6 +233,9 @@ export function useKindActionRunner(
           runShortcut,
           itemState: itemStateRef.current,
           openFile: (fileId) => openFilePreview(fileId),
+          openUrl: (url) => {
+            window.open(url, "_blank", "noopener,noreferrer");
+          },
           shareFile: (fileId, name) =>
             dispatch(
               openOverlay({

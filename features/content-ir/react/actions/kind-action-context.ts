@@ -106,6 +106,8 @@ export interface KindActionContext {
   openFile: (fileId: string) => void;
   /** Open the canonical share window for a saved file. */
   shareFile: (fileId: string, name: string) => void;
+  /** Open an already-validated link in a new tab (`noopener`). */
+  openUrl: (url: string) => void;
 }
 
 /** A kind capability. Pure w.r.t. globals — all deps arrive via ctx. */
