@@ -883,6 +883,7 @@ export const primaryNavItems: ShellNavItem[] = [
       { label: "All Agents", href: "/agents/all", iconName: "List", exact: true, group: "Agents" },
       { label: "Templates", href: "/agents/templates", iconName: "LayoutTemplate", group: "Agents" },
       { label: "Shortcuts", href: "/agents/shortcuts", iconName: "Zap", group: "Agents" },
+      { label: "Prompt blocks", href: "/agents/prompt-blocks", iconName: "Boxes", group: "Agents", guestHidden: true },
       { label: "Categories", href: "/agents/categories", iconName: "Folder", group: "Agents" },
       { label: "Org Chart", href: "/agents/org-chart", iconName: "Network", group: "Agents", guestHidden: true },
       { label: "System Builder", href: "/agents/system-builder", iconName: "Network", group: "Agents", guestHidden: true },
