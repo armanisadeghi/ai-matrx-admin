@@ -13,7 +13,7 @@ import {
   type SheetCell,
   type WorkbookLike,
 } from "../link-model";
-import { describeIssue, planToSheet, planToTable } from "../sync-plan";
+import { describeIssue, matchRowsToRecords, planToSheet, planToTable } from "../sync-plan";
 
 const field = (field_name: string, display_name: string, data_type: string, format?: unknown) =>
   ({ field_name, display_name, data_type, metadata: format ? { format } : {} }) as Parameters<typeof linkedFieldFor>[0];
@@ -187,5 +187,25 @@ describe("refresh sheet from table", () => {
     expect(plan.appended).toEqual([{ id: "rec-4", row: 5, label: "Pinecrest Pediatrics" }]);
     expect(plan.writes).toContainEqual({ row: 4, col: ID_COL, cell: { v: "rec-4", t: 1 } });
     expect(plan.writes).toContainEqual({ row: 4, col: col("Owner"), cell: { v: "Sam Lee", t: 1, s: "tl-ro" } });
+  });
+});
+
+describe("Make table: pairing sheet rows with the records the import made", () => {
+  it("matches by typed values (date serials, choice keys), never by position", () => {
+    // A sheet a person typed: dates are day serials, no id column yet.
+    const typed = exported();
+    for (const row of [1, 2, 3]) delete typed.sheets![SHEET].cellData![row]![ID_COL];
+    // The store hands records back in another order, with lowercase choice keys.
+    const records = [ROWS[2], ROWS[0], ROWS[1]].map((r) => ({ ...r, data: { ...r.data, stage: String(r.data.stage).toLowerCase() } }));
+    const { matched, unmatched } = matchRowsToRecords(parseSheet(typed, SHEET)!, FIELDS, records);
+    expect([...matched.entries()]).toEqual([[1, "rec-1"], [2, "rec-2"], [3, "rec-3"]]);
+    expect(unmatched).toEqual([]);
+  });
+
+  it("leaves a row that matches nothing unmatched instead of guessing", () => {
+    const typed = exported();
+    const { matched, unmatched } = matchRowsToRecords(parseSheet(typed, SHEET)!, FIELDS, [ROWS[0]]);
+    expect([...matched.values()]).toEqual(["rec-1"]);
+    expect(unmatched).toEqual([3, 4]);
   });
 });

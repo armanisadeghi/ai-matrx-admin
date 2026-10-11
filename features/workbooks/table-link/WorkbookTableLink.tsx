@@ -30,7 +30,8 @@ import { getTableMetadata } from "@/features/data-tables/service";
 import { isServiceFailure } from "@/features/data-tables/types";
 import { univerSnapshotToRows } from "@/features/workbooks/univer-snapshot-rows";
 
-import { RECORD_ID_HEADER, displayText, parseSheet, type TableLink } from "./link-model";
+import { RECORD_ID_HEADER, parseSheet, type TableLink } from "./link-model";
+import { matchRowsToRecords } from "./sync-plan";
 import { readLinks, readTableForSheet, writeLink } from "./link-service";
 import { settleLink, TableSyncDialog, writeCells, type SyncDirection } from "./TableSyncDialog";
 
@@ -44,39 +45,22 @@ function activeSheetId(api: FUniver | null): string | null {
 
 /**
  * After "Save to a table" made (or filled) a table from this sheet: give each sheet row its
- * record's id. Rows are matched by their values; whatever is left pairs up in order.
+ * record's id, matched by values (`matchRowsToRecords`); rows that match nothing are named.
  */
-async function linkSheetToNewTable(api: FUniver, workbookId: string, sheetId: string, tableId: string): Promise<TableLink> {
+async function linkSheetToNewTable(
+  api: FUniver,
+  workbookId: string,
+  sheetId: string,
+  tableId: string,
+): Promise<{ link: TableLink; unmatched: number[] }> {
   const table = await readTableForSheet(tableId);
   if (!table.ok) throw new Error(table.error);
   const sheet = parseSheet(api.getActiveWorkbook()?.save(), sheetId);
   if (!sheet) throw new Error("The sheet is no longer in this workbook");
-  const byHeader = new Map([...sheet.headers.entries()].map(([col, h]) => [h.trim().toLowerCase(), col]));
+  const byHeader = new Set([...sheet.headers.values()].map((h) => h.trim().toLowerCase()));
   const fields = table.data.fields.filter((f) => byHeader.has(f.header.trim().toLowerCase()));
   if (fields.length === 0) throw new Error("None of the table's columns match this sheet's header row");
-  const key = (values: string[]) => values.map((v) => v.trim().toLowerCase()).join("\u0001");
-  const sheetKey = (cells: (typeof sheet.rows)[number]["cells"]) =>
-    key(fields.map((f) => displayText(cells[byHeader.get(f.header.trim().toLowerCase())!]?.v ?? "")));
-  const pool = new Map<string, string[]>();
-  for (const r of table.data.rows) {
-    const k = key(fields.map((f) => displayText(r.data[f.field_name])));
-    pool.set(k, [...(pool.get(k) ?? []), r.id]);
-  }
-  const used = new Set<string>();
-  const assigned = new Map<number, string>();
-  for (const row of sheet.rows) {
-    const ids = pool.get(sheetKey(row.cells));
-    const id = ids?.find((x) => !used.has(x));
-    if (id) {
-      used.add(id);
-      assigned.set(row.row, id);
-    }
-  }
-  const leftover = table.data.rows.map((r) => r.id).filter((id) => !used.has(id));
-  for (const row of sheet.rows) {
-    if (assigned.has(row.row) || leftover.length === 0) continue;
-    assigned.set(row.row, leftover.shift()!);
-  }
+  const { matched: assigned, unmatched } = matchRowsToRecords(sheet, fields, table.data.rows);
   const idCol = sheet.maxCol + 1;
   writeCells(api, sheetId, [{ row: 0, col: idCol, cell: { v: RECORD_ID_HEADER, t: 1 } }, ...[...assigned].map(([row, id]) => ({ row, col: idCol, cell: { v: id, t: 1 } }))], {});
   api.getActiveWorkbook()?.getSheetBySheetId(sheetId)?.hideColumns(idCol, 1);
@@ -93,7 +77,7 @@ async function linkSheetToNewTable(api: FUniver, workbookId: string, sheetId: st
   };
   const settled = await settleLink(api, workbookId, link, "to_table");
   if (settled) throw new Error(settled);
-  return { ...link, last_synced_at: now, last_sync_direction: "to_table" };
+  return { link: { ...link, last_synced_at: now, last_sync_direction: "to_table" }, unmatched };
 }
 
 export function WorkbookTableLink({
@@ -197,8 +181,10 @@ export function WorkbookTableLink({
         setLinking(true);
         try {
           const made = await linkSheetToNewTable(api, workbookId, sid, tableId);
-          setLinks((current) => [...(current ?? []).filter((l) => l.sheet_id !== sid), made]);
-          toast.success("Sheet linked to the table");
+          setLinks((current) => [...(current ?? []).filter((l) => l.sheet_id !== sid), made.link]);
+          if (made.unmatched.length > 0) {
+            toast.error(`Linked; rows ${made.unmatched.slice(0, 8).join(", ")} matched no record and will be added on the next update`);
+          } else toast.success("Sheet linked to the table");
         } catch (e) {
           toast.error(`The table was made, but the sheet could not be linked: ${e instanceof Error ? e.message : String(e)}`);
         } finally {

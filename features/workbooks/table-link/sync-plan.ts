@@ -398,3 +398,40 @@ export function describeIssue(issue: SheetIssue): string {
       return `Row ${issue.row} names a record this table doesn't have; skipped`;
   }
 }
+
+// ─── first link: which record is which sheet row ─────────────────────────────
+
+/**
+ * After "Make table" imported a sheet: pair each sheet row with the record made from it. Values
+ * are compared per field, type-aware (a date cell holds a day serial, the record an ISO date), and
+ * each row takes the unused record agreeing on the most fields — at least half of them. A row
+ * with no such record stays unmatched (and is said so), never paired by position.
+ */
+export function matchRowsToRecords(
+  sheet: ParsedSheet,
+  fields: readonly LinkedField[],
+  records: readonly TableRowLike[],
+): { matched: Map<number, string>; unmatched: number[] } {
+  const columns = locateColumns(sheet, { fields: [...fields] }).columns;
+  const used = new Set<string>();
+  const matched = new Map<number, string>();
+  const unmatched: number[] = [];
+  const usable = fields.filter((f) => columns.has(f.field_name));
+  const need = Math.max(1, Math.ceil(usable.length / 2));
+  for (const row of sheet.rows) {
+    const values = readRow(usable, columns, row.cells).values;
+    let best: { id: string; score: number } | null = null;
+    for (const record of records) {
+      if (used.has(record.id)) continue;
+      let score = 0;
+      for (const f of usable) if (sameValue(f, values[f.field_name], record.data[f.field_name])) score += 1;
+      if (!best || score > best.score) best = { id: record.id, score };
+      if (score === usable.length) break;
+    }
+    if (best && best.score >= need) {
+      used.add(best.id);
+      matched.set(row.row, best.id);
+    } else unmatched.push(row.row + 1);
+  }
+  return { matched, unmatched };
+}
