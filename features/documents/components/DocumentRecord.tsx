@@ -289,6 +289,10 @@ export function DocumentRecord({
     }),
   });
 
+  // Every hook runs before the error return below: a hook after it ran on the first render and not on the
+  // error render, so a missing or deleted id crashed with "Rendered fewer hooks than expected".
+  const plainView = usePlainView(doc ? `udt-document-${doc.id}` : null);
+
   if (error) {
     return (
       <>
@@ -372,7 +376,6 @@ export function DocumentRecord({
     const markdown = univerDocToMarkdown(port.getSnapshot?.());
     return markdown || bodyTextOf(port.getDataStream()).text;
   };
-  const plainView = usePlainView(doc ? `udt-document-${doc.id}` : null);
 
   const actions = doc ? (
     <div className="flex items-center gap-0.5">
