@@ -8,7 +8,9 @@
 
 "use client";
 
-import { Check, ChevronDown, Layers, RotateCcw, Trophy } from "lucide-react";
+import type { ReactNode } from "react";
+import { Check, ChevronDown, Layers, RotateCcw, Trophy, X } from "lucide-react";
+import CardFaceBlock from "@/components/mardown-display/blocks/flashcards/CardFaceBlock";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -131,7 +133,9 @@ export function RoundProgress({
   );
 }
 
-/** End of a round: score, retake, retake missed, round size, back. */
+/** End of a round: score, retake, retake missed, round size, back. Learn
+ *  passes `retakeLabel` ("Continue"), no `onRetakeMissed`, and its stage
+ *  progress as `children`. */
 export function RoundComplete({
   title,
   correct,
@@ -144,6 +148,8 @@ export function RoundComplete({
   onRetake,
   onRetakeMissed,
   onBack,
+  retakeLabel = "New round",
+  children,
 }: {
   title: string;
   correct: number;
@@ -154,8 +160,12 @@ export function RoundComplete({
   dealt: number;
   onSizeChange: (count: number) => void;
   onRetake: () => void;
-  onRetakeMissed: () => void;
+  /** Absent: no "Retake missed" (Learn brings misses back by itself). */
+  onRetakeMissed?: () => void;
   onBack: () => void;
+  retakeLabel?: string;
+  /** Extra progress view under the score. */
+  children?: ReactNode;
 }) {
   const score = total > 0 ? Math.round((correct / total) * 100) : 0;
   const value = roundSizeValue(dealt, deckSize);
@@ -170,6 +180,7 @@ export function RoundComplete({
         <Stat label="Correct" value={String(correct)} tone="good" />
         <Stat label="Missed" value={String(missed)} tone={missed > 0 ? "bad" : undefined} />
       </div>
+      {children}
 
       {sizeChoices.length >= 2 && (
         <ToggleGroup
@@ -196,18 +207,18 @@ export function RoundComplete({
       )}
 
       <div className="flex w-full flex-col gap-2">
-        {missed > 0 && (
+        {missed > 0 && onRetakeMissed && (
           <Button icon={<RotateCcw />} variant="primary" className="w-full" onClick={onRetakeMissed}>
             Retake {missed} missed
           </Button>
         )}
         <Button
           icon={<RotateCcw />}
-          variant={missed > 0 ? "outline" : "primary"}
+          variant={missed > 0 && onRetakeMissed ? "outline" : "primary"}
           className="w-full"
           onClick={onRetake}
         >
-          New round
+          {retakeLabel}
         </Button>
         <Button variant="quiet" className="w-full" onClick={onBack}>
           Back to deck
@@ -240,6 +251,87 @@ function Stat({
       <div className="text-[11px] font-medium text-muted-foreground">
         {label}
       </div>
+    </div>
+  );
+}
+
+/** Multiple-choice answers (Test and Learn): equal tiles, the right one marked
+ *  green and a wrong pick red once answered. Faces render via CardFaceBlock. */
+export function QuizOptionGrid({
+  options,
+  correctAnswer,
+  selected,
+  answered,
+  onPick,
+}: {
+  options: string[];
+  correctAnswer: string;
+  selected: string | null;
+  answered: boolean;
+  onPick: (option: string) => void;
+}) {
+  return (
+    /* Every option is the same size: equal rows on the grid, one column on
+       a phone, two from sm up. A long face scrolls inside its tile. */
+    <div className="mt-3 grid auto-rows-fr grid-cols-1 gap-2 sm:mt-4 sm:grid-cols-2 sm:gap-3">
+      {options.map((option, i) => {
+        const isCorrectOption =
+          option.trim().toLowerCase() ===
+          correctAnswer.trim().toLowerCase();
+        const isSelected = selected === option;
+        return (
+          <button
+            key={option}
+            type="button"
+            disabled={answered}
+            onClick={() => onPick(option)}
+            className={cn(
+              "group flex min-h-16 min-w-0 items-start gap-3 rounded-xl border bg-card px-3.5 py-3 text-left shadow-sm transition-colors sm:min-h-20",
+              !answered &&
+                "border-border hover:border-primary/60 hover:bg-accent/40 active:scale-[0.99]",
+              answered &&
+                isCorrectOption &&
+                "border-green-500/70 bg-green-50 dark:bg-green-950/30",
+              answered &&
+                isSelected &&
+                !isCorrectOption &&
+                "border-red-500/70 bg-red-50 dark:bg-red-950/30",
+              answered && !isSelected && !isCorrectOption && "opacity-50",
+            )}
+          >
+            <span
+              className={cn(
+                "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border text-xs font-semibold tabular-nums",
+                !answered &&
+                  "border-border text-muted-foreground group-hover:border-primary/60 group-hover:text-primary",
+                answered &&
+                  isCorrectOption &&
+                  "border-green-600 bg-green-600 text-white dark:border-green-500 dark:bg-green-500",
+                answered &&
+                  isSelected &&
+                  !isCorrectOption &&
+                  "border-red-600 bg-red-600 text-white dark:border-red-500 dark:bg-red-500",
+                answered &&
+                  !isSelected &&
+                  !isCorrectOption &&
+                  "border-border text-muted-foreground",
+              )}
+              aria-hidden
+            >
+              {answered && isCorrectOption ? (
+                <Check className="h-3.5 w-3.5" />
+              ) : answered && isSelected ? (
+                <X className="h-3.5 w-3.5" />
+              ) : (
+                i + 1
+              )}
+            </span>
+            <span className="max-h-40 min-w-0 flex-1 self-center overflow-y-auto overscroll-contain scrollbar-thin">
+              <CardFaceBlock content={option} align="start" />
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }

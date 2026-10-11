@@ -64,8 +64,9 @@ A headless run has two possible `fc_set` writers: the surface's save and the str
 ## Study modes
 
 - Every grade funnels through `useFlashcardStudy().grade` (writes `study_attempt`, advances `item_mastery`, offline-aware via `recordAttemptOfflineAware`); both layouts use `FlashcardConfidenceRow` (`confidenceToResult` in `lib/srs/fsrs.ts`) — never a fork.
+- Learn is staged (`components/study/LearnSurface.tsx` + pure `data/learnQueue.ts`): multiple choice (`buildQuizQuestions`) → typed recall graded on meaning (`gradeTypedSemantic`) → mastered; a miss returns later in the round, a missed recall drops back to choice; rounds of `userPreferences.flashcard.learnRoundSize`, graded via `grade({ cardId })`.
 - Round size for Test / Write / Match: `data/roundSize.ts`, per learner at `userPreferences.flashcard.{testQuestionCount,writeCardCount,matchPairCount}` (0 = every card). Cloze/formula cards render through `studyFaces` / `CardFaceBlock`, never raw markup.
-- Swipe-to-grade (Study/Learn, touch only, armed once flipped): `components/study/SwipeToGrade.tsx` — right = knew it, left = again, through the same `handleGrade`; axis-locked (`touch-action: pan-y`), tap-to-flip untouched; on a phone it replaces left/right navigation while armed.
+- Swipe-to-grade (Study, touch only, armed once flipped): `components/study/SwipeToGrade.tsx` — right = knew it, left = again, through the same `handleGrade`; axis-locked (`touch-action: pan-y`), tap-to-flip untouched; on a phone it replaces left/right navigation while armed.
 - "Answer with" definition | term: `userPreferences.flashcard.answerWith`, in the deck's study options menu; `orientedStudyFaces` in `utils/cardVariants.ts` turns basic cards only (cloze/matching/formula keep their direction).
 - Edit card while studying: the pencil (deck editors only, `useAccess("fc_set")`) opens `components/study/StudyCardEditDialog.tsx` — the editor page's own exported `CardEditor`; each autosave calls `refreshCards`, anchored on the current card.
 - Collapse-on-mastery: `data/collapse.ts` folds mastered `expands_into` sub-cards; decision in `item_mastery.collapse_state`. Fast Fire launcher only.

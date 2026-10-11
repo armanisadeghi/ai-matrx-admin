@@ -136,9 +136,15 @@ export function LearnSurface({ setId }: { setId: string }) {
   const [answered, setAnswered] = useState<{ key: string; answer: string } | null>(null);
   const itemKey = learn && item ? `${learn.round}:${learn.position}` : "";
   const answeredHere = answered?.key === itemKey ? answered : null;
+  // The page's agents read the card Learn is on, not the hook's own index.
+  const cardIndex = card ? cards.indexOf(card) : -1;
   useFlashcardStudySurface({
     setId,
-    study,
+    study: {
+      ...study,
+      currentIndex: cardIndex,
+      isFlipped: answeredHere !== null,
+    },
     mode: "learn",
     backSeen: answeredHere !== null,
   });

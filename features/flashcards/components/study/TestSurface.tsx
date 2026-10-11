@@ -11,11 +11,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, BookOpen, Check, Loader2, X } from "lucide-react";
+import { ArrowRight, BookOpen, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
-import { cn } from "@/lib/utils";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { useQuizStudy } from "../../data/useQuizStudy";
 import { StudyDeckHeader } from "./StudyDeckHeader";
@@ -30,6 +29,7 @@ import {
 import {
   ROUND_PAGE_CLASS,
   RoundComplete,
+  QuizOptionGrid,
   RoundProgress,
   RoundSizeMenu,
 } from "./round-controls";
@@ -220,68 +220,13 @@ function QuestionPanel({
         </p>
       )}
 
-      {/* Every option is the same size: equal rows on the grid, one column on
-          a phone, two from sm up. A long face scrolls inside its tile. */}
-      <div className="mt-3 grid auto-rows-fr grid-cols-1 gap-2 sm:mt-4 sm:grid-cols-2 sm:gap-3">
-        {current.options.map((option, i) => {
-          const isCorrectOption =
-            option.trim().toLowerCase() ===
-            current.correctAnswer.trim().toLowerCase();
-          const isSelected = selected === option;
-          return (
-            <button
-              key={option}
-              type="button"
-              disabled={answered}
-              onClick={() => void study.answer(option)}
-              className={cn(
-                "group flex min-h-16 min-w-0 items-start gap-3 rounded-xl border bg-card px-3.5 py-3 text-left shadow-sm transition-colors sm:min-h-20",
-                !answered &&
-                  "border-border hover:border-primary/60 hover:bg-accent/40 active:scale-[0.99]",
-                answered &&
-                  isCorrectOption &&
-                  "border-green-500/70 bg-green-50 dark:bg-green-950/30",
-                answered &&
-                  isSelected &&
-                  !isCorrectOption &&
-                  "border-red-500/70 bg-red-50 dark:bg-red-950/30",
-                answered && !isSelected && !isCorrectOption && "opacity-50",
-              )}
-            >
-              <span
-                className={cn(
-                  "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border text-xs font-semibold tabular-nums",
-                  !answered &&
-                    "border-border text-muted-foreground group-hover:border-primary/60 group-hover:text-primary",
-                  answered &&
-                    isCorrectOption &&
-                    "border-green-600 bg-green-600 text-white dark:border-green-500 dark:bg-green-500",
-                  answered &&
-                    isSelected &&
-                    !isCorrectOption &&
-                    "border-red-600 bg-red-600 text-white dark:border-red-500 dark:bg-red-500",
-                  answered &&
-                    !isSelected &&
-                    !isCorrectOption &&
-                    "border-border text-muted-foreground",
-                )}
-                aria-hidden
-              >
-                {answered && isCorrectOption ? (
-                  <Check className="h-3.5 w-3.5" />
-                ) : answered && isSelected ? (
-                  <X className="h-3.5 w-3.5" />
-                ) : (
-                  i + 1
-                )}
-              </span>
-              <span className="max-h-40 min-w-0 flex-1 self-center overflow-y-auto overscroll-contain scrollbar-thin">
-                <CardFaceBlock content={option} align="start" />
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      <QuizOptionGrid
+        options={current.options}
+        correctAnswer={current.correctAnswer}
+        selected={selected}
+        answered={answered}
+        onPick={(option) => void study.answer(option)}
+      />
 
       {/* The agent's explanation of the right answer — generated, paid for,
           and previously dropped at the coercion boundary (D151). */}

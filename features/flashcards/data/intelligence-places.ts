@@ -86,6 +86,14 @@ export const FLASHCARDS_PLACES: FeaturePlaces = {
       sources: ["features/flashcards/components/study/WriteSurface.tsx"],
     },
     {
+      id: "learn",
+      label: "Learn mode",
+      trigger: "Checking a typed answer",
+      urlPattern: "/education/flashcards/[setId]/learn",
+      mandateKeys: [FC_MANDATES.gradeTypedAnswer],
+      sources: ["features/flashcards/components/study/LearnSurface.tsx"],
+    },
+    {
       id: "test",
       label: "Test mode",
       trigger: "Building quiz questions",

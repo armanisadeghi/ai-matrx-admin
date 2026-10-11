@@ -87,7 +87,7 @@ export const flashcardsAdminMap: FeatureAdminMap = {
       status: "Live",
       notes: [
         "Phase 1B of the competitive-parity push",
-        "Driven by useFlashcardStudy({ reshuffleWeighted: true, mode: 'learn' }) → the SAME shared StudyDeck",
+        "Staged rounds: multiple choice → typed recall (graded on meaning) → mastered (data/learnQueue.ts)",
       ],
     },
     {
@@ -310,7 +310,7 @@ export const flashcardsAdminMap: FeatureAdminMap = {
       name: "LearnSurface",
       filePath: "features/flashcards/components/study/LearnSurface.tsx",
       description:
-        "Phase 1B — Learn mode driver: useFlashcardStudy({ reshuffleWeighted: true, mode: 'learn' }) → the shared StudyDeck (flip/grade/keyboard/tutor/review all reused for free).",
+        "Learn mode: staged rounds over data/learnQueue.ts — Test's multiple choice, Write's meaning grader, the shared RoundComplete; every answer via useFlashcardStudy.grade({ cardId }).",
       tier: "internal",
     },
     {
