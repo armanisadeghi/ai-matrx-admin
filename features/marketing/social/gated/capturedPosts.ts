@@ -103,6 +103,19 @@ export async function readCapturedPost(postId: string): Promise<CapturedPostRow 
   return (data as CapturedPostRow | null) ?? null;
 }
 
+/**
+ * Point the organization's captured row at the shared post it now is (after a public read of its link).
+ * Only `post_id` changes; the row stays the organization's.
+ */
+export async function linkCapturedPost(postId: string, sharedPostId: string): Promise<void> {
+  const { error } = await client()
+    .schema("social")
+    .from("captured_post")
+    .update({ post_id: sharedPostId })
+    .eq("id", capturedRowId(postId));
+  if (error) throw new Error(`Could not link the captured post: ${error.message}`);
+}
+
 const num = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) ? v : v == null ? null : Number.isFinite(Number(v)) ? Number(v) : null);
 
 function postUrl(row: CapturedPostRow, handle: string | null): string {

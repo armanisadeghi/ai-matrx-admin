@@ -41,6 +41,8 @@ import type { PostCardModel } from "../types";
 import { OutlierBadge } from "./OutlierBadge";
 import { useCanEditSocial } from "../useCanEditSocial";
 import { PostCardMenuItems } from "./PostCardMenuItems";
+import { postActionRunners } from "./usePostActions";
+import { socialKeys } from "../hooks";
 import { postMenuKey, registerPostCardMenu } from "./post-card-menu";
 import { accountHref as accountHrefOf } from "../account-href";
 import { postThumbnailDoor } from "../server";
@@ -95,6 +97,19 @@ export function SocialPostCard({ post, onOpen, onSave, extraActions, isNew, comp
   const stats = [countLabel(post.views, "view"), compact ? null : countLabel(post.likes, "like")].filter(Boolean).join(" · ");
   const absolute = post.postedAt ? postedTitle(post.postedAt) : "";
   const queryClient = useQueryClient();
+  // A captured post's Save reads it from its link first (points named), then saves the shared post.
+  const saveCaptured = () =>
+    brand
+      ? postActionRunners(
+          { postId: post.postId, organizationId: brand.organizationId, hasTranscript: false },
+          { invalidate: () => queryClient.invalidateQueries({ queryKey: socialKeys.all }) },
+        )
+          .saveToSwipe()
+          .then(
+            (message) => toast.success(message),
+            (err: unknown) => toast.error(err instanceof Error ? err.message : "Couldn't save the post"),
+          )
+      : Promise.resolve();
   // The card's rows join the page's ONE right-click menu ("Post"), registered only when it opens.
   const registerMenu = () =>
     registerPostCardMenu({
@@ -243,6 +258,12 @@ export function SocialPostCard({ post, onOpen, onSave, extraActions, isNew, comp
               ))}
               {brand && !isCapturedPostId(post.postId) ? (
                 <PostCardMenuItems post={post} brandSeg={brand.seg} organizationId={brand.organizationId} hasSaveHandler={Boolean(onSave)} />
+              ) : null}
+              {brand && canEdit && !onSave && isCapturedPostId(post.postId) ? (
+                <DropdownMenuItem onSelect={() => void saveCaptured()}>
+                  <Bookmark className="mr-2 h-4 w-4" />
+                  Save to swipe file
+                </DropdownMenuItem>
               ) : null}
               {onSave && canEdit ? (
                 <DropdownMenuItem onSelect={() => onSave(post)}>

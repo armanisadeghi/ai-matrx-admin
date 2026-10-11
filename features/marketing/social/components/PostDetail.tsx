@@ -84,7 +84,8 @@ import { MetricChart, seriesToCsv } from "./MetricChart";
 import { OutlierBadge } from "./OutlierBadge";
 import { PlatformMark } from "./PlatformMark";
 import { PostMedia, guessAspect } from "./PostMedia";
-import { usePostActions } from "./usePostActions";
+import { sharedPostIdFor, usePostActions } from "./usePostActions";
+import { isCapturedPostId, linkCapturedPost } from "../gated/capturedPosts";
 import { postScopeValues } from "@/features/board/items/social-tile-values";
 import { useCanEditSocial } from "../useCanEditSocial";
 import { socialPostKind, postTranscriptKind } from "../kind-models";
@@ -135,7 +136,9 @@ function TranscriptTab({ postId, organizationId, canEdit }: { postId: string; or
     if (!(await confirmPostSpend("transcript"))) return;
     setBusy(true);
     try {
-      const outcome = await getTranscript(postId, { organizationId });
+      const id = await sharedPostIdFor(postId, organizationId);
+      if (!id) return;
+      const outcome = await getTranscript(id, { organizationId });
       await client.invalidateQueries({
         queryKey: socialKeys.transcript(postId),
       });
@@ -373,7 +376,9 @@ function BreakdownTab({ postId, organizationId, canEdit }: { postId: string; org
     setBusy(true);
     setState("idle");
     try {
-      await analyzePost(postId, { organizationId });
+      const id = await sharedPostIdFor(postId, organizationId);
+      if (!id) return;
+      await analyzePost(id, { organizationId });
       await client.invalidateQueries({
         queryKey: socialKeys.analysis(organizationId, postId),
       });
@@ -541,7 +546,9 @@ export function PostDetailBody({
     try {
       let id = collectionId;
       if (!id) id = (await createCollection({ name: "Saved" }, { organizationId })).collection_id;
-      await addToCollection(id, { itemType: "social_post", itemId: postId }, { organizationId });
+      const shared = await sharedPostIdFor(postId, organizationId);
+      if (!shared) return;
+      await addToCollection(id, { itemType: "social_post", itemId: shared }, { organizationId });
       await client.invalidateQueries({
         queryKey: socialKeys.collections(organizationId),
       });
@@ -558,7 +565,10 @@ export function PostDetailBody({
     if (!(await confirmPostSpend("refresh_metrics"))) return;
     setBusy(true);
     try {
-      setFetchTrace((await ingestPost({ url, landMedia: false, transcript: false, force: true }, { organizationId })).trace);
+      const read = await ingestPost({ url, landMedia: false, transcript: false, force: true }, { organizationId });
+      // A captured post read from its link IS that shared post from now on.
+      if (isCapturedPostId(postId)) await linkCapturedPost(postId, read.post_id);
+      setFetchTrace(read.trace);
       await client.invalidateQueries({ queryKey: socialKeys.all });
     } catch (err) {
       toast.error(socialErrorMessage(err, "Refresh failed"));

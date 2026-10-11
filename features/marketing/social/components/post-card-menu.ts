@@ -58,11 +58,7 @@ export function postCardMenuRows(input: PostCardMenuInput): RecordMenuRows {
     },
     ...(extraActions ?? []).map((a) => ({ kind: "item" as const, id: `x-${a.id}`, label: a.label, onSelect: () => a.onSelect(post) })),
   ];
-  // A post only this organization's browser captured is not in the shared cache, so the server's post
-  // actions (swipe, transcript, breakdown) have nothing to act on; its account link still opens.
-  if (brand && isCapturedPostId(post.postId)) {
-    if (accountHref) items.push({ kind: "link", id: "open-account", label: "Open account", icon: UserRound, href: accountHref });
-  } else if (brand) {
+  if (brand) {
     const runners = postActionRunners(
       { postId: post.postId, organizationId: brand.organizationId, hasTranscript: false },
       { invalidate: () => queryClient.invalidateQueries({ queryKey: socialKeys.all }) },
@@ -73,7 +69,11 @@ export function postCardMenuRows(input: PostCardMenuInput): RecordMenuRows {
         (err: unknown) => toast.error(err instanceof Error ? err.message : "That didn't work"),
       );
     if (accountHref) items.push({ kind: "link", id: "open-account", label: "Open account", icon: UserRound, href: accountHref });
-    if (canEdit) {
+    // A post only this organization's browser captured offers Save (it reads the post from its link
+    // first, points named); transcript and breakdown live in its post window.
+    if (canEdit && isCapturedPostId(post.postId)) {
+      if (!onSave) items.push({ kind: "item", id: "save-swipe", label: "Save to swipe file", icon: Bookmark, onSelect: run(runners.saveToSwipe) });
+    } else if (canEdit) {
       if (!onSave) items.push({ kind: "item", id: "save-swipe", label: "Save to swipe file", icon: Bookmark, onSelect: run(runners.saveToSwipe) });
       const points = transcriptPoints(queryClient, brand.organizationId);
       items.push({ kind: "item", id: "transcript", label: "Get transcript", icon: FileText, ...(points ? { hint: points } : {}), onSelect: run(runners.transcript) });
