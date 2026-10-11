@@ -14,6 +14,8 @@ import {
   Globe,
   MoreHorizontal,
   Printer,
+  Link2,
+  ExternalLink,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -24,6 +26,8 @@ import {
 import { printPublishedPage } from "@/features/canvas/output/printPage";
 import { copyHtmlSource, downloadHtmlSource } from "@/features/html-pages/output/htmlSourceOutput";
 import { Button } from "@ai-matrx/design-system/controls";
+import { copyText } from "@ai-matrx/kit/clipboard";
+import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { cn } from "@/styles/themes/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
@@ -53,6 +57,8 @@ import {
   WIDE_FIGURE_ATTRIBUTE,
   WIDE_FIGURE_CLASS,
 } from "@ai-matrx/chat/agents/components/shared/assistant-message-layout";
+
+const copyPageLink = (link: string) => copyText(link, { successMessage: "Copied page link", notify: copyNotify });
 
 /**
  * HtmlInlinePreview — auto-renders previewable HTML as a live, inline webpage
@@ -363,13 +369,29 @@ const HtmlInlinePreview: React.FC<HtmlInlinePreviewProps> = ({
             aria-label="Download .html"
           />
           {url ? (
-            <Button
-              variant="quiet"
-              icon={<Printer />}
-              onClick={printPage}
-              title="Print page"
-              aria-label="Print page"
-            />
+            <>
+              <Button
+                variant="quiet"
+                icon={<Link2 />}
+                onClick={() => void copyPageLink(url)}
+                title="Copy page link"
+                aria-label="Copy page link"
+              />
+              <Button
+                variant="quiet"
+                icon={<ExternalLink />}
+                onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
+                title="Open page"
+                aria-label="Open page"
+              />
+              <Button
+                variant="quiet"
+                icon={<Printer />}
+                onClick={printPage}
+                title="Print page"
+                aria-label="Print page"
+              />
+            </>
           ) : null}
         </span>
         <span className="contents @min-[32rem]:hidden">
@@ -400,6 +422,16 @@ const HtmlInlinePreview: React.FC<HtmlInlinePreviewProps> = ({
               <DropdownMenuItem onSelect={() => downloadHtmlSource(title, shownHtml ?? code)}>
                 <Download /> Download .html
               </DropdownMenuItem>
+              {url ? (
+                <DropdownMenuItem onSelect={() => void copyPageLink(url)}>
+                  <Link2 /> Copy page link
+                </DropdownMenuItem>
+              ) : null}
+              {url ? (
+                <DropdownMenuItem onSelect={() => window.open(url, "_blank", "noopener,noreferrer")}>
+                  <ExternalLink /> Open page
+                </DropdownMenuItem>
+              ) : null}
               {url ? (
                 <DropdownMenuItem onSelect={printPage}>
                   <Printer /> Print page
