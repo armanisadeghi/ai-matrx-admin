@@ -27,11 +27,19 @@ export interface CleanupEdit {
   replacement: string;
 }
 
+/** A protected region's character span (code, table, JSON…). */
+export interface BlockSpan {
+  start: number;
+  end: number;
+}
+
 export interface CleanupOperationDef extends CleanupOperationMeta {
   /** Plain-language, past-tense phrase for the review cards (no jargon). */
   human: string;
-  /** Precise edits this op would make to `text` (non-overlapping, sorted). */
-  edits(text: string): CleanupEdit[];
+  /** Precise edits this op would make to `text` (non-overlapping, sorted).
+   *  `blocks` = protected spans when `text` is the raw (unmasked) content —
+   *  the review passes them; the engine's masked text carries sentinels instead. */
+  edits(text: string, blocks?: readonly BlockSpan[]): CleanupEdit[];
   run(text: string): OperationRunResult;
 }
 
@@ -59,9 +67,9 @@ const SMART_SINGLE_QUOTES = new RegExp(
   `[${chars(0x2018, 0x2019, 0x201a, 0x201b, 0x2032)}]`,
   "g",
 );
-/** The orchestrator's protected-region sentinels (see clean.ts). */
-const PROTECTED_OPEN = String.fromCodePoint(0xe000);
-const PROTECTED_CLOSE = String.fromCodePoint(0xe001);
+/** Sentinels wrapping each masked protected region (see clean.ts). */
+export const PROTECTED_OPEN = String.fromCodePoint(0xe000);
+export const PROTECTED_CLOSE = String.fromCodePoint(0xe001);
 const ELLIPSIS = new RegExp(chars(0x2026), "g");
 const BULLET_GLYPHS = new RegExp(
   `^(\\s*)[${chars(
@@ -236,14 +244,17 @@ export const CLEANUP_OPERATIONS: CleanupOperationDef[] = [
     description: "Delete every empty line; lines are never joined.",
     defaultEnabled: false,
     group: "extra",
-    // A run of newlines (with any whitespace-only lines between) becomes one
-    // newline. Next to a protected block (code, table, JSON…) one blank line is
-    // kept so markdown still sees the block as its own block.
-    edits: (t) =>
-      regexEdits(t, /\n(?:[ \t]*\n)+/g, (m) => {
+    // A run of newlines (with any whitespace-only lines between, CR included)
+    // becomes one newline. Next to a protected block (code, table, JSON…) one
+    // blank line is kept so markdown still sees the block as its own block.
+    edits: (t, blocks) =>
+      regexEdits(t, /\n(?:[ \t\r]*\n)+/g, (m) => {
         const end = m.index + m[0].length;
+        const lineEnd = t[m.index - 1] === "\r" ? m.index - 1 : m.index;
         const touchesBlock =
-          t[m.index - 1] === PROTECTED_CLOSE || t[end] === PROTECTED_OPEN;
+          t[lineEnd - 1] === PROTECTED_CLOSE ||
+          t[end] === PROTECTED_OPEN ||
+          (blocks?.some((b) => b.end === lineEnd || b.start === end) ?? false);
         return {
           start: m.index,
           end,

@@ -21,7 +21,11 @@
 //     corrupting the note — a recovery layer that screams when it fires.
 
 import { getProtectedRegions } from "./segment";
-import { CLEANUP_OPERATIONS } from "./operations";
+import {
+  CLEANUP_OPERATIONS,
+  PROTECTED_CLOSE as PH_CLOSE,
+  PROTECTED_OPEN as PH_OPEN,
+} from "./operations";
 import {
   CLEANUP_REGION_OPERATIONS,
   applyRegionOperations,
@@ -34,9 +38,6 @@ import type {
   RegionChange,
   RegionOperationOutcome,
 } from "./types";
-
-const PH_OPEN = String.fromCodePoint(0xe000);
-const PH_CLOSE = String.fromCodePoint(0xe001);
 
 function countLines(s: string): number {
   let n = s === "" ? 0 : 1;

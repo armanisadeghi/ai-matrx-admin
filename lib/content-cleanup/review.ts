@@ -114,7 +114,9 @@ export function buildOperationCards(
   const cards: OperationCard[] = [];
   for (const op of CLEANUP_OPERATIONS) {
     if (!enabled.has(op.id)) continue;
-    const edits = op.edits(content).filter((e) => !isProtected(e.start, e.end));
+    const edits = op
+      .edits(content, regions)
+      .filter((e) => !isProtected(e.start, e.end));
     if (edits.length === 0) continue;
     cards.push({
       id: op.id,
