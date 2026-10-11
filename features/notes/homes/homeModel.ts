@@ -21,6 +21,21 @@ export interface NoteHome {
   /** The scope type's singular label ("Client", "Case", "General"). */
   scopeTypeLabel: string;
   isGeneral: boolean;
+  /** A General not created yet: `scopeId` is a placeholder (`generalPlaceholderId`)
+   *  resolved on choose through `platform.ensure_general_scope`. */
+  unresolved?: boolean;
+}
+
+const GENERAL_PLACEHOLDER_PREFIX = "org-general:";
+
+/** The placeholder id of an organization's not-yet-created General. */
+export function generalPlaceholderId(organizationId: string): string {
+  return `${GENERAL_PLACEHOLDER_PREFIX}${organizationId}`;
+}
+
+/** The organization a placeholder General stands for; null for a real scope id. */
+export function placeholderGeneralOrganization(scopeId: string): string | null {
+  return scopeId.startsWith(GENERAL_PLACEHOLDER_PREFIX) ? scopeId.slice(GENERAL_PLACEHOLDER_PREFIX.length) : null;
 }
 
 /** The slice of a scope-tree organization a home list needs. */
@@ -34,10 +49,24 @@ export function isGeneralScopeType(type: Pick<ScopeTypeWithScopes, "slug">): boo
   return type.slug === GENERAL_SCOPE_TYPE_SLUG;
 }
 
-/** Every home a person can put a note in: each organization's General, then its scopes. */
+/** Every home a person can put a note in: each organization's General (a placeholder
+ *  until it exists — every organization offers one), then its scopes. */
 export function buildHomes(organizations: readonly HomeOrganization[]): NoteHome[] {
   const homes: NoteHome[] = [];
   for (const org of organizations) {
+    const hasGeneral = org.scope_types.some((type) => isGeneralScopeType(type) && type.scopes.length > 0);
+    if (!hasGeneral) {
+      homes.push({
+        scopeId: generalPlaceholderId(org.id),
+        name: "General",
+        organizationId: org.id,
+        organizationName: org.name,
+        scopeTypeId: "",
+        scopeTypeLabel: "General",
+        isGeneral: true,
+        unresolved: true,
+      });
+    }
     for (const type of org.scope_types) {
       const isGeneral = isGeneralScopeType(type);
       for (const scope of type.scopes) {

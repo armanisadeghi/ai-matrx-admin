@@ -21,7 +21,10 @@ import type { ResourceType } from "@/utils/permissions/types";
 import { FileMenuItems, type FileMenuItemsProps } from "./FileMenuItems";
 import { MoveToProjectDialog } from "./MoveToProjectDialog";
 
-export type FileMenuProps = Omit<FileMenuItemsProps, "onShare" | "onMoveRequest"> & {
+export type FileMenuProps = Omit<
+  FileMenuItemsProps,
+  "onShare" | "onMoveRequest"
+> & {
   resourceType: ResourceType;
   id: string;
   /** A Share row (and, in lists, a Share button). Editors have Share in their header: false. */
@@ -29,7 +32,10 @@ export type FileMenuProps = Omit<FileMenuItemsProps, "onShare" | "onMoveRequest"
   /** A visible Share button next to the menu (list rows). */
   shareButton?: boolean;
   projectId?: string | null;
-  onMove?: (projectId: string | null, projectName: string | null) => Promise<void> | void;
+  onMove?: (
+    projectId: string | null,
+    projectName: string | null,
+  ) => Promise<void> | void;
   /** "icon" is the ⋯ of a list row; "label" is the editor's text "File" button. */
   trigger?: "icon" | "label";
   disabled?: boolean;
@@ -62,30 +68,39 @@ export function FileMenu({
           onClick={() => setShareOpen(true)}
         />
       )}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          {trigger === "label" ? (
-            <ToolbarButton variant="ghost" size="sm" className="h-7 gap-1 px-2 text-xs" title="File" disabled={disabled}>
-              File
-            </ToolbarButton>
-          ) : (
-            <Button
-              icon={<MoreHorizontal />}
-              aria-label={`Actions for ${name}`}
-              title="More actions"
-              variant="quiet"
-              disabled={disabled}
+      {/* In Trash only the owner can act (Restore); anyone else would open an empty menu. */}
+      {!(trashed && !items.canManage) && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            {trigger === "label" ? (
+              <ToolbarButton
+                variant="ghost"
+                size="sm"
+                className="h-7 gap-1 px-2 text-xs"
+                title="File"
+                disabled={disabled}
+              >
+                File
+              </ToolbarButton>
+            ) : (
+              <Button
+                icon={<MoreHorizontal />}
+                aria-label={`Actions for ${name}`}
+                title="More actions"
+                variant="quiet"
+                disabled={disabled}
+              />
+            )}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-[11rem]">
+            <FileMenuItems
+              {...items}
+              {...(shareable ? { onShare: () => setShareOpen(true) } : {})}
+              {...(onMove ? { onMoveRequest: () => setMoveOpen(true) } : {})}
             />
-          )}
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="min-w-[11rem]">
-          <FileMenuItems
-            {...items}
-            {...(shareable ? { onShare: () => setShareOpen(true) } : {})}
-            {...(onMove ? { onMoveRequest: () => setMoveOpen(true) } : {})}
-          />
-        </DropdownMenuContent>
-      </DropdownMenu>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
       {shareOpen && (
         <ShareModal
           isOpen={shareOpen}

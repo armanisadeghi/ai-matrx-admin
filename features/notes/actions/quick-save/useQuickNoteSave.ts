@@ -4,10 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAllNotesList,
-  selectAllFolders,
   selectNotesListStatus,
   selectNotesListError,
-  selectNotesByFolder,
 } from "@/features/notes/redux/selectors";
 import {
   fetchNotesList,
@@ -30,10 +28,14 @@ import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 export type { SaveMode, UpdateMethod } from "./quickNoteSaveVocabulary";
 import type { SaveMode, UpdateMethod } from "./quickNoteSaveVocabulary";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { useNoteHomes } from "@/features/notes/homes/useNoteHomes";
+import { resolveHomeScopeId } from "@/features/notes/homes/moveNoteToHome";
 
 export interface UseQuickNoteSaveArgs {
   initialContent: string;
-  defaultFolder?: string;
+  /** A code-owned bucket ("Chat Saves", "Voice Notes"…): stamped as a TAG on
+   *  the new note. The home stays the database default unless one is picked. */
+  bucketTag?: string;
   /** Pre-filled note title (e.g. chat save: "My topic Message 4"). */
   defaultNoteName?: string;
 }
@@ -55,7 +57,7 @@ function buildTimestampNoteName(): string {
 
 export function useQuickNoteSave({
   initialContent: rawInitialContent,
-  defaultFolder = "Scratch",
+  bucketTag,
   defaultNoteName: initialNoteName,
 }: UseQuickNoteSaveArgs) {
   const dispatch = useAppDispatch();
@@ -70,13 +72,12 @@ export function useQuickNoteSave({
   const { workingContent, initialContent } = refine;
 
   const allNotes = useAppSelector(selectAllNotesList);
-  const foldersFromRedux = useAppSelector(selectAllFolders);
-  const allFolders = useMemo(() => {
-    if (!defaultFolder || foldersFromRedux.includes(defaultFolder)) {
-      return foldersFromRedux;
-    }
-    return [defaultFolder, ...foldersFromRedux];
-  }, [foldersFromRedux, defaultFolder]);
+  // Homes (item homes): "" = the General of the active organization.
+  const homes = useNoteHomes();
+  const allHomes = useMemo(
+    () => homes.homes.map((h) => ({ scopeId: h.scopeId, label: homes.labelOf(h.scopeId) ?? h.name })),
+    [homes],
+  );
   const listStatus = useAppSelector(selectNotesListStatus);
   const listError = useAppSelector(selectNotesListError);
   const selectedOrganizationId = useAppSelector(selectOrganizationId);
@@ -94,22 +95,22 @@ export function useQuickNoteSave({
   const [noteName, setNoteName] = useState(
     () => initialNoteName?.trim() || buildTimestampNoteName(),
   );
-  const [folder, setFolder] = useState(defaultFolder);
+  const [home, setHome] = useState("");
   const [mode, setMode] = useState<SaveMode>("create");
-  // Selection is stored WITH the folder+mode it was made under; changing
+  // Selection is stored WITH the home+mode it was made under; changing
   // either invalidates it by derivation (no setState-in-effect reset).
   const [selection, setSelection] = useState<{
-    folder: string;
+    home: string;
     mode: SaveMode;
     id: string;
   } | null>(null);
   const selectedNoteId =
-    selection && selection.folder === folder && selection.mode === mode
+    selection && selection.home === home && selection.mode === mode
       ? selection.id
       : "";
   const setSelectedNoteId = useCallback(
-    (id: string) => setSelection(id ? { folder, mode, id } : null),
-    [folder, mode],
+    (id: string) => setSelection(id ? { home, mode, id } : null),
+    [home, mode],
   );
   const [updateMethod, setUpdateMethod] = useState<UpdateMethod>("append");
 
@@ -117,7 +118,11 @@ export function useQuickNoteSave({
   const [isSaving, setIsSaving] = useState(false);
   const [savedNote, setSavedNote] = useState<Note | null>(null);
 
-  const notesInFolder = useAppSelector(selectNotesByFolder(folder));
+  const notesInHome = useMemo(
+    () => (home ? allNotes.filter((n) => n.home_scope_id === home) : allNotes),
+    [allNotes, home],
+  );
+  const homeLabel = home ? (homes.labelOf(home) ?? "Home") : "General";
 
   const selectedNote: NoteRecord | undefined = useMemo(
     () => allNotes.find((n) => n.id === selectedNoteId),
@@ -148,7 +153,7 @@ export function useQuickNoteSave({
     let organizationId: string;
     if (isCreate) {
       try {
-        organizationId = await ensureOrgId(null);
+        organizationId = await ensureOrgId(home ? (homes.byId.get(home)?.organizationId ?? null) : null);
       } catch (error) {
         throw error;
       }
@@ -172,7 +177,7 @@ export function useQuickNoteSave({
           op: "create" as const,
           label: noteName.trim() || "Quick Note",
           content: trimmedContent,
-          folder_name: folder,
+          home_scope_id: home || null,
           organization_id: organizationId ?? "",
         }
       : {
@@ -202,13 +207,22 @@ export function useQuickNoteSave({
         recoveryId,
         run: async () => {
           if (isCreate) {
+            // A chosen home that is an organization's General is left to the
+            // database default; a General not created yet is created on choose.
+            const picked = home ? homes.byId.get(home) : undefined;
+            let homeScopeId: string | null = null;
+            if (picked && !picked.isGeneral) {
+              const resolved = await resolveHomeScopeId(picked.scopeId);
+              if (!resolved.ok) throw new Error(resolved.message);
+              homeScopeId = resolved.scopeId;
+            }
             const note = await dispatch(
               createNewNote({
                 label: noteName.trim() || "Quick Note",
                 content: trimmedContent,
-                folder_name: folder,
                 organization_id: organizationId,
-                tags: [],
+                ...(homeScopeId ? { home_scope_id: homeScopeId } : {}),
+                tags: bucketTag ? [bucketTag] : [],
               }),
             ).unwrap();
             return note;
@@ -239,7 +253,7 @@ export function useQuickNoteSave({
       });
 
       if (isCreate) {
-        toast.success(`Created in ${folder}!`);
+        toast.success(`Created in ${homeLabel}`);
       } else {
         toast.success(
           `Content ${updateMethod === "append" ? "appended to" : "overwrote"} ${
@@ -261,7 +275,10 @@ export function useQuickNoteSave({
     toast,
     mode,
     noteName,
-    folder,
+    home,
+    homes,
+    homeLabel,
+    bucketTag,
     workingContent,
     initialContent,
     selectedNoteId,
@@ -272,13 +289,13 @@ export function useQuickNoteSave({
   const reset = useCallback(() => {
     refine.resetTransforms();
     setNoteName(initialNoteName?.trim() || buildTimestampNoteName());
-    setFolder(defaultFolder);
+    setHome("");
     setMode("create");
     setSelectedNoteId("");
     setUpdateMethod("append");
     setSavedNote(null);
     setIsSaving(false);
-  }, [defaultFolder, initialNoteName, refine]);
+  }, [initialNoteName, refine]);
 
   const isSaveDisabled =
     isSaving ||
@@ -295,8 +312,9 @@ export function useQuickNoteSave({
     // targets
     noteName,
     setNoteName,
-    folder,
-    setFolder,
+    home,
+    setHome,
+    homeLabel,
     mode,
     setMode,
     selectedNoteId,
@@ -306,10 +324,10 @@ export function useQuickNoteSave({
     selectedNote,
 
     // data
-    allFolders,
-    notesInFolder,
-    // The notes-list read behind `notesInFolder` / `allFolders` (RC-B12): a
-    // picker must not say "No notes in this folder" while it is loading or
+    allHomes,
+    notesInHome,
+    // The notes-list read behind `notesInHome` (RC-B12): a
+    // picker must not say "No notes here" while it is loading or
     // after it failed.
     listStatus,
     listError,

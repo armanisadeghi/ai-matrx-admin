@@ -12,7 +12,6 @@ import {
   Check,
   X,
   GitCompareArrows,
-  FolderPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
@@ -38,14 +37,14 @@ import type { Note } from "@/features/notes/types";
 import { useQuickNoteSave } from "./useQuickNoteSave";
 import { NOTE_DRAFT_FIELDS } from "./quickNoteSaveVocabulary";
 import { useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { CreateFolderDialog } from "@/features/notes/components/CreateFolderDialog";
 import { ReadFailure } from "@ai-matrx/design-system";
 
 export type PostSaveAction = "newTab" | "navigate" | "openWindow" | "none";
 
 export interface QuickNoteSaveCoreProps {
   initialContent: string;
-  defaultFolder?: string;
+  /** A code-owned bucket ("Chat Saves", "Voice Notes"…), stamped as a tag. */
+  bucketTag?: string;
   /** Pre-filled note title when the caller knows it (e.g. chat save). */
   defaultNoteName?: string;
   /** Compact footprint (popover). */
@@ -62,7 +61,7 @@ export interface QuickNoteSaveCoreProps {
    * Canonical `ui_surface.name` of the shell hosting this core, when that
    * shell publishes a surface (today: the Quick Note Save WINDOW). Passing it
    * registers this core's `note_draft` write handler against that surface, so
-   * an agent bound to the window can stage a title / body / folder into the
+   * an agent bound to the window can stage a title / body / home into the
    * live form. Omitted by the popover / dialog / overlay shells, which publish
    * no surface of their own — a core with no surfaceName registers nothing.
    */
@@ -78,7 +77,7 @@ export interface QuickNoteSaveCoreProps {
 
 export function QuickNoteSaveCore({
   initialContent,
-  defaultFolder = "Scratch",
+  bucketTag,
   defaultNoteName,
   compact = false,
   showPostSaveActions = true,
@@ -102,8 +101,8 @@ export function QuickNoteSaveCore({
     refine,
     noteName,
     setNoteName,
-    folder,
-    setFolder,
+    home,
+    setHome,
     mode,
     setMode,
     selectedNoteId,
@@ -111,8 +110,8 @@ export function QuickNoteSaveCore({
     updateMethod,
     setUpdateMethod,
     selectedNote,
-    allFolders,
-    notesInFolder,
+    allHomes,
+    notesInHome,
     listStatus,
     listError,
     retryList,
@@ -122,20 +121,12 @@ export function QuickNoteSaveCore({
     save,
   } = useQuickNoteSave({
     initialContent: safeInitialContent,
-    defaultFolder,
+    bucketTag,
     defaultNoteName,
   });
 
   const [showOverwriteWarning, setShowOverwriteWarning] = useState(false);
-  const [createFolderOpen, setCreateFolderOpen] = useState(false);
   const openDiff = useOpenDiffViewerWindow();
-
-  const handleCreateFolder = useCallback(
-    async (folderName: string) => {
-      setFolder(folderName);
-    },
-    [setFolder],
-  );
 
   // Compare-before-apply: the existing note content is the baseline (old); the
   // content about to overwrite it is the incoming version (new), so the diff
@@ -169,11 +160,11 @@ export function QuickNoteSaveCore({
   // composite draft target, registered by name because the WINDOW owns the
   // surface while this core owns the form state. Every accepted key lands
   // through the same setter the user's own typing uses — `setNoteName`,
-  // `setFolder`, and the refine primitive's `setEditedContent` (the editor's
+  // `setHome`, and the refine primitive's `setEditedContent` (the editor's
   // own onChange) — so nothing here is a parallel write path, and the user
   // still presses Save Note.
   //
-  // The save MODE gates the payload: a title and a folder describe a NEW note,
+  // The save MODE gates the payload: a title and a home describe a NEW note,
   // and body text may only be staged where it is additive (a new note, or an
   // append). Everything that could destroy an existing note — saving, picking
   // the mode, choosing the target note, choosing overwrite — stays human and
@@ -222,7 +213,7 @@ export function QuickNoteSaveCore({
       };
 
       const nextName = field("note_name");
-      const nextFolder = field("folder");
+      const nextHome = field("home");
       const nextContent = field("content");
 
       // Mode coherence — a value for the wrong mode would land in an input the
@@ -230,11 +221,11 @@ export function QuickNoteSaveCore({
       if (mode === "update") {
         const newNoteOnly = [
           nextName !== undefined ? "note_name" : null,
-          nextFolder !== undefined ? "folder" : null,
+          nextHome !== undefined ? "home" : null,
         ].filter(Boolean);
         if (newNoteOnly.length > 0)
           throw new Error(
-            `The form is saving into an EXISTING note, so ${newNoteOnly.join(" and ")} cannot be staged: the title input is not rendered in this mode, and the folder select only filters which notes are listed, so changing it would drop the note the user chose. Ask the user to switch to a new note if that is what they want.`,
+            `The form is saving into an EXISTING note, so ${newNoteOnly.join(" and ")} cannot be staged: the title input is not rendered in this mode, and the home select only filters which notes are listed, so changing it would drop the note the user chose. Ask the user to switch to a new note if that is what they want.`,
           );
         // `updateMethod` is this form's own state, typed from UPDATE_METHODS —
         // TypeScript rejects a comparison against anything not in that union,
@@ -245,13 +236,14 @@ export function QuickNoteSaveCore({
           );
       }
 
-      if (nextFolder !== undefined) {
-        const folderName = nextFolder.trim();
-        if (!allFolders.includes(folderName))
+      if (nextHome !== undefined) {
+        const homeName = nextHome.trim();
+        const target = allHomes.find((h) => h.label === homeName);
+        if (!target)
           throw new Error(
-            `"${folderName}" is not one of this form's folders, and this target never creates one. Choose an exact (case-sensitive) name from: ${allFolders.join(" | ")}.`,
+            `"${homeName}" is not one of this form's homes, and this target never creates one. Choose an exact name from: ${allHomes.map((h) => h.label).join(" | ")}.`,
           );
-        setFolder(folderName);
+        setHome(target.scopeId);
       }
       if (nextName !== undefined) setNoteName(nextName.trim());
       if (nextContent !== undefined) refine.setEditedContent(nextContent);
@@ -427,38 +419,27 @@ export function QuickNoteSaveCore({
             )}
           >
             <div className="grid gap-1 min-w-0">
-              <Label htmlFor="qns-folder" className="text-xs">
-                Folder
+              <Label htmlFor="qns-home" className="text-xs">
+                Home
               </Label>
               <Select
-                value={folder}
-                onValueChange={(value) => {
-                  if (value === "__create_folder__") {
-                    setCreateFolderOpen(true);
-                    return;
-                  }
-                  setFolder(value);
-                }}
+                value={home || "__general__"}
+                onValueChange={(value) => setHome(value === "__general__" ? "" : value)}
               >
                 <SelectTrigger
-                  id="qns-folder"
+                  id="qns-home"
                   className="w-full"
                 >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="max-w-[min(90vw,360px)]">
-                  <SelectItem
-                    value="__create_folder__"
-                    className="text-primary"
-                  >
-                    <span className="flex items-center gap-2 font-medium">
-                      <FolderPlus className="h-3.5 w-3.5" /> New folder…
-                    </span>
+                  <SelectItem value="__general__">
+                    <span className="truncate">General</span>
                   </SelectItem>
                   <SelectSeparator />
-                  {allFolders.map((f) => (
-                    <SelectItem key={f} value={f}>
-                      <span className="truncate">{f}</span>
+                  {allHomes.map((h) => (
+                    <SelectItem key={h.scopeId} value={h.scopeId}>
+                      <span className="truncate">{h.label}</span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -498,8 +479,8 @@ export function QuickNoteSaveCore({
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent className="max-w-[min(90vw,480px)]">
-                    {notesInFolder.length > 0 ? (
-                      notesInFolder.map((n) => (
+                    {notesInHome.length > 0 ? (
+                      notesInHome.map((n) => (
                         <SelectItem key={n.id} value={n.id}>
                           <span className="truncate block max-w-[min(80vw,400px)]">
                             {n.label}
@@ -516,7 +497,7 @@ export function QuickNoteSaveCore({
                       </SelectItem>
                     ) : (
                       <SelectItem value="__none" disabled>
-                        No notes in this folder
+                        No notes here
                       </SelectItem>
                     )}
                   </SelectContent>
@@ -587,15 +568,6 @@ export function QuickNoteSaveCore({
           {footerActions}
         </div>
       )}
-
-      <CreateFolderDialog
-        open={createFolderOpen}
-        onOpenChange={setCreateFolderOpen}
-        onConfirm={handleCreateFolder}
-        existingFolders={allFolders}
-        description="Create a folder and use it as this note's destination."
-        confirmLabel="Create & Select"
-      />
 
       {/* Overwrite confirm — the CANONICAL dialog, declarative form.
           This was hand-assembled from AlertDialog primitives at

@@ -96902,6 +96902,10 @@ export type Database = {
         Args: never
         Returns: undefined
       }
+      _rehome_to_general: {
+        Args: { p_org: string; p_scope_ids: string[] }
+        Returns: number
+      }
       _reopen_declared_doors_after_revoke_impl: {
         Args: never
         Returns: undefined
@@ -98316,6 +98320,7 @@ export type Database = {
         }
         Returns: string
       }
+      ensure_general_scope: { Args: { p_org: string }; Returns: string }
       entity_archive: {
         Args: { p_entity_type: string; p_ids: string[] }
         Returns: Json

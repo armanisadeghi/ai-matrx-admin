@@ -16,7 +16,30 @@ import type { RootState } from "@/lib/redux/store";
 import { applyNoteHomeReceipt } from "../redux/slice";
 import { saveNote } from "../redux/thunks";
 import type { NoteRecord } from "../redux/notes.types";
-import { homeReceiptFrom, homeRefusalMessage, type HomeReceipt } from "./homeModel";
+import {
+  homeReceiptFrom,
+  homeRefusalMessage,
+  placeholderGeneralOrganization,
+  type HomeReceipt,
+} from "./homeModel";
+
+/**
+ * A real home scope id for `scopeId`: an organization's General that does not
+ * exist yet (a placeholder) is created once, as the system, by
+ * `platform.ensure_general_scope` — only when a person actually chooses it.
+ */
+export async function resolveHomeScopeId(
+  scopeId: string,
+): Promise<{ ok: true; scopeId: string } | { ok: false; message: string }> {
+  const organizationId = placeholderGeneralOrganization(scopeId);
+  if (!organizationId) return { ok: true, scopeId };
+  const { data, error } = await supabase
+    .schema("platform")
+    .rpc("ensure_general_scope", { p_org: organizationId });
+  if (error) return { ok: false, message: homeRefusalMessage(error) };
+  if (typeof data !== "string") return { ok: false, message: "That organization's General could not be opened." };
+  return { ok: true, scopeId: data };
+}
 
 export type MoveNoteToHomeResult =
   | { ok: true; receipt: HomeReceipt }
@@ -33,11 +56,14 @@ export interface MoveNoteToHomeArgs {
 
 export const moveNoteToHome = createAsyncThunk<MoveNoteToHomeResult, MoveNoteToHomeArgs>(
   "notes/moveNoteToHome",
-  async ({ noteId, scopeId, homeLabel, quiet }, { dispatch, getState }) => {
+  async ({ noteId, scopeId: requestedScopeId, homeLabel, quiet }, { dispatch, getState }) => {
     const refuse = (message: string): MoveNoteToHomeResult => {
       if (!quiet) toast.error(message);
       return { ok: false, message };
     };
+    const resolved = await resolveHomeScopeId(requestedScopeId);
+    if (!resolved.ok) return refuse(resolved.message);
+    const scopeId = resolved.scopeId;
     const before = (getState() as RootState).notes.notes[noteId] as NoteRecord | undefined;
     if (!before) return refuse("This note is not open here. Reload and try again.");
     if (before.home_scope_id === scopeId) {
