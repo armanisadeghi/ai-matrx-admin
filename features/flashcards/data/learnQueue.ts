@@ -33,10 +33,15 @@ export interface LearnState {
   roundCardIds: string[];
   /** Cards missed at least once this round. */
   roundMissed: string[];
+  /** Questions answered right this round. */
+  roundCorrect: number;
 }
 
 /** How many questions later a missed card comes back in the same round. */
 export const LEARN_MISS_OFFSET = 3;
+/** Most times one card is asked in a round — a card missed again waits for
+ *  the next round, so a struggling learner's round still ends. */
+export const LEARN_MAX_ASKS_PER_ROUND = 2;
 
 /**
  * A fresh Learn run over `cardIds` (already in the order rounds should draw
@@ -57,6 +62,7 @@ export function startLearn(
     round: 0,
     roundCardIds: [],
     roundMissed: [],
+    roundCorrect: 0,
   };
 }
 
@@ -80,6 +86,7 @@ export function dealRound(state: LearnState, size: number): LearnState {
     round: state.round + 1,
     roundCardIds: picked,
     roundMissed: [],
+    roundCorrect: 0,
   };
 }
 
@@ -94,6 +101,7 @@ export function currentLearnItem(state: LearnState): LearnItem | null {
  * - choice wrong → asked again as choice later in this round
  * - typed right  → mastered
  * - typed wrong  → back to choice, asked again later in this round
+ * A card is asked at most LEARN_MAX_ASKS_PER_ROUND times per round.
  */
 export function answerLearn(state: LearnState, correct: boolean): LearnState {
   const item = currentLearnItem(state);
@@ -106,13 +114,23 @@ export function answerLearn(state: LearnState, correct: boolean): LearnState {
     stages[item.cardId] = item.stage === "choice" ? "typed" : "mastered";
   } else {
     stages[item.cardId] = "choice";
-    const insertAt = Math.min(state.position + 1 + LEARN_MISS_OFFSET, queue.length);
-    queue.splice(insertAt, 0, { cardId: item.cardId, stage: "choice" });
+    const asked = queue.filter((q) => q.cardId === item.cardId).length;
+    if (asked < LEARN_MAX_ASKS_PER_ROUND) {
+      const insertAt = Math.min(state.position + 1 + LEARN_MISS_OFFSET, queue.length);
+      queue.splice(insertAt, 0, { cardId: item.cardId, stage: "choice" });
+    }
     if (!roundMissed.includes(item.cardId)) {
       roundMissed = [...roundMissed, item.cardId];
     }
   }
-  return { ...state, stages, queue, position: state.position + 1, roundMissed };
+  return {
+    ...state,
+    stages,
+    queue,
+    position: state.position + 1,
+    roundMissed,
+    roundCorrect: state.roundCorrect + (correct ? 1 : 0),
+  };
 }
 
 /** True when every question in the round has been answered. */

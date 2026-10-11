@@ -270,8 +270,7 @@ export function LearnSurface({ setId }: { setId: string }) {
               <RoundProgress
                 position={Math.min(learn.position + 1, learn.queue.length)}
                 total={learn.queue.length}
-                // Answers right this round: each miss added one question.
-                correct={learn.position - (learn.queue.length - learn.roundCardIds.length)}
+                correct={learn.roundCorrect}
               />
               <p className="mb-2 text-xs font-medium text-muted-foreground">
                 {item.stage === "choice" ? "Choose the answer" : "Type the answer"}

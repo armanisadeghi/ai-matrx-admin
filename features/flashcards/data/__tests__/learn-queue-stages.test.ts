@@ -29,6 +29,7 @@ describe("learn queue stages", () => {
     expect(currentLearnItem(s)).toEqual({ cardId: "a", stage: "choice" });
     s = answerLearn(s, true);
     expect(s.stages.a).toBe("typed");
+    expect(s.roundCorrect).toBe(1);
     // Not asked again this round — it comes back typed next round.
     expect(s.queue.filter((q) => q.cardId === "a")).toHaveLength(1);
     s = answerAll(s, true);
@@ -74,6 +75,15 @@ describe("learn queue stages", () => {
     expect(s.stages.a).toBe("mastered");
     expect(isAllMastered(s)).toBe(true);
     expect(learnCounts(s)).toEqual({ choice: 0, typed: 0, mastered: 1 });
+  });
+
+  it("a card missed twice waits for the next round, so the round ends", () => {
+    let s = dealRound(startLearn(["a", "b"]), 2);
+    s = answerAll(s, false);
+    expect(s.queue.map((q) => q.cardId)).toEqual(["a", "b", "a", "b"]);
+    expect(isRoundOver(s)).toBe(true);
+    expect(s.roundMissed).toEqual(["a", "b"]);
+    expect(s.roundCorrect).toBe(0);
   });
 
   it("rounds skip mastered cards and size 0 deals every open card", () => {
