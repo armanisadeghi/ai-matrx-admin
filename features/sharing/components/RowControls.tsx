@@ -62,9 +62,6 @@ export interface RowControlsProps {
   onStopPublishing: () => Promise<ShareActionResult>;
 }
 
-/** Each kind's sharing options, read once per page (`get_share_capabilities` answers per kind, not per row). */
-const CAPS_READ = new Map<ResourceType, ShareCapabilities>();
-
 export function RowControls({
   resourceType,
   resourceId,
@@ -81,9 +78,7 @@ export function RowControls({
     notify: copyNotify,
   });
   const { toast } = useToast();
-  // A kind's sharing options never change while the page is open: read once per kind, and every later
-  // Share dialog draws its row controls on its first frame.
-  const [caps, setCaps] = useState<ShareCapabilities | null>(() => CAPS_READ.get(resourceType) ?? null);
+  const [caps, setCaps] = useState<ShareCapabilities | null>(null);
   const [capsError, setCapsError] = useState<string | null>(null);
   const [busy, setBusy] = useState<"shown" | "publish" | null>(null);
   const [copied, setCopied] = useState(false);
@@ -91,16 +86,8 @@ export function RowControls({
   useEffect(() => {
     let live = true;
     setCapsError(null);
-    const known = CAPS_READ.get(resourceType);
-    if (known) {
-      setCaps(known);
-      return;
-    }
     getShareCapabilities(resourceType)
-      .then((c) => {
-        CAPS_READ.set(resourceType, c);
-        if (live) setCaps(c);
-      })
+      .then((c) => live && setCaps(c))
       .catch((e: unknown) => live && setCapsError(extractErrorMessage(e)));
     return () => {
       live = false;
