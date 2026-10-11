@@ -167,6 +167,10 @@ export interface PodcastGenerateRequest {
   /** TTS quality mode — saved audio uses "high_quality"; the backend resolves
    *  the latest model for that tier on each provider. */
   tts_quality?: "high_quality" | "fast";
+  /** A flashcard set this episode is the audio overview of: the SERVER saves the
+   *  finished audio onto it (aidream `stamp_deck_audio_overview`), so the
+   *  overview is kept even when the page that started it has closed. */
+  audio_overview_for_set?: string | null;
 }
 
 // ── Podcast stream events (inside `event: "data"`) ──────────────────────────

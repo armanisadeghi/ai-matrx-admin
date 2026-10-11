@@ -551,17 +551,6 @@ export const SHAREABLE_RESOURCE_REGISTRY = {
     urlPathTemplate: "/notes/{id}",
     rlsUsesHasPermission: true,
   },
-  note_folder: {
-    resourceType: "note_folder",
-    tableName: "note_folders",
-    schemaName: "workbench",
-    idColumn: "id",
-    ownerColumn: "created_by",
-    isPublicColumn: null,
-    displayLabel: "Note Folder",
-    urlPathTemplate: "/notes?folder={id}",
-    rlsUsesHasPermission: true,
-  },
   pdf_redaction_audit: {
     resourceType: "pdf_redaction_audit",
     tableName: "pdf_redaction_audits",

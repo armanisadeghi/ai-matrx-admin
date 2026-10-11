@@ -34,7 +34,6 @@ import { AGENT_ICON } from "@/components/icons/domain-icons";
 
 const RESOURCE_ICONS: Record<string, LucideIcon> = {
   note: Notebook,
-  note_folder: Folder,
   agent: AGENT_ICON,
   agent_card: AGENT_ICON,
   app: Boxes,

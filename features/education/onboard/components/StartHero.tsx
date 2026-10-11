@@ -524,11 +524,11 @@ export function StartHero({
           {kit.stopped && !autoContinue && (
             <RunStoppedNotice
               message={
-                kit.stopped.savedCount > 0
-                  ? `${kit.stopped.title ?? "Your kit"} stopped · ${kit.stopped.savedCount} of ${kit.stopped.request.kinds.length} saved`
+                kit.stopped.building
+                  ? `${kit.stopped.title ?? "Your kit"} is still being built`
                   : `${kit.stopped.title ?? "Your kit"} stopped`
               }
-              redoLabel="Continue"
+              redoLabel={kit.stopped.building ? "Show" : "Continue"}
               onRedo={() => void continueKit()}
               onDismiss={kit.dismissStopped}
             />

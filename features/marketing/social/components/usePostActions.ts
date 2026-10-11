@@ -11,12 +11,24 @@ import { confirmSocialSpendNow } from "../cost";
 import { useInvalidateSocial } from "../hooks";
 import { addToCollection, analyzePost, createCollection, getTranscript, socialErrorCode, socialErrorMessage } from "../server";
 
-/** The one set of post actions: the buttons and the agent's client tools run THESE. */
-export function usePostActions(args: { postId: string; organizationId: string; hasTranscript: boolean; openDetail: () => void }) {
+export interface PostActionArgs {
+  postId: string;
+  organizationId: string;
+  hasTranscript: boolean;
+}
+
+/**
+ * The same three actions without React (a right-click menu runs them from a card that mounts no hook
+ * per post): each reports progress through the optional callbacks and resolves to the words to show.
+ */
+export function postActionRunners(
+  args: PostActionArgs,
+  io: { invalidate: () => Promise<unknown>; setBusy?: (b: string | null) => void; setBreakdownNote?: (n: string | null) => void },
+) {
   const { postId, organizationId } = args;
-  const invalidate = useInvalidateSocial();
-  const [busy, setBusy] = useState<string | null>(null);
-  const [breakdownNote, setBreakdownNote] = useState<string | null>(null);
+  const setBusy = io.setBusy ?? (() => {});
+  const setBreakdownNote = io.setBreakdownNote ?? (() => {});
+  const invalidate = io.invalidate;
 
   async function transcript(): Promise<string> {
     if (args.hasTranscript) return "This post already has a transcript.";
@@ -71,6 +83,14 @@ export function usePostActions(args: { postId: string; organizationId: string; h
     }
   }
 
-  return { busy, breakdownNote, transcript, breakdown, saveToSwipe, openDetail: args.openDetail };
+  return { transcript, breakdown, saveToSwipe };
 }
 
+/** The one set of post actions: the buttons and the agent's client tools run THESE. */
+export function usePostActions(args: PostActionArgs & { openDetail: () => void }) {
+  const invalidate = useInvalidateSocial();
+  const [busy, setBusy] = useState<string | null>(null);
+  const [breakdownNote, setBreakdownNote] = useState<string | null>(null);
+  const { transcript, breakdown, saveToSwipe } = postActionRunners(args, { invalidate, setBusy, setBreakdownNote });
+  return { busy, breakdownNote, transcript, breakdown, saveToSwipe, openDetail: args.openDetail };
+}

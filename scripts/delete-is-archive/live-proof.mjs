@@ -7,8 +7,7 @@
  * "PP test …"):
  *
  *   notes   delete a note from the list menu → it is in Trash → Restore brings it back
- *   folder  "Move all notes to Trash" on a folder → every note AND the folder row
- *           are in Trash with one timestamp; restoring a note revives its folder
+ *   (the folder case was retired with folders: notes live in homes now)
  *
  * Session: minted exactly like scripts/campaign-invite-delivery/shots.mjs
  * (auth.admin.generateLink → email OTP → verifyOtp) for AI_ADMIN_USERNAME; no
@@ -81,23 +80,16 @@ async function main() {
   const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-");
 
   // ── Disposable records, as the person ─────────────────────────────────────
-  const { data: folderId, error: fErr } = await wb().rpc("note_folder_get_or_create", {
-    p_organization_id: ORG, p_name: `PP test folder ${stamp}`,
-  });
-  if (fErr) throw fErr;
-  const mk = async (label, folder) => {
+  const mk = async (label) => {
     const { data, error } = await wb().from("notes").insert({
       label, content: `Disposable note for the delete-means-archive proof (${stamp}).`,
-      organization_id: ORG, folder_id: folder?.id ?? null, folder_name: folder?.name ?? "Draft",
+      organization_id: ORG,
     }).select("id, label").single();
     if (error) throw error;
     return data;
   };
-  const folder = { id: typeof folderId === "string" ? folderId : folderId?.id ?? folderId, name: `PP test folder ${stamp}` };
-  const single = await mk(`PP test note ${stamp}`, null);
-  const f1 = await mk(`PP test folder note 1 ${stamp}`, folder);
-  const f2 = await mk(`PP test folder note 2 ${stamp}`, folder);
-  record("created disposable records", true, { single: single.id, folder: folder.id, f1: f1.id, f2: f2.id });
+  const single = await mk(`PP test note ${stamp}`);
+  record("created disposable records", true, { single: single.id });
 
   // ── Browser as the person ────────────────────────────────────────────────
   const browser = await chromium.launch({ headless: true });
@@ -171,33 +163,6 @@ async function main() {
   record("note: restored from Trash (deleted_at cleared)", !!sRow && sRow.deleted_at === null, sRow);
   await page.screenshot({ path: `${OUT}/3-note-restored.png` });
 
-  // ── 2. Folder: Move all notes to Trash ───────────────────────────────────
-  await page.goto(`${ORIGIN}/notes`, { waitUntil: "domcontentloaded" });
-  await page.waitForTimeout(8000);
-  await page.getByText(folder.name, { exact: false }).first().click({ button: "right", timeout: 30000 });
-  await page.getByRole("menuitem", { name: /Move all notes to Trash/i }).first().click({ timeout: 15000 });
-  await page.screenshot({ path: `${OUT}/4-folder-confirm.png` });
-  const { data: inFolder } = await wb().from("notes").select("id").eq("folder_id", folder.id).is("deleted_at", null);
-  const folderNoteIds = (inFolder ?? []).map((r) => r.id);
-  await page.getByRole("button", { name: new RegExp(`Move ${folderNoteIds.length} to Trash`, "i") }).click({ timeout: 15000 });
-  await page.waitForTimeout(4000);
-  const { data: fRows } = await wb().from("notes").select("id, deleted_at").in("id", folderNoteIds);
-  const { data: fFolder } = await wb().from("note_folders").select("id, deleted_at").eq("id", folder.id).maybeSingle();
-  const stamps = new Set((fRows ?? []).map((r) => r.deleted_at));
-  record(`folder: all ${folderNoteIds.length} notes in Trash`, (fRows ?? []).length === folderNoteIds.length && folderNoteIds.length >= 2 && (fRows ?? []).every((r) => r.deleted_at), fRows);
-  record("folder: folder row archived, not destroyed, same timestamp", !!fFolder?.deleted_at && stamps.has(fFolder.deleted_at), fFolder);
-  await page.getByText(/^Trash$/).first().click({ timeout: 15000 }).catch(() => {});
-  await page.waitForTimeout(3000);
-  await page.screenshot({ path: `${OUT}/5-folder-notes-in-trash.png` });
-  const bothShown = (await page.getByText(f1.label).count()) > 0 && (await page.getByText(f2.label).count()) > 0;
-  record("folder: both notes shown in Trash", bothShown, {});
-  const f1Row = page.locator(".group\\/trash", { hasText: f1.label }).first();
-  await f1Row.hover();
-  await f1Row.getByTitle("Restore").click({ timeout: 10000 });
-  await page.waitForTimeout(3000);
-  const { data: f1After } = await wb().from("notes").select("id, deleted_at, folder_id").eq("id", f1.id).maybeSingle();
-  const { data: folderAfter } = await wb().from("note_folders").select("id, deleted_at").eq("id", folder.id).maybeSingle();
-  record("folder: restoring a note brings its folder back", !!f1After && f1After.deleted_at === null && folderAfter?.deleted_at === null, { f1After, folderAfter });
 
   await browser.close();
   writeFileSync(`${OUT}/results.json`, JSON.stringify(results, null, 2));

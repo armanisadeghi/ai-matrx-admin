@@ -1969,17 +1969,6 @@
     "is_active": true
   },
   {
-    "resource_type": "note_folder",
-    "table_name": "note_folders",
-    "id_column": "id",
-    "owner_column": "created_by",
-    "is_public_column": null,
-    "display_label": "Note Folder",
-    "url_path_template": "/notes?folder={id}",
-    "rls_uses_has_permission": true,
-    "is_active": true
-  },
-  {
     "resource_type": "notification",
     "table_name": "notification",
     "id_column": "id",
