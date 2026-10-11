@@ -1,6 +1,5 @@
 -- chair-step: restores the previous get_resource_permissions body (manager-only list) verbatim.
--- based-on: public.get_resource_permissions(text, uuid) <fill-after-apply>
-set local lock_timeout = '30s';
+-- based-on: public.get_resource_permissions(text, uuid) eb3ffcd6ad6ec0fcc1748401f62b4b772cd44def194f4b83a568b577106c479c
 
 CREATE OR REPLACE FUNCTION public.get_resource_permissions(p_resource_type text, p_resource_id uuid)
  RETURNS TABLE(id uuid, resource_type text, resource_id uuid, granted_to_user_id uuid, granted_to_organization_id uuid, is_public boolean, permission_level text, created_at timestamp with time zone, granted_to_user jsonb, granted_to_organization jsonb)
