@@ -85,7 +85,7 @@ import { identifyUniverUser } from "@/lib/univer/identifyUniverUser";
 import { registerMatrxImageStore } from "@/lib/univer/univerImageStore";
 import { matrxImagePorts } from "@/lib/univer/matrxImagePorts";
 import { disposeUniverInstance } from "@/lib/univer/disposeUniverInstance";
-import { isSnapshotMutation } from "@/lib/univer/isSnapshotMutation";
+import { isWorkbookSnapshotMutation } from "@/lib/univer/isSnapshotMutation";
 import { RemoteCursorsLayer } from "@/lib/collab/RemoteCursorsLayer";
 import { WorkbookCursorOverlay } from "@/features/workbooks/components/WorkbookCursorOverlay";
 import { getLatestSnapshot, saveSnapshot } from "@/features/workbooks/workbook-service";
@@ -337,7 +337,7 @@ export default function WorkbookEditor({
         apiRef.current.addEvent(
           apiRef.current.Event.CommandExecuted,
           (command) => {
-            if (!isSnapshotMutation(command)) return;
+            if (!isWorkbookSnapshotMutation(command)) return;
             if (!editableRef.current) return;
             setSaveStatus("dirty");
             if (saveTimerRef.current) clearTimeout(saveTimerRef.current);

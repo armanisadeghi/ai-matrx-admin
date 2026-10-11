@@ -28,3 +28,21 @@ export function isSnapshotMutation(command: ICommandInfo): boolean {
   if (NON_CONTENT_ID_PATTERN.test(command.id)) return false;
   return true;
 }
+
+/**
+ * Mutations a SPREADSHEET fires on its own while it opens and recalculates —
+ * they change nothing the person typed, so they must never mark the workbook
+ * dirty. Observed on a plain open of a workbook with formulas (2026-10-10):
+ * `formula.mutation.set-trigger-formula-calculation-start`,
+ * `...set-formula-calculation-start`, `...set-formula-calculation-notification`
+ * and a `doc.mutation.rich-text-editing` from the internal cell-editor document.
+ * Each open then wrote a new snapshot (history bloat, and a false "both changed"
+ * against Google). A real edit always arrives as a `sheet.mutation.*`.
+ */
+const WORKBOOK_SELF_MUTATION_PATTERN =
+  /^(formula\.mutation\.[a-z-]*(calculation|trigger)[a-z-]*|doc\.mutation\.)/;
+
+export function isWorkbookSnapshotMutation(command: ICommandInfo): boolean {
+  if (!isSnapshotMutation(command)) return false;
+  return !WORKBOOK_SELF_MUTATION_PATTERN.test(command.id);
+}
