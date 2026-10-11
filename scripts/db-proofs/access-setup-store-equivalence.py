@@ -2,7 +2,8 @@
 """
 EQUIVALENCE PROOF for Store Tables parts — who sees and edits each column (access-setup PLAN §12, §12.1).
 
-Everything runs on the live database inside ONE transaction that is ALWAYS rolled back: a fixture organization, its
+Everything runs on the NIGHTLY CLONE ONLY (common-docs/operations/clone/CURRENT.md; never live: a rolled-back proof
+transaction held live's iam tables for 75 minutes on 2026-10-10) inside ONE transaction that is ALWAYS rolled back: a fixture organization, its
 persona-factory people (auth users tagged app_metadata.test_fixture, 1-hour expiry, never committed), a "Crew pay"
 Table made through the real doors, shares, field shares and the planted faults. Nothing persists.
 
@@ -35,7 +36,7 @@ Exit 1 when MODE 0/1/2/3 differ, a seat check fails, a write disagrees, a panel 
 Run from aidream so its .env and the persona factory are found:
   cd aidream && uv run python ../matrx-frontend/scripts/db-proofs/access-setup-store-equivalence.py
 """
-import json, sys, time, uuid
+import json, os, re, sys, threading, time, uuid
 from collections import Counter
 
 import psycopg
@@ -61,10 +62,91 @@ def check(label, ok, detail=''):
         failures.append(label)
 
 
-conn = psycopg.connect(host=env['SUPABASE_MATRIX_HOST'], port=5432, dbname=env['SUPABASE_MATRIX_DATABASE_NAME'],
-                       user=env['SUPABASE_MATRIX_USER'], password=env['SUPABASE_MATRIX_PASSWORD'], autocommit=False)
+CLONE_REF_FILE = '/Users/armanisadeghi/code/common-docs/operations/clone/CLONE-REF'
+
+
+def refuse(msg, code=2):
+    print(f"REFUSED: {msg}\nThis proof runs ONLY on the nightly clone (common-docs/operations/clone/CURRENT.md). It never "
+          f"runs on live: on 2026-10-10 one rolled-back proof transaction held live's iam tables for 75 minutes.", flush=True)
+    sys.exit(code)
+
+
+def clone_ref_values():
+    vals = {}
+    for line in open(CLONE_REF_FILE):
+        if '=' in line and not line.lstrip().startswith('#'):
+            k, v = line.split('=', 1)
+            vals[k.strip()] = v.strip()
+    return vals
+
+
+def clone_connect():
+    """A connection to the clone named by CLONE-REF, proven by the connection's project ref; never SUPABASE_MATRIX_*."""
+    ref = clone_ref_values().get('clone_ref')
+    if not ref:
+        refuse(f"{CLONE_REF_FILE} names no clone_ref")
+    url = env.get('CLONE_DATABASE_URL') or dotenv_values(
+        '/Users/armanisadeghi/code/matrx-frontend/.env.local').get('CLONE_DATABASE_URL')
+    if url:
+        m = re.match(r'postgres(?:ql)?://([^:@/]+)(?::[^@]*)?@([^:/?]+)', url)
+        user, host = (m.group(1), m.group(2)) if m else ('', '')
+        if user != f'postgres.{ref}' and host != f'db.{ref}.supabase.co':
+            refuse(f"CLONE_DATABASE_URL names user {user!r} on {host!r}, not the clone {ref} named by CLONE-REF")
+        return psycopg.connect(url, autocommit=False, prepare_threshold=None), ref
+    v = clone_ref_values()
+    pw_file = os.path.expanduser(v.get('password_file', ''))
+    if not pw_file or not os.path.exists(pw_file):
+        refuse('neither CLONE_DATABASE_URL nor the CLONE-REF password file is present')
+    return psycopg.connect(host=v['pooler_host'], port=int(v.get('pooler_port', 6543)), dbname=v.get('database', 'postgres'),
+                           user=f'postgres.{ref}', password=open(pw_file).read().strip(), autocommit=False,
+                           prepare_threshold=None), ref
+
+
+def quarantined(c):
+    """The clone's quarantine facts, never true of production: pg_net absent AND no active pg_cron job."""
+    with c.cursor() as k:
+        k.execute("""select not exists (select 1 from pg_extension where extname = 'pg_net')
+                       and (to_regclass('cron.job') is null
+                            or not exists (select 1 from cron.job where active))""")
+        return bool(k.fetchone()[0])
+
+
+conn, CLONE_REF = clone_connect()
+if not quarantined(conn):
+    conn.close()
+    refuse(f"the server behind the {CLONE_REF} connection does not show the clone's quarantine (pg_net absent and no "
+           f"active pg_cron job)")
+conn.rollback()
 cur = conn.cursor()
 cur.execute("set statement_timeout = 0")
+PROOF_PID = None
+WATCHDOG_LIMIT = float(os.environ.get('PROOF_MAX_XACT_SECONDS', '120'))
+WATCHDOG_TRIPPED = threading.Event()
+
+
+def watchdog():
+    """Second connection: while the target cannot be proven the clone, no proof transaction may outlive the limit."""
+    try:
+        w, _ = clone_connect()
+        w.autocommit = True
+    except SystemExit:
+        return
+    while PROOF_PID is not None and not WATCHDOG_TRIPPED.is_set():
+        try:
+            if not quarantined(w):
+                with w.cursor() as k:
+                    k.execute("""select extract(epoch from now() - xact_start) from pg_stat_activity
+                                  where pid = %s and xact_start is not null""", (PROOF_PID,))
+                    row = k.fetchone()
+                    if row and row[0] > WATCHDOG_LIMIT:
+                        print(f"WATCHDOG: the target no longer shows the clone's quarantine and the proof transaction is "
+                              f"{row[0]:.0f}s old (> {WATCHDOG_LIMIT:.0f}s): terminating backend {PROOF_PID}", flush=True)
+                        k.execute("select pg_terminate_backend(%s)", (PROOF_PID,))
+                        WATCHDOG_TRIPPED.set()
+                        return
+        except Exception as e:   # a failed check is reported, never silent
+            print(f"WATCHDOG: check failed ({e.__class__.__name__}: {e})", flush=True)
+        time.sleep(15)
 
 
 def q(sql, args=None):
@@ -577,6 +659,9 @@ def run_plants():
 
 
 try:
+    PROOF_PID = one("select pg_backend_pid()")
+    threading.Thread(target=watchdog, daemon=True).start()
+    log(f"target: clone {CLONE_REF} (quarantine confirmed), backend {PROOF_PID}")
     build_fixture()
     run_mode0()
     run_mode1()
@@ -589,6 +674,7 @@ try:
     run_plants()
     run_scoped()
 finally:
+    PROOF_PID = None
     conn.rollback()
     conn.close()
     log('rolled back; nothing persisted')
