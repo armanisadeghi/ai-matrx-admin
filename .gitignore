@@ -213,3 +213,6 @@ tmp/fixer-logs/
 
 # Private generated diagnostics; never website assets or committed reports.
 /.matrx/diagnostics/
+
+# check-shell-eager-graph self-test leftovers (now writes under .cache/)
+/tmp-eager-selftest-*/
