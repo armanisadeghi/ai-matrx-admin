@@ -1883,6 +1883,12 @@
    fought its portal popovers. These rules ONLY shape toolbar geometry so the
    secondary row hugs the left like Google Sheets.
    ──────────────────────────────────────────────────────────────────────── */
+/* Univer mounts its own sonner <Toaster> (no `.toaster` class) beside the app's; sonner's store is
+   global, so every toast rendered twice on a workbook page. The app's Toaster shows them all. */
+[data-sonner-toaster]:not(.toaster) {
+  display: none !important;
+}
+
 .matrx-univer-shell {
   /* Univer renders its built-in chrome inside its container — clipping the
      overflow on the wrapper keeps the layout tight when the canvas resizes. */
