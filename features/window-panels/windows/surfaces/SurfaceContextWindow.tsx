@@ -356,7 +356,7 @@ export default function SurfaceContextWindow({
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex shrink-0 items-center gap-2 border-b border-border p-2">
         <div className="relative min-w-0 flex-1">
-          <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-2 top-1/2 z-10 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             adornment="start"
             value={query}
@@ -423,7 +423,7 @@ export default function SurfaceContextWindow({
                 />
               );
             }}
-            renderRowTrail={(row) => <code className="text-[10px]">{row.key}</code>}
+            renderRowTrail={(row) => <code className="text-xs">{row.key}</code>}
           />
         ) : filteredItems.length === 0 ? (
           <EmptyState
@@ -445,7 +445,7 @@ export default function SurfaceContextWindow({
                   expanded={expanded}
                   trailing={
                     isAdmin ? (
-                      <code className="hidden max-w-[40%] shrink-0 truncate text-[10px] text-muted-foreground sm:block">
+                      <code className="hidden max-w-[40%] shrink-0 truncate text-xs text-muted-foreground sm:block">
                         {item.key}
                       </code>
                     ) : null
@@ -675,7 +675,7 @@ export default function SurfaceContextWindow({
                     availableHere: availableHere.available.map((item) => ({
                       label: item.label,
                       requirements: item.requirements,
-                      mandateKey: item.mandateKey,
+                      mandate: item.mandateKey,
                     })),
                     missingKeyUnlocks: Object.fromEntries(topMissingKeys),
                   },
@@ -742,23 +742,24 @@ export default function SurfaceContextWindow({
       }
       footerRight={
         isAdmin && surfaceName ? (
-          <code className="max-w-[260px] truncate font-mono text-[10px] text-muted-foreground">
+          <code className="max-w-[260px] truncate font-mono text-xs text-muted-foreground">
             {surfaceName}
           </code>
         ) : null
       }
     >
-      <Tabs
-        aria-label="This page"
-        value={section}
-        onValueChange={setSection}
-        className="shrink-0 px-2"
-        data={[
-          { value: "values", label: "What's here", count: shownItems.length },
-          { value: "actions", label: "What can be done", count: actionCount },
-          { value: "agents", label: "Agents" },
-        ]}
-      />
+      <div className="shrink-0 px-2">
+        <Tabs
+          aria-label="This page"
+          value={section}
+          onValueChange={setSection}
+          data={[
+            { value: "values", label: "What's here", count: shownItems.length },
+            { value: "actions", label: "What can be done", count: actionCount },
+            { value: "agents", label: "Agents" },
+          ]}
+        />
+      </div>
       {section === "values" ? valuesSection : section === "actions" ? actionsSection : agentsSection}
       {live.error ? (
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 rounded-md border border-destructive/30 bg-background px-3 py-2 text-xs text-destructive shadow-lg">
