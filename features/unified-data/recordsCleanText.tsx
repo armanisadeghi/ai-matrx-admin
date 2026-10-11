@@ -16,7 +16,7 @@ import { DEFAULT_ENABLED_VALUE_OPERATIONS } from "@/lib/content-cleanup/value-op
 import { IconInputCompact } from "@/components/official/icons/IconInputWithValidation.dynamic";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import type { ReactNode } from "react";
-import type { TextBoxProps } from "@ai-matrx/records-ui";
+import type { RecordsUiHost } from "@ai-matrx/records-ui";
 import { ProTextarea } from "@/components/official/ProTextarea";
 
 export function recordsCleanText(text: string): string {
@@ -48,7 +48,7 @@ export function recordsRenderText(text: string, where: string): ReactNode {
  *               every other text field gives, exactly as the retired Sheet's cell editor did. The mic
  *               is off: one icon in the editor, nothing else over a grid cell.
  */
-export function recordsTextBox(props: TextBoxProps): ReactNode {
+export function recordsTextBox(props: Parameters<NonNullable<RecordsUiHost["textBox"]>>[0]): ReactNode {
   return (
     <ProTextarea
       id={props.id}

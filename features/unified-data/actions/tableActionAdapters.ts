@@ -30,6 +30,7 @@ import {
   Copy,
   DoorOpen,
   Download,
+  Eraser,
   ExternalLink,
   FileText,
   FolderInput,
@@ -99,6 +100,7 @@ export const OBJECT_ACTION_ICONS: Record<ObjectActionIcon, LucideIcon> = {
   "lock-open": LockOpen,
   "arrow-up-from-line": ArrowUpFromLine,
   split: Split,
+  eraser: Eraser,
 };
 
 function toCommand(action: ObjectAction): ItemMenuCommand {
