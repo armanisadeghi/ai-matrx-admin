@@ -675,6 +675,9 @@ export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
                     // nothing here removes it from the sequence).
                     title={title}
                     data-matrx-kind-sandbox={kind}
+                    // Whether the frame has spoken — a test reads this instead
+                    // of guessing from the placeholder height.
+                    data-matrx-kind-sandbox-heard={heard ? "true" : "false"}
                     className="border-0"
                     style={{
                         height: decision.height,
