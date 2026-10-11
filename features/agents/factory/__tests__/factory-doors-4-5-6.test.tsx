@@ -92,8 +92,13 @@ describe("startAgentBuild", () => {
 
 type Listener = (event: { event: string; data?: unknown }) => void;
 let streamed: { event: string; data?: unknown }[] = [];
+// The stream is read through the foreign-stream adopter (events arrive on its `onEvent`), and the
+// POST through `callApi`; both are thunk-likes the fake dispatch below interprets.
 jest.mock("@/lib/api/call-api", () => ({
-  callApi: (args: { onStreamEvent: Listener }) => args,
+  callApi: (args: Record<string, unknown>) => ({ __callApi: args }),
+}));
+jest.mock("@ai-matrx/chat/agents/redux/execution-system/thunks/adopt-foreign-stream", () => ({
+  adoptForeignStream: (args: { onEvent: Listener }) => ({ __adopt: args }),
 }));
 jest.mock("@/lib/api/adminDoor", () => ({ adminDoorOpen: () => false }));
 jest.mock("@/features/masterwork/service", () => ({ createDraftRulebook: jest.fn() }));
@@ -101,8 +106,15 @@ jest.mock("@/features/masterwork/service", () => ({ createDraftRulebook: jest.fn
 async function runFromChat() {
   const { makeAgentFromChat } = await import("@/features/agents/from-chat/service");
   const steps: string[] = [];
-  const dispatch = (async (args: { onStreamEvent: Listener }) => {
-    for (const e of streamed) args.onStreamEvent(e);
+  let listener: Listener | null = null;
+  const dispatch = (async (action: { __adopt?: { onEvent: Listener }; __callApi?: unknown }) => {
+    if (action.__adopt) {
+      listener = action.__adopt.onEvent; // the consumeStream the POST will feed
+      return () => undefined;
+    }
+    // The POST "runs": the server's events reach the adopter's listener, the call itself succeeds.
+    if (!listener) throw new Error("callApi ran before the stream was adopted");
+    for (const e of streamed) listener(e);
     return {};
   }) as unknown as Parameters<typeof makeAgentFromChat>[0];
   const answer = await makeAgentFromChat(dispatch, "conv-1", (step) => steps.push(step));

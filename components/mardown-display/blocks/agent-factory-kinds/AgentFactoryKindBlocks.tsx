@@ -396,6 +396,7 @@ const OUTCOME_TONE: Record<string, ChipTone> = {
   needs_new_kind: "warn",
   unproven: "warn",
   worker_lost: "warn",
+  schema_refresh_regressed: "bad",
 };
 const OUTCOME_LABEL: Record<string, string> = {
   passed: "Passed",
@@ -408,11 +409,25 @@ const OUTCOME_LABEL: Record<string, string> = {
   needs_new_kind: "Needs new shape",
   unproven: "Too few real cases",
   worker_lost: "Stopped mid-build",
+  schema_refresh_regressed: "Refresh made it worse",
 };
 
+/** Short human label for a build outcome code; an unmapped code reads as spaced words, never raw. */
+export function outcomeLabel(outcome: string): string {
+  const known = OUTCOME_LABEL[outcome];
+  if (known) return known;
+  const words = outcome.replace(/_/g, " ").trim();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+/** The chip for a build outcome; the raw code rides in the tooltip. */
 export function outcomeChip(outcome: string | null) {
   if (!outcome) return null;
-  return <StateChip label={OUTCOME_LABEL[outcome] ?? outcome} tone={OUTCOME_TONE[outcome] ?? "neutral"} />;
+  return (
+    <span title={outcome} className="inline-flex">
+      <StateChip label={outcomeLabel(outcome)} tone={OUTCOME_TONE[outcome] ?? "neutral"} />
+    </span>
+  );
 }
 
 const BuildPart: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
