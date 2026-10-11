@@ -1432,6 +1432,7 @@ export type Database = {
           published_to_web_at: string | null
           published_to_web_by: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          skill_id: string | null
           sort_order: number
           source_kind: string
           source_ref: string | null
@@ -1459,6 +1460,7 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          skill_id?: string | null
           sort_order?: number
           source_kind?: string
           source_ref?: string | null
@@ -1486,6 +1488,7 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          skill_id?: string | null
           sort_order?: number
           source_kind?: string
           source_ref?: string | null

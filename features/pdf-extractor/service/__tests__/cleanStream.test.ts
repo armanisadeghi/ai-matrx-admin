@@ -38,7 +38,7 @@ describe("streamPdfClean", () => {
       ]),
     );
     const onActivity = jest.fn();
-    await streamPdfClean({ docId: DOC, callbacks: { onActivity } });
+    await streamPdfClean({ docId: DOC, force: false, callbacks: { onActivity } });
     expect(onActivity.mock.calls.length).toBeGreaterThanOrEqual(2);
   });
 
@@ -47,7 +47,7 @@ describe("streamPdfClean", () => {
     const controller = new AbortController();
     controller.abort();
     await expect(
-      streamPdfClean({ docId: DOC, signal: controller.signal }),
+      streamPdfClean({ docId: DOC, force: false, signal: controller.signal }),
     ).rejects.toBeInstanceOf(StreamAbortedError);
   });
 
@@ -64,6 +64,7 @@ describe("streamPdfClean", () => {
     const seen: Array<string | null> = [];
     const result = await streamPdfClean({
       docId: DOC,
+      force: false,
       callbacks: { onRecordUpdate: (_id, status) => seen.push(status) },
     });
     expect(seen).toEqual(["awaiting_batch"]);

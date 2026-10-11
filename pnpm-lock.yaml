@@ -64,7 +64,7 @@ importers:
         version: 0.4.80(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react-is@19.3.0)(react@19.3.0)(redux@5.0.1)
       '@ai-matrx/coding-sessions':
         specifier: latest
-        version: 0.3.126(fcbda8abcb7c0b53213efbe65e894aa8)
+        version: 0.3.127(fcbda8abcb7c0b53213efbe65e894aa8)
       '@ai-matrx/content-ir':
         specifier: latest
         version: 0.24.19(react@19.3.0)
@@ -73,7 +73,7 @@ importers:
         version: 0.25.81(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react-is@19.3.0)(react@19.3.0)(redux@5.0.1))
       '@ai-matrx/context-menu':
         specifier: latest
-        version: 0.1.24(4a7296d0727648a5c52f35bd432d655d)
+        version: 0.1.25(4a7296d0727648a5c52f35bd432d655d)
       '@ai-matrx/data':
         specifier: latest
         version: 0.29.15(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(react@19.3.0)
@@ -1231,8 +1231,8 @@ packages:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
 
-  '@ai-matrx/coding-sessions@0.3.126':
-    resolution: {integrity: sha512-z7zV/Yfgvj+QFJPAPjjaiA5HJXoz9AoGsqcbknybUe7gd9WB3HI1KlWk9A1lSnk9UY1BwYqP39a9eBZrgsNbzw==}
+  '@ai-matrx/coding-sessions@0.3.127':
+    resolution: {integrity: sha512-w7cJXfX7IuZX4SPAofkGR+L3Qfeg29eQwPpJiTHnN5W0OO9jXbkdzCESsFXqm+xACiNeXyJuSNfnjlrPTHnb2Q==}
     engines: {node: '>=22.18'}
     hasBin: true
     peerDependencies:
@@ -1254,8 +1254,8 @@ packages:
     resolution: {integrity: sha512-cocLx8NNWSCCYSuZ9ZG78rKjQelOsl1yh/ugL5i83g1cDowsGnsEZb9mQwXoHmw6FVPiyJji5z2bDpumjLxacw==}
     engines: {node: '>=20'}
 
-  '@ai-matrx/context-menu@0.1.24':
-    resolution: {integrity: sha512-XbWDxXx5HyhEoJ3SGamODOTQdraqboMZbgFVorELHvSqffAU0aV8VhLBIbLGOVm4ZAkCU8E64R1H055DIffo7Q==}
+  '@ai-matrx/context-menu@0.1.25':
+    resolution: {integrity: sha512-uPrE/rNVGLXOSCaQKHVPVhSTy4pUzOCkG7KsRSuiEXIOSyck5mX81Eei/cO+LvZIVSI+U9LD+00wiNSq5t6d7g==}
     engines: {node: '>=20'}
     peerDependencies:
       '@reduxjs/toolkit': '>=2.0.0'
@@ -13370,7 +13370,7 @@ snapshots:
       - redux
       - supports-color
 
-  '@ai-matrx/coding-sessions@0.3.126(fcbda8abcb7c0b53213efbe65e894aa8)':
+  '@ai-matrx/coding-sessions@0.3.127(fcbda8abcb7c0b53213efbe65e894aa8)':
     dependencies:
       '@ai-matrx/agents': 0.59.68(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react-is@19.3.0)(react@19.3.0)(redux@5.0.1))
       '@ai-matrx/chat': 0.8.56(d1e8625e9f63ae2a9877116976a74ce7)
@@ -13439,7 +13439,7 @@ snapshots:
     transitivePeerDependencies:
       - react
 
-  '@ai-matrx/context-menu@0.1.24(4a7296d0727648a5c52f35bd432d655d)':
+  '@ai-matrx/context-menu@0.1.25(4a7296d0727648a5c52f35bd432d655d)':
     dependencies:
       '@ai-matrx/alchemy': 0.23.39(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react-is@19.3.0)(react@19.3.0)(redux@5.0.1))
       '@ai-matrx/chat': 0.8.56(d1e8625e9f63ae2a9877116976a74ce7)
