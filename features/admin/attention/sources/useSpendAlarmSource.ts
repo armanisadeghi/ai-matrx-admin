@@ -46,7 +46,8 @@ export function useSpendAlarmSource(enabled: boolean): AttentionSourceState {
   });
 
   const refetch = () => {
-    void queryClient.invalidateQueries({ queryKey: SPEND_ALARMS_QUERY_KEY });
+    // The alarm list and record pages share the prefix: one mute refreshes every view of it.
+    void queryClient.invalidateQueries({ queryKey: ["admin-attention"] });
   };
 
   const after = async (write: Promise<unknown>) => {

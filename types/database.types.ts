@@ -569,6 +569,7 @@ export type Database = {
           organization_id: string
           output_contract_hash: string | null
           output_schema: Json | null
+          prompt_blocks: Json
           published_to_web: boolean
           published_to_web_at: string | null
           published_to_web_by: string | null
@@ -627,6 +628,7 @@ export type Database = {
           organization_id: string
           output_contract_hash?: string | null
           output_schema?: Json | null
+          prompt_blocks?: Json
           published_to_web?: boolean
           published_to_web_at?: string | null
           published_to_web_by?: string | null
@@ -685,6 +687,7 @@ export type Database = {
           organization_id?: string
           output_contract_hash?: string | null
           output_schema?: Json | null
+          prompt_blocks?: Json
           published_to_web?: boolean
           published_to_web_at?: string | null
           published_to_web_by?: string | null
@@ -763,6 +766,7 @@ export type Database = {
           organization_id: string
           output_contract_hash: string | null
           output_schema: Json | null
+          prompt_blocks: Json
           rag_awareness_mode: string
           settings: Json | null
           skill_config: Json
@@ -810,6 +814,7 @@ export type Database = {
           organization_id: string
           output_contract_hash?: string | null
           output_schema?: Json | null
+          prompt_blocks?: Json
           rag_awareness_mode?: string
           settings?: Json | null
           skill_config?: Json
@@ -857,6 +862,7 @@ export type Database = {
           organization_id?: string
           output_contract_hash?: string | null
           output_schema?: Json | null
+          prompt_blocks?: Json
           rag_awareness_mode?: string
           settings?: Json | null
           skill_config?: Json
@@ -1406,6 +1412,146 @@ export type Database = {
         }
         Relationships: []
       }
+      prompt_block: {
+        Row: {
+          bound_tool: string | null
+          category_id: string | null
+          content: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          description: string | null
+          icon_name: string | null
+          id: string
+          label: string
+          metadata: Json
+          name: string
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          sort_order: number
+          source_kind: string
+          source_ref: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          bound_tool?: string | null
+          category_id?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          icon_name?: string | null
+          id?: string
+          label?: string
+          metadata?: Json
+          name: string
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          sort_order?: number
+          source_kind?: string
+          source_ref?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          bound_tool?: string | null
+          category_id?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          icon_name?: string | null
+          id?: string
+          label?: string
+          metadata?: Json
+          name?: string
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          sort_order?: number
+          source_kind?: string
+          source_ref?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
+      prompt_block_variant: {
+        Row: {
+          condition: Json
+          content: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          label: string
+          metadata: Json
+          organization_id: string
+          prompt_block_id: string
+          sort_order: number
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          condition?: Json
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          label?: string
+          metadata?: Json
+          organization_id: string
+          prompt_block_id: string
+          sort_order?: number
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          condition?: Json
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          label?: string
+          metadata?: Json
+          organization_id?: string
+          prompt_block_id?: string
+          sort_order?: number
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompt_block_variant_prompt_block_id_fkey"
+            columns: ["prompt_block_id"]
+            isOneToOne: false
+            referencedRelation: "prompt_block"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prompt_remediation: {
         Row: {
           agent_id: string
@@ -1748,6 +1894,7 @@ export type Database = {
           name: string
           organization_id: string
           output_schema: Json | null
+          prompt_blocks: Json
           published_to_web: boolean
           published_to_web_at: string | null
           published_to_web_by: string | null
@@ -1785,6 +1932,7 @@ export type Database = {
           name: string
           organization_id: string
           output_schema?: Json | null
+          prompt_blocks?: Json
           published_to_web?: boolean
           published_to_web_at?: string | null
           published_to_web_by?: string | null
@@ -1822,6 +1970,7 @@ export type Database = {
           name?: string
           organization_id?: string
           output_schema?: Json | null
+          prompt_blocks?: Json
           published_to_web?: boolean
           published_to_web_at?: string | null
           published_to_web_by?: string | null
@@ -2039,6 +2188,7 @@ export type Database = {
           name: string | null
           organization_id: string | null
           output_schema: Json | null
+          prompt_blocks: Json | null
           tags: string[] | null
           updated_at: string | null
           variable_definitions: Json | null
@@ -2056,6 +2206,7 @@ export type Database = {
           name?: string | null
           organization_id?: string | null
           output_schema?: Json | null
+          prompt_blocks?: Json | null
           tags?: string[] | null
           updated_at?: string | null
           variable_definitions?: Json | null
@@ -2073,6 +2224,7 @@ export type Database = {
           name?: string | null
           organization_id?: string | null
           output_schema?: Json | null
+          prompt_blocks?: Json | null
           tags?: string[] | null
           updated_at?: string | null
           variable_definitions?: Json | null
@@ -2324,6 +2476,7 @@ export type Database = {
           organization_id: string
           output_contract_hash: string | null
           output_schema: Json | null
+          prompt_blocks: Json
           published_to_web: boolean
           published_to_web_at: string | null
           published_to_web_by: string | null
@@ -8919,6 +9072,20 @@ export type Database = {
         Returns: number
       }
       spend_alarm_merge_rollups: { Args: { p_kind: string }; Returns: number }
+      spend_alarm_occurrence_rows: {
+        Args: { p_alarm_id: string }
+        Returns: {
+          cost_usd: number
+          detail: string
+          execution_id: string
+          id: string
+          occurred_at: string
+          refs: Json
+          repeat_count: number
+          run_id: string
+          source: Json
+        }[]
+      }
       spend_alarm_provider_label: { Args: { p: string }; Returns: string }
       spend_alarm_raise: { Args: { p: Json }; Returns: Json }
       spend_alarm_regrade: { Args: { p_grades: Json }; Returns: number }

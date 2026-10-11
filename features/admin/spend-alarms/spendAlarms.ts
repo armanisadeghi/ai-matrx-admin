@@ -114,6 +114,10 @@ export interface CodeFix {
 
 export interface SpendAlarmOccurrence {
   id: string;
+  /** The Source this occurrence was about, resolved by title (`billing.spend_alarm_occurrence_rows`). */
+  source?: Omit<AlarmSourceItem, "id" | "source_kind" | "times" | "last_at"> | null;
+  /** Collapsed rows: how many Sources this one line stands for. */
+  collapsed?: number;
   occurred_at: string;
   repeat_count: number;
   run_id: string | null;
@@ -238,21 +242,71 @@ export async function fetchSpendAlarmStatuses(
 }
 
 export async function fetchSpendAlarmOccurrences(alarmId: string): Promise<SpendAlarmOccurrence[]> {
-  const { data, error } = await billing()
-    .from("spend_alarm_occurrence")
-    .select("id, occurred_at, repeat_count, run_id, execution_id, refs, detail, cost_usd")
-    .eq("alarm_id", alarmId)
-    .order("occurred_at", { ascending: false })
-    .limit(500);
-  if (error) throw pgErrorToError(error);
-  return (data ?? []).map((r) => {
-    const row = r as Record<string, unknown>;
-    return {
-      ...(row as unknown as SpendAlarmOccurrence),
-      refs: asRefs(row.refs),
-      cost_usd: row.cost_usd == null ? null : Number(row.cost_usd),
-    };
-  });
+  // Every occurrence, all pages (a skip record has hundreds), each with its Source by title.
+  const out: SpendAlarmOccurrence[] = [];
+  for (let from = 0; ; from += ROWS_PAGE) {
+    // The installed @ai-matrx/data types predate this door (added 2026-10-10, live); they gain it on
+    // the next package publish, and this cast goes then.
+    const rpc = billing().rpc as unknown as (fn: string, args: Record<string, unknown>) => ReturnType<ReturnType<typeof billing>["rpc"]>;
+    const { data, error } = await rpc.call(billing(), "spend_alarm_occurrence_rows", { p_alarm_id: alarmId }).range(from, from + ROWS_PAGE - 1);
+    if (error) throw pgErrorToError(error);
+    const rows = (data ?? []) as unknown as Record<string, unknown>[];
+    for (const row of rows) {
+      out.push({
+        ...(row as unknown as SpendAlarmOccurrence),
+        refs: asRefs(row.refs),
+        cost_usd: row.cost_usd == null ? null : Number(row.cost_usd),
+        source: row.source && typeof row.source === "object" ? (row.source as SpendAlarmOccurrence["source"]) : null,
+      });
+    }
+    if (rows.length < ROWS_PAGE) return out;
+  }
+}
+
+/** Occurrences about Sources that no longer exist read as ONE line per type, with a count. */
+export function collapseGoneSources(occ: readonly SpendAlarmOccurrence[]): SpendAlarmOccurrence[] {
+  const out: SpendAlarmOccurrence[] = [];
+  const gone = new Map<string, SpendAlarmOccurrence & { ids: Set<string> }>();
+  for (const o of occ) {
+    if (!o.source?.missing || !o.refs.source_id) {
+      out.push(o);
+      continue;
+    }
+    const kind = o.source.kind;
+    const g = gone.get(kind);
+    if (!g) {
+      gone.set(kind, { ...o, ids: new Set([o.refs.source_id]) });
+    } else {
+      g.repeat_count += o.repeat_count;
+      g.ids.add(o.refs.source_id);
+      if (o.occurred_at > g.occurred_at) g.occurred_at = o.occurred_at;
+    }
+  }
+  for (const g of gone.values()) {
+    const { ids, ...row } = g;
+    out.push({ ...row, id: `gone:${row.source?.kind}`, collapsed: ids.size });
+  }
+  return out.sort((a, b) => b.occurred_at.localeCompare(a.occurred_at));
+}
+
+/** An occurrence's Source as a line: its title, or "3 messages that no longer exist (deleted)". */
+export function occurrenceSourceTitle(o: SpendAlarmOccurrence): string | null {
+  if (!o.refs.source_id || !o.source) return null;
+  if (o.collapsed) {
+    const kind = o.source.kind === "source" ? "Source" : o.source.kind;
+    return `${o.collapsed.toLocaleString()} ${kind}${o.collapsed === 1 ? "" : "s"} that no longer exist (deleted)`;
+  }
+  return alarmSourceTitle({ ...o.source, id: o.refs.source_id, source_kind: o.refs.source_kind ?? "source", times: o.repeat_count, last_at: o.occurred_at });
+}
+
+/** Mandate display names by key (one read), for every place a mandate is named. */
+export async function fetchMandateLabels(keys: readonly string[]): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  const want = [...new Set(keys.filter(Boolean))];
+  if (!want.length) return out;
+  const { data } = await supabase.schema("mandate").from("definition").select("mandate_key, label").in("mandate_key", want).is("deleted_at", null);
+  for (const d of (data ?? []) as { mandate_key: string; label: string | null }[]) if (d.label) out.set(d.mandate_key, d.label);
+  return out;
 }
 
 /**
@@ -593,16 +647,18 @@ export function alarmAgentData(record: SpendAlarmRecord, occurrences: SpendAlarm
       level: record.level,
       status: record.status,
       snoozed_until: record.snoozed_until,
-      title: record.title,
-      what_happened: record.detail,
+      title: alarmTitle(record),
+      what_happened: alarmSentence(record),
       rule: record.rule,
       fix: record.fix,
       subject: { type: record.subject_type, id: record.subject_id, name: record.subject_name },
       count: record.occurrence_count,
       first_seen_at: record.first_seen_at,
       last_seen_at: record.last_seen_at,
-      cost_usd: record.cost_usd,
-      cost_avoided_usd: record.cost_avoided_usd,
+      // A refusal spent nothing: 0, never null. What it kept back is the estimate when one was measured.
+      cost_usd: record.cost_usd ?? (record.refused ? 0 : null),
+      cost_avoided_usd: record.cost_avoided_usd ?? (record.refused ? 0 : null),
+      cost_avoided_measured: record.cost_avoided_usd != null,
       cost: costLabel(record, (n) => `$${n.toFixed(2)}`),
       watching: record.watching ?? false,
       muted: record.status === "snoozed" ? { until: record.snoozed_until, by: record.snoozed_by ?? null, note: record.snooze_note } : null,
@@ -611,7 +667,7 @@ export function alarmAgentData(record: SpendAlarmRecord, occurrences: SpendAlarm
     blocked: refLinks(record.refs).map((l) => ({
       what: l.label,
       id: l.value,
-      name: record.names?.[l.value] ?? null,
+      name: record.names?.[l.value] ?? refName(l.key, l.value, record),
       link: l.href ? `${origin}${l.href}` : null,
     })),
     recorded_occurrences: occurrences.length,
@@ -627,6 +683,17 @@ export function alarmAgentData(record: SpendAlarmRecord, occurrences: SpendAlarm
       cost_usd: o.cost_usd,
     })),
   };
+}
+
+/** A ref's name when the record carries no lookup for it (a spend approval is named by its subject). */
+export function refName(key: keyof AlarmRefs, value: string, r: Pick<SpendAlarmRecord, "subject_name" | "refs"> & { names?: Record<string, string> }): string | null {
+  if (key === "approval_id") {
+    const subject = r.subject_name ?? (r.refs.agent_id ? r.names?.[r.refs.agent_id] : null);
+    return subject ? `Spend approval for ${subject}` : "Spend approval";
+  }
+  if (key === "handler") return value.replace(/^mandate(_candidate)?:/, "").replace(/[_]+/g, " ");
+  if (key === "provider") return providerLabel(value);
+  return null;
 }
 
 // ── Display: no raw ids in a headline ──────────────────────────────────────
@@ -811,6 +878,15 @@ export function alarmSentence(
   const person = (r.refs.user_id && names[r.refs.user_id]) || r.person || null;
   if (r.kind === "protected_account_refusal") {
     return `${handlerPhrase(r.refs.handler, names, r.refs)} would have run as, and billed, ${person ?? "a protected account"}, a protected test account. It was refused before it ran, so nothing was billed.`;
+  }
+  if (r.kind === "external_spend_gate_refused") {
+    const who = person ?? "this account";
+    const what = `${providerLabel(r.refs.provider ?? "a provider")} ${r.refs.operation ?? "call"}`;
+    const m = /cap reached(?: \(([^)]+)\))?/.exec(r.detail);
+    if (m || /usage limit|upgrade your plan/i.test(r.detail)) {
+      const period = /(\w+) cap reached/.exec(r.detail)?.[1];
+      return `Refused by the usage gate for ${who}: ${period && period !== "the" ? `${period} ` : ""}cap reached${m?.[1] ? ` (${m[1]})` : ""}. The ${what} call did not run and nothing was spent.`;
+    }
   }
   if (r.kind === "guardrail.check_failed") {
     const m = /^The (.+?) could not run/.exec(stripAnsi(r.detail));

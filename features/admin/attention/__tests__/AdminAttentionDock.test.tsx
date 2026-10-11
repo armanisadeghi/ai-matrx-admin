@@ -91,9 +91,26 @@ jest.mock("@/components/agent-copy/CopyButtons", () => ({
   CopyButtons: ({ label }: { label: string }) => <button type="button" aria-label={`Copy ${label}`} />,
 }));
 
-jest.mock("@/components/agent-copy/CopyForAiButton", () => ({
-  CopyForAiButton: ({ label }: { label: string }) => <button type="button" aria-label={`Copy ${label} for AI`} />,
+jest.mock("../CopyForAiAction", () => ({
+  CopyForAiAction: ({ label }: { label: string }) => <button type="button" aria-label={`Copy ${label} for AI`}>Copy for AI</button>,
 }));
+
+// The one mute dialog: a duration picker (and an optional note) — rendered inline here.
+jest.mock("../MuteDialog", () => {
+  const { MUTE_CHOICES } = jest.requireActual("../item-mute");
+  return {
+    MuteDialog: ({ open, onConfirm }: { open: boolean; onConfirm: (c: unknown, note: string | null) => Promise<void> }) =>
+      open ? (
+        <div data-testid="mute-dialog">
+          {MUTE_CHOICES.map((c: { id: string; label: string }) => (
+            <button key={c.id} type="button" data-testid={`mute-choice-${c.id}`} onClick={() => void onConfirm(c, null)}>
+              {c.label}
+            </button>
+          ))}
+        </div>
+      ) : null,
+  };
+});
 
 jest.mock("@/features/scheduling/redux/tasks/thunks", () => ({
   setSystemTaskEnabled: (id: string, enabled: boolean) => ({ type: "test/setSystemTaskEnabled", id, enabled }),
@@ -493,7 +510,8 @@ describe("AdminAttentionDock", () => {
     expect(rows()).toHaveLength(2);
 
     const anthropic = rows().find((r) => r.getAttribute("data-attention-key") === "provider-outages:o-anthropic")!;
-    await click(anthropic.querySelector('[data-testid="attention-mute-1h"]')!);
+    await click(anthropic.querySelector('[data-testid="attention-mute"]')!);
+    await click(container.querySelector('[data-testid="mute-choice-1h"]')!);
     for (let i = 0; i < 4; i += 1) await tick();
 
     expect(rows()).toHaveLength(1);
@@ -510,7 +528,8 @@ describe("AdminAttentionDock", () => {
     await expand();
 
     const before = Date.now();
-    await click(rows()[0].querySelector('[data-testid="attention-mute-7d"]')!);
+    await click(rows()[0].querySelector('[data-testid="attention-mute"]')!);
+    await click(container.querySelector('[data-testid="mute-choice-7d"]')!);
     for (let i = 0; i < 4; i += 1) await tick();
 
     expect(muteSystemScheduleAlarm).toHaveBeenCalledTimes(1);
@@ -628,7 +647,8 @@ describe("AdminAttentionDock", () => {
     await mount();
     await expand();
     const before = Date.now();
-    await click(rows()[0].querySelector('[data-testid="attention-mute-1h"]')!);
+    await click(rows()[0].querySelector('[data-testid="attention-mute"]')!);
+    await click(container.querySelector('[data-testid="mute-choice-1h"]')!);
     for (let i = 0; i < 4; i += 1) await tick();
     expect(setSpendAlarmStatus).toHaveBeenCalledTimes(1);
     const [id, status, options] = setSpendAlarmStatus.mock.calls[0] as [string, string, { snoozedUntil: string; note: string | null }];

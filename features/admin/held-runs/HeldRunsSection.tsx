@@ -4,13 +4,20 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { fetchHeldRunsForAlarm, heldRunHref, replayCostLine, type HeldRun } from "./heldRuns";
+import { fetchMandateLabels } from "@/features/admin/spend-alarms/spendAlarms";
 
 export function HeldRunsSection({ alarmId }: { alarmId: string }) {
   const [runs, setRuns] = useState<HeldRun[] | null>(null);
+  const [labels, setLabels] = useState<ReadonlyMap<string, string>>(new Map());
   useEffect(() => {
     let live = true;
     fetchHeldRunsForAlarm(alarmId)
-      .then((r) => live && setRuns(r))
+      .then(async (r) => {
+        if (!live) return;
+        setRuns(r);
+        const l = await fetchMandateLabels(r.map((x) => x.mandate_key ?? "")).catch(() => new Map<string, string>());
+        if (live) setLabels(l);
+      })
       .catch(() => live && setRuns([]));
     return () => {
       live = false;
@@ -24,8 +31,9 @@ export function HeldRunsSection({ alarmId }: { alarmId: string }) {
         {runs.map((r) => (
           <li key={r.id} className="flex flex-wrap items-center gap-2 px-3 py-2">
             <Link className="font-medium underline" href={heldRunHref(r.id)}>
-              {r.mandate_key ?? r.agent_name ?? "Held run"}
+              {(r.mandate_key && labels.get(r.mandate_key)) ?? r.agent_name ?? r.mandate_key ?? "Held run"}
             </Link>
+            {r.mandate_key && labels.get(r.mandate_key) ? <span className="text-xs text-muted-foreground">{r.mandate_key}</span> : null}
             <span className="text-muted-foreground">
               {Object.keys(r.variables).length} inputs · {r.model ?? "model unknown"} · {replayCostLine(r.estimated_cost_usd)}
             </span>

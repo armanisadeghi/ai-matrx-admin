@@ -28,22 +28,13 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Button as SurfaceButton } from "@ai-matrx/design-system";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { AppLink } from "@/components/navigation/AppLink";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
-import { CopyForAiButton } from "@/components/agent-copy/CopyForAiButton";
+import { CopyForAiAction } from "./CopyForAiAction";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
 import { humanizeRelative } from "@/features/scheduling/utils/triggerHumanize";
 import { cn } from "@/lib/utils";
-import { MUTE_CHOICES } from "./item-mute";
 import type { AttentionAction, AttentionItem } from "./types";
 
 export interface AttentionItemRowProps {
@@ -51,7 +42,8 @@ export interface AttentionItemRowProps {
   /** The row is listed as MUTED: shows the mute and an Unmute instead of the menu. */
   muted?: boolean;
   onAction: (item: AttentionItem, action: AttentionAction) => Promise<void>;
-  onMute: (item: AttentionItem, ms: number) => Promise<void>;
+  /** Kept for callers; muting goes through the one dialog (`onMuteWithNote`). */
+  onMute?: (item: AttentionItem, ms: number) => Promise<void>;
   onMuteWithNote: (item: AttentionItem) => void;
   onUnmute: (item: AttentionItem) => Promise<void>;
 }
@@ -60,7 +52,6 @@ export function AttentionItemRow({
   item,
   muted = false,
   onAction,
-  onMute,
   onMuteWithNote,
   onUnmute,
 }: AttentionItemRowProps) {
@@ -109,7 +100,6 @@ export function AttentionItemRow({
         {item.copy && (
           <span className="ml-auto inline-flex items-center gap-1">
             <CopyButtons size="xs" label={item.copy.label} hide={["ai"]} human={item.copy.human} />
-            <CopyForAiButton size="sm" compact label={item.copy.label} agent={item.copy.agent} />
           </span>
         )}
       </div>
@@ -190,6 +180,8 @@ export function AttentionItemRow({
             </SurfaceButton>
           ))}
 
+        {item.copy && <CopyForAiAction label={item.copy.label} agent={item.copy.agent} />}
+
         {item.mute === null ? null : muted && item.mute.current ? (
           <>
             <span className="text-[11px] text-muted-foreground" data-testid="attention-mute-state">
@@ -219,43 +211,17 @@ export function AttentionItemRow({
             )}
           </>
         ) : (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                icon={busy === "mute" ? (
-                  <Loader2 className="animate-spin" aria-hidden />
-                ) : (
-                  <BellOff aria-hidden />
-                )}
-                variant="quiet"
-                disabled={busy !== null}
-                aria-label={`Mute ${item.title} for a while`}
-              >
-                Mute
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-64">
-              <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                {item.mute.scope === "server"
-                  ? "Quiet this one for a while, for every super-admin. It comes back on its own."
-                  : "Quiet this one in this browser for a while. It comes back on its own."}
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {MUTE_CHOICES.map((choice) => (
-                <DropdownMenuItem
-                  key={choice.id}
-                  data-testid={`attention-mute-${choice.id}`}
-                  onSelect={() => void run("mute", () => onMute(item, choice.ms))}
-                >
-                  Mute for {choice.label}
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem data-testid="attention-mute-note" onSelect={() => onMuteWithNote(item)}>
-                Mute with a note…
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          // ONE dialog: pick how long, add a note if you like (harsh walk: a note only on one duration).
+          <Button
+            icon={busy === "mute" ? <Loader2 className="animate-spin" aria-hidden /> : <BellOff aria-hidden />}
+            variant="quiet"
+            disabled={busy !== null}
+            data-testid="attention-mute"
+            onClick={() => onMuteWithNote(item)}
+            aria-label={`Mute ${item.title} for a while`}
+          >
+            Mute
+          </Button>
         )}
       </div>
     </li>

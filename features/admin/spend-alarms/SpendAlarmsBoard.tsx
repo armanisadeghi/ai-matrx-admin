@@ -3,7 +3,9 @@
 // Billing › Alarms: every spend alarm record, ringing ones first, on the canonical MatrxDataTable
 // (views, KPIs, tones). Each row opens its record page; ?id=<alarm> highlights that row.
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, RefreshCw, X } from "lucide-react";
 import { Button, SegmentedControl } from "@ai-matrx/design-system/controls";
@@ -33,10 +35,11 @@ type StatusFilter = "ringing" | "snoozed" | "resolved" | "all";
 const LEVEL_RANK = { critical: 0, warning: 1, info: 2 } as const;
 
 export function SpendAlarmsBoard() {
-  const [rows, setRows] = useState<SpendAlarmRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [version, setVersion] = useState(0);
+  // Under the dock's query prefix: a mute anywhere (dock, record page) refreshes this list at once.
+  const query = useQuery({ queryKey: ["admin-attention", "spend-alarm-list"], queryFn: fetchSpendAlarms, refetchOnWindowFocus: true });
+  const rows: SpendAlarmRecord[] = query.data ?? [];
+  const loading = query.isFetching && !query.data;
+  const error = query.error ? (query.error instanceof Error ? query.error.message : String(query.error)) : null;
   const { prefs: viewPrefs, setPrefs: setViewPrefs } = useListViewPrefs("spend-alarms-admin");
   const params = useSearchParams();
   const focusId = params.get("id");
@@ -45,17 +48,7 @@ export function SpendAlarmsBoard() {
   const kindFilter = params.get("kind");
   const [status, setStatus] = useState<StatusFilter>("ringing");
 
-  useEffect(() => {
-    let alive = true;
-    setLoading(true);
-    fetchSpendAlarms()
-      .then((r) => alive && (setRows(r), setError(null)))
-      .catch((e) => alive && setError(e instanceof Error ? e.message : String(e)))
-      .finally(() => alive && setLoading(false));
-    return () => {
-      alive = false;
-    };
-  }, [version]);
+
 
   const visible = rows
     .filter((r) => !kindFilter || r.kind === kindFilter)
@@ -167,6 +160,17 @@ export function SpendAlarmsBoard() {
           viewTabsStore={{ views: viewPrefs.savedViews ?? [], onChange: (savedViews) => setViewPrefs({ savedViews }) }}
           focusRowId={focusId}
           headerWrap="two-lines"
+          // A phone reads each alarm as a card: title, level, whose, count, cost.
+          mobileCardsBreakpoint="sm"
+          mobileCards={(r) => (
+            <Link href={spendAlarmHref(r.id)} className="flex flex-col gap-0.5 px-3 py-2" data-testid="spend-alarm-card">
+              <span className="line-clamp-2 text-sm font-medium text-foreground">{alarmTitle(r)}</span>
+              <span className="text-xs text-muted-foreground">
+                <span className={r.level === "critical" ? "text-destructive" : r.level === "warning" ? "text-warning" : undefined}>{r.watching ? "Fixed, watching" : LEVEL_LABEL[r.level]}</span>
+                {` · ${whose(r)} · ${r.occurrence_count.toLocaleString()}× · ${costLabel(r, formatAdminUsd)}`}
+              </span>
+            </Link>
+          )}
           cellLines="two"
           read={readOf({ loading, error }, { what: "spend alarms" })}
           emptyState={{ title: status === "ringing" ? "No alarms ringing" : "No alarms" }}
@@ -187,8 +191,8 @@ export function SpendAlarmsBoard() {
                     { value: "all", label: "All" },
                   ]}
                 />
-                <Button variant="outline" onClick={() => setVersion((v) => v + 1)} disabled={loading} aria-label="Refresh">
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                <Button variant="outline" onClick={() => void query.refetch()} disabled={query.isFetching} aria-label="Refresh">
+                  {query.isFetching ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                 </Button>
               </div>
             ),

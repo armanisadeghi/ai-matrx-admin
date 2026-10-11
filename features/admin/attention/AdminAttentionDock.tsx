@@ -378,6 +378,7 @@ export default function AdminAttentionDock() {
         className="z-50 flex items-center gap-1 shadow-xl"
         style={float.style}
         data-surface-value="admin_attention_dock_collapsed"
+        data-matrx-floating-bottom=""
       >
         <span
           className={cn(
@@ -412,6 +413,7 @@ export default function AdminAttentionDock() {
       className={shell}
       style={float.style}
       data-surface-value="admin_attention_dock"
+        data-matrx-floating-bottom=""
     >
       <div
         role="status"
@@ -471,7 +473,8 @@ export default function AdminAttentionDock() {
             <section key={source.id} className="mt-2" data-testid={`attention-section-${source.id}`}>
               <div className="flex items-center justify-between gap-2">
                 <h3 className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                  {source.label}
+                  {/* The section's own count: the spend alarms number equals the alarm list's Open tab. */}
+                  {source.counted === false ? `${source.label} · not an alarm` : `${source.label} · ${items.length + hidden}`}
                 </h3>
                 {source.review && (
                   <AppLink
