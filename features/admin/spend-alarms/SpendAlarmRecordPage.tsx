@@ -7,6 +7,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import { CopyForAiAction } from "@/features/admin/attention/CopyForAiAction";
 import {
   BellOff,
   Bell,
@@ -47,16 +49,19 @@ import {
   alarmAgentData,
   alarmSentence,
   alarmTitle,
+  alarmSourceHref,
+  collapseGoneSources,
+  fetchMandateLabels,
+  occurrenceSourceTitle,
+  refName,
   fetchSpendAlarm,
   LEVEL_LABEL,
   migratedNote,
   costLabel,
-  fetchItemTitles,
   fixFor,
   isMigrated,
   isRinging,
   whose,
-  type ItemLabel,
   fetchSpendAlarmOccurrences,
   fetchTaskState,
   refHref,
@@ -89,24 +94,26 @@ function fixDate(iso: string): string {
 }
 
 function when(iso: string | null | undefined): string {
-  return iso ? new Date(iso).toLocaleString() : "—";
+  return iso ? new Date(iso).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—";
 }
 
 function RefList({ record, names }: { record: SpendAlarmRecord; names: ReadonlyMap<string, string> }) {
-  const links = refLinks(record.refs);
-  if (links.length === 0) return <p className="text-sm text-muted-foreground">No ids recorded</p>;
+  // A ref with no name and no page says nothing to a person ("Recorded"); it stays in Copy for AI.
+  const links = refLinks(record.refs).filter(
+    (l) => l.href || names.has(l.value) || refName(l.key, l.value, record) || l.key === "driver" || l.key === "mandate_key" || l.key === "operation" || l.key === "scope",
+  );
+  if (links.length === 0) return <p className="text-sm text-muted-foreground">Not recorded</p>;
   return (
     <dl className="grid grid-cols-[9rem_1fr] gap-x-3 gap-y-1 text-sm">
       {links.map((l) => {
         const shown =
           names.get(l.value) ??
-          (l.key === "approval_id"
-            ? "Open in spend approvals"
-            : l.key === "handler" || l.key === "driver" || l.key === "mandate_key" || l.key === "provider" || l.key === "operation" || l.key === "scope"
+          refName(l.key, l.value, record) ??
+          (l.key === "handler" || l.key === "driver" || l.key === "mandate_key" || l.key === "provider" || l.key === "operation" || l.key === "scope"
               ? l.value.replace(/^mandate(_candidate)?:/, "").replace(/[_]+/g, " ")
               : l.href
                 ? `Open ${l.label.toLowerCase()}`
-                : "Recorded");
+                : "");
         return (
           <div key={l.key} className="contents">
             <dt className="text-muted-foreground">{l.label}</dt>
@@ -128,6 +135,7 @@ function RefList({ record, names }: { record: SpendAlarmRecord; names: ReadonlyM
 
 export function SpendAlarmRecordPage({ id }: { id: string }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [record, setRecord] = useState<SpendAlarmAttentionRow | null>(null);
   const [muteOpen, setMuteOpen] = useState(false);
   const [occurrences, setOccurrences] = useState<SpendAlarmOccurrence[]>([]);
@@ -140,7 +148,6 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [version, setVersion] = useState(0);
-  const [itemTitles, setItemTitles] = useState<ReadonlyMap<string, ItemLabel>>(new Map());
 
   useEffect(() => {
     let alive = true;
@@ -169,16 +176,16 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
         const fetched = people.length ? await fetchUserDisplayNames(people).catch(() => new Map<string, string>()) : new Map<string, string>();
         // A generic "User" placeholder is never a name.
         const resolved = new Map([...fetched].filter(([, n]) => n && n.trim().toLowerCase() !== "user"));
-        const served = occ.filter((o) => o.refs.source_id && o.refs.source_kind === "document").map((o) => ({ kind: o.refs.source_kind, id: o.refs.source_id as string }));
-        const titles = await fetchItemTitles(served).catch(() => new Map<string, ItemLabel>());
+        // Every mandate an occurrence names, by its display name (the sentence already uses names).
+        const mandateLabels = await fetchMandateLabels([rec?.refs.mandate_key ?? "", ...occ.map((o) => o.refs.mandate_key ?? "")]).catch(() => new Map<string, string>());
         if (!alive) return;
         setRecord(rec);
         setOccurrences(occ);
         setTask(t);
         setApprovalStatus(approval);
         if (rec?.refs.user_id && (rec.person || rec.subject_name)) resolved.set(rec.refs.user_id, rec.person ?? rec.subject_name!.split(" · ")[0]!);
-        if (rec?.subject_type === "source") resolved.set(rec.subject_id, titles.get(rec.subject_id)?.title ?? rec.subject_name ?? "the Source");
-        for (const [docId, label] of titles) if (!resolved.has(docId)) resolved.set(docId, label.title);
+        if (rec?.subject_type === "source") resolved.set(rec.subject_id, rec.subject_name ?? "the Source");
+        for (const [key, label] of mandateLabels) if (!resolved.has(key)) resolved.set(key, label);
         if (rec?.refs.agent_id && rec.subject_name && rec.subject_type === "agent") resolved.set(rec.refs.agent_id, rec.subject_name);
         if (t?.title && rec?.refs.task_id) resolved.set(rec.refs.task_id, t.title);
         for (const [rid, n] of Object.entries(rec?.names ?? {})) if (!resolved.has(rid)) resolved.set(rid, n);
@@ -189,7 +196,6 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
           for (const o of (orgs ?? []) as { id: string; name: string | null }[]) if (o.name) resolved.set(o.id, o.name);
         }
         setNames(resolved);
-        setItemTitles(titles);
         setError(rec ? null : "This alarm does not exist");
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : String(e));
@@ -212,6 +218,8 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
       setPending(null);
       setNote("");
       reload();
+      // The dock and the alarm list read the same records: refresh them now, not on the next poll.
+      void queryClient.invalidateQueries({ queryKey: ["admin-attention"] });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : String(e));
     } finally {
@@ -317,8 +325,8 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
         if (o.refs.mandate_key) return names.get(o.refs.mandate_key) ?? o.refs.mandate_key.replace(/[._]+/g, " ");
         if (o.refs.operation) return o.refs.operation;
         if (!o.refs.source_id) return <span className="text-muted-foreground">—</span>;
-        const href = itemHref(o);
-        const text = itemTitle(o) ?? "Source (not found)";
+        const href = o.source && !o.collapsed ? alarmSourceHref({ ...o.source, id: o.refs.source_id, source_kind: o.refs.source_kind ?? "source", times: 1, last_at: o.occurred_at }) : null;
+        const text = occurrenceSourceTitle(o) ?? "Not recorded";
         return href ? (
           <Link href={href} className="text-primary hover:underline">
             {text}
@@ -333,9 +341,6 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
   ];
 
   const shippedFix = record ? fixFor(record) : null;
-  const itemTitle = (o: SpendAlarmOccurrence) =>
-    o.refs.source_id ? itemTitles.get(o.refs.source_id)?.title ?? "Source (not found)" : null;
-  const itemHref = (o: SpendAlarmOccurrence) => (o.refs.source_id ? itemTitles.get(o.refs.source_id)?.href ?? null : null);
   const fixAt = shippedFix?.at ? Date.parse(shippedFix.at) : null;
   const afterFix = fixAt
     ? occurrences.filter((o) => !isMigrated(o) && Date.parse(o.occurred_at) > fixAt).reduce((n, o) => n + o.repeat_count, 0)
@@ -382,14 +387,16 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
         {record ? (
           <div className="mx-auto flex max-w-6xl flex-col gap-4">
             <section className="group/x relative rounded-lg border border-border bg-card p-4">
-              <CopyButtons
-                size="icon"
-                label="Spend alarm"
-                className="absolute right-2 top-2"
-                human={() => `${record.title}\n${record.detail}\nRule: ${record.rule ?? "—"}\n${window.location.origin}${spendAlarmHref(id)}`}
-                agent={agentPayload}
-              />
-              <p className="pr-20 text-sm font-medium text-foreground">{alarmSentence({ ...record, names: Object.fromEntries(names) })}</p>
+              <div className="absolute right-2 top-2 flex items-center gap-1">
+                <CopyButtons
+                  size="icon"
+                  label="Spend alarm"
+                  hide={["ai"]}
+                  human={() => `${alarmTitle(record)}\n${alarmSentence(record)}\nRule: ${record.rule ?? "—"}\n${window.location.origin}${spendAlarmHref(id)}`}
+                />
+                <CopyForAiAction label="Spend alarm" agent={agentPayload} />
+              </div>
+              <p className="pr-44 text-sm font-medium text-foreground">{alarmSentence({ ...record, names: Object.fromEntries(names) })}</p>
               {record.status === "snoozed" && !isRinging(record) ? (
                 <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-2 text-sm" data-testid="alarm-muted">
                   <BellOff className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
@@ -461,13 +468,6 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
 
             <section className="group/x relative rounded-lg border border-border bg-card p-4">
               <h2 className="mb-2 text-sm font-semibold">What was blocked</h2>
-              <CopyButtons
-                size="xs"
-                label="Blocked ids"
-                className="absolute right-2 top-2"
-                human={() => refLinks(record.refs).map((l) => `${l.label}: ${l.value}`).join("\n")}
-                agent={agentPayload}
-              />
               <RefList record={record} names={names} />
               {task ? (
                 <p className="mt-2 text-sm">
@@ -491,7 +491,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
 
             <div className="h-[28rem] min-h-0" id="occurrences">
               <MatrxDataTable
-                data={occurrences}
+                data={collapseGoneSources(occurrences)}
                 columns={visibleColumns}
                 getRowId={(o) => o.id}
                 isLoading={loading}

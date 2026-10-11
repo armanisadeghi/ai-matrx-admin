@@ -79,6 +79,7 @@ export function buildAttentionNotice(
     // Stable sort: within a severity the source's own order (its newest/worst first) holds.
     const ordered = [...live].sort((a, b) => RANK[a.severity] - RANK[b.severity]);
     for (const i of ordered) {
+      if (source.counted === false && i.severity !== "critical") continue;
       if (i.severity === "critical") criticalCount += 1;
       else if (i.severity === "warning") warningCount += 1;
       else infoCount += 1;

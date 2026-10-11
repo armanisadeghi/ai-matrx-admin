@@ -45,6 +45,7 @@ export function useSpendTodaySource(enabled: boolean): AttentionSourceState {
     status: !on ? "idle" : query.isError ? "failed" : query.data === undefined ? "loading" : "ok",
     error: query.error instanceof Error ? query.error.message : null,
     loud: false,
+    counted: false,
     summarize: (live) => (live.length ? `${live[0].title}.` : null),
     review: { href: SPEND_DASHBOARD_HREF, label: "Open spend dashboard" },
     refetch: () => void query.refetch(),

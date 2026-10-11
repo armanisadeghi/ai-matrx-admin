@@ -5,6 +5,7 @@
 // "Replay and watch" — the same mandate with the frozen inputs, as the person who clicks, streamed
 // in the chat window. Every replay is kept on the held run (billing.held_run_note_replay).
 
+import { fetchMandateLabels } from "@/features/admin/spend-alarms/spendAlarms";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Pause, Play, RotateCcw } from "lucide-react";
@@ -50,6 +51,7 @@ function ValueBlock({ value }: { value: string }) {
 /** `id` is a held run id, or an alarm id (the dock's door) — then the alarm's newest held run opens. */
 export function HeldRunView({ id }: { id: string }) {
   const [run, setRun] = useState<HeldRun | null>(null);
+  const [mandateLabel, setMandateLabel] = useState<string | null>(null);
   const [siblings, setSiblings] = useState<HeldRun[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +67,12 @@ export function HeldRunView({ id }: { id: string }) {
         const direct = await fetchHeldRun(id);
         const list = direct ? [] : await fetchHeldRunsForAlarm(id);
         if (!live) return;
-        setRun(direct ?? list[0] ?? null);
+        const found = direct ?? list[0] ?? null;
+        setRun(found);
+        if (found?.mandate_key) {
+          const labels = await fetchMandateLabels([found.mandate_key]).catch(() => new Map<string, string>());
+          if (live) setMandateLabel(labels.get(found.mandate_key) ?? null);
+        }
         setSiblings(list);
       } catch (e) {
         if (live) setError(e instanceof Error ? e.message : String(e));
@@ -117,7 +124,7 @@ export function HeldRunView({ id }: { id: string }) {
   };
 
   const replays = run?.replays ?? [];
-  const label = run ? (run.mandate_key ?? run.agent_name ?? "Held run") : loading ? "Held run" : "Held run not found";
+  const label = run ? (mandateLabel ?? run.agent_name ?? run.mandate_key ?? "Held run") : loading ? "Held run" : "Held run not found";
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -174,7 +181,10 @@ export function HeldRunView({ id }: { id: string }) {
             <Section title="What ran">
               <dl className="grid grid-cols-[8rem_1fr] gap-y-1 text-sm">
                 <dt className="text-muted-foreground">Mandate</dt>
-                <dd>{run.mandate_key ? <Link className="underline" href={mandateAdminHref(run.mandate_key)}>{run.mandate_key}</Link> : "—"}</dd>
+                <dd>{run.mandate_key ? <>
+                      <Link className="underline" href={mandateAdminHref(run.mandate_key)}>{mandateLabel ?? run.mandate_key}</Link>
+                      {mandateLabel ? <span className="ml-2 text-xs text-muted-foreground">{run.mandate_key}</span> : null}
+                    </> : "—"}</dd>
                 <dt className="text-muted-foreground">Agent</dt>
                 <dd>
                   {run.agent_id ? (
@@ -258,7 +268,7 @@ export function HeldRunView({ id }: { id: string }) {
                     .map((s) => (
                       <li key={s.id}>
                         <Link className="underline" href={heldRunHref(s.id)}>
-                          {s.mandate_key ?? s.agent_name ?? s.id}
+                          {(s.mandate_key && s.mandate_key === run?.mandate_key && mandateLabel) || s.agent_name || s.mandate_key || "Held run"}
                         </Link>{" "}
                         <span className="text-muted-foreground">· {new Date(s.last_seen_at).toLocaleString()}</span>
                       </li>
@@ -273,7 +283,7 @@ export function HeldRunView({ id }: { id: string }) {
         open={confirming}
         onOpenChange={setConfirming}
         title={replays.length ? "Replay this run again?" : "Replay this run?"}
-        description={`Runs ${run?.mandate_key ?? run?.agent_name ?? "it"} once as you, with the same inputs, on the current version. ${replayCostLine(run?.estimated_cost_usd ?? null)}, billed to you.`}
+        description={`Runs ${mandateLabel ?? run?.agent_name ?? run?.mandate_key ?? "it"} once as you, with the same inputs, on the current version. ${replayCostLine(run?.estimated_cost_usd ?? null)}, billed to you.`}
         confirmLabel="Replay and watch"
         onConfirm={() => {
           setConfirming(false);

@@ -153,4 +153,9 @@ export interface AttentionSourceState {
   summarize: (live: readonly AttentionItem[]) => string | null;
   review: { href: string; label: string } | null;
   refetch: () => void;
+  /**
+   * `false`: a fact shown on the dock that is not an alarm (Spend today). Its rows are listed but
+   * not counted in the pill — unless critical — so the pill's spend count equals the alarm list's.
+   */
+  counted?: boolean;
 }
