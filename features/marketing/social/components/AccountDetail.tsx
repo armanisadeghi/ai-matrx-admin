@@ -69,9 +69,9 @@ import {
 } from "../mappers";
 import { OUTLIER_TIER_THRESHOLDS, formatCompact, formatPercentile, profileBaseline } from "../outlier";
 import { useSocialSpend } from "../cost";
-import { LOAD_MORE_STEP } from "../post-count";
+import { COUNT_UNREADABLE_MESSAGE, loadMoreRequest } from "../post-count";
 import { PostCountControl } from "./PostCountControl";
-import { LimitLine, fetchedText } from "./FetchLines";
+import { LimitLine, fetchedText, stoppedText } from "./FetchLines";
 import { ProviderChip } from "./ProviderFallbackNotice";
 import { refreshProfile, socialErrorCode, socialErrorMessage, trackAccount } from "../server";
 import { useCanEditSocial } from "../useCanEditSocial";
@@ -365,13 +365,18 @@ export function AccountDetail({ platform, profileId }: { platform: string; profi
 
   /** `more`: the next LOAD_MORE_STEP posts beyond what is stored. `force`: ignore the reuse window. */
   async function refresh(opts: { force?: boolean; more?: boolean } = {}) {
-    const n = opts.more ? (posts.data?.length ?? 0) + LOAD_MORE_STEP : await rememberedMaxPosts();
-    const ok = await confirmPosts(profile.data?.platform ?? platform, opts.more ? LOAD_MORE_STEP : n, { title: `${opts.more ? "Load more for" : "Refresh"} ${profile.data ? accountName({ displayName: profile.data.display_name ?? "", handle: profile.data.handle ?? "", platform: profile.data.platform }) : "this account"}?`, confirmLabel: opts.more ? "Load more" : "Refresh" });
+    const more = loadMoreRequest();
+    let n: number;
+    if (opts.more) n = more.maxPosts;
+    else {
+      try { n = await rememberedMaxPosts(); } catch { setRefreshLine({ text: COUNT_UNREADABLE_MESSAGE, failed: true }); return; }
+    }
+    const ok = await confirmPosts(profile.data?.platform ?? platform, opts.more ? more.quoteCount : n, { title: `${opts.more ? "Load more for" : "Refresh"} ${profile.data ? accountName({ displayName: profile.data.display_name ?? "", handle: profile.data.handle ?? "", platform: profile.data.platform }) : "this account"}?`, confirmLabel: opts.more ? "Load more" : "Refresh" });
     if (!ok) return;
     setBusy(true);
     setRefreshLine({ text: "Starting…", failed: false });
     try {
-      const result = await refreshProfile(profileId, { maxPosts: n, force: opts.force || opts.more }, {
+      const result = await refreshProfile(profileId, { maxPosts: n, force: opts.force, continueFromLast: opts.more }, {
         organizationId: brand.organizationId,
         onProgress: (pr) =>
           setRefreshLine({ text: pr.step && pr.total ? `${pr.message} · ${pr.step} of ${pr.total}` : pr.message, failed: false }),
@@ -389,13 +394,15 @@ export function AccountDetail({ platform, profileId }: { platform: string; profi
   async function trackThis() {
     const p0 = profile.data;
     if (!p0) return;
-    const ok = await confirmPosts(p0.platform, await rememberedMaxPosts(), { title: `Track ${accountName({ displayName: p0.display_name ?? "", handle: p0.handle ?? "", platform: p0.platform })}?`, confirmLabel: "Track" });
+    let count: number;
+    try { count = await rememberedMaxPosts(); } catch { setRefreshLine({ text: COUNT_UNREADABLE_MESSAGE, failed: true }); return; }
+    const ok = await confirmPosts(p0.platform, count, { title: `Track ${accountName({ displayName: p0.display_name ?? "", handle: p0.handle ?? "", platform: p0.platform })}?`, confirmLabel: "Track" });
     if (!ok) return;
     setBusy(true);
     setRefreshLine({ text: "Starting…", failed: false });
     try {
       await trackAccount(
-        { profileId: p0.id, handleOrUrl: p0.profile_url || p0.handle, platform: isSocialPlatform(p0.platform) ? p0.platform : undefined, role: "competitor", brandId: brand.id, maxPosts: await rememberedMaxPosts() },
+        { profileId: p0.id, handleOrUrl: p0.profile_url || p0.handle, platform: isSocialPlatform(p0.platform) ? p0.platform : undefined, role: "competitor", brandId: brand.id, maxPosts: count },
         { organizationId: brand.organizationId, onProgress: (pr) => setRefreshLine({ text: pr.step && pr.total ? `${pr.message} · ${pr.step} of ${pr.total}` : pr.message, failed: false }) },
       );
       await invalidate();
@@ -539,7 +546,7 @@ export function AccountDetail({ platform, profileId }: { platform: string; profi
         {lastFetch?.posts_requested != null && lastFetch.posts_received != null ? (
           <span>{`Got ${lastFetch.posts_received.toLocaleString("en-US")} of ${lastFetch.posts_requested.toLocaleString("en-US")} asked`}</span>
         ) : null}
-        {lastFetch?.stopped_reason === "points_limit" ? <span className="text-destructive">Stopped early: points limit reached. Posts already loaded are kept.</span> : null}
+        {stoppedText(lastFetch?.stopped_reason) ? <span className={lastFetch?.stopped_reason === "points_limit" || lastFetch?.stopped_reason === "provider_error" ? "text-destructive" : undefined}>{stoppedText(lastFetch?.stopped_reason)}</span> : null}
         <LimitLine limit={lastFetch?.limit_applied} organizationId={brand.organizationId} />
       </div>
 

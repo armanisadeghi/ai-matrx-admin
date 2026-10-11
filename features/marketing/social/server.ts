@@ -286,12 +286,12 @@ export async function untrackAccount(
 
 export function refreshProfile(
   profileId: string,
-  input: { pages?: number; maxPosts?: number; force?: boolean },
+  input: { pages?: number; maxPosts?: number; force?: boolean; continueFromLast?: boolean },
   opts: CallOptions,
 ): Promise<IngestProfileResult> {
   return callSocial<IngestProfileResult>(
     `/profiles/${profileId}/refresh`,
-    { ...pagesOrMax(input), force: input.force ?? false },
+    { ...pagesOrMax(input), force: input.force ?? false, ...(input.continueFromLast ? { continue_from_last: true } : {}) },
     opts,
   );
 }

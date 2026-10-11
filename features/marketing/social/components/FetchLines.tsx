@@ -27,6 +27,27 @@ export function LimitLine({ limit, organizationId }: { limit: SocialLimitApplied
   );
 }
 
+/** Why a fetch ended early, in plain words; null when it ended normally. */
+export function stoppedText(reason: string | null | undefined): string | null {
+  switch (reason) {
+    case "points_limit": return "Stopped early: points limit reached. Posts already loaded are kept.";
+    case "provider_error": return "Stopped early: the provider had a problem. Posts already loaded are kept.";
+    case "cursor_expired": return "Couldn't pick up where the last fetch stopped. Use Refresh now.";
+    case "no_saved_place": return "Load more isn't available yet for this account. Use Refresh now once.";
+    case "nothing_more": return "Everything the provider has is already loaded.";
+    default: return null;
+  }
+}
+
+/** Toast text for a row refresh: the summary plus any limit and early stop. */
+export function fetchOutcomeText(summary: string, r: { limit_applied?: SocialLimitApplied | null; stopped_reason?: string | null }): string {
+  const parts = [summary];
+  if (r.limit_applied) parts.push(`Limited to ${r.limit_applied.value.toLocaleString("en-US")} by ${SETTING_LABELS[r.limit_applied.setting] ?? r.limit_applied.setting}`);
+  const stopped = stoppedText(r.stopped_reason);
+  if (stopped) parts.push(stopped);
+  return parts.join(" · ");
+}
+
 /** "Fetched 3h ago" (the Refresh-now button is the caller's, so it can carry its own busy state). */
 export function fetchedText(fetchedAt: string | null | undefined, reused?: boolean): string | null {
   if (!fetchedAt) return null;

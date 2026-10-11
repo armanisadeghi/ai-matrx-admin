@@ -161,6 +161,8 @@ export interface IngestProfileResult {
   fetched_at?: string | null;
   /** "points_limit" when a points refusal stopped the walk (posts already stored are kept). */
   stopped_reason?: string | null;
+  /** The walk resumed where the last one stopped. */
+  continued?: boolean;
 }
 
 /** The server cut a request down to a setting; the UI names it in place. */

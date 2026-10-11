@@ -17,7 +17,7 @@ import { useSocialSpend } from "../cost";
 import { socialErrorCode, socialErrorMessage, trackAccount } from "../server";
 import { platformLabel } from "./PlatformMark";
 import { isSocialPlatform, type AccountRow } from "../types";
-import { rememberedMaxPosts } from "../post-count";
+import { COUNT_UNREADABLE_MESSAGE, rememberedMaxPosts } from "../post-count";
 
 export { trackableOwn } from "../own-accounts";
 
@@ -31,6 +31,13 @@ export function useTrackOwn(organizationId: string, brandId: string) {
   /** Track one own property as role Own; an empty account asks before tracking it anyway. */
   async function trackOwnRow(row: AccountRow, allowEmpty = false): Promise<"ok" | "failed"> {
     if (!row.profileUrl && !row.handle) return "failed";
+    let maxPosts: number;
+    try {
+      maxPosts = await rememberedMaxPosts();
+    } catch {
+      toast.error(`${accountName(row)}: ${COUNT_UNREADABLE_MESSAGE}`);
+      return "failed";
+    }
     try {
       await trackAccount(
         {
@@ -39,7 +46,7 @@ export function useTrackOwn(organizationId: string, brandId: string) {
           role: "own",
           brandId,
           propertyId: row.propertyId ?? undefined,
-          maxPosts: await rememberedMaxPosts(),
+          maxPosts,
           allowEmpty,
         },
         {

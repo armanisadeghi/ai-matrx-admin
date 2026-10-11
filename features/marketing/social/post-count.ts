@@ -17,6 +17,13 @@ export type PostCountChoice = (typeof POST_COUNT_CHOICES)[number];
 export const POST_COUNT_LABELS: Record<PostCountChoice, string> = { "12": "12", "50": "50", "100": "100", "500": "500", all: "All" };
 export const COMMENT_COUNT_CHOICES = [20, 100, 200] as const;
 export const LOAD_MORE_STEP = 50;
+/** Shown when the count cannot be worked out (the "All" limit could not be read). Nothing is fetched. */
+export const COUNT_UNREADABLE_MESSAGE = "Couldn't read your organization's post limit, so nothing was fetched. Pick a number instead of All, or try again.";
+
+/** Load more = the next LOAD_MORE_STEP NEW posts, starting where the last fetch stopped; the quote is exactly those. Pure. */
+export function loadMoreRequest(): { maxPosts: number; continueFromLast: true; quoteCount: number } {
+  return { maxPosts: LOAD_MORE_STEP, continueFromLast: true, quoteCount: LOAD_MORE_STEP };
+}
 /** Where an org admin changes the limits; with a setting name it scrolls to that exact row (rows anchor at their full key). */
 export const SOCIAL_LIMITS_HREF = (organizationId: string, setting?: string) =>
   `/organizations/${organizationId}/settings/configuration${setting ? `#social.${setting}` : ""}`;
@@ -85,4 +92,13 @@ export async function rememberedMaxPosts(): Promise<number> {
   const choice = read();
   if (choice !== "all") return Number(choice);
   return knobInt("social", "profile_posts_max");
+}
+
+/** Same as `rememberedMaxPosts` but a failure to read the limit arrives as a plain sentence (for callers whose errors are shown as written). */
+export async function rememberedMaxPostsPlain(): Promise<number> {
+  try {
+    return await rememberedMaxPosts();
+  } catch {
+    throw new Error(COUNT_UNREADABLE_MESSAGE);
+  }
 }

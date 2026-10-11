@@ -79,7 +79,8 @@ import { CONNECTION_RETURN_PARAMS, ManageConnectionsDialog } from "./ManageConne
 import { useSocials } from "./SocialsContext";
 import { trackableOwn, useTrackOwn } from "./useTrackOwn";
 import { formatSocialHandle } from "@/features/marketing/lib/social-handle";
-import { rememberedMaxPosts, resolveCount, usePostCount, useProfilePostsMax } from "../post-count";
+import { fetchOutcomeText } from "./FetchLines";
+import { COUNT_UNREADABLE_MESSAGE, rememberedMaxPosts, rememberedMaxPostsPlain, resolveCount, usePostCount, useProfilePostsMax } from "../post-count";
 import { PostCountControl } from "./PostCountControl";
 
 const ROLE_OPTIONS: SelectOption<TrackedRole>[] = TRACKED_ROLES.map((r) => ({
@@ -167,7 +168,13 @@ export function AccountsTab() {
 
   async function refresh(row: AccountRow) {
     if (!row.profileId) return;
-    const n = await rememberedMaxPosts();
+    let n: number;
+    try {
+      n = await rememberedMaxPosts();
+    } catch {
+      toast.error(COUNT_UNREADABLE_MESSAGE);
+      return;
+    }
     const ok = await confirmPosts(row.platform, n, {
       title: `Refresh ${accountName(row)}?`,
       confirmLabel: "Refresh",
@@ -181,7 +188,7 @@ export function AccountsTab() {
         { organizationId },
       );
       await invalidate();
-      toast.success(refreshSummary(result));
+      toast.success(fetchOutcomeText(refreshSummary(result), result));
     } catch (err) {
       setRefusedRows((prev) => new Set(prev).add(row.rowId));
       if (!showRefused(err, captureTarget(row)))
@@ -580,7 +587,7 @@ export function AccountsTab() {
           parse: (value) => parseCreateAccounts(value),
           run: async (plan) => {
             const result = await trackAccount(
-              { handleOrUrl: plan.handleOrUrl, platform: plan.platform, role: plan.role, brandId, maxPosts: await rememberedMaxPosts() },
+              { handleOrUrl: plan.handleOrUrl, platform: plan.platform, role: plan.role, brandId, maxPosts: await rememberedMaxPostsPlain() },
               { organizationId },
             );
             await invalidate();
@@ -600,7 +607,7 @@ export function AccountsTab() {
             }
             if (plan.role && row.trackedAccountId) await setTrackedRole(row.trackedAccountId, plan.role);
             if (plan.refresh && row.profileId) {
-              await refreshProfile(row.profileId, { maxPosts: await rememberedMaxPosts() }, { organizationId });
+              await refreshProfile(row.profileId, { maxPosts: await rememberedMaxPostsPlain() }, { organizationId });
             }
             await invalidate();
             return { id: row.rowId, name: plan.label };
