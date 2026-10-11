@@ -212,6 +212,9 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
   // Canvas integration
   const { open: openCanvas } = useCanvas();
   const { openArtifact } = useOpenArtifactInCanvas();
+  // Hooks stay above every early return. "Make flashcards" state (handler lives with the other actions).
+  const [deckHref, setDeckHref] = useState<string | null>(null);
+  const [makingDeck, setMakingDeck] = useState(false);
 
   // Print integration
   const {
@@ -457,8 +460,6 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
   };
 
   // "Make flashcards": the quiz's questions become a real deck (the platform's one deck writer).
-  const [deckHref, setDeckHref] = useState<string | null>(null);
-  const [makingDeck, setMakingDeck] = useState(false);
   const handleMakeFlashcards = async () => {
     if (makingDeck) return;
     if (deckHref) {
