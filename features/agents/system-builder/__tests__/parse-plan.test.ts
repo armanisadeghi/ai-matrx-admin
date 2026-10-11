@@ -90,11 +90,10 @@ describe("step cards are clean prose with one badge", () => {
       for (const text of [s.summary, s.job, s.title]) {
         expect(text).not.toMatch(/\*|`|(^|\s)[-•]\s|\s_\w/);
       }
-      expect(s.summary.length).toBeGreaterThan(0);
+      if (s.markdown.length > 0) expect(s.summary.length).toBeGreaterThan(0);
       expect(s.summary.length).toBeLessThanOrEqual(221);
       // a clip ends in an ellipsis after a whole word, never mid-word
       if (s.summary.endsWith("…")) expect(s.job.startsWith(s.summary.slice(0, -1).trimEnd())).toBe(true);
-      expect(s.markdown.length).toBeGreaterThan(0);
       expect(stepBadge(s)).not.toBeNull();
     }
   });

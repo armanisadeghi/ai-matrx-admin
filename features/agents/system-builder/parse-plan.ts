@@ -57,13 +57,15 @@ function splitSections(md: string): Section[] {
 
 function doerOf(text: string): StepDoer {
   const t = text.toLowerCase();
-  if (/\b(no ai|simple code|code compares|deterministic|pure code|workflow node)\b/.test(t)) return "code";
+  if (/\b(no ai|simple code|simple rules|plain rules|code compares|deterministic|pure code|workflow node)\b/.test(t)) return "code";
   if (/\b(decision model|decision-model|small model|classifier)\b/.test(t)) return "decision";
   if (/\b(frontier|mid-size|mid size|top-tier|top tier|large model)\b/.test(t)) return "ai-call";
   if (/\b(workflow pauses|you (review|approve|check|decide|upload)|a person signs)\b/.test(t)) return "human";
   if (/\bagent\b/.test(t)) return "agent";
   if (/\b(ai call|llm call|model call|prompt)\b/.test(t)) return "ai-call";
+  if (/\b(the same model|a model|the model)\b/.test(t)) return "ai-call";
   if (/\bcode\b/.test(t)) return "code";
+  if (/\b(creates?|publish\w*|posts?|saves?|sends?|records?|totals?|exports?|automatic(ally)?)\b/.test(t)) return "code";
   return "unknown";
 }
 
