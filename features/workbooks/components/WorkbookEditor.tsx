@@ -98,6 +98,7 @@ import { resolveExportImage } from "@/lib/univer/matrxImagePorts";
 import { workbookHistoryToggleInput } from "@/lib/univer/historyKinds";
 import { WorkbookSheetReferenceCopyButton } from "@/features/workbooks/components/WorkbookSheetReferenceCopyButton";
 import { WorkbookTableLink } from "@/features/workbooks/table-link/WorkbookTableLink";
+import { registerOpenEditorContent, type SavedEditorSnapshot } from "@/lib/univer/openEditorContent";
 
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -159,6 +160,10 @@ export default function WorkbookEditor({
   const univerRef = useRef<Univer | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSaveByUserRef = useRef<string | null>(null);
+  /** The snapshot row the canvas shows (loaded, saved, or replaced to). */
+  const shownSnapshotIdRef = useRef<string | null>(null);
+  /** True while the content is being swapped: what Univer emits then is not an edit. */
+  const replacingRef = useRef(false);
   // V2 collab session — null until `collab=true` AND Univer has booted.
   // See `../collab/FEATURE.md` for the full architecture; this ref is the
   // sole live connection between Univer's command service and Yjs.
@@ -258,12 +263,12 @@ export default function WorkbookEditor({
       });
       return;
     }
-    const snapshot = res.data?.snapshot;
-    if (snapshot) {
-      // Boundary cast: snapshot was written by Univer itself (or our default
-      // shape from defaultEmptyWorkbook); it's stored as opaque JSONB.
-      apiRef.current.createWorkbook(snapshot as Partial<IWorkbookData>);
-    }
+    const row = res.data;
+    // Already showing it (our own save, or a joiner that loaded it): nothing to swap.
+    if (!row?.snapshot || row.id === shownSnapshotIdRef.current) return;
+    replaceWorkbookContent({ id: row.id, snapshot: row.snapshot }, { announce: false });
+    // replaceWorkbookContent is declared below and stable (refs only).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workbookId]);
 
   // Boot Univer EXACTLY ONCE per workbookId. `editable` / `collab` are read
@@ -327,6 +332,7 @@ export default function WorkbookEditor({
           (res.data?.snapshot as Partial<IWorkbookData>) ??
           defaultEmptyWorkbook();
         apiRef.current.createWorkbook(initial);
+        shownSnapshotIdRef.current = res.data?.id ?? null;
         setBootState("ready");
 
         // Command stream → debounced autosave. Registered for the lifetime of
@@ -338,7 +344,7 @@ export default function WorkbookEditor({
           apiRef.current.Event.CommandExecuted,
           (command) => {
             if (!isWorkbookSnapshotMutation(command)) return;
-            if (!editableRef.current) return;
+            if (!editableRef.current || replacingRef.current) return;
             setSaveStatus("dirty");
             if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
             saveTimerRef.current = setTimeout(() => {
@@ -477,16 +483,24 @@ export default function WorkbookEditor({
         const election = session.electHost();
         setCollabIsHost(election.isHost);
       },
+      // A peer restored history / took Google's version: show the newest save.
+      onReplaced: () => void reloadFromLatest(),
     });
 
     collabSessionRef.current = session;
     await session.start();
 
-    // Stream local selection changes into Awareness so remote peers can
-    // render this user's cell ring. Defensive: facade typings are loose at
-    // the .onSelectionChange boundary; on a Univer build where the method
-    // is missing we just skip cursor broadcasting — sessions still sync
-    // mutations + presence (uid + color) without cell coords.
+    wireCollabSelection();
+  }, [workbookId]);
+
+  // Stream local selection changes into Awareness so remote peers can render
+  // this user's cell ring. Bound to the CURRENT workbook unit, so a content
+  // swap unbinds it first (Univer's facade reads the current unit inside the
+  // listener and throws on none) and rebinds it to the new unit after.
+  const wireCollabSelection = () => {
+    collabSelectionDisposerRef.current?.dispose();
+    collabSelectionDisposerRef.current = null;
+    if (!collabSessionRef.current) return;
     try {
       const fb = (
         apiRef.current as unknown as {
@@ -506,7 +520,7 @@ export default function WorkbookEditor({
         } | null
       )?.getActiveWorkbook?.();
       if (fb?.onSelectionChange) {
-        const disposer = fb.onSelectionChange((selections) => {
+        collabSelectionDisposerRef.current = fb.onSelectionChange((selections) => {
           if (!collabSessionRef.current) return;
           const first = selections?.[0];
           if (!first) return;
@@ -517,12 +531,64 @@ export default function WorkbookEditor({
             col: first.startColumn,
           });
         });
-        collabSelectionDisposerRef.current = disposer;
       }
     } catch (err) {
       console.warn("[workbook] collab: selection wiring failed", err);
     }
-  }, [workbookId]);
+  };
+
+  /**
+   * THE content swap for this editor (see lib/univer/openEditorContent): show
+   * a SAVED snapshot in place of what is open. The pending autosave is dropped
+   * (it would write the old content back over the new one), the unit keeps its
+   * id (peers' mutations address it), and with `announce` every collab peer
+   * reloads the same snapshot and the shared log is emptied.
+   */
+  const replaceWorkbookContent = (
+    row: SavedEditorSnapshot,
+    { announce }: { announce: boolean },
+  ) => {
+    const api = apiRef.current;
+    if (!api) throw new Error("The workbook editor is not ready yet. Try again in a moment.");
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    const session = collabSessionRef.current;
+    collabSelectionDisposerRef.current?.dispose();
+    collabSelectionDisposerRef.current = null;
+    const swap = () => {
+      const current = api.getActiveWorkbook();
+      const snapshot = { ...(row.snapshot as Partial<IWorkbookData>) };
+      if (current) {
+        snapshot.id = current.getId();
+        api.disposeUnit(current.getId());
+      }
+      api.createWorkbook(snapshot);
+    };
+    replacingRef.current = true;
+    try {
+      if (session) session.muteWhile(swap);
+      else swap();
+    } finally {
+      replacingRef.current = false;
+    }
+    shownSnapshotIdRef.current = row.id;
+    setSaveStatus("idle");
+    wireCollabSelection();
+    if (announce) session?.announceReplaced(row.id);
+  };
+
+  // History restore, Google update and table refresh reach the open canvas here.
+  useEffect(
+    () =>
+      registerOpenEditorContent("workbook", workbookId, (row) =>
+        replaceWorkbookContent(row, { announce: true }),
+      ),
+    // replaceWorkbookContent reads refs only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [workbookId],
+  );
 
   // Stable save fn — pulled out so the timer callback and the manual-save
   // button can both reach it.
@@ -550,6 +616,7 @@ export default function WorkbookEditor({
         return;
       }
       setSaveStatus("saved");
+      shownSnapshotIdRef.current = res.data.id;
       // The host's saved snapshot now holds those mutations; trim them from
       // the shared log so a joiner does not replay them onto it.
       if (collabSessionRef.current && collabIsHostRef.current) {
@@ -662,8 +729,10 @@ export default function WorkbookEditor({
       }),
     [withActiveSheet],
   );
+  const liveGoogle = useLiveGoogleAdapter("workbook", workbookId);
   const fileMenu = useFileRecordMenu(WORKBOOK_ADAPTER, record, {
     listHref: "/workbooks",
+    ...(liveGoogle ? { google: { adapter: liveGoogle, editable } } : {}),
     ...(onProjectMoved ? { onProjectMoved } : {}),
     // The editor offers its LIVE content (unsaved edits included), not the last saved snapshot.
     downloads: [
@@ -729,10 +798,8 @@ export default function WorkbookEditor({
           }
         ).getActiveSheet?.();
         return {
-  const liveGoogle = useLiveGoogleAdapter("workbook", workbookId);
           sheets,
           activeSheetId: activeSheet?.getSheetId?.() ?? null,
-    ...(liveGoogle ? { google: { adapter: liveGoogle, editable } } : {}),
           activeSheetName: activeSheet?.getSheetName?.() ?? null,
           snapshot,
           bootState,

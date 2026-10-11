@@ -84,6 +84,8 @@ interface AttachedView {
 export interface DocumentCollabHandle {
   stop: () => void;
   isHost: () => boolean;
+  /** This tab replaced the whole document and saved it as `snapshotId`: peers reload it. */
+  announceReplaced: (snapshotId: string) => void;
 }
 
 /** Who else is in the document's room (shared by every view of it). */
@@ -111,6 +113,8 @@ export interface ParkedDocumentEditor<T = unknown> {
 export type DocumentCollabFactory = (
   commandService: CommandServiceLike,
   onAwareness: (awareness: DocumentAwareness) => void,
+  /** A peer replaced the whole document (history restore, Google update). */
+  onReplaced: () => void,
 ) => Promise<DocumentCollabHandle | null>;
 
 let viewIds = 0;
@@ -357,6 +361,29 @@ export class DocumentModel {
     }
     const row = await this.deps.loadLatest(this.documentId);
     if (!row || (this.hasUnsaved() && !overUnsaved) || this.knownSnapshots.has(row.id)) return;
+    this.show(row);
+  }
+
+  /**
+   * THE content swap (see lib/univer/openEditorContent): a SAVED snapshot
+   * replaces the document in every view and the kept editor. It is the saved
+   * version from now on, so the pending save compares equal and writes
+   * nothing (it would put the old content back over the new). In a collab
+   * room the peers reload it and the shared log is emptied.
+   */
+  replaceContent(row: { id: string; snapshot: DocumentSnapshotData }): void {
+    this.show(row);
+    this.collab?.announceReplaced(row.id);
+  }
+
+  /** A peer replaced the document: show the newest save (once). */
+  private async onPeerReplaced(): Promise<void> {
+    const row = await this.deps.loadLatest(this.documentId);
+    if (!row || this.knownSnapshots.has(row.id)) return;
+    this.show(row);
+  }
+
+  private show(row: { id: string; snapshot: DocumentSnapshotData }): void {
     this.knownSnapshots.add(row.id);
     this.savedFingerprint = contentFingerprint(row.snapshot);
     this.stored = row.snapshot;
@@ -394,10 +421,18 @@ export class DocumentModel {
   startCollab(factory: DocumentCollabFactory): Promise<void> {
     if (this.collab) return Promise.resolve();
     if (!this.collabStarting) {
-      this.collabStarting = factory(this.virtualCommandService, (awareness) => {
-        this.awareness = awareness;
-        for (const listener of Array.from(this.awarenessListeners)) listener();
-      })
+      this.collabStarting = factory(
+        this.virtualCommandService,
+        (awareness) => {
+          this.awareness = awareness;
+          for (const listener of Array.from(this.awarenessListeners)) listener();
+        },
+        () => {
+          void this.onPeerReplaced().catch((error: unknown) =>
+            console.warn(`[document-model] could not load ${this.documentId}'s replaced version`, error),
+          );
+        },
+      )
         .then((handle) => {
           if (!handle) return;
           if (this.views.size === 0) {

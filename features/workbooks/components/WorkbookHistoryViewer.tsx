@@ -12,6 +12,7 @@
  */
 "use client";
 
+import { showSavedSnapshot } from "@/lib/univer/openEditorContent";
 import { useCallback, useEffect, useState } from "react";
 import {
   Clock,
@@ -119,6 +120,20 @@ export function WorkbookHistoryViewer({ workbookId, editable = true }: Props) {
           description: saved.error,
           variant: "destructive",
         });
+        return;
+      }
+      // Show it in the open editor (and its collab peers) — saving alone
+      // left the canvas on the old content until a reload, and its next
+      // autosave wrote the old content back over the restore.
+      try {
+        await showSavedSnapshot("workbook", workbookId, { id: saved.data.id, snapshot: full.snapshot });
+      } catch (err) {
+        toast({
+          title: "Restored, but the open editor still shows the old version",
+          description: err instanceof Error ? err.message : String(err),
+          variant: "destructive",
+        });
+        void reload();
         return;
       }
       toast({ title: "Restored snapshot", variant: "success" });

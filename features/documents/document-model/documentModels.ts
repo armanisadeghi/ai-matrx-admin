@@ -20,6 +20,7 @@ import { openShared } from "@/lib/realtime/sharedChannel";
 import { toast } from "@/components/ui/use-toast";
 import { getLatestDocumentSnapshot, saveDocumentSnapshot } from "@/features/documents/document-service";
 import { isServiceFailure } from "@/features/data-tables/types";
+import { registerOpenEditorContent } from "@/lib/univer/openEditorContent";
 import {
   DOCUMENT_SAVE_DELAY_MS,
   DocumentModel,
@@ -84,15 +85,34 @@ const deps: DocumentModelDeps = {
  */
 const DOCUMENT_KEEP_ALIVE_MS = 5 * 60_000;
 
+/** Each open document's hold on the one content-replacement door, released on close. */
+const replaceDoors = new Map<DocumentModel, () => void>();
+
 export const documentWorkingCopy = defineWorkingCopyKind<DocumentModel>({
   entity: "udt_document",
   delay: () => DOCUMENT_SAVE_DELAY_MS,
   keepAliveMs: DOCUMENT_KEEP_ALIVE_MS,
-  createEngine: (handle) => new DocumentModel(handle, deps),
+  createEngine: (handle) => {
+    const model = new DocumentModel(handle, deps);
+    // History restore and Google update reach every view of the document here.
+    replaceDoors.set(
+      model,
+      registerOpenEditorContent("document", handle.id, (row) =>
+        model.replaceContent({ id: row.id, snapshot: row.snapshot as DocumentSnapshotData }),
+      ),
+    );
+    return model;
+  },
   firstViewArrived: (model) => model?.wake(),
   lastViewGone: (model) => model?.rest(),
   engineBusy: (model) => model.hasViews(),
-  close: (model) => model?.close(),
+  close: (model) => {
+    if (model) {
+      replaceDoors.get(model)?.();
+      replaceDoors.delete(model);
+    }
+    model?.close();
+  },
   async save({ engine, reason }) {
     if (!engine) throw new Error("The document is not open in this tab.");
     const wrote = await engine.write(reason);

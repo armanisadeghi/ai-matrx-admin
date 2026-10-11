@@ -90,10 +90,21 @@ export type WorkbookCollabSessionOptions = {
   }) => CollabProviderLike;
   /** Called when the awareness set changes (peers join / leave / move cursor). */
   onAwarenessChange?: (awareness: Awareness) => void;
+  /**
+   * A peer replaced the whole content (history restore, Google update): the
+   * newest saved snapshot is the content now. Reload it in place; never
+   * re-announce. See `announceReplaced`.
+   */
+  onReplaced?: (snapshotId: string) => void;
 };
+
+/** What `announceReplaced` writes into the room's control map. */
+type ReplacedSignal = { snapshotId: string; by: string; nonce: string };
 
 const REMOTE_PARAM_TAG = "__matrxRemote";
 const MUTATIONS_ARRAY_KEY = "mutations";
+const CONTROL_MAP_KEY = "control";
+const REPLACED_KEY = "replaced";
 
 export class WorkbookCollabSession {
   private readonly options: WorkbookCollabSessionOptions;
@@ -104,6 +115,9 @@ export class WorkbookCollabSession {
   private yArrayObserver:
     ((event: Y.YArrayEvent<CollabMutationInfo>) => void) | null = null;
   private awarenessObserver: (() => void) | null = null;
+  private controlObserver: ((event: Y.YMapEvent<unknown>) => void) | null = null;
+  /** >0 while this client swaps its own content: its mutations are not edits. */
+  private muted = 0;
   private started = false;
   private disposed = false;
 
@@ -175,6 +189,21 @@ export class WorkbookCollabSession {
 
     await this.provider.connect();
     await this.provider.ready();
+
+    // Whole-content replacement from a peer. Bound AFTER the initial sync: a
+    // joiner already loaded the newest snapshot, so the signal it finds in
+    // the room's state is history, not news (the editor also skips a
+    // snapshot it already shows).
+    if (this.disposed || !this.doc) return;
+    const control = this.doc.getMap<unknown>(CONTROL_MAP_KEY);
+    const seen = (control.get(REPLACED_KEY) as ReplacedSignal | undefined)?.nonce ?? null;
+    this.controlObserver = (event) => {
+      if (event.transaction.local || !event.keysChanged.has(REPLACED_KEY)) return;
+      const signal = control.get(REPLACED_KEY) as ReplacedSignal | undefined;
+      if (!signal?.snapshotId || signal.nonce === seen) return;
+      this.options.onReplaced?.(signal.snapshotId);
+    };
+    control.observe(this.controlObserver);
   }
 
   stop(): void {
@@ -190,6 +219,11 @@ export class WorkbookCollabSession {
         this.yArrayObserver as Parameters<typeof yArray.unobserve>[0],
       );
       this.yArrayObserver = null;
+    }
+
+    if (this.doc && this.controlObserver) {
+      this.doc.getMap<unknown>(CONTROL_MAP_KEY).unobserve(this.controlObserver);
+      this.controlObserver = null;
     }
 
     if (this.awareness && this.awarenessObserver) {
@@ -237,6 +271,41 @@ export class WorkbookCollabSession {
   }
 
   /**
+   * This client replaced the whole content and SAVED it as `snapshotId`.
+   * One transaction empties the shared mutation log (every entry targets the
+   * content that is gone — a joiner must never replay them onto the new
+   * snapshot) and tells every peer to reload the newest snapshot.
+   */
+  announceReplaced(snapshotId: string): void {
+    if (!this.doc) return;
+    const yArray = this.doc.getArray<CollabMutationInfo>(MUTATIONS_ARRAY_KEY);
+    const control = this.doc.getMap<unknown>(CONTROL_MAP_KEY);
+    const signal: ReplacedSignal = {
+      snapshotId,
+      by: this.options.clientId,
+      nonce: `${this.options.clientId}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+    };
+    this.doc.transact(() => {
+      if (yArray.length > 0) yArray.delete(0, yArray.length);
+      control.set(REPLACED_KEY, signal);
+    });
+  }
+
+  /**
+   * Run `swap` (this client tearing its content down and mounting the new
+   * one) without broadcasting what Univer emits while it does: those are not
+   * edits, and peers reload the same snapshot themselves.
+   */
+  muteWhile<T>(swap: () => T): T {
+    this.muted += 1;
+    try {
+      return swap();
+    } finally {
+      this.muted -= 1;
+    }
+  }
+
+  /**
    * Update the local awareness cursor. Call this from Univer's selection
    * listener (`worksheet.onSelectionChange(...)`). Throttle at the call site
    * (~50ms is plenty); the provider broadcasts on its own debounced cycle.
@@ -281,6 +350,7 @@ export class WorkbookCollabSession {
   // ─── internals ────────────────────────────────────────────────────────
 
   private handleLocalMutation(info: CollabMutationInfo): void {
+    if (this.muted > 0) return;
     // Inbound-applied mutations re-fire this listener because Univer's
     // syncExecuteCommand legitimately processes them through the full
     // pipeline. Skip by sniffing the sentinel we stamped on apply.

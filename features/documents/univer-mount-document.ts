@@ -29,3 +29,20 @@ export function mountUniverDocument(
   }
   return id;
 }
+
+/**
+ * Replace the open document unit with `data` (same unit id). The old unit is
+ * disposed first: Univer refuses a second unit with the same id, so mounting
+ * over it threw and the view kept the old document.
+ */
+export function replaceUniverDocument(
+  api: FUniver,
+  data: Partial<IDocumentData>,
+): string {
+  const unitId = data.id;
+  const facade = api as unknown as { disposeUnit?: (id: string) => boolean };
+  if (unitId) facade.disposeUnit?.(unitId);
+  const current = api.getActiveDocument?.()?.getId?.();
+  if (current && current !== unitId) facade.disposeUnit?.(current);
+  return mountUniverDocument(api, data);
+}

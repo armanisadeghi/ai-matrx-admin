@@ -72,7 +72,7 @@ import {
   renderDocumentCanvasColorsVerbatim,
   type ReplaceableInjector,
 } from "@/features/documents/univer-doc-canvas-colors";
-import { mountUniverDocument } from "@/features/documents/univer-mount-document";
+import { mountUniverDocument, replaceUniverDocument } from "@/features/documents/univer-mount-document";
 import { useUniverDarkModeSync } from "@/lib/univer/useUniverDarkModeSync";
 import { useUniverDocSurfaceTheme } from "@/features/documents/hooks/useUniverDocSurfaceTheme";
 import { sanitizeUniverDocSnapshot } from "@/features/documents/utils/sanitizeUniverDocSnapshot";
@@ -270,7 +270,7 @@ export default function DocumentEditor({
         snapshot: () => apiRef.current?.getActiveDocument()?.save() ?? null,
         remount: (snapshot) => {
           if (!apiRef.current) return;
-          mountUniverDocument(
+          replaceUniverDocument(
             apiRef.current,
             sanitizeUniverDocSnapshot(snapshot as Partial<IDocumentData>, documentId),
           );
@@ -426,7 +426,7 @@ export default function DocumentEditor({
           element: kept.host,
           instance: kept,
           remount: (snapshot) => {
-            kept.unitId = mountUniverDocument(
+            kept.unitId = replaceUniverDocument(
               kept.univerAPI,
               sanitizeUniverDocSnapshot(snapshot as Partial<IDocumentData>, documentId),
             );
@@ -586,7 +586,7 @@ function resolveCommandService(univer: Univer): CommandServiceLike {
  * non-collab documents never load it.
  */
 function collabFactoryFor(documentId: string): DocumentCollabFactory {
-  return async (commandService, onAwareness) => {
+  return async (commandService, onAwareness, onReplaced) => {
     const { data: userData } = await getClaimsUser(supabase);
     const uid = userData?.user?.id;
     if (!uid) return null;
@@ -624,9 +624,14 @@ function collabFactoryFor(documentId: string): DocumentCollabFactory {
           selfUid: uid,
         });
       },
+      onReplaced: () => onReplaced(),
     });
     await session.start();
-    return { stop: () => session.stop(), isHost: () => host };
+    return {
+      stop: () => session.stop(),
+      isHost: () => host,
+      announceReplaced: (snapshotId) => session.announceReplaced(snapshotId),
+    };
   };
 }
 
