@@ -99,12 +99,12 @@ export function mergeFieldToken(path: string): string {
   return `{{${path}}}`;
 }
 
-/** An example placeholder: shown as literal `{{path}}`, never filled in. */
+/** An example placeholder `{{!path}}`: shown as literal `{{path}}`, never filled in. */
 export function mergeFieldExampleToken(path: string): string {
-  return `\\{{${path}}}`;
+  return `{{!${path}}}`;
 }
 
-/** Plain text for display: `\{{x}}` reads as the literal `{{x}}`. */
+/** Plain text for display: `{{!x}}` reads as the literal `{{x}}`. */
 function unescapeExamples(text: string): string {
-  return text.replace(/\\\{\{/g, "{{");
+  return text.replace(/\{\{!/g, "{{");
 }

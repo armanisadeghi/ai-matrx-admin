@@ -20,7 +20,7 @@ describe("an escaped example in a template body", () => {
     document.body.appendChild(container);
     await act(async () => {
       createRoot(container).render(
-        <TemplateRichText text={"Use {{party.first_name}} to greet. Example: \\{{party.first_name}}"} show="example" />,
+        <TemplateRichText text={"Use {{party.first_name}} to greet. Example: {{!party.first_name}}"} show="example" />,
       );
     });
     expect(container.querySelectorAll("[data-merge-field]")).toHaveLength(1);

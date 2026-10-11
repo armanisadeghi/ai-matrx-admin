@@ -15,8 +15,8 @@ import { mergeFieldRegex } from "@/components/merge-field-input/merge-field-dom"
 import { mergeFieldInfo, type MergeFieldInfo } from "@/features/message-templates/lib/merge-fields";
 
 const MARK = /matrx(field|example)(\d+)end/g;
-// `\{{x}}` is an example: kept out of the engine (which would draw `{{x}}` as a variable) and put back as plain text.
-const ESCAPED_EXAMPLE = /\\(\{\{[^{}\n]*\}\})/g;
+// `{{!x}}` is an example: kept out of the engine (which would draw `{{x}}` as a variable) and put back as plain text.
+const ESCAPED_EXAMPLE = /\{\{!([^{}\n]*\}\})/g;
 
 export function TemplateRichText({ text, show = "names", className }: { text: string; show?: "names" | "example"; className?: string }) {
   const host = useRef<HTMLDivElement>(null);
@@ -24,7 +24,7 @@ export function TemplateRichText({ text, show = "names", className }: { text: st
     const found: MergeFieldInfo[] = [];
     const literal: string[] = [];
     const held = text.replace(ESCAPED_EXAMPLE, (_all, braces: string) => {
-      literal.push(braces);
+      literal.push(`{{${braces}`);
       return `matrxexample${literal.length - 1}end`;
     });
     const swapped = held.replace(mergeFieldRegex(), (_all, path: string) => {

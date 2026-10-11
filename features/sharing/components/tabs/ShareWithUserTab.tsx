@@ -113,6 +113,41 @@ const SOURCE_LABELS: Record<ConnectionUser["source"], string> = {
   invitation: "Invited",
 };
 
+const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** One exact email → the person, through `lookup_user_by_email`; null when no one has it. */
+async function lookupConnectionByEmail(typed: string): Promise<ConnectionUser | null> {
+  const { data } = await createClient().rpc("lookup_user_by_email", { lookup_email: typed });
+  const row = (data as Array<{ user_id: string; user_email: string }> | null)?.[0];
+  return row
+    ? {
+        user_id: row.user_id,
+        email: row.user_email,
+        display_name: row.user_email.split("@", 1)[0] ?? null,
+        avatar_url: null,
+        source: "invitation",
+        sourceDetails: "Found by email",
+      }
+    : null;
+}
+
+function candidateOf(connection: ConnectionUser, foundByEmail: boolean): UserSearchCandidate {
+  return {
+    id: connection.user_id,
+    email: connection.email,
+    displayName: connection.display_name,
+    avatarUrl: connection.avatar_url,
+    phone: null,
+    adminLevel: null,
+    organizations:
+      connection.source === "organization" && connection.sourceDetails ? [connection.sourceDetails] : [],
+    source: foundByEmail ? "Found by email" : SOURCE_LABELS[connection.source],
+    createdAt: null,
+    lastSignInAt: null,
+  };
+}
+
+
 
 /**
  * ShareWithUserTab - Form to share with a specific user.
@@ -166,9 +201,16 @@ export function ShareWithUserTab({
   // an existing person outside it found "nothing" while typing their email worked. A full email
   // typed in the field is now resolved by the same lookup and offered as a candidate.
   const [looked, setLooked] = useState<ConnectionUser | null>(null);
+  /** An exact email, resolved now: the search window takes a snapshot, so Enter must not outrun the debounce. */
+  const resolveTypedEmail = async (query: string): Promise<UserSearchCandidate[]> => {
+    const typed = query.trim().toLowerCase();
+    if (!EMAIL_SHAPE.test(typed)) return [];
+    const found = connections.find((c) => c.email?.toLowerCase() === typed) ?? (await lookupConnectionByEmail(typed));
+    return found ? [candidateOf(found, true)] : [];
+  };
   useEffect(() => {
     const typed = email.trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(typed)) {
+    if (!EMAIL_SHAPE.test(typed)) {
       setLooked(null);
       return;
     }
@@ -178,21 +220,9 @@ export function ShareWithUserTab({
     }
     let stale = false;
     const handle = setTimeout(async () => {
-      const { data } = await createClient().rpc("lookup_user_by_email", { lookup_email: typed });
-      const row = (data as Array<{ user_id: string; user_email: string }> | null)?.[0];
+      const found = await lookupConnectionByEmail(typed);
       if (stale) return;
-      setLooked(
-        row
-          ? {
-              user_id: row.user_id,
-              email: row.user_email,
-              display_name: row.user_email.split("@", 1)[0] ?? null,
-              avatar_url: null,
-              source: "invitation",
-              sourceDetails: "Found by email",
-            }
-          : null,
-      );
+      setLooked(found);
     }, 300);
     return () => {
       stale = true;
@@ -205,22 +235,8 @@ export function ShareWithUserTab({
     [connections, looked],
   );
 
-  const userSearchCandidates: UserSearchCandidate[] = searchableConnections.map(
-    (connection) => ({
-      id: connection.user_id,
-      email: connection.email,
-      displayName: connection.display_name,
-      avatarUrl: connection.avatar_url,
-      phone: null,
-      adminLevel: null,
-      organizations:
-        connection.source === "organization" && connection.sourceDetails
-          ? [connection.sourceDetails]
-          : [],
-      source: connection === looked ? "Found by email" : SOURCE_LABELS[connection.source],
-      createdAt: null,
-      lastSignInAt: null,
-    }),
+  const userSearchCandidates: UserSearchCandidate[] = searchableConnections.map((connection) =>
+    candidateOf(connection, connection === looked),
   );
 
   const resetStatus = () => {
@@ -593,6 +609,7 @@ export function ShareWithUserTab({
                 if (contact) selectContact(contact);
               }}
               candidates={userSearchCandidates}
+              resolveCandidates={resolveTypedEmail}
               title="Choose a user to share with"
               inputType="email"
               disabled={isLoading}

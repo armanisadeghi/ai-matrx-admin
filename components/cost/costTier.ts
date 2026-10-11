@@ -1,7 +1,7 @@
 /**
  * components/cost/costTier.ts
  *
- * Bucket a POINTS figure for emphasis and warnings (20,000 points = $1):
+ * Bucket a POINTS figure for emphasis and warnings (points per dollar is the billing/points_per_usd knob):
  *   free       0
  *   low        1–9,999        (< ~$0.50)
  *   moderate   10,000–99,999  (~$0.50–$5)

@@ -27,8 +27,7 @@ import { useCenterControlFit } from "@/features/shell/components/header/useCente
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { summarizeContextCell } from "@/features/scopes/utils/referenceCell";
 import { useEntityTitles } from "@/features/scopes/hooks/useEntityTitles";
-import { registerChatUsageGate } from "@ai-matrx/chat/host/usage-gate";
-import * as usageGate from "@/features/entitlements/usage-gate/usageGate";
+import "@/providers/chatUsageGateRegistration";
 import { registerKindValueMarkdown } from "@ai-matrx/content-ir/surfaces";
 import { useKnowledgeAttachSearch } from "@/features/resource-manager/resource-picker/useKnowledgeAttachSearch";
 import { useConversationAttachments } from "@/features/connectors/useConversationAttachments";
@@ -243,4 +242,3 @@ registerChatUi({
 });
 
 registerKindValueMarkdown(kindValueToMarkdown);
-registerChatUsageGate(usageGate);

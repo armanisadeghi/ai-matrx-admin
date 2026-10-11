@@ -1,4 +1,3 @@
--- draft: access-setup lane — based-on lines and the clone rehearsal pending
 -- chair-step: iam.seats_of answers from the PERSON's side. Each function resolver of a declared setup gets a person-scoped form (resolver.has_fn, (person uuid, record uuid) -> boolean; the setup check now requires it), and the new iam._seat_rows_of (one person's (seat, source) rows of iam._seat_table_now, statement-memoised) asks those forms instead of listing every holder of every seat; a seat's full holder list is read only when this person could fill it by fallback and it would otherwise be empty. iam.seats_of and iam._cells_for_now's blind_wins check read it; iam._seat_table / iam.seat_holders stay the holder list for the panel. Seven hr.review_seat_*_has forms added and declared on the hr_review setup. Every answer is unchanged (old vs new seats_of and rows agree on the live reviews; the six-configuration fixture proof on the clone).
 -- lane: access-setup
 -- lock: iam
@@ -477,8 +476,8 @@ begin
       if v_seat #>> '{resolver,has_fn}' is null or to_regprocedure(v_seat #>> '{resolver,has_fn}') is null then
         p := p || ('resolver_person_form_missing: ' || v_key);
       elsif (select pr.prorettype from pg_proc pr where pr.oid = to_regprocedure(v_seat #>> '{resolver,has_fn}')) <> 'boolean'::regtype
-         or (select pr.proargtypes::oid[] from pg_proc pr where pr.oid = to_regprocedure(v_seat #>> '{resolver,has_fn}'))
-            <> array['uuid'::regtype::oid, 'uuid'::regtype::oid] then
+         or not (select pr.pronargs = 2 and pr.proargtypes[0] = 'uuid'::regtype and pr.proargtypes[1] = 'uuid'::regtype
+                   from pg_proc pr where pr.oid = to_regprocedure(v_seat #>> '{resolver,has_fn}')) then
         p := p || ('resolver_person_form_not_uuid_uuid_boolean: ' || v_key);
       end if;
     elsif coalesce(v_seat #>> '{resolver,kind}', '') <> 'grants' then

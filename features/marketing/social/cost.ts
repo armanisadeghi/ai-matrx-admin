@@ -3,7 +3,7 @@
 /**
  * THE one place social screens get cost words. Arman, 2026-10-09: a provider's charge is "our
  * business, not the user's" — it is a hard cost, charged in points exactly like AI tokens
- * (20,000 points = $1 of hard cost, rounded up per call). So:
+ * (billing/points_per_usd points per $1 of hard cost, rounded up per call). So:
  *
  *   - the server says what each action costs us (`GET /social/costs`, USD from the same price knob
  *     the ledger charges with); this hook turns it into points through `useCostDisplay` (the one

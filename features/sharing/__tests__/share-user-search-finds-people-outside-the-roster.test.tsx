@@ -27,9 +27,11 @@ jest.mock("@/features/sharing/components/AddEveryoneInOrg", () => ({ AddEveryone
 
 const seen: Array<Array<{ id: string; email: string | null }>> = [];
 let setTyped: (v: string) => void = () => {};
+let resolveTyped: ((q: string) => Promise<Array<{ id: string; email: string | null }>>) | undefined;
 jest.mock("@/features/user-search/UserSearchField", () => ({
-  UserSearchField: (props: { candidates: Array<{ id: string; email: string | null }>; onValueChange: (v: string) => void; inputType?: string }) => {
+  UserSearchField: (props: { candidates: Array<{ id: string; email: string | null }>; onValueChange: (v: string) => void; inputType?: string; resolveCandidates?: (q: string) => Promise<Array<{ id: string; email: string | null }>> }) => {
     if (props.inputType === "email") {
+      resolveTyped = props.resolveCandidates;
       seen.push(props.candidates);
       setTyped = props.onValueChange;
     }
@@ -79,6 +81,15 @@ describe("the share picker finds an existing person outside the roster", () => {
     await typeEmail("outsider@example.com");
     const last = seen[seen.length - 1] ?? [];
     expect(last.map((c) => c.id)).toEqual([OUTSIDER]);
+  });
+
+  it("resolves a typed email at once when Enter outruns the lookup's pause", async () => {
+    await typeEmail("outsider@example.com");
+    jest.useFakeTimers();
+    const got = await resolveTyped!("  Outsider@Example.com ");
+    expect(got.map((c) => c.id)).toEqual([OUTSIDER]);
+    expect(await resolveTyped!("nobody@example.com")).toEqual([]);
+    expect(await resolveTyped!("outs")).toEqual([]);
   });
 
   it("offers nobody for an address that belongs to no account", async () => {

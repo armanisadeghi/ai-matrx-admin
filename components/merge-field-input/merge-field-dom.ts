@@ -7,12 +7,12 @@
 // (a chip counts as its full `{{path}}` length) so a redraw never moves it.
 
 /**
- * Same grammar as aidream's strict renderer (`_MERGE_FIELD`). A backslash
- * before the braces (`\{{name}}`) marks an EXAMPLE: literal text, never a
- * field — the same escape aidream's renderer and matrx-ai's substitution use.
+ * Same grammar as aidream's strict renderer (`_MERGE_FIELD`). `{{!name}}`
+ * marks an EXAMPLE: literal text, never a field — a path starts with a letter,
+ * so the `!` keeps it out of this grammar with no special case.
  */
 const MERGE_FIELD_SOURCE =
-  "(?<!\\\\)\\{\\{\\s*([A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)\\s*\\}\\}";
+  "\\{\\{\\s*([A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)\\s*\\}\\}";
 
 /** A fresh global regex each call — a shared one carries `lastIndex` between callers. */
 export function mergeFieldRegex(): RegExp {

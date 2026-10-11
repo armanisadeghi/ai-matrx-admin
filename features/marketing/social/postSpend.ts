@@ -2,8 +2,8 @@
  * The one seam where a post action that spends asks before it runs: fetching a
  * post's video, buying a transcript, refreshing its numbers.
  *
- * A provider charge is a hard cost charged in points (20,000 points = $1, Arman
- * 2026-10-09). Like every AI action it asks only when the cost is worth a warning
+ * A provider charge is a hard cost charged in points (points per dollar is the billing/points_per_usd knob,
+ * Arman 2026-10-09). Like every AI action it asks only when the cost is worth a warning
  * (`confirmSocialSpendNow`, cost.ts); a trivial cost — one fetch is 38 points —
  * asks nothing and names no vendor or credits.
  */

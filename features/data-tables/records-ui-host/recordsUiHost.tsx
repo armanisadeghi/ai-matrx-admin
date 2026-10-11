@@ -295,7 +295,23 @@ export function useRecordsUiPorts({
   const userId = useAppSelector(selectUserId);
   const store = useAppStore();
   const { organizations: myOrganizations, loading: myOrganizationsLoading } = useUserOrganizations();
-  const { launchMandate } = useAgentLauncher();
+  const { launchMandate: launchMandateAnywhere } = useAgentLauncher();
+  /**
+   * A MANDATE RUNS IN AN ORGANIZATION THE PERSON IS IN. A table given to her from outside lives in an
+   * organization she does not belong to; the server refuses a request that names it (400
+   * `organization_forbidden`), so every Ask and every agent button on a shared table failed for her.
+   * The table's organization is named only when she is a member of it; otherwise the launch carries
+   * none and runs in her own workspace. The table's id and organization still ride as variables.
+   */
+  const launchMandate = useCallback<typeof launchMandateAnywhere>(
+    (key, options) => {
+      const member = !myOrganizationsLoading && organizationId != null && myOrganizations.some((o) => o.id === organizationId);
+      if (member || !options || options.organizationId == null) return launchMandateAnywhere(key, options);
+      const { organizationId: _theTablesOrganization, ...rest } = options;
+      return launchMandateAnywhere(key, rest);
+    },
+    [launchMandateAnywhere, myOrganizations, myOrganizationsLoading, organizationId],
+  );
   const backend = useBackendApi();
   /** AN AI COLUMN'S PREVIEW AND FILL: the server's one runner, model `table.column_fill` (`enrichPort.ts`). */
   const enrich = useCallback(

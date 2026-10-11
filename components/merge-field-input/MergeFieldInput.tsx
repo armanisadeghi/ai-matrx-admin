@@ -54,7 +54,7 @@ export interface MergeFieldInputHandle extends ProTextareaEditorHandle {
   /**
    * Insert `{{path}}` at the caret (or where the caret last was), as a chip —
    * with a space before it when it would touch a word — and put the caret
-   * right after it, in the field. `asExample` writes `\{{path}}` instead: plain
+   * right after it, in the field. `asExample` writes `{{!path}}` instead: plain
    * text that is never filled in.
    */
   insertField: (path: string, asExample?: boolean) => void;
@@ -296,7 +296,7 @@ export const MergeFieldInput = forwardRef<MergeFieldInputHandle, MergeFieldInput
         const at = Math.min(caretRef.current ?? current.length, current.length);
         const before = current.slice(0, at);
         // A chip never glues onto a word: "Hi{{name}}" reads as one blob.
-        const token = `${before && !/\s$/.test(before) ? " " : ""}${asExample ? "\\" : ""}{{${path}}}`;
+        const token = `${before && !/\s$/.test(before) ? " " : ""}{{${asExample ? "!" : ""}${path}}}`;
         const next = before + token + current.slice(at);
         const caret = at + token.length;
         rootRef.current?.focus();

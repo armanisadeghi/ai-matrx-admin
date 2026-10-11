@@ -12,6 +12,7 @@
  * through `storedMandateKey` (types, never rejects; the server answers an unknown key with a 404).
  */
 
+import { launchRefusal } from "@/features/unified-data/row-agent-action/rowAgentAction";
 import { usdToPoints } from "@ai-matrx/kit/format";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import type { TableAskAgentAnswer, TableAskOutcome, TableAskRequest } from "@ai-matrx/records-ui";
@@ -92,6 +93,7 @@ export async function askTableByMandate(args: {
     const costPoints = usdToPoints(usd, { rate: pointsRate?.() ?? null });
     return { ok: true, answer: tableAskAnswerFrom(text), costPoints };
   } catch (thrown) {
-    return { ok: false, message: thrown instanceof Error && thrown.message ? thrown.message : "The question could not be asked" };
+    // The refusal's own words (the server's, when it refused) - never a generic "try again".
+    return { ok: false, message: launchRefusal(thrown) };
   }
 }

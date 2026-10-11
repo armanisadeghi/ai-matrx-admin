@@ -22,6 +22,12 @@ export interface UserSearchFieldProps {
   className?: string;
   inputClassName?: string;
   onEnter?: () => void;
+  /**
+   * People the typed words name exactly that the host's snapshot of `candidates` cannot hold yet
+   * (a full email resolved by a lookup). Awaited before the search opens, so pressing Enter right
+   * after typing never opens a search that cannot find the person who was typed.
+   */
+  resolveCandidates?: (query: string) => Promise<UserSearchCandidate[]>;
   ariaLabel?: string;
 }
 
@@ -40,18 +46,22 @@ export function UserSearchField({
   className,
   inputClassName,
   onEnter,
+  resolveCandidates,
   ariaLabel = "Open advanced user search",
 }: UserSearchFieldProps) {
   const openUserSearch = useOpenUserSearchWindow();
-  const openSearch = () =>
+  const openSearch = async () => {
+    const extra = resolveCandidates ? await resolveCandidates(value).catch(() => []) : [];
+    const known = new Set(candidates.map((c) => c.id));
     openUserSearch({
       title,
       initialQuery: value,
       directory,
-      candidates,
+      candidates: [...candidates, ...extra.filter((c) => !known.has(c.id))],
       excludeUserIds,
       onSelected: ({ user }) => onUserSelect(user),
     });
+  };
 
   return (
     <div className={cn("flex min-w-0 gap-2", className)}>
@@ -66,7 +76,7 @@ export function UserSearchField({
           // expects after typing a name — opens the search on what they typed (2026-10-05: Enter
           // on a typed name did nothing, and the magnifier was the only way in).
           if (onEnter) onEnter();
-          else openSearch();
+          else void openSearch();
         }}
         placeholder={placeholder}
         disabled={disabled}
@@ -81,7 +91,7 @@ export function UserSearchField({
         aria-label={ariaLabel}
         title={ariaLabel}
         className="shrink-0"
-        onClick={openSearch}
+        onClick={() => void openSearch()}
       >
         <Search className="h-4 w-4" />
       </Button>

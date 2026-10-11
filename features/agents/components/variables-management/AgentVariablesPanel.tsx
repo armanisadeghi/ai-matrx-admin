@@ -50,8 +50,9 @@ interface AgentVariablesPanelProps {
 
 type Selection = { kind: "none" } | { kind: "existing"; name: string };
 
+// `{{!name}}` is the author's example, never a use (the one detector lives in variable-utils).
 function isVariableUsedInText(name: string, text: string): boolean {
-  return new RegExp(`\\{\\{\\s*${name}\\s*\\}\\}`).test(text);
+  return extractVariableReferences(text).includes(name);
 }
 
 function buildAllText(

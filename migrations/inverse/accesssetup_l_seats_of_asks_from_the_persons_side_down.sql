@@ -1,6 +1,10 @@
 -- chair-step: inverse of accesssetup_l — restores the accesssetup_j/h bodies of iam.seats_of (holders from iam._seat_table), iam._cells_for_now (blind_wins from iam._seat_table) and iam._access_setup_problems (no person-scoped form required), removes resolver.has_fn from the hr_review declaration, and drops iam._seat_rows_of, iam._seat_resolve_all and the hr.review_seat_*_has forms with their helpers.
 -- lane: access-setup
 -- lock: iam
+-- based-on: iam._access_setup_problems(text, jsonb) abe4ae0546aafdc7cebfb6aff57d10057fe254f88371cbb63e5e34466e63c348
+-- based-on: iam.seats_of(uuid, text, uuid) f8b45cfbd3c65ddf49e34c95c4ea94403a5a434a31ee72763330fa529c7e130e
+-- based-on: iam._cells_for_now(uuid, text, uuid, text) 2ff07f735375136e9ba8de4bd0eefaad671a8312380e90d09fe5db5b26b3c342
+-- ground-standing-ok: b - the restored iam._cells_for_now body calls iam._access_setup_stages; this inverse runs BEFORE accesssetup_j's, i's, h's, g's and b's inverses, and accesssetup_b_the_seat_and_part_answers_down drops those bodies and their helpers together.
 
 CREATE OR REPLACE FUNCTION iam._access_setup_problems(p_type text, s jsonb)
  RETURNS text[]

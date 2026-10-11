@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-11T00:51:46.884Z",
+  "generated_at": "2026-10-11T01:07:35.206Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -127,6 +127,12 @@
       "filename": "accesssetup_k3_owner_takes_hr_when_nobody_holds_hr.sql",
       "checksum": "829b782b53b60f7511d1d98a586deb3fd81074cd2dc73a65a4d977930b23590b",
       "applied_at": "2026-10-11 00:29:32.73706+00"
+    },
+    "migrations/campaign/accesssetup_l_seats_of_asks_from_the_persons_side.sql": {
+      "source": "matrx-frontend",
+      "filename": "accesssetup_l_seats_of_asks_from_the_persons_side.sql",
+      "checksum": "302da8b2d48b4b40941bb975b1c08a5a06118e84fa361f9af7ccdb4fffdfb54d",
+      "applied_at": "2026-10-11 01:07:24.896665+00"
     },
     "migrations/campaign/accesssetup_store_a_the_column_answers_are_frozen_as_the_oracle.sql": {
       "source": "matrx-frontend",
