@@ -220,7 +220,7 @@ export function PdfStudioHeaderControls({
                 )}
                 Run pipeline
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onRunAiClean} disabled={actionsBusy}>
+              <DropdownMenuItem onClick={() => onRunAiClean()} disabled={actionsBusy}>
                 {aiCleanRunning ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
