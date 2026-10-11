@@ -10,6 +10,7 @@
 import { mergeJsonColumn } from "@ai-matrx/data/db";
 
 import { supabase } from "@/utils/supabase/client";
+import { peekSelectedOrganizationId } from "@/lib/api/organization-admission";
 import { createWorkbook, saveSnapshot } from "@/features/workbooks/workbook-service";
 import {
   addTableColumn,
@@ -190,7 +191,9 @@ export async function createLinkedWorkbook(name: string, tableOrganizationId: st
   const args = { name, description: "Linked to a table", source: "created" as const };
   const inTableOrg = await createWorkbook({ ...args, organizationId: tableOrganizationId });
   if (!isServiceFailure(inTableOrg) || !isWorkbookInsertRefused(inTableOrg.error)) return inTableOrg;
-  return createWorkbook(args);
+  const organizationId = peekSelectedOrganizationId();
+  if (!organizationId) return { success: false, error: "Select an organization before creating a workbook." };
+  return createWorkbook({ ...args, organizationId });
 }
 
 export async function openTableAsWorkbook(tableId: string): Promise<LinkResult<{ workbookId: string; href: string }>> {
