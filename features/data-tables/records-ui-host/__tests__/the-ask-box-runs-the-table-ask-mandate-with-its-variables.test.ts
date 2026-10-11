@@ -1,7 +1,7 @@
 // THE ASK BOX AT CEDAR RIDGE: the office manager types a line; the app runs the `table.ask` mandate
 // headless with the table, the line and the view as VARIABLES and reads the structured output.
 // BREAKS CAUGHT: a raw agent id instead of the mandate; the line sent as user_input; JSON read wrong.
-import { askTableByMandate, tableAskAnswerFrom } from "../askTable";
+import { askTableByMandate, tableAskAnswerFrom, tableAskToday } from "../askTable";
 
 const TABLE = "ae674b7a-6433-4cf2-8a7e-a1f7997ddf4d";
 const body = {
@@ -20,7 +20,7 @@ describe("askTableByMandate", () => {
     const [key, options] = launchMandate.mock.calls[0] as unknown as [string, Record<string, any>];
     expect(key).toBe("table.ask");
     expect(options.config.displayMode).toBe("direct");
-    expect(options.runtime.variables).toEqual({ table_id: TABLE, question: "past due?", view_id: "", max_words: "120" });
+    expect(options.runtime.variables).toEqual({ table_id: TABLE, question: "past due?", view_id: "", max_words: "120", today: expect.stringMatching(/^\d{4}-\d{2}-\d{2} \(.+\)$/) });
     expect(options.runtime.userInput).toBeUndefined();
     expect(got).toEqual({
       ok: true,
@@ -33,6 +33,15 @@ describe("askTableByMandate", () => {
       },
       costPoints: null,
     });
+  });
+  it("hands the model the person's date and zone as `today`, formatted YYYY-MM-DD (Zone)", async () => {
+    const launchMandate = jest.fn(async () => ({ conversationId: "c1", responseText: "Nine visits." }));
+    // 2026-10-11 02:00 UTC is still Oct 10 on the Pacific calendar.
+    const now = new Date("2026-10-11T02:00:00Z");
+    await askTableByMandate({ launchMandate: launchMandate as never, organizationId: null, ask: { tableId: TABLE as never, question: "overdue?", viewId: "" }, zone: "America/Los_Angeles", now });
+    const [, options] = launchMandate.mock.calls[0] as unknown as [string, Record<string, any>];
+    expect(options.runtime.variables.today).toBe("2026-10-10 (America/Los_Angeles)");
+    expect(tableAskToday("Asia/Tokyo", now)).toBe("2026-10-11 (Asia/Tokyo)");
   });
   it("hands back the run's cost in points at the viewer's rate, and null when unmeasured", async () => {
     const launchMandate = jest.fn(async () => ({ conversationId: "c1", requestId: "req1", responseText: "Nine visits." }));
