@@ -15,6 +15,7 @@ const listeners = new Set<() => void>();
 export const INVALIDATING_DOORS: ReadonlySet<string> = new Set([
   "hr_review_cycle_create",
   "hr_review_cycle_launch",
+  "hr_review_start",
   "hr_review_cycle_close",
   "hr_review_template_save",
   "hr_review_template_archive",

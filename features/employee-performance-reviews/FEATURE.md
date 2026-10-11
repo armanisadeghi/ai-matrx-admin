@@ -63,9 +63,18 @@ organization-level doors (cycles, templates) stay on `hr._rev_can_manage`.
   `seats.includes(...)`; the peer view is `isPeerOnly(seats)` (`standard/types.ts`).
 - `line_manager` is a seat that never opens a review (history reads it); ignore it on screen.
 - Proof: `scripts/db-proofs/access-setup-review-equivalence.py` (legacy `hr._legacy_*` bodies vs the live doors).
+- **Manager-started review** (PLAN §7): `hr.hr_review_start(employment, organization)` — the setup's `start` action
+  before a record exists is `hr.review_may_start` (manager by `hr.manager_as_of` today, or HR; never the subject).
+  The review goes into the organization's standing **Individual reviews** cycle (`metadata.standing_cycle =
+  'individual'`, created open on first use, default template; due dates from the self/manager day knobs on the
+  review's workflow steps). Per-review insert + workflow is `hr._review_create_one`, shared with
+  `hr_review_cycle_launch`. Read door `hr.hr_review_start_candidates(org)` feeds the home's **Start a review**
+  table (`StandardHome.tsx`, every employer in scope); start → confirm → review page → `useAfterCreateOpenAccessSetup`.
+  Proof: `scripts/db-proofs/access-setup-review-start.py` (rolled back, ~5 s).
 
 ## Change log
 
+- 2026-10-10 - Managers (and HR) start a single standard review from the home; it opens People involved (lane access-setup).
 - 2026-10-10 - Standard-review doors answer from the access setup; the client reads `seats[]` (lane access-setup).
 
 - 2026-08-26 - Added the first-class organization-workspace door, canonicalized
