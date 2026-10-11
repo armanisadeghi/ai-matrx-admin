@@ -6,6 +6,9 @@
  */
 // Side effect: the copy/save/export/convert rich-document handlers self-register.
 import "@/features/rich-document/actions/handlers";
+// The designed menu's own stylesheet arrives with the menu on first open (this module is loaded
+// by `loadOnOpen`), never in the global stylesheet every page pays for.
+import "@ai-matrx/context-menu/styles.css";
 import type { ComponentType } from "react";
 import type {
   ContextMenuHost,
