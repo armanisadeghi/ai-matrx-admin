@@ -96,6 +96,6 @@ export async function runDownload(
   try {
     await download.run();
   } catch (err) {
-    fail(adapter, `download (${download.label})`, err instanceof Error ? err.message : String(err));
+    fail(adapter, "download", `${download.label}: ${err instanceof Error ? err.message : String(err)}`);
   }
 }

@@ -108,7 +108,8 @@ describe("file ops never fail silently", () => {
       },
     });
     expect(toastCalls[0]).toMatchObject({ kind: "error" });
-    expect(toastCalls[0]?.message).toMatch(/PDF/);
+    expect(toastCalls[0]?.message).toBe("Could not download this workbook");
+    expect((toastCalls[0]?.opts as { description?: string } | undefined)?.description).toBe("PDF: no content");
   });
 });
 
