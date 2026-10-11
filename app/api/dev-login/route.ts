@@ -342,7 +342,15 @@ async function signIn(request: NextRequest): Promise<NextResponse> {
   const callerHost = request.headers.get("host") ?? url.host;
   const destination = new URL(safeNext, `${url.protocol}//${callerHost}`);
 
-  const supabase = await createClient();
+  // Renewing a session removes same-name cookies at multiple Domain scopes.
+  // Next's cookie map cannot retain those duplicate names; append them last.
+  const deferredSetCookies: string[] = [];
+  const supabase = await createClient({ appendSetCookie: (header) => deferredSetCookies.push(header) });
+  const authenticatedRedirect = () => {
+    const response = NextResponse.redirect(destination);
+    for (const header of deferredSetCookies) response.headers.append("Set-Cookie", header);
+    return response;
+  };
 
   const defaultEmail = process.env.AI_ADMIN_USERNAME;
   if (!defaultEmail) {
@@ -413,7 +421,7 @@ async function signIn(request: NextRequest): Promise<NextResponse> {
           `[dev-login] signed in after a transport retry — ${formatAttempts(attempts)}`,
         );
       }
-      return NextResponse.redirect(destination);
+      return authenticatedRedirect();
     }
   }
 
@@ -563,5 +571,5 @@ async function signIn(request: NextRequest): Promise<NextResponse> {
     );
   }
   console.warn(`[dev-login] signed in via the OTP fallback — ${formatAttempts(attempts)}`);
-  return NextResponse.redirect(destination);
+  return authenticatedRedirect();
 }

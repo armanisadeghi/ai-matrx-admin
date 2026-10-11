@@ -158,7 +158,7 @@ export function CustomerAccountsPanel({ organizationId, brandId, returnUrl = "/u
         {unavailable && <p className="text-sm text-muted-foreground">{config?.reason ?? "This provider is not available."}</p>}
         {provider === "pinterest" && <Badge variant="outline">Approved testers · Trial access</Badge>}
         {provider === "linkedin" && <Badge variant="outline">Profile insights unavailable</Badge>}
-        {["facebook", "instagram", "threads"].includes(provider) && config?.accessMode !== "approved" && <Badge variant="outline">Approved testers only</Badge>}
+        {(config?.accessMode === "internal_test" || (["facebook", "instagram", "threads"].includes(provider) && config?.accessMode !== "approved")) && <Badge variant="outline">Approved testers only</Badge>}
         {!unavailable && provider === "mastodon" && <Input aria-label="Mastodon server" placeholder="https://mastodon.social" value={issuer} onChange={(event) => setMastodonIssuer(event.target.value)} />}
         {!unavailable && provider === "bluesky" && <Input aria-label="Bluesky handle" placeholder="your-name.bsky.social" value={blueskyHandle} onChange={(event) => setBlueskyHandle(event.target.value)} />}
         {connected.map((connection) => <div className="space-y-2 text-sm" key={connection.id}>

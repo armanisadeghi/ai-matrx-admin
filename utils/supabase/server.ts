@@ -10,12 +10,13 @@ import { supabaseNext } from "@/utils/supabase/authCookie";
 import { adminLaneOpenForHeaders, installAdminLane } from "@/utils/supabase/adminLane";
 import { installRestDeadline } from "@/utils/supabase/restDeadline";
 
-export async function createClient() {
+export async function createClient(options?: { appendSetCookie?: (header: string) => void }) {
   const [cookieStore, requestHeaders] = await Promise.all([
     cookies(),
     headers(),
   ]);
   const client = supabaseNext.serverClient({
+    ...(options?.appendSetCookie ? { appendSetCookie: options.appendSetCookie } : {}),
     cookieStore,
     host: requestHeaders.get("host"),
     // The RAW header: `cookies()` has already collapsed two same-name cookies

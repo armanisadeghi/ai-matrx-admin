@@ -34,6 +34,19 @@ describe("customer disconnect receipts", () => {
     jest.mocked(loadCustomerSocialConnections).mockResolvedValue([{ id: "customer-grant", provider: "facebook", status: "connected", accountName: "Customer Page", providerSubject: "subject", issuer: null }]);
   });
 
+  it.each(["internal_test", "approved"] as const)("shows Snapchat admission %s separately from a connected customer grant", async (accessMode) => {
+    jest.mocked(loadSocialConfigs).mockResolvedValue([{ provider: "snapchat", status: "available", scopes: [], accessMode }]);
+    jest.mocked(loadCustomerSocialConnections).mockResolvedValue([{ id: "snap-grant", provider: "snapchat", status: "connected", accountName: "AI Matrx", providerSubject: "snap-subject", issuer: null }]);
+    const host = document.createElement("div"); document.body.append(host);
+    const root = createRoot(host);
+    try {
+      await act(async () => { root.render(<CustomerAccountsPanel organizationId="customer-org" providers={["snapchat"]} />); });
+      if (accessMode === "internal_test") expect(host.textContent).toContain("Approved testers only");
+      else expect(host.textContent).not.toContain("Approved testers only");
+      expect(host.textContent).toContain("Connected");
+    } finally { await act(async () => { root.unmount(); }); host.remove(); }
+  });
+
   it("checks Facebook access without claiming token renewal and reloads stored health", async () => {
     jest.mocked(loadCustomerSocialConnections).mockResolvedValue([{ id: "customer-grant", provider: "facebook", status: "connected", accountName: "Customer Page", providerSubject: "subject", issuer: null, lastVerifiedAt: "2026-10-09T12:00:00Z", tokenExpiresAt: "2026-12-08T12:00:00Z" }]);
     jest.mocked(refreshCustomerSocialAccount).mockResolvedValue({ refresh_supported: false });

@@ -46,6 +46,8 @@ const signInWithPassword = jest.fn(
   async (): Promise<{ error: unknown }> => ({ error: null }),
 );
 const signOut = jest.fn(async () => ({}));
+const verifyOtp = jest.fn(async () => ({ error: null }));
+let cookieWrites: string[] = [];
 let existingUser: { id: string; email: string } | null = null;
 const handOverSession = jest.fn(
   (_via: string, replace: () => Promise<unknown>) => replace(),
@@ -55,13 +57,20 @@ jest.mock("@/lib/guest/session-handover", () => ({
   handOverSession,
 }));
 jest.mock("@/utils/supabase/server", () => ({
-  createClient: jest.fn(async () => ({
+  createClient: jest.fn(async (options?: { appendSetCookie?: (header: string) => void }) => {
+    cookieWrites.forEach((header) => options?.appendSetCookie?.(header));
+    return ({
     auth: mockWithClaims({
       getUser: async () => ({ data: { user: existingUser } }),
       signOut,
       signInWithPassword,
+      verifyOtp,
     }),
-  })),
+    });
+  }),
+}));
+jest.mock("@supabase/supabase-js", () => ({
+  createClient: () => ({ auth: { admin: { generateLink: async () => ({ data: { properties: { email_otp: "guard-one-time-code" } }, error: null }) } } }),
 }));
 
 type Route = typeof import("./route");
@@ -92,14 +101,44 @@ afterAll(() => {
 });
 
 beforeEach(() => {
+  cookieWrites = [];
   existingUser = null;
   signOut.mockClear();
+  verifyOtp.mockClear();
   signInWithPassword.mockClear();
   handOverSession.mockClear();
   signInWithPassword.mockImplementation(async () => ({ error: null }));
 });
 
 describe("dev-login accepts ONLY the nonce handshake", () => {
+  it("retains duplicate cookie writes after the OTP fallback succeeds", async () => {
+    const oldKey = process.env.SUPABASE_SECRET_KEY;
+    process.env.SUPABASE_SECRET_KEY = "guard-service-key";
+    signInWithPassword.mockResolvedValue({ error: { message: "Invalid login credentials", status: 400 } });
+    cookieWrites = ["sb-matrx-auth-v2.0=; Domain=localhost; Path=/; Max-Age=0"];
+    writeFileSync(NONCE_FILE, A_NONCE + "\n");
+    try {
+      const response = await GET(get(`?nonce=${A_NONCE}&next=/tasks`));
+      expect(verifyOtp).toHaveBeenCalledWith({ email: "guard@example.invalid", token: "guard-one-time-code", type: "email" });
+      expect(response.headers.getSetCookie().filter((header) => header.startsWith("sb-matrx-auth-v2.0="))).toEqual(cookieWrites);
+      expect(response.headers.get("location")).toBe("http://localhost:3000/tasks");
+    } finally {
+      if (oldKey === undefined) delete process.env.SUPABASE_SECRET_KEY;
+      else process.env.SUPABASE_SECRET_KEY = oldKey;
+    }
+  });
+  it("preserves the duplicate domain-scoped cookie write when renewing a session", async () => {
+    existingUser = { id: "admin-session-refresh", email: "guard@example.invalid" };
+    cookieWrites = [
+      // The first write goes through Next's cookie store; the package sends
+      // only the second same-name write to this response-header callback.
+      "sb-matrx-auth-v2.0=; Domain=localhost; Path=/; Max-Age=0",
+    ];
+    writeFileSync(NONCE_FILE, A_NONCE + "\n");
+    const response = await GET(get(`?nonce=${A_NONCE}&next=/tasks`));
+    expect(response.headers.getSetCookie().filter((header) => header.startsWith("sb-matrx-auth-v2.0="))).toEqual(cookieWrites);
+    expect(response.headers.get("location")).toBe("http://localhost:3000/tasks");
+  });
   it("refuses ?token= even when it matches DEV_LOGIN_TOKEN", async () => {
     const response = await GET(
       get(`?token=${process.env.DEV_LOGIN_TOKEN}&next=/tasks`),
