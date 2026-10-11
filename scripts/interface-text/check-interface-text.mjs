@@ -79,6 +79,8 @@ const SECONDARY_PROPS = new Set([
   "emptyDescription", "emptyHint", "tagline",
 ]);
 // `helpText` opens in the settings help popover (CompactHelpPopover), never inline.
+/** A native title= longer than this is a definition, not a control name — it belongs in InfoHint. */
+const NATIVE_TITLE_MAX = 60;
 const TOOLTIP_PROPS = new Set(["title", "tooltip", "tooltipText", "aria-description", "info", "infoText", "helpText"]);
 const PLACEHOLDER_PROPS = new Set(["placeholder"]);
 
@@ -306,6 +308,10 @@ export function scanSource(file, source) {
         for (const t of attrTexts(a)) {
           where = `${tag}.${name}`;
           checkText(a, t, kind);
+          // A native title= on a DOM element never opens on a phone (Arman, 2026-10-10: tooltips always,
+          // through the shared primitive). A short one on an icon button is its accessible name and stays.
+          if (name === "title" && /^[a-z]/.test(tag) && collapse(t).length > NATIVE_TITLE_MAX)
+            push("native-title", a, t, `native title= on <${tag}> (${collapse(t).length} chars) never opens on touch — use components/official/InfoHint`);
           if (name === "description" && HEADER_COMPONENT.test(tag) && !TOOLTIP_HOSTS.has(`${tag}.${name}`) && collapse(t).length >= 12)
             push("page-description", a, t, `<${tag} description=…> renders a sentence under a title`);
         }
@@ -469,7 +475,7 @@ function resolveTargets() {
     && (FLAGS.has("--include-dev") || PATHS.length > 0 || !DEV.some((re) => re.test(f))));
 }
 
-const RULE_ORDER = ["implementation-leak", "multi-sentence", "page-description", "asymmetric-siblings", "over-budget"];
+const RULE_ORDER = ["implementation-leak", "multi-sentence", "page-description", "asymmetric-siblings", "native-title", "over-budget"];
 
 function run() {
   const files = resolveTargets();
@@ -543,6 +549,7 @@ function selfTest() {
       <p className="text-xs text-muted-foreground">On = when a scope/field is added, suggest values from already-indexed content. Always requires confirmation. Off by default.</p>
       <KpiTile label="NER" value={e} hint={x ? "Backfill brings this up to 100%." : "Live coverage not yet reported by the backend."} />
       {[{ title: "Agents", description: "Every system agent the platform runs, with its bindings, versions, and the mandates that call it today." }].map((c) => <Card key={c.title} {...c} />)}
+      <span title="Indexed chunks that have had entities extracted, out of all chunks in the org">NER</span>
     </div>); }`;
   const good = `
     export function A() { return (<div>
@@ -554,8 +561,9 @@ function selfTest() {
         <KpiTile label="Batch savings (7d)" value={d} title="Live-rate cost minus the batch bill." />
       </KpiGrid>
       <p className="text-xs text-muted-foreground">Suggests values from indexed content.</p>
+      <button title="Copy link">x</button>
     </div>); }`;
-  const want = ["over-budget", "multi-sentence", "implementation-leak", "page-description", "asymmetric-siblings"];
+  const want = ["over-budget", "multi-sentence", "implementation-leak", "page-description", "asymmetric-siblings", "native-title"];
   const got = new Set(scanSource("self-test.tsx", bad).map((f) => f.rule));
   const quiet = scanSource("self-test-good.tsx", good);
   const missing = want.filter((r) => !got.has(r));
