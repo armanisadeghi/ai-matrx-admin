@@ -34,6 +34,7 @@ import type {
   TrackedRole,
 } from "@/features/marketing/social/types";
 import { TRACKED_ROLE_LABELS } from "@/features/marketing/social/types";
+import { PostCountControl } from "@/features/marketing/social/components/PostCountControl";
 
 import {
   feedPlan,
@@ -193,6 +194,8 @@ export interface ProfileTileViewProps {
   /** undefined while reading; null = not tracked. */
   trackedRole: TrackedRole | null | undefined;
   canTrack: boolean;
+  /** Names the org the "How many posts" estimate is priced for. */
+  organizationId?: string;
   tracking: boolean;
   onTrack: () => void;
   onOpenAccount: (() => void) | null;
@@ -261,9 +264,12 @@ export function ProfileTileView(props: ProfileTileViewProps) {
         {trackedLabel ? (
           <Badge tone="success">{trackedLabel}</Badge>
         ) : props.canTrack && props.trackedRole === null ? (
-          <Button variant="outline" onClick={props.onTrack} disabled={props.tracking}>
-            {props.tracking ? "Tracking" : "Track"}
-          </Button>
+          <span className="flex items-center gap-2">
+            {props.organizationId ? <PostCountControl organizationId={props.organizationId} platform={profile.platform} disabled={props.tracking} /> : null}
+            <Button variant="outline" onClick={props.onTrack} disabled={props.tracking}>
+              {props.tracking ? "Tracking" : "Track"}
+            </Button>
+          </span>
         ) : null}
       </div>
 

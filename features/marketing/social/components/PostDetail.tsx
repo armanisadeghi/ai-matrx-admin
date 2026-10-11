@@ -18,6 +18,9 @@
  * AI is user-triggered only: transcript and breakdown run from a button.
  */
 
+import { ProviderChip } from "./ProviderFallbackNotice";
+import type { SocialProviderTrace } from "../types";
+import { CommentsLoader } from "./CommentsLoader";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -550,11 +553,12 @@ export function PostDetailBody({
     }
   }
 
+  const [fetchTrace, setFetchTrace] = useState<SocialProviderTrace | null>(null);
   async function refreshMetrics(url: string) {
     if (!(await confirmPostSpend("refresh_metrics"))) return;
     setBusy(true);
     try {
-      await ingestPost({ url, landMedia: false, transcript: false, force: true }, { organizationId });
+      setFetchTrace((await ingestPost({ url, landMedia: false, transcript: false, force: true }, { organizationId })).trace);
       await client.invalidateQueries({ queryKey: socialKeys.all });
     } catch (err) {
       toast.error(socialErrorMessage(err, "Refresh failed"));
@@ -750,8 +754,10 @@ export function PostDetailBody({
           {tab === "overview" ? (
             <div className="flex flex-col gap-2">
               <CaptionBlock caption={caption} hashtags={hashtags} expanded={expanded} setExpanded={setExpanded} />
+              {canEdit ? <CommentsLoader url={post.url} organizationId={organizationId} /> : null}
               <p className="text-[11px] text-muted-foreground">
                 {`${post.posted_at ? `Posted ${formatDay(post.posted_at)} · ` : ""}Updated ${relativeAge(post.last_refreshed_at)}`}
+                {fetchTrace ? <ProviderChip trace={fetchTrace} /> : null}
               </p>
             </div>
           ) : null}

@@ -27,7 +27,7 @@ import { toast } from "@/lib/toast";
 import { useInvalidateSocial } from "../hooks";
 import { RefusedReadOffer } from "../gated/RefusedReadOffer";
 import { SocialAccountInput, useSocialAccountInput } from "./SocialAccountInput";
-import { useSocialSpend } from "../cost";
+import { PostCountControl } from "./PostCountControl";
 import {
   ingestPost,
   socialErrorCode,
@@ -41,6 +41,7 @@ import {
   type SocialPlatform,
   type TrackedRole,
 } from "../types";
+import { rememberedMaxPosts } from "../post-count";
 
 const ROLE_OPTIONS: SelectOption<TrackedRole>[] = TRACKED_ROLES.map((r) => ({
   value: r,
@@ -75,7 +76,6 @@ export function TrackAccountDialog({
     }
   }, [open, openPosts, dispatch]);
   const invalidate = useInvalidateSocial();
-  const { costText } = useSocialSpend(organizationId);
   const input = useSocialAccountInput({ initialText, organizationId });
   const text = input.text;
   const [role, setRole] = useState<TrackedRole>(defaultRole);
@@ -121,13 +121,15 @@ export function TrackAccountDialog({
             platform: effectivePlatform ?? undefined,
             role,
             brandId,
-            pages: 1,
+            maxPosts: await rememberedMaxPosts(),
             allowEmpty,
           },
           opts,
         );
         await invalidate();
-        toast.success(result.created ? "Account tracked" : "Already tracked");
+        const loaded = result.posts_received != null ? ` · ${result.posts_received.toLocaleString("en-US")} posts` : "";
+        const cut = result.limit_applied ? ` · limited to ${result.limit_applied.value.toLocaleString("en-US")} by a setting` : "";
+        toast.success(`${result.created ? "Account tracked" : "Already tracked"}${loaded}${cut}`);
         onOpenChange(false);
       }
       input.reset();
@@ -159,6 +161,7 @@ export function TrackAccountDialog({
             onValueChange={(v) => setRole(v)}
             disabled={isPost}
           />
+          {isPost ? null : <PostCountControl organizationId={organizationId} platform={effectivePlatform} disabled={busy} />}
           <p className="h-8 overflow-hidden text-xs text-muted-foreground" aria-live="polite">
             {error ? (
               <span className="text-destructive">
@@ -170,7 +173,8 @@ export function TrackAccountDialog({
             ) : isPost ? (
               "Post link — it will be saved"
             ) : parsed.status === "ok" ? (
-              (costText("track") ?? "")
+              ""
+
             ) : (
               ""
             )}

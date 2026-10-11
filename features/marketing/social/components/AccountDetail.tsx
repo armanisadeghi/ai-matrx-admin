@@ -69,6 +69,10 @@ import {
 } from "../mappers";
 import { OUTLIER_TIER_THRESHOLDS, formatCompact, formatPercentile, profileBaseline } from "../outlier";
 import { useSocialSpend } from "../cost";
+import { LOAD_MORE_STEP } from "../post-count";
+import { PostCountControl } from "./PostCountControl";
+import { LimitLine, fetchedText } from "./FetchLines";
+import { ProviderChip } from "./ProviderFallbackNotice";
 import { refreshProfile, socialErrorCode, socialErrorMessage, trackAccount } from "../server";
 import { useCanEditSocial } from "../useCanEditSocial";
 import { GatedCaptureOffer } from "../gated/GatedCaptureOffer";
@@ -76,7 +80,7 @@ import { CapturedFromBrowser, browserCapturesKey } from "../gated/CapturedFromBr
 import { capturePollInterval, enrichWithCaptures, fetchBrowserCaptures, knownPostKeys } from "../gated/browserCaptures";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { GUIDED_CAPTURE_PLATFORMS } from "../gated/guidedJob";
-import { TRACKED_ROLE_LABELS, isSocialPlatform, isTrackedRole, type PostCardModel } from "../types";
+import { TRACKED_ROLE_LABELS, isSocialPlatform, isTrackedRole, type IngestProfileResult, type PostCardModel } from "../types";
 import { MetricChart, seriesToCsv } from "./MetricChart";
 import { AccountInsights } from "./AccountInsights";
 import { OutlierBadge } from "./OutlierBadge";
@@ -87,6 +91,7 @@ import { formatSocialHandle } from "@/features/marketing/lib/social-handle";
 import { profileAvatarDoor } from "../server";
 import { SocialImage } from "./SocialImage";
 import { UntrackedAccount } from "./UntrackedAccount";
+import { rememberedMaxPosts } from "../post-count";
 
 type InnerTab = "posts" | "outliers" | "growth";
 const INNER_TABS = [
@@ -339,7 +344,7 @@ export function AccountDetail({ platform, profileId }: { platform: string; profi
   const invalidate = useInvalidateSocial();
   const profile = useProfile(profileId);
   const tracked = useTrackedForProfile(brand.organizationId, profileId);
-  const { costText, confirmSpend } = useSocialSpend(brand.organizationId);
+  const { costText, confirmSpend, confirmPosts } = useSocialSpend(brand.organizationId);
   const handle = profile.data?.handle ?? null;
   const posts = useProfilePosts(profileId, handle);
   const captureTargets = [
@@ -352,23 +357,27 @@ export function AccountDetail({ platform, profileId }: { platform: string; profi
   const openInPanel = useOpenPost();
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
+  const [lastFetch, setLastFetch] = useState<IngestProfileResult | null>(null);
   // The refresh's inline home: its live stage while running, then what it did
   // (or why it failed), beside the button that started it.
   const [captureNotice, setCaptureNotice] = useState<{ text: string; failed: boolean } | null>(null);
   const [refreshLine, setRefreshLine] = useState<{ text: string; failed: boolean; error?: unknown } | null>(null);
 
-  async function refresh() {
-    const ok = await confirmSpend("profile_page", 1, { title: `Refresh ${profile.data ? accountName({ displayName: profile.data.display_name ?? "", handle: profile.data.handle ?? "", platform: profile.data.platform }) : "this account"}?`, confirmLabel: "Refresh" });
+  /** `more`: the next LOAD_MORE_STEP posts beyond what is stored. `force`: ignore the reuse window. */
+  async function refresh(opts: { force?: boolean; more?: boolean } = {}) {
+    const n = opts.more ? (posts.data?.length ?? 0) + LOAD_MORE_STEP : await rememberedMaxPosts();
+    const ok = await confirmPosts(profile.data?.platform ?? platform, opts.more ? LOAD_MORE_STEP : n, { title: `${opts.more ? "Load more for" : "Refresh"} ${profile.data ? accountName({ displayName: profile.data.display_name ?? "", handle: profile.data.handle ?? "", platform: profile.data.platform }) : "this account"}?`, confirmLabel: opts.more ? "Load more" : "Refresh" });
     if (!ok) return;
     setBusy(true);
     setRefreshLine({ text: "Starting…", failed: false });
     try {
-      const result = await refreshProfile(profileId, { pages: 1 }, {
+      const result = await refreshProfile(profileId, { maxPosts: n, force: opts.force || opts.more }, {
         organizationId: brand.organizationId,
         onProgress: (pr) =>
           setRefreshLine({ text: pr.step && pr.total ? `${pr.message} · ${pr.step} of ${pr.total}` : pr.message, failed: false }),
       });
       await invalidate();
+      setLastFetch(result);
       setRefreshLine({ text: refreshSummary(result), failed: false });
     } catch (err) {
       setRefreshLine({ text: socialErrorMessage(err, "Refresh failed"), failed: true, error: err });
@@ -380,13 +389,13 @@ export function AccountDetail({ platform, profileId }: { platform: string; profi
   async function trackThis() {
     const p0 = profile.data;
     if (!p0) return;
-    const ok = await confirmSpend("track", 1, { title: `Track ${accountName({ displayName: p0.display_name ?? "", handle: p0.handle ?? "", platform: p0.platform })}?`, confirmLabel: "Track" });
+    const ok = await confirmPosts(p0.platform, await rememberedMaxPosts(), { title: `Track ${accountName({ displayName: p0.display_name ?? "", handle: p0.handle ?? "", platform: p0.platform })}?`, confirmLabel: "Track" });
     if (!ok) return;
     setBusy(true);
     setRefreshLine({ text: "Starting…", failed: false });
     try {
       await trackAccount(
-        { profileId: p0.id, handleOrUrl: p0.profile_url || p0.handle, platform: isSocialPlatform(p0.platform) ? p0.platform : undefined, role: "competitor", brandId: brand.id, pages: 1 },
+        { profileId: p0.id, handleOrUrl: p0.profile_url || p0.handle, platform: isSocialPlatform(p0.platform) ? p0.platform : undefined, role: "competitor", brandId: brand.id, maxPosts: await rememberedMaxPosts() },
         { organizationId: brand.organizationId, onProgress: (pr) => setRefreshLine({ text: pr.step && pr.total ? `${pr.message} · ${pr.step} of ${pr.total}` : pr.message, failed: false }) },
       );
       await invalidate();
@@ -459,13 +468,19 @@ export function AccountDetail({ platform, profileId }: { platform: string; profi
         )}
         <span className="ml-auto flex flex-wrap items-center gap-1">
           {!canEdit ? null : tracked.data ? (
-            <Button variant="outline" icon={<RefreshCw />} onClick={() => void refresh()} disabled={busy} title={["Refresh", costText("profile_page")].filter(Boolean).join(" · ")}>
-              {busy ? "Refreshing…" : "Refresh"}
-            </Button>
+            <>
+              <PostCountControl organizationId={brand.organizationId} platform={p.platform} disabled={busy} />
+              <Button variant="outline" icon={<RefreshCw />} onClick={() => void refresh()} disabled={busy}>
+                {busy ? "Refreshing…" : "Refresh"}
+              </Button>
+            </>
           ) : tracked.isLoading ? null : (
-            <Button variant="outline" icon={<Plus />} onClick={() => void trackThis()} disabled={busy}>
-              {busy ? "Tracking…" : "Track"}
-            </Button>
+            <>
+              <PostCountControl organizationId={brand.organizationId} platform={p.platform} disabled={busy} />
+              <Button variant="outline" icon={<Plus />} onClick={() => void trackThis()} disabled={busy}>
+                {busy ? "Tracking…" : "Track"}
+              </Button>
+            </>
           )}
           {GUIDED_CAPTURE_PLATFORMS.has(p.platform) ? (
             <GatedCaptureOffer
@@ -503,6 +518,25 @@ export function AccountDetail({ platform, profileId }: { platform: string; profi
             {refreshLine?.failed ? <ErrorAlchemyMenu error={refreshLine.error} operation="refresh social account" /> : null}
           </span>
         ) : null}
+      </div>
+
+      <div className="-mt-1 flex min-h-4 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground" data-testid="fetch-lines">
+        <span>{posts.isLoading ? "" : `${list.length.toLocaleString("en-US")} posts loaded${(lastFetch?.has_more ?? false) ? " · more available" : ""}`}</span>
+        {lastFetch?.has_more && canEdit ? (
+          <Button variant="quiet" onClick={() => void refresh({ more: true })} disabled={busy}>
+            Load more
+          </Button>
+        ) : null}
+        {fetchedText(lastFetch?.fetched_at ?? p.last_refreshed_at, lastFetch?.reused) ? (
+          <span>{fetchedText(lastFetch?.fetched_at ?? p.last_refreshed_at, lastFetch?.reused)}</span>
+        ) : null}
+        {canEdit && tracked.data ? (
+          <Button variant="quiet" onClick={() => void refresh({ force: true })} disabled={busy}>
+            Refresh now
+          </Button>
+        ) : null}
+        <ProviderChip provider={p.provider} trace={lastFetch?.trace} />
+        <LimitLine limit={lastFetch?.limit_applied} organizationId={brand.organizationId} />
       </div>
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">

@@ -132,6 +132,7 @@ import {
 import type { BoardItemType, ItemBodyProps, PickerProps } from "./types";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { rememberedMaxPosts } from "@/features/marketing/social/post-count";
 export const SOCIAL_POST_KEY = "social-post";
 export const SOCIAL_PROFILE_KEY = "social-profile";
 export const SOCIAL_OUTLIER_FEED_KEY = "social-outlier-feed";
@@ -292,9 +293,9 @@ function IngestProfileTile({
   });
   useEffect(() => {
     let live = true;
-    shared(`profile:${organizationId}:${handleOrUrl}:${attempt}`, () =>
+    shared(`profile:${organizationId}:${handleOrUrl}:${attempt}`, async () =>
       ingestProfile(
-        { handleOrUrl, platform: platform && isSocialPlatform(platform) ? platform : undefined, pages: 1 },
+        { handleOrUrl, platform: platform && isSocialPlatform(platform) ? platform : undefined, maxPosts: await rememberedMaxPosts() },
         { organizationId, onProgress: (p) => live && setProgress(p.message) },
       ),
     ).then(
@@ -703,7 +704,7 @@ function ProfileRecordBody({
     setTracking(true);
     try {
       await trackAccount(
-        { profileId: row.id, role: "competitor", brandId: brand?.id, pages: 1 },
+        { profileId: row.id, role: "competitor", brandId: brand?.id, maxPosts: await rememberedMaxPosts() },
         { organizationId },
       );
       await invalidate();
@@ -741,6 +742,7 @@ function ProfileRecordBody({
         snapshots={snapshots.data ?? []}
         trackedRole={tracked.isLoading ? undefined : tracked.data ? (isTrackedRole(tracked.data.role) ? tracked.data.role : null) : null}
         canTrack={TRACKABLE_PLATFORMS.has(row.platform)}
+        organizationId={organizationId}
         tracking={tracking}
         onTrack={() => void track()}
         onOpenAccount={accountHref ? () => void openAccount() : null}

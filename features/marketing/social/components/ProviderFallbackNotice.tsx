@@ -43,3 +43,26 @@ export function ProviderFallbackNotice({
     </span>
   );
 }
+
+/**
+ * Where the data came from: the dollars seat sees the vendor always; everyone else sees
+ * "Backup source" only when a fallback happened. Nothing otherwise.
+ */
+export function ProviderChip({
+  provider,
+  trace,
+}: {
+  provider?: string | null;
+  trace?: Pick<SocialProviderTrace, "provider" | "fallback_reason"> | null;
+}) {
+  const seesVendor = useSeesDollars();
+  const name = trace?.provider ?? provider;
+  if (seesVendor && name) {
+    return (
+      <span title={trace?.fallback_reason ?? undefined} className="inline-flex">
+        <Badge tone={trace?.fallback_reason ? "warning" : "neutral"}>{`via ${providerName(name)}`}</Badge>
+      </span>
+    );
+  }
+  return <ProviderFallbackNotice trace={trace} />;
+}

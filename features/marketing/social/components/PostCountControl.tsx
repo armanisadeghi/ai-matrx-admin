@@ -1,0 +1,62 @@
+"use client";
+
+/**
+ * "How many posts" beside the thing that fetches: the remembered choice + the live estimate in
+ * points. One control, every account-fetch surface.
+ */
+
+import { Select, type SelectOption } from "@ai-matrx/design-system/controls";
+
+import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { useQuery } from "@tanstack/react-query";
+import { getCosts } from "../server";
+import { formatPointsAlways } from "../cost";
+import {
+  POST_COUNT_CHOICES,
+  POST_COUNT_LABELS,
+  postsUsd,
+  resolveCount,
+  usePostCount,
+  useProfilePostsMax,
+  type PostCountChoice,
+} from "../post-count";
+
+const OPTIONS: SelectOption<PostCountChoice>[] = POST_COUNT_CHOICES.map((c) => ({ value: c, label: POST_COUNT_LABELS[c] }));
+
+/** The count the current choice means, and the words for its cost. */
+export function usePostCountEstimate(organizationId: string, platform: string | null | undefined, countOverride?: number) {
+  const { choice } = usePostCount();
+  const max = useProfilePostsMax();
+  const { toPoints } = useCostDisplay();
+  const costs = useQuery({
+    queryKey: ["marketing", "social", "costs", organizationId],
+    queryFn: ({ signal }) => getCosts({ organizationId, signal }),
+    enabled: Boolean(organizationId),
+    staleTime: 60 * 60 * 1000,
+  });
+  const count = countOverride ?? resolveCount(choice, max.value);
+  const estimate = formatPointsAlways(postsUsd(costs.data, platform, count), toPoints);
+  return { choice, count, estimate, maxError: max.error && choice === "all" };
+}
+
+export function PostCountControl({
+  organizationId,
+  platform,
+  disabled,
+}: {
+  organizationId: string;
+  platform?: string | null;
+  disabled?: boolean;
+}) {
+  const { choice, setChoice } = usePostCount();
+  const { estimate, count, maxError } = usePostCountEstimate(organizationId, platform);
+  return (
+    <span className="inline-flex items-center gap-2" data-testid="post-count-control">
+      <Select aria-label="How many posts" value={choice} options={OPTIONS} onValueChange={setChoice} disabled={disabled} />
+      <span className="min-w-16 text-xs text-muted-foreground" aria-live="polite">
+        {maxError ? "Limit not loaded" : choice === "all" && count != null ? `${count.toLocaleString("en-US")} max` : ""}
+        {estimate ? ` ${estimate}` : ""}
+      </span>
+    </span>
+  );
+}

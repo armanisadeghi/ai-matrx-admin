@@ -79,6 +79,8 @@ import { CONNECTION_RETURN_PARAMS, ManageConnectionsDialog } from "./ManageConne
 import { useSocials } from "./SocialsContext";
 import { trackableOwn, useTrackOwn } from "./useTrackOwn";
 import { formatSocialHandle } from "@/features/marketing/lib/social-handle";
+import { rememberedMaxPosts, resolveCount, usePostCount, useProfilePostsMax } from "../post-count";
+import { PostCountControl } from "./PostCountControl";
 
 const ROLE_OPTIONS: SelectOption<TrackedRole>[] = TRACKED_ROLES.map((r) => ({
   value: r,
@@ -140,9 +142,11 @@ export function AccountsTab() {
     trackOwnRow,
     trackAllOwn,
     costText,
-    confirmSpend,
   } = useTrackOwn(organizationId, brandId);
-  const { agentCostText } = useSocialSpend(organizationId);
+  const { agentCostText, confirmPosts, postsText } = useSocialSpend(organizationId);
+  const { choice: countChoice } = usePostCount();
+  const postsMax = useProfilePostsMax();
+  const askedPosts = resolveCount(countChoice, postsMax.value);
 
   const {
     show: showRefused,
@@ -163,7 +167,8 @@ export function AccountsTab() {
 
   async function refresh(row: AccountRow) {
     if (!row.profileId) return;
-    const ok = await confirmSpend("profile_page", 1, {
+    const n = await rememberedMaxPosts();
+    const ok = await confirmPosts(row.platform, n, {
       title: `Refresh ${accountName(row)}?`,
       confirmLabel: "Refresh",
     });
@@ -172,7 +177,7 @@ export function AccountsTab() {
     try {
       const result = await refreshProfile(
         row.profileId,
-        { pages: 1 },
+        { maxPosts: n },
         { organizationId },
       );
       await invalidate();
@@ -575,7 +580,7 @@ export function AccountsTab() {
           parse: (value) => parseCreateAccounts(value),
           run: async (plan) => {
             const result = await trackAccount(
-              { handleOrUrl: plan.handleOrUrl, platform: plan.platform, role: plan.role, brandId, pages: 1 },
+              { handleOrUrl: plan.handleOrUrl, platform: plan.platform, role: plan.role, brandId, maxPosts: await rememberedMaxPosts() },
               { organizationId },
             );
             await invalidate();
@@ -595,7 +600,7 @@ export function AccountsTab() {
             }
             if (plan.role && row.trackedAccountId) await setTrackedRole(row.trackedAccountId, plan.role);
             if (plan.refresh && row.profileId) {
-              await refreshProfile(row.profileId, { pages: 1 }, { organizationId });
+              await refreshProfile(row.profileId, { maxPosts: await rememberedMaxPosts() }, { organizationId });
             }
             await invalidate();
             return { id: row.rowId, name: plan.label };
@@ -661,6 +666,7 @@ export function AccountsTab() {
           searchPlaceholder: "Search accounts…",
           actions: !canEdit ? undefined : (
             <div className="flex items-center gap-2">
+              <PostCountControl organizationId={organizationId} disabled={busyRow !== null} />
               <ConnectAccountMenu
                 organizationId={organizationId}
                 start={startConnect}
@@ -693,7 +699,7 @@ export function AccountsTab() {
                 id: "refresh",
                 icon: RefreshCw,
                 label: "Refresh",
-                tooltip: ["Refresh", costText("profile_page")]
+                tooltip: ["Refresh", askedPosts ? `${askedPosts} posts` : null, askedPosts ? postsText(row.platform, askedPosts) : null]
                   .filter(Boolean)
                   .join(" · "),
                 loading: busyRow === row.rowId,

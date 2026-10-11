@@ -11,6 +11,7 @@ import { isRawChannelId } from "./mappers";
 import { ingestProfile } from "./server";
 import { readProfile } from "./service";
 import { isSocialPlatform, type SocialPlatform, type SocialProfileRow } from "./types";
+import { rememberedMaxPosts } from "./post-count";
 
 export function foundFromRow(row: SocialProfileRow, source: FoundAccount["source"]): FoundAccount | null {
   if (!isSocialPlatform(row.platform)) return null;
@@ -53,7 +54,7 @@ export async function fetchAccount(args: {
   signal?: AbortSignal;
 }): Promise<FoundAccount> {
   const result = await ingestProfile(
-    { handleOrUrl: args.account.url, platform: args.account.platform, pages: 1 },
+    { handleOrUrl: args.account.url, platform: args.account.platform, maxPosts: await rememberedMaxPosts() },
     { organizationId: args.organizationId, signal: args.signal },
   );
   const row = await readProfile(result.profile_id);

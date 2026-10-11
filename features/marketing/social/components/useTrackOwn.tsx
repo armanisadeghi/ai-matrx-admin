@@ -17,6 +17,7 @@ import { useSocialSpend } from "../cost";
 import { socialErrorCode, socialErrorMessage, trackAccount } from "../server";
 import { platformLabel } from "./PlatformMark";
 import { isSocialPlatform, type AccountRow } from "../types";
+import { rememberedMaxPosts } from "../post-count";
 
 export { trackableOwn } from "../own-accounts";
 
@@ -38,7 +39,7 @@ export function useTrackOwn(organizationId: string, brandId: string) {
           role: "own",
           brandId,
           propertyId: row.propertyId ?? undefined,
-          pages: 1,
+          maxPosts: await rememberedMaxPosts(),
           allowEmpty,
         },
         {

@@ -212,7 +212,7 @@ async function callSocial<T>(
 // ---------------------------------------------------------------------------
 
 export function ingestPost(
-  input: { url: string; landMedia?: boolean; transcript?: boolean; force?: boolean },
+  input: { url: string; landMedia?: boolean; transcript?: boolean; force?: boolean; commentsMax?: number },
   opts: CallOptions,
 ): Promise<IngestPostResult> {
   return callSocial<IngestPostResult>(
@@ -222,13 +222,19 @@ export function ingestPost(
       land_media: input.landMedia ?? true,
       transcript: input.transcript ?? true,
       force: input.force ?? false,
+      comments_max: input.commentsMax,
     },
     opts,
   );
 }
 
+/** max_posts wins over pages server-side; with neither, one page (the old default). */
+function pagesOrMax(input: { pages?: number; maxPosts?: number }): { pages?: number; max_posts?: number } {
+  return input.maxPosts != null ? { max_posts: input.maxPosts } : { pages: input.pages ?? 1 };
+}
+
 export function ingestProfile(
-  input: { handleOrUrl: string; platform?: SocialPlatform; pages?: number; force?: boolean },
+  input: { handleOrUrl: string; platform?: SocialPlatform; pages?: number; maxPosts?: number; force?: boolean },
   opts: CallOptions,
 ): Promise<IngestProfileResult> {
   return callSocial<IngestProfileResult>(
@@ -236,7 +242,7 @@ export function ingestProfile(
     {
       handle_or_url: input.handleOrUrl,
       platform: input.platform,
-      pages: input.pages ?? 1,
+      ...pagesOrMax(input),
       force: input.force ?? false,
     },
     opts,
@@ -258,7 +264,8 @@ export function trackAccount(
       property_id: input.role === "own" ? input.propertyId : undefined,
       label: input.label,
       notes: input.notes,
-      pages: input.pages ?? 1,
+      ...pagesOrMax(input),
+      force: input.force ?? false,
       allow_empty: input.allowEmpty ?? false,
     },
     opts,
@@ -279,12 +286,12 @@ export async function untrackAccount(
 
 export function refreshProfile(
   profileId: string,
-  input: { pages?: number; force?: boolean },
+  input: { pages?: number; maxPosts?: number; force?: boolean },
   opts: CallOptions,
 ): Promise<IngestProfileResult> {
   return callSocial<IngestProfileResult>(
     `/profiles/${profileId}/refresh`,
-    { pages: input.pages ?? 1, force: input.force ?? false },
+    { ...pagesOrMax(input), force: input.force ?? false },
     opts,
   );
 }

@@ -23,6 +23,7 @@ import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { shouldWarnAboutCost } from "@/components/cost/costTier";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { getCosts } from "./server";
+import { commentsUsd, postsUsd } from "./post-count";
 import type { SocialCosts, SocialSpendAction } from "./types";
 
 export type { SocialSpendAction } from "./types";
@@ -102,7 +103,28 @@ export function useSocialSpend(organizationId: string | null | undefined) {
     });
   }
 
-  return { costText, pointsText, agentCostText, confirmSpend };
+  /** The points a fetch of `count` posts will use, always named; null when unpriced. */
+  function postsText(platform: string, count: number): string | null {
+    return formatPointsAlways(postsUsd(costs.data, platform, count), display.toPoints);
+  }
+
+  /** The points `count` comments will use, always named; null when unpriced. */
+  function commentsText(count: number): string | null {
+    return formatPointsAlways(commentsUsd(costs.data, count), display.toPoints);
+  }
+
+  /** Confirm a fetch of `count` posts of `platform` (a warning-tier cost only; trivial costs ask nothing). */
+  async function confirmPosts(
+    platform: string,
+    count: number,
+    dialog: { title: string; confirmLabel: string },
+  ): Promise<boolean> {
+    const words = formatPointsCost(postsUsd(costs.data, platform, count), display);
+    if (!words) return true;
+    return confirm({ title: dialog.title, description: `Uses ${words.replace(/^≈ /, "about ")}.`, confirmLabel: dialog.confirmLabel });
+  }
+
+  return { costText, pointsText, agentCostText, confirmSpend, confirmPosts, postsText, commentsText };
 }
 
 // ---------------------------------------------------------------------------

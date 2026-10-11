@@ -135,6 +135,8 @@ export interface IngestPostResult {
   media: PostMediaRef[];
   media_notes: string[];
   transcript: TranscriptOutcome | null;
+  comments_stored?: number;
+  comments_limit_applied?: SocialLimitApplied | null;
 }
 
 export interface IngestProfileResult {
@@ -152,6 +154,18 @@ export interface IngestProfileResult {
   /** Refresh only: posts first seen in this refresh, and the rest re-observed. */
   posts_new?: number;
   posts_updated?: number;
+  posts_requested?: number;
+  posts_received?: number;
+  limit_applied?: SocialLimitApplied | null;
+  reused?: boolean;
+  fetched_at?: string | null;
+}
+
+/** The server cut a request down to a setting; the UI names it in place. */
+export interface SocialLimitApplied {
+  setting: string;
+  value: number;
+  requested: number;
 }
 
 export interface TrackAccountResult {
@@ -160,6 +174,9 @@ export interface TrackAccountResult {
   created: boolean;
   crm_party_id: string | null;
   notes: string[];
+  posts_received?: number;
+  has_more?: boolean;
+  limit_applied?: SocialLimitApplied | null;
 }
 
 export interface TrackAccountInput {
@@ -173,6 +190,8 @@ export interface TrackAccountInput {
   label?: string;
   notes?: string;
   pages?: number;
+  maxPosts?: number;
+  force?: boolean;
   /** Track an account with no posts anyway (refused as `social_profile_empty` otherwise). */
   allowEmpty?: boolean;
 }
@@ -370,6 +389,10 @@ export type SocialSpendAction =
 export interface SocialCosts {
   call_usd: number | null;
   operations: Partial<Record<SocialSpendAction, number | null>>;
+  /** Per platform: USD per page and posts per page (profile post lists). */
+  per_post?: Record<string, { usd_per_page: number | null; posts_per_page: number | null }>;
+  /** USD per page of comments. */
+  per_comment_page?: number | null;
 }
 
 export interface SocialCredits {
