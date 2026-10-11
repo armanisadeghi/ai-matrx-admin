@@ -27,14 +27,10 @@ import {
 import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
 
 import {
-  copyWorkbook,
   createWorkbook,
-  deleteWorkbook,
   discardFailedWorkbook,
   listAccessibleWorkbooks,
   listTrashedWorkbooks,
-  renameWorkbook,
-  restoreWorkbook,
   saveSnapshot,
 } from "@/features/workbooks/workbook-service";
 import {
@@ -42,10 +38,8 @@ import {
   filterByScope,
   type FileScope,
 } from "@/features/file-actions/FileScopeBar";
-import {
-  useFileItemActions,
-  type FileKindAdapter,
-} from "@/features/file-actions/useFileItemActions";
+import { useFileItemActions } from "@/features/file-actions/useFileItemActions";
+import { WORKBOOK_ADAPTER } from "@/features/file-actions/adapters";
 import { DocumentsHubToolbar } from "@/features/documents/components/DocumentsHubToolbar";
 import { WorkbooksHubTable } from "@/features/workbooks/components/WorkbooksHubTable";
 import {
@@ -105,18 +99,6 @@ function unsupportedFileReason(file: File): string | null {
   // Anything else.
   return `"${file.name}" doesn't look like a spreadsheet. Supported: .xlsx, .xls, .csv. If you're importing from Google Sheets, use File → Download → Microsoft Excel (.xlsx) first.`;
 }
-
-const WORKBOOK_ADAPTER: FileKindAdapter<Workbook> = {
-  noun: "workbook",
-  resourceType: "workbook",
-  entityType: "workbook",
-  nameOf: (w) => w.workbook_name,
-  hrefFor: (id) => `/workbooks/${id}`,
-  rename: renameWorkbook,
-  copy: copyWorkbook,
-  trash: deleteWorkbook,
-  restore: restoreWorkbook,
-};
 
 function sortWorkbooks(rows: Workbook[], key: DocumentSortKey): Workbook[] {
   const byName = (a: Workbook, b: Workbook) =>

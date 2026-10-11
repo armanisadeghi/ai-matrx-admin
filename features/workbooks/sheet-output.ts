@@ -63,3 +63,33 @@ table{border-collapse:collapse;width:100%}td{border:1px solid #bbb;padding:3px 6
   win.print();
   return true;
 }
+
+/** The sheet's grid as a markdown table (first row is the header row). */
+export function rowsToMarkdownTable(rows: readonly (readonly string[])[]): string {
+  if (rows.length === 0) return "";
+  const width = Math.max(...rows.map((r) => r.length));
+  const cell = (v: string | undefined) => (v ?? "").replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
+  const line = (r: readonly string[]) =>
+    `| ${Array.from({ length: width }, (_, i) => cell(r[i])).join(" | ")} |`;
+  const [head, ...rest] = rows;
+  return [line(head!), `| ${Array.from({ length: width }, () => "---").join(" | ")} |`, ...rest.map(line)].join("\n");
+}
+
+/**
+ * Real PDF download of the current sheet (not the print sheet): the grid goes through the
+ * platform's document exporter, which writes the file and says so. Returns false when empty.
+ */
+export async function downloadSheetAsPdf(
+  snapshot: unknown,
+  options: { sheetId?: string; title: string },
+): Promise<boolean> {
+  const grid = univerSnapshotToRows(snapshot, options.sheetId ? { sheetId: options.sheetId } : {});
+  if (!grid || grid.rows.length === 0) return false;
+  const { exportContent } = await import("@ai-matrx/rich-content/copy/content-export");
+  await exportContent(
+    `# ${options.title} — ${grid.sheetName}\n\n${rowsToMarkdownTable(grid.rows)}`,
+    "pdf",
+    options.title,
+  );
+  return true;
+}

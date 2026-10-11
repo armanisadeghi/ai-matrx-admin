@@ -20,10 +20,10 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
-import { toast } from "@/lib/toast";
-import { FileRecordMenu } from "@/features/file-actions/FileRecordMenu";
+import { Loader2, Printer } from "lucide-react";
+import { useFileRecordMenu } from "@/features/file-actions/useFileRecordMenu";
+import { DOCUMENT_ADAPTER } from "@/features/file-actions/adapters";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 import { Input } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
@@ -45,9 +45,6 @@ import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/eng
 import { captureDomSelection } from "@ai-matrx/context-menu/engine";
 
 import {
-  copyDocument,
-  deleteDocument,
-  restoreDocument,
   getDocument,
   renameDocument,
   updateDocumentDescription,
@@ -235,35 +232,6 @@ export function DocumentRecord({
   const isOwner =
     doc !== null && currentUserId !== null && doc.user_id === currentUserId;
 
-  const router = useRouter();
-  const makeCopy = async () => {
-    const current = docRef.current;
-    if (!current) return;
-    const res = await copyDocument(id, `Copy of ${current.document_name}`);
-    if (isServiceFailure(res)) {
-      toast.error("Could not copy this document", { description: res.error });
-      return;
-    }
-    toast.success("Copy created");
-    router.push(`/documents/${res.data.id}`);
-  };
-  const moveToTrash = async () => {
-    const current = docRef.current;
-    if (!current) return;
-    const res = await deleteDocument(id);
-    if (isServiceFailure(res)) {
-      toast.error("Could not move this document to trash", { description: res.error });
-      return;
-    }
-    toast.success(`Moved "${current.document_name}" to trash`, {
-      action: {
-        label: "Undo",
-        onClick: () => void restoreDocument(id).then(() => router.push(`/documents/${id}`)),
-      },
-    });
-    router.push("/documents");
-  };
-
   const applyRename = async (name: string) => {
     const current = docRef.current;
     if (!current || name === current.document_name) return;
@@ -327,6 +295,49 @@ export function DocumentRecord({
   // Every hook runs before the error return below: a hook after it ran on the first render and not on the
   // error render, so a missing or deleted id crashed with "Rendered fewer hooks than expected".
   const plainView = usePlainView(doc ? `udt-document-${doc.id}` : null);
+
+  // Markdown WITH its markup (headings, bold, italics, lists, tables) from the live
+  // snapshot; the plain choice strips it downstream. Falls back to the bare text.
+  const documentMarkdown = () => {
+    const port = bodyPortRef.current;
+    if (!port) return "";
+    const markdown = univerDocToMarkdown(port.getSnapshot?.());
+    return markdown || bodyTextOf(port.getDataStream()).text;
+  };
+
+  const fileMenu = useFileRecordMenu(DOCUMENT_ADAPTER, doc, {
+    listHref: "/documents",
+    onProjectMoved: (projectId) => {
+      const current = docRef.current;
+      if (current) commitDocument({ ...current, project_id: projectId });
+    },
+    // The editor offers its LIVE text (unsaved edits included), not the last saved snapshot.
+    downloads: (
+      [
+        ["pdf", "PDF"],
+        ["docx", "Word"],
+        ["markdown", "Markdown"],
+      ] as const
+    ).map(([format, label]) => ({
+      label,
+      run: async () => {
+        const { exportContent } = await import("@ai-matrx/rich-content/copy/content-export");
+        await exportContent(documentMarkdown(), format, docRef.current?.document_name);
+      },
+    })),
+    extra: (
+      <DropdownMenuItem
+        onSelect={() =>
+          void import("@ai-matrx/rich-content/copy/content-export").then((m) =>
+            m.printContent(documentMarkdown(), docRef.current?.document_name),
+          )
+        }
+      >
+        <Printer className="mr-2 size-4" />
+        Print
+      </DropdownMenuItem>
+    ),
+  });
 
   if (error) {
     return (
@@ -403,15 +414,6 @@ export function DocumentRecord({
     </>
   );
 
-  // Markdown WITH its markup (headings, bold, italics, lists, tables) from the live
-  // snapshot; the plain choice strips it downstream. Falls back to the bare text.
-  const documentMarkdown = () => {
-    const port = bodyPortRef.current;
-    if (!port) return "";
-    const markdown = univerDocToMarkdown(port.getSnapshot?.());
-    return markdown || bodyTextOf(port.getDataStream()).text;
-  };
-
   const actions = doc ? (
     <div className="flex items-center gap-0.5">
       {/* Secondary action — hidden below sm so the rename field and
@@ -440,10 +442,7 @@ export function DocumentRecord({
         variant="ghost"
         size="sm"
       />
-      <FileRecordMenu
-        onMakeCopy={makeCopy}
-        {...(isOwner ? { onTrash: moveToTrash } : {})}
-      />
+      {fileMenu}
     </div>
   ) : null;
 

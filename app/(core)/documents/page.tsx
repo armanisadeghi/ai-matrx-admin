@@ -15,10 +15,8 @@ import {
   filterByScope,
   type FileScope,
 } from "@/features/file-actions/FileScopeBar";
-import {
-  useFileItemActions,
-  type FileKindAdapter,
-} from "@/features/file-actions/useFileItemActions";
+import { useFileItemActions } from "@/features/file-actions/useFileItemActions";
+import { DOCUMENT_ADAPTER } from "@/features/file-actions/adapters";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
@@ -30,13 +28,9 @@ import { googleLinkIn } from "@/features/google-workspace/linked/link-store";
 import { DocumentsHubTable } from "@/features/documents/components/DocumentsHubTable";
 import { DocumentsHubToolbar } from "@/features/documents/components/DocumentsHubToolbar";
 import {
-  copyDocument,
   createDocument,
-  deleteDocument,
   listAccessibleDocuments,
   listTrashedDocuments,
-  renameDocument,
-  restoreDocument,
 } from "@/features/documents/document-service";
 import {
   isServiceFailure,
@@ -74,18 +68,6 @@ const DOCUMENTS_HUB_VIEW_DEFAULTS: Partial<ListViewPrefs> = { view: "cards" };
 const DOCUMENTS_HUB_LEGACY_VIEW: LegacyListViewImport = {
   key: "documents-hub-view",
   map: (raw) => (raw === "table" || raw === "cards" ? { view: raw } : null),
-};
-
-const DOCUMENT_ADAPTER: FileKindAdapter<DocumentRow> = {
-  noun: "document",
-  resourceType: "udt_document",
-  entityType: "udt_document",
-  nameOf: (d) => d.document_name,
-  hrefFor: (id) => `/documents/${id}`,
-  rename: renameDocument,
-  copy: copyDocument,
-  trash: deleteDocument,
-  restore: restoreDocument,
 };
 
 export default function DocumentsLandingPage() {

@@ -20,16 +20,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Copy, Download, FileText, History, Loader2, Printer, Save, Table2, Trash2 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { downloadSheetAsCsv, printSheet } from "@/features/workbooks/sheet-output";
+import { History, Loader2, MessageSquare, Printer, Save, Search } from "lucide-react";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { downloadSheetAsCsv, downloadSheetAsPdf, printSheet } from "@/features/workbooks/sheet-output";
+import { useFileRecordMenu } from "@/features/file-actions/useFileRecordMenu";
+import { WORKBOOK_ADAPTER } from "@/features/file-actions/adapters";
+import type { Workbook } from "@/features/data-tables/types";
 
 import {
   createUniver,
@@ -142,10 +138,10 @@ type Props = {
    * History controls so primary actions stay closest to the canvas.
    */
   toolbarRightSlot?: React.ReactNode;
-  /** File menu: "Make a copy". Omit to hide. */
-  onMakeCopy?: () => void | Promise<void>;
-  /** File menu: "Move to trash" (owner only). Omit to hide. */
-  onTrash?: () => void | Promise<void>;
+  /** The open workbook row: feeds the shared File menu (copy, move, star, trash). Omit to hide it. */
+  record?: Workbook | null;
+  /** Called after "Move to project" so the page can refresh its copy of the row. */
+  onProjectMoved?: (projectId: string | null) => void;
 };
 
 export default function WorkbookEditor({
@@ -155,8 +151,8 @@ export default function WorkbookEditor({
   collab = false,
   toolbarLeftSlot,
   toolbarRightSlot,
-  onMakeCopy,
-  onTrash,
+  record = null,
+  onProjectMoved,
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const apiRef = useRef<FUniver | null>(null);
@@ -639,6 +635,60 @@ export default function WorkbookEditor({
     [withActiveSheet],
   );
 
+  // Find and replace / comments are Univer commands; the File menu is the visible door to them.
+  const runUniverCommand = useCallback((id: string) => {
+    const api = apiRef.current as unknown as {
+      executeCommand?: (id: string) => Promise<unknown> | unknown;
+    } | null;
+    if (!api?.executeCommand) {
+      toast({ title: "This editor action is not ready yet", variant: "destructive" });
+      return;
+    }
+    void Promise.resolve(api.executeCommand(id)).catch((err: unknown) =>
+      toast({
+        title: "Could not open that",
+        description: err instanceof Error ? err.message : String(err),
+        variant: "destructive",
+      }),
+    );
+  }, []);
+  const handleExportPdf = useCallback(
+    () =>
+      withActiveSheet((snapshot, sheetId, title) => {
+        void downloadSheetAsPdf(snapshot, { ...(sheetId ? { sheetId } : {}), title }).then((ok) => {
+          if (!ok) toast({ title: "This sheet has nothing to export", variant: "destructive" });
+        });
+        return true;
+      }),
+    [withActiveSheet],
+  );
+  const fileMenu = useFileRecordMenu(WORKBOOK_ADAPTER, record, {
+    listHref: "/workbooks",
+    ...(onProjectMoved ? { onProjectMoved } : {}),
+    // The editor offers its LIVE content (unsaved edits included), not the last saved snapshot.
+    downloads: [
+      { label: "Excel (.xlsx)", run: handleExportXlsx },
+      { label: "CSV (current sheet)", run: async () => handleExportCsv() },
+      { label: "PDF (current sheet)", run: async () => handleExportPdf() },
+    ],
+    extra: (
+      <>
+        <DropdownMenuItem onSelect={handlePrint}>
+          <Printer className="mr-2 size-4" />
+          Print
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => runUniverCommand("ui.operation.open-find-dialog")}>
+          <Search className="mr-2 size-4" />
+          Find and replace
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => runUniverCommand("sheet.operation.toggle-comment-panel")}>
+          <MessageSquare className="mr-2 size-4" />
+          Comments
+        </DropdownMenuItem>
+      </>
+    ),
+  });
+
   // Surface bridge — publish the live editor state (sheets, snapshot, save
   // status, collab presence) for the `matrx-user/workbooks` emitter on the
   // page above us. Read-on-demand at agent-launch time, never pushed up as
@@ -865,61 +915,7 @@ export default function WorkbookEditor({
               <span className="hidden sm:inline">Save now</span>
             </Button>
           )}
-          {bootState === "ready" && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 gap-1 px-2 text-xs"
-                  title="Make a copy, download, print"
-                >
-                  <Download className="size-3" />
-                  <span className="hidden sm:inline">File</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-[13rem]">
-                {onMakeCopy && (
-                  <DropdownMenuItem onSelect={() => void onMakeCopy()}>
-                    <Copy className="mr-2 size-4" />
-                    Make a copy
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuLabel className="text-[11px] font-normal text-muted-foreground">
-                  Download
-                </DropdownMenuLabel>
-                <DropdownMenuItem onSelect={() => void handleExportXlsx()}>
-                  <Table2 className="mr-2 size-4" />
-                  Excel (.xlsx)
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={handleExportCsv}>
-                  <FileText className="mr-2 size-4" />
-                  CSV (current sheet)
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={handlePrint}>
-                  <FileText className="mr-2 size-4" />
-                  PDF (current sheet)
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={handlePrint}>
-                  <Printer className="mr-2 size-4" />
-                  Print
-                </DropdownMenuItem>
-                {onTrash && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="text-destructive focus:text-destructive"
-                      onSelect={() => void onTrash()}
-                    >
-                      <Trash2 className="mr-2 size-4" />
-                      Move to trash
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+          {bootState === "ready" && fileMenu}
           <Button
             variant="ghost"
             size="sm"
