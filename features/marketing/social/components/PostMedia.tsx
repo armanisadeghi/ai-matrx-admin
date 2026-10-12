@@ -64,6 +64,7 @@ export function PostMedia({
   durationSeconds,
   onRatio,
   fill,
+  staged,
   canLoadMedia = true,
 }: {
   postId: string;
@@ -80,6 +81,8 @@ export function PostMedia({
   onRatio?: (ratio: number) => void;
   /** The host sizes the box (a board tile): the frame fills it instead of following the media's ratio. */
   fill?: boolean;
+  /** The host is a MediaDetailLayout stage already shaped like the media: fill it, but keep reporting the true ratio. */
+  staged?: boolean;
   /** The media list is the brand organization's own; a viewer outside it would be refused, so the request is not made. */
   canLoadMedia?: boolean;
 }) {
@@ -205,12 +208,12 @@ export function PostMedia({
   const working = stage.kind === "working";
   const slides = savedPostSlides(media.data ?? []);
   if (!embed && slides.length > 0 && (slides.length > 1 || !wantsVideo)) {
-    return <Frame ratio={ratio} fill={fill}><SavedPostGallery key={postId} files={slides} organizationId={organizationId} onRatio={setRatio} fill={fill} /></Frame>;
+    return <Frame ratio={ratio} fill={fill} stage={staged}><SavedPostGallery key={postId} files={slides} organizationId={organizationId} onRatio={setRatio} fill={fill} /></Frame>;
   }
 
   if (embed && embedding) {
     return (
-      <Frame ratio={ratio} fill={fill}>
+      <Frame ratio={ratio} fill={fill} stage={staged}>
         <iframe
           title="YouTube player"
           src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(platformPostId)}?autoplay=1&rel=0&playsinline=1`}
@@ -224,7 +227,7 @@ export function PostMedia({
   }
   if (src) {
     return (
-      <Frame ratio={ratio} fill={fill}>
+      <Frame ratio={ratio} fill={fill} stage={staged}>
         <video
           src={src}
           poster={poster ?? undefined}
@@ -247,7 +250,7 @@ export function PostMedia({
   const canPlay = embed || wantsVideo;
 
   return (
-    <Frame ratio={ratio} fill={fill}>
+    <Frame ratio={ratio} fill={fill} stage={staged}>
       {thumbnailFileId ? (
         <SocialImage
           door={postThumbnailDoor(postId)}
@@ -314,7 +317,8 @@ export function PostMedia({
   );
 }
 
-function Frame({ ratio, fill, children }: { ratio: number; fill?: boolean; children: React.ReactNode }) {
+function Frame({ ratio, fill, stage, children }: { ratio: number; fill?: boolean; stage?: boolean; children: React.ReactNode }) {
+  if (stage) return <div className="relative h-full w-full overflow-hidden bg-black">{children}</div>;
   return (
     <div className="relative w-full overflow-hidden rounded-lg bg-black" style={fill ? { height: "100%" } : { aspectRatio: String(ratio) }}>
       {children}

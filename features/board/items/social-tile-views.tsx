@@ -22,7 +22,8 @@ import { OutlierBadge } from "@/features/marketing/social/components/OutlierBadg
 import { PlatformMark } from "@/features/marketing/social/components/PlatformMark";
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
 import { postThumbnailDoor, profileAvatarDoor } from "@/features/marketing/social/server";
-import { thumbAspect } from "@/features/marketing/social/components/SocialPostCard";
+import { MediaDetailLayout } from "@/features/marketing/social/components/MediaDetailLayout";
+import { guessAspect } from "@/features/marketing/social/components/PostMedia";
 import { formatDuration, formatGrowth, judgeFollowerGrowth, profileFollowerSeries, relativeAge } from "@/features/marketing/social/mappers";
 import { formatCompact, outlierBadgeModel } from "@/features/marketing/social/outlier";
 import type {
@@ -38,7 +39,6 @@ import { PostCountControl } from "@/features/marketing/social/components/PostCou
 
 import {
   feedPlan,
-  postLayout,
   profilePlan,
   rankPostsForTile,
   sparklinePath,
@@ -321,8 +321,9 @@ export interface PostTileViewProps {
   caption: string | null;
   hashtags: readonly string[];
   engagementRate: number | null;
-  player: ReactNode;
-  /** Player placement: the poster's shape decides its box. */
+  /** The player, told where to report its true ratio; it fills the stage it is given. */
+  player: (report: (ratio: number) => void) => ReactNode;
+  /** Initial player shape. */
   platform: string;
   format: string;
   /** The transcript body, null when none; `transcriptNode` is the canonical transcript block. */
@@ -333,18 +334,9 @@ export interface PostTileViewProps {
 
 export function PostTileView(props: PostTileViewProps) {
   const { post } = props;
-  const [ref, size] = useBoxSize({ w: 620, h: 560 });
   const [showTranscript, setShowTranscript] = useState(false);
-  const layout = postLayout(size);
+  const [ratio, setRatio] = useState(() => guessAspect(props.format, props.platform));
   const rate = props.engagementRate;
-  const vertical = thumbAspect(props.platform, props.format) === "aspect-[9/16]";
-
-  // Stack: the poster is a fixed share of the tile height; split: it is a column as tall as the tile allows.
-  const posterBox =
-    layout === "split"
-      ? { width: vertical ? Math.min(220, Math.max(140, (size.h - 24) * 0.5625)) : Math.min(300, size.w * 0.42), aspectRatio: vertical ? "9 / 16" : "16 / 9" }
-      : { width: "100%", height: Math.round(Math.min(Math.max(size.h * 0.42, 150), 340)) };
-
   const content = (
     <div className="flex min-w-0 flex-1 flex-col gap-2">
       <div className="flex min-w-0 items-center justify-between gap-2">
@@ -389,13 +381,8 @@ export function PostTileView(props: PostTileViewProps) {
   );
 
   return (
-    <div ref={ref} className={cn(FRAME, layout === "split" ? "flex gap-3" : "flex flex-col gap-2.5")}>
-      <div className={cn(layout === "split" ? "shrink-0 self-start" : "")} style={layout === "split" ? { width: posterBox.width } : undefined}>
-        <div style={layout === "split" ? { aspectRatio: String(posterBox.aspectRatio) } : { height: posterBox.height }} className="relative w-full">
-          {props.player}
-        </div>
-      </div>
-      {content}
+    <div className="h-full min-h-0 bg-textured">
+      <MediaDetailLayout ratio={ratio} media={() => props.player(setRatio)} details={content} detailsClassName="gap-2" />
     </div>
   );
 }

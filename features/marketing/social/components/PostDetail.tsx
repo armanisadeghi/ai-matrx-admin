@@ -84,6 +84,7 @@ import { MetricChart, seriesToCsv } from "./MetricChart";
 import { OutlierBadge } from "./OutlierBadge";
 import { PlatformMark } from "./PlatformMark";
 import { PostMedia, guessAspect } from "./PostMedia";
+import { MediaDetailLayout } from "./MediaDetailLayout";
 import { sharedPostIdFor, usePostActions } from "./usePostActions";
 import { isCapturedPostId, linkCapturedPost } from "../gated/capturedPosts";
 import { postScopeValues } from "@/features/board/items/social-tile-values";
@@ -604,11 +605,10 @@ export function PostDetailBody({
   const duration = formatDuration(post.duration_seconds === null ? null : Number(post.duration_seconds));
   const caption = post.caption ?? post.title ?? "";
   const currentRatio = ratio ?? guessAspect(post.format, post.platform);
-  const portrait = currentRatio < 1;
   const hashtags = post.hashtags ?? [];
 
   const actions = (
-    <div className="flex flex-wrap items-center gap-1">
+    <div className="flex min-w-0 flex-nowrap items-center gap-1 overflow-hidden">
       {canEdit ? (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -654,12 +654,7 @@ export function PostDetailBody({
   );
 
   return (
-    <div
-      className={cn(
-        "@container min-h-0 w-full",
-        host === "page" ? "" : "h-full overflow-y-auto @[34rem]:overflow-hidden",
-      )}
-    >
+    <div className={cn("@container min-h-0 w-full", host === "page" ? "h-[max(30rem,calc(100dvh-9rem))]" : "h-full")}>
       <PostAgentSurface
         data={detail.data}
         postId={postId}
@@ -667,46 +662,29 @@ export function PostDetailBody({
         brandSeg={brandSeg}
         host={host}
       />
-      <div
-        className={cn(
-          "grid gap-3 p-3",
-          host !== "page" && "@[34rem]:h-full",
-          portrait ? "@[34rem]:grid-cols-[14.5rem_minmax(0,1fr)]" : "@[44rem]:grid-cols-[22rem_minmax(0,1fr)]",
+      <MediaDetailLayout
+        ratio={currentRatio}
+        footer={actions}
+        detailsClassName="@container/info"
+        media={() => (
+          <PostMedia
+            key={postId}
+            staged
+            postId={postId}
+            organizationId={organizationId}
+            thumbnailUrl={post.thumbnail_url}
+            thumbnailFileId={post.thumbnail_file_id}
+            postUrl={post.url}
+            platform={post.platform}
+            platformPostId={post.platform_post_id}
+            format={post.format}
+            durationSeconds={post.duration_seconds === null ? null : Number(post.duration_seconds)}
+            onRatio={setRatio}
+            canLoadMedia={canEdit}
+          />
         )}
-      >
-        <div className="flex min-w-0 flex-col gap-2 @[34rem]:min-h-0">
-          <div
-            className={cn("w-full", portrait ? "mx-auto max-w-[14.5rem]" : "mx-auto max-w-[26rem] @[44rem]:max-w-none")}
-          >
-            <PostMedia
-              key={postId}
-              postId={postId}
-              organizationId={organizationId}
-              thumbnailUrl={post.thumbnail_url}
-              thumbnailFileId={post.thumbnail_file_id}
-              postUrl={post.url}
-              platform={post.platform}
-              platformPostId={post.platform_post_id}
-              format={post.format}
-              durationSeconds={post.duration_seconds === null ? null : Number(post.duration_seconds)}
-              onRatio={setRatio}
-              canLoadMedia={canEdit}
-            />
-          </div>
-          {actions}
-          {host !== "page" && tab !== "overview" && (caption || hashtags.length) ? (
-            <div className="hidden min-h-0 overflow-y-auto border-t border-border pt-2 @[34rem]:block">
-              <CaptionBlock caption={caption} hashtags={hashtags} expanded={expanded} setExpanded={setExpanded} />
-            </div>
-          ) : null}
-        </div>
-
-        <div
-          className={cn(
-            "@container/info flex min-w-0 flex-col gap-2.5",
-            host !== "page" && "@[34rem]:min-h-0 @[34rem]:overflow-y-auto",
-          )}
-        >
+        details={
+          <>
           <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs">
             {profile ? (
               <Link
@@ -760,6 +738,7 @@ export function PostDetailBody({
             {stat?.saves != null ? <Stat label="Saves" value={formatCompact(stat.saves)} /> : null}
           </div>
 
+          {tab !== "overview" && caption ? <p className="line-clamp-2 text-xs text-muted-foreground">{caption}</p> : null}
           <Tabs aria-label="Post sections" value={tab} onValueChange={setTab} data={DETAIL_TABS} />
 
           {tab === "overview" ? (
@@ -782,8 +761,9 @@ export function PostDetailBody({
             />
           ) : null}
           {tab === "breakdown" ? <BreakdownTab postId={postId} organizationId={organizationId} canEdit={canEdit} /> : null}
-        </div>
-      </div>
+          </>
+        }
+      />
     </div>
   );
 }

@@ -442,9 +442,10 @@ function PostRecordBody({ id, source, title, onSource, organizationId }: ItemBod
         engagementRate={stat?.engagement_rate ?? null}
         platform={post.platform}
         format={post.format}
-        player={
+        player={(onRatio) => (
           <PostMedia
-            fill
+            staged
+            onRatio={onRatio}
             postId={card.postId}
             organizationId={organizationId}
             thumbnailUrl={card.thumbnailUrl}
@@ -455,7 +456,7 @@ function PostRecordBody({ id, source, title, onSource, organizationId }: ItemBod
             format={card.format}
             durationSeconds={card.durationSeconds}
           />
-        }
+        )}
         hasTranscript={hasTranscript}
         transcriptNode={kind.transcript ? <PostTranscriptBlock serverData={kind.transcript} className="my-1" /> : null}
         actions={<PostActionBar actions={actions} hasTranscript={hasTranscript} />}

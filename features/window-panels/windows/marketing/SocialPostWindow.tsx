@@ -36,8 +36,6 @@ export interface SocialPostWindowProps {
 
 const WIDTH = 760;
 const HEIGHT = 580;
-/** A landscape post's panel: media 22rem wide is ~200px tall, so the panel is short. */
-const LANDSCAPE_HEIGHT = 400;
 
 export default function SocialPostWindow({
   onClose,
@@ -47,7 +45,7 @@ export default function SocialPostWindow({
   organizationId,
   brandSeg,
   initialTab = "overview",
-  landscape = false,
+  // landscape is kept for old callers: the layout now follows the media's real ratio.
 }: SocialPostWindowProps) {
   const canvas = useOptionalCanvas();
   const [title, setTitle] = useState("Post");
@@ -67,7 +65,7 @@ export default function SocialPostWindow({
   const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
   const vh = typeof window !== "undefined" ? window.innerHeight : 800;
   const width = Math.min(WIDTH, vw - 32);
-  const height = Math.min(landscape ? LANDSCAPE_HEIGHT : HEIGHT, vh - 96);
+  const height = Math.min(HEIGHT, vh - 96);
   const rect = {
     width,
     height,

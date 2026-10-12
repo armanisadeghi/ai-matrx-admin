@@ -51,11 +51,13 @@ export function SavedPostGallery({ files, organizationId, onRatio, fill }: {
     >
       <ArchivedSlide key={`${organizationId}:${file.file_id}`} file={file} organizationId={organizationId} onRatio={onRatio} fill={fill} position={selected + 1} />
       {files.length > 1 ? (
-        <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2">
-          <Button variant="outline" icon={<ChevronLeft />} aria-label="Previous saved slide" disabled={selected === 0} onClick={() => setIndex(selected - 1)} />
-          <span className="rounded bg-black/75 px-2 py-1 text-xs tabular-nums text-white" aria-live="polite">{selected + 1} / {files.length} saved</span>
-          <Button variant="outline" icon={<ChevronRight />} aria-label="Next saved slide" disabled={selected === files.length - 1} onClick={() => setIndex(selected + 1)} />
-        </div>
+        <>
+          <div className="pointer-events-none absolute inset-y-0 left-1 right-1 flex items-center justify-between">
+            <Button className="pointer-events-auto" variant="outline" icon={<ChevronLeft />} aria-label="Previous saved slide" disabled={selected === 0} onClick={() => setIndex(selected - 1)} />
+            <Button className="pointer-events-auto" variant="outline" icon={<ChevronRight />} aria-label="Next saved slide" disabled={selected === files.length - 1} onClick={() => setIndex(selected + 1)} />
+          </div>
+          <span className="pointer-events-none absolute left-1/2 top-2 -translate-x-1/2 rounded-full bg-black/70 px-2 py-0.5 text-[11px] tabular-nums text-white" aria-live="polite">{selected + 1} / {files.length} saved</span>
+        </>
       ) : null}
     </div>
   );
@@ -81,7 +83,7 @@ function ArchivedSlide({ file, organizationId, onRatio, fill, position }: {
     return () => { abort.abort(); if (url) URL.revokeObjectURL(url); };
   }, [file.door, organizationId, attempt]);
   return (
-    <div role="group" aria-roledescription="slide" aria-label={`Saved slide ${position}`} className="absolute inset-0 flex items-center justify-center pb-10">
+    <div role="group" aria-roledescription="slide" aria-label={`Saved slide ${position}`} className="absolute inset-0 flex items-center justify-center">
       {error ? (
         <div className="flex flex-col items-center gap-2 px-4 text-center text-white">
           <span className="text-sm">{error}<ErrorAlchemyMenu error={error} /></span>
