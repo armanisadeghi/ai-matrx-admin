@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1416,
+  "routeCount": 1417,
   "routes": [
     {
       "pattern": "/",
@@ -4963,6 +4963,11 @@
       "pattern": "/marketing/brands/new-website",
       "status": "live",
       "source": "app/(core)/marketing/brands/new-website/page.tsx"
+    },
+    {
+      "pattern": "/marketing/brands/smart-add",
+      "status": "live",
+      "source": "app/(core)/marketing/brands/smart-add/page.tsx"
     },
     {
       "pattern": "/marketing/calendar",
