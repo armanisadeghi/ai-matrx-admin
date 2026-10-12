@@ -9,9 +9,9 @@ import { useResearchTags, useResearchSynthesis } from '../../hooks/useResearchSt
 import { useResearchStream } from '../../hooks/useResearchStream';
 import { useStreamDebug } from '../../context/ResearchContext';
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
+import { ResearchRecordContent } from "../reader/ResearchRecordContent";
 import { AnswerValueView } from '@/components/official/structured-value/AnswerValueView';
 import { confirm } from '@/components/dialogs/confirm/ConfirmDialogHost';
-import { RichDocumentActions } from '@ai-matrx/rich-content/rich-document/RichDocumentActions';
 import { StoppedEarlyNote } from '../shared/StoppedEarlyNote';
 import { ResearchUsedBy } from '../shared/ResearchUsedBy';
 import type { ResearchSynthesis, ResearchDataEvent } from '../../types';
@@ -157,19 +157,18 @@ export default function ConsolidationView({ topicId, tagId }: ConsolidationViewP
                             {consolidation.status === 'failed' && (
                                 <StoppedEarlyNote reason={consolidation.error || 'Consolidation stopped early.'} />
                             )}
-                            <RichContent level="full" imagePolicy="ai" source={consolidation.result} />
-                            <div className="flex justify-end">
-                                <RichDocumentActions
-                                  content={consolidation.result}
-                                  source={{ type: "raw", title: tag ? `${tag.name} — consolidation` : 'Tag consolidation' }}
-                                  actions={{ metadata: {
-                                        consolidationId: consolidation.id,
-                                        tagId,
-                                        version: consolidation.capture_version ?? undefined,
-                                        model_id: consolidation.model_id ?? undefined,
-                                    } }}
-                                />
-                            </div>
+                            <ResearchRecordContent
+                              token="research_synthesis"
+                              id={consolidation.id}
+                              title={tag ? `${tag.name} — consolidation` : 'Tag consolidation'}
+                              body={consolidation.result}
+                              actions={{ metadata: {
+                                    consolidationId: consolidation.id,
+                                    tagId,
+                                    version: consolidation.capture_version ?? undefined,
+                                    model_id: consolidation.model_id ?? undefined,
+                                } }}
+                            />
                         </div>
                     ) : consolidation && consolidation.result_structured ? (
                         <div className="space-y-2">

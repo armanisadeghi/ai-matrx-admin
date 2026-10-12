@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@ai-matrx/design-system";
-import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
+import { ResearchRecordContent } from "../reader/ResearchRecordContent";
 import { fmtCount } from "../../format";
 import {
   useResearchKeywords,
@@ -222,7 +222,7 @@ export function KeywordDetailView({
                 className="rounded-xl border border-border/50 bg-card/60 p-3"
               >
                 {s.result ? (
-                  <RichContent level="full" imagePolicy="ai" source={s.result} />
+                  <ResearchRecordContent token="research_synthesis" id={s.id} title="Keyword synthesis" body={s.result} href={`/research/topics/${s.topic_id}/synthesis?record=${s.id}`} />
                 ) : (
                   <p className="type-meta text-muted-foreground">
                     Completed with no text output.

@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import { ChevronDown, ChevronUp, History, Loader2 } from "lucide-react";
 
-import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
+import { ResearchRecordContent } from "../reader/ResearchRecordContent";
 import { AiModelRef } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
 import { toast } from "@/lib/toast";
 
@@ -112,7 +112,7 @@ export function SynthesisVersionHistory({
                 </summary>
                 <div className="border-t border-border/40 px-2.5 py-2">
                   {v.result && v.result.trim().length > 0 ? (
-                    <RichContent level="full" imagePolicy="ai" source={v.result} />
+                    <ResearchRecordContent token="research_synthesis" id={v.id} title={`${label} v${v.capture_version ?? ""}`.trim()} body={v.result} href={`/research/topics/${v.topic_id}/synthesis?record=${v.id}`} />
                   ) : (
                     // An empty body is a real "produced nothing" outcome, not a
                     // loading state — render it as such.
