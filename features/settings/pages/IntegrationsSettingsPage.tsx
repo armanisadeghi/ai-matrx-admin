@@ -105,6 +105,7 @@ import { SocialConnectionsPanel } from "@/features/social-connections/SocialConn
 import { listSocialConnections } from "@/features/social-connections/connections";
 import { CustomerAccountsPanel } from "@/features/social-connections/CustomerAccountsPanel";
 import { WhatsAppBusinessPanel } from "@/features/social-connections/WhatsAppBusinessPanel";
+import { PersonalWhatsAppPanel } from "@/features/social-connections/PersonalWhatsAppPanel";
 import {
   loadCustomerSocialConnections,
   type CustomerSocialConnection,
@@ -601,7 +602,7 @@ export function IntegrationsWorkspace({
         Boolean(userId) && socialInventory?.userId !== userId,
         socialInventory?.error ?? false,
       ),
-      "LinkedIn Reddit Discord Twitch Bluesky Mastodon Snapchat profiles identity",
+      "WhatsApp Beeper personal business LinkedIn Reddit Discord Twitch Bluesky Mastodon Snapchat profiles identity",
     ),
     nativeItem(
       "google",
@@ -1010,15 +1011,14 @@ export function IntegrationsWorkspace({
         />
       );
     if (item.id === "native:social-accounts")
-      return organizationId ? (
+      return (
         <div className="space-y-4">
-          <CustomerAccountsPanel organizationId={organizationId} />
-          <WhatsAppBusinessPanel organizationId={organizationId} />
+          {organizationId ? <>
+            <CustomerAccountsPanel organizationId={organizationId} />
+            <WhatsAppBusinessPanel organizationId={organizationId} />
+          </> : <p className="p-4 text-sm text-muted-foreground">Choose an organization to connect a business account.</p>}
+          <PersonalWhatsAppPanel />
         </div>
-      ) : (
-        <p className="p-4 text-sm text-muted-foreground">
-          Choose an organization to connect an account.
-        </p>
       );
     if (item.id === "native:google") return <ConnectorsSettingsPanel />;
     if (item.id === "native:github") return <GitHubConnectionCard />;

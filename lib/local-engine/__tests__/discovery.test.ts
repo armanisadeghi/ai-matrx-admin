@@ -289,3 +289,48 @@ describe("local-engine discovery", () => {
     expect(fetchMock).toHaveBeenCalledTimes(LOCAL_ENGINE_PORT_COUNT);
   });
 });
+
+
+describe("isolated per-view DEV engine", () => {
+  const originalFetch = global.fetch;
+  beforeEach(() => {
+    __resetLocalEngineCacheForTests();
+    jest.replaceProperty(process, "env", { ...process.env, NODE_ENV: "development" });
+    delete process.env.NEXT_PUBLIC_LOCAL_ENGINE_BASE_URL;
+    jest.spyOn(console, "info").mockImplementation(() => undefined);
+  });
+  afterEach(() => { global.fetch = originalFetch; __resetLocalEngineCacheForTests(); jest.restoreAllMocks(); });
+
+  it.each(["http://127.0.0.1:22140", "http://example.com:22240", "https://localhost:22240", "http://localhost:22260", "http://a@localhost:22240", "http://localhost:22240/path", "http://localhost:22240/?x=1", "http://localhost:22240/#a", "bad", ""])("refuses %s without probing or falling back", async (developmentBaseUrl) => {
+    const mock = loopback({ [at(22140)]: { body: healthBody() } }); global.fetch = mock;
+    expect(await discoverLocalEngine({ developmentBaseUrl })).toBeNull();
+    expect(mock).not.toHaveBeenCalled(); expect(getCachedLocalEngine()).toBeNull();
+  });
+  it("keeps the installed-engine cache intact on explicit success and failure", async () => {
+    const mock = loopback({ [at(22140)]: { body: healthBody() }, [at(22240)]: { body: healthBody() } }); global.fetch = mock;
+    const installed = await discoverLocalEngine(); mock.mockClear();
+    expect((await discoverLocalEngine({ developmentBaseUrl: "http://localhost:22240/" }))?.port).toBe(22240);
+    expect(await discoverLocalEngine({ developmentBaseUrl: at(22241) })).toBeNull();
+    expect(getCachedLocalEngine()).toBe(installed);
+    expect(await discoverLocalEngine()).toBe(installed);
+    expect(mock.mock.calls.map(([url]) => url)).toEqual([`${at(22240)}/health`, `${at(22241)}/health`]);
+  });
+  it("leaves miss cooldown intact and never scans after an unhealthy explicit responder", async () => {
+    const mock = loopback({ [at(22240)]: { body: { service: "other", status: "ok" } } }); global.fetch = mock;
+    expect(await discoverLocalEngine()).toBeNull(); mock.mockClear();
+    expect(await discoverLocalEngine({ developmentBaseUrl: at(22240) })).toBeNull();
+    expect(await discoverLocalEngine()).toBeNull(); expect(mock).toHaveBeenCalledTimes(1);
+  });
+  it("keeps concurrent default discovery independent", async () => {
+    const mock = loopback({ [at(22140)]: { body: healthBody() }, [at(22240)]: { body: healthBody() } }); global.fetch = mock;
+    const normal = discoverLocalEngine();
+    const isolated = discoverLocalEngine({ developmentBaseUrl: at(22240) });
+    expect((await isolated)?.port).toBe(22240); expect((await normal)?.port).toBe(22140);
+    expect(getCachedLocalEngine()?.port).toBe(22140);
+  });
+  it("refuses explicit overrides in production without touching fetch", async () => {
+    jest.replaceProperty(process, "env", { ...process.env, NODE_ENV: "production" });
+    const mock = loopback({ [at(22240)]: { body: healthBody() } }); global.fetch = mock;
+    expect(await discoverLocalEngine({ developmentBaseUrl: at(22240) })).toBeNull(); expect(mock).not.toHaveBeenCalled();
+  });
+});

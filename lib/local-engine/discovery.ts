@@ -140,7 +140,20 @@ export function supportsLocalAgentExecution(engine: LocalEngineInfo): boolean {
  */
 export async function discoverLocalEngine(options?: {
   force?: boolean;
+  /** Per-view DEV harness only; never shares the installed-engine cache. */
+  developmentBaseUrl?: string;
 }): Promise<LocalEngineInfo | null> {
+  if (options?.developmentBaseUrl !== undefined) {
+    if (process.env.NODE_ENV !== "development") return null;
+    try {
+      const url = new URL(options.developmentBaseUrl);
+      const port = Number(url.port);
+      if (url.protocol !== "http:" || !["localhost", "127.0.0.1"].includes(url.hostname)
+        || !Number.isInteger(port) || port < 22240 || port > 22259
+        || url.pathname !== "/" || url.username || url.password || url.search || url.hash) return null;
+      return probeBaseUrl(`http://127.0.0.1:${port}`, port);
+    } catch { return null; }
+  }
   const force = options?.force ?? false;
 
   if (!force) {
