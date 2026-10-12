@@ -20,6 +20,7 @@ import { getAccessTokenOrNull } from "@/lib/python-client";
 import { consoleStatus } from "./connection";
 import type { ConsoleStatus } from "./connection";
 import { relayConnectUrl, relaySubprotocols } from "./relay";
+import { clientLabelFor } from "./sessions/model";
 
 /** Reported to the device in hello; the relay and the Mac log it. */
 const CLIENT_VERSION = "web-1";
@@ -47,6 +48,8 @@ export function useDeviceClient(deviceId: string): DeviceConnection {
       getToken: requireToken,
       clientType: "web",
       clientVersion: CLIENT_VERSION,
+      // What this browser is ("iPhone", "Safari on Mac"): a run started here reads "From iPhone" on the computer.
+      ...(typeof navigator === "undefined" ? {} : { clientLabel: clientLabelFor(navigator.userAgent) }),
     }),
   );
   const [device, setDevice] = useState<RelayDeviceStatusEvent | null>(null);

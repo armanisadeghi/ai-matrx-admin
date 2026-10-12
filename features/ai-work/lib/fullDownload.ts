@@ -9,10 +9,12 @@
  * on your computer first and get it directly first if it's available and then
  * go to s3 if it's not"):
  *
- *   1. THIS COMPUTER — the Matrx Local app copies the provider's own file into
- *      Downloads (`coding_session.full_download` over the existing bridge
- *      channel). When the owner turned cloud backup on, it also refreshes the
- *      backup while it has the file.
+ *   1. THE PERSON'S COMPUTER — a Matrx 2 computer sends the provider's own
+ *      file over the relay (`coding.transcript.raw`, protocol 1.38) and this
+ *      browser saves it; it refreshes the opt-in cloud backup while it has the
+ *      file and counts the subagent transcripts. Else the Matrx Local app
+ *      copies it into that computer's Downloads (`coding_session.full_download`
+ *      over the existing bridge channel), refreshing the backup the same way.
  *   2. THE CLOUD BACKUP — the gzip copy stored only for owners who opted in
  *      (Feature Knob `coding_session_bridge.raw_transcript_backup`, default off).
  *   3. AN HONEST NO — every step that could not deliver says why, in words.
@@ -23,6 +25,7 @@ import type { AppDispatch } from "@/lib/redux/store";
 import type { components } from "@ai-matrx/api/types";
 import { downloadFile } from "@/features/files/api/files";
 import { callMatrxLocal } from "./matrxLocalRuntime";
+import { askMatrx2Computers } from "./matrx2Computers";
 import { downloadFile as saveFile } from "@ai-matrx/kit/download";
 
 export type RawTranscriptSource = components["schemas"]["RawTranscriptSource"];
@@ -48,6 +51,42 @@ interface LocalFullDownloadReply {
 
 /** How long to wait for this computer before trying the cloud backup. */
 const THIS_COMPUTER_TIMEOUT_MS = 20_000;
+
+/** The note a computer's backup refresh earns, in the panel's words. Pure. */
+export function backupNoteFor(refreshed: boolean): string | null {
+  return refreshed ? "The cloud backup was refreshed too." : null;
+}
+
+/** Step 1 on a Matrx 2 computer: its file over the relay, saved by this browser. */
+async function fromMatrx2Computer(
+  provider: "claude" | "codex",
+  providerSessionId: string,
+): Promise<{ step: FullDownloadStep } | { reasons: string[] }> {
+  const answer = await askMatrx2Computers(async (client, name) => {
+    const chunks: Uint8Array[] = [];
+    const stream = client.stream("coding.transcript.raw", { provider, provider_session_id: providerSessionId }, {
+      onData: (payload) => void chunks.push(payload),
+    });
+    const head = await stream.result;
+    if (!head.available) {
+      stream.cancel();
+      return null;
+    }
+    await stream.done;
+    const fileName = head.file_name ?? `${providerSessionId}.jsonl`;
+    saveBlob(new Blob(chunks as BlobPart[], { type: "application/x-ndjson" }), fileName);
+    return { name, fileName, subagents: head.subagents, backup: head.backup_refreshed };
+  });
+  if ("reasons" in answer) return { reasons: answer.reasons.length ? answer.reasons : ["Not on your Matrx 2 computers."] };
+  return {
+    step: {
+      kind: "this_computer",
+      savedPath: `${answer.value.fileName}, from ${answer.value.name}`,
+      subagentStreams: answer.value.subagents,
+      backupNote: backupNoteFor(answer.value.backup),
+    },
+  };
+}
 
 export async function readRawTranscriptSources(
   dispatch: AppDispatch,
@@ -82,6 +121,13 @@ export async function fullDownloadOne(
 ): Promise<FullDownloadResult> {
   const reasons: string[] = [];
   const base = { provider: source.provider, providerSessionId: source.provider_session_id };
+
+  const relayProvider = source.provider === "claude_code" ? "claude" : source.provider === "codex" ? "codex" : null;
+  if (source.native_session_id && relayProvider) {
+    const fromMatrx2 = await fromMatrx2Computer(relayProvider, source.native_session_id);
+    if ("step" in fromMatrx2) return { ...base, step: fromMatrx2.step };
+    reasons.push(...fromMatrx2.reasons);
+  }
 
   if (source.native_session_id) {
     try {
