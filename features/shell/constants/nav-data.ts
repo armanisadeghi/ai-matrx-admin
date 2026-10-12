@@ -570,6 +570,14 @@ export const DATA_NAV_CHILDREN: ShellNavChild[] = [
     dashboard: true,
   },
   {
+    // Fetched records beside what a model would receive: handed over vs fetched by a tool.
+    label: "Data to Model",
+    href: "/data/library/lab",
+    iconName: "FlaskConical",
+    description: "What a model receives from fetched data, and its cost",
+    color: "cyan",
+  },
+  {
     label: "Data Tables Window",
     href: "/data",
     iconName: NAV_WINDOW_PANEL_ICON,
