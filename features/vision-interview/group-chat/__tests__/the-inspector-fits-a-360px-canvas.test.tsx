@@ -59,6 +59,11 @@ it("renders every control with no table, no horizontal scroller and no fixed min
   for (const label of ["Sees", "Labels", "Reveal", "Cadence", "Budget (characters)"]) {
     expect(host.querySelectorAll(`[aria-label="${label}"]`).length).toBeGreaterThanOrEqual(2);
   }
+  // The Sees trigger sits in a min-w-0 flex row: without shrink-0 it was squeezed 4px short of its
+  // own "Everyone" (56 vs 52px live, 2026-10-12) and clipped the word.
+  for (const sees of Array.from(host.querySelectorAll('[aria-label="Sees"]'))) {
+    expect((sees.getAttribute("class") ?? "").split(/\s+/)).toContain("shrink-0");
+  }
   const offenders = Array.from(host.querySelectorAll("*")).filter((el) => {
     const cls = (el.getAttribute("class") ?? "").split(/\s+/);
     return cls.includes("overflow-x-auto") || cls.includes("overflow-x-scroll") || cls.some((c) => /^min-w-\[\d+(px|rem)\]$/.test(c));

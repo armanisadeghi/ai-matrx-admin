@@ -226,7 +226,7 @@ function ParticipantRow({
               if (wantsKeys && full.seesKeys.length === 0) setPickerOpen(true);
             }}
           >
-            <SelectTrigger width="xs" aria-label="Sees">
+            <SelectTrigger width="xs" aria-label="Sees" className="shrink-0">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
