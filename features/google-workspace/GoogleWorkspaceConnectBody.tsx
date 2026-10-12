@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CircleAlert, ExternalLink, Loader2, Mail, Plus } from "lucide-react";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { Button } from "@/components/ui/button";
+import { GoogleDrive } from "@/components/icons/brand-icons";
 import { Input } from "@ai-matrx/design-system/controls";
 import { toast, recordToast } from "@/lib/toast";
 import { LazyGoogleAPIProvider } from "@/providers/google-provider/LazyGoogleAPIProvider";
@@ -610,39 +611,40 @@ function GoogleWorkspaceConnectBodyContent({
             className="m-0"
           />
         ) : !connection ? (
-          <div className="flex flex-col gap-2">
-            <p className="text-sm text-foreground">
+          <div className="flex flex-col gap-3 rounded-md border border-border bg-muted/30 p-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+              <GoogleDrive className="h-4 w-4 shrink-0" />
               {reason
-                ? `Connect Google ${reason}.`
+                ? `Connect Google ${reason}`
                 : mode === "drive-import"
-                  ? "Connect Google to import the Drive files you choose."
-                  : "Connect Google and AI Matrx can work with the docs and sheets you choose."}{" "}
-              <span className="text-muted-foreground">
-                Nothing else in your Drive.
-              </span>
-            </p>
-            <Button
-              variant="primary"
-              onClick={connect}
-              disabled={authorizationActionDisabled}
-            >
-              {busy === "connect"
-                ? "Connecting…"
-                : !google.isGoogleLoaded
-                  ? "Loading Google…"
+                  ? "Connect Google to import files"
                   : "Connect Google"}
-            </Button>
-
-            <Button
-              variant="quiet"
-              onClick={connectInThisTab}
-              disabled={authorizationActionDisabled}
-              className="self-start"
-            >
-              {busy === "connect-redirect"
-                ? "Opening Google…"
-                : "Use this tab instead"}
-            </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Only the docs and sheets you choose.
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="primary"
+                onClick={connect}
+                disabled={authorizationActionDisabled}
+              >
+                {busy === "connect"
+                  ? "Connecting…"
+                  : !google.isGoogleLoaded
+                    ? "Loading Google…"
+                    : "Connect Google"}
+              </Button>
+              <Button
+                variant="quiet"
+                onClick={connectInThisTab}
+                disabled={authorizationActionDisabled}
+              >
+                {busy === "connect-redirect"
+                  ? "Opening Google…"
+                  : "Use this tab instead"}
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col gap-3">
@@ -662,26 +664,26 @@ function GoogleWorkspaceConnectBodyContent({
               />
             ) : null}
 
-            <Button
-              icon={<Plus />}
-              variant="quiet"
-              onClick={connect}
-              disabled={authorizationActionDisabled}
-              className="self-start"
-            >
-              {busy === "connect" ? "Connecting…" : "Add another account"}
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                icon={<Plus />}
+                variant="quiet"
+                onClick={connect}
+                disabled={authorizationActionDisabled}
+              >
+                {busy === "connect" ? "Connecting…" : "Add another account"}
+              </Button>
 
-            <Button
-              variant="quiet"
-              onClick={connectInThisTab}
-              disabled={authorizationActionDisabled}
-              className="self-start"
-            >
-              {busy === "connect-redirect"
-                ? "Opening Google…"
-                : "Reconnect in this tab"}
-            </Button>
+              <Button
+                variant="quiet"
+                onClick={connectInThisTab}
+                disabled={authorizationActionDisabled}
+              >
+                {busy === "connect-redirect"
+                  ? "Opening Google…"
+                  : "Reconnect in this tab"}
+              </Button>
+            </div>
 
             <Button
               variant="outline"
@@ -860,8 +862,7 @@ function GoogleWorkspaceConnectBodyContent({
               </div>
             ) : mode === "workspace" ? (
               <p className="text-xs text-muted-foreground">
-                No files chosen yet. Pick one and it stays available to you and
-                your agents.
+                No files chosen yet.
               </p>
             ) : null}
 
@@ -872,8 +873,7 @@ function GoogleWorkspaceConnectBodyContent({
                   Send email too?
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  An agent can draft a message; you review every one and send it
-                  yourself.
+                  Agents draft; you review and send each one.
                 </p>
                 <Button
                   variant="outline"
