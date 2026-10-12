@@ -162,7 +162,7 @@ function ReaderLayout({ groupKey, defaultLayout, source, panelLabel, panelAction
 
   const left = (
     <aside className="matrx-touch-targets flex h-full min-h-0 flex-col bg-muted/20">
-      <div className="flex h-10 shrink-0 items-center gap-1 pl-10 pr-1">
+      <div className={cn("flex h-10 shrink-0 items-center gap-1 pr-1", isMobile ? "pl-2" : "pl-10")}>
         <p className="min-w-0 flex-1 truncate text-xs font-semibold uppercase tracking-wide text-muted-foreground">{panelLabel}</p>
         {panelActions && <div className="flex shrink-0 items-center">{panelActions}</div>}
       </div>
