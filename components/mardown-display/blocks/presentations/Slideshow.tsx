@@ -29,6 +29,7 @@ import { ScaledSlide } from "./ScaledSlide";
 import { useCanvasPresentation } from "@ai-matrx/canvas/react";
 import { slideThumbnailPlacement } from "@ai-matrx/rich-content/display/blocks/canvas-adaptive";
 import { Button } from "@ai-matrx/design-system/controls";
+import { SaveToPresentationsButton } from "@/features/presentations/components/SaveToPresentationsButton";
 
 // Lazy load PresentationExportMenu to avoid loading GoogleAPIProvider on initial render
 const PresentationExportMenu = lazy(() => import("./PresentationExportMenu"));
@@ -254,6 +255,17 @@ const Slideshow = (
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              <SaveToPresentationsButton
+                deck={{
+                  __kind: "presentation_deck",
+                  title: slides[0]?.title,
+                  slides,
+                  // The look the viewer picked here is the look they save.
+                  theme: pickedPreset ? { ...(theme ?? {}), preset: pickedPreset } : theme,
+                }}
+                title={slides[0]?.title}
+              />
 
               <Suspense fallback={<div className="h-11 w-11 sm:h-7 sm:w-7" />}>
                 <PresentationExportMenu

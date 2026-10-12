@@ -45,7 +45,7 @@ describe("featured templates", () => {
   });
 
   it.each([...sheets, ...docs].map((t) => [t.name, t] as const))("%s renders a thumbnail showing its own words", (_n, t) => {
-    const svg = snapshotPreviewSvg(t.kind, t.snapshot);
+    const svg = snapshotPreviewSvg(t.kind as "workbook" | "document", t.snapshot);
     expect(svg.length).toBeGreaterThan(1500);
     const words = (svg.match(/>([^<]{3,})</g) ?? []).length;
     expect(words).toBeGreaterThan(8);
