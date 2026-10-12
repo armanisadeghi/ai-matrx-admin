@@ -1,9 +1,10 @@
 /**
  * /devices/[deviceId] — one computer, driven from anywhere. Phone (Termius bones): a header with
- * back, name and the Live / Reconnecting… / Offline pill; a segmented Terminal | Files | Info; the
- * terminal fills the screen down to the keyboard. Desktop: Info in a left pane, Terminal | Files on
- * the right. View, shell and folder live in the URL (?view, ?t, ?path), written with
- * history.replaceState so switching never refetches the route.
+ * back, name and the Live / Reconnecting… / Offline pill; a segmented Terminal | Files | Sessions |
+ * Info; the terminal fills the screen down to the keyboard. Desktop: Info in a left pane,
+ * Terminal | Files | Sessions on the right. Sessions is the computer's Claude Code and Codex
+ * sessions, live (code from anywhere). View, shell, folder and open session live in the URL (?view,
+ * ?t, ?path, ?s), written with history.replaceState so switching never refetches the route.
  */
 
 "use client";
@@ -14,27 +15,30 @@ import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons
 
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { cn } from "@/lib/utils";
+import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 
 import { lastSeenIso, sinceLabel } from "../platform";
 import { useNow } from "../useNow";
 import type { DeviceRow } from "../types";
 import { FilesPanel } from "./FilesPanel";
 import { InfoPanel } from "./InfoPanel";
+import { SessionsPanel } from "./sessions/SessionsPanel";
 import { StatusPill } from "./StatusPill";
 import { TerminalPanel } from "./TerminalPanel";
 import { useDeviceClient } from "./useDeviceClient";
 
-type View = "terminal" | "files" | "info";
+type View = "terminal" | "files" | "sessions" | "info";
 
 const PHONE_VIEWS = [
   { value: "terminal", label: "Terminal" },
   { value: "files", label: "Files" },
+  { value: "sessions", label: "Sessions" },
   { value: "info", label: "Info" },
 ];
-const DESKTOP_VIEWS = PHONE_VIEWS.slice(0, 2);
+const DESKTOP_VIEWS = PHONE_VIEWS.slice(0, 3);
 
 function readView(raw: string | null): View {
-  return raw === "files" || raw === "info" ? raw : "terminal";
+  return raw === "files" || raw === "info" || raw === "sessions" ? raw : "terminal";
 }
 
 /** Rewrite the query in place: no navigation, no RSC refetch, the back stack untouched. */
@@ -44,7 +48,7 @@ function setQuery(patch: Record<string, string | null>): void {
     if (v === null) url.searchParams.delete(k);
     else url.searchParams.set(k, v);
   }
-  window.history.replaceState(null, "", url);
+  replaceAddressWithoutNavigating(`${url.pathname}${url.search}${url.hash}`);
 }
 
 function offlineText(name: string, lastIso: string | null, now: number): string {
@@ -120,6 +124,14 @@ export function DeviceConsole({ device }: { device: DeviceRow }) {
           hiddenOnPhone={view === "info"}
         />
         <FilesPanel client={client} live={live} blocked={blocked} path={search.get("path")} onPathChange={(p) => setQuery({ path: p })} visible={view === "files"} />
+        <SessionsPanel
+          client={client}
+          console={status}
+          deviceName={name}
+          visible={view === "sessions"}
+          selected={search.get("s")}
+          onSelect={(target) => setQuery({ s: target })}
+        />
         <div className={cn("flex min-h-0 flex-1 flex-col lg:hidden", view !== "info" && "hidden")}>
           <InfoPanel client={client} live={live} device={device} relay={relay} status={status} visible={view === "info"} />
         </div>
