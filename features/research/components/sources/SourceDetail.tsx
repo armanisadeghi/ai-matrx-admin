@@ -1750,6 +1750,7 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
             <ContentViewer
               topicId={topicId}
               content={currentContent}
+              title={typedSource?.title ?? typedSource?.hostname ?? undefined}
               onSaved={handleContentSaved}
             />
           ) : typedSource ? (

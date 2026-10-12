@@ -10,19 +10,37 @@ import { runResearchAction } from "../../utils/researchAction";
 import { toast } from "@/lib/toast";
 import type { ResearchContent } from "../../types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { RecordAnnotations } from "@/features/rich-document/annotations/RecordAnnotations";
+import type { AnnotationSource } from "@/features/rich-document/annotations/types";
+import { useRegisterInlineResearchRecord } from "../../agent-context/readingRecord";
 
 interface ContentViewerProps {
   topicId: string;
   content: ResearchContent;
+  /** The page's own title (its source), shown in the Notes & comments dock. */
+  title?: string;
   onSaved: () => void;
 }
 
 export function ContentViewer({
   topicId,
   content,
+  title,
   onSaved,
 }: ContentViewerProps) {
   const [editing, setEditing] = useState(false);
+  const pageTitle = title || "Read page";
+  useRegisterInlineResearchRecord({ type: "research_content", id: content.id, title: pageTitle });
+  const contentRecord: AnnotationSource | null = content.content
+    ? {
+        token: "research_content",
+        id: content.id,
+        title: pageTitle,
+        body: content.content,
+        contentVersion: Math.max(1, content.capture_version ?? 1),
+        href: `/research/topics/${topicId}/sources/${content.source_id}`,
+      }
+    : null;
   const [editText, setEditText] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -128,9 +146,13 @@ export function ContentViewer({
         />
       ) : (
         <div className="rounded-lg border border-border bg-muted/30 p-4 max-h-[500px] overflow-y-auto">
-          <pre /* rich-content-exempt: verbatim transcript or extracted document text, not authored markdown */ className="whitespace-pre-wrap type-secondary font-mono leading-relaxed text-foreground">
-            {content.content}
-          </pre>
+          {/* The read page carries the reading set (highlight, comment, note,
+              link) on its verbatim text — the record is the research_content row. */}
+          <RecordAnnotations record={contentRecord}>
+            <pre /* rich-content-exempt: verbatim transcript or extracted document text, not authored markdown */ className="whitespace-pre-wrap type-secondary font-mono leading-relaxed text-foreground">
+              {content.content}
+            </pre>
+          </RecordAnnotations>
         </div>
       )}
 

@@ -86,7 +86,7 @@ export function readingRecordScopeValues(record: ResearchReadingRecord | null | 
 // them that holds any, as `page_record_comments`.
 
 export interface InlineResearchRecord {
-  type: "research_synthesis" | "research_analysis" | "research_document";
+  type: "research_synthesis" | "research_analysis" | "research_document" | "research_content";
   id: string;
   title: string;
 }
