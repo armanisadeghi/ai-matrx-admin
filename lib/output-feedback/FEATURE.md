@@ -122,6 +122,8 @@ const { verdict, setVerdict, captureCorrection } = useOutputFeedback({
 
 ## Change Log
 
+- 2026-10-12 — `saveOutputFeedback` files a `message` subject in the answer's own organization (read from `chat.message.organization_id`) before falling back to the active one. `upsert_output_feedback` refuses a disagreeing org (`organization_conflict`, 400), so every in-place correction of an answer from another organization was lost. `_output_feedback_subject_org` is not client-callable (it names tables a person cannot read: 403). Guard: `service.organization.test.ts` (two organizations, red without the read).
+
 - **2026-08-15** — Created. Traced the three pre-existing thumbs paths, landed
   `platform.output_feedback` + its two RPCs, backfilled the 4 legacy reactions,
   dropped `cx_message_set_reaction` and `metadata.user_reaction`, wired all
