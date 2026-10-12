@@ -19,6 +19,7 @@ import {
   trackSocialAccount,
   type BrandCompetitor,
 } from "./brand-competitors";
+import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { platformLabel, untrackedLinks } from "./competitor-detail";
 import type { FoundSocialLink } from "./social-links";
 
@@ -96,6 +97,7 @@ export function useCompetitorSocialActions(brand: BrandRef) {
       const current = queryClient.getQueryData<FoundSocials | null>(foundKey(brand.id, row.key));
       put(row.key, { status: "tracking", links: [...(current?.links ?? links)], message: null });
       const failures: { link: FoundSocialLink; message: string }[] = [];
+      const linkFailures: string[] = [];
       let tracked = 0;
       await Promise.all(
         links.map(async (link) => {
@@ -114,8 +116,20 @@ export function useCompetitorSocialActions(brand: BrandRef) {
           if (row.seoCompetitorId && result.trackedAccountId) {
             try {
               await linkAccountToWebsiteCompetitor(result.trackedAccountId, row.seoCompetitorId, brand.organizationId);
-            } catch {
-              // Tracked fine; the row still groups by name. The link is a convenience.
+            } catch (e) {
+              // Tracked fine; the row still groups by name, but the link failed and that must
+              // never be silent: it is reported with the other failures and captured.
+              const why = e instanceof Error ? e.message : "link failed";
+              linkFailures.push(`${platformLabel(link.platform)} was tracked but not linked to the website (${why})`);
+              try {
+                captureError({
+                  source: "supabase-postgrest",
+                  message: `linkAccountToWebsiteCompetitor failed: ${why}`,
+                  relation: "platform.associations",
+                });
+              } catch {
+                /* capture never breaks the caller */
+              }
             }
           }
         }),
@@ -126,7 +140,9 @@ export function useCompetitorSocialActions(brand: BrandRef) {
         links: remaining,
         message: failures.length
           ? failures.map((f) => `${platformLabel(f.link.platform)} was not saved — ${f.message}`).join(". ")
-          : null,
+          : linkFailures.length
+            ? linkFailures.join(". ")
+            : null,
       });
       await queryClient.invalidateQueries({ queryKey: directoryKey(brand.id) });
       return { tracked, failed: failures.length };

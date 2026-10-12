@@ -14,6 +14,7 @@
 
 import { supabase } from "@/utils/supabase/client";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { associationsService, type AddAssociationArgs } from "@/features/scopes/service/associationsService";
 import { callApi, type ApiCallConfig } from "@/lib/api/call-api";
 import type { AppDispatch } from "@/lib/redux/store";
 import type { Database } from "@/types/database.types";
@@ -309,25 +310,30 @@ export async function trackSocialAccount(req: TrackSocialRequest, organizationId
   return { ...base, ...outcome };
 }
 
-/** Link a tracked account to a website competitor (platform association). */
+/**
+ * Link a tracked account to a website competitor (platform association).
+ *
+ * Written through the ONE edge chokepoint (`associationsService.add` -> the `assoc_add` SECURITY
+ * DEFINER RPC). A direct `.insert()` into `platform.associations` always failed with 42501:
+ * `authenticated` has SELECT only on it (live grant check 2026-10-12), so no edge was ever written.
+ * Throws on a refused write so every caller can say so out loud.
+ */
 export async function linkAccountToWebsiteCompetitor(
   trackedAccountId: string,
   seoCompetitorId: string,
   organizationId: string,
 ): Promise<void> {
-  const { data: auth } = await getClaimsUser(supabase);
-  const { error } = await supabase
-    .schema("platform")
-    .from("associations")
-    .insert({
-      source_type: "social_tracked_account",
-      source_id: trackedAccountId,
-      target_type: "seo_competitor",
-      target_id: seoCompetitorId,
-      organization_id: organizationId,
-      created_by: auth?.user?.id ?? null,
-    });
-  if (error) throw error;
+  const result = await associationsService.add({
+    sourceType: "social_tracked_account",
+    sourceId: trackedAccountId,
+    // `seo_competitor` is a registered entity type (platform.entity_types) and the pair is a
+    // registered association_type, but @ai-matrx/associations 0.14.43 types `targetType` as
+    // its container list only. The runtime guard checks the registry, not that list.
+    targetType: "seo_competitor" as AddAssociationArgs["targetType"],
+    targetId: seoCompetitorId,
+    orgId: organizationId,
+  });
+  if (!result.ok) throw new Error(result.error.message);
 }
 
 /** Create (or reuse) the website competitor for a domain on the brand's first site. */
