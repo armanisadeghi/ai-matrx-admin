@@ -561,18 +561,22 @@ function EvidenceRow({
         <Button
           variant={decision === "yes" ? "primary" : "outline"}
           aria-pressed={decision === "yes"}
+          aria-label="This is us"
           disabled={locked}
           onClick={() => onDecide("yes")}
         >
-          <Check className="size-3.5" /> This is us
+          <Check className="size-3.5" />
+          <span className="hidden sm:inline">This is us</span>
         </Button>
         <Button
           variant={decision === "no" ? "danger" : "quiet"}
           aria-pressed={decision === "no"}
+          aria-label="Not us"
           disabled={locked}
           onClick={() => onDecide("no")}
         >
-          <X className="size-3.5" /> Not us
+          <X className="size-3.5" />
+          <span className="hidden sm:inline">Not us</span>
         </Button>
       </div>
     </li>
