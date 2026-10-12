@@ -251,7 +251,7 @@ export default function DocumentsLandingPage() {
           </span>
         }
         right={
-          <span className="flex items-center gap-1">
+          <>
           <input
             ref={uploadRef}
             type="file"
@@ -287,7 +287,7 @@ export default function DocumentsLandingPage() {
             onClick={handleCreate}
             disabled={creating}
           />
-          </span>
+          </>
         }
       />
       <div className="h-full overflow-y-auto scrollbar-none">

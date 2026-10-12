@@ -87,6 +87,7 @@ import { useUniverDocSurfaceTheme } from "@/features/documents/hooks/useUniverDo
 import { sanitizeUniverDocSnapshot } from "@/features/documents/utils/sanitizeUniverDocSnapshot";
 import { identifyUniverUser } from "@/lib/univer/identifyUniverUser";
 import { registerMatrxImageStore } from "@/lib/univer/univerImageStore";
+import { registerMissingUniverIcons } from "@/lib/univer/registerMissingUniverIcons";
 import {
   routeUniverNotificationsToApp,
   type NotificationReplaceableInjector,
@@ -357,6 +358,7 @@ export default function DocumentEditor({
         if (!routed.applied) {
           console.warn(`[univer] notifications not routed to the app toaster (${routed.reason}) — toasts may show twice`);
         }
+        registerMissingUniverIcons(univer.__getInjector());
         // Pictures go to the file store; the snapshot keeps only a reference.
         registerMatrxImageStore(univer.__getInjector(), matrxImagePorts);
         void identifyUniverUser(univer.__getInjector()).catch((err) =>

@@ -83,6 +83,7 @@ import { useWorkbookRealtime } from "@/features/workbooks/hooks/useWorkbookRealt
 import { useUniverDarkModeSync } from "@/lib/univer/useUniverDarkModeSync";
 import { identifyUniverUser } from "@/lib/univer/identifyUniverUser";
 import { registerMatrxImageStore } from "@/lib/univer/univerImageStore";
+import { registerMissingUniverIcons } from "@/lib/univer/registerMissingUniverIcons";
 import {
   routeUniverNotificationsToApp,
   type NotificationReplaceableInjector,
@@ -327,6 +328,7 @@ export default function WorkbookEditor({
           console.warn(`[univer] notifications not routed to the app toaster (${routed.reason}) — toasts may show twice`);
         }
         // Pictures go to the file store; the snapshot keeps only a reference.
+        registerMissingUniverIcons(univer.__getInjector());
         registerMatrxImageStore(univer.__getInjector(), matrxImagePorts);
         void identifyUniverUser(univer.__getInjector()).catch((err) =>
           console.warn("[univer] could not attribute edits to the signed-in user", err),
