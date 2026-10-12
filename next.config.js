@@ -235,6 +235,11 @@ console.log(
 // else; main/admin/demos production builds never compile a lab page.
 const LAB_PAGES = ["lab.tsx", "lab.ts"];
 const ADMIT_LAB = process.env.NODE_ENV !== "production";
+// Lab runs on Vercel's 4-core / 8 GB builder. The standard eight-worker
+// production setting was measured on the 60 GB builders used by the other
+// profiles and OOM-killed Lab during its optimized compile. Keep Lab serial so
+// its worker fan-out stays inside that project's memory ceiling.
+const BUILD_CPUS = MATRX_PROFILE === "lab" ? 1 : 8;
 const pageExtensions =
   MATRX_PROFILE === "lab"
     ? [...LAB_PAGES, "labroot.tsx"]
@@ -394,7 +399,7 @@ const nextConfig = {
     // If compile memory climbs back past ~45 GB, return to the two-pass split
     // (package.json build:next) with 1 worker in the compile pass — and hunt the
     // graph regression that caused it (code-splitting skill) before anything else.
-    cpus: 8,
+    cpus: BUILD_CPUS,
     serverActions: {
       bodySizeLimit: "10mb",
     },
