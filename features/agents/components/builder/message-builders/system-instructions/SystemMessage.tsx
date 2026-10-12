@@ -779,6 +779,7 @@ export function SystemMessage({
               variableNames={variableNames}
               contextData={contextMenuData}
               promptBlocks={blockEditing.highlight}
+              menuProps={blockEditing.menuProps}
               menuSections={(conditional) => promptMenuSections("write", conditional)}
               placeholder="You're a very helpful assistant"
               textClassName="[&_.rich-editor-prose]:text-gray-900 dark:[&_.rich-editor-prose]:text-gray-200"

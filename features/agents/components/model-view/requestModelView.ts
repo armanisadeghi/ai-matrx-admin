@@ -21,11 +21,13 @@ export async function requestModelView(
   getState: () => RootState,
   conversationId: string,
   agentId?: string,
+  signal?: AbortSignal,
 ): Promise<ModelViewPreview> {
   // A run refreshes the surface scope and loads the context rules before it
   // assembles; without them the context the person set never reaches the request.
   await dispatch(refreshSurfaceScope({ conversationId }) as never);
   await dispatch(ensureContextRulesReady(conversationId) as never);
+  if (signal?.aborted) throw new DOMException("Superseded", "AbortError");
   const state = getState();
   const payload = (await assembleManualRequest(state as never, conversationId)) as Record<
     string,
@@ -54,6 +56,7 @@ export async function requestModelView(
         // server makes a dry run ephemeral itself.
         dry_run: true,
       } as never,
+      signal,
       expectedErrorStatuses: [400, 422],
     }),
   );

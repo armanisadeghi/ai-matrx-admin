@@ -217,4 +217,56 @@ describe("ModelViewPanel", () => {
     expect(section("System")).toBeNull();
     expect(host.querySelector('[data-testid="model-view-skeleton"]')).toBeNull();
   });
+  it("clears the loading state the moment the request settles, and the old refusal when a new capture starts", async () => {
+    requestModelView.mockRejectedValueOnce(new Error("Nothing is typed."));
+    await mount();
+    await act(async () => {
+      for (let i = 0; i < 5; i++) await Promise.resolve();
+    });
+    expect(host.querySelector('[role="alert"]')?.textContent).toContain("Nothing is typed.");
+    expect(host.querySelector('[data-testid="model-view-capturing"]')).toBeNull();
+    // A new capture starts: the last refusal is gone while Capturing shows.
+    let settle: (v: unknown) => void = () => undefined;
+    requestModelView.mockReturnValue(new Promise((r) => (settle = r)));
+    selected = { userValues: { customer: "Ana" } };
+    await act(async () => {
+      root.render(<ModelViewPanel agentId="agent-1" conversationId="c-1" />);
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(600);
+    });
+    expect(host.querySelector('[data-testid="model-view-capturing"]')).not.toBeNull();
+    expect(host.querySelector('[role="alert"]')).toBeNull();
+    // The answer lands: Capturing is gone in the same turn, no later tick needed.
+    await act(async () => {
+      settle({ provider: "anthropic", model: "m", request: anthropic, notices: [] });
+    });
+    expect(host.querySelector('[data-testid="model-view-capturing"]')).toBeNull();
+  });
+
+  it("a capture replaced by a newer one is aborted, never left running beside it", async () => {
+    const signals: AbortSignal[] = [];
+    requestModelView.mockImplementation((...args: unknown[]) => {
+      signals.push(args[4] as AbortSignal);
+      return new Promise(() => {});
+    });
+    await mount();
+    selected = { userValues: { customer: "Bo" } };
+    await act(async () => {
+      root.render(<ModelViewPanel agentId="agent-1" conversationId="c-1" />);
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(600);
+    });
+    expect(signals).toHaveLength(2);
+    expect(signals[0].aborted).toBe(true);
+    expect(signals[1].aborted).toBe(false);
+  });
+
+  it("the header's Raw JSON, Copy all and Refresh keep their names when the panel is narrow", async () => {
+    await mount();
+    for (const name of ["Raw JSON", "Copy all", "Refresh"]) {
+      expect(host.querySelector(`button[aria-label="${name}"]`)).not.toBeNull();
+    }
+  });
 });

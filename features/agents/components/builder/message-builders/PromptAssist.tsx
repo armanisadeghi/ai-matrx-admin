@@ -154,6 +154,11 @@ export interface PromptWriteBoxProps {
    * "Only include when" section to place. Called when the menu opens.
    */
   menuSections?: (conditional: ContextMenuExtraSection[]) => ContextMenuExtraSection[];
+  /**
+   * Extra props for the right-click menu (`usePromptBlockEditing().menuProps`): a content block picked
+   * from the menu becomes a declared `{{<name>}}` chip instead of pasted text.
+   */
+  menuProps?: object;
 }
 
 /** Write: the rich editor over the stored prompt text (see header). */
@@ -168,6 +173,7 @@ export function PromptWriteBox({
   contextData,
   promptBlocks = null,
   menuSections,
+  menuProps,
 }: PromptWriteBoxProps) {
   const declared = useMemo(() => variableNames?.map((name) => ({ name })) ?? null, [variableNames]);
   const box = (
@@ -203,6 +209,7 @@ export function PromptWriteBox({
   );
   return (
     <EditableContextMenu
+      {...menuProps}
       sourceFeature="agent-builder"
       surfaceName={surfaceName}
       menuDesign="global"

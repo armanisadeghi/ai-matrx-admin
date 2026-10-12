@@ -41,7 +41,18 @@ interface ModelViewPanelProps {
   conversationId: string;
 }
 
-function CopyButton({ onCopy, disabled, children = "Copy" }: { onCopy: () => void; disabled?: boolean; children?: string }) {
+function CopyButton({
+  onCopy,
+  disabled,
+  children = "Copy",
+  compact = false,
+}: {
+  onCopy: () => void;
+  disabled?: boolean;
+  children?: string;
+  /** Header use: the label shows only when the panel is wide enough, the icon always. */
+  compact?: boolean;
+}) {
   const [done, setDone] = useState(false);
   useEffect(() => {
     if (!done) return;
@@ -54,12 +65,19 @@ function CopyButton({ onCopy, disabled, children = "Copy" }: { onCopy: () => voi
       icon={done ? <Check /> : <Copy />}
       disabled={disabled}
       aria-live="polite"
+      aria-label={compact ? children : undefined}
       onClick={() => {
         onCopy();
         setDone(true);
       }}
     >
-      {done ? "Copied" : children}
+      {compact ? (
+        <span className="hidden @[34rem]:inline">{done ? "Copied" : children}</span>
+      ) : done ? (
+        "Copied"
+      ) : (
+        children
+      )}
     </Button>
   );
 }
@@ -105,11 +123,14 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
   // change, and Refresh; the previous answer stays on screen until the next lands.
   useEffect(() => {
     const mine = ++seq.current;
+    const controller = new AbortController();
     setLoading(true);
+    // A new capture starts clean: the last refusal belongs to the last request, not this one.
+    setError(null);
     const timer = setTimeout(
       () => {
         loadedOnce.current = true;
-        requestModelView(dispatch, store.getState as () => RootState, conversationId, agentId)
+        requestModelView(dispatch, store.getState as () => RootState, conversationId, agentId, controller.signal)
           .then((next) => {
             if (mine !== seq.current) return;
             setPreview(next);
@@ -128,7 +149,11 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
       },
       loadedOnce.current ? REFRESH_DELAY_MS : 0,
     );
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      // A superseded capture stops waiting at once; the newer one is the only answer in flight.
+      controller.abort();
+    };
   }, [dispatch, store, conversationId, agentId, nonce, draft, conversation, typed, variables, resources, context, ui, messages]);
 
   const copy = (label: string, text: string) => void copyText(text, `${label} copied`);
@@ -138,15 +163,19 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto bg-textured p-3" data-testid="model-view">
-      <div className="flex items-center justify-between gap-2">
-        <span className="min-w-0 truncate text-xs text-muted-foreground">
+      <div className="@container flex items-center justify-between gap-2">
+        <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
           {/* One slot: the target, or Capturing… while a capture runs, so the header never changes size. */}
           {loading ? (
             <span role="status" data-testid="model-view-capturing">
               Capturing…
             </span>
           ) : (
-            <span className="font-mono" data-testid="model-view-target">
+            <span
+              className="font-mono"
+              data-testid="model-view-target"
+              title={request ? `${request.provider} · ${request.model ?? preview?.model ?? ""}` : undefined}
+            >
               {request ? `${request.provider} · ${request.model ?? preview?.model ?? ""}` : ""}
             </span>
           )}
@@ -157,19 +186,21 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
             icon={<Braces />}
             disabled={!request}
             aria-pressed={raw}
+            aria-label="Raw JSON"
             onClick={() => setRaw((r) => !r)}
           >
-            Raw JSON
+            <span className="hidden @[34rem]:inline">Raw JSON</span>
           </Button>
-          <CopyButton disabled={!request} onCopy={() => request && copy("Request", copyAllText(request))}>
+          <CopyButton compact disabled={!request} onCopy={() => request && copy("Request", copyAllText(request))}>
             Copy all
           </CopyButton>
           <Button
             variant="quiet"
             icon={<RefreshCw className={loading ? "animate-spin" : undefined} />}
+            aria-label="Refresh"
             onClick={() => setNonce((n) => n + 1)}
           >
-            Refresh
+            <span className="hidden @[34rem]:inline">Refresh</span>
           </Button>
         </div>
       </div>

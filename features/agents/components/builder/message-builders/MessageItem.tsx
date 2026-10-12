@@ -854,6 +854,7 @@ export function MessageItem({
             variableNames={variableNames}
             contextData={contextMenuData}
             promptBlocks={blockEditing.highlight}
+              menuProps={blockEditing.menuProps}
             menuSections={(conditional) => promptMenuSections("write", conditional)}
             placeholder={
               message.role === "assistant"
