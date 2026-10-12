@@ -3,7 +3,7 @@
   "updated": "2026-10-07",
   "sha": "e389e62b291c8f8958b40ae46c3c3cb67335a4b2",
   "sites": 33659,
-  "count": 13,
+  "count": 14,
   "ids": [
     "arbitrary-text-size|features/esign/signer/parts/PaperField.tsx",
     "primitive-visual-class|features/education/classes/components/ClassTestDialog.tsx",
@@ -17,7 +17,8 @@
     "raw-color|features/esign/signer/parts/PaperField.tsx",
     "styled-raw-button|features/connectors/IntegrationDirectory.tsx",
     "styled-raw-button|features/esign/signer/parts/DocumentStack.tsx",
-    "styled-raw-button|features/esign/signer/parts/PaperField.tsx"
+    "styled-raw-button|features/esign/signer/parts/PaperField.tsx",
+    "styled-raw-button|features/rich-document/outline/DocumentOutline.tsx"
   ],
   "counts": {
     "arbitrary-text-size|app/(admin)/administration/_nav/AdminNavTreeMenu.tsx": 2,
@@ -10524,6 +10525,11 @@
       "reason": "Same sizing/skeleton placement classes as the existing AddMoreQuestionsButton dialog and ClassStudyContent rows; no design-system variant exists for them yet.",
       "accepted_by": "Armani Sadeghi",
       "date": "2026-10-09"
+    },
+    "styled-raw-button|features/rich-document/outline/DocumentOutline.tsx": {
+      "reason": "Outline tree rows (disclosure chevron + dense heading link) moved verbatim from the study guide reader; no tree-row primitive exists in the design system yet",
+      "accepted_by": "Armani Sadeghi",
+      "date": "2026-10-12"
     }
   }
 }
