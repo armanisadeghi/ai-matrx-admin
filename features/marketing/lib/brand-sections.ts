@@ -272,6 +272,17 @@ export const MARKETING_BRAND_SECTIONS = [
   },
   {
     slug: "intelligence",
+    name: "What AI says",
+    titlePrefix: "What AI says",
+    description:
+      "How the answer engines talk about this brand, and its share of voice against its competitors.",
+    letter: "AI",
+    iconName: "SearchCheck",
+    group: "Insight",
+    subPath: "ai-visibility",
+  },
+  {
+    slug: "intelligence",
     name: "Reputation",
     titlePrefix: "Reputation",
     description:

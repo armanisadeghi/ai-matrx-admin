@@ -41,6 +41,7 @@ import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { webCopy } from "@/features/marketing/lib/copy-payloads";
 import { businessFactValueText } from "@/features/marketing/lib/business-fact-value";
 import { marketingSeg } from "@/features/marketing/lib/keys";
+import { BrandAiVisibilityCard } from "@/features/marketing/seo/ai-visibility/brand/BrandAiVisibilityCard";
 import { BrandTopicalMapCard } from "@/features/marketing/seo/topical-map/components/BrandTopicalMapCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -867,6 +868,14 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
               rather than another row action on one site. */}
           <BrandTopicalMapCard
             title={overviewCopy.mapTitle}
+            brandId={current.id}
+            brandSeg={marketingSeg(current)}
+            organizationId={current.organization_id}
+            canEdit={canEdit}
+          />
+
+          {/* What AI says about this brand — the owner is the brand, so it shows with or without a site. */}
+          <BrandAiVisibilityCard
             brandId={current.id}
             brandSeg={marketingSeg(current)}
             organizationId={current.organization_id}

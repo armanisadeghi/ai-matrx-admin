@@ -234,6 +234,9 @@ export const marketingRoutes = {
     `/marketing/${brandId}/intelligence/competitors`,
   brandMonitoring: (brandId: string) =>
     `/marketing/${brandId}/intelligence/monitoring`,
+  /** What AI says about this brand — the brand-level AI-visibility view. */
+  brandAiVisibility: (brandId: string) =>
+    `/marketing/${brandId}/intelligence/ai-visibility`,
   /** The tracker editor — one editor for both monitor lenses. */
   brandMonitorSetup: (
     brandId: string,
