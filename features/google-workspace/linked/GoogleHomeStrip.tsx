@@ -193,6 +193,9 @@ export function GoogleHomeStrip({
     <PromoBanner
       icon={<Mark />}
       tone={tone}
+      // The words keep a floor of their own, so many chips wrap onto the next line instead of squeezing
+      // the title to "Google S…" (the package lets the chip block take everything the row has).
+      className="[&_.matrx-control-promo-text]:min-w-[17rem]"
       eyebrow={state.connection.accountEmail ?? app}
       title={app}
       line={linked.length === 0 ? "Import, start new, or send a file" : `${linked.length} linked`}

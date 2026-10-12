@@ -17,7 +17,7 @@ import {
   Info,
 } from "lucide-react";
 import { Skeleton } from "@ai-matrx/design-system";
-import { Input, SegmentedControl } from "@ai-matrx/design-system/controls";
+import { Chip, Input, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MCP_CATEGORY_META } from "@ai-matrx/chat/agents/types/mcp.types";
@@ -707,38 +707,16 @@ function ConnectionChip({
   shared?: boolean;
   onOpen: () => void;
 }) {
+  const tone = shared ? "neutral" : item.attention ? "warning" : item.connected ? "success" : "neutral";
   return (
-    <button
-      type="button"
-      data-integration-id={item.id}
-      onClick={onOpen}
-      title={
-        shared
-          ? `Shared by ${item.sharedBy?.join(", ")}`
-          : item.accountSummary || item.status
-      }
-      className="inline-flex max-w-full items-center gap-2 rounded-full border border-border bg-card py-1 pl-1 pr-3 text-sm transition-colors hover:border-foreground/20 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    <Chip
+      label={shared ? `${item.name} · ${item.sharedBy?.join(", ")}` : item.name}
+      tone={tone}
+      icon={<ConnectorTile connector={item.artwork} size="xs" />}
+      title={shared ? `Shared by ${item.sharedBy?.join(", ")}` : item.accountSummary || item.status}
+      asChild
     >
-      <ConnectorTile connector={item.artwork} size="xs" />
-      <span className="truncate font-medium">{item.name}</span>
-      {shared ? (
-        <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
-          <Building2 className="h-3 w-3" aria-hidden />
-          {item.sharedBy?.join(", ")}
-        </span>
-      ) : (
-        <span
-          aria-label={item.status}
-          className={cn(
-            "h-2 w-2 shrink-0 rounded-full",
-            item.attention
-              ? "bg-warning"
-              : item.connected
-                ? "bg-success"
-                : "bg-muted-foreground/40",
-          )}
-        />
-      )}
-    </button>
+      <button type="button" data-integration-id={item.id} aria-label={`${item.name}: ${shared ? "shared" : item.status}`} onClick={onOpen} />
+    </Chip>
   );
 }
