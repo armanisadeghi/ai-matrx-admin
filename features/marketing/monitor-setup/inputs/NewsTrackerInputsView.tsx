@@ -27,6 +27,7 @@ import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { useTrackerInputs, type NewsTrackerInputs } from "./data";
 
 import { ErrorNotice } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 const STATUS_BADGE = {
   active: { label: "Active", tone: "success" },
   paused: { label: "Paused", tone: "warning" },
@@ -238,9 +239,9 @@ function Body({ tracker }: { tracker: NewsTrackerInputs }) {
                   {fact.title ? <span className="text-muted-foreground"> · {fact.title}</span> : null}
                 </span>
                 {fact.url ? (
-                  <a href={fact.url} target="_blank" rel="noreferrer" className="shrink-0 text-primary hover:underline">
+                  <OutboundLink href={fact.url} className="shrink-0 text-primary hover:underline">
                     Source
-                  </a>
+                  </OutboundLink>
                 ) : null}
               </li>
             ))}

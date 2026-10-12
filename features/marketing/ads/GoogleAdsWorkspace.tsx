@@ -27,6 +27,7 @@ import { GOOGLE_ADS_REPORTING_SCOPES, GOOGLE_SCOPE } from "@/lib/googleScopes";
 import { toast } from "@/lib/toast";
 import { useGoogleAPI } from "@/providers/google-provider/GoogleApiProvider";
 import { useGoogleAuthorizationWindow } from "@/providers/google-provider/useGoogleAuthorizationWindow";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function isoDate(daysAgo: number): string {
   const value = new Date();
@@ -404,13 +405,11 @@ export function GoogleAdsWorkspace() {
                 asChild
                 variant="outline"
               >
-                <a
+                <OutboundLink
                   href="https://ads.google.com/"
-                  target="_blank"
-                  rel="noreferrer"
                 >
                   Open Google Ads <ExternalLink className="ml-2 h-4 w-4" />
-                </a>
+                </OutboundLink>
               </Button>
             </CardHeader>
             <CardContent className="grid gap-3">

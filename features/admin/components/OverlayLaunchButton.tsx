@@ -14,6 +14,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { ExternalLink, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface OverlayLaunchButtonProps {
   overlayId: string;
@@ -100,15 +101,13 @@ export function ExternalTabLink({
   children,
 }: ExternalTabLinkProps) {
   return (
-    <a
+    <OutboundLink
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
       aria-label={label}
       className={cn("inline-flex items-center gap-1", className)}
     >
       {children}
       <ExternalLink className="h-3 w-3 shrink-0 opacity-60" aria-hidden="true" />
-    </a>
+    </OutboundLink>
   );
 }

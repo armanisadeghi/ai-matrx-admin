@@ -38,6 +38,7 @@ import { toast } from "@/lib/toast";
 import { downloadMediaSource, mediaRefToDownloadSource } from "./download";
 import { copyText } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const playbackSession: PlaybackSessionPort = {
   useMediaElementSink(forward) {
@@ -103,7 +104,7 @@ const actions: MediaHostPorts["actions"] = {
       return;
     }
     const src = ctx.resolution?.src;
-    if (src) window.open(src, "_blank", "noopener,noreferrer");
+    if (src) openOutbound(src, "_blank", "noopener");
   },
   // THE SHARE MANDATE (C19) hookup: the rich share body for the package
   // shells (toolbar / lightbox), lazily loaded.

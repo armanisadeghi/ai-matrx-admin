@@ -84,7 +84,7 @@ it("opens a new tab, announced, when the window key has no hydrator", async () =
   open?.(notice("/somewhere?panels=no_such_window:x"));
   await flush();
   expect(testHydrator).not.toHaveBeenCalled();
-  expect(windowOpen).toHaveBeenCalledWith(`${window.location.origin}/somewhere?panels=no_such_window:x`, "_blank", "noopener,noreferrer");
+  expect(windowOpen).toHaveBeenCalledWith(`${window.location.origin}/somewhere?panels=no_such_window:x`, "_blank", "noopener");
   expect(captureError).toHaveBeenCalledWith(expect.objectContaining({ code: "notice-no-hydrator" }));
 });
 

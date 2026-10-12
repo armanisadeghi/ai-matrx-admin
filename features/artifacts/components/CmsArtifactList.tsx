@@ -67,6 +67,7 @@ import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ARTIFACTS_SURFACE_NAME } from "@/features/surfaces/manifests/artifacts.manifest";
 import { buildArtifactListScope } from "@/features/artifacts/lib/artifacts-scope";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const ARTIFACT_ICONS: Record<ArtifactType, React.FC<{ className?: string }>> = {
   html_page: Globe,
@@ -501,7 +502,7 @@ export function CmsArtifactList() {
                 <div className="hidden items-center gap-0.5 @2xl/artifacts:flex">
                   <Button icon={<FileText />} aria-label="Open full page" variant="quiet" disabled={navigationPending} onClick={() => handleNavigate(artifact.id)} title="Open full page" />
                   <Button icon={<Pencil />} aria-label="Edit content" variant="quiet" disabled={navigationPending || !canEdit} onClick={() => handleOpenEditor(artifact)} title="Edit content" />
-                  {artifact.externalUrl && <Button icon={<ExternalLink />} aria-label="View live" variant="quiet" disabled={navigationPending} asChild><a href={artifact.externalUrl} target="_blank" rel="noopener noreferrer" title="View live" /></Button>}
+                  {artifact.externalUrl && <Button icon={<ExternalLink />} aria-label="View live" variant="quiet" disabled={navigationPending} asChild><OutboundLink href={artifact.externalUrl} title="View live" /></Button>}
                   <Button icon={<ArchiveIcon />} aria-label="Move to Trash" variant="quiet" disabled={navigationPending} onClick={() => handleArchive(artifact)} title="Move to Trash" />
                 </div>
                 <DropdownMenu>
@@ -511,7 +512,7 @@ export function CmsArtifactList() {
                   <DropdownMenuContent align="end" className="w-44">
                     <DropdownMenuItem onSelect={() => handleNavigate(artifact.id)}><FileText className="mr-2 size-3.5" />Open full page</DropdownMenuItem>
                     {canEdit && <DropdownMenuItem onSelect={() => handleOpenEditor(artifact)}><Pencil className="mr-2 size-3.5" />Edit content</DropdownMenuItem>}
-                    {artifact.externalUrl && <DropdownMenuItem asChild><a href={artifact.externalUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="mr-2 size-3.5" />View live</a></DropdownMenuItem>}
+                    {artifact.externalUrl && <DropdownMenuItem asChild><OutboundLink href={artifact.externalUrl}><ExternalLink className="mr-2 size-3.5" />View live</OutboundLink></DropdownMenuItem>}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onSelect={() => void handleArchive(artifact)}><ArchiveIcon className="mr-2 size-3.5" />Move to Trash</DropdownMenuItem>
                   </DropdownMenuContent>

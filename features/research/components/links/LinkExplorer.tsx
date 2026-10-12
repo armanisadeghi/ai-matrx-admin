@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useTopicContext } from '../../context/ResearchContext';
 import { useResearchApi } from '../../hooks/useResearchApi';
 import type { ExtractedLink } from '../../types';
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export default function LinkExplorer() {
     const { topicId, refresh } = useTopicContext();
@@ -130,16 +131,14 @@ export default function LinkExplorer() {
                                 className="mt-1"
                             />
                             <div className="flex-1 min-w-0">
-                                <a
+                                <OutboundLink
                                     href={link.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
                                     className="type-secondary font-medium text-primary hover:underline flex items-center gap-1 break-all"
                                     onClick={e => e.stopPropagation()}
                                 >
                                     {link.link_text || link.url}
                                     <ExternalLink className="h-2.5 w-2.5 shrink-0" />
-                                </a>
+                                </OutboundLink>
                                 {link.link_text && (
                                     <div className="type-meta text-muted-foreground truncate mt-px">{link.url}</div>
                                 )}

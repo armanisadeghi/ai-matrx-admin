@@ -46,6 +46,7 @@ import { jsonExportItem, csvExportItem } from "@/components/agent-copy/export";
 import { agentShortcutRecordSummary } from "../format";
 import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
 import { readOf } from "@ai-matrx/design-system";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export interface ShortcutListProps extends ScopeProps {
   onEdit?: (shortcut: AgentShortcutRecord) => void;
@@ -636,7 +637,7 @@ export function ShortcutList({
             const href = doorHrefFor?.(shortcut) ?? null;
             const openShortcut = (event: React.MouseEvent<HTMLElement>) => {
               if (event.metaKey || event.ctrlKey || event.shiftKey) {
-                if (href) window.open(href, "_blank", "noopener");
+                if (href) openOutbound(href, "_blank", "noopener");
                 return;
               }
               onEdit?.(shortcut);
@@ -648,7 +649,7 @@ export function ShortcutList({
                 onAuxClick={(event) => {
                   if (event.button === 1 && href) {
                     event.preventDefault();
-                    window.open(href, "_blank", "noopener");
+                    openOutbound(href, "_blank", "noopener");
                   }
                 }}
               >

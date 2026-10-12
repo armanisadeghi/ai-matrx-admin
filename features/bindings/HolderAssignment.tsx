@@ -82,6 +82,7 @@ import { AGENT_ICON } from "@/components/icons/domain-icons";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { isAdminLanePath } from "@/utils/supabase/adminLane";
 import { intelligenceGoHref } from "@/features/mandates/go/intelligenceGo";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** "Latest" as a select value. `null` is the stored form; this is the option. */
 export const LATEST_VERSION_VALUE = "latest";
@@ -340,10 +341,8 @@ export function HolderAssignment({
             icon={<ExternalLink aria-hidden />}
             data-testid="holder-open-new-tab"
           >
-            <a
+            <OutboundLink
               href={openHref}
-              target="_blank"
-              rel="noopener noreferrer"
               aria-label={openLabel}
               title={openLabel}
             />

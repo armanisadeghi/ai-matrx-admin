@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/cn";
 import { ShieldCheck, ShieldAlert, ShieldQuestion, ExternalLink } from "lucide-react";
 import type { AccountBinding, AccountHealthState } from "../types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const STATE_META: Record<
   AccountHealthState,
@@ -62,14 +63,12 @@ export function HealthWarnings({
               <span className={cn("text-xs font-medium", meta.tone)}>{meta.label}</span>
               {meta.warn ? (
                 <Button asChild variant="outline">
-                  <a
+                  <OutboundLink
                     href={`https://${b.normalizedOrigin}`}
-                    target="_blank"
-                    rel="noreferrer noopener"
                   >
                     Open site
                     <ExternalLink className="ml-1 h-3 w-3" />
-                  </a>
+                  </OutboundLink>
                 </Button>
               ) : null}
             </div>

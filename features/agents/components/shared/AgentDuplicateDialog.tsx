@@ -30,6 +30,7 @@ import {
 import { Button, Select } from "@ai-matrx/design-system/controls";
 import { ProInput } from "@/components/official/ProInput";
 import { ErrorNotice } from "@ai-matrx/design-system";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export type AgentDuplicateStep = "choose" | "loading" | "success" | "error";
 
@@ -223,7 +224,7 @@ export function AgentDuplicateDialog({
                   variant="outline"
                   icon={<ExternalLink />}
                   onClick={() => {
-                    window.open(newAgentPath, "_blank", "noopener,noreferrer");
+                    openOutbound(newAgentPath, "_blank", "noopener");
                     close();
                   }}
                 >

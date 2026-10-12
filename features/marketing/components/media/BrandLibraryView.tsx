@@ -55,6 +55,7 @@ import {
   type BrandAsset,
   type BrandAssetKind,
 } from "@/features/marketing/types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** Image CDNs whose URLs carry no file extension (e.g. Unsplash CDN saves). */
 const IMAGE_CDN_HOSTS = new Set(["images.unsplash.com", "plus.unsplash.com"]);
@@ -204,10 +205,8 @@ function AssetTile({
           <PreviewImage src={preview} alt={asset.title ?? asset.kind} />
         </div>
       ) : asset.kind === "portal" && asset.source_url ? (
-        <a
+        <OutboundLink
           href={asset.source_url}
-          target="_blank"
-          rel="noopener noreferrer"
           title={asset.source_url}
           className="flex aspect-[4/3] flex-col items-center justify-center gap-1 bg-muted/40 text-muted-foreground transition-colors hover:text-primary"
         >
@@ -215,7 +214,7 @@ function AssetTile({
           <span className="max-w-full truncate px-2 text-[10px]">
             {portalHostname(asset.source_url) ?? "Open portal"}
           </span>
-        </a>
+        </OutboundLink>
       ) : (
         <div className="flex aspect-[4/3] items-center justify-center bg-muted/40 text-muted-foreground">
           <CircleOff className="h-5 w-5" />

@@ -119,6 +119,7 @@ import {
   stringArrayFromJson,
 } from "../../types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function formatPageAge(pageAge: string | null): string {
   if (!pageAge) return "—";
@@ -1175,15 +1176,13 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                 {videoIdentity && (
                   <VideoSourceMeta identity={videoIdentity} />
                 )}
-                <a
+                <OutboundLink
                   href={typedSource.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="type-secondary text-primary hover:underline flex items-start gap-1 break-all"
                 >
                   {typedSource.url}
                   <ExternalLink className="h-3 w-3 shrink-0 mt-0.5" />
-                </a>
+                </OutboundLink>
               </div>
 
               {/* Core metadata */}

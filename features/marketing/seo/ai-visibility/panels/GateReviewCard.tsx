@@ -49,6 +49,7 @@ import type {
 } from "./types";
 
 import { ProTextarea } from "@/components/official/ProTextarea";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 function arr<T>(value: unknown): T[] {
   return Array.isArray(value) ? (value as T[]) : [];
 }
@@ -181,14 +182,12 @@ function Gate1Body({
           {arr<Gate1Payload["sources"][number]>(payload.sources).map((source, index) => (
             <li key={source.id ?? `source-${index}`}>
               {source.url ? (
-                <a
+                <OutboundLink
                   href={source.url}
-                  target="_blank"
-                  rel="noreferrer"
                   className="text-primary hover:underline"
                 >
                   {source.title || source.url}
-                </a>
+                </OutboundLink>
               ) : (
                 <span>{source.title || "Untitled source"}</span>
               )}

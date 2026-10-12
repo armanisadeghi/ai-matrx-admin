@@ -10,6 +10,7 @@ import { parsePickList } from "./parsePickList";
 import { usePickListDetail } from "./usePickListDetail";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { selectUserId } from "@ai-matrx/chat/host/identity";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * Overlay renderer for the `pick_list` tool — the full interactive list editor
@@ -45,14 +46,12 @@ export function PickListOverlay({ entry }: ToolRendererProps) {
         <AlertTriangle className="h-6 w-6 text-warning" />
         <span>{summary.message ?? "Couldn't load this list."} <ErrorAlchemyMenu /></span>
         <Button asChild variant="outline">
-          <a
+          <OutboundLink
             href={`/pick-lists/${listId}`}
-            target="_blank"
-            rel="noopener noreferrer"
           >
             <ExternalLink className="h-3.5 w-3.5" />
             Open in new tab
-          </a>
+          </OutboundLink>
         </Button>
       </div>
     );

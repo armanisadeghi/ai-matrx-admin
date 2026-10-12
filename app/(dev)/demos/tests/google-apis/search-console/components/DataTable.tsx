@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { ExternalLink, ArrowUpDown, ArrowUp, ArrowDown, Copy, Filter } from "lucide-react";
 import type { SearchAnalyticsResponse, Dimension, SearchAnalyticsRow } from "../types";
 import { toast } from "@/lib/toast";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 interface DataTableProps {
     data: SearchAnalyticsResponse | null;
@@ -149,7 +150,7 @@ export function DataTable({ data, dimension, title }: DataTableProps) {
     };
 
     const handleOpenUrl = (url: string) => {
-        window.open(url, '_blank', 'noopener,noreferrer');
+        openOutbound(url, '_blank', "noopener");
     };
 
     const handleFilter = (value: string, dimension: Dimension) => {

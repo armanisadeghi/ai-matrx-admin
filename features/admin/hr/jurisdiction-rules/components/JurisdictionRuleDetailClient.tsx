@@ -52,6 +52,7 @@ import {
 } from "./rule-chrome";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function Section({
   title,
@@ -119,15 +120,13 @@ function CitationAtSignoff({ rule }: { rule: JurisdictionRule }) {
         {citation?.title ? <Field label="Title">{citation.title}</Field> : null}
         <Field label="Source">
           {sourceUrl ? (
-            <a
+            <OutboundLink
               href={sourceUrl}
-              target="_blank"
-              rel="noreferrer noopener"
               className="inline-flex items-center gap-1 break-all text-primary hover:underline"
             >
               {sourceUrl}
               <ExternalLink className="h-3 w-3 shrink-0" />
-            </a>
+            </OutboundLink>
           ) : (
             <span className="break-all text-muted-foreground">
               {citation?.url ?? "none recorded"}
@@ -351,15 +350,13 @@ export function JurisdictionRuleDetailClient({ ruleId }: { ruleId: string }) {
           <Field label="Title">{rule.citation?.title ?? "—"}</Field>
           <Field label="URL">
             {externalCitationUrl(rule.citation?.url) ? (
-              <a
+              <OutboundLink
                 href={externalCitationUrl(rule.citation?.url) ?? undefined}
-                target="_blank"
-                rel="noreferrer noopener"
                 className="inline-flex items-center gap-1 break-all text-primary hover:underline"
               >
                 {rule.citation?.url}
                 <ExternalLink className="h-3 w-3 shrink-0" />
-              </a>
+              </OutboundLink>
             ) : (
               <span className="break-all text-amber-700 dark:text-amber-400">
                 {rule.citation?.url

@@ -36,6 +36,7 @@ import {
 } from "./service";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { extractErrorMessage } from "@/utils/errors";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export interface AddToRulebookDialogProps {
   isOpen: boolean;
@@ -118,7 +119,7 @@ export function AddToRulebookDialog({
         action: {
           label: "Open",
           onClick: () =>
-            window.open(`/masterwork/${selectedId}`, "_blank", "noopener"),
+            openOutbound(`/masterwork/${selectedId}`, "_blank", "noopener"),
         },
       });
       onClose();

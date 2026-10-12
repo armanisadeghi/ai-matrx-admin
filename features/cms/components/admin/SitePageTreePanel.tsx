@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MatrxDataTable, type MatrxColumnDef } from '@ai-matrx/design-system/data-table';
 import { ExternalLink, Eye, Loader2, RefreshCw, FileText } from 'lucide-react';
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type AdminPage = ClientPageSummary & { client_id: string };
 
@@ -84,15 +85,13 @@ export default function SitePageTreePanel({ sites }: { sites: ClientSiteSummary[
             <div className="flex items-center gap-2">
                 {site && (
                     <>
-                        <a href={clientPageUrl({ siteSlug: site.slug, slug: page.slug, route: page.route, category: page.category, domain: activeSiteDomain(site) })}
-                            target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-muted-foreground hover:text-primary" title="Live">
+                        <OutboundLink href={clientPageUrl({ siteSlug: site.slug, slug: page.slug, route: page.route, category: page.category, domain: activeSiteDomain(site) })} className="inline-flex items-center gap-1 text-muted-foreground hover:text-primary" title="Live">
                             <ExternalLink className="h-3.5 w-3.5" />
-                        </a>
+                        </OutboundLink>
                         {page.has_draft && (
-                            <a href={clientPageUrl({ siteSlug: site.slug, slug: page.slug, route: page.route, category: page.category, preview: true, previewToken: sitePreviewToken(site) })}
-                                target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 hover:opacity-80" title="Preview draft">
+                            <OutboundLink href={clientPageUrl({ siteSlug: site.slug, slug: page.slug, route: page.route, category: page.category, preview: true, previewToken: sitePreviewToken(site) })} className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 hover:opacity-80" title="Preview draft">
                                 <Eye className="h-3.5 w-3.5" />
-                            </a>
+                            </OutboundLink>
                         )}
                     </>
                 )}
@@ -117,14 +116,12 @@ export default function SitePageTreePanel({ sites }: { sites: ClientSiteSummary[
                     </SelectContent>
                 </Select>
                 {site && (
-                    <a
+                    <OutboundLink
                         href={clientSiteRootUrl(site.slug, false, activeSiteDomain(site))}
-                        target="_blank"
-                        rel="noreferrer"
                         className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1"
                     >
                         /c/{site.slug} <ExternalLink className="h-3 w-3" />
-                    </a>
+                    </OutboundLink>
                 )}
                 <div className="flex-1" />
                 <Button icon={isLoading ? <Loader2 className="animate-spin" /> : <RefreshCw />} variant="quiet" onClick={fetchPages}>

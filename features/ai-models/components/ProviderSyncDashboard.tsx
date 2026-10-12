@@ -74,6 +74,7 @@ import {
 } from "@ai-matrx/design-system/data-table";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -1431,15 +1432,13 @@ function ProviderSection({
             />
           )}
           {provider?.models_link && (
-            <a
+            <OutboundLink
               href={provider.models_link}
-              target="_blank"
-              rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground"
               title="Official models page"
             >
               <ExternalLink className="h-3.5 w-3.5" />
-            </a>
+            </OutboundLink>
           )}
           <Button
             icon={<SlidersHorizontal />}

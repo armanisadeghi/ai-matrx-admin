@@ -28,6 +28,7 @@ import {
 } from "@/features/surfaces/manifests/quick-data.manifest";
 import { ReadFailure } from "@ai-matrx/design-system";
 import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 interface QuickDataSheetProps {
   onClose?: () => void;
@@ -160,7 +161,7 @@ export function QuickDataSheet({
         </div>
         <Button
           variant="outline"
-          onClick={() => window.open("/data", "_blank")}
+          onClick={() => openOutbound("/data", "_blank")}
         >
           Create a Table
         </Button>
@@ -206,7 +207,7 @@ export function QuickDataSheet({
                 <Button
                   icon={<ExternalLink />} aria-label="Open in New Tab"
                   variant="quiet"
-                  onClick={() => window.open("/data", "_blank")}
+                  onClick={() => openOutbound("/data", "_blank")}
                 />
               </TooltipTrigger>
               <TooltipContent>Open in New Tab</TooltipContent>

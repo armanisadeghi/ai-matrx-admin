@@ -14,6 +14,7 @@ import { InlineMediaRef } from "@ai-matrx/media/react";
 import { cn } from "@/lib/utils";
 
 import type { MakeClipResult } from "./api";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * The article's date as the page states it, in full. A machine date (ISO) is formatted;
@@ -45,14 +46,12 @@ export function ClipView({ result, compact = false }: { result: MakeClipResult; 
         <div>
           <p className="font-medium text-foreground">No clip made</p>
           <p className="mt-0.5 text-muted-foreground">{result.message}</p>
-          <a
+          <OutboundLink
             href={result.source_url}
-            target="_blank"
-            rel="noreferrer"
             className="mt-1 inline-flex items-center gap-1 text-primary hover:underline"
           >
             Read the article <ExternalLink className="h-3 w-3" aria-hidden />
-          </a>
+          </OutboundLink>
         </div>
       </div>
     );
@@ -86,9 +85,9 @@ export function ClipView({ result, compact = false }: { result: MakeClipResult; 
           <Link href={fileViewerHref(clip.pdf_file_id)} className="inline-flex items-center gap-1 font-medium text-primary hover:underline">
             <FileText className="h-3.5 w-3.5" aria-hidden /> Open the PDF
           </Link>
-          <a href={clip.source_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">
+          <OutboundLink href={clip.source_url} className="inline-flex items-center gap-1 text-primary hover:underline">
             Original <ExternalLink className="h-3 w-3" aria-hidden />
-          </a>
+          </OutboundLink>
           <span className="text-muted-foreground">
             {result.rounds.length} of {result.max_rounds} round{result.max_rounds === 1 ? "" : "s"} · logo:{" "}
             {clip.logo_source.replaceAll("_", " ")}

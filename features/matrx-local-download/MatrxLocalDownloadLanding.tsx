@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MATRX_LOCAL_RELEASE, type DesktopPlatform } from "./release";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const PLATFORM_COPY: Record<
   Exclude<DesktopPlatform, "unknown">,
@@ -328,15 +329,13 @@ export function MatrxLocalDownloadLanding({
                     Version {MATRX_LOCAL_RELEASE.version}. Downloads are hosted
                     in the official Matrx Local release.
                   </p>
-                  <a
+                  <OutboundLink
                     href={MATRX_LOCAL_RELEASE.releasePage}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
                   >
                     View release details
                     <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-                  </a>
+                  </OutboundLink>
                 </div>
               </div>
             </div>

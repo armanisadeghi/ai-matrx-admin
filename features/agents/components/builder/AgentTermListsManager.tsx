@@ -27,6 +27,7 @@ import {
 } from "@/features/agents/term-lists/service";
 import type { TermList } from "@/features/agents/term-lists/types";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const EDITOR_HREF = "/resources/term-lists";
 
@@ -116,15 +117,13 @@ function SavedAgentTermListsManager({ agentId }: { agentId: string }) {
             className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border bg-muted/40 py-0.5 pl-1.5 pr-0.5 text-xs"
           >
             <BookA className="h-3 w-3 text-muted-foreground" />
-            <a
+            <OutboundLink
               href={`${EDITOR_HREF}?id=${item.termListId}`}
-              target="_blank"
-              rel="noreferrer"
               className="max-w-40 truncate hover:underline"
               title="Open in a new tab"
             >
               {item.label ?? "Term list"}
-            </a>
+            </OutboundLink>
             <button
               type="button"
               aria-label={`Remove ${item.label ?? "term list"}`}
@@ -243,15 +242,13 @@ function TermListPicker({
               </>
             )}
           </CommandList>
-          <a
+          <OutboundLink
             href={EDITOR_HREF}
-            target="_blank"
-            rel="noreferrer"
             className="flex items-center gap-2 border-t border-border px-3 py-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             <ExternalLink className="h-3.5 w-3.5" />
             Manage term lists
-          </a>
+          </OutboundLink>
         </Command>
       </PopoverContent>
     </Popover>

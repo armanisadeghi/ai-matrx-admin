@@ -64,6 +64,7 @@ import { BoardOrganizationProvider } from "@/features/board/items/board-organiza
 import { LayoutSwitch, type MeetingLayoutChoice } from "./LayoutSwitch";
 import { PeopleStrip } from "./PeopleStrip";
 import { useGuestMeetingBoard } from "./useGuestMeetingBoard";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const OPENING = "Opening the board…";
 
@@ -252,16 +253,14 @@ function BoardHeader({
         {isHost && <HostMenu />}
         {headerControls}
         {boardHref ? (
-          <a
+          <OutboundLink
             href={boardHref}
-            target="_blank"
-            rel="noreferrer"
             title="Open this board on its own page"
             aria-label="Open this board on its own page"
             className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <ExternalLink className="h-4 w-4" />
-          </a>
+          </OutboundLink>
         ) : null}
         <LayoutSwitch value="board" onChange={onLayout} />
       </header>

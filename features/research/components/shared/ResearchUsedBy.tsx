@@ -21,6 +21,7 @@ import { useEntityTitles } from "@/features/scopes/hooks/useEntityTitles";
 import { getEntityInfo } from "@/features/scopes/registry/entityRegistry";
 import type { EntityTypeToken } from "@ai-matrx/associations";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const CONSUMER_TOKENS = ["web_site", "plan_node", "web_page"] as const;
 type ConsumerToken = (typeof CONSUMER_TOKENS)[number];
@@ -85,15 +86,13 @@ export function ResearchUsedBy({ token, id }: ResearchUsedByProps) {
                   {CONSUMER_LABEL[item.token]}
                 </span>
                 {href ? (
-                  <a
+                  <OutboundLink
                     href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="inline-flex min-w-0 items-center gap-1 font-medium text-primary hover:underline underline-offset-2"
                   >
                     <span className="truncate">{title}</span>
                     <ExternalLink className="h-3 w-3 shrink-0" />
-                  </a>
+                  </OutboundLink>
                 ) : (
                   <span className="truncate font-medium text-foreground">
                     {title}

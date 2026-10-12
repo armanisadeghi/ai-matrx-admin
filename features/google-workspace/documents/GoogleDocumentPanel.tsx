@@ -52,6 +52,8 @@ import type { GoogleDocumentRow } from "./types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 import { ProTextarea } from "@/components/official/ProTextarea";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 /**
  * 🚨 N12 — THE DOOR TO GOOGLE IS DERIVED FROM THE FILE ID WHEN THE ROW HAS NO URL.
  *
@@ -386,16 +388,14 @@ function BodyView({ row }: { row: GoogleDocumentRow }) {
         {href ? (
           <>
             , or{" "}
-            <a
+            <OutboundLink
               href={href}
-              target="_blank"
-              rel="noreferrer"
               className="inline-flex items-center gap-1 font-medium text-foreground underline underline-offset-2 hover:text-primary"
               data-google-document-open-in-google
             >
               <ExternalLink className="h-3 w-3" />
               open it in Google
-            </a>
+            </OutboundLink>
           </>
         ) : null}
         .
@@ -444,7 +444,7 @@ function AppendComposer({
         toast.info(SENT_FOR_APPROVAL_MESSAGE, {
           action: {
             label: "Open the queue",
-            onClick: () => window.open(approvalQueueHref(outcome.assistId), "_blank"),
+            onClick: () => openOutbound(approvalQueueHref(outcome.assistId), "_blank"),
           },
         });
       } else {
@@ -671,14 +671,12 @@ export function GoogleDocumentPanel({ initialRow }: { initialRow: GoogleDocument
                 {mimeKindLabel(row.mime_kind).toLowerCase()}. AI Matrx has no write for this file
                 type —{" "}
                 {googleFileHref(row) ? (
-                  <a
+                  <OutboundLink
                     href={googleFileHref(row) ?? undefined}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="underline"
                   >
                     open it in Google
-                  </a>
+                  </OutboundLink>
                 ) : (
                   "open it in Google"
                 )}{" "}

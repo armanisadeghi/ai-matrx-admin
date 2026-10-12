@@ -71,6 +71,7 @@ import {
   buildSnapshotMenuSection,
   type SnapshotMenuRow,
 } from "@/features/marketing/components/pages/snapshot-actions";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const OUTCOME_OPTIONS = [
   "discovered",
@@ -108,15 +109,13 @@ function urlCell(url: string, pageHref?: string) {
         </span>
       )}
       {url.startsWith("http://") || url.startsWith("https://") ? (
-        <a
+        <OutboundLink
           href={url}
-          target="_blank"
-          rel="noreferrer"
           className="shrink-0 text-muted-foreground hover:text-primary"
           aria-label={`Open ${url}`}
         >
           <ExternalLink className="h-3 w-3" />
-        </a>
+        </OutboundLink>
       ) : null}
     </div>
   );

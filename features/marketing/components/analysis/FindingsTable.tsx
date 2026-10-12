@@ -61,6 +61,7 @@ import {
   webLocation,
 } from "@/features/marketing/lib/copy-payloads";
 import { humanizeItemKey } from "@/features/marketing/lib/finding-remedy-render";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function humanFindingRow(row: FindingListRow): string {
   return humanLines([
@@ -211,17 +212,15 @@ export function FindingsTable() {
               ) : null}
             </button>
             {row.page_url ? (
-              <a
+              <OutboundLink
                 href={row.page_url}
-                target="_blank"
-                rel="noreferrer"
                 title="Open the live page in a new tab"
                 aria-label="Open the live page in a new tab"
                 className="shrink-0 rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
                 onClick={(event) => event.stopPropagation()}
               >
                 <ExternalLink className="h-3.5 w-3.5" />
-              </a>
+              </OutboundLink>
             ) : null}
           </div>
         ) : (

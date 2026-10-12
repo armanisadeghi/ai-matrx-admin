@@ -62,6 +62,7 @@ import { googleImageNote, googleReadyMarkdown } from "./doc-images";
 import { documentNameFrom, isPlaceholderName } from "./importers";
 import { renameDocument } from "@/features/documents/document-service";
 import { useGoogleWorkspaceConnection } from "./useGoogleWorkspaceConnection";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /** What a host editor lends the control. Content is a workbook snapshot or markdown. */
 export interface GoogleLinkAdapter {
@@ -220,11 +221,11 @@ export function useGoogleLink(adapter: GoogleLinkAdapter, editable: boolean, act
 
   const proposed = (assistId: string) =>
     toast.info(SENT_FOR_APPROVAL_MESSAGE, {
-      action: { label: "Open", onClick: () => window.open(approvalQueueHref(assistId), "_blank") },
+      action: { label: "Open", onClick: () => openOutbound(approvalQueueHref(assistId), "_blank") },
     });
 
   const openInGoogle = (href: string | null) => {
-    if (href) window.open(href, "_blank", "noopener");
+    if (href) openOutbound(href, "_blank", "noopener");
   };
 
   const run = async (kind: NonNullable<typeof busy>, work: () => Promise<void>) => {

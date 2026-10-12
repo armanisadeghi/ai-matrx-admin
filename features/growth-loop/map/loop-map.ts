@@ -973,7 +973,7 @@ export const GAPS: LoopGap[] = [
     status: "closed",
     at: "crawl->measure",
     breaks: ["code"],
-    detail:
+    detail: // outbound-ok: prose about a URL, not a link
       "CLOSED 2026-08-13, both halves. (1) THE ID: client_pages.web_page_id (CMS migration 0037) carries the web.page a CMS page serves — the plan_node_id pattern applied to the measurement half, unique per site so a measured URL has exactly one CMS page. NOT an association edge: client_pages lives in the separate CMS Postgres, so it has no canonical entity token and an edge to it could never be validated or reaped. ONE writer each side (page_service.set_web_page_link / the /api/cms/pages set-web-page-link action, both ownership-checked and activity-logged; the column is absent from every generic update field list). resolvePushTarget now resolves by id first, exact route key second, and a case-insensitive alias only when it names exactly ONE candidate — and it never reuses a page linked to a different measured page. Proven live against both databases: with the crawler recording /About/, /Services/Service-1 and /contact?utm_source=nav, the raw-string join landed on the RIGHT page 1 of 3 (one silent WRONG PAGE, one silent miss) while the id join resolved 3 of 3, and the unique index refused a second claim. (2) THE TWIN: the fifth route comparer (normalizeRoutePath) is deleted — pageRouteKey is the only one — and the TS half now runs the same url-identity-rules.json fixture as matrx-scraper, byte-identical and SHA-256-pinned in both suites, with pnpm check:url-identity failing on a one-sided edit before either suite runs.",
     lane: "L3",
     evidence: "aidream/db/migrations/cms/0037_client_page_web_page_link.sql",

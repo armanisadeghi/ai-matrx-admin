@@ -41,6 +41,7 @@ import {
   ADMIN_APPLICATIONS_SURFACE_NAME,
   createAdminApplicationsScope,
 } from "@/features/surfaces/manifests/admin-applications.manifest";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 interface ApplicationsHistoryClientProps {
   initialEntries: ApplicationsHistoryEntry[];
@@ -285,10 +286,10 @@ export function ApplicationsHistoryClient({
                     description: "Open the configuration or catalog record",
                     onSelect: () => {
                       if (!clickedRow) return;
-                      window.open(
+                      openOutbound(
                         recordHref(clickedRow),
                         "_blank",
-                        "noopener,noreferrer",
+                        "noopener",
                       );
                     },
                   },

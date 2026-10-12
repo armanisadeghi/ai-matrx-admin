@@ -33,6 +33,7 @@ import { marketingRoutes } from "@/features/marketing/lib/routes";
 import type { BrandProperty } from "@/features/marketing/types";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 function joinTitle(label: string, cost: string | null): string {
   return cost ? `${label} · ${cost}` : label;
 }
@@ -336,16 +337,14 @@ function SocialRow({
         ) : null}
         {captureNode}
         {row.externalUrl ? (
-          <a
+          <OutboundLink
             href={row.externalUrl}
-            target="_blank"
-            rel="noreferrer"
             title={`Open on ${platformLabel(row.platform)}`}
             aria-label={`Open ${row.displayName} on ${platformLabel(row.platform)}`}
             className={ICON_BUTTON}
           >
             <ExternalLink className="h-3.5 w-3.5" />
-          </a>
+          </OutboundLink>
         ) : null}
         {onEdit ? (
           <button type="button" title="Edit property" aria-label="Edit property" onClick={onEdit} className={ICON_BUTTON}>
@@ -389,9 +388,9 @@ function ExtraRow({
       </div>
       <span className="flex shrink-0 items-center gap-1">
         {href ? (
-          <a href={href} target="_blank" rel="noreferrer" title="Open link" aria-label="Open link" className={ICON_BUTTON}>
+          <OutboundLink href={href} title="Open link" aria-label="Open link" className={ICON_BUTTON}>
             <ExternalLink className="h-3.5 w-3.5" />
-          </a>
+          </OutboundLink>
         ) : null}
         {onEdit ? (
           <button type="button" title="Edit property" aria-label="Edit property" onClick={onEdit} className={ICON_BUTTON}>

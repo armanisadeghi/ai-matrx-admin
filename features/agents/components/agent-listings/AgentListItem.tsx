@@ -40,6 +40,7 @@ import { Button } from "@/components/ui/button";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { useAgentView } from "@ai-matrx/chat/agents/identity/agent-identity";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 interface AgentListItemProps {
   id: string;
@@ -90,7 +91,7 @@ export function AgentListItem({
 
   const handleItemClick = (e: React.MouseEvent) => {
     if (e.metaKey || e.ctrlKey) {
-      window.open(`${basePath}/${id}/run`, "_blank");
+      openOutbound(`${basePath}/${id}/run`, "_blank");
       return;
     }
     const timeSinceClose = Date.now() - lastModalCloseTime;

@@ -7,6 +7,7 @@ import { SettingsRow } from "../SettingsRow";
 import { cn } from "@/lib/utils";
 import { useSettingsNavigate } from "@/features/settings/components/SettingsPresentationContext";
 import type { SettingsCommonProps } from "../types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export type SettingsLinkProps = SettingsCommonProps & {
   /** Internal route (href starting with "/") or external URL. */
@@ -45,15 +46,13 @@ export function SettingsLink({
   return (
     <SettingsRow {...rowProps} id={id} variant="inline" last={last}>
       {isExternal ? (
-        <a
+        <OutboundLink
           href={href}
-          target="_blank"
-          rel="noopener noreferrer"
           className={anchorClasses}
         >
           <span>{labelText}</span>
           <Icon className="h-3.5 w-3.5" />
-        </a>
+        </OutboundLink>
       ) : (
         <AppLink
           href={href}

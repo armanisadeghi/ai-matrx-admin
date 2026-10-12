@@ -27,6 +27,7 @@ import { useOpenSourceInspectorWindow } from "@/features/overlays/openers/source
 import { useOpenNotesWindow } from "@/features/overlays/openers/notesWindow";
 import { useOpenTranscriptStudioWindow } from "@/features/overlays/openers/transcriptStudioWindow";
 import { useOpenScraperWindow } from "@/features/overlays/openers/scraperWindow";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 // Canonical home: `@/utils/navigation/should-open-in-new-tab` — re-exported
 // here so existing Knowledge/KG imports keep working.
@@ -106,7 +107,7 @@ export function useOpenCitation() {
           // No dedicated window for this kind — open its canonical viewer in a
           // new tab so the user still lands on the real thing.
           if (typeof window !== "undefined") {
-            window.open(c.href, "_blank", "noopener,noreferrer");
+            openOutbound(c.href, "_blank", "noopener");
           }
           return;
       }

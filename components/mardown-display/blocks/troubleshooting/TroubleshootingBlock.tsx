@@ -47,6 +47,7 @@ import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artif
 import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-registry";
 import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
 import { convertTroubleshootingToTasks } from "@/features/tasks/utils/importConverters";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface TroubleshootingData {
   title: string;
@@ -687,22 +688,20 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
                                                                       link,
                                                                       linkIndex,
                                                                     ) => (
-                                                                      <a
+                                                                      <OutboundLink
                                                                         key={
                                                                           linkIndex
                                                                         }
                                                                         href={
                                                                           link.url
                                                                         }
-                                                                        target="_blank"
-                                                                        rel="noopener noreferrer"
                                                                         className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                                                                       >
                                                                         <ExternalLink className="h-3 w-3" />
                                                                         {
                                                                           link.title
                                                                         }
-                                                                      </a>
+                                                                      </OutboundLink>
                                                                     ),
                                                                   )}
                                                                 </div>

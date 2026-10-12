@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { GitHubConnectionCard } from "./GitHubConnectionCard";
 import type { GitHubRepository } from "./types";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * Search over what the row actually SHOWS: full name, public/private word, and
@@ -146,15 +147,13 @@ export function GitHubRepositoryPicker({
                         {repository.archived ? " · archived" : ""}
                       </span>
                     </button>
-                    <a
+                    <OutboundLink
                       className="shrink-0 text-muted-foreground hover:text-foreground"
                       href={repository.htmlUrl}
-                      target="_blank"
-                      rel="noreferrer"
                       aria-label={`Open ${repository.fullName} on GitHub`}
                     >
                       <ExternalLink className="h-3 w-3" />
-                    </a>
+                    </OutboundLink>
                   </div>
                 </li>
               );

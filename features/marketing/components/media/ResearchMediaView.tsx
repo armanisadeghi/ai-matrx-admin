@@ -36,6 +36,7 @@ import {
 } from "@/features/files/redux/converters";
 import type { ResearchImageRow } from "@/features/marketing/data/media-library";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function hostnameOf(url: string | null): string | null {
   if (!url) return null;
@@ -285,14 +286,12 @@ export function ResearchMediaView({
                         variant="quiet"
                         asChild
                       >
-                        <a
+                        <OutboundLink
                           href={row.sourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
                           title="Open the source page"
                         >
                           <ExternalLink className="h-3 w-3" />
-                        </a>
+                        </OutboundLink>
                       </Button>
                     ) : null}
                     <Button

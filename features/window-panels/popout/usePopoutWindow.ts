@@ -48,6 +48,7 @@ import {
 import { cloneStylesIntoDocument } from "./cloneStyles";
 import { markPopoutPending, clearPopoutPending } from "./popoutPendingStorage";
 import { buildDockWindowPayload } from "./dockWindowPayload";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export interface OpenPopoutOptions {
   width: number;
@@ -176,7 +177,7 @@ export function usePopoutWindow(windowId: string): UsePopoutWindowReturn {
           `height=${Math.max(120, Math.round(opts.height))}`,
         ].join(",");
         try {
-          pipWin = window.open("", `popout-${windowId}`, features);
+          pipWin = openOutbound("", `popout-${windowId}`, features);
           mode = "popup";
         } catch (err) {
           console.error("[popout] window.open failed:", err);

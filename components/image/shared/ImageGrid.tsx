@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 // FilePreview from @/features/files with a fileId.
 import { EnhancedFileDetails } from '@/utils/file-operations/constants';
 import { SelectableImageCard } from './SelectableImageCard';
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 interface ImageGridProps {
   images: ImageSource[];
@@ -67,7 +68,7 @@ export function ImageGrid({
       return;
     }
     if (typeof window !== "undefined") {
-      window.open(image.url, "_blank", "noopener,noreferrer");
+      openOutbound(image.url, "_blank", "noopener");
     }
   };
 

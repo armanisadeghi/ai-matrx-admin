@@ -51,6 +51,7 @@ import {
 } from "@ai-matrx/chat/agents/format";
 import { useAgentModelLabel } from "@ai-matrx/chat/agents/hooks/useAgentModelLabel";
 import { useAgentView } from "@ai-matrx/chat/agents/identity/agent-identity";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 interface AgentCardProps {
   id: string;
@@ -245,7 +246,7 @@ export function AgentCard({
     // rendered by this card is not a click on the card body.
     if (!e.currentTarget.contains(e.target as Node)) return;
     if (e.metaKey || e.ctrlKey) {
-      window.open(`${basePath}/${id}/run`, "_blank");
+      openOutbound(`${basePath}/${id}/run`, "_blank");
       return;
     }
     const timeSinceClose = Date.now() - lastModalCloseTime;

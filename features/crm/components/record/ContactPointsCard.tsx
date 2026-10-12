@@ -76,6 +76,7 @@ import {
   formatContactPointsCopy,
   type CrmRecordCopyParent,
 } from "./record-copy";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** Brand marks for platform identities — the one shim module, never lucide. */
 const PLATFORM_ICONS: Record<string, LucideIcon> = {
@@ -436,10 +437,8 @@ export function ContactPointsCard({
               >
                 <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                 {shown.href ? (
-                  <a
+                  <OutboundLink
                     href={shown.href}
-                    target="_blank"
-                    rel="noreferrer"
                     className="inline-flex min-h-11 min-w-0 items-center truncate text-sm text-primary underline decoration-primary/40 underline-offset-2 hover:decoration-primary sm:min-h-0"
                     title={
                       shown.raw
@@ -448,7 +447,7 @@ export function ContactPointsCard({
                     }
                   >
                     {shown.text}
-                  </a>
+                  </OutboundLink>
                 ) : (
                   <span
                     className="min-w-0 truncate text-sm text-foreground"

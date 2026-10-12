@@ -17,6 +17,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 type Pick = (applet: AppletCardInfo) => void;
 
 let current: Pick | null = null;
@@ -97,9 +98,9 @@ function Lists({ onPick }: { onPick: Pick }) {
             {a.description ? <span className="max-w-[45%] truncate type-secondary text-muted-foreground">{a.description}</span> : null}
           </Button>
         ))}
-        <a href={NEW_APPLET_HREF} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-2 type-body text-muted-foreground hover:text-foreground" data-clickable="">
+        <OutboundLink href={NEW_APPLET_HREF} className="flex items-center gap-2 px-3 py-2 type-body text-muted-foreground hover:text-foreground" data-clickable="">
           <Plus size={15} aria-hidden /> Build a new Applet
-        </a>
+        </OutboundLink>
       </div>
     </>
   );

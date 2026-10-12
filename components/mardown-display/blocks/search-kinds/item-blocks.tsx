@@ -41,6 +41,7 @@ import {
   SearchChip,
   SearchFavicon,
 } from "./search-kind-shared";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface SearchKindBlockProps {
   serverData?: unknown;
@@ -103,10 +104,8 @@ export function WebResultBlock({ serverData, className }: SearchKindBlockProps) 
             </div>
           </div>
 
-          <a
+          <OutboundLink
             href={url ?? undefined}
-            target="_blank"
-            rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
             className="group/link mt-1.5 flex items-start gap-1.5"
           >
@@ -114,7 +113,7 @@ export function WebResultBlock({ serverData, className }: SearchKindBlockProps) 
               {title}
             </span>
             <ExternalLink className="mt-1.5 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/result:opacity-100" />
-          </a>
+          </OutboundLink>
 
           {snippet && (
             <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
@@ -143,16 +142,14 @@ export function WebResultBlock({ serverData, className }: SearchKindBlockProps) 
                 const linkUrl = text(link.url);
                 if (!linkTitle || !linkUrl) return null;
                 return (
-                  <a
+                  <OutboundLink
                     key={i}
                     href={linkUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
                     className="text-xs text-primary underline-offset-2 hover:underline"
                   >
                     {linkTitle}
-                  </a>
+                  </OutboundLink>
                 );
               })}
             </div>
@@ -184,10 +181,8 @@ export function NewsResultBlock({ serverData, className }: SearchKindBlockProps)
   const date = dateLine(value, formatDate);
 
   return (
-    <a
+    <OutboundLink
       href={url ?? undefined}
-      target="_blank"
-      rel="noopener noreferrer"
       onClick={(e) => e.stopPropagation()}
       className={cn(
         "group flex max-w-xl flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-primary/40",
@@ -227,7 +222,7 @@ export function NewsResultBlock({ serverData, className }: SearchKindBlockProps)
           {text(value.author) && <span className="truncate">· {text(value.author)}</span>}
         </div>
       </div>
-    </a>
+    </OutboundLink>
   );
 }
 
@@ -249,10 +244,8 @@ export function VideoResultBlock({ serverData, className }: SearchKindBlockProps
     .join(" · ");
 
   return (
-    <a
+    <OutboundLink
       href={url ?? undefined}
-      target="_blank"
-      rel="noopener noreferrer"
       onClick={(e) => e.stopPropagation()}
       className={cn(
         "group flex max-w-xl flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-primary/40",
@@ -289,7 +282,7 @@ export function VideoResultBlock({ serverData, className }: SearchKindBlockProps
           </div>
         )}
       </div>
-    </a>
+    </OutboundLink>
   );
 }
 
@@ -319,10 +312,8 @@ export function FaqItemBlock({ serverData, className }: SearchKindBlockProps) {
             </p>
           )}
           {sourceUrl && (
-            <a
+            <OutboundLink
               href={sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
               className="mt-1.5 inline-flex max-w-full items-center gap-1.5 text-xs text-primary underline-offset-2 hover:underline"
             >
@@ -332,7 +323,7 @@ export function FaqItemBlock({ serverData, className }: SearchKindBlockProps) {
                 className="h-3.5 w-3.5 rounded"
               />
               <span className="truncate">{sourceTitle ?? sourceUrl}</span>
-            </a>
+            </OutboundLink>
           )}
         </div>
       </div>
@@ -373,15 +364,13 @@ export function DiscussionResultBlock({
           <span className="truncate">{text(value.forum_name) ?? ""}</span>
           {date && <span className="opacity-80">· {date}</span>}
         </div>
-        <a
+        <OutboundLink
           href={url ?? undefined}
-          target="_blank"
-          rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
           className="mt-0.5 block text-sm font-medium leading-snug text-primary underline-offset-2 hover:underline"
         >
           {title}
-        </a>
+        </OutboundLink>
         {body && (
           <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
             {body}

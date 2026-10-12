@@ -56,6 +56,7 @@ import {
 import { validateAppTags } from "@/features/applets/route/applet-entity-writes";
 import { pushAppHref } from "@/lib/deployment/navigate";
 import { usePointsRate } from "@/components/cost/pointsRate.client";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // `AppletAdminView` is a hand-narrowed subset of the real DB row used by the
 // list/analytics surfaces (no component_code/variable_schema/shell_* fields).
@@ -401,15 +402,13 @@ export default function AdminEditAppletPage({
           <Badge variant="outline" className="text-[10px]">
             {app.status}
           </Badge>
-          <a
+          <OutboundLink
             href={`/applets/${app.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
             className="text-primary inline-flex items-center gap-1 text-xs hover:underline"
           >
             /applets/{app.slug}
             <ExternalLink className="h-3 w-3" />
-          </a>
+          </OutboundLink>
         </div>
         <div className="ml-auto flex-shrink-0">
           <CopyButtons

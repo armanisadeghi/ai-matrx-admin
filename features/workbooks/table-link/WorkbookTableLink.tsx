@@ -37,6 +37,7 @@ import { RECORD_ID_HEADER, parseSheet, type TableLink } from "./link-model";
 import { matchRowsToRecords } from "./sync-plan";
 import { readLinks, readPendingLinks, readTableForSheet, writeLink, writePendingLink, type PendingTableLink } from "./link-service";
 import { settleLink, TableSyncDialog, writeCells, type SyncDirection } from "./TableSyncDialog";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** The workbook's name; with its sheet's when the sheet was named on purpose ("Sheet1" adds nothing). */
 export function tableNameOffer(workbookName: string | undefined, sheetName: string): string {
@@ -318,9 +319,9 @@ export function useWorkbookTableLink({
         </>
       )}
       <DropdownMenuItem asChild>
-        <a href={`/data/${link.table_id}`} target="_blank" rel="noreferrer">
+        <OutboundLink href={`/data/${link.table_id}`}>
           <ExternalLink className="size-4" aria-hidden /> Open table
-        </a>
+        </OutboundLink>
       </DropdownMenuItem>
       {editable && (
         <>

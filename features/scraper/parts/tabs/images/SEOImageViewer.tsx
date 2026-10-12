@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Skeleton, } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 interface SEOImageMetadata {
   url: string;
@@ -174,7 +175,7 @@ export function SEOImageViewer({
                 <Button
                   icon={<ExternalLink />} aria-label="Open" 
                   variant="quiet" 
-                  onClick={() => window.open(currentImageUrl, '_blank')}
+                  onClick={() => openOutbound(currentImageUrl, '_blank')}
                 />
               </div>
             </div>

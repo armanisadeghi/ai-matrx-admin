@@ -58,6 +58,7 @@ import { useMarketingSubView } from "@/features/marketing/lib/useMarketingSubVie
 import { useAuthorityRouter } from "./useAuthorityRouter";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { NO_RAW_ROW_WINDOW } from "@/features/marketing/social/row-open";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * `view` fixes the screen from the ROUTE — the agency-model tree gives each
@@ -600,16 +601,14 @@ function EvidenceTable({
           <span className="truncate font-mono font-medium">
             {page.path || pathOf(page.url)}
           </span>
-          <a
+          <OutboundLink
             href={page.url}
-            target="_blank"
-            rel="noreferrer"
             className="shrink-0 text-muted-foreground hover:text-primary"
             aria-label={`Open ${page.url} live`}
             onClick={(event) => event.stopPropagation()}
           >
             <ExternalLink className="h-3 w-3" />
-          </a>
+          </OutboundLink>
         </div>
       ),
     },

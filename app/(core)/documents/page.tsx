@@ -41,6 +41,7 @@ import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** One-time adoption of the device-local key this hub used before the list-view hook. */
 const DOCUMENTS_HUB_LEGACY_VIEW: LegacyListViewImport = {
@@ -203,16 +204,14 @@ export default function DocumentsLandingPage() {
         marksFor={(doc) => {
           const link = googleLinkIn(doc.metadata)?.webViewLink;
           return link ? (
-            <a
+            <OutboundLink
               href={link}
-              target="_blank"
-              rel="noopener noreferrer"
               className="inline-flex shrink-0 items-center"
               title="Open in Google Docs"
               aria-label="Open in Google Docs"
             >
               <GoogleDocsMark className="size-3.5" />
-            </a>
+            </OutboundLink>
           ) : null;
         }}
         wrap={(list, home) => (

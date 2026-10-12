@@ -71,6 +71,7 @@ import {
   derivedCompetitorLabel,
 } from "./CompetitorIdentification";
 import { ProTextarea } from "@/components/official/ProTextarea";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const SOURCE = "ground_truth_queue";
 
@@ -337,10 +338,8 @@ export function GroundTruthQueue({
         header: "Competitor",
         filter: "text",
         cell: (row) => (
-          <a
+          <OutboundLink
             href={`https://${row.display_domain}`}
-            target="_blank"
-            rel="noreferrer"
             onClick={(event) => event.stopPropagation()}
             className="inline-flex max-w-64 items-center gap-1 truncate font-medium text-primary hover:underline"
           >
@@ -348,7 +347,7 @@ export function GroundTruthQueue({
               {row.display_name || row.display_domain}
             </span>
             <ArrowUpRight className="size-3 shrink-0" />
-          </a>
+          </OutboundLink>
         ),
       },
       {

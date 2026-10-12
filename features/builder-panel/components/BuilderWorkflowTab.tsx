@@ -27,6 +27,7 @@ import type { BuilderEntry } from "../types";
 import type { MandateProposal } from "../data";
 import { BuilderValue } from "./BuilderValue";
 import { ProposalCard } from "./ProposalCard";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type Tone = "neutral" | "success" | "warning" | "destructive" | "info";
 const PHASE_TONE: Record<string, Tone> = {
@@ -100,9 +101,9 @@ function RunGraph({ runId, label }: { runId: string; label: string }) {
             Watch AI
           </Button>
           <Button variant="quiet" asChild icon={<ExternalLink className="h-3.5 w-3.5" />}>
-            <a href={runHref(runId)} target="_blank" rel="noopener noreferrer">
+            <OutboundLink href={runHref(runId)}>
               Open run
-            </a>
+            </OutboundLink>
           </Button>
         </div>
       </div>

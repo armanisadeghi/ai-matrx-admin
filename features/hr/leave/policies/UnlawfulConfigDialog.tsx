@@ -65,6 +65,7 @@ import type {
 } from "../manager/api/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { asClause } from "@ai-matrx/kit/text";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** The jurisdictions named by a set of findings, in the order they were returned. */
 function jurisdictionsOf(findings: LeaveConfigViolation[]): string[] {
@@ -146,15 +147,13 @@ function WhyDisclosure({ finding }: { finding: LeaveConfigViolation }) {
               in a new tab — the admin never loses the form they are in the middle of.
             */}
             {citation.url ? (
-              <a
+              <OutboundLink
                 href={citation.url}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
               >
                 Open the source
                 <ExternalLink className="h-3 w-3" />
-              </a>
+              </OutboundLink>
             ) : null}
             {/*
               Live rows carry `confidence: 'unverified'` alongside an authority that says so in

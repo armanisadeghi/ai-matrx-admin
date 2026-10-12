@@ -34,6 +34,7 @@ import {
 import { formatFieldValue } from "@ai-matrx/design-system/field-formats";
 import { getFieldFormat } from "@ai-matrx/design-system/field-formats";
 import type { FieldChoice, FieldFormatConfig } from "@ai-matrx/design-system/field-formats";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const MISMATCH_CLASS =
   "text-amber-600 dark:text-amber-400 decoration-amber-400/60 underline decoration-dotted underline-offset-2";
@@ -222,32 +223,28 @@ function renderRich(
       );
     case "url":
       return (
-        <a
+        <OutboundLink
           href={text.includes("://") ? text : `https://${text}`}
-          target="_blank"
-          rel="noopener noreferrer"
           className={linkClass}
           onClick={(e) => e.stopPropagation()}
         >
           <ExternalLink className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">{text}</span>
-        </a>
+        </OutboundLink>
       );
     case "attachment":
       return <AttachmentChips value={raw} className={className} />;
     case "address":
       return (
-        <a
+        <OutboundLink
           href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(text)}`}
-          target="_blank"
-          rel="noopener noreferrer"
           className={linkClass}
           title="Open in maps"
           onClick={(e) => e.stopPropagation()}
         >
           <MapPin className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">{text}</span>
-        </a>
+        </OutboundLink>
       );
     case "progress": {
       const n = Number(raw);

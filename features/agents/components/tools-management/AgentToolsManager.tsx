@@ -138,6 +138,7 @@ import { readOf } from "@ai-matrx/design-system";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { InfoHint } from "@/components/official/InfoHint";
 import { loadAvailableTools, selectAllTools, selectToolsStatus, useToolCatalog } from "@ai-matrx/chat/agents/identity/tool-catalog";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type ToolsTab = "server" | "custom" | "client" | "mcp";
 
@@ -2985,24 +2986,20 @@ function McpAgentServerCard({
           </div>
           <div className="flex gap-2 pt-1">
             {entry.websiteUrl && (
-              <a
+              <OutboundLink
                 href={entry.websiteUrl}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="type-meta text-primary hover:underline"
               >
                 Website
-              </a>
+              </OutboundLink>
             )}
             {entry.docsUrl && (
-              <a
+              <OutboundLink
                 href={entry.docsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="type-meta text-primary hover:underline"
               >
                 Documentation
-              </a>
+              </OutboundLink>
             )}
           </div>
 
@@ -3070,14 +3067,12 @@ export function BearerTokenForm({ entry }: { entry: McpCatalogEntry }) {
         {entry.docsUrl && (
           <>
             {" "}
-            <a
+            <OutboundLink
               href={entry.docsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
               className="text-primary hover:underline"
             >
               See docs
-            </a>
+            </OutboundLink>
           </>
         )}
       </p>
@@ -3170,14 +3165,12 @@ export function ApiKeyForm({ entry }: { entry: McpCatalogEntry }) {
         {entry.docsUrl && (
           <>
             {" "}
-            <a
+            <OutboundLink
               href={entry.docsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
               className="text-primary hover:underline"
             >
               See docs
-            </a>
+            </OutboundLink>
           </>
         )}
       </p>
@@ -3328,14 +3321,12 @@ export function EnvVarForm({ entry }: { entry: McpCatalogEntry }) {
         <p>No local configurations available for this server.</p>
         <p className="mt-1 type-meta">
           Needs a local stdio setup; see the{" "}
-          <a
+          <OutboundLink
             href={entry.docsUrl ?? "#"}
-            target="_blank"
-            rel="noopener noreferrer"
             className="text-primary hover:underline"
           >
             documentation
-          </a>
+          </OutboundLink>
         </p>
       </div>
     );

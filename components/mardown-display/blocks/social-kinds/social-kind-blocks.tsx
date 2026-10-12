@@ -30,6 +30,7 @@ import {
 import { relativeAge } from "@/features/marketing/social/mappers";
 import { formatCompact, outlierBadgeModel } from "@/features/marketing/social/outlier";
 import { num, readSearchKindValue, text } from "../search-kinds/search-kind-data";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface SocialKindBlockProps {
   serverData?: unknown;
@@ -171,15 +172,13 @@ export function SocialPostBlock({ serverData, className }: SocialKindBlockProps)
             </p>
           ) : null}
           {card.url ? (
-            <a
+            <OutboundLink
               href={card.url}
-              target="_blank"
-              rel="noreferrer noopener"
               className="inline-flex w-fit items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
             >
               <ExternalLink className="h-3 w-3" />
               Open original
-            </a>
+            </OutboundLink>
           ) : null}
         </div>
       </div>
@@ -272,15 +271,13 @@ export function SocialProfileBlock({ serverData, className }: SocialKindBlockPro
       </div>
       {bio ? <p className="line-clamp-3 whitespace-pre-line text-xs text-muted-foreground">{bio}</p> : null}
       {url ? (
-        <a
+        <OutboundLink
           href={url}
-          target="_blank"
-          rel="noreferrer noopener"
           className="inline-flex w-fit items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
         >
           <ExternalLink className="h-3 w-3" />
           Open profile
-        </a>
+        </OutboundLink>
       ) : null}
     </div>
   );
@@ -306,15 +303,13 @@ export function OutlierRowBlock({ serverData, className }: SocialKindBlockProps)
         </p>
       </div>
       {card.url ? (
-        <a
+        <OutboundLink
           href={card.url}
-          target="_blank"
-          rel="noreferrer noopener"
           aria-label="Open original"
           className="shrink-0 text-muted-foreground hover:text-foreground"
         >
           <ExternalLink className="h-3.5 w-3.5" />
-        </a>
+        </OutboundLink>
       ) : null}
     </div>
   );
@@ -365,15 +360,13 @@ export function AdCreativeBlock({ serverData, className }: SocialKindBlockProps)
         {num(value.impressions) !== null ? <span>{compact(value.impressions)} impressions</span> : null}
       </div>
       {landing ? (
-        <a
+        <OutboundLink
           href={landing}
-          target="_blank"
-          rel="noreferrer noopener"
           className="inline-flex w-fit max-w-full items-center gap-1 truncate text-[11px] text-muted-foreground hover:text-foreground"
         >
           <ExternalLink className="h-3 w-3 shrink-0" />
           <span className="truncate">{landing}</span>
-        </a>
+        </OutboundLink>
       ) : null}
     </div>
   );

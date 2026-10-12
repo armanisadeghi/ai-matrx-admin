@@ -38,6 +38,7 @@ import { useQuickNoteSave } from "./useQuickNoteSave";
 import { NOTE_DRAFT_FIELDS } from "./quickNoteSaveVocabulary";
 import { useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export type PostSaveAction = "newTab" | "navigate" | "openWindow" | "none";
 
@@ -254,7 +255,7 @@ export function QuickNoteSaveCore({
     (action: PostSaveAction) => {
       if (!savedNote) return;
       if (action === "newTab") {
-        window.open(`/notes/${savedNote.id}`, "_blank", "noopener,noreferrer");
+        openOutbound(`/notes/${savedNote.id}`, "_blank", "noopener");
       } else if (action === "navigate") {
         router.push(`/notes/${savedNote.id}`);
       } else if (action === "openWindow") {

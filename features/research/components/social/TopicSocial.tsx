@@ -35,6 +35,8 @@ import {
   subjectVoiceOf,
   type SocialSourceFacts,
 } from "../../utils/socialSource";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const SOCIAL_SOURCE_LIMIT = 1000;
 
@@ -162,9 +164,9 @@ function ProfileName({ brandId, platform, handle, name, externalUrl }: { brandId
     );
   }
   return (
-    <a href={externalUrl} target="_blank" rel="noopener noreferrer" className={className}>
+    <OutboundLink href={externalUrl} className={className}>
       {name}
-    </a>
+    </OutboundLink>
   );
 }
 
@@ -310,14 +312,12 @@ export default function TopicSocial() {
                         <p className="line-clamp-3 whitespace-pre-line type-meta text-muted-foreground">{found.facts.bio}</p>
                       )}
                       <div className="flex flex-wrap gap-3 pt-1">
-                        <a
+                        <OutboundLink
                           href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
                           className="inline-flex items-center gap-0.5 type-meta text-muted-foreground hover:text-foreground"
                         >
                           Open profile <ArrowUpRight className="h-3 w-3" />
-                        </a>
+                        </OutboundLink>
                         <TrackInSocials brandId={brandId} url={url} />
                         {!found && topic?.organization_id && GUIDED_CAPTURE_PLATFORMS.has(h.platform) ? (
                           <button
@@ -350,7 +350,7 @@ export default function TopicSocial() {
                 <SocialPostCard
                   key={p.postId}
                   post={p}
-                  onOpen={(post) => window.open(post.url, "_blank", "noopener,noreferrer")}
+                  onOpen={(post) => openOutbound(post.url, "_blank", "noopener")}
                 />
               ))}
             </div>

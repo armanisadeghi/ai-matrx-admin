@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { ProcessForRagButton } from "@/features/rag/components/ProcessForRagButton";
 import { LibraryPreviewPage } from "@/features/rag/components/library/LibraryPreviewPage";
 import { useNoteIngestStatus } from "../hooks/useNoteIngestStatus";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /** Light up `useNoteIngestStatus` everywhere instantly. ProcessForRagButton
  *  only clears the cld_file cache; for notes the panel fires the
@@ -86,10 +87,10 @@ export function NoteKnowledgePanel({ noteId }: { noteId: string }) {
             icon={<ExternalLink />}
             variant="outline"
             onClick={() =>
-              window.open(
+              openOutbound(
                 `/knowledge/viewer/${documentId}`,
                 "_blank",
-                "noopener,noreferrer",
+                "noopener",
               )
             }
           > Full viewer

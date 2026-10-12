@@ -130,6 +130,7 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type BridgeAction =
   | "link"
@@ -1377,15 +1378,13 @@ function Rung({
 /** A small always-new-tab door to a result the step produced. */
 function DoorLink({ href, label }: { href: string; label: string }) {
   return (
-    <a
+    <OutboundLink
       href={href}
-      target="_blank"
-      rel="noreferrer"
       className="inline-flex shrink-0 items-center gap-1 text-[11px] font-medium text-primary hover:underline"
     >
       <ExternalLink className="h-3 w-3" />
       {label}
-    </a>
+    </OutboundLink>
   );
 }
 

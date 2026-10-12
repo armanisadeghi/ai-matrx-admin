@@ -46,6 +46,7 @@ import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { StaleDataNotice } from "@ai-matrx/design-system";
 import { extractErrorMessage } from "@/utils/errors";
 import { Chip } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function fact(label: string, value: ReactNode) {
   return (
@@ -82,15 +83,13 @@ function section(
 
 function externalUrl(url: string, label?: string) {
   return (
-    <a
+    <OutboundLink
       href={url}
-      target="_blank"
-      rel="noopener noreferrer"
       className="group inline-flex min-w-0 items-start gap-1.5 break-all font-mono text-xs leading-5 text-primary hover:underline"
     >
       <span className="break-all">{label ?? url}</span>
       <ExternalLink className="mt-1 h-3 w-3 shrink-0" />
-    </a>
+    </OutboundLink>
   );
 }
 
@@ -462,24 +461,20 @@ export function BacklinkEnrichmentDetail({
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">
             <Button asChild type="button" variant="outline">
-              <a
+              <OutboundLink
                 href={row.source_url}
-                target="_blank"
-                rel="noopener noreferrer"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
                 Open source page
-              </a>
+              </OutboundLink>
             </Button>
             <Button asChild type="button" variant="outline">
-              <a
+              <OutboundLink
                 href={row.target_url}
-                target="_blank"
-                rel="noopener noreferrer"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
                 Open target page
-              </a>
+              </OutboundLink>
             </Button>
             <Button asChild type="button" variant="outline">
               <Link

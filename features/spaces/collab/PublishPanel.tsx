@@ -24,6 +24,7 @@ import {
 } from "../publish/publish-doors";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 function Toggle({
   label,
   checked,
@@ -168,7 +169,7 @@ export function PublishPanel({ spaceId }: { spaceId: string }) {
           variant="quiet"
           aria-label="Open the public page"
           title="Open"
-          onClick={() => window.open(url, "_blank", "noopener")}
+          onClick={() => openOutbound(url, "_blank", "noopener")}
         >
           <ArrowUpRight size={15} />
         </Button>

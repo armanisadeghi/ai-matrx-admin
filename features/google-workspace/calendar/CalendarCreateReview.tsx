@@ -35,6 +35,7 @@ import type { SelectedCalendar } from "./selectedCalendarService";
 import { googleCalendarHref } from "./record";
 import { createResultLocalRefresh } from "./calendarLocalRefresh";
 import { CalendarSavedCopyStatus } from "./CalendarSavedCopyStatus";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface CalendarCreateTransport {
   preview(request: CalendarCreateRequest): Promise<CalendarCreateIntent>;
@@ -526,7 +527,7 @@ export function CalendarCreateReview({
               ) : null}
               <p>This event may already exist. Check the original Google source before continuing.</p>
               <p>Review {saved.request.summary} at {saved.request.starts_at} in {saved.account_label} · {saved.calendar_summary}.</p>
-              {originalSourceHref ? <a className="inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline" href={originalSourceHref} target="_blank" rel="noreferrer">Open original event in Google Calendar <ExternalLink className="h-3.5 w-3.5" /></a> : null}
+              {originalSourceHref ? <OutboundLink className="inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline" href={originalSourceHref}>Open original event in Google Calendar <ExternalLink className="h-3.5 w-3.5" /></OutboundLink> : null}
               {["uncertain", "reconciliation_required"].includes(saved.phase) ? (
                 <Button type="button" variant="outline" onClick={() => void checkOriginalSource()} disabled={!scopeMatches || busy !== null}>{busy === "source" ? "Checking…" : "Check original source"}</Button>
               ) : null}
@@ -542,14 +543,12 @@ export function CalendarCreateReview({
                 <Input mono readOnly value={verifiedSource.eventId} />
               </label>
               <p>This source read confirms the matching event. It does not verify the create response, guests, body, or notifications.</p>
-              <a
+              <OutboundLink
                 className="inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline"
                 href={verifiedSource.href}
-                target="_blank"
-                rel="noreferrer"
               >
                 Open verified event in Google Calendar <ExternalLink className="h-3.5 w-3.5" />
-              </a>
+              </OutboundLink>
               <Button type="button" variant="outline" onClick={startAnother}>Create another event</Button>
             </div>
           ) : null}
@@ -562,17 +561,15 @@ export function CalendarCreateReview({
                 <Input mono readOnly value={saved.result?.result.provider_event_id ?? ""} />
               </label>
               {saved.result ? (
-                <a
+                <OutboundLink
                   className="inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline"
                   href={googleCalendarHref({
                     external_id: saved.result.result.provider_event_id,
                     calendar_id: saved.result.result.calendar_id,
                   }, saved.result.result.account_email) ?? undefined}
-                  target="_blank"
-                  rel="noreferrer"
                 >
                   Open event in Google Calendar <ExternalLink className="h-3.5 w-3.5" />
-                </a>
+                </OutboundLink>
               ) : null}
               <Button type="button" variant="outline" onClick={startAnother}>Create another event</Button>
             </div>

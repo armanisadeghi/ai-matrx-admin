@@ -136,6 +136,7 @@ import { selectOrganizationsList } from "@/features/scopes/redux/selectors/tree"
 import { splitConnectionsByOwnership } from "@/features/connectors/connection-ownership";
 import { useConnectionViewer } from "@/features/connectors/useConnectionViewer";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -1681,26 +1682,22 @@ function ServerCard({
             {(entry.websiteUrl || entry.docsUrl) && (
               <div className="flex items-center gap-3 pt-1">
                 {entry.websiteUrl && (
-                  <a
+                  <OutboundLink
                     href={entry.websiteUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="text-xs text-primary hover:underline inline-flex items-center gap-1"
                   >
                     <ExternalLink className="h-3 w-3" />
                     Website
-                  </a>
+                  </OutboundLink>
                 )}
                 {entry.docsUrl && (
-                  <a
+                  <OutboundLink
                     href={entry.docsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="text-xs text-primary hover:underline inline-flex items-center gap-1"
                   >
                     <BookOpen className="h-3 w-3" />
                     Docs
-                  </a>
+                  </OutboundLink>
                 )}
               </div>
             )}

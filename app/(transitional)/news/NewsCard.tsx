@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Article } from './types';
 import { Skeleton } from "@ai-matrx/design-system";
 import Image from "next/image";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 interface NewsCardProps {
     article: Article;
@@ -44,7 +45,7 @@ const NewsCard = ({ article, index }: { article: Article; index: number }) => {
     return (
         <Card
             className="overflow-hidden h-full flex flex-col group cursor-pointer transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-            onClick={() => window.open(article.url, '_blank')}
+            onClick={() => openOutbound(article.url, '_blank')}
         >
             <div className="relative w-full h-48 overflow-hidden bg-muted">
                 {imageLoading && (

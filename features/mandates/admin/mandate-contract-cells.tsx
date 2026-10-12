@@ -17,6 +17,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Badge } from "@/components/ui/badge";
 import type { MandateRow } from "./mandate-health";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** A machine name as a person reads it (`prompt_config` → "Prompt Config").
  * Described inputs are already words and pass through. UX punch list
@@ -180,10 +181,8 @@ export function MandateOutputCell({
   const kind = row.mandate.output_kind;
   if (kind) {
     return (
-      <a
+      <OutboundLink
         href={`${KIND_REGISTRY_BASE}/${kind}`}
-        target="_blank"
-        rel="noopener noreferrer"
         onClick={(e) => e.stopPropagation()}
         title={`Registered content kind "${kind}" — open its definition`}
         className="inline-flex max-w-full"
@@ -194,7 +193,7 @@ export function MandateOutputCell({
         >
           {humanizeIdentifier(kind) || kind}
         </Badge>
-      </a>
+      </OutboundLink>
     );
   }
   const keys = row.requiredOutputKeys;

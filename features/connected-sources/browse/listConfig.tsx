@@ -38,6 +38,7 @@ import {
 } from "./service";
 import { formatFileSize } from "@ai-matrx/kit/format";
 import { downloadFile } from "@ai-matrx/kit/download";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const KIND_WORDS: Record<string, string> = {
   file: "File",
@@ -274,7 +275,7 @@ function createRowActionsHook(
         );
         return;
       }
-      window.open(row.url, "_blank", "noopener,noreferrer");
+      openOutbound(row.url, "_blank", "noopener");
     }, []);
 
     const readRow = useCallback(

@@ -68,6 +68,7 @@ import {
 } from "../service/kgInspectorService";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { readOf } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const PAGE_SIZE = 50;
 const FETCH_MAX = 200;
@@ -663,10 +664,8 @@ function MentionsTab({ entity }: { entity: SelectedEntity | null }) {
                     </span>
                   ) : null}
                   {href ? (
-                    <a
+                    <OutboundLink
                       href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       onClick={(e) => {
                         if (shouldOpenInNewTab(e)) return;
                         e.preventDefault();
@@ -682,7 +681,7 @@ function MentionsTab({ entity }: { entity: SelectedEntity | null }) {
                     >
                       Open source
                       <ExternalLink className="h-3 w-3" />
-                    </a>
+                    </OutboundLink>
                   ) : (
                     /* No route for this source kind (citationHrefFor knows the
                        mapped set and returns null otherwise). The id stays a

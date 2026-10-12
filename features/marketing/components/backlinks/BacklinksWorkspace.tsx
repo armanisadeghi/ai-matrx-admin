@@ -130,6 +130,7 @@ import { toast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function compactNumber(value: number | null | undefined): string {
   return value === null || value === undefined
@@ -301,28 +302,24 @@ function TopTenCard({
                       {label}
                     </Link>
                     {row.url ? (
-                      <a
+                      <OutboundLink
                         href={row.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         title={`Open ${row.url} live`}
                         aria-label={`Open ${label} live in a new tab`}
                       >
                         <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground hover:text-primary" />
-                      </a>
+                      </OutboundLink>
                     ) : null}
                   </>
                 ) : row.url || domainNames ? (
-                  <a
+                  <OutboundLink
                     href={row.url ?? `https://${label}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="flex min-w-0 items-center gap-1 truncate text-foreground hover:text-primary hover:underline"
                     title={label}
                   >
                     <span className="truncate">{label}</span>
                     <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground" />
-                  </a>
+                  </OutboundLink>
                 ) : (
                   <span className="truncate text-foreground" title={label}>
                     {label}

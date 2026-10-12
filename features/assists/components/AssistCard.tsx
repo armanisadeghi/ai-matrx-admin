@@ -36,6 +36,7 @@ import {
 } from "../types";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { AnswerTextPreview } from "@/components/official/structured-value/AnswerTextPreview";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // Markdown loads only when a card actually opens — chips stay feather-light.
 const BasicMarkdownContent = lazy(
@@ -80,15 +81,13 @@ function EvidenceBlock({
           · {evidence.label ?? evidence.kind}
         </span>
         {evidence.href && (
-          <a
+          <OutboundLink
             href={evidence.href}
-            target="_blank"
-            rel="noopener noreferrer"
             className="ml-auto inline-flex items-center gap-1 text-primary "
           >
             Open
             <ExternalLink className="h-3 w-3" />
-          </a>
+          </OutboundLink>
         )}
       </div>
       {evidence.snippet && (

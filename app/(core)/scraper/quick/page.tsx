@@ -36,6 +36,7 @@ import { ScraperSurfaceMount } from "@/features/scraper/agent-context/ScraperSur
 import { normalizeUrl } from "@/features/scraper/utils/scraper-floating-helpers";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ErrorNotice } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export default function QuickScrapePage() {
   const { copyText } = useClipboard({
@@ -402,17 +403,15 @@ export default function QuickScrapePage() {
                           <h2 className="text-xl font-semibold text-foreground mb-2">
                             {data.overview.page_title || "Untitled Page"}
                           </h2>
-                          <a
+                          <OutboundLink
                             href={data.overview.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
                             className="text-sm text-primary hover:underline flex items-center gap-1 truncate"
                           >
                             <span className="truncate">
                               {data.overview.url}
                             </span>
                             <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                          </a>
+                          </OutboundLink>
                           {/* Which engine actually produced this — silent when
                             the backend did not say. */}
                           <ScrapeProvenance

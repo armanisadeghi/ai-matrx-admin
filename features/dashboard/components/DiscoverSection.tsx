@@ -8,6 +8,7 @@ import { iconColorMap } from "@/features/shell/constants/nav-data";
 import { cn } from "@/lib/utils";
 import { PinButton } from "@/components/favorites/PinButton";
 import { type DiscoverItem } from "../constants/discover";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** How many Discover cards show at once. Exported so the rotation hook can be
  *  driven by `DashboardClient` (which also emits the visible window as the
@@ -54,14 +55,12 @@ function DiscoverCard({ item }: { item: DiscoverItem }) {
         />
       </div>
       {item.external ? (
-        <a
+        <OutboundLink
           href={item.href}
-          target="_blank"
-          rel="noopener noreferrer"
           className="flex flex-col pr-8"
         >
           {body}
-        </a>
+        </OutboundLink>
       ) : (
         <Link href={item.href} className="flex flex-col pr-8">
           {body}

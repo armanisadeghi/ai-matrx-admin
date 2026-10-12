@@ -89,6 +89,7 @@ const FilePickerWindow = dynamic(
 import { useAppStore } from "@/lib/redux/hooks";
 import { fileHandler } from "@/features/files/handler/handler";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // ── Public surface ───────────────────────────────────────────────────────
 
@@ -680,15 +681,13 @@ function InitialUrlBanner({
       />
       <div className="min-w-0 flex-1">
         <p className="text-xs font-medium text-foreground">Current image</p>
-        <a
+        <OutboundLink
           href={url}
-          target="_blank"
-          rel="noopener noreferrer"
           className="text-[11px] text-muted-foreground hover:text-foreground underline truncate block"
           title={url}
         >
           {url}
-        </a>
+        </OutboundLink>
         <p className="text-[10px] text-muted-foreground mt-0.5">
           Drop a new image to regenerate every size, or click Replace.
         </p>
@@ -916,15 +915,13 @@ function ExternalUrlBanner({
         >
           {sourceLabel}
         </p>
-        <a
+        <OutboundLink
           href={url}
-          target="_blank"
-          rel="noopener noreferrer"
           className="text-[10px] text-muted-foreground hover:text-foreground underline truncate block mt-0.5"
           title={url}
         >
           {url}
-        </a>
+        </OutboundLink>
       </div>
       <div className="flex items-center gap-1 shrink-0">
         <button
@@ -1326,15 +1323,13 @@ function VariantCard({
                 </>
               )}
             </button>
-            <a
+            <OutboundLink
               href={publicUrl}
-              target="_blank"
-              rel="noopener noreferrer"
               className="rounded-md border border-border hover:bg-muted/40 p-1 text-muted-foreground"
               title="Open public URL in a new tab"
             >
               <ExternalLink className="h-2.5 w-2.5" />
-            </a>
+            </OutboundLink>
           </div>
         ) : pending ? (
           <p className="text-[10px] text-muted-foreground italic">

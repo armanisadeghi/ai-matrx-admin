@@ -43,6 +43,7 @@ import { selectApiServiceTargets } from "@/lib/redux/slices/apiConfigSlice";
 import { toast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function ratioLabel(part: number, whole: number): string {
   if (whole === 0) return "—";
@@ -348,14 +349,12 @@ export function PageBacklinksCard({ page }: { page: MarketingPage }) {
                           )}
                           {action.label}
                         </Button>
-                        <a
+                        <OutboundLink
                           href={row.source_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
                           className="inline-flex items-center justify-center gap-1 text-[10px] text-primary "
                         >
                           Source <ExternalLink className="h-3 w-3" />
-                        </a>
+                        </OutboundLink>
                       </div>
                     </div>
                   </li>
@@ -464,14 +463,12 @@ export function PageBacklinksCard({ page }: { page: MarketingPage }) {
             {pageGapCandidates.map((candidate) => (
               <li key={candidate.id} className="flex min-w-0 items-center gap-2 text-xs">
                 <Badge variant="outline">Approved</Badge>
-                <a
+                <OutboundLink
                   href={candidate.competitorUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="min-w-0 truncate font-medium text-primary "
                 >
                   {candidate.competitorName}: {candidate.competitorUrl}
-                </a>
+                </OutboundLink>
               </li>
             ))}
           </ul>
@@ -486,22 +483,18 @@ export function PageBacklinksCard({ page }: { page: MarketingPage }) {
               {pageGapMatches.slice(0, 10).map((match) => (
                 <li key={match.id} className="flex items-start justify-between gap-3 p-2">
                   <div className="min-w-0 text-xs">
-                    <a
+                    <OutboundLink
                       href={match.sourceUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       className="block truncate font-medium text-primary "
                     >
                       {match.sourceUrl}
-                    </a>
-                    <a
+                    </OutboundLink>
+                    <OutboundLink
                       href={match.targetUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       className="mt-0.5 block truncate text-[11px] text-muted-foreground "
                     >
                       Links to {match.targetUrl}
-                    </a>
+                    </OutboundLink>
                   </div>
                   <div className="flex shrink-0 gap-1">
                     <Badge variant="secondary">{match.reviewStatus}</Badge>

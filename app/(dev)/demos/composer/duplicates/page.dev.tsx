@@ -6,6 +6,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ExternalLink, FileCode2 } from "lucide-react";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export const metadata: Metadata = {
   title: "Input Duplicates",
@@ -144,14 +145,12 @@ function Section({ title, rows }: { title: string; rows: Row[] }) {
                         <ExternalLink className="h-3.5 w-3.5" /> Open
                       </Link>
                     ) : null}
-                    <a
+                    <OutboundLink
                       href={`${REPO}${row.file}`}
-                      target="_blank"
-                      rel="noreferrer"
                       className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground hover:underline"
                     >
                       <FileCode2 className="h-3.5 w-3.5" /> File
-                    </a>
+                    </OutboundLink>
                   </div>
                 </td>
               </tr>

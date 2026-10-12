@@ -17,6 +17,7 @@ import { BLOCK_LANE_LABEL, SYSTEM_ORG_ID, laneOf } from "../lanes";
 import { resolveBlocks } from "../resolveBlocks";
 import { describeCondition, parseCondition } from "../conditions";
 import type { PromptBlockRow, PromptBlockVariantRow } from "../types";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export interface ChipTarget {
   name: string;
@@ -108,7 +109,7 @@ export function BlockChipPanel({ target, declared, modelName, creatorId, onDecla
       onChanged();
       await load();
       toast.success(visibility === "personal" ? "Your own copy is ready" : "Your organization's copy is ready");
-      window.open(`/agents/prompt-blocks/${row.id}`, "_blank");
+      openOutbound(`/agents/prompt-blocks/${row.id}`, "_blank");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not make a copy");
     } finally {
@@ -195,12 +196,12 @@ export function BlockChipPanel({ target, declared, modelName, creatorId, onDecla
             </>
           )}
           {shown?.winner && (
-            <Button variant="quiet" onClick={() => window.open(`/agents/prompt-blocks/${(mine ?? shown.winner)?.id}`, "_blank")}>
+            <Button variant="quiet" onClick={() => openOutbound(`/agents/prompt-blocks/${(mine ?? shown.winner)?.id}`, "_blank")}>
               Open in library
             </Button>
           )}
           {shown && !shown.winner && (
-            <Button variant="quiet" onClick={() => window.open(`/agents/prompt-blocks/new?name=${encodeURIComponent(name ?? "")}`, "_blank")}>
+            <Button variant="quiet" onClick={() => openOutbound(`/agents/prompt-blocks/new?name=${encodeURIComponent(name ?? "")}`, "_blank")}>
               Create it
             </Button>
           )}

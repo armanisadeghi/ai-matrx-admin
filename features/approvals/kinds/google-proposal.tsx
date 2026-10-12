@@ -45,6 +45,7 @@ import type {
   ApprovalSource,
   GoogleApprovalDecisionPending,
 } from "../types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** The `{ preview, arguments }` payload the producer writes for these kinds. */
 export interface GoogleProposalPayload {
@@ -489,14 +490,12 @@ export function OpenInGoogle({
 }) {
   if (!href) return null;
   return (
-    <a
+    <OutboundLink
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
       className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-xs font-medium text-primary-ink hover:bg-primary/10"
     >
       {label}
       <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-    </a>
+    </OutboundLink>
   );
 }

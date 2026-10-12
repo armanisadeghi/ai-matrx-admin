@@ -77,6 +77,7 @@ import {
 import type { TranscriptStatus, VideoRow } from "../types";
 import { sourceVocabulary, type SourceVocabulary } from "../vocabulary";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /* ─────────────────────────── header pieces ─────────────────────────── */
 
@@ -571,10 +572,8 @@ export function SourceDetailPanel({
                                                   : "bg-transparent",
                                         )}
                                     >
-                                        <a
+                                        <OutboundLink
                                             href={youtubeUrlAtSecond(video.url, segment.start)}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
                                             data-tap-target="true"
                                             title={`Open the ${vocabulary.item.one} at ${formatTimestamp(segment.start)}`}
                                             className="group inline-flex h-11 shrink-0 items-center gap-1 self-start rounded-md px-1.5 font-mono text-xs tabular-nums text-primary hover:bg-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -587,7 +586,7 @@ export function SourceDetailPanel({
                                             <span className="sr-only">
                                                 Open the {vocabulary.item.one} at this moment
                                             </span>
-                                        </a>
+                                        </OutboundLink>
                                         <p className="min-w-0 flex-1 self-center py-1 text-sm leading-relaxed text-foreground">
                                             {segment.speaker ? (
                                                 <span className="mr-1.5 font-medium text-muted-foreground">
@@ -697,16 +696,14 @@ export function SourceDetailPanel({
                             {transcriptStatusLabel(video.transcript_status)}
                         </Badge>
 
-                        <a
+                        <OutboundLink
                             href={video.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
                             data-tap-target="true"
                             className="ml-auto inline-flex h-11 items-center gap-1.5 rounded-md px-2 text-sm text-primary hover:bg-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                             Watch on YouTube
                             <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-                        </a>
+                        </OutboundLink>
                     </div>
 
                     {/* The same sentence, visible without a hover — a phone has no hover. */}

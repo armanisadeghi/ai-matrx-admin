@@ -27,6 +27,7 @@ import {
   useWorkflowsBasePath,
   workflowRunPermalinkHref,
 } from "@/features/workflow-runtime/browse/workflowActionRegistry";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function TriggerFireHistory({
   triggerId,
@@ -123,15 +124,13 @@ export function TriggerFireHistory({
                 Open this run
                 <ArrowUpRight className="h-3 w-3" />
               </Link>
-              <a
+              <OutboundLink
                 href={workflowRunPermalinkHref(fire.runId, workflowsBase)}
-                target="_blank"
-                rel="noreferrer"
                 aria-label="Open this run in a new tab"
                 className="inline-flex items-center text-muted-foreground hover:text-foreground"
               >
                 <ExternalLink className="h-3 w-3" />
-              </a>
+              </OutboundLink>
             </>
           ) : (
             <span className="text-[11px] text-muted-foreground">

@@ -28,6 +28,7 @@ import {
   panelsParamOf,
 } from "./openNoticeLink";
 import type { InboxNotification } from "./types";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /** Routes whose page is itself a window this app can open in place. */
 const ROUTE_WINDOWS: ReadonlyArray<readonly [RegExp, "notificationsInboxWindow" | "approvalsWindow" | "assistsWindow" | "waitingRunsWindow"]> = [
@@ -46,7 +47,7 @@ export function routeWindowFor(link: string) {
 
 export function openInNewTab(link: string): void {
   if (!isInternalLink(link) && !isSafeExternalLink(link)) return;
-  window.open(newTabHref(link), "_blank", "noopener,noreferrer");
+  openOutbound(newTabHref(link), "_blank", "noopener");
 }
 
 const announced = new Set<string>();

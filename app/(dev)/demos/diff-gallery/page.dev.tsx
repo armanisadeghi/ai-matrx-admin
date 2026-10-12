@@ -29,6 +29,7 @@ import { NoteDiffViewer } from "@/features/notes/components/diff/NoteDiffViewer"
 // Legacy utils — rendered faithfully below
 import { analyzeDiff } from "@/features/notes/utils/diffAnalysis";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // ── Scenarios ────────────────────────────────────────────────────────────────
 
@@ -177,14 +178,12 @@ function Card({
           <Badge tone={tone}>{tone}</Badge>
           {chip}
           {route && (
-            <a
+            <OutboundLink
               href={route.href}
-              target="_blank"
-              rel="noreferrer"
               className="ml-auto text-[11px] text-primary underline-offset-2 hover:underline"
             >
               {route.label} ↗
-            </a>
+            </OutboundLink>
           )}
         </div>
         <p className="mt-0.5 text-[11px] text-muted-foreground">{verdict}</p>
@@ -527,14 +526,12 @@ export default function DiffGalleryPage() {
                   <Badge tone="heavy">coupled</Badge>
                   <LegacyDiffChip label="why?" reason={r.note} />
                   {r.route && (
-                    <a
+                    <OutboundLink
                       href={r.route}
-                      target="_blank"
-                      rel="noreferrer"
                       className="ml-auto text-primary underline-offset-2 hover:underline"
                     >
                       {r.route} ↗
-                    </a>
+                    </OutboundLink>
                   )}
                 </div>
                 <p className="mt-0.5 text-muted-foreground">{r.note}</p>

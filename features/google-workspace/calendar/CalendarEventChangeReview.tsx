@@ -54,6 +54,7 @@ import {
   type CalendarChangeCollection,
   type CalendarChangeScope,
 } from "./calendarChangeRecovery";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface CalendarEventChangeTransport {
   readSource(input: {
@@ -585,7 +586,7 @@ export function CalendarEventChangeReview(props: CalendarEventChangeReviewProps)
           <p>{activeAttempt.action.preview.guest_notification_behavior}</p>
           {"action_notice" in activeAttempt.action.preview ? <p>{activeAttempt.action.preview.action_notice}</p> : null}
           <p>{activeAttempt.action.preview.recovery_notice}</p>
-          {activeEventHref ? <a className="inline-flex items-center gap-1 text-primary hover:underline" href={activeEventHref} target="_blank" rel="noreferrer">Open event in Google Calendar <ExternalLink className="h-3.5 w-3.5" /></a> : null}
+          {activeEventHref ? <OutboundLink className="inline-flex items-center gap-1 text-primary hover:underline" href={activeEventHref}>Open event in Google Calendar <ExternalLink className="h-3.5 w-3.5" /></OutboundLink> : null}
           {activeAttempt.phase === "reviewed_unattempted" ? <div className="flex flex-wrap gap-2">
             <Button variant="primary" type="button" onClick={() => void send(activeAttempt)} disabled={busy !== null}>Confirm {activeAttempt.action.kind === "reschedule" ? "move" : activeAttempt.action.kind === "cancel" ? "cancellation" : "RSVP"}</Button>
             <Button type="button" variant="outline" onClick={() => { if (invalidateUnattemptedReview()) setActiveAttemptId(null); }} disabled={busy !== null}>Edit action</Button>

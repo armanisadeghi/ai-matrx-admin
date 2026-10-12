@@ -5,6 +5,7 @@ import { ToggledDataBody } from "./ToggledDataBody";
 // The preview line is a fragment: a kind in it reads as its one-line label (K8).
 import { snippetKindText } from "@/features/content-ir/surfaces/kind-snippet-text";
 import { Button, DisclosureHeader } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface FetchResultsBlockProps {
   results?: Record<string, unknown>[];
@@ -74,15 +75,13 @@ const FetchResultsBlock: React.FC<FetchResultsBlockProps> = ({
                         </span>
                       </div>
                       {url && title && (
-                        <a
+                        <OutboundLink
                           href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
                           className="flex items-center gap-1 text-xs text-primary hover:underline mt-0.5 ml-6 truncate"
                         >
                           <ExternalLink className="w-3 h-3 flex-shrink-0" />
                           <span className="truncate">{url}</span>
-                        </a>
+                        </OutboundLink>
                       )}
                       {content && !isOpen && (
                         <p className="text-xs text-muted-foreground mt-1 ml-6 line-clamp-2 leading-relaxed">

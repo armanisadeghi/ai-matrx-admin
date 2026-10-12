@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { AiProvider, ProviderModelEntry } from "../types";
 import AppLink from "@/components/navigation/AppLink";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type Position = { x: number; y: number };
 
@@ -226,15 +227,13 @@ function ProviderTab({ provider }: { provider: AiProvider }) {
           </span>
         </div>
         {provider.models_link && (
-          <a
+          <OutboundLink
             href={provider.models_link}
-            target="_blank"
-            rel="noopener noreferrer"
             className="flex items-center gap-1 text-[10px] text-primary hover:underline"
           >
             Official docs
             <ExternalLink className="h-3 w-3" />
-          </a>
+          </OutboundLink>
         )}
       </div>
 

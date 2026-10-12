@@ -43,6 +43,7 @@ import {
   type AskRunner,
   type AskSourceUsed,
 } from "@/features/knowledge/ask/askKnowledge";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface AskPanelProps {
   /** The current filter. Its `text` pre-fills the question. */
@@ -362,18 +363,16 @@ export function AskPanel({
                               {tok.numbers.map((n) => {
                                 const c = byNumber.get(n);
                                 return c ? (
-                                  <a
+                                  <OutboundLink
                                     key={n}
                                     href={citationHref(c)}
-                                    target="_blank"
-                                    rel="noreferrer"
                                     onClick={(e) => openCitation(e, c)}
                                     title={`${c.source_title ?? "Source"}${c.locator ? `, ${c.locator}` : ""}: ${c.quote}`}
                                     aria-label={`Citation ${n}: ${c.source_title ?? "Source"}`}
                                     className="rounded bg-primary/10 px-1 font-medium text-primary-ink hover:bg-primary/20"
                                   >
                                     {n}
-                                  </a>
+                                  </OutboundLink>
                                 ) : (
                                   <span key={n} className="px-0.5 text-muted-foreground">
                                     {n}
@@ -399,10 +398,8 @@ export function AskPanel({
             <ol aria-label="Citations" className="mt-4 space-y-2 border-t border-border pt-3">
               {citations.map((c) => (
                 <li key={c.number} className="text-xs">
-                  <a
+                  <OutboundLink
                     href={citationHref(c)}
-                    target="_blank"
-                    rel="noreferrer"
                     onClick={(e) => openCitation(e, c)}
                     className="group flex gap-2 rounded-md p-1.5 hover:bg-muted"
                   >
@@ -415,7 +412,7 @@ export function AskPanel({
                       </span>
                       <span className="line-clamp-3 text-muted-foreground">{c.quote}</span>
                     </span>
-                  </a>
+                  </OutboundLink>
                 </li>
               ))}
             </ol>

@@ -22,6 +22,7 @@ import { tableActions, tableLink, type ObjectAction } from "@ai-matrx/records-ui
 import type { ContextMenuEntityRef, ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { toExtraSections } from "@/features/unified-data/actions/tableActionAdapters";
 import { copyToClipboard } from "@/lib/clipboard/copy";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /** The one thing every dataset-table surface can say about the selected table. */
 export interface DatasetTableMenuRow {
@@ -70,7 +71,7 @@ export function tableActionSectionsAwayFromPage(
       ...(origin ? { origin } : {}),
       open: () => window.location.assign(tableLink(row.id, origin)),
       openInNewTab: (url) => {
-        window.open(url, "_blank", "noopener,noreferrer");
+        openOutbound(url, "_blank", "noopener");
       },
       copyText: (url) => copy(url, "Link copied"),
       unavailableReasons: Object.fromEntries(PAGE_VERBS.map((id) => [id, ON_THE_TABLE_PAGE_REASON])),

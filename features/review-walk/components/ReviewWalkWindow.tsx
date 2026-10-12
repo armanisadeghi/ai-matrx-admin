@@ -67,6 +67,7 @@ import {
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { RecordedStepError } from "./RecordedStepError";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface ReviewWalkWindowProps {
   onClose: () => void;
@@ -747,15 +748,13 @@ function TechnicalDetails({ out }: { out: DescendOut }) {
             row(
               "Conversation",
               <>
-                <a
+                <OutboundLink
                   href={`/chat/${out.unit.conversation_id}`}
-                  target="_blank"
-                  rel="noreferrer"
                   className="inline-flex items-center gap-1 text-primary underline-offset-2 hover:underline"
                 >
                   Open in a new tab
                   <ExternalLink className="h-3 w-3" aria-hidden />
-                </a>
+                </OutboundLink>
                 <TapTargetCopyButton value={out.unit.conversation_id} variant="transparent" ariaLabel="Copy conversation id" />
               </>,
             )}
@@ -1000,14 +999,12 @@ function ReceiptPanel({
       </p>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
         {hindsightHref && (
-          <a
+          <OutboundLink
             href={hindsightHref}
-            target="_blank"
-            rel="noreferrer"
             className="font-medium text-primary underline-offset-2 hover:underline"
           >
             Open it in the improvement workspace
-          </a>
+          </OutboundLink>
         )}
         {agentId && (
           <EntityRef

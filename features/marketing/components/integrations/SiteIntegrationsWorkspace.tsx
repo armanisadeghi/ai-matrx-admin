@@ -155,6 +155,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { extractErrorMessage } from "@/utils/errors";
 
 import { Spinner } from "@/components/ui/loaders/Spinner";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 const integrationValueLabels = surfaceValueLabels(
   marketingIntegrationsManifest,
 );
@@ -1967,14 +1968,12 @@ function UrlChangeIntakeCard({
             </Label>
             <Input readOnly value={keyLocation} />
           </div>
-          <a
+          <OutboundLink
             className="inline-flex type-meta text-primary underline"
             href={keyLocation}
-            target="_blank"
-            rel="noreferrer"
           >
             Open verification file
-          </a>
+          </OutboundLink>
         </div>
         <div className="space-y-2 rounded-md border border-border bg-muted/20 p-3">
           <p className="type-meta font-medium">

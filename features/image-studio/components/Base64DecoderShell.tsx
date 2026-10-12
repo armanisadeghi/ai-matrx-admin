@@ -44,6 +44,7 @@ import { mimeTypeLabel } from "../utils/decode-base64";
 import { formatFileSize } from "@ai-matrx/kit/format";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { downloadUrl } from "@ai-matrx/kit/download";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface Base64DecoderShellProps {
   defaultFolder?: string;
@@ -514,15 +515,13 @@ function SaveResultPanel({
         </Button>
       </div>
       <div className="flex items-center justify-between gap-2 pt-1">
-        <a
+        <OutboundLink
           href={shareUrl}
-          target="_blank"
-          rel="noreferrer noopener"
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
         >
           <ExternalLink className="h-3 w-3" />
           Open
-        </a>
+        </OutboundLink>
         <Link
           href={`/files/f/${fileId}`}
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"

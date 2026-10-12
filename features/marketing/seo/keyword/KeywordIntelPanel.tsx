@@ -114,6 +114,7 @@ import {
 import type { KeywordIntelTab, KeywordScope } from "./types";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 const TAB_LABELS: Record<KeywordIntelTab, string> = {
   overview: "Summary",
   research: "Pipeline",
@@ -999,14 +1000,12 @@ function SiteTab({
             choose one from the website portfolio first.
           </p>
         </div>
-        <a
+        <OutboundLink
           href={marketingRoutes.sites()}
-          target="_blank"
-          rel="noreferrer"
           className="text-xs font-medium text-primary hover:underline"
         >
           Open website portfolio
-        </a>
+        </OutboundLink>
       </div>
     );
   }
@@ -1199,14 +1198,12 @@ function ProviderDirectiveState({
     <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
       <p>{message}</p>
       {href ? (
-        <a
+        <OutboundLink
           href={href}
-          target="_blank"
-          rel="noreferrer"
           className="shrink-0 font-medium text-primary hover:underline"
         >
           {label}
-        </a>
+        </OutboundLink>
       ) : null}
     </div>
   );
@@ -1255,14 +1252,12 @@ function KeywordPerformanceFields({
         {
           label: "Strongest page",
           value: row.top_page_id ? (
-            <a
+            <OutboundLink
               href={marketingRoutes.sitePage(brandId, siteId, row.top_page_id)}
-              target="_blank"
-              rel="noreferrer"
               className="break-all text-[11px] text-foreground hover:text-primary"
             >
               {row.top_page_path ?? row.top_page_url ?? "Open page"}
-            </a>
+            </OutboundLink>
           ) : (
             "—"
           ),
@@ -1306,14 +1301,12 @@ function SearchVisibilityTab({
             into other keywords.
           </p>
         </div>
-        <a
+        <OutboundLink
           href={marketingRoutes.sites()}
-          target="_blank"
-          rel="noreferrer"
           className="text-xs font-medium text-primary hover:underline"
         >
           Open website portfolio
-        </a>
+        </OutboundLink>
       </div>
     );
   }

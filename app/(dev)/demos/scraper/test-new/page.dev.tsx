@@ -10,6 +10,7 @@ import { useScraperApi } from "@/features/scraper/hooks/useScraperApi";
 import { ScraperHookErrorDetails } from "@/features/scraper/parts/ScraperHookErrorDetails";
 import { ScrapedContentPretty } from "@/features/scraper/parts/ScrapedContentPretty";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function normalizeUrl(raw: string): string | null {
   const trimmed = raw.trim();
@@ -139,14 +140,12 @@ export default function TestNewScraperPage() {
                 {data.overview.page_title || "Untitled Page"}
               </h2>
               {data.url && (
-                <a
+                <OutboundLink
                   href={data.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="text-sm text-primary hover:underline mb-4 block"
                 >
                   {data.url}
-                </a>
+                </OutboundLink>
               )}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                 {[

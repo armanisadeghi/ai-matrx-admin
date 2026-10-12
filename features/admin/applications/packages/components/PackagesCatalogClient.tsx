@@ -15,6 +15,7 @@ import {
   type NpmPackageCatalogRow,
 } from "../npmRegistry";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface PackagesCatalogClientProps {
   rows: NpmPackageCatalogRow[];
@@ -27,15 +28,13 @@ const columns: MatrxColumnDef<NpmPackageCatalogRow>[] = [
     accessorKey: "name",
     header: "Package",
     cell: (row) => (
-      <a
+      <OutboundLink
         href={row.npmUrl}
-        target="_blank"
-        rel="noreferrer"
         className="inline-flex items-center gap-1 font-mono text-sm font-medium text-primary hover:underline"
       >
         {row.name}
         <ExternalLink className="h-3 w-3" aria-hidden="true" />
-      </a>
+      </OutboundLink>
     ),
     width: 250,
   },
@@ -101,15 +100,13 @@ const columns: MatrxColumnDef<NpmPackageCatalogRow>[] = [
     header: "Registry-declared source",
     cell: (row) =>
       row.sourceUrl && row.repositoryDirectory ? (
-        <a
+        <OutboundLink
           href={row.sourceUrl}
-          target="_blank"
-          rel="noreferrer"
           className="inline-flex items-center gap-1 font-mono text-xs text-primary hover:underline"
         >
           {row.repositoryDirectory}
           <ExternalLink className="h-3 w-3" aria-hidden="true" />
-        </a>
+        </OutboundLink>
       ) : row.lifecycle === "reserved" ? (
         <span className="text-xs text-muted-foreground">Reserved name; no live source asserted</span>
       ) : (

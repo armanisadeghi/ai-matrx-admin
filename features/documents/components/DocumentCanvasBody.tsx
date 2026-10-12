@@ -36,6 +36,7 @@ import { printMarkdown } from "@ai-matrx/print/markdown";
 import { useArtifactBodyOutput } from "@/features/canvas/output/bodyOutput";
 import { univerDocToMarkdown } from "@/features/documents/univer-doc-to-markdown";
 import { bodyTextOf, type DocumentBodyPort } from "@/features/documents/document-body-text";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 // Univer hard-depends on `window` / `document`, and it is a heavy chunk — keep
 // it out of the canvas base bundle until a document pane actually opens.
 const DocumentEditor = dynamic(
@@ -73,15 +74,13 @@ function DocumentUnavailable({
           </p>
           <p className="mt-1 text-xs">{reason}</p>
         </div>
-        <a
+        <OutboundLink
           href={`/documents/${documentId}`}
-          target="_blank"
-          rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground underline underline-offset-2"
         >
           <ExternalLink className="h-3.5 w-3.5" aria-hidden />
           Open it on its own page
-        </a>
+        </OutboundLink>
       </div>
     </div>
   );

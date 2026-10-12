@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { promptForValues } from "@/components/dialogs/value-prompts/ValuePromptsDialogHost";
 import type { FileDownload } from "./types";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export type FileMenuItemsProps = {
   name: string;
@@ -84,7 +85,7 @@ export function FileMenuItems(p: FileMenuItemsProps): ReactNode {
         </DropdownMenuItem>
       )}
       {p.href && (
-        <DropdownMenuItem onSelect={() => window.open(p.href, "_blank", "noopener")}>
+        <DropdownMenuItem onSelect={() => openOutbound(p.href, "_blank", "noopener")}>
           <ExternalLink className="mr-2 size-4" />
           Open in new tab
         </DropdownMenuItem>

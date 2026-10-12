@@ -37,6 +37,7 @@ import {
 } from "@/features/kg-suggestions/service/sourcePreviewService";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface SuggestionSourcePreviewProps {
   kind: string;
@@ -99,15 +100,13 @@ export function SuggestionSourcePreview({
             </h3>
           </div>
           {doc?.href ? (
-            <a
+            <OutboundLink
               href={doc.href}
-              target="_blank"
-              rel="noopener noreferrer"
               className="shrink-0 inline-flex items-center gap-1 rounded border border-border bg-background px-1.5 py-1 text-[11px] text-foreground hover:bg-accent transition-colors"
             >
               <ExternalLink className="h-3 w-3" />
               Open
-            </a>
+            </OutboundLink>
           ) : null}
         </div>
 
@@ -235,15 +234,13 @@ function PreviewBody({
         <ErrorAlchemyMenu />
       </p>
       {doc?.href ? (
-        <a
+        <OutboundLink
           href={doc.href}
-          target="_blank"
-          rel="noopener noreferrer"
           className="inline-flex items-center gap-1 rounded border border-border bg-background px-2 py-1 text-[11px] text-foreground hover:bg-accent transition-colors"
         >
           <ExternalLink className="h-3 w-3" />
           Open source
-        </a>
+        </OutboundLink>
       ) : null}
     </div>
   );

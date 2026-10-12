@@ -38,6 +38,7 @@ import {
 } from "./service";
 
 import { ErrorNotice } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 function useOrg(): string | null {
   const params = useSearchParams();
   const hr = useHrContext();
@@ -370,7 +371,7 @@ function Respond({ trackId, org }: { trackId: string; org: string }) {
             <>
               {calendar ? (
                 <Button variant="quiet" icon={<CalendarPlus />} asChild>
-                  <a href={calendar} target="_blank" rel="noopener noreferrer">Add to calendar</a>
+                  <OutboundLink href={calendar}>Add to calendar</OutboundLink>
                 </Button>
               ) : null}
               {calendarEvent ? (

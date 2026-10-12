@@ -70,6 +70,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { PitchAdvisoryPanel } from "@/features/crm/pitch-advisories/PitchAdvisoryPanel";
 import { usePitchAdvisories } from "@/features/crm/pitch-advisories/usePitchAdvisories";
 import { CrisisHoldingDialog } from "./crisis/CrisisHoldingDialog";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const SURFACE = "matrx-user/marketing-reputation";
 
@@ -158,9 +159,9 @@ function EvidenceReferenceCard({ reference }: { reference: ReputationEvidenceRef
     </div>
   );
   return reference.url ? (
-    <a href={reference.url} target="_blank" rel="noopener noreferrer" className="block">
+    <OutboundLink href={reference.url} className="block">
       {content}
-    </a>
+    </OutboundLink>
   ) : (
     content
   );
@@ -394,14 +395,12 @@ function CaseCard({
         </div>
         <div className="mt-3 flex flex-wrap gap-2 text-xs">
           {row.source_url ? (
-            <a
+            <OutboundLink
               href={row.source_url}
-              target="_blank"
-              rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-primary hover:underline"
             >
               Open source <ArrowUpRight className="h-3 w-3" />
-            </a>
+            </OutboundLink>
           ) : null}
           {backlinkHref ? (
             <Link href={backlinkHref} className="inline-flex items-center gap-1 text-primary hover:underline">
@@ -506,14 +505,12 @@ function PublicationCard({ opportunity }: { opportunity: PublicationOpportunity 
     <article className="rounded-xl border bg-card p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <a
+          <OutboundLink
             href={href}
-            target="_blank"
-            rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-sm font-semibold text-foreground hover:text-primary hover:underline"
           >
             {opportunity.publication_name} <ArrowUpRight className="h-3.5 w-3.5" />
-          </a>
+          </OutboundLink>
           <p className="mt-1 text-xs text-muted-foreground">{opportunity.relationship_basis}</p>
         </div>
         <Score label="Confidence" value={opportunity.confidence} />

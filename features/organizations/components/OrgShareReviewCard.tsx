@@ -43,6 +43,7 @@ import {
   type OrgResourceEntry,
 } from "../resource-catalogue";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface OrgShareReviewCardProps {
   orgId: string;
@@ -257,16 +258,14 @@ export function OrgShareReviewCard({
                       {grant.title}
                     </span>
                     {href && (
-                      <a
+                      <OutboundLink
                         href={href}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         className="text-muted-foreground hover:text-foreground shrink-0"
                         title="Open in new tab"
                         aria-label={`Open ${grant.title} in a new tab`}
                       >
                         <ExternalLink className="h-3 w-3" />
-                      </a>
+                      </OutboundLink>
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground truncate">

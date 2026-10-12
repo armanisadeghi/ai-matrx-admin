@@ -72,6 +72,7 @@ import {
   type TaskCreateDraftScope,
 } from "@/features/surfaces/manifests/task-create.manifest";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export type PostSaveAction = "newTab" | "navigate" | "openWindow" | "none";
 type Priority = TaskPriorityValue | "";
@@ -493,10 +494,10 @@ export function TaskQuickCreateCore({
     (action: PostSaveAction) => {
       if (!savedTaskId) return;
       if (action === "newTab") {
-        window.open(
+        openOutbound(
           `/tasks?task=${savedTaskId}`,
           "_blank",
-          "noopener,noreferrer",
+          "noopener",
         );
       } else if (action === "navigate") {
         router.push(`/tasks?task=${savedTaskId}`);
@@ -1129,15 +1130,15 @@ function openEntity(
 ) {
   if (!entityId) return;
   if (entityType === "conversation") {
-    window.open(`/demos/chat/c/${entityId}`, "_blank", "noopener,noreferrer");
+    openOutbound(`/demos/chat/c/${entityId}`, "_blank", "noopener");
   } else if (entityType === "message" && parentConversationId) {
-    window.open(
+    openOutbound(
       `/demos/chat/c/${parentConversationId}#m-${entityId}`,
       "_blank",
-      "noopener,noreferrer",
+      "noopener",
     );
   } else if (entityType === "note") {
-    window.open(`/notes?active=${entityId}`, "_blank", "noopener,noreferrer");
+    openOutbound(`/notes?active=${entityId}`, "_blank", "noopener");
   }
   // Unknown types: no-op (chip still shows what's linked)
 }

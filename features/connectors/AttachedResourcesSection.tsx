@@ -37,6 +37,7 @@ import { useAttachResourcePicker } from "./useAttachResourcePicker";
 import { useConversationAttachments } from "./useConversationAttachments";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { UntrustedCount } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface AttachableConnectionSummary {
   slug: string;
@@ -197,15 +198,13 @@ function AttachedChip({
       }
     >
       {item.link ? (
-        <a
+        <OutboundLink
           href={item.link}
-          target="_blank"
-          rel="noreferrer"
           aria-label={`Open ${item.display_name}`}
           className="flex min-w-0 items-center gap-1 px-1.5 hover:underline"
         >
           {body}
-        </a>
+        </OutboundLink>
       ) : (
         <span className="flex min-w-0 items-center gap-1 px-1.5">{body}</span>
       )}

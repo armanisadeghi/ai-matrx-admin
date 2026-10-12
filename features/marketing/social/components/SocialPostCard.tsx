@@ -50,6 +50,7 @@ import { FROM_BROWSER_LABEL, isCapturedPostId } from "../gated/capturedPosts";
 import { PlatformMark } from "./PlatformMark";
 import { SocialImage } from "./SocialImage";
 import { formatSocialHandle } from "@/features/marketing/lib/social-handle";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * ONE thumbnail box per platform, whatever the post's format, so every card in a grid is the same
@@ -235,10 +236,10 @@ export function SocialPostCard({ post, onOpen, onSave, extraActions, isNew, comp
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
-                <a href={post.url} target="_blank" rel="noreferrer noopener">
+                <OutboundLink href={post.url}>
                   <ExternalLink className="mr-2 h-4 w-4" />
                   Open original
-                </a>
+                </OutboundLink>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onSelect={() => {

@@ -42,6 +42,7 @@ import {
   fileNameFromUrl,
   type OurFileMatch,
 } from "@/lib/media/our-file-sources";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface UniversalInlineFileProps {
   /** Proven-ours match (source + recovered fileId + sniffed mime). */
@@ -226,15 +227,13 @@ function FallbackLink({
   fileName: string;
 }) {
   return (
-    <a
+    <OutboundLink
       href={url}
-      target="_blank"
-      rel="noopener noreferrer"
       className="inline-flex items-center gap-1.5 text-primary underline underline-offset-2 hover:text-primary/80"
     >
       <ExternalLink className="h-3.5 w-3.5 shrink-0" />
       {label && label.trim() ? label : fileName}
-    </a>
+    </OutboundLink>
   );
 }
 

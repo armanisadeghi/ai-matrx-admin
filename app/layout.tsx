@@ -54,6 +54,7 @@ interface RootLayoutProps {
 
 import SessionIntegrityGate from "@/features/shell/components/SessionIntegrityGate";
 import { UrlStateDoor } from "@/lib/url-state/UrlStateDoor";
+import { OutboundReferralDecorator } from "@ai-matrx/kit/outbound-decorator";
 import { BUILD_IDENTITY_META, serverBuildIdentity } from "@/lib/deployment/build-identity";
 
 export default async function RootLayout({ children }: RootLayoutProps) {
@@ -133,6 +134,8 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         {/* One address door for @ai-matrx/kit/url-state (lane URL-STATE). */}
         <ViewportHintProvider isMobile={isMobileHint}>
           <UrlStateDoor />
+          {/* Any third-party link in the document carries our referral data (@ai-matrx/kit/outbound). */}
+          <OutboundReferralDecorator />
           {/* THE HONEST-SCREEN MOUNT — exactly one, at the root, so every route
             group inherits it. Mounting it per-shell is how the first attempt
             covered `(core)` and missed everything else. Renders nothing unless

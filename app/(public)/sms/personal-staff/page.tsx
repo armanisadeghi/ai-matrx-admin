@@ -11,6 +11,7 @@ import {
   SMS_SUPPORT_EMAIL,
   SMS_TERMS_PATH,
 } from "@/features/sms/compliance";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * The public opt-in page for ONE SMS program: AI Matrx Personal Staff. Its 10DLC
@@ -61,9 +62,9 @@ export default function PersonalStaffSmsPage() {
         <p>
           <strong>Operator:</strong> AI Matrx is owned and operated by{" "}
           {siteConfig.legalOperatorName} (
-          <a href={siteConfig.legalOperatorUrl} rel="external noopener" target="_blank">
+          <OutboundLink href={siteConfig.legalOperatorUrl} rel="external">
             {siteConfig.legalOperatorUrl}
-          </a>
+          </OutboundLink>
           ).
         </p>
 

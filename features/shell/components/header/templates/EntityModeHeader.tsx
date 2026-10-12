@@ -53,6 +53,7 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { resolveActiveRouteMode } from "@/features/shell/components/header/route-mode-match";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const EXTERNAL_HREF_RE = /^(https?:|mailto:|tel:)/;
 
@@ -246,7 +247,7 @@ function EntitySheetRows({
               setSheetOpen(false);
               if (a.href) {
                 if (a.newTab || EXTERNAL_HREF_RE.test(a.href)) {
-                  window.open(a.href, "_blank", "noopener,noreferrer");
+                  openOutbound(a.href, "_blank", "noopener");
                 } else {
                   router.push(a.href);
                 }

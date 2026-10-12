@@ -22,6 +22,7 @@ import {
   type LaunchpadGroup,
 } from "../catalog";
 import { useVisibilityAwarePageRefresh } from "../hooks/useVisibilityAwarePageRefresh";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const PREVIEW_DESTINATION_COUNT = 3;
 
@@ -478,14 +479,12 @@ function LaunchpadAnchor({
 }) {
   if (external) {
     return (
-      <a
+      <OutboundLink
         href={href}
-        target="_blank"
-        rel="noopener noreferrer"
         className={className}
       >
         {children}
-      </a>
+      </OutboundLink>
     );
   }
 

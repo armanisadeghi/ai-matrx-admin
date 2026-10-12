@@ -37,6 +37,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { readOf } from "@ai-matrx/design-system";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 function statusToDocStatus(s: RichMember["status"]): DocStatus {
   if (s === "no_processing") return "pending";
@@ -284,10 +285,10 @@ export function RichMemberTable({
         disabled={!member.processedDocumentId}
         onClick={() => {
           if (member.processedDocumentId)
-            window.open(
+            openOutbound(
               `/knowledge/library/${member.processedDocumentId}/preview`,
               "_blank",
-              "noopener,noreferrer",
+              "noopener",
             );
         }}
       />

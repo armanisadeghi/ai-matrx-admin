@@ -31,6 +31,7 @@ import { isJsonRecord } from "@/features/marketing/types";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import type { Json } from "@/types/database.types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function primaryBlockLabel(data: Record<string, Json>): string | null {
   for (const key of ["name", "headline", "title", "url", "@id"]) {
@@ -198,10 +199,8 @@ export function PageIdentityCard({
                   src={featuredImage}
                   alt={head.title ?? page.path ?? "Featured page image"}
                 />
-                <a
+                <OutboundLink
                   href={featuredImage}
-                  target="_blank"
-                  rel="noreferrer"
                   title={featuredImage}
                   className="mt-1 flex w-32 min-w-0 items-center gap-1 text-[9px] text-muted-foreground hover:text-primary sm:w-40"
                 >
@@ -209,7 +208,7 @@ export function PageIdentityCard({
                   <span className="truncate">
                     {resourceFileName(featuredImage)}
                   </span>
-                </a>
+                </OutboundLink>
               </div>
             ) : null}
             <div className="min-w-0 flex-1">
@@ -243,35 +242,29 @@ export function PageIdentityCard({
               {hasRelatedLinks ? (
                 <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-1 text-[10px]">
                   {identity.shortlink ? (
-                    <a
+                    <OutboundLink
                       href={identity.shortlink}
-                      target="_blank"
-                      rel="noreferrer"
                       className="text-muted-foreground hover:text-primary"
                     >
                       Shortlink
-                    </a>
+                    </OutboundLink>
                   ) : null}
                   {identity.ampUrl ? (
-                    <a
+                    <OutboundLink
                       href={identity.ampUrl}
-                      target="_blank"
-                      rel="noreferrer"
                       className="text-muted-foreground hover:text-primary"
                     >
                       AMP version
-                    </a>
+                    </OutboundLink>
                   ) : null}
                   {identity.apiUrls.map((url) => (
-                    <a
+                    <OutboundLink
                       key={url}
                       href={url}
-                      target="_blank"
-                      rel="noreferrer"
                       className="text-muted-foreground hover:text-primary"
                     >
                       API
-                    </a>
+                    </OutboundLink>
                   ))}
                 </div>
               ) : null}
@@ -440,15 +433,13 @@ function ResourceRow({ item }: { item: ParsedSnapshotResource }) {
         <Link2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
       )}
       <div className="min-w-0 flex-1">
-        <a
+        <OutboundLink
           href={item.url}
-          target="_blank"
-          rel="noreferrer"
           title={item.url}
           className="block truncate font-mono text-[10px] text-foreground hover:text-primary"
         >
           {resourceFileName(item.url)}
-        </a>
+        </OutboundLink>
         <p className="truncate text-[9px] text-muted-foreground">
           {item.tag ?? "resource"}
           {item.rel ? ` · ${item.rel}` : ""}
@@ -551,11 +542,9 @@ export function PageResourcesCard({
                       candidate.srcset.includes(resource.url),
                   );
                   return (
-                    <a
+                    <OutboundLink
                       key={`${resource.url}-${index}`}
                       href={resource.url}
-                      target="_blank"
-                      rel="noreferrer"
                       className="min-w-0 overflow-hidden rounded-md border border-border/70 bg-muted/20"
                     >
                       {/* Observed external page image; its load failure remains visible. */}
@@ -578,7 +567,7 @@ export function PageResourcesCard({
                                 "image"}
                         </p>
                       </div>
-                    </a>
+                    </OutboundLink>
                   );
                 })}
               </div>

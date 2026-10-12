@@ -9,6 +9,7 @@ import {
   youTubeWatchUrl,
 } from "@ai-matrx/rich-content/utils/youtube";
 import { VideoPublishDate } from "@/features/files/blocks/video/VideoPublishDate";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface YouTubeEmbedProps {
   /** The 11-ish char YouTube video id. */
@@ -109,16 +110,14 @@ export const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({
           >
             {title}
           </p>
-          <a
+          <OutboundLink
             href={youTubeWatchUrl(videoId, start)}
-            target="_blank"
-            rel="noopener noreferrer"
             className="shrink-0 text-muted-foreground/60 transition-colors hover:text-foreground"
             title="Open on YouTube"
             onClick={(e) => e.stopPropagation()}
           >
             <ExternalLinkIcon className="h-3.5 w-3.5" />
-          </a>
+          </OutboundLink>
         </div>
       ) : null}
     </div>

@@ -31,6 +31,7 @@ import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
 import { GoogleSheetsMark, NotionMark } from "@/features/connectors/marks";
 import { cn } from "@/lib/utils";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const MATRX_MCP_URL = "https://server.app.matrxserver.com/api/matrx-mcp";
 
@@ -210,9 +211,9 @@ function ConnectActions({ client, onDone }: { client: Client; onDone: () => void
         <div className="flex flex-col gap-3">
           <div>
             <Button variant="primary" icon={<ExternalLink />} asChild>
-              <a href={href} target="_blank" rel="noopener noreferrer" onClick={onDone}>
+              <OutboundLink href={href} onClick={onDone}>
                 {client === "claude" ? "Open Claude" : "Open ChatGPT"}
-              </a>
+              </OutboundLink>
             </Button>
           </div>
           <dl className="m-0 flex flex-col divide-y divide-border rounded-lg border border-border bg-card">

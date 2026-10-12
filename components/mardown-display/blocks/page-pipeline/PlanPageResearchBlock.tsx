@@ -33,6 +33,7 @@ import type {
   PlanResearchSourceData,
 } from "@/features/content-ir/kinds/plan-page-research";
 import { cn } from "@/lib/utils";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface PlanPageResearchBlockProps {
   serverData?: unknown;
@@ -159,15 +160,13 @@ export function PlanResearchSources({
           >
             <div className="flex flex-wrap items-baseline gap-1.5">
               {source.url ? (
-                <a
+                <OutboundLink
                   href={source.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
                 >
                   {source.label}
                   <ExternalLink className="h-3 w-3 shrink-0" aria-hidden />
-                </a>
+                </OutboundLink>
               ) : (
                 <span className="font-medium text-foreground">
                   {source.label}

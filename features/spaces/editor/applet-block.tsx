@@ -25,6 +25,7 @@ import { readPublishState } from "../publish/publish-doors";
 import { useSpaces } from "../state/SpacesProvider";
 import { AppletFrame, appletBlockHeight } from "./applet-frame";
 import { storedSpec } from "./stored-blocks";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type Ctx = { blockId: string; editor: never; update: (next: Record<string, unknown>) => void };
 
@@ -107,12 +108,12 @@ function AppletBlockView({ p, ctx }: { p: Record<string, unknown>; ctx: Ctx }) {
       {editable ? (
         <>
           <div className="spaces-applet-tools" onMouseDown={(e) => e.stopPropagation()}>
-            <a href={info ? appletWebUrl(info.slug) : undefined} target="_blank" rel="noreferrer" aria-disabled={!info || undefined} aria-busy={!info || undefined} title={info ? undefined : "Finding the Applet…"} data-testid="applet-open">
+            <OutboundLink href={info ? appletWebUrl(info.slug) : undefined} aria-disabled={!info || undefined} aria-busy={!info || undefined} title={info ? undefined : "Finding the Applet…"} data-testid="applet-open">
               <ArrowUpRight size={13} /> Open Applet
-            </a>
-            <a href={appletBuilderHref(appletId)} target="_blank" rel="noreferrer" data-testid="applet-change">
+            </OutboundLink>
+            <OutboundLink href={appletBuilderHref(appletId)} data-testid="applet-change">
               <MessageSquare size={13} /> Change with AI
-            </a>
+            </OutboundLink>
             <button type="button" onClick={() => editor.removeBlocks([ctx.blockId])} data-testid="applet-remove">
               <Trash2 size={13} /> Remove
             </button>

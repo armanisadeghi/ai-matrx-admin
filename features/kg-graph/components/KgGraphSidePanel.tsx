@@ -33,6 +33,7 @@ import { colorForKind } from "../constants";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { copyToClipboard } from "@/lib/clipboard/copy";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface KgGraphSidePanelProps {
   node: GraphNode;
@@ -349,10 +350,8 @@ export function KgGraphSidePanel({ node }: KgGraphSidePanelProps) {
                       </span>
                     </span>
                     {href ? (
-                      <a
+                      <OutboundLink
                         href={href}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         onClick={(e) => {
                           if (shouldOpenInNewTab(e)) return;
                           e.preventDefault();
@@ -367,7 +366,7 @@ export function KgGraphSidePanel({ node }: KgGraphSidePanelProps) {
                         className="inline-flex shrink-0 items-center gap-1 text-[11px] text-primary hover:underline"
                       >
                         Open <ExternalLink className="h-3 w-3" />
-                      </a>
+                      </OutboundLink>
                     ) : null}
                   </div>
 

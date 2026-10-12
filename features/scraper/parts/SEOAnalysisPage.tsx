@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import ScraperDataUtils from '../utils/data-utils';
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const SEOAnalysisPage = ({ overview = {}, structuredData = {} }) => {
   const [activeSection, setActiveSection] = useState('overview');
@@ -85,9 +86,9 @@ const SEOAnalysisPage = ({ overview = {}, structuredData = {} }) => {
             <span className="text-gray-500 dark:text-gray-400 text-sm">{website}</span>
             {website && url && <span className="mx-2 text-gray-400">•</span>}
             {url && (
-              <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 text-sm truncate">
+              <OutboundLink href={url} className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 text-sm truncate">
                 {url}
-              </a>
+              </OutboundLink>
             )}
           </div>
         </div>

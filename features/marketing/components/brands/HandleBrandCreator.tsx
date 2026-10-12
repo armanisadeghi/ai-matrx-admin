@@ -77,6 +77,7 @@ import {
 } from "@/features/marketing/social/types";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 type Step = "start" | "looking" | "confirm" | "creating" | "track" | "tracking";
 
 type TrackState = {
@@ -716,15 +717,13 @@ function AccountRowView({
       {locked ? (
         <span className="text-[11px] text-muted-foreground">Looked up</span>
       ) : null}
-      <a
+      <OutboundLink
         href={account.url}
-        target="_blank"
-        rel="noreferrer"
         className="ml-auto text-muted-foreground hover:text-foreground"
         aria-label={`Open ${account.url}`}
       >
         <ExternalLink className="h-3.5 w-3.5" />
-      </a>
+      </OutboundLink>
     </li>
   );
 }

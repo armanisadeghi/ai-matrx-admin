@@ -43,6 +43,7 @@ import {
   resolveFindingRemedy,
   type FindingRemedyContext,
 } from "@/features/marketing/lib/finding-remedy-render";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface FindingRemedyCardProps {
   context: FindingRemedyContext;
@@ -200,18 +201,18 @@ export function FindingRemedyCard({
         <div className="flex flex-wrap items-center gap-1.5">
           {pageWorkspaceHref ? (
             <Button asChild variant="outline">
-              <a href={pageWorkspaceHref} target="_blank" rel="noreferrer">
+              <OutboundLink href={pageWorkspaceHref}>
                 <LayoutPanelTop className="h-3.5 w-3.5" />
                 Open the page workspace
-              </a>
+              </OutboundLink>
             </Button>
           ) : null}
           {context.pageUrl ? (
             <Button asChild variant="outline">
-              <a href={context.pageUrl} target="_blank" rel="noreferrer">
+              <OutboundLink href={context.pageUrl}>
                 <ExternalLink className="h-3.5 w-3.5" />
                 View the live page
-              </a>
+              </OutboundLink>
             </Button>
           ) : null}
           {suppressed && onUnsuppress ? (

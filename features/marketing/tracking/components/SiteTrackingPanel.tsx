@@ -76,6 +76,7 @@ import {
 } from "@/features/marketing/tracking/types";
 import type { MarketingSite } from "@/features/marketing/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const TAG_MANAGER_PRODUCT_KEY = "tag_manager";
 
@@ -518,13 +519,11 @@ export function SiteTrackingPanel({
                         {/* THE DOOR LAW: a container id the panel names must OPEN. It is
                             Google's record, not ours, so its door is Google's — the container's
                             own workspace list in Tag Manager, in a new tab. */}
-                        <a
+                        <OutboundLink
                           href={tagManagerContainerUrl(
                             tmAccount.account_id,
                             container.container_id,
                           )}
-                          target="_blank"
-                          rel="noreferrer"
                           className="inline-flex items-center gap-1 text-foreground underline-offset-2 hover:underline"
                           title={`Open ${container.name} in Google Tag Manager`}
                         >
@@ -533,7 +532,7 @@ export function SiteTrackingPanel({
                             {container.public_id ?? container.container_id}
                           </span>
                           <ExternalLink className="h-3 w-3 shrink-0" aria-hidden />
-                        </a>
+                        </OutboundLink>
                         {container.workspaces.length ? (
                           <span>
                             {" · "}

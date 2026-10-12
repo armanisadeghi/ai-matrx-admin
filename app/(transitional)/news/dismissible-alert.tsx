@@ -4,6 +4,7 @@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from "@ai-matrx/design-system";
 import { X } from 'lucide-react';
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface DismissibleAlertProps {
     sourceName: string;
@@ -22,14 +23,12 @@ export function DismissibleAlert({ sourceName, title, url, index }: DismissibleA
         <Alert id={`headline-${index}`} className="relative">
             <AlertTitle className="pr-8">{sourceName}</AlertTitle>
             <AlertDescription className="pr-8">
-                <a
+                <OutboundLink
                     href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="hover:underline"
                 >
                     {title}
-                </a>
+                </OutboundLink>
             </AlertDescription>
             <Button
                 variant="ghost"

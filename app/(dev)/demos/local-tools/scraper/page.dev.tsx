@@ -32,6 +32,7 @@ import type {
   SearchResult,
 } from "../_lib/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -426,14 +427,12 @@ function SearchPanel({ local }: { local: UseMatrxLocalReturn }) {
           {results.map((r, i) => (
             <div key={i} className="border rounded-lg p-3 space-y-1 bg-card">
               <div className="flex items-start justify-between gap-2">
-                <a
+                <OutboundLink
                   href={r.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="text-sm font-medium text-primary hover:underline line-clamp-2"
                 >
                   {r.title}
-                </a>
+                </OutboundLink>
                 {r.age && (
                   <span className="text-[10px] text-muted-foreground shrink-0">
                     {r.age}

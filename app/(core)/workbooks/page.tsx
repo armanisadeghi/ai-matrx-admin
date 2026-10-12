@@ -50,6 +50,7 @@ import { importWorkbookFile, unsupportedFileReason } from "@/features/workbooks/
 import { GoogleHomeStrip } from "@/features/google-workspace/linked/GoogleHomeStrip";
 import { googleLinkIn } from "@/features/google-workspace/linked/link-store";
 import { GoogleSheetsMark } from "@/features/google-workspace/linked/marks";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export default function WorkbooksLandingPage() {
   const homeTemplates = useHomeTemplates("workbook");
@@ -487,16 +488,14 @@ function WorkbookMarks({ workbook: wb, withSourceFile }: { workbook: Workbook; w
   return (
     <>
       {google ? (
-        <a
+        <OutboundLink
           href={google}
-          target="_blank"
-          rel="noopener noreferrer"
           className="inline-flex shrink-0 items-center"
           title="Open in Google Sheets"
           aria-label="Open in Google Sheets"
         >
           <GoogleSheetsMark className="size-3.5" />
-        </a>
+        </OutboundLink>
       ) : null}
       {typeof tableId === "string" ? (
         <Link

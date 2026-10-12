@@ -40,6 +40,7 @@ import type { BrandAsset } from "@/features/marketing/types";
 import { webCopy } from "@/features/marketing/lib/copy-payloads";
 import type { SizeTier } from "@/lib/media/categorization";
 import type { SiteMediaStandards } from "@/features/marketing/data/media-library";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type TierFilter = "all" | SizeTier;
 
@@ -325,15 +326,13 @@ export function CrawledMediaView({
                       {image.pages.length === 1 ? "" : "s"}
                     </span>
                   </div>
-                  <a
+                  <OutboundLink
                     href={image.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="block truncate font-mono text-[10px] text-foreground hover:text-primary"
                     title={image.url}
                   >
                     {image.url}
-                  </a>
+                  </OutboundLink>
                   <p
                     className="truncate text-[9px] text-muted-foreground/70"
                     title={image.pages

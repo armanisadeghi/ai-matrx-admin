@@ -59,6 +59,7 @@ import type { AiVisibilityEvidenceView } from "./evidence-views";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { readOf } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface ClaimRow extends AiVisibilityClaim {
   engine: string;
@@ -361,15 +362,13 @@ export function AiVisibilityWorkspace({
       filter: "text",
       cellKind: "text",
       cell: (row) => (
-        <a
+        <OutboundLink
           href={row.url}
-          target="_blank"
-          rel="noreferrer"
           className="flex min-w-72 items-center gap-1 text-xs font-medium text-primary hover:underline"
         >
           <span className="max-w-xl truncate">{row.title || row.url}</span>
           <ExternalLink className="h-3 w-3 shrink-0" />
-        </a>
+        </OutboundLink>
       ),
     },
     { accessorKey: "domain", header: "Domain", filter: "text" },
@@ -658,9 +657,9 @@ export function AiVisibilityWorkspace({
               `${engineLabel(row.engine)} · citation #${row.ordinal}`,
             headerActions: (row) => (
               <Button asChild variant="outline">
-                <a href={row.url} target="_blank" rel="noreferrer">
+                <OutboundLink href={row.url}>
                   Open source
-                </a>
+                </OutboundLink>
               </Button>
             ),
           }}

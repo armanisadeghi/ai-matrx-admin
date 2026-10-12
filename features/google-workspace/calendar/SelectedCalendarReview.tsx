@@ -36,6 +36,7 @@ import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { GOOGLE_SCOPE, hasGoogleGrantedScope } from "@/lib/googleScopes";
 import { CalendarCreateReview } from "./CalendarCreateReview";
 import { CalendarEventChangeReview } from "./CalendarEventChangeReview";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface SelectedCalendarProblem {
   message: string;
@@ -129,14 +130,12 @@ export function SelectedCalendarEventRow({ event }: { event: SelectedEvent }) {
           </p>
         </div>
         {event.meeting_url ? (
-          <a
+          <OutboundLink
             className="inline-flex min-h-9 items-center gap-1 text-sm text-primary underline-offset-4 hover:underline"
             href={event.meeting_url}
-            target="_blank"
-            rel="noreferrer"
           >
             Meeting <ExternalLink className="h-3.5 w-3.5" />
-          </a>
+          </OutboundLink>
         ) : null}
       </div>
       <p className="mt-2 text-xs text-muted-foreground">

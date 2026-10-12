@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { ProjectCopyForAiButton } from "./ProjectCopyForAiButton";
 import type { ProjectWithRole } from "../types";
 import { cn } from "@/lib/utils";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 interface ProjectCardProps {
   project: ProjectWithRole;
@@ -106,7 +107,7 @@ export function ProjectCard({
       )}
       onClick={(e) => {
         if (e.metaKey || e.ctrlKey) {
-          window.open(projectPath, "_blank");
+          openOutbound(projectPath, "_blank");
           return;
         }
         handleNavigate(projectPath);

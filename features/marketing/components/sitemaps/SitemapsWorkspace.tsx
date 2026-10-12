@@ -56,6 +56,7 @@ import { cn } from "@/lib/utils";
 import { pushAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { RegionSkeleton } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function SitemapsWorkspace() {
   const { site, brandId } = useMarketingSite();
@@ -689,16 +690,14 @@ function SitemapRow({
       <span onClick={(event) => event.stopPropagation()}>
         <CopyButtons size="icon" {...rowCopy} />
       </span>
-      <a
+      <OutboundLink
         href={sitemap.url}
-        target="_blank"
-        rel="noreferrer"
         onClick={(event) => event.stopPropagation()}
         className="text-muted-foreground hover:text-foreground"
         aria-label="Open sitemap XML"
       >
         <ExternalLink className="h-3.5 w-3.5" />
-      </a>
+      </OutboundLink>
       <button
         type="button"
         title={sitemap.is_active ? "Deactivate sitemap" : "Activate sitemap"}

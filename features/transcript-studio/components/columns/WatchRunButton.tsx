@@ -28,6 +28,7 @@ import { useOpenLiveRunWindow } from "@/features/overlays/openers/liveRunWindow"
 import { conversationHref } from "@/features/hindsight/subject-doors";
 import { selectLatestRunForColumn } from "../../redux/selectors";
 import { studioLiveRunInstanceId } from "../../redux/liveRunWatch";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 interface WatchRunButtonProps {
   sessionId: string;
@@ -67,10 +68,10 @@ export function WatchRunButton({
           });
           return;
         }
-        window.open(
+        openOutbound(
           conversationHref(run.conversationId, "product"),
           "_blank",
-          "noopener,noreferrer",
+          "noopener",
         );
       }}
       title={

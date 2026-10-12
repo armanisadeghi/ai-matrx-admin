@@ -52,6 +52,7 @@ import {
 } from "@/features/marketing/components/shared/MarketingUi";
 import { MediaEmptyState } from "@/features/marketing/components/media/SnapshotMediaGallery";
 import type { BrandAsset } from "@/features/marketing/types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const STOCK_PAGE_SIZE = 24;
 
@@ -216,10 +217,8 @@ function BrandPortalsPanel({
               key={portal.id}
               className="group flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1"
             >
-              <a
+              <OutboundLink
                 href={portal.source_url ?? undefined}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="flex items-center gap-1.5 text-[11px] text-foreground hover:text-primary"
                 title={portal.source_url ?? undefined}
               >
@@ -229,7 +228,7 @@ function BrandPortalsPanel({
                     (portal.source_url ? hostnameOf(portal.source_url) : null) ||
                     "Portal"}
                 </span>
-              </a>
+              </OutboundLink>
               <button
                 type="button"
                 onClick={() => void removePortal(portal)}
@@ -494,15 +493,13 @@ export function StockSourcesView({
                         "Untitled photo"}
                     </p>
                     <div className="flex items-center justify-between gap-1">
-                      <a
+                      <OutboundLink
                         href={photo.user?.links?.html ?? photo.links.html}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         className="truncate text-[9px] text-muted-foreground/70 hover:text-primary"
                         title="Photographer profile on Unsplash"
                       >
                         {photo.user?.name ?? "Unsplash"}
-                      </a>
+                      </OutboundLink>
                       <span className="shrink-0 text-[9px] tabular-nums text-muted-foreground/70">
                         {photo.width}×{photo.height}
                       </span>
@@ -512,14 +509,12 @@ export function StockSourcesView({
                         variant="quiet"
                         asChild
                       >
-                        <a
+                        <OutboundLink
                           href={photo.links.html}
-                          target="_blank"
-                          rel="noopener noreferrer"
                           title="Open on Unsplash"
                         >
                           <ExternalLink className="h-3 w-3" />
-                        </a>
+                        </OutboundLink>
                       </Button>
                       <Button
                         icon={savingId === photo.id ? (

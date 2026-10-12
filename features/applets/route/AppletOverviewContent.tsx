@@ -24,6 +24,7 @@ import { appletJobs, appletPages, appletSources } from "@/features/applets/types
 import { useSourceTableNames } from "@/features/applets/hooks/useSourceTableNames";
 import { appletState, appletVersionLabel } from "@/features/applets/lib/applet-state";
 import { AppletWebDataNotice } from "@/features/applets/components/AppletWebDataNotice";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** "summarize_book" → "Summarize book": the code's name for a job, as words. */
 function humanizeAlias(alias: string): string {
@@ -178,10 +179,10 @@ export function AppletOverviewContent({ appId }: AppletOverviewContentProps) {
           {isPublished && (
             <SettingRow label="Public link">
               <Button variant="quiet" asChild>
-                <a href={`${siteConfig.url}/applets/${app.slug}`} target="_blank" rel="noopener noreferrer">
+                <OutboundLink href={`${siteConfig.url}/applets/${app.slug}`}>
                   {/* The whole address she can share, never a relative path (audit M6). */}
                   {`${siteConfig.url.replace(/^https?:\/\/(www\.)?/, "")}/applets/${app.slug}`}
-                </a>
+                </OutboundLink>
               </Button>
             </SettingRow>
           )}

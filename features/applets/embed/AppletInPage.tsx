@@ -14,6 +14,7 @@ import { Globe } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AppletHostMount } from "@/features/applets-host/AppletHostMount";
 import { appletManageHref, readAppletCards, type AppletCardInfo } from "./appletsPort";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface AppletInPageProps {
   appId: string;
@@ -67,9 +68,9 @@ export default function AppletInPage({ appId, height, pagePublished = false, onI
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground" data-applet-notice="not-on-web">
           <Globe size={12} aria-hidden />
           <span>Visitors cannot see this Applet.</span>
-          <a href={appletManageHref(appId)} target="_blank" rel="noreferrer" className="text-primary underline-offset-2 hover:underline">
+          <OutboundLink href={appletManageHref(appId)} className="text-primary underline-offset-2 hover:underline">
             Publish
-          </a>
+          </OutboundLink>
         </p>
       ) : null}
       <div className={height ? "min-h-0 overflow-auto" : "min-h-24"} style={frame}>

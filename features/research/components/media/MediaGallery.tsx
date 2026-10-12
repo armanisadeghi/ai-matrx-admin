@@ -78,6 +78,8 @@ import {
   youTubeEmbedUrl,
 } from "@ai-matrx/rich-content/utils/youtube";
 import { extractErrorMessage } from "@/utils/errors";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const TYPE_ICONS = {
   image: ImageIcon,
@@ -846,16 +848,14 @@ function YouTubeVideoCard({
         >
           {label}
         </p>
-        <a
+        <OutboundLink
           href={item.url}
-          target="_blank"
-          rel="noopener noreferrer"
           className="shrink-0 text-muted-foreground/50 hover:text-foreground transition-colors"
           title="Open on YouTube"
           onClick={(e) => e.stopPropagation()}
         >
           <ExternalLink className="h-3 w-3" />
-        </a>
+        </OutboundLink>
       </div>
       <Button
         variant={item.is_relevant ? "default" : "outline"}
@@ -898,10 +898,8 @@ function YouTubeChannelCard({
         item.is_relevant ? "border-primary/20" : "border-border/50 opacity-60",
       )}
     >
-      <a
+      <OutboundLink
         href={item.url}
-        target="_blank"
-        rel="noopener noreferrer"
         className="flex flex-1 flex-col"
         title={title}
       >
@@ -924,17 +922,15 @@ function YouTubeChannelCard({
             {pathLabel}
           </p>
         </div>
-      </a>
+      </OutboundLink>
       <div className="border-t border-border/40 px-2.5 py-1.5">
-        <a
+        <OutboundLink
           href={item.url}
-          target="_blank"
-          rel="noopener noreferrer"
           className="inline-flex items-center gap-1 type-meta text-muted-foreground hover:text-foreground transition-colors"
         >
           <ExternalLink className="h-3 w-3" />
           Open on YouTube
-        </a>
+        </OutboundLink>
       </div>
       <Button
         variant={item.is_relevant ? "default" : "outline"}
@@ -1057,7 +1053,7 @@ function VideoCard({
             onClick={() =>
               canPlayInApp
                 ? setPlaying(true)
-                : window.open(item.url, "_blank", "noopener,noreferrer")
+                : openOutbound(item.url, "_blank", "noopener")
             }
             className="absolute inset-0 h-full w-full"
             title={canPlayInApp ? "Play" : "Open on source site"}

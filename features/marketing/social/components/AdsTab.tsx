@@ -60,6 +60,8 @@ import { AdCard, libraryLabel } from "./AdCard";
 import { ProviderFallbackNotice } from "./ProviderFallbackNotice";
 import { useSocials } from "./SocialsContext";
 import { SaveToCollectionDialog } from "./SwipeDialogs";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const SECTIONS = [
   { value: "search", label: "Search" },
@@ -78,7 +80,7 @@ const SORT_DATA = [
 ] as const;
 
 function openLibrary(ad: AdCardModel) {
-  if (ad.libraryUrl) window.open(ad.libraryUrl, "_blank", "noopener,noreferrer");
+  if (ad.libraryUrl) openOutbound(ad.libraryUrl, "_blank", "noopener");
 }
 
 /** Look again at a tracked advertiser's library (spends one ad search): the button and the agent. */
@@ -685,9 +687,9 @@ function AdvertiserView({ advertiser, onBack }: { advertiser: TrackedAdvertiser;
                 {landing.length === 0 ? <li>None reported</li> : null}
                 {landing.map((l) => (
                   <li key={l.url} className="min-w-0">
-                    <a href={l.url} target="_blank" rel="noreferrer noopener" className="block truncate text-primary hover:underline" title={l.url}>
+                    <OutboundLink href={l.url} className="block truncate text-primary hover:underline" title={l.url}>
                       {l.url.replace(/^https?:\/\/(www\.)?/, "")}
-                    </a>
+                    </OutboundLink>
                     <span className="tabular-nums">
                       {l.count} ads · {Math.round(l.share * 100)}%
                     </span>

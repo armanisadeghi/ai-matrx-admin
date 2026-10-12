@@ -34,6 +34,7 @@ import type { SwipeCollectionRow, SwipeItem } from "../types";
 import { libraryLabel } from "./AdCard";
 import { NoteTagsFields } from "./NoteTagsFields";
 import { PlatformMark, platformLabel } from "./PlatformMark";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function SwipeItemSheet({
   item,
@@ -284,9 +285,9 @@ export function SwipeItemSheet({
             Open post details
           </Button>
           <Button variant="outline" icon={<ExternalLink />} asChild>
-            <a href={post.url} target="_blank" rel="noreferrer noopener">
+            <OutboundLink href={post.url}>
               Open original
-            </a>
+            </OutboundLink>
           </Button>
         </section>
       ) : null}
@@ -317,24 +318,20 @@ export function SwipeItemSheet({
           <div className="flex flex-wrap gap-2 pt-1">
             {ad.libraryUrl ? (
               <Button variant="outline" icon={<ExternalLink />} asChild>
-                <a
+                <OutboundLink
                   href={ad.libraryUrl}
-                  target="_blank"
-                  rel="noreferrer noopener"
                 >
                   Open in library
-                </a>
+                </OutboundLink>
               </Button>
             ) : null}
             {ad.landingUrl ? (
               <Button variant="outline" icon={<ExternalLink />} asChild>
-                <a
+                <OutboundLink
                   href={ad.landingUrl}
-                  target="_blank"
-                  rel="noreferrer noopener"
                 >
                   Landing page
-                </a>
+                </OutboundLink>
               </Button>
             ) : null}
           </div>

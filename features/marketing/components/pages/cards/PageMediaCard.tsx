@@ -23,6 +23,7 @@ import {
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { webCopy } from "@/features/marketing/lib/copy-payloads";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * Media inventory for one canonical page's latest snapshot — every observed
@@ -60,15 +61,13 @@ function ShareImageTile({ label, url }: { label: string; url: string }) {
         <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
           {label}
         </p>
-        <a
+        <OutboundLink
           href={url}
-          target="_blank"
-          rel="noopener noreferrer"
           className="block truncate font-mono text-[10px] text-foreground hover:text-primary"
           title={url}
         >
           {url}
-        </a>
+        </OutboundLink>
       </div>
     </div>
   );
@@ -236,15 +235,13 @@ export function PageMediaCard({
                   >
                     {humanizeIdentifier(resource.kind)}
                   </Badge>
-                  <a
+                  <OutboundLink
                     href={resource.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="min-w-0 flex-1 truncate font-mono text-[10px] text-foreground hover:text-primary"
                     title={resource.url}
                   >
                     {resource.url}
-                  </a>
+                  </OutboundLink>
                   {resource.mimeType ? (
                     <span className="shrink-0 text-[9px] text-muted-foreground/70">
                       {resource.mimeType}

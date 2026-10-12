@@ -37,9 +37,9 @@ import type { SocialPlatform } from "@/features/marketing/social/types";
 import { customItem, websiteHost, type EvidenceItem } from "./evidence";
 import type { RoundView } from "./SmartAddRound";
 import { Shared } from "./stage/Shared";
-import { addUtmSource } from "@/utils/url-utm";
 import { proxiedExternalImageUrl } from "@/lib/media/external-image";
 import styles from "./stage/stage.module.css";
+import { withReferral } from "@ai-matrx/kit/outbound";
 
 type Mode = "website" | "social" | "name";
 
@@ -1048,7 +1048,7 @@ export function stageName(items: EvidenceItem[]): EvidenceItem | null {
 function referralHref(url: string): string {
   const absolute = /^https?:\/\//i.test(url) ? url : `https://${url}`;
   try {
-    const out = new URL(addUtmSource(absolute));
+    const out = new URL(withReferral(absolute));
     out.searchParams.set("utm_medium", "referral");
     return out.toString();
   } catch {

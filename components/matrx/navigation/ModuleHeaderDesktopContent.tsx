@@ -12,6 +12,7 @@ import { ModulePage } from "./types";
 import { useModuleHeader } from "@/providers/ModuleHeaderProvider";
 import AutoBreadcrumbs from "@/components/matrx/navigation/breadcumbs/AutoBreadcumbsOptions";
 import NavigationSelectIcon from "@/components/matrx/navigation/NavigationSelectIcon";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface ModuleHeaderProps {
     pages: ModulePage[];
@@ -102,11 +103,11 @@ export default function ModuleHeaderDesktopContent({ pages, moduleHome, moduleNa
                             <Tooltip key={shortcut.path}>
                                 <TooltipTrigger asChild>
                                     <motion.div variants={buttonVariants} initial="initial" animate="animate" whileHover="hover">
-                                        <a href={shortcut.path} target="_blank" rel="noopener noreferrer">
+                                        <OutboundLink href={shortcut.path}>
                                             <Button variant="ghost" size="icon" className="hover:bg-accent">
                                                 <shortcut.icon className="h-4 w-4" />
                                             </Button>
-                                        </a>
+                                        </OutboundLink>
                                     </motion.div>
                                 </TooltipTrigger>
                                 <TooltipContent>

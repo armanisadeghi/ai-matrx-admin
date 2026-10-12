@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Button as SurfaceButton } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type LearningAction = "ask" | "explain" | "hint" | "memory";
 
@@ -545,10 +546,8 @@ export function SharpCanonicalFlashcardsDemo() {
                   Read {flipped ? "answer" : "question"} aloud
                   <Headphones className="ml-auto h-4 w-4 text-muted-foreground" />
                 </SurfaceButton>
-                <a
+                <OutboundLink
                   href={card.trust.sourceUrl}
-                  target="_blank"
-                  rel="noreferrer"
                   className="flex min-h-12 items-center gap-3 rounded-md border border-border bg-background px-4 py-2 text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 >
                   <ShieldCheck className="h-4 w-4 shrink-0 text-success" />
@@ -560,7 +559,7 @@ export function SharpCanonicalFlashcardsDemo() {
                     </span>
                   </span>
                   <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" />
-                </a>
+                </OutboundLink>
               </div>
 
               <div className="mt-4 flex items-start gap-2 rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">

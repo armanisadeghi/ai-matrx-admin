@@ -21,6 +21,7 @@ import { competitorDetailModel, platformLabel } from "./competitor-detail";
 import { AddHandlesForm } from "./AddHandlesForm";
 import { useSocialSpend } from "@/features/marketing/social/cost";
 import { directoryKey, useCompetitorSocialActions, useFoundSocials, type BrandRef } from "./useCompetitorSocials";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function Heading({ children }: { children: string }) {
   return <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{children}</p>;
@@ -60,15 +61,13 @@ export function CompetitorDetail({
     <div className="space-y-5 p-4 text-sm">
       <header className="space-y-1">
         {model.website ? (
-          <a
+          <OutboundLink
             href={model.website.href}
-            target="_blank"
-            rel="noreferrer"
             className="inline-flex items-center gap-1 text-foreground hover:underline"
           >
             {model.website.label}
             <ExternalLink className="h-3 w-3" />
-          </a>
+          </OutboundLink>
         ) : (
           // read-gate-exempt: the website comes from the competitor record in props, not from a read
           <p className="text-muted-foreground">No website on file</p>
@@ -114,9 +113,9 @@ export function CompetitorDetail({
                   </span>
                 </span>
                 {o.postUrl ? (
-                  <a href={o.postUrl} target="_blank" rel="noreferrer" className="shrink-0 text-xs text-muted-foreground hover:text-foreground hover:underline">
+                  <OutboundLink href={o.postUrl} className="shrink-0 text-xs text-muted-foreground hover:text-foreground hover:underline">
                     Open post
-                  </a>
+                  </OutboundLink>
                 ) : (
                   <Link href={o.href} className="shrink-0 text-xs text-muted-foreground hover:text-foreground hover:underline">
                     Open account

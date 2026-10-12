@@ -64,6 +64,7 @@ import {
 } from "@/features/rag/hooks/useDocument";
 import type { ChunkRow } from "@/features/rag/types/documents";
 import { DATA_STORES_PATH } from "@/features/knowledge/modulePaths";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface DocumentViewerProps {
   documentId: string;
@@ -308,15 +309,13 @@ function BindButton({
         <div className="px-4 py-2 border-t type-meta text-muted-foreground flex items-center justify-between">
           <span>
             Manage all stores at{" "}
-            <a
+            <OutboundLink
               href={DATA_STORES_PATH}
-              target="_blank"
-              rel="noreferrer"
               className="underline inline-flex items-center gap-0.5 hover:text-foreground"
             >
               /knowledge/data-stores
               <ExternalLink className="h-3 w-3" />
-            </a>
+            </OutboundLink>
           </span>
         </div>
       </DialogContent>

@@ -17,6 +17,7 @@ import type { CanvasController, CanvasItemId, CanvasJson } from "@ai-matrx/canva
 import { canvasRecord, canvasText, useToolOpener, type ToolOpenInput } from "@/features/canvas/host/toolCanvas";
 
 import { QUICK_CHAT_KIND, QUICK_CHAT_TITLE as TITLE, freshQuickChatData } from "@/features/canvas/host/quickToolLaunchers";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export { QUICK_CHAT_KIND, freshQuickChatData };
 
@@ -85,7 +86,7 @@ function quickChatMenu({ data }: CanvasKindProps): readonly CanvasMenuItem[] {
       id: "open-chat-page",
       label: "Open in Chat",
       icon: <ExternalLink />,
-      onSelect: () => window.open(`/chat/${conversationId}`, "_blank", "noopener"),
+      onSelect: () => openOutbound(`/chat/${conversationId}`, "_blank", "noopener"),
     },
   ];
 }

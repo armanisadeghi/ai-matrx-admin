@@ -38,6 +38,7 @@ import { cn } from "@/lib/utils";
 import type { HrLawCitation, HrOrgLawRule, HrPlatformLawRule } from "../types";
 import { describeLawValue, displayableParameters } from "./law-parameters";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** The one class the owner called out by name, and the key that makes it dangerous. */
 const PTO_PAYOUT_CLASS = "pto-payout-at-termination";
@@ -62,15 +63,13 @@ export function LawCitationLine({ citation }: { citation: HrLawCitation | null }
   return (
     <p className="text-xs text-foreground">
       {isWebLink(citation.url) ? (
-        <a
+        <OutboundLink
           href={citation.url ?? "#"}
-          target="_blank"
-          rel="noopener noreferrer"
           className="inline-flex items-center gap-1 underline underline-offset-2"
         >
           {label}
           <ExternalLink className="h-3 w-3" />
-        </a>
+        </OutboundLink>
       ) : (
         <span>{label}</span>
       )}

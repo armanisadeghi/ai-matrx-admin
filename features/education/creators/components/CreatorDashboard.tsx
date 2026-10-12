@@ -70,6 +70,7 @@ import {
   createEducationCreatorScope,
   EDUCATION_CREATOR_SURFACE_NAME,
 } from "@/features/surfaces/manifests/education-creator.manifest";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const RESOURCE_LABEL: Record<string, string> = {
   fc_set: "Flashcards",
@@ -526,15 +527,13 @@ function Editor({ initial }: { initial: CreatorProfileMine }) {
         <div className="flex items-center gap-2">
           <BadgeCheck className="h-5 w-5 text-primary" />
           <h1 className="text-lg font-semibold text-foreground">Creator page</h1>
-          <a
+          <OutboundLink
             href={`/c/${handle}`}
-            target="_blank"
-            rel="noopener noreferrer"
             className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 font-mono text-xs text-muted-foreground hover:text-foreground"
           >
             /c/{handle}
             <ExternalLink className="h-3 w-3" />
-          </a>
+          </OutboundLink>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
@@ -544,10 +543,10 @@ function Editor({ initial }: { initial: CreatorProfileMine }) {
             </Label>
           </div>
           <Button variant="outline" asChild>
-            <a href={`/c/${handle}`} target="_blank" rel="noopener noreferrer">
+            <OutboundLink href={`/c/${handle}`}>
               <Eye className="mr-1.5 h-4 w-4" />
               View
-            </a>
+            </OutboundLink>
           </Button>
           <Button icon={saving ? <Loader2 className="animate-spin" /> : <Save />} variant="primary" disabled={saving} onClick={save}>
             Save

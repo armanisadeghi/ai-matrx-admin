@@ -45,6 +45,7 @@ import {
   swipeCols,
   type BoxSize,
 } from "./social-tile-model";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // ─── Size ────────────────────────────────────────────────────────────────────
 
@@ -523,26 +524,22 @@ export function AdTileView({ ad }: { ad: AdCardModel }) {
         <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-1">
           {ad.cta ? <Badge tone="neutral">{ad.cta}</Badge> : null}
           {ad.landingUrl ? (
-            <a
+            <OutboundLink
               href={ad.landingUrl}
-              target="_blank"
-              rel="noreferrer noopener"
               className="inline-flex min-w-0 max-w-full items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
             >
               <ExternalLink className="h-3 w-3 shrink-0" />
               <span className="truncate">{hostOf(ad.landingUrl)}</span>
-            </a>
+            </OutboundLink>
           ) : null}
           {ad.libraryUrl ? (
-            <a
+            <OutboundLink
               href={ad.libraryUrl}
-              target="_blank"
-              rel="noreferrer noopener"
               className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
             >
               <ExternalLink className="h-3 w-3 shrink-0" />
               Open in library
-            </a>
+            </OutboundLink>
           ) : null}
         </div>
       </div>
@@ -556,10 +553,8 @@ function SwipeThumb({ item, onOpenPost }: { item: SwipeItem; onOpenPost: (p: Pos
   if (item.post) return <PostThumb post={item.post} onOpen={onOpenPost} />;
   const ad = item.ad;
   return (
-    <a
+    <OutboundLink
       href={ad?.libraryUrl ?? ad?.landingUrl ?? undefined}
-      target="_blank"
-      rel="noreferrer noopener"
       title={ad?.headline || ad?.advertiser}
       className="relative block aspect-[3/4] min-w-0 overflow-hidden rounded-md border border-border bg-muted"
     >
@@ -571,7 +566,7 @@ function SwipeThumb({ item, onOpenPost }: { item: SwipeItem; onOpenPost: (p: Pos
         </span>
       )}
       <span className="absolute left-1 top-1 rounded bg-card/90 px-1 text-[11px] text-foreground">Ad</span>
-    </a>
+    </OutboundLink>
   );
 }
 

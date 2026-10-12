@@ -23,10 +23,11 @@ import { openPath } from "@/lib/deep-link/openPath";
 import { RECORDS_NOTIFY } from "@/features/unified-data/recordsNotify";
 import { OrganizationContextNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
 import { useAppRecordsConfig } from "@/features/data-tables/records-ui-host/recordsUiHost";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 function openRecordInNewTab(recordId: string, tableId: string) {
   const href = openPath(recordId, { fallback: `/data/${tableId}?record=${recordId}` });
-  window.open(new URL(href, window.location.origin).toString(), "_blank", "noopener,noreferrer");
+  openOutbound(new URL(href, window.location.origin).toString(), "_blank", "noopener");
 }
 
 export function WorkInboxWindow({ onClose }: { onClose?: () => void }) {

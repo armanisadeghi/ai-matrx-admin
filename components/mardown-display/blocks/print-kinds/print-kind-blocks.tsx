@@ -43,6 +43,7 @@ import {
   text,
 } from "../search-kinds/search-kind-data";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface PrintBlockProps {
   serverData?: unknown;
@@ -771,14 +772,12 @@ export function LuluPrintJobBlock({ serverData, className }: PrintBlockProps) {
                         <ul className="mt-0.5 space-y-0.5">
                           {trackingUrls.map((url) => (
                             <li key={url}>
-                              <a
+                              <OutboundLink
                                 href={url}
-                                target="_blank"
-                                rel="noopener noreferrer"
                                 className="break-all text-xs text-primary underline underline-offset-2"
                               >
                                 {url}
-                              </a>
+                              </OutboundLink>
                             </li>
                           ))}
                         </ul>

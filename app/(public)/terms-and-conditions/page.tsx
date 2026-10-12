@@ -11,6 +11,7 @@ import {
   SMS_SENDER_PHONE,
   SMS_SUPPORT_EMAIL,
 } from "@/features/sms/compliance";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export const metadata = createRouteMetadata("/terms-and-conditions", {
   title: "SMS Terms and Conditions",
@@ -105,13 +106,12 @@ export default function TermsAndConditionsPage() {
           AI Matrx product
           <br />
           Website:{" "}
-          <a
+          <OutboundLink
             href={siteConfig.legalOperatorUrl}
-            rel="external noopener"
-            target="_blank"
+            rel="external"
           >
             {siteConfig.legalOperatorUrl}
-          </a>
+          </OutboundLink>
           <br />
           Email: <a href={`mailto:${SMS_SUPPORT_EMAIL}`}>{SMS_SUPPORT_EMAIL}</a>
         </p>

@@ -68,6 +68,7 @@ import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { MakeClipDialog } from "@/features/marketing/pr/media-desk/MakeClipDialog";
 import { useBrand } from "@/features/marketing/data/hooks";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** `?mention=` — the exact row an assist chip is talking about. */
 const MENTION_PARAM = "mention";
@@ -147,14 +148,12 @@ function MentionDetail({
         </blockquote>
       ) : null}
       <div className="mt-3 flex flex-wrap items-center gap-3">
-        <a
+        <OutboundLink
           href={row.url}
-          target="_blank"
-          rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-sm font-medium text-primary "
         >
           Read the article <ExternalLink className="h-3.5 w-3.5" />
-        </a>
+        </OutboundLink>
         <MakeClipDialog
           siteId={row.site_id}
           organizationId={row.organization_id}
@@ -390,10 +389,8 @@ export function CoverageTab({ siteId }: { siteId: string }) {
       cellKind: "text",
       cell: (row) => (
         <div className="min-w-40 max-w-64">
-          <a
+          <OutboundLink
             href={row.url}
-            target="_blank"
-            rel="noopener noreferrer"
             title={row.url}
             onClick={(event) => event.stopPropagation()}
             className="group block"
@@ -402,7 +399,7 @@ export function CoverageTab({ siteId }: { siteId: string }) {
               <span className="truncate">{row.domain}</span>
               <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground" />
             </span>
-          </a>
+          </OutboundLink>
           <span className="text-[10px] text-muted-foreground">
             {MEDIUM_LABEL[row.medium] ?? row.medium}
             {row.is_competitor ? ` · about ${row.competitor_key}` : ""}

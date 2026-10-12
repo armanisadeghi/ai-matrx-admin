@@ -10,6 +10,7 @@ import { ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Cost } from "@/components/cost/Cost";
 import { formatCount, formatDurationMs } from "@ai-matrx/kit/format";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function Chip({ className, children }: { className?: string; children: ReactNode }) {
   return (
@@ -74,16 +75,14 @@ export function MetricsLine({ metrics }: { metrics: Record<string, unknown> | nu
 export function NewTabLink({ href, label = "Open in new tab" }: { href: string; label?: string }) {
   const absolute = typeof window === "undefined" ? href : new URL(href, window.location.origin).toString();
   return (
-    <a
+    <OutboundLink
       href={absolute}
-      target="_blank"
-      rel="noopener noreferrer"
       className="inline-flex h-7 items-center gap-1 rounded-md px-2 type-secondary text-muted-foreground hover:bg-accent hover:text-foreground pointer-coarse:h-10"
       data-candidate-new-tab
     >
       <ExternalLink className="h-3.5 w-3.5" />
       {label}
-    </a>
+    </OutboundLink>
   );
 }
 

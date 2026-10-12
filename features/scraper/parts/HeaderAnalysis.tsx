@@ -8,6 +8,7 @@ import {
 import { BarChart, ExternalLink, FileText, Search } from "lucide-react";
 import ScraperDataUtils from "../utils/data-utils";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface Overview {
   uuid: string;
@@ -104,14 +105,12 @@ const HeaderAnalysis = ({ overview }: { overview: Overview }) => {
                 </h1>
                 <div className="flex items-center">
                   <ExternalLink className="text-white/80 mr-2 h-5 w-5" />
-                  <a
+                  <OutboundLink
                     href={overview.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="text-white/90 hover:text-white underline decoration-1 underline-offset-4 text-lg font-medium"
                   >
                     {overview.url}
-                  </a>
+                  </OutboundLink>
                 </div>
               </div>
 

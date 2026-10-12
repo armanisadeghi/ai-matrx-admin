@@ -68,6 +68,7 @@ import {
 } from "./style";
 import { LINK_LAYOUTS, type LinkLayoutId } from "./layouts";
 import { Chip } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // cytoscape + extensions touch window at import → must be client-only.
 const LinkGraphCytoscape = dynamic(() => import("./LinkGraphCytoscape"), {
@@ -210,15 +211,13 @@ function NodePanel({
           <p className="truncate font-mono text-xs font-semibold text-foreground">
             {node.label}
           </p>
-          <a
+          <OutboundLink
             href={node.fullUrl}
-            target="_blank"
-            rel="noreferrer"
             className="mt-0.5 inline-flex max-w-full items-center gap-1 truncate text-[11px] text-primary"
           >
             <span className="truncate">{node.fullUrl}</span>
             <ExternalLink className="h-3 w-3 shrink-0" />
-          </a>
+          </OutboundLink>
         </div>
         <button
           type="button"
@@ -410,14 +409,12 @@ function SectionPanel({
           </Link>
         ) : null}
         {node.kind === "external" ? (
-          <a
+          <OutboundLink
             href={node.representativeUrl}
-            target="_blank"
-            rel="noreferrer"
             className="block truncate text-primary"
           >
             {node.representativeUrl}
-          </a>
+          </OutboundLink>
         ) : null}
       </div>
     </aside>

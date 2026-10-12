@@ -242,7 +242,7 @@ describe("RichMemberTable", () => {
     expect(open).toHaveBeenCalledWith(
       "/knowledge/library/document-1/preview",
       "_blank",
-      "noopener,noreferrer",
+      "noopener",
     );
     await act(async () => {
       (

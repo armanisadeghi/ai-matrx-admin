@@ -61,6 +61,7 @@ import type { LibraryMetrics, LibraryRow } from "../types";
 import { sourceVocabulary, type SourceVocabulary } from "../vocabulary";
 import type { SyncState } from "../redux/sourceLibrarySlice";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** Fixed number of "top by views" slots, so the list never changes height. */
 const TOP_SLOTS = 5;
@@ -1020,14 +1021,12 @@ export function LibraryMetricsHeader(props: {
                                     {library.handle ?? library.external_id}
                                 </span>
                                 <span aria-hidden="true">·</span>
-                                <a
+                                <OutboundLink
                                     href={library.canonical_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
                                     className="truncate underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 >
                                     {library.canonical_url}
-                                </a>
+                                </OutboundLink>
                             </>
                         )}
                     </div>

@@ -43,6 +43,7 @@ import type {
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { StaleDataNotice } from "@ai-matrx/design-system";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const TIER_STYLE: Record<ExpertCandidateTier, string> = {
   strong:
@@ -132,15 +133,13 @@ function CandidateRow({
         {candidate.evidence.length > 0 && (
           <div className="mt-1 space-y-0.5">
             {candidate.evidence.slice(0, 2).map((evidence, index) => (
-              <a
+              <OutboundLink
                 key={`${evidence.source_id}-${index}`}
                 href={evidence.url}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="block truncate type-meta text-muted-foreground hover:text-foreground hover:underline"
               >
                 {evidence.detail || evidence.title || evidence.url}
-              </a>
+              </OutboundLink>
             ))}
           </div>
         )}

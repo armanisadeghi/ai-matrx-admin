@@ -33,6 +33,7 @@ import {
 import { useCmsSiteSurfaceScope } from "@/features/cms/hooks/useCmsSiteSurfaceScope";
 import { CMS_SITE_CONTEXT_MENU_PROPS } from "@/features/cms/agent-context/cmsSiteContextMenuProps";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const SETTINGS_SECTIONS = [
   ["general", "General"],
@@ -420,7 +421,7 @@ export default function SiteSettingsPage() {
                       icon={<ExternalLink />}
                       variant="outline"
                       onClick={() =>
-                        window.open(
+                        openOutbound(
                           `/marketing/content-plan/${site.web_site_id}`,
                           "_blank",
                         )

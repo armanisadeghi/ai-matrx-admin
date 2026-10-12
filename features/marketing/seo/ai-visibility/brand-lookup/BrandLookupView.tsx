@@ -64,6 +64,7 @@ import {
   type ShareOfVoiceEntry,
 } from "./types";
 import { NO_RAW_ROW_WINDOW } from "@/features/marketing/social/row-open";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** What this index read does not prove — on screen beside every number (≤140 chars). */
 export const INDEX_NOT_PROVEN =
@@ -230,9 +231,9 @@ function PagesTable({ rows }: { rows: CitedPage[] }) {
       header: "Cited page",
       filter: "text",
       cell: (r) => (
-        <a href={r.url} target="_blank" rel="noreferrer" className="block max-w-96 truncate text-primary" title={r.url}>
+        <OutboundLink href={r.url} className="block max-w-96 truncate text-primary" title={r.url}>
           {r.url.replace(/^https?:\/\//, "")}
-        </a>
+        </OutboundLink>
       ),
     },
     { accessorKey: "platform", header: "Platform", filter: "select", cell: (r) => platformName(r.platform) },

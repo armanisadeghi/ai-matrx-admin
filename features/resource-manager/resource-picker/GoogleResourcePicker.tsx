@@ -44,6 +44,7 @@ import {
   ResourcePickerSubViewHeader,
 } from "./ResourcePickerSubViewHeader";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface GoogleResourcePickerProps {
   onBack: () => void;
@@ -182,16 +183,14 @@ export function GoogleResourcePicker({
                         />
                       </div>
                       {typeof link === "string" && link ? (
-                        <a
+                        <OutboundLink
                           href={link}
-                          target="_blank"
-                          rel="noopener noreferrer"
                           onClick={(event) => event.stopPropagation()}
                           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground pointer-coarse:h-11 pointer-coarse:w-11"
                           aria-label={`Open ${file.display_name} in Google`}
                         >
                           <ExternalLink className="h-4 w-4" />
-                        </a>
+                        </OutboundLink>
                       ) : null}
                     </div>
                   );

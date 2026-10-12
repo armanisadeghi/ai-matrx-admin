@@ -11,6 +11,7 @@
 
 import { openFilePreview } from "@/features/files/components/preview/openFilePreview";
 import type { SourceCitation } from "./types";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 // Re-export the pure predicate (defined in types.ts to stay free of the heavy
 // file-preview import) so callers can grab both from one place.
@@ -30,7 +31,7 @@ export function openCitationSource(c: SourceCitation): boolean {
   }
   if (c.url) {
     if (typeof window !== "undefined") {
-      window.open(c.url, "_blank", "noopener,noreferrer");
+      openOutbound(c.url, "_blank", "noopener");
     }
     return true;
   }

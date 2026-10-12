@@ -71,6 +71,7 @@ import {
   useOrgSharedItems,
   type OrgSharedItem,
 } from "../hooks/useOrgSharedItems";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export function OrgResourceDetail() {
   const params = useParams();
@@ -299,10 +300,10 @@ export function OrgResourceDetail() {
               iconEnd={<ExternalLink />}
               variant="outline"
               onClick={() =>
-                window.open(
+                openOutbound(
                   `/organizations/${org.slug}/${entry.orgRoute}`,
                   "_blank",
-                  "noopener,noreferrer",
+                  "noopener",
                 )
               }
             >

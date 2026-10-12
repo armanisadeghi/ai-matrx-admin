@@ -46,6 +46,7 @@ import { pushAppHref } from "@/lib/deployment/navigate";
 import { readOf } from "@ai-matrx/design-system";
 
 import { ErrorNotice } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 type Timeframe = "7d" | "30d" | "90d" | "all";
 
 const TIMEFRAME_DAYS: Record<Exclude<Timeframe, "all">, number> = {
@@ -445,15 +446,13 @@ export function UserAcquisitionTableClient() {
                   Local / agent test
                 </Badge>
               ) : null}
-              <a
+              <OutboundLink
                 href={row.referrer}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="block min-w-0 truncate text-xs text-primary hover:underline"
                 title={row.referrer}
               >
                 {row.referrer}
-              </a>
+              </OutboundLink>
             </div>
           ) : (
             <span className="text-xs text-muted-foreground">

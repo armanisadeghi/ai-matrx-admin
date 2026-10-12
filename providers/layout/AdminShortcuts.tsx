@@ -10,6 +10,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export default function AdminShortcuts() {
     const buttonVariants = {
@@ -43,10 +44,8 @@ export default function AdminShortcuts() {
                                 animate="animate"
                                 whileHover="hover"
                             >
-                                <a
+                                <OutboundLink
                                     href={shortcut.path}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
                                 >
                                     <Button
                                         variant="ghost"
@@ -55,7 +54,7 @@ export default function AdminShortcuts() {
                                     >
                                         <shortcut.icon className="h-4 w-4"/>
                                     </Button>
-                                </a>
+                                </OutboundLink>
                             </motion.div>
                         </TooltipTrigger>
                         <TooltipContent>

@@ -16,6 +16,7 @@ import { DemoPageLayout } from "../_components/DemoPageLayout";
 import { ResponseViewer } from "../_components/ResponseViewer";
 import { useScraperApi } from "@/features/scraper/hooks/useScraperApi";
 import { ScrapedContentPretty } from "@/features/scraper/parts/ScrapedContentPretty";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function normalizeUrl(raw: string): string | null {
   const trimmed = raw.trim();
@@ -241,15 +242,13 @@ function RenderedContent({ raw }: { raw: Record<string, unknown> }) {
                   (raw.title as string) ||
                   "Untitled Page"}
               </h2>
-              <a
+              <OutboundLink
                 href={(raw.response_url as string) || (raw.url as string)}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="text-sm text-primary hover:underline flex items-center gap-1"
               >
                 {(raw.response_url as string) || (raw.url as string)}
                 <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+              </OutboundLink>
               <div className="flex items-center gap-2 flex-wrap pt-1">
                 <Badge variant="outline" className="text-xs">
                   {(raw.cms as string) || "unknown CMS"}
@@ -384,15 +383,13 @@ function RenderedContent({ raw }: { raw: Record<string, unknown> }) {
                   </h3>
                   <div className="space-y-0.5 max-h-48 overflow-auto bg-muted rounded-lg p-2">
                     {arr.slice(0, 100).map((link, i) => (
-                      <a
+                      <OutboundLink
                         key={i}
                         href={link}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         className="block text-xs text-primary hover:underline truncate py-0.5"
                       >
                         {link}
-                      </a>
+                      </OutboundLink>
                     ))}
                     {arr.length > 100 && (
                       <p className="text-xs text-muted-foreground pt-1">

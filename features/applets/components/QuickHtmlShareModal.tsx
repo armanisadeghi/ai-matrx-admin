@@ -6,6 +6,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { X, Copy, Check, Download, ExternalLink } from 'lucide-react';
 import { markdownToHtml } from '@ai-matrx/print/markdown';
 import { downloadFile } from "@ai-matrx/kit/download";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 interface QuickHtmlShareModalProps {
     isOpen: boolean;
@@ -103,7 +104,7 @@ export default function QuickHtmlShareModal({ isOpen, onClose, markdown, title =
     const handleOpenInTab = useCallback(() => {
         const blob = new Blob([standaloneHtml], { type: 'text/html;charset=utf-8' });
         const url = URL.createObjectURL(blob);
-        window.open(url, '_blank', 'noopener');
+        openOutbound(url, '_blank', 'noopener');
         // Don't revoke immediately — the tab needs it
     }, [standaloneHtml]);
 

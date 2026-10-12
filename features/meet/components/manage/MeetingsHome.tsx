@@ -117,6 +117,7 @@ import type {
   OccurrenceRef,
 } from "@/features/meet/components/manage/MeetingFormDialog";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /** One Upcoming row: an AI Matrx occurrence, or an event from the person's other calendar. */
 type AgendaRow =
@@ -919,7 +920,7 @@ function ExternalEventRow({
     noteTakerLine(event) ??
     "No call link — open it in AI Matrx to add the AI note-taker.";
   const openLink = () => {
-    if (event.link) window.open(event.link, "_blank", "noopener,noreferrer");
+    if (event.link) openOutbound(event.link, "_blank", "noopener");
   };
   return (
     <Row

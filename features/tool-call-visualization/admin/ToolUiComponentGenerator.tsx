@@ -63,6 +63,7 @@ import { buildToolComponentGenerationOffer } from "@/features/tool-call-visualiz
 import { IntelligenceIndicator } from "@/features/mandates/feature-intelligence/IntelligenceIndicator";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { copyToClipboard } from "@/lib/clipboard/copy";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1244,13 +1245,12 @@ export function ToolUiComponentGenerator({
                     <p className="text-sm font-medium">No test samples saved</p>
                     <p className="text-xs text-muted-foreground">
                       Run this tool on the{" "}
-                      <a
+                      <OutboundLink
                         href="/demos/api-tests/tool-testing"
-                        target="_blank"
                         className="underline text-primary"
                       >
                         Tool Testing page
-                      </a>{" "}
+                      </OutboundLink>{" "}
                       and save a sample first. Samples provide the stream data
                       the AI needs to generate accurate components.
                     </p>

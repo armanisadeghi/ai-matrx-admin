@@ -54,6 +54,7 @@ import {
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { isJsonObject } from "@/types/json";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface GmailReviewCardProps {
   ask: PendingAsk;
@@ -495,15 +496,13 @@ export function GmailReviewCard({ ask, organizationId, preflight, plan }: GmailR
             <ErrorAlchemyMenu error={refusal.userMessage} />
           </div>
         ) : null}
-        <a
+        <OutboundLink
           href="/user-settings/integrations/google-workspace"
-          target="_blank"
-          rel="noopener noreferrer"
           className="inline-flex w-fit items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:text-foreground "
         >
           Manage or disconnect this Google account
           <ExternalLink className="h-3 w-3" />
-        </a>
+        </OutboundLink>
       </div>
     </AgentCardShell>
   );

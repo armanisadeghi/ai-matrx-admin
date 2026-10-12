@@ -27,6 +27,7 @@ import { adminMandateRecordHref } from "@/features/mandates/admin-routes";
 import type { UnifiedUsageRow } from "./unified-rows";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const CONTROL_CLASS =
   "flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground " +
@@ -72,17 +73,15 @@ export function UsageNameCell({ row }: { row: UnifiedUsageRow }) {
         >
           {key}
         </button>
-        <a
+        <OutboundLink
           href={href}
-          target="_blank"
-          rel="noopener noreferrer"
           className={CONTROL_CLASS}
           title="Open this mandate in a new tab"
           aria-label="Open this mandate in a new tab"
           data-tap-target
         >
           <ExternalLink className="h-3 w-3" aria-hidden />
-        </a>
+        </OutboundLink>
       </div>
     );
   }

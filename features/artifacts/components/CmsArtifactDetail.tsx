@@ -54,6 +54,7 @@ import {
 } from "@/features/artifacts/lib/artifacts-scope";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 // ── CanvasItemPreview ─────────────────────────────────────────────────────────
 
 /**
@@ -267,14 +268,12 @@ function MetaRow({ icon: Icon, label, value, href }: MetaRowProps) {
           {label}
         </p>
         {href ? (
-          <a
+          <OutboundLink
             href={href}
-            target="_blank"
-            rel="noopener noreferrer"
             className="text-sm text-primary break-all hover:underline underline-offset-2"
           >
             {value}
-          </a>
+          </OutboundLink>
         ) : (
           <p className="text-sm text-foreground break-all">{value}</p>
         )}
@@ -576,14 +575,12 @@ export function CmsArtifactDetail({ artifactId }: CmsArtifactDetailProps) {
                   <span className="text-xs text-muted-foreground truncate">
                     {artifact.externalUrl}
                   </span>
-                  <a
+                  <OutboundLink
                     href={artifact.externalUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="ml-auto flex-shrink-0"
                   >
                     <ExternalLink className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                  </a>
+                  </OutboundLink>
                 </div>
                 <iframe key={previewSandbox}
                   src={artifact.externalUrl}

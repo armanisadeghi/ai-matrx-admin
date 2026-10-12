@@ -134,6 +134,7 @@ import { VerdictDetail } from "./impact-cells";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function describeError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -537,14 +538,12 @@ function DriftPanel({
           {diffError ? (
             <div className="space-y-1 p-3 type-secondary">
               <p className="text-destructive">{diffError} <ErrorAlchemyMenu error={diffError} /></p>
-              <a
+              <OutboundLink
                 href={getAgentModeHref("versions", agentId, SYSTEM_AGENT_BASE)}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-primary hover:underline"
               >
                 <History className="h-3 w-3" /> Open full version history
-              </a>
+              </OutboundLink>
             </div>
           ) : !diff ? (
             <div className="flex items-center gap-2 p-3 type-secondary text-muted-foreground">
@@ -845,9 +844,9 @@ function CodeAgentDriftPanel({
         <CopyButtons label="Copy fix" human={`${brief}\n\nPREFERRED OPTION: deliver the unconsumed code value through a named variable or a declared context slot. Keep user_input exclusively for human-authored text. Update every discovered call site.`} size="sm" />
         {agentEditHref ? (
           <Button asChild variant="outline">
-            <a href={agentEditHref} target="_blank" rel="noopener noreferrer">
+            <OutboundLink href={agentEditHref}>
               Open agent builder <ExternalLink className="ml-1 size-3" />
-            </a>
+            </OutboundLink>
           </Button>
         ) : (
           <PropertyRow label="Agent builder" value="Unavailable" />
@@ -1384,20 +1383,18 @@ function FactsPanel({
                     </span>
                   )}
                   {row.agentId && (
-                    <a
+                    <OutboundLink
                       href={getAgentModeHref(
                         "versions",
                         row.agentId,
                         isSystem ? SYSTEM_AGENT_BASE : USER_AGENT_BASE,
                       )}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       className="ml-auto inline-flex h-6 shrink-0 items-center gap-1 rounded border border-border px-1.5 type-meta text-muted-foreground hover:bg-accent hover:text-foreground"
                       title={`Version history for ${row.agentName}`}
                     >
                       <History className="h-3 w-3" />
                       Versions
-                    </a>
+                    </OutboundLink>
                   )}
                 </div>
               </Fact>

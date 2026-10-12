@@ -28,6 +28,8 @@ import {
   type UnconvertedCall,
 } from "./data";
 import { copyToClipboard } from "@/lib/clipboard/copy";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 type Spec = EntityColumnSpec<UnconvertedCall>;
 
@@ -40,17 +42,15 @@ function CodeLink({ row }: { row: UnconvertedCall }) {
   const line = row.line ? `:${row.line}` : "";
   if (!row.codeUrl) return <TextCell value={`${text}${line}`} />;
   return (
-    <a
+    <OutboundLink
       href={row.codeUrl}
-      target="_blank"
-      rel="noreferrer"
       title={`${row.location} — open on GitHub`}
       className="block truncate font-mono type-secondary text-primary hover:underline"
       onClick={(event) => event.stopPropagation()}
     >
       {text}
       <span className="text-muted-foreground">{line}</span>
-    </a>
+    </OutboundLink>
   );
 }
 
@@ -171,7 +171,7 @@ function useRowActions(): EntityRowActionsResult<UnconvertedCall> {
     actions: {
       menuFor,
       onOpenRow: (row) => {
-        if (row.codeUrl) window.open(row.codeUrl, "_blank", "noopener,noreferrer");
+        if (row.codeUrl) openOutbound(row.codeUrl, "_blank", "noopener");
         else copy(row.location, "location");
       },
     },

@@ -56,6 +56,7 @@ import { cn } from "@/lib/utils";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface TopicalMapWindowProps {
   onClose: () => void;
@@ -161,16 +162,14 @@ export default function TopicalMapWindow({
             >
               <AGENT_ICON className="h-3.5 w-3.5" aria-hidden />
             </button>
-            <a
+            <OutboundLink
               href={marketingRoutes.topicalMapDoor(mapId)}
-              target="_blank"
-              rel="noopener noreferrer"
               title="Open this map as a page in a new tab"
               aria-label="Open this map as a page in a new tab"
               className="inline-flex h-6 w-6 items-center justify-center rounded-sm text-muted-foreground hover:bg-accent hover:text-foreground"
             >
               <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-            </a>
+            </OutboundLink>
           </>
         ) : undefined
       }

@@ -53,6 +53,7 @@ import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerW
 import { ScopeContextTargetPicker } from "@/features/scopes/components/quick-assign/ScopeContextTargetPicker";
 import { scopeHref } from "@/features/scopes/lib/scopeRoutes";
 import { useSetContextValue } from "./useSetContextValue";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export type PostSaveAction = "newTab" | "navigate" | "none";
 
@@ -166,7 +167,7 @@ export function SetContextValueCore({
         { id: savedScopeId },
       );
       if (action === "newTab") {
-        window.open(href, "_blank", "noopener,noreferrer");
+        openOutbound(href, "_blank", "noopener");
       } else if (action === "navigate") {
         router.push(href);
       }

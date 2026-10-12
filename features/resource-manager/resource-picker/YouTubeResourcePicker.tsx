@@ -13,6 +13,7 @@ import {
 import { usePickerInputFocus } from "./usePickerInputFocus";
 import { youtubeId } from "@ai-matrx/rich-content/utils/youtube";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface YouTubeResourcePickerProps {
     onBack: () => void;
@@ -239,15 +240,13 @@ export function YouTubeResourcePicker({ onBack, onSelect, initialUrl }: YouTubeR
                                     {videoPreview.channelName}
                                 </p>
                             )}
-                            <a
+                            <OutboundLink
                                 href={videoPreview.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
                                 className="flex items-center gap-1 text-xs text-blue-600 hover:underline dark:text-blue-400"
                             >
                                 Watch on YouTube
                                 <ExternalLink className="h-3 w-3" />
-                            </a>
+                            </OutboundLink>
                         </div>
                     </div>
                 )}

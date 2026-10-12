@@ -37,6 +37,7 @@ import {
   spendAlarmItems,
   summarizeSpendAlarms,
 } from "./spend-alarms";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export const SPEND_ALARMS_QUERY_KEY = ["admin-attention", "spend-alarms"] as const;
 
@@ -78,7 +79,7 @@ export function useSpendAlarmSource(enabled: boolean): AttentionSourceState {
     setTaskEnabled: (taskId, enabled) => after(patchSystemTask(taskId, { enabled })),
     runTaskNow: async (taskId) => {
       const { run_id } = await runSystemTaskNow(taskId);
-      window.open(`${adminScheduleHref(taskId)}?run=${encodeURIComponent(run_id)}`, "_blank", "noopener");
+      openOutbound(`${adminScheduleHref(taskId)}?run=${encodeURIComponent(run_id)}`, "_blank", "noopener");
       refetch();
     },
     pauseCiWorkflows: (alarmId) => after(pauseCostlyWorkflows(alarmId)),

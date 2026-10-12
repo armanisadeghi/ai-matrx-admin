@@ -17,6 +17,7 @@ import { SuggestEditDialog } from "./SuggestEditDialog";
 import { certifyDeckAction, uncertifyDeckAction } from "../actions";
 import type { PublicDeck } from "../types";
 import { guardedSave } from "@/lib/save/guardedSave";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** One community-library deck. Links into the P7 public viewer (signed-out OK),
  *  offers duplicate-to-edit + suggest-edit, and — for super-admins — a
@@ -96,9 +97,9 @@ export function DeckCard({
 
       <div className="mt-4 flex flex-wrap items-center gap-2 pt-4 border-t border-border">
         <Button variant="outline" asChild>
-          <a href={viewHref} target="_blank" rel="noreferrer" data-tap-target>
+          <OutboundLink href={viewHref} data-tap-target>
             <ExternalLink className="h-3.5 w-3.5" /> View
-          </a>
+          </OutboundLink>
         </Button>
         <DuplicateToEditButton
           resourceType="fc_set"

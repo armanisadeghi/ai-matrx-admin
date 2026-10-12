@@ -22,6 +22,7 @@ import { createClient } from "@/utils/supabase/client";
 import { useSpaces } from "../state/SpacesProvider";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 type Item = { kind: string; item: string | null; reason: string | null };
 
 interface Finished {
@@ -277,7 +278,7 @@ function Report({ report, onOpen, onOpenTable }: { report: Finished; onOpen: (sp
           <Button
             type="button"
             variant={report.top_pages[0] ? "outline" : "primary"}
-            onClick={() => (onOpenTable ? onOpenTable(report.report_table_id as string) : window.open(`/data/${report.report_table_id}`, "_blank", "noopener"))}
+            onClick={() => (onOpenTable ? onOpenTable(report.report_table_id as string) : openOutbound(`/data/${report.report_table_id}`, "_blank", "noopener"))}
           >
             Full report
           </Button>

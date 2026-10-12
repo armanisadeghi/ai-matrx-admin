@@ -29,6 +29,7 @@ import { useOrgSettingsLayoutRefresh } from "./OrgSettingsLayoutContext";
 import { OrganizationAbbreviation } from "./OrganizationAbbreviation";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface GeneralSettingsProps {
   organization: Organization;
@@ -303,15 +304,13 @@ export function GeneralSettings({
         <div className="space-y-2">
           <Label>Organization URL</Label>
           <div className="flex items-center gap-2 flex-wrap">
-            <a
+            <OutboundLink
               href={`https://aimatrx.com/organizations/${organization.slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
               className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline decoration-dotted underline-offset-4 flex items-center gap-1"
             >
               aimatrx.com/organizations/{organization.slug}
               <ExternalLink className="h-3 w-3" />
-            </a>
+            </OutboundLink>
             <Button
               icon={<Copy />}
               type="button"
@@ -378,14 +377,12 @@ export function GeneralSettings({
           ) : (
             <p className="text-sm">
               {website ? (
-                <a
+                <OutboundLink
                   href={website}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                 >
                   {website}
-                </a>
+                </OutboundLink>
               ) : (
                 <span className="text-muted-foreground italic">
                   No website provided
@@ -428,14 +425,12 @@ export function GeneralSettings({
               </Button>
             )}
             {!isEditing && hasLogo && effectiveLogoUrl && (
-              <a
+              <OutboundLink
                 href={effectiveLogoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
               >
                 View logo
-              </a>
+              </OutboundLink>
             )}
             {!isEditing && !hasLogo && (
               <span className="text-sm text-muted-foreground italic">

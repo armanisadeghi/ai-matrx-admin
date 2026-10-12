@@ -42,6 +42,7 @@ import { ReadFailure } from "@ai-matrx/design-system";
 import { useRead } from "@ai-matrx/design-system";
 import { StaleDataNotice } from "@ai-matrx/design-system";
 import { copyToClipboard } from "@/lib/clipboard/copy";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface ShareLinkDialogProps {
   open: boolean;
@@ -397,16 +398,14 @@ function UrlRow({
           {url}
         </div>
       </div>
-      <a
+      <OutboundLink
         href={url}
-        target="_blank"
-        rel="noopener noreferrer"
         aria-label="Open in new tab"
         title="Open in new tab"
         className="flex h-7 w-7 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
       >
         <ExternalLink className="h-3.5 w-3.5" />
-      </a>
+      </OutboundLink>
       <button
         type="button"
         onClick={onCopy}

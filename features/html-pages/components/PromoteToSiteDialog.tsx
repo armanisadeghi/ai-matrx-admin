@@ -46,6 +46,7 @@ import type { ClientSiteSummary, PromoteFromHtmlPageResult } from "@/features/cm
 import { clientPageUrl } from "@/features/cms/utils/pageUrls";
 import { slugifyTitle, SLUG_RE } from "@/features/html-pages/utils/promoteConvert";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export interface PromoteTargetPage {
   id: string;
@@ -176,7 +177,7 @@ export function PromoteToSiteDialog({
                   icon={<ExternalLink />}
                   variant="outline"
                   onClick={() =>
-                    window.open(resultPreviewUrl, "_blank", "noopener,noreferrer")
+                    openOutbound(resultPreviewUrl, "_blank", "noopener")
                   }
                 >
                   Preview draft

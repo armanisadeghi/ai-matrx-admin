@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 import type { Door } from "../subject-doors";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function DoorLink({
   door,
@@ -29,10 +30,10 @@ export function DoorLink({
 
   if (door.external) {
     return (
-      <a href={door.href} target="_blank" rel="noopener noreferrer" className={classes}>
+      <OutboundLink href={door.href} className={classes}>
         {door.label}
         <ExternalLink className="h-3 w-3" />
-      </a>
+      </OutboundLink>
     );
   }
 
@@ -47,7 +48,7 @@ export function DoorLink({
         variant="quiet"
         title="Open in a new tab"
       >
-        <a href={door.href} target="_blank" rel="noopener noreferrer" />
+        <OutboundLink href={door.href} />
       </Button>
     </span>
   );

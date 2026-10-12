@@ -24,6 +24,7 @@ import {
   extractLucideJsxIconName,
 } from "@ai-matrx/icons";
 import { LUCIDE_ICONS_GALLERY_URL } from "@/utils/icons/lucide-gallery-url";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface IconInputWithValidationProps {
   value: string;
@@ -235,15 +236,13 @@ export default function IconInputWithValidation({
                 <Search className="h-3 w-3 shrink-0" aria-hidden />
                 Search Lucide
               </button>
-              <a
+              <OutboundLink
                 href={LUCIDE_ICONS_GALLERY_URL}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-primary underline-offset-2 hover:underline"
               >
                 lucide.dev
                 <ExternalLink className="h-3 w-3" aria-hidden />
-              </a>
+              </OutboundLink>
             </>
           ) : null}
           {showCuratedIconGallery ? (

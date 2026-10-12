@@ -26,6 +26,7 @@ import { useFileDocument } from "@/features/files/hooks/useFileDocument";
 import { ingestFile } from "@/features/rag/api/ingest";
 import { RAG_VOCAB } from "@/features/rag/constants/vocabulary";
 import { clearFileDocumentCache } from "@/features/files/api/document-lookup";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export interface FileKnowledgePanelProps {
   fileId: string;
@@ -133,7 +134,7 @@ export function FileKnowledgePanel({
             icon={<ExternalLink />}
             variant="outline"
             onClick={() =>
-              window.open("/knowledge-graph", "_blank", "noopener,noreferrer")
+              openOutbound("/knowledge-graph", "_blank", "noopener")
             }
           >
             Knowledge graph

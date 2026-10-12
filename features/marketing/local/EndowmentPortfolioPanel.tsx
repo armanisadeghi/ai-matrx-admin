@@ -58,6 +58,7 @@ import {
 import { toast } from "@/lib/toast";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { NO_RAW_ROW_WINDOW } from "@/features/marketing/social/row-open";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const VERDICT_CLASS: Record<EndowmentVerdict, string> = {
   strong: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
@@ -85,15 +86,13 @@ const platformColumns: MatrxColumnDef<RegistryMatch>[] = [
     filter: "text",
     cell: (match) => (
       <div className="min-w-0">
-        <a
+        <OutboundLink
           href={`https://${match.platform.domain}`}
-          target="_blank"
-          rel="noopener noreferrer"
           className="inline-flex items-center gap-1 font-medium text-foreground hover:text-primary"
         >
           {match.platform.name}
           <ArrowUpRight className="size-3" aria-hidden />
-        </a>
+        </OutboundLink>
         <div className="text-xs text-muted-foreground">
           {match.platform.domain}
         </div>

@@ -18,6 +18,7 @@ import { useMediaResolution } from "@ai-matrx/media/core";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * Inline renderer for `document_content` — random access into a processed
@@ -153,15 +154,13 @@ function PdfBody({ result }: { result: Record<string, unknown> }) {
         ) : null}
       </div>
       {src ? (
-        <a
+        <OutboundLink
           href={src}
-          target="_blank"
-          rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
           className="shrink-0 rounded-md border border-border bg-muted/40 px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
         >
           Open PDF
-        </a>
+        </OutboundLink>
       ) : null}
     </div>
   );

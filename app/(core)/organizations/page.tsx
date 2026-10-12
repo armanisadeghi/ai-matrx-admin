@@ -84,6 +84,7 @@ import {
 } from "@/features/organizations/lib/copy";
 import { organizationLogoRef } from "@/features/organizations/lib/organization-logo";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface RoleMeta {
   label: string;
@@ -238,16 +239,14 @@ function OrgCard({
                 </span>
               )}
               {org.website && (
-                <a
+                <OutboundLink
                   href={org.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-0.5 text-xs text-primary hover:underline"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <ExternalLink className="h-3 w-3" />
                   Website
-                </a>
+                </OutboundLink>
               )}
             </div>
           </div>

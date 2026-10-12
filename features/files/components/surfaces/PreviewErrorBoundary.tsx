@@ -29,6 +29,7 @@ import { getStore } from "@/lib/redux/store-singleton";
 import { setActiveFileId } from "@/features/files/redux/slice";
 import { getFileUrl } from "@/features/files/redux/thunks";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 interface PreviewErrorBoundaryProps {
   fileId: string;
@@ -96,7 +97,7 @@ export class PreviewErrorBoundary extends React.Component<
       const url =
         (result as { payload?: { url?: string } } | undefined)?.payload?.url ??
         null;
-      if (url) window.open(url, "_blank", "noopener,noreferrer");
+      if (url) openOutbound(url, "_blank", "noopener");
     } catch {
       // ignore — the user can fall back to Close
     }

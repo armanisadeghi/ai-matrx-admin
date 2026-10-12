@@ -36,6 +36,7 @@ import {
 } from "@/components/agent-copy/export";
 import { webCopy } from "@/features/marketing/lib/copy-payloads";
 import { humanizeItemKey } from "@/features/marketing/lib/finding-remedy-render";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * Render-only preview size. The rollup carries every open item; showing a
@@ -342,16 +343,14 @@ export function CatalogueAnalysisPanel() {
                       </button>
                       {/* The second door: the live page itself, in a new tab. */}
                       {page.url ? (
-                        <a
+                        <OutboundLink
                           href={page.url}
-                          target="_blank"
-                          rel="noreferrer"
                           title="Open the live page in a new tab"
                           aria-label="Open the live page in a new tab"
                           className="mr-2 shrink-0 rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
                         >
                           <ExternalLink className="h-3.5 w-3.5" />
-                        </a>
+                        </OutboundLink>
                       ) : null}
                     </li>
                   ))}

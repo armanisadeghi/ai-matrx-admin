@@ -50,6 +50,7 @@ import { ReadFailure } from "@ai-matrx/design-system";
 import {
   MOBILE_TABLE,
 } from "@/components/official/mobile-table/mobileTable";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type GroupBy = "none" | "keyword" | "tag";
 
@@ -910,15 +911,13 @@ function GroupRows({
                   </Link>
                   <div className="flex items-center gap-1 type-meta text-muted-foreground">
                     <span className="truncate max-w-[16rem]">{s.hostname}</span>
-                    <a
+                    <OutboundLink
                       href={s.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
                       className="hover:text-foreground"
                     >
                       <ExternalLink className="h-2.5 w-2.5" />
-                    </a>
+                    </OutboundLink>
                   </div>
                 </div>
               </div>

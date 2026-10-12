@@ -58,6 +58,7 @@ import {
   GscDailySparkline,
   PerformanceHistoryChart,
 } from "@/features/marketing/components/pages/cards/PagePerformanceCharts";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const LIGHTHOUSE_THRESHOLDS = { good: 90, warning: 50 } as const;
 
@@ -125,14 +126,12 @@ function StrategyResults({ sample }: { sample: PagePerformanceSample }) {
           </p>
         </div>
         {sample.final_url ? (
-          <a
+          <OutboundLink
             href={sample.final_url}
-            target="_blank"
-            rel="noreferrer"
             className="inline-flex items-center gap-1 text-[11px] font-medium text-primary "
           >
             Tested page <ExternalLink className="h-3 w-3" />
-          </a>
+          </OutboundLink>
         ) : null}
       </div>
 

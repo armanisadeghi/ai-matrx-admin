@@ -32,6 +32,7 @@ import { selectViewedJobForFile } from "@/features/page-extraction/redux/selecto
 import { EXTRACTIONS_ALL_VIEW } from "@/features/page-extraction/redux/pageExtractionSlice";
 import { usePageRunsRealtime } from "@/features/page-extraction/hooks/usePageRunsRealtime";
 import { usePersistedRunHydration } from "@/features/page-extraction/hooks/usePersistedRunHydration";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface ExtractionsPaneProps {
   fileId: string | null;
@@ -83,16 +84,14 @@ export function ExtractionsPane({
         <div className="min-w-0 flex-1">
           <JobPicker fileId={fileId} />
         </div>
-        <a
+        <OutboundLink
           href={fullViewHref}
-          target="_blank"
-          rel="noopener noreferrer"
           title="Open full extraction workspace in a new tab"
           className="mr-2 inline-flex h-6 shrink-0 items-center gap-1 rounded border border-border px-1.5 text-[10px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
           <span className="hidden xl:inline">Full view</span>
           <ArrowUpRight className="h-3 w-3" />
-        </a>
+        </OutboundLink>
       </div>
       <RunProgressBar jobId={jobId} />
 

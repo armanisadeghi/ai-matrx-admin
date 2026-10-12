@@ -54,6 +54,7 @@ import type {
   ResolvedFile,
 } from "@/features/admin/applications/catalogs/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const KIND_HINT_AUTO = "__auto__";
 
@@ -321,14 +322,12 @@ export function AddFromLinkDialog({
                       {result.license}
                     </Badge>
                   ) : null}
-                  <a
+                  <OutboundLink
                     href={result.canonical_url}
-                    target="_blank"
-                    rel="noreferrer"
                     className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
                   >
                     <ExternalLink className="h-3.5 w-3.5" /> open source page
-                  </a>
+                  </OutboundLink>
                 </div>
                 {result.description ? (
                   <p className="line-clamp-3 text-xs text-muted-foreground">

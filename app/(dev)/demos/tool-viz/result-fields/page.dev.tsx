@@ -760,6 +760,7 @@ const RESEARCH_STREAMING_SNAPSHOT: ToolLifecycleEntry = {
 //   • ods.od.nih.gov/.../Omega3FattyAcids appears in Q1 and Q2.
 // After dedupe the unified source list collapses these. No AI answer (plain
 // search) → the persistent view leads with results, not a summary.
+// outbound-ok: sample tool output text (a search engine's own utm), rendered through the outbound door
 const SEARCH_RESULT = `Comprehensive research using the following queries: "best omega-3 food sources", "omega-3 supplements ranked 2026", "algae omega-3 vs fish oil".
 
 # All Search Results:

@@ -25,6 +25,7 @@ import {
   type RunStepPresentation,
 } from "../../components/run/node-presentation";
 import { formatDurationMs } from "@ai-matrx/kit/format";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function fmtDuration(ms: number): string {
   return formatDurationMs(ms, { style: "compact" });
@@ -199,14 +200,12 @@ export function PlanLedger({
                 ) : null}
               </button>
               {childRunId ? (
-                <a
+                <OutboundLink
                   href={`/workflows/runs/${childRunId}`}
-                  target="_blank"
-                  rel="noreferrer"
                   className="block truncate px-2 pb-1 pl-9 text-[11px] text-primary underline-offset-2 hover:underline"
                 >
                   Watch its sub-workflow
-                </a>
+                </OutboundLink>
               ) : null}
             </li>
           );

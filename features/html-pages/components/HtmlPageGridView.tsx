@@ -10,6 +10,7 @@ import { ExternalLink, FileCode, Loader2 } from "lucide-react";
 import { HTML_PAGES_GRID_ROW_BATCH } from "@/features/html-pages/utils/list-url-state";
 import { HtmlPagesContextMenu } from "@/features/html-pages/components/HtmlPagesContextMenu";
 import { formatRelativeTime } from "@/utils/datetime";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface HtmlPageGridViewProps {
   pages: HtmlPageSummary[];
@@ -110,16 +111,14 @@ function LazyPreviewCard({
           >
             {page.meta_title || "Untitled"}
           </Link>
-          <a
+          <OutboundLink
             href={page.url}
-            target="_blank"
-            rel="noopener noreferrer"
             className="shrink-0 text-muted-foreground hover:text-foreground"
             onClick={(e) => e.stopPropagation()}
             title="View live"
           >
             <ExternalLink className="h-3.5 w-3.5" />
-          </a>
+          </OutboundLink>
         </div>
       </div>
     </motion.div>

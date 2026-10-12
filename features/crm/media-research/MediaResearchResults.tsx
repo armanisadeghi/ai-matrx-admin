@@ -18,6 +18,7 @@ import {
 } from "./service";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 const STATUS_TONE: Record<MediaResearchRow["status"], string> = {
   fit: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
   soft_fit: "bg-sky-500/10 text-sky-700 dark:text-sky-400",
@@ -178,12 +179,12 @@ function journalistColumns(cuts: boolean): MatrxColumnDef<MediaResearchRow>[] {
       width: 220,
       cell: (row) =>
         row.anchor ? (
-          <a href={row.anchor.url} target="_blank" rel="noreferrer" className="text-primary hover:underline">
+          <OutboundLink href={row.anchor.url} className="text-primary hover:underline">
             {row.anchor.title || row.anchor.url}
             {row.anchor.published_at ? (
               <span className="ml-1 text-muted-foreground">({row.anchor.published_at.slice(0, 10)})</span>
             ) : null}
-          </a>
+          </OutboundLink>
         ) : (
           <span className="text-muted-foreground">No dated piece</span>
         ),

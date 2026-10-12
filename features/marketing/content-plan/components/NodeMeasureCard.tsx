@@ -32,6 +32,7 @@ import { marketingRoutes } from "@/features/marketing/lib/routes";
 
 import type { CmsPageMapEntry } from "../setup/bridge";
 import type { NodeMeasurement } from "../hooks/useNodeMeasurement";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // This one-at-a-time window owns the heavy measured-page workspace. Keep its
 // WindowPanel import behind the user-action gate so the Content Plan route does
@@ -173,26 +174,22 @@ export function NodeMeasureCard({
           Open measurement
         </Button>
         {workspaceHref ? (
-          <a
+          <OutboundLink
             href={workspaceHref}
-            target="_blank"
-            rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-xs font-medium text-primary "
           >
             Page workspace
             <ExternalLink className="h-3 w-3" />
-          </a>
+          </OutboundLink>
         ) : null}
         {cmsMeasureHref ? (
-          <a
+          <OutboundLink
             href={cmsMeasureHref}
-            target="_blank"
-            rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-xs font-medium text-primary "
           >
             Measure in CMS
             <ExternalLink className="h-3 w-3" />
-          </a>
+          </OutboundLink>
         ) : null}
       </div>
 
@@ -219,15 +216,13 @@ function Note({ children }: { children: React.ReactNode }) {
 function DoorRow({ measureHref }: { measureHref: string }) {
   return (
     <span className="mt-1.5 block">
-      <a
+      <OutboundLink
         href={measureHref}
-        target="_blank"
-        rel="noopener noreferrer"
         className="inline-flex items-center gap-1 text-xs font-medium text-primary "
       >
         Measure tab in the CMS
         <ExternalLink className="h-3 w-3" />
-      </a>
+      </OutboundLink>
     </span>
   );
 }

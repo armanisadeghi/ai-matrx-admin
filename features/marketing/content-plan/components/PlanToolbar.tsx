@@ -42,6 +42,7 @@ import { ResearchTopicSelect } from "./ResearchTopicSelect";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /** A small icon button whose disabled state IS information. */
 function StatusActionButton({
@@ -407,7 +408,7 @@ export function PlanToolbar({
               disabled={!linked}
               disabledReason="This plan has no website yet — nothing can become a real page until it does. Use Set up."
               enabledReason="Open the website's editor (CMS) in a new tab."
-              onClick={() => window.open(`/cms/${cmsSiteId}`, "_blank")}
+              onClick={() => openOutbound(`/cms/${cmsSiteId}`, "_blank")}
             />
             <StatusActionButton
               icon={<ExternalLink className="h-3 w-3" />}
@@ -420,7 +421,7 @@ export function PlanToolbar({
               }
               enabledReason="Open the live site in a new tab."
               onClick={() => {
-                if (liveUrl) window.open(liveUrl, "_blank");
+                if (liveUrl) openOutbound(liveUrl, "_blank");
               }}
             />
           </>

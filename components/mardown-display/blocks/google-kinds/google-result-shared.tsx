@@ -78,6 +78,7 @@ import {
   type ChipTone,
 } from "../result-kinds/result-kind-shared";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** A list of records, or `null` when the key did not arrive as one. */
 export function readRows(value: unknown): Record<string, unknown>[] | null {
@@ -194,9 +195,9 @@ export const OpenInGoogle: React.FC<{ href: unknown; label?: string }> = ({
   if (!url || !/^https?:\/\//.test(url)) return null;
   return (
     <Button asChild variant="link" className="shrink-0" iconEnd={<ExternalLink />}>
-      <a href={url} target="_blank" rel="noopener noreferrer">
+      <OutboundLink href={url}>
         {label}
-      </a>
+      </OutboundLink>
     </Button>
   );
 };

@@ -11,6 +11,7 @@ import {
   formatDate,
   SectionCard,
 } from "@/features/marketing/components/shared/MarketingUi";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface BrandSearchRow {
   position: number;
@@ -181,19 +182,17 @@ export function BrandSearchCard({
                 {capture.runs.map((run) => (
                   <tr key={`${run.engine}-${run.query}`}>
                     <td className="py-1 pr-3 text-foreground">
-                      <a
+                      <OutboundLink
                         href={
                           run.engine === "brave"
                             ? `https://search.brave.com/search?q=${encodeURIComponent(run.query)}`
                             : `https://www.google.com/search?q=${encodeURIComponent(run.query)}`
                         }
-                        target="_blank"
-                        rel="noreferrer"
                         className="inline-flex items-center gap-1 hover:text-primary"
                       >
                         {run.query}
                         <ExternalLink className="h-3 w-3 opacity-50" />
-                      </a>
+                      </OutboundLink>
                     </td>
                     <td className="py-1 pr-3 text-muted-foreground">
                       {engineLabel(run.engine)}
@@ -219,14 +218,12 @@ export function BrandSearchCard({
               <ul className="flex flex-wrap gap-x-3 gap-y-1">
                 {capture.profiles.map((url) => (
                   <li key={url} className="min-w-0">
-                    <a
+                    <OutboundLink
                       href={url}
-                      target="_blank"
-                      rel="noreferrer"
                       className="block max-w-[18rem] truncate type-secondary text-foreground hover:text-primary"
                     >
                       {url.replace(/^https?:\/\/(www\.)?/, "")}
-                    </a>
+                    </OutboundLink>
                   </li>
                 ))}
               </ul>

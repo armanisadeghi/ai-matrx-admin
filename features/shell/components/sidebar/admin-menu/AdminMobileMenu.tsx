@@ -24,6 +24,7 @@ import { toggleOverlay } from "@/lib/redux/slices/overlaySlice";
 import { ERROR_INSPECTOR_OVERLAY_ID } from "@/features/admin/error-inspector/useOpenErrorInspector";
 import { closeShellMobileMenu } from "@/features/shell/utils/closeShellMobileMenu";
 import { usePathname } from "next/navigation";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export default function AdminMobileMenu() {
   const dispatch = useAppDispatch();
@@ -79,10 +80,8 @@ export default function AdminMobileMenu() {
         <span>Error Inspector</span>
       </button>
 
-      <a
+      <OutboundLink
         href={ADMIN_APP_URL}
-        target="_blank"
-        rel="noopener noreferrer"
         className="shell-mobile-nav-item"
         onClick={closeShellMobileMenu}
       >
@@ -96,7 +95,7 @@ export default function AdminMobileMenu() {
           iconName="ArrowUpRight"
           className="h-4 w-4 text-emerald-500/70 dark:text-emerald-400/70"
         />
-      </a>
+      </OutboundLink>
 
       {adminMenuDomains
         .filter((domain) => domain.slug !== "launchpad")

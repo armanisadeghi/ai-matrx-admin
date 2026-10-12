@@ -25,6 +25,7 @@ import {
 } from "@/features/scraper/hooks/useScraperApi";
 import { ScrapedContentPretty } from "@/features/scraper/parts/ScrapedContentPretty";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -177,15 +178,13 @@ function DetailPanel({ result }: { result: ScraperResult }) {
             <h2 className="text-lg font-semibold text-foreground">
               {result.overview.page_title || "Untitled"}
             </h2>
-            <a
+            <OutboundLink
               href={result.url}
-              target="_blank"
-              rel="noopener noreferrer"
               className="text-sm text-primary hover:underline flex items-center gap-1 mt-0.5"
             >
               {result.url}
               <ExternalLink className="w-3 h-3 shrink-0" />
-            </a>
+            </OutboundLink>
           </div>
 
           <div className="grid grid-cols-3 gap-3">

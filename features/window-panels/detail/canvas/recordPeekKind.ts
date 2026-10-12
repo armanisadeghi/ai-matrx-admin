@@ -12,6 +12,7 @@ import { defineCanvasKind, type AnyCanvasKind, type CanvasKindProps, type Canvas
 import { KindHeaderSlot } from "@/features/canvas/host/kindHeaderSlot";
 import { detailPageHref } from "../DetailHost";
 import { RECORD_PEEK_KIND, readRecordPeekData } from "./recordPeek";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 function recordPeekMenu({ data }: CanvasKindProps): readonly CanvasMenuItem[] {
   const record = readRecordPeekData(data);
@@ -21,7 +22,7 @@ function recordPeekMenu({ data }: CanvasKindProps): readonly CanvasMenuItem[] {
       id: "open-new-tab",
       label: "Open in new tab",
       icon: createElement(ExternalLink),
-      onSelect: () => window.open(detailPageHref(record, { list: record.list }), "_blank", "noopener"),
+      onSelect: () => openOutbound(detailPageHref(record, { list: record.list }), "_blank", "noopener"),
     },
   ];
 }

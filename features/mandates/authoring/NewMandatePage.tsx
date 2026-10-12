@@ -42,6 +42,7 @@ import {
   writeDraft,
 } from "./draft";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * The three pieces a mandate cannot be created without, in the words the page
@@ -337,15 +338,13 @@ export function NewMandatePage() {
               <p className="text-[12.5px] leading-snug text-destructive">
                 {keyTakenSentence(keyState.mandateKey, keyState.label)}
               </p>
-              <a
+              <OutboundLink
                 href={keyState.href}
-                target="_blank"
-                rel="noreferrer"
                 className="inline-flex items-center gap-1 type-secondary font-medium underline underline-offset-2"
               >
                 <ExternalLink className="h-3 w-3" />
                 Open {keyState.label} in a new tab
-              </a>
+              </OutboundLink>
             </div>
           ) : null}
           {keyState.status === "unknown" ? (

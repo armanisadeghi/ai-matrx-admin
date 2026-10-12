@@ -15,6 +15,7 @@ import { KindValueFrontDoor } from "@/components/official/structured-value/KindV
 import { kindOfValue } from "@/components/official/structured-value/AnswerValueView";
 import { StructuredValueView } from "@/components/official/structured-value/StructuredValueView";
 import { JsonTreeViewer } from "@/components/official/json-explorer/JsonTreeViewer";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const IMAGE_RE = /\.(png|jpe?g|gif|webp|svg|avif|ico)(\?|#|$)/i;
 
@@ -44,15 +45,13 @@ export function BuilderValue({ value, kind, raw }: { value: unknown; kind?: stri
         {IMAGE_RE.test(url) ? (
           <img src={url} alt="" className="max-h-64 max-w-full self-start rounded-md border border-border object-contain" />
         ) : null}
-        <a
+        <OutboundLink
           href={url}
-          target="_blank"
-          rel="noopener noreferrer"
           className="inline-flex min-w-0 items-center gap-1 text-sm text-primary hover:underline"
         >
           <span className="truncate">{url}</span>
           <ExternalLink className="h-3.5 w-3.5 shrink-0" />
-        </a>
+        </OutboundLink>
       </div>
     );
   }

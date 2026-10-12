@@ -57,6 +57,7 @@ import { formatFileSize } from "@/features/files/utils/format";
 import { signUpHref } from "@/utils/auth/auth-destination";
 import { resourceTitle } from "@/features/sharing/lenses/default-renderers";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // The one heavy engine on this lens — React.lazy in-gate boundary so the
 // react-pdf/pdfjs chunk loads only when a PDF share actually renders.
@@ -415,10 +416,10 @@ export function SharedFileLens({
                 variant="outline"
                 aria-label="Open in a new tab"
               >
-                <a href={urls.public} target="_blank" rel="noreferrer">
+                <OutboundLink href={urls.public}>
                   <ExternalLink className="h-4 w-4" />
                   <span className="ml-1.5 hidden md:inline">New tab</span>
-                </a>
+                </OutboundLink>
               </Button>
             )}
             <Button variant="primary" asChild>

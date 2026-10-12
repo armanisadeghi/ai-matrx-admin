@@ -42,6 +42,7 @@ import type { GitHubInstallation } from "./types";
 import { useGitHubConnection } from "./useGitHubConnection";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { UntrustedCount } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function coverageLabel(installation: GitHubInstallation): string {
   if (installation.suspended) return "Suspended on GitHub";
@@ -107,16 +108,14 @@ function InstallationRow({
 
   if (!installation.htmlUrl) return <div className={className}>{body}</div>;
   return (
-    <a
+    <OutboundLink
       className={cn(className, "transition-colors hover:bg-accent")}
       href={installation.htmlUrl}
-      target="_blank"
-      rel="noreferrer"
       title={`Manage AI Matrx access for ${installation.accountLogin} on GitHub`}
     >
       {body}
       <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground" />
-    </a>
+    </OutboundLink>
   );
 }
 
@@ -251,14 +250,12 @@ export function GitHubConnectionCard({
                 </div>
               ) : connected ? (
                 <p className="mt-1 break-words text-xs text-muted-foreground">
-                  <a
+                  <OutboundLink
                     className="break-all font-medium text-foreground hover:underline"
                     href={accountUrl}
-                    target="_blank"
-                    rel="noreferrer"
                   >
                     @{accountLogin}
-                  </a>{" "}
+                  </OutboundLink>{" "}
                   ·{" "}
                   <UntrustedCount
                     value={repositoryCount}

@@ -76,6 +76,7 @@ import {
 } from "./cell-value-shapes";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * The portable type vocabulary the Python model declares
@@ -266,17 +267,15 @@ const NestedCell: React.FC<{
 
 /** A URL is a door (LAW 1): shown short, opened in a new tab, full in the title. */
 const UrlCell: React.FC<{ value: string }> = ({ value }) => (
-  <a
+  <OutboundLink
     href={value}
-    target="_blank"
-    rel="noopener noreferrer"
     title={value}
     onClick={(event) => event.stopPropagation()}
     className="inline-flex min-w-0 items-center gap-1 text-primary hover:underline"
   >
     <span className="truncate">{urlLabel(value)}</span>
     <ExternalLink className="h-3 w-3 shrink-0 opacity-70" />
-  </a>
+  </OutboundLink>
 );
 
 const EmailCell: React.FC<{ value: string }> = ({ value }) => (

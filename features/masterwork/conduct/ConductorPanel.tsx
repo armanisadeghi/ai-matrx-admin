@@ -83,6 +83,7 @@ import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { asClause } from "@ai-matrx/kit/text";
 import { WorkspaceGate } from "@/features/organizations/components/WorkspaceGate";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 
 const SOURCE_FEATURE = "masterwork" as const;
@@ -386,10 +387,10 @@ function ConductorColumn({
               detail: "Included",
               hint: "The complete Rulebook is included with every turn.",
               onOpen: () =>
-                window.open(
+                openOutbound(
                   `/masterwork/${rulebookId}`,
                   "_blank",
-                  "noopener,noreferrer",
+                  "noopener",
                 ),
             },
           ],

@@ -61,6 +61,7 @@ import ControlRuleRow, { type RuleDestination } from "./ControlRuleRow";
 import PendingChangesBar from "./PendingChangesBar";
 import JsonFieldEditor from "../JsonFieldEditor";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type ModelConfigRow = Database["ai"]["Views"]["model_config"]["Row"];
 
@@ -470,30 +471,26 @@ export default function ModelControlsEditor({
         {cellsGovern && (
           <p className="text-xs text-muted-foreground flex items-center gap-1.5">
             Set by translation cells
-            <a
+            <OutboundLink
               href="/administration/ai/ai-models/translations"
-              target="_blank"
-              rel="noreferrer"
               className="inline-flex items-center gap-0.5 text-primary hover:underline"
             >
               Translations
               <ExternalLink className="h-3 w-3" />
-            </a>
+            </OutboundLink>
           </p>
         )}
         {showNoOffering && (
           <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
             This model has NO offering — it cannot route; controls resolve to
             capability gates only. Create one on the
-            <a
+            <OutboundLink
               href="/administration/ai-models/offerings"
-              target="_blank"
-              rel="noreferrer"
               className="inline-flex items-center gap-0.5 text-primary hover:underline"
             >
               Offerings page
               <ExternalLink className="h-3 w-3" />
-            </a>
+            </OutboundLink>
           </p>
         )}
         {loadError && apis.length > 0 ? (

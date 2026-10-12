@@ -18,6 +18,7 @@ import {
   SLUG_RE,
 } from "@/features/html-pages/utils/promoteConvert";
 import type { AgentWritePolicy, ClientPageSummary } from "@/features/cms/types";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export default function SiteDashboardPage() {
   const { siteId } = useParams() as { siteId: string };
@@ -50,10 +51,10 @@ export default function SiteDashboardPage() {
     onOpenSettings: () => router.push(`/cms/${siteId}/settings`),
     onOpenComponents: () => router.push(`/cms/${siteId}/components`),
     onOpenLive: () =>
-      window.open(
+      openOutbound(
         clientSiteRootUrl(site.slug),
         "_blank",
-        "noopener,noreferrer",
+        "noopener",
       ),
   });
 

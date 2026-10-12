@@ -108,6 +108,7 @@ import {
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { readOf } from "@ai-matrx/design-system";
 import { UntrustedCount } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type Artifact = {
   executive_verdict?: string;
@@ -237,16 +238,14 @@ function dateCell(value: string | null) {
 function externalLink(url: string | null, label: string) {
   if (!url) return <span className="text-muted-foreground">—</span>;
   return (
-    <a
+    <OutboundLink
       href={url}
-      target="_blank"
-      rel="noreferrer"
       className="inline-flex max-w-64 items-center gap-1 truncate text-primary hover:underline"
       onClick={(event) => event.stopPropagation()}
     >
       <span className="truncate">{label}</span>
       <ArrowUpRight className="size-3 shrink-0" />
-    </a>
+    </OutboundLink>
   );
 }
 
@@ -1426,14 +1425,12 @@ export default function CompetitorAutopsyWorkspace({
                             </span>
                           ) : null}
                           {business.domain ? (
-                            <a
+                            <OutboundLink
                               href={business.website ?? `https://${business.domain}`}
-                              target="_blank"
-                              rel="noreferrer"
                               className="text-xs text-muted-foreground underline-offset-2 hover:underline"
                             >
                               {business.domain}
-                            </a>
+                            </OutboundLink>
                           ) : null}
                           {business.address ? (
                             <span className="ml-auto truncate text-xs text-muted-foreground">

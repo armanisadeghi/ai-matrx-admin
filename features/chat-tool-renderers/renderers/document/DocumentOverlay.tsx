@@ -5,6 +5,7 @@ import { FileText, ExternalLink } from "lucide-react";
 import { RichDocument } from "@ai-matrx/rich-content/rich-document/RichDocument";
 import type { ToolRendererProps } from "@ai-matrx/chat/tool-call-visualization/types";
 import { parseDocument } from "./parseDocument";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * Overlay renderer for the `document` tool — the real document rendered with the
@@ -20,15 +21,13 @@ export function DocumentOverlay({ entry }: ToolRendererProps) {
         <FileText className="h-6 w-6" />
         <span>Open the document to view it.</span>
         {doc.id ? (
-          <a
+          <OutboundLink
             href={`/documents/${doc.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-foreground hover:bg-muted"
           >
             <ExternalLink className="h-4 w-4" />
             Open in new tab
-          </a>
+          </OutboundLink>
         ) : null}
       </div>
     );

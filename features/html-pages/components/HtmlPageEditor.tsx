@@ -57,6 +57,8 @@ import {
 import { fenceOpenerOf } from "@ai-matrx/content-ir/source";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { UntrustedCount } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 type EditorTab = "meta" | "html" | "preview";
 
@@ -117,24 +119,20 @@ function HtmlPageLineage({ page }: { page: HtmlPageRecord }) {
           </p>
           <div className="flex flex-wrap gap-3">
             {page.source_conv_id ? (
-              <a
+              <OutboundLink
                 href={`/chat/${page.source_conv_id}`}
-                target="_blank"
-                rel="noopener noreferrer"
                 className={doorClass}
               >
                 Open the conversation
-              </a>
+              </OutboundLink>
             ) : null}
             {page.artifact_id ? (
-              <a
+              <OutboundLink
                 href={`/artifacts/${page.artifact_id}`}
-                target="_blank"
-                rel="noopener noreferrer"
                 className={doorClass}
               >
                 Open the artifact
-              </a>
+              </OutboundLink>
             ) : null}
           </div>
         </div>
@@ -146,18 +144,16 @@ function HtmlPageLineage({ page }: { page: HtmlPageRecord }) {
           </p>
           <div className="flex flex-wrap gap-3">
             {promotions.map((promo) => (
-              <a
+              <OutboundLink
                 key={promo.client_page_id}
                 href={`/cms/${promo.client_site_id}/pages/${promo.client_page_id}`}
-                target="_blank"
-                rel="noopener noreferrer"
                 className={doorClass}
               >
                 CMS page
                 {promo.promoted_at
                   ? ` (${new Date(promo.promoted_at).toLocaleDateString()})`
                   : ""}
-              </a>
+              </OutboundLink>
             ))}
           </div>
         </div>
@@ -388,7 +384,7 @@ export default function HtmlPageEditor({
     liveUrl: page.url,
     onSave: () => void handleSave(),
     onCopyUrl: () => void handleCopyUrl(),
-    onOpenLive: () => window.open(page.url, "_blank", "noopener,noreferrer"),
+    onOpenLive: () => openOutbound(page.url, "_blank", "noopener"),
     onBackToList: () => requestBack(),
   });
 

@@ -49,6 +49,7 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { buildToolComponentGenerationOffer } from "@/features/tool-call-visualization/admin/toolComponentGenerationOffer";
 import { copyToClipboard } from "@/lib/clipboard/copy";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -493,13 +494,12 @@ export function ToolComponentPreview({
           <div className="flex items-center gap-1.5 text-xs text-warning">
             <AlertTriangle className="h-3.5 w-3.5" />
             No test samples — run the tool on the{" "}
-            <a
+            <OutboundLink
               href="/demos/api-tests/tool-testing"
-              target="_blank"
               className="underline text-primary"
             >
               Tool Testing page
-            </a>{" "}
+            </OutboundLink>{" "}
             first.
           </div>
         ) : (

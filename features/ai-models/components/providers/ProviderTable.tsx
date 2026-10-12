@@ -36,6 +36,7 @@ import {
 } from "@ai-matrx/design-system/tap-target/buttons";
 import type { AiProvider } from "../../types";
 import { readOf } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function LinkIcon({
   href,
@@ -63,15 +64,13 @@ function LinkIcon({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <a
+        <OutboundLink
           href={href}
-          target="_blank"
-          rel="noreferrer"
           onClick={(event) => event.stopPropagation()}
           className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-primary"
         >
           <Icon className="h-3.5 w-3.5" />
-        </a>
+        </OutboundLink>
       </TooltipTrigger>
       <TooltipContent side="top" className="max-w-[280px] break-all text-xs">
         {label}: {href}

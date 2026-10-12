@@ -23,6 +23,7 @@ import { usePageLocation, useSite } from "@/features/marketing/data/hooks";
 import { useSiteCrawlActivity } from "@/features/marketing/data/useSiteCrawlActivity";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { MarketingSiteSurfaceProvider } from "@/features/marketing/lib/scopes/site-surface-base";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export default function CmsPageMeasure({ webPageId }: { webPageId: string }) {
   const location = usePageLocation(webPageId);
@@ -75,14 +76,12 @@ export default function CmsPageMeasure({ webPageId }: { webPageId: string }) {
             Measurement runs per brand. Link {site.data.name} to a brand and its
             analysis, findings, and search data appear here.
           </p>
-          <a
+          <OutboundLink
             href={marketingRoutes.sitePage(null, siteId, webPageId)}
-            target="_blank"
-            rel="noopener noreferrer"
             className="mt-3 inline-block text-xs font-medium text-primary hover:underline"
           >
             Open this page in the marketing workspace
-          </a>
+          </OutboundLink>
         </div>
       </div>
     );

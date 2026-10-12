@@ -61,6 +61,7 @@ import {
   type PendingAttachment,
 } from "./attachable-resources";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** How long a keystroke waits before a live provider search leaves the browser. */
 const LIVE_SEARCH_DEBOUNCE_MS = 300;
@@ -398,7 +399,7 @@ function ResourceAttachPickerBody({
                       </button>
                     )}
                     {candidate.link && (
-                      <a
+                      <OutboundLink
                         className={cn(
                           "inline-flex shrink-0 flex-col items-center justify-center gap-0.5 rounded max-sm:min-h-11 max-sm:min-w-11 sm:flex-row sm:gap-1",
                           candidate.record_table
@@ -406,8 +407,6 @@ function ResourceAttachPickerBody({
                             : "text-muted-foreground hover:text-foreground",
                         )}
                         href={candidate.link}
-                        target="_blank"
-                        rel="noreferrer"
                         aria-label={
                           candidate.record_table
                             ? `Join ${candidate.display_name}`
@@ -422,7 +421,7 @@ function ResourceAttachPickerBody({
                         <span className="text-[10px] leading-none sm:text-xs">
                           {candidate.record_table ? "Join" : "Open"}
                         </span>
-                      </a>
+                      </OutboundLink>
                     )}
                   </div>
                 </li>

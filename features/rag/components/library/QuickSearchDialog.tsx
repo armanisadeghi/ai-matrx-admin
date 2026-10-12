@@ -22,6 +22,7 @@ import { apiPost, buildPath } from "@/lib/api/typed-client";
 import type { components } from "@ai-matrx/api/types";
 import { RAG_VOCAB } from "@/features/rag/constants/vocabulary";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // Search hit — DERIVED from the generated contract (never hand-mirrored).
 type ApiHit = components["schemas"]["LibraryTestSearchHit"];
@@ -171,14 +172,12 @@ export function QuickSearchDialog({
                   {processedDocumentId &&
                     h.page_numbers &&
                     h.page_numbers.length > 0 && (
-                      <a
+                      <OutboundLink
                         href={`/knowledge/library/${processedDocumentId}/preview?page=${h.page_numbers[0]}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         className="ml-auto inline-flex items-center gap-1 text-primary type-meta hover:underline"
                       >
                         Open in preview <ExternalLink className="h-3 w-3" />
-                      </a>
+                      </OutboundLink>
                     )}
                 </div>
                 <pre className="whitespace-pre-wrap break-words type-secondary leading-relaxed font-sans max-h-40 overflow-auto">

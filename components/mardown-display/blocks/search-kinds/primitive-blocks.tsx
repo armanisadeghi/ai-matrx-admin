@@ -12,6 +12,7 @@ import { Clock, MapPin, Navigation } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { items, num, readSearchKindValue, text } from "./search-kind-data";
 import { RatingStars } from "./search-kind-shared";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface SearchKindBlockProps {
   serverData?: unknown;
@@ -118,10 +119,8 @@ export function GeoCoordinatesBlock({ serverData, className }: SearchKindBlockPr
   const lon = num(value.longitude);
   if (lat === null || lon === null) return null;
   return (
-    <a
+    <OutboundLink
       href={`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=15/${lat}/${lon}`}
-      target="_blank"
-      rel="noopener noreferrer"
       onClick={(e) => e.stopPropagation()}
       className={cn(
         "inline-flex items-center gap-1.5 text-xs text-primary underline-offset-2 hover:underline",
@@ -133,6 +132,6 @@ export function GeoCoordinatesBlock({ serverData, className }: SearchKindBlockPr
       <span className="tabular-nums">
         {lat.toFixed(5)}, {lon.toFixed(5)}
       </span>
-    </a>
+    </OutboundLink>
   );
 }

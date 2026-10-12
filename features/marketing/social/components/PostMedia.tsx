@@ -27,6 +27,7 @@ import type { PostMediaRef } from "../types";
 import { PlatformMark, platformLabel } from "./PlatformMark";
 import { SocialImage } from "./SocialImage";
 import { SavedPostGallery, savedPostSlides } from "./SavedPostGallery";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** Aspect ratio (w/h) a post's player starts with, before the poster or the video reports its own. */
 export function guessAspect(format: string, platform: string): number {
@@ -273,7 +274,7 @@ export function PostMedia({
         <PosterPlaceholder platform={platform} format={format} />
       )}
       {!canPlay && !media.isPending && slides.length === 0 ? (
-        <a href={postUrl} target="_blank" rel="noreferrer" className="absolute bottom-2 left-2 rounded bg-black/75 px-2 py-1 text-xs text-white underline">Cover only · Open original</a>
+        <OutboundLink href={postUrl} className="absolute bottom-2 left-2 rounded bg-black/75 px-2 py-1 text-xs text-white underline">Cover only · Open original</OutboundLink>
       ) : null}
       {working ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/55 px-4 text-center text-white" aria-live="polite">

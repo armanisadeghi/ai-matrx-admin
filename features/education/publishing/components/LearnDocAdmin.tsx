@@ -89,6 +89,7 @@ import { guardedSave } from "@/lib/save/guardedSave";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { StaleDataNotice } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface Props {
   initialDocs: LearnDocRecord[];
@@ -447,14 +448,12 @@ export function LearnDocAdmin({ initialDocs }: Props) {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         {doc.status === "published" ? (
-                          <a
+                          <OutboundLink
                             href={eduHref("learn", doc.slug)}
-                            target="_blank"
-                            rel="noreferrer"
                             className="font-medium truncate hover:text-primary hover:underline"
                           >
                             {doc.title}
-                          </a>
+                          </OutboundLink>
                         ) : (
                           <button
                             type="button"
@@ -489,10 +488,8 @@ export function LearnDocAdmin({ initialDocs }: Props) {
                           asChild
                           title="View live"
                         >
-                          <a
+                          <OutboundLink
                             href={eduHref("learn", doc.slug)}
-                            target="_blank"
-                            rel="noreferrer"
                           />
                         </Button>
                       ) : null}

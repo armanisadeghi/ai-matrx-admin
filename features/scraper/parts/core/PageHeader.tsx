@@ -9,6 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { InfoIcon, ExternalLinkIcon } from "lucide-react";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface FeatureToggles {
   keywordAnalysis: boolean;
@@ -52,14 +53,12 @@ const PageHeader = ({
               {url && (
                 <div className="flex items-center mt-0.5 min-w-0">
                   <ExternalLinkIcon className="text-muted-foreground mr-1.5 h-3 w-3 shrink-0" />
-                  <a
+                  <OutboundLink
                     href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="text-muted-foreground hover:text-foreground text-xs truncate"
                   >
                     {url || "No URL"}
-                  </a>
+                  </OutboundLink>
                 </div>
               )}
             </div>

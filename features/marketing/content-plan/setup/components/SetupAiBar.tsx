@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { ResearchTopicSelect } from "@/features/marketing/content-plan/components/ResearchTopicSelect";
 import type { ResearchDocument } from "@/features/research/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface SetupAiRunSummary {
   kind: "shape" | "names" | "review" | "keywords" | "entities";
@@ -107,16 +108,14 @@ export function SetupAiBar({
           </Link>
         </Button>
         {selectedTopicId ? (
-          <a
+          <OutboundLink
             href={`/research/topics/${selectedTopicId}`}
-            target="_blank"
-            rel="noreferrer"
             className="inline-flex shrink-0 items-center gap-1 text-[11px] font-medium text-primary hover:underline"
             title="Open this research topic in the Research workspace (new tab)"
           >
             <ExternalLink className="h-3 w-3" />
             Open in Research
-          </a>
+          </OutboundLink>
         ) : null}
         <span className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground">
           {reportStatus}

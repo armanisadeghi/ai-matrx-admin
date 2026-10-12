@@ -74,6 +74,8 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 // THE package duration formatter (`@ai-matrx/kit/format`, census H1
 // 2026-09-07). THE UNIT LAW: the unit is in the name.
 import { formatDurationSeconds } from "@ai-matrx/kit/format";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /** An episode length reads at a glance: "45 min" / "1h 30m". */
 function formatDuration(seconds: number): string {
@@ -318,7 +320,7 @@ export function ShowManageClient({ showId }: { showId: string }) {
           {
             label: "View public page",
             icon: ExternalLink,
-            onPress: () => window.open(`/podcast/${show.slug}`, "_blank", "noopener,noreferrer"),
+            onPress: () => openOutbound(`/podcast/${show.slug}`, "_blank", "noopener"),
           },
         ]}
       />
@@ -526,19 +528,19 @@ export function ShowManageClient({ showId }: { showId: string }) {
               <p className="text-xs font-medium text-foreground">Submit to directories</p>
               <div className="flex flex-wrap gap-2">
                 <Button asChild variant="outline">
-                  <Link
+                  <OutboundLink
                     href="https://podcastsconnect.apple.com/my-podcasts/new-feed"
                     target="_blank"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
                     Apple Podcasts Connect
-                  </Link>
+                  </OutboundLink>
                 </Button>
                 <Button asChild variant="outline">
-                  <Link href="https://podcasters.spotify.com/" target="_blank">
+                  <OutboundLink href="https://podcasters.spotify.com/" target="_blank">
                     <ExternalLink className="h-3.5 w-3.5" />
                     Spotify for Podcasters
-                  </Link>
+                  </OutboundLink>
                 </Button>
               </div>
               <div className="flex items-start gap-2 pt-1">

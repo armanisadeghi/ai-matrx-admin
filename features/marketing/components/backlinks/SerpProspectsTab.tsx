@@ -110,6 +110,7 @@ import { humanizeBackendError } from "@/utils/errors";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { asClause } from "@ai-matrx/kit/text";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const BACKLINKS_SURFACE_NAME = "matrx-user/marketing-backlinks";
 const KEYWORD_EXPANDER_ROLE = "keyword_expander";
@@ -207,16 +208,14 @@ function PromoterChip({
     );
   }
   return (
-    <a
+    <OutboundLink
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
       onClick={(event) => event.stopPropagation()}
       className="shrink-0 hover:opacity-80"
       title={`${signal.summary} Open the proof.`}
     >
       {body}
-    </a>
+    </OutboundLink>
   );
 }
 
@@ -350,17 +349,15 @@ function BrokenLinkList({ mention }: { mention: SerpMentionRow }) {
             <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
               {link.http_status}
             </span>
-            <a
+            <OutboundLink
               href={link.dead_url}
-              target="_blank"
-              rel="noopener noreferrer"
               onClick={(event) => event.stopPropagation()}
               className="min-w-0 truncate text-[11px] text-muted-foreground hover:text-primary "
               title={link.dead_url}
             >
               {link.anchor_text ? `“${link.anchor_text}” → ` : ""}
               {link.dead_url}
-            </a>
+            </OutboundLink>
           </li>
         ))}
       </ul>
@@ -590,15 +587,13 @@ function MentionEvidence({
                   {mention.rank === null ? "" : ` · #${mention.rank}`}
                 </span>
               </div>
-              <a
+              <OutboundLink
                 href={mention.url}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="block truncate text-[11px] text-muted-foreground hover:text-primary "
                 title={mention.url}
               >
                 {mention.title ?? mention.url}
-              </a>
+              </OutboundLink>
               {mention.snippet ? (
                 <p className="text-[11px] leading-4 text-muted-foreground">
                   {mention.snippet}
@@ -639,15 +634,13 @@ function OpportunityDetail({
           `${row.display_domain} already ranks in ${row.mention_count} of your search${row.mention_count === 1 ? "" : "es"} — the search engines already trust it on your subject.`}
       </p>
       <div className="flex flex-wrap items-center gap-2">
-        <a
+        <OutboundLink
           href={`https://${row.normalized_domain}`}
-          target="_blank"
-          rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-xs font-medium text-primary "
         >
           Open {row.display_domain}
           <ExternalLink className="h-3 w-3" />
-        </a>
+        </OutboundLink>
         {partyId ? (
           <EntityRef
             token="party"
@@ -990,17 +983,15 @@ export function SerpProspectsTab({
           const promoter = prospects.promoterByDomain[row.normalized_domain];
           return (
             <span className="flex min-w-0 items-center gap-1.5">
-              <a
+              <OutboundLink
                 href={`https://${row.normalized_domain}`}
-                target="_blank"
-                rel="noopener noreferrer"
                 onClick={(event) => event.stopPropagation()}
                 className="inline-flex min-w-0 items-center gap-1 truncate text-xs font-medium text-primary "
                 title={`Open ${row.display_domain}`}
               >
                 <span className="truncate">{row.display_domain}</span>
                 <ExternalLink className="h-3 w-3 shrink-0" />
-              </a>
+              </OutboundLink>
               {promoter ? <PromoterChip signal={promoter} compact /> : null}
               {partyId ? (
                 <EntityRef

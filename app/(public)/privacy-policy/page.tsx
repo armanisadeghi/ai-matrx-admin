@@ -1,6 +1,7 @@
 import React from "react";
 import { siteConfig } from "@/config/extras/site";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const PrivacyPolicyPage = () => {
   return (
@@ -14,13 +15,12 @@ const PrivacyPolicyPage = () => {
           AI Matrx is a technology product owned and operated by{" "}
           {siteConfig.legalOperatorName} (&quot;we&quot;, &quot;us&quot;). We
           provide an AI-agent platform that you access through our website at{" "}
-          <a
+          <OutboundLink
             href="https://www.aimatrx.com/"
-            rel="external noopener"
-            target="_blank"
+            rel="external"
           >
             https://www.aimatrx.com
-          </a>{" "}
+          </OutboundLink>{" "}
           and through our Chrome extension &quot;Matrx Extend&quot; (the
           &quot;Extension&quot;). This Privacy Policy explains what information
           we collect, how we use it, where it goes, and how long we keep it. We
@@ -200,18 +200,17 @@ const PrivacyPolicyPage = () => {
           If you press the microphone button in the Extension, your microphone
           captures audio locally. Audio chunks are sent to our backend at
           aimatrx.com, which proxies the audio to{" "}
-          <a href="https://groq.com/" rel="external noopener" target="_blank">
+          <OutboundLink href="https://groq.com/" rel="external">
             Groq
-          </a>{" "}
+          </OutboundLink>{" "}
           for speech-to-text transcription, and (when you ask an agent to speak)
           proxies generated text to{" "}
-          <a
+          <OutboundLink
             href="https://cartesia.ai/"
-            rel="external noopener"
-            target="_blank"
+            rel="external"
           >
             Cartesia
-          </a>{" "}
+          </OutboundLink>{" "}
           for text-to-speech synthesis. Audio is processed for the request only;
           we do not retain the raw audio.
         </p>
@@ -358,13 +357,12 @@ const PrivacyPolicyPage = () => {
         <p>
           The use of information received from Google Workspace APIs will adhere
           to the{" "}
-          <a
+          <OutboundLink
             href="https://developers.google.com/workspace/workspace-api-user-data-developer-policy"
-            rel="external noopener"
-            target="_blank"
+            rel="external"
           >
             Google User Data Policy
-          </a>
+          </OutboundLink>
           {", including the Limited Use requirements."}
         </p>
         <p>
@@ -406,63 +404,58 @@ const PrivacyPolicyPage = () => {
             <strong>Supabase</strong> &mdash; authentication, database storage,
             and realtime cross-device messaging. Hosts your account record,
             conversation history, and saved artifacts. (
-            <a
+            <OutboundLink
               href="https://supabase.com/privacy"
-              rel="external noopener"
-              target="_blank"
+              rel="external"
             >
               Supabase privacy policy
-            </a>
+            </OutboundLink>
             )
           </li>
           <li>
             <strong>Amazon Web Services (AWS)</strong> &mdash; hosts the AI
             Matrx server that processes connected-service requests, including
             Gmail reading and outreach replies. (
-            <a
+            <OutboundLink
               href="https://aws.amazon.com/privacy/"
-              rel="external noopener"
-              target="_blank"
+              rel="external"
             >
               AWS privacy notice
-            </a>
+            </OutboundLink>
             )
           </li>
           <li>
             <strong>Vercel</strong> &mdash; hosting for our web application and
             API routes. Receives request metadata (IP address, user-agent) as
             part of normal HTTPS serving. (
-            <a
+            <OutboundLink
               href="https://vercel.com/legal/privacy-policy"
-              rel="external noopener"
-              target="_blank"
+              rel="external"
             >
               Vercel privacy policy
-            </a>
+            </OutboundLink>
             )
           </li>
           <li>
             <strong>Groq</strong> &mdash; speech-to-text. Receives the audio you
             submit when you use voice input. (
-            <a
+            <OutboundLink
               href="https://groq.com/privacy-policy/"
-              rel="external noopener"
-              target="_blank"
+              rel="external"
             >
               Groq privacy policy
-            </a>
+            </OutboundLink>
             )
           </li>
           <li>
             <strong>Cartesia</strong> &mdash; text-to-speech. Receives the text
             submitted for synthesis. (
-            <a
+            <OutboundLink
               href="https://cartesia.ai/privacy"
-              rel="external noopener"
-              target="_blank"
+              rel="external"
             >
               Cartesia privacy policy
-            </a>
+            </OutboundLink>
             )
           </li>
           <li>
@@ -470,13 +463,12 @@ const PrivacyPolicyPage = () => {
             delivery. Receives the mobile number and message data needed to
             verify enrollment and deliver texts. Twilio may process delivery
             metadata and opt-out keywords to operate the messaging service. (
-            <a
+            <OutboundLink
               href="https://www.twilio.com/en-us/legal/privacy"
-              rel="external noopener"
-              target="_blank"
+              rel="external"
             >
               Twilio privacy notice
-            </a>
+            </OutboundLink>
             )
           </li>
           <li>

@@ -21,6 +21,7 @@
 import { toast } from "@/lib/toast";
 
 import type { SendToGoogleResult } from "./sendToGoogle";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /** The `202, a person reviews this first` branch of the ONE Google path. */
 export type ProposedGoogleWrite = Extract<SendToGoogleResult, { reason: "proposed" }>;
@@ -43,7 +44,7 @@ export function announceProposedGoogleWrite(result: ProposedGoogleWrite): void {
     description: NOTHING_CHANGED_YET,
     action: {
       label: OPEN_APPROVAL_LABEL,
-      onClick: () => window.open(result.queueHref, "_blank", "noopener"),
+      onClick: () => openOutbound(result.queueHref, "_blank", "noopener"),
     },
   });
 }

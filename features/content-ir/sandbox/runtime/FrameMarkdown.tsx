@@ -27,6 +27,7 @@ import React from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { safeUrl } from "./safe-url";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface FrameMarkdownProps {
     /** Markdown source. `children` is accepted for react-markdown parity. */
@@ -84,9 +85,9 @@ const COMPONENTS: Components = {
             return <RefusedUrl label="link">{children}</RefusedUrl>;
         }
         return (
-            <a {...rest} href={safe} target="_blank" rel="noopener noreferrer nofollow">
+            <OutboundLink {...rest} href={safe} rel="nofollow">
                 {children}
-            </a>
+            </OutboundLink>
         );
     },
     img({ src, alt, node: _node, ...rest }) {

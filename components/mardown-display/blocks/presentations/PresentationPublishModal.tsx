@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { X, ExternalLink, Copy, CheckCircle2 } from 'lucide-react';
 import { PresentationData } from './Slideshow';
 import { Button } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface PresentationPublishModalProps {
     isOpen: boolean;
@@ -79,28 +80,24 @@ export const PresentationPublishModal: React.FC<PresentationPublishModalProps> =
                                     YOUR WEBPAGE URL
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <a
+                                    <OutboundLink
                                         href={publishedUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
                                         className="flex-1 text-sm text-blue-600 dark:text-blue-400 hover:underline truncate font-medium"
                                     >
                                         {publishedUrl}
-                                    </a>
+                                    </OutboundLink>
                                     <Button variant="quiet" icon={copiedUrl ? (
                                             <CheckCircle2  size={18} />
                                         ) : (
                                             <Copy  size={18} />
                                         )} glyphTone={copiedUrl ? "success" : undefined} onClick={handleCopyUrl} title="Copy URL" aria-label="Copy URL" />
-                                    <a
+                                    <OutboundLink
                                         href={publishedUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
                                         className="p-2 hover:bg-blue-100 dark:hover:bg-blue-800 rounded transition-colors"
                                         title="Open in new tab"
                                     >
                                         <ExternalLink size={18} className="text-blue-600 dark:text-blue-400" />
-                                    </a>
+                                    </OutboundLink>
                                 </div>
                                 {copiedUrl && (
                                     <div className="mt-2 flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
@@ -131,15 +128,13 @@ export const PresentationPublishModal: React.FC<PresentationPublishModalProps> =
                                 <Button variant="quiet" onClick={onClose}>
                                     Close
                                 </Button>
-                                <a
+                                <OutboundLink
                                     href={publishedUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
                                     className="px-4 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors inline-flex items-center gap-2"
                                 >
                                     Open in New Tab
                                     <ExternalLink className="h-4 w-4" />
-                                </a>
+                                </OutboundLink>
                             </div>
                         </>
                     ) : null}

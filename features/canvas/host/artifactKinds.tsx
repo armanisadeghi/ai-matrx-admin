@@ -74,6 +74,7 @@ import { artifactOutputDef } from "@/features/canvas/artifact-types/artifact-out
 import { iframeBlockUrl } from "@/features/canvas/output/framePrinters";
 import { artifactKey, contentOf, readArtifactItemData, type ArtifactItemData } from "./artifactItem";
 import { openArtifactPanel, toggleArtifactPanel, useArtifactPanel } from "./artifactPanels";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const ICONS: Record<CanvasContentType, LucideIcon> = {
   quiz: ListChecks,
@@ -234,7 +235,7 @@ function artifactMenu(props: CanvasKindProps): readonly CanvasMenuItem[] {
 function embeddedSiteEntries(content: CanvasContent): CanvasMenuItem[] {
   const url = iframeBlockUrl(content.data);
   if (!url) return [];
-  return [{ id: "open-site", label: "Open site", icon: <ExternalLink />, onSelect: () => window.open(url, "_blank", "noopener") }];
+  return [{ id: "open-site", label: "Open site", icon: <ExternalLink />, onSelect: () => openOutbound(url, "_blank", "noopener") }];
 }
 
 function persistEntries(props: CanvasKindProps, data: ArtifactItemData, content: CanvasContent): CanvasMenuItem[] {
@@ -250,7 +251,7 @@ function persistEntries(props: CanvasKindProps, data: ArtifactItemData, content:
       id: "open-page",
       label: "Open full page",
       icon: <Globe />,
-      onSelect: () => window.open(`/artifacts/${savedId}`, "_blank", "noopener"),
+      onSelect: () => openOutbound(`/artifacts/${savedId}`, "_blank", "noopener"),
     });
   }
   entries.push({ id: "share", label: "Share", icon: <Share2 />, onSelect: () => openArtifactPanel(props.item.id, "share") });

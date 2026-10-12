@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/button";
 import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
 import { usePeekHrefOverride } from "./peekHrefOverride";
 import { PEEK_CONTENT_PROPS, useTransientPeek } from "./useTransientPeek";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface PeekDialogProps {
   open: boolean;
@@ -123,10 +124,10 @@ export function PeekDialog({
         {resolvedHref && (
           <DialogFooter className="px-5 py-3 border-t border-border">
             <Button asChild variant="outline">
-              <a href={resolvedHref} target="_blank" rel="noopener noreferrer">
+              <OutboundLink href={resolvedHref}>
                 <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
                 New tab
-              </a>
+              </OutboundLink>
             </Button>
             <Button
               variant="primary"

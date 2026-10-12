@@ -19,6 +19,7 @@ import {
 } from "./codeLocation";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 function useCodeLocations() {
   const state = useSyncExternalStore(
     subscribeCodeLocations,
@@ -66,16 +67,14 @@ export function CodeLocationCell({ mandateKey }: { mandateKey: string }) {
         {file}:{lineRangeText(location)}
       </span>
       {href ? (
-        <a
+        <OutboundLink
           href={href}
-          target="_blank"
-          rel="noreferrer"
           aria-label={`Open ${full} on GitHub`}
           className="shrink-0 text-muted-foreground hover:text-foreground"
           onClick={(event) => event.stopPropagation()}
         >
           <ExternalLink className="size-3.5" aria-hidden="true" />
-        </a>
+        </OutboundLink>
       ) : null}
     </span>
   );

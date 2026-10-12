@@ -26,6 +26,7 @@ import {
   RatingBlock,
 } from "./primitive-blocks";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface SearchKindBlockProps {
   serverData?: unknown;
@@ -76,15 +77,13 @@ export function LocalPlaceBlock({ serverData, className }: SearchKindBlockProps)
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           {website ? (
-            <a
+            <OutboundLink
               href={website}
-              target="_blank"
-              rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
               className="text-sm font-semibold text-primary underline-offset-2 hover:underline"
             >
               {name}
-            </a>
+            </OutboundLink>
           ) : (
             <span className="text-sm font-semibold text-foreground">{name}</span>
           )}
@@ -134,16 +133,14 @@ export function LocalPlaceBlock({ serverData, className }: SearchKindBlockProps)
             <GeoCoordinatesBlock serverData={value.coordinates} />
           )}
           {website && (
-            <a
+            <OutboundLink
               href={website}
-              target="_blank"
-              rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
               className="inline-flex items-center gap-1.5 text-xs text-primary underline-offset-2 hover:underline"
             >
               <Globe className="h-3.5 w-3.5" />
               <span className="truncate">Website</span>
-            </a>
+            </OutboundLink>
           )}
         </div>
       </div>
@@ -191,15 +188,13 @@ export function EntityCardBlock({ serverData, className }: SearchKindBlockProps)
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               {description}
               {sourceUrl && (
-                <a
+                <OutboundLink
                   href={sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
                   className="ml-1.5 text-xs text-primary underline-offset-2 hover:underline"
                 >
                   source
-                </a>
+                </OutboundLink>
               )}
             </p>
           )}
@@ -224,15 +219,13 @@ export function EntityCardBlock({ serverData, className }: SearchKindBlockProps)
                 <dt className="font-medium text-foreground">{label}</dt>
                 <dd className="text-muted-foreground">
                   {links.length > 0 ? (
-                    <a
+                    <OutboundLink
                       href={links[0]}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
                       className="text-primary underline-offset-2 hover:underline"
                     >
                       {factText}
-                    </a>
+                    </OutboundLink>
                   ) : (
                     factText
                   )}
@@ -252,27 +245,23 @@ export function EntityCardBlock({ serverData, className }: SearchKindBlockProps)
       {(profiles.length > 0 || website) && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {website && (
-            <a
+            <OutboundLink
               href={website}
-              target="_blank"
-              rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
               className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-foreground hover:border-primary/40 hover:text-primary"
             >
               <Globe className="h-3.5 w-3.5" />
               Website
-            </a>
+            </OutboundLink>
           )}
           {profiles.slice(0, 8).map((profile, i) => {
             const pName = text(profile.name);
             const pUrl = text(profile.url);
             if (!pName || !pUrl) return null;
             return (
-              <a
+              <OutboundLink
                 key={i}
                 href={pUrl}
-                target="_blank"
-                rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
                 className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-foreground hover:border-primary/40 hover:text-primary"
               >
@@ -282,7 +271,7 @@ export function EntityCardBlock({ serverData, className }: SearchKindBlockProps)
                   className="h-3.5 w-3.5 rounded"
                 />
                 {pName}
-              </a>
+              </OutboundLink>
             );
           })}
         </div>
@@ -349,11 +338,9 @@ export function AiAnswerKindBlock({ serverData, className }: SearchKindBlockProp
             if (!url) return null;
             const label = text(ref.source_name) ?? url;
             return (
-              <a
+              <OutboundLink
                 key={i}
                 href={url}
-                target="_blank"
-                rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
                 className="inline-flex max-w-[220px] items-center gap-1.5 rounded-full border border-border bg-card px-2 py-0.5 text-xs text-muted-foreground hover:border-primary/40 hover:text-primary"
                 title={url}
@@ -361,7 +348,7 @@ export function AiAnswerKindBlock({ serverData, className }: SearchKindBlockProp
                 <SearchFavicon url={url} className="h-3.5 w-3.5 rounded" />
                 <span className="truncate">{label}</span>
                 <ExternalLink className="h-3 w-3 flex-shrink-0 opacity-60" />
-              </a>
+              </OutboundLink>
             );
           })}
         </div>

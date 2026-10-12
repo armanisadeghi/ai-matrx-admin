@@ -62,6 +62,7 @@ import {
 } from "../useHrProfile";
 import { ChangePositionForm } from "../ChangePositionForm";
 import { PayGroupCard } from "../PayGroupCard";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type Row = Record<string, unknown>;
 
@@ -593,14 +594,12 @@ function ExternalIdentities({ rows }: { rows: Row[] }) {
             >
               <span className="font-medium text-foreground">{systemKey}</span>
               {url ? (
-                <a
+                <OutboundLink
                   href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="font-mono text-xs text-primary underline underline-offset-2"
                 >
                   {externalId}
-                </a>
+                </OutboundLink>
               ) : (
                 // Not a door, deliberately: this is SOMEBODY ELSE'S id in
                 // SOMEBODY ELSE'S system. We hold no route for it and inventing
@@ -669,14 +668,12 @@ function Engagements({
                 <div className="text-xs text-muted-foreground">
                   Engaged through{" "}
                   {platformUrl ? (
-                    <a
+                    <OutboundLink
                       href={platformUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       className="text-primary underline underline-offset-2"
                     >
                       {platform}
-                    </a>
+                    </OutboundLink>
                   ) : (
                     platform
                   )}

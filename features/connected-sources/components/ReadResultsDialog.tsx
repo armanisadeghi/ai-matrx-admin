@@ -25,6 +25,7 @@ import type {
   GooglePresentationResponse,
   GoogleRevisionsResponse,
 } from "../types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface FileRef {
   title: string;
@@ -117,14 +118,12 @@ export function readResultText(result: ConnectedReadResult): string {
 
 function FileHeading({ file }: { file: FileRef }) {
   return file.url ? (
-    <a
+    <OutboundLink
       href={file.url}
-      target="_blank"
-      rel="noopener noreferrer"
       className="text-sm font-medium text-foreground hover:underline"
     >
       {file.title}
-    </a>
+    </OutboundLink>
   ) : (
     <span className="text-sm font-medium text-foreground">{file.title}</span>
   );

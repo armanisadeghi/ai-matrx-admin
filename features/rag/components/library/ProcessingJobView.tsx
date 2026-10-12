@@ -57,6 +57,7 @@ import { STAGE_META, StageHero } from "./StageAnimations";
 // 1h 02m. THE UNIT LAW puts the unit in the name.
 import { formatDurationSeconds } from "@ai-matrx/kit/format";
 import { ErrorNotice } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const formatDuration = (sec: number): string =>
   formatDurationSeconds(sec, { style: "compact" });
@@ -616,15 +617,13 @@ function ResultPanel({
           )}
         </div>
         {result.processedDocumentId && (
-          <a
+          <OutboundLink
             href={`/knowledge/library/${result.processedDocumentId}/preview`}
-            target="_blank"
-            rel="noopener noreferrer"
             className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 type-secondary font-medium text-primary-foreground hover:bg-primary/90 shrink-0"
           >
             Open
             <ExternalLink className="h-3 w-3" />
-          </a>
+          </OutboundLink>
         )}
       </div>
       <div className="grid gap-1.5 sm:grid-cols-2 mt-3">

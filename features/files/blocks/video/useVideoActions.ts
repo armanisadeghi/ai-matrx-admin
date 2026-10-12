@@ -34,6 +34,7 @@ import {
   mediaRefToDownloadSource,
 } from "../../media-client/download";
 import type { VideoBlock } from "../types";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export interface VideoActionsApi {
   openNewTab(): void;
@@ -85,7 +86,7 @@ export function useVideoActions({
       toast.error("No safe link is available for this video");
       return;
     }
-    window.open(target, "_blank", "noopener,noreferrer");
+    openOutbound(target, "_blank", "noopener");
   }, [block, currentSrc]);
 
   const copyLink = useCallback(async () => {
@@ -139,7 +140,7 @@ export function useVideoActions({
 
   const viewOriginal = useCallback(() => {
     if (!parentFileId) return;
-    window.open(`/files/f/${parentFileId}`, "_blank", "noopener,noreferrer");
+    openOutbound(`/files/f/${parentFileId}`, "_blank", "noopener");
   }, [parentFileId]);
 
   return {

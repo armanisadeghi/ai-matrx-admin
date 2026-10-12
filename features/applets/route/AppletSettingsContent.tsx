@@ -77,6 +77,7 @@ import {
 import { ShareButton } from "@/features/sharing/components/ShareButton";
 import { AppletWebDataNotice } from "@/features/applets/components/AppletWebDataNotice";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface AppletSettingsContentProps {
   appId: string;
@@ -610,14 +611,12 @@ export function AppletSettingsContent({ appId }: AppletSettingsContentProps) {
                 <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-muted/40 border border-border/60">
                   {appletState(app).live ? (
                     <>
-                      <a
+                      <OutboundLink
                         href={publicUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         className="text-sm font-mono text-foreground hover:underline truncate flex-1"
                       >
                         {publicUrl}
-                      </a>
+                      </OutboundLink>
                       <button
                         type="button"
                         onClick={handleCopyUrl}

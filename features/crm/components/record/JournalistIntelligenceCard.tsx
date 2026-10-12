@@ -39,6 +39,7 @@ import { RecipientFitBadge } from "@/features/crm/pre-send-check/RecipientFitBad
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 import { ProTextarea } from "@/components/official/ProTextarea";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 interface Props {
   partyId: string;
   /** The organization that owns this party; every write names it. */
@@ -232,15 +233,13 @@ export function JournalistIntelligenceCard({ partyId, organizationId, storedActi
             <ul className="space-y-0.5 text-xs">
               {(activity?.evidence ?? []).slice(0, 3).map((item) => (
                 <li key={item.url}>
-                  <a
+                  <OutboundLink
                     className="inline-flex items-center gap-1 text-muted-foreground underline underline-offset-2"
                     href={item.url}
-                    target="_blank"
-                    rel="noreferrer"
                   >
                     {item.title ?? item.url}
                     <ExternalLink className="h-3 w-3" />
-                  </a>
+                  </OutboundLink>
                 </li>
               ))}
             </ul>

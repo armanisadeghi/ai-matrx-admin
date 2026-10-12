@@ -87,6 +87,7 @@ import { cn } from "@/lib/utils";
 import { humanizeBackendError } from "@/utils/errors";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { asClause } from "@ai-matrx/kit/text";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function scoreCell(row: LinkGapDomainRow) {
   return (
@@ -145,15 +146,13 @@ function ProspectEvidence({
           {rows.map((match) => (
             <li key={match.id} className="space-y-0.5 px-2.5 py-1.5">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <a
+                <OutboundLink
                   href={`https://${match.competitor_domain}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-xs font-medium text-primary "
                 >
                   {match.competitor_domain}
                   <ExternalLink className="h-3 w-3" />
-                </a>
+                </OutboundLink>
                 <span className="text-[11px] tabular-nums text-muted-foreground">
                   {match.backlinks ?? 1} link
                   {(match.backlinks ?? 1) === 1 ? "" : "s"}
@@ -161,26 +160,22 @@ function ProspectEvidence({
                 </span>
               </div>
               {match.source_url ? (
-                <a
+                <OutboundLink
                   href={match.source_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="block truncate text-[11px] text-muted-foreground hover:text-primary "
                   title={match.source_url}
                 >
                   From: {match.source_url}
-                </a>
+                </OutboundLink>
               ) : null}
               {match.target_url ? (
-                <a
+                <OutboundLink
                   href={match.target_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="block truncate text-[11px] text-muted-foreground hover:text-primary "
                   title={match.target_url}
                 >
                   To: {match.target_url}
-                </a>
+                </OutboundLink>
               ) : null}
               {match.page_id ? (
                 <Link
@@ -223,15 +218,13 @@ function ProspectDetail({
         })}
       </p>
       <div className="flex flex-wrap items-center gap-2">
-        <a
+        <OutboundLink
           href={`https://${row.normalized_domain}`}
-          target="_blank"
-          rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-xs font-medium text-primary "
         >
           Open {row.display_domain}
           <ExternalLink className="h-3 w-3" />
-        </a>
+        </OutboundLink>
         {partyId ? (
           <EntityRef
             token="party"
@@ -295,10 +288,8 @@ function SeedCard({ prospects }: { prospects: LinkGapProspects }) {
           <ul className="flex flex-wrap gap-1">
             {seed.seeded.map((competitor) => (
               <li key={competitor.competitor_id}>
-                <a
+                <OutboundLink
                   href={`https://${competitor.domain}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 rounded border border-border bg-card px-1.5 py-0.5 text-[11px] text-foreground hover:border-primary/40 hover:text-primary"
                   title={seededCompetitorLabel(competitor)}
                 >
@@ -307,7 +298,7 @@ function SeedCard({ prospects }: { prospects: LinkGapProspects }) {
                     {seededCompetitorLabel(competitor)}
                   </span>
                   <ExternalLink className="h-2.5 w-2.5" />
-                </a>
+                </OutboundLink>
               </li>
             ))}
           </ul>
@@ -392,17 +383,15 @@ export function BacklinkProspectsTab({
         const partyId = prospects.partyByDomainId[row.id];
         return (
           <span className="flex min-w-0 items-center gap-1.5">
-            <a
+            <OutboundLink
               href={`https://${row.normalized_domain}`}
-              target="_blank"
-              rel="noopener noreferrer"
               onClick={(event) => event.stopPropagation()}
               className="inline-flex min-w-0 items-center gap-1 truncate text-xs font-medium text-primary "
               title={`Open ${row.display_domain}`}
             >
               <span className="truncate">{row.display_domain}</span>
               <ExternalLink className="h-3 w-3 shrink-0" />
-            </a>
+            </OutboundLink>
             {partyId ? (
               <EntityRef
                 token="party"

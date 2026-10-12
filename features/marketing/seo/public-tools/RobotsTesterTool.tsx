@@ -30,6 +30,7 @@ import { useSeoCommandRun } from "@/features/marketing/seo/durable-run/useSeoCom
 import { cn } from "@/lib/utils";
 import type { components } from "@ai-matrx/api/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type RobotsCheckResult = components["schemas"]["RobotsCheckResult"];
 type RobotsPathCheck = components["schemas"]["RobotsPathCheck"];
@@ -297,14 +298,12 @@ export function RobotsTesterTool() {
                 {result.content_type ? (
                   <span>{result.content_type}</span>
                 ) : null}
-                <a
+                <OutboundLink
                   href={result.fetched_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
                 >
                   Open robots.txt <ExternalLink className="h-3 w-3" />
-                </a>
+                </OutboundLink>
               </div>
             </CardContent>
           </Card>
@@ -332,16 +331,14 @@ export function RobotsTesterTool() {
                   Declared sitemap{result.sitemaps.length === 1 ? "" : "s"}
                 </h2>
                 {result.sitemaps.map((sitemap) => (
-                  <a
+                  <OutboundLink
                     key={sitemap}
                     href={sitemap}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="flex items-start gap-2 break-all font-mono text-xs text-primary hover:underline"
                   >
                     <FileText className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                     {sitemap}
-                  </a>
+                  </OutboundLink>
                 ))}
               </CardContent>
             </Card>

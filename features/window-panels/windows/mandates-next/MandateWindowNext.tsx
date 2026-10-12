@@ -64,6 +64,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { StaleDataNotice } from "@ai-matrx/design-system";
 import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface MandateWindowNextProps {
   isOpen?: boolean;
@@ -342,17 +343,15 @@ function MandateWindowNextInner({
         </span>
       ) : null}
       {fullPageHref ? (
-        <a
+        <OutboundLink
           href={fullPageHref}
-          target="_blank"
-          rel="noopener noreferrer"
           aria-label="Open the full page in a new tab"
           title="Open the full page in a new tab"
           onPointerDown={(event) => event.stopPropagation()}
           className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
         >
           <SquareArrowOutUpRight className="h-3 w-3" />
-        </a>
+        </OutboundLink>
       ) : null}
     </span>
   );

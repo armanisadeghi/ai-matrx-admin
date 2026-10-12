@@ -23,6 +23,7 @@ import {
   type DiagnosticsCopyInput,
 } from '../utils/diagnostics-copy';
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export interface VoiceDiagnosticsDisplayProps {
   error?: string | null;
@@ -343,7 +344,7 @@ export function VoiceDiagnosticsDisplay({
         </Button>
         <Button
           variant="outline"
-          onClick={() => window.open('https://support.google.com/chrome/answer/2693767', '_blank')}
+          onClick={() => openOutbound('https://support.google.com/chrome/answer/2693767', '_blank')}
           className="min-w-max flex-1 basis-auto"
         >
           <ExternalLink className="h-4 w-4 mr-2" />

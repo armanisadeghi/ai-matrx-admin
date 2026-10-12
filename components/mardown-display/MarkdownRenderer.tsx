@@ -10,6 +10,7 @@ import { KindTextGate } from "@ai-matrx/rich-content/display/chat-markdown/KindT
 
 import type { ComponentPropsWithoutRef } from "react";
 import type { Components, ExtraProps } from "react-markdown";
+import { OutboundMarkdownLink } from "@ai-matrx/kit/outbound-react";
 
 interface MarkdownRendererProps {
   content: string;
@@ -81,7 +82,7 @@ const MarkdownRendererBody: React.FC<MarkdownRendererProps> = ({
       </li>
     ),
     a: ({ node, ...props }) => (
-      <a
+      <OutboundMarkdownLink
         className="text-blue-500 underline font-medium"
         style={{ fontSize: `${fontSize}px` }}
         {...props}

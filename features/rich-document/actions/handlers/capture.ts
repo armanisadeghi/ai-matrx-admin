@@ -39,6 +39,7 @@ import {
 } from "../utils";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /**
  * THE ORACLE TAP's question half: for an ASSISTANT message, the user turn it
@@ -206,7 +207,7 @@ registerAction({
           ? {
               label: "Open",
               onClick: () =>
-                window.open(`/files/f/${fileId}`, "_blank", "noopener,noreferrer"),
+                openOutbound(`/files/f/${fileId}`, "_blank", "noopener"),
             }
           : undefined,
       });
@@ -261,7 +262,7 @@ registerAction({
           ? {
               label: "Open",
               onClick: () =>
-                window.open(`/files/f/${fileId}`, "_blank", "noopener,noreferrer"),
+                openOutbound(`/files/f/${fileId}`, "_blank", "noopener"),
             }
           : undefined,
       });
@@ -352,10 +353,10 @@ registerAction({
           action: {
             label: "View in Instances",
             onClick: () =>
-              window.open(
+              openOutbound(
                 `${shapeInstancesHref(first.kind)}?i=${first.id}`,
                 "_blank",
-                "noopener,noreferrer",
+                "noopener",
               ),
           },
         },

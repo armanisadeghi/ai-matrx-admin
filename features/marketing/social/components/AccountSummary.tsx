@@ -20,6 +20,7 @@ import { profileAvatarDoor } from "../server";
 import type { AccountRow } from "../types";
 import { PlatformMark, platformLabel } from "./PlatformMark";
 import { SocialImage } from "./SocialImage";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function AccountSummary({
   row,
@@ -73,9 +74,9 @@ export function AccountSummary({
             <div className="flex items-center justify-end gap-2">
               {row.externalUrl ? (
                 <Button variant="outline" icon={<ExternalLink />} asChild>
-                  <a href={row.externalUrl} target="_blank" rel="noreferrer noopener">
+                  <OutboundLink href={row.externalUrl}>
                     Open on {platformLabel(row.platform)}
-                  </a>
+                  </OutboundLink>
                 </Button>
               ) : null}
               {canTrack ? (

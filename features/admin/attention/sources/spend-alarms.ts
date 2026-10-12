@@ -50,6 +50,7 @@ import type { CostlyWorkflow } from "@/features/admin/spend-alarms/ciPause";
 import { humanizeRelative } from "@/features/scheduling/utils/triggerHumanize";
 import { HELD_RUN_ALARM_KINDS, heldRunHref } from "@/features/admin/held-runs/heldRuns";
 import type { AttentionAction, AttentionItem } from "../types";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export const SPEND_ALARM_SOURCE_ID = "spend-alarms";
 export const SPEND_ALARM_SOURCE_LABEL = "Spend alarms";
@@ -273,7 +274,7 @@ function actionsOf(row: SpendAlarmAttentionRow, deps: SpendAlarmDeps): Attention
         confirmLabel: "Fix GitHub billing",
       },
       run: async () => {
-        if (typeof window !== "undefined") window.open(GITHUB_BILLING_URL, "_blank", "noopener");
+        if (typeof window !== "undefined") openOutbound(GITHUB_BILLING_URL, "_blank", "noopener");
       },
     });
   }

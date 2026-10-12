@@ -39,6 +39,7 @@ import {
   useWorkflowsBasePath,
   workflowRunPermalinkHref,
 } from "@/features/workflow-runtime/browse/workflowActionRegistry";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type PreviewSource = "sample" | "real";
 
@@ -261,14 +262,12 @@ export function PreviewPane({
                 />
               </div>
               {realRunId ? (
-                <a
+                <OutboundLink
                   href={workflowRunPermalinkHref(realRunId, workflowsBase)}
-                  target="_blank"
-                  rel="noreferrer"
                   className="flex h-9 shrink-0 items-center gap-1 rounded-lg border border-border px-2 text-xs font-medium text-foreground hover:border-primary/40"
                 >
                   <ExternalLink className="h-3.5 w-3.5" /> Open
-                </a>
+                </OutboundLink>
               ) : null}
               </div>
             </div>

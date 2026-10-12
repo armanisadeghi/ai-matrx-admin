@@ -108,6 +108,7 @@ import {
 import type { SurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 interface PdfStudioShellProps {
   initialDocumentId?: string;
 }
@@ -692,10 +693,10 @@ export function PdfStudioShell({ initialDocumentId }: PdfStudioShellProps) {
   const handleOpenSource = useCallback(() => {
     if (!activeDoc) return;
     if (activeDoc.sourceKind === "cld_file" && activeDoc.sourceId) {
-      window.open(
+      openOutbound(
         `/files/f/${activeDoc.sourceId}`,
         "_blank",
-        "noopener,noreferrer",
+        "noopener",
       );
       return;
     }

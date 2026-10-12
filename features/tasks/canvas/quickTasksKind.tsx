@@ -12,6 +12,7 @@ import type { CanvasJson } from "@ai-matrx/canvas";
 import { canvasRecord, canvasText, useToolOpener } from "@/features/canvas/host/toolCanvas";
 
 import { QUICK_TASKS_KIND, QUICK_TASKS_TITLE as TITLE } from "@/features/canvas/host/quickToolLaunchers";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export { QUICK_TASKS_KIND };
 
@@ -44,7 +45,7 @@ export const quickTasksKind = defineCanvasKind<CanvasJson>({
       id: "open-tasks-page",
       label: "Open Tasks",
       icon: <ExternalLink />,
-      onSelect: () => window.open("/tasks", "_blank", "noopener"),
+      onSelect: () => openOutbound("/tasks", "_blank", "noopener"),
     },
   ],
 });

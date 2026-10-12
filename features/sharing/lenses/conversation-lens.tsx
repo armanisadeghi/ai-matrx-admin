@@ -49,6 +49,7 @@ import {
 import { resourceTitle } from "./default-renderers";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 // The chat's tool renderers are a large graph; keep them out of every other
 // share lens's chunk. Rendered on the server too (default ssr), so the tool
 // lines are in the first paint.
@@ -154,7 +155,7 @@ function MediaBlock({ block, token }: { block: MediaBlockData; token: string }) 
       );
     }
     return (
-      <a href={src.inline} target="_blank" rel="noreferrer" className="block max-w-full">
+      <OutboundLink href={src.inline} className="block max-w-full">
         {/* A token-scoped byte URL on the files service, readable by anyone
             holding this link — a raw tag is right on this anonymous page, as in
             ./file-lens.tsx. */}
@@ -172,7 +173,7 @@ function MediaBlock({ block, token }: { block: MediaBlockData; token: string }) 
           }}
           className="h-auto max-h-[28rem] w-auto max-w-full rounded-lg border border-border"
         />
-      </a>
+      </OutboundLink>
     );
   }
   if (block.kind === "audio") {

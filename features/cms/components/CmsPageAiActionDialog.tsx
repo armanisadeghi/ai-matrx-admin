@@ -48,6 +48,7 @@ import { isWritePolicyBlocked } from "@/features/marketing/content-plan/lib/page
 import { useFloatingLiveRun } from "@/features/overlays/openers/liveRunWindow";
 import { cn } from "@/lib/utils";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export type CmsPageAiIntent = "build-edit" | "review";
 
@@ -330,10 +331,10 @@ export function CmsPageAiActionDialog({
                 }
                 action={
                   <Button asChild variant="outline">
-                    <a href={planHref} target="_blank" rel="noopener noreferrer">
+                    <OutboundLink href={planHref}>
                       <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
                       Open Plan
-                    </a>
+                    </OutboundLink>
                   </Button>
                 }
               />

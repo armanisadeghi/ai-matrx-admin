@@ -92,6 +92,7 @@ import {
   selectScopesByOrg,
 } from "@/features/scopes/redux/selectors/admin";
 import { StaleDataNotice } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function OrgWorkspace() {
   const params = useParams();
@@ -473,15 +474,13 @@ export function OrgWorkspace() {
                     : "Unknown"}
                 </div>
                 {organization.website && (
-                  <a
+                  <OutboundLink
                     href={organization.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
                     Website
-                  </a>
+                  </OutboundLink>
                 )}
               </div>
             </div>

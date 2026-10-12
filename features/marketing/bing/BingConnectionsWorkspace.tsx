@@ -43,6 +43,7 @@ import type { MarketingSite } from "@/features/marketing/types";
 import { BING_PROVIDER } from "@/features/marketing/lib/provider-names";
 import { humanizeBackendError } from "@/utils/errors";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const BING_WEBMASTER_URL = "https://www.bing.com/webmasters";
 
@@ -415,14 +416,12 @@ export function BingConnectionsWorkspace() {
                         variant="outline"
                         className="mt-3"
                       >
-                        <a
+                        <OutboundLink
                           href={BING_WEBMASTER_URL}
-                          target="_blank"
-                          rel="noreferrer"
                         >
                           Open {BING_PROVIDER.label}
                           <ExternalLink className="h-3.5 w-3.5" />
-                        </a>
+                        </OutboundLink>
                       </Button>
                     </div>
 
@@ -714,14 +713,12 @@ export function BingConnectionsWorkspace() {
                         variant="outline"
                         className="mt-2"
                       >
-                        <a
+                        <OutboundLink
                           href={BING_WEBMASTER_URL}
-                          target="_blank"
-                          rel="noreferrer"
                         >
                           Open {BING_PROVIDER.label}
                           <ExternalLink className="h-3.5 w-3.5" />
-                        </a>
+                        </OutboundLink>
                       </Button>
                     </div>
                   )

@@ -48,6 +48,7 @@ import {
 import { SyncStatePanel } from "@/features/ai-work/conversations/components/SyncStatePanel";
 import { MATRX_LOCAL_DOWNLOAD_PATH } from "@/features/matrx-local-download/release";
 import { CodingProjectOrganizations } from "@/features/ai-work/components/CodingProjectOrganizations";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * Matrx Local ships the explicit Claude local-history importer (v1.4.22+,
@@ -310,15 +311,13 @@ export function AiWorkConnections() {
                         {meta.connection}
                       </p>
                     </div>
-                    <a
+                    <OutboundLink
                       href={meta.docsHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       className="text-muted-foreground hover:text-foreground"
                       aria-label={`${meta.label} documentation`}
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
-                    </a>
+                    </OutboundLink>
                   </div>
                   <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
                     <ConnectionFact label="Authorization grant">
@@ -530,14 +529,12 @@ export function AiWorkConnections() {
                   variant="outline"
                   className="mt-2"
                 >
-                  <a
+                  <OutboundLink
                     href={MATRX_LOCAL_DOWNLOAD_PATH}
-                    target="_blank"
-                    rel="noopener noreferrer"
                   >
                     Get Matrx Local
                     <ExternalLink className="h-3.5 w-3.5" />
-                  </a>
+                  </OutboundLink>
                 </Button>
                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                   ChatGPT and Claude.ai web-chat history remain unavailable — no

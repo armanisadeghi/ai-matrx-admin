@@ -205,6 +205,7 @@ import { Search, X } from "lucide-react";
 import { CrumbTrailHeader, type CrumbOption } from "@/features/shell/components/header/templates/CrumbTrailHeader";
 import { EDUCATION_NAV_ITEMS } from "@/features/education/components/EducationHeader";
 import { Button as ControlButton, ControlRow, ControlScope, SearchField, SegmentedControl, SplitButton } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 
 const SAMPLE_PATH = "/demos/ui-unification/samples/education-flashcards";
@@ -1342,10 +1343,10 @@ export function FlashcardSetSample({
                       )}
                       {data.set.published_to_web && (
                         <DropdownMenuItem asChild className="cursor-pointer gap-2">
-                          <a href={`/p/e/fc_set/${setId}`} target="_blank" rel="noopener noreferrer">
+                          <OutboundLink href={`/p/e/fc_set/${setId}`}>
                             <Expand className="h-4 w-4 text-muted-foreground" />
                             View public page
-                          </a>
+                          </OutboundLink>
                         </DropdownMenuItem>
                       )}
                       {!deckEmpty && (

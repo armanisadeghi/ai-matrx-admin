@@ -59,6 +59,7 @@ import {
   type SourceRequest,
   type StoryAngle,
 } from "@/features/marketing/pr/types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const URGENCY_CHIP: Record<DeadlineUrgency, string> = {
   critical:
@@ -305,10 +306,10 @@ function RequestRow({
               variant="outline"
               className="ml-auto shrink-0"
             >
-              <a href={MEDIA_LISTS_HREF} target="_blank" rel="noreferrer">
+              <OutboundLink href={MEDIA_LISTS_HREF}>
                 Media lists
                 <ArrowUpRight className="ml-1 h-3 w-3" />
-              </a>
+              </OutboundLink>
             </Button>
           </div>
 
@@ -448,16 +449,14 @@ function RequestRow({
             {/* The original query stays reachable whatever the status — on a
                 closed request it is the only door left. */}
             {request.external_url ? (
-              <a
+              <OutboundLink
                 href={request.external_url}
-                target="_blank"
-                rel="noreferrer"
                 className="ml-auto inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline"
               >
                 Open the original query on{" "}
                 {PLATFORM_LABELS[request.platform] ?? humanize(request.platform)}
                 <ExternalLink className="h-3 w-3" />
-              </a>
+              </OutboundLink>
             ) : null}
           </div>
         </div>

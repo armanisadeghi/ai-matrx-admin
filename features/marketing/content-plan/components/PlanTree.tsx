@@ -69,6 +69,7 @@ import { NodeMeasureDoor } from "./NodeMeasureDoor";
 import { PipelineProgressBadge } from "./PipelineProgressBadge";
 import { PlanTreeToolbar, type TreeStatusOption } from "./PlanTreeToolbar";
 import { DragCursorMonitor } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface FlatRow {
   node: PlanNodeRow;
@@ -665,10 +666,8 @@ function TreeRow({
                     );
                   }
                   return (
-                    <a
+                    <OutboundLink
                       href={cmsPageEditorHref(cmsSiteId, cmsPage.pageId)}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       title={`${stateTitle} — open in the CMS editor`}
                       className={cn(badgeClass, "hover:underline")}
                       // The row is selectable AND draggable; the badge is
@@ -677,7 +676,7 @@ function TreeRow({
                       onPointerDown={(event) => event.stopPropagation()}
                     >
                       {label}
-                    </a>
+                    </OutboundLink>
                   );
                 })()
               ) : null}

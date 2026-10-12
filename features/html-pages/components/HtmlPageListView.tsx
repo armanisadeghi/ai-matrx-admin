@@ -62,6 +62,7 @@ import {
 import { toast } from "@/lib/toast";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 interface HtmlPageListViewProps {
   pages: HtmlPageSummary[];
@@ -738,7 +739,7 @@ function HtmlPageActions({
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => window.open(page.url, "_blank", "noopener,noreferrer")}
+          onClick={() => openOutbound(page.url, "_blank", "noopener")}
         >
           <ExternalLink className="mr-2 h-3.5 w-3.5" />
           View live

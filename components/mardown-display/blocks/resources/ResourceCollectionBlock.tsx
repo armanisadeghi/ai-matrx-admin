@@ -39,6 +39,7 @@ import { IconButton } from "@ai-matrx/design-system";
 import { matchesSearch as matchesSearchScoring } from "@ai-matrx/kit/search-scoring";
 
 import { DisclosureHeader } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 interface ResourceCollectionBlockProps {
   collection: ResourceCollectionData;
   taskId?: string;
@@ -552,17 +553,15 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({
                                         {renderStars(resource.rating)}
                                       </div>
                                     )}
-                                    <a
+                                    <OutboundLink
                                       href={resource.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
                                       className="flex items-center justify-center gap-1 w-full py-1.5 px-2 bg-violet-500 dark:bg-violet-600 hover:bg-violet-600 dark:hover:bg-violet-700 text-white text-xs font-medium rounded-md transition-colors"
                                     >
                                       <ExternalLink className="h-3 w-3" />
                                       <span className="hidden sm:inline">
                                         Open
                                       </span>
-                                    </a>
+                                    </OutboundLink>
                                   </div>
                                 </div>
                               );

@@ -69,6 +69,7 @@ import {
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { guardedSave } from "@/lib/save/guardedSave";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // ──────────────────────────────────────────────────
 // Progress Stepper - User-facing stage definitions
@@ -704,11 +705,9 @@ function FeedbackItem({
               </p>
               <div className="flex gap-2 flex-wrap">
                 {screenshotRefs.map((screenshotRef, i) => (
-                  <a
+                  <OutboundLink
                     key={screenshotRef}
                     href={feedbackScreenshotHref(screenshotRef)}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="block w-20 h-20 rounded border border-border overflow-hidden bg-muted hover:ring-2 hover:ring-primary transition-all"
                   >
                     <InlineMediaRef
@@ -719,7 +718,7 @@ function FeedbackItem({
                       fallback={null}
                       alt={`Screenshot ${i + 1}`}
                     />
-                  </a>
+                  </OutboundLink>
                 ))}
               </div>
             </div>

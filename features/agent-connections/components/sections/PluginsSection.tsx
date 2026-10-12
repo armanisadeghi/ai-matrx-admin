@@ -49,6 +49,7 @@ import {
 import { workspaceName } from "@/features/ai-work/lib/codingSessionPresentation";
 import { CODE_PLUGIN_SOURCE_APP } from "@/features/ai-work/lib/providerSource";
 import { conversationTitleText } from "@/features/content-ir/surfaces/kind-text-label";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function workConversationHref(conversationId: string): string {
   return `/work/conversations/${conversationId}`;
@@ -407,15 +408,13 @@ function ClaudeInstallStatus({ sessionCount }: { sessionCount: number }) {
             </p>
           ) : null}
         </div>
-        <a
+        <OutboundLink
           href={meta.docsHref}
-          target="_blank"
-          rel="noopener noreferrer"
           className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md border border-border bg-background px-2.5 text-xs text-foreground hover:bg-accent"
         >
           Claude docs
           <ExternalLink className="h-3 w-3" />
-        </a>
+        </OutboundLink>
       </div>
     </section>
   );

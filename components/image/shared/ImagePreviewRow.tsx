@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 // render @/features/files FilePreview with a fileId instead.
 import { QuickImagePreview } from './QuickImagePreview';
 import { EnhancedFileDetails } from '@/utils/file-operations/constants';
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 type SizeVariant = 'xs' | 's' | 'm' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl';
 
@@ -158,7 +159,7 @@ export function ImagePreviewRow({
 
   const handleImageClick = (image: ImageSource) => {
     if (typeof window !== "undefined") {
-      window.open(image.url, "_blank", "noopener,noreferrer");
+      openOutbound(image.url, "_blank", "noopener");
     }
   };
 

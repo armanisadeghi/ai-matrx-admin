@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AlertTriangle, ArrowLeft, ArrowRight, ExternalLink, Mail } from "lucide-react";
 import type { SourceGalleryConfig, SourceProviderConfig } from "../types";
 import { ScreenshotSlot } from "./ScreenshotSlot";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * One provider's dedicated hand-holding guide page: exactly how to get your
@@ -103,15 +104,13 @@ export function SourceGuidePage({
                   </div>
                 ) : null}
                 {step.deepLink ? (
-                  <a
+                  <OutboundLink
                     href={step.deepLink.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
                   >
                     {step.deepLink.label}
                     <ExternalLink className="h-3.5 w-3.5" />
-                  </a>
+                  </OutboundLink>
                 ) : null}
                 {step.deepLink?.note ? (
                   <p className="text-xs text-muted-foreground">

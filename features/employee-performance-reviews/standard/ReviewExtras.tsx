@@ -13,6 +13,7 @@ import { reviewDueEvents } from "./calendarEvents";
 import { buildReportMarkdown, buildReportModel, openStandardReportPrint } from "./standardReport";
 import { formatDay } from "./status";
 import type { ReviewDetail } from "./types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function ReviewExtras({ detail }: { detail: ReviewDetail }) {
   const url = typeof window === "undefined" ? undefined : window.location.href;
@@ -31,14 +32,14 @@ export function ReviewExtras({ detail }: { detail: ReviewDetail }) {
             {e.label} {formatDay(e.event.start.slice(0, 10))}
           </span>
           <Button asChild variant="quiet">
-            <a href={googleCalendarUrl(e.event)} target="_blank" rel="noopener noreferrer">
+            <OutboundLink href={googleCalendarUrl(e.event)}>
               Google
-            </a>
+            </OutboundLink>
           </Button>
           <Button asChild variant="quiet">
-            <a href={outlookCalendarUrl(e.event)} target="_blank" rel="noopener noreferrer">
+            <OutboundLink href={outlookCalendarUrl(e.event)}>
               Outlook
-            </a>
+            </OutboundLink>
           </Button>
           <Button variant="quiet" onClick={() => downloadIcs(e.event)}>
             .ics

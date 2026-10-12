@@ -14,6 +14,7 @@ import { parseDocument } from "./parseDocument";
 import { EntityCard, type EntityAction } from "@ai-matrx/chat/tool-call-visualization/renderers/_shared-entity/EntityCard";
 import { EmptyResultCard } from "@ai-matrx/chat/tool-call-visualization/renderers/_shared-entity/EmptyResultCard";
 import { useOpenDocumentCanvas } from "@/features/documents/hooks/useOpenDocumentCanvas";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * Inline renderer for the `document` tool — a polished entity card with a short
@@ -122,14 +123,12 @@ export function DocumentInline({
         remedy={
           <>
             Your documents are all listed at{" "}
-            <a
+            <OutboundLink
               href="/documents"
-              target="_blank"
-              rel="noopener noreferrer"
               className="font-medium text-foreground underline underline-offset-2"
             >
               /documents
-            </a>
+            </OutboundLink>
             {onOpenOverlay ? ", and the full tool result is under Expand." : "."}
           </>
         }

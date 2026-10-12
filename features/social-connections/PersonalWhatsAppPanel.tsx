@@ -10,6 +10,8 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { createPersonalWhatsAppClient, personalWhatsAppDevelopmentTarget, type PersonalAccount, type PersonalGrant } from "./personal-whatsapp-service";
 import { PersonalWhatsAppMessenger } from "@/features/messaging/messenger/PersonalWhatsAppMessenger";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export function PersonalWhatsAppPanel({ messenger = false }: { messenger?: boolean }) {
   const actor = useAppSelector(selectUserId);
@@ -76,7 +78,7 @@ function PersonalWhatsAppContent({ messenger }: { messenger: boolean }) {
   async function connect(reconnect = false, profile: "read" | "read_write" = grant?.request_profile ?? "read") {
     const version = ++sequence.current;
     // Prepare the popup in the click gesture; a blocked popup keeps a normal link.
-    const popup = window.open("about:blank", "_blank");
+    const popup = openOutbound("about:blank", "_blank");
     setBusy(true); setError(null); setAuthorizationUrl(null); setAccounts([]);
     try {
       if (profile === "read_write") await personalWhatsApp.ensureWriteSupport();
@@ -122,7 +124,7 @@ function PersonalWhatsAppContent({ messenger }: { messenger: boolean }) {
       </div>
     </div>
     {error && <div className="px-3"><ErrorNotice size="inline" message={error} /></div>}
-    {grant?.status === "pending_local" && authorizationUrl && <div className="px-3 text-sm"><a className="underline" href={authorizationUrl} target="_blank" rel="noreferrer">Open Beeper consent</a><InfoHint text={grant.request_profile === "read_write" ? "Approve read and sensitive actions for one day, then select Check connection." : "Approve read-only access for one day, then select Check connection."} /></div>}
+    {grant?.status === "pending_local" && authorizationUrl && <div className="px-3 text-sm"><OutboundLink className="underline" href={authorizationUrl}>Open Beeper consent</OutboundLink><InfoHint text={grant.request_profile === "read_write" ? "Approve read and sensitive actions for one day, then select Check connection." : "Approve read-only access for one day, then select Check connection."} /></div>}
     {accounts.length > 0 && grant?.status === "pending_credential" && <div className="flex flex-wrap gap-2 px-3">{accounts.map((account) => <Button key={account.account_ref} variant="outline" disabled={busy || account.status !== "connected"} onClick={() => void run(async () => (await personalWhatsApp.selectAccount(account.account_ref)).grant)}>{account.name}</Button>)}</div>}
     {grant?.recovery_required && grant.cleanup_client_label && grant.revision && <div className="space-y-2 px-3 text-sm">
       <div className="flex items-center gap-2"><span>Interrupted consent</span><InfoHint text="In Beeper Settings → Developer, remove this app under Authorized Connections, then confirm its removal here." /></div>

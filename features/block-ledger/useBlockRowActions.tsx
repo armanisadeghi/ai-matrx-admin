@@ -40,6 +40,7 @@ import {
   labelFor,
   type AcquisitionBlock,
 } from "./types";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export function useBlockRowActions(
   list: EntityListController<AcquisitionBlock>,
@@ -64,7 +65,7 @@ export function useBlockRowActions(
         label: "Open the page yourself",
         icon: ExternalLink,
         onSelect: () => {
-          window.open(row.input_ref, "_blank", "noopener");
+          openOutbound(row.input_ref, "_blank", "noopener");
         },
       });
     }

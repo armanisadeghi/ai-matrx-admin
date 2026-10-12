@@ -31,6 +31,7 @@ import { cn } from "@/utils/cn";
 import { provenanceDoorFor } from "../provenance-door";
 import type { TaskOrigin } from "../constants/status";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const ORIGIN_META: Record<
   Exclude<TaskOrigin, "user">,
@@ -127,16 +128,14 @@ export function TaskProvenanceChip({
     }
     if (door.kind === "external") {
       return (
-        <a
+        <OutboundLink
           href={door.href}
-          target="_blank"
-          rel="noreferrer"
           className={chipClass}
           title={title}
           onClick={stopRowClick}
         >
           {body}
-        </a>
+        </OutboundLink>
       );
     }
     // not-a-page: the provenance is true, so it is shown; it is not a door, so

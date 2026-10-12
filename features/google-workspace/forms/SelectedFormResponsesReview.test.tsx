@@ -126,9 +126,10 @@ it("opens the chosen Form at Google's fixed origin and explains preview versus s
   mockPreview.mockResolvedValue(first);
   await render(); await press("Choose Form");
   const link = [...host.querySelectorAll("a")].find((node) => node.textContent?.includes("Open in Google Forms"));
-  expect(link?.getAttribute("href")).toBe("https://docs.google.com/forms/d/form-1/edit");
+  // Leaves through the outbound door: our referral data rides along, the Referer is kept.
+  expect(link?.getAttribute("href")).toBe("https://docs.google.com/forms/d/form-1/edit?utm_source=aimatrx.com&utm_medium=referral");
   expect(link?.getAttribute("target")).toBe("_blank");
-  expect(link?.getAttribute("rel")).toContain("noreferrer");
+  expect(link?.getAttribute("rel")).toBe("noopener");
   expect(host.textContent).toContain("Preview is temporary");
   expect(host.textContent).toContain("Only selected rows are saved to a table");
   expect(host.textContent).toContain("Preview does not send responses to an AI model");

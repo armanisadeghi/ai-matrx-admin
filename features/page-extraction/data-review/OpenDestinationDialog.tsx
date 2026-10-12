@@ -40,6 +40,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export interface WindowOverlayDescriptor {
   /** Registered overlayId (e.g. `quickDataWindow`). */
@@ -85,7 +86,7 @@ export function OpenDestinationDialog({
 
   const openNewTab = useCallback(() => {
     close();
-    window.open(route, "_blank", "noopener,noreferrer");
+    openOutbound(route, "_blank", "noopener");
   }, [close, route]);
 
   const openWindow = useCallback(() => {

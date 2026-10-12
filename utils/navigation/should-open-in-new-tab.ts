@@ -1,3 +1,4 @@
+import { openOutbound } from "@ai-matrx/kit/outbound";
 /**
  * Global navigation primitive — Cmd/Ctrl/middle/modified clicks must open a
  * new tab, never replace the current one (data-loss hazard).
@@ -45,5 +46,5 @@ export function allowNativeNewTab(e: NewTabClickEvent): boolean {
  * the URL in a new tab yourself. Call this from onClick BEFORE onSelect runs.
  */
 export function openInNewTab(href: string): void {
-  window.open(href, "_blank", "noopener,noreferrer");
+  openOutbound(href, "_blank", "noopener");
 }

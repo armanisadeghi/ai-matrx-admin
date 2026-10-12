@@ -48,6 +48,7 @@ import {
   displayUrl,
   type ExternalDomainRollup,
 } from "./model";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function StatChip({
   value,
@@ -156,15 +157,13 @@ function DomainRow({
                 >
                   {target.url}
                 </span>
-                <a
+                <OutboundLink
                   href={target.url}
-                  target="_blank"
-                  rel="noreferrer"
                   aria-label={`Open ${target.url}`}
                   className="shrink-0 text-muted-foreground hover:text-primary"
                 >
                   <ExternalLink className="h-3 w-3" />
-                </a>
+                </OutboundLink>
                 <HttpStatusBadge httpStatus={target.httpStatus} />
                 {target.nofollow ? (
                   <Badge variant="outline" className="shrink-0 text-[10px]">

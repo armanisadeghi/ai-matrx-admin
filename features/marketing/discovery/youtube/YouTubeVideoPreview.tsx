@@ -21,6 +21,7 @@ import { formatYouTubeCount, formatYouTubeDuration } from "./formatters";
 import type { YouTubeVideoCandidate } from "./types";
 import { YouTubeResearchActions } from "./YouTubeResearchActions";
 import { CanvasPagePanel } from "@/features/canvas/host/pagePanel";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function YouTubeVideoPreviewContent({
   video,
@@ -98,14 +99,12 @@ export function YouTubeVideoPreviewContent({
         )}
         <div className="mt-6 flex flex-wrap gap-2">
           <Button variant="primary" asChild>
-            <a
+            <OutboundLink
               href={youTubeWatchUrl(video.video_id)}
-              target="_blank"
-              rel="noreferrer"
             >
               <ExternalLink className="mr-2 h-4 w-4" />
               Open on YouTube
-            </a>
+            </OutboundLink>
           </Button>
           <TapTargetCopyButton value={youTubeWatchUrl(video.video_id)} variant="transparent" ariaLabel="Copy YouTube link" tooltip="Copy YouTube link" />
         </div>

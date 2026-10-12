@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { unsplashClient } from "./unsplashClient";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 // Our simple types
 export type SortOrder =
@@ -620,7 +621,7 @@ export function useUnsplashGallery() {
   const downloadImage = async (photo: UnsplashPhoto) => {
     const response = await fetch(photo.links.download_location);
     const data = await response.json();
-    window.open(data.url, "_blank");
+    openOutbound(data.url, "_blank");
   };
 
   return {

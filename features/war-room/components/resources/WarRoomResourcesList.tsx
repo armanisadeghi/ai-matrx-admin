@@ -61,6 +61,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { EntityTypeToken } from "@ai-matrx/associations";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const DELETABLE_TOKENS = new Set<string>(["file", "udt_document", "note"]);
 
@@ -204,7 +205,7 @@ export function WarRoomResourcesList({
   const openRow = (row: ContainerResourceRow) => {
     const info = tryGetEntityInfo(row.token);
     const href = info?.hrefFor?.(row.resourceId);
-    if (href) window.open(href, "_blank", "noopener,noreferrer");
+    if (href) openOutbound(href, "_blank", "noopener");
   };
 
   const deleteEntity = async (row: ContainerResourceRow) => {

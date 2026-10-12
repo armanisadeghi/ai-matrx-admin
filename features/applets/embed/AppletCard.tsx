@@ -13,6 +13,7 @@
 import { AppWindow, ArrowUpRight, Globe } from "lucide-react";
 import { useEffect, useState } from "react";
 import { appletManageHref, appletWebUrl, readAppletCards, type AppletCardInfo } from "./appletsPort";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export default function AppletCard({ appId }: { appId: string }) {
   const [app, setApp] = useState<AppletCardInfo | null | undefined>(undefined);
@@ -37,16 +38,14 @@ export default function AppletCard({ appId }: { appId: string }) {
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground" data-applet-card={appId} data-state="not-on-web">
         <Globe size={12} aria-hidden />
         <span>Visitors cannot see {app.name}.</span>
-        <a href={appletManageHref(appId)} target="_blank" rel="noreferrer" className="text-primary underline-offset-2 hover:underline">
+        <OutboundLink href={appletManageHref(appId)} className="text-primary underline-offset-2 hover:underline">
           Publish
-        </a>
+        </OutboundLink>
       </p>
     );
   return (
-    <a
+    <OutboundLink
       href={appletWebUrl(app.slug)}
-      target="_blank"
-      rel="noreferrer"
       data-applet-card={appId}
       data-state="on-web"
       data-clickable=""
@@ -60,6 +59,6 @@ export default function AppletCard({ appId }: { appId: string }) {
       <span className="flex shrink-0 items-center gap-1 text-xs text-primary">
         Open this Applet <ArrowUpRight size={12} aria-hidden />
       </span>
-    </a>
+    </OutboundLink>
   );
 }

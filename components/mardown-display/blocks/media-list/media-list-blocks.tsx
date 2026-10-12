@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 
 import { readSearchKindValue } from "../search-kinds/search-kind-data";
 import { Button } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type Status = MediaCandidateVerdict["status"];
 type Candidate = Partial<MediaCandidateVerdict> & Record<string, unknown>;
@@ -131,10 +132,8 @@ function CandidateBody({ item }: { item: Candidate }) {
         )}
       </div>
       {anchor && str(anchor.title) && (
-        <a
+        <OutboundLink
           href={str(anchor.url) || undefined}
-          target="_blank"
-          rel="noreferrer"
           className="flex min-w-0 items-center gap-1 text-xs text-primary hover:underline"
         >
           <ExternalLink className="h-3 w-3 shrink-0" />
@@ -142,7 +141,7 @@ function CandidateBody({ item }: { item: Candidate }) {
           {str(anchor.published_at) && (
             <span className="shrink-0 text-muted-foreground">· {str(anchor.published_at)}</span>
           )}
-        </a>
+        </OutboundLink>
       )}
       {whyThem ? (
         <p className="text-sm leading-snug text-foreground">{whyThem}</p>

@@ -21,6 +21,7 @@ import {
 import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { SectionCard } from "./SectionCard";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface Props {
   outletPartyId: string;
@@ -234,11 +235,9 @@ export function OutreachContactCandidatesCard({ outletPartyId }: Props) {
 
               <div className="flex flex-wrap gap-x-3 gap-y-1">
                 {(candidate.evidence ?? []).map((evidence, index) => (
-                  <a
+                  <OutboundLink
                     key={`${evidence.source_id}-${evidence.kind}-${index}`}
                     href={evidence.url}
-                    target="_blank"
-                    rel="noreferrer"
                     className="inline-flex max-w-full items-center gap-1 text-xs text-primary "
                     title={evidence.detail}
                   >
@@ -247,7 +246,7 @@ export function OutreachContactCandidatesCard({ outletPartyId }: Props) {
                       {evidence.title || evidence.url}
                     </span>
                     <ExternalLink className="h-3 w-3 shrink-0" />
-                  </a>
+                  </OutboundLink>
                 ))}
               </div>
 
@@ -290,15 +289,13 @@ export function OutreachContactCandidatesCard({ outletPartyId }: Props) {
                           <span className="mt-0.5 block text-muted-foreground">
                             {email.confidence}% · {email.why}
                           </span>
-                          <a
+                          <OutboundLink
                             href={email.source_url}
-                            target="_blank"
-                            rel="noreferrer"
                             className="inline-flex items-center gap-1 text-primary "
                           >
                             See the page where this address was observed
                             <ExternalLink className="h-3 w-3" />
-                          </a>
+                          </OutboundLink>
                         </span>
                       </label>
                     );

@@ -20,6 +20,7 @@ import { Contact } from "lucide-react";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { crmCreatePartyHref } from "@/features/crm/routes";
 import { cn } from "@/lib/utils";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export const MEDIA_LISTS_HREF = "/crm/outreach-lists";
 
@@ -56,16 +57,14 @@ export function JournalistRef({
     return (
       <span className={cn("inline-flex min-w-0 items-center gap-1.5", className)}>
         <span className={cn("min-w-0 truncate text-foreground", size)}>{name}</span>
-        <a
+        <OutboundLink
           href={crmCreatePartyHref({ kind: "person", name })}
-          target="_blank"
-          rel="noreferrer noopener"
           title={`${name} has no contact record in your CRM yet. This opens the CRM with their name already filled in — add them and every future request and piece of coverage links to the same person.`}
           className="inline-flex shrink-0 items-center gap-0.5 rounded border border-dashed border-border px-1 py-px text-[10px] text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
         >
           <Contact className="h-2.5 w-2.5" aria-hidden />
           not in CRM — add
-        </a>
+        </OutboundLink>
       </span>
     );
   }

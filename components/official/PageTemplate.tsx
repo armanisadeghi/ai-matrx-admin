@@ -5,6 +5,7 @@
 import React, { ReactNode, useState } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ExternalLinkIcon, LucideIcon } from "lucide-react";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // Types
 interface PageTemplateProps {
@@ -88,14 +89,12 @@ export const PageTemplate: React.FC<PageTemplateProps> = ({
                 {url && (
                   <div className="flex items-center">
                     <ExternalLinkIcon className="text-white/80 mr-2 h-4 w-4" />
-                    <a 
-                      href={url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
+                    <OutboundLink 
+                      href={url}
                       className="text-white/90 hover:text-white hover:dark:text-gray-300 underline decoration-1 underline-offset-4 type-secondary font-small"
                     >
                       {urlText || url}
-                    </a>
+                    </OutboundLink>
                   </div>
                 )}
               </div>

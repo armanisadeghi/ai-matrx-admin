@@ -55,6 +55,7 @@ import {
 import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { SectionCard } from "./SectionCard";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * The most one paid lookup is metered at, in USD — the server's fallback unit
@@ -332,15 +333,13 @@ export function ContactCandidatesCard({
                   Found by {candidate.source}
                   {candidate.source_url ? " · " : ""}
                   {candidate.source_url && (
-                    <a
+                    <OutboundLink
                       className="inline-flex items-center gap-1 underline underline-offset-2"
                       href={candidate.source_url}
-                      target="_blank"
-                      rel="noreferrer"
                     >
                       the page we read it on
                       <ExternalLink className="h-3 w-3" />
-                    </a>
+                    </OutboundLink>
                   )}
                 </p>
                 <div className="flex items-center gap-1.5">

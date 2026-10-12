@@ -42,6 +42,7 @@ import {
 } from "./data";
 import { axesOf, buildRuling } from "./groundTruth";
 import { ProTextarea } from "@/components/official/ProTextarea";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const BUSINESS = ["direct", "adjacent", "none"] as const;
 const MARKET = ["same_market", "different_market", "market_agnostic"] as const;
@@ -257,15 +258,13 @@ export function ManualCompetitorAdd({
                 className="flex items-start justify-between gap-3 rounded-lg border p-3"
               >
                 <div className="min-w-0">
-                  <a
+                  <OutboundLink
                     href={result.url}
-                    target="_blank"
-                    rel="noreferrer"
                     className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
                   >
                     {result.title}
                     <ExternalLink className="size-3" />
-                  </a>
+                  </OutboundLink>
                   <p className="text-xs text-muted-foreground">
                     {result.domain}
                   </p>

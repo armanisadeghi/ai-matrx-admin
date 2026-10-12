@@ -25,6 +25,7 @@ import {
   PanelSection,
   SelectField,
 } from "./panel-primitives";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const WEIGHTS = [1, 2, 3, 4, 5].map((w) => ({
   value: String(w),
@@ -306,14 +307,12 @@ export function ResearchPanel({
                 <li key={i} className="flex items-center gap-1.5 text-sm">
                   <ExternalLink className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   {sourceEntry.url ? (
-                    <a
+                    <OutboundLink
                       href={sourceEntry.url}
-                      target="_blank"
-                      rel="noreferrer"
                       className="truncate text-primary hover:underline"
                     >
                       {sourceEntry.label || sourceEntry.url}
-                    </a>
+                    </OutboundLink>
                   ) : (
                     <span className="truncate">{sourceEntry.label}</span>
                   )}

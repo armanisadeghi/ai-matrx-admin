@@ -78,6 +78,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { PitchAdvisoryPanel } from "@/features/crm/pitch-advisories/PitchAdvisoryPanel";
 import { usePitchAdvisories } from "@/features/crm/pitch-advisories/usePitchAdvisories";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * What the reviewer currently has in front of them, lifted to the page so the
@@ -548,15 +549,13 @@ export function ChaseboxDraftDialog({
                         </p>
                       )}
                       {field.sourceUrl && (
-                        <a
+                        <OutboundLink
                           href={field.sourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-xs text-primary underline underline-offset-2"
                         >
                           {field.sourceUrl}
                           <ExternalLink className="h-3 w-3" aria-hidden />
-                        </a>
+                        </OutboundLink>
                       )}
                     </li>
                   ))}

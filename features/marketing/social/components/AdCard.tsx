@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 
 import { adFormatLabel, isLikelyWinner, runLabel } from "../ads";
 import { AD_LIBRARY_LABELS, isAdLibrary, type AdCardModel } from "../types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function libraryLabel(library: string): string {
   return isAdLibrary(library) ? AD_LIBRARY_LABELS[library] : library;
@@ -126,18 +127,18 @@ export function AdCard({ ad, onOpen, onSave, onTrack, isNew, className }: AdCard
             <DropdownMenuContent align="end">
               {ad.libraryUrl ? (
                 <DropdownMenuItem asChild>
-                  <a href={ad.libraryUrl} target="_blank" rel="noreferrer noopener">
+                  <OutboundLink href={ad.libraryUrl}>
                     <ExternalLink className="mr-2 h-4 w-4" />
                     Open in library
-                  </a>
+                  </OutboundLink>
                 </DropdownMenuItem>
               ) : null}
               {ad.landingUrl ? (
                 <DropdownMenuItem asChild>
-                  <a href={ad.landingUrl} target="_blank" rel="noreferrer noopener">
+                  <OutboundLink href={ad.landingUrl}>
                     <ExternalLink className="mr-2 h-4 w-4" />
                     Open landing page
-                  </a>
+                  </OutboundLink>
                 </DropdownMenuItem>
               ) : null}
               {ad.libraryUrl ? (
@@ -174,15 +175,13 @@ export function AdCard({ ad, onOpen, onSave, onTrack, isNew, className }: AdCard
         <div className="flex min-w-0 items-center justify-between gap-1 text-xs text-muted-foreground">
           <span className="truncate">{ad.cta || "—"}</span>
           {ad.landingUrl ? (
-            <a
+            <OutboundLink
               href={ad.landingUrl}
-              target="_blank"
-              rel="noreferrer noopener"
               className="truncate text-primary hover:underline"
               title={ad.landingUrl}
             >
               {hostOf(ad.landingUrl)}
-            </a>
+            </OutboundLink>
           ) : null}
         </div>
         {where ? (

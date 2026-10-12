@@ -5,6 +5,7 @@ import {
   announceProposedGoogleWrite,
   isProposedGoogleWrite,
 } from "@/features/google-workspace/export/proposedWrite";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /** Host port for the authenticated Google Sheets destination. */
 export async function sendRowsToSheetOutcome(
@@ -24,7 +25,7 @@ export async function sendRowsToSheetOutcome(
   const result = await sendRowsToGoogleSheet(rows, label);
   if (result.ok) {
     const openUrl = result.openUrl;
-    if (openUrl) toast.success(`Created "${result.name}" in Google Drive`, {action: {label: "Open", onClick: () => window.open(openUrl, "_blank", "noopener")}});
+    if (openUrl) toast.success(`Created "${result.name}" in Google Drive`, {action: {label: "Open", onClick: () => openOutbound(openUrl, "_blank", "noopener")}});
     return {
       status: "success",
       delivered: "action",
@@ -56,7 +57,7 @@ export async function sendRowsToSheetOutcome(
       },
     };
   }
-  if (result.reason === "not_connected") toast.info("Connect Google Workspace to send this to a Sheet", {action: {label: "Connect", onClick: () => window.open(result.settingsHref, "_blank", "noopener")}});
+  if (result.reason === "not_connected") toast.info("Connect Google Workspace to send this to a Sheet", {action: {label: "Connect", onClick: () => openOutbound(result.settingsHref, "_blank", "noopener")}});
   return result.reason === "not_connected"
     ? {
         status: "error",

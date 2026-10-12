@@ -48,6 +48,7 @@ import {
   type CaptureHandoff,
 } from "@/features/capture-ladder/types";
 import type { NeedsYouState } from "@/features/capture-ladder/useNeedsYou";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function hostOf(url: string): string {
   try {
@@ -137,16 +138,14 @@ export function NeedsYouRow({ handoff }: { handoff: CaptureHandoff }) {
 
       {/* Secondary, and labelled as secondary: the button above does the real
           work. This is here for the person who simply wants to look. */}
-      <a
+      <OutboundLink
         href={handoff.url}
-        target="_blank"
-        rel="noopener noreferrer"
         title={`Open this ${noun} in a new tab yourself`}
         aria-label={`Open ${host} in a new tab yourself`}
         className="mt-0.5 shrink-0 rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
       >
         <ExternalLink className="h-3.5 w-3.5" />
-      </a>
+      </OutboundLink>
     </li>
   );
 }

@@ -89,6 +89,7 @@ import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { SOURCES_PATH } from "@/features/knowledge/modulePaths";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 interface ScrapeItemState {
   loading: boolean;
@@ -437,7 +438,7 @@ export function ScraperFloatingWorkspace({
           type="button"
           variant="quiet"
           onClick={() =>
-            window.open(selectedHit.url, "_blank", "noopener,noreferrer")
+            openOutbound(selectedHit.url, "_blank", "noopener")
           }
           title="Open result"
           className={iconBtn}
@@ -449,7 +450,7 @@ export function ScraperFloatingWorkspace({
           type="button"
           variant="quiet"
           onClick={() =>
-            window.open(selectedScraped.url, "_blank", "noopener,noreferrer")
+            openOutbound(selectedScraped.url, "_blank", "noopener")
           }
           title="Open in browser"
           className={iconBtn}
@@ -728,7 +729,7 @@ export function ScraperFloatingWorkspace({
   // operations (open / copy / images) ride along via extraSections.
   const presentationalExtras = createScraperExtraSections({
     onOpenInBrowser: selectedScraped
-      ? () => window.open(selectedScraped.url, "_blank", "noopener,noreferrer")
+      ? () => openOutbound(selectedScraped.url, "_blank", "noopener")
       : undefined,
     onCopyText: selectedScraped ? () => void handleCopy() : undefined,
     onViewImages: hasImages ? openImages : undefined,

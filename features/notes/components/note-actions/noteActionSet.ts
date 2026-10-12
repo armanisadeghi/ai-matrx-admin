@@ -25,6 +25,7 @@ import type {
   ContextMenuExtraItem,
   ContextMenuExtraSection,
 } from "@ai-matrx/context-menu/engine";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export interface NoteActionHandlers {
   rename?: () => void;
@@ -101,5 +102,5 @@ export function noteActionsSection(h: NoteActionHandlers): ContextMenuExtraSecti
 
 /** Opens the print studio for a note in a new tab. */
 export function openNotePrintStudio(noteId: string): void {
-  window.open(`/print/documents?note=${encodeURIComponent(noteId)}`, "_blank", "noopener");
+  openOutbound(`/print/documents?note=${encodeURIComponent(noteId)}`, "_blank", "noopener");
 }

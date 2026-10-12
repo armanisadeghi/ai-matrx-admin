@@ -80,6 +80,7 @@ import {
 } from "@/features/shell/components/header/templates/EntityModeHeader";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { extractErrorMessage } from "@/utils/errors";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const DEFAULT_CWD = "/home/agent";
 
@@ -1029,7 +1030,7 @@ export default function SandboxDetailPage() {
                       type="submit"
                       variant="outline"
                       onClick={() => {
-                        window.open(`/api/sandbox/${id}`, "_blank");
+                        openOutbound(`/api/sandbox/${id}`, "_blank");
                       }}
                     >
                       API Inspect

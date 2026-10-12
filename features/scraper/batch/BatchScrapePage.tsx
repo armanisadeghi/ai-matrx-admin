@@ -111,6 +111,7 @@ import { sendUrlsToOwnBrowser } from "@/features/capture-ladder/sendToOwnBrowser
 import { NEEDS_YOU_ROUTE } from "@/features/capture-ladder/route";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type RowStatus = "pending" | "success" | "failed";
 
@@ -452,16 +453,14 @@ export default function BatchScrapePage() {
       header: "URL",
       sortable: true,
       cell: (row) => (
-        <a
+        <OutboundLink
           href={row.url}
-          target="_blank"
-          rel="noopener noreferrer"
           className="flex min-w-0 items-center gap-1 text-sm text-primary hover:underline"
           onClick={(e) => e.stopPropagation()}
         >
           <span className="block max-w-[360px] truncate">{row.url}</span>
           <ExternalLink className="h-3 w-3 flex-shrink-0" />
-        </a>
+        </OutboundLink>
       ),
     },
     {

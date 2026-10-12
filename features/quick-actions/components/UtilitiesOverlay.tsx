@@ -45,6 +45,7 @@ import {
   ExternalLink,
   Flame,
 } from "lucide-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 interface UtilitiesOverlayProps {
   isOpen: boolean;
@@ -190,7 +191,7 @@ export function UtilitiesOverlay({
                   <Button
                     icon={<ExternalLink />}
                     variant="quiet"
-                    onClick={() => window.open(route, "_blank")}
+                    onClick={() => openOutbound(route, "_blank")}
                   >
                     <span className="text-xs">Open in New Tab</span>
                   </Button>

@@ -38,6 +38,7 @@ import { Badge, Button } from "@ai-matrx/design-system/controls";
 import { formatCount, formatDurationMs, formatPercent, formatPercentFromFraction } from "@ai-matrx/kit/format";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 function tokens(n: number | null | undefined): string {
   if (n == null) return "—";
   // Rounded first: the matrix shows per-run AVERAGES, and a token count is whole.
@@ -340,16 +341,14 @@ function CellDetail({
         {cell && cell.attempt > 1 && <span className="text-muted-foreground">attempt {cell.attempt}</span>}
         <div className="flex-1" />
         {cell && (
-          <a
+          <OutboundLink
             href={canonicalConversationHref(cell.conversationId)}
-            target="_blank"
-            rel="noreferrer"
             className="inline-flex items-center gap-1 h-6 px-2 rounded hover:bg-muted text-primary"
             title="Open this cell's conversation in a new tab"
           >
             <ExternalLink className="w-3 h-3" />
             Conversation
-          </a>
+          </OutboundLink>
         )}
         <Button variant="quiet" icon={<RotateCw />} onClick={onRerun} disabled={busy || (!!cell && (cell.status === "running" || cell.status === "queued") && !cell.stalled)} title={cell?.status === "completed" ? "Run this cell again; spends another run" : "Run this cell"}>
           {cell ? "Re-run" : "Run"}
@@ -406,15 +405,13 @@ function CellDetail({
                 </span>
               )}
               {h.conversationId && (
-                <a
+                <OutboundLink
                   href={canonicalConversationHref(h.conversationId)}
-                  target="_blank"
-                  rel="noreferrer"
                   className="ml-auto text-primary hover:underline"
                   title="Open this attempt's conversation in a new tab"
                 >
                   <ExternalLink className="w-3 h-3" />
-                </a>
+                </OutboundLink>
               )}
             </div>
           ))}

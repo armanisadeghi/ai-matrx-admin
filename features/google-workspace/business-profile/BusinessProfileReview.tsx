@@ -14,6 +14,7 @@ import {
   type BusinessProfileReviewsPreview,
   type BusinessProfileReviewService,
 } from "./service";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface BusinessProfileReviewContext {
   organizationId: string;
@@ -322,14 +323,12 @@ function BusinessProfileReviewBodyInner({
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="type-title text-foreground">Business Profile reviews</h2>
         <span className="type-secondary text-muted-foreground">Read only</span>
-        <a
+        <OutboundLink
           className="mt-2 inline-block type-body text-primary hover:underline"
           href="https://business.google.com/locations"
-          target="_blank"
-          rel="noopener noreferrer"
         >
           Open Google Business Profile
-        </a>
+        </OutboundLink>
       </div>
       <GoogleAccountSelect
         connections={eligible}
@@ -439,15 +438,13 @@ function BusinessProfileReviewBodyInner({
                   </span>
                 </Button>
                 {location.metadata?.mapsUri ? (
-                  <a
+                  <OutboundLink
                     href={location.metadata.mapsUri}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     aria-label={`Open ${location.title ?? location.name} in Google Maps`}
                     className="inline-flex shrink-0 items-center justify-center rounded-md border border-border px-3 text-muted-foreground hover:border-primary/50 hover:text-primary"
                   >
                     <ExternalLink className="h-4 w-4" />
-                  </a>
+                  </OutboundLink>
                 ) : null}
               </div>
             ))

@@ -12,6 +12,7 @@ import { pickGoogleFormForConnection, type SelectedGoogleForm } from "./formPick
 import { previewSelectedFormResponses, type FormResponsesPreview } from "./service";
 import { selectedResponsesGrid } from "./transform";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface Props {
   connectionId: string;
@@ -139,7 +140,7 @@ export function SelectedFormResponsesReview({ connectionId, accountLabel, organi
       {form ? (
         <div className="mt-2 space-y-2">
           <p className="text-sm font-medium">{form.name} <span className="font-normal text-muted-foreground">({form.id})</span></p>
-          <a className="inline-flex items-center gap-1 text-sm text-primary underline-offset-4 hover:underline" href={`https://docs.google.com/forms/d/${encodeURIComponent(form.id)}/edit`} target="_blank" rel="noreferrer">Open in Google Forms <ExternalLink className="h-3.5 w-3.5" /></a>
+          <OutboundLink className="inline-flex items-center gap-1 text-sm text-primary underline-offset-4 hover:underline" href={`https://docs.google.com/forms/d/${encodeURIComponent(form.id)}/edit`}>Open in Google Forms <ExternalLink className="h-3.5 w-3.5" /></OutboundLink>
           <p className="text-xs text-muted-foreground">{accountLabel}</p>
           <div className="space-y-1 text-xs text-muted-foreground">
             <p>Preview is temporary.</p>

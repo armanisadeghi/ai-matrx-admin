@@ -93,6 +93,7 @@ import {
 import type { MarketingSite } from "@/features/marketing/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { NO_RAW_ROW_WINDOW } from "@/features/marketing/social/row-open";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function integer(value: number): string {
   return Intl.NumberFormat().format(Math.round(value));
@@ -448,14 +449,12 @@ export function SiteAnalyticsPanel({
               </Link>
             </Button>
             <Button asChild variant="quiet">
-              <a
+              <OutboundLink
                 href="https://console.cloud.google.com/apis/library/analyticsdata.googleapis.com"
-                target="_blank"
-                rel="noreferrer"
               >
                 <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
                 Enable the Analytics Data API
-              </a>
+              </OutboundLink>
             </Button>
           </div>
         </div>

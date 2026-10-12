@@ -30,6 +30,7 @@ import { recordCitationTarget } from "../recordCitation";
 import { useDocumentPassage } from "../useDocumentPassage";
 import { headingLabel } from "../documentPassage";
 import { useOpenCitation } from "@/features/rag/components/source-inspector/useOpenCitation";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const isDocumentKind = (k: string | undefined) => k === "document" || k === "udt_document";
 
@@ -104,7 +105,7 @@ function TrustCitationChip({
             placeLabel: recordLabel,
           });
         } else if (typeof window !== "undefined") {
-          window.open(record.href, "_blank", "noopener,noreferrer");
+          openOutbound(record.href, "_blank", "noopener");
         }
       }
     : undefined;

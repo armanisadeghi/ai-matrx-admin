@@ -100,6 +100,7 @@ import {
 } from "@/features/connected-sources/components/ReadResultsDialog";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 type BusyAction =
   | "connect-files"
   | "enable-gmail"
@@ -1012,17 +1013,15 @@ export function GoogleWorkspaceReviewWorkspace({
                                     variant="ghost"
                                   />
                                 )}
-                                <a
+                                <OutboundLink
                                   href={link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
                                   className="inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-primary-ink hover:bg-primary/10"
                                   aria-label={`Open ${resource.display_name} in Google`}
                                 >
                                   <GoogleG className="size-3.5" />
                                   Open in Google
                                   <ExternalLink className="h-3.5 w-3.5" />
-                                </a>
+                                </OutboundLink>
                               </div>
                             </div>
                             {recordAbsent && fresh?.record_absent_reason ? (
@@ -1347,15 +1346,13 @@ function PresentationFileDetail({
             Read slides and notes
           </Button>
           <Button asChild type="button" variant="outline">
-            <a
+            <OutboundLink
               href={resourceDoor(resource)}
-              target="_blank"
-              rel="noopener noreferrer"
             >
               <GoogleG className="size-3.5" />
               Open in Google
               <ExternalLink className="h-3.5 w-3.5" />
-            </a>
+            </OutboundLink>
           </Button>
         </div>
       </div>

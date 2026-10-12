@@ -131,6 +131,7 @@ import {
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { SecureLinkPanel } from "@/features/sharing/secure/SecureLinkPanel";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface VaultItemDetailProps {
   item: VaultItem;
@@ -2149,16 +2150,14 @@ function DestinationSection({
                   {url}
                 </span>
                 {safeUrl ? (
-                  <a
+                  <OutboundLink
                     href={safeUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="inline-flex shrink-0 items-center gap-1 font-sans font-medium text-primary hover:underline"
                     aria-label={`Open ${url} in a new tab`}
                   >
                     Open website
                     <ExternalLink className="h-3 w-3" />
-                  </a>
+                  </OutboundLink>
                 ) : (
                   <span className="shrink-0 font-sans text-destructive">
                     Invalid URL

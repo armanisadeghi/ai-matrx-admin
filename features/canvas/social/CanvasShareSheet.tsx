@@ -74,6 +74,7 @@ import { useIsMobile } from "@ai-matrx/kit/media-query";
 import type { CanvasType, CanvasVisibility } from "@/types/canvas-social";
 import { ShareCoverImagePicker } from "./ShareCoverImagePicker";
 import { ProTextarea } from "@/components/official/ProTextarea";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 // ============================================================================
 // TYPES
@@ -561,7 +562,7 @@ function useShareLogic({
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
     };
-    window.open(urls[platform], "_blank", "width=600,height=400");
+    openOutbound(urls[platform], "_blank", "width=600,height=400");
   };
 
   return {

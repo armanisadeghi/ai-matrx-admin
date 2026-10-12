@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Check, Copy, ExternalLink, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function parseDomain(url: string): string | null {
   try {
@@ -89,10 +90,10 @@ export function WebpagePreviewContent({
           {copied ? "Copied" : "Copy URL"}
         </Button>
         <Button variant="primary" asChild className="ml-auto">
-          <a href={url} target="_blank" rel="noopener noreferrer">
+          <OutboundLink href={url}>
             <ExternalLink />
             Open
-          </a>
+          </OutboundLink>
         </Button>
       </div>
     </div>

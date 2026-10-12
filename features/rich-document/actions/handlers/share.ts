@@ -17,6 +17,7 @@ import {
   contentForDestination,
 } from "../utils";
 import { copyText } from "@ai-matrx/kit/clipboard";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 registerAction({
   id: "share-webpage",
@@ -59,7 +60,7 @@ registerAction({
           description: url,
           action: {
             label: "Open",
-            onClick: () => window.open(url, "_blank", "noopener,noreferrer"),
+            onClick: () => openOutbound(url, "_blank", "noopener"),
           },
         },
       );
@@ -116,7 +117,7 @@ registerAction({
             "Takes about ten seconds, and only for files you choose or that we create.",
           action: {
             label: "Connect",
-            onClick: () => window.open(result.settingsHref, "_blank", "noopener"),
+            onClick: () => openOutbound(result.settingsHref, "_blank", "noopener"),
           },
         });
         return;
@@ -126,7 +127,7 @@ registerAction({
           ? {
               label: "Open",
               onClick: () =>
-                window.open(result.openUrl as string, "_blank", "noopener"),
+                openOutbound(result.openUrl as string, "_blank", "noopener"),
             }
           : undefined,
       });

@@ -126,6 +126,7 @@ import { AdminUserDoorControls } from "@/features/admin/users/components/AdminUs
 import { feedbackHref } from "@/features/admin/feedback/doors";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface FeedbackDetailDialogProps {
   feedback: UserFeedback;
@@ -986,15 +987,13 @@ export default function FeedbackDetailDialog({
                           open the page instead of describing it. Only in-app
                           paths link; anything else stays plain text. */}
                       {item.route?.startsWith("/") ? (
-                        <a
+                        <OutboundLink
                           href={item.route}
-                          target="_blank"
-                          rel="noopener noreferrer"
                           title={`Open ${item.route} in a new tab`}
                           className="underline-offset-2 hover:text-foreground hover:underline"
                         >
                           {item.route}
-                        </a>
+                        </OutboundLink>
                       ) : (
                         item.route
                       )}
@@ -1269,11 +1268,9 @@ export default function FeedbackDetailDialog({
                           const viewHref =
                             feedbackScreenshotHref(screenshotRef);
                           return (
-                            <a
+                            <OutboundLink
                               key={screenshotRef}
                               href={viewHref}
-                              target="_blank"
-                              rel="noopener noreferrer"
                               className="relative aspect-video rounded-lg overflow-hidden border border-border hover:border-primary transition-colors group"
                             >
                               <InlineMediaRef
@@ -1288,7 +1285,7 @@ export default function FeedbackDetailDialog({
                               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                                 <ExternalLink className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
                               </div>
-                            </a>
+                            </OutboundLink>
                           );
                         })}
                       </div>
@@ -1396,16 +1393,14 @@ export default function FeedbackDetailDialog({
                                   </a>
                                 );
                               })()}
-                              <a
+                              <OutboundLink
                                 href={feedbackHref(parentId)}
-                                target="_blank"
-                                rel="noopener noreferrer"
                                 title="Open parent in a new tab"
                                 aria-label="Open parent in a new tab"
                                 className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                               >
                                 <ExternalLink className="w-3.5 h-3.5" />
-                              </a>
+                              </OutboundLink>
                             </div>
                           </div>
                         );
@@ -1711,16 +1706,14 @@ export default function FeedbackDetailDialog({
                           <ArrowRight className="w-4 h-4" />
                         </a>
                       )}
-                      <a
+                      <OutboundLink
                         href={feedbackHref(parentId)}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         title="Open parent ticket in a new tab"
                         aria-label="Open parent ticket in a new tab"
                         className="flex h-8 w-8 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                       >
                         <ExternalLink className="w-4 h-4" />
-                      </a>
+                      </OutboundLink>
                       <Button
                         icon={<Unlink />} aria-label="Unlink parent"
                         type="button"
@@ -2228,15 +2221,13 @@ export default function FeedbackDetailDialog({
                         <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
                           Testing URL
                         </label>
-                        <a
+                        <OutboundLink
                           href={item.testing_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 text-blue-700 dark:text-blue-400 hover:bg-blue-500/20 transition-colors text-sm font-mono"
                         >
                           <ExternalLink className="w-4 h-4" />
                           {item.testing_url}
-                        </a>
+                        </OutboundLink>
                       </div>
                     )}
 
@@ -2754,11 +2745,9 @@ export default function FeedbackDetailDialog({
                                 >
                                   {getFeedbackScreenshotRefs(msg).map(
                                     (ref, idx) => (
-                                      <a
+                                      <OutboundLink
                                         key={ref}
                                         href={feedbackScreenshotHref(ref)}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
                                       >
                                         <InlineMediaRef
                                           ref={ref}
@@ -2770,7 +2759,7 @@ export default function FeedbackDetailDialog({
                                           className="cursor-pointer hover:opacity-90 transition-opacity max-h-48 max-w-xs"
                                           alt={`Attachment ${idx + 1}`}
                                         />
-                                      </a>
+                                      </OutboundLink>
                                     ),
                                   )}
                                 </div>

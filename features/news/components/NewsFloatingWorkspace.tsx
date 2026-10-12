@@ -9,6 +9,7 @@ import Image from "next/image";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { useRead } from "@ai-matrx/design-system";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const CATEGORIES = [
   "general",
@@ -161,10 +162,8 @@ export function NewsFloatingWorkspace() {
 
 function NewsItem({ article }: { article: Article }) {
   return (
-    <a
+    <OutboundLink
       href={article.url}
-      target="_blank"
-      rel="noopener noreferrer"
       className="group block rounded-lg border border-border bg-card hover:bg-accent/30 hover:border-primary/30 transition-all p-2.5 shadow-sm"
     >
       <div className="flex gap-3">
@@ -206,6 +205,6 @@ function NewsItem({ article }: { article: Article }) {
           </div>
         </div>
       </div>
-    </a>
+    </OutboundLink>
   );
 }

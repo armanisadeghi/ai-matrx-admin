@@ -40,6 +40,7 @@ import { formatTimecode } from "@/features/transcript-studio/utils/timecode";
 import { cn } from "@/lib/utils";
 import { mediumLabel } from "./columns";
 import { keptSourceTitle, type KeptSource, type KeptSourceTurn } from "./types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const MATCH_OPTIONS = {
   caseSensitive: false,
@@ -68,14 +69,12 @@ function RestOfIt({ source }: { source: KeptSource }) {
   }
   if (source.url) {
     return (
-      <a
+      <OutboundLink
         href={source.url}
-        target="_blank"
-        rel="noopener noreferrer"
         className="text-primary underline-offset-2 hover:underline"
       >
         {source.url}
-      </a>
+      </OutboundLink>
     );
   }
   if (source.transcript_id) {
@@ -306,10 +305,10 @@ export function KeptSourceReader({
             </Button>
           ) : source.url ? (
             <Button asChild variant="outline">
-              <a href={source.url} target="_blank" rel="noopener noreferrer">
+              <OutboundLink href={source.url}>
                 <ExternalLink className="h-3.5 w-3.5" />
                 Open the original
-              </a>
+              </OutboundLink>
             </Button>
           ) : source.transcript_id ? (
             <EntityRef

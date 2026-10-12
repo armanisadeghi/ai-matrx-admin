@@ -194,6 +194,7 @@ import { useOpenMasterworkYourWordsWindow } from "@/features/overlays/openers/ma
 import { RulePassageLink } from "../../kept-sources/RulePassageLink";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * The Expert surface: read your Rulebook, correct it, grow it. Rules are
@@ -395,14 +396,12 @@ function RuleProvenance({ sourceRef }: { sourceRef: RuleSourceRef }) {
           />
         ) : sourceRef.url ? (
           // The dump Approach's URL source — the link IS the door.
-          <a
+          <OutboundLink
             href={sourceRef.url}
-            target="_blank"
-            rel="noopener noreferrer"
             className="text-primary underline-offset-2 hover:underline"
           >
             {sourceRef.note ?? sourceRef.url}
-          </a>
+          </OutboundLink>
         ) : sourceRef.file_id ? (
           <Link
             href={`/files/f/${sourceRef.file_id}`}

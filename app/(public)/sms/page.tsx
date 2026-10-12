@@ -15,6 +15,7 @@ import {
   SMS_SUPPORT_EMAIL,
   SMS_TERMS_PATH,
 } from "@/features/sms/compliance";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export const metadata = createRouteMetadata("/sms", {
   title: "SMS Programs",
@@ -65,13 +66,12 @@ export default function SmsProgramPage() {
           <strong>Legal operator:</strong> AI Matrx is a technology service
           owned and operated by {siteConfig.legalOperatorName}. The registered
           business website is{" "}
-          <a
+          <OutboundLink
             href={siteConfig.legalOperatorUrl}
-            rel="external noopener"
-            target="_blank"
+            rel="external"
           >
             {siteConfig.legalOperatorUrl}
-          </a>
+          </OutboundLink>
           .
         </p>
 

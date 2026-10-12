@@ -82,6 +82,7 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const LazyWindowPanel = dynamic(
   () => import("@/features/window-panels/WindowPanel").then((m) => m.WindowPanel),
@@ -434,9 +435,9 @@ export function SmartToastCard({
               )}
               {options.href && (
                 <DropdownMenuItem asChild>
-                  <a href={options.href} target="_blank" rel="noopener noreferrer">
+                  <OutboundLink href={options.href}>
                     <ExternalLink aria-hidden /> Open in new tab
-                  </a>
+                  </OutboundLink>
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>

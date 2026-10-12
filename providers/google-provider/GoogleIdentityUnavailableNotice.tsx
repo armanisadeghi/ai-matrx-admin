@@ -14,6 +14,7 @@ import {
   GOOGLE_IDENTITY_UNAVAILABLE_MESSAGE,
   GOOGLE_STATUS_DASHBOARD_URL,
 } from "./googleIdentityReadiness";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface GoogleIdentityUnavailableNoticeProps {
   /** Re-inserts the script and restarts the bound. */
@@ -54,14 +55,12 @@ export function GoogleIdentityUnavailableNotice({
           Retry
         </Button>
         <Button variant="quiet" asChild>
-          <a
+          <OutboundLink
             href={GOOGLE_STATUS_DASHBOARD_URL}
-            target="_blank"
-            rel="noreferrer noopener"
           >
             <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
             Open Google&apos;s status
-          </a>
+          </OutboundLink>
         </Button>
       </div>
     </div>

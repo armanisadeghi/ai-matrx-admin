@@ -18,6 +18,7 @@ import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 import { attachTikTokAccount, discoverTikTokAccount, disconnectTikTokConnection, finishTikTokAuthorization,
   listTikTokConnections, listTikTokVideos, refreshTikTokConnection, startTikTokAuthorization } from "./service";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function tikTokLink(value: string | null | undefined): string | undefined {
   if (!value) return undefined;
@@ -125,7 +126,7 @@ function TikTokConnectionContents() {
         {discovery.account.profile.is_verified === true && <Badge variant="secondary">Verified</Badge>}
       </div>
       {discovery.account.profile.bio_description && <p className="text-sm whitespace-pre-wrap break-words">{discovery.account.profile.bio_description}</p>}
-      {tikTokLink(discovery.account.profile.profile_deep_link) && <a className="text-sm underline" href={tikTokLink(discovery.account.profile.profile_deep_link)} target="_blank" rel="noopener noreferrer">View on TikTok</a>}
+      {tikTokLink(discovery.account.profile.profile_deep_link) && <OutboundLink className="text-sm underline" href={tikTokLink(discovery.account.profile.profile_deep_link)}>View on TikTok</OutboundLink>}
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-sm">
         {([
           ["Followers", discovery.account.profile.follower_count],
@@ -148,7 +149,7 @@ function TikTokConnectionContents() {
         {videos.videos.length === 0 && <p className="text-sm text-muted-foreground">No public videos</p>}
         {videos.videos.map(video => <div key={video.id} className="space-y-1">
           {tikTokLink(video.share_url)
-            ? <a className="text-sm font-medium underline" href={tikTokLink(video.share_url)} target="_blank" rel="noopener noreferrer">{video.title || video.video_description || "Untitled video"}</a>
+            ? <OutboundLink className="text-sm font-medium underline" href={tikTokLink(video.share_url)}>{video.title || video.video_description || "Untitled video"}</OutboundLink>
             : <p className="text-sm font-medium">{video.title || video.video_description || "Untitled video"}</p>}
           <dl className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
             {([["Views", video.view_count], ["Likes", video.like_count], ["Comments", video.comment_count], ["Shares", video.share_count]] as const).map(([label, value]) => <div key={label} className="flex gap-1"><dt>{label}</dt><dd>{formatCount(value)}</dd></div>)}

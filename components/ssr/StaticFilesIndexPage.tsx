@@ -2,6 +2,7 @@ import { readdirSync } from "fs";
 import { join } from "path";
 import { ExternalLink, FileCode2, FolderOpen } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface StaticFile {
   name: string;
@@ -109,11 +110,9 @@ export function StaticFilesIndexPage({
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {files.map((file) => (
-              <a
+              <OutboundLink
                 key={file.name}
                 href={file.href}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="group flex items-start gap-3 rounded-lg border border-border bg-card px-4 py-3.5 hover:border-primary/50 hover:bg-accent/30 transition-colors"
               >
                 <FileCode2 className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0 group-hover:text-primary transition-colors" />
@@ -128,7 +127,7 @@ export function StaticFilesIndexPage({
                     {file.name}
                   </p>
                 </div>
-              </a>
+              </OutboundLink>
             ))}
           </div>
         )}

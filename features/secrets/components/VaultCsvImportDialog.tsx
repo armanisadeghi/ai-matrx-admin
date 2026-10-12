@@ -59,6 +59,7 @@ import {
 } from "../vault-service";
 import type { VaultPrincipal } from "../types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const SOURCES = [
   ["generic", "CSV export"],
@@ -757,14 +758,12 @@ export function VaultCsvImportDialog({
                 </SelectContent>
               </Select>
               {SOURCE_URLS[source] && (
-                <a
+                <OutboundLink
                   className="text-xs text-primary underline"
                   href={SOURCE_URLS[source]}
-                  target="_blank"
-                  rel="noreferrer"
                 >
                   How to export from this password manager
-                </a>
+                </OutboundLink>
               )}
               <Button
                 icon={<FileUp />}

@@ -44,6 +44,8 @@ import { toast } from "@/lib/toast";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { downloadFile } from "@ai-matrx/kit/download";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound, withReferral } from "@ai-matrx/kit/outbound";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -687,7 +689,7 @@ function PhotoCard({
   // Unsplash attribution guideline + THE DOOR LAW: the photographer is named,
   // so the name must open their profile.
   const authorProfile = photo.user?.links?.html
-    ? `${photo.user.links.html}?utm_source=ai_matrx&utm_medium=referral`
+    ? withReferral(photo.user.links.html)
     : null;
 
   const isCompact = viewMode === "compact";
@@ -731,16 +733,14 @@ function PhotoCard({
       >
         {!isCompact &&
           (authorProfile ? (
-            <a
+            <OutboundLink
               href={authorProfile}
-              target="_blank"
-              rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
               title={`View ${author} on Unsplash`}
               className="text-[9px] text-white/80 hover:text-white hover:underline truncate leading-tight block"
             >
               {author}
-            </a>
+            </OutboundLink>
           ) : (
             <p className="text-[9px] text-white/80 truncate leading-tight">
               {author}
@@ -778,7 +778,7 @@ function PhotoCard({
                 onClick={(e) => {
                   e.stopPropagation();
                   const url = photo.links?.html;
-                  if (url) window.open(url, "_blank", "noopener,noreferrer");
+                  if (url) openOutbound(url, "_blank", "noopener");
                 }}
                 title="Open on Unsplash"
               >

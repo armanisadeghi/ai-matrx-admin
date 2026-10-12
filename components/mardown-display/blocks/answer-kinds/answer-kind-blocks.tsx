@@ -22,6 +22,7 @@ import { downloadIcs } from "@/lib/calendar/eventLinks";
 import { useBlockMakeReal } from "@/features/rich-content-host/block-make-real";
 import { readSearchKindValue, text } from "../search-kinds/search-kind-data";
 import { eventText, eventToCalendar } from "./event-calendar";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface AnswerKindBlockProps {
   serverData?: unknown;
@@ -123,7 +124,7 @@ export function ContactBlock({ serverData, className }: AnswerKindBlockProps) {
         {website ? (
           <li className="flex items-start gap-1.5">
             <Globe className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-            <a className={LINK} href={webHref(website)} target="_blank" rel="noopener noreferrer">{website}</a>
+            <OutboundLink className={LINK} href={webHref(website)}>{website}</OutboundLink>
           </li>
         ) : null}
         {address ? (
@@ -225,7 +226,7 @@ export function EventBlock({ serverData, className }: AnswerKindBlockProps) {
       {url && /^https?:\/\//i.test(url) ? (
         <p className="mt-2 flex items-start gap-1.5 text-xs">
           <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <a className={LINK} href={url} target="_blank" rel="noopener noreferrer">{url}</a>
+          <OutboundLink className={LINK} href={url}>{url}</OutboundLink>
         </p>
       ) : null}
     </div>

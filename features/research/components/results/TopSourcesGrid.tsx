@@ -9,6 +9,7 @@ import { AuthorityTierBadge } from "../sources/AuthorityTierBadge";
 import { SourceFavicon } from "./SourceFavicon";
 import { resolveTier, TIER_VISUALS, type AuthorityTier } from "./resultsShared";
 import type { ResearchSource } from "../../types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const MAX_CARDS = 8;
 
@@ -147,15 +148,13 @@ function TopSourceCard({
       )}
 
       <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-2.5">
-        <a
+        <OutboundLink
           href={source.url}
-          target="_blank"
-          rel="noopener noreferrer"
           className="inline-flex items-center gap-1 type-meta font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
           <ExternalLink className="h-3 w-3" />
           Visit
-        </a>
+        </OutboundLink>
         <Link
           href={`/research/topics/${topicId}/sources/${source.id}`}
           className="inline-flex items-center gap-1 type-meta font-medium text-primary/80 transition-colors hover:text-primary"

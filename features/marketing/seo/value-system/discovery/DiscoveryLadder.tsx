@@ -58,6 +58,7 @@ import {
 } from "./data";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * `requires` is the rung's REAL prerequisite list, not its position.
@@ -593,14 +594,12 @@ function BusinessModelView({ a }: { a: Record<string, unknown> }) {
         </summary>
         {asList(a.evidence).map((e, i) => (
           <p key={i} className="mt-1 text-muted-foreground">
-            <a
+            <OutboundLink
               href={String(e.page_url)}
-              target="_blank"
-              rel="noreferrer"
               className="text-primary underline-offset-2 hover:underline"
             >
               {String(e.page_url)}
-            </a>{" "}
+            </OutboundLink>{" "}
             — {String(e.observation)}
           </p>
         ))}

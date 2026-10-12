@@ -48,6 +48,7 @@ import {
   type SandboxCapacityRefusal,
   type SandboxOccupant,
 } from "@/features/ai-work/lib/ownPlan";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const PROVIDER = "claude_code" as const;
 
@@ -328,10 +329,10 @@ export function ClaudeAccountsPanel() {
           <div className="mt-3 space-y-2 rounded-lg border border-border p-3">
             {pending.status.sign_in_url ? (
               <Button asChild variant="outline">
-                <a href={pending.status.sign_in_url} target="_blank" rel="noreferrer">
+                <OutboundLink href={pending.status.sign_in_url}>
                   <ExternalLink className="size-3.5" />
                   Sign in on Claude
-                </a>
+                </OutboundLink>
               </Button>
             ) : (
               <p className="text-xs text-muted-foreground">{pending.status.detail}</p>
@@ -433,10 +434,10 @@ export function ClaudeAccountsPanel() {
           </Button>
         </div>
         <Button asChild variant="outline" className="mt-3">
-          <a href={CLAUDE_CONNECTORS_URL} target="_blank" rel="noreferrer">
+          <OutboundLink href={CLAUDE_CONNECTORS_URL}>
             <ExternalLink className="size-3.5" />
             Open Claude connectors
-          </a>
+          </OutboundLink>
         </Button>
       </div>
     </section>

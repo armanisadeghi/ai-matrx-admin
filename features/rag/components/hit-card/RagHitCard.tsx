@@ -56,6 +56,7 @@ import {
   type RagReferenceKind,
   type RagReferenceRequest,
 } from "./referenceTypes";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** A subtle per-kind wash for the compact popover header strip. */
 const HEADER_WASH: Record<ToolAccent, string> = {
@@ -627,17 +628,15 @@ export function RagHitCard({
               </button>
             ) : null}
             <OpenButton view={view} onOpen={onOpen} />
-            <a
+            <OutboundLink
               href={href}
-              target="_blank"
-              rel="noopener noreferrer"
               onClick={(event) => event.stopPropagation()}
               title="Open source in a new tab"
               aria-label="Open source in a new tab"
               className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <ExternalLink className="h-4 w-4" />
-            </a>
+            </OutboundLink>
             <button
               type="button"
               className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -767,15 +766,13 @@ export function RagHitCard({
                 ? `Inspect page ${view.pageNumber}`
                 : "Open in window"}
             </button>
-            <a
+            <OutboundLink
               href={href}
-              target="_blank"
-              rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 type-meta font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <ExternalLink className="h-3.5 w-3.5" />
               Open source
-            </a>
+            </OutboundLink>
           </div>
         </div>
       }

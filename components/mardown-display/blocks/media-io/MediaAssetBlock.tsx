@@ -43,6 +43,7 @@ import {
   type MediaAssetType,
 } from "@/features/content-ir/kinds/media-asset";
 import { cn } from "@/lib/utils";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface MediaAssetBlockProps {
   serverData?: unknown;
@@ -120,10 +121,8 @@ export function MediaAssetLink({
 
   if (data.linkHref) {
     return (
-      <a
+      <OutboundLink
         href={data.linkHref}
-        target="_blank"
-        rel="noopener noreferrer"
         className={cn(
           "inline-flex items-center gap-1.5 rounded text-xs text-primary underline-offset-2 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
           className,
@@ -131,7 +130,7 @@ export function MediaAssetLink({
       >
         <Link2 className="h-3.5 w-3.5 shrink-0" />
         <span className="truncate">{text}</span>
-      </a>
+      </OutboundLink>
     );
   }
 

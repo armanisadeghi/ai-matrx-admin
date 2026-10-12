@@ -113,6 +113,7 @@ import {
   publishedToWebLabel,
   shownToLabel,
 } from "@/lib/row-access";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type InitPhase = "idle" | "connecting" | "running" | "failed";
 
@@ -834,15 +835,13 @@ function SiteHero({
                     </button>
                     {copy}
                   </div>
-                  <a
+                  <OutboundLink
                     href={site.root_url}
-                    target="_blank"
-                    rel="noreferrer"
                     className="inline-flex max-w-full items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-primary"
                   >
                     <span className="truncate">{site.root_url}</span>
                     <ExternalLink className="h-3.5 w-3.5 shrink-0 opacity-60" />
-                  </a>
+                  </OutboundLink>
                 </div>
               </div>
 

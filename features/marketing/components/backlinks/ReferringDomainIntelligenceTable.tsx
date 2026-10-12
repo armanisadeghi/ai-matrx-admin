@@ -47,6 +47,7 @@ import {
   webLocation,
 } from "@/features/marketing/lib/copy-payloads";
 import { ProTextarea } from "@/components/official/ProTextarea";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const VERDICTS = [
   "valuable",
@@ -185,14 +186,12 @@ function DomainDetail({
   return (
     <div className="h-full overflow-y-auto p-3">
       <div className="flex flex-wrap items-center gap-3">
-        <a
+        <OutboundLink
           href={`https://${row.normalized_domain}`}
-          target="_blank"
-          rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-sm font-medium text-primary "
         >
           Open site <ExternalLink className="h-3.5 w-3.5" />
-        </a>
+        </OutboundLink>
         <Link
           href={`${marketingRoutes.brandReputation(brandId, siteId)}?tab=publications`}
           className="inline-flex items-center gap-1 text-sm font-medium text-primary "
@@ -313,15 +312,13 @@ export function ReferringDomainIntelligenceTable({
       header: "Domain",
       filter: false,
       cell: (row) => (
-        <a
+        <OutboundLink
           href={`https://${row.normalized_domain}`}
-          target="_blank"
-          rel="noopener noreferrer"
           onClick={(event) => event.stopPropagation()}
           className="inline-flex items-center gap-1 font-medium text-primary "
         >
           {row.display_domain} <ExternalLink className="h-3 w-3" />
-        </a>
+        </OutboundLink>
       ),
     },
     {

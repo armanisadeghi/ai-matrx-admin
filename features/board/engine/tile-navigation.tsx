@@ -24,6 +24,7 @@ import {
   type AppRouterInstance,
 } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { toast } from "@/lib/toast";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /** A press inside a tile this recently is what started a navigation. */
 export const TILE_GESTURE_WINDOW_MS = 1500;
@@ -63,13 +64,13 @@ function leaveTo(url: URL, nav: BoardNavigation): void {
 
 /** Open `url` in a new tab, never this one; tell the person (with a way in if a blocker stopped it). */
 export function openOutsideBoard(url: string): void {
-  const opened = window.open(url, "_blank");
+  const opened = openOutbound(url, "_blank");
   if (opened) {
     opened.opener = null;
     toast("Opened in a new tab");
     return;
   }
-  toast("Opens in a new tab", { action: { label: "Open", onClick: () => window.open(url, "_blank", "noopener") } });
+  toast("Opens in a new tab", { action: { label: "Open", onClick: () => openOutbound(url, "_blank", "noopener") } });
 }
 
 /** Around a tile body: the router its content sees never replaces the board. */

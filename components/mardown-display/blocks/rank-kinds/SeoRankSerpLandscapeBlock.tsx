@@ -44,6 +44,7 @@ import {
 import { SearchChip, SectionHeading } from "../search-kinds/search-kind-shared";
 import { RankKindNested } from "./RankKindNested";
 import { RankBasisNote, RankChip, shortDate } from "./rank-kind-shared";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface SeoRankSerpLandscapeBlockProps {
   serverData?: unknown;
@@ -203,15 +204,13 @@ const LegacyPlacementRow: React.FC<{ row: Record<string, unknown> }> = ({
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm text-foreground">{title ?? "—"}</div>
         {url && (
-          <a
+          <OutboundLink
             href={url}
-            target="_blank"
-            rel="noopener noreferrer"
             className="flex items-center gap-1 truncate text-xs text-primary hover:underline"
           >
             <span className="truncate">{url}</span>
             <ExternalLink className="h-3 w-3 flex-shrink-0 opacity-60" />
-          </a>
+          </OutboundLink>
         )}
         <div className="mt-1 text-[11px] italic text-muted-foreground">
           Pre-supersede page entry — recorded before this position became a

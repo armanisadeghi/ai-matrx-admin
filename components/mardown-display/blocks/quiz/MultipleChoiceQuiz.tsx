@@ -61,6 +61,7 @@ import { InlineLatexRenderer } from "@/features/math/components/InlineLatexRende
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useCanvasFit } from "@ai-matrx/rich-content/display/blocks/canvas-fit";
 import { Button } from "@ai-matrx/design-system/controls";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 // Legacy type for backwards compatibility
 export type Question = OriginalQuestion;
@@ -463,7 +464,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
   const handleMakeFlashcards = async () => {
     if (makingDeck) return;
     if (deckHref) {
-      window.open(deckHref, "_blank", "noopener");
+      openOutbound(deckHref, "_blank", "noopener");
       return;
     }
     setMakingDeck(true);

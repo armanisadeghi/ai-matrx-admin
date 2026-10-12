@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface SectionFooterProps {
   description: string;
@@ -18,14 +19,12 @@ export function SectionFooter({
       <p className="text-sm text-muted-foreground">{description}</p>
       {/* "#" is a placeholder, not a destination — never render a dead link. */}
       {learnMoreLabel && learnMoreHref && learnMoreHref !== "#" && (
-        <a
+        <OutboundLink
           href={learnMoreHref}
           className="mt-1 inline-block text-sm text-sky-500 hover:text-sky-400 hover:underline"
-          target="_blank"
-          rel="noreferrer"
         >
           {learnMoreLabel}
-        </a>
+        </OutboundLink>
       )}
     </div>
   );

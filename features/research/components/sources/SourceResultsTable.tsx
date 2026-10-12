@@ -41,6 +41,7 @@ import {
 } from "@/features/marketing/discovery/youtube/formatters";
 import type { YouTubeVideoIdentity } from "../../service";
 import type { ReadOutcome } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function tierFromSource(source: ResearchSource): string | null {
   return authorityTier(source.authority_tier, source.authority_score);
@@ -195,17 +196,15 @@ export function SourceResultsTable({
                     </span>
                   )}
                   {source.url && (
-                    <a
+                    <OutboundLink
                       href={source.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       onClick={(event) => event.stopPropagation()}
                       title={`Open ${source.url} in a new tab`}
                       aria-label={`Open the original page for ${source.title || source.hostname || source.url} in a new tab`}
                       className="inline-flex text-muted-foreground/70 hover:text-foreground"
                     >
                       <ExternalLink className="h-3 w-3" />
-                    </a>
+                    </OutboundLink>
                   )}
                   <RedundancyGroupBadge group={source.redundancy_group} />
                 </div>

@@ -89,6 +89,7 @@ import { pushAddressOrNavigate } from "@/lib/url-state/addressWithoutNavigating"
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** Canonical `ui_surface.name` this page emits — the catalog half. */
 const RAG_LIBRARY_SURFACE = "matrx-user/knowledge-library";
@@ -672,15 +673,13 @@ const MEMBER_COLUMNS: MatrxColumnDef<LibraryMember>[] = [
     accessorFn: (m) => (m.sourceKind === "cld_file" ? "Available" : ""),
     cell: (m) =>
       m.sourceKind === "cld_file" ? (
-        <a
+        <OutboundLink
           href={`/files/f/${m.sourceId}`}
-          target="_blank"
-          rel="noopener noreferrer"
           className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 type-meta font-medium text-primary-ink transition-colors hover:bg-primary/10"
         >
           <BookOpenText className="h-3.5 w-3.5" /> Preview
           <ExternalLink className="h-3 w-3" />
-        </a>
+        </OutboundLink>
       ) : null,
     sortable: false,
     width: 120,

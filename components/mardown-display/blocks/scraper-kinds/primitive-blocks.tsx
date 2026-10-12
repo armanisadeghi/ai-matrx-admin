@@ -32,6 +32,7 @@ import {
   strings,
   text,
 } from "./scraper-kind-data";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface BlockProps {
   serverData?: unknown;
@@ -59,14 +60,12 @@ export function PageLinkBlock({ serverData, className }: BlockProps) {
     <div className={cn("flex items-start gap-2 py-1", className)}>
       <SiteFavicon url={url} className="mt-0.5 h-4 w-4 shrink-0" />
       <div className="min-w-0 flex-1">
-        <a
+        <OutboundLink
           href={url}
-          target="_blank"
-          rel="noopener noreferrer"
           className="block truncate text-sm text-primary hover:underline"
         >
           {anchor ?? url}
-        </a>
+        </OutboundLink>
         <div className="flex flex-wrap items-center gap-1.5">
           {anchor && <span className="truncate text-[11px] text-muted-foreground">{url}</span>}
           {fromAlt && (
@@ -137,14 +136,12 @@ export function LinkBucketsBlock({ serverData, className }: BlockProps) {
           <ul className="space-y-0.5">
             {b.urls.slice(0, 25).map((url) => (
               <li key={url} className="truncate">
-                <a
+                <OutboundLink
                   href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="text-xs text-primary hover:underline"
                 >
                   {url}
-                </a>
+                </OutboundLink>
               </li>
             ))}
           </ul>
@@ -172,9 +169,9 @@ export function PageImageBlock({ serverData, className }: BlockProps) {
 
   return (
     <figure className={cn("overflow-hidden rounded-md border border-border bg-card", className)}>
-      <a href={src} target="_blank" rel="noopener noreferrer">
+      <OutboundLink href={src}>
         <ExternalImage src={src} alt={alt} className="h-28 w-full bg-muted" />
-      </a>
+      </OutboundLink>
       <figcaption className="space-y-0.5 px-2 py-1.5">
         <div className={cn("truncate text-[11px]", alt ? "text-foreground" : "italic text-destructive")}>
           {alt ?? "no alt text"}
@@ -206,14 +203,12 @@ export function PageVideoBlock({ serverData, className }: BlockProps) {
         </span>
       )}
       <div className="min-w-0 flex-1">
-        <a
+        <OutboundLink
           href={src}
-          target="_blank"
-          rel="noopener noreferrer"
           className="block truncate text-xs text-primary hover:underline"
         >
           {src}
-        </a>
+        </OutboundLink>
         {provider && <Pill className="mt-1">{provider}</Pill>}
       </div>
     </div>
@@ -229,14 +224,12 @@ export function PageAudioBlock({ serverData, className }: BlockProps) {
       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-muted text-muted-foreground">
         <Music className="h-4 w-4" />
       </span>
-      <a
+      <OutboundLink
         href={src}
-        target="_blank"
-        rel="noopener noreferrer"
         className="min-w-0 flex-1 truncate text-xs text-primary hover:underline"
       >
         {src}
-      </a>
+      </OutboundLink>
     </div>
   );
 }
@@ -502,14 +495,12 @@ export function PageMetadataBlock({ serverData, className }: BlockProps) {
         <div className="flex items-center gap-1.5 text-xs">
           <Link2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           <span className="shrink-0 text-muted-foreground">canonical</span>
-          <a
+          <OutboundLink
             href={canonical}
-            target="_blank"
-            rel="noopener noreferrer"
             className="min-w-0 truncate text-primary hover:underline"
           >
             {canonical}
-          </a>
+          </OutboundLink>
         </div>
       )}
 

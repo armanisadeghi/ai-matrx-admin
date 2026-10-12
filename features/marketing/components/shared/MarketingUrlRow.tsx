@@ -5,6 +5,7 @@ import { Check, Copy, ExternalLink } from "lucide-react";
 import { copyText } from "@ai-matrx/kit/clipboard";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function MarketingUrlRow({
   url,
@@ -60,16 +61,14 @@ export function MarketingUrlRow({
       >
         {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
       </button>
-      <a
+      <OutboundLink
         href={url}
-        target="_blank"
-        rel="noreferrer"
         aria-label="Open URL in new tab"
         title="Open in new tab"
         className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:text-foreground focus:outline-none lg:h-8 lg:w-8"
       >
         <ExternalLink className="h-3 w-3" />
-      </a>
+      </OutboundLink>
     </div>
   );
 }

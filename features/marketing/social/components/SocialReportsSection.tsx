@@ -28,6 +28,8 @@ import { SOCIAL_PLATFORM_LABELS, TRACKED_ROLE_LABELS, isSocialPlatform } from ".
 import { PlatformMark } from "./PlatformMark";
 import { agencyAccountHref, agencyBrandHref } from "../agencyLinks";
 import { formatSocialHandle } from "@/features/marketing/lib/social-handle";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 function RowLink({ href, children }: { href: string | null; children: React.ReactNode }) {
   return href ? (
@@ -48,10 +50,10 @@ function AccountLink({ row, children }: { row: { brandId: string | null; platfor
   if (href) return <RowLink href={href}>{children}</RowLink>;
   if (!row.profileUrl) return <>{children}</>;
   return (
-    <a href={row.profileUrl} target="_blank" rel="noreferrer noopener" className="inline-flex min-w-0 items-center gap-1 underline-offset-2 hover:underline" data-clickable="">
+    <OutboundLink href={row.profileUrl} className="inline-flex min-w-0 items-center gap-1 underline-offset-2 hover:underline" data-clickable="">
       <span className="truncate">{children}</span>
       <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground" aria-label="Opens in a new tab" />
-    </a>
+    </OutboundLink>
   );
 }
 
@@ -140,9 +142,9 @@ const OUTLIER_COLUMNS: MatrxColumnDef<AgencyOutlierRow>[] = [
     filter: "text",
     minWidth: 240,
     cell: (r) => (
-      <a href={r.url} target="_blank" rel="noreferrer noopener" className="block max-w-[28rem] truncate underline-offset-2 hover:underline">
+      <OutboundLink href={r.url} className="block max-w-[28rem] truncate underline-offset-2 hover:underline">
         {r.hookLine || "No caption"}
-      </a>
+      </OutboundLink>
     ),
   },
   { id: "creator", label: "Creator", header: "Creator", accessorFn: (r) => r.handle, filter: "text", cell: (r) => <AccountLink row={r}>{formatSocialHandle({ platform: r.platform, handle: r.handle, url: r.profileUrl })}</AccountLink> },
@@ -290,7 +292,7 @@ export function SocialReportsSection() {
             {...socialRowOpen<AgencyAccountRow>((r) => {
               const href = agencyAccountHref(r) ?? agencyBrandHref(r);
               if (href) router.push(href);
-              else if (r.profileUrl) window.open(r.profileUrl, "_blank", "noopener,noreferrer");
+              else if (r.profileUrl) openOutbound(r.profileUrl, "_blank", "noopener");
             })}
             mobileCardsBreakpoint="md"
             mobileCards={(r, _i, controls) => <RollupAccountCard row={r} controls={controls} />}
@@ -311,7 +313,7 @@ export function SocialReportsSection() {
             columns={OUTLIER_COLUMNS}
             getRowId={(r) => r.postId}
             {...socialRowOpen<AgencyOutlierRow>((r) => {
-              window.open(r.url, "_blank", "noopener,noreferrer");
+              openOutbound(r.url, "_blank", "noopener");
             })}
             mobileCardsBreakpoint="md"
             mobileCards={(r, _i, controls) => <RollupOutlierCard row={r} controls={controls} />}

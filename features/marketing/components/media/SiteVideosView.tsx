@@ -67,6 +67,7 @@ import {
 } from "@/features/marketing/components/media/BrandAssetDetail";
 import { readVideoMetadata } from "@/features/marketing/lib/video-metadata";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const PROVIDER_LABELS: Record<SiteVideoAsset["provider"], string> = {
   youtube: "YouTube",
@@ -564,16 +565,14 @@ export function SiteVideosView({
                     />
                   </div>
                   <div className="space-y-1 p-1.5">
-                    <a
+                    <OutboundLink
                       href={video.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       className="flex min-w-0 items-center gap-1 font-mono text-[10px] text-foreground hover:text-primary"
                       title={video.url}
                     >
                       <span className="truncate">{video.url}</span>
                       <ExternalLink className="h-2.5 w-2.5 shrink-0" />
-                    </a>
+                    </OutboundLink>
                     {/* Every page here is a canonical `web.page` record — it
                         was rendered as comma-joined text (THE DOOR LAW). */}
                     <div className="min-w-0 space-y-0.5">

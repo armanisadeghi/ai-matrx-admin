@@ -71,6 +71,7 @@ import {
 } from "../../outreach-start/service";
 import type { PartyRow } from "../../types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** What made this organization worth writing to — carried all the way to the draft. */
 export type OutreachMotivation =
@@ -333,14 +334,12 @@ export function StartOutreachDialog({
             </p>
           )}
           {target.sourceUrl && (
-            <a
+            <OutboundLink
               href={target.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
               className="mt-1.5 inline-block text-xs text-primary hover:underline"
             >
               Why this is an opportunity — open the source page
-            </a>
+            </OutboundLink>
           )}
         </div>
       )}

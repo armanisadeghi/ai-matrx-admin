@@ -29,6 +29,7 @@ import {
   NotePreview,
   SaveStatusBadge,
 } from "./NoteToolParts";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export const NoteToolOverlay: React.FC<ToolRendererProps> = ({
   entry,
@@ -153,15 +154,13 @@ export const NoteToolOverlay: React.FC<ToolRendererProps> = ({
 
       {/* Primary actions */}
       <div className="flex justify-end gap-2">
-        <a
+        <OutboundLink
           href={`/notes/${data.noteId}`}
-          target="_blank"
-          rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted"
         >
           <ExternalLink className="h-4 w-4" />
           New tab
-        </a>
+        </OutboundLink>
         <button
           type="button"
           onClick={() =>

@@ -25,6 +25,7 @@ import type {
   JurisdictionRuleCitation,
   JurisdictionRuleFixture,
 } from "../types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function RuleStatusBadge({ status }: { status: string }) {
   const variant =
@@ -143,14 +144,12 @@ export function CitationLine({
           </TooltipContent>
         </Tooltip>
         {href ? (
-          <a
+          <OutboundLink
             href={href}
-            target="_blank"
-            rel="noreferrer noopener"
             className="shrink-0 text-primary hover:underline"
           >
             source <ExternalLink className="inline h-3 w-3" />
-          </a>
+          </OutboundLink>
         ) : (
           <span
             className="shrink-0 text-amber-700 dark:text-amber-400"
@@ -167,15 +166,13 @@ export function CitationLine({
     <span className="inline-flex items-center gap-1.5">
       <span className="text-foreground">{citation.authority ?? "—"}</span>
       {href ? (
-        <a
+        <OutboundLink
           href={href}
-          target="_blank"
-          rel="noreferrer noopener"
           className="inline-flex items-center gap-1 text-primary hover:underline"
         >
           source
           <ExternalLink className="h-3 w-3" />
-        </a>
+        </OutboundLink>
       ) : (
         <span className="text-amber-700 dark:text-amber-400">
           own research — no external source

@@ -44,6 +44,7 @@ import type {
   PageMappingWantedTopic,
   PageMappingWantedTopicHeldBack,
 } from "../../../types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 
 export interface WantedTopicsPanelProps {
@@ -242,15 +243,13 @@ function ExampleUrls({ urls }: { urls: string[] | null }) {
     <ul className="mt-1 space-y-0.5">
       {urls.map((url) => (
         <li key={url} className="min-w-0">
-          <a
+          <OutboundLink
             href={url}
-            target="_blank"
-            rel="noopener noreferrer"
             className="inline-flex max-w-full items-center gap-1 truncate text-muted-foreground underline underline-offset-2 hover:text-foreground"
           >
             <ExternalLink className="h-3 w-3 shrink-0" aria-hidden />
             <span className="truncate">{url}</span>
-          </a>
+          </OutboundLink>
         </li>
       ))}
     </ul>

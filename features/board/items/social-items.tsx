@@ -133,6 +133,7 @@ import type { BoardItemType, ItemBodyProps, PickerProps } from "./types";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { rememberedMaxPosts } from "@/features/marketing/social/post-count";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 export const SOCIAL_POST_KEY = "social-post";
 export const SOCIAL_PROFILE_KEY = "social-profile";
 export const SOCIAL_OUTLIER_FEED_KEY = "social-outlier-feed";
@@ -691,7 +692,7 @@ function ProfileRecordBody({
     : null;
   const openAccount = () => {
     if (!accountHref) return "This account has no page to open.";
-    window.open(accountHref, "_blank", "noopener,noreferrer");
+    openOutbound(accountHref, "_blank", "noopener");
     return "Opened the account page.";
   };
   async function track() {

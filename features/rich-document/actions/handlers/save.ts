@@ -37,6 +37,7 @@ import { buildTaskSeedFromMessage } from "@ai-matrx/chat/agents/components/messa
 import type { ContentSource } from "@ai-matrx/rich-content/rich-document/types";
 import { downloadFile } from "@ai-matrx/kit/download";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /**
  * Map a ContentSource to the `entity_type` used by save-to-task. Centralized
@@ -322,7 +323,7 @@ registerAction({
         description: "Your content is ready as a normal document.",
         action: {
           label: "Open",
-          onClick: () => window.open(href, "_blank", "noopener,noreferrer"),
+          onClick: () => openOutbound(href, "_blank", "noopener"),
         },
       });
     } catch (error) {

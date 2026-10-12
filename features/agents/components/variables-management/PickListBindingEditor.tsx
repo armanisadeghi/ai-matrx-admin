@@ -17,6 +17,7 @@ import {
 } from "@/features/data-tables/pick-lists/service";
 import type { UserList } from "@/features/data-tables/pick-lists/types";
 import type { StructuredListBinding } from "@ai-matrx/chat/agents/types/agent-definition.types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface PickListBindingEditorProps {
   binding: StructuredListBinding | undefined;
@@ -132,15 +133,13 @@ export function PickListBindingEditor({
             <div className="flex items-center justify-between gap-2">
               <Label className="text-xs text-muted-foreground">List</Label>
               {binding.listId && (
-                <a
+                <OutboundLink
                   href={`/pick-lists/${binding.listId}`}
-                  target="_blank"
-                  rel="noreferrer"
                   className="inline-flex items-center gap-1 type-secondary font-medium text-primary "
                 >
                   Edit pick list
                   <ExternalLink className="h-3 w-3" />
-                </a>
+                </OutboundLink>
               )}
             </div>
             <Select

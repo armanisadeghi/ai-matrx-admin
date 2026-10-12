@@ -10,6 +10,7 @@ import {
   MATRX_EXTEND_STORE_URL,
 } from '@/lib/extension-bridge/chrome-rpc';
 import { hasOwnBrowserExtension } from '@/lib/extension-bridge/handToOwnBrowser';
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * Is the extension actually in THIS browser?
@@ -55,10 +56,10 @@ function InstalledHere() {
   return (
     <Card className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:gap-3 md:p-4">
       <Button variant="primary" asChild className="self-start sm:self-auto">
-        <a href={MATRX_EXTEND_STORE_URL} target="_blank" rel="noopener noreferrer">
+        <OutboundLink href={MATRX_EXTEND_STORE_URL}>
           <Chrome className="h-3.5 w-3.5" />
           Add to Chrome
-        </a>
+        </OutboundLink>
       </Button>
       <p className="text-sm text-muted-foreground">
         Not in this browser yet — add it, then sign in below

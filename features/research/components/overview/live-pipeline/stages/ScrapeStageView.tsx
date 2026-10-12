@@ -23,6 +23,7 @@ import { WorkItemCard } from "../ui/WorkItemCard";
 import { CaptureLevelChip } from "../ui/CaptureLevelChip";
 import { FoldableSection } from "../ui/FoldableSection";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface Props {
   state: PipelineState;
@@ -86,15 +87,13 @@ function VerdictMenu({
         {url && (
           <>
             <DropdownMenuItem asChild>
-              <a
+              <OutboundLink
                 href={url}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="flex items-center gap-2 type-secondary"
               >
                 <ExternalLink className="h-3 w-3" />
                 Open URL
-              </a>
+              </OutboundLink>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>

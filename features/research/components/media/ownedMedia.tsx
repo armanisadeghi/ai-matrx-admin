@@ -30,6 +30,8 @@ import {
 import { pythonFileInlineUrl } from "@/features/files/handler/utils/python-base";
 import type { MediaRef } from "@/features/files/types";
 import type { ResearchMedia } from "../../types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /** True when the row names a file we store (an upload), not a page reference. */
 export function isOwnedMedia(item: ResearchMedia): boolean {
@@ -93,13 +95,13 @@ export function ResearchMediaImage({
  */
 export async function openResearchMedia(item: ResearchMedia): Promise<void> {
   if (!item.file_id) {
-    window.open(item.url, "_blank", "noopener,noreferrer");
+    openOutbound(item.url, "_blank", "noopener");
     return;
   }
-  window.open(
+  openOutbound(
     pythonFileInlineUrl(item.file_id),
     "_blank",
-    "noopener,noreferrer",
+    "noopener",
   );
 }
 
@@ -136,16 +138,14 @@ export function ResearchMediaOpen({
     );
   }
   return (
-    <a
+    <OutboundLink
       href={item.url}
-      target="_blank"
-      rel="noopener noreferrer"
       className={className}
       title={title}
       onClick={(e) => e.stopPropagation()}
     >
       {children}
-    </a>
+    </OutboundLink>
   );
 }
 

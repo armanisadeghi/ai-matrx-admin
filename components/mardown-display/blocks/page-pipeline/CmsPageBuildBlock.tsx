@@ -48,6 +48,7 @@ import type {
 import { cmsPageBuildPreviewDocument } from "@/features/content-ir/kinds/cms-page-build";
 import { cn } from "@/lib/utils";
 import { Button } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface CmsPageBuildBlockProps {
   serverData?: unknown;
@@ -131,15 +132,13 @@ export function CmsBuildStatus({
       </p>
       {route ? (
         href ? (
-          <a
+          <OutboundLink
             href={href}
-            target="_blank"
-            rel="noopener noreferrer"
             className="ml-auto inline-flex items-center gap-1 font-mono text-xs text-primary hover:underline"
           >
             {route}
             <ExternalLink className="h-3 w-3 shrink-0" aria-hidden />
-          </a>
+          </OutboundLink>
         ) : (
           <span className="ml-auto font-mono text-xs text-muted-foreground">
             {route}

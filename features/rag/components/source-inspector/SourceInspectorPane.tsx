@@ -68,6 +68,7 @@ import { messageRangeOfPart } from "@/features/education/trust/recordCitation";
 import { useDocumentPassage } from "@/features/education/trust/useDocumentPassage";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 // react-pdf is heavy — keep it out of the inspector chunk until a PDF is shown.
 const PdfPreview = dynamic(
   () => import("@/features/pdf/components/viewer/PdfPreview"),
@@ -516,15 +517,13 @@ function PageSourceInspector({
 
       <div className="ml-auto flex shrink-0 items-center gap-2">
         {href ? (
-          <a
+          <OutboundLink
             href={href}
-            target="_blank"
-            rel="noopener noreferrer"
             className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 type-meta font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <ExternalLink className="h-3.5 w-3.5" />
             Open source
-          </a>
+          </OutboundLink>
         ) : null}
       </div>
     </div>

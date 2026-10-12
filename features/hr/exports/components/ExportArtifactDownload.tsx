@@ -41,6 +41,7 @@ import { downloadBlob } from "@/lib/python-client";
 import { toast } from "@/lib/toast";
 import type { ExportEnvelope } from "../types";
 import { downloadFile } from "@ai-matrx/kit/download";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function ExportArtifactDownload({
   envelope,
@@ -86,10 +87,10 @@ export function ExportArtifactDownload({
         </Button>
         {url ? (
           <Button variant="outline" asChild>
-            <a href={url} target="_blank" rel="noopener noreferrer">
+            <OutboundLink href={url}>
               <ExternalLink className="mr-2 h-4 w-4" aria-hidden />
               Open in a new tab
-            </a>
+            </OutboundLink>
           </Button>
         ) : null}
       </div>

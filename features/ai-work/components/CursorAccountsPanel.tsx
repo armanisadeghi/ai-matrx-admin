@@ -28,6 +28,7 @@ import {
   readCursorAccounts,
   type CursorAccountRow,
 } from "@/features/ai-work/lib/cursorAccounts";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const STATUS_LABEL: Record<string, string> = {
   connected: "Connected",
@@ -132,10 +133,10 @@ export function CursorAccountsPanel() {
             }}
           >
             <Button asChild variant="quiet">
-              <a href={CURSOR_DASHBOARD_URL} target="_blank" rel="noreferrer">
+              <OutboundLink href={CURSOR_DASHBOARD_URL}>
                 <ExternalLink className="size-3.5" />
                 Create a key in Cursor
-              </a>
+              </OutboundLink>
             </Button>
             <Input
               type="password"

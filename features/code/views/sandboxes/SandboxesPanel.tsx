@@ -113,6 +113,7 @@ import {
   PANE_BORDER,
 } from "../../styles/tokens";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface SandboxesPanelProps {
   className?: string;
@@ -1130,9 +1131,9 @@ function SandboxRowActions({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem asChild>
-          <a href={`/sandbox/${instance.id}`} target="_blank" rel="noreferrer">
+          <OutboundLink href={`/sandbox/${instance.id}`}>
             <ExternalLink size={15} /> Open sandbox details
-          </a>
+          </OutboundLink>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled={!canExtend || busy} onClick={onExtend}>

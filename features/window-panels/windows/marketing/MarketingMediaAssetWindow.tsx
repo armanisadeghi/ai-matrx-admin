@@ -67,6 +67,7 @@ import {
   IMAGE_VIEWER_SURFACE_NAME,
   createImageViewerScope,
 } from "@/features/surfaces/manifests/image-viewer.manifest";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface MarketingMediaAssetWindowProps {
   isOpen: boolean;
@@ -569,10 +570,10 @@ function AssetInspector({
               Copy URL
             </Button>
             <Button variant="outline" asChild>
-              <a href={asset.src} target="_blank" rel="noopener noreferrer">
+              <OutboundLink href={asset.src}>
                 <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
                 Open original
-              </a>
+              </OutboundLink>
             </Button>
             <Button
               icon={<ImagePlus />}

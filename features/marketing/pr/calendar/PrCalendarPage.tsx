@@ -57,6 +57,7 @@ import {
 } from "./calendar-model";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 const BUCKET_TONE: Record<PrBucket, string> = {
   pitch_ready: "border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-200",
   watch: "border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200",
@@ -383,9 +384,9 @@ export function PrCalendarPage() {
                     {plan.couldNotVerify.map((c, i) => (
                       <li key={i}>
                         {c.url ? (
-                          <a href={c.url} target="_blank" rel="noreferrer" className="underline">
+                          <OutboundLink href={c.url} className="underline">
                             {c.title || c.url}
-                          </a>
+                          </OutboundLink>
                         ) : (
                           c.title
                         )}{" "}
@@ -488,10 +489,10 @@ function MomentDetail({
 
       <Field label="Source">
         {row?.source_url ? (
-          <a href={row.source_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 underline">
+          <OutboundLink href={row.source_url} className="inline-flex items-center gap-1 underline">
             {row.organizer || new URL(row.source_url).hostname}
             <ArrowUpRight className="size-3" />
-          </a>
+          </OutboundLink>
         ) : (
           <span>{row?.organizer || "No link on file"}</span>
         )}

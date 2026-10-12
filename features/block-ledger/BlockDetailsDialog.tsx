@@ -29,6 +29,7 @@ import {
   labelFor,
   type AcquisitionBlock,
 } from "./types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface TrailEntry {
   rung?: string;
@@ -86,15 +87,13 @@ export function BlockDetailsDialog({
             <dl className="divide-y divide-border/60">
               <Row label="Address">
                 {/^https?:\/\//.test(block.input_ref) ? (
-                  <a
+                  <OutboundLink
                     className="inline-flex items-center gap-1 text-primary underline-offset-2 hover:underline"
                     href={block.input_ref}
-                    target="_blank"
-                    rel="noopener noreferrer"
                   >
                     <span className="break-all">{block.input_ref}</span>
                     <ExternalLink className="h-3 w-3 shrink-0" />
-                  </a>
+                  </OutboundLink>
                 ) : (
                   <span className="break-all">{block.input_ref}</span>
                 )}

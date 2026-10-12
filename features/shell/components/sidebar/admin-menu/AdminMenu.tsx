@@ -36,6 +36,7 @@ import {
 } from "@/features/admin/constants/admin-navigation";
 import { ADMIN_APP_URL } from "@/features/shell/constants/nav-data";
 import { Badge } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const iconSlot =
   "flex h-4 w-4 shrink-0 items-center justify-center text-muted-foreground [&>svg]:h-4 [&>svg]:w-4 [&>svg]:max-w-none";
@@ -86,7 +87,7 @@ export default function AdminMenu() {
           </AppLink>
         </DropdownMenuItem>
         <DropdownMenuItem asChild className="gap-2">
-          <a href={ADMIN_APP_URL} target="_blank" rel="noopener noreferrer">
+          <OutboundLink href={ADMIN_APP_URL}>
             <span
               className={cn(iconSlot, "text-emerald-500 dark:text-emerald-400")}
             >
@@ -99,7 +100,7 @@ export default function AdminMenu() {
               iconName="ArrowUpRight"
               className="h-3.5 w-3.5 text-emerald-500/70 dark:text-emerald-400/70"
             />
-          </a>
+          </OutboundLink>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
 

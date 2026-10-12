@@ -53,6 +53,7 @@ import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import { useServerConfig } from "../_shared/useServerConfig";
 import { ServerBar } from "../_shared/ServerBar";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -987,11 +988,9 @@ export default function DynamicApiClient() {
                           { label: "ReDoc", path: "/redoc" },
                           { label: "OpenAPI JSON", path: "/openapi.json" },
                         ].map(({ label, path: p }) => (
-                          <a
+                          <OutboundLink
                             key={p}
                             href={`${config.serverUrl}${p}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
                             className="flex items-center gap-2 px-2 py-1 rounded text-xs hover:bg-muted/80 transition-colors group"
                           >
                             <ExternalLink className="h-3 w-3 text-muted-foreground flex-shrink-0" />
@@ -1000,7 +999,7 @@ export default function DynamicApiClient() {
                               {config.serverUrl}
                               {p}
                             </span>
-                          </a>
+                          </OutboundLink>
                         ))}
                       </div>
                     </div>
@@ -1012,11 +1011,9 @@ export default function DynamicApiClient() {
                       </p>
                       <div className="space-y-1">
                         {STATIC_DOC_LINKS.map((link) => (
-                          <a
+                          <OutboundLink
                             key={link.url}
                             href={link.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
                             className="flex items-center gap-2 px-2 py-1 rounded text-xs hover:bg-muted/80 transition-colors"
                           >
                             <ExternalLink className="h-3 w-3 text-muted-foreground flex-shrink-0" />
@@ -1026,7 +1023,7 @@ export default function DynamicApiClient() {
                             <span className="text-[10px] text-muted-foreground">
                               {link.desc}
                             </span>
-                          </a>
+                          </OutboundLink>
                         ))}
                       </div>
                     </div>

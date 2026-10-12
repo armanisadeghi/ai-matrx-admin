@@ -39,6 +39,8 @@ import {
 } from "./health";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { copyToClipboard } from "@/lib/clipboard/copy";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 type Spec = EntityColumnSpec<HealthFinding>;
 
@@ -137,16 +139,14 @@ const COLUMNS: Spec[] = [
         !row.location ? (
           <Muted>No code location</Muted>
         ) : row.codeUrl ? (
-          <a
+          <OutboundLink
             href={row.codeUrl}
-            target="_blank"
-            rel="noreferrer"
             title={`${row.location} — open on GitHub`}
             className="block truncate font-mono type-secondary text-primary hover:underline"
             onClick={(event) => event.stopPropagation()}
           >
             {row.location}
-          </a>
+          </OutboundLink>
         ) : (
           <TextCell value={row.location} className="font-mono type-secondary" />
         ),
@@ -230,7 +230,7 @@ function useRowActions(): EntityRowActionsResult<HealthFinding> {
       menuFor,
       onOpenRow: (row) => {
         if (row.fixHref) router.push(row.fixHref);
-        else if (row.codeUrl) window.open(row.codeUrl, "_blank", "noopener,noreferrer");
+        else if (row.codeUrl) openOutbound(row.codeUrl, "_blank", "noopener");
       },
     },
   };

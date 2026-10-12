@@ -23,6 +23,7 @@ import { isServiceFailure } from "@/features/data-tables/types";
 import { RECORD_ID_HEADER, displayText, linkStyles, parseSheet, type ParsedSheet, type TableLink } from "./link-model";
 import { describeIssue, offListCells, planToSheet, planToTable, resolveOffList, type CellWrite, type ListDecision, type ToSheetPlan, type ToTablePlan } from "./sync-plan";
 import { addColumnsAsFields, addWordsToChoices, applyPlanToTable, openTableAsWorkbook, readBaseline, readTableForSheet, writeLink, type PlanChoice } from "./link-service";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export type SyncDirection = "to_table" | "to_sheet";
 
@@ -394,9 +395,9 @@ export function TableSyncDialog({
         </DialogHeader>
         <div className="flex flex-col gap-2">
           {loaded.state === "ready" && (
-            <a href={`/data/${link.table_id}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+            <OutboundLink href={`/data/${link.table_id}`} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
               {loaded.tableName} <ExternalLink className="size-3" aria-hidden />
-            </a>
+            </OutboundLink>
           )}
           {issues.length > 0 && (
             <div className="flex flex-col gap-1 rounded-md border border-amber-500/40 bg-amber-500/5 p-2 text-xs" data-table-sync-issues="">

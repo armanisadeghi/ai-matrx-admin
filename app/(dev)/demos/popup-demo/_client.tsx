@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const CHANNEL = "popup-demo";
 const POPUP_PATH = "/popup-window";
@@ -83,7 +84,7 @@ export default function PopupDemoClient() {
   const openPopup = useCallback(() => {
     setBlockerMessage(null);
     const features = "popup=yes,width=480,height=640,left=200,top=200";
-    const win = window.open(POPUP_PATH, "popup-demo-window", features);
+    const win = openOutbound(POPUP_PATH, "popup-demo-window", features);
     if (!win) {
       setBlockerMessage(
         "Popup was blocked by the browser. Check the address bar for a popup-blocked indicator and allow it for this site.",
@@ -100,7 +101,7 @@ export default function PopupDemoClient() {
       "Waiting 1.5s, then calling window.open outside the click gesture…",
     );
     window.setTimeout(() => {
-      const win = window.open(
+      const win = openOutbound(
         POPUP_PATH,
         "popup-demo-window-delayed",
         "popup=yes,width=480,height=640",

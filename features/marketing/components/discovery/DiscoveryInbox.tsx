@@ -107,6 +107,7 @@ import { describeDiscoveredSocialProfile } from "@/features/marketing/lib/discov
 import { buildBrandContextXml } from "@/features/marketing/lib/surface-context";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { NoWebsiteState } from "@/features/marketing/components/shared/NoWebsiteState";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const STATUS_TABS: Array<{ value: DiscoveredItemStatus; label: string }> = [
   { value: "pending", label: "Pending" },
@@ -1174,17 +1175,15 @@ function DiscoveryRow({
           </div>
         ) : null}
         {item.url ? (
-          <a
+          <OutboundLink
             href={item.url}
-            target="_blank"
-            rel="noopener noreferrer"
             className={cn(
               "block truncate font-mono text-xs text-muted-foreground transition-colors hover:text-primary",
               !socialPreview && "mt-0.5 text-foreground",
             )}
           >
             {display}
-          </a>
+          </OutboundLink>
         ) : (
           <p className="mt-0.5 truncate font-mono text-xs text-foreground">
             {display}
@@ -1207,10 +1206,8 @@ function DiscoveryRow({
           variant="quiet"
           className="shrink-0"
         >
-          <a
+          <OutboundLink
             href={item.url}
-            target="_blank"
-            rel="noopener noreferrer"
             aria-label={`Open ${socialPreview?.providerLabel ?? "discovered link"} in a new tab`}
             title="Open in new tab"
           />

@@ -11,6 +11,7 @@ import { ScoreProgress } from "./ScoreProgress";
 import { LLMDataModal } from "./LLMDataModal";
 import { formatPageSpeedForLLM } from "../utils/formatForLLM";
 import { ExternalLink, Calendar, Globe, Stars } from "lucide-react";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface PageSpeedResultsProps {
     data: PageSpeedResponse;
@@ -50,16 +51,14 @@ export function PageSpeedResults({ data, strategy }: PageSpeedResultsProps) {
         <div className="space-y-4">
             {/* Compact URL Info with LLM Button */}
             <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 pb-3 border-b border-border">
-                <a
+                <OutboundLink
                     href={finalUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="hover:underline flex items-center gap-1.5 text-blue-600 dark:text-blue-400"
                 >
                     <Globe className="w-3.5 h-3.5" />
                     {finalUrl}
                     <ExternalLink className="w-3 h-3" />
-                </a>
+                </OutboundLink>
                 <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1.5">
                         <Calendar className="w-3.5 h-3.5" />

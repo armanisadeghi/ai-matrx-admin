@@ -73,6 +73,7 @@ import { CompetitorDetail } from "./CompetitorDetail";
 import { compactCount as compact, PLATFORM_LABEL, rowsToSearch } from "./competitor-detail";
 import { foundKey, useCompetitorSocialActions, useFoundSocials, type FoundSocials } from "./useCompetitorSocials";
 import { formatSocialHandle } from "@/features/marketing/lib/social-handle";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** A name that is just the website (www/scheme/case aside) is shown once. */
 function sameAsName(name: string, domain: string | null | undefined): boolean {
@@ -326,17 +327,15 @@ export function BrandCompetitorDirectory() {
                 ) : null}
               </span>
             ) : row.domain && !sameAsName(row.name, row.domain) ? (
-              <a
+              <OutboundLink
                 href={`https://${row.domain}`}
-                target="_blank"
-                rel="noreferrer noopener"
                 className="matrx-tap-area inline-flex min-w-0 items-center gap-1 text-xs text-muted-foreground hover:underline"
                 data-clickable=""
                 onClick={(e) => e.stopPropagation()}
               >
                 <span className="truncate">{row.domain}</span>
                 <ExternalLink className="h-3 w-3 shrink-0" aria-label="Opens in a new tab" />
-              </a>
+              </OutboundLink>
             ) : null}
           </span>
         ),
@@ -570,16 +569,14 @@ export function BrandCompetitorDirectory() {
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{row.name}</p>
                     {row.domain ? (
-                      <a
+                      <OutboundLink
                         href={`https://${row.domain}`}
-                        target="_blank"
-                        rel="noreferrer noopener"
                         className="matrx-tap-area inline-flex min-w-0 items-center gap-1 text-xs text-muted-foreground hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <span className="truncate">{row.domain}</span>
                         <ExternalLink className="h-3 w-3 shrink-0" aria-label="Opens in a new tab" />
-                      </a>
+                      </OutboundLink>
                     ) : null}
                   </div>
                   <span onClick={(e) => e.stopPropagation()}>{controls.actions}</span>

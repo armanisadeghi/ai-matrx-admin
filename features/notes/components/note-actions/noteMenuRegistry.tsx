@@ -47,6 +47,7 @@ import { isNoteContentEmpty } from "../../utils/noteUtils";
 import { downloadNoteAsMarkdown } from "../../utils/exportNotesMarkdown";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export interface NoteMenuContext {
   instanceId: string;
@@ -288,7 +289,7 @@ export function buildNoteMenu(ctx: NoteMenuContext): ItemMenuConfig {
             // The print studio: real pages, cover/TOC/header/footer from the
             // note's settings block, and PDF / Word / EPUB / HTML downloads.
             onSelect: () => {
-              window.open(`/print/documents?note=${encodeURIComponent(ctx.noteId)}`, "_blank", "noopener");
+              openOutbound(`/print/documents?note=${encodeURIComponent(ctx.noteId)}`, "_blank", "noopener");
             },
           },
           {

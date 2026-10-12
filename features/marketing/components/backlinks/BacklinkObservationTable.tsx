@@ -92,6 +92,7 @@ import {
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { Chip } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * One honest empty line per lens — a lens finding nothing is usually GOOD
@@ -198,10 +199,8 @@ export function BacklinkObservationTable({
         const screenshotFileId = backlinkScreenshotFileId(row.source_capture);
         return (
           <div className="min-w-44 max-w-72">
-            <a
+            <OutboundLink
               href={row.source_url}
-              target="_blank"
-              rel="noopener noreferrer"
               title={row.source_url}
               onClick={(event) => event.stopPropagation()}
               className="group block"
@@ -217,7 +216,7 @@ export function BacklinkObservationTable({
                   {extras.pageFromTitle}
                 </span>
               ) : null}
-            </a>
+            </OutboundLink>
             {screenshotFileId ? (
               <button
                 type="button"

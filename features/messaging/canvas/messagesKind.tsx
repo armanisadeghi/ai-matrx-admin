@@ -13,6 +13,7 @@ import { ExternalLink, MessageSquare } from "lucide-react";
 import { canvasItemId, type CanvasController } from "@ai-matrx/canvas";
 import { defineCanvasKind, useOptionalCanvas } from "@ai-matrx/canvas/react";
 import { openToolInCanvas, useToolToggle } from "@/features/canvas/host/toolCanvas";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export const MESSAGES_KIND = "messages";
 const TITLE = "Messages";
@@ -31,7 +32,7 @@ export const messagesKind = defineCanvasKind<null>({
       id: "open-messages-page",
       label: "Open Messages",
       icon: <ExternalLink />,
-      onSelect: () => window.open("/messages", "_blank", "noopener"),
+      onSelect: () => openOutbound("/messages", "_blank", "noopener"),
     },
   ],
 });

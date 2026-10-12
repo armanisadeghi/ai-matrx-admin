@@ -17,6 +17,7 @@ import type { MediaSlot, PodcastRunState } from "@/features/podcasts/generator/t
 import { cn } from "@/lib/utils";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function StreamingResults({ state }: { state: PodcastRunState }) {
   const hasMeta = !!state.title || !!state.description;
@@ -108,15 +109,13 @@ export function StreamingResults({ state }: { state: PodcastRunState }) {
 
       {/* Completion actions */}
       {state.status === "done" && state.episodeSlug && (
-        <a
+        <OutboundLink
           href={`/podcast/${state.episodeSlug}`}
-          target="_blank"
-          rel="noopener noreferrer"
           className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-md transition-opacity hover:opacity-90"
         >
           Open the published episode
           <ExternalLink className="h-4 w-4" />
-        </a>
+        </OutboundLink>
       )}
     </div>
   );

@@ -39,6 +39,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { SINGLE_SITE_SENTENCE, fetchMandateReferences, formatRepoList, unreportedSentence, type MandateReferenceReport, type MandateReferenceRow } from "./references";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface SourceUsageFallback {
   /** The code-truth declaration string, when discovery found one. */
@@ -141,15 +142,13 @@ function RowLine({
         </span>
         <TapTargetCopyButton value={row.location} variant="transparent" ariaLabel={copyLabel} />
         {github ? (
-          <a
+          <OutboundLink
             href={github}
-            target="_blank"
-            rel="noreferrer"
             aria-label={`Open ${row.location} on GitHub`}
             className="shrink-0 text-muted-foreground hover:text-foreground"
           >
             <ExternalLink className="size-4" aria-hidden="true" />
-          </a>
+          </OutboundLink>
         ) : null}
       </div>
       {row.flag_sentence ? (

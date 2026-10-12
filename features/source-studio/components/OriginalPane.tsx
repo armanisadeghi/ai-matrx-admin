@@ -24,6 +24,7 @@ import {
   type OriginalView,
   type SeekRequest,
 } from "@/features/source-studio/sourceStudioModel";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface OriginalPaneProps {
   view: OriginalView;
@@ -150,14 +151,12 @@ function YouTubeOriginal({
         allow="autoplay; encrypted-media; picture-in-picture"
         allowFullScreen
       />
-      <a
+      <OutboundLink
         href={url}
-        target="_blank"
-        rel="noopener noreferrer"
         className="flex items-center gap-1 bg-card px-3 py-1.5 text-xs text-primary hover:underline"
       >
         Open on YouTube <ExternalLink className="h-3 w-3" />
-      </a>
+      </OutboundLink>
     </div>
   );
 }
@@ -226,15 +225,13 @@ function WebSnapshot({
         <Globe className="h-3.5 w-3.5 shrink-0" />
         <span className="shrink-0">As captured</span>
         {url && (
-          <a
+          <OutboundLink
             href={textFragmentUrl(url, passage)}
-            target="_blank"
-            rel="noopener noreferrer"
             className="ml-auto inline-flex min-w-0 items-center gap-1 text-primary hover:underline"
           >
             <span className="truncate">Open the live page at this part</span>
             <ExternalLink className="h-3 w-3 shrink-0" />
-          </a>
+          </OutboundLink>
         )}
       </div>
       {!settled ? (
@@ -271,14 +268,12 @@ function LivePage({ url, passage }: { url: string; passage: string | null }) {
     <Notice icon={<Globe className="h-5 w-5" />} title="Live page">
       A copy of this page was not stored when it was captured, and most sites
       refuse to be shown inside another site.{" "}
-      <a
+      <OutboundLink
         href={textFragmentUrl(url, passage)}
-        target="_blank"
-        rel="noopener noreferrer"
         className="break-all text-primary hover:underline"
       >
         Open {url} at this part
-      </a>
+      </OutboundLink>
       .
     </Notice>
   );

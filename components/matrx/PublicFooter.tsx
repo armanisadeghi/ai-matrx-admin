@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { siteConfig } from "@/config/extras/site";
 import { MATRX_LOCAL_DOWNLOAD_PATH } from "@/features/matrx-local-download/release";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const FOOTER_LINKS = [
   { href: "/desktop", label: "Matrx Desktop" },
@@ -32,14 +33,13 @@ export function PublicFooter() {
       <div className="flex w-full flex-col-reverse items-center gap-1 px-4 py-2 xl:flex-row xl:justify-between xl:gap-4">
         <span className="py-2 text-center text-xs text-muted-foreground xl:py-0 xl:text-left">
           © {new Date().getFullYear()} AI Matrx · Operated by{" "}
-          <a
+          <OutboundLink
             href={siteConfig.legalOperatorUrl}
-            rel="external noopener"
-            target="_blank"
+            rel="external"
             className="hover:text-foreground"
           >
             {siteConfig.legalOperatorName}
-          </a>
+          </OutboundLink>
         </span>
         <nav
           aria-label="Footer"

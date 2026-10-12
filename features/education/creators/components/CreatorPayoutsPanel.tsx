@@ -38,6 +38,7 @@ import {
   startConnectOnboarding,
   type ConnectStatus,
 } from "../service";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export function CreatorPayoutsPanel() {
   const searchParams = useSearchParams();
@@ -121,7 +122,7 @@ export function CreatorPayoutsPanel() {
     try {
       const r = await openConnectDashboard();
       if (r.url) {
-        window.open(r.url, "_blank", "noopener,noreferrer");
+        openOutbound(r.url, "_blank", "noopener");
         return;
       }
       toast.error("Payout dashboard unavailable", { description: r.error });

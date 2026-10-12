@@ -11,6 +11,7 @@ import { CmsSiteService } from "../../services/cmsService";
 import type { ClientSite } from "../../types";
 import { activeSiteDomain, clientSiteRootUrl } from "../../utils/pageUrls";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const PROVIDERS = {
   godaddy: {
@@ -137,14 +138,14 @@ export function SiteDomainSettings({ site, onRefresh }: { site: ClientSite; onRe
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <a href={platformUrl} target="_blank" rel="noreferrer" className="rounded-md border p-3 hover:border-primary">
+        <OutboundLink href={platformUrl} className="rounded-md border p-3 hover:border-primary">
           <div className="text-[11px] font-medium text-muted-foreground">Working Matrx URL</div>
           <div className="mt-1 flex items-center gap-1 text-xs text-primary break-all">{platformUrl}<ExternalLink className="h-3 w-3 shrink-0" /></div>
-        </a>
-        <a href={desiredUrl || undefined} target="_blank" rel="noreferrer" aria-disabled={!desiredUrl} className="rounded-md border p-3 hover:border-primary aria-disabled:pointer-events-none aria-disabled:opacity-50">
+        </OutboundLink>
+        <OutboundLink href={desiredUrl || undefined} aria-disabled={!desiredUrl} className="rounded-md border p-3 hover:border-primary aria-disabled:pointer-events-none aria-disabled:opacity-50">
           <div className="text-[11px] font-medium text-muted-foreground">Desired custom URL</div>
           <div className="mt-1 flex items-center gap-1 text-xs break-all">{desiredUrl || "Save a domain above first"}{desiredUrl && <ExternalLink className="h-3 w-3 shrink-0" />}</div>
-        </a>
+        </OutboundLink>
       </div>
 
       {traffic?.last_error && !usingCustom && (
@@ -158,7 +159,7 @@ export function SiteDomainSettings({ site, onRefresh }: { site: ClientSite; onRe
         <div className="space-y-4 border-t pt-4">
           <div>
             <h4 className="text-sm font-medium">Connect {site.domain}</h4>
-            <p className="text-xs text-muted-foreground mt-1">First add the domain to the <a className="text-primary underline" href="https://vercel.com/dashboard" target="_blank" rel="noreferrer">my-matrx project in Vercel</a>. Then update DNS where the domain is managed.</p>
+            <p className="text-xs text-muted-foreground mt-1">First add the domain to the <OutboundLink className="text-primary underline" href="https://vercel.com/dashboard">my-matrx project in Vercel</OutboundLink>. Then update DNS where the domain is managed.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             {(Object.keys(PROVIDERS) as ProviderKey[]).map((key) => (
@@ -171,8 +172,8 @@ export function SiteDomainSettings({ site, onRefresh }: { site: ClientSite; onRe
             <div className="flex flex-wrap items-center justify-between gap-2">
               <strong className="text-sm">{PROVIDERS[provider].name} instructions</strong>
               <div className="flex gap-2">
-                <Button variant="outline" asChild><a href={PROVIDERS[provider].help} target="_blank" rel="noreferrer">Official guide <ExternalLink className="ml-1 h-3 w-3" /></a></Button>
-                <Button variant="primary" asChild><a href={PROVIDERS[provider].dashboard} target="_blank" rel="noreferrer">Open DNS dashboard <ExternalLink className="ml-1 h-3 w-3" /></a></Button>
+                <Button variant="outline" asChild><OutboundLink href={PROVIDERS[provider].help}>Official guide <ExternalLink className="ml-1 h-3 w-3" /></OutboundLink></Button>
+                <Button variant="primary" asChild><OutboundLink href={PROVIDERS[provider].dashboard}>Open DNS dashboard <ExternalLink className="ml-1 h-3 w-3" /></OutboundLink></Button>
               </div>
             </div>
             <ol className="list-decimal pl-5 text-xs text-muted-foreground space-y-1">

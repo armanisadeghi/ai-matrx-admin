@@ -23,6 +23,7 @@ import {
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface CredentialMaintenanceEditorProps {
   entries: Record<string, CredentialMaintenanceEntry>;
@@ -178,20 +179,18 @@ export function CredentialMaintenanceEditor({
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button type="button" variant="outline" asChild>
-                  <a href={entry.source_url} target="_blank" rel="noreferrer">
+                  <OutboundLink href={entry.source_url}>
                     Rotate at source{" "}
                     <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
-                  </a>
+                  </OutboundLink>
                 </Button>
                 <Button type="button" variant="outline" asChild>
-                  <a
+                  <OutboundLink
                     href={entry.deployment_url}
-                    target="_blank"
-                    rel="noreferrer"
                   >
                     Update consumer{" "}
                     <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
-                  </a>
+                  </OutboundLink>
                 </Button>
                 <Button
                   icon={<RefreshCw />}

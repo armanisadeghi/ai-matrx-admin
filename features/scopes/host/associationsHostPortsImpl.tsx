@@ -18,6 +18,7 @@ import {
 } from "@ai-matrx/associations/react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { FilePickerWindow } from "@/features/resource-manager/resource-picker/FilePickerWindow";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /**
  * The `windowShell.Window` binding.
@@ -84,7 +85,7 @@ export function FileAssociationPickerImpl(props: AssociationPickerProps) {
     createdLocationLabel: "your Files",
     openCreatedLocation: {
       label: "Open Files",
-      onClick: () => window.open("/files", "_blank", "noopener,noreferrer"),
+      onClick: () => openOutbound("/files", "_blank", "noopener"),
     },
   });
   return (

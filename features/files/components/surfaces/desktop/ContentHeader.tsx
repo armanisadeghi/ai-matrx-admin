@@ -44,6 +44,7 @@ import type { FilterChipKey } from "./FilterChips";
 import { KindFilter } from "./KindFilter";
 import { ViewModeToggle } from "./ViewModeToggle";
 import type { CloudFilesSection } from "./section";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const SECTION_TITLES: Record<CloudFilesSection, string> = {
   // "Home" — labeled this way (instead of "All files") because the section
@@ -141,7 +142,7 @@ export function ContentHeader({
       return;
     }
     const origin = typeof window !== "undefined" ? window.location.origin : "";
-    window.open(`${origin}/s/${link.shareToken}`, "_blank");
+    openOutbound(`${origin}/s/${link.shareToken}`, "_blank");
   };
 
   return (

@@ -2,6 +2,7 @@
 
 import { toast } from "@/lib/toast";
 import { pagePrintUrl, resolvePrintablePageUrl, type PrintablePageInput } from "./publishedPage";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /**
  * Prints a published HTML page exactly as its author made it: opens
@@ -10,7 +11,7 @@ import { pagePrintUrl, resolvePrintablePageUrl, type PrintablePageInput } from "
  * activation is spent on it — and is pointed at the page once it is known.
  */
 export function printPublishedPage(input: PrintablePageInput): void {
-  const tab = window.open("about:blank", "_blank");
+  const tab = openOutbound("about:blank", "_blank");
   void resolvePrintablePageUrl(input).then(
     (pageUrl) => {
       if (!pageUrl) {

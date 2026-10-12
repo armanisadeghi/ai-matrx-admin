@@ -75,6 +75,7 @@ import {
   webLocation,
 } from "@/features/marketing/lib/copy-payloads";
 import { humanizeItemKey } from "@/features/marketing/lib/finding-remedy-render";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** Immutable result evidence → the shape the surface declares. */
 function projectResult(
@@ -552,10 +553,10 @@ export function FindingDetail({ findingId }: { findingId: string }) {
                   variant="outline"
                   className="shrink-0"
                 >
-                  <a href={data.page.url} target="_blank" rel="noreferrer">
+                  <OutboundLink href={data.page.url}>
                     <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
                     {data.page.path || "/"}
-                  </a>
+                  </OutboundLink>
                 </Button>
               </>
             ) : null}

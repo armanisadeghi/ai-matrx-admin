@@ -57,6 +57,7 @@ import { kindActionId, kindActionProvider } from "./kind-action-provider";
 import { invokeAction } from "@ai-matrx/alchemy/actions";
 import { useOptionalAlchemyActions } from "@ai-matrx/alchemy/react/host";
 import { ensureInvokedProvider } from "./invoked-actions";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export type RunKindAction = (
   key: string,
@@ -234,7 +235,7 @@ export function useKindActionRunner(
           itemState: itemStateRef.current,
           openFile: (fileId) => openFilePreview(fileId),
           openUrl: (url) => {
-            window.open(url, "_blank", "noopener,noreferrer");
+            openOutbound(url, "_blank", "noopener");
           },
           shareFile: (fileId, name) =>
             dispatch(

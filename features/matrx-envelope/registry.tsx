@@ -66,6 +66,8 @@ import {
 // the renderer's whole graph — framer-motion included — across all of them.
 // Method B (`code-splitting` skill): id → chunk; never a static value import.
 import dynamic from "next/dynamic";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const CreateProjectWithTasksRenderer = dynamic(
   () =>
@@ -231,7 +233,7 @@ function ReferenceChip({ item, type }: { item: ReferenceItem; type: string }) {
           type="button"
           onClick={() =>
             isExternalUrl
-              ? window.open(ref.url, "_blank", "noopener,noreferrer")
+              ? openOutbound(ref.url, "_blank", "noopener")
               : door.activate()
           }
           title={isExternalUrl ? ref.url : door.title}
@@ -241,16 +243,14 @@ function ReferenceChip({ item, type }: { item: ReferenceItem; type: string }) {
         </button>
       )}
       {!isExternalUrl && door.newTabHref ? (
-        <a
+        <OutboundLink
           href={door.newTabHref}
-          target="_blank"
-          rel="noopener noreferrer"
           title={`Open ${label} in a new tab`}
           aria-label={`Open ${label} in a new tab`}
           className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground focus-visible:opacity-100 group-hover/ref-chip:opacity-100 [@media(pointer:coarse)]:hidden"
         >
           <ExternalLink className="h-3 w-3" />
-        </a>
+        </OutboundLink>
       ) : null}
       {door.peek}
     </span>

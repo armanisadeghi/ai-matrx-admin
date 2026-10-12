@@ -38,6 +38,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { DATA_STORES_PATH } from "@/features/knowledge/modulePaths";
 import AppLink from "@/components/navigation/AppLink";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export type FeedType = DB["public"]["Enums"]["context_feed_type"];
 export type FeedConfig = Record<string, unknown>;
@@ -189,10 +190,8 @@ export function OpenSourceLink({
   className?: string;
 }) {
   return (
-    <a
+    <OutboundLink
       href={link.href}
-      target="_blank"
-      rel="noopener noreferrer"
       onClick={(e) => e.stopPropagation()}
       className={`inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline ${className}`}
     >
@@ -202,7 +201,7 @@ export function OpenSourceLink({
         <ExternalLink className="h-3 w-3" />
       )}
       {link.label}
-    </a>
+    </OutboundLink>
   );
 }
 

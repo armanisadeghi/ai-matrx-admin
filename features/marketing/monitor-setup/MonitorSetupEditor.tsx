@@ -121,6 +121,7 @@ import {
 
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { useFocusEditTarget, useIsEditTarget } from "@/features/marketing/lib/useEditTarget";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 const NO_PROOF_SENTENCE =
   "Without a spokesperson or proof on file, pitch-ready stories will be marked 'needs a spokesperson'.";
 
@@ -201,9 +202,9 @@ function BasisChip({
     />
   );
   return source?.url ? (
-    <a href={source.url} target="_blank" rel="noopener noreferrer">
+    <OutboundLink href={source.url}>
       {chip}
-    </a>
+    </OutboundLink>
   ) : (
     chip
   );
@@ -1737,14 +1738,12 @@ function MonitorSetupEditorBody({
                 <ul className="mt-1 flex flex-col gap-1">
                   {runMentions.data.map((m) => (
                     <li key={m.id} className="text-xs">
-                      <a
+                      <OutboundLink
                         href={m.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         className="text-primary"
                       >
                         {m.title || m.url}
-                      </a>{" "}
+                      </OutboundLink>{" "}
                       <span className="text-muted-foreground">
                         {m.domain}
                         {m.verdict ? ` · ${humanizeIdentifier(m.verdict) || m.verdict}` : ""}

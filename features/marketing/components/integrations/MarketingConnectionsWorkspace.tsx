@@ -78,6 +78,7 @@ import {
 } from "@/features/marketing/google/youtube-campaign";
 import { useGoogleAuthorizationWindow } from "@/providers/google-provider/useGoogleAuthorizationWindow";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function MarketingConnectionsWorkspace({
   reviewMode = false,
@@ -708,14 +709,12 @@ function MarketingConnectionsContent({ reviewMode }: { reviewMode: boolean }) {
                     {youtubePreview.data ? (
                       <div className="space-y-2 rounded-md border border-border p-2">
                         <div>
-                          <a
+                          <OutboundLink
                             href={`https://www.youtube.com/channel/${youtubePreview.data.channel_id}`}
-                            target="_blank"
-                            rel="noreferrer"
                             className="text-xs font-semibold text-primary hover:underline"
                           >
                             {youtubePreview.data.title}
-                          </a>
+                          </OutboundLink>
                           {/* read-gate-exempt: inside the youtubePreview.data guard — the provider's own reported channel stats, each "—" when the provider omits it, never a failed read's 0 */}
                           <p className="mt-0.5 text-[10px] text-muted-foreground">
                             {youtubePreview.data.subscriber_count?.toLocaleString() ??
@@ -738,14 +737,12 @@ function MarketingConnectionsContent({ reviewMode }: { reviewMode: boolean }) {
                               className="flex flex-wrap items-center justify-between gap-2 px-2 py-1.5"
                             >
                               <div className="min-w-0">
-                                <a
+                                <OutboundLink
                                   href={`https://www.youtube.com/watch?v=${video.video_id}`}
-                                  target="_blank"
-                                  rel="noreferrer"
                                   className="block truncate text-[11px] font-medium text-primary hover:underline"
                                 >
                                   {video.title}
-                                </a>
+                                </OutboundLink>
                                 <p className="text-[10px] text-muted-foreground">
                                   {video.published_at
                                     ? new Date(

@@ -74,6 +74,7 @@ import {
   shapeDetailHref,
 } from "@/features/content-ir/studio/constants";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 type SlugStatus =
   | "idle"
@@ -349,7 +350,7 @@ const CreateShapeDialog: React.FC<CreateShapeDialogProps> = ({
       toast.success(`Shape "${rootSlug}" created`, {
         action: {
           label: "Open",
-          onClick: () => window.open(shapeDetailHref(rootSlug), "_blank"),
+          onClick: () => openOutbound(shapeDetailHref(rootSlug), "_blank"),
         },
       });
       setPendingFix(null);
@@ -569,7 +570,7 @@ const CreateShapeDialog: React.FC<CreateShapeDialogProps> = ({
               <Button
                 icon={<ExternalLink />}
                 variant="outline"
-                onClick={() => window.open(shapeDetailHref(slug), "_blank")}
+                onClick={() => openOutbound(shapeDetailHref(slug), "_blank")}
               >
                 Open kind
               </Button>

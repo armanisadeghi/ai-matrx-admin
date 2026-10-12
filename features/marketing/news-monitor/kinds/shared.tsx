@@ -9,6 +9,7 @@ import { ExternalLink } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Chip, type ChipTone } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function KindCard({
   title,
@@ -83,10 +84,8 @@ export function SmartLink({
     );
   }
   return (
-    <a
+    <OutboundLink
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
       className={cn(
         "inline-flex items-center gap-0.5 text-primary hover:underline",
         className,
@@ -94,7 +93,7 @@ export function SmartLink({
     >
       {children}
       <ExternalLink className="h-3 w-3 shrink-0" />
-    </a>
+    </OutboundLink>
   );
 }
 

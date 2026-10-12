@@ -42,6 +42,7 @@ import { platformWord } from "../../reachability";
 import type { PartyRow } from "../../types";
 import { SectionCard } from "./SectionCard";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** The three provenance roles the SEO→CRM bridge writes. */
 const PROVENANCE_ROLES = new Set([
@@ -322,16 +323,14 @@ export function PartyProvenanceCard({
                 {/^https?:\/\//i.test(party.source_detail) ? (
                   // A URL is a door, not a name: short words, the address in
                   // the tooltip, never a raw link wrapping across the card.
-                  <a
+                  <OutboundLink
                     href={party.source_detail}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     title={party.source_detail}
                     className="inline-flex min-h-11 items-center gap-1 text-primary hover:underline sm:min-h-0"
                   >
                     {`Open on ${platformWord(party.source) ?? "the web"}`}
                     <ExternalLink className="h-3 w-3" />
-                  </a>
+                  </OutboundLink>
                 ) : (
                   <span className="text-foreground">{party.source_detail}</span>
                 )}
@@ -393,14 +392,12 @@ export function PartyProvenanceCard({
             )}
             <div className="mt-1.5 flex flex-wrap gap-3 text-xs">
               {item.sourceUrl && (
-                <a
+                <OutboundLink
                   href={item.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-primary "
                 >
                   Open the source <ArrowUpRight className="h-3 w-3" />
-                </a>
+                </OutboundLink>
               )}
               {item.href && (
                 <Link

@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { useShare } from "@/features/sharing/hooks/useShare";
 import { isJsonObject } from "@/types/json";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface PublicVisibilityProvider {
   engine: string;
@@ -192,15 +193,13 @@ export function AiVisibilityReport({
             >
               {ONE_QUESTION_NOT_A_MEASUREMENT}
             </p>
-            <a
+            <OutboundLink
               href={result.website_url}
-              target="_blank"
-              rel="noreferrer"
               className="mt-4 inline-flex items-center gap-1 text-sm text-primary hover:underline"
             >
               {result.website_url}
               <ExternalLink className="h-3.5 w-3.5" />
-            </a>
+            </OutboundLink>
           </div>
           {url ? (
             <Button
@@ -421,17 +420,15 @@ export function AiVisibilityReport({
                             variant="outline"
                             className="max-w-full"
                           >
-                            <a
+                            <OutboundLink
                               href={sourceUrl}
-                              target="_blank"
-                              rel="noreferrer"
                             >
                               <span className="truncate">
                                 {field(item, "title", "cited_for") ||
                                   hostname(sourceUrl)}
                               </span>
                               <ExternalLink className="ml-1.5 h-3.5 w-3.5 shrink-0" />
-                            </a>
+                            </OutboundLink>
                           </Button>
                         );
                       })}

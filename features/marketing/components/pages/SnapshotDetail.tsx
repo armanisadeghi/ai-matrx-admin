@@ -28,6 +28,7 @@ import {
   CrawlSessionRef,
   useCrawlSessionRef,
 } from "@/features/marketing/components/shared/MarketingRefs";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function SnapshotDetail({
   pageId,
@@ -141,10 +142,8 @@ export function SnapshotDetail({
             </Button>
             {row.final_url ? (
               <Button icon={<ExternalLink />} aria-label="Open observed URL" asChild variant="outline">
-                <a
+                <OutboundLink
                   href={row.final_url}
-                  target="_blank"
-                  rel="noreferrer"
                   title="Open observed URL"
                 />
               </Button>

@@ -17,6 +17,7 @@ import { InlineMediaRef } from "@ai-matrx/media/react";
 
 import { resolveUnsplashImage, type ResolvedImage } from "./slide-images";
 import { RichText, SlideField, useSlideEditing } from "./slide-edit";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export type SlideVariant = "generic" | "fancy" | "deluxe";
 
@@ -414,9 +415,9 @@ function Attribution({ credit, creditUrl, onDark }: { credit?: string; creditUrl
   const cls = `absolute bottom-1.5 right-2 z-10 rounded bg-black/35 px-1.5 py-0.5 text-[10px] ${onDark ? "text-white/80" : "text-white/85"}`;
   const label = `Photo: ${credit} / Unsplash`;
   return creditUrl ? (
-    <a href={creditUrl} target="_blank" rel="noopener noreferrer" className={`${cls} hover:underline`}>
+    <OutboundLink href={creditUrl} className={`${cls} hover:underline`}>
       {label}
-    </a>
+    </OutboundLink>
   ) : (
     <span className={cls}>{label}</span>
   );

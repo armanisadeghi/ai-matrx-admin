@@ -67,6 +67,7 @@ import {
   text,
 } from "./scraper-kind-data";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface Props {
   serverData?: unknown;
@@ -232,14 +233,12 @@ export default function ScrapedPageBlock({ serverData, className }: Props) {
         <SiteFavicon url={responseUrl} className="mt-0.5 h-9 w-9 shrink-0 p-1.5" />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <a
+            <OutboundLink
               href={responseUrl ?? "#"}
-              target="_blank"
-              rel="noopener noreferrer"
               className="min-w-0 truncate text-base font-semibold text-foreground hover:underline"
             >
               {title ?? responseUrl ?? (isComplete ? "Untitled page" : "Reading…")}
-            </a>
+            </OutboundLink>
             {status !== null && status > 0 && (
               <Pill tone={tone} title={failureReason ?? undefined}>
                 {status}

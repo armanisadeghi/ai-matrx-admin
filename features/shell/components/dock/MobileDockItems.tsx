@@ -10,20 +10,19 @@ import AppLink from "@/components/navigation/AppLink";
 import ShellIcon from "../ShellIcon";
 import { dockItems, navItemsForViewer } from "../../constants/nav-data";
 import type { ShellNavItem } from "../../constants/nav-data";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** Single dock link — reusable by custom route docks. */
 export function MobileDockItem({ item }: { item: ShellNavItem }) {
   if (item.external) {
     return (
-      <a
+      <OutboundLink
         href={item.href}
-        target="_blank"
-        rel="noopener noreferrer"
         className="shell-dock-item"
         aria-label={item.label}
       >
         <ShellIcon name={item.iconName} size={22} strokeWidth={1.75} />
-      </a>
+      </OutboundLink>
     );
   }
 

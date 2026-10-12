@@ -31,6 +31,7 @@ import {
   type DatedChange,
 } from "./service";
 import { OFFERINGS_PAGE_HREF, describeDatedChange, formatEffective, formatPricing } from "./describe";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const LIST_QUERY_KEY = ["admin-attention", "dated-changes", "all"] as const;
 
@@ -207,15 +208,13 @@ export default function DatedChangesPage() {
 
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 {change.sourceUrl ? (
-                  <a
+                  <OutboundLink
                     href={change.sourceUrl}
-                    target="_blank"
-                    rel="noreferrer"
                     className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:text-primary hover:underline"
                   >
                     <ExternalLink className="h-3 w-3" aria-hidden />
                     The provider&apos;s page
-                  </a>
+                  </OutboundLink>
                 ) : null}
                 {change.status === "scheduled" && !change.timeZone ? (
                   <Button

@@ -104,6 +104,7 @@ import { fetchAidreamAcceptAdapters, markFindingOk } from "./acceptApi";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import type { ReadOutcome } from "@ai-matrx/design-system";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** What the server page knows about matrx-frontend's accept adapters (scripts/findings/registry.mjs). */
 /** How a check's findings are accepted (model.ts AcceptInfo); the route builds it from accept-rules.json. */
@@ -721,10 +722,8 @@ function CheckDetail({
       width: 300,
       cell: (item) =>
         item.file && repo ? (
-          <a
+          <OutboundLink
             href={repositoryFileHref(repo, item.file, item.line)}
-            target="_blank"
-            rel="noreferrer"
             className="inline-flex max-w-full items-center gap-1 truncate font-mono text-[11px] text-primary hover:underline"
             title={`Open ${item.file}${item.line ? `:${item.line}` : ""} on GitHub (main)`}
           >
@@ -733,7 +732,7 @@ function CheckDetail({
               {item.line ? `:${item.line}` : ""}
             </span>
             <ExternalLink className="h-3 w-3 shrink-0" />
-          </a>
+          </OutboundLink>
         ) : (
           <span className="font-mono text-[11px] text-muted-foreground">{item.file ?? "—"}</span>
         ),
@@ -892,15 +891,13 @@ function CheckDetail({
             <span className="hidden min-w-0 items-center gap-1 sm:flex">
               Commit:{" "}
               {run?.git_sha && repo ? (
-                <a
+                <OutboundLink
                   href={repositoryCommitHref(repo, run.git_sha)}
-                  target="_blank"
-                  rel="noreferrer"
                   className="inline-flex items-center gap-1 font-mono text-primary hover:underline"
                 >
                   <GitCommitHorizontal className="h-3 w-3" />
                   {run.git_sha.slice(0, 10)}
-                </a>
+                </OutboundLink>
               ) : (
                 "—"
               )}
@@ -1119,9 +1116,9 @@ function DrainOutcomeBadge({ drain }: { drain: DrainOutcome | null }) {
       {drain.commitUrl ? (
         <>
           {" · "}
-          <a href={drain.commitUrl} target="_blank" rel="noreferrer" className="underline">
+          <OutboundLink href={drain.commitUrl} className="underline">
             {drain.commitSha?.slice(0, 7) ?? "commit"}
-          </a>
+          </OutboundLink>
         </>
       ) : null}
       <span className="line-clamp-2 max-w-[220px] whitespace-normal text-muted-foreground">{drain.note.replace(/^Stuck — /, "")}</span>
@@ -1142,9 +1139,9 @@ function PendingAcceptBadge({ view }: { view: PendingAcceptView }) {
           {view.pending.commitUrl ? (
             <>
               {" · "}
-              <a href={view.pending.commitUrl} target="_blank" rel="noreferrer" className="underline">
+              <OutboundLink href={view.pending.commitUrl} className="underline">
                 {view.pending.commitSha?.slice(0, 7) ?? "commit"}
-              </a>
+              </OutboundLink>
             </>
           ) : null}
         </span>

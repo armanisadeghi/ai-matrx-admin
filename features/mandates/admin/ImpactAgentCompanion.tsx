@@ -33,6 +33,7 @@ import {
 import { versionLabel, type ImpactVerdict } from "./impact";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export type CompanionSection = "history" | "test";
 
@@ -139,14 +140,12 @@ function VersionHistory({
           Every job this change reaches already runs the newest saved version, or tracks
           latest — there is no pinned version to compare against.
         </p>
-        <a
+        <OutboundLink
           href={historyHref}
-          target="_blank"
-          rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-primary hover:underline"
         >
           <History className="h-3 w-3" /> Open the full version history
-        </a>
+        </OutboundLink>
       </div>
     );
   }
@@ -164,15 +163,13 @@ function VersionHistory({
             {versionLabel(entry.pinned)} → {versionLabel(entry.latest)}
           </Button>
         ))}
-        <a
+        <OutboundLink
           href={historyHref}
-          target="_blank"
-          rel="noopener noreferrer"
           className="ml-auto inline-flex items-center gap-1 type-meta text-primary hover:underline"
           title="Every saved version of this agent, on its own page"
         >
           <ExternalLink className="h-3 w-3" /> Full history
-        </a>
+        </OutboundLink>
       </div>
       <div className="min-h-0 flex-1 overflow-auto p-2">
         {error ? (

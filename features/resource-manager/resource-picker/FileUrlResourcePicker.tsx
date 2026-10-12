@@ -12,6 +12,7 @@ import {
 import { usePickerInputFocus } from "./usePickerInputFocus";
 import { parseYouTubeUrl } from "@ai-matrx/rich-content/utils/youtube";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface FileUrlResourcePickerProps {
     onBack: () => void;
@@ -297,15 +298,13 @@ export function FileUrlResourcePicker({ onBack, onSelect, onSwitchTo, initialUrl
                             </div>
                         </div>
                         <div className="border-t border-border bg-background p-2.5">
-                            <a
+                            <OutboundLink
                                 href={previewFile.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
                                 className="flex items-center gap-1 text-xs text-blue-600 hover:underline dark:text-blue-400"
                             >
                                 <span className="truncate">{previewFile.url}</span>
                                 <ExternalLink className="h-3 w-3 shrink-0" />
-                            </a>
+                            </OutboundLink>
                         </div>
                     </div>
                 )}

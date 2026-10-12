@@ -53,6 +53,7 @@ import { createNoteAboutEvent } from "./service";
 import { useAgenda, type AgendaValue } from "./useAgenda";
 import type { AttendeePerson, CalendarEventRow } from "./types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface AgendaPanelProps {
   /** The heading. Absent on a surface whose own chrome already names it. */
@@ -382,26 +383,22 @@ function AgendaEventRow({
 
       <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
         {event.meeting_url ? (
-          <a
+          <OutboundLink
             href={event.meeting_url}
-            target="_blank"
-            rel="noreferrer"
             className="inline-flex items-center gap-1 text-xs text-primary hover:underline max-sm:min-h-11"
           >
             <Video className="h-3.5 w-3.5" />
             Join the meeting
-          </a>
+          </OutboundLink>
         ) : null}
         {googleHref ? (
-          <a
+          <OutboundLink
             href={googleHref}
-            target="_blank"
-            rel="noreferrer"
             className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground hover:underline max-sm:min-h-11"
           >
             <GoogleCalendarLogo className="size-3.5" />
             Open in Google Calendar
-          </a>
+          </OutboundLink>
         ) : null}
         <Button
           icon={<StickyNote />}

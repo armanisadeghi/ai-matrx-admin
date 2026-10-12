@@ -44,6 +44,7 @@ import { isMaterializedArtifactId } from '@/features/canvas/artifact-types/artif
 import { getArtifactDef } from '@/features/canvas/artifact-types/artifact-type-registry';
 import { cn } from '@/lib/utils';
 import { useCanvasFit } from '@ai-matrx/rich-content/display/blocks/canvas-fit';
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface UnrecognizedSection {
   id: string;
@@ -540,7 +541,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({
                                               icon={<ExternalLink />}
                                               label={`Source ${urlIndex + 1}`}
                                             >
-                                              <a href={url} target="_blank" rel="noopener noreferrer" />
+                                              <OutboundLink href={url} />
                                             </Chip>
                                           ))}
                                         </div>

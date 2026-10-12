@@ -52,6 +52,7 @@ import type { CmsPageMapEntry } from "../setup/bridge";
 import type { PlanNodeRow } from "../types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const STATE_TONE: Record<RealityState, string> = {
     "no-cms-site":
@@ -150,7 +151,7 @@ export function NodeRealityCard({
                 return;
             case "edit-in-cms": {
                 if (cmsPage && cmsSiteId) {
-                    window.open(
+                    openOutbound(
                         cmsPageEditorHref(cmsSiteId, cmsPage.pageId),
                         "_blank",
                     );
@@ -375,7 +376,7 @@ export function NodeRealityCard({
                             icon={<PenLine />}
                             variant="outline"
                             onClick={() =>
-                                window.open(
+                                openOutbound(
                                     cmsPageEditorHref(
                                         cmsSiteId,
                                         cmsPage.pageId,
@@ -392,7 +393,7 @@ export function NodeRealityCard({
                         <Button
                             icon={<ExternalLink />}
                             variant="outline"
-                            onClick={() => window.open(pageUrl, "_blank")}
+                            onClick={() => openOutbound(pageUrl, "_blank")}
                         >
                             {cmsPage?.isPublished ? "Open live" : "Preview"}
                         </Button>

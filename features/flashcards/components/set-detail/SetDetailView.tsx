@@ -206,6 +206,7 @@ import {
 } from "@/features/education/components/EducationCollectionSearch";
 
 import { Tile } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 const EDU_BASE = "/education/flashcards";
 
 /** Every way to study a deck besides classic Study — the Study button's menu
@@ -1389,14 +1390,12 @@ export function SetDetailView({
                     )}
                     {data.set.published_to_web && (
                       <DropdownMenuItem asChild className="gap-2">
-                        <a
+                        <OutboundLink
                           href={`/p/e/fc_set/${setId}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
                         >
                           <Expand className="h-4 w-4 text-muted-foreground" />
                           View public page
-                        </a>
+                        </OutboundLink>
                       </DropdownMenuItem>
                     )}
                     {!deckEmpty && (

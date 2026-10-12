@@ -20,6 +20,7 @@ import { CanvasPagePanel } from "@/features/canvas/host/pagePanel";
 import { cn } from "@/lib/utils";
 import type { TutorGroundingSeed } from "../grounding";
 import { EducationTutorClient } from "./EducationTutorClient";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface AskTutorButtonProps {
   /** The local context to ground the tutor in (the card/item/set the user is on). */
@@ -85,15 +86,13 @@ export function AskTutorPanel({
       title="AI Tutor"
       onClose={() => onOpenChange(false)}
       headerActions={
-        <a
+        <OutboundLink
           href="/education/tutor"
-          target="_blank"
-          rel="noreferrer"
           className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
         >
           Open full tutor
           <ExternalLink className="h-3 w-3" aria-hidden />
-        </a>
+        </OutboundLink>
       }
     >
       <div className="flex min-h-0 flex-1 flex-col px-3 pb-3">

@@ -26,6 +26,7 @@ import type { PageSearchPerformance } from "@/features/marketing/types";
 import { cn } from "@/lib/utils";
 
 import { measureDoorModel } from "../lib/measure-door";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface NodeMeasureDoorProps {
   /** The paired CMS site — without it the badge is text, not a door. */
@@ -73,10 +74,8 @@ export function NodeMeasureDoor({
   }
 
   return (
-    <a
+    <OutboundLink
       href={cmsPageEditorHref(cmsSiteId, cmsPageId, "measure")}
-      target="_blank"
-      rel="noopener noreferrer"
       title={`${title} — open this page's measurement`}
       className={cn(badgeClass, "hover:underline")}
       // Tree rows are selectable AND draggable; table rows open a panel. The
@@ -85,6 +84,6 @@ export function NodeMeasureDoor({
       onPointerDown={(event) => event.stopPropagation()}
     >
       {content}
-    </a>
+    </OutboundLink>
   );
 }

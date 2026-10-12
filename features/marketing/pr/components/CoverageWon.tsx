@@ -31,6 +31,7 @@ import type {
   CoverageMention,
   StoryAngle,
 } from "@/features/marketing/pr/types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function CoverageWon({
   coverage,
@@ -91,17 +92,15 @@ export function CoverageWon({
                   {formatDateOnly(mention.published_at)}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <a
+                  <OutboundLink
                     href={mention.url}
-                    target="_blank"
-                    rel="noreferrer"
                     className="inline-flex min-w-0 max-w-full items-center gap-1 text-xs font-medium text-foreground hover:text-primary hover:underline"
                   >
                     <span className="truncate">
                       {mention.title ?? mention.normalized_url}
                     </span>
                     <ExternalLink className="h-3 w-3 shrink-0 opacity-60" />
-                  </a>
+                  </OutboundLink>
                   <span className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
                     <span className="shrink-0 font-medium text-foreground">
                       {mention.domain}

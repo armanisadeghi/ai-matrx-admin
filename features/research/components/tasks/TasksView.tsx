@@ -45,6 +45,7 @@ import type {
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { UntrustedCount } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // ============================================================================
 // Capture-ladder metadata
@@ -631,10 +632,10 @@ function TaskRow({
             asChild
             variant="quiet"
           >
-            <a href={item.url} target="_blank" rel="noopener noreferrer">
+            <OutboundLink href={item.url}>
               <ExternalLink className="h-3 w-3" />
               Open
-            </a>
+            </OutboundLink>
           </Button>
           {isPasteLevel && (
             <Button

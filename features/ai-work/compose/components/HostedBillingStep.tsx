@@ -45,6 +45,7 @@ import {
   connectClaudeAccount,
   redeemClaudeCode,
 } from "@/features/ai-work/lib/connectClaudeAccount";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 const PROVIDER = "claude_code" as const;
 
 type Busy = "reading" | "starting" | "code" | "cancel" | "sign-out" | null;
@@ -187,14 +188,12 @@ export function HostedBillingStep({
               <div className="flex flex-wrap items-center gap-2">
                 {status?.sign_in_url && (
                   <Button asChild variant="outline">
-                    <a
+                    <OutboundLink
                       href={status.sign_in_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
                     >
                       <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
                       Open Claude sign-in
-                    </a>
+                    </OutboundLink>
                   </Button>
                 )}
                 {state === "awaiting_browser" && (

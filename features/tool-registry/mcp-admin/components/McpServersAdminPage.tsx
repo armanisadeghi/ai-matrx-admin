@@ -102,6 +102,7 @@ import { pushAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavi
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { readOf } from "@ai-matrx/design-system";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const PAGE_LOCATION =
   "AI Matrx Admin — Tool Registry · MCP Servers (/administration/agents/mcp-servers)";
@@ -727,14 +728,12 @@ function ServerDetail({
                 asChild
                 variant="quiet"
               >
-                <a
+                <OutboundLink
                   href={server.docs_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
                 >
                   Docs
                   <ExternalLink className="h-3 w-3" />
-                </a>
+                </OutboundLink>
               </Button>
             )}
             <Button

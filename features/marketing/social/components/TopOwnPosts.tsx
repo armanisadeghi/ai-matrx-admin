@@ -13,6 +13,7 @@ import { formatCompact } from "../outlier";
 import { useOwnPostFigures } from "../useOwnInsights";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 /** `account` names whose posts these are when several accounts list theirs; it appears only with the list. */
 export function TopOwnPosts({ trackedAccountId, limit = 5, account }: { trackedAccountId: string; limit?: number; account?: string }) {
   const query = useOwnPostFigures([trackedAccountId]);
@@ -52,9 +53,9 @@ export function TopOwnPosts({ trackedAccountId, limit = 5, account }: { trackedA
             return (
               <li key={f.providerPostId} className="flex items-center justify-between gap-3 px-3 py-2">
                 {label?.url ? (
-                  <a href={label.url} target="_blank" rel="noreferrer" className="min-w-0 truncate text-sm text-foreground hover:underline">
+                  <OutboundLink href={label.url} className="min-w-0 truncate text-sm text-foreground hover:underline">
                     {name}
-                  </a>
+                  </OutboundLink>
                 ) : (
                   <span className="min-w-0 truncate text-sm text-foreground">{name}</span>
                 )}

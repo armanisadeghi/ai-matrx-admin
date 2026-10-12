@@ -16,6 +16,7 @@ import {
   ICON_MAX_DIM,
   SQUARE_ASPECT_TOLERANCE,
 } from "@/lib/media/categorization";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface MediaDebugPanelProps {
   topicId: string;
@@ -91,10 +92,10 @@ export default function MediaDebugPanel({
           className="shrink-0"
           asChild
         >
-          <a href={debugHref} target="_blank" rel="noopener noreferrer">
+          <OutboundLink href={debugHref}>
             <ExternalLink className="h-3 w-3" />
             Open in new tab
-          </a>
+          </OutboundLink>
         </Button>
       </div>
 

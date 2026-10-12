@@ -54,6 +54,7 @@ import {
   type StoryAngle,
 } from "@/features/marketing/pr/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const KIND_ICON: Record<ProofKind, ComponentType<{ className?: string }>> = {
   document: FileText,
@@ -289,15 +290,13 @@ export function EvidenceLadder({
                     <p className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5 text-[11px] text-muted-foreground">
                       <span className="min-w-0">{rung.evidence.source}</span>
                       {rung.evidence.url ? (
-                        <a
+                        <OutboundLink
                           href={rung.evidence.url}
-                          target="_blank"
-                          rel="noreferrer noopener"
                           className="inline-flex shrink-0 items-center gap-0.5 font-medium text-primary hover:underline"
                         >
                           Open source
                           <ExternalLink className="h-3 w-3" />
-                        </a>
+                        </OutboundLink>
                       ) : null}
                     </p>
                   ) : (

@@ -48,6 +48,7 @@ import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
 import type { CodeFile } from "../redux/code-files.types";
 import { useQuickSaveCode } from "./useQuickSaveCode";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export type CodePostSaveAction = "newTab" | "openWindow" | "navigate" | "none";
 
@@ -172,10 +173,10 @@ export function QuickSaveCodeCore({
     (action: CodePostSaveAction) => {
       if (!savedFile) return;
       if (action === "newTab") {
-        window.open(
+        openOutbound(
           `/code-files/${savedFile.id}`,
           "_blank",
-          "noopener,noreferrer",
+          "noopener",
         );
       } else if (action === "navigate") {
         router.push(`/code-files/${savedFile.id}`);

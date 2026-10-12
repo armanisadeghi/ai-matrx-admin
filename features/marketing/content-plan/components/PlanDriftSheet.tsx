@@ -31,6 +31,7 @@ import type { DriftItem } from "../lib/drift";
 import { driftItemCsvRow, driftItemSummary } from "../format";
 import type { DriftRepair, RepairOutcome, usePlanDrift } from "../hooks/usePlanDrift";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** Big crawls can surface thousands of orphans — cap the synchronous DOM and
  * say so, rather than pretending the list is complete. */
@@ -397,15 +398,13 @@ function DriftRow({
           <p className="mt-0.5 text-xs text-muted-foreground">{item.verdict}</p>
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
             {externalUrl ? (
-              <a
+              <OutboundLink
                 href={externalUrl}
-                target="_blank"
-                rel="noreferrer"
                 className="inline-flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 font-mono text-[11px] text-foreground hover:bg-accent"
               >
                 {item.kind === "conflict" ? item.pageRoute : item.route}
                 <ArrowUpRight className="h-3 w-3" />
-              </a>
+              </OutboundLink>
             ) : (
               <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground">
                 {item.kind === "conflict" ? item.nodeRoute : item.route}

@@ -71,6 +71,7 @@ import { BuildAttachments } from "./BuildAttachments";
 import { attachedJobKeys, attachmentsContext, referenceResources, withReference, withoutReference, type BuildReference } from "./build-references";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 // The preview (the Applet host, its frame and compiler) is needed only once a saved version exists, so it
 // loads then — never with the first screen. One edge, ssr:false (it mounts browser-only code), gated on
 // `saved` below (code-splitting skill, Method A).
@@ -764,9 +765,9 @@ function AppletLinkRow({ slug }: { slug: string }) {
   if (!url) return null;
   return (
     <div className="flex min-w-0 items-start gap-2 text-xs" data-applet-link="">
-      <a href={url} target="_blank" rel="noreferrer" className="min-w-0 flex-1 break-all text-primary" title={url}>
+      <OutboundLink href={url} className="min-w-0 flex-1 break-all text-primary" title={url}>
         {url}
-      </a>
+      </OutboundLink>
       <Button variant="quiet" icon={<Copy className="h-3.5 w-3.5" />} aria-label="Copy link" title="Copy link" onClick={() => void copyText(url)}>
         Copy
       </Button>

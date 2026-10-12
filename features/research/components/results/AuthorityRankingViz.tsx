@@ -13,6 +13,7 @@ import {
   type AuthorityTier,
 } from "./resultsShared";
 import type { ResearchSource } from "../../types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface RankedSource {
   source: ResearchSource;
@@ -211,15 +212,13 @@ function AuthorityRow({
           >
             <TrendingUp className="h-3.5 w-3.5" />
           </Link>
-          <a
+          <OutboundLink
             href={source.url}
-            target="_blank"
-            rel="noopener noreferrer"
             aria-label="Visit source"
             className="rounded-md p-1.5 text-muted-foreground/60 transition-colors hover:bg-accent/60 hover:text-foreground"
           >
             <ExternalLink className="h-3.5 w-3.5" />
-          </a>
+          </OutboundLink>
         </div>
       </div>
 

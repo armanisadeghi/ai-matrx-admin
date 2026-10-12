@@ -30,6 +30,7 @@ import { useSpacesKnob } from "../state/knobs";
 import { embedTarget } from "./embed-providers";
 import { SpaceEmbedFrame } from "./SpaceEmbedFrame";
 import { openMediaPicker, type MediaKind } from "./media-insert";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const DatabaseBlockView = dynamic(() => import("../data/DatabaseBlock").then((m) => m.DatabaseBlock), {
   ssr: false,
@@ -102,9 +103,9 @@ export function Spans({ spans }: { spans: RichSpan[] | undefined }) {
           .join(" ");
         const body = s.equation !== undefined ? <InlineMath expression={s.equation} /> : s.text;
         return s.link ? (
-          <a key={i} href={s.link} className={`spaces-link ${cls}`} target="_blank" rel="noreferrer">
+          <OutboundLink key={i} href={s.link} className={`spaces-link ${cls}`}>
             {body}
-          </a>
+          </OutboundLink>
         ) : (
           <span key={i} className={cls} data-color={s.color} data-background={s.background}>
             {body}
@@ -314,10 +315,10 @@ function MediaBlock({ type, p, edit }: { type: MediaKind; p: Record<string, unkn
   if (type === "file") {
     return (
       <MediaFrame kind="file" p={p} edit={edit} resizable={false}>
-        <a className="spaces-file-row" href={src ?? undefined} target="_blank" rel="noreferrer" onMouseDown={(e) => e.stopPropagation()}>
+        <OutboundLink className="spaces-file-row" href={src ?? undefined} onMouseDown={(e) => e.stopPropagation()}>
           <Paperclip size={16} strokeWidth={1.8} />
           <span className="truncate">{name}</span>
-        </a>
+        </OutboundLink>
       </MediaFrame>
     );
   }
@@ -346,7 +347,7 @@ function BookmarkBlock({ p }: { p: Record<string, unknown> }) {
   const card = status === "ready" && preview ? preview : null;
   return (
     <figure className="spaces-media" contentEditable={false}>
-      <a className="spaces-bookmark" data-rich={card ? "true" : undefined} href={url} target="_blank" rel="noreferrer" onMouseDown={(e) => e.stopPropagation()}>
+      <OutboundLink className="spaces-bookmark" data-rich={card ? "true" : undefined} href={url} onMouseDown={(e) => e.stopPropagation()}>
         <span className="spaces-bookmark-text">
           <span className="spaces-bookmark-title">{card?.title || hostOf(url)}</span>
           {card?.description ? <span className="spaces-bookmark-desc">{card.description}</span> : null}
@@ -366,7 +367,7 @@ function BookmarkBlock({ p }: { p: Record<string, unknown> }) {
             <img src={card.image_url} alt="" />
           </span>
         ) : null}
-      </a>
+      </OutboundLink>
       <Caption spans={p.caption} />
     </figure>
   );

@@ -51,6 +51,7 @@ import {
 } from "../syncState";
 import { MATRX_LOCAL_DOWNLOAD_PATH } from "@/features/matrx-local-download/release";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** Exact, verified statement of why the web app cannot start a sync itself. */
 export const SYNC_NOW_UNAVAILABLE_REASON =
@@ -135,15 +136,13 @@ export function SyncNowDoor({ compact = false }: { compact?: boolean }) {
       className={cn("flex flex-wrap items-center gap-2", compact && "gap-1.5")}
     >
       <Button asChild variant="outline">
-        <a
+        <OutboundLink
           href={MATRX_LOCAL_DOWNLOAD_PATH}
-          target="_blank"
-          rel="noopener noreferrer"
         >
           <Download className="h-3.5 w-3.5" />
           Sync now in Matrx Local
           <ExternalLink className="h-3.5 w-3.5" />
-        </a>
+        </OutboundLink>
       </Button>
       {!compact && (
         <p className="flex-1 basis-full text-xs leading-relaxed text-muted-foreground">

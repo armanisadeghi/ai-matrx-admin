@@ -97,6 +97,7 @@ import {
   SOCIAL_POST_SURFACE_NAME,
   createSocialPostScope,
 } from "@/features/surfaces/manifests/social-tiles.manifest";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export { guessAspect };
 
@@ -630,9 +631,9 @@ export function PostDetailBody({
       </DropdownMenu>
       ) : null}
       <Button variant="outline" icon={<ExternalLink />} asChild>
-        <a href={post.url} target="_blank" rel="noreferrer noopener">
+        <OutboundLink href={post.url}>
           Original
-        </a>
+        </OutboundLink>
       </Button>
       {canEdit ? (
       <Button

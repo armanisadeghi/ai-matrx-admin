@@ -24,6 +24,7 @@ import { useState } from "react";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { fileIdToMediaRef, urlToMediaRef } from "@/features/files/redux/converters";
 import { cn } from "@/lib/utils";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface FaceImageRef {
   /** cld_files UUID for stored images (upload / stock / generated lanes). */
@@ -101,15 +102,13 @@ export function FlashcardFaceImage({
         <span className="mt-0.5 shrink-0 text-[10px] leading-tight text-muted-foreground">
           Photo:{" "}
           {image.credit.url ? (
-            <a
+            <OutboundLink
               href={image.credit.url}
-              target="_blank"
-              rel="noreferrer noopener"
               className="underline underline-offset-2 hover:text-foreground"
               onClick={(e) => e.stopPropagation()}
             >
               {image.credit.name}
-            </a>
+            </OutboundLink>
           ) : (
             image.credit.name
           )}

@@ -50,6 +50,7 @@ import {
 import { useWorkWaiting } from "../useInbox";
 import { useInboxMemory } from "../useInboxMemory";
 import { markPlaces, newIn, type PlaceReading } from "../badge";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /** How a source interrupts: needs_you/direct add to the badge, updates a dot, quiet nothing. */
 export type SourceBucket = "needs_you" | "direct" | "updates" | "quiet";
@@ -87,7 +88,7 @@ function openWindow(overlayId: "approvalsWindow" | "assistsWindow" | "workInboxW
 
 function openTab(path: string) {
   return () => {
-    window.open(new URL(path, window.location.origin).toString(), "_blank", "noopener,noreferrer");
+    openOutbound(new URL(path, window.location.origin).toString(), "_blank", "noopener");
   };
 }
 

@@ -27,6 +27,7 @@ import {
 import { plainFailureReason } from "@/lib/entity-list/failure";
 import { asClause } from "@ai-matrx/kit/text";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const SEVERITY_CLASS: Record<HealthFinding["severity"], string> = {
   high: "border-red-500/40 text-red-700 dark:text-red-400",
@@ -116,14 +117,12 @@ export function MandateHealthSummary({ mandateKey }: { mandateKey: AnyMandateKey
                 {f.detail ? ` — ${f.detail}` : ""}
               </span>
               {f.codeUrl ? (
-                <a
+                <OutboundLink
                   href={f.codeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="type-secondary text-primary hover:underline"
                 >
                   Open code
-                </a>
+                </OutboundLink>
               ) : null}
               <span className="type-secondary">
                 Fix: {f.fixHref ? (

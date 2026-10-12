@@ -17,6 +17,7 @@ import { ShowForm, EpisodeForm } from "./PodcastForm";
 import { podcastService } from "../../service";
 import type { PcShow, PcEpisodeWithShow } from "../../types";
 import { archiveConfirmSentence } from "@/features/trash/archiveCopy";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface PodcastDetailPanelProps {
   activeTab: "shows" | "episodes";
@@ -83,15 +84,13 @@ export function PodcastDetailPanel({
           <h2 className="font-semibold text-sm truncate">{panelTitle}</h2>
           <div className="flex items-center gap-1">
             {!isNew && currentSlug && (
-              <a
+              <OutboundLink
                 href={`/podcast/${currentSlug}`}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                 title="Open public page"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
-              </a>
+              </OutboundLink>
             )}
             {!isNew && currentId && (
               <button

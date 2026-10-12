@@ -12,6 +12,7 @@
 import { Copy, ExternalLink, RotateCw } from "lucide-react";
 import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { copyToClipboard } from "@/lib/clipboard/copy";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export interface BrowserFrameMenuContext {
   url: string;
@@ -49,7 +50,7 @@ export function buildBrowserFrameMenuSection(
         label: "Open in new tab",
         icon: ExternalLink,
         onSelect: () => {
-          window.open(ctx.url, "_blank", "noopener,noreferrer");
+          openOutbound(ctx.url, "_blank", "noopener");
         },
       },
     ],

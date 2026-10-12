@@ -11,6 +11,7 @@ import AppLink from "@/components/navigation/AppLink";
 import ShellIcon from "../ShellIcon";
 import { navToneIconClass, type ShellNavItem } from "../../constants/nav-data";
 import { cn } from "@/lib/utils";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface NavItemProps {
   item: ShellNavItem;
@@ -19,11 +20,9 @@ interface NavItemProps {
 export default function NavItem({ item }: NavItemProps) {
   if (item.external || item.openInNewTab) {
     return (
-      <a
+      <OutboundLink
         href={item.href}
         title={item.label}
-        target="_blank"
-        rel="noopener noreferrer"
         className="shell-nav-item shell-tactile-subtle"
       >
         <span className={cn("shell-nav-icon", navToneIconClass(item.tone))}>
@@ -33,7 +32,7 @@ export default function NavItem({ item }: NavItemProps) {
         <span className="shell-nav-external">
           <ShellIcon name="ArrowUpRight" size={14} strokeWidth={1.75} />
         </span>
-      </a>
+      </OutboundLink>
     );
   }
 

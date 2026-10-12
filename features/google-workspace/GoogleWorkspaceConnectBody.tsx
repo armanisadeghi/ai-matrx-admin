@@ -72,6 +72,7 @@ import { attachChildToFolder, upsertFiles } from "@/features/files/redux/slice";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { SelectedFormResponsesReview } from "@/features/google-workspace/forms/SelectedFormResponsesReview";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface GoogleWorkspaceConnectBodyProps {
   onClose: () => void;
@@ -828,15 +829,13 @@ function GoogleWorkspaceConnectBodyContent({
                           />
                         ) : null}
                         {typeof link === "string" && link ? (
-                          <a
+                          <OutboundLink
                             href={link}
-                            target="_blank"
-                            rel="noopener noreferrer"
                             className={`${showRecordDoor ? "" : "ml-auto "}shrink-0 text-muted-foreground hover:text-foreground`}
                             aria-label={`Open ${file.display_name} in Google`}
                           >
                             <ExternalLink className="h-3.5 w-3.5" />
-                          </a>
+                          </OutboundLink>
                         ) : null}
                       </div>
                       {recordAbsent && fresh?.record_absent_reason ? (

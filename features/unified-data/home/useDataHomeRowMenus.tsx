@@ -50,6 +50,7 @@ import { toItemMenuConfig } from "@/features/unified-data/actions/tableActionAda
 import { useStarToggle } from "@/features/unified-data/actions/useTableFavorite";
 import type { DataHomeRow } from "./dataHomeRows";
 import { archiveTableFromHome } from "./archiveTableFromHome";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /** How many table ids one `custom.my_levels` call asks about. */
 const LEVELS_PER_CALL = 200;
@@ -318,7 +319,7 @@ export function useDataHomeRowMenus({
           router.push(row.href);
         },
         openInNewTab: (url) => {
-          window.open(url, "_blank", "noopener,noreferrer");
+          openOutbound(url, "_blank", "noopener");
         },
         copyText: async (url) => {
           await copyTextKit(url, "Link copied", "Couldn’t copy the link");
@@ -351,7 +352,7 @@ export function useDataHomeRowMenus({
                 label: "Open public link",
                 icon: "link-2",
                 group: "open",
-                run: () => void window.open(row.publicHref as string, "_blank", "noopener,noreferrer"),
+                run: () => void openOutbound(row.publicHref as string, "_blank", "noopener"),
               }
             : { id: "open-public", label: "Open public link", icon: "link-2", group: "open", disabledReason: NO_PUBLIC_LINK_REASON, run: () => {} },
         ],

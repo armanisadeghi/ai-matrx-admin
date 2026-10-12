@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { Copy, Check, FileText, Hash, Type, List, Minus, Quote, Link, CornerDownLeft, Square, SquareCheckBig } from 'lucide-react';
-import { addUtmSource } from '@/utils/url-utm';
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface LineItem {
   type: string;
@@ -206,9 +206,9 @@ const renderLineItem = (item: LineItem) => {
   
   if (type === "link") {
     return (
-      <a href={addUtmSource(content)} className="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">
+      <OutboundLink href={content} className="text-blue-600 dark:text-blue-400 hover:underline">
         {content}
-      </a>
+      </OutboundLink>
     );
   }
   

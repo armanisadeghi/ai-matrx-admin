@@ -4,6 +4,7 @@ import { palette } from "./SlideView";
 import type { JsonObject } from "@/types/json";
 import { markdownToPlainText } from "@/lib/markdown/plain-text";
 import { downloadFile } from "@ai-matrx/kit/download";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 // Google Slides `presentations.batchUpdate` request objects — heterogeneous
 // (createSlide/createShape/insertText/updateTextStyle/...), no local type
@@ -760,7 +761,7 @@ export const exportToGoogleSlides = async (
 
         // Success! Open the presentation
         const presentationUrl = `https://docs.google.com/presentation/d/${presentationId}/edit`;
-        window.open(presentationUrl, '_blank');
+        openOutbound(presentationUrl, '_blank');
 
         return {
             success: true,

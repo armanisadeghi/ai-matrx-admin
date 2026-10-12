@@ -20,6 +20,7 @@ import {
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { parseSnapshotFingerprint } from "@/features/marketing/lib/snapshot-content";
 import { Chip } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * Duplicate-content clusters for one crawl session — exact duplicates grouped
@@ -239,15 +240,13 @@ function ClusterCard({
                 ? "— words"
                 : `${page.wordCount.toLocaleString()} words`}
             </span>
-            <a
+            <OutboundLink
               href={page.url}
-              target="_blank"
-              rel="noreferrer"
               className="shrink-0 text-muted-foreground hover:text-primary"
               aria-label={`Open ${page.url}`}
             >
               <ExternalLink className="h-3 w-3" />
-            </a>
+            </OutboundLink>
           </li>
         ))}
       </ul>

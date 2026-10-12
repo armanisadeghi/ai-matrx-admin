@@ -52,6 +52,7 @@ import {
   TITLE_LIMITS,
 } from "@/features/marketing/seo/serp/metrics";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface HtmlPreviewModalProps {
   isOpen: boolean;
@@ -1149,15 +1150,13 @@ ${wordPressCSS}
                           </h4>
 
                           <div className="flex flex-col gap-3">
-                            <a
+                            <OutboundLink
                               href={savedPage.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
                               className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
                             >
                               <ExternalLink size={16} />
                               View Live Page
-                            </a>
+                            </OutboundLink>
 
                             <button
                               onClick={() => handleCopyUrl(savedPage.url)}

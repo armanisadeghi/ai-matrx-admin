@@ -26,6 +26,7 @@ import { YouTubeEmbed } from "./YouTubeEmbed";
 import { EnrollButton } from "./EnrollButton";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { Chip } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const RESOURCE_META: Record<string, { label: string; icon: typeof Layers }> = {
   fc_set: { label: "Flashcards", icon: Layers },
@@ -202,16 +203,15 @@ export function CreatorLandingPage({ page }: { page: CreatorPublicPage }) {
             {page.links.length > 0 ? (
               <div className="mt-4 flex flex-wrap justify-center gap-2 sm:justify-start">
                 {page.links.map((l) => (
-                  <a
+                  <OutboundLink
                     key={l.url}
                     href={l.url}
-                    target="_blank"
-                    rel="noopener noreferrer nofollow"
+                    rel="nofollow"
                     className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
                   >
                     <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
                     {l.label}
-                  </a>
+                  </OutboundLink>
                 ))}
               </div>
             ) : null}

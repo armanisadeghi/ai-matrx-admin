@@ -54,6 +54,7 @@ import {
 } from "@/features/marketing/components/sites/SiteKpiPeeks";
 import { siteKpiDelta } from "@/features/marketing/analytics/gsc-delta";
 import { publishedToWebLabel, shownToLabel } from "@/lib/row-access";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const CHART_METRICS: Array<{ key: GscPeekMetric; label: string }> = [
   { key: "clicks", label: "Clicks" },
@@ -118,15 +119,13 @@ export default function SitePeekBody({ site }: SitePeekBodyProps) {
         <p className="truncate text-sm font-semibold text-foreground">
           {site.name}
         </p>
-        <a
+        <OutboundLink
           href={site.root_url}
-          target="_blank"
-          rel="noreferrer"
           className="inline-flex items-center gap-1 truncate text-xs text-muted-foreground hover:text-foreground hover:underline"
         >
           {site.domain}
           <ExternalLink className="h-3 w-3 shrink-0" />
-        </a>
+        </OutboundLink>
       </div>
       <StatusBadge value={site.status} />
     </div>

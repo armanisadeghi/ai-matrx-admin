@@ -27,6 +27,7 @@ import {
   type OrganizationKpis,
 } from "../lib/copy";
 import { OrganizationAbbreviation } from "./OrganizationAbbreviation";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface OrganizationCardProps {
   organization: OrganizationWithRole;
@@ -192,16 +193,14 @@ export function OrganizationCard({
               </span>
             </div>
             {organization.website && (
-              <a
+              <OutboundLink
                 href={organization.website}
-                target="_blank"
-                rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
                 className="flex shrink-0 items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
               >
                 <ExternalLink className="h-4 w-4" />
                 <span>Website</span>
-              </a>
+              </OutboundLink>
             )}
           </div>
         </div>

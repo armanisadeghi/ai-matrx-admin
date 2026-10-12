@@ -52,6 +52,7 @@ import { useMarketingSite } from "@/features/marketing/components/site/Marketing
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { Chip } from "@ai-matrx/design-system/controls";
 import { spendCategory } from "@/features/marketing/data/spend-categories";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const INTERSECTIONS_EXPLAINER =
   "Websites that link to both you and this competitor. They already know your space, so they are the easiest places to ask for a link.";
@@ -195,16 +196,14 @@ function nameCell(
             {urlPath(fullUrl)}
           </Link>
           {row.url ? (
-            <a
+            <OutboundLink
               href={row.url}
-              target="_blank"
-              rel="noopener noreferrer"
               title={`Open ${row.url} live`}
               aria-label={`Open ${fullUrl} live in a new tab`}
               onClick={(event) => event.stopPropagation()}
             >
               <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground hover:text-primary" />
-            </a>
+            </OutboundLink>
           ) : null}
         </span>
         {extras.metaTitle ? (
@@ -219,17 +218,15 @@ function nameCell(
   // referring_domain / competitor_domain — the name IS a domain.
   const href = row.url ?? `https://${label}`;
   return (
-    <a
+    <OutboundLink
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
       title={href}
       onClick={(event) => event.stopPropagation()}
       className="flex min-w-40 max-w-72 items-center gap-1 truncate text-xs font-medium text-foreground hover:text-primary "
     >
       <span className="truncate">{label}</span>
       <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground" />
-    </a>
+    </OutboundLink>
   );
 }
 
@@ -304,14 +301,12 @@ function DimensionDetail({
           </Link>
         ) : null}
         {row.url ? (
-          <a
+          <OutboundLink
             href={row.url}
-            target="_blank"
-            rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-xs font-medium text-primary "
           >
             Open live URL <ExternalLink className="h-3 w-3" />
-          </a>
+          </OutboundLink>
         ) : null}
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-3">

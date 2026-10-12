@@ -326,8 +326,8 @@ describe("shared vault UI contract", () => {
 
     expect(detailSource).toContain("safeVaultLoginUrl(url)");
     expect(detailSource).toContain("Open website");
-    expect(detailSource).toContain('target="_blank"');
-    expect(detailSource).toContain('rel="noopener noreferrer"');
+    // The outbound door opens it in a new tab with rel="noopener" and our referral data.
+    expect(detailSource).toContain("<OutboundLink");
     expect(detailSource).toContain("Invalid URL");
   });
 

@@ -89,6 +89,8 @@ import {
 } from "@/features/marketing/seo/serp/metrics";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /** A must-fix hint shows at most this many characters; the rest is behind InfoHint. */
 const WRITING_HINT_MAX = 60;
@@ -679,9 +681,9 @@ export default function PageEditor({
     onPublish: page?.has_draft ? handlePublish : handleSaveLive,
     onDiscardDraft: handleDiscard,
     onOpenLive: () =>
-      liveUrl && window.open(liveUrl, "_blank", "noopener,noreferrer"),
+      liveUrl && openOutbound(liveUrl, "_blank", "noopener"),
     onOpenPreview: () =>
-      previewUrl && window.open(previewUrl, "_blank", "noopener,noreferrer"),
+      previewUrl && openOutbound(previewUrl, "_blank", "noopener"),
     onBackToPages: onClose,
     onRollback: onRollback
       ? () => {
@@ -794,17 +796,15 @@ export default function PageEditor({
                       asChild
                       variant="quiet"
                     >
-                      <a
+                      <OutboundLink
                         href={measuredPageHref}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         title="Open page workspace"
                       >
                         <ExternalLink className="h-3.5 w-3.5" />
                         <span className="hidden xl:inline">
                           Open page workspace
                         </span>
-                      </a>
+                      </OutboundLink>
                     </Button>
                   )}
                   {page?.has_draft && (
@@ -1001,18 +1001,16 @@ export default function PageEditor({
                           Search Console data.
                         </p>
                         {site.web_site_id ? (
-                          <a
+                          <OutboundLink
                             href={marketingRoutes.site(
                               null,
                               site.web_site_id,
                               "/pages",
                             )}
-                            target="_blank"
-                            rel="noopener noreferrer"
                             className="mt-3 inline-block text-xs font-medium text-primary hover:underline"
                           >
                             See this site&apos;s measured pages
-                          </a>
+                          </OutboundLink>
                         ) : null}
                       </div>
                     </div>

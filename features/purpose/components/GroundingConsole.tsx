@@ -42,6 +42,7 @@ import {
   type OrphanedPurpose,
   type PurposeUnitType,
 } from "../service";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type Rollup = {
   unitType: string;
@@ -124,7 +125,7 @@ function UnitRow({
           Rendering no button is the honest state; a button that 404s is worse. */}
       {href ? (
         <Button asChild variant="quiet">
-          <a href={href} target="_blank" rel="noreferrer">Open</a>
+          <OutboundLink href={href}>Open</OutboundLink>
         </Button>
       ) : null}
     </div>

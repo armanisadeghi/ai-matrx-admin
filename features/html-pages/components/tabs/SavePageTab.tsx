@@ -29,6 +29,7 @@ import {
 import { EmbeddedImageStudio } from "@/features/image-studio/components/EmbeddedImageStudio";
 import { confirmResetToOriginal } from "@/features/html-pages/utils/confirm-destructive";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
   const previewUrl = actions.getCurrentPreviewUrl();
@@ -69,14 +70,12 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
               CURRENT PAGE URL
             </div>
             <div className="flex items-center gap-2">
-              <a
+              <OutboundLink
                 href={previewUrl}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="flex-1 text-sm text-blue-600 dark:text-blue-400  truncate"
               >
                 {previewUrl}
-              </a>
+              </OutboundLink>
               <button
                 onClick={() => actions.handleCopyUrl(previewUrl)}
                 className="p-2 hover:bg-blue-100 dark:hover:bg-blue-800 rounded transition-colors"
@@ -94,10 +93,8 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                   />
                 )}
               </button>
-              <a
+              <OutboundLink
                 href={previewUrl}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="p-2 hover:bg-blue-100 dark:hover:bg-blue-800 rounded transition-colors"
                 title="Open in new tab"
               >
@@ -105,7 +102,7 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                   size={16}
                   className="text-blue-600 dark:text-blue-400"
                 />
-              </a>
+              </OutboundLink>
             </div>
           </div>
         )}

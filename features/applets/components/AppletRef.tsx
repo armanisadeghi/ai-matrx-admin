@@ -21,6 +21,7 @@
 import React from "react";
 import { Globe } from "lucide-react";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** Admin editor for one app — the admin shell's canonical door. */
 export function appletAdminEditHref(appId: string): string {
@@ -70,17 +71,15 @@ export function AppletRef({
       alwaysShowActions={alwaysShowActions}
       extraActions={
         slug ? (
-          <a
+          <OutboundLink
             href={appletPublicHref(slug)}
-            target="_blank"
-            rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
             title={`Open /applets/${slug}`}
             aria-label={`Open /applets/${slug}`}
             className={CONTROL_CLASS}
           >
             <Globe className="h-3 w-3" />
-          </a>
+          </OutboundLink>
         ) : undefined
       }
     />

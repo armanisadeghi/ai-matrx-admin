@@ -49,6 +49,7 @@ import {
   type IllustrateRunState,
 } from "./illustrateSetRun";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface IllustrateSetWindowProps {
   run: IllustrateRunState;
@@ -149,15 +150,13 @@ function ReviewRow({
                 </span>
               )}
               {result?.candidate?.page_url && (
-                <a
+                <OutboundLink
                   href={result.candidate.page_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-primary hover:underline"
                 >
                   <ExternalLink className="h-3 w-3" />
                   {result.candidate.domain || "Source page"}
-                </a>
+                </OutboundLink>
               )}
               {result?.alt_text && (
                 <span className="truncate">Alt: {result.alt_text}</span>

@@ -22,6 +22,7 @@ import { HTML_PAGE_CONTEXT_MENU_PROPS } from "../agent-context/htmlPageContextMe
 import { buildHtmlPagesListContextData } from "../agent-context/buildHtmlPagesListContextData";
 import { createHtmlPagesListExtraSections } from "../agent-context/htmlPagesListExtraSections";
 import type { HtmlPageSummary } from "../types";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 interface HtmlPagesContextMenuProps {
   /** Framing list — every published page (typically the filtered list view). */
@@ -57,7 +58,7 @@ export function HtmlPagesContextMenu({
       await copyText(page.url, "URL copied");
     },
     onOpenSelectedLive: () => {
-      if (page?.url) window.open(page.url, "_blank", "noopener,noreferrer");
+      if (page?.url) openOutbound(page.url, "_blank", "noopener");
     },
     onBackToHub: () => router.push("/cms"),
   });

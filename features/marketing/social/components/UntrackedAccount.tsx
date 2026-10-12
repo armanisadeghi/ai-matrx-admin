@@ -33,6 +33,7 @@ import { PlatformMark, platformLabel } from "./PlatformMark";
 import { trackableOwn, useTrackOwn } from "./useTrackOwn";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 export function UntrackedAccount({ platform, propertyId }: { platform: string; propertyId: string }) {
   const brand = useMarketingBrand();
   const router = useRouter();
@@ -111,9 +112,9 @@ export function UntrackedAccount({ platform, propertyId }: { platform: string; p
         )}
         {row.externalUrl ? (
           <Button variant="quiet" asChild icon={<ExternalLink />}>
-            <a href={row.externalUrl} target="_blank" rel="noreferrer">
+            <OutboundLink href={row.externalUrl}>
               Open on {platformLabel(row.platform)}
-            </a>
+            </OutboundLink>
           </Button>
         ) : null}
       </span>

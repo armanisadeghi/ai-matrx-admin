@@ -20,6 +20,7 @@ import { savedRecordGoogleAdapter } from "@/features/google-workspace/linked/Edi
 import { useFileFavorites } from "./useFileFavorites";
 import { copyRecord, moveRecord, renameRecord, restoreRecord, runDownload, trashRecord } from "./ops";
 import { FILE_NOUN_LABEL, type FileKindAdapter, type FileMenuPayload } from "./types";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export type { FileKindAdapter } from "./types";
 
@@ -58,7 +59,7 @@ export function useFileItemActions<Row extends { id: string; user_id: string }>(
     }
     const items: MatrxTableMenuSection["items"] = [
       { id: "share", label: "Share", icon: "link", onSelect: () => setDialog({ kind: "share", row }) },
-      { id: "open", label: "Open in new tab", onSelect: () => window.open(adapter.hrefFor(row.id), "_blank", "noopener") },
+      { id: "open", label: "Open in new tab", onSelect: () => openOutbound(adapter.hrefFor(row.id), "_blank", "noopener") },
       { id: "star", label: isStarred(row.id) ? "Remove star" : "Star", onSelect: () => void toggle(row.id) },
     ];
     if (canManage)

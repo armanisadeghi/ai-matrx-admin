@@ -53,6 +53,7 @@ import {
 } from "@/features/marketing/components/analysis/useFindingFixer";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** Checks whose fix this card can actually land on the page today. */
 const FIXABLE_ITEM_KEYS = new Set([
@@ -241,15 +242,13 @@ export function FindingFixCard({
             <div className="space-y-1">
               <p>{applied}</p>
               {pageWorkspaceHref ? (
-                <a
+                <OutboundLink
                   className="inline-flex items-center gap-1 text-primary "
                   href={pageWorkspaceHref}
-                   target="_blank"
-                   rel="noopener noreferrer"
                  >
                   Open the page workspace
                   <ExternalLink className="h-3 w-3" />
-                </a>
+                </OutboundLink>
               ) : null}
             </div>
           </div>

@@ -6,6 +6,7 @@ import { closeShellMobileMenu } from "@/features/shell/utils/closeShellMobileMen
 import type { ShellIconName } from "@/features/shell/shellIconMap";
 import ShellIcon from "../ShellIcon";
 import { isOnRoute } from "@/features/shell/utils/is-nav-group-active";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface MobileSheetNavLinkProps {
   href: string;
@@ -50,10 +51,8 @@ export default function MobileSheetNavLink({
 
   if (external || openInNewTab) {
     return (
-      <a
+      <OutboundLink
         href={href}
-        target="_blank"
-        rel="noopener noreferrer"
         className={className}
         onClick={closeAfterNavigationStarts}
       >
@@ -75,7 +74,7 @@ export default function MobileSheetNavLink({
         <span className="shell-nav-external">
           <ShellIcon name="ArrowUpRight" size={14} strokeWidth={1.75} />
         </span>
-      </a>
+      </OutboundLink>
     );
   }
 

@@ -30,6 +30,7 @@ import type { CheckedStatement, CrisisHoldingResult } from "@/features/marketing
 import { validity } from "./crisis-intake";
 import { copyText } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function rec(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
@@ -295,9 +296,9 @@ export function CrisisHoldingView({
           <Button icon={<CalendarClock />} variant="outline" onClick={() => downloadIcs(reminder)}> Remind me at valid-until (.ics)
           </Button>
           <Button asChild variant="quiet">
-            <a href={googleCalendarUrl(reminder)} target="_blank" rel="noreferrer">
+            <OutboundLink href={googleCalendarUrl(reminder)}>
               Add to Google Calendar
-            </a>
+            </OutboundLink>
           </Button>
         </div>
         {result.gate.fired ? (

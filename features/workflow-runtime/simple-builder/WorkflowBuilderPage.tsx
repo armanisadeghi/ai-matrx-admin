@@ -71,6 +71,7 @@ import { BuilderRunsList } from "./BuilderRunsList";
 import { useAppRecordsConfig } from "@/features/data-tables/records-ui-host/recordsUiHost";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 const KIND_ICON: Record<TableWorkflowKind, LucideIcon> = {
   workflow: Workflow,
   button: MousePointerClick,
@@ -546,14 +547,12 @@ export function WorkflowBuilderPage({ tableId }: { tableId: string }) {
             says={view?.detached_says ?? "Edited in Workflow Studio."}
             action={
               studioHref ? (
-                <a
+                <OutboundLink
                   href={studioHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="text-primary hover:underline"
                 >
                   Open
-                </a>
+                </OutboundLink>
               ) : null
             }
           />
@@ -750,15 +749,13 @@ function WorkflowList({
           );
         }
         return target.external ? (
-          <a
+          <OutboundLink
             key={i}
             href={target.href}
-            target="_blank"
-            rel="noopener noreferrer"
             className={className}
           >
             {content}
-          </a>
+          </OutboundLink>
         ) : (
           <Link key={i} href={target.href} className={className}>
             {content}

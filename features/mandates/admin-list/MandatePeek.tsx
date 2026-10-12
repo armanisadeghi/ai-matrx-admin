@@ -26,6 +26,7 @@ import {
 } from "@/features/mandates/admin/mandate-contract-cells";
 import { useMandateAdminListState } from "./context";
 import type { MandateAdminRow } from "./types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function Field({
   label,
@@ -170,15 +171,13 @@ export function MandatePeek({
               {row.name}
             </Link>
           </DialogTitle>
-          <a
+          <OutboundLink
             href={href}
-            target="_blank"
-            rel="noopener noreferrer"
             aria-label="Open in a new tab"
             className="shrink-0 text-muted-foreground hover:text-foreground"
           >
             <ExternalLink className="h-3.5 w-3.5" />
-          </a>
+          </OutboundLink>
           <MandateStatusControl
             mandateId={row.id}
             name={row.name}

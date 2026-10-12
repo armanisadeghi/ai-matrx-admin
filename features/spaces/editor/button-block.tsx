@@ -27,6 +27,7 @@ import { useSourcePicker } from "../data/SourcePicker";
 import { toEngine } from "./convert";
 import { DATABASE_HOST_CLASS } from "./database-host";
 import { storedSpec } from "./stored-blocks";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const ACTION_WORDS: Record<ButtonActionKind, string> = {
   insert: "Insert blocks",
@@ -155,7 +156,7 @@ function ButtonView({ p, ctx }: { p: Record<string, unknown>; ctx: Ctx }) {
           }
         } else if (a.kind === "open") {
           if (a.spaceId) router.push(`/spaces/${a.spaceId}`);
-          else if (a.url) window.open(a.url, "_blank", "noopener");
+          else if (a.url) openOutbound(a.url, "_blank", "noopener");
         } else if (a.kind === "notify") {
           const to = a.userId === "me" ? userId : a.userId;
           if (!to || !pageId) continue;

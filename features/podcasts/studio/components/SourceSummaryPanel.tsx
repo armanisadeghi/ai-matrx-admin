@@ -9,6 +9,7 @@
 
 import { FileText, Link2, Type } from "lucide-react";
 import type { RunDetail } from "@/features/podcasts/studio/runs/run-types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function inputTypeLabel(kind: string | null): string {
   switch (kind) {
@@ -61,16 +62,14 @@ export function SourceSummaryPanel({ detail }: { detail: RunDetail }) {
           </div>
         )}
         {fileUrls.map((url) => (
-          <a
+          <OutboundLink
             key={url}
             href={url}
-            target="_blank"
-            rel="noopener noreferrer"
             className="flex items-center gap-2 rounded-lg bg-muted/40 px-3 py-2 text-sm text-primary hover:underline"
           >
             <Link2 className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">{url}</span>
-          </a>
+          </OutboundLink>
         ))}
       </div>
     </details>

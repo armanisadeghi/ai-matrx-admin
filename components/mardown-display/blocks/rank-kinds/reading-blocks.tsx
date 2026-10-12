@@ -37,6 +37,7 @@ import {
   resultTypeLabel,
   shortDate,
 } from "./rank-kind-shared";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface RankKindBlockProps {
   serverData?: unknown;
@@ -98,10 +99,8 @@ export function SeoRankReadingBlock({
           )}
 
           {url && (
-            <a
+            <OutboundLink
               href={url}
-              target="_blank"
-              rel="noopener noreferrer"
               className="mt-1 flex items-center gap-1.5 text-xs text-primary hover:underline"
             >
               <SearchFavicon
@@ -110,7 +109,7 @@ export function SeoRankReadingBlock({
               />
               <span className="truncate">{url}</span>
               <ExternalLink className="h-3 w-3 flex-shrink-0 opacity-60" />
-            </a>
+            </OutboundLink>
           )}
 
           {snippet && (

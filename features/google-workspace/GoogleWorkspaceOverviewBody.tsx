@@ -62,6 +62,7 @@ import { useGoogleAuthorizationWindow } from "@/providers/google-provider/useGoo
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ChatMessagesReview } from "@/features/google-workspace/chat/ChatMessagesReview";
 import { BusinessProfileReviewBody } from "@/features/google-workspace/business-profile/BusinessProfileReview";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface GoogleWorkspaceOverviewBodyProps {
   initialConnectionId?: string | null;
@@ -587,17 +588,15 @@ function CapabilityCatalog({
                         key={resource.id}
                         className="flex items-center justify-between gap-2 py-1.5"
                       >
-                        <a
+                        <OutboundLink
                           href={googleResourceHref(resource)}
-                          target="_blank"
-                          rel="noopener noreferrer"
                           className="flex min-w-0 flex-1 items-center justify-between gap-3 text-foreground hover:text-primary"
                         >
                           <span className="min-w-0 truncate">
                             {resource.display_name}
                           </span>
                           <ExternalLink className="h-3.5 w-3.5 shrink-0" />
-                        </a>
+                        </OutboundLink>
                         {/*
                           🚨 A NAMED FILE OPENS HERE TOO (F-58). A Doc or Sheet in
                           this roster used to offer only its Google link; its AI

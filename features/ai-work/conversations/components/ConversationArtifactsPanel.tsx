@@ -56,6 +56,8 @@ import type {
 } from "../artifacts/useCodingSessionArtifacts";
 import { providerLabel } from "../presentation";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const NO_ARTIFACTS = "No artifacts captured for this session";
 
@@ -386,7 +388,7 @@ function FileRow({ file, depth }: { file: ArtifactFile; depth: number }) {
     // same door every other file list uses. Everything else opens the
     // canonical preview window in place.
     if (html) {
-      window.open(fileTabHref(file.id), "_blank", "noopener,noreferrer");
+      openOutbound(fileTabHref(file.id), "_blank", "noopener");
       return;
     }
     openFilePreview(file.id);
@@ -436,10 +438,8 @@ function FileRow({ file, depth }: { file: ArtifactFile; depth: number }) {
         {formatRelativeTime(file.updatedAt, { absolute: "date" })}
       </time>
       <span className="flex shrink-0 items-center gap-0.5">
-        <a
+        <OutboundLink
           href={fileTabHref(file.id)}
-          target="_blank"
-          rel="noopener noreferrer"
           aria-label={`Open ${file.name} in a new tab`}
           title="Open in new tab"
           className={cn(
@@ -448,7 +448,7 @@ function FileRow({ file, depth }: { file: ArtifactFile; depth: number }) {
           )}
         >
           <ExternalLink className="h-3.5 w-3.5" />
-        </a>
+        </OutboundLink>
         <button
           type="button"
           onClick={() => void download()}

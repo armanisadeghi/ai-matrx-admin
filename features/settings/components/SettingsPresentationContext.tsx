@@ -38,6 +38,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef } fr
 import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode, MouseEvent as ReactMouseEvent } from "react";
 import { SETTINGS_BASE, tabIdToHref } from "../route-shell/routing";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export type SettingsPresentation = "route" | "window" | "drawer";
 
@@ -190,7 +191,7 @@ export function useSettingsNavigate() {
       // External URLs: just open a new tab. Leave the shell open.
       if (isExternal) {
         if (event && "preventDefault" in event) event.preventDefault();
-        window.open(href, "_blank", "noopener,noreferrer");
+        openOutbound(href, "_blank", "noopener");
         return;
       }
 
@@ -204,7 +205,7 @@ export function useSettingsNavigate() {
           target?.closest("a[href]") instanceof HTMLAnchorElement;
         if (!fromAnchor) {
           if (event && "preventDefault" in event) event.preventDefault();
-          window.open(href, "_blank", "noopener,noreferrer");
+          openOutbound(href, "_blank", "noopener");
         }
         // If the event came from a real <a>, we *don't* preventDefault
         // so the browser executes its native cmd-click semantics.
@@ -263,7 +264,7 @@ export function useSettingsTabNavigate() {
           target?.closest("a[href]") instanceof HTMLAnchorElement;
         if (!fromAnchor) {
           if (event && "preventDefault" in event) event.preventDefault();
-          window.open(href, "_blank", "noopener,noreferrer");
+          openOutbound(href, "_blank", "noopener");
         }
         return;
       }

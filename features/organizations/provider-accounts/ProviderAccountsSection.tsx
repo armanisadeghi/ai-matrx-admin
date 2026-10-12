@@ -21,6 +21,7 @@ import {
   type ProviderAccountRegistryRow,
 } from "./service";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function label(value: string): string {
   return value
@@ -127,15 +128,13 @@ const columns: MatrxColumnDef<ProviderAccountRegistryRow>[] = [
     cell: (row) => {
       const href = row.loginUrl ? safeVaultLoginUrl(row.loginUrl) : null;
       return href ? (
-        <a
+        <OutboundLink
           href={href}
-          target="_blank"
-          rel="noreferrer"
           className="inline-flex rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
           aria-label={`Open ${row.displayName}`}
         >
           <ExternalLink className="h-4 w-4" />
-        </a>
+        </OutboundLink>
       ) : null;
     },
   },

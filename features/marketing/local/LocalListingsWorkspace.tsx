@@ -98,6 +98,7 @@ import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import type { ContextMenuExtraItem } from "@ai-matrx/context-menu/engine";
 import { NO_RAW_ROW_WINDOW } from "@/features/marketing/social/row-open";
 import { spendCategory } from "@/features/marketing/data/spend-categories";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const TIER_BADGE_CLASS: Record<PublisherTier, string> = {
   critical: "bg-primary/15 text-primary-ink",
@@ -918,15 +919,13 @@ function ListingsMatrix({
               </Button>
             ) : null}
             {publisher.manage_url ? (
-              <a
+              <OutboundLink
                 href={publisher.manage_url}
-                target="_blank"
-                rel="noreferrer"
                 className="text-muted-foreground hover:text-primary"
                 aria-label={`Open ${publisher.name} listing manager`}
               >
                 <ArrowUpRight className="size-3.5" aria-hidden />
-              </a>
+              </OutboundLink>
             ) : null}
           </div>
           {listing &&
@@ -1044,15 +1043,13 @@ function ListingsMatrix({
             }}
           />
           {row.listing?.listing_url ? (
-            <a
+            <OutboundLink
               href={row.listing.listing_url}
-              target="_blank"
-              rel="noreferrer"
               className="text-muted-foreground hover:text-primary"
               aria-label={`Open the live listing on ${row.publisher.name}`}
             >
               <ArrowUpRight className="size-3.5" aria-hidden />
-            </a>
+            </OutboundLink>
           ) : null}
         </div>
       ),

@@ -54,6 +54,7 @@ import {
   openFreshGoogleDriveFile,
   openGoogleDriveBlankTab,
 } from "./drive-browser";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const NO_ORGANIZATION_FOR_CONNECTION =
   "This Google account is your own (not filed under an organization) and the Drive service still needs an organization for the request. Choose one from the organization picker in the header and try again.";
@@ -369,7 +370,7 @@ export function GoogleDriveLibraryContent({ environment }: { environment: Google
       return;
     }
     const tab = openGoogleDriveBlankTab((url, target) =>
-      window.open(url, target),
+      openOutbound(url, target),
     );
     if (!tab) {
       setError(

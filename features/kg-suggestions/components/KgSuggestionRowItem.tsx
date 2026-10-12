@@ -82,6 +82,7 @@ import { formatRelativeTime } from "@/utils/datetime";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const MATCH_LABEL: Partial<Record<KgMatchKind, string>> = {
   exact: "Exact match",
@@ -1035,7 +1036,7 @@ function PreviewSourceButton({
       openNoteInWindow({ noteId: id, title: title ?? "Note" });
       return;
     }
-    if (href) window.open(href, "_blank", "noopener,noreferrer");
+    if (href) openOutbound(href, "_blank", "noopener");
   };
 
   return (

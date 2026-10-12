@@ -47,6 +47,7 @@ import {
   type Pipe,
   type PipeState,
 } from "../map/loop-map";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * Boustrophedon layout, 4 columns x 3 rows. Deliberately squarer than a long
@@ -605,14 +606,12 @@ function GrowthLoopCanvasInner() {
               {openGaps.length} open gaps · {blockers.length} blockers
             </div>
             {/* No dead ends: the customer-facing view of this same map. */}
-            <a
+            <OutboundLink
               href="/how-it-works"
-              target="_blank"
-              rel="noopener noreferrer"
               className="mt-1 inline-block text-[11px] font-medium text-primary hover:underline"
             >
               Customer-facing view →
-            </a>
+            </OutboundLink>
           </Panel>
         </ReactFlow>
       </div>

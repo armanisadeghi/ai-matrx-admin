@@ -70,6 +70,8 @@ import { PDF_EXTRACTOR_SURFACE_NAME as PDF_EXTRACTOR_SURFACE } from "@/features/
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { ArchivedDisclosure } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 // ─── Sub-tab type for per-extraction view ────────────────────────────────────
 
@@ -195,7 +197,7 @@ export function PdfExtractorFloatingWorkspace({
     // Open the in-app file viewer — files are identified by id, never by
     // a raw storage location.
     if (typeof window !== "undefined") {
-      window.open(`/files/f/${doc.sourceId}`, "_blank", "noopener,noreferrer");
+      openOutbound(`/files/f/${doc.sourceId}`, "_blank", "noopener");
     }
   }, [activeTab]);
 
@@ -1001,15 +1003,13 @@ function MetadataView({ doc }: { doc: PdfDocument }) {
           <span className="text-[10px] font-medium text-muted-foreground shrink-0 w-28">
             Source File
           </span>
-          <a
+          <OutboundLink
             href={`/files/f/${doc.sourceId}`}
-            target="_blank"
-            rel="noopener noreferrer"
             className="text-[10px] text-primary hover:underline break-all flex items-center gap-1"
           >
             Open file
             <ExternalLink className="w-2.5 h-2.5 shrink-0" />
-          </a>
+          </OutboundLink>
         </div>
       )}
       <MetaRow

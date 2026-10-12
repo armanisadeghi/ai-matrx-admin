@@ -315,6 +315,11 @@ jobs:
         # Arman 2026-10-11: "via ScrapeCreators" reached aimatrx.com. Data vendors are our business,
         # never the customer's. Static scan of customer-facing UI text; self-test proves it can fail.
         run: pnpm check:no-vendor-names && pnpm check:no-vendor-names:self-test
+      - name: Every link leaving AI Matrx carries our referral data
+        # Arman 2026-10-12: "We need sites to know our referral traffic." A raw <a target="_blank">,
+        # literal third-party anchor, window.open or hand-rolled utm_source outside @ai-matrx/kit/outbound
+        # fails (shrink-only baseline); the self-test plants each offender and must go red.
+        run: pnpm check:outbound-referral && pnpm check:outbound-referral:self-test
       - name: THE SHARED-CHECKOUT INSTALL GATE — it must run before pnpm links
         # 2026-09-12, three times: a `pnpm install` in the shared checkout
         # relinked @ai-matrx/design-system under the live :3001 preview, which

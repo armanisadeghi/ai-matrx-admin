@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import type { LocalInstance } from "@/app/api/local-instances/route";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** THE relative-time voice: @ai-matrx/kit/format owns "3m ago". */
 function formatLastSeen(lastSeen: string): string {
@@ -185,15 +186,13 @@ export default function LocalDevicesPage() {
 
               {/* Connect button */}
               {inst.tunnel_active && inst.tunnel_url ? (
-                <a
+                <OutboundLink
                   href={inst.tunnel_url}
-                  target="_blank"
-                  rel="noreferrer"
                   className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors shrink-0"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
                   Connect
-                </a>
+                </OutboundLink>
               ) : (
                 <span className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground shrink-0 cursor-not-allowed opacity-50">
                   <Globe className="h-3.5 w-3.5" />

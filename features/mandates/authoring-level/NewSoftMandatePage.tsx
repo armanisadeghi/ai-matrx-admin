@@ -59,6 +59,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { BackendApiError } from "@ai-matrx/api";
 import { keyFromName, softMandateNamespace } from "./soft-key";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface NewSoftMandatePageProps {
   level: MandateListLevel;
@@ -431,15 +432,13 @@ export function NewSoftMandatePage({ level, orgId = null, orgName = null }: NewS
               <p className="text-[12.5px] leading-snug text-destructive">
                 {keyTakenSentence(keyState.mandateKey, keyState.label)}
               </p>
-              <a
+              <OutboundLink
                 href={takenHref ?? keyState.href}
-                target="_blank"
-                rel="noreferrer"
                 className="inline-flex items-center gap-1 type-secondary font-medium underline underline-offset-2"
               >
                 <ExternalLink className="h-3 w-3" />
                 Open {keyState.label} in a new tab
-              </a>
+              </OutboundLink>
             </div>
           ) : null}
           {keyState.status === "unknown" ? (

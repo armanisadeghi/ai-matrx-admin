@@ -44,6 +44,7 @@ import { toast } from "@/lib/toast";
 import { announceComingSoon } from "@/lib/coming-soon/announce";
 import { adminDoorOpen } from "@/lib/api/adminDoor";
 import { agentGoHref } from "@ai-matrx/chat/agents/addressing/agentAddress";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type Lane = "agent" | "masterwork";
 type ResultTab = "compare" | "requirements" | "inputs";
@@ -377,9 +378,9 @@ function AgentFromChatResult({
           </Button>
         ) : null}
         <Button variant="outline" asChild iconEnd={<ExternalLink className="h-4 w-4" />}>
-          <a href={agentGoHref(result.agent_id, "/run")} target="_blank" rel="noreferrer">
+          <OutboundLink href={agentGoHref(result.agent_id, "/run")}>
             Run
-          </a>
+          </OutboundLink>
         </Button>
         <Button variant="outline" asChild>
           <Link href={agentGoHref(result.agent_id, "/build")} onClick={onOpened}>
@@ -387,9 +388,9 @@ function AgentFromChatResult({
           </Link>
         </Button>
         <Button variant="primary" asChild icon={<MessagesSquare className="h-4 w-4" />}>
-          <a href={continueWithAgentHref(result)} target="_blank" rel="noreferrer" title="Open in the builder, with its author in the side chat">
+          <OutboundLink href={continueWithAgentHref(result)} title="Open in the builder, with its author in the side chat">
             Keep working on it
-          </a>
+          </OutboundLink>
         </Button>
       </div>
       <StepRuns runs={resultRuns(result)} />
@@ -456,16 +457,14 @@ function StepRuns({ runs }: { runs: Partial<Record<FromChatStep, string>> }) {
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground" data-testid="from-chat-step-runs">
       <span>Full runs:</span>
       {named.map(({ step, label }) => (
-        <a
+        <OutboundLink
           key={step}
           href={fromChatRunHref(runs[step] as string)}
-          target="_blank"
-          rel="noreferrer"
           className="inline-flex items-center gap-1 text-primary underline-offset-2 hover:underline"
         >
           {label}
           <ExternalLink className="h-3 w-3" />
-        </a>
+        </OutboundLink>
       ))}
     </div>
   );

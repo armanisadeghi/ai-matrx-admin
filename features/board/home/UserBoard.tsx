@@ -94,6 +94,7 @@ import { runArrange, SHAPE_ARRANGE_GROUPS, SHAPE_GROUP_LABEL } from "../board/ar
 import { groupMoveSet } from "../engine/selection";
 import type { ArrangeCommand } from "../engine/arrange";
 import type { ItemStatus, ItemStatusDoor } from "../items/types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface UserBoardTile {
   id: string;
@@ -1127,16 +1128,14 @@ function BoardItemTile({
             <ReusedMarker source={source} />
             <TileCommentDoor tileId={id} type={type} source={source} title={title} boardRecord={boardRecord} />
             {href ? (
-            <a
+            <OutboundLink
               href={href}
-              target="_blank"
-              rel="noreferrer"
               title="Open in its own page"
               aria-label={`Open ${title} in its own page`}
               className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
             >
               <ExternalLink className="h-3.5 w-3.5" />
-            </a>
+            </OutboundLink>
             ) : null}
           </>
         }

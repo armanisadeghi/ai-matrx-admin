@@ -118,6 +118,8 @@ import { useMediaQuery } from "@ai-matrx/kit/media-query";
 import { setSourceNavOrder } from "../../utils/sourceNavOrder";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { researchTopicHubHref } from "@/features/knowledge/hub/legacyRoutes";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 function formatPageAge(pageAge: string | null): {
   display: string;
@@ -1061,16 +1063,14 @@ export default function SourceList() {
               {s.title || s.url}
             </Link>
             {/* The page this row is ABOUT — the outbound door. */}
-            <a
+            <OutboundLink
               href={s.url}
-              target="_blank"
-              rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
               title={`Open ${s.url} in a new tab`}
               className="mt-0.5 block type-secondary text-muted-foreground break-all line-clamp-1 hover:text-foreground "
             >
               {s.url}
-            </a>
+            </OutboundLink>
             {s.description && (
               <div className="type-secondary text-muted-foreground/80 mt-0.5 line-clamp-2 leading-relaxed break-words">
                 {s.description}
@@ -1353,7 +1353,7 @@ export default function SourceList() {
                   <DropdownMenuItem
                     onClick={(e) => {
                       if (e.metaKey || e.ctrlKey) {
-                        window.open(sourceHref(s.id), "_blank");
+                        openOutbound(sourceHref(s.id), "_blank");
                         return;
                       }
                       handleNavigate(s.id);
@@ -1362,7 +1362,7 @@ export default function SourceList() {
                     View Details
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => window.open(s.url, "_blank")}
+                    onClick={() => openOutbound(s.url, "_blank")}
                   >
                     <ExternalLink className="h-4 w-4 mr-2" />
                     Open URL

@@ -44,6 +44,7 @@ import { pageTopicState, pageTopicViewOf } from "../../redux/selectors";
 import type { EntityRef as MapEntityRef, PageIntentItem } from "../../types";
 import { IntentDot } from "../../ui/IntentDot";
 import { hasImpressions, pageTrafficNumbers } from "./pageRows";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface PageColumnDeps {
   mapId: string;
@@ -126,17 +127,15 @@ export function pageColumns({
           <span className="flex min-w-0 items-center gap-1">
             <EntityRef token="web_page" id={id} name={label ?? url ?? id} />
             {url ? (
-              <a
+              <OutboundLink
                 href={url}
-                target="_blank"
-                rel="noreferrer noopener"
                 aria-label={`Open ${url} in a new tab`}
                 title="Open the live page in a new tab"
                 onClick={(event) => event.stopPropagation()}
                 className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 <ExternalLink className="h-3 w-3" aria-hidden />
-              </a>
+              </OutboundLink>
             ) : null}
           </span>
         );

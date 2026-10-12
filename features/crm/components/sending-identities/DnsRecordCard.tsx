@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { DnsRecordSpec } from "@/features/crm/sending-identities/types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface DnsRecordCardProps {
   record: DnsRecordSpec;
@@ -116,25 +117,21 @@ export function DnsRecordCard({
             {REGISTRAR_GUIDES.map((guide, index) => (
               <span key={guide.name}>
                 {index > 0 ? " · " : ""}
-                <a
+                <OutboundLink
                   href={guide.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="underline underline-offset-2 hover:text-foreground"
                 >
                   {guide.name}
-                </a>
+                </OutboundLink>
               </span>
             ))}
             {" · "}
-            <a
+            <OutboundLink
               href={`https://www.google.com/search?q=${encodeURIComponent("how to add a TXT record to my domain")}`}
-              target="_blank"
-              rel="noopener noreferrer"
               className="underline underline-offset-2 hover:text-foreground"
             >
               somewhere else
-            </a>
+            </OutboundLink>
           </p>
         ) : null}
         <div className="flex items-center gap-3">

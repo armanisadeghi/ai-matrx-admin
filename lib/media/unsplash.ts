@@ -20,6 +20,7 @@
  */
 
 import { unsplashClient } from "@/hooks/images/unsplashClient";
+import { withReferral } from "@ai-matrx/kit/outbound";
 
 /** Attribution required by the Unsplash API guidelines. */
 export interface UnsplashCredit {
@@ -49,7 +50,6 @@ export interface ResolvedImage {
   creditUrl?: string;
 }
 
-const UTM = "?utm_source=ai_matrx&utm_medium=referral";
 
 type UnsplashPhotoLike = {
   id?: string;
@@ -71,7 +71,7 @@ function toPick(photo: UnsplashPhotoLike): UnsplashPick | null {
     alt: photo.alt_description || photo.description || undefined,
     credit: {
       name: photo?.user?.name || "Unsplash",
-      url: profile ? `${profile}${UTM}` : undefined,
+      url: profile ? withReferral(profile) : undefined,
     },
     downloadLocation: photo?.links?.download_location,
   };

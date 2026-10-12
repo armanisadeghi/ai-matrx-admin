@@ -28,6 +28,7 @@ import { AnswerValueView } from "@/components/official/structured-value/AnswerVa
 import { hasKindKeyAnySpelling } from "@/features/content-ir/surfaces/json-kind-signal";
 import { referenceFence, type ContextFieldKind } from "@ai-matrx/records/scopes";
 import type { ContextCellLike } from "@/features/scopes/utils/referenceCell";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** What the display reads: a value's kind, its cell and its decoded references. */
 export type ContextValueDisplayCell = ContextCellLike;
@@ -92,15 +93,13 @@ function renderTyped(
     case "url":
       if (!text) return undefined;
       return (
-        <a
+        <OutboundLink
           href={text}
-          target="_blank"
-          rel="noopener noreferrer"
           className={cn("inline-flex items-center gap-1 text-primary hover:underline", className)}
         >
           <ExternalLink className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">{text}</span>
-        </a>
+        </OutboundLink>
       );
     case "phone":
       if (!text) return undefined;

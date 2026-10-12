@@ -69,6 +69,7 @@ import {
 import { YouTubeResearchActions } from "./YouTubeResearchActions";
 import { YouTubeSearchHistory } from "./YouTubeSearchHistory";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type FormState = YouTubeSearchRequest & {
   published_after: string;
@@ -1035,14 +1036,12 @@ function VideoCard({
             asChild
             variant="outline"
           >
-            <a
+            <OutboundLink
               href={youTubeWatchUrl(video.video_id)}
-              target="_blank"
-              rel="noreferrer"
               aria-label="Open on YouTube"
             >
               <ExternalLink className="h-4 w-4" />
-            </a>
+            </OutboundLink>
           </Button>
           <TapTargetCopyButton value={youTubeWatchUrl(video.video_id)} variant="transparent" ariaLabel="Copy YouTube link" />
         </div>

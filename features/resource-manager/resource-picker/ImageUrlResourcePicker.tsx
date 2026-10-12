@@ -23,6 +23,7 @@ import { useOpenImageUploaderWindow } from "@/features/overlays/openers/imageUpl
 import { CloudFolders } from "@/features/files/utils/folder-conventions";
 import { normalizeUrl, validateImageUrl } from "./imageLink";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface ImageUrlResourcePickerProps {
   onBack: () => void;
@@ -223,15 +224,13 @@ export function ImageUrlResourcePicker({
               <div className="text-sm font-medium text-foreground">
                 {previewImage.type}
               </div>
-              <a
+              <OutboundLink
                 href={previewImage.url}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="flex items-center gap-1 truncate text-xs text-blue-600 hover:underline dark:text-blue-400"
               >
                 <span className="truncate">{previewImage.url}</span>
                 <ExternalLink className="h-3 w-3 shrink-0" />
-              </a>
+              </OutboundLink>
             </div>
           </div>
         )}

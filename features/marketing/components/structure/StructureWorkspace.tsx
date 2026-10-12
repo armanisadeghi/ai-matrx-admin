@@ -31,6 +31,7 @@ import {
 } from "@/features/marketing/components/shared/MarketingUi";
 import { cn } from "@/lib/utils";
 import { Badge, Chip, ChipSet } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * Structure — the site's ROUTING TREE, derived from the canonical page
@@ -246,15 +247,13 @@ function TreeRow({
             <FileText className="h-3.5 w-3.5" />
           </Link>
         ) : null}
-        <a
+        <OutboundLink
           href={liveHref(node)}
-          target="_blank"
-          rel="noreferrer"
           title="Open on the live site"
           className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           <ExternalLink className="h-3.5 w-3.5" />
-        </a>
+        </OutboundLink>
       </span>
     </div>
   );
@@ -383,15 +382,13 @@ function ColumnsView({
               Page workspace
             </Link>
           ) : null}
-          <a
+          <OutboundLink
             href={liveHref(selected)}
-            target="_blank"
-            rel="noreferrer"
             className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-foreground hover:bg-muted"
           >
             <ExternalLink className="h-3 w-3" />
             Live URL
-          </a>
+          </OutboundLink>
         </div>
       </div>
     </div>

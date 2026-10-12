@@ -20,6 +20,7 @@ import { SpaceIcon } from "../page/SpaceIcon";
 import { useSeededLink } from "../page/space-links";
 import { useSpaces } from "../state/SpacesProvider";
 import { InlineMath } from "./stored-blocks";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function readSpan(raw: unknown): RichSpan {
   try {
@@ -78,11 +79,9 @@ function LinkMention({ url, title: storedTitle, icon: storedIcon }: { url: strin
   const isImage = !!icon && /^(https?:|data:|\/)/.test(icon) && failedIcon !== icon;
   return (
     <span className="spaces-mention-linkwrap">
-      <a
+      <OutboundLink
         className="spaces-mention spaces-mention-link"
         href={url}
-        target="_blank"
-        rel="noopener noreferrer"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <span className="spaces-mention-icon">
@@ -94,7 +93,7 @@ function LinkMention({ url, title: storedTitle, icon: storedIcon }: { url: strin
           )}
         </span>
         <span className="spaces-mention-title">{title || host}</span>
-      </a>
+      </OutboundLink>
       <span className="spaces-mention-card" role="tooltip" contentEditable={false}>
         <span className="spaces-mention-card-title">{title || host}</span>
         {live?.description ? <span className="spaces-mention-card-desc">{live.description}</span> : null}

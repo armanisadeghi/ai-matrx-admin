@@ -77,6 +77,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { readOf, type ReadOutcome } from "@ai-matrx/design-system";
 
 import { KgCostExplorer } from "./KgCostExplorer";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -968,15 +969,13 @@ function BatchDetailDialog({
               {detail.response_uri && (
                 <section>
                   <h3 className="mb-1 text-sm font-semibold">Response URI</h3>
-                  <a
+                  <OutboundLink
                     href={detail.response_uri}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                   >
                     {detail.response_uri}
                     <ExternalLink className="h-3 w-3" />
-                  </a>
+                  </OutboundLink>
                 </section>
               )}
 

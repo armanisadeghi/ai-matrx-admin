@@ -25,6 +25,7 @@ import { downloadSingleVariant } from "../utils/download-bundle";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function fitIcon(fit: ImageFit): React.ReactNode {
   switch (fit) {
@@ -315,15 +316,13 @@ export function StudioVariantTile({
         {viewerHref && (
           <>
             <div className="w-px bg-border" />
-            <a
+            <OutboundLink
               href={viewerHref}
-              target="_blank"
-              rel="noopener noreferrer"
               className="flex items-center justify-center px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
               title="Open in the file viewer (new tab)"
             >
               <ExternalLink className="h-3 w-3" />
-            </a>
+            </OutboundLink>
           </>
         )}
       </div>

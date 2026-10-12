@@ -16,6 +16,7 @@ import { getEntityInfo } from "@/features/scopes/registry/entityRegistry";
 import { chatStateOf } from "../utils";
 import { getAction, registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 function continueHref(ctx: RichDocumentActionContext): string | null {
   if (ctx.source.type !== "chat-message") return null;
@@ -43,7 +44,7 @@ registerAction({
     continueHref(ctx) !== null,
   run: (ctx) => {
     const href = continueHref(ctx);
-    if (href) window.open(href, "_blank", "noopener,noreferrer");
+    if (href) openOutbound(href, "_blank", "noopener");
   },
 });
 

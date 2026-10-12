@@ -3,6 +3,7 @@ import { Image, Rocket, ArrowRight, ExternalLink, Lightbulb, Loader2 } from 'luc
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import DefaultErrorFallback from "@/components/mardown-display/markdown-classification/custom-views/common/DefaultErrorFallback";
 import { Button } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface AppSuggestion {
     app_name?: string;
@@ -192,17 +193,15 @@ const AppSuggestionsDisplay = ({ data, handleGenerate, handleSelect, imageUrls =
                                                         alt={`Generated visual for ${suggestion.app_name || 'App'}`}
                                                         className="w-full h-auto rounded-lg object-cover shadow-sm"
                                                     />
-                                                    <a
+                                                    <OutboundLink
                                                         href={imageUrls[index]}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
                                                         data-tap-target
                                                         aria-label="Open generated image in a new tab"
                                                         className="absolute top-2 right-2 p-1.5 bg-white/80 dark:bg-slate-800/80 rounded-full opacity-100 transition-opacity sm:[@media(hover:hover)]:opacity-0 sm:[@media(hover:hover)]:group-hover:opacity-100 focus-visible:opacity-100"
                                                         onClick={(e) => e.stopPropagation()}
                                                     >
                                                         <ExternalLink size={14} className="text-indigo-500" />
-                                                    </a>
+                                                    </OutboundLink>
                                                 </div>
                                             )}
                                         </div>

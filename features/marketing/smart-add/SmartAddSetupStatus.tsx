@@ -28,6 +28,7 @@ import { lookupSystemRun, startSystemRun } from "@/features/education/kits/syste
 import { countSitePages, listBrandProperties, listBrandSites } from "@/features/marketing/data/service";
 import { initializeSite } from "@/features/marketing/crawler/direct-client";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const SETUP_KEY = "smart_add_brand_setup";
 const STOPPED = new Set(["failed", "errored", "cancelled", "stopped"]);
@@ -170,9 +171,9 @@ export function SmartAddSetupStatus({ brandId, organizationId }: { brandId: stri
           Run setup again
         </Button>
       ) : null}
-      <a href={runHref(r.runId)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 text-xs text-primary">
+      <OutboundLink href={runHref(r.runId)} className="inline-flex items-center gap-0.5 text-xs text-primary">
         Watch <ExternalLink className="size-3" />
-      </a>
+      </OutboundLink>
     </span>
   );
 }

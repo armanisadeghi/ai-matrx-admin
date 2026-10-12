@@ -62,6 +62,7 @@ import {
   invitationWhen,
   meetingCalendarEvent,
 } from "@/features/meet/lib/invitation";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface MeetingInviteDialogProps {
   open: boolean;
@@ -235,28 +236,24 @@ export function MeetingInviteDialog({
               <SectionTitle>Add to calendar</SectionTitle>
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" asChild>
-                  <a
+                  <OutboundLink
                     href={googleCalendarUrl(calendarEvent)}
-                    target="_blank"
-                    rel="noopener noreferrer"
                   >
                     <CalendarPlus className="h-4 w-4" aria-hidden="true" />
                     Google Calendar
-                  </a>
+                  </OutboundLink>
                 </Button>
                 {outlookWebSupports(calendarEvent) ? (
                   <Button
                     variant="outline"
                     asChild
                   >
-                    <a
+                    <OutboundLink
                       href={outlookCalendarUrl(calendarEvent)}
-                      target="_blank"
-                      rel="noopener noreferrer"
                     >
                       <CalendarPlus className="h-4 w-4" aria-hidden="true" />
                       Outlook
-                    </a>
+                    </OutboundLink>
                   </Button>
                 ) : null}
                 <Button

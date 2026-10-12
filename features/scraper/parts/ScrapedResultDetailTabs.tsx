@@ -17,6 +17,7 @@ import type { ScraperResult } from "@/features/scraper/hooks/useScraperApi";
 import { cn } from "@/lib/utils";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export type ScrapedDetailTabId = "pretty" | "overview" | "text" | "raw";
 
@@ -138,15 +139,13 @@ function ScrapedOverviewPanel({ selected }: { selected: ScraperResult }) {
         <h3 className="text-sm font-semibold text-foreground leading-snug">
           {selected.overview?.page_title || "Untitled"}
         </h3>
-        <a
+        <OutboundLink
           href={selected.url}
-          target="_blank"
-          rel="noopener noreferrer"
           className="text-[10px] text-primary  flex items-center gap-1 mt-1 max-w-full"
         >
           <span className="truncate">{selected.url}</span>
           <ExternalLink className="w-2.5 h-2.5 shrink-0" />
-        </a>
+        </OutboundLink>
       </div>
 
       <div className="grid grid-cols-3 gap-1.5">

@@ -36,6 +36,7 @@ import {
   isExclusiveNavGroupActive,
   isOnRoute,
 } from "@/features/shell/utils/is-nav-group-active";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface MobileNavigationDrawerProps {
   items: ShellNavItem[];
@@ -90,15 +91,13 @@ function GroupButton({
       data-active={isActive ? "true" : undefined}
     >
       {item.external || item.openInNewTab ? (
-        <a
+        <OutboundLink
           href={item.href}
-          target="_blank"
-          rel="noopener noreferrer"
           className={className}
           onClick={closeAfterNavigationStarts}
         >
           {content}
-        </a>
+        </OutboundLink>
       ) : (
         <AppLink
           href={item.href}

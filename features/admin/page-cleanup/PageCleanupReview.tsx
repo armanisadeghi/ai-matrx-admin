@@ -48,6 +48,7 @@ import {
   type PageCleanupDecision,
 } from "./page-cleanup.typed-table";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface Entry {
   decision: PageCleanupDecision | null;
@@ -409,15 +410,13 @@ function CleanupRowView({
     >
       <div className="min-w-0">
         {row.href === row.path ? (
-          <a
+          <OutboundLink
             href={row.href}
-            target="_blank"
-            rel="noopener noreferrer"
             className="inline-flex max-w-full items-center gap-1 break-all font-mono text-xs text-primary hover:underline"
           >
             {row.path}
             <ExternalLink className="h-3 w-3 shrink-0" />
-          </a>
+          </OutboundLink>
         ) : (
           <span className="break-all font-mono text-xs text-foreground">
             {row.path}
@@ -427,15 +426,13 @@ function CleanupRowView({
           <div className="flex flex-wrap items-center gap-x-1 text-[11px] text-muted-foreground">
             <span>{row.note}</span>
             {row.href ? (
-              <a
+              <OutboundLink
                 href={row.href}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="inline-flex items-center gap-0.5 font-mono text-primary hover:underline"
               >
                 · open {row.href}
                 <ExternalLink className="h-3 w-3 shrink-0" />
-              </a>
+              </OutboundLink>
             ) : null}
           </div>
         ) : null}

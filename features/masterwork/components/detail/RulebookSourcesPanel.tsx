@@ -104,6 +104,7 @@ import { RunStages } from "../RunStages";
 import { useLaunchGate } from "@/lib/launch-gate/useLaunchGate";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { LIBRARIES_PATH } from "@/features/knowledge/modulePaths";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
  * The registered source→rulebook pairs live in ONE place — `../../sourceLinks`
@@ -1694,15 +1695,13 @@ export function SourceRows({
           <div className="flex min-h-14 items-center gap-3">
           <Globe className="size-4 shrink-0 text-muted-foreground" />
           <div className="min-w-0 flex-1">
-            <a
+            <OutboundLink
               href={staged.url}
-              target="_blank"
-              rel="noopener noreferrer"
               className="inline-flex max-w-full items-center gap-1 truncate text-sm text-foreground underline-offset-2 hover:underline"
             >
               <span className="truncate">{staged.title || staged.url}</span>
               <ExternalLink className="size-3 shrink-0 text-muted-foreground" />
-            </a>
+            </OutboundLink>
             <div className="mt-0.5 text-[10px] text-muted-foreground">
               Link — fetched fresh when the rules are distilled
             </div>
@@ -2113,14 +2112,12 @@ export function DumpOutcomes({
                     className="text-xs text-foreground"
                   />
                 ) : res.kind === "url" && res.url ? (
-                  <a
+                  <OutboundLink
                     href={res.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="text-foreground underline-offset-2 hover:underline"
                   >
                     {name}
-                  </a>
+                  </OutboundLink>
                 ) : (
                   <span className="text-foreground">{name}</span>
                 )}

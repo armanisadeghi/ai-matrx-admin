@@ -29,6 +29,7 @@ import { useResearchStream } from "../../hooks/useResearchStream";
 import { StoppedEarlyNote } from "../shared/StoppedEarlyNote";
 import { ResearchRecordReader, type ResearchReaderRecord } from "../reader/ResearchRecordReader";
 import { type ResearchAnalysis, type ResearchDataEvent, type ResearchSource, tokenUsageFromJson } from "../../types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** A string with real (non-whitespace) content. */
 const hasText = (s: string | null | undefined): s is string => !!s && s.trim().length > 0;
@@ -55,7 +56,7 @@ function AnalysisDetails({
         {
           title: "This analysis",
           rows: [
-            !!source?.url && { label: "Page", value: <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{source.hostname ?? "Open"}</a> },
+            !!source?.url && { label: "Page", value: <OutboundLink href={source.url} className="text-primary hover:underline">{source.hostname ?? "Open"}</OutboundLink> },
             analysis.status !== "success" && { label: "Status", value: <span className="capitalize">{analysis.status}</span> },
             { label: "Written", value: detailDate(analysis.created_at) },
             !!analysis.model_id && { label: "Model", value: <AiModelRef modelId={analysis.model_id} showIcon={false} disableNavigation /> },

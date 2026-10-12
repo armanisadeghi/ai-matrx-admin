@@ -69,6 +69,7 @@ import {
 import { useMarketingSite } from "@/features/marketing/components/site/MarketingSiteContext";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { cn } from "@/lib/utils";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** `?changeKind=` — set by the server assist chips, and by the KPI tiles. */
 const CHANGE_KIND_PARAM = "changeKind";
@@ -189,15 +190,13 @@ function ChangeDetail({
       <p className="text-sm font-medium text-foreground">{verdict.headline}</p>
       <p className="mt-1 text-sm text-muted-foreground">{verdict.detail}</p>
       <div className="mt-3 flex flex-wrap items-center gap-3">
-        <a
+        <OutboundLink
           href={row.source_url}
-          target="_blank"
-          rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-sm font-medium text-primary "
         >
           Open the page that links to you
           <ExternalLink className="h-3.5 w-3.5" />
-        </a>
+        </OutboundLink>
         <Link
           href={linkRecordHref}
           className="inline-flex items-center gap-1 text-sm font-medium text-primary "
@@ -205,14 +204,12 @@ function ChangeDetail({
           Open the link record <Link2 className="h-3.5 w-3.5" />
         </Link>
         {row.target_url ? (
-          <a
+          <OutboundLink
             href={row.target_url}
-            target="_blank"
-            rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-sm font-medium text-primary "
           >
             Open your page <ExternalLink className="h-3.5 w-3.5" />
-          </a>
+          </OutboundLink>
         ) : null}
       </div>
       <p className="mt-3 text-xs text-muted-foreground">
@@ -443,10 +440,8 @@ export function BacklinkChangesTable({ siteId }: { siteId: string }) {
       cellKind: "text",
       cell: (row) => (
         <div className="min-w-40 max-w-64">
-          <a
+          <OutboundLink
             href={row.source_url}
-            target="_blank"
-            rel="noopener noreferrer"
             title={row.source_url}
             onClick={(event) => event.stopPropagation()}
             className="group block"
@@ -455,7 +450,7 @@ export function BacklinkChangesTable({ siteId }: { siteId: string }) {
               <span className="truncate">{row.source_domain}</span>
               <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground" />
             </span>
-          </a>
+          </OutboundLink>
           {/* A change names a backlink, so the backlink must be reachable. */}
           <Link
             href={linkRecordHref(row)}
@@ -477,16 +472,14 @@ export function BacklinkChangesTable({ siteId }: { siteId: string }) {
       cellKind: "text",
       cell: (row) =>
         row.target_url ? (
-          <a
+          <OutboundLink
             href={row.target_url}
-            target="_blank"
-            rel="noopener noreferrer"
             title={row.target_url}
             onClick={(event) => event.stopPropagation()}
             className="block min-w-32 max-w-56 truncate font-mono text-[11px] text-primary "
           >
             {urlPath(row.target_url)}
-          </a>
+          </OutboundLink>
         ) : (
           <span className="text-xs text-muted-foreground">—</span>
         ),

@@ -88,6 +88,7 @@ import { FileInfoDialog } from "@/features/files/components/core/FileInfo/FileIn
 import { RenameDialog } from "@/features/files/components/core/RenameDialog/RenameDialog";
 import { setClipboard } from "@/features/files/utils/clipboard";
 import { downloadUrl, downloadFile } from "@ai-matrx/kit/download";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export interface FileContextMenuProps {
   fileId: string;
@@ -433,7 +434,7 @@ export function FileContextMenu({
         found: boolean;
       }>(`/api/document/by-cld-file/${encodeURIComponent(fileId)}`);
       if (data.found && data.document_id) {
-        window.open(
+        openOutbound(
           `/knowledge/viewer/${data.document_id}`,
           "_blank",
           "noopener",
@@ -461,7 +462,7 @@ export function FileContextMenu({
     try {
       const ids = await resolvePdfSurfaceIds({ fileId });
       if (ids.processedDocumentId) {
-        window.open(
+        openOutbound(
           `/knowledge/library/${ids.processedDocumentId}/preview?assets=1`,
           "_blank",
           "noopener",
@@ -724,7 +725,7 @@ export function FileContextMenu({
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() =>
-                      window.open("/knowledge/search", "_blank", "noopener")
+                      openOutbound("/knowledge/search", "_blank", "noopener")
                     }
                   >
                     <Telescope className="mr-2 h-4 w-4" />

@@ -37,6 +37,7 @@ import {
 } from "@/features/marketing/components/shared/MarketingUi";
 import { cn } from "@/lib/utils";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const FILTERS: Array<{ value: SitemapPagesFilter; label: string }> = [
   { value: "all", label: "All listed" },
@@ -255,15 +256,13 @@ export function SitemapDetail({ sitemapId }: { sitemapId: string }) {
           ))}
         </div>
         <CopyButtons size="icon" {...sitemapCopy} json={() => doc} />
-        <a
+        <OutboundLink
           href={sitemap.data.url}
-          target="_blank"
-          rel="noreferrer"
           className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
           aria-label="Open sitemap XML"
         >
           <ExternalLink className="h-3.5 w-3.5" />
-        </a>
+        </OutboundLink>
       </header>
 
       <NonEditableContextMenu

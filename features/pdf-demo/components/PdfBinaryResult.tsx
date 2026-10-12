@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { formatFileSize } from "@ai-matrx/kit/format";
 import type { BinaryResult } from "../hooks/usePdfDemoApi";
 import { downloadUrl } from "@ai-matrx/kit/download";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // react-pdf + pdfjs cannot SSR and are heavy — load only when a PDF arrives.
 const PdfDocumentRenderer = dynamic(
@@ -65,9 +66,9 @@ export function PdfBinaryResult({ result }: Props) {
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <Button asChild variant="outline">
-            <a href={objectUrl} target="_blank" rel="noreferrer">
+            <OutboundLink href={objectUrl}>
               <ExternalLink className="h-3.5 w-3.5 mr-1" /> Open
-            </a>
+            </OutboundLink>
           </Button>
           <Button
             icon={<Download />}

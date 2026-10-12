@@ -15,6 +15,7 @@ import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/ac
 import { loadBlocks, winningRowId } from "../blocksCache";
 import { BLOCK_LANES, BLOCK_LANE_LABEL, SYSTEM_ORG_ID, matchesQuery, partitionByLane, type BlockLane } from "../lanes";
 import type { PromptBlockRow } from "../types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface PickerAnchor {
   x: number;
@@ -126,15 +127,13 @@ export function PromptBlockPicker({ open, anchor, initialQuery = "", declared, o
             </button>
           ))}
         </div>
-        <a
+        <OutboundLink
           href="/agents/prompt-blocks/new"
-          target="_blank"
-          rel="noreferrer"
           className="mt-2 flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs text-primary hover:bg-accent"
         >
           <Plus className="h-3.5 w-3.5" />
           New block
-        </a>
+        </OutboundLink>
       </PopoverContent>
     </Popover>
   );

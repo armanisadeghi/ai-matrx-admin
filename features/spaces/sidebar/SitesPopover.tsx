@@ -14,6 +14,8 @@ import { toast } from "@/lib/toast";
 import { SpaceIcon } from "../page/SpaceIcon";
 import { publicPageUrl, readPublishedPages, type PublishedPage } from "../publish/publish-doors";
 import { useSpaces } from "../state/SpacesProvider";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const DATE = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" });
 
@@ -57,12 +59,12 @@ export function SitesPopover() {
                   <div className="truncate type-secondary text-muted-foreground">
                     {DATE.format(new Date(p.publishedAt))} · {p.indexed ? "Indexed" : "Not indexed"}
                   </div>
-                  <a className="block truncate type-secondary text-muted-foreground hover:underline" href={url} target="_blank" rel="noopener noreferrer" data-testid="spaces-site-link">
+                  <OutboundLink className="block truncate type-secondary text-muted-foreground hover:underline" href={url} data-testid="spaces-site-link">
                     /site/{p.key}
-                  </a>
+                  </OutboundLink>
                 </div>
                 <Button variant="quiet" aria-label="Copy link" title="Copy link" icon={<Copy size={15} />} onClick={() => void copyText(url, "Link copied")} />
-                <Button variant="quiet" aria-label="Open public link" title="Open public link" icon={<ExternalLink size={15} />} onClick={() => window.open(url, "_blank", "noopener,noreferrer")} />
+                <Button variant="quiet" aria-label="Open public link" title="Open public link" icon={<ExternalLink size={15} />} onClick={() => openOutbound(url, "_blank", "noopener")} />
                 <Button
                   variant="quiet"
                   aria-label="Open in Spaces"

@@ -46,6 +46,7 @@ import {
 import { saveImageFile } from "./utils/save-image-file";
 import type { UnifiedImageBlock } from "./types";
 import { downloadFile } from "@ai-matrx/kit/download";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export interface ImageActionsApi {
   // ── Local actions (no network) ─────────────────────────────────────
@@ -169,7 +170,7 @@ export function useImageActions({
       toast.error("No safe link is available for this image");
       return;
     }
-    window.open(target, "_blank", "noopener,noreferrer");
+    openOutbound(target, "_blank", "noopener");
   }, [block, currentSrc]);
 
   const copyLink = useCallback(async () => {
@@ -255,7 +256,7 @@ export function useImageActions({
 
   const viewOriginal = useCallback(() => {
     if (!parentFileId) return;
-    window.open(`/files/f/${parentFileId}`, "_blank", "noopener,noreferrer");
+    openOutbound(`/files/f/${parentFileId}`, "_blank", "noopener");
   }, [parentFileId]);
 
   // ── Server actions ────────────────────────────────────────────────

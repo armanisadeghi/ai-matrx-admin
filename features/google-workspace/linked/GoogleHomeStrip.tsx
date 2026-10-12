@@ -23,6 +23,8 @@ import { useGoogleWorkspaceConnection } from "./useGoogleWorkspaceConnection";
 import { useGoogleLink } from "./GoogleLinkControl";
 import { savedRecordGoogleAdapter } from "./EditorGoogleLinks";
 import type { GoogleFileLink } from "./link-store";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export interface LinkedItem {
   id: string;
@@ -166,12 +168,12 @@ export function GoogleHomeStrip({
       if (made.assistId) {
         const assistId = made.assistId;
         toast.info(SENT_FOR_APPROVAL_MESSAGE, {
-          action: { label: "Open", onClick: () => window.open(approvalQueueHref(assistId), "_blank") },
+          action: { label: "Open", onClick: () => openOutbound(approvalQueueHref(assistId), "_blank") },
         });
       } else {
         toast.success(`Created in ${app}`, {
           action: made.webViewLink
-            ? { label: "Open", onClick: () => window.open(made.webViewLink ?? "", "_blank", "noopener") }
+            ? { label: "Open", onClick: () => openOutbound(made.webViewLink ?? "", "_blank", "noopener") }
             : undefined,
         });
       }
@@ -204,7 +206,7 @@ export function GoogleHomeStrip({
           <>
             {chipLabels(recent).map(({ item, label }) => (
               <Chip key={item.id} label={label} title={`Open in ${app}`} icon={<ExternalLink />} asChild>
-                <a href={item.link.webViewLink ?? "#"} target="_blank" rel="noopener noreferrer" />
+                <OutboundLink href={item.link.webViewLink ?? "#"} />
               </Chip>
             ))}
             {sendable.map((item) => (

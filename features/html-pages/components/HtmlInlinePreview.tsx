@@ -57,6 +57,7 @@ import {
   WIDE_FIGURE_ATTRIBUTE,
   WIDE_FIGURE_CLASS,
 } from "@ai-matrx/chat/agents/components/shared/assistant-message-layout";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const copyPageLink = (link: string) => copyText(link, { successMessage: "Copied page link", notify: copyNotify });
 
@@ -380,7 +381,7 @@ const HtmlInlinePreview: React.FC<HtmlInlinePreviewProps> = ({
               <Button
                 variant="quiet"
                 icon={<ExternalLink />}
-                onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
+                onClick={() => openOutbound(url, "_blank", "noopener")}
                 title="Open page"
                 aria-label="Open page"
               />
@@ -428,7 +429,7 @@ const HtmlInlinePreview: React.FC<HtmlInlinePreviewProps> = ({
                 </DropdownMenuItem>
               ) : null}
               {url ? (
-                <DropdownMenuItem onSelect={() => window.open(url, "_blank", "noopener,noreferrer")}>
+                <DropdownMenuItem onSelect={() => openOutbound(url, "_blank", "noopener")}>
                   <ExternalLink /> Open page
                 </DropdownMenuItem>
               ) : null}

@@ -42,6 +42,7 @@ import { TemplateGallery } from "./TemplateGallery";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { useSpaceBuilder } from "../ai/SpaceBuilder";
 import { signInHref } from "../workspace/LoadAccessState";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 
 /** The current page's row scrolls into view when it appears (D9), without moving the page itself. */
@@ -156,7 +157,7 @@ function RowMenu({ space, onRename }: { space: SpaceSummary; onRename: () => voi
           Move to Trash
         </button>
         <div className="my-1 border-t border-border" />
-        <button type="button" className="spaces-menu-row" onClick={act(() => window.open(`/spaces/${space.id}`, "_blank", "noopener"))}>
+        <button type="button" className="spaces-menu-row" onClick={act(() => openOutbound(`/spaces/${space.id}`, "_blank", "noopener"))}>
           <span className="spaces-menu-row-icon">
             <ExternalLink size={16} />
           </span>

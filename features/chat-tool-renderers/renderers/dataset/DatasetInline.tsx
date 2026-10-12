@@ -9,6 +9,7 @@ import { EntityCard, type EntityAction } from "@ai-matrx/chat/tool-call-visualiz
 import { EmptyResultCard } from "@ai-matrx/chat/tool-call-visualization/renderers/_shared-entity/EmptyResultCard";
 import { PartPeekPopover } from "@ai-matrx/chat/tool-call-visualization/renderers/_shared-entity/PartPeekPopover";
 import { displayLabel } from "@ai-matrx/kit/text-case";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const MAX_FIELD_CHIPS = 12;
 
@@ -62,14 +63,12 @@ export function DatasetInline({
         remedy={
           <>
             Your tables are all listed at{" "}
-            <a
+            <OutboundLink
               href="/data"
-              target="_blank"
-              rel="noopener noreferrer"
               className="font-medium text-foreground underline underline-offset-2"
             >
               /data
-            </a>
+            </OutboundLink>
             {onOpenOverlay ? ", and the full tool result is under Expand." : "."}
           </>
         }

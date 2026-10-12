@@ -122,6 +122,8 @@ import { useFocusEditTarget, useIsEditTarget } from "@/features/marketing/lib/us
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
 import { formatSocialHandle } from "@/features/marketing/lib/social-handle";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /** Compact icon-button used by every cockpit row's edit/delete actions. */
 function RowActionButton({
@@ -714,15 +716,13 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                 {current.name}
               </h2>
               {current.website_url ? (
-                <a
+                <OutboundLink
                   href={externalHref(current.website_url)}
-                  target="_blank"
-                  rel="noreferrer"
                   className="matrx-tap-area inline-flex max-w-full items-center gap-1.5 text-sm text-muted-foreground hover:text-primary"
                 >
                   <span className="truncate">{current.website_url}</span>
                   <ExternalLink className="h-3.5 w-3.5 shrink-0 opacity-60" />
-                </a>
+                </OutboundLink>
               ) : null}
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <StatusBadge value={current.status} />
@@ -760,17 +760,15 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                           <PropertyKindMark kind={property.kind} size={24} />
                         </Link>
                       ) : href ? (
-                        <a
+                        <OutboundLink
                           key={property.id}
                           href={href}
-                          target="_blank"
-                          rel="noreferrer"
                           title={title}
                           aria-label={title}
                           className="matrx-tap-area inline-flex shrink-0 transition-transform hover:scale-110"
                         >
                           <PropertyKindMark kind={property.kind} size={24} />
-                        </a>
+                        </OutboundLink>
                       ) : (
                         <PropertyKindMark
                           key={property.id}
@@ -896,14 +894,12 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
               // A viewer who cannot read the managed site still sees the
               // brand's public website, as a plain link.
               <div className="flex flex-wrap items-center gap-3 px-4 py-2.5 text-sm">
-                <a
+                <OutboundLink
                   href={publicWebsiteUrl}
-                  target="_blank"
-                  rel="noreferrer"
                   className="truncate font-medium text-foreground hover:underline"
                 >
                   {linkLabelOf(publicWebsiteUrl).replace(/\/+$/, "")}
-                </a>
+                </OutboundLink>
               </div>
             ) : websiteSites.length === 0 ? (
               <div className="flex flex-wrap items-center gap-3 px-4 py-2.5 text-xs text-muted-foreground">
@@ -1173,10 +1169,10 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                             }
                             onClick={() => {
                               if (asset.source_url) {
-                                window.open(
+                                openOutbound(
                                   asset.source_url,
                                   "_blank",
-                                  "noreferrer",
+                                  "noopener",
                                 );
                               }
                             }}

@@ -17,6 +17,7 @@ import { FlaskConical } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/selectors/userSelectors";
 import { cn } from "@/lib/utils";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const GALLERY_URL = "/demos/diff-gallery";
 
@@ -37,7 +38,7 @@ export function LegacyDiffChip({
       type="button"
       onClick={(e) => {
         e.stopPropagation();
-        window.open(GALLERY_URL, "_blank", "noopener,noreferrer");
+        openOutbound(GALLERY_URL, "_blank", "noopener");
       }}
       title="Open the Diff Gallery"
       aria-label={`Open the Diff Gallery: ${reason}`}

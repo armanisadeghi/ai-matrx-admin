@@ -39,6 +39,7 @@ import { usePagesWithoutTopic } from "../../hooks";
 import { useMapLinks } from "../../links";
 import type { PageWithoutTopic } from "../../types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface PagesOnNoTopicTableProps {
   mapId: string;
@@ -64,17 +65,15 @@ function columnsFor(): MatrxColumnDef<PageWithoutTopic>[] {
       cell: (row) => (
         <span className="flex min-w-0 items-center gap-1">
           <EntityRef token="web_page" id={row.page_id} name={row.url} />
-          <a
+          <OutboundLink
             href={row.url}
-            target="_blank"
-            rel="noreferrer noopener"
             aria-label={`Open ${row.url} in a new tab`}
             title="Open the live page in a new tab"
             onClick={(event) => event.stopPropagation()}
             className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             <ExternalLink className="h-3 w-3" aria-hidden />
-          </a>
+          </OutboundLink>
         </span>
       ),
     },

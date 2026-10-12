@@ -80,6 +80,7 @@ import { countBy, formatUpdated, withCounts } from "../utils";
 import type { PlanNodeRow, PlanNodeType } from "../types";
 import { PipelineProgressBadge } from "./PipelineProgressBadge";
 import type { ReadOutcome } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** Bump `version` when a column is added/removed (lib/list-views backfill contract). */
 const SURFACE_PREFS: Partial<ListViewPrefs> = {
@@ -518,15 +519,13 @@ export function PlanNodesTable({
           const during = !cmsSiteId ? (
             badge
           ) : (
-            <a
+            <OutboundLink
               href={cmsPageEditorHref(cmsSiteId, page.pageId)}
-              target="_blank"
-              rel="noopener noreferrer"
               title={`Open the CMS page${page.route ? ` ${page.route}` : ""} in the editor`}
               onClick={(event) => event.stopPropagation()}
             >
               {badge}
-            </a>
+            </OutboundLink>
           );
           return (
             <span className="inline-flex items-center gap-1">

@@ -9,6 +9,7 @@ import { DemoPageLayout } from "../_components/DemoPageLayout";
 import { ResponseViewer } from "../_components/ResponseViewer";
 import { useScraperApi } from "@/features/scraper/hooks/useScraperApi";
 import type { SearchResultItem } from "@/features/scraper/types/scraper-api";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function RenderedContent({ items }: { items: SearchResultItem[] }) {
   if (items.length === 0) {
@@ -50,14 +51,12 @@ function RenderedContent({ items }: { items: SearchResultItem[] }) {
 
           {/* Content */}
           <div className="flex-1 min-w-0">
-            <a
+            <OutboundLink
               href={item.url}
-              target="_blank"
-              rel="noopener noreferrer"
               className="font-medium text-sm text-primary hover:underline line-clamp-1"
             >
               {item.title || item.url || `Result ${index + 1}`}
-            </a>
+            </OutboundLink>
             {item.source && (
               <p className="text-xs text-muted-foreground truncate mt-0.5">
                 {item.source}
@@ -75,14 +74,12 @@ function RenderedContent({ items }: { items: SearchResultItem[] }) {
 
           {/* External link */}
           {item.url && (
-            <a
+            <OutboundLink
               href={item.url}
-              target="_blank"
-              rel="noopener noreferrer"
               className="p-1.5 rounded hover:bg-muted transition-colors shrink-0"
             >
               <ExternalLink className="w-4 h-4 text-muted-foreground" />
-            </a>
+            </OutboundLink>
           )}
         </div>
       ))}

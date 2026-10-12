@@ -45,6 +45,7 @@ import {
   type OutcomeCounts,
 } from "./service";
 import { readOf } from "@ai-matrx/design-system";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const PAGE_SIZE = 25;
 
@@ -92,15 +93,13 @@ function OutcomeDetail({
 
       <div className="flex flex-wrap items-center gap-2">
         {row.evidence_url && (
-          <a
+          <OutboundLink
             href={row.evidence_url}
-            target="_blank"
-            rel="noreferrer"
             className="inline-flex items-center gap-1 text-xs font-medium text-primary underline underline-offset-2"
           >
             <ExternalLink className="h-3.5 w-3.5" />
             See the page carrying the link
-          </a>
+          </OutboundLink>
         )}
         <span className="text-xs text-muted-foreground">
           Confidence: {confidenceLabel(row.confidence)} ({row.confidence}/100)

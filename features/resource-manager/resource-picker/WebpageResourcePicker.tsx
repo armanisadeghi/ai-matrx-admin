@@ -38,6 +38,7 @@ import { formatCount } from "@ai-matrx/kit/format";
 import type { PreFetchedUrl } from "@ai-matrx/agents/generated/stream-events";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { isYouTubeChannelUrl, parseYouTubeUrl } from "@ai-matrx/rich-content/utils/youtube";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface WebpageResourcePickerProps {
   onBack: () => void;
@@ -719,15 +720,13 @@ export function WebpageResourcePickerCore({
               {/* Actions */}
               <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-t border-border">
                 <div className="flex items-center gap-3 min-w-0 flex-1 mr-4">
-                  <a
+                  <OutboundLink
                     href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 truncate min-w-0"
                   >
                     <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
                     <span className="truncate">{url}</span>
-                  </a>
+                  </OutboundLink>
                   {/*
                     ONE figure, ONE unit system. This rendered the same number
                     twice — "1,258,291 chars" beside "1.2 MB" — and the second

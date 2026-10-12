@@ -50,6 +50,7 @@ import { readVideoMetadata } from "@/features/marketing/lib/video-metadata";
 import type { Json } from "@/types/database.types";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { copyToClipboard } from "@/lib/clipboard/copy";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface AssetPageRef {
   pageId: string;
@@ -190,15 +191,13 @@ export function BrandAssetDetail({
               {
                 label: "Source URL",
                 value: asset.source_url ? (
-                  <a
+                  <OutboundLink
                     href={asset.source_url}
-                    target="_blank"
-                    rel="noreferrer"
                     className="inline-flex min-w-0 items-center gap-1 break-all text-primary hover:underline"
                   >
                     <span className="break-all">{asset.source_url}</span>
                     <ExternalLink className="h-3 w-3 shrink-0" />
-                  </a>
+                  </OutboundLink>
                 ) : (
                   <span className="text-muted-foreground">
                     No external URL (uploaded file)

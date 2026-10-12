@@ -69,6 +69,7 @@ import {
   type LinkEdgeMenuRow,
 } from "@/features/marketing/components/inspection/link-edge-actions";
 import { pushAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function humanLinkEdgeRow(row: InspectionLinkRow): string {
   return humanLines([
@@ -310,15 +311,13 @@ export function LinksInspectionTable({
           >
             {displayUrl(row.target_url, site.root_url)}
           </span>
-          <a
+          <OutboundLink
             href={row.target_url}
-            target="_blank"
-            rel="noreferrer"
             aria-label={`Open ${row.target_url}`}
             className="shrink-0 text-muted-foreground hover:text-primary"
           >
             <ExternalLink className="h-3 w-3" />
-          </a>
+          </OutboundLink>
         </div>
       ),
     },

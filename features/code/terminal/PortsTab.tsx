@@ -23,6 +23,7 @@ import {
   MOBILE_TABLE_FROZEN_HEAD,
 } from "@/components/official/mobile-table/mobileTable";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface PortsTabProps {
   className?: string;
@@ -233,16 +234,14 @@ export const PortsTab: React.FC<PortsTabProps> = ({ className }) => {
                           )}
                         </button>
                         {previewUrl && (
-                          <a
+                          <OutboundLink
                             href={previewUrl}
-                            target="_blank"
-                            rel="noreferrer"
                             aria-label="Open preview URL"
                             title="Open preview URL"
                             className="flex h-5 w-5 items-center justify-center rounded-sm text-neutral-500 hover:bg-neutral-200 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-100"
                           >
                             <ExternalLink size={12} />
-                          </a>
+                          </OutboundLink>
                         )}
                       </div>
                     </td>

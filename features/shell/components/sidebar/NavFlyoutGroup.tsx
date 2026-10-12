@@ -41,6 +41,7 @@ import {
   isExclusiveNavGroupActive,
 } from "../../utils/is-nav-group-active";
 import { cn } from "@/lib/utils";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface NavFlyoutGroupProps {
   item: ShellNavItem;
@@ -537,11 +538,9 @@ export default function NavFlyoutGroup({
       // A separately hosted app, or a launcher that stays open while what it
       // launches opens beside it: a real new tab, never an in-app transition.
       return (
-        <a
+        <OutboundLink
           key={childKey(child)}
           href={child.href}
-          target="_blank"
-          rel="noopener noreferrer"
           role="menuitem"
           className="shell-nav-flyout-item"
           onMouseEnter={closeSubOnEnter}
@@ -557,7 +556,7 @@ export default function NavFlyoutGroup({
             strokeWidth={1.75}
             className="shrink-0 text-muted-foreground"
           />
-        </a>
+        </OutboundLink>
       );
     }
     return (

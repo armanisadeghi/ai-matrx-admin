@@ -10,6 +10,7 @@ import { defineCanvasKind } from "@ai-matrx/canvas/react";
 import { useToolOpener } from "@/features/canvas/host/toolCanvas";
 
 import { QUICK_NOTES_KIND, QUICK_NOTES_TITLE as TITLE } from "@/features/canvas/host/quickToolLaunchers";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export { QUICK_NOTES_KIND };
 
@@ -26,7 +27,7 @@ export const quickNotesKind = defineCanvasKind<null>({
       id: "open-notes-page",
       label: "Open Notes",
       icon: <ExternalLink />,
-      onSelect: () => window.open("/notes", "_blank", "noopener"),
+      onSelect: () => openOutbound("/notes", "_blank", "noopener"),
     },
   ],
 });

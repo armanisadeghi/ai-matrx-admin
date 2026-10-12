@@ -42,6 +42,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { RAG_VOCAB } from "@/features/rag/constants/vocabulary";
 import { cn } from "@/lib/utils";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // ---------------------------------------------------------------------------
 // Frame type — what the dialog renders. Caller's job is to convert their
@@ -620,15 +621,13 @@ function ResultView({ result }: { result: ProcessingResultSummary }) {
             )}
           </div>
           {result.processedDocumentId && (
-            <a
+            <OutboundLink
               href={`/knowledge/library/${result.processedDocumentId}/preview`}
-              target="_blank"
-              rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 type-title text-primary-foreground hover:bg-primary/90 shrink-0"
             >
               Open in Library
               <Maximize2 className="h-3.5 w-3.5" />
-            </a>
+            </OutboundLink>
           )}
         </div>
 
@@ -770,15 +769,13 @@ function MinimizedWidget({
       )}
       {finished && !error && openInLibraryHref && (
         <div className="border-t px-3 py-2">
-          <a
+          <OutboundLink
             href={openInLibraryHref}
-            target="_blank"
-            rel="noopener noreferrer"
             className="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-primary px-2 py-1 type-meta font-medium text-primary-foreground hover:bg-primary/90"
           >
             Open in Library
             <Maximize2 className="h-3 w-3" />
-          </a>
+          </OutboundLink>
         </div>
       )}
     </div>

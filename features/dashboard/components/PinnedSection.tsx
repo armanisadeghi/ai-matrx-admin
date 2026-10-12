@@ -9,6 +9,7 @@ import { iconColorMap } from "@/features/shell/constants/nav-data";
 import { cn } from "@/lib/utils";
 import { usePinned } from "@/components/favorites/usePinned";
 import { useIsMounted } from "@/hooks/use-is-mounted";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function PinnedSection({
   openInNewTab = false,
@@ -79,14 +80,12 @@ export function PinnedSection({
                 className="group relative flex min-h-11 items-center gap-3 rounded-2xl border border-border bg-card p-3 pr-11 transition-colors hover:border-foreground/20 hover:bg-accent/40"
               >
                 {f.href.startsWith("http") ? (
-                  <a
+                  <OutboundLink
                     href={f.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="flex min-h-11 min-w-0 flex-1 items-center gap-3"
                   >
                     {inner}
-                  </a>
+                  </OutboundLink>
                 ) : (
                   <Link
                     href={f.href}

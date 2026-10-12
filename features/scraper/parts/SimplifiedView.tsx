@@ -3,6 +3,7 @@ import React from "react";
 import { Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { processOrganizedData, copyToClipboard } from "../utils/scraper-utils";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface SimplifiedViewOverview {
   page_title?: string;
@@ -153,14 +154,12 @@ const SimplifiedView = ({ pageData }: SimplifiedViewProps) => {
       {overview?.url && (
         <div className="px-6 py-3 border-t border-border text-sm text-muted-foreground">
           Source:{" "}
-          <a
+          <OutboundLink
             href={overview.url}
-            target="_blank"
-            rel="noopener noreferrer"
             className="text-primary hover:underline"
           >
             {overview.url}
-          </a>
+          </OutboundLink>
         </div>
       )}
     </div>

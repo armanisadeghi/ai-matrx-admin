@@ -949,6 +949,11 @@ if $STRICT; then
         # NO VENDOR NAMES ON CUSTOMER SCREENS (Arman, 2026-10-11: "via ScrapeCreators" reached the site).
         "Vendor name in customer-facing UI text|pnpm check:no-vendor-names"
         "No-vendor-names guard self-test|pnpm check:no-vendor-names:self-test"
+        # EVERY LINK LEAVING AI MATRX CARRIES OUR REFERRAL DATA (Arman, 2026-10-12: "We need sites to know
+        # our referral traffic."). Raw <a target=_blank>, literal third-party anchors, window.open and
+        # hand-rolled utm_source outside @ai-matrx/kit/outbound. Shrink-only baseline.
+        "Raw outbound link outside the referral door (@ai-matrx/kit/outbound)|pnpm check:outbound-referral"
+        "Outbound-referral guard self-test|pnpm check:outbound-referral:self-test"
         # UNIVER ADD-ONS — every free add-on loads, survives a save, and a signed-in person can
         # actually type in a cell (the owner-role identity); reds on a planted break. Static, no database.
         "Univer add-ons load, save back, and a signed-in person can edit|pnpm check:univer-addons"
@@ -1688,6 +1693,11 @@ else
         # NO VENDOR NAMES ON CUSTOMER SCREENS (Arman, 2026-10-11: "via ScrapeCreators" reached the site).
         "Vendor name in customer-facing UI text|pnpm check:no-vendor-names"
         "No-vendor-names guard self-test|pnpm check:no-vendor-names:self-test"
+        # EVERY LINK LEAVING AI MATRX CARRIES OUR REFERRAL DATA (Arman, 2026-10-12: "We need sites to know
+        # our referral traffic."). Raw <a target=_blank>, literal third-party anchors, window.open and
+        # hand-rolled utm_source outside @ai-matrx/kit/outbound. Shrink-only baseline.
+        "Raw outbound link outside the referral door (@ai-matrx/kit/outbound)|pnpm check:outbound-referral"
+        "Outbound-referral guard self-test|pnpm check:outbound-referral:self-test"
         # UNIVER ADD-ONS — every free add-on loads, survives a save, and a signed-in person can
         # actually type in a cell (the owner-role identity); reds on a planted break. Static, no database.
         "Univer add-ons load, save back, and a signed-in person can edit|pnpm check:univer-addons"

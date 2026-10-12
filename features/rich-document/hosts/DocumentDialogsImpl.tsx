@@ -19,6 +19,7 @@ import { requireUserId } from "@/utils/auth/getUserId";
 import { DocumentAgentReview } from "./DocumentAgentReview";
 import { ChatMessageDialogs } from "./ChatMessageDialogs";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /** The deck every "Save as flashcard" lands in — one per person. */
 const SAVED_CARDS_DECK = "Saved cards";
@@ -54,7 +55,7 @@ async function saveFlashcard(front: string, back: string): Promise<void> {
     action: {
       label: "Open deck",
       onClick: () =>
-        window.open(`/education/flashcards/${deckId}`, "_blank", "noopener,noreferrer"),
+        openOutbound(`/education/flashcards/${deckId}`, "_blank", "noopener"),
     },
   });
 }

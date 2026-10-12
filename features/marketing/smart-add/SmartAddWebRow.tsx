@@ -16,6 +16,7 @@ import type { Certainty, EvidenceItem } from "./evidence";
 import { webRow } from "./evidence";
 import { outboundHref } from "./SmartAddExtras";
 import type { RoundView } from "./SmartAddRound";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const TIERS: { step: string; label: string; waits: string }[] = [
   { step: "web", label: "Web", waits: "Needs a website" },
@@ -92,7 +93,7 @@ export function SmartAddWebRow({ items, views }: { items: EvidenceItem[]; views:
                 </span>
               </span>
               <Button asChild variant="quiet" icon={<ExternalLink aria-hidden />} aria-label="Open" title="Open">
-                <a href={outboundHref(i.url ?? i.value)} target="_blank" rel="noopener" />
+                <OutboundLink href={outboundHref(i.url ?? i.value)} />
               </Button>
             </li>
           ))}

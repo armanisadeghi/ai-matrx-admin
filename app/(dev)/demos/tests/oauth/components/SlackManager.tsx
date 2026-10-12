@@ -9,6 +9,7 @@ import {
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { ExternalLink, RotateCcw, X } from 'lucide-react';
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface SlackManagerProps {
   tokenData: SlackTokenResponse | { access_token: string };
@@ -376,17 +377,15 @@ const SlackManager: React.FC<SlackManagerProps> = ({ tokenData }) => {
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                                           </svg>
                                           {file.permalink ? (
-                                              <a
+                                              <OutboundLink
                                                   href={file.permalink}
-                                                  target="_blank"
-                                                  rel="noopener noreferrer"
                                                   className="inline-flex min-w-0 items-center gap-1 text-sm font-medium underline-offset-2 hover:text-primary hover:underline"
                                                   title={`Open ${file.name} in Slack`}
                                                   aria-label={`Open ${file.name} in Slack`}
                                               >
                                                 <span className="truncate">{file.name}</span>
                                                 <ExternalLink aria-hidden="true" className="h-3 w-3 shrink-0" />
-                                              </a>
+                                              </OutboundLink>
                                           ) : (
                                               <span
                                                   className="text-sm font-medium"

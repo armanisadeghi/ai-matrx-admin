@@ -109,7 +109,7 @@ it("copies an agent you do not own through the dialog, opens the copy in a new t
   await act(async () => {
     buttonLabelled("Open in new tab")!.click();
   });
-  expect(open).toHaveBeenCalledWith("/agents/copy-9/build", "_blank", "noopener,noreferrer");
+  expect(open).toHaveBeenCalledWith("/agents/copy-9/build", "_blank", "noopener");
   expect(push).not.toHaveBeenCalled();
   // The peek closes once the dialog does.
   expect(onStart).toHaveBeenCalledTimes(1);

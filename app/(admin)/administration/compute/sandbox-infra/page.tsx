@@ -46,6 +46,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/lib/toast";
 import { confirm as confirmDialog } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -181,14 +182,12 @@ function TierCard({ tier }: { tier: TierStatus }) {
                             </Badge>
                         )}
                     </div>
-                    <a
+                    <OutboundLink
                         href={tier.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         className="text-xs text-muted-foreground hover:text-primary inline-flex max-w-full items-center gap-1 mt-1"
                     >
                         <span className="min-w-0 truncate">{tier.url}</span> <ExternalLink className="w-3 h-3 shrink-0" />
-                    </a>
+                    </OutboundLink>
                 </div>
                 <div className="min-w-0 max-w-full @lg:text-right">
                     <div className="text-xs text-muted-foreground">source SHA</div>
@@ -263,10 +262,8 @@ function DeployRunRow({ run }: { run: DeployRun }) {
     const failure = run.conclusion === "failure" || run.conclusion === "cancelled";
 
     return (
-        <a
+        <OutboundLink
             href={run.html_url}
-            target="_blank"
-            rel="noopener noreferrer"
             className="flex items-center justify-between gap-3 px-3 py-2 hover:bg-muted/50 rounded text-sm border-b border-border last:border-b-0"
         >
             <div className="flex items-center gap-3 min-w-0">
@@ -291,7 +288,7 @@ function DeployRunRow({ run }: { run: DeployRun }) {
                 <div>{relativeTime(run.run_started_at || run.created_at)}</div>
                 <div className="font-mono">{run.conclusion ?? run.status}</div>
             </div>
-        </a>
+        </OutboundLink>
     );
 }
 

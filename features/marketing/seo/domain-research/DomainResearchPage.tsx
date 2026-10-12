@@ -58,6 +58,7 @@ import type {
 } from "./types";
 import { useDomainSection } from "./useDomainSection";
 import { NO_RAW_ROW_WINDOW } from "@/features/marketing/social/row-open";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export type DomainTab = "keywords" | "competitors" | "gap";
 const TABS: { tab: DomainTab; name: string; description: string }[] = [
@@ -601,9 +602,9 @@ function KeywordsTable({ rows }: { rows: RankedKeywordRow[] }) {
       filter: "text",
       cell: (r) =>
         r.url ? (
-          <a href={r.url} target="_blank" rel="noreferrer" className="block max-w-72 truncate text-primary" title={r.url}>
+          <OutboundLink href={r.url} className="block max-w-72 truncate text-primary" title={r.url}>
             {r.url.replace(/^https?:\/\//, "")}
-          </a>
+          </OutboundLink>
         ) : (
           num(null)
         ),
@@ -675,9 +676,9 @@ function GapTable({ rows, ours }: { rows: KeywordGapRow[]; ours: string }) {
       filter: "text",
       cell: (r) =>
         r.their_url ? (
-          <a href={r.their_url} target="_blank" rel="noreferrer" className="block max-w-72 truncate text-primary" title={r.their_url}>
+          <OutboundLink href={r.their_url} className="block max-w-72 truncate text-primary" title={r.their_url}>
             {r.their_url.replace(/^https?:\/\//, "")}
-          </a>
+          </OutboundLink>
         ) : (
           num(null)
         ),
