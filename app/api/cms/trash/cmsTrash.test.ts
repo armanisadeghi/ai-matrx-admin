@@ -75,7 +75,18 @@ const db = {
 };
 
 jest.mock("@/utils/supabase/server", () => ({
-  createClient: async () => ({ rpc: async () => ({ data: member, error: null }) }),
+  createClient: async () => ({
+    // PostgREST builder shape: the membership read is paged (`.order().range()`), awaited at the end.
+    rpc: () => {
+      const chain: Record<string, unknown> = {
+        order: () => chain,
+        range: () => chain,
+        then: (res: (v: unknown) => unknown, rej: (e: unknown) => unknown) =>
+          Promise.resolve({ data: member, error: null }).then(res, rej),
+      };
+      return chain;
+    },
+  }),
 }));
 jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: async () => ({ data: { user: { id: caller, email: "a@b.c" } }, error: null }),
