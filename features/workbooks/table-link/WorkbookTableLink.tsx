@@ -8,7 +8,7 @@
  * `?tableSync=update|refresh` (the table page's doors) opens the matching preview on load.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { ExternalLink, Link2Off, Loader2, RefreshCw, Table2, Upload } from "lucide-react";
@@ -32,7 +32,7 @@ import { univerSnapshotToRows } from "@/features/workbooks/univer-snapshot-rows"
 
 import { RECORD_ID_HEADER, parseSheet, type TableLink } from "./link-model";
 import { matchRowsToRecords } from "./sync-plan";
-import { readLinks, readTableForSheet, writeLink } from "./link-service";
+import { readLinks, readPendingLinks, readTableForSheet, writeLink, writePendingLink, type PendingTableLink } from "./link-service";
 import { settleLink, TableSyncDialog, writeCells, type SyncDirection } from "./TableSyncDialog";
 
 function activeSheetId(api: FUniver | null): string | null {
@@ -99,10 +99,11 @@ export function WorkbookTableLink({
   const [tableName, setTableName] = useState<string | null>(null);
   const [dialog, setDialog] = useState<SyncDirection | null>(null);
   const [linking, setLinking] = useState(false);
+  const [pending, setPending] = useState<PendingTableLink[]>([]);
 
   useEffect(() => {
     let cancelled = false;
-    void readLinks(workbookId).then((r) => {
+    void Promise.all([readLinks(workbookId), readPendingLinks(workbookId)]).then(([r, p]) => {
       if (cancelled) return;
       if (!r.ok) {
         toast.error(`Table link: ${r.error}`);
@@ -110,6 +111,7 @@ export function WorkbookTableLink({
         return;
       }
       setLinks(r.data);
+      if (p.ok) setPending(p.data);
     });
     return () => {
       cancelled = true;
@@ -166,10 +168,55 @@ export function WorkbookTableLink({
     [link],
   );
 
+  /**
+   * Finish a link whose table already exists: the editor closed before "Make table" could link it, or
+   * a second "Make table" was pressed. The existing table is adopted, never duplicated.
+   */
+  const finishLink = useCallback(
+    async (note: PendingTableLink) => {
+      const api = apiRef.current;
+      if (!api) return;
+      setLinking(true);
+      try {
+        const made = await linkSheetToNewTable(api, workbookId, note.sheet_id, note.table_id);
+        setLinks((current) => [...(current ?? []).filter((l) => l.sheet_id !== note.sheet_id), made.link]);
+        setPending((current) => current.filter((p) => p.sheet_id !== note.sheet_id));
+        if (made.unmatched.length > 0) {
+          toast.error(`Linked; rows ${made.unmatched.slice(0, 8).join(", ")} matched no record and will be added on the next update`);
+        } else toast.success("Sheet linked to the table");
+      } catch (e) {
+        const gone = !(await readTableForSheet(note.table_id)).ok;
+        if (gone) {
+          // The table it made is no longer there: forget it, so "Make table" starts fresh.
+          await writePendingLink(workbookId, note.sheet_id, null);
+          setPending((current) => current.filter((p) => p.sheet_id !== note.sheet_id));
+        }
+        toast.error(`The table was made, but the sheet could not be linked: ${e instanceof Error ? e.message : String(e)}`);
+      } finally {
+        setLinking(false);
+      }
+    },
+    [apiRef, workbookId],
+  );
+
+  // Reopened with a table made but not linked: finish it.
+  const resumeNote = editable && links && sheetId && !links.some((l) => l.sheet_id === sheetId) ? pending.find((p) => p.sheet_id === sheetId) ?? null : null;
+  const resumed = useRef<string | null>(null);
+  useEffect(() => {
+    if (!resumeNote || resumed.current === resumeNote.table_id) return;
+    resumed.current = resumeNote.table_id;
+    void finishLink(resumeNote);
+  }, [resumeNote, finishLink]);
+
   const makeTable = () => {
     const api = apiRef.current;
     const sid = activeSheetId(api);
     if (!api || !sid || !openSaveToTable) return;
+    const waiting = pending.find((p) => p.sheet_id === sid);
+    if (waiting) {
+      void finishLink(waiting);
+      return;
+    }
     const snapshot = api.getActiveWorkbook()?.save();
     const grid = univerSnapshotToRows(snapshot, { sheetId: sid });
     if (!grid || grid.rows.length < 2) {
@@ -183,11 +230,18 @@ export function WorkbookTableLink({
       grid: { headers, rows },
       title: grid.sheetName,
       onSaved: async ({ tableId }) => {
+        // The table exists: note it at once, before any editor work, so closing now cannot orphan it.
+        const note: PendingTableLink = { sheet_id: sid, table_id: tableId, at: new Date().toISOString() };
+        resumed.current = tableId; // this run links it; the reopen-resume below is for a LATER open
+        setPending((current) => [...current.filter((p) => p.sheet_id !== sid), note]);
+        const noted = await writePendingLink(workbookId, sid, note);
+        if (!noted.ok) toast.error(`The table was made; its link could not be noted: ${noted.error}`);
         setLinking(true);
         try {
           // The editor can remount while the overlay loads; always link through the live one.
           const made = await linkSheetToNewTable(apiRef.current ?? api, workbookId, sid, tableId);
           setLinks((current) => [...(current ?? []).filter((l) => l.sheet_id !== sid), made.link]);
+          setPending((current) => current.filter((p) => p.sheet_id !== sid));
           if (made.unmatched.length > 0) {
             toast.error(`Linked; rows ${made.unmatched.slice(0, 8).join(", ")} matched no record and will be added on the next update`);
           } else toast.success("Sheet linked to the table");

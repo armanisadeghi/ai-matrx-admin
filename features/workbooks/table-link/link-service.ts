@@ -54,7 +54,56 @@ function linksIn(metadata: unknown): TableLink[] {
   return Array.isArray(list) ? (list as TableLink[]).filter((l) => l && typeof l.table_id === "string" && typeof l.sheet_id === "string") : [];
 }
 
+/**
+ * A table "Make table" created whose link is not finished yet (the editor closed first, or the link
+ * write failed). Saved the moment the table exists — before any editor work — so a reopen finishes
+ * the link and a second "Make table" adopts this table instead of making a duplicate.
+ */
+export interface PendingTableLink {
+  sheet_id: string;
+  table_id: string;
+  at: string;
+}
+
+function pendingIn(metadata: unknown): PendingTableLink[] {
+  const list = (metadata as { pending_table_links?: unknown } | null)?.pending_table_links;
+  return Array.isArray(list)
+    ? (list as PendingTableLink[]).filter((l) => l && typeof l.table_id === "string" && typeof l.sheet_id === "string")
+    : [];
+}
+
 type WorkbookMetaRow = { id: string; version: number; metadata: unknown };
+
+export async function readPendingLinks(workbookId: string): Promise<LinkResult<PendingTableLink[]>> {
+  const { data, error } = await supabase.schema("workbench").from("udt_workbooks").select("metadata").eq("id", workbookId).maybeSingle();
+  if (error) return fail(error.message);
+  return { ok: true, data: pendingIn(data?.metadata) };
+}
+
+/** Note (`pending`) or forget (`null`) the unfinished link of one sheet. */
+export async function writePendingLink(workbookId: string, sheetId: string, pending: PendingTableLink | null): Promise<LinkResult<PendingTableLink[]>> {
+  const result = await mergeJsonColumn<WorkbookMetaRow>({
+    fetchCurrent: () => supabase.schema("workbench").from("udt_workbooks").select("id, version, metadata").eq("id", workbookId).maybeSingle(),
+    readColumn: (row) => row.metadata,
+    merge: (current) => {
+      const others = pendingIn(current).filter((l) => l.sheet_id !== sheetId);
+      return { ...current, pending_table_links: pending ? [...others, pending] : others };
+    },
+    applyUpdate: ({ value, expectedVersion, nextVersion }) =>
+      supabase
+        .schema("workbench")
+        .from("udt_workbooks")
+        .update({ metadata: value as never, version: nextVersion })
+        .eq("id", workbookId)
+        .eq("version", expectedVersion)
+        .select("id, version, metadata")
+        .maybeSingle(),
+  });
+  if (result.status === "saved") return { ok: true, data: pendingIn(result.row.metadata) };
+  if (result.status === "not_found") return fail("This workbook could not be found");
+  if (result.status === "conflict") return fail("The workbook changed while saving its link; try again");
+  return fail(result.error);
+}
 
 export async function readLinks(workbookId: string): Promise<LinkResult<TableLink[]>> {
   const { data, error } = await supabase.schema("workbench").from("udt_workbooks").select("metadata").eq("id", workbookId).maybeSingle();
@@ -69,7 +118,8 @@ export async function writeLink(workbookId: string, sheetId: string, link: Table
     readColumn: (row) => row.metadata,
     merge: (current) => {
       const others = linksIn(current).filter((l) => l.sheet_id !== sheetId);
-      return { ...current, table_links: link ? [...others, link] : others };
+      const pending = pendingIn(current).filter((l) => l.sheet_id !== sheetId);
+      return { ...current, table_links: link ? [...others, link] : others, ...(link ? { pending_table_links: pending } : {}) };
     },
     applyUpdate: ({ value, expectedVersion, nextVersion }) =>
       supabase
