@@ -38,6 +38,7 @@ import {
 import { runHref } from "@/features/workflow-runtime/run-doors";
 import { initializeSite } from "@/features/marketing/crawler/direct-client";
 import { SmartAddSlots } from "./SmartAddSlots";
+import { BrandCard, CompareSources, situationOf } from "./SmartAddExtras";
 import { ADOPTION_RELEASE_GRACE_MS } from "@/features/workflow-runtime/hooks/useWorkflowRun";
 import { detachWorkflowRunState } from "@/features/workflow-runtime/redux/adopt-workflow-run.thunk";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
@@ -56,6 +57,7 @@ import type { MarketingBrand } from "@/features/marketing/types";
 import {
   FIELD_LABEL,
   applyDecision,
+  candidateCategory,
   confirmedBasics,
   mergeEvidence,
   nextRoundSeeds,
@@ -102,6 +104,9 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const [picked, setPicked] = useState<SocialPlatform | null>(null);
   const parsed = resolveAccountInput({ text: socialText, picked });
 
+  // A personal brand: a headshot instead of a logo, and expertise.
+  const [person, setPerson] = useState(false);
+  const [comparing, setComparing] = useState(false);
   const [rounds, setRounds] = useState<Round[]>([]);
   const [views, setViews] = useState<Record<string, RoundView>>({});
   const [items, setItems] = useState<Map<string, EvidenceItem>>(new Map());
@@ -234,6 +239,25 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
 
   const decide = (key: string, decision: Decision) => setDecisions((d) => applyDecision(d, items, key, decision));
 
+  /** "Custom": the person's own value lands in its slot, confirmed — the main one when the slot has none. */
+  const addCustom = (item: EvidenceItem) => {
+    const next = mergeEvidence(items, [item]);
+    setItems(next);
+    setDecisions((d) => {
+      const single = ["name", "tagline", "description", "category", "website"].includes(item.field);
+      const hasPreferred = [...next.values()].some((i) => i.field === item.field && d[i.key] === "preferred");
+      return applyDecision(d, next, item.key, single && !hasPreferred ? "preferred" : "yes");
+    });
+  };
+
+  /** Compare view: claim or reject everything one source (the site, a profile) found. */
+  const claim = (keys: string[], decision: Decision) =>
+    setDecisions((d) => {
+      const next = { ...d };
+      for (const k of keys) if (!next[k] || decision === "no") next[k] = decision;
+      return next;
+    });
+
   // ── derived ─────────────────────────────────────────────────────────────
 
   const roundViews = rounds.map((r) => (r.runId ? views[r.runId] : undefined));
@@ -264,7 +288,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       const brand = await createBrand({
         organizationId,
         name: basics.name,
-        kind: "company",
+        kind: person ? "person" : "company",
         industry: basics.category,
         description: basics.description,
         websiteUrl: basics.websiteUrl,
@@ -275,7 +299,15 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         notes: null,
         status: "active",
         // Aliases live where every brand reader looks for them (web.brand.profile.brand_aliases).
-        ...(basics.aliases.length ? { profile: { brand_aliases: basics.aliases } } : {}),
+        // Aliases and expertise live where every brand reader looks for them (web.brand.profile).
+        ...(basics.aliases.length || basics.expertise.length
+          ? {
+              profile: {
+                ...(basics.aliases.length ? { brand_aliases: basics.aliases } : {}),
+                ...(basics.expertise.length ? { expertise_areas: basics.expertise } : {}),
+              },
+            }
+          : {}),
       });
       const problems: string[] = [];
       const accounts: { handle_or_url: string; platform: string; property_id: string }[] = [];
@@ -297,7 +329,9 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       }
       // The primary website and every other confirmed domain become the brand's sites; the primary
       // one then gets the real crawl (tier 3) in the background.
-      let primarySiteId: string | null = null;
+      // Every confirmed website (found or typed) becomes one of the brand's sites, and EVERY one gets
+      // the normal default crawl in the background (tier 3) — none of it blocks.
+      const siteIds: string[] = [];
       for (const url of [basics.websiteUrl, ...basics.otherWebsites].filter((u): u is string => Boolean(u))) {
         try {
           const parsedUrl = normalizeWebsiteUrl(url);
@@ -310,26 +344,31 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           });
           // An address already saved as a site comes back as that site: link it to THIS brand.
           if (site.brand_id !== brand.id) await moveSiteBrand(site.id, brand.id);
-          primarySiteId ??= site.id;
+          siteIds.push(site.id);
         } catch (error) {
           problems.push(`${websiteHost(url)}: ${extractErrorMessage(error)}`);
         }
       }
-      if (primarySiteId) {
+      if (siteIds.length) {
         setCrawl("running");
-        initializeSite(primarySiteId).then(
-          () => setCrawl("done"),
-          (error: unknown) => {
-            setCrawl("failed");
-            setCrawlNote(extractErrorMessage(error));
-          },
-        );
+        Promise.allSettled(siteIds.map((id) => initializeSite(id))).then((results) => {
+          const failedCrawls = results.filter((r): r is PromiseRejectedResult => r.status === "rejected");
+          setCrawl(failedCrawls.length === results.length ? "failed" : "done");
+          setCrawlNote(
+            failedCrawls.length
+              ? `${failedCrawls.length} of ${results.length} failed: ${extractErrorMessage(failedCrawls[0].reason)}`
+              : `${results.length} site${results.length === 1 ? "" : "s"}`,
+          );
+        });
       }
+      // Nothing is lost: every finding the person did not answer is kept as a candidate in the
+      // brand's discovery inbox (web.discovered_item); only "Not us" is left out.
+      problems.push(...(await saveCandidates(organizationId, brand.id, [...items.values()].filter((i) => !decisions[i.key]))));
       problems.push(...(await saveFacts(organizationId, brand.id, basics)));
       setSaveNotes(problems);
       setCreated(brand);
       onCreated?.(brand);
-      if (basics.logoUrl || accounts.length) {
+      if (basics.images.length || accounts.length) {
         try {
           const { runId } = await startSystemRun(
             dispatch,
@@ -338,7 +377,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
               subject: `brand:${brand.id}`,
               organizationId,
               sourceFeature: "marketing",
-              inputs: { brand_id: brand.id, logo_url: basics.logoUrl ?? "", accounts },
+              inputs: { brand_id: brand.id, images: basics.images, accounts },
             },
             "The background setup could not start.",
           );

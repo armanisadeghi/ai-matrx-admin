@@ -18,6 +18,7 @@ import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
 import { websiteHost, type Decision, type EvidenceField, type EvidenceItem } from "./evidence";
+import { CustomAdd } from "./SmartAddExtras";
 
 interface Choice {
   decision: Decision;
@@ -69,7 +70,9 @@ export function SmartAddSlots({
   working,
   started,
   locked,
+  person,
   onDecide,
+  onAdd,
 }: {
   items: EvidenceItem[];
   decisions: Record<string, Decision>;
@@ -77,8 +80,15 @@ export function SmartAddSlots({
   /** False until the first identify round starts: empty slots stay quiet. */
   started: boolean;
   locked: boolean;
+  /** A personal brand: a headshot instead of a logo, and expertise. */
+  person: boolean;
   onDecide: (key: string, decision: Decision) => void;
+  /** A value the person typed into a slot ("Custom"). */
+  onAdd: (item: EvidenceItem) => void;
 }) {
+  const custom = (field: EvidenceField | "contact", placeholder: string) => (
+    <CustomAdd field={field} placeholder={placeholder} onAdd={onAdd} disabled={locked} />
+  );
   const of = (...fields: EvidenceField[]) => items.filter((i) => fields.includes(i.field));
   const socials = of("social");
   const platforms = [...new Set(socials.map((s) => s.platform ?? "other"))];
@@ -89,7 +99,7 @@ export function SmartAddSlots({
 
   return (
     <div className="flex flex-col divide-y divide-border" data-testid="smart-add-slots">
-      <Slot title="Brand name" empty={of("name").length ? null : empty}>
+      <Slot title={person ? "Name" : "Brand name"} empty={of("name").length ? null : empty} after={custom("name", person ? "Your name" : "Brand name")}>
         {of("name").map((i) => (
           <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={choices(i, NAME_CHOICES)}>
             <span className="truncate text-lg font-semibold leading-tight">{i.value}</span>
@@ -97,15 +107,24 @@ export function SmartAddSlots({
         ))}
       </Slot>
 
-      <Slot title="Logo" empty={of("logo").length ? null : empty}>
+      <Slot title={person ? "Headshot & photos" : "Logo & images"} empty={of("logo").length ? null : empty} hint="Pick every image to keep; star the main one">
         <div className="flex flex-wrap gap-3 px-4 pb-3 pt-1">
           {of("logo").map((i) => (
-            <LogoChoice key={i.key} item={i} decision={decisions[i.key] ?? null} locked={locked} onPick={() => onDecide(i.key, "preferred")} />
+            <LogoChoice
+              key={i.key}
+              item={i}
+              decision={decisions[i.key] ?? null}
+              locked={locked}
+              round={person}
+              onToggle={() => onDecide(i.key, decisions[i.key] === "yes" || decisions[i.key] === "preferred" ? "yes" : "yes")}
+              onClear={() => onDecide(i.key, decisions[i.key] ?? "yes")}
+              onPrimary={() => onDecide(i.key, "preferred")}
+            />
           ))}
         </div>
       </Slot>
 
-      <Slot title="Website" empty={of("website").length ? null : empty}>
+      <Slot title="Websites" empty={of("website").length ? null : empty} after={custom("website", "another-site.com")}>
         {of("website").map((i) => (
           <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={choices(i, PRIMARY_CHOICES)}>
             <span className="truncate text-base font-medium">{i.label ?? websiteHost(i.value)}</span>
@@ -113,7 +132,7 @@ export function SmartAddSlots({
         ))}
       </Slot>
 
-      <Slot title="Social accounts" empty={socials.length ? null : empty}>
+      <Slot title="Social accounts" empty={socials.length ? null : empty} after={custom("social", "@handle or profile link")}>
         {platforms.map((p) => (
           <div key={p} className="flex flex-col">
             <div className="px-4 pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
@@ -139,7 +158,7 @@ export function SmartAddSlots({
         ))}
       </Slot>
 
-      <Slot title="Contact" empty={of("phone", "email", "address").length ? null : empty}>
+      <Slot title="Contact" empty={of("phone", "email", "address").length ? null : empty} after={custom("contact", "Phone, email or address")}>
         {of("phone", "email", "address").map((i) => (
           <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={choices(i, PRIMARY_CHOICES)} compact>
             <span className="flex min-w-0 items-baseline gap-2 text-sm">
@@ -150,7 +169,31 @@ export function SmartAddSlots({
         ))}
       </Slot>
 
-      <Slot title="About" empty={of("description", "category").length ? null : empty}>
+      {person ? (
+        <Slot title="Expertise" empty={of("expertise").length ? null : started ? "Add what you are known for" : "—"} after={custom("expertise", "e.g. Spanish property law")}>
+          {of("expertise").map((i) => (
+            <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={choices(i, OURS_CHOICES)} compact>
+              <span className="truncate text-sm">{i.value}</span>
+            </Row>
+          ))}
+        </Slot>
+      ) : null}
+
+      <Slot title="About" empty={of("description", "category", "tagline").length ? null : empty} after={
+        <div className="flex flex-wrap">
+          {custom("tagline", "Tagline")}
+          {custom("description", "What you do, in a sentence or two")}
+          {custom("category", "Category")}
+        </div>
+      }>
+        {of("tagline").map((i) => (
+          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={choices(i, ABOUT_CHOICES)} compact>
+            <span className="flex min-w-0 items-baseline gap-2 text-sm">
+              <span className="w-16 shrink-0 text-xs text-muted-foreground">Tagline</span>
+              <span className="truncate italic">{i.value}</span>
+            </span>
+          </Row>
+        ))}
         {of("category").map((i) => (
           <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={choices(i, ABOUT_CHOICES)} compact>
             <span className="flex min-w-0 items-baseline gap-2 text-sm">
@@ -171,11 +214,27 @@ export function SmartAddSlots({
 
 const CONTACT_LABEL: Partial<Record<EvidenceField, string>> = { phone: "Phone", email: "Email", address: "Address" };
 
-function Slot({ title, empty, children }: { title: string; empty: string | null; children: React.ReactNode }) {
+function Slot({
+  title,
+  empty,
+  hint,
+  after,
+  children,
+}: {
+  title: string;
+  empty: string | null;
+  hint?: string;
+  after?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <section className="flex min-h-16 flex-col py-2" aria-label={title}>
-      <h3 className="px-4 pb-1 text-xs font-semibold text-muted-foreground">{title}</h3>
+      <h3 className="flex items-baseline gap-2 px-4 pb-1 text-xs font-semibold text-muted-foreground">
+        {title}
+        {hint && !empty ? <span className="font-normal text-muted-foreground/60">{hint}</span> : null}
+      </h3>
       {empty ? <p className="px-4 py-1 text-sm text-muted-foreground/50">{empty}</p> : children}
+      {after}
     </section>
   );
 }
@@ -280,45 +339,64 @@ function LogoChoice({
   item,
   decision,
   locked,
-  onPick,
+  round,
+  onToggle,
+  onClear,
+  onPrimary,
 }: {
   item: EvidenceItem;
   decision: Decision | null;
   locked: boolean;
-  onPick: () => void;
+  round: boolean;
+  onToggle: () => void;
+  onClear: () => void;
+  onPrimary: () => void;
 }) {
-  const picked = decision === "preferred";
+  const kept = decision === "yes" || decision === "preferred";
+  const primary = decision === "preferred";
   return (
-    <figure className={`flex w-[5.25rem] sm:w-24 flex-col items-center gap-1 animate-in fade-in duration-300 ${decision === "no" ? "opacity-40" : ""}`}>
-      {/* ui-exception: an image tile you pick; the 28px Button cannot hold a 96px image */}
-      <button
-        type="button"
-        disabled={locked}
-        aria-pressed={picked}
-        aria-label={`Use this logo (${whereOf(item)})`}
-        onClick={onPick}
-        className={`relative flex size-[5.25rem] sm:size-24 items-center justify-center overflow-hidden rounded-lg border bg-white p-2 dark:bg-zinc-100 ${
-          picked ? "border-primary ring-2 ring-primary" : "border-border"
-        }`}
-        data-testid="smart-add-logo"
-      >
-        {item.profile_id ? (
-          <SocialImage
-            door={profileAvatarDoor(item.profile_id)}
-            url={item.image_url}
-            fallback={<PlatformMark platform={item.platform ?? ""} size={24} />}
-            className="size-full rounded-full object-cover"
-          />
-        ) : (
-          <img src={item.image_url ?? item.value} alt="" className="max-h-full max-w-full object-contain" />
-        )}
-        {picked ? (
-          <span className="absolute right-1 top-1 rounded-full bg-primary p-0.5 text-primary-foreground">
-            <Check className="size-3" />
+    <figure className="flex w-[5.25rem] flex-col items-center gap-1 animate-in fade-in duration-300 sm:w-24">
+      <span className="relative">
+        {/* ui-exception: an image tile you select; the 28px Button cannot hold a 96px image */}
+        <button
+          type="button"
+          disabled={locked}
+          aria-pressed={kept}
+          aria-label={`${kept ? "Keep" : "Skip"} this image (${whereOf(item)})`}
+          onClick={kept ? onClear : onToggle}
+          className={`flex size-[5.25rem] items-center justify-center overflow-hidden border bg-white p-1.5 dark:bg-zinc-100 sm:size-24 ${
+            round ? "rounded-full" : "rounded-lg"
+          } ${primary ? "border-primary ring-2 ring-primary" : kept ? "border-primary/60 ring-1 ring-primary/60" : "border-border"}`}
+          data-testid="smart-add-logo"
+        >
+          {item.profile_id ? (
+            <SocialImage
+              door={profileAvatarDoor(item.profile_id)}
+              url={item.image_url}
+              fallback={<PlatformMark platform={item.platform ?? ""} size={24} />}
+              className="size-full rounded-full object-cover"
+            />
+          ) : (
+            <img src={item.image_url ?? item.value} alt="" className="max-h-full max-w-full object-contain" />
+          )}
+        </button>
+        {kept ? (
+          <span className="absolute -right-1.5 -top-1.5">
+            <Button
+              variant={primary ? "primary" : "outline"}
+              aria-label={primary ? "Main image" : "Make this the main image"}
+              title={primary ? "Main image" : "Make main"}
+              icon={<Star />}
+              disabled={locked}
+              onClick={onPrimary}
+            />
           </span>
         ) : null}
-      </button>
-      <figcaption className="w-full truncate text-center text-[11px] text-muted-foreground">{whereOf(item)}</figcaption>
+      </span>
+      <figcaption className="w-full truncate text-center text-[11px] text-muted-foreground">
+        {primary ? "Main · " : ""}
+        {whereOf(item)}
+      </figcaption>
     </figure>
   );
 }

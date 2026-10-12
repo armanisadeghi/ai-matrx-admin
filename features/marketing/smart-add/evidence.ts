@@ -14,6 +14,8 @@
 
 export type EvidenceField =
   | "name"
+  | "tagline"
+  | "expertise"
   | "logo"
   | "website"
   | "social"
@@ -70,11 +72,13 @@ export interface RoundSeeds {
 }
 
 /** One field answers once per brand (name, logo, website); the rest can hold several. */
-export const SINGLE_VALUE_FIELDS: ReadonlySet<EvidenceField> = new Set(["name", "logo", "website", "description", "category"]);
+export const SINGLE_VALUE_FIELDS: ReadonlySet<EvidenceField> = new Set(["name", "tagline", "website", "description", "category"]);
 
 /** Display order of the results area. */
 export const FIELD_ORDER: EvidenceField[] = [
   "name",
+  "tagline",
+  "expertise",
   "logo",
   "website",
   "social",
@@ -87,6 +91,8 @@ export const FIELD_ORDER: EvidenceField[] = [
 
 export const FIELD_LABEL: Record<EvidenceField, string> = {
   name: "Name",
+  tagline: "Tagline",
+  expertise: "Expertise",
   logo: "Logo",
   website: "Website",
   social: "Account",
@@ -206,8 +212,19 @@ export function seedKeys(seeds: RoundSeeds, accountKey: (seed: SocialSeed) => st
   return keys;
 }
 
+export interface LibraryImage {
+  url: string;
+  kind: "logo" | "favicon" | "og_image" | "image";
+  primary: boolean;
+  source: string | null;
+}
+
 export interface BrandBasics {
   name: string | null;
+  tagline: string | null;
+  expertise: string[];
+  /** Every image kept (selected), the primary one flagged — it all lands in the asset library. */
+  images: LibraryImage[];
   aliases: string[];
   logoUrl: string | null;
   websiteUrl: string | null;
@@ -237,8 +254,26 @@ export function confirmedBasics(items: Map<string, EvidenceItem>, decisions: Rec
   const facts = ours
     .filter((i) => i.field === "phone" || i.field === "email" || i.field === "address")
     .sort((a, b) => Number(decisions[b.key] === "preferred") - Number(decisions[a.key] === "preferred"));
+  const imageKind = (i: EvidenceItem): LibraryImage["kind"] => {
+    const where = (i.source.where ?? "").toLowerCase();
+    if (where.includes("icon")) return "favicon";
+    if (where.includes("share") || where.includes("og:image")) return "og_image";
+    if (where.includes("photo") || where.includes("header image")) return "image";
+    return "logo";
+  };
+  const primaryLogo = pick("logo");
   return {
     name: pick("name")?.value ?? null,
+    tagline: pick("tagline")?.value ?? null,
+    expertise: ours.filter((i) => i.field === "expertise").map((i) => i.value),
+    images: ordered
+      .filter((i) => i.field === "logo" && (decisions[i.key] === "preferred" || decisions[i.key] === "yes"))
+      .map((i) => ({
+        url: i.image_url ?? i.value,
+        kind: i === primaryLogo ? "logo" : imageKind(i),
+        primary: i === primaryLogo,
+        source: i.source.where,
+      })),
     aliases: ordered.filter((i) => i.field === "name" && decisions[i.key] === "alias").map((i) => i.value),
     logoUrl: pick("logo")?.image_url ?? pick("logo")?.value ?? null,
     websiteUrl: website?.value ?? null,
@@ -252,7 +287,7 @@ export function confirmedBasics(items: Map<string, EvidenceItem>, decisions: Rec
 
 /**
  * Apply one answer with the slot's rules: a slot has at most ONE preferred value (a new one demotes
- * the old to `yes`); picking a logo marks every other logo "not us"; answering again clears it.
+ * the old to `yes` — for images: the primary among many kept); answering again clears it.
  */
 export function applyDecision(
   decisions: Record<string, Decision>,
@@ -269,8 +304,7 @@ export function applyDecision(
   if (item && decision === "preferred") {
     for (const other of items.values()) {
       if (other.key === key || other.field !== item.field) continue;
-      if (item.field === "logo") next[other.key] = "no";
-      else if (next[other.key] === "preferred") next[other.key] = "yes";
+      if (next[other.key] === "preferred") next[other.key] = "yes";
     }
   }
   return next;
@@ -283,4 +317,43 @@ export function isSettledByAnother(item: EvidenceItem, items: Map<string, Eviden
     if (other.key !== item.key && other.field === item.field && decisions[other.key] === "preferred") return true;
   }
   return false;
+}
+
+/** A value the person typed into a slot ("Custom"): their own word, confirmed at once. */
+export function customItem(
+  field: EvidenceField,
+  value: string,
+  extra: Partial<Pick<EvidenceItem, "platform" | "handle" | "url" | "label">> = {},
+): EvidenceItem {
+  const v = value.trim();
+  const keyValue =
+    field === "website"
+      ? websiteHost(v)
+      : field === "phone"
+        ? v.replace(/\D/g, "").slice(-10)
+        : v.toLowerCase();
+  return {
+    key: field === "social" && extra.platform && extra.handle ? `social:${extra.platform}:${extra.handle.toLowerCase()}` : `${field}:${keyValue}`,
+    field,
+    value: field === "website" && !/^https?:\/\//i.test(v) ? `https://${v}` : v,
+    label: extra.label ?? (field === "website" ? websiteHost(v) : null),
+    image_url: null,
+    url: extra.url ?? (field === "website" ? (/^https?:\/\//i.test(v) ? v : `https://${v}`) : null),
+    platform: extra.platform ?? null,
+    handle: extra.handle ?? null,
+    followers: null,
+    verified: null,
+    profile_id: null,
+    source: { node: "person", kind: "typed", url: null, where: "typed by you" },
+    confidence: 1,
+  };
+}
+
+/** web.discovered_item category for a finding kept as an unreviewed candidate. */
+export function candidateCategory(field: EvidenceField): "media" | "fact" | "social" | "link" | "identity" {
+  if (field === "logo") return "media";
+  if (field === "social") return "social";
+  if (field === "website") return "link";
+  if (field === "phone" || field === "email" || field === "address") return "fact";
+  return "identity";
 }
