@@ -24,13 +24,13 @@ import { promptSectionSections, wrapPromptSection } from "../promptSectionMenu";
 import { usePromptBlockEditing } from "@/features/prompt-blocks/usePromptBlockEditing";
 import { useModelFull } from "@/features/ai-models/hooks/useModels";
 import { selectAgentModelId as selectSystemAgentModelId } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
-import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";
 import { SystemMessageButtons } from "@/features/agents/components/builder/message-builders/system-instructions/SystemMessageButtons";
 import { MessageFlagToggles } from "@ai-matrx/chat/agents/message-flags/MessageFlagToggles";
 import { useMessageFlags } from "@/features/agents/message-flags/useMessageFlags";
 import {
   MessageViewModeMenu,
   DEFAULT_MESSAGE_VIEW_MODE,
+  isRawMode,
   showsTextTools,
   type MessageViewMode,
 } from "@/features/agents/components/builder/message-builders/MessageViewModeMenu";
@@ -79,14 +79,6 @@ function extractTextFromBlock(block: Record<string, unknown>): string {
   return (block.text as string | undefined) ?? "";
 }
 
-/** Compute character offset of (node, offset) within `root`'s text content. */
-function getOffsetWithinRoot(root: Node, node: Node, offset: number): number {
-  const range = document.createRange();
-  range.selectNodeContents(root);
-  range.setEnd(node, offset);
-  return range.toString().length;
-}
-
 interface SystemMessageProps {
   agentId: string;
   onOpenFullScreenEditor?: () => void;
@@ -99,7 +91,9 @@ export function SystemMessage({
   scrollContainerRef,
 }: SystemMessageProps) {
   const [viewMode, setViewMode] = useState<MessageViewMode>(DEFAULT_MESSAGE_VIEW_MODE);
-  const isEditing = viewMode === "edit";
+  // Raw IS the textarea, focused or not: no swap to a separate display view on blur (Arman,
+  // 2026-10-11 — "we don't need to have it change when it loses focus").
+  const isEditing = isRawMode(viewMode);
   const setIsEditing = useCallback(
     (next: boolean | ((prev: boolean) => boolean)) => {
       setViewMode((prev) => {
@@ -625,84 +619,10 @@ export function SystemMessage({
   );
 
   const handleBlur = useCallback(() => {
-    if (!contextMenuOpenRef.current) {
-      setIsEditing(false);
-    }
     setTimeout(() => {
       contextMenuOpenRef.current = false;
     }, 100);
   }, []);
-
-  const handleViewClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (!scrollContainerRef?.current) return;
-      const scrollContainer = scrollContainerRef.current;
-      const savedScrollPosition = scrollContainer.scrollTop;
-      const target = e.target as HTMLElement;
-      const range = document.caretRangeFromPoint?.(e.clientX, e.clientY);
-      let clickPosition = 0;
-      if (range) {
-        const preCaretRange = range.cloneRange();
-        preCaretRange.selectNodeContents(target);
-        preCaretRange.setEnd(range.endContainer, range.endOffset);
-        clickPosition = preCaretRange.toString().length;
-      }
-      setIsEditing(true);
-      requestAnimationFrame(() => {
-        scrollContainer.scrollTop = savedScrollPosition;
-        const textarea = textareaRefs.current?.[systemMessageIndex];
-        if (textarea && clickPosition > 0) {
-          textarea.setSelectionRange(clickPosition, clickPosition);
-        }
-      });
-    },
-    [scrollContainerRef],
-  );
-
-  // Drag-select handler: when a user releases the mouse with a non-empty
-  // selection inside the view div, enter edit mode and mirror the selection
-  // into the textarea so they can immediately type/replace the selected text.
-  // Pure clicks (no movement → collapsed range) fall through to onClick above.
-  const handleViewMouseUp = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (e.button !== 0 || isEditing) return;
-      const selection =
-        typeof window !== "undefined" ? window.getSelection() : null;
-      if (!selection || selection.rangeCount === 0) return;
-      const range = selection.getRangeAt(0);
-      if (range.collapsed) return;
-      const rootEl = e.currentTarget;
-      if (
-        !rootEl.contains(range.startContainer) ||
-        !rootEl.contains(range.endContainer)
-      ) {
-        return;
-      }
-      const start = getOffsetWithinRoot(
-        rootEl,
-        range.startContainer,
-        range.startOffset,
-      );
-      const end = getOffsetWithinRoot(
-        rootEl,
-        range.endContainer,
-        range.endOffset,
-      );
-      const savedScroll = scrollContainerRef?.current?.scrollTop ?? 0;
-      setIsEditing(true);
-      requestAnimationFrame(() => {
-        if (scrollContainerRef?.current) {
-          scrollContainerRef.current.scrollTop = savedScroll;
-        }
-        const textarea = textareaRefs.current?.[systemMessageIndex];
-        if (textarea) {
-          textarea.focus({ preventScroll: true });
-          textarea.setSelectionRange(start, end);
-        }
-      });
-    },
-    [isEditing, scrollContainerRef],
-  );
 
   const buildAgentScope = useAgentBuilderSurfaceScope(agentId);
   const agentMenuActions = useAgentBuilderMenuActions(agentId);
@@ -861,10 +781,11 @@ export function SystemMessage({
               promptBlocks={blockEditing.highlight}
               menuSections={(conditional) => promptMenuSections("write", conditional)}
               placeholder="You're a very helpful assistant"
+              textClassName="[&_.rich-editor-prose]:text-gray-900 dark:[&_.rich-editor-prose]:text-gray-200"
             />
           ) : viewMode === "preview" ? (
             <div
-              className="min-h-[240px] cursor-text"
+              className="cursor-text"
               onClick={() => setViewMode("edit")}
               title="Click to edit"
             >
@@ -886,7 +807,7 @@ export function SystemMessage({
                 </span>
               )}
             </div>
-          ) : isEditing ? (
+          ) : (
             <EditableContextMenu
               {...blockEditing.menuProps}
               sourceFeature="agent-builder"
@@ -938,36 +859,13 @@ export function SystemMessage({
                 onFocus={handleFocus}
                 onBlur={handleBlur}
                 placeholder="You're a very helpful assistant"
+                rows={1}
                 className="w-full bg-gray-50 dark:bg-gray-800 border-none outline-none text-xs text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-0 resize-none overflow-hidden leading-normal"
-                style={{
-                  minHeight: "240px",
-                  lineHeight: "1.5",
-                }}
+                style={{ lineHeight: "1.5" }}
               />
             </EditableContextMenu>
-          ) : (
-            <div
-              className="text-xs pb-2 text-gray-600 dark:text-gray-400 whitespace-pre-wrap cursor-text leading-normal"
-              onClick={handleViewClick}
-              onMouseUp={handleViewMouseUp}
-              style={{
-                minHeight: "240px",
-                lineHeight: "1.5",
-              }}
-            >
-              {developerMessage ? (
-                <HighlightedText
-                  text={developerMessage}
-                  validVariables={variableNames}
-                  blocks={blockEditing.highlight}
-                />
-              ) : (
-                <span className="text-gray-500 dark:text-gray-500 italic">
-                  You're a very helpful assistant
-                </span>
-              )}
-            </div>
           )}
+
 
           {/* Content blocks */}
           {(nonTextBlocks.length > 0 || pendingAddType != null) && (

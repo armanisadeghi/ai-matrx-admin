@@ -34,10 +34,16 @@ import {
 import { cn } from "@/lib/utils";
 
 /**
- * "edit" is Plain while the text box has the caret (a click on the highlighted
- * text enters it; leaving returns to "plain") — one shared mode, two states.
+ * "edit" and "plain" are both Raw: the textarea, focused or not. Raw used to swap to a highlighted
+ * display view on blur; it no longer does (Arman, 2026-10-11) — the two keys remain only because
+ * hosts set "edit" to put the caret in the text.
  */
 export type MessageViewMode = "edit" | "plain" | "write" | "preview";
+
+/** Raw: the exact text in its textarea — the same box whether or not it has the caret. */
+export function isRawMode(viewMode: MessageViewMode): boolean {
+  return viewMode === "edit" || viewMode === "plain";
+}
 
 type SharedMode = "plain" | "write" | "preview";
 

@@ -18,6 +18,7 @@
  */
 
 import { useMemo, useRef, useState, type RefObject } from "react";
+import { cn } from "@/lib/utils";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { sectionMenuSection, wrapEditorSelection } from "@ai-matrx/rich-editor/core/section-menu";
 import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
@@ -136,7 +137,12 @@ export interface PromptWriteBoxProps {
   controllerRef: RefObject<RichEditorController | null>;
   surfaceName: string;
   placeholder?: string;
-  minHeight?: number;
+  /**
+   * The box's own text colour, as literal `[&_.rich-editor-prose]:…` classes (each prompt box keeps
+   * the colour its text always had). The editor's surface is transparent — the box's background
+   * shows through, and the box hugs its text (no minimum height, no runway).
+   */
+  textClassName?: string;
   /** The agent's variable names: undeclared names are flagged, and a selection can become a section. */
   variableNames?: readonly string[];
   /** The surface scope the right-click menu acts on. */
@@ -157,7 +163,7 @@ export function PromptWriteBox({
   controllerRef,
   surfaceName,
   placeholder,
-  minHeight = 240,
+  textClassName,
   variableNames,
   contextData,
   promptBlocks = null,
@@ -167,14 +173,22 @@ export function PromptWriteBox({
   const box = (
     <div
       data-testid="prompt-write-box"
-      className="relative w-full [&_.ProseMirror]:min-h-0! [&_.ProseMirror]:px-0! [&_.ProseMirror]:py-0! [&_.ProseMirror]:font-sans [&_.ProseMirror]:text-xs!"
-      style={{ minHeight }}
+      // In place (layout "flow"): no panel, no textured surface, no 60dvh floor, no 40dvh runway — the
+      // text sits on the box's own background at the size the prompt textarea always had (Arman,
+      // 2026-10-11: "the giant blank thing added to the bottom … looks horrible"). Headings take the
+      // text's colour: a prompt is read as text.
+      className={cn(
+        "relative w-full [--rich-editor-heading-color:currentColor] [&_.ProseMirror]:min-h-0! [&_.ProseMirror]:px-0! [&_.ProseMirror]:py-0! [&_.ProseMirror]:font-sans [&_.ProseMirror]:text-xs!",
+        textClassName,
+      )}
     >
       <RichEditor
         value={value}
         onChange={onChange}
         view="visual"
         chrome="bare"
+        // PUBLISH-PENDING (rich-editor > 0.5.104): layout="flow" textSize="xs" — no panel surface,
+        // no 60dvh floor, no 40dvh runway. Until it is on npm the panel keeps its runway.
         hostContextMenu
         variables={declared}
         promptBlocks={promptBlocks}
@@ -184,7 +198,6 @@ export function PromptWriteBox({
         sourceFeature="agent-builder"
         defaultOutlineOpen={false}
         imagePolicy="other"
-        className="h-full"
       />
     </div>
   );
