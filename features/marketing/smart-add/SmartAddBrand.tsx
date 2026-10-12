@@ -17,6 +17,7 @@
  */
 
 import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { Check, ExternalLink, Globe, Loader2, RotateCcw, X } from "lucide-react";
 import { Button, Field, SegmentedControl, Select, type SelectOption } from "@ai-matrx/design-system/controls";
 import { useAppDispatch } from "@/lib/redux/hooks";
@@ -39,6 +40,7 @@ import {
 import { runHref } from "@/features/workflow-runtime/run-doors";
 import { initializeSite } from "@/features/marketing/crawler/direct-client";
 import { SmartAddSlots } from "./SmartAddSlots";
+import { SMART_ADD_VT, SmartAddHero } from "./SmartAddHero";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useSocialSpend } from "@/features/marketing/social/cost";
@@ -453,6 +455,58 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   // ── render ──────────────────────────────────────────────────────────────
 
   const showPicker = needsPlatformPick(parsed, null);
+
+  // The welcome stage until the first real finding; then ONE morph into the structured page
+  // (a shared-element view transition where the browser has it; an instant swap otherwise).
+  const [structured, setStructured] = useState(false);
+  const hasFindings = items.size > 0;
+  useEffect(() => {
+    if (structured || !hasFindings) return;
+    const go = () => flushSync(() => setStructured(true));
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (doc.startViewTransition && !reduce) doc.startViewTransition(go);
+    else go();
+  }, [hasFindings, structured]);
+  const nothingFound = rounds.length > 0 && !working && !hasFindings;
+  const listeners = (
+    <>
+      {setupRunId && setupAttached ? (
+        <SmartAddRound
+          key={setupRunId}
+          runId={setupRunId}
+          steps={SETUP_STEPS}
+          onView={(view) => setSetupView((v) => (JSON.stringify(v) === JSON.stringify(view) ? v : view))}
+        />
+      ) : null}
+      {rounds.map((r) =>
+        r.runId ? <SmartAddRound key={r.runId} runId={r.runId} onEvidence={onEvidence} onView={onView} /> : null,
+      )}
+    </>
+  );
+  if (!structured) {
+    return (
+      <>
+        <SmartAddHero
+          person={person}
+          onPerson={setPerson}
+          websiteText={websiteText}
+          onWebsite={setWebsiteText}
+          socialText={socialText}
+          onSocial={setSocialText}
+          showPicker={showPicker}
+          picked={picked}
+          pickOptions={PICK_OPTIONS}
+          onPick={setPicked}
+          working={working}
+          views={roundViews.filter((v): v is RoundView => Boolean(v))}
+          nothingFound={nothingFound}
+          onAdd={addCustom}
+        />
+        {listeners}
+      </>
+    );
+  }
   // Honest run state: finished, failed, interrupted (a restart — the platform resumes it), or working.
   const setupStatus = setupView?.status ?? "";
   const setupState: "working" | "done" | "failed" | "interrupted" =
@@ -466,6 +520,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
 
   return (
     <div className="flex w-full max-w-3xl flex-col gap-3" data-testid="smart-add-brand">
+      <div style={{ viewTransitionName: SMART_ADD_VT.kind }} className="self-start">
       <SegmentedControl
         aria-label="Brand kind"
         value={person ? "person" : "company"}
@@ -474,9 +529,9 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           { value: "company", label: "Company" },
           { value: "person", label: "Person" },
         ]}
-        className="self-start"
       />
-      <div className="grid gap-3 sm:grid-cols-2">
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2" style={{ viewTransitionName: SMART_ADD_VT.inputs }}>
         <label className="flex flex-col gap-1">
           <span className="text-xs font-medium text-muted-foreground">Website</span>
           <Field
@@ -534,7 +589,9 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       </div>
 
       {/* The brand as it stands: the primary choices, building as the person confirms. */}
+      <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-500">
       <BrandCard basics={basics} person={person} location={basics.facts.find((f) => f.field === "address")?.value ?? null} />
+      </div>
       <p className="text-xs text-muted-foreground">Everything found is kept with the brand — only “Not us” is left out.</p>
 
       {situation === "new" ? (
@@ -562,7 +619,10 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         </div>
       ) : null}
 
-      <div className="rounded-xl border border-border bg-card" data-testid="smart-add-results">
+      <div
+        className="rounded-xl border border-border bg-card motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-700"
+        data-testid="smart-add-results"
+      >
         <SmartAddSlots
           items={visible}
           decisions={decisions}
@@ -707,17 +767,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         </section>
       ) : null}
 
-      {setupRunId && setupAttached ? (
-        <SmartAddRound
-          key={setupRunId}
-          runId={setupRunId}
-          steps={SETUP_STEPS}
-          onView={(view) => setSetupView((v) => (JSON.stringify(v) === JSON.stringify(view) ? v : view))}
-        />
-      ) : null}
-      {rounds.map((r) =>
-        r.runId ? <SmartAddRound key={r.runId} runId={r.runId} onEvidence={onEvidence} onView={onView} /> : null,
-      )}
+      {listeners}
     </div>
   );
 }
