@@ -27,7 +27,7 @@ const STRICT = process.argv.includes("--strict");
 const LINKED_ANOTHER_WAY = new Set(["file", "user", "person", "user_profile", "record", "custom_record"]);
 const SKIP_DIRS = new Set(["node_modules", ".next", ".git", "migrations", "tmp", ".wt", "__tests__"]);
 const TAG = /<(EntityCustomFields|EntityBackLinks)\b([\s\S]*?)\/>/g;
-const TOKEN = /\bentityToken="([a-z0-9_]+)"/;
+const TOKEN = /\bentityToken=\{?["'`]([a-z0-9_]+)["'`]\}?/;
 
 function* walk(dir: string): Generator<string> {
   for (const name of readdirSync(dir)) {

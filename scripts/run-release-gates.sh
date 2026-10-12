@@ -282,7 +282,7 @@ if $STRICT; then
         "TypeScript type-check|pnpm type-check"
         "Doctrine check|pnpm exec tsx scripts/check-doctrine.ts --strict"
         "Doc claims vs live config|pnpm exec tsx scripts/check-doc-claims.ts --strict"
-        "Linked-records kinds are linkable|pnpm exec tsx scripts/check-back-link-kinds.ts"
+        "Linked-records kinds are linkable|pnpm exec tsx scripts/check-back-link-kinds.ts --strict"
         "Route metadata and favicons|pnpm check:route-metadata:strict"
         "Pattern Patrol manifest contracts|pnpm exec tsx scripts/pattern-patrol/check-manifest.ts --repo-only"
         "Turbopack filesystem tracing|pnpm exec tsx scripts/check-turbopack-fs-tracing.ts"
@@ -918,6 +918,11 @@ if $STRICT; then
         # (pan/zoom) layer is squeezed to 0px by the phone max-width default
         # (2026-09-28: org charts, React Flow). Zero findings; advisory here.
         "Fixed-width child in a zero-width layer (phones squeeze it to 0)|pnpm check:zero-width-layers"
+        # NOTHING IS NOT AN ERROR — a strict assertData over a .maybeSingle() read turns
+        # "no row yet" into a red error (Arman, 2026-10-12: absent data is an inviting
+        # empty state). Fix: assertData.nullable (kit 0.43.0). Zero findings; advisory here.
+        "Strict assertData over a .maybeSingle() read (absent row shown as an error)|pnpm check:maybe-single-assert"
+        "Maybe-single assert guard self-test|pnpm check:maybe-single-assert:self-test"
         # THE MOTION STANDARD — every panel, sidebar, dock, drawer, sheet and the canvas
         # slides on ONE pair (--matrx-motion-*-panel; Arman, 2026-10-02 — common-docs
         # policies/motion-standard.md). Zero findings today; advisory here.

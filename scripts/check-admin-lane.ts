@@ -85,7 +85,8 @@ const IDENTITY_ALLOWED = new Set([
   "features/shell/components/sidebar/admin-menu/AdminSidebarSection.tsx",
   "features/shell/components/sidebar/admin-menu/AdminMobileMenuItem.tsx",
   "components/matrx/PublicHeaderAuth.tsx",
-  // A badge into the entity registry where a kind is made linkable; it grants and reveals nothing.
+  // A badge into the relationship rules page where a kind is made linkable. It grants nothing; it shows
+  // a super admin the kind's token (an admin-only fix-it signal the owner asked for, 2026-10-11).
   "features/unified-data/components/EntityBackLinks.tsx",
   // Protects the person's session; grants nothing.
   "features/shell/auth/useSignOut.ts",
