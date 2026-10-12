@@ -1,7 +1,8 @@
 "use client";
 
 import { formatRelativeTime } from "@ai-matrx/kit/format";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { TranscriptScrollNav } from "@ai-matrx/design-system/transcript-scroll-nav";
 import Link from "next/link";
 import {
   ChevronLeftTapButton,
@@ -43,6 +44,7 @@ export function SessionDetail({
   onDirectRoomCreated: (roomId: string) => void;
 }) {
   const [tab, setTab] = useState<Tab>("messages");
+  const transcriptRef = useRef<HTMLElement>(null);
   const Icon = providerMeta(session.provider)?.icon ?? AGENT_ICON;
   const lag = worstLag(members.map((m) => deliveryLag(m, nowMs)));
   const lagLine = lagText(lag);
@@ -122,15 +124,22 @@ export function SessionDetail({
       </div>
 
       <div className="flex min-h-0 flex-1">
-        <section
-          aria-label="Transcript"
+        <div
           className={cn(
-            "min-h-0 min-w-0 flex-1 overflow-y-auto scrollbar-thin @4xl/live:block",
+            "relative min-h-0 min-w-0 flex-1 @4xl/live:block",
             tab === "transcript" ? "block" : "hidden",
           )}
         >
-          <SessionTranscriptPane address={session.address} />
-        </section>
+          <section
+            ref={transcriptRef}
+            aria-label="Transcript"
+            className="h-full overflow-y-auto scrollbar-thin"
+          >
+            <SessionTranscriptPane address={session.address} />
+          </section>
+          {/* Up: the previous message I sent, top-aligned. Down: the end. */}
+          <TranscriptScrollNav scrollRef={transcriptRef} />
+        </div>
         <section
           aria-label="Messages"
           className={cn(
