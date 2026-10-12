@@ -95,6 +95,9 @@ export function SmartAddSlots({
   // own item came from a page link still shows the real photo.
   const photoByPlatform = new Map<string, EvidenceItem>();
   for (const l of of("logo")) if (l.profile_id && l.platform) photoByPlatform.set(l.platform, l);
+  // The display name that profile reported (its own "name" finding), for rows that only had a link.
+  const nameByProfile = new Map<string, string>();
+  for (const n of of("name")) if (n.source.kind === "social_profile" && n.source.url) nameByProfile.set(n.source.url, n.value);
   const platforms = [...new Set(socials.map((s) => s.platform ?? "other"))];
   const empty = working ? "Looking…" : started ? "Nothing found" : "—";
   const choices = (item: EvidenceItem, list: Choice[]) => (
@@ -149,7 +152,9 @@ export function SmartAddSlots({
                   <span className="flex min-w-0 items-center gap-3">
                     <Avatar item={i.profile_id ? i : { ...i, ...photoOf(photoByPlatform.get(i.platform ?? ""), i) }} />
                     <span className="flex min-w-0 flex-col">
-                      <span className="truncate text-sm font-medium">{i.label ?? `@${i.handle ?? ""}`}</span>
+                      <span className="truncate text-sm font-medium">
+                        {i.label ?? nameByProfile.get(photoByPlatform.get(i.platform ?? "")?.source.url ?? "") ?? `@${i.handle ?? ""}`}
+                      </span>
                       <span className="truncate text-xs text-muted-foreground">
                         @{i.handle ?? ""}
                         {i.followers != null ? ` · ${formatCount(i.followers)} followers` : ""}

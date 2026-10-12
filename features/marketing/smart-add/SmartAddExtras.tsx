@@ -211,9 +211,12 @@ function groupBySource(items: EvidenceItem[]): SourceGroup[] {
       photos.find((p) => p.source.url && p.source.url === acct.source.url) ??
       photos.find((p) => p.platform === acct.platform) ??
       null;
+    const profileName = items.find(
+      (i) => i.field === "name" && i.source.kind === "social_profile" && photo?.source.url && i.source.url === photo.source.url,
+    )?.value;
     return {
       id: acct.key,
-      title: acct.label ?? `@${acct.handle ?? ""}`,
+      title: acct.label ?? profileName ?? `@${acct.handle ?? ""}`,
       photo: { ...acct, profile_id: photo?.profile_id ?? null, image_url: photo?.image_url ?? acct.image_url },
       items: fromProfile.includes(acct) ? fromProfile : [acct, ...fromProfile],
     };
