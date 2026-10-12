@@ -6,7 +6,7 @@
  * Move dialogs so they outlive the dropdown that opened them.
  */
 
-import { useState, type ReactNode } from "react";
+import { isValidElement, useState, type ReactElement, type ReactNode } from "react";
 import { MoreHorizontal, Share2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -44,8 +44,8 @@ export type FileMenuProps = Omit<
     projectId: string | null,
     projectName: string | null,
   ) => Promise<void> | void;
-  /** "icon" is the ⋯ of a list row; "label" is the editor's text "File" button. */
-  trigger?: "icon" | "label";
+  /** "icon" is the ⋯ of a list row; "label" is a text "File" button; an element is the editor menu bar's own "File" trigger. */
+  trigger?: "icon" | "label" | ReactElement;
   disabled?: boolean;
   /**
    * Google Sheets / Docs rows (Open in Google, Create, Update, Push). The ONE Google link
@@ -138,6 +138,7 @@ export function FileMenu({
         <GoogleSlot google={trashed ? undefined : google} active={menuOpened || open === true}>
           {(googleRows) => (
             <DropdownMenu
+              {...(isValidElement(trigger) ? { modal: false } : {})}
               {...(open !== undefined ? { open } : {})}
               onOpenChange={(next) => {
                 if (next) setMenuOpened(true);
@@ -145,7 +146,9 @@ export function FileMenu({
               }}
             >
               <DropdownMenuTrigger asChild>
-                {trigger === "label" ? (
+                {isValidElement(trigger) ? (
+                  trigger
+                ) : trigger === "label" ? (
                   <ToolbarButton
                     variant="ghost"
                     size="sm"
@@ -165,7 +168,10 @@ export function FileMenu({
                   />
                 )}
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-[11rem]">
+              <DropdownMenuContent
+                align={isValidElement(trigger) ? "start" : "end"}
+                className={isValidElement(trigger) ? "max-h-[75vh] min-w-[15rem] overflow-y-auto" : "min-w-[11rem]"}
+              >
                 <FileMenuItems
                   {...items}
                   extra={

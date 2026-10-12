@@ -6,7 +6,7 @@
  * (optionally with `extra` rows: Print, Find and replace, Comments…).
  */
 
-import type { ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -30,6 +30,10 @@ export function useFileRecordMenu<Row extends { id: string; user_id: string }>(
     onProjectMoved?: (projectId: string | null) => void;
     /** Google rows for the open record (the editor lends its live content). */
     google?: FileMenuProps["google"];
+    /** Mounted as the editor menu bar's File menu (Google layout): its trigger and open state. */
+    menubar?: { trigger: ReactElement; open: boolean; onOpenChange: (open: boolean) => void };
+    /** A Rename row (the editor's one rename path). */
+    onRename?: (name: string) => Promise<void>;
   },
 ): ReactNode {
   const router = useRouter();
@@ -74,6 +78,15 @@ export function useFileRecordMenu<Row extends { id: string; user_id: string }>(
       }}
       extra={options.extra}
       google={options.google}
+      {...(options.onRename ? { onRename: options.onRename } : {})}
+      {...(options.menubar
+        ? {
+            trigger: options.menubar.trigger,
+            open: options.menubar.open,
+            onOpenChange: options.menubar.onOpenChange,
+            shareable: true,
+          }
+        : {})}
     />
   );
 }

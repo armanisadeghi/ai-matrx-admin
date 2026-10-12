@@ -5,11 +5,13 @@ import { useRecordOpened } from "@/features/file-actions/home/useRecordsOpened";
 import dynamic from "next/dynamic";
 import { Loader2 } from "lucide-react";
 
-import { Input } from "@ai-matrx/design-system/controls";
 import { supabase } from "@/utils/supabase/client";
 import { getClaimsUser } from "@ai-matrx/auth";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
-import { ReferenceCopyButton } from "@/features/matrx-envelope/components/ReferenceCopyButton";
+import { EditorTitleField } from "@/components/editor-chrome/EditorTitleField";
+import { FileTitleMarks } from "@/features/file-actions/FileTitleMarks";
+import { WORKBOOK_ADAPTER } from "@/features/file-actions/adapters";
+import { useLiveFileName } from "@/features/file-actions/useLiveFileName";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
@@ -51,8 +53,6 @@ export default function WorkbookPage({
 
   const [workbook, setWorkbook] = useState<Workbook | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [renameDraft, setRenameDraft] = useState("");
-  const [renameSaving, setRenameSaving] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [canEdit, setCanEdit] = useState(false);
   // Editability must be RESOLVED before the editor mounts. Univer boots once
@@ -70,7 +70,6 @@ export default function WorkbookPage({
         return;
       }
       setWorkbook(res.data);
-      setRenameDraft(res.data.workbook_name);
 
       const { data: userData } = await getClaimsUser(supabase);
       const userId = userData?.user?.id ?? null;
@@ -99,24 +98,15 @@ export default function WorkbookPage({
   // same optimistic state, same revert on failure.
   const applyRename = async (name: string) => {
     if (!workbook || name === workbook.workbook_name) return;
-    setRenameSaving(true);
     const res = await renameWorkbook(id, name);
-    setRenameSaving(false);
-    if (isServiceFailure(res)) {
-      setRenameDraft(workbook.workbook_name);
-      throw new Error(res.error);
-    }
+    if (isServiceFailure(res)) throw new Error(res.error);
     setWorkbook(res.data);
-    setRenameDraft(res.data.workbook_name);
   };
 
-  const commitRename = () => {
-    // The field has already reverted to the persisted name on failure, and a
-    // blur is trivially retryable — swallow here so an unhandled rejection
-    // never escapes the event handler. Agent writes go through the handler
-    // below instead, where the throw becomes an error envelope the agent reads.
-    void applyRename(renameDraft).catch(() => {});
-  };
+  // A collaborator's (or an agent's) rename shows here live, like Google's title.
+  useLiveFileName({ table: "udt_workbooks", column: "workbook_name", id }, (name) =>
+    setWorkbook((w) => (w && w.workbook_name !== name ? { ...w, workbook_name: name } : w)),
+  );
 
   // Write half of `matrx-user/workbooks` for the EDITOR route. Only the two
   // human-authored fields of the workbook row are wired here; the sheet-name
@@ -246,79 +236,60 @@ export default function WorkbookPage({
       getScope={getScope}
       getWriteHandlers={getSurfaceWriteHandlers}
     >
-      <RouteHeader
-        left={
-          <>
-            {/* The glass Back button is its own group: the name field beside it is a solid control, and a
-                row mixing glass and solid trips the tap-target guard. */}
-            <span className="flex shrink-0">
-              <ChevronLeftTapButton href="/workbooks" ariaLabel="Back" />
-            </span>
-            <Input
-              value={renameDraft}
-              onChange={(e) => setRenameDraft(e.target.value)}
-              onBlur={commitRename}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                if (e.key === "Escape" && workbook) {
-                  setRenameDraft(workbook.workbook_name);
-                  (e.target as HTMLInputElement).blur();
-                }
-              }}
-              className="min-w-0 max-w-[45vw] sm:max-w-xs"
-              disabled={!workbook || !canEdit}
-              placeholder="Workbook name"
-            />
-            {renameSaving && (
-              <Loader2 className="size-3 animate-spin text-muted-foreground shrink-0" />
-            )}
-          </>
-        }
-        right={
-          workbook ? (
-            <div className="flex items-center gap-0.5">
-              <ReferenceCopyButton
-                referenceType="workbook"
-                id={workbook.id}
-                label={workbook.workbook_name}
-                toastLabel={workbook.workbook_name}
-                size="sm"
+      {permsResolved && workbook ? (
+        <WorkbookEditor
+          workbookId={id}
+          workbookName={workbook.workbook_name}
+          editable={canEdit}
+          collab
+          record={workbook}
+          onProjectMoved={(projectId) =>
+            setWorkbook((w) => (w ? { ...w, project_id: projectId } : w))
+          }
+          chrome={{
+            backHref: "/workbooks",
+            title: (
+              <EditorTitleField
+                value={workbook.workbook_name}
+                editable={canEdit}
+                placeholder="Untitled spreadsheet"
+                onCommit={applyRename}
               />
+            ),
+            titleMarks: (
+              <FileTitleMarks
+                adapter={WORKBOOK_ADAPTER}
+                row={workbook}
+                canManage={isOwner}
+                onProjectMoved={(projectId) =>
+                  setWorkbook((w) => (w ? { ...w, project_id: projectId } : w))
+                }
+              />
+            ),
+            actions: (
               <ShareButton
                 resourceType="workbook"
                 resourceId={workbook.id}
                 resourceName={workbook.workbook_name}
                 isOwner={isOwner}
-                variant="ghost"
+                variant="default"
                 size="sm"
+                className="rounded-full px-4"
               />
-            </div>
-          ) : undefined
-        }
-      />
-      {/* Single full-page editor: Univer renders its own static top toolbar
-          (Editing / Save now / Export / History), so the surface must start
-          BELOW the glass header rather than scroll behind it — otherwise
-          Univer's toolbar collides with the back button + name field. */}
-      <div
-        className="h-full w-full overflow-hidden"
-        style={{ paddingTop: "var(--shell-header-h)" }}
-      >
-        {permsResolved && workbook ? (
-          <WorkbookEditor
-            workbookId={id}
-            workbookName={workbook.workbook_name}
-            editable={canEdit}
-            collab
-            record={workbook}
-            onProjectMoved={(projectId) =>
-              setWorkbook((w) => (w ? { ...w, project_id: projectId } : w))
-            }
+            ),
+            ...(canEdit ? { onRename: applyRename } : {}),
+          }}
+        />
+      ) : (
+        <>
+          <RouteHeader
+            left={<ChevronLeftTapButton href="/workbooks" ariaLabel="Back" />}
           />
-        ) : (
-          <EditorBootSpinner />
-        )}
-      </div>
+          <div className="h-full pt-[var(--shell-header-h)]">
+            <EditorBootSpinner />
+          </div>
+        </>
+      )}
     </SurfaceRuntimeProvider>
   );
 }

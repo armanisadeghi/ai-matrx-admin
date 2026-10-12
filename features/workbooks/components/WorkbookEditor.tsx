@@ -19,9 +19,18 @@
  */
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { History, Loader2, MessageSquare, Printer, Save, Search } from "lucide-react";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { FilePlus2, FolderOpen, History, Loader2, MessageSquare, Printer, Sheet } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { EditorDocumentHeader } from "@/features/shell/components/header/templates/EditorDocumentHeader";
+import { useShellCanvasFullScreen } from "@/features/shell/components/ShellChromeMode";
+import { EditorMenuBar, useMenuBarState, renderMenuEntries } from "@/components/editor-chrome/EditorMenuBar";
+import { EditorToolbar } from "@/components/editor-chrome/EditorToolbar";
+import { EditorSaveStatus } from "@/components/editor-chrome/EditorTitleField";
+import { boundActions, matchesShortcut, type EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
+import { buildSheetMenus, buildSheetToolbar, type SheetChromeHost, type SheetsApiLike } from "@/features/workbooks/chrome/sheet-commands";
+import { createWorkbook } from "@/features/workbooks/workbook-service";
+import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { downloadSheetAsCsv, downloadSheetAsPdf, printSheet } from "@/features/workbooks/sheet-output";
 import { useFileRecordMenu } from "@/features/file-actions/useFileRecordMenu";
 import { WORKBOOK_ADAPTER } from "@/features/file-actions/adapters";
@@ -73,9 +82,7 @@ import "@univerjs/preset-sheets-thread-comment/lib/index.css";
 
 import { supabase } from "@/utils/supabase/client";
 import { useThemeMode } from "@/styles/themes/useThemeMode";
-import { Button } from "@ai-matrx/design-system";
-import { WorkbookDataToolbar } from "@/features/workbooks/components/WorkbookDataToolbar";
-import { cn } from "@/lib/utils";
+import { Button } from "@ai-matrx/design-system/controls";
 import { useToolToggle } from "@/features/canvas/host/toolCanvas";
 import { toast } from "@/components/ui/use-toast";
 
@@ -132,18 +139,17 @@ type Props = {
    */
   collab?: boolean;
   /**
-   * Optional content rendered into the editor's compact top toolbar (left
-   * cluster). Use this to push the page-level "back arrow + rename input"
-   * INTO the editor's bar so we don't burn a second row above the canvas.
-   * On phones every pixel matters; on desktop it dodges the avatar.
+   * The page's parts of the Google-Sheets header this editor draws
+   * (`EditorDocumentHeader`): the title field and its marks, the page actions
+   * (Share, last), and the rename path the File menu's Rename row uses.
    */
-  toolbarLeftSlot?: React.ReactNode;
-  /**
-   * Optional content for the right cluster of the toolbar — typically the
-   * <ShareButton>. Renders left of the save-status / Save now / Export /
-   * History controls so primary actions stay closest to the canvas.
-   */
-  toolbarRightSlot?: React.ReactNode;
+  chrome: {
+    backHref: string;
+    title: React.ReactNode;
+    titleMarks?: React.ReactNode;
+    actions?: React.ReactNode;
+    onRename?: (name: string) => Promise<void>;
+  };
   /** The open workbook row: feeds the shared File menu (copy, move, star, trash). Omit to hide it. */
   record?: Workbook | null;
   /** Called after "Move to project" so the page can refresh its copy of the row. */
@@ -155,8 +161,7 @@ export default function WorkbookEditor({
   editable = true,
   workbookName,
   collab = false,
-  toolbarLeftSlot,
-  toolbarRightSlot,
+  chrome,
   record = null,
   onProjectMoved,
 }: Props) {
@@ -193,6 +198,22 @@ export default function WorkbookEditor({
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   // Snapshot history is a canvas tab beside the editor; the button toggles it.
   const snapshotHistory = useToolToggle(workbookHistoryToggleInput(workbookId, editable, workbookName));
+  const router = useRouter();
+  const menuBar = useMenuBarState();
+  const [formulaBarHidden, setFormulaBarHidden] = useState(false);
+  const [fullScreen, setFullScreen] = useState(false);
+  useShellCanvasFullScreen(fullScreen);
+  // The toolbar reads the live selection (bold, font, zoom); a tick re-reads it
+  // after every command, at most once a frame.
+  const [, setChromeTick] = useState(0);
+  const chromeFrameRef = useRef<number | null>(null);
+  const bumpChrome = useCallback(() => {
+    if (chromeFrameRef.current !== null) return;
+    chromeFrameRef.current = requestAnimationFrame(() => {
+      chromeFrameRef.current = null;
+      setChromeTick((t) => t + 1);
+    });
+  }, []);
 
   // Univer boots ONCE per workbookId (see boot effect). `editable`, `collab`,
   // and the collab host-election flag can change AFTER boot, so we read them
@@ -300,6 +321,9 @@ export default function WorkbookEditor({
               // footprint tight (Google-Sheets-shaped), which matters on
               // phones and short laptop screens.
               ribbonType: "simple",
+              // Google's menu bar + toolbar replace Univer's ribbon
+              // (components/editor-chrome); the formula bar stays.
+              toolbar: false,
             }),
             UniverSheetsSortPreset(),
             UniverSheetsFilterPreset(),
@@ -357,6 +381,7 @@ export default function WorkbookEditor({
         apiRef.current.addEvent(
           apiRef.current.Event.CommandExecuted,
           (command) => {
+            bumpChrome();
             if (!isWorkbookSnapshotMutation(command)) return;
             if (!editableRef.current || replacingRef.current) return;
             setSaveStatus("dirty");
@@ -765,6 +790,24 @@ export default function WorkbookEditor({
       }),
     [withActiveSheet],
   );
+  const createNewWorkbook = async () => {
+    try {
+      const organizationId = await ensureOrgId(null);
+      const res = await createWorkbook({ name: "Untitled workbook", organizationId });
+      if (isServiceFailure(res)) throw new Error(res.error);
+      router.push(`/workbooks/${res.data.id}`);
+    } catch (err) {
+      toast({ title: "Could not create workbook", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+    }
+  };
+  // Google's File rows this editor owns (the rest are the shared file menu's).
+  const fileExtras: EditorMenuEntry[] = [
+    { kind: "separator" },
+    { kind: "action", id: "file.new", label: "New spreadsheet", icon: FilePlus2, run: () => void createNewWorkbook() },
+    { kind: "action", id: "file.open", label: "Open", icon: FolderOpen, shortcut: { key: "o", mod: true, bind: true }, run: () => router.push("/workbooks") },
+    { kind: "action", id: "file.history", label: "Version history", icon: History, shortcut: { key: "h", mod: true, alt: true, shift: true, bind: true }, run: snapshotHistory.toggle },
+    { kind: "action", id: "file.print", label: "Print", icon: Printer, shortcut: { key: "p", mod: true, bind: true }, run: handlePrint },
+  ];
   const liveGoogle = useLiveGoogleAdapter("workbook", workbookId);
   const fileMenu = useFileRecordMenu(WORKBOOK_ADAPTER, record, {
     listHref: "/workbooks",
@@ -776,22 +819,9 @@ export default function WorkbookEditor({
       { label: "CSV (current sheet)", run: async () => handleExportCsv() },
       { label: "PDF (current sheet)", run: async () => handleExportPdf() },
     ],
-    extra: (
-      <>
-        <DropdownMenuItem onSelect={handlePrint}>
-          <Printer className="mr-2 size-4" />
-          Print
-        </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => runUniverCommand("ui.operation.open-find-dialog")}>
-          <Search className="mr-2 size-4" />
-          Find and replace
-        </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => runUniverCommand("sheet.operation.toggle-comment-panel")}>
-          <MessageSquare className="mr-2 size-4" />
-          Comments
-        </DropdownMenuItem>
-      </>
-    ),
+    extra: renderMenuEntries(fileExtras),
+    menubar: menuBar.fileMenuProps(),
+    ...(chrome.onRename ? { onRename: chrome.onRename } : {}),
   });
 
   // Surface bridge — publish the live editor state (sheets, snapshot, save
@@ -938,118 +968,138 @@ export default function WorkbookEditor({
     },
   });
 
-  // Save-status pill text/style.
-  const statusPill = useMemo(() => statusPillFor(saveStatus), [saveStatus]);
+  // ─── Google Sheets chrome: menus, toolbar, bound shortcuts ───
+  const chromeHost: SheetChromeHost | null =
+    bootState === "ready" && apiRef.current
+      ? {
+          api: apiRef.current as unknown as SheetsApiLike,
+          editable,
+          print: handlePrint,
+          formulaBarVisible: () => !formulaBarHidden,
+          toggleFormulaBar: () => setFormulaBarHidden((v) => !v),
+          fullScreen: () => fullScreen,
+          toggleFullScreen: () => setFullScreen((v) => !v),
+          notify: (message) => toast({ title: message }),
+        }
+      : null;
+  const menus = chromeHost ? buildSheetMenus(chromeHost) : [];
+  const toolbarItems = chromeHost ? buildSheetToolbar(chromeHost) : [];
+
+  // Shortcuts Google has and Univer does not bind (number formats, align,
+  // Print, Open, Version history) run the same rows the menus run.
+  const boundRef = useRef<ReturnType<typeof boundActions>>([]);
+  boundRef.current = boundActions([...menus, { id: "file", label: "File", items: fileExtras }]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const root = containerRef.current?.closest("[data-editor-document-header]");
+      if (!root || !(e.target instanceof Node) || !(root.contains(e.target) || e.target === document.body)) return;
+      const hit = boundRef.current.find((a) => a.shortcut && matchesShortcut(e, a.shortcut));
+      if (!hit) return;
+      e.preventDefault();
+      e.stopPropagation();
+      void Promise.resolve(hit.run()).catch(() => {});
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, []);
+
+  const saveState = saveStatus === "idle" ? "saved" : saveStatus;
 
   return (
     // Univer owns its own light/dark theming via the Facade API
     // (useUniverDarkModeSync); we do NOT pin a colorScheme here — that fought
-    // Univer's portals and broke dark mode. The wrapper bg uses a semantic
-    // token so it adapts with the app theme during boot.
-    <div className="matrx-univer-shell flex h-full w-full flex-col bg-card">
-      <div className="flex items-center gap-2 border-b border-border px-2 py-1 text-xs min-w-0">
-        {/* Left cluster — caller-supplied (back arrow + rename) when this
-            editor lives on the workbook page, empty otherwise. */}
-        {toolbarLeftSlot && (
-          <div className="flex items-center gap-1 min-w-0 flex-1">
-            {toolbarLeftSlot}
-          </div>
-        )}
-        {!toolbarLeftSlot && (
-          <div className="text-muted-foreground flex-1 min-w-0 truncate">
-            {bootState === "booting" && (
-              <span className="flex items-center gap-2">
-                <Loader2 className="size-3 animate-spin" />
-                Loading workbook…
-              </span>
-            )}
-            {bootState === "load_error" && (
-              <span className="text-destructive">
-                Load failed: {loadError ?? "unknown"}
-                <ErrorAlchemyMenu error={loadError} />
-              </span>
-            )}
-            {bootState === "ready" && (
-              <span>{editable ? "Editing" : "Viewing"}</span>
-            )}
-          </div>
-        )}
-        <div className="flex items-center gap-1 shrink-0">
+    // Univer's portals and broke dark mode.
+    <EditorDocumentHeader
+      backHref={chrome.backHref}
+      backLabel="Back to workbooks"
+      productTone="sheets"
+      productIcon={<Sheet />}
+      title={chrome.title}
+      titleMarks={
+        <>
+          {chrome.titleMarks}
+          {bootState === "ready" ? (
+            <EditorSaveStatus state={saveState} {...(editable ? { onSaveNow: handleSaveNow } : {})} />
+          ) : (
+            <span className="flex size-7 items-center justify-center">
+              <Loader2 className="size-4 animate-spin text-muted-foreground" />
+            </span>
+          )}
+        </>
+      }
+      menuBar={
+        <EditorMenuBar
+          menus={menus}
+          state={menuBar}
+          fileMenu={bootState === "ready" ? fileMenu : null}
+        />
+      }
+      actions={
+        <>
           {collab && bootState === "ready" && (
-            <RemoteCursorsLayer
+            <span className="hidden md:flex">
+              <RemoteCursorsLayer states={remoteAwareness} selfUid={collabSelfUid} />
+            </span>
+          )}
+          {/* Extensions, where Google keeps its own (beside Share): table link, Google link, reference. */}
+          {bootState === "ready" && (
+            <span className="hidden items-center gap-1 md:flex">
+              <WorkbookTableLink apiRef={apiRef} workbookId={workbookId} workbookName={workbookName} editable={editable} />
+              <WorkbookGoogleLink apiRef={apiRef} workbookId={workbookId} workbookName={workbookName} editable={editable} />
+              <WorkbookSheetReferenceCopyButton apiRef={apiRef} workbookId={workbookId} workbookName={workbookName} />
+            </span>
+          )}
+          <Button
+            variant="quiet"
+            icon={<History />}
+            aria-label="Version history"
+            title="Version history"
+            aria-pressed={snapshotHistory.isVisible}
+            className="hidden aria-pressed:bg-accent sm:inline-flex"
+            onClick={snapshotHistory.toggle}
+          />
+          <Button
+            variant="quiet"
+            icon={<MessageSquare />}
+            aria-label="Comments"
+            title="Comments"
+            className="hidden sm:inline-flex"
+            disabled={bootState !== "ready"}
+            onClick={() => runUniverCommand("sheet.operation.toggle-comment-panel")}
+          />
+          {chrome.actions}
+        </>
+      }
+      toolbar={
+        <EditorToolbar items={toolbarItems} menus={menus} className={bootState === "ready" ? undefined : "invisible"} />
+      }
+    >
+      <div
+        className="matrx-univer-shell relative flex min-h-0 flex-1 flex-col bg-card"
+        data-formula-bar={formulaBarHidden ? "hidden" : "shown"}
+      >
+        {bootState === "load_error" && (
+          <div className="flex items-center gap-2 px-3 py-2 text-sm text-destructive">
+            Load failed: {loadError ?? "unknown"}
+            <ErrorAlchemyMenu error={loadError} />
+          </div>
+        )}
+        {/* Relative wrapper so the absolute cursor overlay layers inside it
+            (not over the whole viewport) and the Univer canvas keeps its own
+            flex sizing. */}
+        <div className="relative min-h-0 flex-1">
+          <div ref={containerRef} className="absolute inset-0" />
+          {collab && bootState === "ready" && (
+            <WorkbookCursorOverlay
+              univerAPI={apiRef.current}
+              containerRef={containerRef}
               states={remoteAwareness}
               selfUid={collabSelfUid}
             />
           )}
-          {/* Compact status pill (icon only on phones, full text on sm+). */}
-          {bootState === "ready" && saveStatus !== "idle" && (
-            <div
-              className={`hidden sm:flex items-center gap-1 ${statusPill.className}`}
-            >
-              {statusPill.icon}
-              <span>{statusPill.text}</span>
-            </div>
-          )}
-          {bootState === "ready" && <WorkbookDataToolbar apiRef={apiRef} editable={editable} />}
-          {toolbarRightSlot}
-          {/* Custom-table link (Lane B): linked chip or "Make table". */}
-          {bootState === "ready" && (
-            <WorkbookTableLink apiRef={apiRef} workbookId={workbookId} workbookName={workbookName} editable={editable} />
-          )}
-          {/* Google Sheets link (Lane C): create / open / update / push. */}
-          {bootState === "ready" && (
-            <WorkbookGoogleLink apiRef={apiRef} workbookId={workbookId} workbookName={workbookName} editable={editable} />
-          )}
-          {bootState === "ready" && (
-            <WorkbookSheetReferenceCopyButton
-              apiRef={apiRef}
-              workbookId={workbookId}
-              workbookName={workbookName}
-            />
-          )}
-          {editable && bootState === "ready" && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 gap-1 px-2 text-xs"
-              onClick={handleSaveNow}
-              disabled={saveStatus === "saving"}
-              title="Save a labeled snapshot now (bypass autosave debounce)"
-            >
-              <Save className="size-3" />
-              <span className="hidden sm:inline">Save now</span>
-            </Button>
-          )}
-          {bootState === "ready" && fileMenu}
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn("h-7 gap-1 px-2 text-xs", snapshotHistory.isVisible && "bg-accent text-accent-foreground")}
-            onClick={snapshotHistory.toggle}
-            aria-pressed={snapshotHistory.isVisible}
-            title="View snapshot history"
-          >
-            <History className="size-3" />
-            <span className="hidden sm:inline">History</span>
-          </Button>
         </div>
       </div>
-      {/* Relative wrapper so the absolute cursor overlay layers inside it
-          (not over the whole viewport) and the Univer canvas keeps its own
-          flex sizing. */}
-      <div className="relative min-h-0 flex-1">
-        <div ref={containerRef} className="absolute inset-0" />
-        {collab && bootState === "ready" && (
-          <WorkbookCursorOverlay
-            univerAPI={apiRef.current}
-            containerRef={containerRef}
-            states={remoteAwareness}
-            selfUid={collabSelfUid}
-          />
-        )}
-      </div>
-
-    </div>
+    </EditorDocumentHeader>
   );
 }
 
@@ -1082,39 +1132,4 @@ function cryptoRandomId() {
     return crypto.randomUUID();
   }
   return `wb-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function statusPillFor(s: SaveStatus): {
-  text: string;
-  icon: React.ReactNode;
-  className: string;
-} {
-  switch (s) {
-    case "saving":
-      return {
-        text: "Saving…",
-        icon: <Loader2 className="size-3 animate-spin" />,
-        className: "text-muted-foreground",
-      };
-    case "saved":
-      return {
-        text: "Saved",
-        icon: null,
-        className: "text-emerald-600 dark:text-emerald-500",
-      };
-    case "dirty":
-      return {
-        text: "Unsaved changes",
-        icon: null,
-        className: "text-amber-600 dark:text-amber-500",
-      };
-    case "error":
-      return {
-        text: "Save failed",
-        icon: null,
-        className: "text-destructive",
-      };
-    default:
-      return { text: "", icon: null, className: "" };
-  }
 }

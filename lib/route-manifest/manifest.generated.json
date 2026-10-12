@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1417,
+  "routeCount": 1419,
   "routes": [
     {
       "pattern": "/",
@@ -2542,6 +2542,11 @@
       "pattern": "/documents/[id]",
       "status": "live",
       "source": "app/(core)/documents/[id]/page.tsx"
+    },
+    {
+      "pattern": "/documents/templates",
+      "status": "live",
+      "source": "app/(core)/documents/templates/page.tsx"
     },
     {
       "pattern": "/download",
@@ -6984,6 +6989,11 @@
       "pattern": "/workbooks/[id]",
       "status": "live",
       "source": "app/(core)/workbooks/[id]/page.tsx"
+    },
+    {
+      "pattern": "/workbooks/templates",
+      "status": "live",
+      "source": "app/(core)/workbooks/templates/page.tsx"
     },
     {
       "pattern": "/workflows",

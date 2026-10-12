@@ -1890,15 +1890,11 @@
   contain: layout paint;
 }
 
-/* Univer 0.25.x toolbar row classes: center-justify by default. Force the
-   secondary toolbar row to start-align so the buttons hug the left edge.
-   The class names are Univer-internal but stable across 0.25.x patch releases;
-   if a future major rename breaks this, the only consequence is the toolbar
-   reverts to its default centering — nothing functional fails. */
-.matrx-univer-shell .univer-toolbar-group,
-.matrx-univer-shell [class*="univer-toolbar"][class*="group"],
-.matrx-univer-shell [class*="univer-ribbon"][class*="row"] {
-  justify-content: flex-start !important;
+/* Univer's own ribbon is off (`toolbar: false`) — the editors draw Google's
+   menu bar and toolbar (components/editor-chrome). View → Show → Formula bar
+   hides Univer's formula bar row; Univer has no runtime switch for it. */
+.matrx-univer-shell[data-formula-bar="hidden"] [data-u-comp="formula-bar"] {
+  display: none !important;
 }
 
 /* Scroll fade (.matrx-scroll-fade + data-fade-top/bottom) moved VERBATIM to
