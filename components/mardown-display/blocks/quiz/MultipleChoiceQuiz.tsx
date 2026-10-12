@@ -36,7 +36,7 @@ import { Layers } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { fcService } from "@/features/flashcards/data/fcService";
 import { flashcardSetHref } from "@/features/flashcards/routes";
-import { quizToFlashcards } from "./quiz-flashcards";
+import { makeQuizDeck } from "./quiz-flashcards";
 import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
 import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-registry";
 import { IconButton } from "@ai-matrx/design-system";
@@ -466,26 +466,29 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
       window.open(deckHref, "_blank", "noopener");
       return;
     }
-    const cards = quizToFlashcards(quizState?.originalQuestions ?? []);
-    if (cards.length === 0) {
-      toast.error("This quiz has no question with a readable answer to turn into cards.");
-      return;
-    }
     setMakingDeck(true);
     try {
-      const res = await fcService.createSetWithCards(
+      const res = await makeQuizDeck(
         {
-          name: parsedQuiz?.title || "Quiz",
-          metadata: { source_system: "quiz_block", source_id: quizState?.quizId ?? null },
+          title: parsedQuiz?.title || "Quiz",
+          contentHash: parsedQuiz?.contentHash ?? quizState?.quizId ?? "",
+          questions: quizState?.originalQuestions ?? [],
         },
-        cards,
+        {
+          find: async (system, id) => fcService.findSetBySource(system, id),
+          create: async (input, cards) => fcService.createSetWithCards(input, cards),
+        },
       );
-      if (!res.data) {
-        toast.error(res.error ?? "The flashcards could not be saved.");
+      if (!res.ok) {
+        toast.error(res.error);
         return;
       }
-      setDeckHref(flashcardSetHref({ id: res.data.set.id }));
-      toast.success(`${cards.length} flashcards saved. Click the deck button again to open them.`);
+      setDeckHref(flashcardSetHref({ id: res.deckId }));
+      toast.success(
+        res.created
+          ? `${res.cardCount} flashcards saved. Click the deck button again to open them.`
+          : "This quiz is already a flashcard deck. Click the deck button to open it.",
+      );
     } finally {
       setMakingDeck(false);
     }

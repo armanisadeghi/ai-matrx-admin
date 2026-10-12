@@ -592,6 +592,25 @@ export const fcService = {
    * The set a generation SURFACE saved for this conversation's run, if any
    * (dedupe target for the materialization adapter — link, don't create).
    */
+  /** The live deck a block saved under this (system, id) key, or null. One deck per source. */
+  async findSetBySource(system: string, id: string): Promise<FcResult<FcSetRow | null>> {
+    try {
+      const { data, error } = await EDU()
+        .from("fc_set")
+        .select("*")
+        .eq("metadata->>source_system", system)
+        .eq("metadata->>source_id", id)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (error) return fail("findSetBySource", error);
+      return { data: data ? withDisplayTitle(data as FcSetRow, "name") : null, error: null };
+    } catch (e) {
+      return fail("findSetBySource", e);
+    }
+  },
+
   async findSurfaceSavedSetForConversation(
     conversationId: string,
   ): Promise<FcResult<FcSetRow | null>> {
