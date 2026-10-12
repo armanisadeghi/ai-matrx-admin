@@ -6,16 +6,35 @@
  * conflicted / established) and the side-by-side compare used when look-alikes are found.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { Check, Globe, Plus, X } from "lucide-react";
+import { BadgeCheck, Check, ExternalLink, Globe, Plus, X } from "lucide-react";
 import { Button, Field, Select, type SelectOption } from "@ai-matrx/design-system/controls";
+import { addUtmSource } from "@/utils/url-utm";
+import { extractErrorMessage } from "@/utils/errors";
+import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import {
+  listBrandRelationKinds,
+  saveCustomRelationKind,
+  type BrandRelationKind,
+} from "@/features/marketing/data/service";
 import { formatCount } from "@ai-matrx/kit/format";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { resolveAccountInput } from "@/features/marketing/social/account-input";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
-import { customItem, websiteHost, type BrandBasics, type Decision, type EvidenceField, type EvidenceItem } from "./evidence";
+import {
+  compareRows,
+  customItem,
+  isOurs,
+  websiteHost,
+  type BrandBasics,
+  type Candidate,
+  type Decision,
+  type EvidenceField,
+  type EvidenceItem,
+  type Relation,
+} from "./evidence";
 
 // ── Custom ──────────────────────────────────────────────────────────────────────
 
@@ -185,95 +204,294 @@ export function situationOf(items: EvidenceItem[], settled: boolean): Situation 
   return null;
 }
 
-/** One finding source (the website, each profile) as a column the person can claim or reject. */
-interface SourceGroup {
-  id: string;
-  title: string;
-  photo: EvidenceItem | null;
-  items: EvidenceItem[];
-}
+// ── Compare ─────────────────────────────────────────────────────────────────────
 
-function groupBySource(items: EvidenceItem[]): SourceGroup[] {
-  // One card for the website, one per account — each account carries what its own profile said and
-  // its real photo (the same photo source as the image library), never a bare host name.
-  const photos = items.filter((i) => i.field === "logo" && i.profile_id);
-  const accounts = items.filter((i) => i.field === "social");
-  const claimedByAccount = new Set<string>();
-  const groups: SourceGroup[] = accounts.map((acct) => {
-    const fromProfile =
-      acct.source.kind === "social_profile" && acct.source.url
-        ? items.filter((i) => i.source.kind === "social_profile" && i.source.url === acct.source.url)
-        : [acct];
-    for (const i of fromProfile) claimedByAccount.add(i.key);
-    claimedByAccount.add(acct.key);
-    const photo =
-      (acct.profile_id ? acct : null) ??
-      photos.find((p) => p.source.url && p.source.url === acct.source.url) ??
-      photos.find((p) => p.platform === acct.platform) ??
-      null;
-    const profileName = items.find(
-      (i) => i.field === "name" && i.source.kind === "social_profile" && photo?.source.url && i.source.url === photo.source.url,
-    )?.value;
-    return {
-      id: acct.key,
-      title: acct.label ?? profileName ?? `@${acct.handle ?? ""}`,
-      photo: { ...acct, profile_id: photo?.profile_id ?? null, image_url: photo?.image_url ?? acct.image_url },
-      items: fromProfile.includes(acct) ? fromProfile : [acct, ...fromProfile],
-    };
-  });
-  const site = items.filter((i) => !claimedByAccount.has(i.key) && i.source.kind !== "typed");
-  if (site.length) {
-    const url = site.find((i) => i.source.url)?.source.url;
-    groups.unshift({ id: "site", title: url ? websiteHost(url) : "Website", photo: null, items: site });
+const OWN_HOSTS = ["aimatrx.com", "matrxserver.com"];
+
+/**
+ * Every link out of this flow carries our referral mark (the existing UTM helper plus the medium);
+ * our own addresses are left alone.
+ * TODO(outbound-referral): replace with the canonical primitive.
+ */
+export function outboundHref(url: string): string {
+  const absolute = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+  const host = websiteHost(absolute);
+  if (OWN_HOSTS.some((h) => host === h || host.endsWith(`.${h}`))) return absolute;
+  try {
+    const out = new URL(addUtmSource(absolute));
+    out.searchParams.set("utm_medium", "referral");
+    return out.toString();
+  } catch {
+    return absolute;
   }
-  return groups;
 }
 
+/** Open a found page in a new tab. */
+export function OpenLink({ url, label = "Open" }: { url: string; label?: string }) {
+  return (
+    <Button asChild variant="quiet" icon={<ExternalLink aria-hidden />} aria-label={label} title={label}>
+      <a href={outboundHref(url)} target="_blank" rel="noopener" />
+    </Button>
+  );
+}
+
+const CUSTOM = "__custom";
+
+function CandidateAvatar({ c }: { c: Candidate }) {
+  if (c.platform === "website") {
+    return c.iconUrl ? (
+      <img src={c.iconUrl} alt="" className="size-10 shrink-0 rounded-md object-contain" />
+    ) : (
+      <PlatformMark platform="website" size={40} />
+    );
+  }
+  const initial = (c.name ?? c.handle ?? "?").replace(/^@/, "").charAt(0).toUpperCase();
+  return (
+    <span className="relative size-10 shrink-0">
+      <SocialImage
+        door={c.profileId ? profileAvatarDoor(c.profileId) : null}
+        url={c.photoUrl}
+        fallback={
+          <span className="flex size-10 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
+            {initial}
+          </span>
+        }
+        className="size-10 rounded-full object-cover"
+      />
+      <span className="absolute -right-1 -bottom-1 rounded-md ring-2 ring-card">
+        <PlatformMark platform={c.platform} size={16} />
+      </span>
+    </span>
+  );
+}
+
+function RelationPicker({
+  kinds,
+  relation,
+  onRelate,
+  onCustom,
+}: {
+  kinds: BrandRelationKind[];
+  relation: Relation | null;
+  onRelate: (relation: Relation | null) => void;
+  onCustom: (label: string) => Promise<void>;
+}) {
+  const [custom, setCustom] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
+  const known = kinds.filter((k) => k.isKnown);
+  const saved = kinds.filter((k) => !k.isKnown);
+  const options: SelectOption<string>[] = [
+    { value: "", label: "Related…" },
+    ...known.map((k) => ({ value: k.key, label: k.label })),
+    ...saved.map((k) => ({ value: k.key, label: k.label })),
+    ...(relation && !kinds.some((k) => k.key === relation.key) ? [{ value: relation.key, label: relation.label }] : []),
+    { value: CUSTOM, label: "Custom…" },
+  ];
+  const pick = (value: string) => {
+    if (value === CUSTOM) return setCustom("");
+    if (!value) return onRelate(null);
+    const k = kinds.find((x) => x.key === value);
+    if (k) onRelate({ key: k.key, label: k.label, routesTo: k.routesTo });
+  };
+  const save = async () => {
+    const label = (custom ?? "").trim();
+    if (!label) return;
+    setSaving(true);
+    setProblem(null);
+    try {
+      await onCustom(label);
+      setCustom(null);
+    } catch (error) {
+      setProblem(extractErrorMessage(error));
+    } finally {
+      setSaving(false);
+    }
+  };
+  if (custom !== null) {
+    return (
+      <div className="flex w-full flex-wrap items-center gap-1.5">
+        <Field
+          aria-label="Relationship"
+          // ui-exception: a short relationship name
+          placeholder="How it's related"
+          value={custom}
+          autoFocus
+          maxLength={60}
+          onChange={(e) => setCustom(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") void save();
+            if (e.key === "Escape") setCustom(null);
+          }}
+          className="min-w-0 flex-1"
+        />
+        <Button variant="primary" onClick={() => void save()} disabled={!custom.trim() || saving}>
+          Save
+        </Button>
+        <Button variant="quiet" aria-label="Cancel" icon={<X />} onClick={() => setCustom(null)} />
+        {problem ? (
+          <span className="flex w-full items-center gap-1 text-xs text-destructive">
+            {problem}
+            <ErrorAlchemyMenu error={problem} />
+          </span>
+        ) : null}
+      </div>
+    );
+  }
+  return (
+    <Select
+      aria-label="Relationship"
+      value={relation?.key ?? ""}
+      options={options}
+      onValueChange={pick}
+      className="min-w-36 flex-1"
+    />
+  );
+}
+
+function CandidateCard({
+  c,
+  decision,
+  relation,
+  kinds,
+  wide,
+  onClaim,
+  onRelate,
+  onCustom,
+}: {
+  c: Candidate;
+  decision: Decision | undefined;
+  relation: Relation | null;
+  kinds: BrandRelationKind[];
+  wide: boolean;
+  onClaim: (c: Candidate, decision: "yes" | "no") => void;
+  onRelate: (c: Candidate, relation: Relation | null) => void;
+  onCustom: (c: Candidate, label: string) => Promise<void>;
+}) {
+  const ours = isOurs(decision);
+  const rejected = decision === "no";
+  const handleLine = c.platform === "website" ? (c.url ? websiteHost(c.url) : null) : c.handle ? `@${c.handle}` : null;
+  const title = c.name ?? handleLine ?? c.anchor.value;
+  const findings = c.items.length;
+  return (
+    <article
+      className={`flex shrink-0 snap-start flex-col gap-2.5 rounded-lg border bg-card p-3 transition-colors ${
+        wide ? "w-full sm:w-[24rem]" : "w-[min(22rem,84vw)]"
+      } ${ours ? "border-primary ring-1 ring-primary/30" : relation ? "border-foreground/30" : "border-border"} ${rejected ? "opacity-50" : ""}`}
+      data-testid="smart-add-candidate"
+      data-candidate={c.id}
+    >
+      <div className="flex items-start gap-3">
+        <CandidateAvatar c={c} />
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="flex items-center gap-1 text-sm leading-snug font-semibold break-words">
+            {title}
+            {c.verified ? <BadgeCheck className="size-3.5 shrink-0 text-primary" aria-label="Verified" /> : null}
+          </span>
+          {handleLine && handleLine !== title ? <span className="text-xs break-all text-foreground/80">{handleLine}</span> : null}
+          {c.followers != null ? (
+            <span className="text-xs text-muted-foreground tabular-nums">{formatCount(c.followers)} followers</span>
+          ) : null}
+        </div>
+        {c.url ? <OpenLink url={c.url} /> : null}
+      </div>
+      {c.bio ? (
+        <p className="line-clamp-2 text-xs text-muted-foreground" title={c.bio}>
+          {c.bio}
+        </p>
+      ) : null}
+      {c.url ? <span className="text-[11px] break-all text-muted-foreground/80">{c.url}</span> : null}
+      <div className="mt-auto flex items-center gap-2 text-[11px] text-muted-foreground">
+        <span>{findings === 1 ? "1 finding" : `${findings} findings`}</span>
+      </div>
+      <div className="flex flex-wrap items-center gap-1.5">
+        <Button variant={ours ? "primary" : "outline"} icon={<Check />} onClick={() => onClaim(c, "yes")} aria-pressed={ours}>
+          This is us
+        </Button>
+        <Button variant={rejected ? "danger" : "quiet"} icon={<X />} onClick={() => onClaim(c, "no")} aria-pressed={rejected}>
+          Not us
+        </Button>
+        <RelationPicker
+          kinds={kinds}
+          relation={relation}
+          onRelate={(r) => onRelate(c, r)}
+          onCustom={(label) => onCustom(c, label)}
+        />
+      </div>
+    </article>
+  );
+}
+
+/**
+ * The side-by-side check for a conflicted brand: one row per platform, that platform's candidates
+ * next to each other (a row scrolls sideways, and swipes on a phone). Each one is ours, not us, or
+ * related in a named way (the relationship vocabulary is data: web.brand_relation_kind).
+ */
 export function CompareSources({
   items,
   decisions,
+  relations,
   onClaim,
+  onRelate,
 }: {
   items: EvidenceItem[];
   decisions: Record<string, Decision>;
-  onClaim: (keys: string[], decision: Decision) => void;
+  relations: Record<string, Relation>;
+  onClaim: (c: Candidate, decision: "yes" | "no") => void;
+  onRelate: (c: Candidate, relation: Relation | null) => void;
 }) {
-  const groups = groupBySource(items);
+  const rows = compareRows(items);
+  const [kinds, setKinds] = useState<BrandRelationKind[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    listBrandRelationKinds()
+      .then((k) => live && setKinds(k))
+      .catch((error) => live && setLoadError(extractErrorMessage(error)));
+    return () => {
+      live = false;
+    };
+  }, []);
+  const onCustom = async (c: Candidate, label: string) => {
+    const organizationId = await ensureOrgId(null);
+    const kind = await saveCustomRelationKind(organizationId, label);
+    setKinds((list) => (list.some((k) => k.key === kind.key) ? list : [...list, kind]));
+    onRelate(c, { key: kind.key, label: kind.label, routesTo: kind.routesTo });
+  };
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="smart-add-compare">
-      {groups.map((g) => {
-        const name = g.photo ? g.title : (g.items.find((i) => i.field === "name")?.value ?? g.title);
-        const rejected = g.items.every((i) => decisions[i.key] === "no");
-        const claimed = g.items.some((i) => decisions[i.key] === "yes" || decisions[i.key] === "preferred");
-        return (
-          <div key={g.id} className={`flex flex-col gap-2 rounded-xl border bg-card p-3 ${claimed ? "border-primary" : "border-border"} ${rejected ? "opacity-40" : ""}`}>
-            <div className="flex items-center gap-2">
-              {g.photo?.profile_id ? (
-                <SocialImage door={profileAvatarDoor(g.photo.profile_id)} url={g.photo.image_url} fallback={<Globe className="size-4" />} className="size-9 rounded-full object-cover" />
-              ) : (
-                <span className="flex size-9 items-center justify-center rounded-full bg-muted">
-                  {g.photo ? <PlatformMark platform={g.photo.platform ?? ""} size={16} /> : <Globe className="size-4 text-muted-foreground" />}
-                </span>
-              )}
-              <span className="flex min-w-0 flex-col">
-                <span className="truncate text-sm font-semibold">{name}</span>
-                <span className="truncate text-xs text-muted-foreground">
-                  {g.photo ? `${platformLabel(g.photo.platform ?? "")}${g.photo.followers != null ? ` · ${formatCount(g.photo.followers)}` : ""}` : g.title}
-                </span>
-              </span>
-            </div>
-            <span className="text-xs text-muted-foreground">{g.items.length} findings</span>
-            <div className="flex gap-1">
-              <Button variant={claimed ? "primary" : "outline"} icon={<Check />} onClick={() => onClaim(g.items.filter((i) => i.field !== "name").map((i) => i.key), "yes")}>
-                This is us
-              </Button>
-              <Button variant={rejected ? "danger" : "quiet"} icon={<X />} onClick={() => onClaim(g.items.map((i) => i.key), "no")}>
-                Not us
-              </Button>
-            </div>
+    <div className="flex flex-col divide-y divide-border rounded-xl border border-border bg-card" data-testid="smart-add-compare">
+      {loadError ? (
+        <span className="flex items-center gap-1 px-4 py-2 text-xs text-destructive">
+          {loadError}
+          <ErrorAlchemyMenu error={loadError} />
+        </span>
+      ) : null}
+      {rows.map((row) => (
+        <section key={row.platform} className="flex flex-col gap-2 py-3" data-testid="smart-add-compare-row" data-platform={row.platform}>
+          <header className="flex items-center gap-2 px-4">
+            <PlatformMark platform={row.platform} size={18} />
+            <span className="text-sm font-medium">{row.platform === "website" ? "Website" : platformLabel(row.platform)}</span>
+            {row.candidates.length > 1 ? (
+              <span className="text-xs text-muted-foreground tabular-nums">{row.candidates.length}</span>
+            ) : null}
+          </header>
+          <div className="flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto overscroll-x-contain px-4 pb-1 [scrollbar-width:thin]">
+            {row.candidates.map((c) => (
+              <CandidateCard
+                key={c.id}
+                c={c}
+                decision={decisions[c.anchor.key]}
+                relation={relations[c.id] ?? null}
+                kinds={kinds}
+                wide={row.candidates.length === 1}
+                onClaim={onClaim}
+                onRelate={onRelate}
+                onCustom={onCustom}
+              />
+            ))}
           </div>
-        );
-      })}
+        </section>
+      ))}
     </div>
   );
 }

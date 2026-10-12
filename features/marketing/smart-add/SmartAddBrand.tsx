@@ -74,7 +74,10 @@ import {
   type EvidenceItem,
   type RoundSeeds,
   type SocialSeed,
+  type Candidate,
+  type Relation,
 } from "./evidence";
+import { routeRelated, relatedCompetitors, type RelatedCandidate } from "./relations";
 import { SETUP_STEPS, SmartAddRound, type RoundView } from "./SmartAddRound";
 import { captureProvision } from "@/features/provision-window/data";
 import { useOpenProvisionWindow } from "@/features/overlays/openers/provisionWindow";
@@ -128,6 +131,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const [views, setViews] = useState<Record<string, RoundView>>({});
   const [items, setItems] = useState<Map<string, EvidenceItem>>(new Map());
   const [decisions, setDecisions] = useState<Record<string, Decision>>({});
+  // Compare: candidates that are neither ours nor "not us" — how each relates (keyed by candidate id).
+  const [relations, setRelations] = useState<Record<string, RelatedCandidate>>({});
   const explored = useRef<Set<string>>(new Set());
   const typedKeys = useRef<{ website: string | null; social: string | null }>({ website: null, social: null });
 
@@ -181,6 +186,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     setViews({});
     setItems(new Map());
     setDecisions({});
+    setRelations({});
+    setComparing(false);
     explored.current = new Set();
     typedKeys.current = { website: null, social: null };
   };
@@ -275,13 +282,41 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     });
   };
 
-  /** Compare view: claim or reject everything one source (the site, a profile) found. */
-  const claim = (keys: string[], decision: Decision) =>
+  /** Compare view: one candidate is ours (everything its page said) or not us (what only it said). */
+  const claim = (c: Candidate, decision: "yes" | "no") => {
+    setRelations(({ [c.id]: _drop, ...rest }) => rest);
     setDecisions((d) => {
       const next = { ...d };
-      for (const k of keys) if (!next[k] || decision === "no") next[k] = decision;
+      if (decision === "no") {
+        // Pressing "Not us" again clears it.
+        const undo = d[c.anchor.key] === "no";
+        for (const k of c.ownKeys) {
+          if (undo) delete next[k];
+          else next[k] = "no";
+        }
+        return next;
+      }
+      if (d[c.anchor.key] === "yes" || d[c.anchor.key] === "preferred") {
+        for (const k of c.ownKeys) if (next[k] === "yes") delete next[k];
+        return next;
+      }
+      for (const i of c.items) {
+        if (i.field === "name") continue;
+        if (!next[i.key] || next[i.key] === "no") next[i.key] = "yes";
+      }
       return next;
     });
+  };
+
+  /** Compare view: related in a named way — neither ours nor "not us"; clears its own answers. */
+  const relate = (c: Candidate, relation: Relation | null) => {
+    setDecisions((d) => {
+      const next = { ...d };
+      for (const k of c.ownKeys) delete next[k];
+      return next;
+    });
+    setRelations(({ [c.id]: _drop, ...rest }) => (relation ? { ...rest, [c.id]: { candidate: c, relation } } : rest));
+  };
 
   // ── derived ─────────────────────────────────────────────────────────────
 
@@ -336,6 +371,9 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     setCreateError(null);
     try {
       const organizationId = await ensureOrgId(null);
+      // "Related" candidates the person answered (only ones still unanswered elsewhere count).
+      const related = Object.values(relations).filter((r) => !decisions[r.candidate.anchor.key]);
+      const competitors = relatedCompetitors(related);
       const brand = await createBrand({
         organizationId,
         name: basics.name,
@@ -351,11 +389,12 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         status: "active",
         // Aliases live where every brand reader looks for them (web.brand.profile.brand_aliases).
         // Aliases and expertise live where every brand reader looks for them (web.brand.profile).
-        ...(basics.aliases.length || basics.expertise.length
+        ...(basics.aliases.length || basics.expertise.length || competitors.length
           ? {
               profile: {
                 ...(basics.aliases.length ? { brand_aliases: basics.aliases } : {}),
                 ...(basics.expertise.length ? { expertise_areas: basics.expertise } : {}),
+                ...(competitors.length ? { competitors } : {}),
               },
             }
           : {}),
@@ -414,7 +453,16 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       }
       // Nothing is lost: every finding the person did not answer is kept as a candidate in the
       // brand's discovery inbox (web.discovered_item); only "Not us" is left out.
-      problems.push(...(await saveCandidates(organizationId, brand.id, [...items.values()].filter((i) => !decisions[i.key]))));
+      // Related items keep their relationship (and land in their home: people, competitors).
+      const relatedSaved = await routeRelated(organizationId, brand.id, related, decisions);
+      problems.push(...relatedSaved.problems);
+      problems.push(
+        ...(await saveCandidates(
+          organizationId,
+          brand.id,
+          [...items.values()].filter((i) => !decisions[i.key] && !relatedSaved.keys.has(i.key)),
+        )),
+      );
       problems.push(...(await saveFacts(organizationId, brand.id, basics)));
       setSaveNotes(problems);
       setCreated(brand);
@@ -640,15 +688,24 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           <CustomAdd field="description" label="What you do" placeholder="What you do, in a sentence" onAdd={addCustom} />
           <CustomAdd field="address" label="Where you are" placeholder="City or street address" onAdd={addCustom} />
         </div>
-      ) : situation === "conflicted" ? (
-        <div className="flex flex-col gap-2 rounded-lg border border-amber-500/40 bg-amber-500/5 px-4 py-3 text-sm" data-testid="smart-add-situation">
-          <div className="flex items-center gap-2">
-            <span className="font-medium">Some of these may be someone else.</span>
+      ) : situation === "conflicted" || comparing ? (
+        // Once open, the compare stays put while answers start new lookups.
+        <div className="flex flex-col gap-3" data-testid="smart-add-situation">
+          <div className="flex items-center gap-2 rounded-lg border border-amber-500/40 bg-amber-500/5 px-4 py-2 text-sm">
+            <span className="font-medium">Some of these may be someone else</span>
             <Button variant="outline" className="ml-auto" onClick={() => setComparing((c) => !c)}>
               {comparing ? "Back to sections" : "Compare side by side"}
             </Button>
           </div>
-          {comparing ? <CompareSources items={visible} decisions={decisions} onClaim={claim} /> : null}
+          {comparing ? (
+            <CompareSources
+              items={visible}
+              decisions={decisions}
+              relations={Object.fromEntries(Object.entries(relations).map(([k, r]) => [k, r.relation]))}
+              onClaim={claim}
+              onRelate={relate}
+            />
+          ) : null}
         </div>
       ) : situation === "established" ? (
         <div className="rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm" data-testid="smart-add-situation">

@@ -406,6 +406,18 @@ export interface PlatformRow {
 /** Row order: the website first, then the platforms people check most. */
 const PLATFORM_ORDER = ["website", "instagram", "facebook", "x", "linkedin", "youtube", "pinterest", "tiktok", "threads"];
 
+/** One spelling per profile address: no scheme, no www, no trailing slash, twitter.com = x.com. */
+function profileAddress(url: string): string {
+  return url
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/^(www|m|mobile)\./, "")
+    .replace(/^twitter\.com\//, "x.com/")
+    .replace(/[?#].*$/, "")
+    .replace(/\/+$/, "");
+}
+
 function hostOf(url: string | null): string | null {
   return url ? websiteHost(url) : null;
 }
@@ -421,10 +433,15 @@ export function compareRows(items: EvidenceItem[]): PlatformRow[] {
     if (!existing || (existing.source.kind !== "social_profile" && i.source.kind === "social_profile")) accounts.set(i.key, i);
   }
   for (const acct of accounts.values()) {
-    const fromProfile =
-      acct.source.kind === "social_profile" && acct.source.url
-        ? items.filter((i) => i.source.kind === "social_profile" && i.source.url === acct.source.url)
-        : [];
+    // A looked-up profile's findings carry the profile address as their source; match it to the account.
+    const addresses = new Set(
+      [acct.url, acct.value, acct.source.kind === "social_profile" ? acct.source.url : null]
+        .filter((u): u is string => Boolean(u))
+        .map(profileAddress),
+    );
+    const fromProfile = items.filter(
+      (i) => i.source.kind === "social_profile" && i.source.url && addresses.has(profileAddress(i.source.url)),
+    );
     const group = [acct, ...fromProfile.filter((i) => i.key !== acct.key)];
     const said = (f: EvidenceField) => fromProfile.find((i) => i.field === f) ?? null;
     const photo = acct.profile_id ? acct : (fromProfile.find((i) => i.field === "logo" && i.profile_id) ?? said("logo"));
