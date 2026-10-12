@@ -58,7 +58,7 @@ export function EditorTitleField({
   return (
     <span className={cn("relative inline-grid min-w-[3rem] max-w-full shrink", className)} data-editor-title="">
       {/* The invisible twin sizes the field to its words (auto-width, no measuring). */}
-      <span aria-hidden className="invisible col-start-1 row-start-1 whitespace-pre px-1.5 text-lg leading-7">
+      <span aria-hidden className="invisible col-start-1 row-start-1 whitespace-pre border border-transparent px-1.5 text-lg leading-7">
         {draft || placeholder}
       </span>
       {/* ui-exception: a title edited in place (Google's document title), not a form field. */}

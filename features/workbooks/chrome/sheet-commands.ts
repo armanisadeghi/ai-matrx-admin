@@ -197,7 +197,8 @@ export function trimWhitespace(r: RangeLike): number {
   let changed = 0;
   const next = values.map((row, i) =>
     row.map((v, j) => {
-      if (formulas[i]?.[j]) return { f: formulas[i]![j] };
+      // A formula goes back as its "=…" text, which the facade writes as a formula.
+      if (formulas[i]?.[j]) return formulas[i]![j];
       if (typeof v === "string" && v !== v.trim()) {
         changed += 1;
         return v.trim();
