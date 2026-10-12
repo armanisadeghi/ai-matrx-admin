@@ -14,6 +14,13 @@
       "reason": "Arman's own cause-and-remedy rule for the no-organization state, spelled out verbatim (owner-words check, round 2 review)",
       "by": "check-owner-words",
       "on": "2026-09-30"
+    },
+    {
+      "text": "This workweek straddles the edge of the pay period. Overtime is calculated on the whole week and attributed to the period containing the week’s end date — not split between the two periods.",
+      "file": "features/hr/time/timesheet/WeekBlocks.tsx",
+      "reason": "Restates Arman’s HR straddle-week ruling (OT attributed to the period containing the week’s end date); owner-words check, P14 daily run",
+      "by": "check-owner-words",
+      "on": "2026-10-12"
     }
   ]
 }
