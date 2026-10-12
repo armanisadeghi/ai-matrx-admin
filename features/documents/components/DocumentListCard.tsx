@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRelativeTime } from "@/utils/datetime";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { FileText, Loader2, Star, Users } from "lucide-react";
@@ -83,7 +84,7 @@ export function DocumentListCard({
               </a>
             ) : null}
             <span className="truncate">
-              Updated {new Date(doc.updated_at).toLocaleString()}
+              Updated {formatRelativeTime(doc.updated_at, { style: "long" })}
             </span>
           </span>
           <span className="shrink-0 rounded border border-border px-1.5 py-0.5 text-[10px] uppercase tracking-wide">

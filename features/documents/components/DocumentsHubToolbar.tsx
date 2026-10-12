@@ -24,6 +24,8 @@ interface DocumentsHubToolbarProps {
   noun?: string;
   /** Table view carries its own column search; a second box here is noise. */
   hideSearch?: boolean;
+  /** Phones: the table shows only Name (no row actions), so cards are the one view and the switch is hidden. */
+  cardsOnly?: boolean;
 }
 
 export function DocumentsHubToolbar({
@@ -31,6 +33,7 @@ export function DocumentsHubToolbar({
   onQueryChange,
   view,
   onViewChange,
+  cardsOnly = false,
   sortKey,
   onSortChange,
   noun = "documents",
@@ -82,7 +85,7 @@ export function DocumentsHubToolbar({
       </div>
       )}
       <TapTargetButtonGroup surface="solid">
-        <LayoutGridTapButton
+        {cardsOnly ? null : (<LayoutGridTapButton
           variant="group"
           className={
             view === "cards" ? "text-primary" : "text-muted-foreground"
@@ -90,8 +93,8 @@ export function DocumentsHubToolbar({
           ariaLabel="Card view"
           tooltip="Card view"
           onClick={() => onViewChange("cards")}
-        />
-        <ListTapButton
+        />)}
+        {cardsOnly ? null : (<ListTapButton
           variant="group"
           className={
             view === "table" ? "text-primary" : "text-muted-foreground"
@@ -99,7 +102,7 @@ export function DocumentsHubToolbar({
           ariaLabel="Table view"
           tooltip="Table view"
           onClick={() => onViewChange("table")}
-        />
+        />)}
         {view === "cards" ? (
           <DocumentsSortMenu
             variant="group"

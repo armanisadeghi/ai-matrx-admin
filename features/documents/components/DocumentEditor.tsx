@@ -76,6 +76,7 @@ import { cn } from "@/lib/utils";
 import { useToolToggle } from "@/features/canvas/host/toolCanvas";
 import { toast } from "@/components/ui/use-toast";
 
+import { fitZoomRatio } from "@/features/documents/utils/fitZoomRatio";
 import { defaultDocumentPageStyle } from "@/features/documents/document-page-style";
 import {
   renderDocumentCanvasColorsVerbatim,
@@ -238,6 +239,26 @@ export default function DocumentEditor({
   // Keep Univer's dark mode in lockstep with the app theme (Facade API).
   // This reaches Univer's CHROME only — see the hook's header.
   useUniverDarkModeSync(apiRef, bootState === "ready");
+
+  // A narrow editor (a phone) fits the page to its width, so the page reflows
+  // into view instead of scrolling sideways. View-only: the saved page is untouched.
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || bootState !== "ready" || unitId === null) return undefined;
+    const apply = () => {
+      const api = apiRef.current as unknown as {
+        executeCommand?: (id: string, params?: unknown) => unknown;
+      } | null;
+      void api?.executeCommand?.("doc.operation.set-zoom-ratio", {
+        unitId,
+        zoomRatio: fitZoomRatio(container.clientWidth, defaultDocumentPageStyle().pageSize?.width ?? 595),
+      });
+    };
+    apply();
+    const observer = new ResizeObserver(apply);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [bootState, unitId]);
 
   // …and the page itself, which Univer paints from hardcoded LIGHT constants
   // no theme ever reaches. Without this the document renders as a page in the

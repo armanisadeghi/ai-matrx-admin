@@ -9,6 +9,7 @@ import {
   useTransition,
 } from "react";
 import { useRouter } from "next/navigation";
+import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { FileText, Loader2, Plus, Search, Upload } from "lucide-react";
 
 import {
@@ -97,7 +98,9 @@ export default function DocumentsLandingPage() {
     DOCUMENTS_HUB_LEGACY_VIEW,
   );
   // This hub renders two of the three canonical views; anything else is cards.
-  const view = prefs.view === "table" ? "table" : "cards";
+  const isPhone = useIsMobile();
+  // On a phone the table is Name only (no share, no row menu), so cards are the one view there.
+  const view = !isPhone && prefs.view === "table" ? "table" : "cards";
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -319,6 +322,7 @@ export default function DocumentsLandingPage() {
                 sortKey={sortKey}
                 onSortChange={setSortKey}
                 hideSearch={view === "table"}
+                cardsOnly={isPhone}
               />
               <FileScopeBar scope={scope} onChange={setScope} />
               {dialogs}

@@ -47,7 +47,7 @@ import {
   useListViewPrefs,
 } from "@/lib/list-views/useListViewPrefs";
 import type { DocumentSortKey } from "@/features/documents/utils/documentsHubDisplay";
-import { compareTimestamps } from "@/utils/datetime";
+import { compareTimestamps, formatRelativeTime } from "@/utils/datetime";
 import { isServiceFailure, type Workbook } from "@/features/data-tables/types";
 import { fileHandler } from "@/features/files/handler/handler";
 // xlsx-to-univer (xlsx + @univerjs/*) and smart-importer (xlsx) are heavy —
@@ -714,7 +714,7 @@ export default function WorkbooksLandingPage() {
                         <Users className="size-3 shrink-0" aria-label="Shared with me" />
                       ) : null}
                       <span className="truncate">
-                        Updated {new Date(wb.updated_at).toLocaleString()}
+                        Updated {formatRelativeTime(wb.updated_at, { style: "long" })}
                       </span>
                       {/* An imported workbook knows the file it came from —
                           a relationship we can resolve must be reachable. */}
