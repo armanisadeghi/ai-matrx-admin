@@ -795,7 +795,6 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                   {current.description}
                 </p>
               ) : null}
-              <SmartAddBasicsGate brandId={current.id} organizationId={current.organization_id} />
             </div>
             {heroCover ? (
               // The brand's own public og/hero image — the share-card face of
@@ -849,6 +848,8 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                 </>
               ) : null}
             </div>
+            {/* THE HUMAN GATE: the full width of the brand card, under the header row. */}
+            <SmartAddBasicsGate brandId={current.id} />
           </section>
 
           {/* The brand is the anchor entity, but it carried no search data at

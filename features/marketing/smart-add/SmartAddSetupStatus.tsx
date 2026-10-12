@@ -51,7 +51,7 @@ function useSetupRun(brandId: string, organizationId: string) {
 export function SmartAddBasicsGate({ brandId }: { brandId: string; organizationId?: string }) {
   const queryClient = useQueryClient();
   return (
-    <div className="mt-3 max-w-2xl empty:hidden">
+    <div className="basis-full empty:hidden">
       <HumanGatePanel
         entityType="web_brand"
         entityId={brandId}
