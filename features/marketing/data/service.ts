@@ -2633,6 +2633,45 @@ export async function confirmDiscoveredProperty(
 }
 
 /** Promote a discovered item to a confirmed business fact. */
+/**
+ * Keep findings as PENDING candidates in a brand's discovery inbox (Smart Add: everything the
+ * person did not answer is kept, never thrown away). One insert for the batch.
+ */
+export async function createDiscoveredCandidates(
+  rows: Array<{
+    organizationId: string;
+    brandId: string;
+    source: string;
+    category: "media" | "fact" | "social" | "link" | "identity" | "other";
+    guessedKind: string | null;
+    url: string | null;
+    value: Json;
+    context: Json;
+    confidence: number | null;
+  }>,
+): Promise<void> {
+  if (!rows.length) return;
+  const response = await (
+    await authenticatedWebDb(supabase)
+  )
+    .from("discovered_item")
+    .insert(
+      rows.map((r) => ({
+        organization_id: r.organizationId,
+        brand_id: r.brandId,
+        source: r.source,
+        category: r.category,
+        guessed_kind: r.guessedKind,
+        url: r.url,
+        value: r.value,
+        context: r.context,
+        confidence: r.confidence,
+        status: "pending",
+      })),
+    );
+  if (response.error) throw new Error(response.error.message);
+}
+
 export async function confirmDiscoveredFact(
   input: ConfirmFactInput,
 ): Promise<void> {

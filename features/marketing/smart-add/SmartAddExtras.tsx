@@ -7,6 +7,7 @@
  */
 
 import { useState } from "react";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { Check, Globe, Plus, X } from "lucide-react";
 import { Button, Field, Select, type SelectOption } from "@ai-matrx/design-system/controls";
 import { formatCount } from "@ai-matrx/kit/format";
@@ -93,7 +94,12 @@ export function CustomAdd({
         Add
       </Button>
       <Button variant="quiet" aria-label="Cancel" icon={<X />} onClick={() => setOpen(false)} />
-      {problem ? <span className="w-full text-xs text-destructive">{problem}</span> : null}
+      {problem ? (
+        <span className="flex w-full items-center gap-1 text-xs text-destructive">
+          {problem}
+          <ErrorAlchemyMenu error={problem} />
+        </span>
+      ) : null}
     </div>
   );
 }

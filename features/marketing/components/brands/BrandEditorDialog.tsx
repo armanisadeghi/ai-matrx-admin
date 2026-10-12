@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Loader2 } from "lucide-react";
+import { ArrowRight, ChevronDown, Link2, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { toast } from "@/lib/toast";
 import { toastDoor } from "@/components/official/entity-ref/toastDoor";
 import { Button } from "@/components/ui/button";
@@ -320,6 +322,24 @@ function BrandEditorDialogBody({
             {brand ? "Every editable brand field, in one place." : BRAND_KIND_COPY[kind].createDescription}
           </DialogDescription>
         </DialogHeader>
+
+        {!brand ? (
+          // Smart Add first: paste a website or social link and confirm what we find.
+          <Link
+            href={marketingRoutes.smartAddBrand()}
+            onClick={() => onOpenChange(false)}
+            data-clickable
+            className="flex items-center gap-3 rounded-lg border border-primary/40 bg-primary/5 px-3 py-2.5"
+            data-testid="smart-add-entry"
+          >
+            <Link2 className="size-4 shrink-0 text-primary" />
+            <span className="flex min-w-0 flex-col">
+              <span className="text-sm font-medium">Smart Add</span>
+              <span className="truncate text-xs text-muted-foreground">Paste a website or social link — we find the rest</span>
+            </span>
+            <ArrowRight className="ml-auto size-4 shrink-0 text-muted-foreground" />
+          </Link>
+        ) : null}
 
         {kindLocked ? null : (
         <div className="flex flex-wrap items-center gap-2" data-testid="brand-kind-choice">

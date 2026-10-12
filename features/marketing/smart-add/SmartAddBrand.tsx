@@ -18,7 +18,7 @@
 
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Check, ExternalLink, Globe, Loader2, RotateCcw, X } from "lucide-react";
-import { Button, Field, Select, type SelectOption } from "@ai-matrx/design-system/controls";
+import { Button, Field, SegmentedControl, Select, type SelectOption } from "@ai-matrx/design-system/controls";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
@@ -33,6 +33,7 @@ import {
   createProperty,
   createSite,
   moveSiteBrand,
+  createDiscoveredCandidates,
   updateBusinessLocation,
 } from "@/features/marketing/data/service";
 import { runHref } from "@/features/workflow-runtime/run-doors";
@@ -275,6 +276,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const costUsd = roundViews.reduce((sum, v) => sum + (v?.steps.reduce((s, x) => s + x.costUsd, 0) ?? 0), 0);
   const visible = orderedEvidence(items.values());
   const basics = confirmedBasics(items, decisions);
+  const situation = situationOf(visible, rounds.length > 0 && !working);
   const canCreate = Boolean(basics.name) && !creating && !created;
 
   // ── create ──────────────────────────────────────────────────────────────
@@ -409,6 +411,16 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
 
   return (
     <div className="flex w-full max-w-3xl flex-col gap-3" data-testid="smart-add-brand">
+      <SegmentedControl
+        aria-label="Brand kind"
+        value={person ? "person" : "company"}
+        onValueChange={(v) => setPerson(v === "person")}
+        data={[
+          { value: "company", label: "Company" },
+          { value: "person", label: "Person" },
+        ]}
+        className="self-start"
+      />
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1">
           <span className="text-xs font-medium text-muted-foreground">Website</span>
@@ -466,18 +478,42 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         </span>
       </div>
 
-      {/* Results: reserved from the start (zero layout shift); findings stream in. */}
-      <div
-        className="rounded-xl border border-border bg-card"
-        data-testid="smart-add-results"
-      >
+      {/* The brand as it stands: the primary choices, building as the person confirms. */}
+      <BrandCard basics={basics} person={person} location={basics.facts.find((f) => f.field === "address")?.value ?? null} />
+      <p className="text-xs text-muted-foreground">Everything found is kept with the brand — only “Not us” is left out.</p>
+
+      {situation === "new" ? (
+        <div className="rounded-lg border border-dashed border-border px-4 py-3 text-sm" data-testid="smart-add-situation">
+          <span className="font-medium">Not much out there yet.</span>{" "}
+          <span className="text-muted-foreground">Add your name, what you do and where — Custom in each section.</span>
+        </div>
+      ) : situation === "conflicted" ? (
+        <div className="flex flex-col gap-2 rounded-lg border border-amber-500/40 bg-amber-500/5 px-4 py-3 text-sm" data-testid="smart-add-situation">
+          <div className="flex items-center gap-2">
+            <span className="font-medium">Some of these may be someone else.</span>
+            <Button variant="outline" className="ml-auto" onClick={() => setComparing((c) => !c)}>
+              {comparing ? "Back to sections" : "Compare side by side"}
+            </Button>
+          </div>
+          {comparing ? <CompareSources items={visible} decisions={decisions} onClaim={claim} /> : null}
+        </div>
+      ) : situation === "established" ? (
+        <div className="rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm" data-testid="smart-add-situation">
+          <span className="font-medium">We found plenty.</span>{" "}
+          <span className="text-muted-foreground">Check the card, star your main picks and create.</span>
+        </div>
+      ) : null}
+
+      <div className="rounded-xl border border-border bg-card" data-testid="smart-add-results">
         <SmartAddSlots
           items={visible}
           decisions={decisions}
           working={working}
           started={rounds.length > 0}
           locked={Boolean(created)}
+          person={person}
           onDecide={decide}
+          onAdd={addCustom}
         />
       </div>
 
@@ -583,6 +619,14 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         </div>
       ) : null}
 
+      {created ? (
+        // The brand-intake agent's research lands here after Create (built by its own lane).
+        <section className="flex min-h-24 flex-col gap-1 rounded-xl border border-dashed border-border px-4 py-3" data-testid="smart-add-research-slot" aria-label="Brand research">
+          <h3 className="text-xs font-semibold text-muted-foreground">Brand research</h3>
+          <p className="text-sm text-muted-foreground/70">Research on this brand will appear here.</p>
+        </section>
+      ) : null}
+
       {setupRunId && setupAttached ? (
         <SmartAddRound
           key={setupRunId}
@@ -622,6 +666,13 @@ async function saveFacts(
   basics: ReturnType<typeof confirmedBasics>,
 ): Promise<string[]> {
   const problems: string[] = [];
+  if (basics.tagline) {
+    try {
+      await createBusinessFact({ organizationId, brandId, kind: "tagline", label: null, value: basics.tagline });
+    } catch (error) {
+      problems.push(`tagline: ${extractErrorMessage(error)}`);
+    }
+  }
   for (const fact of basics.facts) {
     try {
       await createBusinessFact({
@@ -674,3 +725,26 @@ const SETUP_STEP_LABEL: Record<string, string> = {
   accounts: "Accounts",
   history: "Post history",
 };
+
+/** Every unanswered finding, kept in the brand's discovery inbox (web.discovered_item, pending). */
+async function saveCandidates(organizationId: string, brandId: string, items: EvidenceItem[]): Promise<string[]> {
+  if (!items.length) return [];
+  try {
+    await createDiscoveredCandidates(
+      items.map((i) => ({
+        organizationId,
+        brandId,
+        source: "smart_add",
+        category: candidateCategory(i.field),
+        guessedKind: i.field === "social" ? (i.platform ?? "social") : i.field,
+        url: i.url ?? (i.field === "logo" ? (i.image_url ?? i.value) : null),
+        value: { text: i.value, label: i.label, handle: i.handle, followers: i.followers },
+        context: { where: i.source.where, found_on: i.source.url, step: i.source.node },
+        confidence: i.confidence,
+      })),
+    );
+    return [];
+  } catch (error) {
+    return [`Unreviewed findings: ${extractErrorMessage(error)}`];
+  }
+}

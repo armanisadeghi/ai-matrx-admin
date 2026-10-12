@@ -153,6 +153,8 @@ export const marketingRoutes = {
   home: () => "/marketing",
   brands: () => "/marketing/brands",
   /** New-website intake (static child of /brands so it can't collide with a brand key). */
+  /** Smart Add: a website or social link → confirm what we find → the brand (a static child of /brands). */
+  smartAddBrand: () => "/marketing/brands/smart-add",
   newSite: (brandId?: string) =>
     brandId
       ? `/marketing/brands/new-website?brand=${brandId}`
