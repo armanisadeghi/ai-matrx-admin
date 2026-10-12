@@ -29,6 +29,10 @@ export default function DocumentPage({
   return (
     <DocumentRecord
       documentId={id}
+      // Google Docs' header (title in place, menu bar, toolbar) is the editor's own
+      // full-bleed top once the document has loaded; the RouteHeader below shows
+      // only while it loads or when access is refused.
+      layout="page"
       // The editor owns a static status/action bar at its very top, so the
       // body takes header clearance instead of scrolling behind the glass —
       // without it that row (and Save / History) sits under the shell header

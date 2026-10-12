@@ -20,7 +20,16 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
-import { Loader2, MessageSquare, Printer, Search } from "lucide-react";
+import { FilePlus2, FolderOpen, History, Loader2, MessageSquare, Printer, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { renderMenuEntries, useMenuBarState } from "@/components/editor-chrome/EditorMenuBar";
+import { EditorTitleField } from "@/components/editor-chrome/EditorTitleField";
+import type { EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
+import { FileTitleMarks } from "@/features/file-actions/FileTitleMarks";
+import { useLiveFileName } from "@/features/file-actions/useLiveFileName";
+import { useToolToggle } from "@/features/canvas/host/toolCanvas";
+import { documentHistoryToggleInput } from "@/lib/univer/historyKinds";
+import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { toast } from "@/lib/toast";
 import { useFileRecordMenu } from "@/features/file-actions/useFileRecordMenu";
 import { useLiveGoogleAdapter } from "@/features/google-workspace/linked/EditorGoogleLinks";
@@ -47,6 +56,7 @@ import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/eng
 import { captureDomSelection } from "@ai-matrx/context-menu/engine";
 
 import {
+  createDocument,
   getDocument,
   renameDocument,
   updateDocumentDescription,
@@ -100,8 +110,14 @@ interface DocumentRecordMeta {
 
 export interface DocumentRecordProps {
   documentId: string;
-  /** Places the title field and the actions. Rendered above the body. */
+  /** Places the title field and the actions. Rendered above the body (on a page: only while loading or refused). */
   renderHeader: (parts: DocumentRecordHeaderParts) => ReactNode;
+  /**
+   * "page": the document's own route — Google Docs' header (title in place,
+   * menu bar with the File menu, toolbar) is drawn by the editor itself.
+   * "tile" (default): a board tile — the host's strip plus the compact bar.
+   */
+  layout?: "page" | "tile";
   /** Extra classes on the body frame (the page adds its header clearance). */
   bodyClassName?: string;
   /** Called with the row each time it loads or changes (a rename, an agent write). */
@@ -113,7 +129,10 @@ export function DocumentRecord({
   renderHeader,
   bodyClassName,
   onDocument,
+  layout = "tile",
 }: DocumentRecordProps) {
+  const router = useRouter();
+  const menuBar = useMenuBarState();
   const [doc, setDoc] = useState<DocumentRow | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
@@ -317,6 +336,37 @@ export function DocumentRecord({
     void run(commandId).catch((err: unknown) => toast.error(err instanceof Error ? err.message : String(err)));
   };
 
+  // A collaborator's (or an agent's) rename shows here live, like Google's title.
+  useLiveFileName({ table: "udt_documents", column: "document_name", id }, (name) => {
+    const current = docRef.current;
+    if (current && current.document_name !== name) {
+      commitDocument({ ...current, document_name: name });
+      setRenameDraft(name);
+    }
+  });
+  const history = useToolToggle(documentHistoryToggleInput(id, canEdit, doc?.document_name));
+  const printDocument = () =>
+    void import("@ai-matrx/rich-content/copy/content-export").then((m) =>
+      m.printContent(documentMarkdown(), docRef.current?.document_name),
+    );
+  const createNewDocument = async () => {
+    try {
+      const organizationId = await ensureOrgId(null);
+      const res = await createDocument({ name: "Untitled document", organizationId });
+      if (isServiceFailure(res)) throw new Error(res.error);
+      router.push(`/documents/${res.data.id}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    }
+  };
+  // Google Docs' File rows the page owns (the rest are the shared file menu's).
+  const pageFileExtras: EditorMenuEntry[] = [
+    { kind: "separator" },
+    { kind: "action", id: "file.new", label: "New document", icon: FilePlus2, run: () => void createNewDocument() },
+    { kind: "action", id: "file.open", label: "Open", icon: FolderOpen, shortcut: { key: "o", mod: true, bind: true }, run: () => router.push("/documents") },
+    { kind: "action", id: "file.history", label: "Version history", icon: History, shortcut: { key: "h", mod: true, alt: true, shift: true, bind: true }, run: history.toggle },
+    { kind: "action", id: "file.print", label: "Print", icon: Printer, shortcut: { key: "p", mod: true, bind: true }, run: printDocument },
+  ];
   const liveGoogle = useLiveGoogleAdapter("document", id);
   const fileMenu = useFileRecordMenu(DOCUMENT_ADAPTER, doc, {
     listHref: "/documents",
@@ -339,7 +389,13 @@ export function DocumentRecord({
         await exportContent(documentMarkdown(), format, docRef.current?.document_name);
       },
     })),
-    extra: (
+    ...(layout === "page"
+      ? {
+          menubar: menuBar.fileMenuProps(),
+          ...(canEdit ? { onRename: (name: string) => applyRename(name) } : {}),
+        }
+      : {}),
+    extra: layout === "page" ? renderMenuEntries(pageFileExtras) : (
       <>
       <DropdownMenuItem
         onSelect={() =>
@@ -476,9 +532,68 @@ export function DocumentRecord({
       getWriteHandlers={getSurfaceWriteHandlers}
       isEditable={canEdit}
     >
-      {renderHeader({ title, actions })}
+      {layout === "page" && permsResolved && doc ? (
+        <DocumentEditor
+          documentId={id}
+          documentName={doc.document_name}
+          editable={canEdit}
+          collab
+          onBodyPort={lendBodyPort}
+          chrome={{
+            backHref: "/documents",
+            title: (
+              <EditorTitleField
+                value={doc.document_name}
+                editable={canEdit}
+                placeholder="Untitled document"
+                maxLength={DOCUMENT_NAME_MAX_LENGTH}
+                onCommit={applyRename}
+              />
+            ),
+            titleMarks: (
+              <FileTitleMarks
+                adapter={DOCUMENT_ADAPTER}
+                row={doc}
+                canManage={isOwner}
+                onProjectMoved={(projectId) => {
+                  const current = docRef.current;
+                  if (current) commitDocument({ ...current, project_id: projectId });
+                }}
+              />
+            ),
+            actions: (
+              <>
+                <span className="hidden md:inline-flex">
+                  <RichCopySplit
+                    label={doc.document_name}
+                    size="sm"
+                    human={documentMarkdown}
+                    exportTitle={doc.document_name}
+                    viewKey={`udt-document-${doc.id}`}
+                  />
+                </span>
+                <ShareButton
+                  resourceType="udt_document"
+                  resourceId={doc.id}
+                  resourceName={doc.document_name}
+                  isOwner={isOwner}
+                  variant="default"
+                  size="sm"
+                  className="rounded-full px-4"
+                />
+              </>
+            ),
+            menuBar,
+            fileMenu,
+            fileExtras: pageFileExtras,
+            notice: <DocumentRulebookNotice documentId={id} className="mx-2 mt-1 shrink-0" />,
+          }}
+        />
+      ) : null}
+      {layout === "page" && permsResolved && doc ? null : renderHeader({ title, actions })}
       {/* The editor owns a static status/action bar at its very top; the host
           decides the clearance above it (the page's glass header needs it). */}
+      {layout === "page" && permsResolved && doc ? null : (
       <div
         className={cn(
           "flex h-full w-full flex-col overflow-hidden",
@@ -520,6 +635,7 @@ export function DocumentRecord({
           )}
         </div>
       </div>
+      )}
     </SurfaceRuntimeProvider>
   );
 }

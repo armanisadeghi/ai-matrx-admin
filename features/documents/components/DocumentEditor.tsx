@@ -28,7 +28,16 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { History, Loader2, Save } from "lucide-react";
+import { FileText, History, Loader2, MessageSquare, Save } from "lucide-react";
+import { EditorDocumentHeader } from "@/features/shell/components/header/templates/EditorDocumentHeader";
+import { useShellCanvasFullScreen } from "@/features/shell/components/ShellChromeMode";
+import { EditorMenuBar, type MenuBarState } from "@/components/editor-chrome/EditorMenuBar";
+import { EditorToolbar } from "@/components/editor-chrome/EditorToolbar";
+import { EditorSaveStatus } from "@/components/editor-chrome/EditorTitleField";
+import { boundActions, matchesShortcut, type EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
+import { buildDocMenus, buildDocToolbar, type DocChromeHost, type DocsApiLike } from "@/features/documents/chrome/doc-commands";
+import { univerDocToMarkdown } from "@/features/documents/univer-doc-to-markdown";
+import { bodyTextOf } from "@/features/documents/document-body-text";
 
 import {
   createUniver,
@@ -72,6 +81,7 @@ import { supabase } from "@/utils/supabase/client";
 import { useThemeMode } from "@/styles/themes/useThemeMode";
 import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { Button } from "@ai-matrx/design-system";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { useToolToggle } from "@/features/canvas/host/toolCanvas";
 import { toast } from "@/components/ui/use-toast";
@@ -147,6 +157,24 @@ type Props = {
   onBodyPort?: (port: DocumentBodyPort | null) => void;
   /** The record's File menu, in the same place the workbook editor puts it (left of History). */
   toolbarRightSlot?: ReactNode;
+  /**
+   * The document's page (`/documents/[id]`): draw Google Docs' header — title,
+   * marks, menu bar (with the record's shared File menu), actions — around
+   * the editor. Absent on a board tile, which keeps its compact bar.
+   */
+  chrome?: {
+    backHref: string;
+    title: ReactNode;
+    titleMarks?: ReactNode;
+    actions?: ReactNode;
+    menuBar: MenuBarState;
+    /** The shared File menu, mounted with `menuBar.fileMenuProps()`. */
+    fileMenu: ReactNode;
+    /** The File rows the page owns (New, Open, Version history, Print) — their shortcuts are bound here. */
+    fileExtras?: EditorMenuEntry[];
+    /** A row under the toolbar (the Rulebook notice). */
+    notice?: ReactNode;
+  };
 };
 
 export default function DocumentEditor({
@@ -156,6 +184,7 @@ export default function DocumentEditor({
   collab = false,
   onBodyPort,
   toolbarRightSlot,
+  chrome,
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const apiRef = useRef<FUniver | null>(null);
@@ -360,6 +389,8 @@ export default function DocumentEditor({
             UniverDocsCorePreset({
               container: host,
               ribbonType: "simple",
+              // Google's menu bar + toolbar replace Univer's ribbon (components/editor-chrome).
+              toolbar: false,
             }),
             UniverDocsHyperLinkPreset(),
             UniverDocsDrawingPreset(),
@@ -518,12 +549,156 @@ export default function DocumentEditor({
 
   const statusPill = useMemo(() => statusPillFor(saveStatus), [saveStatus]);
 
+  // ─── Google Docs chrome: menus, toolbar, bound shortcuts ───
+  const [fullScreen, setFullScreen] = useState(false);
+  useShellCanvasFullScreen(fullScreen);
+  const [zoom, setZoom] = useState(1);
+  useEffect(() => {
+    const api = apiRef.current;
+    if (bootState !== "ready" || !api) return undefined;
+    const sub = api.addEvent(api.Event.CommandExecuted, (command) => {
+      const ratio = (command.params as { zoomRatio?: unknown } | undefined)?.zoomRatio;
+      if (command.id === "doc.operation.set-zoom-ratio" && typeof ratio === "number") setZoom(ratio);
+    });
+    return () => sub.dispose();
+  }, [bootState]);
+  const liveSnapshot = () =>
+    (apiRef.current as unknown as { getActiveDocument?: () => { save: () => unknown } | null } | null)
+      ?.getActiveDocument?.()
+      ?.save() ?? null;
+  const printDocument = () =>
+    void import("@ai-matrx/rich-content/copy/content-export").then((m) =>
+      m.printContent(univerDocToMarkdown(liveSnapshot() as Parameters<typeof univerDocToMarkdown>[0]), documentName),
+    );
+  const showWordCount = () => {
+    const snap = liveSnapshot() as { body?: { dataStream?: string } } | null;
+    const text = bodyTextOf(snap?.body?.dataStream ?? "").text;
+    const words = text.split(/\s+/).filter(Boolean).length;
+    toast({ title: `${words.toLocaleString()} words`, description: `${text.replace(/\s/g, "").length.toLocaleString()} characters` });
+  };
+  const chromeHost: DocChromeHost | null =
+    bootState === "ready" && apiRef.current
+      ? {
+          api: apiRef.current as unknown as DocsApiLike,
+          editable,
+          unitId: () => unitId,
+          zoom: () => zoom,
+          print: printDocument,
+          wordCount: showWordCount,
+          fullScreen: () => fullScreen,
+          toggleFullScreen: () => setFullScreen((v) => !v),
+        }
+      : null;
+  const menus = chromeHost ? buildDocMenus(chromeHost) : [];
+  const toolbarItems = chromeHost ? buildDocToolbar(chromeHost) : [];
+  const boundRef = useRef<ReturnType<typeof boundActions>>([]);
+  boundRef.current = boundActions([...menus, ...(chrome?.fileExtras ? [{ id: "file", label: "File", items: chrome.fileExtras }] : [])]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const root = containerRef.current?.closest("[data-editor-document-header],[data-document-editor]");
+      if (!root || !(e.target instanceof Node) || !(root.contains(e.target) || e.target === document.body)) return;
+      const hit = boundRef.current.find((a) => a.shortcut && matchesShortcut(e, a.shortcut));
+      if (!hit) return;
+      e.preventDefault();
+      e.stopPropagation();
+      void Promise.resolve(hit.run()).catch(() => {});
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, []);
+  const toolbar = (
+    <EditorToolbar items={toolbarItems} menus={menus} className={bootState === "ready" ? undefined : "invisible"} />
+  );
+
+  if (chrome) {
+    return (
+      <EditorDocumentHeader
+        backHref={chrome.backHref}
+        backLabel="Back to documents"
+        productTone="docs"
+        productIcon={<FileText />}
+        title={chrome.title}
+        titleMarks={
+          <>
+            {chrome.titleMarks}
+            {bootState === "ready" ? (
+              <EditorSaveStatus
+                state={saveStatus === "idle" ? "saved" : saveStatus}
+                {...(editable ? { onSaveNow: handleSaveNow } : {})}
+              />
+            ) : (
+              <span className="flex size-7 items-center justify-center">
+                <Loader2 className="size-4 animate-spin text-muted-foreground" />
+              </span>
+            )}
+          </>
+        }
+        menuBar={
+          <EditorMenuBar
+            menus={menus}
+            state={chrome.menuBar}
+            fileMenu={bootState === "ready" ? chrome.fileMenu : null}
+          />
+        }
+        actions={
+          <>
+            {collab && bootState === "ready" && awareness && (
+              <span className="hidden md:flex">
+                <RemoteCursorsLayer states={awareness.states} selfUid={awareness.selfUid} />
+              </span>
+            )}
+            {bootState === "ready" && (
+              <span className="hidden items-center gap-1 md:flex">
+                <DocumentGoogleLink apiRef={apiRef} documentId={documentId} documentName={documentName} editable={editable} />
+                <DocumentPageReferenceCopyButton documentId={documentId} documentName={documentName} />
+              </span>
+            )}
+            <ControlButton
+              variant="quiet"
+              icon={<History />}
+              aria-label="Version history"
+              title="Version history"
+              aria-pressed={snapshotHistory.isVisible}
+              className="hidden aria-pressed:bg-accent sm:inline-flex"
+              onClick={snapshotHistory.toggle}
+            />
+            <ControlButton
+              variant="quiet"
+              icon={<MessageSquare />}
+              aria-label="Comments"
+              title="Comments"
+              className="hidden sm:inline-flex"
+              disabled={bootState !== "ready"}
+              onClick={() => void apiRef.current?.executeCommand("docs.operation.toggle-comment-panel")}
+            />
+            {chrome.actions}
+          </>
+        }
+        toolbar={toolbar}
+      >
+        <div className="matrx-univer-shell relative flex min-h-0 flex-1 flex-col" data-document-editor="">
+          {bootState === "load_error" && (
+            <div className="flex items-center gap-2 px-3 py-2 text-sm text-destructive">
+              Load failed: {loadError ?? "unknown"}
+              <ErrorAlchemyMenu error={loadError} />
+            </div>
+          )}
+          {chrome.notice}
+          <WorkingCopyAlert kind={documentWorkingCopy} id={documentId} />
+          <div className="relative min-h-0 flex-1">
+            <div ref={containerRef} className="absolute inset-0" />
+          </div>
+        </div>
+      </EditorDocumentHeader>
+    );
+  }
+
   return (
     // Univer owns its own light/dark theming via the Facade API
     // (useUniverDarkModeSync), so we do NOT pin a colorScheme here — that fought
     // Univer's portals and broke dark mode. The wrapper bg uses a semantic
     // token so it adapts with the app theme during boot.
-    <div className="matrx-univer-shell flex h-full w-full flex-col">
+    <div className="matrx-univer-shell flex h-full w-full flex-col" data-document-editor="">
       <div className="flex items-center gap-2 border-b border-border px-2 py-1 text-xs min-w-0">
         <div className="text-muted-foreground flex-1 min-w-0 truncate">
           {bootState === "booting" && (
@@ -595,6 +770,7 @@ export default function DocumentEditor({
           </Button>
         </div>
       </div>
+      {toolbar}
       <WorkingCopyAlert kind={documentWorkingCopy} id={documentId} />
       <div className="relative min-h-0 flex-1">
         <div ref={containerRef} className="absolute inset-0" />
