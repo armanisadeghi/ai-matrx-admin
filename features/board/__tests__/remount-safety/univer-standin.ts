@@ -104,8 +104,11 @@ export function createUniverStandIn(commandServiceToken: unknown, mutationType: 
       executeCommand: async () => true,
     };
 
+    const looseService: object = new Proxy(() => undefined, { get: () => () => undefined, set: () => true });
     const injector = {
-      get: (token: unknown) => (token === commandServiceToken ? commandService : undefined),
+      // Any service other than the command service (image io, URL images, user identity, ...) answers with a
+      // permissive no-op object: the editor wires them at boot and the board tests never exercise them.
+      get: (token: unknown) => (token === commandServiceToken ? commandService : looseService),
       has: () => true,
       add: () => undefined,
     };
@@ -181,5 +184,13 @@ export const univerModules = {
   docsPreset: () => ({ UniverDocsCorePreset: () => ({ plugins: [] }) }),
   locale: () => ({ __esModule: true, default: {} }),
   sheetsPreset: () => ({ DragManagerService: class DragManagerService {}, HoverManagerService: class HoverManagerService {}, UniverSheetsCorePreset: () => ({ plugins: [] }) }),
+  // The docs add-ons DocumentEditor registers (links, drawings, comments, find & replace) and the UI service
+  // token the notification router replaces: presets answer with no plugins, plugins with empty classes.
+  linkPreset: () => ({ UniverDocsHyperLinkPreset: () => ({ plugins: [] }) }),
+  drawingPreset: () => ({ UniverDocsDrawingPreset: () => ({ plugins: [] }) }),
+  commentPreset: () => ({ UniverDocsThreadCommentPreset: () => ({ plugins: [] }) }),
+  findReplace: () => ({ UniverFindReplacePlugin: class UniverFindReplacePlugin {} }),
+  docsFindReplace: () => ({ UniverDocsFindReplacePlugin: class UniverDocsFindReplacePlugin {} }),
+  ui: () => ({ INotificationService: Symbol.for("univer.INotificationService") }),
   engineRender: () => ({ ICanvasColorService: Symbol.for("univer.ICanvasColorService"), DumbCanvasColorService: class DumbCanvasColorService {} }),
 };
