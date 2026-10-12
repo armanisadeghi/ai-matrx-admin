@@ -1220,6 +1220,10 @@ const DataSourceWindow = lazyOverlay(
   () => import("@/features/window-panels/windows/data-sources/DataSourceWindow"),
   { ssr: false },
 );
+const DataChangesWindow = lazyOverlay(
+  () => import("@/features/window-panels/windows/data-sources/DataChangesWindow"),
+  { ssr: false },
+);
 const DictionarySelectorWindow = lazyOverlay(
   () =>
     import("@/features/dictionary/components/DictionarySelectorWindow").then(
@@ -1671,6 +1675,9 @@ export default function OverlayController() {
     dataSourceWindow: useAppSelector((s) =>
       selectIsOverlayOpen(s, "dataSourceWindow"),
     ),
+    dataChangesWindow: useAppSelector((s) =>
+      selectIsOverlayOpen(s, "dataChangesWindow"),
+    ),
     systemInstructionWindow: useAppSelector((s) =>
       selectIsOverlayOpen(s, "systemInstructionWindow"),
     ),
@@ -2109,6 +2116,9 @@ export default function OverlayController() {
     ) as Record<string, unknown> | null,
     dataSourceWindow: useAppSelector((s) =>
       selectOverlayData(s, "dataSourceWindow"),
+    ) as Record<string, unknown> | null,
+    dataChangesWindow: useAppSelector((s) =>
+      selectOverlayData(s, "dataChangesWindow"),
     ) as Record<string, unknown> | null,
     systemInstructionWindow: useAppSelector((s) =>
       selectOverlayData(s, "systemInstructionWindow"),
@@ -8025,6 +8035,27 @@ export default function OverlayController() {
             initialValues={values}
             onClose={() =>
               dispatch(closeOverlay({ overlayId: "dataSourceWindow" }))
+            }
+          />
+        );
+      })()}
+
+      {/* dataChangesWindow — singleton (what a refresh of one fetched table changed) */}
+      {(() => {
+        const isOpen = isOpenById.dataChangesWindow;
+        const data = dataById.dataChangesWindow as
+          Record<string, unknown> | null | undefined;
+        const tableId = typeof data?.tableId === "string" ? data.tableId : null;
+        if (!isOpen || !tableId) return null;
+        return (
+          <DataChangesWindow
+            isOpen
+            tableId={tableId}
+            organizationId={typeof data?.organizationId === "string" ? data.organizationId : null}
+            jobId={typeof data?.jobId === "string" ? data.jobId : null}
+            tableName={typeof data?.tableName === "string" ? data.tableName : null}
+            onClose={() =>
+              dispatch(closeOverlay({ overlayId: "dataChangesWindow" }))
             }
           />
         );

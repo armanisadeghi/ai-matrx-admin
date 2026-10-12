@@ -12,6 +12,8 @@
  * `{type:"data_fetch_result", result}`; a refusal is an `error` event `{code, user_message, limit?}`.
  */
 
+import { parseSummary, type ChangeSummary } from "./changes";
+
 export type DataSourceInputKind = "url" | "keyword";
 
 export interface DataSourceField {
@@ -77,6 +79,8 @@ export interface DataFetchResult {
   key_basis?: "source_id" | "url" | "record_hash" | null;
   /** Honest notes about this fetch (a known issue with the source, a fallback record key). */
   notices?: string[];
+  /** What this fetch changed in the table (counts). Null/absent: the server did not say. */
+  changes?: ChangeSummary | null;
   /** The fetched records themselves, only when the request asked for `includeRecords` (a card or autofill showing them at once). */
   records?: Record<string, unknown>[];
 }
@@ -224,6 +228,7 @@ export function parseResult(raw: unknown): DataFetchResult | null {
     limit_applied: applied,
     key_basis: r.key_basis === "source_id" || r.key_basis === "url" || r.key_basis === "record_hash" ? r.key_basis : null,
     notices: Array.isArray(r.notices) ? r.notices.filter((n): n is string => typeof n === "string" && n.trim().length > 0) : [],
+    changes: parseSummary(r.changes),
   };
 }
 
@@ -283,6 +288,8 @@ export interface DataFetchSpec {
   rowsUpdated: number;
   finishedAt: string | null;
   createdAt: string | null;
+  /** What the newest fetch changed (counts), from its stored result. */
+  changes: ChangeSummary | null;
 }
 
 export function parseSpec(row: unknown): DataFetchSpec | null {
@@ -300,6 +307,7 @@ export function parseSpec(row: unknown): DataFetchSpec | null {
     rowsUpdated: num(r.rows_updated) ?? 0,
     finishedAt: str(r.finished_at),
     createdAt: str(r.created_at),
+    changes: parseSummary((r.result && typeof r.result === "object" ? (r.result as Record<string, unknown>) : {}).changes),
   };
 }
 

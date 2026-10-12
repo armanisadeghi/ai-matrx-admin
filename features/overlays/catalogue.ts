@@ -1154,6 +1154,11 @@ export const OVERLAY_CATALOGUE = {
     instanceMode: "singleton",
     isWindow: true,
   },
+  dataChangesWindow: {
+    label: "Data Changes",
+    instanceMode: "singleton",
+    isWindow: true,
+  },
 } as const satisfies Record<string, OverlayCatalogueEntry>;
 
 /**

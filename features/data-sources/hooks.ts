@@ -4,9 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 
 import { createClient } from "@/utils/supabase/client";
 
+import { parseHistory, type ChangeSet, type RefreshRun } from "./changes";
 import { parseFetchedTables, parseSpec, type FetchedTable, type DataFetchSpec, type DataSource } from "./contract";
 import { usePriceText } from "./library/hooks";
-import { getDataSources } from "./server";
+import { getDataSources, getJobChanges } from "./server";
 
 export const dataSourcesKey = (organizationId: string | null) => ["data-sources", "catalog", organizationId] as const;
 
@@ -53,7 +54,7 @@ export function useFetchSpec(tableId: string) {
       const { data, error } = await createClient()
         .schema("scraper")
         .from("data_fetch_job")
-        .select("id,source_key,max_records,status,rows_created,rows_updated,finished_at,created_at")
+        .select("id,source_key,max_records,status,rows_created,rows_updated,finished_at,created_at,result")
         .eq("table_id", tableId)
         .is("deleted_at", null)
         .order("created_at", { ascending: false })
@@ -85,5 +86,40 @@ export function useFetchedTables() {
       return parseFetchedTables(data);
     },
     staleTime: 30 * 1000,
+  });
+}
+
+export const refreshHistoryKey = (tableId: string) => ["data-sources", "refresh-history", tableId] as const;
+
+/** Every finished refresh of this table, newest first: when, what it changed (counts), what it cost. Client-direct under RLS. */
+export function useRefreshHistory(tableId: string) {
+  return useQuery({
+    queryKey: refreshHistoryKey(tableId),
+    queryFn: async (): Promise<RefreshRun[]> => {
+      const { data, error } = await createClient()
+        .schema("scraper")
+        .from("data_fetch_job")
+        .select("id,status,records_billed,cost_usd,finished_at,created_at,result")
+        .eq("table_id", tableId)
+        .eq("status", "done")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return parseHistory(data);
+    },
+    staleTime: 15 * 1000,
+  });
+}
+
+export const jobChangesKey = (jobId: string) => ["data-sources", "job-changes", jobId] as const;
+
+/** The full change set of one refresh (a finished job's changes never move, so it is cached for the session). */
+export function useJobChanges(jobId: string | null, organizationId: string | null) {
+  return useQuery({
+    queryKey: jobChangesKey(jobId ?? ""),
+    queryFn: ({ signal }): Promise<ChangeSet | null> => getJobChanges(jobId ?? "", { organizationId: organizationId ?? "", signal }),
+    enabled: Boolean(jobId && organizationId),
+    staleTime: Infinity,
   });
 }

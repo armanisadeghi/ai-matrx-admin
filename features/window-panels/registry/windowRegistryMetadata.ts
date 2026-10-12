@@ -1765,6 +1765,20 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
   },
 
   {
+    // What a refresh of a fetched table changed (New / Changed / Gone) + its refresh history.
+    // The body is features/data-sources/ChangesPanel — data carries `tableId`, `organizationId`, `jobId?`.
+    slug: "data-changes",
+    overlayId: "dataChangesWindow",
+    kind: "window",
+    label: "Data Changes",
+    defaultData: { tableId: null },
+    mobilePresentation: "fullscreen",
+    instanceMode: "singleton",
+    // R35 address: `?panels=data_changes:<tableId>`.
+    urlSync: { key: "data_changes" },
+  },
+
+  {
     // Compact Custom Dictionary context selector. Opened from the dictionary
     // indicator button on transcription/TTS surfaces; selection persists per
     // user per surface (user_surface_state) — data carries only `surfaceKey`.

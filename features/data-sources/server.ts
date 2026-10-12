@@ -6,6 +6,7 @@
 import { getJson, requestRaw } from "@/lib/python-client";
 import { parseMatrxNdjsonResponse } from "@ai-matrx/agents/matrx";
 
+import { parseChangeSet, type ChangeSet } from "./changes";
 import {
   DataFetchRefusal,
   consumeDataFetch,
@@ -107,4 +108,13 @@ export async function getJob(jobId: string, opts: { organizationId: string; sign
     signal: opts.signal,
   });
   return parseJob(data, jobId);
+}
+
+/** What one refresh changed: new rows, changed fields (before and after), rows no longer returned. */
+export async function getJobChanges(jobId: string, opts: { organizationId: string; signal?: AbortSignal }): Promise<ChangeSet | null> {
+  const { data } = await getJson<unknown>(`${BASE}/jobs/${encodeURIComponent(jobId)}/changes`, {
+    organizationId: org(opts.organizationId),
+    signal: opts.signal,
+  });
+  return parseChangeSet(data);
 }

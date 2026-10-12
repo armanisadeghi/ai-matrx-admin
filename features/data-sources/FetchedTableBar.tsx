@@ -11,7 +11,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { DownloadCloud, RefreshCw } from "lucide-react";
+import { DownloadCloud, History, RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { tableShapeChanged } from "@ai-matrx/records/react";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
@@ -20,7 +20,10 @@ import { formatCount, formatRelativeTime } from "@ai-matrx/kit/format";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { getMoreCount, inputWords, type DataFetchInput, type DataFetchResult } from "./contract";
-import { fetchSpecKey, limitSettingHref, useDataSources, useFetchEstimate, useFetchSpec } from "./hooks";
+import { useOpenDataChangesWindow } from "@/features/overlays/openers/dataChangesWindow";
+
+import { hasChanges, summaryParts } from "./changes";
+import { fetchSpecKey, limitSettingHref, refreshHistoryKey, useDataSources, useFetchEstimate, useFetchSpec } from "./hooks";
 import { RefusalView } from "./RefusalView";
 import { clearRun, startRun, useRun } from "./runs";
 import { refreshTable } from "./server";
@@ -110,6 +113,7 @@ function Bar({
   const catalogSource = catalog.data?.sources.find((s) => s.key === sourceKey) ?? null;
   const limit = catalog.data?.limits.max_records_per_fetch ?? null;
   const run = useRun(runKey);
+  const openChanges = useOpenDataChangesWindow();
   useMinuteTick();
   const busy = run.status === "running";
   if (!sourceKey) return null;
@@ -125,6 +129,7 @@ function Bar({
   const finish = (result: DataFetchResult) => {
     onFinished?.(result);
     void queryClient.invalidateQueries({ queryKey: fetchSpecKey(tableId) });
+    void queryClient.invalidateQueries({ queryKey: refreshHistoryKey(tableId) });
     tableShapeChanged(tableId);
     clearRun(runKey);
   };
@@ -144,6 +149,7 @@ function Bar({
   const textValues = fetched?.valuesAsText ?? 0;
   const trimmed = fetched?.limitApplied ?? null;
   const notices = fetched?.notices ?? [];
+  const changeParts = summaryParts(spec?.changes ?? null);
   const settingHref = trimmed ? limitSettingHref(organizationId, trimmed.setting) : limit ? limitSettingHref(organizationId, limit.setting) : null;
 
   if (run.status === "failed") {
@@ -198,6 +204,18 @@ function Bar({
             {atLimit ? `At your limit of ${formatCount(limit?.value ?? 0)}` : `Fetch up to ${formatCount(moreCount)} into this table (billed for all)`}
           </TooltipContent>
         </Tooltip>
+        {changeParts && !busy && (
+          <Button
+            variant="quiet"
+            icon={<History className="h-4 w-4" />}
+            meta={hasChanges(spec?.changes ?? null) ? changeParts.join(" · ") : "Nothing changed"}
+            onClick={() => openChanges({ tableId, organizationId, jobId: spec?.jobId ?? null, tableName: fetched?.sourceLabel ?? null })}
+            data-view-changes=""
+            data-fetch-changes={hasChanges(spec?.changes ?? null) ? "some" : "none"}
+          >
+            View changes
+          </Button>
+        )}
       </div>
       {notices.length > 0 && (
         <div className="flex flex-col text-[11px] text-warning" data-fetch-notices="">

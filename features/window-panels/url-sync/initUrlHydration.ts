@@ -760,6 +760,17 @@ export function initUrlHydration() {
     );
   });
 
+  // Data changes — `?panels=data_changes:<tableId>`: what the latest refresh of one fetched table
+  // changed. A token with no table opens nothing.
+  registerPanelHydrator("data_changes", (dispatch, id) => {
+    const tableId = getRestorableResourceId(id, "dataChangesWindow");
+    if (!tableId) {
+      console.warn(`[UrlPanelManager] ?panels=data_changes:${id} names no table — expected data_changes:<tableId>.`);
+      return;
+    }
+    dispatch(openOverlay({ overlayId: "dataChangesWindow", data: { tableId, organizationId: null } }));
+  });
+
   // Review walk ("Diagnose") — `?panels=review_walk:<unitKind>.<unitId>` opens
   // the walk on one unit (assistant_message | agent_request | wf_node_outcome).
   // Same deterministic instance id as the opener (features/review-walk/
