@@ -14,15 +14,15 @@ const SETTING_LABELS: Record<string, string> = {
   reuse_hours_profile: "Reuse window (hours)",
 };
 
-/** "Limited to 500 by Most posts per account · Change" — no hidden limits. */
+/** "500 of 1,000 · capped by Most posts per account" with a settings link — no hidden limits. */
 export function LimitLine({ limit, organizationId }: { limit: SocialLimitApplied | null | undefined; organizationId: string }) {
   if (!limit) return null;
   const bare = limit.setting.replace(/^social\./, "");
   return (
     <span className="text-xs text-muted-foreground" data-testid="limit-line">
-      {`Showing ${limit.value.toLocaleString("en-US")} of the ${limit.requested.toLocaleString("en-US")} asked · limited by your organization's "${SETTING_LABELS[bare] ?? bare}" · `}
+      {`${limit.value.toLocaleString("en-US")} of ${limit.requested.toLocaleString("en-US")} · capped by `}
       <Link href={SOCIAL_LIMITS_HREF(organizationId, bare)} className="underline">
-        Change
+        {SETTING_LABELS[bare] ?? bare}
       </Link>
     </span>
   );
@@ -31,11 +31,11 @@ export function LimitLine({ limit, organizationId }: { limit: SocialLimitApplied
 /** Why a fetch ended early, in plain words; null when it ended normally. */
 export function stoppedText(reason: string | null | undefined): string | null {
   switch (reason) {
-    case "points_limit": return "Stopped early: points limit reached. Posts already loaded are kept.";
-    case "provider_error": return "Stopped early: the source had a problem. Posts already loaded are kept.";
-    case "cursor_expired": return "Couldn't pick up where the last fetch stopped. Use Refresh now.";
-    case "no_saved_place": return "Load more isn't available yet for this account. Use Refresh now once.";
-    case "nothing_more": return "Everything available is already loaded.";
+    case "points_limit": return "Stopped: points limit reached";
+    case "provider_error": return "Stopped early: source unavailable";
+    case "cursor_expired": return "Couldn't resume. Use Refresh.";
+    case "no_saved_place": return "Use Refresh once to enable Load more";
+    case "nothing_more": return "All posts loaded";
     default: return null;
   }
 }
@@ -43,7 +43,7 @@ export function stoppedText(reason: string | null | undefined): string | null {
 /** Toast text for a row refresh: the summary plus any limit and early stop. */
 export function fetchOutcomeText(summary: string, r: { limit_applied?: SocialLimitApplied | null; stopped_reason?: string | null }): string {
   const parts = [summary];
-  if (r.limit_applied) parts.push(`Limited to ${r.limit_applied.value.toLocaleString("en-US")} by ${SETTING_LABELS[r.limit_applied.setting.replace(/^social\./, "")] ?? r.limit_applied.setting}`);
+  if (r.limit_applied) parts.push(`Capped at ${r.limit_applied.value.toLocaleString("en-US")} (${SETTING_LABELS[r.limit_applied.setting.replace(/^social\./, "")] ?? r.limit_applied.setting})`);
   const stopped = stoppedText(r.stopped_reason);
   if (stopped) parts.push(stopped);
   return parts.join(" · ");
