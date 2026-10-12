@@ -116,6 +116,16 @@ describe("deck history (undo / redo)", () => {
     h = historyReducer(h, { type: "redo" });
     expect(h.present.deck.slides[0]!.title).toBe("Hel");
   });
+  it("committing the text already there (a blur after undo) keeps the redo stack", () => {
+    let h = initialHistory(deckOf("a"));
+    h = historyReducer(h, { type: "setField", index: 0, path: "title", value: "ab" });
+    h = historyReducer(h, { type: "undo" });
+    h = historyReducer(h, { type: "setField", index: 0, path: "title", value: "a" });
+    h = historyReducer(h, { type: "setNotes", index: 0, notes: "" });
+    expect(h.future).toHaveLength(1);
+    h = historyReducer(h, { type: "redo" });
+    expect(h.present.deck.slides[0]!.title).toBe("ab");
+  });
   it("selecting a slide is not an edit (no revision, no undo step)", () => {
     const h0 = initialHistory(deckOf("a", "b"));
     const h1 = historyReducer(h0, { type: "select", index: 1 });

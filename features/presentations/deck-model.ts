@@ -257,7 +257,9 @@ export function deckReducer(state: DeckState, action: DeckAction): DeckState {
         return next;
       });
     case "setField":
-      return withSlide(state, action.index, (s) => setSlidePath(s, action.path, action.value));
+      // A commit of the text already there (an editor blurring) is not a change: it must not
+      // reach history, where it would clear the redo stack.
+      return withSlide(state, action.index, (s) => (getPath(s, action.path) === action.value ? s : setSlidePath(s, action.path, action.value)));
     case "insertItem":
       return withSlide(state, action.index, (s) => {
         const at = listOf(action.path);
@@ -281,7 +283,7 @@ export function deckReducer(state: DeckState, action: DeckAction): DeckState {
         return next;
       });
     case "setNotes":
-      return withSlide(state, action.index, (s) => ({ ...s, notes: action.notes }));
+      return withSlide(state, action.index, (s) => ((s.notes ?? "") === action.notes ? s : { ...s, notes: action.notes }));
     case "setImage":
       return withSlide(state, action.index, (s) => {
         const extra: Record<string, unknown> = { ...(isRecord(s.extra) ? s.extra : {}) };

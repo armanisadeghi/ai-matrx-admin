@@ -71,6 +71,8 @@ function EditableText({
     if (!el || el.textContent === text) return;
     if (document.activeElement === el && emitted.current === text) return;
     el.textContent = text;
+    // The model overrode what was typed (undo): redoing back to the typed text must write too.
+    emitted.current = null;
   }, [text]);
   useEffect(() => {
     const el = ref.current;
