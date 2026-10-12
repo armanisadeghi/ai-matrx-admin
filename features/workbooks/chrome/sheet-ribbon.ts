@@ -34,7 +34,14 @@ import {
   ZoomIn,
   Keyboard,
 } from "lucide-react";
-import type { RibbonTabSpec } from "@/components/editor-chrome/ribbon-model";
+import type { GoogleOnlyRows, RibbonTabSpec } from "@/components/editor-chrome/ribbon-model";
+
+/**
+ * Menu rows (id or whole submenu id -> reason) the Microsoft look deliberately does not place.
+ * Empty on purpose: every row is placed. A new menu row fails the ribbon forcing test until it is
+ * either placed in a named group above or listed here WITH a reason.
+ */
+export const SHEET_GOOGLE_ONLY: GoogleOnlyRows = {};
 
 export const SHEET_RIBBON: RibbonTabSpec[] = [
   {
@@ -114,6 +121,8 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
           { ref: "insert.rows", label: "Insert rows", icon: Rows3 },
           { ref: "insert.columns", label: "Insert columns", icon: Columns3 },
           { ref: "edit.delete", label: "Delete", icon: Trash2 },
+          { ref: "view.rows", label: "Hide / unhide rows", icon: Rows3 },
+          { ref: "view.columns", label: "Hide / unhide columns", icon: Columns3 },
         ],
       },
       {
@@ -127,7 +136,6 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
           { ref: "format.clear", label: "Clear", icon: Eraser },
         ],
       },
-      { id: "more", label: "More", controls: [{ ref: "menu:edit", label: "Edit" }, { ref: "menu:format", label: "Format" }] },
     ],
   },
   {
@@ -161,7 +169,6 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
           { ref: "insert.sheet", label: "Sheet", icon: Sheet },
         ],
       },
-      { id: "more", label: "More", controls: [{ ref: "menu:insert", label: "Insert" }] },
     ],
   },
   {
@@ -185,7 +192,6 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
           { ref: "tools.functions", label: "Function list" },
         ],
       },
-      { id: "more", label: "More", controls: [{ ref: "menu:tools", label: "Tools" }] },
     ],
   },
   {
@@ -212,7 +218,6 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
         ],
       },
       { id: "protect", label: "Protect", controls: [{ ref: "data.protect", size: "large", label: "Protect", icon: Lock }] },
-      { id: "more", label: "More", controls: [{ ref: "menu:data", label: "Data" }] },
     ],
   },
   {
@@ -258,7 +263,6 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
         label: "Full Screen",
         controls: [{ ref: "view.full-screen", size: "large", icon: Maximize2 }],
       },
-      { id: "more", label: "More", controls: [{ ref: "menu:view", label: "View" }] },
     ],
   },
   {
@@ -271,7 +275,6 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
         controls: [
           { ref: "help.shortcuts", size: "large", icon: Keyboard },
           { ref: "help.functions", label: "Function list" },
-          { ref: "menu:help", label: "More" },
         ],
       },
     ],

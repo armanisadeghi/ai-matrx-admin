@@ -21,7 +21,10 @@ import {
   ZoomIn,
   Hash,
 } from "lucide-react";
-import type { RibbonTabSpec } from "@/components/editor-chrome/ribbon-model";
+import type { GoogleOnlyRows, RibbonTabSpec } from "@/components/editor-chrome/ribbon-model";
+
+/** Menu rows the Microsoft look deliberately does not place (id -> reason). Empty: every row is placed. */
+export const DOC_GOOGLE_ONLY: GoogleOnlyRows = {};
 
 export const DOC_RIBBON: RibbonTabSpec[] = [
   {
@@ -86,7 +89,6 @@ export const DOC_RIBBON: RibbonTabSpec[] = [
           { ref: "format.clear", label: "Clear formatting" },
         ],
       },
-      { id: "more", label: "More", controls: [{ ref: "menu:edit", label: "Edit" }, { ref: "menu:format", label: "Format" }] },
     ],
   },
   {
@@ -126,7 +128,6 @@ export const DOC_RIBBON: RibbonTabSpec[] = [
           { ref: "insert.horizontal-line", label: "Horizontal line", icon: Minus },
         ],
       },
-      { id: "more", label: "More", controls: [{ ref: "menu:insert", label: "Insert" }] },
     ],
   },
   {
@@ -152,7 +153,6 @@ export const DOC_RIBBON: RibbonTabSpec[] = [
           { ref: "tools.comments", label: "Comments panel" },
         ],
       },
-      { id: "more", label: "More", controls: [{ ref: "menu:tools", label: "Tools" }] },
     ],
   },
   {
@@ -168,7 +168,6 @@ export const DOC_RIBBON: RibbonTabSpec[] = [
         ],
       },
       { id: "full-screen", label: "Full Screen", controls: [{ ref: "view.full-screen", size: "large", icon: Maximize2 }] },
-      { id: "more", label: "More", controls: [{ ref: "menu:view", label: "View" }] },
     ],
   },
   {

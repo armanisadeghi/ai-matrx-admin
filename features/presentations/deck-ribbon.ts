@@ -5,7 +5,10 @@
  */
 
 import { ArrowUpDown, Copy, Image, Keyboard, LayoutTemplate, MonitorPlay, Palette, Play, Plus, StickyNote, Trash2 } from "lucide-react";
-import type { RibbonTabSpec } from "@/components/editor-chrome/ribbon-model";
+import type { GoogleOnlyRows, RibbonTabSpec } from "@/components/editor-chrome/ribbon-model";
+
+/** Menu rows the Microsoft look deliberately does not place (id -> reason). Empty: every row is placed. */
+export const DECK_GOOGLE_ONLY: GoogleOnlyRows = {};
 
 export const DECK_RIBBON: RibbonTabSpec[] = [
   {
@@ -29,7 +32,6 @@ export const DECK_RIBBON: RibbonTabSpec[] = [
         label: "Arrange",
         controls: [{ ref: "slide.move", size: "large", label: "Move", icon: ArrowUpDown }],
       },
-      { id: "more", label: "More", controls: [{ ref: "menu:edit", label: "Edit" }, { ref: "menu:slide", label: "Slide" }] },
     ],
   },
   {
@@ -54,7 +56,6 @@ export const DECK_RIBBON: RibbonTabSpec[] = [
           { ref: "tb.image", label: "Image" },
         ],
       },
-      { id: "more", label: "More", controls: [{ ref: "menu:insert", label: "Insert" }] },
     ],
   },
   {
@@ -98,7 +99,6 @@ export const DECK_RIBBON: RibbonTabSpec[] = [
           { ref: "tb.notes", label: "Speaker notes" },
         ],
       },
-      { id: "more", label: "More", controls: [{ ref: "menu:view", label: "View" }] },
     ],
   },
   {

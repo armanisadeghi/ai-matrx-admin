@@ -6,12 +6,12 @@
 import { buildSheetMenus, buildSheetToolbar, type SheetChromeHost } from "@/features/workbooks/chrome/sheet-commands";
 import { buildDocMenus, buildDocToolbar, type DocChromeHost } from "@/features/documents/chrome/doc-commands";
 import { buildDeckMenus, buildDeckToolbar, type DeckChromeHost } from "@/features/presentations/deck-commands";
-import { SHEET_RIBBON } from "@/features/workbooks/chrome/sheet-ribbon";
-import { DOC_RIBBON } from "@/features/documents/chrome/doc-ribbon";
-import { DECK_RIBBON } from "@/features/presentations/deck-ribbon";
+import { SHEET_RIBBON, SHEET_GOOGLE_ONLY } from "@/features/workbooks/chrome/sheet-ribbon";
+import { DOC_RIBBON, DOC_GOOGLE_ONLY } from "@/features/documents/chrome/doc-ribbon";
+import { DECK_RIBBON, DECK_GOOGLE_ONLY } from "@/features/presentations/deck-ribbon";
 import { flattenMenus, type EditorMenu } from "../editor-menu-model";
 import type { EditorToolbarItem } from "../EditorToolbar";
-import { resolveRibbon, ribbonCoverage, type RibbonTabSpec } from "../ribbon-model";
+import { resolveRibbon, ribbonCoverage, type GoogleOnlyRows, type RibbonTabSpec } from "../ribbon-model";
 
 /** A host that answers anything (an editor API we never call here): every read is callable. */
 function anything(): never {
@@ -75,27 +75,58 @@ function deckHost(): DeckChromeHost {
   } as DeckChromeHost;
 }
 
-const editors: Array<[string, RibbonTabSpec[], () => { menus: EditorMenu[]; toolbar: EditorToolbarItem[] }]> = [
-  ["workbook", SHEET_RIBBON, () => {
+const editors: Array<[string, RibbonTabSpec[], GoogleOnlyRows, () => { menus: EditorMenu[]; toolbar: EditorToolbarItem[] }]> = [
+  ["workbook", SHEET_RIBBON, SHEET_GOOGLE_ONLY, () => {
     const h = sheetHost();
     return { menus: buildSheetMenus(h), toolbar: buildSheetToolbar(h) };
   }],
-  ["document", DOC_RIBBON, () => {
+  ["document", DOC_RIBBON, DOC_GOOGLE_ONLY, () => {
     const h = docHost();
     return { menus: buildDocMenus(h), toolbar: buildDocToolbar(h) };
   }],
-  ["presentation", DECK_RIBBON, () => {
+  ["presentation", DECK_RIBBON, DECK_GOOGLE_ONLY, () => {
     const h = deckHost();
     const menus = buildDeckMenus(h);
     return { menus, toolbar: buildDeckToolbar(h, menus) };
   }],
 ];
 
-describe.each(editors)("%s ribbon", (_name, ribbon, build) => {
+describe.each(editors)("%s ribbon", (_name, ribbon, googleOnly, build) => {
   it("reaches every menu row and every toolbar tool, and names nothing the model lacks", () => {
     const { menus, toolbar } = build();
     expect(flattenMenus(menus).length).toBeGreaterThan(5);
-    expect(ribbonCoverage(ribbon, menus, toolbar)).toEqual({ missingActions: [], missingToolbar: [], unknownRefs: [] });
+    expect(ribbonCoverage(ribbon, menus, toolbar, googleOnly)).toEqual({
+      missingActions: [],
+      badGoogleOnly: [],
+      wholeMenuRefs: [],
+      missingToolbar: [],
+      unknownRefs: [],
+    });
+  });
+
+  it("a menu row nobody placed fails — a catch-all group cannot hide it", () => {
+    const { menus, toolbar } = build();
+    const planted: EditorMenu[] = menus.map((m, i) =>
+      i === 0 ? { ...m, items: [...m.items, { kind: "action", id: "planted.unplaced", label: "Planted", run: () => {} }] } : m,
+    );
+    // Even with a whole-menu "More" dropdown of every menu in the layout, the planted row is not covered.
+    const withCatchAll: RibbonTabSpec[] = [
+      ...ribbon,
+      { id: "more", label: "More", groups: [{ id: "all", label: "All", controls: menus.map((m) => `menu:${m.id}`) }] },
+    ];
+    const cov = ribbonCoverage(withCatchAll, planted, toolbar, googleOnly);
+    expect(cov.missingActions).toContain("planted.unplaced");
+    expect(cov.wholeMenuRefs.length).toBeGreaterThan(0);
+  });
+
+  it("a Google-only entry needs a reason and a real, unplaced row", () => {
+    const { menus, toolbar } = build();
+    const rows = flattenMenus(menus);
+    const placed = ribbonCoverage(ribbon, menus, toolbar, {});
+    expect(placed.missingActions).toEqual([]);
+    const anyRow = rows[0]!.id;
+    expect(ribbonCoverage(ribbon, menus, toolbar, { [anyRow]: "" }).badGoogleOnly).toEqual([anyRow]);
+    expect(ribbonCoverage(ribbon, menus, toolbar, { "no.such.row": "x" }).badGoogleOnly).toEqual(["no.such.row"]);
   });
 
   it("starts on Home and every tab has a group", () => {
@@ -122,7 +153,7 @@ it("a renamed command is caught (the guard can fail)", () => {
   const h = deckHost();
   const menus = buildDeckMenus(h);
   const broken: RibbonTabSpec[] = [{ id: "home", label: "Home", groups: [{ id: "g", label: "G", controls: ["slide.newer"] }] }];
-  const cov = ribbonCoverage(broken, menus, buildDeckToolbar(h, menus));
+  const cov = ribbonCoverage(broken, menus, buildDeckToolbar(h, menus), {});
   expect(cov.unknownRefs).toEqual(["slide.newer"]);
   expect(cov.missingActions.length).toBeGreaterThan(0);
 });

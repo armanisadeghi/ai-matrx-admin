@@ -52,6 +52,9 @@ export type RibbonGroupSpec = {
 
 export type RibbonTabSpec = { id: string; label: string; groups: RibbonGroupSpec[] };
 
+/** Menu rows (or whole submenus) the Microsoft ribbon deliberately does not place, with the reason. */
+export type GoogleOnlyRows = Record<string, string>;
+
 export type ResolvedRibbonControl =
   | { kind: "toolbar"; key: string; size: RibbonSize; label?: string; icon?: IconType; item: Exclude<EditorToolbarItem, { kind: "separator" }> }
   | { kind: "action"; key: string; size: RibbonSize; label?: string; icon?: IconType; action: EditorMenuAction }
@@ -131,11 +134,17 @@ function actionIdsIn(entries: EditorMenuEntry[], into: Set<string>) {
  * control leads to; `missingToolbar`: toolbar tools absent from the ribbon; `unknownRefs`: layout
  * ids the model does not have (a typo, or a renamed command).
  */
-export function ribbonCoverage(tabs: RibbonTabSpec[], menus: EditorMenu[], toolbar: EditorToolbarItem[]) {
+export function ribbonCoverage(
+  tabs: RibbonTabSpec[],
+  menus: EditorMenu[],
+  toolbar: EditorToolbarItem[],
+  googleOnly: GoogleOnlyRows = {},
+) {
   const index = indexCommands(menus, toolbar);
   const reached = new Set<string>();
   const placedToolbar = new Set<string>();
   const unknownRefs: string[] = [];
+  const wholeMenuRefs: string[] = [];
   for (const tab of tabs)
     for (const g of tab.groups)
       for (const raw of g.controls) {
@@ -143,6 +152,12 @@ export function ribbonCoverage(tabs: RibbonTabSpec[], menus: EditorMenu[], toolb
         const hit = index.get(c.ref);
         if (!hit) {
           unknownRefs.push(c.ref);
+          continue;
+        }
+        // A whole-menu dropdown ("menu:edit") is a catch-all, not a placement: it must not make
+        // a new row look covered. Rows are placed by their own id (or their submenu's).
+        if (c.ref.startsWith("menu:")) {
+          wholeMenuRefs.push(c.ref);
           continue;
         }
         if (hit.kind === "action") reached.add(hit.action.id);
@@ -170,8 +185,24 @@ export function ribbonCoverage(tabs: RibbonTabSpec[], menus: EditorMenu[], toolb
   const viaRow = (t: EditorToolbarItem) =>
     t.kind === "button" &&
     reachedRows.some((a) => a.label.toLowerCase() === t.label.toLowerCase() || sameShortcut(a.shortcut, t.shortcut));
+  // Rows (or whole submenus) the layout declares Google-only, each with a reason.
+  const declared = new Set<string>();
+  const badGoogleOnly: string[] = [];
+  for (const [id, reason] of Object.entries(googleOnly)) {
+    const hit = index.get(id);
+    if (!hit || !reason.trim()) {
+      badGoogleOnly.push(id);
+      continue;
+    }
+    if (hit.kind === "action") declared.add(hit.action.id);
+    else if (hit.kind === "submenu") actionIdsIn(hit.submenu.items, declared);
+    else badGoogleOnly.push(id);
+    if (hit.kind === "action" && reached.has(hit.action.id)) badGoogleOnly.push(id);
+  }
   return {
-    missingActions: [...all].filter((id) => !reached.has(id)),
+    missingActions: [...all].filter((id) => !reached.has(id) && !declared.has(id)),
+    badGoogleOnly,
+    wholeMenuRefs,
     missingToolbar: toolbar
       .filter((t) => t.kind !== "separator" && t.kind !== "node" && !placedToolbar.has(t.id) && !viaRow(t))
       .map((t) => (t as { id: string }).id),
