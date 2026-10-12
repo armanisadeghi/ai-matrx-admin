@@ -28,7 +28,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { FileText, History, Loader2, MessageSquare, Save } from "lucide-react";
+import { Bookmark, FileText, History, Loader2, MessageSquare, Save } from "lucide-react";
+import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { EditorDocumentHeader } from "@/features/shell/components/header/templates/EditorDocumentHeader";
 import { useShellCanvasFullScreen } from "@/features/shell/components/ShellChromeMode";
 import { EditorMenuBar, type MenuBarState } from "@/components/editor-chrome/EditorMenuBar";
@@ -109,7 +110,9 @@ import { registerUniverFacadeDependencies } from "@/lib/univer/registerUniverFac
 import { RemoteCursorsLayer } from "@/lib/collab/RemoteCursorsLayer";
 import { documentHistoryToggleInput } from "@/lib/univer/historyKinds";
 import { DocumentPageReferenceCopyButton } from "@/features/documents/components/DocumentPageReferenceCopyButton";
-import { DocumentGoogleLink } from "@/features/google-workspace/linked/EditorGoogleLinks";
+import { DocumentGoogleLink, useDocumentGoogleLink } from "@/features/google-workspace/linked/EditorGoogleLinks";
+import { copyCompoundReference } from "@/features/matrx-envelope/components/CompoundReferenceCopyButton";
+import { buildDocumentPageReferenceFence } from "@/features/matrx-envelope/compoundReference";
 import type { DocumentBodyPort } from "@/features/documents/document-body-text";
 import {
   selectWorkingCopyStatus,
@@ -174,6 +177,8 @@ type Props = {
     fileExtras?: EditorMenuEntry[];
     /** A row under the toolbar (the Rulebook notice). */
     notice?: ReactNode;
+    /** A control at the toolbar's far end (the copy and export split). */
+    toolbarTrailing?: ReactNode;
   };
 };
 
@@ -607,8 +612,35 @@ export default function DocumentEditor({
     return () => window.removeEventListener("keydown", onKey, true);
   }, []);
   const toolbar = (
-    <EditorToolbar items={toolbarItems} menus={menus} className={bootState === "ready" ? undefined : "invisible"} />
+    <EditorToolbar
+      items={toolbarItems}
+      menus={menus}
+      trailing={chrome?.toolbarTrailing}
+      className={bootState === "ready" ? undefined : "invisible"}
+    />
   );
+  // Extensions (Google keeps its own in the menu bar): the Google link and the page reference are
+  // rows of ONE menu, with a small mark by the title once the Google link exists.
+  const ready = bootState === "ready";
+  const googleLink = useDocumentGoogleLink(apiRef, documentId, documentName, editable, ready && !!chrome);
+  const extensionRows = ready ? (
+    <>
+      {googleLink.items}
+      <DropdownMenuSeparator />
+      <DropdownMenuItem
+        data-editor-command="extensions.page-reference"
+        onSelect={() =>
+          void copyCompoundReference(
+            () => buildDocumentPageReferenceFence({ documentId, pageIndex: 1, documentName }),
+            documentName ? `${documentName} (page 1)` : "Document page 1",
+          )
+        }
+      >
+        <Bookmark className="mr-2 size-4" />
+        Copy page reference
+      </DropdownMenuItem>
+    </>
+  ) : null;
 
   if (chrome) {
     return (
@@ -621,6 +653,7 @@ export default function DocumentEditor({
         titleMarks={
           <>
             {chrome.titleMarks}
+            {ready ? googleLink.mark : null}
             {bootState === "ready" ? (
               <EditorSaveStatus
                 state={saveStatus === "idle" ? "saved" : saveStatus}
@@ -638,6 +671,7 @@ export default function DocumentEditor({
             menus={menus}
             state={chrome.menuBar}
             fileMenu={bootState === "ready" ? chrome.fileMenu : null}
+            extensions={extensionRows}
           />
         }
         actions={
@@ -645,12 +679,6 @@ export default function DocumentEditor({
             {collab && bootState === "ready" && awareness && (
               <span className="hidden md:flex">
                 <RemoteCursorsLayer states={awareness.states} selfUid={awareness.selfUid} />
-              </span>
-            )}
-            {bootState === "ready" && (
-              <span className="hidden items-center gap-1 md:flex">
-                <DocumentGoogleLink apiRef={apiRef} documentId={documentId} documentName={documentName} editable={editable} />
-                <DocumentPageReferenceCopyButton documentId={documentId} documentName={documentName} />
               </span>
             )}
             <ControlButton
@@ -676,6 +704,7 @@ export default function DocumentEditor({
         }
         toolbar={toolbar}
       >
+        {googleLink.dialog}
         <div className="matrx-univer-shell relative flex min-h-0 flex-1 flex-col" data-document-editor="">
           {bootState === "load_error" && (
             <div className="flex items-center gap-2 px-3 py-2 text-sm text-destructive">

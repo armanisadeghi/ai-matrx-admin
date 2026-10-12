@@ -18,6 +18,18 @@ interface CompoundReferenceCopyButtonProps {
   visibleLabel?: string;
 }
 
+/** The same copy, run from a menu row: build the fence, put it on the clipboard, say so. */
+export async function copyCompoundReference(buildFence: () => string | null, toastLabel: string): Promise<void> {
+  const fence = buildFence();
+  if (!fence) {
+    toast.error("Cannot copy reference — selection incomplete");
+    return;
+  }
+  if (await copyReferenceFence(fence)) {
+    toast.success("Reference copied to clipboard", { description: toastLabel, duration: 2500 });
+  }
+}
+
 /**
  * Copy a compound / sub-dimension reference fence (table schema, transcript
  * segment, workbook sheet, …). Same UX as {@link ReferenceCopyButton}.

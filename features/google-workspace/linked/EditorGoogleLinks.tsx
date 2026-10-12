@@ -22,7 +22,7 @@ import { markdownToUniverDoc } from "@/features/documents/markdown-to-univer-doc
 import { showSavedSnapshot } from "@/lib/univer/openEditorContent";
 import { sanitizeUniverDocSnapshot } from "@/features/documents/utils/sanitizeUniverDocSnapshot";
 
-import { GoogleLinkControl, type GoogleLinkAdapter } from "./GoogleLinkControl";
+import { GoogleLinkControl, googleLinkParts, useGoogleLink, type GoogleLinkAdapter } from "./GoogleLinkControl";
 
 // An open editor registers its live adapter here, so the record's File menu (mounted elsewhere in
 // the page) offers the SAME Google actions over the same live content as the toolbar button.
@@ -114,6 +114,19 @@ export function WorkbookGoogleLink({
   return <GoogleLinkControl adapter={adapter} editable={editable} />;
 }
 
+/** The workbook's Google link as marks + Extensions rows (the editor keeps the hook alive). */
+export function useWorkbookGoogleLink(
+  apiRef: React.RefObject<FUniver | null>,
+  workbookId: string,
+  workbookName: string | undefined,
+  editable: boolean,
+  enabled: boolean,
+) {
+  const adapter = workbookGoogleAdapter(apiRef, workbookId, workbookName);
+  useEffect(() => (enabled ? registerLiveAdapter(adapter) : undefined), [workbookId, workbookName, enabled]);
+  return googleLinkParts(useGoogleLink(adapter, editable, enabled));
+}
+
 export function documentGoogleAdapter(
   apiRef: React.RefObject<FUniver | null>,
   documentId: string,
@@ -166,6 +179,19 @@ export function DocumentGoogleLink({
   const adapter = documentGoogleAdapter(apiRef, documentId, documentName);
   useEffect(() => registerLiveAdapter(adapter), [documentId, documentName]);
   return <GoogleLinkControl adapter={adapter} editable={editable} />;
+}
+
+/** The document's Google link as marks + Extensions rows (the editor keeps the hook alive). */
+export function useDocumentGoogleLink(
+  apiRef: React.RefObject<FUniver | null>,
+  documentId: string,
+  documentName: string | undefined,
+  editable: boolean,
+  enabled: boolean,
+) {
+  const adapter = documentGoogleAdapter(apiRef, documentId, documentName);
+  useEffect(() => (enabled ? registerLiveAdapter(adapter) : undefined), [documentId, documentName, enabled]);
+  return googleLinkParts(useGoogleLink(adapter, editable, enabled));
 }
 
 /**

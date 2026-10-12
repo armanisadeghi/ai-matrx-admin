@@ -8,8 +8,8 @@
  * mounted by the host through `renderFileMenu`.
  */
 
-import { forwardRef, useState, type ReactElement, type ReactNode } from "react";
-import { Check } from "lucide-react";
+import { forwardRef, useRef, useState, type ReactElement, type ReactNode } from "react";
+import { Check, MoreVertical } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { formatShortcut, type EditorMenu, type EditorMenuEntry } from "./editor-menu-model";
+import { useFitCount } from "./useFitCount";
 
 /**
  * Google returns the caret to the document after a menu or toolbar choice.
@@ -128,42 +129,94 @@ export function useMenuBarState() {
 
 export type MenuBarState = ReturnType<typeof useMenuBarState>;
 
+type BarEntry =
+  | { id: string; label: string; kind: "menu"; menu: EditorMenu }
+  | { id: string; label: string; kind: "extensions"; content: ReactNode };
+
+/** Rows of one bar entry: a model menu's tree, or the host's Extensions rows. */
+function entryRows(entry: BarEntry): ReactNode {
+  return entry.kind === "menu" ? renderMenuEntries(entry.menu.items, `${entry.id}/`) : entry.content;
+}
+
 export function EditorMenuBar({
   menus,
   state,
   fileMenu,
+  extensions,
   className,
 }: {
   menus: EditorMenu[];
   state: MenuBarState;
   /** The shared File menu, mounted with `state.fileMenuProps()` (first, like Google). */
   fileMenu?: ReactNode;
+  /**
+   * Google's Extensions menu (before Help): the host's own tools — Google link, table
+   * link, references — as dropdown rows. Omit and no Extensions menu is drawn.
+   */
+  extensions?: ReactNode;
   className?: string;
 }) {
   const { openId, change, hoverSwitch } = state;
+  const rowRef = useRef<HTMLElement | null>(null);
+  const entries: BarEntry[] = menus.map((m) => ({ id: m.id, label: m.label, kind: "menu", menu: m }));
+  if (extensions) {
+    const help = entries.findIndex((e) => e.id === "help");
+    entries.splice(help < 0 ? entries.length : help, 0, {
+      id: "extensions",
+      label: "Extensions",
+      kind: "extensions",
+      content: extensions,
+    });
+  }
+  const fit = useFitCount(rowRef, entries.length);
+  const overflow = entries.slice(fit);
   return (
     <nav
+      ref={rowRef}
       aria-label="Menu bar"
       data-editor-menubar=""
-      className={cn("flex min-w-0 items-center gap-0 overflow-x-auto [scrollbar-width:none]", className)}
+      className={cn("flex min-w-0 flex-1 items-center gap-0 overflow-hidden", className)}
     >
       {fileMenu}
-      {menus.map((m) => (
-        <DropdownMenu key={m.id} modal={false} open={openId === m.id} onOpenChange={change(m.id)}>
-          <DropdownMenuTrigger asChild>
-            <MenuBarTrigger data-editor-menu={m.id} onPointerEnter={hoverSwitch(m.id)}>
-              {m.label}
-            </MenuBarTrigger>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="start"
-            className="max-h-[75vh] min-w-[15rem] overflow-y-auto"
-            onCloseAutoFocus={restoreEditorFocus}
-          >
-            {renderMenuEntries(m.items, `${m.id}/`)}
+      {entries.map((m, index) => (
+        <span key={m.id} data-fit-item={m.id} className={cn("flex shrink-0 items-center", index >= fit && "hidden")}>
+          <DropdownMenu modal={false} open={openId === m.id} onOpenChange={change(m.id)}>
+            <DropdownMenuTrigger asChild>
+              <MenuBarTrigger data-editor-menu={m.id} onPointerEnter={hoverSwitch(m.id)}>
+                {m.label}
+              </MenuBarTrigger>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="start"
+              className="max-h-[75vh] min-w-[15rem] overflow-y-auto"
+              onCloseAutoFocus={restoreEditorFocus}
+            >
+              {entryRows(m)}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </span>
+      ))}
+      {overflow.length > 0 ? (
+        <DropdownMenu modal={false}>
+          <span data-fit-more="" className="flex shrink-0 items-center">
+            <DropdownMenuTrigger asChild>
+              <MenuBarTrigger aria-label="More menus" title="More menus" data-editor-menu="more">
+                <MoreVertical className="size-3.5" />
+              </MenuBarTrigger>
+            </DropdownMenuTrigger>
+          </span>
+          <DropdownMenuContent align="start" className="min-w-[10rem]" onCloseAutoFocus={restoreEditorFocus}>
+            {overflow.map((m) => (
+              <DropdownMenuSub key={m.id}>
+                <DropdownMenuSubTrigger data-editor-menu-more={m.id}>{m.label}</DropdownMenuSubTrigger>
+                <DropdownMenuSubContent className="max-h-[70vh] min-w-[13rem] overflow-y-auto">
+                  {entryRows(m)}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
-      ))}
+      ) : null}
     </nav>
   );
 }

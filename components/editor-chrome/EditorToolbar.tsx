@@ -8,12 +8,18 @@
  */
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ChevronDown, Search } from "lucide-react";
+import { createPortal } from "react-dom";
+import { ChevronDown, MoreVertical, Search } from "lucide-react";
 
 import { Button } from "@ai-matrx/design-system/controls";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
@@ -26,6 +32,7 @@ import {
   type EditorShortcut,
 } from "./editor-menu-model";
 import { rememberEditorFocus, renderMenuEntries, restoreEditorFocus } from "./EditorMenuBar";
+import { useFitCount } from "./useFitCount";
 
 type IconType = React.ComponentType<{ className?: string }>;
 
@@ -61,7 +68,22 @@ export function MenusSearch({ menus, className }: { menus: EditorMenu[]; classNa
   const [open, setOpen] = useState(false);
   const [cursor, setCursor] = useState(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const [anchor, setAnchor] = useState<DOMRect | null>(null);
   const results = searchActions(flattenMenus(menus), query);
+  const showing = open && query.trim().length > 0;
+
+  // The list is a portal (the toolbar clips its own overflow): follow the box while it is open.
+  useEffect(() => {
+    if (!showing) return;
+    const place = () => setAnchor(inputRef.current?.getBoundingClientRect() ?? null);
+    place();
+    window.addEventListener("resize", place);
+    window.addEventListener("scroll", place, true);
+    return () => {
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
+    };
+  }, [showing]);
 
   // Google: Alt+/ jumps to the Menus search.
   useEffect(() => {
@@ -115,77 +137,137 @@ export function MenusSearch({ menus, className }: { menus: EditorMenu[]; classNa
         }}
         placeholder="Menus"
         aria-label="Search the menus"
-        className="h-7 w-[6.5rem] rounded-full bg-muted/70 pl-7 pr-2 text-[13px] outline-none placeholder:text-muted-foreground focus:w-[13rem] focus:bg-background focus:ring-1 focus:ring-ring md:w-[7.5rem]"
+        className="h-7 w-[7.5rem] rounded-full bg-muted/70 pl-7 pr-2 text-[13px] outline-none placeholder:text-muted-foreground focus:bg-background focus:ring-1 focus:ring-ring"
       />
-      {open && query.trim() ? (
-        <div
-          role="listbox"
-          className="absolute left-0 top-8 z-50 max-h-[60vh] w-[20rem] overflow-y-auto rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md"
-        >
-          {results.length === 0 ? (
-            <div className="px-2 py-1.5 text-xs text-muted-foreground">No menu item matches</div>
-          ) : (
-            results.map((a, i) => (
-              <button
-                key={`${a.path.join("/")}/${a.id}`}
-                type="button"
-                role="option"
-                aria-selected={i === cursor}
-                data-editor-command={a.id}
-                onMouseDown={(e) => e.preventDefault()}
-                onMouseEnter={() => setCursor(i)}
-                onClick={() => runAt(i)}
-                className={cn(
-                  "flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-[13px]",
-                  i === cursor && "bg-accent",
-                )}
-              >
-                <span className="min-w-0 flex-1 truncate">{a.label}</span>
-                <span className="shrink-0 truncate text-[11px] text-muted-foreground">{a.path.join(" › ")}</span>
-                {a.shortcut ? (
-                  <span className="shrink-0 text-[11px] text-muted-foreground">{formatShortcut(a.shortcut)}</span>
-                ) : null}
-              </button>
-            ))
-          )}
-        </div>
-      ) : null}
+      {open && query.trim() && anchor
+        ? createPortal(
+            <div
+              role="listbox"
+              aria-label="Menu search results"
+              data-editor-menus-results=""
+              style={{ position: "fixed", left: anchor.left, top: anchor.bottom + 4 }}
+              className="z-[200] max-h-[60vh] w-[min(22rem,calc(100vw-1rem))] overflow-y-auto rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md"
+            >
+              {results.length === 0 ? (
+                <div className="px-2 py-1.5 text-xs text-muted-foreground">No menu item matches</div>
+              ) : (
+                results.map((a, i) => (
+                  <button
+                    key={`${a.path.join("/")}/${a.id}`}
+                    type="button"
+                    role="option"
+                    aria-selected={i === cursor}
+                    data-editor-command={a.id}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onMouseEnter={() => setCursor(i)}
+                    onClick={() => runAt(i)}
+                    className={cn(
+                      "flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-[13px]",
+                      i === cursor && "bg-accent",
+                    )}
+                  >
+                    <span className="min-w-0 flex-1 truncate">{a.label}</span>
+                    <span className="shrink-0 truncate text-[11px] text-muted-foreground">{a.path.join(" › ")}</span>
+                    {a.shortcut ? (
+                      <span className="shrink-0 text-[11px] text-muted-foreground">{formatShortcut(a.shortcut)}</span>
+                    ) : null}
+                  </button>
+                ))
+              )}
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
+}
+
+/** The items past the fit, as Google's "⋮ more" menu rows. */
+function renderOverflowItems(items: EditorToolbarItem[]): ReactNode {
+  return items.map((it, i) => {
+    if (it.kind === "separator") return <DropdownMenuSeparator key={`${it.id}-${i}`} />;
+    if (it.kind === "node") return null;
+    const Icon = it.icon;
+    if (it.kind === "button") {
+      return (
+        <DropdownMenuItem
+          key={it.id}
+          data-editor-command={`more:${it.id}`}
+          disabled={it.disabled}
+          onSelect={() => void Promise.resolve(it.run()).catch(() => {})}
+        >
+          {Icon ? <Icon className="mr-2 size-4" /> : <span className="mr-2 size-4" />}
+          {it.label}
+          {it.shortcut ? <span className="ml-auto pl-4 text-xs text-muted-foreground">{formatShortcut(it.shortcut)}</span> : null}
+        </DropdownMenuItem>
+      );
+    }
+    return (
+      <DropdownMenuSub key={it.id}>
+        <DropdownMenuSubTrigger data-editor-command={`more:${it.id}`} disabled={it.disabled}>
+          {Icon ? <Icon className="mr-2 size-4" /> : <span className="mr-2 size-4" />}
+          {it.label}
+        </DropdownMenuSubTrigger>
+        <DropdownMenuSubContent className="max-h-[70vh] min-w-[12rem] overflow-y-auto">
+          {renderMenuEntries(it.items, `${it.id}/`)}
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>
+    );
+  });
 }
 
 export function EditorToolbar({
   items,
   menus,
+  trailing,
   className,
 }: {
   items: EditorToolbarItem[];
   /** The menu tree the Menus search reads. */
   menus: EditorMenu[];
+  /** A fixed control at the row's far end (never folded into "more"). */
+  trailing?: ReactNode;
   className?: string;
 }) {
+  const rowRef = useRef<HTMLDivElement | null>(null);
+  const fit = useFitCount(rowRef, items.length);
+  // Never end the visible run on a divider.
+  let shown = fit;
+  while (shown > 0 && items[shown - 1]?.kind === "separator") shown -= 1;
+  const overflow = items.slice(shown);
+  const hasOverflow = overflow.some((it) => it.kind !== "separator");
+
   return (
     <div
+      ref={rowRef}
       role="toolbar"
       aria-label="Editing tools"
       data-editor-toolbar=""
       onPointerDownCapture={rememberEditorFocus}
       className={cn(
-        "matrx-touch-targets mx-2 mb-1 flex h-10 shrink-0 items-center gap-0.5 overflow-x-auto rounded-full bg-muted/50 px-1.5 [scrollbar-width:none]",
+        "matrx-touch-targets mx-2 mb-1 flex h-10 shrink-0 items-center gap-0.5 overflow-hidden rounded-full bg-muted/50 px-1.5",
         className,
       )}
     >
       <MenusSearch menus={menus} />
-      {items.map((it) => {
-        if (it.kind === "separator")
-          return <span key={it.id} aria-hidden className="mx-1 h-5 w-px shrink-0 bg-border" />;
-        if (it.kind === "node") return <span key={it.id} className="flex shrink-0 items-center">{it.node}</span>;
+      {items.map((it, index) => {
+        const hidden = index >= shown;
+        const wrap = (child: ReactNode) => (
+          <span
+            key={it.id}
+            data-fit-item={it.id}
+            className={cn("flex shrink-0 items-center", hidden && "hidden")}
+          >
+            {child}
+          </span>
+        );
+        if (it.kind === "separator") return wrap(<span aria-hidden className="mx-1 h-5 w-px shrink-0 bg-border" />);
+        if (it.kind === "node") return wrap(it.node);
         if (it.kind === "button") {
           const Icon = it.icon;
           const title = it.shortcut ? `${it.label} (${formatShortcut(it.shortcut)})` : it.label;
-          return (
+          return wrap(
             <Button
-              key={it.id}
               variant="quiet"
               icon={<Icon />}
               aria-label={it.label}
@@ -196,12 +278,12 @@ export function EditorToolbar({
               className="shrink-0 aria-pressed:bg-accent"
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => void Promise.resolve(it.run()).catch(() => {})}
-            />
+            />,
           );
         }
         const Icon = it.icon;
-        return (
-          <DropdownMenu key={it.id} modal={false}>
+        return wrap(
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               {it.text !== undefined ? (
                 // ui-exception: a value-showing toolbar trigger (zoom %, font name) — Google's text dropdowns.
@@ -238,9 +320,33 @@ export function EditorToolbar({
             >
               {renderMenuEntries(it.items, `${it.id}/`)}
             </DropdownMenuContent>
-          </DropdownMenu>
+          </DropdownMenu>,
         );
       })}
+      {hasOverflow ? (
+        <DropdownMenu modal={false}>
+          <span data-fit-more="" className="flex shrink-0 items-center">
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="quiet"
+                icon={<MoreVertical />}
+                aria-label="More"
+                title="More"
+                data-editor-command="tb.more"
+                className="shrink-0"
+              />
+            </DropdownMenuTrigger>
+          </span>
+          <DropdownMenuContent
+            align="end"
+            className="max-h-[70vh] min-w-[13rem] overflow-y-auto"
+            onCloseAutoFocus={restoreEditorFocus}
+          >
+            {renderOverflowItems(overflow)}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : null}
+      {trailing ? <span className="ml-auto flex shrink-0 items-center pl-1">{trailing}</span> : null}
     </div>
   );
 }

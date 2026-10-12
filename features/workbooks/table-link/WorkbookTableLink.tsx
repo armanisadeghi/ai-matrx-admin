@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * The workbook toolbar's table link: when the active sheet is linked, a chip naming the table with
- * Update table / Refresh from table / Open table / Unlink and when it last synced; otherwise
- * "Make this sheet a table" — the ONE "Save to a table" overlay (the existing importer, type
+ * The workbook's table link, as an Extensions-menu section plus a small mark by the title: when the
+ * active sheet is linked, rows for Update table / Refresh from table / Open table / Unlink and when it
+ * last synced; otherwise "Make table" — the ONE "Save to a table" overlay (the existing importer, type
  * inference and reconcile path), after which the sheet is linked to what it made.
  * `?tableSync=update|refresh` (the table page's doors) opens the matching preview on load.
  */
@@ -21,6 +21,9 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/lib/toast";
@@ -90,17 +93,20 @@ async function linkSheetToNewTable(
   return { link: { ...link, last_synced_at: now, last_sync_direction: "to_table" }, unmatched };
 }
 
-export function WorkbookTableLink({
+export function useWorkbookTableLink({
   apiRef,
   workbookId,
   workbookName,
   editable,
+  enabled,
 }: {
   apiRef: React.RefObject<FUniver | null>;
   workbookId: string;
   /** Offered as the new table's name (a default "Sheet1" says nothing). */
   workbookName?: string;
   editable: boolean;
+  /** The editor is booted (the live workbook can be read). */
+  enabled: boolean;
 }) {
   const searchParams = useSearchParams();
   const openSaveToTable = useOpenSaveToTable();
@@ -131,11 +137,11 @@ export function WorkbookTableLink({
   // Follow the active sheet tab (the link is per sheet).
   useEffect(() => {
     const api = apiRef.current;
-    if (!api) return;
+    if (!enabled || !api) return;
     setSheetId(activeSheetId(api));
     const sub = api.addEvent(api.Event.ActiveSheetChanged, () => setSheetId(activeSheetId(api)));
     return () => sub.dispose();
-  }, [apiRef]);
+  }, [apiRef, enabled]);
 
   // A linked workbook opened on a sheet that is not the linked one goes to the linked sheet.
   const link = links?.find((l) => l.sheet_id === sheetId) ?? null;
@@ -275,71 +281,94 @@ export function WorkbookTableLink({
     toast.success("Unlinked; the table and the sheet no longer sync");
   };
 
-  if (links === null) return null;
+  const none = { ready: false, mark: null, items: null, dialog: null } as const;
+  if (!enabled || links === null) return none;
 
   if (!link) {
-    if (!editable) return null;
-    return (
-      <Button
-        variant="quiet"
-        icon={linking ? <Loader2 className="animate-spin" aria-hidden /> : <Table2 aria-hidden />}
-        onClick={makeTable}
-        disabled={linking || !openSaveToTable}
-        title="Make this sheet a custom table, linked for updates"
-        data-workbook-make-table=""
-      >
-        <span className="hidden md:inline">Make table</span>
-      </Button>
-    );
+    if (!editable) return none;
+    return {
+      ready: true,
+      mark: null,
+      items: (
+        <DropdownMenuItem
+          disabled={linking || !openSaveToTable}
+          onSelect={makeTable}
+          data-workbook-make-table=""
+        >
+          {linking ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Table2 className="size-4" aria-hidden />}
+          Make table
+        </DropdownMenuItem>
+      ),
+      dialog: null,
+    };
   }
 
   const synced = link.last_synced_at ? `Synced ${formatDistanceToNow(new Date(link.last_synced_at), { addSuffix: true })}` : "Not synced yet";
-  return (
+  const rows = (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="quiet" icon={<Table2 aria-hidden />} title={`Linked to ${tableName ?? "a table"} · ${synced}`} data-workbook-table-link="">
-            <span className="hidden max-w-32 truncate md:inline">{tableName ?? "Linked table"}</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">{synced}</DropdownMenuLabel>
-          {editable && (
-            <>
-              <DropdownMenuItem onSelect={() => setDialog("to_table")} data-table-link-update="">
-                <Upload className="size-4" aria-hidden /> Update table from sheet
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setDialog("to_sheet")} data-table-link-refresh="">
-                <RefreshCw className="size-4" aria-hidden /> Refresh from table
-              </DropdownMenuItem>
-            </>
-          )}
-          <DropdownMenuItem asChild>
-            <a href={`/data/${link.table_id}`} target="_blank" rel="noreferrer">
-              <ExternalLink className="size-4" aria-hidden /> Open table
-            </a>
+      <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">{synced}</DropdownMenuLabel>
+      {editable && (
+        <>
+          <DropdownMenuItem onSelect={() => setDialog("to_table")} data-table-link-update="">
+            <Upload className="size-4" aria-hidden /> Update table from sheet
           </DropdownMenuItem>
-          {editable && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => void unlink()}>
-                <Link2Off className="size-4" aria-hidden /> Unlink
-              </DropdownMenuItem>
-            </>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
-      {dialog && (
-        <TableSyncDialog
-          open
-          onOpenChange={(o) => !o && setDialog(null)}
-          direction={dialog}
-          apiRef={apiRef}
-          workbookId={workbookId}
-          link={link}
-          onSynced={onSynced}
-        />
+          <DropdownMenuItem onSelect={() => setDialog("to_sheet")} data-table-link-refresh="">
+            <RefreshCw className="size-4" aria-hidden /> Refresh from table
+          </DropdownMenuItem>
+        </>
+      )}
+      <DropdownMenuItem asChild>
+        <a href={`/data/${link.table_id}`} target="_blank" rel="noreferrer">
+          <ExternalLink className="size-4" aria-hidden /> Open table
+        </a>
+      </DropdownMenuItem>
+      {editable && (
+        <>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={() => void unlink()}>
+            <Link2Off className="size-4" aria-hidden /> Unlink
+          </DropdownMenuItem>
+        </>
       )}
     </>
   );
+  return {
+    ready: true,
+    // Google's cloud-icon spot: a small mark by the title, only while this sheet is linked.
+    mark: (
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="quiet"
+            icon={<Table2 aria-hidden />}
+            aria-label={`Linked to ${tableName ?? "a table"}`}
+            title={`Linked to ${tableName ?? "a table"} · ${synced}`}
+            data-workbook-table-link=""
+          />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-56">
+          {rows}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    ),
+    items: (
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger data-workbook-table-link-menu="">
+          <Table2 className="mr-2 size-4" aria-hidden /> {tableName ?? "Linked table"}
+        </DropdownMenuSubTrigger>
+        <DropdownMenuSubContent className="w-56">{rows}</DropdownMenuSubContent>
+      </DropdownMenuSub>
+    ),
+    dialog: dialog ? (
+      <TableSyncDialog
+        open
+        onOpenChange={(o) => !o && setDialog(null)}
+        direction={dialog}
+        apiRef={apiRef}
+        workbookId={workbookId}
+        link={link}
+        onSynced={onSynced}
+      />
+    ) : null,
+  };
 }

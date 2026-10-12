@@ -28,6 +28,9 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { errorSentence, toast } from "@/lib/toast";
@@ -516,4 +519,46 @@ export function GoogleLinkControl({ adapter, editable }: { adapter: GoogleLinkAd
       {g.dialog}
     </>
   );
+}
+
+/**
+ * The same control in Google's editor layout: a small mark by the title once the file is linked
+ * (Google's cloud-icon spot) and the Google rows as a section of the Extensions menu. The hook
+ * (`useGoogleLink`) stays in the editor, so the link state and the conflict dialog outlive the menu.
+ */
+export function googleLinkParts(g: GoogleLink): { mark: ReactNode; items: ReactNode; dialog: ReactNode } {
+  const { Mark, link, busy, appName } = g;
+  return {
+    mark:
+      g.ready && (link || busy) ? (
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="quiet"
+              aria-label={`Linked to ${appName}`}
+              title={link ? `Linked to ${appName} · ${link.name}` : appName}
+              disabled={busy !== null}
+              data-google-link-mark=""
+            >
+              {busy ? <Loader2 className="size-3 animate-spin" /> : <Mark className="size-3.5" />}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-60">
+            <GoogleLinkMenuItems g={g} />
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : null,
+    items: (
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger data-google-link-menu="">
+          <Mark className="mr-2 size-4" />
+          {appName}
+        </DropdownMenuSubTrigger>
+        <DropdownMenuSubContent className="w-60">
+          <GoogleLinkMenuItems g={g} />
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>
+    ),
+    dialog: g.dialog,
+  };
 }

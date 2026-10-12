@@ -20,7 +20,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FilePlus2, FolderOpen, History, Loader2, MessageSquare, Printer, Sheet } from "lucide-react";
+import { Bookmark, FilePlus2, FolderOpen, History, Loader2, MessageSquare, Printer, Sheet } from "lucide-react";
+import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { EditorDocumentHeader } from "@/features/shell/components/header/templates/EditorDocumentHeader";
 import { useShellCanvasFullScreen } from "@/features/shell/components/ShellChromeMode";
@@ -101,15 +102,15 @@ import { isWorkbookSnapshotMutation } from "@/lib/univer/isSnapshotMutation";
 import { RemoteCursorsLayer } from "@/lib/collab/RemoteCursorsLayer";
 import { WorkbookCursorOverlay } from "@/features/workbooks/components/WorkbookCursorOverlay";
 import { getLatestSnapshot, saveSnapshot } from "@/features/workbooks/workbook-service";
-import { WorkbookGoogleLink, useLiveGoogleAdapter } from "@/features/google-workspace/linked/EditorGoogleLinks";
+import { useWorkbookGoogleLink, useLiveGoogleAdapter } from "@/features/google-workspace/linked/EditorGoogleLinks";
 import { registerWorkbookScopeSource } from "@/features/workbooks/workbook-scope-source";
 import { useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { isServiceFailure } from "@/features/data-tables/types";
 import { downloadUniverAsXlsx } from "@/features/workbooks/univer-to-xlsx";
 import { resolveExportImage } from "@/lib/univer/matrxImagePorts";
 import { workbookHistoryToggleInput } from "@/lib/univer/historyKinds";
-import { WorkbookSheetReferenceCopyButton } from "@/features/workbooks/components/WorkbookSheetReferenceCopyButton";
-import { WorkbookTableLink } from "@/features/workbooks/table-link/WorkbookTableLink";
+import { copyActiveSheetReference } from "@/features/workbooks/components/WorkbookSheetReferenceCopyButton";
+import { useWorkbookTableLink } from "@/features/workbooks/table-link/WorkbookTableLink";
 import { swapContentGuarded, registerOpenEditorContent, type SavedEditorSnapshot } from "@/lib/univer/openEditorContent";
 
 import { getClaimsUser } from "@ai-matrx/auth";
@@ -1005,6 +1006,26 @@ export default function WorkbookEditor({
 
   const saveState = saveStatus === "idle" ? "saved" : saveStatus;
 
+  // Extensions (Google keeps its own in the menu bar): the Google link, the table link and the
+  // sheet reference are rows of ONE menu, with small marks by the title once a link exists.
+  const ready = bootState === "ready";
+  const googleLink = useWorkbookGoogleLink(apiRef, workbookId, workbookName, editable, ready);
+  const tableLink = useWorkbookTableLink({ apiRef, workbookId, workbookName, editable, enabled: ready });
+  const extensionRows = ready ? (
+    <>
+      {googleLink.items}
+      {tableLink.items}
+      <DropdownMenuSeparator />
+      <DropdownMenuItem
+        data-editor-command="extensions.sheet-reference"
+        onSelect={() => void copyActiveSheetReference(apiRef, workbookId, workbookName)}
+      >
+        <Bookmark className="mr-2 size-4" />
+        Copy sheet reference
+      </DropdownMenuItem>
+    </>
+  ) : null;
+
   return (
     // Univer owns its own light/dark theming via the Facade API
     // (useUniverDarkModeSync); we do NOT pin a colorScheme here — that fought
@@ -1018,6 +1039,8 @@ export default function WorkbookEditor({
       titleMarks={
         <>
           {chrome.titleMarks}
+          {ready ? googleLink.mark : null}
+          {ready ? tableLink.mark : null}
           {bootState === "ready" ? (
             <EditorSaveStatus state={saveState} {...(editable ? { onSaveNow: handleSaveNow } : {})} />
           ) : (
@@ -1032,6 +1055,7 @@ export default function WorkbookEditor({
           menus={menus}
           state={menuBar}
           fileMenu={bootState === "ready" ? fileMenu : null}
+          extensions={extensionRows}
         />
       }
       actions={
@@ -1039,14 +1063,6 @@ export default function WorkbookEditor({
           {collab && bootState === "ready" && (
             <span className="hidden md:flex">
               <RemoteCursorsLayer states={remoteAwareness} selfUid={collabSelfUid} />
-            </span>
-          )}
-          {/* Extensions, where Google keeps its own (beside Share): table link, Google link, reference. */}
-          {bootState === "ready" && (
-            <span className="hidden items-center gap-1 md:flex">
-              <WorkbookTableLink apiRef={apiRef} workbookId={workbookId} workbookName={workbookName} editable={editable} />
-              <WorkbookGoogleLink apiRef={apiRef} workbookId={workbookId} workbookName={workbookName} editable={editable} />
-              <WorkbookSheetReferenceCopyButton apiRef={apiRef} workbookId={workbookId} workbookName={workbookName} />
             </span>
           )}
           <Button
@@ -1074,6 +1090,8 @@ export default function WorkbookEditor({
         <EditorToolbar items={toolbarItems} menus={menus} className={bootState === "ready" ? undefined : "invisible"} />
       }
     >
+      {googleLink.dialog}
+      {tableLink.dialog}
       <div
         className="matrx-univer-shell relative flex min-h-0 flex-1 flex-col bg-card"
         data-formula-bar={formulaBarHidden ? "hidden" : "shown"}

@@ -110,7 +110,11 @@ jest.mock("@univerjs/find-replace/locale/en-US", () => ({}));
 jest.mock("@/lib/univer/routeUniverNotificationsToApp", () => ({ routeUniverNotificationsToApp: () => ({ applied: true }) }));
 jest.mock("@/lib/univer/univerImageStore", () => ({ registerMatrxImageStore: () => undefined }));
 jest.mock("@/lib/univer/matrxImagePorts", () => ({ matrxImagePorts: {} }));
-jest.mock("@/features/google-workspace/linked/EditorGoogleLinks", () => ({ DocumentGoogleLink: () => null, WorkbookGoogleLink: () => null }));
+jest.mock("@/features/google-workspace/linked/EditorGoogleLinks", () => ({
+  DocumentGoogleLink: () => null,
+  WorkbookGoogleLink: () => null,
+  useDocumentGoogleLink: () => ({ mark: null, items: null, dialog: null }),
+}));
 jest.mock("@/lib/univer/identifyUniverUser", () => ({ identifyUniverUser: async () => undefined }));
 jest.mock("@univerjs/preset-sheets-core", () => ({ DragManagerService: class {}, HoverManagerService: class {} }));
 jest.mock("@ai-matrx/realtime/react", () => ({ useRealtimeManager: () => null, useChannel: () => undefined }));

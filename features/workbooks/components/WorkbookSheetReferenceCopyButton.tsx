@@ -1,6 +1,6 @@
 "use client";
 
-import { CompoundReferenceCopyButton } from "@/features/matrx-envelope/components/CompoundReferenceCopyButton";
+import { CompoundReferenceCopyButton, copyCompoundReference } from "@/features/matrx-envelope/components/CompoundReferenceCopyButton";
 import { buildWorkbookSheetReferenceFence } from "@/features/matrx-envelope/compoundReference";
 import type { FUniver } from "@univerjs/presets";
 
@@ -59,5 +59,21 @@ export function WorkbookSheetReferenceCopyButton({
         });
       }}
     />
+  );
+}
+
+/** The same reference, run from the Extensions menu. */
+export function copyActiveSheetReference(
+  apiRef: React.RefObject<FUniver | null>,
+  workbookId: string,
+  workbookName?: string,
+): Promise<void> {
+  return copyCompoundReference(
+    () => {
+      const sheet = readActiveSheet(apiRef.current);
+      if (!sheet) return null;
+      return buildWorkbookSheetReferenceFence({ workbookId, sheetId: sheet.sheetId, sheetName: sheet.sheetName, workbookName });
+    },
+    workbookName ? `${workbookName} (active sheet)` : "Active sheet",
   );
 }

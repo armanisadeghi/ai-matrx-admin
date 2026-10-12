@@ -561,17 +561,17 @@ export function DocumentRecord({
                 }}
               />
             ),
+            toolbarTrailing: (
+              <RichCopySplit
+                label={doc.document_name}
+                size="sm"
+                human={documentMarkdown}
+                exportTitle={doc.document_name}
+                viewKey={`udt-document-${doc.id}`}
+              />
+            ),
             actions: (
               <>
-                <span className="hidden md:inline-flex">
-                  <RichCopySplit
-                    label={doc.document_name}
-                    size="sm"
-                    human={documentMarkdown}
-                    exportTitle={doc.document_name}
-                    viewKey={`udt-document-${doc.id}`}
-                  />
-                </span>
                 <ShareButton
                   resourceType="udt_document"
                   resourceId={doc.id}
