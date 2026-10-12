@@ -42,20 +42,22 @@ export default async function CloudFilesAllLayout({
 
   let initialFolderId: string | null = null;
   if (folderPath) {
-    // Scoped to the viewer's OWN folder. `folder_path` is not globally unique
-    // — `files.folders` has a UNIQUE index on (created_by, folder_path), and 15
-    // separate users own a folder called "system-files". Without `created_by`
-    // this lookup (a) matched every RLS-visible namesake, so `maybeSingle()`
-    // returned PGRST116 and silently dropped the folder id, and (b) could not
-    // use the composite index because its leading column was absent.
+    // Scoped to the viewer's OWN folders. `folder_path` is not globally unique
+    // — `files.folders` is UNIQUE on (created_by, organization_id, folder_path)
+    // (a person's folder tree is per organization, 2026-10-12), so the viewer
+    // can hold one folder at this path in each of their organizations. A read
+    // never narrows to the active organization; the most recently touched one
+    // opens (`maybeSingle()` on several rows is PGRST116 and silently dropped
+    // the folder id).
     const { data } = await filesDb(supabase)
       .from("folders")
       .select("id")
       .eq("created_by", user.id)
       .eq("folder_path", folderPath)
       .is("deleted_at", null)
-      .maybeSingle();
-    initialFolderId = data?.id ?? null;
+      .order("updated_at", { ascending: false })
+      .limit(1);
+    initialFolderId = data?.[0]?.id ?? null;
   }
 
   const sidebarMode = await readSidebarModeCookie();
