@@ -105,6 +105,11 @@ import {
   SocialProfileBlock as SocialProfileBlockImpl,
   SwipeCollectionBlock as SwipeCollectionBlockImpl,
 } from "@/components/mardown-display/blocks/social-kinds/social-kind-blocks";
+// Answer-action kinds: `contact` (Save contact) and `event` (Add to calendar).
+import {
+  ContactBlock as ContactBlockImpl,
+  EventBlock as EventBlockImpl,
+} from "@/components/mardown-display/blocks/answer-kinds/answer-kind-blocks";
 import {
   ProviderRunReceiptBlock as ProviderRunReceiptBlockImpl,
   SeoRankReadingBlock as SeoRankReadingBlockImpl,
@@ -813,6 +818,17 @@ const DOMAIN_BLOCK_COMPONENTS = {
   SwipeCollectionBlock: (props: React.ComponentProps<typeof SwipeCollectionBlockImpl>) => (
     <LazyBlockWrapper>
       <SwipeCollectionBlockImpl {...props} />
+    </LazyBlockWrapper>
+  ),
+  // Answer-action kinds.
+  ContactBlock: (props: React.ComponentProps<typeof ContactBlockImpl>) => (
+    <LazyBlockWrapper>
+      <ContactBlockImpl {...props} />
+    </LazyBlockWrapper>
+  ),
+  EventBlock: (props: React.ComponentProps<typeof EventBlockImpl>) => (
+    <LazyBlockWrapper>
+      <EventBlockImpl {...props} />
     </LazyBlockWrapper>
   ),
   // Rank / SERP-landscape kind family (Rank Kinds Run).

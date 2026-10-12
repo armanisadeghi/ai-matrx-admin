@@ -115,6 +115,7 @@ import { RANK_KINDS_KIND_DEFINITIONS } from "../kinds/rank-kinds";
 import { RAG_KINDS_KIND_DEFINITIONS } from "../kinds/rag-kinds";
 import { TABLE_KINDS_KIND_DEFINITIONS } from "../kinds/table-kinds";
 import { SOCIAL_KINDS_KIND_DEFINITIONS } from "../kinds/social-kinds";
+import { ANSWER_KINDS_KIND_DEFINITIONS } from "../kinds/answer-kinds";
 import { TRUST_ENVELOPE_KIND_DEFINITIONS } from "../kinds/trust-envelope";
 import { COMMERCE_KINDS_KIND_DEFINITIONS } from "../kinds/commerce-kinds";
 import { PRINT_LULU_KIND_DEFINITIONS } from "../kinds/print-kinds";
@@ -232,6 +233,8 @@ export const SYSTEM_KIND_DEFINITIONS: KindDefinition[] = [
   // Social-intelligence family (SI-07c, 2026-10-09): posts, profiles, transcripts,
   // outlier rows, ads, swipe collections. Python-owned: aidream services/social.
   ...SOCIAL_KINDS_KIND_DEFINITIONS,
+  // Answer-action kinds (2026-10-11): `contact` (Save contact) and `event` (Add to calendar).
+  ...ANSWER_KINDS_KIND_DEFINITIONS,
   // RAG retrieval + citation family (RAG Kinds Run, 2026-08-24). `source_ref`
   // is a SYSTEM-WIDE primitive, not a RAG kind — "here is a fact, and here is
   // where it came from" had been built four times in four vocabularies, and

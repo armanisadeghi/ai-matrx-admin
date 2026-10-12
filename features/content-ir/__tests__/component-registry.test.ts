@@ -189,6 +189,9 @@ describe("compiled bootstrap (system-components)", () => {
         outlier_row: "outlier_row",
         ad_creative: "ad_creative",
         swipe_collection: "swipe_collection",
+        // Answer-action kinds
+        contact: "contact",
+        event: "event",
         // RAG retrieval + citation family (RAG Kinds Run). `source_ref` is a
         // SYSTEM-WIDE primitive, not a RAG kind — the platform's cited-source
         // shape, nested by every family that says where something came from.

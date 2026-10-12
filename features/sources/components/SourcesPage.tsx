@@ -330,6 +330,15 @@ export function SourcesPage() {
   /** The last refusal from an Add dialog, shown IN the dialog (a toast can be missed). */
   const [addError, setAddError] = useState<string | null>(null);
   const [saveTarget, setSaveTarget] = useState<SaveTarget | null>(null);
+  // A link from an answer ("Save to sources" on a cited web page) arrives with `?add_url=`: the
+  // Add-a-URL dialog opens prefilled. Nothing is fetched until the person presses Add.
+  const addUrlParam = searchParams?.get("add_url") ?? "";
+  useEffect(() => {
+    if (!/^https?:\/\//i.test(addUrlParam)) return;
+    setUrlInput(addUrlParam);
+    setAddError(null);
+    setAddMode("url");
+  }, [addUrlParam]);
   const [deleteRows, setDeleteRows] = useState<SourceListRow[] | null>(null);
   const [deleting, setDeleting] = useState(false);
   // THE ARCHIVED-ITEMS LAW: `?archived=`, default Active only.

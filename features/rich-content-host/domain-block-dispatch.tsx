@@ -1576,6 +1576,10 @@ const SHAPE_BLOCK_DISPATCH = {
   ad_creative: searchKindEntry(BlockComponents.AdCreativeBlock),
   swipe_collection: searchKindEntry(BlockComponents.SwipeCollectionBlock),
 
+  // Kind-routed answer-action kinds: same uniform bridge.
+  contact: searchKindEntry(BlockComponents.ContactBlock),
+  event: searchKindEntry(BlockComponents.EventBlock),
+
   // Kind-routed RAG retrieval + citation family (RAG Kinds Run): identical
   // uniform `{ value, isComplete }` bridge, so the SAME three-branch entry
   // serves it too. `source_ref` dispatched standalone renders its CARD

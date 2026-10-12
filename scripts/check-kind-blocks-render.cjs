@@ -16,7 +16,7 @@ const ROOT = require("node:path").resolve(__dirname, "..");
 const DEFAULT = [
   "quiz_set", "flashcard_set", "timeline", "task_list", "decision_tree", "presentation_deck",
   "cooking_recipe", "resource_collection", "structured_info", "questionnaire",
-  "troubleshooting_guide", "progress_tracker", "comparison_set", "research_report",
+  "troubleshooting_guide", "progress_tracker", "comparison_set", "research_report", "contact", "event", "citation",
 ];
 const MODES = ["Chat — fenced", "Loading state", "Reloaded from a record", "Direct object"];
 const HOOKS = /more hooks|fewer hooks|order of Hooks/i;

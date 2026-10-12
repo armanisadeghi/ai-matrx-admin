@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 598 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 608 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "31388cdc0861";
+export const KIND_REGISTRY_FINGERPRINT = "4366b9ed113b";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -1499,6 +1499,22 @@ export interface ChannelRef {
 }
 
 /**
+ * A chart view's aggregation.
+ *  *
+ *  * From kind `database_design`.
+ */
+export interface ChartSpec {
+  op: "count" | "sum" | "avg";
+  type: "donut" | "bar" | "hbar" | "line";
+  field: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  group_by: string | null;
+}
+
+/**
  * * From kind `listing_draft`.
  */
 export interface ClaimEvidence_ListingDraft {
@@ -2038,6 +2054,51 @@ export interface DataColumn {
 }
 
 /**
+ * One column of the designed database.
+ *  *
+ *  * Shared by 2 kinds (database_design, notion_move_in_page).
+ */
+export interface DatabaseProperty {
+  key: string;
+  name: string;
+  type: "text" | "number" | "currency" | "percent" | "select" | "multi_select" | "status" | "date" | "checkbox" | "url" | "email" | "phone";
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  options: PropertyOption[];
+}
+
+/**
+ * One row of sample data.
+ *  *
+ *  * Shared by 2 kinds (database_design, notion_move_in_page).
+ */
+export interface DatabaseRow {
+  cells: RowCell[];
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
+ * One saved view of the database.
+ *  *
+ *  * From kind `database_design`.
+ */
+export interface DatabaseView {
+  name: string;
+  chart: ChartSpec | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  layout: "table" | "board" | "chart" | "calendar";
+  group_by: string | null;
+}
+
+/**
  * * Shared by 3 kinds (local_place, opening_hours, serp_placement).
  */
 export interface DayHours {
@@ -2439,6 +2500,38 @@ export interface DocumentMediaPart {
   page_count?: number | null;
   size_bytes?: number | null;
   visibility?: string | null;
+}
+
+/**
+ * The business's strength in one endowment.
+ *  *
+ *  * From kind `company_endowment_portfolio`.
+ */
+export interface EndowmentAssessment {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  verdict: "strong" | "moderate" | "weak";
+  endowment: "data" | "expertise" | "media" | "process" | "people" | "place" | "capital" | "demand" | "code";
+  rationale: string;
+}
+
+/**
+ * The judge's call on one endpoint family.
+ *  *
+ *  * From kind `endpoint_family_verdicts`.
+ */
+export interface EndpointFamilyVerdict {
+  label: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  reason: string;
+  confidence: number;
+  family_key: string;
+  is_machine_endpoint: boolean;
 }
 
 /**
@@ -3403,6 +3496,21 @@ export interface ItemSpecific {
 }
 
 /**
+ * Sampling settings the iteration proposes.
+ *  *
+ *  * From kind `agent_iteration_plan`.
+ */
+export interface IterationSettings {
+  top_p?: number | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  max_tokens?: number | null;
+  temperature?: number | null;
+}
+
+/**
  * * From kind `news_angle_set`.
  */
 export interface JournalistShape {
@@ -3414,7 +3522,7 @@ export interface JournalistShape {
 }
 
 /**
- * * Shared by 73 kinds (ad_creative, agent_assignment_batch_result, agent_react_result, agent_result, …).
+ * * Shared by 74 kinds (ad_creative, agent_assignment_batch_result, agent_iteration_plan, agent_react_result, …).
  */
 export type JsonValue = unknown;
 
@@ -4708,6 +4816,22 @@ export interface Notice {
 }
 
 /**
+ * One database inside a Notion move-in page.
+ *  *
+ *  * From kind `notion_move_in_page`.
+ */
+export interface NotionDatabase {
+  name: string;
+  rows: DatabaseRow[];
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  properties: DatabaseProperty[];
+  title_property: string;
+}
+
+/**
  * One slide / sheet / section of an extracted document (FE-facing).
  *  *
  *  * From kind `office_extraction_result`.
@@ -5199,6 +5323,24 @@ export interface PodcastSpeaker {
 }
 
 /**
+ * One artifact the business could produce to earn links and citations.
+ *  *
+ *  * From kind `company_endowment_portfolio`.
+ */
+export interface PortfolioArtifact {
+  title: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  endowment: "data" | "expertise" | "media" | "process" | "people" | "place" | "capital" | "demand" | "code";
+  description: string;
+  effort_hours: number;
+  reference_class: "doi_citation" | "directory_listing" | "editorial_mention" | "template_share" | "edu_gov_listing" | "marketplace_listing" | "wiki_adoption";
+  target_platforms: string[];
+}
+
+/**
  * * From kind `item_vision_extraction`.
  */
 export interface PositiveFlag {
@@ -5512,6 +5654,50 @@ export interface ProofResultKind {
 }
 
 /**
+ * One choice of a select-style property.
+ *  *
+ *  * Shared by 2 kinds (database_design, notion_move_in_page).
+ */
+export interface PropertyOption {
+  name: string;
+  color: "slate" | "green" | "amber" | "red" | "blue" | "violet" | "teal" | "orange" | "yellow" | "pink" | "brown" | "gray";
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
+ * The proposed replacement agent configuration.
+ *  *
+ *  * From kind `agent_iteration_plan`.
+ */
+export interface ProposedAgentConfig {
+  model: string;
+  tools?: string[];
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  context?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  settings?: IterationSettings | null;
+  variables?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  system_prompt: string;
+}
+
+/**
  * * From kind `page_keyword_map_v1`.
  */
 export interface ProposedPage {
@@ -5580,6 +5766,27 @@ export interface PublishBatchItem {
   error_code?: string | null;
   plan_node_id?: string | null;
   error_message?: string | null;
+}
+
+/**
+ * One publishing ecosystem, shaped for the listing-publisher registry.
+ *  *
+ *  * From kind `company_endowment_portfolio`.
+ */
+export interface PublishingPlatform {
+  name: string;
+  tier: "critical" | "aggregator" | "high_value" | "vertical" | "long_tail";
+  notes: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  domain: string;
+  endowment: "data" | "expertise" | "media" | "process" | "people" | "place" | "capital" | "demand" | "code";
+  categories: string[];
+  signup_url: string | null;
+  suggested_slug: string;
+  api_access_guess: "open" | "approval" | "partnership" | "closed" | "none";
 }
 
 /**
@@ -6258,6 +6465,20 @@ export interface ReviewFinding {
    */
   __kind?: string;
   suggestion?: string | null;
+}
+
+/**
+ * One value in a row.
+ *  *
+ *  * Shared by 2 kinds (database_design, notion_move_in_page).
+ */
+export interface RowCell {
+  value: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  property: string;
 }
 
 /**
@@ -8114,6 +8335,22 @@ export interface TestResult {
 }
 
 /**
+ * A new award, certification, index report or directory the business could found.
+ *  *
+ *  * From kind `company_endowment_portfolio`.
+ */
+export interface Tier3Concept {
+  name: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  archetype: "award" | "certification" | "index_report" | "directory";
+  criteria_axis: string;
+  who_would_link: string;
+}
+
+/**
  * * From kind `flashcard_set`.
  */
 export interface TieredFlashcard_FlashcardSet {
@@ -8892,6 +9129,22 @@ export interface AgentInputQmeReport {
    * Paste the full text of the QME report here. The more complete the text, the more precise the analysis will be.
    */
   qme_report?: string;
+}
+
+/**
+ * What went wrong with an agent, why, and the configuration that should replace it.
+ *  *
+ *  * Kind `agent_iteration_plan` (registry v2).
+ */
+export interface AgentIterationPlan {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_iteration_plan";
+  diagnosis: string;
+  validated?: boolean;
+  root_cause: string;
+  new_agent_config: ProposedAgentConfig;
 }
 
 /**
@@ -10174,6 +10427,24 @@ export interface CombinedPageText {
 }
 
 /**
+ * What a business is strong in, and the ranked portfolio of artifacts and platforms that follows.
+ *  *
+ *  * Kind `company_endowment_portfolio` (registry v2).
+ */
+export interface CompanyEndowmentPortfolio {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "company_endowment_portfolio";
+  artifacts: PortfolioArtifact[];
+  platforms: PublishingPlatform[];
+  endowments: EndowmentAssessment[];
+  business_read: string;
+  tier3_concepts: Tier3Concept[];
+  what_not_to_do: string[];
+}
+
+/**
  * Kind `comparison_set` (registry v8).
  */
 export interface ComparisonSet {
@@ -10326,6 +10597,21 @@ export interface ConditionAssessment {
   overall_grade?: string;
   positive_flags?: unknown[];
   condition_notes?: string;
+}
+
+/**
+ * Kind `contact` (registry v2).
+ */
+export interface Contact {
+  name: string;
+  email?: string;
+  notes?: string;
+  phone?: string;
+  title?: string;
+  __kind: "contact";
+  address?: string;
+  website?: string;
+  organization?: string;
 }
 
 /**
@@ -10774,6 +11060,24 @@ export interface DataTable {
    * How many rows EXIST at the source, when known and different from `row_count`. This is what makes '500 of 40,000' sayable.
    */
   total_row_count?: number | null;
+}
+
+/**
+ * A designed database: its columns, saved views and sample rows.
+ *  *
+ *  * Kind `database_design` (registry v2).
+ */
+export interface DatabaseDesign {
+  name: string;
+  rows: DatabaseRow[];
+  views: DatabaseView[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "database_design";
+  summary: string;
+  properties: DatabaseProperty[];
+  title_property: string;
 }
 
 /**
@@ -11236,6 +11540,19 @@ export interface ElectronicsIntakeAnalysis {
 }
 
 /**
+ * The Endpoint Family Judge's verdicts, one per family it was shown.
+ *  *
+ *  * Kind `endpoint_family_verdicts` (registry v2).
+ */
+export interface EndpointFamilyVerdicts {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "endpoint_family_verdicts";
+  verdicts: EndpointFamilyVerdict[];
+}
+
+/**
  * M7 output: the DELTA after gate-1 human answers — which conclusions
  * changed, which stand, and why. Never a silent full regeneration.
  * ``updated_value_assessment`` is a nested ``value_assessment`` kind, present
@@ -11311,6 +11628,20 @@ export interface EpisodeTitleOptions {
      */
     __kind?: string;
   };
+}
+
+/**
+ * Kind `event` (registry v2).
+ */
+export interface Event {
+  end?: string;
+  url?: string;
+  start: string;
+  title: string;
+  __kind: "event";
+  location?: string;
+  time_zone?: string;
+  description?: string;
 }
 
 /**
@@ -12397,6 +12728,22 @@ export interface HeadlineSet {
    * Each fact a candidate relies on.
    */
   materials_used: string[];
+}
+
+/**
+ * The Hindsight Replay Judge's verdict on one replay against its original.
+ *  *
+ *  * Kind `hindsight_replay_verdict` (registry v2).
+ */
+export interface HindsightReplayVerdict {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "hindsight_replay_verdict";
+  verdict: "better" | "same" | "worse" | "regressed";
+  reasoning: string;
+  quality_delta?: string;
+  regression_risk?: string;
 }
 
 /**
@@ -15127,6 +15474,23 @@ export interface NotableTimestamp {
 }
 
 /**
+ * A move-in page: intro markdown, embedded databases and notes.
+ *  *
+ *  * Kind `notion_move_in_page` (registry v2).
+ */
+export interface NotionMoveInPage {
+  icon: string;
+  notes: string[];
+  title: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "notion_move_in_page";
+  markdown: string;
+  databases: NotionDatabase[];
+}
+
+/**
  * Kind `number` (registry v5).
  */
 export type NumberKind = number;
@@ -16645,6 +17009,22 @@ export interface PodcastEpisode {
 }
 
 /**
+ * The Podcast Episode Metadata Generator's answer: title, description and media prompts.
+ *  *
+ *  * Kind `podcast_episode_metadata` (registry v2).
+ */
+export interface PodcastEpisodeMetadata {
+  title: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "podcast_episode_metadata";
+  description: string;
+  image_descriptions: string[];
+  video_descriptions: string[];
+}
+
+/**
  * Output of ``podcast.video.compose`` — the composed official video's durable URL.
  *  *
  *  * Kind `podcast_video_compose_result` (registry v6).
@@ -17351,6 +17731,23 @@ export interface ProofCheckStatus {
   last_live_verdict?: string | null;
   live_every_seconds?: number;
   consecutive_failures?: number;
+}
+
+/**
+ * The Proof Run Judge's strict pass/fail verdict on one run's output.
+ *  *
+ *  * Kind `proof_run_judgement` (registry v2).
+ */
+export interface ProofRunJudgement {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "proof_run_judgement";
+  verdict: "pass" | "fail";
+  evidence: string[];
+  reasoning: string;
+  confidence: number;
+  failure_modes: string[];
 }
 
 /**
@@ -26597,6 +26994,7 @@ export type GeneratedKindSlug =
   | "agent_factory_tool_choice"
   | "agent_function_spec"
   | "agent_input_qme_report"
+  | "agent_iteration_plan"
   | "agent_mandate_specification"
   | "agent_react_result"
   | "agent_result"
@@ -26642,12 +27040,14 @@ export type GeneratedKindSlug =
   | "cms_starter_kit_result"
   | "code_block"
   | "combined_page_text"
+  | "company_endowment_portfolio"
   | "comparison_set"
   | "competitor_lookup_result"
   | "competitor_opportunity_autopsy_result"
   | "competitor_opportunity_autopsy_v1"
   | "competitor_page_autopsy_v1"
   | "condition_assessment"
+  | "contact"
   | "content_fingerprint"
   | "content_plan_archetype_instantiation"
   | "content_plan_archetype_list"
@@ -26662,6 +27062,7 @@ export type GeneratedKindSlug =
   | "crm_fold_settings"
   | "custom_script_result"
   | "data_table"
+  | "database_design"
   | "datetime_snapshot"
   | "decision_answer"
   | "decision_answers"
@@ -26678,10 +27079,12 @@ export type GeneratedKindSlug =
   | "domain_fold_report"
   | "draft_critique"
   | "electronics_intake_analysis"
+  | "endpoint_family_verdicts"
   | "enrichment_verification"
   | "entity_card"
   | "entity_mention"
   | "episode_title_options"
+  | "event"
   | "evidence_source"
   | "fact_check_report"
   | "faq_item"
@@ -26722,6 +27125,7 @@ export type GeneratedKindSlug =
   | "gsc_site_intake_proposal"
   | "hash_result"
   | "headline_set"
+  | "hindsight_replay_verdict"
   | "http_response"
   | "human_answer"
   | "human_text_answer"
@@ -26810,6 +27214,7 @@ export type GeneratedKindSlug =
   | "node_error"
   | "node_outcome"
   | "notable_timestamp"
+  | "notion_move_in_page"
   | "number"
   | "office_document"
   | "office_extraction_result"
@@ -26865,6 +27270,7 @@ export type GeneratedKindSlug =
   | "platform_record"
   | "podcast_cast_preview_result"
   | "podcast_episode"
+  | "podcast_episode_metadata"
   | "podcast_video_compose_result"
   | "post_transcript"
   | "postal_address"
@@ -26886,6 +27292,7 @@ export type GeneratedKindSlug =
   | "progress_tracker"
   | "proof_attestation"
   | "proof_check_status"
+  | "proof_run_judgement"
   | "provider_run_receipt"
   | "publish_preflight"
   | "q_and_a_set"
@@ -27198,6 +27605,7 @@ export interface KindPayloadBySlug {
   "agent_factory_tool_choice": AgentFactoryToolChoice;
   "agent_function_spec": AgentFunctionSpec;
   "agent_input_qme_report": AgentInputQmeReport;
+  "agent_iteration_plan": AgentIterationPlan;
   "agent_mandate_specification": AgentMandateSpecification;
   "agent_react_result": AgentReactResult;
   "agent_result": AgentResult;
@@ -27243,12 +27651,14 @@ export interface KindPayloadBySlug {
   "cms_starter_kit_result": CmsStarterKitResult;
   "code_block": CodeBlock;
   "combined_page_text": CombinedPageText;
+  "company_endowment_portfolio": CompanyEndowmentPortfolio;
   "comparison_set": ComparisonSet;
   "competitor_lookup_result": CompetitorLookupResult;
   "competitor_opportunity_autopsy_result": CompetitorOpportunityAutopsyResult;
   "competitor_opportunity_autopsy_v1": CompetitorOpportunityAutopsyV1;
   "competitor_page_autopsy_v1": CompetitorPageAutopsyV1;
   "condition_assessment": ConditionAssessment;
+  "contact": Contact;
   "content_fingerprint": ContentFingerprint;
   "content_plan_archetype_instantiation": ContentPlanArchetypeInstantiation;
   "content_plan_archetype_list": ContentPlanArchetypeList;
@@ -27263,6 +27673,7 @@ export interface KindPayloadBySlug {
   "crm_fold_settings": CrmFoldSettings;
   "custom_script_result": CustomScriptResult;
   "data_table": DataTable;
+  "database_design": DatabaseDesign;
   "datetime_snapshot": DatetimeSnapshot;
   "decision_answer": DecisionAnswer;
   "decision_answers": DecisionAnswers;
@@ -27279,10 +27690,12 @@ export interface KindPayloadBySlug {
   "domain_fold_report": DomainFoldReport;
   "draft_critique": DraftCritique;
   "electronics_intake_analysis": ElectronicsIntakeAnalysis;
+  "endpoint_family_verdicts": EndpointFamilyVerdicts;
   "enrichment_verification": EnrichmentVerification;
   "entity_card": EntityCard;
   "entity_mention": EntityMention;
   "episode_title_options": EpisodeTitleOptions;
+  "event": Event;
   "evidence_source": EvidenceSource;
   "fact_check_report": FactCheckReport;
   "faq_item": FaqItem;
@@ -27323,6 +27736,7 @@ export interface KindPayloadBySlug {
   "gsc_site_intake_proposal": GscSiteIntakeProposal;
   "hash_result": HashResult;
   "headline_set": HeadlineSet;
+  "hindsight_replay_verdict": HindsightReplayVerdict;
   "http_response": HttpResponse;
   "human_answer": HumanAnswer;
   "human_text_answer": HumanTextAnswer;
@@ -27411,6 +27825,7 @@ export interface KindPayloadBySlug {
   "node_error": NodeError;
   "node_outcome": NodeOutcome;
   "notable_timestamp": NotableTimestamp;
+  "notion_move_in_page": NotionMoveInPage;
   "number": NumberKind;
   "office_document": OfficeDocument;
   "office_extraction_result": OfficeExtractionResult;
@@ -27466,6 +27881,7 @@ export interface KindPayloadBySlug {
   "platform_record": PlatformRecord;
   "podcast_cast_preview_result": PodcastCastPreviewResult;
   "podcast_episode": PodcastEpisode;
+  "podcast_episode_metadata": PodcastEpisodeMetadata;
   "podcast_video_compose_result": PodcastVideoComposeResult;
   "post_transcript": PostTranscript;
   "postal_address": PostalAddress;
@@ -27487,6 +27903,7 @@ export interface KindPayloadBySlug {
   "progress_tracker": ProgressTracker;
   "proof_attestation": ProofAttestation;
   "proof_check_status": ProofCheckStatus;
+  "proof_run_judgement": ProofRunJudgement;
   "provider_run_receipt": ProviderRunReceipt;
   "publish_preflight": PublishPreflight;
   "q_and_a_set": QAndASet;
@@ -27803,6 +28220,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "agent_factory_tool_choice",
   "agent_function_spec",
   "agent_input_qme_report",
+  "agent_iteration_plan",
   "agent_mandate_specification",
   "agent_react_result",
   "agent_result",
@@ -27848,12 +28266,14 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "cms_starter_kit_result",
   "code_block",
   "combined_page_text",
+  "company_endowment_portfolio",
   "comparison_set",
   "competitor_lookup_result",
   "competitor_opportunity_autopsy_result",
   "competitor_opportunity_autopsy_v1",
   "competitor_page_autopsy_v1",
   "condition_assessment",
+  "contact",
   "content_fingerprint",
   "content_plan_archetype_instantiation",
   "content_plan_archetype_list",
@@ -27868,6 +28288,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "crm_fold_settings",
   "custom_script_result",
   "data_table",
+  "database_design",
   "datetime_snapshot",
   "decision_answer",
   "decision_answers",
@@ -27884,10 +28305,12 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "domain_fold_report",
   "draft_critique",
   "electronics_intake_analysis",
+  "endpoint_family_verdicts",
   "enrichment_verification",
   "entity_card",
   "entity_mention",
   "episode_title_options",
+  "event",
   "evidence_source",
   "fact_check_report",
   "faq_item",
@@ -27928,6 +28351,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "gsc_site_intake_proposal",
   "hash_result",
   "headline_set",
+  "hindsight_replay_verdict",
   "http_response",
   "human_answer",
   "human_text_answer",
@@ -28016,6 +28440,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "node_error",
   "node_outcome",
   "notable_timestamp",
+  "notion_move_in_page",
   "number",
   "office_document",
   "office_extraction_result",
@@ -28071,6 +28496,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "platform_record",
   "podcast_cast_preview_result",
   "podcast_episode",
+  "podcast_episode_metadata",
   "podcast_video_compose_result",
   "post_transcript",
   "postal_address",
@@ -28092,6 +28518,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "progress_tracker",
   "proof_attestation",
   "proof_check_status",
+  "proof_run_judgement",
   "provider_run_receipt",
   "publish_preflight",
   "q_and_a_set",
