@@ -145223,6 +145223,72 @@ export type Database = {
         }
         Relationships: []
       }
+      presentation: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deck: Json
+          deleted_at: string | null
+          description: string | null
+          id: string
+          metadata: Json
+          name: string
+          organization_id: string
+          project_id: string | null
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          source: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deck?: Json
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json
+          name?: string
+          organization_id: string
+          project_id?: string | null
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          source?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deck?: Json
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json
+          name?: string
+          organization_id?: string
+          project_id?: string | null
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          source?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
       product_capture_file: {
         Row: {
           created_at: string
