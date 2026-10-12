@@ -1,54 +1,33 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useTransition,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useIsMobile } from "@ai-matrx/kit/media-query";
-import { FileText, Loader2, Plus, Search, Upload } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
 
-import {
-  FileScopeBar,
-  filterByScope,
-  type FileScope,
-} from "@/features/file-actions/FileScopeBar";
-import { useFileItemActions } from "@/features/file-actions/useFileItemActions";
-import { FileCardContextArea } from "@/features/file-actions/FileCardContextArea";
+import type { FileScope } from "@/features/file-actions/FileScopeBar";
 import { DOCUMENT_ADAPTER } from "@/features/file-actions/adapters";
+import { FileHome } from "@/features/file-actions/home/FileHome";
+import { DOCUMENT_HOME } from "@/features/file-actions/home/home-kinds";
+import { BlankTile, StartBand, StartTile } from "@/features/file-actions/home/StartBand";
 
-import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
-import { TapTargetButtonSolid } from "@ai-matrx/design-system/tap-target";
-import { DocumentListCard } from "@/features/documents/components/DocumentListCard";
+import { TapTargetButton } from "@ai-matrx/design-system/tap-target";
 import { GoogleHomeStrip } from "@/features/google-workspace/linked/GoogleHomeStrip";
 import { googleLinkIn } from "@/features/google-workspace/linked/link-store";
+import { GoogleDocsMark } from "@/features/google-workspace/linked/marks";
 import {
   DOCUMENT_UPLOAD_ACCEPT,
   documentFileKind,
   importDocumentFile,
 } from "@/features/documents/import-document-file";
-import { DocumentsHubTable } from "@/features/documents/components/DocumentsHubTable";
-import { DocumentsHubToolbar } from "@/features/documents/components/DocumentsHubToolbar";
 import {
   createDocument,
   listAccessibleDocuments,
   listTrashedDocuments,
 } from "@/features/documents/document-service";
-import {
-  isServiceFailure,
-  type DocumentRow,
-} from "@/features/data-tables/types";
-import {
-  documentMatchesQuery,
-  sortDocuments,
-  type DocumentSortKey,
-} from "@/features/documents/utils/documentsHubDisplay";
+import { isServiceFailure, type DocumentRow } from "@/features/data-tables/types";
+import { documentSourceLabel } from "@/features/documents/utils/documentsHubDisplay";
 import {
   buildDocumentsLibraryContextData,
   DOCUMENTS_SURFACE_NAME,
@@ -56,58 +35,38 @@ import {
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { captureDomSelection } from "@ai-matrx/context-menu/engine";
-import {
-  useListViewPrefs,
-  type LegacyListViewImport,
-} from "@/lib/list-views/useListViewPrefs";
-import type { ListViewPrefs } from "@/lib/redux/preferences/userPreferencesSlice";
+import type { LegacyListViewImport } from "@/lib/list-views/useListViewPrefs";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 
-/**
- * Style prefs for this hub (synced across devices via `userPreferences`).
- * Cards-first is this hub's own default — the platform default is table.
- */
-const DOCUMENTS_HUB_VIEW_DEFAULTS: Partial<ListViewPrefs> = { view: "cards" };
-
-/** One-time adoption of the device-local key this hub used before the hook. */
+/** One-time adoption of the device-local key this hub used before the list-view hook. */
 const DOCUMENTS_HUB_LEGACY_VIEW: LegacyListViewImport = {
   key: "documents-hub-view",
   map: (raw) => (raw === "table" || raw === "cards" ? { view: raw } : null),
 };
 
+/**
+ * `/documents` — Google Docs' home, on the shared `FileHome` (the Workbooks home is the same
+ * component set). This page keeps what is its own: load, create, upload, the Google strip's data,
+ * and the `matrx-user/documents` library surface.
+ */
 export default function DocumentsLandingPage() {
   const router = useRouter();
   const organizationId = useAppSelector(selectOrganizationId);
+  const userId = useAppSelector(selectUserId);
   const [documents, setDocuments] = useState<DocumentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [uploading, setUploading] = useState(false);
   const uploadRef = useRef<HTMLInputElement>(null);
-  const [query, setQuery] = useState("");
   const [scope, setScope] = useState<FileScope>("all");
-  const [sortKey, setSortKey] = useState<DocumentSortKey>("updated");
-  const [navigatingId, setNavigatingId] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const { prefs, setView } = useListViewPrefs(
-    "documents-hub",
-    DOCUMENTS_HUB_VIEW_DEFAULTS,
-    DOCUMENTS_HUB_LEGACY_VIEW,
-  );
-  // This hub renders two of the three canonical views; anything else is cards.
-  const isPhone = useIsMobile();
-  // On a phone the table is Name only (no share, no row menu), so cards are the one view there.
-  const view = !isPhone && prefs.view === "table" ? "table" : "cards";
 
   const reload = useCallback(async () => {
     setLoading(true);
-    const res =
-      scope === "trash"
-        ? await listTrashedDocuments()
-        : await listAccessibleDocuments();
+    const res = scope === "trash" ? await listTrashedDocuments() : await listAccessibleDocuments();
     if (isServiceFailure(res)) {
       setError(res.error);
       setLoading(false);
@@ -122,38 +81,28 @@ export default function DocumentsLandingPage() {
     void reload();
   }, [reload]);
 
-  const handleCreate = useCallback(async () => {
+  const handleCreate = async () => {
     setCreating(true);
     let capturedOrganizationId: string;
     try {
       capturedOrganizationId = await ensureOrgId(organizationId);
-    } catch (error) {
+    } catch (err) {
       setCreating(false);
       toast({
-          title: "Could not create document",
-          description:
-            error instanceof Error
-              ? error.message
-              : "Select an organization before creating a document.",
-          variant: "destructive",
-        });
-      return;
-    }
-    const res = await createDocument({
-      name: "Untitled document",
-      organizationId: capturedOrganizationId,
-    });
-    setCreating(false);
-    if (isServiceFailure(res)) {
-      toast({
         title: "Could not create document",
-        description: res.error,
+        description: err instanceof Error ? err.message : "Select an organization before creating a document.",
         variant: "destructive",
       });
       return;
     }
+    const res = await createDocument({ name: "Untitled document", organizationId: capturedOrganizationId });
+    setCreating(false);
+    if (isServiceFailure(res)) {
+      toast({ title: "Could not create document", description: res.error, variant: "destructive" });
+      return;
+    }
     router.push(`/documents/${res.data.id}`);
-  }, [organizationId, router]);
+  };
 
   const handleUpload = async (file: File | undefined) => {
     if (!file) return;
@@ -181,123 +130,126 @@ export default function DocumentsLandingPage() {
     }
   };
 
-  const { userId, starredIds, menuFor, sectionsFor, dialogs } = useFileItemActions(
-    DOCUMENT_ADAPTER,
-    reload,
-  );
-
-  const isAnyNavigating = navigatingId != null || isPending;
-
-  const handleNavigate = useCallback(
-    (id: string, path: string) => {
-      if (isAnyNavigating) return;
-      setNavigatingId(id);
-      startTransition(() => {
-        router.push(path);
-      });
-    },
-    [isAnyNavigating, router],
-  );
-
-  const filteredDocuments = useMemo(() => {
-    const scoped = filterByScope(documents, scope, userId, starredIds);
-    const filtered = scoped.filter((doc) => documentMatchesQuery(doc, query));
-    return sortDocuments(filtered, sortKey);
-  }, [documents, scope, userId, starredIds, query, sortKey]);
-
-  const isSearching = query.trim().length > 0;
-  const totalVisible = filteredDocuments.length;
-  const showToolbar = !loading && !error && (documents.length > 0 || scope !== "all");
-
   // ---- Agent-context surface (matrx-user/documents, library view) ---------
-  // Plain function (React Compiler memoizes; never useCallback) so it reads
-  // the live list state at Run time rather than a stale closure.
+  // Built at Run time from the live list (plain function; the React Compiler memoizes).
   //
-  // This mount registers NO write handlers, on purpose. The surface HAS
-  // agent-writable targets, but both of them address a single open document,
-  // and a write target carries one value with no entity selector — on a roster
-  // of N documents "set the description" has no subject. The only mutations
-  // this route offers are create (a creation action, not a field write),
-  // import (needs a `File` an agent cannot supply) and delete (destructive,
-  // human-only), so read-only is the correct posture here rather than an
-  // oversight. `listAgentWritableTargets()` offers a target only where its
-  // mount registered a handler, so the document route's targets stay invisible
-  // from the library. See the `writeTargets` doc block in
+  // This mount registers NO write handlers, on purpose: both of the surface's write targets address
+  // ONE open document, and a write target carries one value with no entity selector — on a roster
+  // of N documents "set the description" has no subject. Create is a creation action, import needs
+  // a `File` an agent cannot supply, delete is human-only. See the `writeTargets` doc block in
   // features/surfaces/manifests/documents.manifest.ts.
-  const getLibraryScope = () => {
-    const captured = captureDomSelection();
-    return buildApplicationScopeFromMenuContext({
-      selectedText: captured.text,
-      selectionRange: null,
-      contextData: buildDocumentsLibraryContextData({
-        documents,
-        visibleDocuments: filteredDocuments,
-        searchQuery: query,
-        sortKey,
-        viewMode: view,
-        loading,
-        error,
-      }),
-    });
-  };
+  const libraryScope =
+    (list: { visible: DocumentRow[]; query: string; sort: Parameters<typeof buildDocumentsLibraryContextData>[0]["sortKey"]; view: string }) =>
+    () => {
+      const captured = captureDomSelection();
+      return buildApplicationScopeFromMenuContext({
+        selectedText: captured.text,
+        selectionRange: null,
+        contextData: buildDocumentsLibraryContextData({
+          documents,
+          visibleDocuments: list.visible,
+          searchQuery: list.query,
+          sortKey: list.sort,
+          viewMode: list.view,
+          loading,
+          error,
+        }),
+      });
+    };
+
+  const pickFile = () => uploadRef.current?.click();
 
   return (
-    <SurfaceRuntimeProvider
-      surfaceName={DOCUMENTS_SURFACE_NAME}
-      getScope={getLibraryScope}
-      isEditable={false}
-    >
-      <RouteHeader
-        left={
-          <span className="px-1.5 text-sm font-medium text-foreground">
-            Documents
-          </span>
-        }
-        right={
-          <>
-          <input
-            ref={uploadRef}
-            type="file"
-            accept={DOCUMENT_UPLOAD_ACCEPT}
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              e.target.value = "";
-              void handleUpload(file);
-            }}
-          />
-          <TapTargetButtonSolid
-            icon={
-              uploading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Upload className="h-4 w-4" />
-              )
-            }
-            label="Upload a file"
-            onClick={() => uploadRef.current?.click()}
-            disabled={uploading}
-          />
-          <TapTargetButtonSolid
-            icon={
-              creating ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Plus className="h-4 w-4" />
-              )
-            }
-            label="New document"
-            onClick={handleCreate}
-            disabled={creating}
-          />
-          </>
-        }
+    <>
+      <input
+        ref={uploadRef}
+        type="file"
+        accept={DOCUMENT_UPLOAD_ACCEPT}
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          void handleUpload(file);
+        }}
       />
-      <div className="h-full overflow-y-auto scrollbar-none">
-        {/* The search/sort toolbar is the first thing in the scroll area, so
-            the content takes header clearance — otherwise it sits under the
-            glass header and collides with the title and the New button. */}
-        <div className="w-full space-y-4 p-1.5 pt-[var(--shell-header-h)]">
+      <FileHome<DocumentRow>
+        kind={DOCUMENT_HOME}
+        adapter={DOCUMENT_ADAPTER}
+        rows={documents}
+        toItem={(doc) => ({
+          row: doc,
+          id: doc.id,
+          name: doc.document_name,
+          description: doc.description,
+          ownerId: doc.user_id,
+          createdAt: doc.created_at,
+          updatedAt: doc.updated_at,
+          updatedBy: doc.updated_by,
+          sourceLabel: documentSourceLabel(doc.source),
+        })}
+        loading={loading}
+        error={error}
+        scope={scope}
+        onScopeChange={setScope}
+        reload={reload}
+        viewPrefsKey="documents-hub"
+        legacyViewPrefs={DOCUMENTS_HUB_LEGACY_VIEW}
+        onPickFile={pickFile}
+        pickingFile={uploading}
+        marksFor={(doc) => {
+          const link = googleLinkIn(doc.metadata)?.webViewLink;
+          return link ? (
+            <a
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex shrink-0 items-center"
+              title="Open in Google Docs"
+              aria-label="Open in Google Docs"
+            >
+              <GoogleDocsMark className="size-3.5" />
+            </a>
+          ) : null;
+        }}
+        wrap={(list, home) => (
+          <SurfaceRuntimeProvider surfaceName={DOCUMENTS_SURFACE_NAME} getScope={libraryScope(list)} isEditable={false}>
+            {home}
+          </SurfaceRuntimeProvider>
+        )}
+        header={
+          <RouteHeader
+            left={<span className="px-1.5 text-sm font-medium text-foreground">Documents</span>}
+            right={
+              <TapTargetButton
+                icon={uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                ariaLabel="Upload a file"
+                tooltip="Upload a Word, Markdown, text or HTML file"
+                onClick={pickFile}
+                disabled={uploading}
+              />
+            }
+          />
+        }
+        startBand={
+          <StartBand
+            kind={DOCUMENT_HOME}
+            blank={<BlankTile onCreate={() => void handleCreate()} creating={creating} />}
+            templates={null}
+            gallery={null}
+            galleryOpen={false}
+            onGalleryOpenChange={() => undefined}
+            extraTiles={
+              <StartTile
+                label="Upload a file"
+                title="Upload a Word, Markdown, text or HTML file"
+                busy={uploading}
+                onClick={pickFile}
+                face={<Upload className="size-10 stroke-[1.25] text-info" aria-hidden />}
+              />
+            }
+          />
+        }
+        googleStrip={
           <GoogleHomeStrip
             kind="document"
             linked={documents.flatMap((doc) => {
@@ -312,120 +264,8 @@ export default function DocumentsLandingPage() {
             onImported={(id) => router.push(`/documents/${id}`)}
             onChanged={() => void reload()}
           />
-          {!error && showToolbar ? (
-            <>
-              <DocumentsHubToolbar
-                query={query}
-                onQueryChange={setQuery}
-                view={view}
-                onViewChange={setView}
-                sortKey={sortKey}
-                onSortChange={setSortKey}
-                hideSearch={view === "table"}
-                cardsOnly={isPhone}
-              />
-              <FileScopeBar scope={scope} onChange={setScope} />
-              {dialogs}
-
-              {isSearching ? (
-                <p className="px-1 text-[11px] tabular-nums text-muted-foreground">
-                  {totalVisible === documents.length
-                    ? `${totalVisible} documents`
-                    : `${totalVisible} of ${documents.length} documents`}
-                </p>
-              ) : null}
-            </>
-          ) : null}
-
-          {loading && (
-            <div className="flex h-40 items-center justify-center text-muted-foreground">
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Loading…
-            </div>
-          )}
-
-          {error && !loading && (
-            <Card>
-              <CardContent className="p-4 text-sm text-destructive">
-                {error}
-                <ErrorAlchemyMenu error={error} />
-              </CardContent>
-            </Card>
-          )}
-
-          {!loading && !error && documents.length === 0 && scope !== "all" && (
-            <div className="py-12 text-center text-sm text-muted-foreground">
-              {scope === "trash" ? "Trash is empty." : "Nothing here."}
-            </div>
-          )}
-
-          {!loading && !error && documents.length === 0 && scope === "all" && (
-            <Card>
-              <CardContent className="flex flex-col items-center gap-2 p-10 text-center text-muted-foreground">
-                <FileText className="size-8" />
-                <div className="text-sm">No documents yet.</div>
-                <div className="text-xs">
-                  Tap <span className="font-medium">New document</span> to
-                  create one.
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {!loading &&
-          !error &&
-          documents.length > 0 &&
-          isSearching &&
-          totalVisible === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-              <Search className="mb-3 h-8 w-8 opacity-40" />
-              <p className="text-sm">Nothing matches your search.</p>
-            </div>
-          ) : null}
-
-          {!loading &&
-          !error &&
-          documents.length > 0 &&
-          !isSearching &&
-          totalVisible === 0 ? (
-            <div className="py-12 text-center text-sm text-muted-foreground">
-              Nothing here.
-            </div>
-          ) : null}
-
-          {!loading && !error && documents.length > 0 && totalVisible > 0 ? (
-            view === "table" ? (
-              <DocumentsHubTable
-                documents={filteredDocuments}
-                menuFor={(doc) => menuFor(doc, scope === "trash")}
-                sectionsFor={(payload) => sectionsFor(payload, scope === "trash")}
-              />
-            ) : (
-              <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredDocuments.map((doc) => (
-                  <FileCardContextArea
-                    key={doc.id}
-                    className="grid min-w-0"
-                    menu={(control) => menuFor(doc, scope === "trash", control)}
-                  >
-                    {(menu) => (
-                      <DocumentListCard
-                        doc={doc}
-                        isNavigating={navigatingId === doc.id}
-                        isAnyNavigating={isAnyNavigating}
-                        onNavigate={handleNavigate}
-                        menu={menu}
-                        starred={starredIds.has(doc.id)}
-                        shared={userId !== null && doc.user_id !== userId}
-                      />
-                    )}
-                  </FileCardContextArea>
-                ))}
-              </div>
-            )
-          ) : null}
-        </div>
-      </div>
-    </SurfaceRuntimeProvider>
+        }
+      />
+    </>
   );
 }

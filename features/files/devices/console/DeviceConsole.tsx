@@ -73,7 +73,9 @@ export function DeviceConsole({ device }: { device: DeviceRow }) {
   const header = (
     // The assists control may rest in this header's spare room rather than on the console.
     <div className="flex min-w-0 items-center gap-1" data-assist-dock-slot="header">
+      {/* Transparent, as the title and pill beside it: glass floats only over moving content. */}
       <ChevronLeftTapButton
+        variant="transparent"
         ariaLabel="Back to devices"
         onClick={() => {
           if (window.history.length > 1) router.back();

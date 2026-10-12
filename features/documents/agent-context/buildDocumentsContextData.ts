@@ -16,7 +16,7 @@ import {
   type DocumentSummaryValue,
 } from "@/features/surfaces/manifests/documents.manifest";
 import type { DocumentRow } from "@/features/data-tables/types";
-import type { DocumentSortKey } from "@/features/documents/utils/documentsHubDisplay";
+import type { HomeSortKey } from "@/features/file-actions/home/recent";
 
 export const DOCUMENTS_SURFACE_NAME = "matrx-user/documents" as const;
 
@@ -52,7 +52,7 @@ export interface BuildDocumentsLibraryArgs {
   /** The filtered + sorted rows actually on screen. */
   visibleDocuments: DocumentRow[];
   searchQuery: string;
-  sortKey: DocumentSortKey;
+  sortKey: HomeSortKey;
   viewMode: string;
   loading: boolean;
   error: string | null;

@@ -5,6 +5,7 @@ import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { DocumentRecord } from "@/features/documents/components/DocumentRecord";
 import { useContentDocumentRedirect } from "@/features/documents/hooks/useContentDocumentRedirect";
+import { useRecordOpened } from "@/features/file-actions/home/useRecordsOpened";
 
 /**
  * `/documents/[id]` — the route chrome only (RouteHeader, back button, header
@@ -22,6 +23,8 @@ export default function DocumentPage({
 }) {
   const { id } = use(params);
   const door = useContentDocumentRedirect(id);
+  // "Last opened by me" on the Documents home.
+  useRecordOpened("udt_document", door ? null : id);
   if (door) return null;
   return (
     <DocumentRecord

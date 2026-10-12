@@ -25,7 +25,8 @@ export interface OpenSaveToTableOptions extends SaveToTableHandlers {
   /** A kind value or JSON rows (must be plain JSON). */
   value?: unknown;
   /** Rows a renderer already holds. */
-  grid?: { headers: string[]; rows: string[][] };
+  /** Rows a renderer already holds. `from` names what they came out of ("table", "sheet"). */
+  grid?: { headers: string[]; rows: string[][]; from?: string };
   /** What it came from, in words — offered as the new table's name. */
   title?: string | null;
   /** When the text holds several shapes, the one to open on. */

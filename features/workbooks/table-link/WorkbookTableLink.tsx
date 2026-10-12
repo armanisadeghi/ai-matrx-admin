@@ -237,7 +237,7 @@ export function WorkbookTableLink({
     const keep = grid.rows[0].map((h, i) => (h.trim() === RECORD_ID_HEADER ? -1 : i)).filter((i) => i >= 0);
     const [headers, ...rows] = grid.rows.map((r) => keep.map((i) => r[i] ?? ""));
     openSaveToTable({
-      grid: { headers, rows },
+      grid: { headers, rows, from: "sheet" },
       title: tableNameOffer(workbookName, grid.sheetName),
       onSaved: async ({ tableId }) => {
         // The table exists: note it at once, before any editor work, so closing now cannot orphan it.

@@ -572,7 +572,6 @@
   "../aidream/apps/shared/chat/src/ui/html-preview/HtmlPreviewBridge.tsx": 1,
   "features/documents/components/DocumentEditor.tsx": 1,
   "features/documents/components/DocumentHistoryViewer.tsx": 1,
-  "features/documents/components/DocumentsHubTable.tsx": 1,
   "features/workbooks/components/WorkbookCursorOverlay.tsx": 2,
   "features/workbooks/components/WorkbookEditor.tsx": 1,
   "features/workbooks/components/WorkbookHistoryViewer.tsx": 1,

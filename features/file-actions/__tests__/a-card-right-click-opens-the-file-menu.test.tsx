@@ -51,8 +51,12 @@ it("right-click opens the card's menu; Shift+right-click leaves the browser's", 
 
 it("both homes render their cards inside the area, with the card's own menu", () => {
   const root = path.resolve(__dirname, "../../..");
+  // Both homes are the shared FileHome; its grid cards and phone rows sit inside the area.
   for (const page of ["app/(core)/workbooks/page.tsx", "app/(core)/documents/page.tsx"]) {
     const src = fs.readFileSync(path.join(root, page), "utf8");
-    expect(src).toMatch(/<FileCardContextArea[\s\S]*?menu=\{\(control\) => menuFor\([^)]*control\)\}/);
+    expect(src).toMatch(/<FileHome</);
   }
+  const home = fs.readFileSync(path.join(root, "features/file-actions/home/FileHome.tsx"), "utf8");
+  expect(home).toMatch(/<FileCardContextArea[\s\S]*?menu=\{\(control\) => menuFor\(d\.item\.row, trashed, control[,)]/);
+  expect(home).toMatch(/<FileCardContextArea[\s\S]*?menu=\{\(control\) => menuFor\(d\.item\.row, control\)\}/);
 });

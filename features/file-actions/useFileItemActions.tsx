@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Wires the shared FileItemMenu to one record type's adapter. A list page gives
+ * Wires the shared FileMenu to one record type's adapter. A list page gives
  * it the adapter once and calls `menuFor(row)` for every card / table row.
  * Trash is the archive (deleted_at), always undoable — never a hard delete.
  */
@@ -15,7 +15,7 @@ import { MoveToProjectDialog } from "./MoveToProjectDialog";
 
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { FileItemMenu } from "./FileItemMenu";
+import { FileMenu } from "./FileMenu";
 import { savedRecordGoogleAdapter } from "@/features/google-workspace/linked/EditorGoogleLinks";
 import { useFileFavorites } from "./useFileFavorites";
 import { copyRecord, moveRecord, renameRecord, restoreRecord, runDownload, trashRecord } from "./ops";
@@ -124,10 +124,13 @@ export function useFileItemActions<Row extends { id: string; user_id: string }>(
     row: Row,
     trashed = false,
     control?: { open: boolean; onOpenChange: (open: boolean) => void },
+    /** Grid cards leave Share to the ⋮ menu (Google's card has only ⋮); rows keep the button. */
+    opts?: { shareButton?: boolean },
   ): ReactNode => {
     const name = adapter.nameOf(row);
     return (
-      <FileItemMenu
+      <FileMenu
+        shareButton={opts?.shareButton ?? true}
         {...(control ? { open: control.open, onOpenChange: control.onOpenChange } : {})}
         resourceType={adapter.resourceType}
         id={row.id}

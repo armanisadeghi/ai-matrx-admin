@@ -2,7 +2,7 @@
 
 /**
  * The menu rows of a file-like record — ONE list shared by the list row menu
- * (FileItemMenu) and the editor's File menu (FileRecordMenu). A row appears only
+ * (useFileItemActions → FileMenu) and the editor's File menu (FileRecordMenu). A row appears only
  * when its handler is given; owner-only rows also need `canManage`.
  */
 

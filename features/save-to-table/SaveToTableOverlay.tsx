@@ -30,7 +30,7 @@ export interface SaveToTableOverlayProps {
   text?: string | null;
   value?: unknown;
   hasValue?: boolean;
-  grid?: { headers: string[]; rows: string[][] } | null;
+  grid?: { headers: string[]; rows: string[][]; from?: string } | null;
   title?: string | null;
   shapeIndex?: number;
   organizationId?: string | null;

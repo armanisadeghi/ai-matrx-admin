@@ -580,6 +580,11 @@ export interface ListsPreferences {
    * column's Lists, an agent's outputs. A person's own choice; absent = off.
    */
   dataHomeShowPlatformTables?: boolean;
+  /**
+   * The Workbooks / Documents homes' "Hide templates" (Google Docs' ⋮ on its template band), per
+   * home. A person's own choice, synced; absent = templates shown.
+   */
+  fileHomeTemplatesHidden?: Partial<Record<"workbook" | "document", boolean>>;
 }
 
 /**

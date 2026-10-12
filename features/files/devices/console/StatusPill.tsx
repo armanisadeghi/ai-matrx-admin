@@ -24,7 +24,10 @@ export function StatusPill({ pill, label, className }: { pill: ConsolePill; labe
         className,
       )}
     >
-      <StatusDot tone={TONE[pill]} className={cn(pill === "reconnecting" && "animate-pulse")} />
+      {/* The dot is the pill's ink (the pill guard measures it with the label, never as empty capsule). */}
+      <span data-matrx-pill-ink="" className="inline-flex">
+        <StatusDot tone={TONE[pill]} className={cn(pill === "reconnecting" && "animate-pulse")} />
+      </span>
       {label}
     </span>
   );

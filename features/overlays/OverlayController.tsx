@@ -7006,7 +7006,7 @@ export default function OverlayController() {
       {/* saveToTable — multi-instance: the ONE "Save to a table" (SAVE-AS-TABLE-EVERYWHERE) */}
       {instancesById.saveToTable.map((inst) => {
         const data = inst.data as Record<string, unknown> | null | undefined;
-        const grid = data?.grid as { headers?: unknown; rows?: unknown } | null | undefined;
+        const grid = data?.grid as { headers?: unknown; rows?: unknown; from?: unknown } | null | undefined;
         return (
           <SaveToTableOverlay
             key={inst.instanceId}
@@ -7027,6 +7027,7 @@ export default function OverlayController() {
                 ? {
                     headers: grid.headers as string[],
                     rows: grid.rows as string[][],
+                    ...(typeof grid.from === "string" ? { from: grid.from } : {}),
                   }
                 : null
             }

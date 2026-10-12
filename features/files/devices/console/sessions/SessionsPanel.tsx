@@ -12,8 +12,8 @@
 
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { Plus, RefreshCw } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type RefObject } from "react";
+import { ListFilter, Plus, RefreshCw } from "lucide-react";
 import {
   createDesktopProtocolTransport,
   type DesktopCodingTransport,
@@ -28,13 +28,14 @@ import {
   CodingSessionView,
   CodingSessionsProvider,
   CodingToastContext,
+  ProviderMark,
   relativeTime,
 } from "@ai-matrx/coding-sessions/react";
 import "@ai-matrx/coding-sessions/react/styles.css";
 import type { DesktopClient } from "@ai-matrx/desktop-protocol/client";
 import { Button, StatusDot } from "@ai-matrx/design-system";
-import { SegmentedControl } from "@ai-matrx/design-system/controls";
-import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
+import { Select } from "@ai-matrx/design-system/controls";
+import { useMediaQuery } from "@ai-matrx/kit/media-query";
 
 import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast";
@@ -112,6 +113,9 @@ function SessionsBody(props: SessionsPanelProps & { transport: DesktopCodingTran
   const [scope, setScope] = useState<SessionsScope>("all");
   const [newOpen, setNewOpen] = useState(false);
   const now = useNow();
+  const wide = useMediaQuery("(min-width: 1024px)");
+  const chatRef = useRef<HTMLDivElement>(null);
+  useComposerClearsAssists(chatRef, Boolean(props.selected) && props.visible);
 
   // The list (and the computer's recent rows) once the computer answers; a refusal by the
   // person's own switch stops the whole view with its sentence.
@@ -155,14 +159,17 @@ function SessionsBody(props: SessionsPanelProps & { transport: DesktopCodingTran
 
   const shown = rows.filter((r) => inScope(r, scope));
   const open = props.selected;
+  // A phone shows the list OR the chat: the chat's own header carries Back (one bar, iOS Mail).
+  const back = wide ? undefined : () => props.onSelect(null);
   const discovered = open ? /^#d\/(claude|codex)\/(.+)$/.exec(open) : null;
   const sessionId = open ? /^#s\/(.+)$/.exec(open)?.[1] ?? null : null;
 
   const list = (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex shrink-0 items-center gap-2 px-3 py-2">
-        <div className="min-w-0 flex-1 overflow-x-auto">
-          <SegmentedControl aria-label="Show" value={scope} onValueChange={(v) => setScope(v as SessionsScope)} data={SCOPES} />
+        {/* iOS Mail's filter: one pop-up naming what shows, never a segmented bar clipped in a narrow column. */}
+        <div className="min-w-0 flex-1">
+          <Select aria-label="Show" icon={<ListFilter className="h-4 w-4" />} value={scope} onValueChange={(v) => setScope(v)} options={SCOPES} />
         </div>
         <Button size="sm" variant="ghost" aria-label="Refresh" onClick={() => void transport.call("listSessions")}>
           <RefreshCw className="h-4 w-4" />
@@ -184,15 +191,11 @@ function SessionsBody(props: SessionsPanelProps & { transport: DesktopCodingTran
   );
 
   const chat = open ? (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-      <div className="flex h-11 shrink-0 items-center gap-1 border-b border-border px-1 lg:hidden">
-        <ChevronLeftTapButton ariaLabel="Back to sessions" onClick={() => props.onSelect(null)} />
-        <span className="truncate text-[15px] font-semibold">{rows.find((r) => r.target === open)?.title ?? "Session"}</span>
-      </div>
+    <div ref={chatRef} className="flex min-h-0 min-w-0 flex-1 flex-col">
       {sessionId ? (
-        <CodingSessionView sessionId={sessionId} />
+        <CodingSessionView sessionId={sessionId} onBack={back} />
       ) : discovered ? (
-        <CodingDiscoveredView provider={discovered[1] as "claude" | "codex"} providerSessionId={discovered[2] ?? ""} onTakenOver={(id) => props.onSelect(`#s/${id}`)} />
+        <CodingDiscoveredView provider={discovered[1] as "claude" | "codex"} providerSessionId={discovered[2] ?? ""} onTakenOver={(id) => props.onSelect(`#s/${id}`)} onBack={back} />
       ) : null}
     </div>
   ) : (
@@ -209,6 +212,57 @@ function SessionsBody(props: SessionsPanelProps & { transport: DesktopCodingTran
   );
 }
 
+/**
+ * The open chat's composer is this page's bottom dock: its height (with the notes above it) is
+ * published as --page-bottom-dock-h, the shell's contract, so the floating assists control rests
+ * above it instead of over the composer and its warnings (TerminalPanel does the same for its keys).
+ */
+/** The chat's bottom bar: its composer (with the notes above it), or a preview's Take over line. */
+const BOTTOM_BAR = "[data-cs-composer], [data-cs-bottom-bar]";
+
+function useComposerClearsAssists(chatRef: RefObject<HTMLDivElement | null>, active: boolean): void {
+  useEffect(() => {
+    const chat = chatRef.current;
+    if (!active || !chat) return undefined;
+    const root = document.documentElement;
+    const publish = () => {
+      const composer = chat.querySelector(BOTTOM_BAR);
+      if (!composer) {
+        root.style.removeProperty("--page-bottom-dock-h");
+        return;
+      }
+      const top = composer.getBoundingClientRect().top;
+      const height = Math.max(0, Math.round(window.innerHeight - top));
+      root.style.setProperty("--page-bottom-dock-h", `${height + 8}px`);
+    };
+    // Coalesced: a streaming answer changes the transcript many times a second; one measure per 150 ms.
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const soon = () => {
+      if (timer === null) {
+        timer = setTimeout(() => {
+          timer = null;
+          const composer = chat.querySelector(BOTTOM_BAR);
+          if (composer) observer.observe(composer);
+          publish();
+        }, 150);
+      }
+    };
+    const observer = new ResizeObserver(soon);
+    observer.observe(chat);
+    const mutations = new MutationObserver(soon);
+    mutations.observe(chat, { childList: true, subtree: true });
+    window.addEventListener("resize", soon);
+    soon();
+    return () => {
+      if (timer !== null) clearTimeout(timer);
+      observer.disconnect();
+      mutations.disconnect();
+      window.removeEventListener("resize", soon);
+      root.style.removeProperty("--page-bottom-dock-h");
+    };
+  }, [chatRef, active]);
+}
+
 function SessionRow({ row, now, selected, onOpen }: { row: RecentChatRow; now: number; selected: boolean; onOpen: () => void }) {
   const facts = rowFacts(row);
   return (
@@ -220,8 +274,9 @@ function SessionRow({ row, now, selected, onOpen }: { row: RecentChatRow; now: n
         aria-current={selected ? "true" : undefined}
         className={cn("h-auto w-full items-start justify-start gap-2.5 rounded-none border-b border-border/60 px-4 py-2.5 text-left font-normal", selected && "bg-muted")}
       >
-        <span className="mt-1.5 flex h-2.5 w-2.5 shrink-0 items-center justify-center" aria-hidden={facts.tone ? undefined : true}>
-          {facts.tone ? <StatusDot tone={facts.tone} label={facts.toneLabel ?? undefined} /> : null}
+        {/* The Mac's Recent row: the app's mark, or a live or unread chat's dot in its place. */}
+        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center" aria-hidden={facts.tone ? undefined : true}>
+          {facts.tone ? <StatusDot tone={facts.tone} label={facts.toneLabel ?? undefined} /> : <ProviderMark provider={row.provider} size={18} />}
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex items-baseline gap-2">

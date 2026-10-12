@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
+import { useRecordOpened } from "@/features/file-actions/home/useRecordsOpened";
 import dynamic from "next/dynamic";
 import { Loader2 } from "lucide-react";
 
@@ -45,6 +46,8 @@ export default function WorkbookPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  // "Last opened by me" on the Workbooks home.
+  useRecordOpened("workbook", id);
 
   const [workbook, setWorkbook] = useState<Workbook | null>(null);
   const [error, setError] = useState<string | null>(null);

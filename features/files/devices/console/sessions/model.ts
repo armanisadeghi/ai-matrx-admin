@@ -54,7 +54,7 @@ export function wholeViewRefusal(error: unknown): string | null {
 
 export interface RowFacts {
   title: string;
-  /** "Claude Code · parser" */
+  /** "parser · Claude Code": the Mac's one rule (the folder's name or "No folder", then the app). */
   where: string;
   /** The dot: amber (warning), blue (info), or none. */
   tone: "warning" | "info" | null;
@@ -69,12 +69,12 @@ export function rowFacts(row: RecentChatRow): RowFacts {
   const folder = row.cwd ? row.cwd.split(/[\\/]+/).filter(Boolean).pop() ?? row.cwd : null;
   const tone = row.state === "new_output" ? "info" : row.state === "idle" ? null : "warning";
   const from = row.startedBy && row.startedBy.kind !== "this_computer" ? (row.startedBy.kind === "agent" ? "From an agent" : `From ${row.startedBy.label}`) : null;
-  return { title: row.title, where: [PROVIDER[row.provider], folder].filter(Boolean).join(" · "), tone, toneLabel: tone ? row.stateLabel : null, from };
+  return { title: row.title, where: `${folder ?? "No folder"} · ${PROVIDER[row.provider]}`, tone, toneLabel: tone ? row.stateLabel : null, from };
 }
 
 export type SessionsScope = "all" | "attention" | "open" | "pinned";
 
-/** The Mac's Code › Chats smart mailboxes, as the list's scope bar. */
+/** The Mac's Code › Chats smart mailboxes, as the list's filter menu (iOS Mail's filter: a pop-up, never a clipped bar). */
 export const SCOPES: { value: SessionsScope; label: string }[] = [
   { value: "all", label: "All" },
   { value: "attention", label: "Needs attention" },

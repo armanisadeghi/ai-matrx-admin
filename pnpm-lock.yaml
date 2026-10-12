@@ -70,7 +70,7 @@ importers:
         version: 0.4.84(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react-is@19.3.0)(react@19.3.0)(redux@5.0.1)
       '@ai-matrx/coding-sessions':
         specifier: latest
-        version: 0.3.140(fcbda8abcb7c0b53213efbe65e894aa8)
+        version: 0.3.141(fcbda8abcb7c0b53213efbe65e894aa8)
       '@ai-matrx/content-ir':
         specifier: latest
         version: 0.24.19(react@19.3.0)
@@ -1260,8 +1260,8 @@ packages:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
 
-  '@ai-matrx/coding-sessions@0.3.140':
-    resolution: {integrity: sha512-mLdMhP73Pk1P7MAF/xfe7Pa7yBDuZS+L4FIfADNiygXCq4FaLjySlJulV0fAmNLsyOIi3bg4v9j0VFLH6eGxRw==}
+  '@ai-matrx/coding-sessions@0.3.141':
+    resolution: {integrity: sha512-sQpovLBkFGEG3om+Ab7tqS80hnCNgyQD58Lhiw+s4bRyxUFksSQI3xn5IBWuQmBtiPJo+75hTA5cWBbYu4wDlQ==}
     engines: {node: '>=22.18'}
     hasBin: true
     peerDependencies:
@@ -13657,7 +13657,7 @@ snapshots:
       - redux
       - supports-color
 
-  '@ai-matrx/coding-sessions@0.3.140(fcbda8abcb7c0b53213efbe65e894aa8)':
+  '@ai-matrx/coding-sessions@0.3.141(fcbda8abcb7c0b53213efbe65e894aa8)':
     dependencies:
       '@ai-matrx/agents': 0.59.79(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react-is@19.3.0)(react@19.3.0)(redux@5.0.1))
       '@ai-matrx/api': 0.1.14(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(react@19.3.0)

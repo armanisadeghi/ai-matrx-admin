@@ -38,9 +38,9 @@ describe("the Sessions view's rules", () => {
   });
 
   it("reads a row with the Mac's words and dots, and who started it", () => {
-    expect(rowFacts(row({ state: "running", stateLabel: "Running" }))).toEqual({ title: "Parser", where: "Claude Code · parser", tone: "warning", toneLabel: "Running", from: null });
+    expect(rowFacts(row({ state: "running", stateLabel: "Running" }))).toEqual({ title: "Parser", where: "parser · Claude Code", tone: "warning", toneLabel: "Running", from: null });
     expect(rowFacts(row({ state: "new_output", stateLabel: "New output", startedBy: { kind: "phone", label: "iPhone" } }))).toMatchObject({ tone: "info", from: "From iPhone" });
-    expect(rowFacts(row({ provider: "codex", cwd: null, startedBy: { kind: "agent", label: "An agent" } }))).toMatchObject({ where: "Codex", tone: null, from: "From an agent" });
+    expect(rowFacts(row({ provider: "codex", cwd: null, startedBy: { kind: "agent", label: "An agent" } }))).toMatchObject({ where: "No folder · Codex", tone: null, from: "From an agent" });
   });
 
   it("scopes the list like the Mac's smart mailboxes", () => {

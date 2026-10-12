@@ -1,24 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  Ellipsis,
-  FileSpreadsheet,
-  Loader2,
-  Plus,
-  Search,
-  Star,
-  Upload,
-  Users,
-} from "lucide-react";
+import { Ellipsis, Loader2, Table2, Upload } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
-import { TapTargetButton, TapTargetButtonSolid } from "@ai-matrx/design-system/tap-target";
+import { TapTargetButton } from "@ai-matrx/design-system/tap-target";
 import {
   BottomSheet,
   BottomSheetHeader,
@@ -32,22 +21,15 @@ import {
   listAccessibleWorkbooks,
   listTrashedWorkbooks,
   saveSnapshot,
+  workbookSourceLabel,
 } from "@/features/workbooks/workbook-service";
-import {
-  FileScopeBar,
-  filterByScope,
-  type FileScope,
-} from "@/features/file-actions/FileScopeBar";
-import { useFileItemActions } from "@/features/file-actions/useFileItemActions";
-import { FileCardContextArea } from "@/features/file-actions/FileCardContextArea";
+import type { FileScope } from "@/features/file-actions/FileScopeBar";
 import { WORKBOOK_ADAPTER } from "@/features/file-actions/adapters";
-import { DocumentsHubToolbar } from "@/features/documents/components/DocumentsHubToolbar";
-import { WorkbooksHubTable } from "@/features/workbooks/components/WorkbooksHubTable";
-import {
-  useListViewPrefs,
-} from "@/lib/list-views/useListViewPrefs";
-import type { DocumentSortKey } from "@/features/documents/utils/documentsHubDisplay";
-import { compareTimestamps, formatRelativeTime } from "@/utils/datetime";
+import { FileHome } from "@/features/file-actions/home/FileHome";
+import { WORKBOOK_HOME } from "@/features/file-actions/home/home-kinds";
+import { BlankTile, StartBand, StartTile } from "@/features/file-actions/home/StartBand";
+import { FromTableTile } from "@/features/workbooks/components/FromTableTile";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { isServiceFailure, type Workbook } from "@/features/data-tables/types";
 import { fileHandler } from "@/features/files/handler/handler";
 // xlsx-to-univer (xlsx + @univerjs/*) and smart-importer (xlsx) are heavy —
@@ -64,7 +46,6 @@ import { ImportRouteDialog } from "@/features/data-tables/components/ImportRoute
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { GoogleHomeStrip } from "@/features/google-workspace/linked/GoogleHomeStrip";
@@ -99,23 +80,6 @@ function unsupportedFileReason(file: File): string | null {
   return `"${file.name}" isn't a spreadsheet file. Supported: .xlsx, .xls, .csv. For a Google Sheet, use Import from Google Sheets.`;
 }
 
-function sortWorkbooks(rows: Workbook[], key: DocumentSortKey): Workbook[] {
-  const byName = (a: Workbook, b: Workbook) =>
-    a.workbook_name.localeCompare(b.workbook_name);
-  return [...rows].sort((a, b) => {
-    switch (key) {
-      case "name":
-        return byName(a, b);
-      case "source":
-        return a.source.localeCompare(b.source) || byName(a, b);
-      case "created":
-        return compareTimestamps(b.created_at, a.created_at) || byName(a, b);
-      default:
-        return compareTimestamps(b.updated_at, a.updated_at) || byName(a, b);
-    }
-  });
-}
-
 export default function WorkbooksLandingPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -124,13 +88,8 @@ export default function WorkbooksLandingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
-  const [query, setQuery] = useState("");
   const [scope, setScope] = useState<FileScope>("all");
-  const [sortKey, setSortKey] = useState<DocumentSortKey>("updated");
-  const { prefs, setView } = useListViewPrefs("workbooks-hub", {
-    view: "cards",
-  });
-  const view = prefs.view === "table" ? "table" : "cards";
+  const userId = useAppSelector(selectUserId);
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -166,20 +125,6 @@ export default function WorkbooksLandingPage() {
     void reload();
   }, [reload]);
 
-  const { userId, starredIds, menuFor, sectionsFor, dialogs } = useFileItemActions(
-    WORKBOOK_ADAPTER,
-    reload,
-  );
-  const visibleWorkbooks = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const scoped = filterByScope(workbooks, scope, userId, starredIds).filter(
-      (w) =>
-        !q ||
-        w.workbook_name.toLowerCase().includes(q) ||
-        (w.description?.toLowerCase().includes(q) ?? false),
-    );
-    return sortWorkbooks(scoped, sortKey);
-  }, [workbooks, scope, userId, starredIds, query, sortKey]);
 
   const handleCreate = useCallback(async () => {
     setCreating(true);
@@ -438,11 +383,10 @@ export default function WorkbooksLandingPage() {
         : {}),
     });
 
+  const busy = importing || creating || smartCommitting;
+
   return (
-    <SurfaceRuntimeProvider
-      surfaceName="matrx-user/workbooks"
-      getScope={getScope}
-    >
+    <>
       {/*
         No `accept` filter — Drive / Google Sheets shortcuts and many
         mobile pickers grey out everything when an accept whitelist is
@@ -467,90 +411,116 @@ export default function WorkbooksLandingPage() {
           if (f) void handleSmartImport(f);
         }}
       />
-      <RouteHeader
-        left={
-          <span className="px-1.5 text-sm font-medium text-foreground">
-            Workbooks
-          </span>
+      <FileHome<Workbook>
+        kind={WORKBOOK_HOME}
+        adapter={WORKBOOK_ADAPTER}
+        rows={workbooks}
+        toItem={(wb) => ({
+          row: wb,
+          id: wb.id,
+          name: wb.workbook_name,
+          description: wb.description,
+          ownerId: wb.user_id,
+          createdAt: wb.created_at,
+          updatedAt: wb.updated_at,
+          updatedBy: wb.updated_by,
+          sourceLabel: workbookSourceLabel(wb.source),
+        })}
+        loading={loading}
+        error={error}
+        scope={scope}
+        onScopeChange={setScope}
+        reload={reload}
+        viewPrefsKey="workbooks-hub"
+        onPickFile={() => fileInputRef.current?.click()}
+        pickingFile={importing}
+        marksFor={(wb, where) => <WorkbookMarks workbook={wb} withSourceFile={where === "table"} />}
+        wrap={(_list, home) => (
+          <SurfaceRuntimeProvider surfaceName="matrx-user/workbooks" getScope={getScope}>
+            {home}
+          </SurfaceRuntimeProvider>
+        )}
+        header={
+          <RouteHeader
+            left={<span className="px-1.5 text-sm font-medium text-foreground">Workbooks</span>}
+            right={
+              <div className="flex items-center">
+                {/* Desktop: the import doors. Mobile: one "More" sheet — the icons collided with
+                    the shell avatar at 375px. New lives in the Start band (Blank). */}
+                <div className="hidden items-center sm:flex">
+                  <TapTargetButton
+                    icon={<AGENT_ICON className="h-4 w-4" />}
+                    ariaLabel="Smart import"
+                    tooltip="Auto-detect whether your file is a typed dataset or a workbook"
+                    disabled={busy}
+                    onClick={() => smartFileInputRef.current?.click()}
+                  />
+                  <TapTargetButton
+                    icon={importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                    ariaLabel="Import XLSX / CSV"
+                    disabled={busy}
+                    onClick={() => fileInputRef.current?.click()}
+                  />
+                </div>
+                <div className="shrink-0 sm:hidden">
+                  <TapTargetButton
+                    icon={<Ellipsis className="h-4 w-4" />}
+                    ariaLabel="More import options"
+                    disabled={busy}
+                    onClick={() => setMobileActionsOpen(true)}
+                  />
+                </div>
+              </div>
+            }
+          />
         }
-        right={
-          <div className="flex items-center">
-            {/* Desktop: full row of actions. Mobile: collapse Smart import +
-                Import behind one "More" sheet trigger — three icons plus a
-                solid pill overflowed past the avatar at 375px. */}
-            <div className="hidden sm:flex items-center">
-              <TapTargetButton
-                icon={<AGENT_ICON className="h-4 w-4" />}
-                ariaLabel="Smart import"
-                tooltip="Auto-detect whether your file is a typed dataset or a workbook"
-                disabled={importing || creating || smartCommitting}
-                onClick={() => smartFileInputRef.current?.click()}
-              />
-              <TapTargetButton
-                icon={
-                  importing ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Upload className="h-4 w-4" />
-                  )
-                }
-                ariaLabel="Import XLSX / CSV"
-                disabled={importing || creating || smartCommitting}
-                onClick={() => fileInputRef.current?.click()}
-              />
-            </div>
-            <div className="shrink-0 sm:hidden">
-              <TapTargetButton
-                icon={<Ellipsis className="h-4 w-4" />}
-                ariaLabel="More import options"
-                disabled={importing || creating || smartCommitting}
-                onClick={() => setMobileActionsOpen(true)}
-              />
-            </div>
-            {/* Solid primary: labeled pill on desktop, icon-only on mobile —
-                the labeled pill alone overflowed into the avatar at 375px. */}
-            <div className="hidden shrink-0 sm:block">
-              <TapTargetButtonSolid
-                icon={
-                  creating ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Plus className="h-4 w-4" />
-                  )
-                }
-                label="New workbook"
-                disabled={creating || importing || smartCommitting}
-                onClick={handleCreate}
-              />
-            </div>
-            <div className="shrink-0 sm:hidden">
-              <TapTargetButtonSolid
-                icon={
-                  creating ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Plus className="h-4 w-4" />
-                  )
-                }
-                ariaLabel="New workbook"
-                disabled={creating || importing || smartCommitting}
-                onClick={handleCreate}
-              />
-            </div>
-          </div>
+        startBand={
+          <StartBand
+            kind={WORKBOOK_HOME}
+            blank={<BlankTile onCreate={() => void handleCreate()} creating={creating} />}
+            templates={null}
+            gallery={null}
+            galleryOpen={false}
+            onGalleryOpenChange={() => undefined}
+            extraTiles={
+              <>
+                <FromTableTile />
+                <StartTile
+                  label="Import a file"
+                  title="Import an Excel or CSV file"
+                  busy={importing}
+                  disabled={busy}
+                  onClick={() => fileInputRef.current?.click()}
+                  face={<Upload className="size-10 stroke-[1.25] text-success" aria-hidden />}
+                />
+              </>
+            }
+          />
+        }
+        googleStrip={
+          <GoogleHomeStrip
+            kind="workbook"
+            linked={workbooks.flatMap((wb) => {
+              const link = googleLinkIn(wb.metadata);
+              return link ? [{ id: wb.id, name: wb.workbook_name, link }] : [];
+            })}
+            unlinked={workbooks
+              .filter((wb) => !googleLinkIn(wb.metadata) && wb.user_id === userId)
+              .sort((a, b) => (b.updated_at ?? "").localeCompare(a.updated_at ?? ""))
+              .map((wb) => ({ id: wb.id, name: wb.workbook_name, updatedAt: wb.updated_at }))}
+            hidden={scope === "trash"}
+            onImported={(id) => router.push(`/workbooks/${id}`)}
+            onChanged={() => void reload()}
+          />
         }
       />
-      <BottomSheet
-        open={mobileActionsOpen}
-        onOpenChange={setMobileActionsOpen}
-        title="Import workbook"
-      >
+      <BottomSheet open={mobileActionsOpen} onOpenChange={setMobileActionsOpen} title="Import workbook">
         <BottomSheetHeader title="Import" />
         <BottomSheetBody>
           <button
             type="button"
             className="flex w-full items-center gap-3 px-5 min-h-[52px] border-b border-glass-edge active:bg-glass-active transition-colors disabled:opacity-50"
-            disabled={importing || creating || smartCommitting}
+            disabled={busy}
             onClick={() => {
               setMobileActionsOpen(false);
               smartFileInputRef.current?.click();
@@ -567,7 +537,7 @@ export default function WorkbooksLandingPage() {
           <button
             type="button"
             className="flex w-full items-center gap-3 px-5 min-h-[52px] active:bg-glass-active transition-colors disabled:opacity-50"
-            disabled={importing || creating || smartCommitting}
+            disabled={busy}
             onClick={() => {
               setMobileActionsOpen(false);
               fileInputRef.current?.click();
@@ -578,177 +548,6 @@ export default function WorkbooksLandingPage() {
           </button>
         </BottomSheetBody>
       </BottomSheet>
-      <div className="h-full overflow-y-auto scrollbar-none">
-        <div className="w-full space-y-4 p-1.5 pt-[var(--shell-header-h)]">
-          <GoogleHomeStrip
-            kind="workbook"
-            linked={workbooks.flatMap((wb) => {
-              const link = googleLinkIn(wb.metadata);
-              return link ? [{ id: wb.id, name: wb.workbook_name, link }] : [];
-            })}
-            unlinked={workbooks
-              .filter((wb) => !googleLinkIn(wb.metadata) && wb.user_id === userId)
-              .sort((a, b) => (b.updated_at ?? "").localeCompare(a.updated_at ?? ""))
-              .map((wb) => ({ id: wb.id, name: wb.workbook_name, updatedAt: wb.updated_at }))}
-            hidden={scope === "trash"}
-            onImported={(id) => router.push(`/workbooks/${id}`)}
-            onChanged={() => void reload()}
-          />
-          {!error && (workbooks.length > 0 || scope !== "all") ? (
-            <>
-              <DocumentsHubToolbar
-                noun="workbooks"
-                query={query}
-                onQueryChange={setQuery}
-                view={view}
-                onViewChange={setView}
-                sortKey={sortKey}
-                onSortChange={setSortKey}
-                hideSearch={view === "table"}
-              />
-              <FileScopeBar scope={scope} onChange={setScope} />
-              {dialogs}
-            </>
-          ) : null}
-
-          {loading && (
-            <div className="flex h-40 items-center justify-center text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              Loading…
-            </div>
-          )}
-
-          {error && !loading && (
-            <Card>
-              <CardContent className="p-4 text-sm text-destructive">
-                {error}
-                <ErrorAlchemyMenu error={error} />
-              </CardContent>
-            </Card>
-          )}
-
-          {!loading && !error && workbooks.length === 0 && scope !== "all" && (
-            <div className="py-12 text-center text-sm text-muted-foreground">
-              {scope === "trash" ? "Trash is empty." : "Nothing here."}
-            </div>
-          )}
-
-          {!loading && !error && workbooks.length > 0 && visibleWorkbooks.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-              <Search className="mb-3 h-8 w-8 opacity-40" />
-              <p className="text-sm">Nothing here.</p>
-            </div>
-          )}
-
-          {!loading && !error && workbooks.length === 0 && scope === "all" && (
-            <Card>
-              <CardContent className="flex flex-col items-center gap-2 p-10 text-center text-muted-foreground">
-                <FileSpreadsheet className="size-8" />
-                <div className="text-sm">No workbooks yet.</div>
-                <div className="text-xs">
-                  Tap <span className="font-medium">New workbook</span> to
-                  create one.
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {!loading && view === "table" && visibleWorkbooks.length > 0 && (
-            <WorkbooksHubTable
-              workbooks={visibleWorkbooks}
-              menuFor={(wb) => menuFor(wb, scope === "trash")}
-                sectionsFor={(payload) => sectionsFor(payload, scope === "trash")}
-            />
-          )}
-
-          {!loading && view === "cards" && visibleWorkbooks.length > 0 && (
-            // Columns follow the LIST's width, never the window's: beside the
-            // canvas a 1440px window left three 180px cards ("Top …").
-            <div className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))]">
-              {visibleWorkbooks.map((wb) => (
-                <FileCardContextArea
-                  key={wb.id}
-                  className="grid min-w-0 [&>*]:min-w-0"
-                  menu={(control) => menuFor(wb, scope === "trash", control)}
-                >
-                {(cardMenu) => (
-                <Card className="group/entity-ref min-w-0 overflow-hidden">
-                  <CardContent className="p-4 space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      {/* A real anchor, not a button that router.pushes: the
-                          card is now cmd/middle-clickable into a new tab,
-                          keyboard-reachable and announced as a link. */}
-                      <Link
-                        href={`/workbooks/${wb.id}`}
-                        className="flex min-w-0 flex-1 items-start gap-2 text-left"
-                      >
-                        <FileSpreadsheet className="size-5 mt-0.5 shrink-0 text-muted-foreground" />
-                        <div className="min-w-0">
-                          <div className="font-medium line-clamp-2 break-words" title={wb.workbook_name}>
-                            {wb.workbook_name}
-                          </div>
-                          {wb.description && (
-                            <div className="line-clamp-2 break-words text-xs text-muted-foreground">
-                              {wb.description}
-                            </div>
-                          )}
-                        </div>
-                      </Link>
-                      {/* Peek + new tab ride BESIDE the anchor (never inside
-                          it), so "which one is that?" costs no navigation.
-                          `original_file_id` gets its own door below. */}
-                      <span className="matrx-touch-targets flex shrink-0 items-center gap-0.5">
-                        <EntityDoorControls
-                          token="workbook"
-                          id={wb.id}
-                          name={wb.workbook_name}
-                        />
-                        {cardMenu}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      {starredIds.has(wb.id) ? (
-                        <Star className="size-3 shrink-0 fill-current text-amber-500" aria-label="Starred" />
-                      ) : null}
-                      {userId !== null && wb.user_id !== userId ? (
-                        <Users className="size-3 shrink-0" aria-label="Shared with me" />
-                      ) : null}
-                      <span className="truncate">
-                        Updated {formatRelativeTime(wb.updated_at, { style: "long" })}
-                      </span>
-                      {/* An imported workbook knows the file it came from —
-                          a relationship we can resolve must be reachable. */}
-                      {googleLinkIn(wb.metadata)?.webViewLink && (
-                        <a
-                          href={googleLinkIn(wb.metadata)?.webViewLink ?? undefined}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex shrink-0 items-center"
-                          title="Open in Google Sheets"
-                          aria-label="Open in Google Sheets"
-                        >
-                          <GoogleSheetsMark className="size-3.5" />
-                        </a>
-                      )}
-                      {wb.original_file_id && (
-                        <EntityDoorControls
-                          token="file"
-                          id={wb.original_file_id}
-                          name={`the file ${wb.workbook_name} was imported from`}
-                          showOpen
-                        />
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-                )}
-                </FileCardContextArea>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
       <ImportRouteDialog
         isOpen={smartDialogOpen}
         onClose={() => {
@@ -763,6 +562,49 @@ export default function WorkbooksLandingPage() {
         onCommit={handleSmartCommit}
         isCommitting={smartCommitting}
       />
-    </SurfaceRuntimeProvider>
+    </>
+  );
+}
+
+/** A card's small marks: the Google file it is linked to, the table it is linked to, the file it came from. */
+function WorkbookMarks({ workbook: wb, withSourceFile }: { workbook: Workbook; withSourceFile: boolean }) {
+  const google = googleLinkIn(wb.metadata)?.webViewLink;
+  const tableLinks = (wb.metadata as { table_links?: Array<{ table_id?: unknown }> } | null)?.table_links;
+  const tableId = Array.isArray(tableLinks) ? tableLinks.find((l) => typeof l?.table_id === "string")?.table_id : undefined;
+  return (
+    <>
+      {google ? (
+        <a
+          href={google}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex shrink-0 items-center"
+          title="Open in Google Sheets"
+          aria-label="Open in Google Sheets"
+        >
+          <GoogleSheetsMark className="size-3.5" />
+        </a>
+      ) : null}
+      {typeof tableId === "string" ? (
+        <Link
+          href={`/data/${tableId}`}
+          className="inline-flex shrink-0 items-center text-muted-foreground hover:text-foreground"
+          title="Open the linked table"
+          aria-label="Open the linked table"
+        >
+          <Table2 className="size-3.5" />
+        </Link>
+      ) : null}
+      {withSourceFile && wb.original_file_id ? (
+        <EntityDoorControls
+          token="file"
+          id={wb.original_file_id}
+          name={`the file ${wb.workbook_name} was imported from`}
+          showOpen
+          disableNewTab
+          size="sm"
+        />
+      ) : null}
+    </>
   );
 }
