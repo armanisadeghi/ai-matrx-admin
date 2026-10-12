@@ -12,7 +12,7 @@
 
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type RefObject } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { ListFilter, Plus, RefreshCw } from "lucide-react";
 import {
   createDesktopProtocolTransport,
@@ -114,8 +114,10 @@ function SessionsBody(props: SessionsPanelProps & { transport: DesktopCodingTran
   const [newOpen, setNewOpen] = useState(false);
   const now = useNow();
   const wide = useMediaQuery("(min-width: 1024px)");
-  const chatRef = useRef<HTMLDivElement>(null);
-  useComposerClearsAssists(chatRef, Boolean(props.selected) && props.visible);
+  // A state, not a ref: the chat mounts after the computer answers (a chat opened from the URL
+  // waits behind "Connecting…"), and the clearance must start when it appears.
+  const [chatEl, setChatEl] = useState<HTMLDivElement | null>(null);
+  useComposerClearsAssists(chatEl, Boolean(props.selected) && props.visible);
 
   // The list (and the computer's recent rows) once the computer answers; a refusal by the
   // person's own switch stops the whole view with its sentence.
@@ -191,7 +193,7 @@ function SessionsBody(props: SessionsPanelProps & { transport: DesktopCodingTran
   );
 
   const chat = open ? (
-    <div ref={chatRef} className="flex min-h-0 min-w-0 flex-1 flex-col">
+    <div ref={setChatEl} className="flex min-h-0 min-w-0 flex-1 flex-col">
       {sessionId ? (
         <CodingSessionView sessionId={sessionId} onBack={back} />
       ) : discovered ? (
@@ -220,9 +222,8 @@ function SessionsBody(props: SessionsPanelProps & { transport: DesktopCodingTran
 /** The chat's bottom bar: its composer (with the notes above it), or a preview's Take over line. */
 const BOTTOM_BAR = "[data-cs-composer], [data-cs-bottom-bar]";
 
-function useComposerClearsAssists(chatRef: RefObject<HTMLDivElement | null>, active: boolean): void {
+function useComposerClearsAssists(chat: HTMLDivElement | null, active: boolean): void {
   useEffect(() => {
-    const chat = chatRef.current;
     if (!active || !chat) return undefined;
     const root = document.documentElement;
     const publish = () => {
@@ -260,7 +261,7 @@ function useComposerClearsAssists(chatRef: RefObject<HTMLDivElement | null>, act
       window.removeEventListener("resize", soon);
       root.style.removeProperty("--page-bottom-dock-h");
     };
-  }, [chatRef, active]);
+  }, [chat, active]);
 }
 
 function SessionRow({ row, now, selected, onOpen }: { row: RecentChatRow; now: number; selected: boolean; onOpen: () => void }) {
