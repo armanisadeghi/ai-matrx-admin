@@ -227,7 +227,7 @@ function SynthesisNavigator({
     <nav aria-label="Syntheses" className="mb-2 grid gap-2">
       {groups.filter((g) => g.items.length > 0).map((group) => (
         <section key={group.title}>
-          <p className="flex items-center gap-1.5 px-1.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          <p className="flex items-center gap-1.5 px-1.5 py-1 type-meta font-semibold uppercase tracking-wide text-muted-foreground">
             <Layers className="h-3 w-3" aria-hidden />
             {group.title}
             <span className="font-normal">{group.items.length}</span>
@@ -245,7 +245,7 @@ function SynthesisNavigator({
                   )}
                 >
                   <span className="block truncate font-medium">{label}</span>
-                  <span className="block truncate text-[11px] text-muted-foreground">
+                  <span className="block truncate type-meta text-muted-foreground">
                     {synthesis.status}
                     {synthesis.capture_version != null ? ` · v${synthesis.capture_version}` : ""}
                     {synthesis.created_at ? ` · ${new Date(synthesis.created_at).toLocaleDateString()}` : ""}

@@ -170,8 +170,8 @@ function ReaderLayout({ groupKey, defaultLayout, source, navigator, toolbar, hea
           <Button icon={<MessageSquareText aria-hidden />} variant="quiet" onClick={() => setMobilePanel("inspector")}>Notes & comments</Button>
         </div>
         <div className="min-h-0 flex-1">{center}</div>
-        <Drawer open={mobilePanel === "navigator"} onOpenChange={(open) => !open && setMobilePanel(null)}><DrawerContent className="h-[92dvh]"><DrawerHeader><DrawerTitle>Contents</DrawerTitle></DrawerHeader><DrawerBody>{left}</DrawerBody></DrawerContent></Drawer>
-        <Drawer open={mobilePanel === "inspector"} onOpenChange={(open) => !open && setMobilePanel(null)}><DrawerContent className="h-[92dvh]"><DrawerHeader><DrawerTitle>Notes & comments</DrawerTitle></DrawerHeader><DrawerBody>{right}</DrawerBody></DrawerContent></Drawer>
+        <Drawer open={mobilePanel === "navigator"} onOpenChange={(open) => !open && setMobilePanel(null)}><DrawerContent><DrawerHeader><DrawerTitle>Contents</DrawerTitle></DrawerHeader><DrawerBody>{left}</DrawerBody></DrawerContent></Drawer>
+        <Drawer open={mobilePanel === "inspector"} onOpenChange={(open) => !open && setMobilePanel(null)}><DrawerContent><DrawerHeader><DrawerTitle>Notes & comments</DrawerTitle></DrawerHeader><DrawerBody>{right}</DrawerBody></DrawerContent></Drawer>
       </div>
     );
   }
