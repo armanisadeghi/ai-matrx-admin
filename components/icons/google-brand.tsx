@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Google brand marks — the ONE place every "Google" mention in the app gets its official mark.
  * Always full colour (Google's brand guidelines forbid recolouring the G or product icons).
