@@ -17,9 +17,19 @@ export default {
     check("history list shows at least one conversation", rows.length >= 1, `${rows.length} rows`);
 
     // 2. Click a past conversation, capture its URL + a distinctive snippet.
-    const row = rows[0];
-    await s.page.locator(`a[href="${row?.href}"]`).first().click();
-    await s.page.waitForURL((u) => CONV_HREF.test(u.pathname), { timeout: 120000 }).catch(() => undefined);
+    // The newest rows can be refusal-only conversations (no assistant answer, so no "More actions" menu exists by design).
+    // Walk the history and own the first conversation that actually has message actions -- the checks below stay unchanged.
+    let row = rows[0];
+    for (const r of rows.slice(0, 12)) {
+      await s.page.locator(`a[href="${r.href}"]`).first().click().catch(() => undefined);
+      await s.page.waitForURL((u) => CONV_HREF.test(u.pathname), { timeout: 120000 }).catch(() => undefined);
+      if (!(await waitForMessages(s.page, 40000))) { await openRetry(s, "/chat"); await waitForRows(s.page); continue; }
+      await s.page.locator("[data-message-id]").first().hover().catch(() => undefined);
+      await sleep(500);
+      if ((await s.page.getByRole("button", { name: "More actions" }).count()) > 0) { row = r; break; }
+      await openRetry(s, "/chat");
+      await waitForRows(s.page);
+    }
     const convUrl = s.page.url();
     check("clicking a history row opens /chat/<id>", CONV_HREF.test(new URL(convUrl).pathname), new URL(convUrl).pathname);
     const loaded = await waitForMessages(s.page);
