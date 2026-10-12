@@ -14,9 +14,12 @@ jest.mock("../requestModelView", () => ({
   requestModelView: (...args: unknown[]) => requestModelView(...args),
 }));
 let selected: unknown = { id: "agent-1" };
+const FALLBACK = { id: "agent-1" }; // stable across renders, like a store value
+const STABLE_DISPATCH = jest.fn(); // the real hooks return the same dispatch and store on every render
+const STABLE_STORE = { getState: () => ({}) };
 jest.mock("@/lib/redux/hooks", () => ({
-  useAppDispatch: () => jest.fn(),
-  useAppStore: () => ({ getState: () => ({}) }),
+  useAppDispatch: () => STABLE_DISPATCH,
+  useAppStore: () => STABLE_STORE,
   useAppSelector: (select: (s: unknown) => unknown) => {
     try {
       return select({
@@ -26,13 +29,14 @@ jest.mock("@/lib/redux/hooks", () => ({
         messages: { byConversationId: {} },
       });
     } catch {
-      return { id: "agent-1" };
+      return FALLBACK;
     }
   },
 }));
-jest.mock("@ai-matrx/chat/agents/redux/agent-definition/selectors", () => ({
-  selectAgentById: () => ({ id: "agent-1" }),
-}));
+jest.mock("@ai-matrx/chat/agents/redux/agent-definition/selectors", () => {
+  const draft = { id: "agent-1" }; // one object, like the store's: a new one per read would re-run the effect forever
+  return { selectAgentById: () => draft };
+});
 const copyText = jest.fn();
 jest.mock("@ai-matrx/kit/clipboard", () => ({
   useClipboard: () => ({ copyText }),
@@ -130,7 +134,7 @@ describe("ModelViewPanel", () => {
   it("names the prompt block's level and variant", async () => {
     await mount();
     await act(async () => {
-      await Promise.resolve();
+      for (let i = 0; i < 5; i++) await Promise.resolve();
     });
     const row = host.querySelector('[data-testid="model-view-block-rules"]')!;
     expect(row.textContent).toContain("Organization");
@@ -158,5 +162,59 @@ describe("ModelViewPanel", () => {
     });
     await mount();
     expect(host.textContent).toContain("can't be captured");
+  });
+
+  it("shows an outline of the final layout and a Capturing state before the first capture lands", async () => {
+    requestModelView.mockReturnValue(new Promise(() => {}));
+    await mount();
+    expect(host.querySelector('[data-testid="model-view-skeleton"]')).not.toBeNull();
+    const status = host.querySelector('[data-testid="model-view-capturing"]') as HTMLElement;
+    expect(status.textContent).toContain("Capturing");
+    // The outline holds the same four sections the finished view has, in the same order.
+    const titles = Array.from(host.querySelectorAll('[data-testid="model-view-skeleton"] h3')).map((h) => h.textContent);
+    expect(titles).toEqual(["System", "Messages", "Tools", "Parameters"]);
+  });
+
+  it("keeps the previous capture on screen, dimmed, while the next one runs", async () => {
+    await mount();
+    await act(async () => {
+      for (let i = 0; i < 5; i++) await Promise.resolve();
+    });
+    expect(host.querySelector('[data-testid="model-view-skeleton"]')).toBeNull();
+    expect(host.querySelector('[data-testid="model-view-capturing"]')).toBeNull();
+    requestModelView.mockReturnValue(new Promise(() => {}));
+    selected = { userValues: { customer: "Sam" } };
+    await act(async () => {
+      root.render(<ModelViewPanel agentId="agent-1" conversationId="c-1" />);
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(600);
+    });
+    const body = host.querySelector('[data-testid="model-view-body"]') as HTMLElement;
+    expect(body.className).toContain("opacity-50");
+    expect(body.getAttribute("aria-busy")).toBe("true");
+    expect(section("System").textContent).toContain("You help Dana Whitfield");
+    expect(host.querySelector('[data-testid="model-view-skeleton"]')).toBeNull();
+    expect(host.querySelector('[data-testid="model-view-capturing"]')?.textContent).toContain("Capturing");
+  });
+
+  it("says plainly why nothing can be shown, and drops the stale request", async () => {
+    await mount();
+    expect(section("System")).not.toBeNull();
+    requestModelView.mockRejectedValue(
+      new Error("This agent has no message of its own and nothing is typed, so a run would send nothing. Type a message to see the request."),
+    );
+    selected = { userValues: { customer: "Pat" } };
+    await act(async () => {
+      root.render(<ModelViewPanel agentId="agent-1" conversationId="c-1" />);
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(600);
+    });
+    const alert = host.querySelector('[role="alert"]') as HTMLElement;
+    expect(alert.textContent).toContain("nothing is typed, so a run would send nothing");
+    expect(host.textContent).not.toContain("Invalid request");
+    expect(section("System")).toBeNull();
+    expect(host.querySelector('[data-testid="model-view-skeleton"]')).toBeNull();
   });
 });

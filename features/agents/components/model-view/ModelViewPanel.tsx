@@ -117,6 +117,9 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
           })
           .catch((e: unknown) => {
             if (mine !== seq.current) return;
+            // A refused capture shows its reason alone: the previous request is not what
+            // the model would receive now, so it must not stay on screen beside the reason.
+            setPreview(null);
             setError(e instanceof Error ? e.message : String(e));
           })
           .finally(() => {
@@ -136,8 +139,17 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto bg-textured p-3" data-testid="model-view">
       <div className="flex items-center justify-between gap-2">
-        <span className="min-w-0 truncate font-mono text-xs text-muted-foreground" data-testid="model-view-target">
-          {request ? `${request.provider} · ${request.model ?? preview?.model ?? ""}` : ""}
+        <span className="min-w-0 truncate text-xs text-muted-foreground">
+          {/* One slot: the target, or Capturing… while a capture runs, so the header never changes size. */}
+          {loading ? (
+            <span role="status" data-testid="model-view-capturing">
+              Capturing…
+            </span>
+          ) : (
+            <span className="font-mono" data-testid="model-view-target">
+              {request ? `${request.provider} · ${request.model ?? preview?.model ?? ""}` : ""}
+            </span>
+          )}
         </span>
         <div className="flex shrink-0 items-center gap-1">
           <Button
@@ -162,6 +174,12 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
         </div>
       </div>
 
+      {/* The previous capture stays, dimmed, while the next one runs; same layout, no shift. */}
+      <div
+        className={`flex flex-col gap-3 transition-opacity ${loading && request ? "opacity-50" : ""}`}
+        aria-busy={loading}
+        data-testid="model-view-body"
+      >
       {request ? (
         <p className="truncate font-mono text-[11px] text-muted-foreground" title={request.url}>
           {request.method} {request.url}
@@ -188,6 +206,8 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
           {n.user_message || n.system_message || n.code}
         </p>
       ))}
+
+      {!request && !error && loading ? <ModelViewSkeleton /> : null}
 
       {request && raw ? (
         <Mono text={prettyBody(request)} testId="model-view-raw" />
@@ -244,6 +264,22 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
           </ul>
         </Section>
       ) : null}
+      </div>
+    </div>
+  );
+}
+
+/** The final layout in outline, shown before the first capture lands. */
+function ModelViewSkeleton() {
+  const bar = (h: string) => <div className={`${h} animate-pulse rounded-md border border-border bg-card`} />;
+  return (
+    <div className="flex flex-col gap-3" data-testid="model-view-skeleton" aria-hidden="true">
+      {["System", "Messages", "Tools", "Parameters"].map((title) => (
+        <section key={title} className="flex flex-col gap-1.5">
+          <h3 className="text-xs font-semibold text-muted-foreground">{title}</h3>
+          {bar(title === "Parameters" ? "h-16" : "h-20")}
+        </section>
+      ))}
     </div>
   );
 }
