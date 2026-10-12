@@ -47,7 +47,17 @@ export interface EvidenceItem {
   confidence: number;
 }
 
-export type Decision = "yes" | "no";
+/**
+ * The person's answer for one finding. `preferred` = THE value of its slot (one brand name, one
+ * logo, one primary website/phone…); `yes` = ours as well; `alias` = another name we go by
+ * (names only); `no` = not us.
+ */
+export type Decision = "preferred" | "yes" | "alias" | "no";
+
+/** Ours, in any role. */
+export function isOurs(decision: Decision | undefined): boolean {
+  return decision === "preferred" || decision === "yes" || decision === "alias";
+}
 
 export interface SocialSeed {
   handle_or_url: string;
@@ -172,7 +182,8 @@ export function nextRoundSeeds(
   let website = "";
   const socials: SocialSeed[] = [];
   for (const item of items.values()) {
-    if (decisions[item.key] !== "yes") continue;
+    const d = decisions[item.key];
+    if (d !== "yes" && d !== "preferred") continue;
     if (item.field === "website" && !website) {
       const host = websiteHost(item.value);
       if (!explored.has(`website:${host}`)) website = item.url ?? item.value;
@@ -197,40 +208,79 @@ export function seedKeys(seeds: RoundSeeds, accountKey: (seed: SocialSeed) => st
 
 export interface BrandBasics {
   name: string | null;
+  aliases: string[];
   logoUrl: string | null;
   websiteUrl: string | null;
+  otherWebsites: string[];
   description: string | null;
   category: string | null;
   accounts: EvidenceItem[];
+  /** Confirmed phone / email / address; the slot's primary one first. */
   facts: EvidenceItem[];
 }
 
-/** The confirmed basics a brand is created from (the highest-confidence confirmed value per single field). */
+/** The confirmed basics a brand is created from: per slot the PREFERRED value, else the best confirmed one. */
 export function confirmedBasics(items: Map<string, EvidenceItem>, decisions: Record<string, Decision>): BrandBasics {
-  const yes = orderedEvidence(items.values()).filter((i) => decisions[i.key] === "yes");
-  const first = (field: EvidenceField) => yes.find((i) => i.field === field) ?? null;
+  const ordered = orderedEvidence(items.values());
+  const ours = ordered.filter((i) => decisions[i.key] === "preferred" || decisions[i.key] === "yes");
+  const pick = (field: EvidenceField) =>
+    ordered.find((i) => i.field === field && decisions[i.key] === "preferred") ??
+    ours.find((i) => i.field === field) ??
+    null;
   // An account confirmed both as a page link and as a looked-up profile is one account.
   const accounts = new Map<string, EvidenceItem>();
-  for (const item of yes.filter((i) => i.field === "social")) {
+  for (const item of ours.filter((i) => i.field === "social")) {
     const existing = accounts.get(item.key);
     if (!existing || item.source.kind === "social_profile") accounts.set(item.key, item);
   }
+  const website = pick("website");
+  const facts = ours
+    .filter((i) => i.field === "phone" || i.field === "email" || i.field === "address")
+    .sort((a, b) => Number(decisions[b.key] === "preferred") - Number(decisions[a.key] === "preferred"));
   return {
-    name: first("name")?.value ?? null,
-    logoUrl: first("logo")?.image_url ?? first("logo")?.value ?? null,
-    websiteUrl: first("website")?.value ?? null,
-    description: first("description")?.value ?? null,
-    category: first("category")?.value ?? null,
+    name: pick("name")?.value ?? null,
+    aliases: ordered.filter((i) => i.field === "name" && decisions[i.key] === "alias").map((i) => i.value),
+    logoUrl: pick("logo")?.image_url ?? pick("logo")?.value ?? null,
+    websiteUrl: website?.value ?? null,
+    otherWebsites: ours.filter((i) => i.field === "website" && i !== website).map((i) => i.value),
+    description: pick("description")?.value ?? null,
+    category: pick("category")?.value ?? null,
     accounts: [...accounts.values()],
-    facts: yes.filter((i) => i.field === "phone" || i.field === "email" || i.field === "address"),
+    facts,
   };
+}
+
+/**
+ * Apply one answer with the slot's rules: a slot has at most ONE preferred value (a new one demotes
+ * the old to `yes`); picking a logo marks every other logo "not us"; answering again clears it.
+ */
+export function applyDecision(
+  decisions: Record<string, Decision>,
+  items: Map<string, EvidenceItem>,
+  key: string,
+  decision: Decision,
+): Record<string, Decision> {
+  const item = items.get(key);
+  if (decisions[key] === decision) {
+    const { [key]: _drop, ...rest } = decisions;
+    return rest;
+  }
+  const next: Record<string, Decision> = { ...decisions, [key]: decision };
+  if (item && decision === "preferred") {
+    for (const other of items.values()) {
+      if (other.key === key || other.field !== item.field) continue;
+      if (item.field === "logo") next[other.key] = "no";
+      else if (next[other.key] === "preferred") next[other.key] = "yes";
+    }
+  }
+  return next;
 }
 
 /** True when a confirmed single-value field makes this item moot (another value already said "this is us"). */
 export function isSettledByAnother(item: EvidenceItem, items: Map<string, EvidenceItem>, decisions: Record<string, Decision>): boolean {
   if (!SINGLE_VALUE_FIELDS.has(item.field) || decisions[item.key]) return false;
   for (const other of items.values()) {
-    if (other.key !== item.key && other.field === item.field && decisions[other.key] === "yes") return true;
+    if (other.key !== item.key && other.field === item.field && decisions[other.key] === "preferred") return true;
   }
   return false;
 }

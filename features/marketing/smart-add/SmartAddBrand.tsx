@@ -23,6 +23,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { extractErrorMessage } from "@/utils/errors";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { formatCount } from "@ai-matrx/kit/format";
 import { startSystemRun } from "@/features/education/kits/systemRuns";
 import {
@@ -34,6 +35,8 @@ import {
   updateBusinessLocation,
 } from "@/features/marketing/data/service";
 import { runHref } from "@/features/workflow-runtime/run-doors";
+import { initializeSite } from "@/features/marketing/crawler/direct-client";
+import { SmartAddSlots } from "./SmartAddSlots";
 import { ADOPTION_RELEASE_GRACE_MS } from "@/features/workflow-runtime/hooks/useWorkflowRun";
 import { detachWorkflowRunState } from "@/features/workflow-runtime/redux/adopt-workflow-run.thunk";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
@@ -51,8 +54,8 @@ import {
 import type { MarketingBrand } from "@/features/marketing/types";
 import {
   FIELD_LABEL,
+  applyDecision,
   confirmedBasics,
-  isSettledByAnother,
   mergeEvidence,
   nextRoundSeeds,
   orderedEvidence,
@@ -114,6 +117,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   // stream adapter treats cancelled as final, so the screen lets go and re-reads the run.
   const [setupAttached, setSetupAttached] = useState(true);
   const [saveNotes, setSaveNotes] = useState<string[]>([]);
+  // Tier 3: the real site crawl, started after Create, never on the identify path.
+  const [crawl, setCrawl] = useState<"idle" | "running" | "done" | "failed">("idle");
 
   // ── rounds ──────────────────────────────────────────────────────────────
 
@@ -194,7 +199,10 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     if (own.length)
       setDecisions((d) => {
         const missing = own.filter((i) => !d[i.key]);
-        return missing.length ? { ...d, ...Object.fromEntries(missing.map((i) => [i.key, "yes" as const])) } : d;
+        // The typed website is the primary one; a typed account is ours.
+        return missing.length
+          ? { ...d, ...Object.fromEntries(missing.map((i) => [i.key, i.field === "website" ? ("preferred" as const) : ("yes" as const)])) }
+          : d;
       });
   };
 
@@ -222,14 +230,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     return () => clearTimeout(timer);
   }, [setupRunId, setupInterrupted, dispatch]);
 
-  const decide = (key: string, decision: Decision) =>
-    setDecisions((d) => {
-      if (d[key] === decision) {
-        const { [key]: _drop, ...rest } = d;
-        return rest;
-      }
-      return { ...d, [key]: decision };
-    });
+  const decide = (key: string, decision: Decision) => setDecisions((d) => applyDecision(d, items, key, decision));
 
   // ── derived ─────────────────────────────────────────────────────────────
 
@@ -271,6 +272,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         ogImageUrl: null,
         notes: null,
         status: "active",
+        // Aliases live where every brand reader looks for them (web.brand.profile.brand_aliases).
+        ...(basics.aliases.length ? { profile: { brand_aliases: basics.aliases } } : {}),
       });
       const problems: string[] = [];
       const accounts: { handle_or_url: string; platform: string; property_id: string }[] = [];
@@ -290,19 +293,30 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           problems.push(`@${item.handle ?? ""}: ${extractErrorMessage(error)}`);
         }
       }
-      if (basics.websiteUrl) {
+      // The primary website and every other confirmed domain become the brand's sites; the primary
+      // one then gets the real crawl (tier 3) in the background.
+      let primarySiteId: string | null = null;
+      for (const url of [basics.websiteUrl, ...basics.otherWebsites].filter((u): u is string => Boolean(u))) {
         try {
-          const parsedUrl = normalizeWebsiteUrl(basics.websiteUrl);
-          await createSite({
+          const parsedUrl = normalizeWebsiteUrl(url);
+          const site = await createSite({
             organizationId,
             name: parsedUrl.hostname,
             rootUrl: parsedUrl.toString(),
             domain: parsedUrl.hostname.toLowerCase(),
             brandId: brand.id,
           });
+          primarySiteId ??= site.id;
         } catch (error) {
-          problems.push(`Website: ${extractErrorMessage(error)}`);
+          problems.push(`${websiteHost(url)}: ${extractErrorMessage(error)}`);
         }
+      }
+      if (primarySiteId) {
+        setCrawl("running");
+        initializeSite(primarySiteId).then(
+          () => setCrawl("done"),
+          () => setCrawl("failed"),
+        );
       }
       problems.push(...(await saveFacts(organizationId, brand.id, basics)));
       setSaveNotes(problems);
@@ -408,25 +422,16 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
 
       {/* Results: reserved from the start (zero layout shift); findings stream in. */}
       <div
-        className="h-[26rem] overflow-y-auto rounded-lg border border-border bg-card"
+        className="h-[34rem] overflow-y-auto rounded-lg border border-border bg-card"
         data-testid="smart-add-results"
       >
-        {visible.length === 0 ? (
-          <ResultsSkeleton active={working} />
-        ) : (
-          <ul className="divide-y divide-border">
-            {visible.map((item) => (
-              <EvidenceRow
-                key={item.key}
-                item={item}
-                decision={decisions[item.key] ?? null}
-                settled={isSettledByAnother(item, items, decisions)}
-                locked={Boolean(created)}
-                onDecide={(d) => decide(item.key, d)}
-              />
-            ))}
-          </ul>
-        )}
+        <SmartAddSlots
+          items={visible}
+          decisions={decisions}
+          working={working}
+          locked={Boolean(created)}
+          onDecide={decide}
+        />
       </div>
 
       {notes.length ? (
@@ -470,7 +475,12 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           </Button>
         )}
       </div>
-      {createError ? <p className="text-xs text-destructive">{createError}</p> : null}
+      {createError ? (
+        <p className="flex items-center gap-1 text-xs text-destructive">
+          {createError}
+          <ErrorAlchemyMenu error={createError} />
+        </p>
+      ) : null}
 
       {saveNotes.length ? (
         <ul className="flex flex-col gap-0.5 text-xs text-destructive">
@@ -482,7 +492,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         </ul>
       ) : null}
 
-      {setupRunId ? (
+      {setupRunId || crawl !== "idle" ? (
         <div className="flex flex-col gap-1 rounded-lg border border-border bg-card px-3 py-2 text-xs" data-testid="smart-add-background">
           <div className="flex items-center gap-2">
             {setupState === "done" ? (
@@ -495,6 +505,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
               <Loader2 className="size-3.5 animate-spin text-primary" />
             )}
             <span className="font-medium">{SETUP_STATE_LABEL[setupState]}</span>
+            {setupRunId ? (
             <a
               href={runHref(setupRunId)}
               target="_blank"
@@ -503,7 +514,14 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
             >
               Watch <ExternalLink className="size-3" />
             </a>
+            ) : null}
           </div>
+          {crawl !== "idle" ? (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <span className="w-32 shrink-0 truncate">Site crawl</span>
+              <span className="w-16 shrink-0">{crawl === "running" ? "Working" : crawl === "done" ? "Done" : "Failed"}</span>
+            </div>
+          ) : null}
           {(setupView?.steps ?? []).map((step) => (
             <div key={step.step} className="flex items-center gap-2 text-muted-foreground">
               <span className="w-32 shrink-0 truncate">{SETUP_STEP_LABEL[step.step] ?? step.step}</span>
@@ -527,129 +545,6 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         r.runId ? <SmartAddRound key={r.runId} runId={r.runId} onEvidence={onEvidence} onView={onView} /> : null,
       )}
     </div>
-  );
-}
-
-function ResultsSkeleton({ active }: { active: boolean }) {
-  return (
-    <ul className="divide-y divide-border" aria-hidden>
-      {Array.from({ length: 6 }, (_, i) => (
-        <li key={i} className="flex h-14 items-center gap-3 px-3">
-          <div className={`size-8 rounded-md bg-muted ${active ? "animate-pulse" : ""}`} />
-          <div className="flex flex-1 flex-col gap-1.5">
-            <div className={`h-3 w-1/3 rounded bg-muted ${active ? "animate-pulse" : ""}`} />
-            <div className={`h-2.5 w-1/2 rounded bg-muted/70 ${active ? "animate-pulse" : ""}`} />
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function EvidenceRow({
-  item,
-  decision,
-  settled,
-  locked,
-  onDecide,
-}: {
-  item: EvidenceItem;
-  decision: Decision | null;
-  settled: boolean;
-  locked: boolean;
-  onDecide: (d: Decision) => void;
-}) {
-  const dim = decision === "no" || (settled && !decision);
-  const meta = [
-    FIELD_LABEL[item.field],
-    item.followers != null ? `${formatCount(item.followers)} followers` : null,
-    item.source.where ?? item.source.kind,
-    `${Math.round(item.confidence * 100)}%`,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-  return (
-    <li
-      className={`flex h-14 items-center gap-3 px-3 transition-opacity ${dim ? "opacity-45" : ""}`}
-      data-testid="smart-add-item"
-      data-field={item.field}
-      data-decision={decision ?? "open"}
-    >
-      <ItemVisual item={item} />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-sm" title={item.value}>
-          {item.field === "social"
-            ? `@${item.handle ?? ""}${item.label ? ` · ${item.label}` : ""}`
-            : item.field === "logo"
-              ? "Logo"
-              : item.field === "website"
-                ? (item.label ?? websiteHost(item.value))
-                : item.value}
-        </span>
-        <span className="truncate text-xs text-muted-foreground" title={item.source.url ?? undefined}>
-          {meta}
-        </span>
-      </div>
-      <div className="flex shrink-0 gap-1">
-        <Button
-          variant={decision === "yes" ? "primary" : "outline"}
-          aria-pressed={decision === "yes"}
-          aria-label="This is us"
-          disabled={locked}
-          onClick={() => onDecide("yes")}
-        >
-          <Check className="size-3.5" />
-          <span className="hidden sm:inline">This is us</span>
-        </Button>
-        <Button
-          variant={decision === "no" ? "danger" : "quiet"}
-          aria-pressed={decision === "no"}
-          aria-label="Not us"
-          disabled={locked}
-          onClick={() => onDecide("no")}
-        >
-          <X className="size-3.5" />
-          <span className="hidden sm:inline">Not us</span>
-        </Button>
-      </div>
-    </li>
-  );
-}
-
-function ItemVisual({ item }: { item: EvidenceItem }) {
-  if (item.field === "social" && item.profile_id) {
-    return (
-      <SocialImage
-        door={profileAvatarDoor(item.profile_id)}
-        url={item.image_url}
-        fallback={<PlatformMark platform={item.platform ?? ""} size={20} />}
-        className="size-8 shrink-0 rounded-full object-cover"
-      />
-    );
-  }
-  if (item.field === "social") {
-    return (
-      <span className="flex size-8 shrink-0 items-center justify-center">
-        <PlatformMark platform={item.platform ?? ""} size={20} />
-      </span>
-    );
-  }
-  if (item.field === "logo" && (item.image_url || item.value)) {
-    return item.profile_id ? (
-      <SocialImage
-        door={profileAvatarDoor(item.profile_id)}
-        url={item.image_url}
-        fallback={<Globe className="size-4" />}
-        className="size-8 shrink-0 rounded-md object-contain"
-      />
-    ) : (
-      <img src={item.image_url ?? item.value} alt="" className="size-8 shrink-0 rounded-md bg-muted object-contain" />
-    );
-  }
-  return (
-    <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-[10px] font-medium uppercase text-muted-foreground">
-      {FIELD_LABEL[item.field].slice(0, 2)}
-    </span>
   );
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { BACKEND_URLS } from "@/lib/api/endpoints";
@@ -8,17 +8,25 @@ import { setServiceOverride, switchServer } from "@/lib/redux/slices/apiConfigSl
 import { SmartAddBrand } from "@/features/marketing/smart-add/SmartAddBrand";
 
 const LAB_SERVER_KEY = "matrx.lab.smartAddBrand.server";
+const labServerListeners = new Set<() => void>();
+function subscribeLabServer(fn: () => void): () => void {
+  labServerListeners.add(fn);
+  return () => labServerListeners.delete(fn);
+}
+function readLabServer(): "production" | "localhost" {
+  return window.localStorage.getItem(LAB_SERVER_KEY) === "localhost" ? "localhost" : "production";
+}
 
 /** Lab chrome only: a title and which aidream server answers (live or this computer). */
 export function LabSmartAddBrand() {
   const dispatch = useAppDispatch();
   // The lab owns its choice (default: Live server) and applies it on load, so the
   // switch and the address every call goes to can never disagree.
-  const [server, setServer] = useState<"production" | "localhost">("production");
-  useEffect(() => {
-    const saved = window.localStorage.getItem(LAB_SERVER_KEY) === "localhost" ? "localhost" : "production";
-    setServer(saved);
-  }, []);
+  const server = useSyncExternalStore(subscribeLabServer, readLabServer, () => "production" as const);
+  const setServer = (next: "production" | "localhost") => {
+    window.localStorage.setItem(LAB_SERVER_KEY, next);
+    labServerListeners.forEach((fn) => fn());
+  };
   useEffect(() => {
     dispatch(setServiceOverride({ service: "aidream", environment: null }));
     void dispatch(switchServer({ env: server }));
@@ -54,7 +62,6 @@ export function LabSmartAddBrand() {
           ]}
           onValueChange={(value) => {
             const next = value === "localhost" ? "localhost" : "production";
-            window.localStorage.setItem(LAB_SERVER_KEY, next);
             setServer(next);
           }}
         />

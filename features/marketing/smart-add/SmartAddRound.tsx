@@ -22,7 +22,7 @@ import { evidenceFromPayload, type EvidenceItem } from "./evidence";
 
 /** The steps a Smart Add workflow shows, in order (at most three; identify has two). */
 export type SmartAddStepPair = readonly [string, string] | readonly [string, string, string];
-export const IDENTIFY_STEPS: SmartAddStepPair = ["website", "socials"];
+export const IDENTIFY_STEPS: SmartAddStepPair = ["probe", "page", "socials"];
 export const SETUP_STEPS: SmartAddStepPair = ["logo", "accounts", "history"];
 
 export interface StepView {
