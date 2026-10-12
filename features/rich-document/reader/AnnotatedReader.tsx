@@ -61,6 +61,8 @@ export interface AnnotatedReaderProps {
   wrapBody?: (body: ReactNode) => ReactNode;
   /** Record-specific passage actions added to the one selection toolbar. */
   passageActions?: readonly Action[];
+  /** Which headings the outline lists (default "all": every section of an authored document). */
+  outlineSections?: "branches" | "all";
   /** Mounted inside the sidecar (agent bridges). */
   children?: ReactNode;
 }
@@ -88,7 +90,7 @@ export function AnnotatedReader(props: AnnotatedReaderProps) {
     : <ReaderLayout {...props} />;
 }
 
-function ReaderLayout({ groupKey, defaultLayout, source, navigator, toolbar, header, placeholder, extraTabs = [], wrapBody, passageActions }: AnnotatedReaderProps) {
+function ReaderLayout({ groupKey, defaultLayout, source, navigator, toolbar, header, placeholder, extraTabs = [], wrapBody, passageActions, outlineSections = "all" }: AnnotatedReaderProps) {
   const isMobile = useIsMobile();
   const readerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -144,7 +146,7 @@ function ReaderLayout({ groupKey, defaultLayout, source, navigator, toolbar, hea
     <aside className="matrx-touch-targets flex h-full min-h-0 flex-col bg-muted/20">
       <div className="scroll-page-end-space min-h-0 flex-1 overflow-y-auto p-1 pt-9">
         {navigator}
-        {source && <DocumentOutline key={`${source.id}:${source.contentVersion}`} content={source.body} titleLabel={source.title} onJump={jump} />}
+        {source && <DocumentOutline key={`${source.id}:${source.contentVersion}`} content={source.body} titleLabel={source.title} onJump={jump} sections={outlineSections} />}
       </div>
     </aside>
   );

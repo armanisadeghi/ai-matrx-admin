@@ -29,7 +29,17 @@ export function documentOutlineDisplayTitle(outline: readonly NoteOutlineItem[],
 /** Commit to the document's Markdown heading hierarchy. The first section
  * level sets the top tier; no other text or shallower headings are promoted.
  * A top-level row must own deeper headings to become an outline branch. */
-export function documentOutlineItems(outline: readonly NoteOutlineItem[], content = ""): NoteOutlineItem[] {
+export interface DocumentOutlineOptions {
+  /**
+   * "branches" (study guides — notes extracted from PDFs carry junk one-line
+   * headings): only top-level sections that own deeper headings are listed.
+   * "all" (authored or AI-written documents): every section in the chosen
+   * hierarchy is listed, leaf sections included.
+   */
+  sections?: "branches" | "all";
+}
+
+export function documentOutlineItems(outline: readonly NoteOutlineItem[], content = "", options: DocumentOutlineOptions = {}): NoteOutlineItem[] {
   const title = documentOutlineTitle(outline, content);
   const sections = outline.filter((item) => item !== title);
   if (!sections.length) return [];
@@ -46,6 +56,7 @@ export function documentOutlineItems(outline: readonly NoteOutlineItem[], conten
       eligible.push(item);
     }
   }
+  if (options.sections === "all") return eligible;
   const roots = documentOutlineTree(eligible);
   const branchIds = new Set(roots.filter((node) => node.children.length > 0).map((node) => node.item.headingIndex));
   if (!branchIds.size) return [];

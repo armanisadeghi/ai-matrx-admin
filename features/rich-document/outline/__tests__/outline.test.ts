@@ -142,3 +142,17 @@ describe("study guide outline", () => {
     expect(toggleOutlineSection(outline, switched, 0)).toEqual({ 0: true, 1: false, 3: false });
   });
 });
+
+describe("authored documents list every section", () => {
+  it("keeps leaf sections beside branches when sections is \"all\"", () => {
+    const headings = parseNoteOutline("# Report\n## Executive Summary\n## Findings\n### Overtime\n## Sources");
+    expect(documentOutlineItems(headings).map((item) => item.text)).toEqual(["Findings", "Overtime"]);
+    expect(documentOutlineItems(headings, "", { sections: "all" }).map((item) => item.text)).toEqual(["Executive Summary", "Findings", "Overtime", "Sources"]);
+  });
+
+  it("lists a flat report's sections instead of nothing", () => {
+    const headings = parseNoteOutline("# Report\n## One\n## Two");
+    expect(documentOutlineItems(headings)).toEqual([]);
+    expect(documentOutlineItems(headings, "", { sections: "all" }).map((item) => item.text)).toEqual(["One", "Two"]);
+  });
+});

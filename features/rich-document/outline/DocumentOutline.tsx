@@ -27,15 +27,18 @@ export function DocumentOutline({
   titleLabel,
   onJump,
   label = "Document outline",
+  sections = "branches",
 }: {
   content: string;
   titleLabel: string;
   onJump: (headingIndex: number) => void;
   label?: string;
+  /** See `DocumentOutlineOptions.sections`. */
+  sections?: "branches" | "all";
 }) {
   const headings = parseNoteOutline(content);
   const title = documentOutlineDisplayTitle(headings, titleLabel, content);
-  const outline = documentOutlineItems(headings, content);
+  const outline = documentOutlineItems(headings, content, { sections });
   const tree = documentOutlineTree(outline);
   const [expanded, setExpanded] = useState(() => initialOutlineExpansion(outline));
   const [activeHeading, setActiveHeading] = useState<number | null>(null);

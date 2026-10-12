@@ -29,6 +29,17 @@ endpoint map). **State** — feature-local Zustand (`state/topicStore.ts` via
 `format.ts`, `constants.ts`, `utils/init-route.ts`, `resources/` (catalog · manifest · selector · resolve),
 `agent-context/buildResearchContextData.ts`.
 
+**Reading set (highlights, comments, notes)** — Synthesis and Document open in THE annotated reader
+(`components/reader/ResearchRecordReader.tsx` over `features/rich-document/reader/AnnotatedReader`):
+outline left, Notes & comments right. Every other saved research text (analyses, keyword syntheses,
+consolidations, older versions) renders through `components/reader/ResearchRecordContent.tsx`, which
+names the record so the same toolbar and dock work in place. Record tokens: `research_synthesis`,
+`research_analysis`, `research_document` (comment doors take them; highlight/link pairs added
+2026-10-11). `agent-context/readingRecord.tsx` publishes the open record + its threads + the person's
+highlights into the topic surface (`open_record`, `record_comments`, `my_record_notes`). Open
+(unresolved) comments also travel into Update / Rebuild / Regenerate on the server
+(aidream `research/reader_comments.py`).
+
 ## The rules
 
 - **`readiness.ts` decides what "done" means and NOTHING re-derives it.** Row counts cannot answer
@@ -120,6 +131,8 @@ via `<Cost>`/`useCostDisplay` (`components/cost/`, points for everyone); never `
 `pnpm type-check` is the only type gate; the build ignores type errors.
 
 ## Change log
+
+- `2026-10-11` — Research records get the study guide's reading set: Synthesis and Document open in the annotated reader (outline, highlight, private note, comment, suggest, link, find), the synthesis list moved into the reader's left column (filters kept), every inline research text is annotatable in place, agents read the open record and its comments, and open comments feed rewrites. Guard: `agent-context/__tests__/reading-record-scope.test.ts`.
 
 - `2026-10-09` — page-pass (research Social tab, Sources filtered to Social, intake; types: tab of a single record, form; posture sharp after Linear): unreadable scraper names fall back to the handle, Posts has its own icon, voice stage reads as words, a social source row never repeats an unreported count as a dash; the intake shows three platform fields plus filled ones (rest one click away) and tells the AI keyword suggester the person's cap so review no longer opens as a red over-limit error. Gated-capture dialogs (`features/marketing/social/gated/`) are finger-sized and the Add login form never opens as nothing. Open: the topic surface (`matrx-user/research`) does not yet declare the Social tab's profiles and posts.
 

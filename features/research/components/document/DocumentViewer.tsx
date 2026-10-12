@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback } from "react";
+import type { Layout } from "react-resizable-panels";
+import { ResearchRecordReader } from "../reader/ResearchRecordReader";
 import {
   RefreshCw,
   Download,
@@ -16,10 +18,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import MarkdownCore from "@ai-matrx/rich-content/markdown-core/MarkdownCore";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { StaleDataNotice } from "@ai-matrx/design-system";
-import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useTopicContext, useStreamDebug } from "../../context/ResearchContext";
 import { useResearchApi } from "../../hooks/useResearchApi";
 import { useResearchDocument } from "../../hooks/useResearchState";
@@ -30,29 +30,25 @@ import { DocumentSkeleton } from "../shared/Skeletons";
 import type { ResearchDocument } from "../../types";
 import { tokenUsageFromJson } from "../../types";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
-import { RichDocumentActions } from "@ai-matrx/rich-content/rich-document/RichDocumentActions";
 import { StoppedEarlyNote } from "../shared/StoppedEarlyNote";
 import { deriveReadiness } from "../../readiness";
-import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
-import {
-  buildResearchContextData,
-  RESEARCH_CONTEXT_MENU_PROPS,
-} from "../../agent-context/buildResearchContextData";
 
 // Universal v3 context menu — the SAME menu everywhere. This surface is the
 // read-only assembled document, so it uses the NonEditable wrapper (Copy / AI
 // Actions / Export / Convert still work via the DOM-content fallback). The
 // wrapper is the lightweight shell (imported statically); MenuContent
 // lazy-loads on first open.
-import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { Cost } from "@/components/cost/Cost";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { downloadFile } from "@ai-matrx/kit/download";
 
-export default function DocumentViewer() {
-  const { topicId, topic, progress, refresh } = useTopicContext();
+/** A string with real (non-whitespace) content. */
+const hasText = (s: string | null | undefined): s is string =>
+  !!s && s.trim().length > 0;
+
+export default function DocumentViewer({ defaultLayout }: { defaultLayout?: Layout }) {
+  const { topicId, progress, refresh } = useTopicContext();
   const api = useResearchApi();
-  const isMobile = useIsMobile();
   const debug = useStreamDebug();
   const {
     data: docData,
@@ -76,17 +72,6 @@ export default function DocumentViewer() {
   // viewer never flashes the empty "No document yet" state during the refetch
   // gap between `document_complete` and the DB row becoming visible.
   const displayContent = document?.content || streamingDocText;
-
-  const headings = useMemo(() => {
-    if (!displayContent) return [];
-    const matches = displayContent.match(/^#{1,3}\s+.+$/gm);
-    return (matches ?? []).map((h) => {
-      const level = h.match(/^#+/)?.[0].length ?? 1;
-      const text = h.replace(/^#+\s+/, "");
-      const id = text.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-      return { level, text, id };
-    });
-  }, [displayContent]);
 
   const handleRegenerate = useCallback(async () => {
     setStreamingDocText("");
@@ -275,260 +260,165 @@ export default function DocumentViewer() {
 
   const docTokenUsage = tokenUsageFromJson(document.token_usage);
 
-  // Surface agent context (matrx-user/research) — read-only over the assembled
-  // document so a right-click offers agent actions on what the user is reading.
-  const documentContextData = buildResearchContextData({
-    topic,
-    progress,
-    primaryText: displayContent,
-    displayTitle: document.title,
-    documents: [
-      {
-        id: document.id,
-        title: document.title ?? "Research Document",
-        created_at: document.created_at ?? undefined,
-      },
-    ],
-  });
-  // Plain fn (React Compiler memoizes) — reads the live DOM selection at click.
-  const getDocumentApplicationScope = () => {
-    const selectedText =
-      typeof window !== "undefined"
-        ? (window.getSelection()?.toString() ?? "")
-        : "";
-    return buildApplicationScopeFromMenuContext({
-      selectedText,
-      selectionRange: null,
-      contextData: documentContextData,
-    });
-  };
+  const toolbar = (
+    <div className="flex items-center gap-2 rounded-full matrx-glass-thin-border px-3 py-1.5">
+      <span className="type-secondary font-medium text-foreground/80 truncate">
+        {document.title ?? "Document"}
+      </span>
+      {document.capture_version != null && (
+        <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
+          v{document.capture_version}
+        </Badge>
+      )}
+      <span className="type-meta text-muted-foreground">
+        {document.created_at
+          ? new Date(document.created_at).toLocaleDateString()
+          : ""}
+      </span>
+      <div className="flex-1" />
+      <div className="flex items-center gap-1">
+        <button
+          onClick={handleRegenerate}
+          disabled={stream.isStreaming}
+          className="inline-flex items-center gap-1 h-6 px-2 rounded-full matrx-glass-card text-[11px] font-medium text-primary disabled:opacity-50 transition-colors"
+        >
+          {stream.isStreaming ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <RefreshCw className="h-3 w-3" />
+          )}
+          <span className="hidden sm:inline">Regen</span>
+        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="inline-flex items-center gap-1 h-6 px-2 rounded-full matrx-glass-card text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors">
+              <Download className="h-3 w-3" />
+              <span className="hidden sm:inline">Export</span>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => handleExport("json")}>
+              Export as JSON
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled>
+              Export as PDF (coming soon)
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled>
+              Export as DOCX (coming soon)
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <button
+          onClick={() => setShowHistory(true)}
+          className="inline-flex items-center gap-1 h-6 px-2 rounded-full matrx-glass-card text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <History className="h-3 w-3" />
+          <span className="hidden sm:inline">History</span>
+        </button>
+      </div>
+    </div>
+  );
 
-  return (
-    <div className="flex h-full min-h-0">
-      {/* TOC Sidebar — Desktop Only */}
-      {!isMobile && headings.length > 2 && (
-        <aside className="hidden lg:block w-48 shrink-0 border-r border-border overflow-y-auto py-4 px-3">
-          <div className="type-secondary font-medium text-muted-foreground uppercase tracking-wide mb-3">
-            Contents
-          </div>
-          <nav className="space-y-1">
-            {headings.map((h, i) => (
-              <a
-                key={i}
-                href={`#${h.id}`}
-                className="block type-secondary text-muted-foreground hover:text-foreground transition-colors truncate"
-                style={{ paddingLeft: `${(h.level - 1) * 12}px` }}
-              >
-                {h.text}
-              </a>
-            ))}
-          </nav>
-        </aside>
+  const header = (
+    <>
+      {docError && (
+        <StaleDataNotice
+          hasData
+          what="this document"
+          onRetry={refetchDoc}
+          retrying={docLoading}
+          detail={docError}
+          className="mb-3"
+        />
+      )}
+      {/* Out-of-date document. Stated, never silently repaired: regenerating
+          is a full document-assembly call, so it stays the user's call. */}
+      {documentStale && (
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-amber-500/35 bg-amber-500/[0.05] p-2.5">
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+          <p className="min-w-0 flex-1 type-meta leading-snug text-muted-foreground">
+            <span className="font-medium text-foreground">
+              Document out of date
+            </span>{" "}
+            · open comments go to the writer
+          </p>
+          <button
+            onClick={handleRegenerate}
+            disabled={stream.isStreaming}
+            className="inline-flex shrink-0 items-center gap-1.5 h-7 px-3 rounded-full bg-primary text-primary-foreground text-[11px] font-medium hover:bg-primary/90 disabled:opacity-40 transition-all"
+          >
+            {stream.isStreaming ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <RefreshCw className="h-3 w-3" />
+            )}
+            Regenerate
+          </button>
+        </div>
       )}
 
-      {/* Main Content */}
-      <div className="flex-1 min-w-0 overflow-y-auto p-3 sm:p-4">
-        {docError && (
-          <StaleDataNotice
-            hasData
-            what="this document"
-            onRetry={refetchDoc}
-            retrying={docLoading}
-            detail={docError}
-            className="mb-3"
-          />
-        )}
-        {/* Out-of-date document. Stated, never silently repaired: regenerating
-            is a full document-assembly call, so it stays the user's call. */}
-        {documentStale && (
-          <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-amber-500/35 bg-amber-500/[0.05] p-2.5">
-            <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
-            <p className="min-w-0 flex-1 type-meta leading-snug text-muted-foreground">
-              <span className="font-medium text-foreground">
-                This document is out of date.
-              </span>{" "}
-              Your topic report has been rewritten since it was assembled.
-              Regenerating is one large AI call — it runs only when you ask.
-            </p>
-            <button
-              onClick={handleRegenerate}
-              disabled={stream.isStreaming}
-              className="inline-flex shrink-0 items-center gap-1.5 h-7 px-3 rounded-full bg-primary text-primary-foreground text-[11px] font-medium hover:bg-primary/90 disabled:opacity-40 transition-all"
-            >
-              {stream.isStreaming ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <RefreshCw className="h-3 w-3" />
-              )}
-              Regenerate
-            </button>
-          </div>
-        )}
-        <div className="flex items-center gap-2 rounded-full matrx-glass-thin-border px-3 py-1.5 mb-4">
-          <span className="type-secondary font-medium text-foreground/80 truncate">
-            {document.title ?? "Document"}
+      {/* Token usage */}
+      {docTokenUsage && (
+        <div className="flex flex-wrap items-center gap-4 type-meta text-muted-foreground mb-4 pb-4 border-b border-border">
+          <span>
+            Input: {docTokenUsage.inputTokens.toLocaleString()} tokens
           </span>
-          {document.capture_version != null && (
-            <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
-              v{document.capture_version}
-            </Badge>
+          {docTokenUsage.cachedInputTokens > 0 && (
+            <span className="text-muted-foreground/60">
+              Cached: {docTokenUsage.cachedInputTokens.toLocaleString()}
+            </span>
           )}
-          <span className="type-meta text-muted-foreground">
-            {document.created_at
-              ? new Date(document.created_at).toLocaleDateString()
-              : ""}
+          <span>
+            Output: {docTokenUsage.outputTokens.toLocaleString()} tokens
           </span>
-          <div className="flex-1" />
-          <div className="flex items-center gap-1">
-            <button
-              onClick={handleRegenerate}
-              disabled={stream.isStreaming}
-              className="inline-flex items-center gap-1 h-6 px-2 rounded-full matrx-glass-card text-[11px] font-medium text-primary disabled:opacity-50 transition-colors"
-            >
-              {stream.isStreaming ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <RefreshCw className="h-3 w-3" />
-              )}
-              <span className="hidden sm:inline">Regen</span>
-            </button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="inline-flex items-center gap-1 h-6 px-2 rounded-full matrx-glass-card text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors">
-                  <Download className="h-3 w-3" />
-                  <span className="hidden sm:inline">Export</span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleExport("json")}>
-                  Export as JSON
-                </DropdownMenuItem>
-                <DropdownMenuItem disabled>
-                  Export as PDF (coming soon)
-                </DropdownMenuItem>
-                <DropdownMenuItem disabled>
-                  Export as DOCX (coming soon)
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <button
-              onClick={() => setShowHistory(true)}
-              className="inline-flex items-center gap-1 h-6 px-2 rounded-full matrx-glass-card text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <History className="h-3 w-3" />
-              <span className="hidden sm:inline">History</span>
-            </button>
-          </div>
+          {docTokenUsage.models.length > 0 && (
+            <span className="text-muted-foreground/50">
+              {docTokenUsage.models.map((m) => m.model).join(", ")}
+            </span>
+          )}
+          {docTokenUsage.costUsd != null && (
+            <span className="inline-flex items-center gap-1">
+              Cost: <Cost usd={docTokenUsage.costUsd} short />
+            </span>
+          )}
         </div>
+      )}
 
-        {/* Token usage */}
-        {docTokenUsage && (
-          <div className="flex items-center gap-4 type-meta text-muted-foreground mb-4 pb-4 border-b border-border">
-            <span>
-              Input: {docTokenUsage.inputTokens.toLocaleString()} tokens
-            </span>
-            {docTokenUsage.cachedInputTokens > 0 && (
-              <span className="text-muted-foreground/60">
-                Cached: {docTokenUsage.cachedInputTokens.toLocaleString()}
-              </span>
-            )}
-            <span>
-              Output: {docTokenUsage.outputTokens.toLocaleString()} tokens
-            </span>
-            {docTokenUsage.models.length > 0 && (
-              <span className="text-muted-foreground/50">
-                {docTokenUsage.models.map((m) => m.model).join(", ")}
-              </span>
-            )}
-            {docTokenUsage.costUsd != null && (
-              <span className="inline-flex items-center gap-1">
-                Cost: <Cost usd={docTokenUsage.costUsd} short />
-              </span>
-            )}
-          </div>
-        )}
+      {/* Stopped early but content was produced — annotate, don't hide it.
+          Gated on the failed status (not a stale error field) so a clean
+          success never shows a false "stopped early" note. */}
+      {!stream.isStreaming && document.status === "failed" && (
+        <StoppedEarlyNote
+          reason={document.error || "Generation stopped early."}
+        />
+      )}
+    </>
+  );
 
-        {/* Stopped early but content was produced — annotate, don't hide it.
-            Gated on the failed status (not a stale error field) so a clean
-            success never shows a false "stopped early" note. */}
-        {!stream.isStreaming && document.status === "failed" && (
-          <StoppedEarlyNote
-            reason={document.error || "Generation stopped early."}
-          />
-        )}
-
-        {/* Markdown Content — uses live streaming text while generating, DB
-            content after. Wrapped in the read-only research surface menu so a
-            right-click offers agent actions on the document the user reads. */}
-        <NonEditableContextMenu
-          {...RESEARCH_CONTEXT_MENU_PROPS}
-          getApplicationScope={getDocumentApplicationScope}
-          contextData={documentContextData}
-        >
-          <article className="prose prose-sm dark:prose-invert max-w-none prose-headings:scroll-mt-4">
-            <MarkdownCore
-              preset="gfm"
-              components={{
-                h1: ({ children, ...props }) => (
-                  <h1
-                    id={String(children)
-                      .toLowerCase()
-                      .replace(/[^a-z0-9]+/g, "-")}
-                    {...props}
-                  >
-                    {children}
-                  </h1>
-                ),
-                h2: ({ children, ...props }) => (
-                  <h2
-                    id={String(children)
-                      .toLowerCase()
-                      .replace(/[^a-z0-9]+/g, "-")}
-                    {...props}
-                  >
-                    {children}
-                  </h2>
-                ),
-                h3: ({ children, ...props }) => (
-                  <h3
-                    id={String(children)
-                      .toLowerCase()
-                      .replace(/[^a-z0-9]+/g, "-")}
-                    {...props}
-                  >
-                    {children}
-                  </h3>
-                ),
-              }}
-            >
-              {displayContent}
-            </MarkdownCore>
-          </article>
-        </NonEditableContextMenu>
-
-        {/* Content actions — copy, TTS, full-screen viewer, save to notes/code/tasks, HTML preview, email, print. */}
-        {!stream.isStreaming && document.content && (
-          <div className="mt-6 pt-3 border-t border-border flex justify-end">
-            <RichDocumentActions
-              content={document.content}
-              source={{
-                type: "raw",
+  // The assembled document in THE annotated reader: outline, highlights,
+  // comments, the research right-click menu (live streaming text while a
+  // regenerate runs, the saved row after).
+  return (
+    <>
+      <ResearchRecordReader
+        groupKey="research-document-reader"
+        defaultLayout={defaultLayout}
+        record={
+          hasText(displayContent)
+            ? {
+                type: "research_document",
+                id: document.id,
                 title: document.title ?? "Research Document",
-              }}
-              actions={{
-                metadata: {
-                  topicId,
-                  documentId: document.id,
-                  version: document.capture_version,
-                  title: document.title ?? null,
-                  created_at: document.created_at,
-                  ...(docTokenUsage ? { token_usage: docTokenUsage } : {}),
-                },
-              }}
-            />
-          </div>
-        )}
-      </div>
+                version: document.capture_version ?? 1,
+                kind: "document",
+                body: displayContent,
+                href: `/research/topics/${topicId}/document`,
+              }
+            : null
+        }
+        toolbar={toolbar}
+        header={header}
+      />
 
       {/* Version History */}
       <VersionHistory
@@ -541,6 +431,6 @@ export default function DocumentViewer() {
           setShowHistory(false);
         }}
       />
-    </div>
+    </>
   );
 }
