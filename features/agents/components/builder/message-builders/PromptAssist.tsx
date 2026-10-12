@@ -184,7 +184,10 @@ export function PromptWriteBox({
       // 2026-10-11: "the giant blank thing added to the bottom … looks horrible"). Headings take the
       // text's colour: a prompt is read as text.
       className={cn(
-        "relative w-full [--rich-editor-heading-color:currentColor] [&_.ProseMirror]:min-h-0! [&_.ProseMirror]:px-0! [&_.ProseMirror]:py-0! [&_.ProseMirror]:font-sans [&_.ProseMirror]:text-xs!",
+        "relative w-full [--rich-editor-heading-color:currentColor] [&_.ProseMirror]:font-sans",
+        // EMPTY-BOX FIX until rich-editor > 0.5.105 is on npm (its flow CSS hid a document's only, empty
+        // line — an empty message had no height, no placeholder and could not be clicked). Remove then.
+        "[&_.rich-editor-prose>p:only-child]:h-auto! [&_.rich-editor-prose>p:only-child]:overflow-visible!",
         textClassName,
       )}
     >
@@ -193,8 +196,8 @@ export function PromptWriteBox({
         onChange={onChange}
         view="visual"
         chrome="bare"
-        // PUBLISH-PENDING (rich-editor > 0.5.104): layout="flow" textSize="xs" — no panel surface,
-        // no 60dvh floor, no 40dvh runway. Until it is on npm the panel keeps its runway.
+        layout="flow"
+        textSize="xs"
         hostContextMenu
         variables={declared}
         promptBlocks={promptBlocks}
