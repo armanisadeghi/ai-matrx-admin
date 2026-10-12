@@ -282,6 +282,7 @@ if $STRICT; then
         "TypeScript type-check|pnpm type-check"
         "Doctrine check|pnpm exec tsx scripts/check-doctrine.ts --strict"
         "Doc claims vs live config|pnpm exec tsx scripts/check-doc-claims.ts --strict"
+        "Linked-records kinds are linkable|pnpm exec tsx scripts/check-back-link-kinds.ts"
         "Route metadata and favicons|pnpm check:route-metadata:strict"
         "Pattern Patrol manifest contracts|pnpm exec tsx scripts/pattern-patrol/check-manifest.ts --repo-only"
         "Turbopack filesystem tracing|pnpm exec tsx scripts/check-turbopack-fs-tracing.ts"
