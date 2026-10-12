@@ -9,6 +9,7 @@
  * history — all come from the one registration and are not repeated here.
  */
 
+import { GoogleG } from "@/components/icons/google-brand";
 import { useEffect, useState } from "react";
 import { Archive, Lock, PlugZap, Users } from "lucide-react";
 
@@ -354,7 +355,7 @@ function CalendarEventReconnectAction({ event }: { event: CalendarEventRow }) {
         }
         data-calendar-event-reconnect
       >
-        <PlugZap className="mr-1.5 h-3.5 w-3.5" />
+        <GoogleG className="mr-1.5 size-3.5" />
         Reconnect Google
       </Button>
       <p className="text-xs text-muted-foreground">

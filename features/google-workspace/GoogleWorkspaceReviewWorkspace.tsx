@@ -1,5 +1,6 @@
 "use client";
 
+import { GmailLogo, GoogleG } from "@/components/icons/google-brand";
 import { InfoHint } from "@/components/official/InfoHint";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -843,6 +844,7 @@ export function GoogleWorkspaceReviewWorkspace({
                 onClick={enableGmail}
                 disabled={!google.isGoogleLoaded || busy !== null}
               >
+                <GmailLogo className="mr-1.5 size-4" />
                 Add Gmail sending
               </Button>
             )}
@@ -1017,6 +1019,7 @@ export function GoogleWorkspaceReviewWorkspace({
                                   className="inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-primary-ink hover:bg-primary/10"
                                   aria-label={`Open ${resource.display_name} in Google`}
                                 >
+                                  <GoogleG className="size-3.5" />
                                   Open in Google
                                   <ExternalLink className="h-3.5 w-3.5" />
                                 </a>
@@ -1349,6 +1352,7 @@ function PresentationFileDetail({
               target="_blank"
               rel="noopener noreferrer"
             >
+              <GoogleG className="size-3.5" />
               Open in Google
               <ExternalLink className="h-3.5 w-3.5" />
             </a>

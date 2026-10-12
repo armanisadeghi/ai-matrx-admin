@@ -1,5 +1,6 @@
 "use client";
 
+import { GoogleG } from "@/components/icons/google-brand";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
@@ -671,6 +672,7 @@ function CapabilityCatalog({
                     else onAddAccount();
                   }}
                 >
+                  <GoogleG className="mr-1.5 size-4" />
                   Manage Google access
                 </Button>
               ) : null}

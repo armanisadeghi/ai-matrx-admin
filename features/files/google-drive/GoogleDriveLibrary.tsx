@@ -718,6 +718,7 @@ export function GoogleDriveLibraryContent({ environment }: { environment: Google
                         variant="quiet"
                         onClick={() => void openInGoogle(file.id, driveFileResourceKey(file, criteria))}
                       >
+                        <GoogleDriveLogo className="mr-1.5 size-4" />
                         Open in Google
                       </Button>
                     </div>

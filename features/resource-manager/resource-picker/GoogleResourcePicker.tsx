@@ -19,6 +19,7 @@
  * can actually open what the user attached.
  */
 
+import { GoogleSignInButton } from "@/components/icons/google-brand";
 import { useState } from "react";
 import { ExternalLink, Loader2, Plus } from "lucide-react";
 import {
@@ -27,7 +28,6 @@ import {
   type GoogleWorkspaceResourceType,
 } from "@/features/google-workspace/resource-types";
 import { isGoogleWorkspaceFileRow } from "@/features/marketing/google/types";
-import { Button } from "@ai-matrx/design-system";
 import { useGoogleConnectionInventory } from "@/features/marketing/google/hooks";
 import { useOpenGoogleConnectWindow } from "@/features/overlays/openers/googleConnectWindow";
 import { GoogleAccountSelect } from "@/features/google-workspace/GoogleAccountSelect";
@@ -124,7 +124,7 @@ export function GoogleResourcePicker({
             <p className="text-sm text-muted-foreground">
               Connect Google to hand a doc or sheet to an agent.
             </p>
-            <Button onClick={connect}>Connect Google</Button>
+            <GoogleSignInButton theme="neutral" text="continue_with" onClick={connect} />
           </div>
         ) : (
           <>

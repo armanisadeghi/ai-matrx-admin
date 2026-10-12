@@ -31,6 +31,7 @@
  * "use another account" lives.
  */
 
+import { GoogleG } from "@/components/icons/google-brand";
 import { useState } from "react";
 import {
   AlertCircle,
@@ -246,6 +247,7 @@ function ConnectMailboxDialogBody({
       disabled={addingAccount || connecting !== null}
       onClick={() => void addGoogleAccount()}
     >
+      <GoogleG className="mr-1.5 size-4" />
       Connect a different Google account
     </Button>
   );

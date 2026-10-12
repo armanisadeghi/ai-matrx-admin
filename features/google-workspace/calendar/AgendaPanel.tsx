@@ -14,6 +14,7 @@
  * unreadable → it says what failed. A day with no events says "Nothing".
  */
 
+import { GoogleCalendarLogo } from "@/components/icons/google-brand";
 import { useState } from "react";
 import {
   CalendarDays,
@@ -398,7 +399,7 @@ function AgendaEventRow({
             rel="noreferrer"
             className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground hover:underline max-sm:min-h-11"
           >
-            <ExternalLink className="h-3.5 w-3.5" />
+            <GoogleCalendarLogo className="size-3.5" />
             Open in Google Calendar
           </a>
         ) : null}

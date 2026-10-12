@@ -1,4 +1,5 @@
 "use client";
+import { GoogleSlidesLogo } from "@/components/icons/google-brand";
 import { Badge } from "@ai-matrx/design-system/controls";
 import { getActiveOrgId } from "@/lib/organizations/activeOrg";
 import React, { useState } from "react";
@@ -513,6 +514,7 @@ const PresentationExportMenu: React.FC<PresentationExportMenuProps> = ({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    <GoogleSlidesLogo className="size-4 shrink-0" />
                     Create Google Slides
                   </p>
                   {!capabilities.googleSlides.available ? (

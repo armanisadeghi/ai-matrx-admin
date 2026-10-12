@@ -1,5 +1,6 @@
 "use client";
 
+import { GmailLogo } from "@/components/icons/google-brand";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { useOpenConnectorConsentDialog } from "@/features/overlays/openers/connectorConsentDialog";
@@ -403,6 +404,7 @@ export function GmailReadReview() {
                     openConsent({ initialProductKeys: ["gmail_read"] })
                   }
                 >
+                  <GmailLogo className="mr-1.5 inline size-4" />
                   Connect Gmail reading
                 </button>
               ) : gmailReading && !gmailReading.eligible ? (
@@ -422,6 +424,7 @@ export function GmailReadReview() {
                       openConsent({ initialProductKeys: ["gmail_modify"] })
                     }
                   >
+                    <GmailLogo className="mr-1.5 inline size-4" />
                     Connect Gmail changes
                   </button>
                 </>

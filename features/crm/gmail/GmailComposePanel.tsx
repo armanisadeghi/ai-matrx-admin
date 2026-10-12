@@ -33,6 +33,7 @@
  * the answer named one.
  */
 
+import { GmailLogo } from "@/components/icons/google-brand";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, ArrowLeft, Mail, UserRound } from "lucide-react";
@@ -503,6 +504,7 @@ export function GmailComposePanel({
             href={GOOGLE_WORKSPACE_SETTINGS_HREF}
             className="mt-1 inline-flex text-primary underline-offset-2 hover:underline"
           >
+            <GmailLogo className="mr-1 size-4 shrink-0" />
             Connect a Google account
           </a>
         </div>

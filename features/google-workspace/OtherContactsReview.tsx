@@ -2,6 +2,7 @@
 
 /** Internal reviewer surface for the separately-authorized Google Other Contacts corpus. */
 
+import { GoogleG } from "@/components/icons/google-brand";
 import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Check, ChevronRight, CircleAlert, Loader2, RefreshCw, UserRound } from "lucide-react";
@@ -234,7 +235,10 @@ export function OtherContactsReview() {
           {!inventory.isLoading && connections.length === 0 ? (
             <div className="flex flex-wrap items-center gap-3">
               <p className="text-sm text-muted-foreground">No Google account is ready for Other Contacts.</p>
-              <Button variant="outline" onClick={connectGoogleAccount}>Connect a Google account</Button>
+              <Button variant="outline" onClick={connectGoogleAccount}>
+                <GoogleG className="mr-1.5 size-4" />
+                Connect a Google account
+              </Button>
             </div>
           ) : null}
           {connections.length ? (

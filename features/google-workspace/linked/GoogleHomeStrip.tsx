@@ -8,6 +8,7 @@
  * Holds its height while it resolves, so the list below never jumps.
  */
 
+import { GoogleSignInButton } from "@/components/icons/google-brand";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useState } from "react";
 import { ExternalLink, Loader2 } from "lucide-react";
@@ -134,9 +135,7 @@ export function GoogleHomeStrip({
         title={isSheet ? "Bring your Google Sheets in" : "Bring your Google Docs in"}
         line={isSheet ? "Import, push and keep workbooks in step" : "Import, push and keep documents in step"}
         action={
-          <Button variant="primary" onClick={() => connect(`to use ${app} with your ${kind}s`)}>
-            Connect Google
-          </Button>
+          <GoogleSignInButton theme="light" text="continue_with" onClick={() => connect(`to use ${app} with your ${kind}s`)} />
         }
         aria-label={app}
       />

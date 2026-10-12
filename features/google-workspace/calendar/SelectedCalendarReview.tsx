@@ -1,5 +1,6 @@
 "use client";
 
+import { GoogleG } from "@/components/icons/google-brand";
 import { useRef, useState } from "react";
 import { CalendarSearch, ExternalLink, RefreshCw, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -497,6 +498,7 @@ export function SelectedCalendarReviewContent({ organizationId }: { organization
                 })
               }
             >
+              <GoogleG className="mr-1.5 size-3.5" />
               Reconnect Google
             </Button>
           ) : null}

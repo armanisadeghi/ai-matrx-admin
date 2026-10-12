@@ -10,6 +10,7 @@
  * primitive as ONE extra section. There is no bespoke Google document window.
  */
 
+import { GoogleG } from "@/components/icons/google-brand";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Archive, ExternalLink, FolderOpen, Lock, Plug, TriangleAlert } from "lucide-react";
@@ -158,7 +159,7 @@ function UnavailableActions({
           onClick={reconnect}
           data-google-document-reconnect
         >
-          <Plug className="mr-1.5 h-3.5 w-3.5" />
+          <GoogleG className="mr-1.5 size-3.5" />
           Reconnect Google
         </Button>
         {connectionId ? (
