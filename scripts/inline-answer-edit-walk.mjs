@@ -176,6 +176,29 @@ try {
     }
   }
 
+  // --pick-block: tap/click a block (code, table, kind). Its tools must open in the flow, never
+  // over its content: the tools row ends above the block's first content line.
+  if (args["pick-block"] && !measureOnly) {
+    const island = page.locator(`${editorSel} .rich-editor-island:not(.rich-editor-reference)`).last();
+    await island.scrollIntoViewIfNeeded();
+    await island.locator(":scope > div").last().click({ position: { x: 8, y: 8 } });
+    await page.waitForTimeout(600);
+    const geo = await island.evaluate((el) => {
+      const tools = el.firstElementChild;
+      const body = el.lastElementChild;
+      const t = tools.getBoundingClientRect();
+      const b = body.getBoundingClientRect();
+      return { toolsShown: getComputedStyle(tools).display !== "none" && t.height > 0, toolsBottom: t.bottom, bodyTop: b.top, toolsPosition: getComputedStyle(tools).position };
+    });
+    await page.screenshot({ path: `${out}/${tag}-5-picked.png` });
+    console.log("PICKED", JSON.stringify(geo));
+    // Escape belongs to the innermost thing first: the picked block lets go, the next one leaves.
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(300);
+    if (!geo.toolsShown) fail("picking a block did not open its tools");
+    else if (geo.toolsBottom > geo.bodyTop + 1) fail(`the block's tools cover its content by ${(geo.toolsBottom - geo.bodyTop).toFixed(1)}px`);
+  }
+
   // Scroll a long answer: the bar stays visible at the top.
   if (!measureOnly && editFacts.bar) {
     await page.locator(`${editorSel} .ProseMirror`).evaluate((pm) => {

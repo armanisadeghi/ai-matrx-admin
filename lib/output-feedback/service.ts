@@ -52,8 +52,12 @@ export async function saveOutputFeedback(
   // EVERY SAVE CARRIES AN ORGANIZATION (law: active-org-is-never-a-list-filter, rule 4): the
   // subject's own when the caller knows it, else the one the person works in — the database never
   // picks one. With none set the write is held and the person picks.
+  // Feedback on a record is filed in THAT record's organization (ensureOrgId(recordOrg)): the RPC
+  // refuses any other with `organization_conflict`, which is how every in-app correction of a chat
+  // answer from another organization than the active one was lost (2026-10-12: a 400 on each save).
+  const recordOrg = args.organizationId ?? (await subjectOrganization(args.subjectType, args.subjectId));
   const organizationId = await withOrganizationRefusalShown("saved", () =>
-    ensureOrgId(args.organizationId ?? undefined),
+    ensureOrgId(recordOrg ?? undefined),
   );
   const { data, error } = await supabase
     .schema("platform")
@@ -79,6 +83,24 @@ export async function saveOutputFeedback(
     throw new Error("upsert_output_feedback returned no row");
   }
   return toOutputFeedbackRecord(data);
+}
+
+/**
+ * The organization the rated output belongs to, read from its own row, or null when the caller has no
+ * read for that kind of output — then the active organization is used. (The database's
+ * `_output_feedback_subject_org` is not callable from a client: it also names tables a person cannot
+ * read, so PostgREST answers 403.)
+ */
+async function subjectOrganization(subjectType: string, subjectId: string): Promise<string | null> {
+  if (subjectType !== "message") return null;
+  const { data, error } = await supabase
+    .schema("chat")
+    .from("message")
+    .select("organization_id")
+    .eq("id", subjectId)
+    .maybeSingle();
+  if (error) throw operationFailed("find the organization this answer belongs to", error);
+  return data?.organization_id ?? null;
 }
 
 /** Retract this user's feedback on a subject (a real delete, not trash). */
