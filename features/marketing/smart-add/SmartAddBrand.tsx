@@ -25,13 +25,20 @@ import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { extractErrorMessage } from "@/utils/errors";
 import { formatCount } from "@ai-matrx/kit/format";
 import { startSystemRun } from "@/features/education/kits/systemRuns";
-import { createBrand, createProperty, createSite } from "@/features/marketing/data/service";
+import {
+  createBrand,
+  createBusinessFact,
+  createBusinessLocation,
+  createProperty,
+  createSite,
+  updateBusinessLocation,
+} from "@/features/marketing/data/service";
+import { runHref } from "@/features/workflow-runtime/run-doors";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { marketingSeg } from "@/features/marketing/lib/keys";
 import { normalizeWebsiteUrl } from "@/features/marketing/lib/website-url";
 import { resolveAccountInput, needsPlatformPick, accountKey } from "@/features/marketing/social/account-input";
-import { profileAvatarDoor, socialErrorMessage, trackAccount } from "@/features/marketing/social/server";
-import { rememberedMaxPostsPlain } from "@/features/marketing/social/post-count";
+import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
 import {
@@ -54,9 +61,10 @@ import {
   type RoundSeeds,
   type SocialSeed,
 } from "./evidence";
-import { SmartAddRound, type RoundView } from "./SmartAddRound";
+import { SETUP_STEPS, SmartAddRound, type RoundView } from "./SmartAddRound";
 
 const WORKFLOW_KEY = "smart_add_brand_identify";
+const SETUP_KEY = "smart_add_brand_setup";
 /** Typing settles this long before a round starts; a newer value supersedes. */
 const IDENTIFY_DEBOUNCE_MS = 700;
 /** Confirmations within this window go out as one round. */
@@ -72,13 +80,6 @@ interface Round {
   runId: string | null;
   seeds: RoundSeeds;
   error: string | null;
-}
-
-interface BackgroundJob {
-  key: string;
-  label: string;
-  state: "running" | "done" | "failed";
-  lines: string[];
 }
 
 function accountSeedKey(seed: SocialSeed): string | null {
@@ -105,8 +106,9 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [created, setCreated] = useState<MarketingBrand | null>(null);
-  const [jobs, setJobs] = useState<BackgroundJob[]>([]);
-  const [watching, setWatching] = useState(false);
+  const [setupRunId, setSetupRunId] = useState<string | null>(null);
+  const [setupView, setSetupView] = useState<RoundView | null>(null);
+  const [saveNotes, setSaveNotes] = useState<string[]>([]);
 
   // ── rounds ──────────────────────────────────────────────────────────────
 
@@ -133,7 +135,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       );
       setRounds((r) => r.map((x) => (x.id === id ? { ...x, runId } : x)));
     } catch (error) {
-      setRounds((r) => r.map((x) => (x.id === id ? { ...x, error: extractErrorMessage(error) } : x)));
+      setRounds((r) => r.map((x) => (x.id === id ? { ...x, error: plainStartError(error) } : x)));
     }
   };
 
@@ -247,13 +249,15 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         industry: basics.category,
         description: basics.description,
         websiteUrl: basics.websiteUrl,
-        logoUrl: basics.logoUrl,
+        // The confirmed logo is saved by the setup run as a durable file, never an expiring link.
+        logoUrl: null,
         faviconUrl: null,
         ogImageUrl: null,
         notes: null,
         status: "active",
       });
-      const properties: { item: EvidenceItem; propertyId: string | null }[] = [];
+      const problems: string[] = [];
+      const accounts: { handle_or_url: string; platform: string; property_id: string }[] = [];
       for (const item of basics.accounts) {
         try {
           const row = await createProperty({
@@ -265,9 +269,9 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
             displayName: item.label,
             status: "active",
           });
-          properties.push({ item, propertyId: row.id });
-        } catch {
-          properties.push({ item, propertyId: null });
+          if (item.platform) accounts.push({ handle_or_url: item.url ?? item.value, platform: item.platform, property_id: row.id });
+        } catch (error) {
+          problems.push(`@${item.handle ?? ""}: ${extractErrorMessage(error)}`);
         }
       }
       if (basics.websiteUrl) {
@@ -281,12 +285,31 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
             brandId: brand.id,
           });
         } catch (error) {
-          setJobs((j) => [...j, { key: "site", label: "Website", state: "failed", lines: [extractErrorMessage(error)] }]);
+          problems.push(`Website: ${extractErrorMessage(error)}`);
         }
       }
+      problems.push(...(await saveFacts(organizationId, brand.id, basics)));
+      setSaveNotes(problems);
       setCreated(brand);
       onCreated?.(brand);
-      startBackground(brand, organizationId, properties);
+      if (basics.logoUrl || accounts.length) {
+        try {
+          const { runId } = await startSystemRun(
+            dispatch,
+            SETUP_KEY,
+            {
+              subject: `brand:${brand.id}`,
+              organizationId,
+              sourceFeature: "marketing",
+              inputs: { brand_id: brand.id, logo_url: basics.logoUrl ?? "", accounts },
+            },
+            "The background setup could not start.",
+          );
+          setSetupRunId(runId);
+        } catch (error) {
+          setSaveNotes((n) => [...n, plainStartError(error)]);
+        }
+      }
     } catch (error) {
       setCreateError(extractErrorMessage(error));
     } finally {
@@ -294,45 +317,10 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     }
   };
 
-  /** Post history for every confirmed account, after the brand exists — never blocks. */
-  const startBackground = (
-    brand: MarketingBrand,
-    organizationId: string,
-    properties: { item: EvidenceItem; propertyId: string | null }[],
-  ) => {
-    for (const { item, propertyId } of properties) {
-      if (!item.platform || !propertyId) continue;
-      const key = item.key;
-      const label = `${platformLabel(item.platform)} @${item.handle ?? ""}`;
-      setJobs((j) => [...j, { key, label, state: "running", lines: ["Fetching post history"] }]);
-      const say = (line: string) =>
-        setJobs((j) => j.map((x) => (x.key === key && x.lines[x.lines.length - 1] !== line ? { ...x, lines: [...x.lines, line] } : x)));
-      void (async () => {
-        try {
-          await trackAccount(
-            {
-              handleOrUrl: item.url ?? item.value,
-              platform: item.platform as SocialPlatform,
-              role: "own",
-              brandId: brand.id,
-              propertyId,
-              maxPosts: await rememberedMaxPostsPlain(),
-            },
-            { organizationId, onProgress: (p) => say(p.message) },
-          );
-          setJobs((j) => j.map((x) => (x.key === key ? { ...x, state: "done", lines: [...x.lines, "Done"] } : x)));
-        } catch (error) {
-          const message = socialErrorMessage(error, "Post history could not be fetched");
-          setJobs((j) => j.map((x) => (x.key === key ? { ...x, state: "failed", lines: [...x.lines, message] } : x)));
-        }
-      })();
-    }
-  };
-
   // ── render ──────────────────────────────────────────────────────────────
 
   const showPicker = needsPlatformPick(parsed, null);
-  const backgroundRunning = jobs.some((j) => j.state === "running");
+  const setupDone = ["completed", "failed", "errored", "cancelled", "stopped", "refused"].includes(setupView?.status ?? "");
 
   return (
     <div className="flex w-full max-w-3xl flex-col gap-3" data-testid="smart-add-brand">
@@ -459,26 +447,49 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       </div>
       {createError ? <p className="text-xs text-destructive">{createError}</p> : null}
 
-      {created && jobs.length ? (
+      {saveNotes.length ? (
+        <ul className="flex flex-col gap-0.5 text-xs text-destructive">
+          {saveNotes.slice(0, 3).map((n) => (
+            <li key={n} className="truncate" title={n}>
+              {n}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {setupRunId ? (
         <div className="flex flex-col gap-1 rounded-lg border border-border bg-card px-3 py-2 text-xs" data-testid="smart-add-background">
           <div className="flex items-center gap-2">
-            {backgroundRunning ? <Loader2 className="size-3.5 animate-spin text-primary" /> : <Check className="size-3.5 text-primary" />}
-            <span className="font-medium">{backgroundRunning ? "Still working in the background" : "Background work finished"}</span>
-            <Button variant="quiet" className="ml-auto" onClick={() => setWatching((w) => !w)}>
-              {watching ? "Hide" : "Watch"}
-            </Button>
+            {setupDone ? <Check className="size-3.5 text-primary" /> : <Loader2 className="size-3.5 animate-spin text-primary" />}
+            <span className="font-medium">{setupDone ? "Setup finished" : "Still working in the background"}</span>
+            <a
+              href={runHref(setupRunId)}
+              target="_blank"
+              rel="noreferrer"
+              className="ml-auto inline-flex items-center gap-1 font-medium text-primary"
+            >
+              Watch <ExternalLink className="size-3" />
+            </a>
           </div>
-          {watching
-            ? jobs.map((j) => (
-                <div key={j.key} className="flex items-center gap-2 text-muted-foreground">
-                  <span className="w-40 shrink-0 truncate">{j.label}</span>
-                  <span className="truncate">{j.lines[j.lines.length - 1]}</span>
-                </div>
-              ))
-            : null}
+          {(setupView?.steps ?? []).map((step) => (
+            <div key={step.step} className="flex items-center gap-2 text-muted-foreground">
+              <span className="w-32 shrink-0 truncate">{step.step === "logo" ? "Logo" : "Post history"}</span>
+              <span className="w-16 shrink-0">{step.skipped ? "Skipped" : STEP_PHASE_LABEL[step.phase] ?? step.phase}</span>
+              <span className="min-w-0 flex-1 truncate">{step.notes[0] ?? step.progress ?? ""}</span>
+              <span className="shrink-0 tabular-nums">{step.costUsd > 0 ? format(step.costUsd) : ""}</span>
+            </div>
+          ))}
         </div>
       ) : null}
 
+      {setupRunId ? (
+        <SmartAddRound
+          key={setupRunId}
+          runId={setupRunId}
+          steps={SETUP_STEPS}
+          onView={(view) => setSetupView((v) => (JSON.stringify(v) === JSON.stringify(view) ? v : view))}
+        />
+      ) : null}
       {rounds.map((r) =>
         r.runId ? <SmartAddRound key={r.runId} runId={r.runId} onEvidence={onEvidence} onView={onView} /> : null,
       )}
@@ -603,4 +614,68 @@ function ItemVisual({ item }: { item: EvidenceItem }) {
       {FIELD_LABEL[item.field].slice(0, 2)}
     </span>
   );
+}
+
+const STEP_PHASE_LABEL: Record<string, string> = {
+  idle: "Waiting",
+  running: "Working",
+  retrying: "Retrying",
+  settled: "Done",
+  failed: "Failed",
+  skipped: "Skipped",
+};
+
+/** A start failure in plain words; a server without Smart Add says so. */
+function plainStartError(error: unknown): string {
+  const message = extractErrorMessage(error);
+  return /not found|unknown_system_workflow/i.test(message)
+    ? "This server doesn't have Smart Add yet. Switch servers or try again after the next release."
+    : message;
+}
+
+/** Confirmed phone / email / address → the brand's business facts and its primary location. */
+async function saveFacts(
+  organizationId: string,
+  brandId: string,
+  basics: ReturnType<typeof confirmedBasics>,
+): Promise<string[]> {
+  const problems: string[] = [];
+  for (const fact of basics.facts) {
+    try {
+      await createBusinessFact({
+        organizationId,
+        brandId,
+        kind: fact.field as "phone" | "email" | "address",
+        label: null,
+        value: fact.value,
+      });
+    } catch (error) {
+      problems.push(`${fact.field}: ${extractErrorMessage(error)}`);
+    }
+  }
+  const first = (field: string) => basics.facts.find((f) => f.field === field)?.value ?? null;
+  const street = first("address");
+  const phone = first("phone");
+  const email = first("email");
+  if (street || phone) {
+    try {
+      const location = await createBusinessLocation({ organizationId, brandId, name: basics.name ?? "Main location" });
+      await updateBusinessLocation({
+        locationId: location.id,
+        expectedVersion: location.version,
+        patch: {
+          is_primary: true,
+          ...(street ? { street_address: street } : {}),
+          ...(phone ? { phone } : {}),
+          ...(email ? { email } : {}),
+          ...(basics.websiteUrl ? { website_url: basics.websiteUrl } : {}),
+          ...(basics.category ? { business_type: basics.category } : {}),
+          ...(basics.description ? { description: basics.description } : {}),
+        },
+      });
+    } catch (error) {
+      problems.push(`Location: ${extractErrorMessage(error)}`);
+    }
+  }
+  return problems;
 }

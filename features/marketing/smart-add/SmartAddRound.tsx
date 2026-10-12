@@ -20,11 +20,13 @@ import {
 } from "@/features/workflow-runtime/redux/workflow-runs.selectors";
 import { evidenceFromPayload, type EvidenceItem } from "./evidence";
 
-export const SMART_ADD_STEPS = ["website", "socials"] as const;
-export type SmartAddStep = (typeof SMART_ADD_STEPS)[number];
+/** Each Smart Add workflow has exactly two steps (identify: website + socials; setup: logo + history). */
+export type SmartAddStepPair = readonly [string, string];
+export const IDENTIFY_STEPS: SmartAddStepPair = ["website", "socials"];
+export const SETUP_STEPS: SmartAddStepPair = ["logo", "history"];
 
 export interface StepView {
-  step: SmartAddStep;
+  step: string;
   phase: string;
   progress: string | null;
   notes: string[];
@@ -42,7 +44,7 @@ function numberOr(value: unknown, fallback: number): number {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
-function useStep(runId: string, step: SmartAddStep): { view: StepView; evidence: EvidenceItem[] } {
+function useStep(runId: string, step: string): { view: StepView; evidence: EvidenceItem[] } {
   const aggregate = useAppSelector(selectNodeAggregate(runId, step));
   const invocation = aggregate.invocations[aggregate.invocations.length - 1] ?? null;
   const output = invocation?.output ?? null;
@@ -63,25 +65,27 @@ function useStep(runId: string, step: SmartAddStep): { view: StepView; evidence:
 
 export function SmartAddRound({
   runId,
+  steps = IDENTIFY_STEPS,
   onEvidence,
   onView,
 }: {
   runId: string;
-  onEvidence: (items: EvidenceItem[]) => void;
+  steps?: SmartAddStepPair;
+  onEvidence?: (items: EvidenceItem[]) => void;
   onView: (view: RoundView) => void;
 }) {
   useWorkflowRun(runId);
   const status = useAppSelector(selectRunStatus(runId));
   const emissions = useAppSelector(selectRunEmissions(runId));
-  const website = useStep(runId, "website");
-  const socials = useStep(runId, "socials");
+  const website = useStep(runId, steps[0]);
+  const socials = useStep(runId, steps[1]);
 
   const live = emissions.flatMap((e) => evidenceFromPayload(e.payload));
   const all = [...live, ...website.evidence, ...socials.evidence];
   // Both callbacks are idempotent on unchanged content (the screen keeps its
   // state when nothing new arrived), so running on every render is safe.
   useEffect(() => {
-    if (all.length) onEvidence(all);
+    if (all.length) onEvidence?.(all);
   }, [all, onEvidence]);
 
   const view: RoundView = { runId, status, steps: [website.view, socials.view] };
