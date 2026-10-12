@@ -75,6 +75,8 @@ export function FileHomeTable<Row>({
     {
       id: "name",
       header: "Name",
+      // The name gets the room in both looks (it truncated to "Untitled wor…" beside empty columns).
+      width: 250,
       accessorFn: (l) => l.item.name,
       filter: "text",
       cell: (l) => (
@@ -146,11 +148,7 @@ export function FileHomeTable<Row>({
 
   const ordered =
     columnSet === "office"
-      ? ["name", "opened", "owner", "updated", "created", "source", "actions"].map((id) => {
-          const c = columns.find((col) => col.id === id)!;
-          // Office's list gives the name the room (a wide first column).
-          return id === "name" ? { ...c, width: 340 } : c;
-        })
+      ? ["name", "opened", "owner", "updated", "created", "source", "actions"].map((id) => columns.find((col) => col.id === id)!)
       : columns;
 
   return (

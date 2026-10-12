@@ -255,7 +255,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
               </>
             ) : (
               <>
-                <h2 className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{heading}</h2>
+                <h2 className="line-clamp-2 min-w-0 flex-1 text-sm font-medium leading-tight text-foreground">{heading}</h2>
                 <Select
                   aria-label="Show"
                   value={scope}
