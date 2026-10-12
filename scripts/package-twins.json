@@ -128,13 +128,13 @@
     },
     {
       "name": "fileNameFromUrl",
-      "package": "@ai-matrx/data/files",
+      "package": "@ai-matrx/files/client",
       "why": "Canonical file-name recognizer. The UniversalInlineFile copy was deleted 2026-08-31; the research mediaEmbed copy 2026-09-07.",
       "allow": []
     },
     {
       "name": "createMatrxNdjsonFramer",
-      "package": "@ai-matrx/agents",
+      "package": "@ai-matrx/api/stream",
       "why": "The last hand-rolled NDJSON parser was routed through the package framer; a raw per-line JSON.parse silently lost chunk text on the compact envelope form.",
       "allow": []
     },
