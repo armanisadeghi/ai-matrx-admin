@@ -192,6 +192,20 @@ export function initUrlHydration() {
   });
 
   // Voice Pad — simple
+  // People involved — ?panels=access-setup:<headType>~r-<recordId> | <headType>~c-<cycleId>
+  registerPanelHydrator("access-setup", (dispatch, id) => {
+    const [headType, subject] = id.split("~");
+    const kind = subject?.slice(0, 2);
+    const value = subject?.slice(2);
+    if (!headType || !value || (kind !== "r-" && kind !== "c-")) return;
+    dispatch(
+      openOverlay({
+        overlayId: "accessSetupWindow",
+        data: kind === "c-" ? { headType, cycleId: value } : { headType, recordId: value },
+      }),
+    );
+  });
+
   // Watch AI — ?panels=ai-watch:c-<conversationId> | u-<userRequestId> | w-<workflowRunId> | r-<requestId>
   registerPanelHydrator("ai-watch", (dispatch, id) => {
     const [kind, ...rest] = id.split("-");
@@ -385,7 +399,10 @@ export function initUrlHydration() {
   // Feedback Window
   // Provision window: ?panels=provision:<snapshot id> reopens one saved capture.
   registerPanelHydrator("provision", (dispatch, id) => {
-    if (id) dispatch(openOverlay({ overlayId: "provisionWindow", data: { snapshotId: id } }));
+    // Only a snapshot id deep-links; the window's own identity is not a snapshot.
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      dispatch(openOverlay({ overlayId: "provisionWindow", data: { snapshotId: id } }));
+    }
   });
 
   registerPanelHydrator("feedback", (dispatch) => {

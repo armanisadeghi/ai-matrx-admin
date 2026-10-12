@@ -721,6 +721,7 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
       ],
     },
     mobilePresentation: "card",
+    urlSync: { key: "ai-watch" },
   },
 
   // ── Workflow run (the run that followed you off its page) ────────────────
@@ -1357,6 +1358,8 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     },
     mobilePresentation: "drawer",
     ephemeral: true,
+    // ?panels=access-setup:<headType>~r-<recordId> | <headType>~c-<cycleId>
+    urlSync: { key: "access-setup" },
   },
 
   // ── Share Modal Window ────────────────────────────────────────────────────

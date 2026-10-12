@@ -170,6 +170,18 @@ export default function AiWatchWindow({
       title={title}
       overlayId="aiWatchWindow"
       overlayInstanceId={windowInstanceId}
+      // The address keeps the watched run after a refresh: ?panels=ai-watch:<c|u|w|r>-<id>
+      urlSyncId={
+        workflowRunId
+          ? `w-${workflowRunId}`
+          : recordId
+            ? `u-${recordId}`
+            : conversationId
+              ? `c-${conversationId}`
+              : requestId
+                ? `r-${requestId}`
+                : undefined
+      }
       minWidth={420}
       minHeight={320}
       width={920}

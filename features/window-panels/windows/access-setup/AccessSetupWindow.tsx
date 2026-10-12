@@ -42,6 +42,7 @@ function AccessSetupWindowInner({ onClose, headType, recordId, cycleId, recordNa
       position="center"
       onClose={onClose}
       overlayId="accessSetupWindow"
+      urlSyncId={cycleId ? `${headType}~c-${cycleId}` : recordId ? `${headType}~r-${recordId}` : undefined}
       onCollectData={() => ({ headType, recordId, cycleId, recordName })}
       bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden p-0"
     >
