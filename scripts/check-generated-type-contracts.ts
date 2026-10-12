@@ -11,12 +11,12 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import ts from "typescript";
 
 const ROOT = process.cwd();
-const GENERATED_API_PATH = resolve(ROOT, "node_modules/@ai-matrx/agents/generated/api-types.ts");
+const API_DIST_DIR = resolve(ROOT, "node_modules/@ai-matrx/api/dist");
 const BASELINE_PATH = resolve(ROOT, "scripts/generated-type-contracts-baseline.json");
 const MIN_SHARED_FIELDS = 8;
 const MIN_LOCAL_COVERAGE = 0.65;
@@ -72,34 +72,54 @@ function memberFields(members: ts.NodeArray<ts.TypeElement>): Set<string> {
   return fields;
 }
 
-export function extractApiContracts(sourceText: string): Map<string, GeneratedContract> {
-  const source = ts.createSourceFile(
-    "api-types.ts",
-    sourceText,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TS,
-  );
-  const contracts = new Map<string, GeneratedContract>();
-
-  for (const statement of source.statements) {
+/**
+ * The contracts of `@ai-matrx/api/types`: `components.schemas` names each schema, and the
+ * field list lives in the domain `.d.ts` the name resolves to (read from the installed dist).
+ */
+export function extractApiContracts(
+  typesText: string,
+  domainTexts: readonly string[],
+): Map<string, GeneratedContract> {
+  const parse = (name: string, text: string) =>
+    ts.createSourceFile(name, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const keyToType = new Map<string, string>();
+  for (const statement of parse("types.d.ts", typesText).statements) {
     if (!ts.isInterfaceDeclaration(statement) || statement.name.text !== "components") continue;
     const schemas = statement.members.find(
       (member): member is ts.PropertySignature =>
         ts.isPropertySignature(member) && propertyNameText(member.name) === "schemas",
     );
     if (!schemas?.type || !ts.isTypeLiteralNode(schemas.type)) continue;
-
     for (const schema of schemas.type.members) {
-      if (!ts.isPropertySignature(schema) || !schema.type || !ts.isTypeLiteralNode(schema.type)) {
-        continue;
-      }
-      const name = propertyNameText(schema.name);
-      if (!name) continue;
-      contracts.set(name, { name, fields: memberFields(schema.type.members) });
+      if (!ts.isPropertySignature(schema) || !schema.type || !ts.isTypeReferenceNode(schema.type)) continue;
+      const key = propertyNameText(schema.name);
+      if (key && ts.isIdentifier(schema.type.typeName)) keyToType.set(key, schema.type.typeName.text);
     }
   }
+  const fieldsByType = new Map<string, Set<string>>();
+  const wanted = new Set(keyToType.values());
+  domainTexts.forEach((text, i) => {
+    for (const statement of parse(`domain-${i}.d.ts`, text).statements) {
+      if (!ts.isTypeAliasDeclaration(statement) || !wanted.has(statement.name.text)) continue;
+      const members = objectTypeMembers(statement.type);
+      if (members && !fieldsByType.has(statement.name.text)) fieldsByType.set(statement.name.text, memberFields(members));
+    }
+  });
+  const contracts = new Map<string, GeneratedContract>();
+  for (const [name, type] of keyToType) {
+    const fields = fieldsByType.get(type);
+    if (fields) contracts.set(name, { name, fields });
+  }
   return contracts;
+}
+
+/** The installed `@ai-matrx/api` dist: `types.d.ts` names the schemas, the other `.d.ts` files hold their fields. */
+function readApiContracts(distDir: string): Map<string, GeneratedContract> {
+  const files = readdirSync(distDir).filter((f) => f.endsWith(".d.ts"));
+  return extractApiContracts(
+    readFileSync(resolve(distDir, "types.d.ts"), "utf8"),
+    files.filter((f) => f !== "types.d.ts").map((f) => readFileSync(resolve(distDir, f), "utf8")),
+  );
 }
 
 function generatedSchemaReference(node: ts.Node): string | null {
@@ -358,7 +378,7 @@ function printFinding(finding: GeneratedContractFinding): void {
 }
 
 export function main(argv = process.argv.slice(2)): number {
-  const contracts = extractApiContracts(readFileSync(GENERATED_API_PATH, "utf8"));
+  const contracts = readApiContracts(API_DIST_DIR);
   const findings = analyzeSources(repoSources(), contracts);
   const ids = findings.map((finding) => finding.id);
   const baseline = readBaseline();

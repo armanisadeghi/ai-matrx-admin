@@ -7,27 +7,33 @@ import {
   type SourceFileInput,
 } from "@/scripts/check-generated-type-contracts";
 
-const GENERATED_API = `
-export interface components {
-  schemas: {
-    LLMParams: {
-      model?: string | null;
-      temperature?: number | null;
-      max_output_tokens?: number | null;
-      top_p?: number | null;
-      top_k?: number | null;
-      stream?: boolean | null;
-      store?: boolean | null;
-      reasoning_effort?: "low" | "high" | null;
-      reasoning_summary?: "auto" | "always" | null;
-      response_format?: { type: string } | null;
+const GENERATED_TYPES = `
+interface components {
+    schemas: {
+        LLMParams: LLMParams;
+        TinyResponse: TinyResponse;
     };
-    TinyResponse: { id: string; ok: boolean };
-  };
 }
+export type { components };
+`;
+const GENERATED_DOMAIN = `
+type LLMParams = {
+  model?: string | null;
+  temperature?: number | null;
+  max_output_tokens?: number | null;
+  top_p?: number | null;
+  top_k?: number | null;
+  stream?: boolean | null;
+  store?: boolean | null;
+  reasoning_effort?: "low" | "high" | null;
+  reasoning_summary?: "auto" | "always" | null;
+  response_format?: { type: string } | null;
+};
+type TinyResponse = { id: string; ok: boolean };
+export type { LLMParams, TinyResponse };
 `;
 
-const contracts = extractApiContracts(GENERATED_API);
+const contracts = extractApiContracts(GENERATED_TYPES, [GENERATED_DOMAIN]);
 
 function analyze(text: string) {
   const sources: SourceFileInput[] = [{ path: "features/example/types.ts", text }];
@@ -35,7 +41,7 @@ function analyze(text: string) {
 }
 
 describe("generated contract extraction", () => {
-  it("extracts schema field names from openapi-typescript components", () => {
+  it("extracts schema field names from the @ai-matrx/api types section", () => {
     expect([...contracts.get("LLMParams")!.fields]).toEqual([
       "model",
       "temperature",

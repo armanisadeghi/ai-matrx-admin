@@ -60,7 +60,7 @@ process.exit(1);
 
 const ROOT = process.cwd();
 const OUT_DIR = join(ROOT, "docs/type-drift/generated");
-const API_TYPES_PATH = join(ROOT, "node_modules/@ai-matrx/agents/generated/api-types.ts");
+const API_TYPES_PATH = join(ROOT, "node_modules/@ai-matrx/api/dist/types.d.ts");
 const STREAM_EVENTS_PATH = join(
   ROOT,
   "node_modules/@ai-matrx/agents/generated/stream-events.ts",
@@ -82,16 +82,10 @@ interface Offender {
 }
 
 function extractOpenApiSchemaNames(content: string): Set<string> {
-  const match = content.match(
-    /schemas:\s*\{([\s\S]*?)\n\s{4}\};\n\s{4}responses:/,
-  );
-  if (!match) throw new Error("Could not parse schemas block in api-types.ts");
+  const match = content.match(/interface components \{\s*schemas: \{([\s\S]*?)\n\s{4}\};/);
+  if (!match) throw new Error("Could not parse the components.schemas block in @ai-matrx/api types.d.ts");
   const names = new Set<string>();
-  for (const m of match[1].matchAll(
-    /^\s{8}([A-Za-z][A-Za-z0-9_]*):\s*(?:\{|components)/gm,
-  )) {
-    names.add(m[1]);
-  }
+  for (const m of match[1].matchAll(/^\s{8}("?)([A-Za-z_][\w-]*)\1:\s/gm)) names.add(m[2]);
   return names;
 }
 

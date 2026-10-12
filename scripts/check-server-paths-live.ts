@@ -5,7 +5,7 @@
  *
  * Class F (bug desk, 2026-10-08): the frontend shipped `POST /ai/warm` while the deployed aidream (git_sha from
  * /health/version) predated the router — a 404 on every page. The client's contract is the installed
- * `@ai-matrx/agents` package: its generated `api-types` paths plus the literal paths its runtime builds by hand.
+ * `@ai-matrx/agents` package: the `@ai-matrx/api/types` paths plus the literal paths its runtime builds by hand.
  * This diffs both against the deployed `/openapi.json` (paths are served under `/api`, matched with `{param}`
  * normalised) and names every path the client knows that the live server does not answer — a half-deployed
  * cross-repo feature. Exit 1 under --strict when any is missing; read-only, no credentials.
@@ -23,7 +23,7 @@ const IGNORED = (p: string) => p === "/ai" || p === "" || p.startsWith("/dev/");
 async function main() {
   const strict = process.argv.includes("--strict");
   const declared = new Map<string, string>();
-  const types = readFileSync(join(AGENTS_DIST, "generated/api-types.d.ts"), "utf8");
+  const types = readFileSync(resolve(process.cwd(), "node_modules/@ai-matrx/api/dist/types.d.ts"), "utf8");
   for (const m of types.matchAll(/^ {4}"(\/[^"]*)": \{/gm)) declared.set(norm(m[1]!), "api-types");
   for (const file of readdirSync(AGENTS_DIST).filter((f) => f.endsWith(".js"))) {
     const src = readFileSync(join(AGENTS_DIST, file), "utf8");
