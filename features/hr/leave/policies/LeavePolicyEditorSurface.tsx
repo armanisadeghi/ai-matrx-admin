@@ -474,8 +474,8 @@ export function LeavePolicyEditorSurface({ policyId }: { policyId: string }) {
           <span className="space-y-2">
             <span className="block">
               {enrolled === null
-                ? "Everyone enrolled in this policy will earn time a different way from now on."
-                : `${enrolled} ${enrolled === 1 ? "person is" : "people are"} enrolled. From now on they earn time a different way.`}
+                ? "Everyone enrolled will earn time a different way from now on."
+                : `${enrolled} ${enrolled === 1 ? "person" : "people"} enrolled will earn time a different way.`}
             </span>
             <span className="block">
               Past ledger entries are not changed; each accrual uses the policy version in force
