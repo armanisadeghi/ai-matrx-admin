@@ -224,7 +224,7 @@ function SynthesisNavigator({
   onSelect: (id: string) => void;
 }) {
   return (
-    <nav aria-label="Syntheses" className="mb-2 grid gap-2">
+    <nav aria-label="Syntheses" className="mb-2 grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2">
       {groups.filter((g) => g.items.length > 0).map((group) => (
         <section key={group.title}>
           <p className="flex items-center gap-1.5 px-1.5 py-1 type-meta font-semibold uppercase tracking-wide text-muted-foreground">
@@ -232,7 +232,7 @@ function SynthesisNavigator({
             {group.title}
             <span className="font-normal">{group.items.length}</span>
           </p>
-          <ul className="grid list-none gap-0.5 p-0">
+          <ul className="grid list-none grid-cols-[minmax(0,1fr)] gap-0.5 p-0">
             {group.items.map(({ synthesis, label }) => (
               <li key={synthesis.id}>
                 <button

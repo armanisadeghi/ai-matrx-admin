@@ -12,6 +12,7 @@ import type {
 } from "@/features/research/types";
 import {
   readingRecordScopeValues,
+  type InlineRecordReadingSet,
   type ResearchReadingRecord,
 } from "@/features/research/agent-context/readingRecord";
 
@@ -101,6 +102,8 @@ export interface BuildResearchContextDataArgs {
    * baseline `content` when no explicit `primaryText` is passed.
    */
   readingRecord?: ResearchReadingRecord | null;
+  /** Comments and highlights on research records read in place on the page. */
+  inlineRecords?: InlineRecordReadingSet[];
 }
 
 /** Coerce a Supabase `Json` column to a plain object, or undefined. */
@@ -150,6 +153,7 @@ export function buildResearchContextData(
     draftTopicDescription,
     activeView,
     readingRecord = null,
+    inlineRecords = [],
   } = args;
 
   const topicOpen = topic != null;
@@ -296,6 +300,7 @@ export function buildResearchContextData(
 
     // ── The record open in the reader ─────────────────────────────────
     ...readingRecordScopeValues(readingRecord),
+    page_record_comments: inlineRecords.length > 0 ? inlineRecords : undefined,
   });
 
   return scope as Record<string, unknown>;

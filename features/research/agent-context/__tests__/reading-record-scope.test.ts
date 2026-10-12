@@ -49,3 +49,12 @@ describe("research scope carries the record open in the reader", () => {
     expect(scope.my_record_notes).toBeUndefined();
   });
 });
+
+describe("records read in place reach the agent too", () => {
+  it("lists each in-place record with its comments", () => {
+    const inline = [{ record: { type: "research_analysis" as const, id: "0479b3b6-1d6e-4c55-9b7e-2f0b7b1f8a10", title: "Analysis of dir.ca.gov" }, comments: record.comments!, notes: [] }];
+    expect(buildResearchContextData({ inlineRecords: inline }).page_record_comments).toEqual(inline);
+    expect(buildResearchContextData({ inlineRecords: [] }).page_record_comments).toBeUndefined();
+  });
+});
+

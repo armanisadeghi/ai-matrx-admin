@@ -36,7 +36,7 @@ consolidations, older versions) renders through `components/reader/ResearchRecor
 names the record so the same toolbar and dock work in place. Record tokens: `research_synthesis`,
 `research_analysis`, `research_document` (comment doors take them; highlight/link pairs added
 2026-10-11). `agent-context/readingRecord.tsx` publishes the open record + its threads + the person's
-highlights into the topic surface (`open_record`, `record_comments`, `my_record_notes`). Open
+highlights into the topic surface (`open_record`, `record_comments`, `my_record_notes`); records read in place register themselves and their saved items ride as `page_record_comments`. Open
 (unresolved) comments also travel into Update / Rebuild / Regenerate on the server
 (aidream `research/reader_comments.py`).
 

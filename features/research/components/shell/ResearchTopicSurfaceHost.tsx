@@ -14,6 +14,7 @@
 
 import type { MutableRefObject, ReactNode } from "react";
 import {
+  inlineRecordReadingSets,
   ResearchReadingRecordProvider,
   type ResearchReadingRecord,
 } from "@/features/research/agent-context/readingRecord";
@@ -66,6 +67,7 @@ function ResearchTopicSurface({
         progress,
         activeView,
         readingRecord: readingRecordRef.current,
+        inlineRecords: inlineRecordReadingSets(),
       }),
     });
 

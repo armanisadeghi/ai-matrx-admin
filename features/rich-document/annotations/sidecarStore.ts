@@ -109,6 +109,11 @@ function entryOf(key: string): Entry {
   return entry;
 }
 
+/** Every source this tab has a reading set for (rendered now or within the grace window). */
+export function loadedSidecarKeys(): string[] {
+  return [...entries.keys()];
+}
+
 /** The kept snapshot for `key` (stable until it changes). */
 export function sidecarSnapshot(key: string | null): SidecarSnapshot {
   return (key ? entries.get(key)?.snapshot : undefined) ?? EMPTY;

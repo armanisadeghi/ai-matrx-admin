@@ -261,8 +261,8 @@ export default function DocumentViewer({ defaultLayout }: { defaultLayout?: Layo
   const docTokenUsage = tokenUsageFromJson(document.token_usage);
 
   const toolbar = (
-    <div className="flex items-center gap-2 rounded-full matrx-glass-thin-border px-3 py-1.5">
-      <span className="type-secondary font-medium text-foreground/80 truncate">
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-[1.25rem] matrx-glass-thin-border px-3 py-1.5">
+      <span className="min-w-0 type-secondary font-medium text-foreground/80 truncate">
         {document.title ?? "Document"}
       </span>
       {document.capture_version != null && (
@@ -275,8 +275,7 @@ export default function DocumentViewer({ defaultLayout }: { defaultLayout?: Layo
           ? new Date(document.created_at).toLocaleDateString()
           : ""}
       </span>
-      <div className="flex-1" />
-      <div className="flex items-center gap-1">
+      <div className="ml-auto flex flex-wrap items-center gap-1">
         <button
           onClick={handleRegenerate}
           disabled={stream.isStreaming}

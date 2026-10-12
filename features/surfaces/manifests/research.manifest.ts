@@ -624,6 +624,17 @@ const surfaceSpecific: SurfaceValue[] = [
     group: "outputs",
     sortOrder: 694,
   },
+  {
+    name: "page_record_comments",
+    label: "Comments on records on this page",
+    description: `Research records read in place on this page (analyses, keyword syntheses, consolidations, older versions) that carry comments or the person's highlights, as [{ record: { type, id, title }, comments: [${COMMENT_THREAD_SHAPE}], notes: [${PERSONAL_ANNOTATION_SHAPE}] }]. Only records with at least one saved item; notes are private to this person. Absent when there are none.`,
+    valueType: "array",
+    alwaysAvailable: false,
+    typicalCharCount: 1500,
+    inlineUpTo: 1000,
+    group: "outputs",
+    sortOrder: 696,
+  },
 ];
 
 /**
@@ -806,6 +817,7 @@ export function createResearchScope(values: {
   open_record?: { type: string; id: string; title: string; version: number; kind: string };
   record_comments?: RecordCommentThread[];
   my_record_notes?: RecordPersonalAnnotation[];
+  page_record_comments?: Array<{ record: { type: string; id: string; title: string }; comments: RecordCommentThread[]; notes: RecordPersonalAnnotation[] }>;
 }): SurfaceScopePayload {
   return values as SurfaceScopePayload;
 }

@@ -222,7 +222,7 @@ export function KeywordDetailView({
                 className="rounded-xl border border-border/50 bg-card/60 p-3"
               >
                 {s.result ? (
-                  <ResearchRecordContent token="research_synthesis" id={s.id} title="Keyword synthesis" body={s.result} href={`/research/topics/${s.topic_id}/synthesis?record=${s.id}`} />
+                  <ResearchRecordContent token="research_synthesis" id={s.id} title={`${keyword?.keyword ?? "Keyword"} synthesis`} body={s.result} href={`/research/topics/${s.topic_id}/synthesis?record=${s.id}`} />
                 ) : (
                   <p className="type-meta text-muted-foreground">
                     Completed with no text output.

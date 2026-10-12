@@ -10,6 +10,7 @@
 
 import { RichDocument } from "@ai-matrx/rich-content/rich-document/RichDocument";
 import type { RichDocumentActionsProp } from "@ai-matrx/rich-content/rich-document/types";
+import { useRegisterInlineResearchRecord } from "../../agent-context/readingRecord";
 
 export type ResearchRecordToken = "research_synthesis" | "research_analysis" | "research_document";
 
@@ -29,6 +30,7 @@ export function ResearchRecordContent({
   href?: string;
   actions?: RichDocumentActionsProp;
 }) {
+  useRegisterInlineResearchRecord({ type: token, id, title });
   return (
     <RichDocument
       imagePolicy="ai"

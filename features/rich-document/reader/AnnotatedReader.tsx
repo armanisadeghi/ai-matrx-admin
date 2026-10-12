@@ -144,7 +144,7 @@ function ReaderLayout({ groupKey, defaultLayout, source, navigator, toolbar, hea
 
   const left = (
     <aside className="matrx-touch-targets flex h-full min-h-0 flex-col bg-muted/20">
-      <div className="scroll-page-end-space min-h-0 flex-1 overflow-y-auto p-1 pt-9">
+      <div className="scroll-page-end-space min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden p-1 pt-9">
         {navigator}
         {source && <DocumentOutline key={`${source.id}:${source.contentVersion}`} content={source.body} titleLabel={source.title} onJump={jump} sections={outlineSections} />}
       </div>

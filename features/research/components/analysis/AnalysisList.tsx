@@ -366,7 +366,7 @@ function DetailPanel({
                 reason={analysis.error || "Analysis stopped early."}
               />
             )}
-            <ResearchRecordContent token="research_analysis" id={analysis.id} title="Analysis" body={analysis.result} href={`/research/topics/${analysis.topic_id}/analysis`} />
+            <ResearchRecordContent token="research_analysis" id={analysis.id} title={`Analysis of ${source?.title ?? source?.hostname ?? "a source"}`} body={analysis.result} href={`/research/topics/${analysis.topic_id}/analysis`} />
           </article>
         ) : isFailed ? (
           <div className="p-6 flex flex-col items-center justify-center min-h-[300px] gap-4 text-center">

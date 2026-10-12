@@ -48,7 +48,7 @@ export function DocumentOutline({
       <ul className="list-none p-0">
         <li>
           <OutlineHeader title={title} active={activeHeading === title.headingIndex} onJump={(headingIndex) => { setActiveHeading(headingIndex); onJump(headingIndex); }} />
-          <ul className="grid list-none gap-0.5 p-0">{tree.map((node) => <OutlineBranch key={`${node.item.headingIndex}:${node.item.charOffset}`} node={node} depth={1} outline={outline} expanded={expanded} setExpanded={setExpanded} activeHeading={activeHeading} setActiveHeading={setActiveHeading} onJump={onJump} />)}</ul>
+          <ul className="grid list-none grid-cols-[minmax(0,1fr)] gap-0.5 p-0">{tree.map((node) => <OutlineBranch key={`${node.item.headingIndex}:${node.item.charOffset}`} node={node} depth={1} outline={outline} expanded={expanded} setExpanded={setExpanded} activeHeading={activeHeading} setActiveHeading={setActiveHeading} onJump={onJump} />)}</ul>
         </li>
       </ul>
     </nav>
@@ -72,8 +72,24 @@ function OutlineBranch({ node, depth, outline, expanded, setExpanded, activeHead
 /**
  * Scroll a rendered body to the outline row's heading: the Nth rendered
  * h1–h6 inside `contentRoot`, or the reader's top (`topTarget`) for -1.
+ * Only the reader's own scroll container moves — `scrollIntoView` would also
+ * scroll every scrollable ancestor (the app shell), shifting the whole page.
  */
 export function scrollToOutlineHeading(contentRoot: Element | null | undefined, topTarget: Element | null | undefined, headingIndex: number): void {
   const target = headingIndex === -1 ? topTarget : contentRoot?.querySelectorAll("h1,h2,h3,h4,h5,h6").item(headingIndex);
-  target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (!target) return;
+  const scroller = scrollParentOf(target);
+  if (!scroller) return;
+  const top = target.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
+  scroller.scrollTo({ top: headingIndex === -1 ? 0 : top, behavior: "smooth" });
+}
+
+function scrollParentOf(element: Element): HTMLElement | null {
+  let node = element.parentElement;
+  while (node) {
+    const { overflowY } = getComputedStyle(node);
+    if ((overflowY === "auto" || overflowY === "scroll") && node.scrollHeight > node.clientHeight) return node;
+    node = node.parentElement;
+  }
+  return null;
 }

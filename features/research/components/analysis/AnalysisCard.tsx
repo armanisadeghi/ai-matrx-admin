@@ -297,7 +297,7 @@ export function AnalysisCard({
               reason={analysis.error || "Analysis stopped early."}
             />
           )}
-          <ResearchRecordContent token="research_analysis" id={analysis.id} title="Analysis" body={analysis.result ?? ""} href={`/research/topics/${analysis.topic_id}/analysis`} />
+          <ResearchRecordContent token="research_analysis" id={analysis.id} title={`Analysis (${analysis.agent_type.replace(/_/g, " ")})`} body={analysis.result ?? ""} href={`/research/topics/${analysis.topic_id}/analysis`} />
 
           {tokenUsage && (
             <div className="flex items-center gap-4 type-meta text-muted-foreground border-t border-border pt-2">
