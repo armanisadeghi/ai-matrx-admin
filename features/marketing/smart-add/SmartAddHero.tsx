@@ -5,7 +5,7 @@
  * nothing else) and Vercel's import flow (the work shows as small live steps under the field).
  * Only the main options show: Company / Person and two big inputs. While we identify, the inputs
  * settle, a soft scan line runs under them and each step chips in with its icon. The moment the
- * first real finding arrives, the page morphs (a shared-element view transition, Arc-style) into
+ * first real finding arrives, the page morphs (shared elements glide to their new home, Arc-style) into
  * the structured page; if nothing is found, three quick questions take the stage instead.
  * Every motion is `motion-safe:` (prefers-reduced-motion shows the same states without movement).
  */
@@ -24,8 +24,60 @@ const STEP_COPY: Record<string, { label: string; icon: typeof Globe }> = {
   socials: { label: "Looking up the account", icon: UserRound },
 };
 
-/** The shared-element names the view transition morphs between the two pages. */
-export const SMART_ADD_VT = { inputs: "smart-add-inputs", kind: "smart-add-kind" } as const;
+/** The attribute that marks the shared elements ("kind", "inputs") the morph carries between pages. */
+export const SMART_ADD_MORPH = "data-smart-add-morph";
+
+/** Where each shared element sits right now (read on the hero, just before the swap). */
+export function readMorphRects(): Record<string, DOMRect> {
+  const out: Record<string, DOMRect> = {};
+  document.querySelectorAll<HTMLElement>(`[${SMART_ADD_MORPH}]`).forEach((el) => {
+    out[el.getAttribute(SMART_ADD_MORPH) ?? ""] = el.getBoundingClientRect();
+  });
+  return out;
+}
+
+function motionMs(token: string, fallback: number): number {
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
+  const n = parseFloat(raw);
+  if (!Number.isFinite(n)) return fallback;
+  return raw.endsWith("ms") ? n : raw.endsWith("s") ? n * 1000 : n;
+}
+
+/**
+ * FLIP: each shared element starts where it sat on the hero and glides to its new place; everything
+ * else on the structured page waits for the glide to land, then rises in (so nothing flies over it).
+ */
+export function playMorph(from: Record<string, DOMRect>, page: HTMLElement | null) {
+  const duration = Math.max(motionMs("--matrx-motion-duration-panel", 320) * 1.2, 420);
+  const easing =
+    getComputedStyle(document.documentElement).getPropertyValue("--matrx-motion-ease-panel").trim() ||
+    "cubic-bezier(0.2, 0, 0, 1)";
+  document.querySelectorAll<HTMLElement>(`[${SMART_ADD_MORPH}]`).forEach((el) => {
+    const was = from[el.getAttribute(SMART_ADD_MORPH) ?? ""];
+    if (!was || typeof el.animate !== "function") return;
+    const now = el.getBoundingClientRect();
+    const dx = was.left + was.width / 2 - (now.left + now.width / 2);
+    const dy = was.top - now.top;
+    el.animate(
+      [
+        { transform: `translate(${dx}px, ${dy}px) scale(${Math.min(was.width / Math.max(now.width, 1), 1.15)})`, opacity: 0.6 },
+        { transform: "none", opacity: 1 },
+      ],
+      { duration, easing },
+    );
+  });
+  if (!page) return;
+  Array.from(page.children).forEach((child, i) => {
+    if (!(child instanceof HTMLElement) || child.hasAttribute(SMART_ADD_MORPH)) return;
+    child.animate(
+      [
+        { opacity: 0, transform: "translateY(10px)" },
+        { opacity: 1, transform: "none" },
+      ],
+      { duration: duration * 0.7, delay: duration * 0.65 + i * 40, easing, fill: "backwards" },
+    );
+  });
+}
 
 export function SmartAddHero({
   person,
@@ -72,7 +124,7 @@ export function SmartAddHero({
           <p className="text-base text-muted-foreground">Your website, a social link — or both.</p>
         </div>
 
-        <div style={{ viewTransitionName: SMART_ADD_VT.kind }}>
+        <div {...{ [SMART_ADD_MORPH]: "kind" }}>
           <SegmentedControl
             aria-label="Brand kind"
             value={person ? "person" : "company"}
@@ -88,7 +140,7 @@ export function SmartAddHero({
           className={`flex w-full flex-col gap-3 transition-transform duration-[var(--matrx-motion-duration-panel)] ease-[var(--matrx-motion-ease-panel)] ${
             working ? "motion-safe:-translate-y-1" : ""
           }`}
-          style={{ viewTransitionName: SMART_ADD_VT.inputs }}
+          {...{ [SMART_ADD_MORPH]: "inputs" }}
         >
           {/* Field `hero` (the 56px inviting-page input) is committed in @ai-matrx/design-system and adopts
               here as soon as that release is served (publishing is held by the CI spend block). */}
@@ -167,17 +219,8 @@ export function SmartAddHero({
           </div>
         ) : null}
       </div>
-      {/* The scan keyframes and the morph's pace (the platform motion tokens) for the two shared elements. */}
-      <style>{`
-        @keyframes smart-add-scan { 0% { left: -33%; } 100% { left: 100%; } }
-        ::view-transition-group(${SMART_ADD_VT.inputs}), ::view-transition-group(${SMART_ADD_VT.kind}) {
-          animation-duration: var(--matrx-motion-duration-panel, 320ms);
-          animation-timing-function: var(--matrx-motion-ease-panel, cubic-bezier(0.2, 0, 0, 1));
-        }
-        @media (prefers-reduced-motion: reduce) {
-          ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
-        }
-      `}</style>
+      {/* The scan line's sweep. */}
+      <style>{`@keyframes smart-add-scan { 0% { left: -33%; } 100% { left: 100%; } }`}</style>
     </section>
   );
 }

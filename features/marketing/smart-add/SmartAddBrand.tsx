@@ -16,8 +16,7 @@
  * Watch window when it is built.
  */
 
-import { useEffect, useEffectEvent, useRef, useState } from "react";
-import { flushSync } from "react-dom";
+import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from "react";
 import { Check, ExternalLink, Globe, Loader2, RotateCcw, X } from "lucide-react";
 import { Button, Field, SegmentedControl, Select, type SelectOption } from "@ai-matrx/design-system/controls";
 import { useAppDispatch } from "@/lib/redux/hooks";
@@ -40,7 +39,7 @@ import {
 import { runHref } from "@/features/workflow-runtime/run-doors";
 import { initializeSite } from "@/features/marketing/crawler/direct-client";
 import { SmartAddSlots } from "./SmartAddSlots";
-import { SMART_ADD_VT, SmartAddHero } from "./SmartAddHero";
+import { SMART_ADD_MORPH, SmartAddHero, playMorph, readMorphRects } from "./SmartAddHero";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useSocialSpend } from "@/features/marketing/social/cost";
@@ -456,18 +455,27 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
 
   const showPicker = needsPlatformPick(parsed, null);
 
-  // The welcome stage until the first real finding; then ONE morph into the structured page
-  // (a shared-element view transition where the browser has it; an instant swap otherwise).
+  // The welcome stage until the first real finding; then ONE morph into the structured page:
+  // the Company/Person switch and the inputs glide from where they sat to their new home (FLIP on
+  // the Web Animations API, paced by the platform motion tokens). Scoped to these two elements on
+  // purpose: a document-wide view transition aborts whenever anything else on the page holds a
+  // duplicate transition name. prefers-reduced-motion swaps instantly.
   const [structured, setStructured] = useState(false);
+  const morphFrom = useRef<Record<string, DOMRect> | null>(null);
+  const pageRef = useRef<HTMLDivElement>(null);
   const hasFindings = items.size > 0;
   useEffect(() => {
     if (structured || !hasFindings) return;
-    const go = () => flushSync(() => setStructured(true));
-    const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
-    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (doc.startViewTransition && !reduce) doc.startViewTransition(go);
-    else go();
+    morphFrom.current = readMorphRects();
+    setStructured(true);
   }, [hasFindings, structured]);
+  useLayoutEffect(() => {
+    const from = morphFrom.current;
+    morphFrom.current = null;
+    if (!structured || !from) return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    playMorph(from, pageRef.current);
+  }, [structured]);
   const nothingFound = rounds.length > 0 && !working && !hasFindings;
   const listeners = (
     <>
@@ -519,8 +527,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           : "working";
 
   return (
-    <div className="flex w-full max-w-3xl flex-col gap-3" data-testid="smart-add-brand">
-      <div style={{ viewTransitionName: SMART_ADD_VT.kind }} className="self-start">
+    <div ref={pageRef} className="flex w-full max-w-3xl flex-col gap-3" data-testid="smart-add-brand">
+      <div {...{ [SMART_ADD_MORPH]: "kind" }} className="self-start">
       <SegmentedControl
         aria-label="Brand kind"
         value={person ? "person" : "company"}
@@ -531,7 +539,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         ]}
       />
       </div>
-      <div className="grid gap-3 sm:grid-cols-2" style={{ viewTransitionName: SMART_ADD_VT.inputs }}>
+      <div className="grid gap-3 sm:grid-cols-2" {...{ [SMART_ADD_MORPH]: "inputs" }}>
         <label className="flex flex-col gap-1">
           <span className="text-xs font-medium text-muted-foreground">Website</span>
           <Field
