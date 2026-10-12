@@ -693,6 +693,36 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     mobilePresentation: "card",
   },
 
+  // ── Watch AI (features/ai-watch) ─────────────────────────────────────────
+  // Preserved: after a refresh it reopens on the server's record of the run
+  // (`userRequestId` → chat.user_request + chat.request_snapshot).
+  {
+    slug: "ai-watch-window",
+    overlayId: "aiWatchWindow",
+    kind: "window",
+    label: "Watch AI",
+    instanceMode: "multi",
+    defaultData: {
+      windowInstanceId: null,
+      requestId: null,
+      userRequestId: null,
+      workflowRunId: null,
+      conversationId: null,
+      label: null,
+    },
+    preservation: {
+      dataKeys: [
+        "windowInstanceId",
+        "requestId",
+        "userRequestId",
+        "workflowRunId",
+        "conversationId",
+        "label",
+      ],
+    },
+    mobilePresentation: "card",
+  },
+
   // ── Workflow run (the run that followed you off its page) ────────────────
   // Ephemeral by construction, and for a second reason beyond the usual one:
   // the run's PERMALINK (`/workflows/runs/{id}`) is what survives a reload,

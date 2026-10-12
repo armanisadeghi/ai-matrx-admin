@@ -120,6 +120,13 @@ export const OVERLAY_CATALOGUE = {
     instanceMode: "multi",
     isWindow: true,
   },
+  // "AI is never hidden" — the exact request and the streamed response of any
+  // AI run, with admin-only cost/time/model metrics (features/ai-watch).
+  aiWatchWindow: {
+    label: "Watch AI",
+    instanceMode: "multi",
+    isWindow: true,
+  },
   workflowRunWindow: {
     label: "Workflow Run",
     instanceMode: "multi",

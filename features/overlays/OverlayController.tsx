@@ -910,6 +910,10 @@ const DiffViewerWindow = lazyOverlay(
   () => import("@/features/window-panels/windows/DiffViewerWindow"),
   { ssr: false },
 );
+const AiWatchWindow = lazyOverlay(
+  () => import("@/features/window-panels/windows/ai-watch/AiWatchWindow"),
+  { ssr: false },
+);
 const LiveRunWindow = lazyOverlay(
   () => import("@ai-matrx/chat/window-panels/windows/agents/LiveRunWindow"),
   { ssr: false },
@@ -2206,6 +2210,9 @@ export default function OverlayController() {
     ),
     diffViewerWindow: useAppSelector((s) =>
       selectOpenInstances(s, "diffViewerWindow"),
+    ),
+    aiWatchWindow: useAppSelector((s) =>
+      selectOpenInstances(s, "aiWatchWindow"),
     ),
     liveRunWindow: useAppSelector((s) =>
       selectOpenInstances(s, "liveRunWindow"),
@@ -6074,6 +6081,31 @@ export default function OverlayController() {
             variables={
               data?.variables as Record<string, unknown> | null | undefined
             }
+          />
+        );
+      })}
+
+      {/* aiWatchWindow — multi-instance */}
+      {instancesById.aiWatchWindow.map((inst) => {
+        const data = inst.data as Record<string, unknown> | null | undefined;
+        const text = (v: unknown) => (typeof v === "string" && v ? v : null);
+        return (
+          <AiWatchWindow
+            key={inst.instanceId}
+            windowInstanceId={text(data?.windowInstanceId) ?? inst.instanceId}
+            onClose={() =>
+              dispatch(
+                closeOverlay({
+                  overlayId: "aiWatchWindow",
+                  instanceId: inst.instanceId,
+                }),
+              )
+            }
+            requestId={text(data?.requestId)}
+            userRequestId={text(data?.userRequestId)}
+            workflowRunId={text(data?.workflowRunId)}
+            conversationId={text(data?.conversationId)}
+            label={text(data?.label)}
           />
         );
       })}
