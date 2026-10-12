@@ -362,3 +362,141 @@ export function candidateCategory(field: EvidenceField): "media" | "fact" | "soc
   if (field === "phone" || field === "email" || field === "address") return "fact";
   return "identity";
 }
+
+// ── Compare: candidates grouped by platform ─────────────────────────────────────
+
+/** How a candidate relates to the brand when it is neither ours nor "not us" (web.brand_relation_kind). */
+export interface Relation {
+  key: string;
+  label: string;
+  routesTo: "owns" | "key_person" | "competitor" | null;
+}
+
+/** One website or account that may or may not be the brand, with what its own page said. */
+export interface Candidate {
+  /** The anchor item's key (the website or account finding). */
+  id: string;
+  /** "website" or the social platform. */
+  platform: string;
+  anchor: EvidenceItem;
+  /** Everything this source said, anchor included. */
+  items: EvidenceItem[];
+  /** Keys that belong to this candidate alone (a shared website link is not rejected with one profile). */
+  ownKeys: string[];
+  name: string | null;
+  /** The exact handle, no "@". */
+  handle: string | null;
+  /** The exact address to open. */
+  url: string | null;
+  followers: number | null;
+  verified: boolean | null;
+  bio: string | null;
+  /** Stored profile photo door + its source link. */
+  profileId: string | null;
+  photoUrl: string | null;
+  /** A website's own icon/logo. */
+  iconUrl: string | null;
+}
+
+export interface PlatformRow {
+  platform: string;
+  candidates: Candidate[];
+}
+
+/** Row order: the website first, then the platforms people check most. */
+const PLATFORM_ORDER = ["website", "instagram", "facebook", "x", "linkedin", "youtube", "pinterest", "tiktok", "threads"];
+
+function hostOf(url: string | null): string | null {
+  return url ? websiteHost(url) : null;
+}
+
+/** Group findings into one row per platform, each row holding that platform's candidates side by side. */
+export function compareRows(items: EvidenceItem[]): PlatformRow[] {
+  const candidates: Candidate[] = [];
+
+  // Accounts — one per account key; a looked-up profile beats a bare link found on a page.
+  const accounts = new Map<string, EvidenceItem>();
+  for (const i of items.filter((x) => x.field === "social")) {
+    const existing = accounts.get(i.key);
+    if (!existing || (existing.source.kind !== "social_profile" && i.source.kind === "social_profile")) accounts.set(i.key, i);
+  }
+  for (const acct of accounts.values()) {
+    const fromProfile =
+      acct.source.kind === "social_profile" && acct.source.url
+        ? items.filter((i) => i.source.kind === "social_profile" && i.source.url === acct.source.url)
+        : [];
+    const group = [acct, ...fromProfile.filter((i) => i.key !== acct.key)];
+    const said = (f: EvidenceField) => fromProfile.find((i) => i.field === f) ?? null;
+    const photo = acct.profile_id ? acct : (fromProfile.find((i) => i.field === "logo" && i.profile_id) ?? said("logo"));
+    candidates.push({
+      id: acct.key,
+      platform: acct.platform ?? "other",
+      anchor: acct,
+      items: group,
+      ownKeys: [],
+      name: said("name")?.value ?? acct.label,
+      handle: acct.handle,
+      url: acct.url ?? acct.source.url ?? (/^https?:\/\//i.test(acct.value) ? acct.value : null),
+      followers: acct.followers ?? photo?.followers ?? null,
+      verified: acct.verified,
+      bio: said("description")?.value ?? said("tagline")?.value ?? null,
+      profileId: photo?.profile_id ?? null,
+      photoUrl: photo?.image_url ?? null,
+      iconUrl: null,
+    });
+  }
+
+  // Websites — one per host: the address itself plus everything read off that site.
+  const siteItems = items.filter((i) => i.source.kind !== "social_profile" && i.source.kind !== "typed" && i.field !== "social");
+  const hosts = new Map<string, EvidenceItem | null>();
+  for (const w of items.filter((i) => i.field === "website")) {
+    const h = websiteHost(w.value);
+    const current = hosts.get(h);
+    if (!current || (current.source.kind === "social_profile" && w.source.kind !== "social_profile")) hosts.set(h, w);
+  }
+  for (const i of siteItems) {
+    const h = hostOf(i.source.url);
+    if (h && !hosts.has(h)) hosts.set(h, null);
+  }
+  for (const [host, anchorItem] of hosts) {
+    const fromSite = siteItems.filter((i) => hostOf(i.source.url) === host);
+    const anchor = anchorItem ?? fromSite[0];
+    if (!anchor) continue;
+    const group = [anchor, ...fromSite.filter((i) => i.key !== anchor.key)];
+    const said = (f: EvidenceField) => fromSite.find((i) => i.field === f) ?? null;
+    const logos = fromSite.filter((i) => i.field === "logo");
+    const icon = logos.find((i) => (i.source.where ?? "").toLowerCase().includes("icon")) ?? logos[0] ?? null;
+    const url = anchor.field === "website" ? (anchor.url ?? anchor.value) : (anchor.source.url ?? `https://${host}`);
+    candidates.push({
+      id: anchor.field === "website" ? anchor.key : `site:${host}`,
+      platform: "website",
+      anchor,
+      items: group,
+      ownKeys: [],
+      name: said("name")?.value ?? null,
+      handle: null,
+      url: /^https?:\/\//i.test(url) ? url : `https://${url}`,
+      followers: null,
+      verified: null,
+      bio: said("description")?.value ?? said("tagline")?.value ?? null,
+      profileId: null,
+      photoUrl: null,
+      iconUrl: icon ? (icon.image_url ?? icon.value) : null,
+    });
+  }
+
+  // A key in two candidates (a profile's link to the site) belongs to neither alone.
+  const seen = new Map<string, number>();
+  for (const c of candidates) for (const i of c.items) seen.set(i.key, (seen.get(i.key) ?? 0) + 1);
+  for (const c of candidates) c.ownKeys = c.items.filter((i) => i.key === c.anchor.key || seen.get(i.key) === 1).map((i) => i.key);
+
+  const rows = new Map<string, Candidate[]>();
+  for (const c of candidates) rows.set(c.platform, [...(rows.get(c.platform) ?? []), c]);
+  const rank = (p: string) => (PLATFORM_ORDER.indexOf(p) === -1 ? PLATFORM_ORDER.length : PLATFORM_ORDER.indexOf(p));
+  return [...rows.entries()]
+    .sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b))
+    .map(([platform, list]) => ({
+      platform,
+      candidates: list.sort((a, b) => (b.followers ?? -1) - (a.followers ?? -1) || b.anchor.confidence - a.anchor.confidence),
+    }));
+}

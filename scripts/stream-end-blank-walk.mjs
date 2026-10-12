@@ -18,9 +18,13 @@ const page = await ctx.newPage();
 await page.goto(url, { timeout: 180000 });
 if (page.url().includes("__dev-walk")) { await page.getByRole("button", { name: "Resume this preview" }).click(); await page.waitForURL(u=>!u.href.includes("__dev-walk"),{timeout:180000}); }
 await page.waitForTimeout(6000);
-await page.getByText("General Chat", {exact:false}).first().click();
-await page.getByText("Content Writing Partner").click();
-await page.waitForTimeout(1500);
+for (let a = 0; a < 4; a++) {
+  if (await page.getByText("Content Writing Partner").count() && !(await page.getByText("General Chat · ").count())) break;
+  await page.getByText("General Chat", {exact:false}).first().click().catch(()=>{});
+  await page.getByText("Content Writing Partner").first().click({timeout:8000}).catch(()=>{});
+  await page.waitForTimeout(1500);
+}
+if (!(await page.getByText("Content Writing Partner").count())) { console.log("ABORT: agent not Content Writing Partner (General Chat is spend-gated)"); await b.close(); process.exit(2); }
 await page.locator("textarea").first().fill(PROMPT);
 await page.keyboard.press("Enter");
 const samples = [];

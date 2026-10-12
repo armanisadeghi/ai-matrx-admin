@@ -339,7 +339,7 @@ export function SmartAddHero({
             <Centerpiece
               items={items}
               views={views}
-              working={working || phase === "identifying"}
+              working={working || (phase === "identifying" && mode !== "name")}
               settled={phase === "nothing"}
               host={host}
               platform={parsed.status === "ok" && socialOk ? parsed.platform : null}
@@ -713,7 +713,11 @@ function CompactSignals({
     <div className="flex h-14 items-center gap-3 pl-4 pr-2">
       {mode === "name" ? (
         <span className="flex min-w-0 items-center gap-2 text-lg font-medium">
-          <Building2 className="size-5 shrink-0 text-muted-foreground" />
+          {person ? (
+            <UserRound className="size-5 shrink-0 text-muted-foreground" />
+          ) : (
+            <Building2 className="size-5 shrink-0 text-muted-foreground" />
+          )}
           <span className="truncate">{name}</span>
         </span>
       ) : (
