@@ -159,7 +159,9 @@ export function SmartAddHero({
   return (
     <MotionConfig reducedMotion="user">
       <section
-        className={`relative flex min-h-full w-full flex-col items-center px-4 pb-12 ${
+        // The shell gives this <main> a bottom runway (the page end once, clear of floating chrome). The stage fills the frame LESS that
+        // runway so the two never add up to a scroll when the content fits, and carries no bottom padding of its own.
+        className={`relative flex min-h-[calc(100%-var(--matrx-floating-clearance))] w-full flex-col items-center px-4 ${
           compact
             ? "justify-start pt-[calc(var(--shell-header-h,3rem)+5vh)]"
             : "justify-center pt-[calc(var(--shell-header-h,3rem)+2rem)]"
