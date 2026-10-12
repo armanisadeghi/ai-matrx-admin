@@ -579,7 +579,7 @@ export function DocumentRecord({
                   isOwner={isOwner}
                   variant="default"
                   size="sm"
-                  className="rounded-full px-4"
+                  className="rounded-full px-4 max-sm:px-2.5 max-sm:[&>span]:hidden"
                 />
               </>
             ),
