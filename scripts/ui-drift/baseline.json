@@ -3,9 +3,10 @@
   "updated": "2026-10-07",
   "sha": "e389e62b291c8f8958b40ae46c3c3cb67335a4b2",
   "sites": 33659,
-  "count": 17,
+  "count": 18,
   "ids": [
     "arbitrary-text-size|features/esign/signer/parts/PaperField.tsx",
+    "primitive-visual-class|components/editor-chrome/EditorRibbon.tsx",
     "primitive-visual-class|features/ai-work/live/components/RoomDetail.tsx",
     "primitive-visual-class|features/education/classes/components/ClassTestDialog.tsx",
     "primitive-visual-class|features/education/classes/components/ClassTestView.tsx",
@@ -10546,6 +10547,11 @@
     },
     "primitive-visual-class|features/ai-work/live/components/RoomDetail.tsx": {
       "reason": "Pre-existing add-session dropdown sizing (scrolling list of sessions), moved unchanged into the header",
+      "accepted_by": "Armani Sadeghi",
+      "date": "2026-10-12"
+    },
+    "primitive-visual-class|components/editor-chrome/EditorRibbon.tsx": {
+      "reason": "Ribbon dropdowns use the same max-height/min-width as the editor menu bar's menus (long command lists scroll)",
       "accepted_by": "Armani Sadeghi",
       "date": "2026-10-12"
     }
