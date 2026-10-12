@@ -188,13 +188,20 @@ try {
     const pm = page.locator(`${editorSel} .ProseMirror`);
     await pm.locator("p, li").first().click();
     await page.keyboard.press("End");
-    await page.keyboard.type(" (checked)");
+    // --restore takes the walk's own edit back out through the same editor (the stored bytes must match the original).
+    if (args.restore) {
+      await pm.locator("li", { hasText: "(checked)" }).first().click();
+      await page.keyboard.press("End");
+      for (let i = 0; i < " (checked)".length; i++) await page.keyboard.press("Backspace");
+      await page.waitForTimeout(800);
+    }
+    else await page.keyboard.type(" (checked)");
     await page.waitForTimeout(400);
     await page.keyboard.press(process.platform === "darwin" ? "Meta+s" : "Control+s");
     await page.locator(editorSel).waitFor({ state: "detached", timeout: 30_000 });
     await page.waitForTimeout(1000);
     const shown = await answer.locator("[data-message-content]").first().innerText();
-    if (!shown.includes("(checked)")) fail("the saved edit is not on screen");
+    if (args.restore ? shown.includes("(checked)") : !shown.includes("(checked)")) fail(args.restore ? "the restore left the edit on screen" : "the saved edit is not on screen");
     await page.screenshot({ path: `${out}/${tag}-4-saved.png` });
     console.log("SAVED: edit on screen =", shown.includes("(checked)"));
   } else if (!measureOnly) {
