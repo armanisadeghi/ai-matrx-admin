@@ -35,6 +35,10 @@ import { artifactsManifest } from "./artifacts.manifest";
 import { assistsManifest } from "./assists.manifest";
 import { reportsManifest } from "./reports.manifest";
 import { cameraManifest } from "./camera.manifest";
+import { chromeExtensionAssistantManifest } from "./chrome-extension-assistant.manifest";
+import { chromeExtensionPilotManifest } from "./chrome-extension-pilot.manifest";
+import { defaultBasicContentDisplayManifest } from "./default-basic-content-display.manifest";
+import { defaultBasicEditorManifest } from "./default-basic-editor.manifest";
 import { vaultManifest } from "./vault.manifest";
 import { legalCaWcManifest } from "./legal-ca-wc.manifest";
 import { codeEditorManifest } from "./code-editor.manifest";
@@ -312,6 +316,10 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   assistsManifest,
   reportsManifest,
   cameraManifest,
+  chromeExtensionAssistantManifest,
+  chromeExtensionPilotManifest,
+  defaultBasicContentDisplayManifest,
+  defaultBasicEditorManifest,
   vaultManifest,
   legalCaWcManifest,
   notesEditorManifest,

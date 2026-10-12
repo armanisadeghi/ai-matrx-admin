@@ -28,7 +28,7 @@ import { memberMandateRecordHref } from "../member-list/routes";
 import { useFeatureIntelligence } from "./useFeatureIntelligence";
 import { rungFor, useIntelligenceActions } from "./useIntelligenceActions";
 import { IntelligenceJobCard, type RunOverride } from "./IntelligenceJobCard";
-import { PlacesMap } from "./PlacesMap";
+import { mergePlaces, PlacesMap } from "./PlacesMap";
 import {
   EverywhereElse,
   IntelligenceSearchBar,
@@ -154,7 +154,7 @@ export function FeatureIntelligence({
       : null;
 
   const hoveredPlaceKeys = hoverPlace
-    ? new Set(state.places.find((place) => place.id === hoverPlace)?.mandateKeys ?? [])
+    ? new Set(mergePlaces(state.places).find((place) => place.ids.includes(hoverPlace))?.mandateKeys ?? [])
     : null;
   const activeKey = hoverKey ?? (hoverPlace ? null : focusMandateKey);
 
@@ -224,28 +224,6 @@ export function FeatureIntelligence({
         ) : null}
       </IntelligenceSearchBar>
 
-      <section className="mb-5 empty:hidden" aria-label="Where it runs">
-        {state.loading ? (
-          <div className="flex gap-1.5">
-            {[0, 1, 2, 3].map((n) => (
-              <div key={n} className="h-12 w-[11.5rem] animate-pulse rounded-lg bg-muted" />
-            ))}
-          </div>
-        ) : (
-          <PlacesMap
-            places={state.places}
-            activeMandateKey={activeKey}
-            activePlaceId={hoverPlace}
-            onHoverPlace={setHoverPlace}
-          />
-        )}
-        {state.placesError ? (
-          <p className="mt-1 type-meta text-destructive">
-            Some places could not be read: {state.placesError}
-            <ErrorAlchemyMenu error={state.placesError} />
-          </p>
-        ) : null}
-      </section>
 
       {state.error ? (
         <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-3.5 py-2.5 type-body text-destructive">
@@ -275,6 +253,25 @@ export function FeatureIntelligence({
           context={context}
         />
       )}
+
+      <section className="mt-5 empty:hidden" aria-label="Where it runs">
+        {state.loading ? (
+          <div className="h-6 w-40 animate-pulse rounded-md bg-muted" />
+        ) : (
+          <PlacesMap
+            places={state.places}
+            activeMandateKey={activeKey}
+            activePlaceId={hoverPlace}
+            onHoverPlace={setHoverPlace}
+          />
+        )}
+        {state.placesError ? (
+          <p className="mt-1 type-meta text-destructive">
+            Some places could not be read: {state.placesError}
+            <ErrorAlchemyMenu error={state.placesError} />
+          </p>
+        ) : null}
+      </section>
 
       <EverywhereElse query={query} excludeTarget={feature} context={context} />
 

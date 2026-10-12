@@ -11,7 +11,8 @@ const K = MANDATE_KEYS;
 
 export const APPLETS_PLACES: FeaturePlaces = {
   feature: "agent_apps",
-  // The builder's jobs are declared as applets.build / applets.fix (d46539068d).
+  // The builder runs applets.build; a fix round is the next turn of that same
+  // conversation, so applets.fix no longer runs on its own (29d9853c15c).
   extraPrefixes: ["applets"],
   label: "Applets",
   roots: ["features/applets", "app/(core)/applets"],
@@ -21,8 +22,12 @@ export const APPLETS_PLACES: FeaturePlaces = {
       label: "Build an Applet",
       trigger: "Describe the Applet; the builder drafts and fixes it",
       urlPattern: "/applets/build",
-      mandateKeys: [K.applets__build, K.applets__fix],
-      sources: ["features/applets-host/builder/AppletBuilder.tsx"],
+      mandateKeys: [K.applets__build],
+      // The Code page opens on the same builder (00ee2cced93).
+      sources: [
+        "features/applets-host/builder/AppletBuilder.tsx",
+        "app/(core)/applets/manage/[id]/code/AppletEditPageClient.tsx",
+      ],
     },
     {
       id: "code",

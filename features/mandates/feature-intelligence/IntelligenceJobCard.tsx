@@ -191,13 +191,13 @@ export function IntelligenceJobCard({
           <ChevronRight className={cn("h-4 w-4 transition-transform", expanded && "rotate-90")} />
         </button>
 
-        <div className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5">
-          <h3 className="min-w-[7rem] shrink truncate type-title text-foreground" title={row.shortName}>
+        <div className="flex min-w-0 flex-nowrap items-center gap-x-1">
+          <h3 className="min-w-0 shrink truncate type-title text-foreground" title={row.shortName}>
             {row.shortName}
           </h3>
           <MandatePeekButton mandate={row.id} name={row.shortName} href={detailsHref} />
           <NewTabLink href={detailsHref} label={row.shortName} />
-          <span className="ml-1 shrink-0" onClick={(event) => event.stopPropagation()}>
+          <span className="ml-1 shrink-0 whitespace-nowrap" onClick={(event) => event.stopPropagation()}>
             {/* THE STATUS — draft vs active is never left to a guess. The
                 person who made this job may change it here. */}
             <MandateStatusControl
