@@ -78,6 +78,7 @@ const IMAGE_KINDS: ReadonlySet<string> = new Set([
   "logo_dark",
   "favicon",
   "wordmark",
+  "headshot",
   "hero_image",
   "og_image",
   "twitter_image",

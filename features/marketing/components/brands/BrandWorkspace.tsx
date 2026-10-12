@@ -21,7 +21,6 @@ import {
   Mic,
   ListTree,
   Mail,
-  Map as MapIcon,
   MapPin,
   Palette,
   Pencil,
@@ -258,7 +257,6 @@ const FACT_KIND_ICONS: Record<BusinessFactKind, LucideIcon> = {
   description: FileText,
   site_name: Globe2,
   social_profile: AtSign,
-  service_area: MapIcon,
   registration: BadgeCheck,
   spokesperson: Mic,
   proof: Award,
@@ -279,7 +277,6 @@ const FACT_KIND_ORDER: BusinessFactKind[] = [
   "spokesperson",
   "proof",
   "hours",
-  "service_area",
   "registration",
   "social_profile",
   "other",
@@ -503,7 +500,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
     name: current.name,
     logo_url:
       current.logo_url ||
-      firstAssetUrl(assetRows, ["logo", "logo_dark", "wordmark"]),
+      firstAssetUrl(assetRows, ["logo", "logo_dark", "wordmark", "headshot"]),
     favicon_url: current.favicon_url || firstAssetUrl(assetRows, ["favicon"]),
   };
   const heroCover =

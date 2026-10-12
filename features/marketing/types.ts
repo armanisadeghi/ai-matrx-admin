@@ -120,9 +120,10 @@ export interface BrandProfile {
   voice_tone?: string;
   positioning?: string;
   value_props?: string[];
-  offerings?: string[];
+  /** Brand-level competitors (the ONE home): `{name, domain, handles}`. Bare strings on older rows parse to `{name}`. */
+  competitors?: BrandCompetitor[];
+  /** Service area — its ONE home (not `business_fact` kind service_area, not `site.settings`). */
   service_area?: string;
-  competitors?: string[];
   target_keywords?: string[];
   content_guidelines?: string;
   notes?: string;
@@ -152,7 +153,34 @@ export interface BrandProfile {
   approved_claims?: string[];
   forbidden_claims?: string[];
   disclaimers?: string[];
+  /** Every name the brand goes by (Smart Add, AI visibility, news monitor and keyword agents read it). */
+  brand_aliases?: string[];
+  /** Brand Foundations (FOUNDATIONS.md §2): positioning, visual and messaging keys. */
+  usp?: string;
+  brand_promise?: string;
+  personality?: string[];
+  imagery_style?: string;
+  iconography?: string;
+  vocabulary?: BrandVocabulary;
 }
+
+export interface BrandCompetitor {
+  name: string;
+  domain?: string;
+  handles?: string[];
+}
+
+/** Brand vocabulary: words the brand uses, and words it never uses. */
+export interface BrandVocabulary {
+  use: string[];
+  avoid: string[];
+}
+
+/**
+ * Retired profile keys: their data has ONE home elsewhere, so every editor save removes them.
+ * `offerings` → `web.brand_offering`.
+ */
+export const RETIRED_BRAND_PROFILE_KEYS = ["offerings"] as const;
 
 export interface MessagingPillar {
   title: string;
@@ -234,6 +262,32 @@ function parseHashtags(value: unknown): BrandHashtag[] {
   });
 }
 
+function parseCompetitors(value: unknown): BrandCompetitor[] {
+  if (!Array.isArray(value)) return [];
+  const seen = new Set<string>();
+  return value.flatMap((entry): BrandCompetitor[] => {
+    const record = asRecord(entry);
+    const rawName = typeof entry === "string" ? entry : record?.name ?? record?.key;
+    const name = typeof rawName === "string" ? rawName.trim() : "";
+    if (!name || seen.has(name.toLowerCase())) return [];
+    seen.add(name.toLowerCase());
+    const out: BrandCompetitor = { name };
+    const domain = typeof record?.domain === "string" ? record.domain.trim() : "";
+    if (domain) out.domain = domain;
+    const handles = cleanStrings(record?.handles);
+    if (handles.length) out.handles = handles;
+    return [out];
+  });
+}
+
+function parseVocabulary(value: unknown): BrandVocabulary | undefined {
+  const record = asRecord(value);
+  if (!record) return undefined;
+  const use = cleanStrings(record.use);
+  const avoid = cleanStrings(record.avoid);
+  return use.length || avoid.length ? { use, avoid } : undefined;
+}
+
 function parseElevatorPitches(value: unknown): ElevatorPitches | undefined {
   const record = asRecord(value);
   if (!record) return undefined;
@@ -258,12 +312,14 @@ export const BRAND_PROFILE_STRING_FIELDS = [
   "mission",
   "vision",
   "story",
+  "usp",
+  "brand_promise",
+  "imagery_style",
+  "iconography",
 ] as const;
 
 export const BRAND_PROFILE_LIST_FIELDS = [
   "value_props",
-  "offerings",
-  "competitors",
   "target_keywords",
   "expertise_areas",
   "credentials",
@@ -273,6 +329,8 @@ export const BRAND_PROFILE_LIST_FIELDS = [
   "approved_claims",
   "forbidden_claims",
   "disclaimers",
+  "brand_aliases",
+  "personality",
 ] as const;
 
 /** Structured (non-flat) profile keys: owned by the parser, serialized separately. */
@@ -281,6 +339,8 @@ export const BRAND_PROFILE_STRUCTURED_FIELDS = [
   "elevator_pitches",
   "content_pillars",
   "hashtags",
+  "competitors",
+  "vocabulary",
 ] as const;
 
 /**
@@ -310,6 +370,10 @@ export function parseBrandProfile(raw: Json | null | undefined): BrandProfile {
   if (contentPillars.length) profile.content_pillars = contentPillars;
   const hashtags = parseHashtags(raw.hashtags);
   if (hashtags.length) profile.hashtags = hashtags;
+  const competitors = parseCompetitors(raw.competitors);
+  if (competitors.length) profile.competitors = competitors;
+  const vocabulary = parseVocabulary(raw.vocabulary);
+  if (vocabulary) profile.vocabulary = vocabulary;
   return profile;
 }
 
@@ -331,6 +395,8 @@ export function brandProfileToJson(profile: BrandProfile): Json {
     elevator_pitches: (profile.elevator_pitches ?? {}) as unknown as Json,
     content_pillars: (profile.content_pillars ?? []) as unknown as Json,
     hashtags: (profile.hashtags ?? []) as unknown as Json,
+    competitors: (profile.competitors ?? []) as unknown as Json,
+    vocabulary: (profile.vocabulary ?? {}) as unknown as Json,
   });
   for (const key of BRAND_PROFILE_STRUCTURED_FIELDS) {
     const value = structured[key];
@@ -353,6 +419,7 @@ export function mergeBrandProfile(current: Json | null | undefined, edited: Bran
     ...BRAND_PROFILE_STRING_FIELDS,
     ...BRAND_PROFILE_LIST_FIELDS,
     ...BRAND_PROFILE_STRUCTURED_FIELDS,
+    ...RETIRED_BRAND_PROFILE_KEYS,
   ]) {
     delete merged[key];
   }
@@ -649,6 +716,7 @@ export const BRAND_ASSET_KINDS = [
   "logo_dark",
   "favicon",
   "wordmark",
+  "headshot",
   "hero_image",
   "og_image",
   "twitter_image",
@@ -671,6 +739,7 @@ export const BRAND_ASSET_KIND_LABELS: Record<BrandAssetKind, string> = {
   logo_dark: "Logo (dark)",
   favicon: "Favicon",
   wordmark: "Wordmark",
+  headshot: "Headshot",
   hero_image: "Hero image",
   og_image: "Open Graph image",
   twitter_image: "Twitter card image",
@@ -733,7 +802,6 @@ export const BUSINESS_FACT_KINDS = [
   "description",
   "site_name",
   "social_profile",
-  "service_area",
   "registration",
   "spokesperson",
   "proof",
@@ -757,7 +825,6 @@ export const BUSINESS_FACT_KIND_LABELS: Record<BusinessFactKind, string> = {
   description: "Homepage description",
   site_name: "Site name",
   social_profile: "Social profile",
-  service_area: "Service area",
   registration: "Registration",
   spokesperson: "Spokesperson",
   proof: "Proof",

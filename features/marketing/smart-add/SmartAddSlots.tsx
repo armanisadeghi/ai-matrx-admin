@@ -91,6 +91,10 @@ export function SmartAddSlots({
   );
   const of = (...fields: EvidenceField[]) => items.filter((i) => fields.includes(i.field));
   const socials = of("social");
+  // Every platform's looked-up photo (the same source as the image library): an account row whose
+  // own item came from a page link still shows the real photo.
+  const photoByPlatform = new Map<string, EvidenceItem>();
+  for (const l of of("logo")) if (l.profile_id && l.platform) photoByPlatform.set(l.platform, l);
   const platforms = [...new Set(socials.map((s) => s.platform ?? "other"))];
   const empty = working ? "Looking…" : started ? "Nothing found" : "—";
   const choices = (item: EvidenceItem, list: Choice[]) => (
@@ -143,7 +147,7 @@ export function SmartAddSlots({
               .map((i) => (
                 <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={choices(i, OURS_CHOICES)} hideWhere>
                   <span className="flex min-w-0 items-center gap-3">
-                    <Avatar item={i} />
+                    <Avatar item={i.profile_id ? i : { ...i, ...photoOf(photoByPlatform.get(i.platform ?? ""), i) }} />
                     <span className="flex min-w-0 flex-col">
                       <span className="truncate text-sm font-medium">{i.label ?? `@${i.handle ?? ""}`}</span>
                       <span className="truncate text-xs text-muted-foreground">
@@ -422,4 +426,10 @@ function Avatar({ item }: { item: EvidenceItem }) {
       </span>
     </span>
   );
+}
+
+/** The photo fields of a looked-up profile, only when it is plausibly this account (same platform). */
+function photoOf(photo: EvidenceItem | undefined, row: EvidenceItem): Partial<EvidenceItem> {
+  if (!photo || photo.platform !== row.platform) return {};
+  return { profile_id: photo.profile_id, image_url: photo.image_url };
 }

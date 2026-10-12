@@ -214,7 +214,7 @@ export function seedKeys(seeds: RoundSeeds, accountKey: (seed: SocialSeed) => st
 
 export interface LibraryImage {
   url: string;
-  kind: "logo" | "favicon" | "og_image" | "image";
+  kind: "logo" | "headshot" | "favicon" | "og_image" | "image";
   primary: boolean;
   source: string | null;
 }
@@ -237,7 +237,11 @@ export interface BrandBasics {
 }
 
 /** The confirmed basics a brand is created from: per slot the PREFERRED value, else the best confirmed one. */
-export function confirmedBasics(items: Map<string, EvidenceItem>, decisions: Record<string, Decision>): BrandBasics {
+export function confirmedBasics(
+  items: Map<string, EvidenceItem>,
+  decisions: Record<string, Decision>,
+  person = false,
+): BrandBasics {
   const ordered = orderedEvidence(items.values());
   const ours = ordered.filter((i) => decisions[i.key] === "preferred" || decisions[i.key] === "yes");
   const pick = (field: EvidenceField) =>
@@ -270,7 +274,8 @@ export function confirmedBasics(items: Map<string, EvidenceItem>, decisions: Rec
       .filter((i) => i.field === "logo" && (decisions[i.key] === "preferred" || decisions[i.key] === "yes"))
       .map((i) => ({
         url: i.image_url ?? i.value,
-        kind: i === primaryLogo ? "logo" : imageKind(i),
+        // A person's main picture is their headshot, never a "logo".
+        kind: i === primaryLogo ? (person ? "headshot" : "logo") : imageKind(i),
         primary: i === primaryLogo,
         source: i.source.where,
       })),
