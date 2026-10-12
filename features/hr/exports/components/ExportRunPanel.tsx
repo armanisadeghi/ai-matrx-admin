@@ -505,8 +505,7 @@ export function ExportRunPanel({
           <AlertTriangle className="h-4 w-4" aria-hidden />
           <AlertTitle>This is taking longer than expected</AlertTitle>
           <AlertDescription>
-            The build is still running on the server — nothing is lost. Refresh
-            the history below to check on it.
+            Nothing is lost; refresh the history below to check on it.
           </AlertDescription>
         </Alert>
       ) : null}

@@ -45,10 +45,8 @@ export function ExportAcknowledgeDialog({
             this file — a batch number, an import id, a confirmation code.
           </p>
           <p className="mt-2 font-medium text-foreground">
-            Once this export is acknowledged it can never be superseded,
-            regenerated or re-sent. From then on, the only way to correct
-            something is an adjustment that lands in the next export, tagged
-            back to this period.
+            Once acknowledged, this export can never be superseded, regenerated
+            or re-sent. Corrections go in the next export as an adjustment.
           </p>
         </>
       }

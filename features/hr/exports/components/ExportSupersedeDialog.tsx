@@ -47,12 +47,8 @@ export function ExportSupersedeDialog({
             one stays as a record of what was nearly sent.
           </p>
           <p className="mt-2 font-medium text-foreground">
-            This is safe because nobody has been paid from version{" "}
-            {exportVersion} yet. If a file has already been acknowledged by your
-            payroll system, it can never be replaced: the same hours would be
-            sitting in payroll twice and people would be paid twice. In that
-            case the fix is an adjustment that lands in the next export, tagged
-            back to this period.
+            Safe because nobody has been paid from version {exportVersion} yet.
+            An acknowledged file can never be replaced.
           </p>
           <p className="mt-2">Why are you replacing it?</p>
         </>

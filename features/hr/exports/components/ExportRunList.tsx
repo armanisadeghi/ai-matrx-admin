@@ -62,6 +62,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { InfoHint } from "@/components/official/InfoHint";
 import { ItemMenu } from "@ai-matrx/design-system/item";
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
@@ -277,9 +278,8 @@ function ExportArtifactSection({
   if (!row.artifact_file_id) {
     return (
       <p className="text-xs text-muted-foreground">
-        This version has no file. That is expected for a replaced draft that was
-        never built, and it is why the file column can be empty on a real row
-        rather than showing a broken link.
+        No file for this version.
+        <InfoHint text="A draft replaced before it was built never gets a file." />
       </p>
     );
   }

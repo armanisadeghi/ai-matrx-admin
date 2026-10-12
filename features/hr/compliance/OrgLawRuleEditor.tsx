@@ -162,7 +162,7 @@ function RefusalPanel({
           <FindingList findings={validation.violations} tone="violation" />
         ) : (
           <p className="text-sm text-foreground">
-            {refusal.detail ?? "The server refused this configuration."}
+            {refusal.detail ?? "This configuration was refused."}
           </p>
         )}
         <ErrorAlchemyMenu />
@@ -183,7 +183,7 @@ function RefusalPanel({
           <FindingList findings={validation.warnings} tone="warning" />
         ) : (
           <p className="text-sm text-foreground">
-            {refusal.detail ?? "The server raised a warning about this configuration."}
+            {refusal.detail ?? "This configuration has a warning."}
             <ErrorAlchemyMenu />
           </p>
         )}
@@ -198,7 +198,7 @@ function RefusalPanel({
     <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3">
       <p className="text-sm text-foreground">
         {refusal.detail ??
-          "The server refused this rule, and nothing was saved."}
+          "This rule was refused; nothing was saved."}
       </p>
     <ErrorAlchemyMenu /></div>
   );

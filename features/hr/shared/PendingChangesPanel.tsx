@@ -270,9 +270,7 @@ export function PendingChangesPanel({
             })}
           </ul>
           <p className="text-xs text-muted-foreground">
-            Cancelling a scheduled change removes only the future row and puts the
-            current record back the way it was. Nothing in the history is erased,
-            and the cancellation is recorded.
+            Cancelling removes only the future change; history is kept.
           </p>
         </section>
       ) : null}
@@ -320,7 +318,7 @@ export function PendingChangesPanel({
         title="Cancel this scheduled change?"
         description={
           target
-            ? `${target.what} is set to take effect ${hrFormatDay(target.effectiveFrom)}. Cancelling stops it and restores the current record. Nothing in the history is erased, and this cancellation is recorded with your reason.`
+            ? `${target.what} takes effect ${hrFormatDay(target.effectiveFrom)}. Cancelling restores the current record; history and your reason are kept.`
             : undefined
         }
         placeholder="Why is this being cancelled?"

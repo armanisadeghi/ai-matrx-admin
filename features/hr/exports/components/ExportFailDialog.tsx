@@ -42,10 +42,8 @@ export function ExportFailDialog({
             rejection message, the code, the person who told you.
           </p>
           <p className="mt-2">
-            This is kept with the export permanently. Marking it failed does not
-            delete the file or change any hours; it records that this attempt
-            did not land, so the next person can see that and does not send the
-            same period twice.
+            Kept with the export permanently. The file and hours are unchanged;
+            this only records that the attempt failed.
           </p>
         </>
       }

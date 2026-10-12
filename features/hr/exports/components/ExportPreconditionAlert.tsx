@@ -148,11 +148,8 @@ export function ExportPreconditionAlert({
         <AlertDescription>
           <p>{failure.userMessage}</p>
           <p className="mt-2 font-medium text-foreground">
-            No file was produced, and no amount was substituted or left out. A
-            rule that decides money has to be verified before we will put a
-            number on a payroll file — a file with a silently missing premium is
-            worse than no file at all, because it fails in someone else&apos;s
-            system after the money has moved.
+            No file was produced and no amount was left out. Pay rules must be
+            verified before they reach a payroll file.
           </p>
           <dl className="mt-3 grid gap-x-4 gap-y-1 text-xs sm:grid-cols-[auto_1fr]">
             {precondition.ruleClass ? (
