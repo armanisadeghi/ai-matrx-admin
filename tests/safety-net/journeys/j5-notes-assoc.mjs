@@ -13,14 +13,19 @@ export default {
       await open(s, "/notes");
       const newBtn = page.getByRole("button", { name: /new note/i }).first();
       await newBtn.waitFor({ timeout: 180000 });
-      await newBtn.click();
-      const titleBox = page.locator('input[value*="Untitled"], input[aria-label*="itle" i], input[placeholder*="itle" i]').first();
-      await titleBox.waitFor({ timeout: 60000 });
+      const titleBox = page.locator('input[aria-label="Note title"], input[value*="Untitled"], input[placeholder*="itle" i]').first();
+      // A press before the page hydrates does nothing: press again until the new note's title field is drawn.
+      for (let tries = 0; tries < 8 && !(await titleBox.isVisible().catch(() => false)); tries += 1) {
+        await newBtn.click({ timeout: 5000 }).catch(() => undefined);
+        await titleBox.waitFor({ timeout: 8000 }).catch(() => undefined);
+      }
+      await titleBox.waitFor({ timeout: 30000 });
       await titleBox.click();
       await titleBox.fill(faulted("j5-notes-assoc") ? "" : title);
       await titleBox.press("Enter");
       created = true;
-      const editor = page.locator('textarea, [contenteditable="true"]').last();
+      // The note's own document surface (not the chat composer, which is also a textarea on this page).
+      const editor = page.locator('[aria-label="Document"][contenteditable="true"], [aria-label="Document"] [contenteditable="true"]').first();
       await editor.click();
       await page.keyboard.type(body);
       await sleep(4000); // autosave

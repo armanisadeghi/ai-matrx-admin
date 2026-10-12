@@ -1,5 +1,5 @@
 // J5 helpers: delete the note this journey created, through the note's own right-click menu ("Move to Trash").
-import { open, sleep } from "./harness.mjs";
+import { open, sleep, until } from "./harness.mjs";
 
 export async function findCreatedNoteTitle(page, title) {
   return page.getByText(title).first().isVisible().catch(() => false);
@@ -14,5 +14,9 @@ export async function deleteNoteByTitle(page, s, title) {
   const confirm = page.getByRole("button", { name: /^(move to trash|delete|confirm)$/i }).last();
   if (await confirm.isVisible({ timeout: 3000 }).catch(() => false)) await confirm.click();
   await sleep(3000);
-  return !(await page.getByText(title).first().isVisible().catch(() => false));
+  // The open tab and list repaint lazily: judge by a fresh load of the list, the way a person revisits it.
+  await open(s, "/notes");
+  await sleep(6000);
+  const { v } = await until("the note is gone from the list", async () => !(await page.getByText(title).first().isVisible().catch(() => false)), 20000);
+  return !!v;
 }

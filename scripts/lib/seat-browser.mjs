@@ -104,7 +104,7 @@ export async function signIn(page, origin, email, password, who = email) {
 }
 
 /** Open the sidebar's organization group, which is a collapsed section until it is clicked. */
-async function openOrganizationGroup(page) {
+export async function openOrganizationGroup(page) {
   // The page that sign-in lands on may still be navigating (the login redirect, or a dev
   // server's first compile reloading it): an evaluate then dies with "Execution context was
   // destroyed". That is the page moving, not the picker failing — wait for it to settle and
@@ -118,6 +118,18 @@ async function openOrganizationGroup(page) {
         const group = document.querySelector("#menu-group-organization");
         if (group instanceof HTMLInputElement && !group.checked) group.click();
       });
+      // The picker now lives in a popover opened by the shell's organization switcher (the
+      // sidebar group no longer exists). Open it only when its rows are not already drawn, so a
+      // second call never closes it again.
+      await sleep(600);
+      const rows = page.locator('[data-slot="organization-picker"] [role="option"]');
+      for (let tries = 0; tries < 4 && !(await rows.count()); tries += 1) {
+        // a press before hydration is ignored: press again until the rows are drawn
+        const switcher = page.locator("[data-shell-org-switcher]:visible").first();
+        if (!(await switcher.count())) break;
+        await switcher.click({ force: true });
+        await rows.first().waitFor({ timeout: 8000 }).catch(() => undefined);
+      }
       break;
     } catch (e) {
       if (attempt >= 4 || !/Execution context was destroyed|navigat/i.test(String(e))) throw e;
