@@ -45,32 +45,22 @@ let joinOrder: string[] | null = null;
  */
 const supabaseTouches: string[] = [];
 
+// The real `getUserOrganizations` stamps each organization with `joinedAt` (when her membership
+// began); the package ladder's last rung picks the oldest by it. The double does the same.
 jest.mock("@/features/organizations/service", () => ({
-  getUserOrganizations: async () => orgs,
+  getUserOrganizations: async () => {
+    const order = joinOrder ?? orgs.map((o) => o.id);
+    return orgs.map((o) => ({
+      ...o,
+      joinedAt: `2026-0${(order.indexOf(o.id) % 9) + 1}-01T00:00:00Z`,
+    }));
+  },
 }));
 
 jest.mock("@/lib/organizations/accountOrganizationChoices", () => ({
   readAccountOrganizationChoices: async () => {
     if (accountReadFails) throw new Error("the account's organization read failed: offline");
     return { lastActiveOrganizationId: lastActive, startupOrganizationId: startup };
-  },
-}));
-
-jest.mock("@/features/organizations/service/membershipsService", () => ({
-  membershipsService: {
-    forUser: async () => ({
-      data: {
-        memberships: (joinOrder ?? orgs.map((o) => o.id)).map((id, i) => ({
-          id: `m-${i}`,
-          organizationId: id,
-          containerId: id,
-          userId: USER,
-          role: "member",
-          status: "active",
-          createdAt: `2026-0${(i % 9) + 1}-01T00:00:00Z`,
-        })),
-      },
-    }),
   },
 }));
 
