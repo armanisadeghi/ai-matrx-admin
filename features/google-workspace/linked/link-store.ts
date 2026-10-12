@@ -158,5 +158,13 @@ async function writeMetadataKey(
   if (result.status === "saved") return { ok: true };
   if (result.status === "not_found") return { ok: false, error: "This item could not be found." };
   if (result.status === "conflict") return { ok: false, error: "It changed while saving the Google link. Try again." };
-  return { ok: false, error: result.error instanceof Error ? result.error.message : String(result.error) };
+  return { ok: false, error: failureMessage(result.error) };
+}
+
+/** A Supabase/Postgrest failure is a plain object with `message`, not an Error: String() would read "[object Object]". */
+export function failureMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  const message = (error as { message?: unknown } | null)?.message;
+  if (typeof message === "string" && message) return message;
+  return typeof error === "string" && error ? error : "The database refused the change and gave no reason.";
 }
