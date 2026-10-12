@@ -799,6 +799,14 @@ export const adminCategoriesData: AdminCategory[] = [
         isNew: true,
       },
       {
+        title: "Converters",
+        description:
+          "Every data converter: which source format becomes which target, its version and code fingerprint, the real samples it is tested on, and its last runs.",
+        iconName: "Shuffle",
+        link: "/administration/utilities/converters",
+        isNew: true,
+      },
+      {
         title: "Feature Registry",
         description:
           "The platform taxonomy — Domains, Features, and Sub-features from platform.taxonomy_node — with full CRUD, status ratification, entity and review counts, and a visual map of the whole platform.",
