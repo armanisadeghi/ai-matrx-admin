@@ -180,6 +180,39 @@ export function insightText(value: number | null, format: (n: number) => string)
   return value === null ? "Not available" : format(value);
 }
 
+/** A follower reading as the growth judge and the chart take it. */
+export interface FollowerReading {
+  observed_at: string;
+  follower_count: number | null;
+}
+
+/**
+ * Pure: one own account's follower history from BOTH sources - public profile snapshots and private
+ * daily insights. A day both cover takes the private reading; a day with no follower figure adds nothing
+ * (NULL is "not available", never 0).
+ */
+export function mergedFollowerReadings(
+  snapshots: readonly FollowerReading[],
+  days: readonly InsightDay[],
+): FollowerReading[] {
+  const byDay = new Map<string, FollowerReading>();
+  for (const s of snapshots) {
+    if (s.follower_count === null || s.follower_count === undefined) continue;
+    byDay.set(String(s.observed_at).slice(0, 10), s);
+  }
+  for (const d of days) {
+    const f = d.values.followers;
+    if (f === null) continue;
+    byDay.set(d.date, { observed_at: `${d.date}T00:00:00Z`, follower_count: f });
+  }
+  return [...byDay.values()].sort((a, b) => Date.parse(a.observed_at) - Date.parse(b.observed_at));
+}
+
+/** Pure: an own account is shown when ANY source can feed it - a public profile or a tracked (private) account. */
+export function hasOwnDataSource(a: { role: string; profileId: string | null; trackedAccountId: string | null }): boolean {
+  return a.role === "own" && (a.profileId !== null || a.trackedAccountId !== null);
+}
+
 /** The reader. RLS scopes the rows to the caller's organizations. */
 export async function readOwnInsightDays(
   trackedAccountIds: readonly string[],

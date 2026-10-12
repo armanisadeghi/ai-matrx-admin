@@ -92,6 +92,8 @@ import { brandAccountHref } from "../property-account-href";
 import { useTrackOwn } from "./useTrackOwn";
 import { OwnInsightsTable } from "./OwnInsightsTable";
 import { ownTrackingState } from "../own-accounts";
+import { hasOwnDataSource, mergedFollowerReadings } from "../insights";
+import { useOwnInsights } from "../useOwnInsights";
 
 type KpiView = "trend" | "benchmark" | "own";
 
@@ -307,7 +309,7 @@ export function KpisTab() {
   const posts = data.data?.posts ?? [];
   const snapshots = data.data?.snapshots ?? [];
   const kpiAccounts = toKpiAccounts(accounts);
-  const own = accounts.filter((a) => a.role === "own" && a.profileId);
+  const own = accounts.filter(hasOwnDataSource);
   const ownState = ownTrackingState(accountRows.data ?? []);
   const untrackedOwn = ownState.kind === "trackable" ? ownState.rows : [];
 
@@ -410,7 +412,7 @@ export function KpisTab() {
           />
         ) : (
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-            {own.slice(0, 6).map((a) => (
+            {own.map((a) => (
               <OwnTrend key={a.rowId} account={a} snapshots={snapshots} />
             ))}
           </div>
@@ -583,7 +585,11 @@ function OwnTrend({
   snapshots: readonly import("../types").ProfileSnapshotRow[];
 }) {
   const { brandSeg } = useSocials();
-  const mine = snapshots.filter((s) => s.profile_id === account.profileId);
+  const insights = useOwnInsights(account.trackedAccountId ? [account.trackedAccountId] : []);
+  const mine = mergedFollowerReadings(
+    account.profileId ? snapshots.filter((s) => s.profile_id === account.profileId) : [],
+    insights.dayRows,
+  );
   const points = profileFollowerSeries(mine);
   const growth = judgeFollowerGrowth(mine, 30);
   return (

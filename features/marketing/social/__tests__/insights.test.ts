@@ -102,3 +102,23 @@ describe("per-post private figures", () => {
     expect(availablePostMetrics(f).map((m) => m.id)).toEqual(["impressions", "saves", "pin_clicks"]);
   });
 });
+
+import { hasOwnDataSource, mergedFollowerReadings } from "../insights";
+
+describe("own Trend sources", () => {
+  it("an own account with only private insights (no public profile) is shown", () => {
+    expect(hasOwnDataSource({ role: "own", profileId: null, trackedAccountId: "t1" })).toBe(true);
+    expect(hasOwnDataSource({ role: "own", profileId: "p1", trackedAccountId: null })).toBe(true);
+    expect(hasOwnDataSource({ role: "own", profileId: null, trackedAccountId: null })).toBe(false);
+    expect(hasOwnDataSource({ role: "competitor", profileId: "p", trackedAccountId: "t" })).toBe(false);
+  });
+  it("merges public snapshots and private daily followers; a missing figure is skipped, never 0", () => {
+    const day = (date: string, followers: number | null) =>
+      ({ trackedAccountId: "t", date, provider: "x", observedAt: date, values: { followers } }) as never;
+    const r = mergedFollowerReadings(
+      [{ observed_at: "2026-10-01T10:00:00Z", follower_count: 100 }, { observed_at: "2026-10-02T10:00:00Z", follower_count: null }],
+      [day("2026-10-01", 110), day("2026-10-03", 120), day("2026-10-04", null)],
+    );
+    expect(r.map((x) => x.follower_count)).toEqual([110, 120]);
+  });
+});
