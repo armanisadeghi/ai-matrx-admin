@@ -3,9 +3,10 @@
   "updated": "2026-10-07",
   "sha": "e389e62b291c8f8958b40ae46c3c3cb67335a4b2",
   "sites": 33659,
-  "count": 16,
+  "count": 17,
   "ids": [
     "arbitrary-text-size|features/esign/signer/parts/PaperField.tsx",
+    "primitive-visual-class|features/ai-work/live/components/RoomDetail.tsx",
     "primitive-visual-class|features/education/classes/components/ClassTestDialog.tsx",
     "primitive-visual-class|features/education/classes/components/ClassTestView.tsx",
     "primitive-visual-class|features/education/classes/components/ClassTestsSection.tsx",
@@ -10540,6 +10541,11 @@
     },
     "styled-raw-button|features/ai-work/live/components/RoomDetail.tsx": {
       "reason": "Pre-existing Live list rows/chips (two-line presence rows with lag markers); moving them onto ItemRow is a separate pass, this change only adds the row menu",
+      "accepted_by": "Armani Sadeghi",
+      "date": "2026-10-12"
+    },
+    "primitive-visual-class|features/ai-work/live/components/RoomDetail.tsx": {
+      "reason": "Pre-existing add-session dropdown sizing (scrolling list of sessions), moved unchanged into the header",
       "accepted_by": "Armani Sadeghi",
       "date": "2026-10-12"
     }
