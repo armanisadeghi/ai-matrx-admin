@@ -20,7 +20,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Bookmark, FilePlus2, FolderOpen, History, Loader2, MessageSquare, Printer, Sheet } from "lucide-react";
+import { Bookmark, FilePlus2, FolderOpen, History, Info, Loader2, MessageSquare, Printer, Sheet, Upload } from "lucide-react";
+import { EditorDetailsDialog, formatDetailDate } from "@/components/editor-chrome/EditorDetailsDialog";
+import { importWorkbookFile, unsupportedFileReason } from "@/features/workbooks/import-workbook-file";
+import { workbookSourceLabel } from "@/features/workbooks/workbook-service";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { EditorDocumentHeader } from "@/features/shell/components/header/templates/EditorDocumentHeader";
@@ -328,6 +331,8 @@ export default function WorkbookEditor({
               // Google's menu bar + toolbar replace Univer's ribbon
               // (components/editor-chrome); the formula bar stays.
               toolbar: false,
+              // Zoom lives in the toolbar and View menu, as in Google; the footer keeps the sheet tabs.
+              footer: { zoomSlider: false },
             }),
             UniverSheetsSortPreset(),
             UniverSheetsFilterPreset(),
@@ -804,13 +809,36 @@ export default function WorkbookEditor({
       toast({ title: "Could not create workbook", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
     }
   };
+  // File → Import: a spreadsheet file becomes a NEW spreadsheet (the home's one import path).
+  const importInputRef = useRef<HTMLInputElement | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const importFile = async (file: File) => {
+    const reason = unsupportedFileReason(file);
+    if (reason) {
+      toast({ title: "Can't import that file", description: reason, variant: "destructive" });
+      return;
+    }
+    try {
+      const imported = await importWorkbookFile(file, null);
+      toast({
+        title: "Imported as a new spreadsheet",
+        description: imported.notCarried.length ? `${imported.name}. Not carried: ${imported.notCarried.join("; ")}` : imported.name,
+        variant: "success",
+      });
+      router.push(`/workbooks/${imported.id}`);
+    } catch (err) {
+      toast({ title: "Could not import", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+    }
+  };
   // Google's File rows this editor owns (the rest are the shared file menu's).
   const fileExtras: EditorMenuEntry[] = [
     { kind: "separator" },
     { kind: "action", id: "file.new", label: "New spreadsheet", icon: FilePlus2, run: () => void createNewWorkbook() },
     { kind: "action", id: "file.open", label: "Open", icon: FolderOpen, shortcut: { key: "o", mod: true, bind: true }, run: () => router.push("/workbooks") },
+    { kind: "action", id: "file.import", label: "Import", icon: Upload, keywords: ["xlsx", "csv", "upload"], run: () => importInputRef.current?.click() },
     { kind: "action", id: "file.history", label: "Version history", icon: History, shortcut: { key: "h", mod: true, alt: true, shift: true, bind: true }, run: snapshotHistory.toggle },
     { kind: "action", id: "file.print", label: "Print", icon: Printer, shortcut: { key: "p", mod: true, bind: true }, run: handlePrint },
+    { kind: "action", id: "file.details", label: "Details", icon: Info, keywords: ["info", "created", "modified"], run: () => setDetailsOpen(true) },
   ];
   const liveGoogle = useLiveGoogleAdapter("workbook", workbookId);
   const fileMenu = useFileRecordMenu(WORKBOOK_ADAPTER, record, {
@@ -1105,6 +1133,29 @@ export default function WorkbookEditor({
     >
       {googleLink.dialog}
       {tableLink.dialog}
+      {/* ui-exception: the native file picker behind File → Import (no accept filter: Drive pickers grey everything out). */}
+      <input
+        ref={importInputRef}
+        type="file"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          e.target.value = "";
+          if (f) void importFile(f);
+        }}
+      />
+      <EditorDetailsDialog
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        title="Details"
+        rows={[
+          ["Name", record?.workbook_name ?? workbookName],
+          ["Created", formatDetailDate(record?.created_at)],
+          ["Last edited", formatDetailDate(record?.updated_at)],
+          ["Source", record ? workbookSourceLabel(record.source) : null],
+          ["Sheets", ready ? String(apiRef.current?.getActiveWorkbook()?.getSheets().length ?? "") : null],
+        ]}
+      />
       <div
         className="matrx-univer-shell relative flex min-h-0 flex-1 flex-col bg-card"
         data-formula-bar={formulaBarHidden ? "hidden" : "shown"}

@@ -23,6 +23,11 @@ import {
 } from "../chrome/sheet-commands";
 import { flattenMenus, type EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
 
+// "Custom number format" asks in our own dialog; the test answers it.
+jest.mock("@/components/dialogs/value-prompts/valuePromptsOpener", () => ({
+  promptForValues: async () => ({ pattern: "0.0%" }),
+}));
+
 type Call = { kind: string; args: unknown[] };
 
 function fakeHost(values: unknown[][] = [["a"]], formulas: string[][] = [[""]]) {
@@ -120,11 +125,11 @@ describe("workbook menus and toolbar → Univer", () => {
     expect(unknown).toEqual([]);
   });
 
-  it("no row is a no-op", () => {
+  it("no row is a no-op", async () => {
     for (const a of allRunnables(fakeHost().host)) {
       const { host, calls } = fakeHost([["  x  "], ["  x  "]], [[""], [""]]);
       const same = allRunnables(host).find((r) => r.id === a.id)!;
-      void same.run();
+      await same.run();
       expect({ id: a.id, reached: calls.length > 0 }).toEqual({ id: a.id, reached: true });
     }
   });

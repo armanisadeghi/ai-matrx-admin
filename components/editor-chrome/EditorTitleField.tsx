@@ -38,6 +38,15 @@ export function EditorTitleField({
     if (!editingRef.current) setDraft(value);
   }, [value]);
 
+  // Google puts the file's name in the browser tab: the SAVED name, and the old tab title returns on leaving.
+  useEffect(() => {
+    const before = document.title;
+    document.title = `${value.trim() || placeholder} - AI Matrx`;
+    return () => {
+      document.title = before;
+    };
+  }, [value, placeholder]);
+
   const commit = async () => {
     editingRef.current = false;
     const next = draft.trim();

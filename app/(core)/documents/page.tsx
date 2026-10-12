@@ -98,11 +98,13 @@ export default function DocumentsLandingPage() {
       return;
     }
     const res = await createDocument({ name: "Untitled document", organizationId: capturedOrganizationId });
-    setCreating(false);
     if (isServiceFailure(res)) {
+      setCreating(false);
       toast({ title: "Could not create document", description: res.error, variant: "destructive" });
       return;
     }
+    // The tile stays busy until the editor opens (the route can take seconds to compile): a second
+    // press while it loads would make a second record.
     router.push(`/documents/${res.data.id}`);
   };
 

@@ -47,6 +47,7 @@ import {
   DecimalsArrowRight,
 } from "lucide-react";
 
+import { promptForValues } from "@/components/dialogs/value-prompts/valuePromptsOpener";
 import type { EditorMenu, EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
 import type { EditorToolbarItem } from "@/components/editor-chrome/EditorToolbar";
 
@@ -243,7 +244,22 @@ function numberFormatEntries(h: SheetChromeHost): EditorMenuEntry[] {
       }),
     ),
     { kind: "separator" },
-    { kind: "action", id: "format.number.custom", label: "Custom number format", keywords: ["more formats"], run: run(h, "sheet.operation.open.numfmt.panel") },
+    {
+      kind: "action",
+      id: "format.number.custom",
+      label: "Custom number format",
+      keywords: ["more formats"],
+      // Our own dialog (Univer's side panel is unstyled for this app); the pattern goes through the same range call.
+      run: withRange(h, async (r) => {
+        const answers = await promptForValues({
+          title: "Custom number format",
+          submitLabel: "Apply",
+          fields: [{ name: "pattern", prompt: "Format, e.g. #,##0.00 or 0.0%", defaultValue: "#,##0.00", required: true }],
+        });
+        const pattern = answers?.pattern?.trim();
+        if (pattern) r.setNumberFormat(pattern);
+      }),
+    },
   ];
 }
 
@@ -463,6 +479,26 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
           ],
         },
         { kind: "submenu", id: "view.zoom", label: "Zoom", items: zoomEntries(h) },
+        {
+          kind: "submenu",
+          id: "view.rows",
+          label: "Rows",
+          keywords: ["hide rows", "unhide rows"],
+          items: [
+            { kind: "action", id: "view.rows.hide", label: "Hide selected rows", run: run(h, "sheet.command.hide-row-confirm") },
+            { kind: "action", id: "view.rows.show", label: "Unhide selected rows", run: run(h, "sheet.command.set-selected-rows-visible") },
+          ],
+        },
+        {
+          kind: "submenu",
+          id: "view.columns",
+          label: "Columns",
+          keywords: ["hide columns", "unhide columns"],
+          items: [
+            { kind: "action", id: "view.columns.hide", label: "Hide selected columns", run: run(h, "sheet.command.hide-col-confirm") },
+            { kind: "action", id: "view.columns.show", label: "Unhide selected columns", run: run(h, "sheet.command.set-selected-cols-visible") },
+          ],
+        },
         { kind: "separator" },
         { kind: "action", id: "view.comments", label: "Comments", keywords: ["comment panel"], run: run(h, "sheet.operation.toggle-comment-panel") },
         { kind: "action", id: "view.full-screen", label: "Full screen", checked: () => h.fullScreen(), run: () => h.toggleFullScreen() },

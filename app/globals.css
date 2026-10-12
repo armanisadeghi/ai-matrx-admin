@@ -1753,7 +1753,10 @@
 .shell-active-pill {
   background: var(--shell-pill-bg);
   border: 1px solid var(--shell-pill-border);
-  view-transition-name: shell-active-pill;
+  /* Several pills render at once (a flyout group + its item, a route menu +
+     the sidebar). A shared literal name made every page-wide view transition
+     abort on the duplicate; `match-element` names each pill uniquely. */
+  view-transition-name: match-element;
 }
 .shell-active-pill svg,
 .shell-active-pill .shell-nav-icon {
@@ -1894,6 +1897,12 @@
    menu bar and toolbar (components/editor-chrome). View → Show → Formula bar
    hides Univer's formula bar row; Univer has no runtime switch for it. */
 .matrx-univer-shell[data-formula-bar="hidden"] [data-u-comp="formula-bar"] {
+  display: none !important;
+}
+
+/* Zoom lives in the toolbar and View menu (Google), so the document editor's footer zoom is hidden;
+   the footer keeps its word count. Univer's docs footer has no switch for the zoom alone. */
+[data-document-editor] section:has([role="slider"][aria-label="Zoom"]) {
   display: none !important;
 }
 

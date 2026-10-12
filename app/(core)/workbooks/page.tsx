@@ -17,10 +17,8 @@ import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorC
 
 import {
   createWorkbook,
-  discardFailedWorkbook,
   listAccessibleWorkbooks,
   listTrashedWorkbooks,
-  saveSnapshot,
   workbookSourceLabel,
 } from "@/features/workbooks/workbook-service";
 import type { FileScope } from "@/features/file-actions/FileScopeBar";
@@ -32,7 +30,6 @@ import { useHomeTemplates } from "@/features/templates/files/components/HomeTemp
 import { FromTableTile } from "@/features/workbooks/components/FromTableTile";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { isServiceFailure, type Workbook } from "@/features/data-tables/types";
-import { fileHandler } from "@/features/files/handler/handler";
 // xlsx-to-univer (xlsx + @univerjs/*) and smart-importer (xlsx) are heavy —
 // this is a LIST page that renders no spreadsheet. Both load via
 // await import() inside the async upload handlers (code-splitting skill,
@@ -49,37 +46,10 @@ import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { importWorkbookFile, unsupportedFileReason } from "@/features/workbooks/import-workbook-file";
 import { GoogleHomeStrip } from "@/features/google-workspace/linked/GoogleHomeStrip";
 import { googleLinkIn } from "@/features/google-workspace/linked/link-store";
 import { GoogleSheetsMark } from "@/features/google-workspace/linked/marks";
-
-/**
- * Pre-flight import file check. We deliberately do NOT use the `accept`
- * attribute on the picker (it greys out everything in Drive / Google
- * Sheets pickers on iOS and many Android pickers), so we validate after
- * pick. Returns null when the file is accepted, or a short user-facing
- * reason string when it isn't.
- */
-function unsupportedFileReason(file: File): string | null {
-  const name = file.name.toLowerCase();
-  // Native, parseable formats.
-  if (
-    name.endsWith(".xlsx") ||
-    name.endsWith(".xls") ||
-    name.endsWith(".csv")
-  ) {
-    return null;
-  }
-  if (name.endsWith(".tsv") || name.endsWith(".txt")) return null; // SheetJS parses these too
-
-  // Drive's "Google Sheets" shortcut is a tiny JSON pointer file that browsers cannot resolve into
-  // the sheet; the Google Sheets import reads the real file through Google's own picker.
-  if (name.endsWith(".gsheet")) {
-    return "A Google Sheets shortcut can't be uploaded. Use Import from Google Sheets.";
-  }
-  // Anything else.
-  return `"${file.name}" isn't a spreadsheet file. Supported: .xlsx, .xls, .csv. For a Google Sheet, use Import from Google Sheets.`;
-}
 
 export default function WorkbooksLandingPage() {
   const homeTemplates = useHomeTemplates("workbook");
@@ -149,8 +119,8 @@ export default function WorkbooksLandingPage() {
       name: "Untitled workbook",
       organizationId: capturedOrganizationId,
     });
-    setCreating(false);
     if (isServiceFailure(res)) {
+      setCreating(false);
       toast({
         title: "Could not create workbook",
         description: res.error,
@@ -158,6 +128,8 @@ export default function WorkbooksLandingPage() {
       });
       return;
     }
+    // The tile stays busy until the editor opens (the route can take seconds to compile): a second
+    // press while it loads would make a second record.
     router.push(`/workbooks/${res.data.id}`);
   }, [organizationId, router]);
 
@@ -180,73 +152,15 @@ export default function WorkbooksLandingPage() {
       setImporting(true);
       let selectionCancelled = false;
       try {
-        const capturedOrganizationId = await ensureOrgId(organizationId);
-        // Parse first — if the file is malformed, we surface the error
-        // BEFORE creating an empty workbook the user would have to delete.
-        const { xlsxToUniverWorkbook } =
-          await import("@/features/workbooks/xlsx-to-univer");
-        const droppedOnImport: string[] = [];
-        const { uploadImportedImage } = await import("@/lib/univer/matrxImagePorts");
-        const snapshot = await xlsxToUniverWorkbook(file, {
-          uploadImage: uploadImportedImage,
-          onDropped: (what) => droppedOnImport.push(what),
-        });
-
-        // Stash the lossless original in cld_files so users can download or
-        // re-import the source later. Failure here is non-fatal — the workbook
-        // import path is the primary deliverable, the original-file link is
-        // a recoverability nicety (FK is ON DELETE SET NULL, so we'd nil out
-        // the link if the file went away anyway). Log + continue on failure.
-        let originalFileId: string | undefined;
-        try {
-          const uploaded = await fileHandler.upload(
-            { kind: "file", file },
-            { folderPath: "Workbooks/Imports" },
-          );
-          originalFileId = uploaded.fileId;
-        } catch (uploadErr) {
-          console.warn(
-            "Workbook import: stashing original failed; continuing without link.",
-            uploadErr,
-          );
-        }
-
-        const cleanName =
-          file.name.replace(/\.[^.]+$/, "") || "Imported workbook";
-        const created = await createWorkbook({
-          name: cleanName,
-          description: `Imported from ${file.name}`,
-          source: file.name.toLowerCase().endsWith(".csv")
-            ? "imported_csv"
-            : "imported_xlsx",
-          organizationId: capturedOrganizationId,
-          originalFileId,
-        });
-        if (isServiceFailure(created)) throw new Error(created.error);
-
-        const saved = await saveSnapshot({
-          workbookId: created.data.id,
-          snapshot,
-          origin: "imported",
-          label: file.name,
-        });
-        if (isServiceFailure(saved)) {
-          // Roll back the workbook so we don't leave an empty husk on import
-          // failure. Best-effort, and a HARD delete on purpose: this row was
-          // created seconds ago by this same flow and never reached the user, so
-          // tombstoning it would leave invisible litter instead of cleaning up.
-          await discardFailedWorkbook(created.data.id);
-          throw new Error(saved.error);
-        }
-
+        const imported = await importWorkbookFile(file, organizationId);
         toast({
           title: "Workbook imported",
-          description: droppedOnImport.length
-            ? `${cleanName}. Not carried: ${droppedOnImport.join("; ")}`
-            : cleanName,
+          description: imported.notCarried.length
+            ? `${imported.name}. Not carried: ${imported.notCarried.join("; ")}`
+            : imported.name,
           variant: "success",
         });
-        router.push(`/workbooks/${created.data.id}`);
+        router.push(`/workbooks/${imported.id}`);
       } catch (err) {
         selectionCancelled = false;
         if (!selectionCancelled) {

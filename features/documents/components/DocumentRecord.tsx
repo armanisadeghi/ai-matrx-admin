@@ -20,7 +20,8 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
-import { FilePlus2, FolderOpen, History, Loader2, MessageSquare, Printer, Search } from "lucide-react";
+import { FilePlus2, FolderOpen, History, Info, Loader2, MessageSquare, Printer, Search } from "lucide-react";
+import { EditorDetailsDialog, formatDetailDate } from "@/components/editor-chrome/EditorDetailsDialog";
 import { useRouter } from "next/navigation";
 import { renderMenuEntries, useMenuBarState } from "@/components/editor-chrome/EditorMenuBar";
 import { EditorTitleField } from "@/components/editor-chrome/EditorTitleField";
@@ -135,6 +136,7 @@ export function DocumentRecord({
   const menuBar = useMenuBarState();
   const [doc, setDoc] = useState<DocumentRow | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [renameDraft, setRenameDraft] = useState("");
   const [renameSaving, setRenameSaving] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -366,6 +368,7 @@ export function DocumentRecord({
     { kind: "action", id: "file.open", label: "Open", icon: FolderOpen, shortcut: { key: "o", mod: true, bind: true }, run: () => router.push("/documents") },
     { kind: "action", id: "file.history", label: "Version history", icon: History, shortcut: { key: "h", mod: true, alt: true, shift: true, bind: true }, run: history.toggle },
     { kind: "action", id: "file.print", label: "Print", icon: Printer, shortcut: { key: "p", mod: true, bind: true }, run: printDocument },
+    { kind: "action", id: "file.details", label: "Details", icon: Info, keywords: ["info", "created", "modified"], run: () => setDetailsOpen(true) },
   ];
   const liveGoogle = useLiveGoogleAdapter("document", id);
   const fileMenu = useFileRecordMenu(DOCUMENT_ADAPTER, doc, {
@@ -588,6 +591,19 @@ export function DocumentRecord({
             fileExtras: pageFileExtras,
             notice: <DocumentRulebookNotice documentId={id} className="mx-2 mt-1 shrink-0" />,
           }}
+        />
+      ) : null}
+      {layout === "page" && permsResolved && doc ? (
+        <EditorDetailsDialog
+          open={detailsOpen}
+          onOpenChange={setDetailsOpen}
+          title="Details"
+          rows={[
+            ["Name", doc.document_name],
+            ["Created", formatDetailDate(doc.created_at)],
+            ["Last edited", formatDetailDate(doc.updated_at)],
+            ["Words", detailsOpen ? String(documentMarkdown().split(/\s+/).filter(Boolean).length) : null],
+          ]}
         />
       ) : null}
       {layout === "page" && permsResolved && doc ? null : renderHeader({ title, actions })}
