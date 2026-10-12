@@ -276,6 +276,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/personal-messaging/beeper/cancel-unsubmitted": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Unsubmitted */
+        post: operations["cancel_unsubmitted_personal_messaging_beeper_cancel_unsubmitted_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -654,6 +671,13 @@ export interface components {
              * Format: uuid
              */
             client_id: string;
+            /**
+             * Grant Id
+             * Format: uuid
+             */
+            grant_id: string;
+            /** Generation */
+            generation: number;
             /** Text */
             text: string;
         };
@@ -695,6 +719,23 @@ export interface components {
             updated_at: string;
             /** Draft Text */
             draft_text: string;
+        };
+        /** PersonalSendBinding */
+        PersonalSendBinding: {
+            /** Chat Id */
+            chat_id: string;
+            /**
+             * Client Id
+             * Format: uuid
+             */
+            client_id: string;
+            /**
+             * Grant Id
+             * Format: uuid
+             */
+            grant_id: string;
+            /** Generation */
+            generation: number;
         };
     };
     responses: never;
@@ -1148,6 +1189,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OutboxEntry"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_unsubmitted_personal_messaging_beeper_cancel_unsubmitted_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PersonalSendBinding"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutboxEntry"];
                 };
             };
             /** @description Validation Error */

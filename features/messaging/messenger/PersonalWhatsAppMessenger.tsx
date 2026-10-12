@@ -59,14 +59,14 @@ export function PersonalWhatsAppMessenger({ grant, client: personalWhatsApp, onS
     activeContactId: active, onSelectContact: setActive,
     header: (contact) => ({ title: contact.name }),
     headerActions: () => <span className="flex items-center gap-2"><Badge variant="outline">{grant.request_profile === "read_write" ? "Sending enabled" : "Read-only"}</Badge><InfoHint text="Shows history available in Beeper. Attachments load on this computer; unavailable files and older history can be opened in Beeper." /></span>,
-    renderThread: (contact) => <NativeWhatsAppThread key={`${grant.id}:${grant.generation}:${contact.id}`} client={personalWhatsApp} grantId={grant.id ?? ""} writable={grant.request_profile === "read_write"} onSelection={onSelection} chatId={contact.id} initiallySelected={grant.selected_chat_ids?.includes(contact.id) ?? false} onAccessFailure={onAccessFailure} />,
+    renderThread: (contact) => <NativeWhatsAppThread key={`${grant.id}:${grant.generation}:${contact.id}`} client={personalWhatsApp} grantId={grant.id ?? ""} generation={grant.generation ?? 0} writable={grant.request_profile === "read_write"} onSelection={onSelection} chatId={contact.id} initiallySelected={grant.selected_chat_ids?.includes(contact.id) ?? false} onAccessFailure={onAccessFailure} />,
     renderEmpty: () => <p className="p-6 text-sm text-muted-foreground">Choose a WhatsApp conversation.</p>,
   }), [active, chats, cursor, error, grant.generation, grant.id, grant.selected_chat_ids, hasMore, loading, onAccessFailure, onSelection, personalWhatsApp]);
 
   return <MessengerShell source={source} />;
 }
 
-function NativeWhatsAppThread({ chatId, initiallySelected, writable, grantId, client: personalWhatsApp, onSelection, onAccessFailure }: { chatId: string; writable: boolean; grantId: string; client: PersonalWhatsAppClient; onSelection: (grant: PersonalGrant) => void; initiallySelected: boolean; onAccessFailure: (message: string) => void }) {
+function NativeWhatsAppThread({ chatId, initiallySelected, writable, grantId, generation, client: personalWhatsApp, onSelection, onAccessFailure }: { chatId: string; writable: boolean; grantId: string; generation: number; client: PersonalWhatsAppClient; onSelection: (grant: PersonalGrant) => void; initiallySelected: boolean; onAccessFailure: (message: string) => void }) {
   const [page, setPage] = useState<PersonalMessages | null>(null);
   const [messages, setMessages] = useState<PersonalMessage[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -135,6 +135,6 @@ function NativeWhatsAppThread({ chatId, initiallySelected, writable, grantId, cl
         </div>
       </li>)}</ol>
     </div>
-    {writable && selected && page && <PersonalWhatsAppComposer client={personalWhatsApp} chatId={chatId} grantId={grantId} onAccessFailure={onAccessFailure} />}
+    {writable && selected && page && <PersonalWhatsAppComposer client={personalWhatsApp} chatId={chatId} grantId={grantId} generation={generation} onAccessFailure={onAccessFailure} />}
   </div>;
 }

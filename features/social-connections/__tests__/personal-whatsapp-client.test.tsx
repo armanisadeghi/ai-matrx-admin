@@ -24,6 +24,7 @@ let status = initial;
 let refuseMore = false;
 let moreStatus = 403;
 let calls: string[] = [];
+let failStart = false;
 
 async function click(host: HTMLElement, name: string) {
   const button = Array.from(host.querySelectorAll("button")).find((item) => item.textContent === name);
@@ -33,14 +34,16 @@ async function click(host: HTMLElement, name: string) {
 
 describe("personal WhatsApp real panel/client/thread boundary", () => {
   beforeEach(() => {
-    jest.clearAllMocks(); status = initial; refuseMore = false; moreStatus = 403; calls = [];
+    jest.clearAllMocks(); status = initial; refuseMore = false; moreStatus = 403; calls = []; failStart = false;
     jest.replaceProperty(process, "env", { ...process.env, NODE_ENV: "development" });
     window.history.replaceState(null, "", "/messenger/whatsapp?devLocalEngine=http%3A%2F%2F127.0.0.1%3A22259");
     jest.mocked(discoverLocalEngine).mockResolvedValue({ baseUrl: "http://127.0.0.1:22259", port: 22259, version: "test", capabilities: ["personal_messaging_v1"], discoveredAt: Date.now() });
     jest.mocked(requestRaw).mockImplementation(async (path, _init, options) => {
       calls.push(path); expect(options?.baseUrlOverride).toBe("http://127.0.0.1:22259");
       let body: unknown;
-      if (path.endsWith("/status") || path.endsWith("/refresh")) body = status;
+      if (path.endsWith("/disconnect")) { status = { ...initial, status: "retired" }; body = status; }
+      else if (path.endsWith("/start") && failStart) return new Response(JSON.stringify({ error: "device_offline", message: "Open Beeper Desktop." }), { status: 503 });
+      else if (path.endsWith("/status") || path.endsWith("/refresh")) body = status;
       else if (path.endsWith("/select-chat")) { status = selection; body = selection; }
       else if (path.includes("/chats")) {
         if (refuseMore && path.includes("cursor=")) return new Response(JSON.stringify(moreStatus === 403 ? { detail: "The device owner changed. Sign in again." } : { error: "device_timeout", message: "Beeper is temporarily unavailable." }), { status: moreStatus });
@@ -52,6 +55,28 @@ describe("personal WhatsApp real panel/client/thread boundary", () => {
   });
   afterEach(() => { jest.restoreAllMocks(); });
 
+  it("unsupported write upgrade preserves the working reader and never disconnects", async () => {
+    jest.spyOn(window, "open").mockReturnValue(null);
+    const host = document.createElement("div"); const root = createRoot(host);
+    try {
+      await act(async () => root.render(<PersonalWhatsAppPanel messenger />));
+      await click(host, "Enable sending");
+      expect(calls.some(path => path.endsWith("/disconnect"))).toBe(false);
+      expect(host.textContent).toContain("Connected"); expect(host.textContent).toContain("Update AI Matrx Local");
+    } finally { await act(async () => root.unmount()); }
+  });
+  it("a failed new consent start immediately shows the verified retired reader", async () => {
+    jest.spyOn(window, "open").mockReturnValue(null); failStart = true;
+    jest.mocked(discoverLocalEngine).mockResolvedValue({ baseUrl: "http://127.0.0.1:22259", port: 22259, version: "test", capabilities: ["personal_messaging_v1", "personal_messaging_write_v1"], discoveredAt: Date.now() });
+    const host = document.createElement("div"); const root = createRoot(host);
+    try {
+      await act(async () => root.render(<PersonalWhatsAppPanel messenger />));
+      await click(host, "Enable sending");
+      expect(calls.some(path => path.endsWith("/disconnect"))).toBe(true);
+      expect(host.textContent).toContain("Disconnected"); expect(host.textContent).not.toContain("Connected");
+      expect(host.textContent).toContain("Open Beeper Desktop.");
+    } finally { await act(async () => root.unmount()); }
+  });
   it("propagates one explicit client and adopts chat selection before reopening", async () => {
     const host = document.createElement("div"); document.body.append(host); const root = createRoot(host);
     try {

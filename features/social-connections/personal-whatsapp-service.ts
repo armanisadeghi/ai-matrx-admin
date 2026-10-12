@@ -104,7 +104,8 @@ return {
     if (receipt.grant.request_profile !== profile || receipt.grant.max_duration_seconds !== 86400 || receipt.required_duration !== "one_day" || url.searchParams.get("scope") !== (profile === "read" ? "read" : "read write")) throw new Error("WhatsApp consent does not match the requested access.");
     return receipt;
   },
-  send: (chatId: string, clientId: string, text: string) => nativeRequest("send", outbox, { chat_id: chatId, client_id: clientId, text } satisfies components["schemas"]["PersonalSendRequest"]),
+  send: (chatId: string, clientId: string, text: string, grantId: string, generation: number) => nativeRequest("send", outbox, { chat_id: chatId, client_id: clientId, text, grant_id: grantId, generation } satisfies components["schemas"]["PersonalSendRequest"]),
+  cancelUnsubmitted: (chatId: string, clientId: string, grantId: string, generation: number) => nativeRequest("cancel-unsubmitted", outbox, { chat_id: chatId, client_id: clientId, grant_id: grantId, generation } satisfies components["schemas"]["PersonalSendBinding"]),
   outbox: (chatId: string, signal?: AbortSignal) => nativeRequest(`outbox?${new URLSearchParams({ chat_id: chatId })}`, z.array(outbox), undefined, signal),
   accounts: () => nativeRequest("accounts", z.array(account)),
   selectAccount: (accountRef: string) => nativeRequest("select-account", activation, { account_ref: accountRef } satisfies components["schemas"]["AccountSelection"]),

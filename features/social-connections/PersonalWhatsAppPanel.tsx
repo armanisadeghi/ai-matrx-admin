@@ -80,7 +80,7 @@ function PersonalWhatsAppContent({ messenger }: { messenger: boolean }) {
     setBusy(true); setError(null); setAuthorizationUrl(null); setAccounts([]);
     try {
       if (profile === "read_write") await personalWhatsApp.ensureWriteSupport();
-      if (reconnect) { const retired = await personalWhatsApp.disconnect(); if (retired.status !== "retired" || retired.provider_revoke_pending || retired.cloud_retirement_pending) throw new Error("Finish WhatsApp cleanup before changing access."); }
+      if (reconnect) { const retired = await personalWhatsApp.disconnect(); if (sequence.current === version) setGrant(retired); if (retired.status !== "retired" || retired.provider_revoke_pending || retired.cloud_retirement_pending) throw new Error("Finish WhatsApp cleanup before changing access."); }
       const started = await personalWhatsApp.start(profile);
       if (sequence.current !== version) { popup?.close(); return; }
       setGrant(started.grant); setAuthorizationUrl(started.authorization_url);

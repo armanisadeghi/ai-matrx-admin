@@ -6,7 +6,7 @@ import { ErrorNotice } from "@ai-matrx/design-system";
 import { MessagesComposerInput } from "../components/MessagesComposerInput";
 import { PersonalWhatsAppFailure, type PersonalOutboxEntry, type PersonalWhatsAppClient } from "@/features/social-connections/personal-whatsapp-service";
 
-export function PersonalWhatsAppComposer({ client, chatId, grantId, onAccessFailure }: { client: PersonalWhatsAppClient; chatId: string; grantId: string; onAccessFailure: (message: string) => void }) {
+export function PersonalWhatsAppComposer({ client, chatId, grantId, generation, onAccessFailure }: { client: PersonalWhatsAppClient; chatId: string; grantId: string; generation: number; onAccessFailure: (message: string) => void }) {
   const [draft, setDraft] = useState("");
   const [entries, setEntries] = useState<PersonalOutboxEntry[]>([]);
   const [ready, setReady] = useState(false);
@@ -15,16 +15,16 @@ export function PersonalWhatsAppComposer({ client, chatId, grantId, onAccessFail
   const [uncertain, setUncertain] = useState(false);
   const mounted = useRef(true);
   const sending = useRef(false);
-  const attemptKey = `matrx:personal-send:${grantId}:${chatId}`;
+  const attemptKey = `matrx:personal-send:${grantId}:${generation}:${chatId}`;
   const attempt = useRef<{ id: string; text: string } | null>(null);
 
   useEffect(() => {
     mounted.current = true;
     const pendingId = sessionStorage.getItem(attemptKey);
-    if (pendingId) { attempt.current = { id: pendingId, text: "" }; setUncertain(true); }
+    if (pendingId) attempt.current = { id: pendingId, text: "" };
     const controller = new AbortController();
     client.outbox(chatId, controller.signal).then((saved) => {
-      if (!controller.signal.aborted) { setEntries(saved); setReady(true); if (pendingId && saved.some((entry) => entry.client_id === pendingId)) { sessionStorage.removeItem(attemptKey); attempt.current = null; setUncertain(false); } }
+      if (!controller.signal.aborted) { setEntries(saved); setReady(true); setUncertain(!!pendingId); if (pendingId && saved.some((entry) => entry.client_id === pendingId && entry.state !== "pending")) { sessionStorage.removeItem(attemptKey); attempt.current = null; setUncertain(false); } }
     }).catch((cause: unknown) => {
       if (!controller.signal.aborted) {
         setError(cause instanceof Error ? cause.message : "Saved sends could not load.");
@@ -44,10 +44,24 @@ export function PersonalWhatsAppComposer({ client, chatId, grantId, onAccessFail
       setEntries(saved); setReady(true);
       // A response lost before persistence must retain its exact request identity.
       const current = attempt.current;
-      if (!current || saved.some((entry) => entry.client_id === current.id)) { setUncertain(false); sessionStorage.removeItem(attemptKey); attempt.current = null; }
+      if (!current || saved.some((entry) => entry.client_id === current.id && entry.state !== "pending")) { setUncertain(false); sessionStorage.removeItem(attemptKey); attempt.current = null; }
     } catch (cause) {
       if (mounted.current) { setError(cause instanceof Error ? cause.message : "Send status could not load."); if (cause instanceof PersonalWhatsAppFailure && cause.accessLost) onAccessFailure(cause.message); }
     } finally { sending.current = false; if (mounted.current) setBusy(false); }
+  }
+  async function cancelUnsubmitted() {
+    const current = attempt.current;
+    if (!current || sending.current) return;
+    sending.current = true; setBusy(true); setError(null);
+    try {
+      const receipt = await client.cancelUnsubmitted(chatId, current.id, grantId, generation);
+      if (!mounted.current) return;
+      setEntries(previous => [...previous.filter(entry => entry.client_id !== receipt.client_id), receipt]);
+      if (["cancelled", "failed", "accepted"].includes(receipt.state)) {
+        sessionStorage.removeItem(attemptKey); attempt.current = null; setUncertain(false);
+      }
+    } catch (cause) { if (mounted.current) { setError(cause instanceof Error ? cause.message : "Attempt could not be cancelled."); if (cause instanceof PersonalWhatsAppFailure && cause.accessLost) onAccessFailure(cause.message); } }
+    finally { sending.current = false; if (mounted.current) setBusy(false); }
   }
   async function send() {
     if (sending.current || !ready || unresolved || !draft.trim()) return;
@@ -57,7 +71,7 @@ export function PersonalWhatsAppComposer({ client, chatId, grantId, onAccessFail
     sessionStorage.setItem(attemptKey, current.id);
     attempt.current = current;
     try {
-      const receipt = await client.send(chatId, current.id, current.text);
+      const receipt = await client.send(chatId, current.id, current.text, grantId, generation);
       if (!mounted.current) return;
       setEntries((previous) => [...previous.filter((entry) => entry.client_id !== receipt.client_id), receipt]);
       setDraft(""); sessionStorage.removeItem(attemptKey); attempt.current = null;
@@ -76,6 +90,7 @@ export function PersonalWhatsAppComposer({ client, chatId, grantId, onAccessFail
       {["pending", "dispatching", "unknown", "failed"].includes(entry.state) && <p className="truncate">{entry.draft_text}</p>}
     </li>)}</ul>}
     {(!ready || unresolved || entries.length > 0) && <Button variant="quiet" disabled={busy} onClick={() => void check()}>Check send status</Button>}
+    {uncertain && <Button variant="quiet" disabled={busy} onClick={() => void cancelUnsubmitted()}>Cancel unsubmitted attempt</Button>}
     <MessagesComposerInput surfaceName="Personal WhatsApp reply" attachmentsEnabled={false} input={{
       additions: [], add: () => undefined, removeAddition: () => undefined,
       value: draft, onChange: setDraft, disabled: busy || !ready || unresolved,
