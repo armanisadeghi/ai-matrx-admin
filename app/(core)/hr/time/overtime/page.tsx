@@ -23,7 +23,10 @@ export const metadata = createRouteMetadata("/hr/time/overtime", {
 
 export default function HrTimeOvertimeRoute() {
   return (
-    <HrTimeShell title="Overtime pre-approval">
+    <HrTimeShell
+      title="Overtime pre-approval"
+      description="Pre-approval decides whether overtime should be worked; overtime that is worked is paid, approved or not."
+    >
       <Suspense fallback={<HrLoading variant="table" rows={8} />}>
         <OvertimeQueuePage />
       </Suspense>
