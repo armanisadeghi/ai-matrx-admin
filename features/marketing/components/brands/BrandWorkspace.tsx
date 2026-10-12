@@ -47,6 +47,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { GovernedActionDialog } from "@/features/access-gate/components/GovernedActionDialog";
 import { isGovernedActionDenial } from "@/features/access-gate/lib/governedActionError";
+import { SmartAddSetupStatus } from "@/features/marketing/smart-add/SmartAddSetupStatus";
 import { BrandEditorDialog } from "@/features/marketing/components/brands/BrandEditorDialog";
 import {
   MARKETING_BRAND_SURFACE_NAME,
@@ -734,6 +735,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                 {current.industry ? (
                   <Badge variant="outline">{current.industry}</Badge>
                 ) : null}
+                <SmartAddSetupStatus brandId={current.id} organizationId={current.organization_id} />
                 {socialProperties.length > 0 ? (
                   <span className="ml-1 inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1">
                     {socialProperties.slice(0, 8).map((property) => {
