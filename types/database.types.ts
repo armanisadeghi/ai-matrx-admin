@@ -84466,6 +84466,84 @@ export type Database = {
         }
         Relationships: []
       }
+      provision_snapshot: {
+        Row: {
+          code_location: string | null
+          coverage: Json
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          metadata: Json
+          organization_id: string
+          point_key: string
+          point_label: string
+          provision_values: Json
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          run_id: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          subject_id: string | null
+          subject_type: string | null
+          total_chars: number
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          code_location?: string | null
+          coverage?: Json
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          metadata?: Json
+          organization_id: string
+          point_key: string
+          point_label: string
+          provision_values?: Json
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          run_id?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          subject_id?: string | null
+          subject_type?: string | null
+          total_chars?: number
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          code_location?: string | null
+          coverage?: Json
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          point_key?: string
+          point_label?: string
+          provision_values?: Json
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          run_id?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          subject_id?: string | null
+          subject_type?: string | null
+          total_chars?: number
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
       readiness_verdict: {
         Row: {
           checked_at: string

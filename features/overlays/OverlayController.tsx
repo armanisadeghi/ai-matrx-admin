@@ -622,6 +622,10 @@ const ErrorInspectorWindow = lazyOverlay(
   () => import("@/features/admin/error-inspector/ErrorInspectorWindow"),
   { ssr: false },
 );
+const ProvisionWindow = lazyOverlay(
+  () => import("@/features/window-panels/windows/provision/ProvisionWindow"),
+  { ssr: false },
+);
 const FeedbackWindow = lazyOverlay(
   () =>
     import("@/features/window-panels/windows/FeedbackWindow").then((m) => ({
@@ -1451,6 +1455,9 @@ export default function OverlayController() {
     executionInspectorWindow: useAppSelector((s) =>
       selectIsOverlayOpen(s, "executionInspectorWindow"),
     ),
+    provisionWindow: useAppSelector((s) =>
+      selectIsOverlayOpen(s, "provisionWindow"),
+    ),
     feedbackDialog: useAppSelector((s) =>
       selectIsOverlayOpen(s, "feedbackDialog"),
     ),
@@ -1902,6 +1909,9 @@ export default function OverlayController() {
     executionInspectorWindow: useAppSelector((s) =>
       selectOverlayData(s, "executionInspectorWindow"),
     ) as Record<string, unknown> | null,
+    provisionWindow: useAppSelector((s) =>
+      selectOverlayData(s, "provisionWindow"),
+    ),
     feedbackDialog: useAppSelector((s) =>
       selectOverlayData(s, "feedbackDialog"),
     ) as Record<string, unknown> | null,
@@ -4764,6 +4774,22 @@ export default function OverlayController() {
             onClose={() =>
               dispatch(closeOverlay({ overlayId: "executionInspectorWindow" }))
             }
+          />
+        );
+      })()}
+
+      {/* provisionWindow */}
+      {(() => {
+        const isOpen = isOpenById.provisionWindow;
+        const data = dataById.provisionWindow as
+          Record<string, unknown> | null | undefined;
+        if (!isOpen) return null;
+        return (
+          <ProvisionWindow
+            isOpen
+            onClose={() => dispatch(closeOverlay({ overlayId: "provisionWindow" }))}
+            snapshotId={typeof data?.snapshotId === "string" ? data.snapshotId : null}
+            title={typeof data?.title === "string" ? data.title : undefined}
           />
         );
       })()}

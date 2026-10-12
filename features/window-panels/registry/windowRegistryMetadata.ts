@@ -1331,6 +1331,18 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     urlSync: { key: "feedback" },
   },
 
+  // ── Provision (the exact values at a call point) ─────────────────────────
+  {
+    slug: "provision-window",
+    overlayId: "provisionWindow",
+    kind: "window",
+    label: "Provision",
+    defaultData: { snapshotId: null, title: null },
+    mobilePresentation: "fullscreen",
+    preservation: { dataKeys: ["snapshotId", "title"] },
+    urlSync: { key: "provision" },
+  },
+
   // ── People involved (access setup) ───────────────────────────────────────
   {
     slug: "access-setup-window",

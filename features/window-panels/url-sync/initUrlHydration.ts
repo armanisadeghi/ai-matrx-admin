@@ -383,6 +383,11 @@ export function initUrlHydration() {
   });
 
   // Feedback Window
+  // Provision window: ?panels=provision:<snapshot id> reopens one saved capture.
+  registerPanelHydrator("provision", (dispatch, id) => {
+    if (id) dispatch(openOverlay({ overlayId: "provisionWindow", data: { snapshotId: id } }));
+  });
+
   registerPanelHydrator("feedback", (dispatch) => {
     dispatch(openOverlay({ overlayId: "feedbackDialog" }));
   });

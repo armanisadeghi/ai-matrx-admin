@@ -39,6 +39,9 @@ import {
 import { runHref } from "@/features/workflow-runtime/run-doors";
 import { initializeSite } from "@/features/marketing/crawler/direct-client";
 import { SmartAddSlots } from "./SmartAddSlots";
+import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { useSocialSpend } from "@/features/marketing/social/cost";
 import { BrandCard, CompareSources, situationOf } from "./SmartAddExtras";
 import { ADOPTION_RELEASE_GRACE_MS } from "@/features/workflow-runtime/hooks/useWorkflowRun";
 import { detachWorkflowRunState } from "@/features/workflow-runtime/redux/adopt-workflow-run.thunk";
@@ -71,6 +74,11 @@ import {
   type SocialSeed,
 } from "./evidence";
 import { SETUP_STEPS, SmartAddRound, type RoundView } from "./SmartAddRound";
+import { captureProvision } from "@/features/provision-window/data";
+import { useOpenProvisionWindow } from "@/features/overlays/openers/provisionWindow";
+
+/** The call point where the brand-intake analysis would run (server: brand_intake/provision.py). */
+const BRAND_INTAKE_POINT = "brand_intake.smart_add_create";
 
 const WORKFLOW_KEY = "smart_add_brand_identify";
 const SETUP_KEY = "smart_add_brand_setup";
@@ -119,6 +127,9 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const [createError, setCreateError] = useState<string | null>(null);
   const [created, setCreated] = useState<MarketingBrand | null>(null);
   const [setupRunId, setSetupRunId] = useState<string | null>(null);
+  const [provisionId, setProvisionId] = useState<string | null>(null);
+  const [capturing, setCapturing] = useState(false);
+  const openProvision = useOpenProvisionWindow();
   const [setupView, setSetupView] = useState<RoundView | null>(null);
   // A restart parks the run as cancelled and the platform's recovery sweep resumes it; the
   // stream adapter treats cancelled as final, so the screen lets go and re-reads the run.
@@ -275,7 +286,16 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   ];
   const costUsd = roundViews.reduce((sum, v) => sum + (v?.steps.reduce((s, x) => s + x.costUsd, 0) ?? 0), 0);
   const visible = orderedEvidence(items.values());
-  const basics = confirmedBasics(items, decisions);
+  const basics = confirmedBasics(items, decisions, person);
+  // Recent posts fetched per confirmed account after Create: its own setting (platform 30, org/person override).
+  const postsKnob = Number(useSessionKnob("social.smart_add_posts_default"));
+  const postsPerAccount = Number.isFinite(postsKnob) && postsKnob >= 0 ? postsKnob : 30;
+  const spendOrg = useAppSelector((st) => st.appContext?.organization_id ?? null);
+  const spend = useSocialSpend(spendOrg);
+  const trackedAccounts = basics.accounts.filter((a) => a.platform);
+  const postsPoints = postsPerAccount
+    ? trackedAccounts.map((a) => spend.postsText(a.platform ?? "", postsPerAccount)).filter(Boolean)
+    : [];
   const situation = situationOf(visible, rounds.length > 0 && !working);
   const canCreate = Boolean(basics.name) && !creating && !created;
 
@@ -379,7 +399,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
               subject: `brand:${brand.id}`,
               organizationId,
               sourceFeature: "marketing",
-              inputs: { brand_id: brand.id, images: basics.images, accounts },
+              inputs: { brand_id: brand.id, images: basics.images, accounts, max_posts: postsPerAccount },
             },
             "The background setup could not start.",
           );
@@ -388,10 +408,27 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           setSaveNotes((n) => [...n, plainStartError(error)]);
         }
       }
+      await showProvision(brand, organizationId);
     } catch (error) {
       setCreateError(extractErrorMessage(error));
     } finally {
       setCreating(false);
+    }
+  };
+
+  // PROVISION POINT — brand_intake.smart_add_create. This is where the brand-intake analysis
+  // would run. No agent runs (Arman, 2026-10-12): the exact values available here are captured
+  // and shown in the Provision window. Spec: smart-add-brand/PROVISION.md.
+  const showProvision = async (brand: MarketingBrand, organizationId: string) => {
+    setCapturing(true);
+    try {
+      const snapshot = await captureProvision(dispatch, BRAND_INTAKE_POINT, brand.id, organizationId);
+      setProvisionId(snapshot.id);
+      openProvision(snapshot.id, `Brand analysis inputs: ${brand.name}`);
+    } catch (error) {
+      setSaveNotes((n) => [...n, extractErrorMessage(error)]);
+    } finally {
+      setCapturing(false);
     }
   };
 
@@ -534,6 +571,13 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
             <img src={basics.logoUrl} alt="" className="size-6 shrink-0 rounded object-contain" />
           ) : null}
           <span className="truncate font-medium">{basics.name ?? "Confirm a name to create the brand"}</span>
+          {basics.name && trackedAccounts.length && !created ? (
+            <span className="hidden truncate text-xs text-muted-foreground sm:inline" data-testid="smart-add-posts-preview">
+              {postsPerAccount
+                ? `Then ${postsPerAccount} recent posts per account${postsPoints.length ? ` · ${postsPoints.join(" + ")}` : ""}`
+                : "No post history (setting is 0)"}
+            </span>
+          ) : null}
           {basics.name ? (
             <span className="truncate text-xs text-muted-foreground">
               {[basics.websiteUrl ? websiteHost(basics.websiteUrl) : null, basics.accounts.length ? `${basics.accounts.length} accounts` : null]
@@ -620,10 +664,24 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       ) : null}
 
       {created ? (
-        // The brand-intake agent's research lands here after Create (built by its own lane).
-        <section className="flex min-h-24 flex-col gap-1 rounded-xl border border-dashed border-border px-4 py-3" data-testid="smart-add-research-slot" aria-label="Brand research">
-          <h3 className="text-xs font-semibold text-muted-foreground">Brand research</h3>
-          <p className="text-sm text-muted-foreground/70">Research on this brand will appear here.</p>
+        <section className="flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-xs" data-testid="smart-add-provision" aria-label="Brand analysis inputs">
+          <span className="font-semibold">Brand analysis</span>
+          <span className="text-muted-foreground">Not running · inputs only</span>
+          <div className="ml-auto flex gap-1">
+            {provisionId ? (
+              <Button variant="outline" onClick={() => openProvision(provisionId, `Brand analysis inputs: ${created.name}`)}>
+                Open inputs
+              </Button>
+            ) : null}
+            <Button
+              variant="outline"
+              disabled={capturing}
+              onClick={() => void ensureOrgId(null).then((org) => showProvision(created, org))}
+            >
+              {capturing ? <Loader2 className="size-3.5 animate-spin" /> : null}
+              Capture again
+            </Button>
+          </div>
         </section>
       ) : null}
 

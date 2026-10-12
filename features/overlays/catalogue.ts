@@ -572,6 +572,11 @@ export const OVERLAY_CATALOGUE = {
     instanceMode: "singleton",
     isWindow: true,
   },
+  provisionWindow: {
+    label: "Provision",
+    instanceMode: "singleton",
+    isWindow: true,
+  },
   filePreviewWindow: {
     label: "File Preview Window",
     instanceMode: "singleton",
