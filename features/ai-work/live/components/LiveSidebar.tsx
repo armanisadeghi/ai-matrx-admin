@@ -27,6 +27,7 @@ import {
 import type { LiveSession } from "../useLiveHub";
 import type { AgentMemberInfo, SessionMemberRow } from "../service";
 import { LagMarker, PresenceDot, PresenceLegend, worstLag } from "./LiveBits";
+import { LiveRowMenu } from "./LiveRowMenu";
 
 export type LiveSelection =
   | { kind: "session"; address: string }
@@ -53,7 +54,7 @@ function SectionHeader({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex h-8 items-center gap-2 px-3 pt-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+    <div className="flex h-8 items-center gap-2 px-3 pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
       <span>{label}</span>
       {count !== undefined && <span className="tabular-nums">{count}</span>}
       <span className="flex-1" />
@@ -62,7 +63,7 @@ function SectionHeader({
   );
 }
 
-function SessionRow({
+function SessionRowBody({
   session,
   members,
   selected,
@@ -112,14 +113,18 @@ function SessionRow({
             </span>
           )}
           <span className="flex-1" />
-          {seen && <span className="shrink-0 tabular-nums">{seen}</span>}
+          {seen && (
+            <span className="shrink-0 tabular-nums group-hover/row:invisible group-focus-within/row:invisible">
+              {seen}
+            </span>
+          )}
         </span>
       </span>
     </button>
   );
 }
 
-function RoomRow({
+function RoomRowBody({
   room,
   memberCount,
   selected,
@@ -150,7 +155,7 @@ function RoomRow({
           </span>
           <span className="flex-1" />
           {room.unreadCount > 0 && (
-            <span className="rounded-full bg-primary px-1.5 text-[10px] font-semibold leading-4 text-primary-foreground tabular-nums">
+            <span className="rounded-full bg-primary px-1.5 text-xs font-semibold leading-4 text-primary-foreground tabular-nums">
               {room.unreadCount}
             </span>
           )}
@@ -163,11 +168,37 @@ function RoomRow({
           </span>
           <span className="flex-1" />
           {room.lastMessageAt && (
-            <span className="shrink-0 tabular-nums">{formatConversationTime(room.lastMessageAt)}</span>
+            <span className="shrink-0 tabular-nums group-hover/row:invisible group-focus-within/row:invisible">
+              {formatConversationTime(room.lastMessageAt)}
+            </span>
           )}
         </span>
       </span>
     </button>
+  );
+}
+
+function SessionRow(props: React.ComponentProps<typeof SessionRowBody>) {
+  return (
+    <LiveRowMenu
+      target={{ kind: "session", address: props.session.address }}
+      title={props.session.title}
+      onOpenHere={props.onSelect}
+    >
+      <SessionRowBody {...props} />
+    </LiveRowMenu>
+  );
+}
+
+function RoomRow(props: React.ComponentProps<typeof RoomRowBody>) {
+  return (
+    <LiveRowMenu
+      target={{ kind: "room", id: props.room.conversation.id }}
+      title={props.room.displayName}
+      onOpenHere={props.onSelect}
+    >
+      <RoomRowBody {...props} />
+    </LiveRowMenu>
   );
 }
 
@@ -236,7 +267,7 @@ export function LiveSidebar({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex items-center gap-2 border-b border-border px-3 py-2">
+      <div className="flex items-center gap-2 px-3 py-2">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
           <input
@@ -256,7 +287,7 @@ export function LiveSidebar({
         <SectionHeader
           label="Sessions"
           count={loaded ? active.length : undefined}
-          action={busy > 0 ? <span className="normal-case tracking-normal text-emerald-600 dark:text-emerald-400">{busy} busy</span> : null}
+          action={busy > 0 ? <span className="normal-case tracking-normal text-success-ink">{busy} busy</span> : null}
         />
         <PresenceLegend />
         {error ? (

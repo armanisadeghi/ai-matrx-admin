@@ -3,9 +3,14 @@
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CalendarClock, Plus, X } from "lucide-react";
+import { CalendarClock, Plus, X } from "lucide-react";
+import {
+  ChevronLeftTapButton,
+  ExternalLinkTapButton,
+} from "@ai-matrx/design-system/tap-target/buttons";
 import type { ConversationSummary } from "@ai-matrx/messaging";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +28,8 @@ import { LagMarker, PresenceDot, sessionTag } from "./LiveBits";
 import { AddManagerDialog } from "./AddManagerDialog";
 import { AddCursorAgentDialog } from "./AddCursorAgentDialog";
 import { useRoomDelivery } from "../useRoomDelivery";
+import { AiWorkHeader } from "../../components/AiWorkHeader";
+import type { LiveLayout } from "./LiveHub";
 
 /** A manager agent's own conversation, scheduled: every run appends to it, so it keeps its room. */
 export function scheduleHref(info: AgentMemberInfo | undefined, conversationId: string): string {
@@ -44,10 +51,12 @@ export function RoomDetail({
   agentInfo,
   sessions,
   nowMs,
+  layout,
   onBack,
   onOpenSession,
   onChanged,
 }: {
+  layout: LiveLayout;
   room: ConversationSummary;
   members: readonly SessionMemberRow[];
   agentInfo: Readonly<Record<string, AgentMemberInfo>>;
@@ -87,61 +96,80 @@ export function RoomDetail({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <header className="border-b border-border px-3 py-2">
-        <div className="flex items-center gap-2">
-          <span className="shrink-0 @2xl/live:hidden">
-            <Button variant="quiet" icon={<ArrowLeft />} aria-label="Back" onClick={onBack} />
-          </span>
-          <div className="min-w-0 flex-1">
-            <h2 className="truncate text-sm font-semibold">{room.displayName}</h2>
-            <p className="text-xs text-muted-foreground">
-              {KIND_LABEL[kind]} · {inRoom.length} session{inRoom.length === 1 ? "" : "s"}
-              {agentsInRoom.length > 0 &&
-                ` · ${agentsInRoom.length} manager agent${agentsInRoom.length === 1 ? "" : "s"}`}
-            </p>
-          </div>
-          {canEdit && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" icon={<Plus />} disabled={busy}>
-                  Session
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="max-h-80 w-72 overflow-y-auto">
-                <DropdownMenuLabel className="text-xs">Active sessions</DropdownMenuLabel>
-                {addable.length === 0 ? (
-                  <DropdownMenuItem disabled>Every active session is in this room</DropdownMenuItem>
-                ) : (
-                  addable.map((s) => (
-                    <DropdownMenuItem
-                      key={s.address}
-                      onSelect={() => void run(() => addSessionToRoom(roomId, s.address))}
-                      className="gap-2"
-                    >
-                      <PresenceDot presence={s.presence} />
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate">{s.title}</span>
-                        <span className="block truncate text-xs text-muted-foreground">
-                          {sessionTag(s, nowMs)}
+      {/* The title lives in the shell header beside its icon (Arman, 2026-10-12). */}
+      <AiWorkHeader
+        left={
+          <>
+            {!layout.listBeside && (
+              <ChevronLeftTapButton variant="transparent" ariaLabel="Back to Live" onClick={onBack} />
+            )}
+            <span className="flex min-w-0 md:max-w-[min(26vw,26rem)] items-center gap-1.5 pl-1.5 text-sm">
+              <span className="min-w-0 truncate font-medium text-foreground">{room.displayName}</span>
+              {layout.roomy && (
+                <span className="min-w-0 shrink-[4] truncate text-xs text-muted-foreground">
+                  {KIND_LABEL[kind]} · {inRoom.length} session{inRoom.length === 1 ? "" : "s"}
+                  {agentsInRoom.length > 0 &&
+                    ` · ${agentsInRoom.length} manager agent${agentsInRoom.length === 1 ? "" : "s"}`}
+                </span>
+              )}
+            </span>
+          </>
+        }
+        right={
+          <>
+            {canEdit && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" icon={<Plus />} disabled={busy}>
+                    Session
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="max-h-80 w-72 overflow-y-auto">
+                  <DropdownMenuLabel className="text-xs">Active sessions</DropdownMenuLabel>
+                  {addable.length === 0 ? (
+                    <DropdownMenuItem disabled>Every active session is in this room</DropdownMenuItem>
+                  ) : (
+                    addable.map((s) => (
+                      <DropdownMenuItem
+                        key={s.address}
+                        onSelect={() => void run(() => addSessionToRoom(roomId, s.address))}
+                        className="gap-2"
+                      >
+                        <PresenceDot presence={s.presence} />
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate">{s.title}</span>
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {sessionTag(s, nowMs)}
+                          </span>
                         </span>
-                      </span>
-                    </DropdownMenuItem>
-                  ))
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-          {canEdit && (
-            <Button variant="outline" icon={<Plus />} disabled={busy} onClick={() => setAddingManager(true)}>
-              Manager agent
-            </Button>
-          )}
-          {canEdit && (
-            <Button variant="outline" icon={<Plus />} disabled={busy} onClick={() => setAddingCursor(true)}>
-              Cursor agent
-            </Button>
-          )}
-        </div>
+                      </DropdownMenuItem>
+                    ))
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            {canEdit && (
+              <Button variant="outline" icon={<Plus />} disabled={busy} onClick={() => setAddingManager(true)}>
+                Manager agent
+              </Button>
+            )}
+            {canEdit && (
+              <Button variant="outline" icon={<Plus />} disabled={busy} onClick={() => setAddingCursor(true)}>
+                Cursor agent
+              </Button>
+            )}
+            {/* The same conversation in Messages, in a NEW tab. */}
+            <ExternalLinkTapButton
+              variant="transparent"
+              href={`/messages/${roomId}`}
+              target="_blank"
+              ariaLabel="Open in Messages in a new tab"
+              tooltip="Open in new tab"
+            />
+          </>
+        }
+      />
+      <div className={cn("px-3", (inRoom.length > 0 || agentsInRoom.length > 0 || error) && "border-b border-border pb-2")}>
         {inRoom.length > 0 && (
           <ul className="mt-2 flex flex-wrap gap-1.5" aria-label="Sessions in this room">
             {inRoom.map((m) => {
@@ -215,7 +243,7 @@ export function RoomDetail({
           </ul>
         )}
         {error && <ErrorNotice message={error} size="inline" />}
-      </header>
+      </div>
       {addingCursor && (
         <AddCursorAgentDialog
           open={addingCursor}

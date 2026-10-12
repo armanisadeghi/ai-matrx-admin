@@ -3,11 +3,15 @@
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import {
+  ChevronLeftTapButton,
+  ExternalLinkTapButton,
+} from "@ai-matrx/design-system/tap-target/buttons";
 import { cn } from "@/lib/utils";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
-import { ErrorNotice } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
+import { Tabs } from "@ai-matrx/design-system/controls";
+import { AiWorkHeader } from "../../components/AiWorkHeader";
 import { providerMeta } from "@/features/agent-connections/coding-sessions/catalog";
 import { deliveryLag, needsClaudeAccount } from "../presence";
 import type { LiveSession } from "../useLiveHub";
@@ -15,6 +19,7 @@ import type { SessionMemberRow } from "../service";
 import { LagMarker, PresenceDot, lagText, presenceLabel, worstLag } from "./LiveBits";
 import { SessionTranscriptPane } from "./SessionTranscriptPane";
 import { DirectLine } from "./DirectLine";
+import type { LiveLayout } from "./LiveHub";
 
 type Tab = "messages" | "transcript";
 
@@ -24,9 +29,11 @@ export function SessionDetail({
   directRoomId,
   directMembers,
   nowMs,
+  layout,
   onBack,
   onDirectRoomCreated,
 }: {
+  layout: LiveLayout;
   session: LiveSession;
   members: readonly SessionMemberRow[];
   directRoomId: string | null;
@@ -42,68 +49,76 @@ export function SessionDetail({
   const seen = session.lastSeenAt
     ? `seen ${formatRelativeTime(session.lastSeenAt, { now: nowMs })}`
     : "never seen";
+  const meta = [
+    presenceLabel(session.presence),
+    session.providerLabel,
+    session.workspace,
+    session.account,
+    seen,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <header className="flex items-center gap-2 border-b border-border px-3 py-2">
-        <span className="shrink-0 @2xl/live:hidden">
-          <Button variant="quiet" icon={<ArrowLeft />} aria-label="Back" onClick={onBack} />
-        </span>
-        <PresenceDot presence={session.presence} />
-        <div className="min-w-0 flex-1">
-          <h2 className="truncate text-sm font-semibold">{session.title}</h2>
-          <p className="flex items-center gap-1 truncate text-xs text-muted-foreground">
-            <Icon className="size-3 shrink-0" />
-            <span className="truncate">
-              {[
-                presenceLabel(session.presence),
-                session.providerLabel,
-                session.workspace,
-                session.account,
-                seen,
-              ]
-                .filter(Boolean)
-                .join(" · ")}
+      {/* The title lives in the shell header beside its icon — no second
+          title row here (Arman, 2026-10-12). */}
+      <AiWorkHeader
+        left={
+          <>
+            {!layout.listBeside && (
+              <ChevronLeftTapButton variant="transparent" ariaLabel="Back to Live" onClick={onBack} />
+            )}
+            <span
+              className="flex min-w-0 md:max-w-[min(26vw,26rem)] items-center gap-1.5 pl-1.5 text-sm"
+              title={meta}
+            >
+              <PresenceDot presence={session.presence} />
+              <span className="min-w-0 truncate font-medium text-foreground">{session.title}</span>
+              <Icon className="size-3 shrink-0 text-muted-foreground" />
+              {layout.roomy && (
+                <span className="min-w-0 shrink-[4] truncate text-xs text-muted-foreground">{meta}</span>
+              )}
+              {lagLine && (
+                <span className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+                  <LagMarker lag={lag} />
+                  {layout.roomy && <span>{lagLine}</span>}
+                </span>
+              )}
             </span>
-            {lagLine && (
-              <span className="ml-1 inline-flex items-center gap-1">
-                <LagMarker lag={lag} />
-                <span className="truncate">{lagLine}</span>
-              </span>
+          </>
+        }
+        right={
+          <>
+            {needsClaudeAccount(lag) && (
+              <Button asChild variant="outline" className="shrink-0">
+                <Link href="/work/connections#claude-accounts">Connect Claude account</Link>
+              </Button>
             )}
-          </p>
-        </div>
-        {needsClaudeAccount(lag) && (
-          <Button asChild variant="outline" className="shrink-0">
-            <Link href="/work/connections#claude-accounts">Connect Claude account</Link>
-          </Button>
-        )}
-        <Button asChild variant="quiet" className="shrink-0">
-          <Link href={`/work/conversations/${session.address}`}>
-            <ExternalLink className="size-3.5" />
-            <span className="hidden @lg/live:inline">Open</span>
-          </Link>
-        </Button>
-      </header>
+            {/* Opens the full conversation page in a NEW tab: an "open
+                elsewhere" icon never replaces the page you are on. */}
+            <ExternalLinkTapButton
+              variant="transparent"
+              href={`/work/conversations/${session.address}`}
+              target="_blank"
+              ariaLabel="Open full conversation in a new tab"
+              tooltip="Open in new tab"
+            />
+          </>
+        }
+      />
 
-      <div role="tablist" className="flex border-b border-border @4xl/live:hidden">
-        {(["messages", "transcript"] as const).map((t) => (
-          <button
-            key={t}
-            role="tab"
-            type="button"
-            aria-selected={tab === t}
-            onClick={() => setTab(t)}
-            className={cn(
-              "flex-1 py-2 text-xs font-medium capitalize",
-              tab === t
-                ? "border-b-2 border-primary text-foreground"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {t === "messages" ? "Messages" : "Transcript"}
-          </button>
-        ))}
+      <div className="@4xl/live:hidden">
+        <Tabs
+          aria-label="Session view"
+          value={tab}
+          onValueChange={setTab}
+          fill
+          data={[
+            { value: "messages", label: "Messages" },
+            { value: "transcript", label: "Transcript" },
+          ]}
+        />
       </div>
 
       <div className="flex min-h-0 flex-1">

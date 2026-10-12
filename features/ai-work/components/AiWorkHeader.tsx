@@ -45,7 +45,23 @@ const AI_WORK_NAV_ITEMS = [
   },
 ];
 
-/** One responsive shell header shared by every user-facing AI Work route. */
-export function AiWorkHeader() {
-  return <RouteHeader center={<RouteModeNav items={AI_WORK_NAV_ITEMS} />} />;
+/**
+ * One responsive shell header shared by every user-facing AI Work route. A
+ * page with a selected record puts its title in `left` (beside the shell's own
+ * icon) and its actions in `right` — never a second title row in the body.
+ */
+export function AiWorkHeader({
+  left,
+  right,
+}: {
+  left?: React.ReactNode;
+  right?: React.ReactNode;
+} = {}) {
+  return (
+    <RouteHeader
+      {...(left ? { left } : {})}
+      center={<RouteModeNav items={AI_WORK_NAV_ITEMS} />}
+      {...(right ? { right } : {})}
+    />
+  );
 }

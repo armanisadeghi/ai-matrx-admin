@@ -10,17 +10,53 @@
  * Selection lives in the URL (?session=<address> | ?room=<id>) so every view
  * is a link.
  */
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { Radio } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@ai-matrx/design-system/controls";
 import { agentRoomKind } from "../presence";
 import { useLiveHub } from "../useLiveHub";
 import { LiveSidebar, type LiveSelection } from "./LiveSidebar";
 import { SessionDetail } from "./SessionDetail";
 import { RoomDetail } from "./RoomDetail";
 import { NewRoomDialog } from "./NewRoomDialog";
+import { AiWorkHeader } from "../../components/AiWorkHeader";
+
+/**
+ * What the hub's own width allows. The shell header is portaled OUT of the
+ * `@container/live` box, so header content cannot use container queries —
+ * it reads these measured flags instead.
+ */
+export interface LiveLayout {
+  /** The list sits beside the detail (container ≥ 42rem): no Back. */
+  listBeside: boolean;
+  /** Room for secondary header text (container ≥ 64rem). */
+  roomy: boolean;
+}
+
+function useLiveLayout() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [layout, setLayout] = useState<LiveLayout>({ listBeside: true, roomy: true });
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const measure = () => {
+      const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      const w = el.clientWidth;
+      setLayout((cur) => {
+        const next = { listBeside: w >= 42 * rem, roomy: w >= 64 * rem };
+        return cur.listBeside === next.listBeside && cur.roomy === next.roomy ? cur : next;
+      });
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  return { ref, layout };
+}
 
 function readSelection(params: URLSearchParams): LiveSelection {
   const session = params.get("session");
@@ -38,6 +74,7 @@ export function LiveHub() {
     useLiveHub();
   const [newRoomOpen, setNewRoomOpen] = useState(false);
   const [createdDirect, setCreatedDirect] = useState<Record<string, string>>({});
+  const { ref: rootRef, layout } = useLiveLayout();
 
 
   const select = (next: LiveSelection) => {
@@ -78,7 +115,9 @@ export function LiveHub() {
   const idle = sessions.filter((s) => s.presence === "idle").length;
 
   return (
-    <div className="@container/live flex h-full min-h-0 overflow-hidden bg-background pt-[var(--shell-header-h)]">
+    <div ref={rootRef} className="@container/live flex h-full min-h-0 overflow-hidden bg-background pt-[var(--shell-header-h)]">
+      {/* A selected session or room renders the header with its own title. */}
+      {!session && !room && <AiWorkHeader />}
       <aside
         aria-label="Sessions and rooms"
         className={cn(
@@ -118,6 +157,7 @@ export function LiveHub() {
               (m) => m.conversation_id === directRoomId && session.bindingIds.includes(m.member_id),
             )}
             nowMs={nowMs}
+            layout={layout}
             onBack={() => select(null)}
             onDirectRoomCreated={(id) => {
               setCreatedDirect((cur) => ({ ...cur, [session.address]: id }));
@@ -132,6 +172,7 @@ export function LiveHub() {
             agentInfo={agentInfo}
             sessions={sessions}
             nowMs={nowMs}
+            layout={layout}
             onBack={() => select(null)}
             onOpenSession={(address) => select({ kind: "session", address })}
             onChanged={refresh}
@@ -139,9 +180,9 @@ export function LiveHub() {
         ) : selection ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-sm text-muted-foreground">
             {loading || !loaded ? "Loading" : selection.kind === "session" ? "This session is not in your recent sessions." : "This room is not in your inbox."}
-            <button type="button" className="underline" onClick={() => select(null)}>
+            <Button variant="quiet" onClick={() => select(null)}>
               Back to Live
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">

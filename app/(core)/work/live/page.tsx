@@ -8,11 +8,10 @@ export function generateMetadata() {
 
 export default function WorkLivePage() {
   return (
-    <>
-      <AiWorkHeader />
-      <Suspense>
-        <LiveHub />
-      </Suspense>
-    </>
+    // LiveHub renders the AI Work header itself: a selected session or room
+    // puts its title in the header's left slot.
+    <Suspense fallback={<AiWorkHeader />}>
+      <LiveHub />
+    </Suspense>
   );
 }
