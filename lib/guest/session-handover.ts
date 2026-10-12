@@ -10,6 +10,8 @@
 import "server-only";
 
 import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { createGuestHandover, type GuestStore } from "@ai-matrx/auth/guest";
 
 import { createAdminClient } from "@/utils/supabase/adminClient";
@@ -62,9 +64,19 @@ const handover = createGuestHandover({
   carrierCookieName: GUEST_VISITOR_CARRIER_COOKIE,
   cookies: () => cookies(),
   store,
-  supabase: {
-    url: process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    publishableKey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY as string,
+  // The anonymous JWT in this very request is the proof of possession: verified locally, never `getUser()`.
+  async readGuestClaims(jar) {
+    const guest = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY as string,
+      {
+        cookieOptions: { name: GUEST_AUTH_COOKIE },
+        cookies: { getAll: () => jar.getAll(), setAll: () => undefined },
+      },
+    );
+    const { data } = await getClaimsUser(guest);
+    const user = data.user as { id: string; is_anonymous?: boolean } | null;
+    return user ? { sub: user.id, is_anonymous: user.is_anonymous } : null;
   },
   secureCookies: process.env.NODE_ENV === "production",
 });
