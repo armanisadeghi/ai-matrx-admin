@@ -51,6 +51,7 @@ import type {
   SelectionMap,
 } from "../../hooks/useContextBuilder";
 import { AuthorityTierBadge } from "../sources/AuthorityTierBadge";
+import { ReadingSetSwitches } from "./ReadingSetSwitches";
 
 /**
  * Kinds where ONE item can be enormous, so the useful control is length-per-item
@@ -369,27 +370,11 @@ export function ResourcePicker({
                         )}
                         {annotationTotals && deliversDirect && (
                           <>
-                            {([
-                              { key: "comments", label: "Comments", count: annotationTotals.open, on: sel.comments !== false, hint: "Open comment threads ride under each item. Resolved ones never do." },
-                              { key: "notes", label: "My notes", count: annotationTotals.notes, on: sel.notes === true, hint: "Your own private highlights and notes ride under each item." },
-                            ] as const).map((toggle) => (
-                              <button
-                                key={toggle.key}
-                                type="button"
-                                aria-pressed={toggle.on}
-                                title={toggle.hint}
-                                onClick={() => onPatchKind(def.key, { [toggle.key]: !toggle.on })}
-                                className={cn(
-                                  "inline-flex h-5 items-center gap-1 rounded-full border px-2 text-[10px] tabular-nums transition-colors",
-                                  toggle.on
-                                    ? "border-primary/40 bg-primary/10 text-foreground"
-                                    : "border-border/60 text-muted-foreground hover:text-foreground",
-                                )}
-                              >
-                                <MessageSquareText className="h-2.5 w-2.5" aria-hidden />
-                                {toggle.label} {toggle.count}
-                              </button>
-                            ))}
+                            <ReadingSetSwitches
+                              counts={annotationTotals}
+                              value={{ comments: sel.comments !== false, notes: sel.notes === true }}
+                              onChange={(next) => onPatchKind(def.key, next)}
+                            />
                           </>
                         )}
                         {sel.mode === "explicit" ? (

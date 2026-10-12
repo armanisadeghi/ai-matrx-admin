@@ -66,7 +66,9 @@ import {
   domainOutputHref,
 } from "./outputDefinitions";
 import { getBundleBySlug, getResourceManifest } from "../../service/resources";
-import { resolveBundle } from "../../resources/resolve";
+import { planResolution, resolveBundle } from "../../resources/resolve";
+import { kindDef } from "../../resources/catalog";
+import { ReadingSetSwitches } from "../resources/ReadingSetSwitches";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ReadFailure } from "@ai-matrx/design-system";
@@ -138,6 +140,10 @@ export default function OutputsStudio() {
     key: string;
     error: unknown;
   } | null>(null);
+  // What the report's reading set adds for the publishing generators — the
+  // same switches the Context picker has (comments on, own notes off).
+  const [reportAnnotations, setReportAnnotations] = useState({ comments: true, notes: false });
+  const [reportCounts, setReportCounts] = useState<{ open: number; notes: number } | null>(null);
   const reportKey = `${topicId}:${reportAttempt}`;
   const reportError =
     reportFailure && reportFailure.key === reportKey
@@ -156,8 +162,28 @@ export default function OutputsStudio() {
         );
         if (bundle) {
           const manifest = await getResourceManifest(topicId);
-          const resolved = await resolveBundle(manifest, bundle);
+          const withSwitches = {
+            ...bundle,
+            selectors: bundle.selectors.map((selector) =>
+              kindDef(selector.kind)?.annotationToken ? { ...selector, annotations: reportAnnotations } : selector,
+            ),
+          };
+          const resolved = await resolveBundle(manifest, withSwitches);
           if (cancelled) return;
+          // Counts for the record(s) the report actually came from.
+          const used = new Set(resolved.report.perKind.filter((k) => k.included > 0).map((k) => k.kind));
+          const counts = { open: 0, notes: 0 };
+          for (const entry of planResolution(manifest, withSwitches).planned) {
+            if (!used.has(entry.kind) || !kindDef(entry.kind)?.annotationToken) continue;
+            for (const item of entry.items) {
+              const c = manifest.annotationCounts?.get(item.id);
+              if (c) {
+                counts.open += c.open;
+                counts.notes += c.notes;
+              }
+            }
+          }
+          setReportCounts(manifest.annotationCounts ? counts : null);
           const md = resolved.variables.research_report ?? "";
           if (md.trim()) {
             setReportMarkdown(md);
@@ -219,7 +245,7 @@ export default function OutputsStudio() {
     return () => {
       cancelled = true;
     };
-  }, [topicId, reportKey]);
+  }, [topicId, reportKey, reportAnnotations]);
 
   const hasReport = reportMarkdown.trim().length > 0;
   const outputs = useMemo(() => parseOutputs(topic?.outputs), [topic?.outputs]);
@@ -268,6 +294,13 @@ export default function OutputsStudio() {
               <code>migrations/research_system_context_bundles.sql</code> to
               restore the canonical path.
             </span>
+          </div>
+        )}
+
+        {hasReport && reportCounts && (reportCounts.open > 0 || reportCounts.notes > 0) && (
+          <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-border/50 bg-card/40 px-3 py-2">
+            <span className="type-meta text-muted-foreground">With the report</span>
+            <ReadingSetSwitches counts={reportCounts} value={reportAnnotations} onChange={setReportAnnotations} />
           </div>
         )}
 
