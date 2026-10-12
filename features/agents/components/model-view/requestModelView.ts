@@ -60,5 +60,13 @@ export async function requestModelView(
   if (result.error) {
     throw new Error(getUserMessage(result.error));
   }
-  return result.data as ModelViewPreview;
+  const data = result.data as ModelViewPreview | null;
+  // A server older than the capture door answers 200 without the captured request:
+  // say so rather than draw an empty view.
+  if (!data || typeof data !== "object" || !("request" in data) || !data.request) {
+    throw new Error(SERVER_BEHIND_MESSAGE);
+  }
+  return data;
 }
+
+export const SERVER_BEHIND_MESSAGE = "This server can't capture the request yet.";
