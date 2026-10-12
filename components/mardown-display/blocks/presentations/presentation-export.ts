@@ -43,17 +43,16 @@ export const exportToPDF = async (
     try {
         const { filename = presentationTitle, quality = 2 } = options;
 
-        // The capture engine loads its renderers on first use.
-        const { elementsToPdf } = await import('@ai-matrx/alchemy/operate/capture');
-
-        // Landscape A4 (standard presentation size); each slide fills its page.
-        const pdf = await elementsToPdf(slideElements, {
-            orientation: 'landscape',
-            unit: 'mm',
-            format: [297, 210],
-            capture: { scale: quality, useCORS: true, logging: false, backgroundColor: '#ffffff' },
-            page: { imageType: 'PNG', placement: 'fill' },
-        });
+        // A slide is a picture of a surface, so it goes through the browser's own renderer
+        // (gradient text and Tailwind 4 colours survive; html2canvas flattens them), then one PDF
+        // page each on a 16:9 page (297 x 167 mm) so filling the page never stretches the slide.
+        const { renderElement, pagesToPdf } = await import('@ai-matrx/alchemy/operate/capture');
+        const pages = [];
+        for (const el of slideElements) {
+            const image = await renderElement(el, { pixelRatio: quality, backgroundColor: '#ffffff', cacheBust: true });
+            pages.push({ image, imageType: 'JPEG' as const, quality: 0.92, placement: 'fill' as const });
+        }
+        const pdf = await pagesToPdf(pages, { orientation: 'landscape', unit: 'mm', format: [297, 167.0625] });
         downloadFile(`${filename}.pdf`, pdf, 'application/pdf');
 
         return {
