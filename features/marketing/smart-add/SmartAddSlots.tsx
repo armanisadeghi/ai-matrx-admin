@@ -289,7 +289,7 @@ function LogoChoice({
 }) {
   const picked = decision === "preferred";
   return (
-    <figure className={`flex w-24 flex-col items-center gap-1 animate-in fade-in duration-300 ${decision === "no" ? "opacity-40" : ""}`}>
+    <figure className={`flex w-[5.25rem] sm:w-24 flex-col items-center gap-1 animate-in fade-in duration-300 ${decision === "no" ? "opacity-40" : ""}`}>
       {/* ui-exception: an image tile you pick; the 28px Button cannot hold a 96px image */}
       <button
         type="button"
@@ -297,7 +297,7 @@ function LogoChoice({
         aria-pressed={picked}
         aria-label={`Use this logo (${whereOf(item)})`}
         onClick={onPick}
-        className={`relative flex size-24 items-center justify-center overflow-hidden rounded-lg border bg-white p-2 dark:bg-zinc-100 ${
+        className={`relative flex size-[5.25rem] sm:size-24 items-center justify-center overflow-hidden rounded-lg border bg-white p-2 dark:bg-zinc-100 ${
           picked ? "border-primary ring-2 ring-primary" : "border-border"
         }`}
         data-testid="smart-add-logo"
