@@ -160,7 +160,8 @@ export function workbookPreviewSvg(snapshot: unknown): string {
   }
   let used = 0;
   for (let c = 0; c <= maxCol; c++) used += colW(c);
-  const span = Math.min(Math.max(used + 12, dcw * 5), 1100);
+  // Google's tiles show the top-left of the sheet at a readable size, not the whole width.
+  const span = Math.min(Math.max(used + 12, dcw * 5), 640);
   const scale = THUMB_WIDTH / span;
 
   const out: string[] = [];
@@ -270,6 +271,21 @@ export function documentPreviewSvg(snapshot: unknown): string {
   const runs = [...(doc.body?.textRuns ?? [])].sort((a, b) => a.st - b.st);
   const tables = doc.body?.tables ?? [];
   const styleAt = (i: number): TextStyle => runs.find((r) => i >= r.st && i < r.ed)?.ts ?? {};
+  /** The style most of a paragraph's characters carry (a bold lead-in does not make the line bold). */
+  const dominantStyle = (from: number, to: number): TextStyle => {
+    const counts = new Map<string, { n: number; ts: TextStyle }>();
+    for (let i = from; i < to; i++) {
+      if (/\s/.test(stream[i] ?? "")) continue;
+      const ts = styleAt(i);
+      const k = JSON.stringify(ts);
+      const e = counts.get(k) ?? { n: 0, ts };
+      e.n++;
+      counts.set(k, e);
+    }
+    let best: { n: number; ts: TextStyle } | null = null;
+    for (const e of counts.values()) if (!best || e.n > best.n) best = e;
+    return best?.ts ?? {};
+  };
   const out: string[] = [`<rect width="${THUMB_WIDTH}" height="${THUMB_HEIGHT}" fill="#ffffff"/>`];
 
   let y = mt;
@@ -308,7 +324,7 @@ export function documentPreviewSvg(snapshot: unknown): string {
       continue;
     }
     const text = stream.slice(start, end).replace(CONTROL, "");
-    const st = styleAt(start + Math.max(0, stream.slice(start, end).search(/\S/)));
+    const st = dominantStyle(start, end);
     const ps = para.paragraphStyle ?? {};
     const fsPt = st.fs ?? 11;
     const fs = fsPt * 1.333 * scale;
