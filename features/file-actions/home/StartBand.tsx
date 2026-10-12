@@ -6,6 +6,9 @@
  * (remembered per person, synced: `userPreferences.lists.fileHomeTemplatesHidden`). Our own doors
  * (a table, an upload) sit in the same row as tiles of the same shape, after the templates.
  * On a phone the row scrolls sideways, like Google's.
+ *
+ * In the Microsoft 365 look (read from the home, `useHomeLook`) the same band is Office's "Create"
+ * row: "Blank workbook / document / presentation" first, "More templates" for the gallery.
  */
 
 import type { ReactNode } from "react";
@@ -23,6 +26,7 @@ import { setPreference } from "@/lib/redux/preferences/userPreferencesSlice";
 import type { RootState } from "@/lib/redux/store";
 import { cn } from "@/lib/utils";
 import type { HomeKind } from "./home-kinds";
+import { useHomeLook } from "./home-look";
 
 export function useTemplatesHidden(kind: HomeKind["kind"]): [boolean, (next: boolean) => void] {
   const dispatch = useAppDispatch();
@@ -89,13 +93,20 @@ export function BlankTile({
   creating: boolean;
   shape?: "page" | "slide";
 }) {
+  const { look, kind } = useHomeLook();
+  const office = look === "microsoft";
   return (
     <StartTile
       shape={shape}
-      label="Blank"
+      label={office && kind ? `Blank ${kind.startNoun}` : "Blank"}
       busy={creating}
       onClick={onCreate}
-      face={<Plus className="size-12 stroke-[1.25] text-primary" aria-hidden />}
+      face={
+        <Plus
+          className={cn("size-12 stroke-[1.25]", office ? "text-[var(--office-accent)]" : "text-primary")}
+          aria-hidden
+        />
+      }
     />
   );
 }
@@ -121,10 +132,15 @@ export function StartBand({
   extraTiles?: ReactNode;
 }) {
   const [hidden, setHidden] = useTemplatesHidden(kind.kind);
-  const title = `Start a new ${kind.startNoun}`;
+  const office = useHomeLook().look === "microsoft";
+  const title = office ? "Create" : `Start a new ${kind.startNoun}`;
 
   return (
-    <section aria-label={title} className="border-b border-border bg-muted/50">
+    <section
+      id={`file-home-create-${kind.kind}`}
+      aria-label={title}
+      className={cn("scroll-mt-[var(--shell-header-h)] border-b border-border", office ? "bg-card" : "bg-muted/50")}
+    >
       <div className="mx-auto w-full max-w-[72rem] px-3 py-3 sm:px-6 sm:py-4">
         <div className="flex h-9 items-center gap-1">
           <h2 className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{title}</h2>
@@ -135,7 +151,7 @@ export function StartBand({
               icon={<ChevronsUpDown aria-hidden />}
               onClick={() => onGalleryOpenChange(!galleryOpen)}
             >
-              Template gallery
+              {office ? "More templates" : "Template gallery"}
             </Button>
           ) : null}
           <DropdownMenu>

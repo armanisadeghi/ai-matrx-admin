@@ -6,6 +6,9 @@
  * Created, Source), ⋮ last like Google's. Every column sorts and filters; right-click is the same
  * file menu as ⋮. ONE table for workbooks and documents (it replaced WorkbooksHubTable and
  * DocumentsHubTable).
+ *
+ * `columns="office"` is the Microsoft 365 look's order (Excel / Word on the web): Name, Opened,
+ * Owner first — the same columns, the same menus.
  */
 
 import type { ReactNode } from "react";
@@ -52,6 +55,7 @@ export function FileHomeTable<Row>({
   menuFor,
   sectionsFor,
   marksFor,
+  columns: columnSet = "google",
 }: {
   kind: HomeKind;
   items: Line<Row>[];
@@ -63,6 +67,8 @@ export function FileHomeTable<Row>({
   menuFor: (row: Row) => ReactNode;
   sectionsFor: (payload: FileMenuPayload<Row>) => MatrxTableMenuSection[];
   marksFor?: (row: Row, where: "card" | "table") => ReactNode;
+  /** Column order: Google's (Name, Owner, Last opened by me) or Office's (Name, Opened, Owner). */
+  columns?: "google" | "office";
 }) {
   const now = Date.now();
   const columns: MatrxColumnDef<Line<Row>>[] = [
@@ -90,7 +96,7 @@ export function FileHomeTable<Row>({
     },
     {
       id: "opened",
-      header: "Last opened by me",
+      header: columnSet === "office" ? "Opened" : "Last opened by me",
       accessorFn: (l) => opened.get(l.item.id) ?? "",
       sortValue: (l) => (opened.has(l.item.id) ? toEpochMs(opened.get(l.item.id)) : 0),
       filter: "date",
@@ -138,14 +144,23 @@ export function FileHomeTable<Row>({
     },
   ];
 
+  const ordered =
+    columnSet === "office"
+      ? ["name", "opened", "owner", "updated", "created", "source", "actions"].map((id) => {
+          const c = columns.find((col) => col.id === id)!;
+          // Office's list gives the name the room (a wide first column).
+          return id === "name" ? { ...c, width: 340 } : c;
+        })
+      : columns;
+
   return (
     <MatrxDataTable<Line<Row>>
-      key={sort}
-      tableId={`${kind.kind}s/home`}
+      key={`${columnSet}-${sort}`}
+      tableId={columnSet === "office" ? `${kind.kind}s/home-office` : `${kind.kind}s/home`}
       rowToken={kind.token}
       viewTabs={false}
       data={items}
-      columns={columns}
+      columns={ordered}
       getRowId={(l) => l.item.id}
       getRowHref={(l) => kind.href(l.item.id)}
       defaultSort={SORT_COLUMN[sort]}

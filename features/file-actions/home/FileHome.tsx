@@ -12,15 +12,21 @@
  *
  * The page keeps what is its own (load, create, import, the Google strip's data) and hands it in.
  * Every per-file action is the shared file menu (`useFileItemActions`), on ⋮ and on right-click.
+ *
+ * The Microsoft 365 look (the person's Office look setting, switched right here or in Settings) is
+ * a skin of this same home — Excel / Word / PowerPoint on the web's start page: a left app rail,
+ * "Create" with Blank workbook/document/presentation and the templates, Recent · Pinned · Shared
+ * with me tabs over a Name / Opened / Owner list, the app's colour and type. Same data, same menus.
  */
 
 import { useEffect, useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, FolderOpen, Star, Users } from "lucide-react";
+import { Check, FolderOpen, Home as HomeIcon, Plus, Star, Users } from "lucide-react";
+import type { CSSProperties } from "react";
 import { Spinner } from "@/components/ui/loaders/Spinner";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
-import { EmptyState, RegionSkeleton, SearchField, Select } from "@ai-matrx/design-system/controls";
+import { Button, EmptyState, RegionSkeleton, SearchField, Select, Tabs } from "@ai-matrx/design-system/controls";
 import { TapTargetButtonForGroup, TapTargetButtonGroup } from "@ai-matrx/design-system/tap-target";
 import {
   ArrowDownUpTapButton,
@@ -57,6 +63,10 @@ import {
   type HomeSortKey,
 } from "./recent";
 import { useRecordsOpened } from "./useRecordsOpened";
+import { HomeLookContext } from "./home-look";
+import { useOfficeLook } from "../skin/useOfficeLook";
+import { OfficeLookSwitch } from "../skin/OfficeLookSwitch";
+import { OFFICE_ACCENT } from "../skin/office-look";
 
 /** Google's owner filter, with our Starred and Trash beside it (same lists, same menu). */
 const SCOPE_OPTIONS: ReadonlyArray<{ value: FileScope; label: string }> = [
@@ -64,6 +74,15 @@ const SCOPE_OPTIONS: ReadonlyArray<{ value: FileScope; label: string }> = [
   { value: "mine", label: "Owned by me" },
   { value: "shared", label: "Not owned by me" },
   { value: "starred", label: "Starred" },
+  { value: "trash", label: "Trash" },
+];
+
+/** The Microsoft 365 look's tabs over the same lists (Office's Recent · Pinned · Shared with me). */
+const OFFICE_TABS: ReadonlyArray<{ value: FileScope; label: string }> = [
+  { value: "all", label: "Recent" },
+  { value: "starred", label: "Pinned" },
+  { value: "shared", label: "Shared with me" },
+  { value: "mine", label: "Owned by me" },
   { value: "trash", label: "Trash" },
 ];
 
@@ -138,7 +157,10 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
     { view: "cards", sort: "opened" },
     props.legacyViewPrefs,
   );
-  const view: "cards" | "table" = prefs.view === "table" ? "table" : "cards";
+  const [look] = useOfficeLook();
+  const office = look === "microsoft";
+  // Office's start page is a list; the Google look keeps the person's grid ⇄ list choice.
+  const view: "cards" | "table" = office || prefs.view === "table" ? "table" : "cards";
   const sort: HomeSortKey = SORT_KEYS.has(prefs.sort) ? (prefs.sort as HomeSortKey) : "opened";
   const trashed = scope === "trash";
 
@@ -164,22 +186,42 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
     startTransition(() => router.push(kind.href(id)));
   };
 
-  const heading = trashed ? "Trash" : scope === "starred" ? `Starred ${kind.pluralNoun}` : `Recent ${kind.pluralNoun}`;
+  const heading = trashed
+    ? "Trash"
+    : scope === "starred"
+      ? office
+        ? `Pinned ${kind.pluralNoun}`
+        : `Starred ${kind.pluralNoun}`
+      : `Recent ${kind.pluralNoun}`;
+  const accent = OFFICE_ACCENT[kind.kind];
+  const scrollToCreate = () =>
+    document.getElementById(`file-home-create-${kind.kind}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
   const showList = !loading && !error && sorted.length > 0;
 
   const home = (
-    <>
+    <HomeLookContext.Provider value={{ look, kind }}>
     {props.header}
-    <div className="h-full overflow-y-auto scrollbar-none" data-file-home={kind.kind}>
+    <div
+      className={cn(
+        "flex h-full",
+        office &&
+          "[--office-accent:var(--office-accent-light)] [font-family:'Segoe_UI',system-ui,sans-serif] dark:[--office-accent:var(--office-accent-dark)]",
+      )}
+      style={office ? ({ "--office-accent-light": accent.light, "--office-accent-dark": accent.dark } as CSSProperties) : undefined}
+      data-office-look={look}
+    >
+    {office ? <OfficeAppRail kind={kind} onCreate={scrollToCreate} onPickFile={props.onPickFile} /> : null}
+    <div className="h-full min-w-0 flex-1 overflow-y-auto scrollbar-none" data-file-home={kind.kind}>
       <div className="pt-[var(--shell-header-h)]">
-        <div className="mx-auto w-full max-w-[72rem] px-3 pb-2 pt-1 sm:px-6">
+        <div className="mx-auto flex w-full max-w-[72rem] items-center gap-2 px-3 pb-2 pt-1 sm:px-6">
           <SearchField
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={`Search ${kind.pluralNoun}`}
             aria-label={`Search ${kind.pluralNoun}`}
-            className="mx-auto w-full max-w-2xl"
+            className="mx-auto w-full min-w-0 max-w-2xl"
           />
+          <OfficeLookSwitch className="shrink-0" />
         </div>
         {trashed ? null : props.startBand}
         {trashed ? null : props.googleStrip ? (
@@ -188,16 +230,32 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
 
         <section aria-label={heading} className="mx-auto w-full max-w-[72rem] px-3 pb-6 pt-3 sm:px-6">
           <div className="flex h-10 items-center gap-2">
-            <h2 className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{heading}</h2>
-            <Select
-              aria-label="Show"
-              value={scope}
-              options={SCOPE_OPTIONS}
-              onValueChange={(v) => onScopeChange(v)}
-              align="end"
-            />
+            {office && !isPhone ? (
+              <>
+                <h2 className="sr-only">{heading}</h2>
+                <Tabs
+                  aria-label="Show"
+                  value={scope}
+                  onValueChange={(v) => onScopeChange(v)}
+                  data={OFFICE_TABS}
+                  rule={false}
+                  className="min-w-0 flex-1"
+                />
+              </>
+            ) : (
+              <>
+                <h2 className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{heading}</h2>
+                <Select
+                  aria-label="Show"
+                  value={scope}
+                  options={office ? OFFICE_TABS : SCOPE_OPTIONS}
+                  onValueChange={(v) => onScopeChange(v)}
+                  align="end"
+                />
+              </>
+            )}
             <TapTargetButtonGroup surface="solid">
-              {isPhone ? null : view === "cards" ? (
+              {isPhone || office ? null : view === "cards" ? (
                 <ListTapButton variant="group" ariaLabel="List view" tooltip="List view" onClick={() => setPrefs({ view: "table" })} />
               ) : (
                 <LayoutGridTapButton variant="group" ariaLabel="Grid view" tooltip="Grid view" onClick={() => setPrefs({ view: "cards" })} />
@@ -289,6 +347,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
               menuFor={(row) => menuFor(row, trashed)}
               sectionsFor={(payload) => sectionsFor(payload, trashed)}
               marksFor={props.marksFor}
+              columns={office ? "office" : "google"}
             />
           ) : null}
 
@@ -322,9 +381,29 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
         </section>
       </div>
     </div>
-    </>
+    </div>
+    </HomeLookContext.Provider>
   );
   return props.wrap ? props.wrap({ visible: visibleRows, query, sort, view }, home) : home;
+}
+
+/** The Microsoft 365 look's left app rail (Office on the web): the app tile, Home, Create, Open. */
+function OfficeAppRail({ kind, onCreate, onPickFile }: { kind: HomeKind; onCreate: () => void; onPickFile?: () => void }) {
+  const toTop = () =>
+    document.querySelector(`[data-file-home="${kind.kind}"]`)?.scrollTo({ top: 0, behavior: "smooth" });
+  return (
+    <nav
+      aria-label="App"
+      className="hidden w-14 shrink-0 flex-col items-center gap-1 border-r border-border bg-card pt-[calc(var(--shell-header-h)+0.5rem)] md:flex"
+    >
+      <span className="mb-2 flex size-9 items-center justify-center rounded-md bg-[var(--office-accent)] text-white" aria-hidden>
+        <kind.Icon className="size-5" />
+      </span>
+      <Button variant="quiet" icon={<HomeIcon />} aria-label="Home" title="Home" aria-current="page" onClick={toTop} />
+      <Button variant="quiet" icon={<Plus />} aria-label="Create" title="Create" onClick={onCreate} />
+      {onPickFile ? <Button variant="quiet" icon={<FolderOpen />} aria-label="Open a file" title="Open a file" onClick={onPickFile} /> : null}
+    </nav>
+  );
 }
 
 function Navigating() {
