@@ -59,6 +59,7 @@ describe("the expanded action set", () => {
   const EVERY_SOURCE = [
     "copy-markdown",
     "copy-plain-text",
+    "copy-formatted",
     "copy-html-source",
     "download-html",
     "download-pdf",

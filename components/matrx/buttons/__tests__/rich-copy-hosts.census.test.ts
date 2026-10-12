@@ -1,7 +1,7 @@
 // GUARD (1): every rich-content surface copies through THE one copy module
 // (`copyRichContent` in components/agent-copy/copy-commands.ts, which writes through kit's `copyText`/`copyRich`:
 // ONE clean plain flavor per click — Copy = the person's default flavor (markdown, or readable text),
-// Copy markdown, Copy plain text; Formatted HTML is the Alchemy palette's own tile). A raw
+// and the three ways — Copy as Markdown, Copy content, Copy formatted (COPY_LABELS, 2026-10-11)). A raw
 // `navigator.clipboard.write*` in a rich-content host is a second copy that
 // gives the person one flavor and no choice (Arman, 2026-10-04).
 //
@@ -108,7 +108,7 @@ describe("rich-content copy goes through the one module", () => {
 //   D. inside one host, every copy copies the SAME source (button = menu).
 // ═══════════════════════════════════════════════════════════════════════════
 
-// CopyMenuButton / ContentActions (2026-10-08): one click raw, then Copy raw · Copy formatted · Copy for AI.
+// CopyMenuButton / ContentActions (2026-10-08; names 2026-10-11): one click = the default, then the three ways + Copy for AI.
 const SPLIT = /\b(CopySplitButton|RichCopySplit|TextCopySplit|TextCopyChevron|CopyMenuButton|ContentActions)\b/;
 const ALCHEMY_TRIGGER = /<(CopyButtons|MatrxCopyMenu|ContentTransferMenu|AlchemyDocumentMenu)\b([\s\S]*?)\/>/g;
 
@@ -122,7 +122,7 @@ const ONE_FLAVOR: Record<string, string> = {
   "features/notes/components/NoteContentEditor.tsx": "Share → clipboard row; the note's split Copy sits in its bar",
   "features/notes/components/NoteTabItem.tsx": "the tab's menu row; the note's split Copy sits in its bar",
   "features/rich-document/actions/handlers/copy.ts":
-    "the registry's Copy row; its siblings Copy markdown / Copy plain text (transfer.ts) sit beside it in the same menu",
+    "the registry's Copy row; its siblings, the three ways to copy (transfer.ts) sit beside it in the same menu",
 };
 
 /** Files whose copies copy different sources on purpose — file → why. */
@@ -185,11 +185,13 @@ describe("one click: markdown or plain text, and the button equals the menu", ()
     expect(fs.readFileSync(path.join(INSTALLED, "copy/ContentActions.js"), "utf8")).toMatch(/CopyMenuButton/);
     expect(bar).toMatch(/"copy-markdown"/);
     expect(bar).toMatch(/"copy-plain-text"/);
+    expect(bar).toMatch(/"copy-formatted"/);
     expect(bar).toMatch(/triggerHidden/);
     // …and those two rows are the registry's "Copy as" rows, over the one cleaned source.
     const transfer = fs.readFileSync(path.join(ROOT, "features/rich-document/actions/handlers/transfer.ts"), "utf8");
     expect(transfer).toMatch(/id: "copy-markdown"[\s\S]*?copyRichContent\(contentForDestination\(ctx\), "markdown"\)/);
     expect(transfer).toMatch(/id: "copy-plain-text"[\s\S]*?copyRichContent\(contentForDestination\(ctx\), "text"\)/);
+    expect(transfer).toMatch(/id: "copy-formatted"[\s\S]*?copyRichContent\(contentForDestination\(ctx\), "formatted"\)/);
     const copy = fs.readFileSync(path.join(ROOT, "features/rich-document/actions/handlers/copy.ts"), "utf8");
     expect(copy).toMatch(/id: "copy",[\s\S]*?copyRichContent\(contentForDestination\(ctx\), "default"\)/);
   });
@@ -351,7 +353,7 @@ export function rawCopyOnMarkdown(root: string, allowed: Record<string, string>)
 
 /** F: hosts that must carry the split Copy and not the old trigger. */
 /**
- * THE COPY MENU IS TWO ROWS (Arman, 2026-10-07): "Copy markdown" and "Copy plain text", nothing else.
+ * THE COPY MENU IS THREE ROWS (Arman, 2026-10-11): "Copy as Markdown", "Copy content", "Copy formatted".
  * The 0.2.40 split took a `mountMore` slot and drew the whole Alchemy palette (Formatted, JSON,
  * download, AI) under the chevron; it lives behind Export… now. Every file that builds or hosts the
  * split is read for a way to hang rows under the chevron again.
@@ -585,3 +587,82 @@ describe("J. the surfaces the first sweeps missed", () => {
 
 /** Markdown renderers whose raw clipboard write is not a copy of the markdown — file → why. */
 const RAW_ON_MARKDOWN_OK: Record<string, string> = {};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// THE THREE NAMES (Arman, 2026-10-11: "Copy markdown" and "Copy plain text" were confusing and
+// "neither of them gives me the actual markdown"). Every copy of rich content offers exactly
+// Copy as Markdown · Copy content · Copy formatted, named by rich-content's COPY_LABELS. The old
+// words are refused anywhere a rich-content host lives; a file that copies something that is not
+// rich content (raw JSON, a scrape, a cleaner's output) is listed WITH its reason.
+// ═══════════════════════════════════════════════════════════════════════════
+
+const OLD_COPY_WORDS = /["'`](Copy plain text|Copy raw|Copy markdown|Copy text|Strip markdown|Raw Text|For Google Docs & Gmail|For Microsoft Office)["'`]/;
+const OLD_WORDS_NOT_RICH_CONTENT: Record<string, string> = {
+  "features/message-templates/admin/MessageTemplateManager.tsx": "\"Copy raw\" copies the raw API response JSON",
+  "components/admin/ContentBlocksManager.tsx": "\"Copy raw\" copies the raw API response JSON",
+  "components/markdown-studio/lab/BlockProcessingPanel.tsx": "\"Copy raw\" copies a lab's raw server output",
+  "app/(dev)/demos/context-menu-designs/_components/answer-menu/ChatAnswerMenuProposal.tsx": "a frozen design proposal (demo), not a live menu",
+  "features/scraper/parts/ScraperFloatingWorkspace.tsx": "\"Copy text\" copies a scraped page's plain text — no markup",
+  "app/(admin)/administration/utilities/utils/text-cleaner/components/TextCleanerComponent.tsx": "a text cleaner's plain output",
+  "features/rag/components/library/StageStatusPills.tsx": "\"Raw Text\" names an ingestion stage, not a copy",
+  "features/pdf-extractor/components/PdfExtractorWorkspace.tsx": "\"Raw Text\" names a view tab, not a copy",
+};
+const OLD_WORD_ROOTS = [
+  "features",
+  "components",
+  "app",
+  "lib",
+  "providers",
+  "../aidream/apps/shared/rich-content/src",
+  "../aidream/apps/shared/chat/src",
+  "../aidream/apps/shared/alchemy/src",
+  "../aidream/apps/shared/context-menu/src",
+  "../aidream/apps/shared/rich-editor/src",
+];
+
+export function oldCopyWords(root: string, dirs: readonly string[], allow: Record<string, string>): string[] {
+  const out: string[] = [];
+  const walk = (rel: string) => {
+    const abs = path.join(root, rel);
+    if (!fs.existsSync(abs)) return;
+    for (const entry of fs.readdirSync(abs, { withFileTypes: true })) {
+      const child = path.join(rel, entry.name);
+      if (entry.isDirectory()) {
+        if (/^(node_modules|dist|__tests__|\.next.*)$/.test(entry.name)) continue;
+        walk(child);
+      } else if (/\.(tsx?|mjs)$/.test(entry.name) && !/\.(test|spec)\.tsx?$/.test(entry.name)) {
+        if (allow[child]) continue;
+        const src = fs.readFileSync(path.join(root, child), "utf8");
+        src.split("\n").forEach((line, i) => {
+          if (/^\s*(\/\/|\*)/.test(line)) return;
+          const m = OLD_COPY_WORDS.exec(line);
+          if (m) out.push(`${child}:${i + 1} ${m[1]}`);
+        });
+      }
+    }
+  };
+  for (const dir of dirs) walk(dir);
+  return out.sort();
+}
+
+describe("THE THREE NAMES: Copy as Markdown · Copy content · Copy formatted", () => {
+  test("the installed copy module names exactly the three", () => {
+    const commands = fs.readFileSync(path.join(INSTALLED, "copy/copy-commands.js"), "utf8");
+    for (const name of ["Copy as Markdown", "Copy content", "Copy formatted"]) expect(commands).toContain(`"${name}"`);
+  });
+
+  test("no rich-content host offers the old words", () => {
+    expect(oldCopyWords(ROOT, OLD_WORD_ROOTS, OLD_WORDS_NOT_RICH_CONTENT)).toEqual([]);
+  });
+
+  test("the old-words census can fail", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "old-copy-words-"));
+    fs.mkdirSync(path.join(dir, "features"));
+    fs.writeFileSync(path.join(dir, "features/Bar.tsx"), 'const rows = [{ label: "Copy plain text" }, { label: "Copy as Markdown" }];\n');
+    expect(oldCopyWords(dir, ["features"], {})).toEqual(["features/Bar.tsx:1 Copy plain text"]);
+  });
+
+  test("every allow-listed file still exists (a stale entry is a hole)", () => {
+    for (const rel of Object.keys(OLD_WORDS_NOT_RICH_CONTENT)) expect(fs.existsSync(path.join(ROOT, rel))).toBe(true);
+  });
+});

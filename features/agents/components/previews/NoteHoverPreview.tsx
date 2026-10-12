@@ -6,8 +6,7 @@
  * already in the notes slice once the user has interacted with them.
  */
 
-import { useClipboard } from "@ai-matrx/kit/clipboard";
-import { copyNotify } from "@/lib/clipboard/copy-notify";
+import { copyRichContent, defaultCopyTitle } from "@ai-matrx/rich-content/copy/copy-commands";
 import { useState } from "react";
 import Link from "next/link";
 import {
@@ -37,9 +36,6 @@ interface NotePreviewContentProps {
 }
 
 export function NotePreviewContent({ noteId, onOpen }: NotePreviewContentProps) {
-  const { copyText } = useClipboard({
-    notify: copyNotify,
-  });
   const note = useAppSelector(selectNoteById(noteId));
   const homeLabel = useNoteHomes().labelOf(note?.home_scope_id);
   const [copied, setCopied] = useState(false);
@@ -47,7 +43,7 @@ export function NotePreviewContent({ noteId, onOpen }: NotePreviewContentProps) 
   const handleCopy = async () => {
     const text = note?.content ?? "";
     if (!text) return;
-    if (!(await copyText(text, "Note text copied"))) return;
+    if (!(await copyRichContent(text, "default", { toast: "Note copied" }))) return;
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
@@ -102,9 +98,10 @@ export function NotePreviewContent({ noteId, onOpen }: NotePreviewContentProps) 
           icon={copied ? <Check className="text-success" /> : <Copy />}
           variant="quiet"
           onClick={handleCopy}
+          title={defaultCopyTitle()}
           disabled={!content}
         >
-          {copied ? "Copied" : "Copy text"}
+          {copied ? "Copied" : "Copy"}
         </Button>
         <div className="ml-auto">
           {onOpen ? (

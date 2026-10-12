@@ -470,7 +470,7 @@ export function OfficePreview({
               ) : (
                 <Copy className="h-3 w-3" />
               )}
-              {copied ? "Copied" : "Copy markdown"}
+              {copied ? "Copied" : "Copy as Markdown"}
             </button>
           )}
         </span>
