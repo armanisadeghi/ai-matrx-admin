@@ -1,12 +1,6 @@
 import type { TypedStreamEvent } from "@ai-matrx/agents/generated/stream-events";
 import type { AssignmentProgressData } from "@ai-matrx/agents/generated/stream-events";
-import {
-  callAgentAssignmentSession,
-  callAgentAssignments,
-  callAgentStart,
-  callCancelAgentAssignmentSession,
-  type AgentAssignmentRunBody,
-} from "@/lib/api/call-api";
+import { callAgentAssignmentSession, callAgentAssignments, callAgentStart, callCancelAgentAssignmentSession, type AgentAssignmentRunBody } from "@/lib/api/run-helpers";
 import type { AppThunk } from "@/lib/redux/store";
 
 import {

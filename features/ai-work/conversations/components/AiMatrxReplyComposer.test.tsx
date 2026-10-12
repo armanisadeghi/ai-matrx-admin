@@ -24,8 +24,10 @@ import { createRoot, type Root } from "react-dom/client";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 jest.mock("@/lib/api/call-api", () => ({
-  callConversationContinue: jest.fn(),
   callApi: jest.fn(),
+}));
+jest.mock("@/lib/api/run-helpers", () => ({
+  callConversationContinue: jest.fn(),
 }));
 // The person's per-chat tool decisions, as the store holds them. Empty by
 // default (the frozen body carries no `user`); one test fills it.
@@ -39,7 +41,8 @@ jest.mock("@/lib/redux/hooks", () => ({
   useAppStore: () => ({ getState: () => mockStoreState }),
 }));
 
-import { callApi, callConversationContinue } from "@/lib/api/call-api";
+import { callApi } from "@/lib/api/call-api";
+import { callConversationContinue } from "@/lib/api/run-helpers";
 import { AiMatrxReplyComposer } from "./AiMatrxReplyComposer";
 
 (

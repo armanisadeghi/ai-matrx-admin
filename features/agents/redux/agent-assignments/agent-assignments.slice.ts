@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-import type { AgentAssignmentBatchResult } from "@/lib/api/call-api";
+import type { AgentAssignmentBatchResult } from "@/lib/api/run-helpers";
 import type { RootState } from "@/lib/redux/rootReducer";
 
 export type AssignmentDemoMode =
