@@ -910,8 +910,7 @@ function NoManagerData({
           No managers assigned yet
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          The chart draws itself from who reports to whom. Once people have
-          managers, this fills in — nothing here has to be drawn by hand.
+          Assign managers and the chart draws itself.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Button
@@ -958,8 +957,7 @@ function NotEmployedOnDate({
           Not employed on {asOf ? formatFullDate(asOf) : "that date"}
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          The person you focused wasn&apos;t on the chart on this date. Their
-          employment dates are on their Job &amp; reporting tab.
+          Not on the chart this date; see Job &amp; reporting.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Button variant="primary" asChild>

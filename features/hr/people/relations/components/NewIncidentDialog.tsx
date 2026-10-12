@@ -279,9 +279,7 @@ export function NewIncidentDialog({
                   the subject&apos;s reach.
                 </p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  The person this is about will not be able to see this record,
-                  and nobody here can change that — not an HR owner, not an
-                  administrator, and not an emergency override.
+                  Nobody can change this: not HR owners, admins or an override.
                 </p>
               </div>
             </div>

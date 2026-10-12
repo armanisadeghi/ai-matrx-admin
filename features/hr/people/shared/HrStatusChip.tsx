@@ -94,7 +94,8 @@ export function HrStatusChip({
           : "border-destructive bg-destructive/10 text-destructive-ink",
         className,
       )}
-      title={known ? undefined : `Unrecognised status "${status}" — server bug (hr_l1_63).`}
+      // Unknown status = server bug hr_l1_63.
+      title={known ? undefined : `Unrecognised status "${status}"`}
     >
       {!known && (
         <TriangleAlert className="h-3 w-3 shrink-0" aria-hidden="true" />

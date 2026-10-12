@@ -29,6 +29,7 @@
 // code path that can render back what was typed. `autoComplete="off"` keeps the
 // browser from offering to remember it.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useState } from "react";
 import { Loader2, ShieldCheck } from "lucide-react";
 
@@ -162,8 +163,8 @@ export function SsnField({
       </div>
       {error ? <p className="text-sm text-destructive">{error} <ErrorAlchemyMenu error={error} /></p> : null}
       <p className="text-[0.6875rem] text-muted-foreground">
-        Sealed on the server the moment you save. Afterwards only the last four
-        digits are shown, and seeing the whole number takes a recorded reason.
+        After saving, only the last 4 digits show.{" "}
+        <InfoHint text="Sealed the moment you save; seeing the whole number requires a recorded reason." />
       </p>
     </div>
   );

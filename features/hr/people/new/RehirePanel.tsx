@@ -24,6 +24,7 @@
 // came from a spell that ended two years ago and a value somebody just confirmed
 // are different things, and only one of them has been checked.
 
+import { InfoHint } from "@/components/official/InfoHint";
 import Link from "next/link";
 import { AlertTriangle, History, Info } from "lucide-react";
 
@@ -89,19 +90,18 @@ export function RehirePanel({
         <History className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
         <div className="min-w-0 space-y-0.5">
           <h3 className="text-sm font-semibold text-foreground">
-            This person has worked here before
+            This person has worked here before{" "}
+            <InfoHint text="Training, credentials and benefits follow the person; timesheets, leave and reviews stay with the old spell." />
           </h3>
           <p className="text-xs text-muted-foreground">
-            They keep the record they already have; this adds a second employment
-            spell to it. Their training transcript, credentials and benefits
-            follow the person. Timesheets, leave and reviews belong to the old
-            spell and stay there.
-            {last?.termination_date
-              ? ` They last left on ${formatFullDate(last.termination_date)};
-                 whether any sick-leave balance is reinstated is decided by the
-                 leave rules for their jurisdiction, not here.`
-              : ""}
+            Adds a second employment spell to their existing record.
           </p>
+          {last?.termination_date ? (
+            <p className="text-xs text-muted-foreground">
+              Last left {formatFullDate(last.termination_date)}.{" "}
+              <InfoHint text="Whether any sick-leave balance is reinstated follows their jurisdiction's leave rules." />
+            </p>
+          ) : null}
         </div>
         {employeeId ? (
           <Link

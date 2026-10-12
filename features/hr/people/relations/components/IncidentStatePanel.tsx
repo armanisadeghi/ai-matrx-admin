@@ -78,8 +78,7 @@ export function IncidentStatePanel({
     const ok = await confirm({
       title: "Set this record aside?",
       description:
-        "It stays on file and stays readable — it will show as set aside, with your reason. " +
-        "Nobody who was named on it gets their access back, and there is no way to delete it.",
+        "It stays on file, readable and marked set aside with your reason. Named people don't regain access, and it can't be deleted.",
       confirmLabel: "Set it aside",
       variant: "destructive",
     });
@@ -194,11 +193,10 @@ export function IncidentStatePanel({
                 id="state-void-reason"
                 value={voidReason}
                 onChange={(e) => setVoidReason(e.target.value)}
-                placeholder="Duplicate of an earlier report; filed against the wrong person"
+                placeholder="Duplicate of an earlier report"
               />
               <p className="text-xs text-muted-foreground">
-                The record is kept and stays readable. It cannot be deleted, and
-                nobody who was named on it gets their access back.
+                Kept on file; named people don&apos;t regain access.
               </p>
               <div className="flex flex-wrap gap-2">
                 <Button

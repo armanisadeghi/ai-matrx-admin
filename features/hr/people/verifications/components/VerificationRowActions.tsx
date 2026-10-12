@@ -148,14 +148,7 @@ export function VerificationRowActions({
             */
             <span className="text-xs text-muted-foreground">
               Waiting on the employee&apos;s consent to state income
-              <details className="mt-0.5">
-                <summary className="cursor-pointer text-xs text-muted-foreground">
-                  Consent reference
-                </summary>
-                <p className="mt-1 break-words font-mono text-xs text-muted-foreground">
-                  employee_consent_at · unset on this request
-                </p>
-              </details>
+              {/* Generation door waits on employee_consent_at being set. */}
             </span>
           ) : null}
         </span>

@@ -409,9 +409,8 @@ export function OffboardEmployeeDialog({
           <p className="flex items-start gap-2 rounded-md border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
             <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <span>
-              Recording this sets their employment to <strong>terminated</strong>, starts the
-              records-retention clock on their file, and ends their HR access to this employer.
-              A future termination date is recorded now and takes effect on that day.
+              Sets their employment to <strong>terminated</strong>, starts the
+              records-retention clock and ends HR access. A future date takes effect that day.
             </span>
           </p>
         </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 // features/hr/people/new/HrNewEmployee.tsx — ROUTE 12, SPEC-EMPLOYEES §4.1
 //
@@ -783,9 +784,8 @@ export function HrNewEmployee({
                   consequence is real and the form does not hide it. */}
               {payGroups.length > 0 && !form.pay_group_id ? (
                 <p className="max-w-prose text-xs text-muted-foreground">
-                  No pay group — this person will have no pay periods, so no
-                  timesheet. That is a normal answer for a contractor who invoices;
-                  for anyone whose hours you compute, pick one.
+                  No pay group means no pay periods or timesheet. Fine for an
+                  invoicing contractor; otherwise pick one.
                 </p>
               ) : null}
             </Fieldset>
@@ -1381,9 +1381,8 @@ function CandidateNote({ candidateId }: { candidateId: string | null }) {
           <span className="font-mono text-xs text-foreground">
             {candidateId}
           </span>
-          . Their details are not carried over automatically yet — fill in what
-          you need below. Interview notes, self-ID and rejection history never
-          cross into an employee record by design.{" "}
+          ; fill in their details below{" "}
+          <InfoHint text="Interview notes, self-ID and rejection history are never copied into an employee record." />{" "}
           <button
             type="button"
             onClick={() =>
@@ -1424,7 +1423,7 @@ function Created({
       </h2>
       <p className="text-sm text-muted-foreground">
         {isFuture
-          ? "They start on a future date, so they show as not-started-yet and are not counted in headcount until then."
+          ? "Starts later; not counted in headcount until then."
           : "Everything else in HR keys off this record from here."}
       </p>
       <div className="flex flex-wrap gap-2">
