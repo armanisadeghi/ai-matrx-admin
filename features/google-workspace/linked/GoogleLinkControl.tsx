@@ -216,11 +216,15 @@ export function useGoogleLink(adapter: GoogleLinkAdapter, editable: boolean, act
 
   const run = async (kind: NonNullable<typeof busy>, work: () => Promise<void>) => {
     setBusy(kind);
+    // Creating, updating and pushing take a few seconds: say so at once instead of looking like a no-op.
+    const working = { create: "Creating in", update: "Updating from", push: "Pushing to", unlink: null }[kind];
+    const progressId = working ? toast.loading(`${working} ${appName}…`) : null;
     try {
       await work();
     } catch (error: unknown) {
       toast.error(errorSentence(error));
     } finally {
+      if (progressId !== null) toast.dismiss(progressId);
       setBusy(null);
     }
   };

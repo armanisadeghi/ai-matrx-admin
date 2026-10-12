@@ -8,6 +8,7 @@
  */
 "use client";
 
+import { formatRelativeTime } from "@/utils/datetime";
 import { showSavedSnapshot } from "@/lib/univer/openEditorContent";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -75,7 +76,7 @@ export function DocumentHistoryViewer({ documentId, editable = true }: Props) {
       const { data: full, error: fetchErr } = await supabase
         .schema("workbench")
         .from("udt_document_snapshots")
-        .select("snapshot, label")
+        .select("snapshot, label, created_at")
         .eq("id", snapshotId)
         .single();
 
@@ -100,7 +101,7 @@ export function DocumentHistoryViewer({ documentId, editable = true }: Props) {
         documentId,
         snapshot: full.snapshot,
         origin: "restored",
-        label: `Restored from ${full.label ?? snapshotId.slice(0, 8)}`,
+        label: restoredLabel(full.label, full.created_at),
       });
       setRestoringId(null);
 
@@ -225,7 +226,7 @@ function SnapshotRow({
         <div className="flex items-center gap-2 min-w-0">
           <OriginBadge origin={snapshot.origin} />
           <span className="text-xs text-muted-foreground flex items-center gap-1">
-            <Clock className="size-3" /> {formatTimestamp(snapshot.created_at)}
+            <Clock className="size-3" /> {formatTimestamp(snapshot.created_at)} ({formatRelativeTime(snapshot.created_at, { style: "long" })})
           </span>
           {isCurrent && (
             <Badge variant="outline" className="text-xs">
@@ -317,5 +318,12 @@ function formatTimestamp(iso: string): string {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    second: "2-digit",
   });
+}
+
+/** What a restore is labeled: the version's own label, else when it was saved. Never a raw id. */
+export function restoredLabel(label: string | null | undefined, createdAt: string | null | undefined): string {
+  if (label) return `Restored from ${label}`;
+  return createdAt ? `Restored from the version saved ${formatTimestamp(createdAt)}` : "Restored from an earlier version";
 }
