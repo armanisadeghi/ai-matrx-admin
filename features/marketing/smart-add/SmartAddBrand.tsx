@@ -87,7 +87,7 @@ import { captureProvision } from "@/features/provision-window/data";
 import { useOpenProvisionWindow } from "@/features/overlays/openers/provisionWindow";
 import { ProvisionCaptures } from "@/features/provision-window/ProvisionCaptures";
 import { useBuilderFeed } from "@/hooks/useBuilderFeed";
-import { publishSmartAddFeed, SMART_ADD_SURFACE } from "./builderFeed";
+import { SMART_ADD_SURFACE } from "./builderSurface";
 
 /** The call point where the brand-intake analysis would run (server: brand_intake/provision.py). */
 const BRAND_INTAKE_POINT = "brand_intake.smart_add_create";
@@ -401,7 +401,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const situation = situationOf(visible, rounds.length > 0 && !working);
   useEffect(() => {
     if (!builder.isActive) return;
-    publishSmartAddFeed(builder.publish, {
+    // The publisher is admin-only code: it loads on first use, never for anyone else.
+    const state = {
       inputs: { website: websiteText, social: socialText, platform: picked, person },
       rounds,
       views,
@@ -412,7 +413,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       basics,
       created,
       provisionPoint: BRAND_INTAKE_POINT,
-    });
+    };
+    void import("./builderFeed").then((m) => m.publishSmartAddFeed(builder.publish, state));
   });
   const canCreate = Boolean(basics.name) && !creating && !created;
 

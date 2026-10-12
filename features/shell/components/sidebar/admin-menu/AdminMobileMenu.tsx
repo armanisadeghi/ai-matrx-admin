@@ -22,6 +22,7 @@ import { ADMIN_APP_URL } from "@/features/shell/constants/nav-data";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { toggleOverlay } from "@/lib/redux/slices/overlaySlice";
 import { ERROR_INSPECTOR_OVERLAY_ID } from "@/features/admin/error-inspector/useOpenErrorInspector";
+import { BUILDER_PANEL_OVERLAY_ID } from "@/features/overlays/openers/builderPanelWindow";
 import { closeShellMobileMenu } from "@/features/shell/utils/closeShellMobileMenu";
 import { usePathname } from "next/navigation";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
@@ -65,6 +66,21 @@ export default function AdminMobileMenu() {
         <span className="flex-1 font-medium">Admin Launchpad</span>
         <IconResolver iconName="ArrowUpRight" className="h-4 w-4" />
       </AppLink>
+
+      <button
+        type="button"
+        className="shell-mobile-nav-item w-full"
+        data-testid="mobile-builder-toggle"
+        onClick={() => {
+          dispatch(toggleOverlay({ overlayId: BUILDER_PANEL_OVERLAY_ID }));
+          closeShellMobileMenu();
+        }}
+      >
+        <span className="shell-nav-icon">
+          <IconResolver iconName="Blocks" className="h-5 w-5" />
+        </span>
+        <span>Builder</span>
+      </button>
 
       <button
         type="button"

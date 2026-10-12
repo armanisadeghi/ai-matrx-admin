@@ -11,7 +11,6 @@ import type { Decision, EvidenceItem, RoundSeeds, confirmedBasics } from "./evid
 import type { RelatedCandidate } from "./relations";
 import type { RoundView } from "./SmartAddRound";
 
-export const SMART_ADD_SURFACE = "marketing.brands.smart_add";
 
 export interface SmartAddFeedState {
   inputs: { website: string; social: string; platform: string | null; person: boolean };

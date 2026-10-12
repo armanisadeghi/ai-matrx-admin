@@ -151,6 +151,7 @@ function BuilderPanelInner({
       bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden p-0"
     >
       <div className="flex shrink-0 items-center gap-2 border-b border-border px-3">
+        <div className="min-w-0 flex-1 overflow-x-auto">
         <Tabs
           aria-label="Builder sections"
           rule={false}
@@ -164,10 +165,11 @@ function BuilderPanelInner({
             { value: "provision", label: "Provision", count: snapshots.length || null },
           ]}
         />
+        </div>
         {feeds.length > 1 && surfaceKey ? (
           <Select
             aria-label="Surface"
-            className="ml-auto"
+            className="hidden shrink-0 sm:flex"
             align="end"
             value={surfaceKey}
             onValueChange={(v) => {
@@ -177,7 +179,7 @@ function BuilderPanelInner({
             options={surfaceOptions}
           />
         ) : surfaceKey ? (
-          <span className="ml-auto truncate font-mono text-[11px] text-muted-foreground">{surfaceKey}</span>
+          <span className="hidden max-w-[40%] shrink-0 truncate font-mono text-[11px] text-muted-foreground sm:inline">{surfaceKey}</span>
         ) : null}
       </div>
       {tab === "data" ? (
