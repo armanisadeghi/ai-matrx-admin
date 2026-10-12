@@ -43,7 +43,7 @@
 import { useId, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ExternalLink, Info, ListTree, Loader2, MapPin, Plus, Save, Users } from "lucide-react";
+import { ExternalLink, ListTree, Loader2, MapPin, Plus, Save, Users } from "lucide-react";
 
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
@@ -72,6 +72,7 @@ import { useHrContext } from "../../shared/useHrContext";
 import { useHrSettingsStructure } from "../hooks/useHrSettingsStructure";
 import { HrSettingsShell } from "../HrSettingsShell";
 import type { HrJurisdiction } from "../types";
+import { InfoHint } from "@/components/official/InfoHint";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 /**
@@ -373,9 +374,8 @@ async function confirmDeactivate(args: {
     await confirm({
       title: `${args.label} is still in use`,
       description:
-        `${args.count} current ${args.count === 1 ? "assignment references" : "assignments reference"} it, so ` +
-        "switching it off would leave those people pointing at something inactive. " +
-        "Move them first — the count on the row opens the list of exactly who they are.",
+        `${args.count} current ${args.count === 1 ? "assignment uses" : "assignments use"} it. ` +
+        "Move them first; the count on the row lists who.",
       confirmLabel: "Got it",
       cancelLabel: null,
     });
@@ -463,11 +463,10 @@ function DepartmentsSection({
         <div className="flex min-w-0 items-start gap-3">
           <ListTree className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
           <div className="min-w-0 space-y-1">
-            <h2 className="text-sm font-semibold text-foreground">Departments</h2>
-            <p className="text-sm text-muted-foreground">
-              Departments nest. A department can never be placed under one of its own
-              descendants — the picker does not offer them.
-            </p>
+            <h2 className="text-sm font-semibold text-foreground">
+              Departments{" "}
+              <InfoHint text="Departments nest, but one can never be placed under its own descendant." />
+            </h2>
           </div>
         </div>
         <NewRowButton
@@ -809,11 +808,10 @@ function LocationsSection({
         <div className="flex min-w-0 items-start gap-3">
           <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
           <div className="min-w-0 space-y-1">
-            <h2 className="text-sm font-semibold text-foreground">Locations</h2>
-            <p className="text-sm text-muted-foreground">
-              Every location carries a time zone and a jurisdiction. Both are required,
-              because every punch, shift and workweek is stamped from them.
-            </p>
+            <h2 className="text-sm font-semibold text-foreground">
+              Locations{" "}
+              <InfoHint text="Time zone and jurisdiction are required: every punch, shift and workweek is stamped from them." />
+            </h2>
           </div>
         </div>
         <NewRowButton
@@ -1211,11 +1209,10 @@ function JobTitlesSection({
         <div className="flex min-w-0 items-start gap-3">
           <Users className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
           <div className="min-w-0 space-y-1">
-            <h2 className="text-sm font-semibold text-foreground">Job titles</h2>
-            <p className="text-sm text-muted-foreground">
-              Every title carries an EEO-1 job category, because a title without one
-              cannot be reported on.
-            </p>
+            <h2 className="text-sm font-semibold text-foreground">
+              Job titles{" "}
+              <InfoHint text="Each title needs an EEO-1 job category so it can be reported on." />
+            </h2>
           </div>
         </div>
         <NewRowButton
@@ -1225,17 +1222,6 @@ function JobTitlesSection({
           onClick={() => setCreating(true)}
         />
       </header>
-
-      {/* The edge, stated on the panel */}
-      <div className="flex items-start gap-2 border-b border-border px-4 pb-4">
-        <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">
-          Changing a title&apos;s EEO-1 category does <span className="font-medium">not</span>{" "}
-          rewrite history. Assignments already written keep the category they were
-          stamped with, which is what makes a past EEO-1 filing reproducible — the new
-          category applies from the next assignment onward.
-        </p>
-      </div>
 
       {creating ? (
         <CreatePanel title="New job title">
@@ -1467,9 +1453,7 @@ function JobTitleEditor({
           </SelectContent>
         </Select>
         <p className="text-sm text-muted-foreground">
-          Fixed by the EEOC — this list is the whole list. It is stamped onto every
-          assignment written against this title, and changing it here does not
-          re-categorise assignments already written.
+          The EEOC&apos;s fixed list; existing assignments keep theirs.
         </p>
         <FieldRefusal refusal={refusal} field="eeo1_job_category" />
       </div>

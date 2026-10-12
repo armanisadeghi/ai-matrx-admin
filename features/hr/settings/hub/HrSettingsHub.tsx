@@ -36,6 +36,7 @@ import { KnobRow, knobValueText } from "../components/KnobPanel";
 import { useHrKnobs } from "../hooks/useHrKnobs";
 import { HR_SETTINGS_TABS } from "../settings-tabs";
 import type { HrPresentedKnob } from "../types";
+import { InfoHint } from "@/components/official/InfoHint";
 import { HrSettingsShell } from "../HrSettingsShell";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
@@ -159,11 +160,8 @@ export function HrSettingsHub() {
                     : `${missing.length} settings HR reads are not defined anywhere`}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  The platform registry defines neither a value nor a default for the
-                  keys below, so HR has nothing to read and nothing safe to write. This
-                  is a configuration defect, not a setting you can fill in — a silent
-                  fallback here would turn a knob into a constant nobody can find. Send
-                  these key names to whoever runs the platform.
+                  {/* Missing registry default is a config defect; a silent fallback would freeze the knob. */}
+                  Send these key names to whoever runs the platform.
                 </p>
               </div>
             </div>
@@ -214,12 +212,9 @@ export function HrSettingsHub() {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="min-w-0">
               <h2 className="text-sm font-semibold text-foreground">
-                Every configuration key
+                Every configuration key{" "}
+                <InfoHint text="Open a row to change it for this employer, or clear the override to follow the platform default." />
               </h2>
-              <p className="text-sm text-muted-foreground">
-                Open a row to change it for this employer, or to clear an override and
-                follow the platform default again.
-              </p>
             </div>
             <Button
               type="button"

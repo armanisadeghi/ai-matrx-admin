@@ -17,8 +17,9 @@
 
 "use client";
 
-import { GitBranch, Info } from "lucide-react";
+import { GitBranch } from "lucide-react";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { Badge } from "@/components/ui/badge";
 
 /** SPEC-EMPLOYEES §1.5's flow types, with the routing that applies when nobody overrides it. */
@@ -78,13 +79,9 @@ export function HrFlowTypeDefaults() {
         <GitBranch className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
         <div className="min-w-0 space-y-1">
           <h2 className="text-sm font-semibold text-foreground">
-            What needs approval here
+            What needs approval here{" "}
+            <InfoHint text="These flows run for this employer whether or not anyone configured them; each shows its default routing." />
           </h2>
-          <p className="text-sm text-muted-foreground">
-            These flows are running for this employer right now, whether or not anyone
-            has configured them. What you see beside each one is where it routes when
-            nobody has said otherwise.
-          </p>
         </div>
       </header>
       <ul className="divide-y divide-border">
@@ -106,15 +103,7 @@ export function HrFlowTypeDefaults() {
           </li>
         ))}
       </ul>
-      <div className="flex items-start gap-2 border-t border-border p-4">
-        <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">
-          Other parts of HR — hiring, time, scheduling, leave, training — run their own
-          approval flows on the same engine. They are not listed here yet because there
-          is no read path to the flow registry from a browser; these six are the ones
-          this part of the product declares and can therefore state honestly.
-        </p>
-      </div>
+      {/* Not built: other HR flows (hiring, time, leave…) are unlisted until the flow registry is readable from the browser. */}
     </section>
   );
 }

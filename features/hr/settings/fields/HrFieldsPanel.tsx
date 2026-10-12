@@ -31,6 +31,7 @@ import { useAppRecordsConfig } from "@/features/data-tables/records-ui-host/reco
 import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";
 import { useHrContext } from "../../shared/useHrContext";
 import { fetchHrCustomFieldRegistry } from "../service";
+import { InfoHint } from "@/components/official/InfoHint";
 import { HrSettingsShell } from "../HrSettingsShell";
 import type { HrCustomFieldTarget } from "../types";
 
@@ -117,12 +118,9 @@ export function HrFieldsPanel() {
             <ClipboardList className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
             <div className="min-w-0 space-y-1">
               <h2 className="text-sm font-semibold text-foreground">
-                What each record type allows
+                What each record type allows{" "}
+                <InfoHint text="Each HR record type that is switched on, and the limits a custom field on it cannot exceed." />
               </h2>
-              <p className="text-sm text-muted-foreground">
-                Every HR record type the database has switched on, and the ceilings a
-                custom field on that record cannot exceed.
-              </p>
             </div>
           </header>
           {targets.length === 0 ? (
@@ -200,20 +198,16 @@ export function HrFieldsPanel() {
           <ul className="space-y-3 text-sm text-muted-foreground">
             <li>
               <span className="font-medium text-foreground">
-                A field&apos;s key, type and reference target cannot be changed once
-                anything has been stored in it.
+                A field&apos;s key, type and reference target are locked once a value is
+                stored.
               </span>{" "}
-              Changing a type under existing values silently reinterprets every one of
-              them — a date that becomes text, a number that becomes a list. The way to
-              change your mind is to archive the field and create a new one.
+              <InfoHint text="To change one, archive the field and create a new one." />
             </li>
             <li>
               <span className="font-medium text-foreground">
                 Deleting a field never deletes what people put in it.
               </span>{" "}
-              The values stay, orphaned and reported, and are purged only by an explicit
-              action that is logged. An HR record is evidence; a field definition is
-              scaffolding around it.
+              <InfoHint text="The values stay and are removed only by an explicit purge, which is logged." />
             </li>
             <li>
               <span className="font-medium text-foreground">
@@ -223,14 +217,13 @@ export function HrFieldsPanel() {
             <li>
               <span className="font-medium text-foreground">
                 An archived field keeps its values readable and refuses new writes.
-              </span>{" "}
-              Nothing that was already recorded disappears from a record because
-              somebody tidied the registry.
+              </span>
             </li>
             <li>
-              Custom fields appear in a &quot;More&quot; section at the bottom of the tab
-              they belong to, never mixed in with the built-in fields — so reordering a
-              custom field can never move a legally required one.
+              <span className="font-medium text-foreground">
+                Custom fields appear under More at the bottom of their tab.
+              </span>{" "}
+              <InfoHint text="Kept apart from built-in fields, so reordering one never moves a legally required field." />
             </li>
           </ul>
         </section>

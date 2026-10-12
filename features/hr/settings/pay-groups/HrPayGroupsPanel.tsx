@@ -80,6 +80,7 @@ import { useHrSettingsStructure } from "../hooks/useHrSettingsStructure";
 import { HrSettingsShell } from "../HrSettingsShell";
 import type { HrEarningCode, HrHolidayCalendar, HrPayGroup } from "../types";
 import { formatPreviewDay, previewPeriods, WORKWEEK_DAYS } from "./period-preview";
+import { InfoHint } from "@/components/official/InfoHint";
 import { upsertHrPayGroup } from "./pay-group-write";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
@@ -232,11 +233,10 @@ export function HrPayGroupsPanel() {
             <div className="flex min-w-0 items-start gap-3">
               <Coins className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
               <div className="min-w-0 space-y-1">
-                <h2 className="text-sm font-semibold text-foreground">Pay groups</h2>
-                <p className="text-sm text-muted-foreground">
-                  Open one to change its frequency, its workweek, or the calendar and
-                  default earning code its timesheets use.
-                </p>
+                <h2 className="text-sm font-semibold text-foreground">
+                  Pay groups{" "}
+                  <InfoHint text="Open a pay group to change its frequency, workweek, calendar or default earning code." />
+                </h2>
               </div>
             </div>
             {/* Present whether or not rows exist — an org with forty pay groups still
@@ -673,10 +673,8 @@ function PayGroupEditor({
         </ul>
         {anySplit ? (
           <p className="text-sm text-muted-foreground">
-            At least one of these periods begins part-way through a workweek. Overtime
-            is computed per workweek, so that week&apos;s overtime is split across two
-            pay periods — normal for a twice-a-month or monthly schedule, and worth
-            knowing before the first payroll rather than after it.
+            A period starts mid-workweek; its overtime splits in two.{" "}
+            <InfoHint text="Overtime is computed per workweek, so that week's overtime lands in two pay periods; normal for semi-monthly or monthly pay." />
           </p>
         ) : null}
       </section>

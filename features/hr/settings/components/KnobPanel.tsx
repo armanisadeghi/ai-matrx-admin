@@ -168,10 +168,8 @@ export function KnobRow({
             <span className="font-mono">{knob.full_key}</span> has no platform default
           </p>
           <p className="text-sm text-muted-foreground">
-            This key is read by HR but nothing in the platform registry defines it, so
-            there is no value to show and nothing safe to write. It is a configuration
-            defect, not a setting you can fill in — a silent fallback here is how a knob
-            becomes a constant. Send this key name to whoever runs the platform.
+            {/* Missing registry default is a config defect; a silent fallback would freeze the knob. */}
+            Send this key name to whoever runs the platform.
           </p>
         </div>
         <ErrorAlchemyMenu className="ml-auto" />
@@ -214,9 +212,7 @@ export function KnobRow({
       title: `Clear this employer's override?`,
       description:
         `${knob.full_key} goes back to the platform default, ` +
-        `${knobValueText(knob.platform_default)}. Clearing REMOVES the key from this ` +
-        "employer's settings — it does not store an empty value, so a later change to " +
-        "the platform default will reach this employer again.",
+        `${knobValueText(knob.platform_default)}. Later changes to that default will reach this employer.`,
       confirmLabel: "Clear the override",
     });
     if (!confirmed) return;
@@ -471,7 +467,8 @@ export function KnobPanel({
         {knobs.length === 0 ? (
           <p className="py-6 text-sm text-muted-foreground">
             {emptyLabel ??
-              "No configuration keys are registered for this panel yet. When the owning lane registers them they appear here automatically — this panel reads the registry, it does not hard-code a list."}
+              // Panel reads the registry; keys appear automatically once registered.
+              "No settings for this panel yet."}
           </p>
         ) : (
           knobs.map((knob) => (
