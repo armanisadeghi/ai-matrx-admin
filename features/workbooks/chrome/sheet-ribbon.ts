@@ -69,7 +69,6 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
           { ref: "tb.borders", size: "icon" },
           { ref: "tb.fill", size: "icon" },
           { ref: "tb.text-color", size: "icon" },
-          { ref: "format.font-size", size: "icon", label: "Size" },
         ],
       },
       {

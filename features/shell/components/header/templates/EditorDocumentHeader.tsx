@@ -77,29 +77,49 @@ export function EditorDocumentHeader({
   children,
   className,
 }: EditorDocumentHeaderProps) {
-  const [look] = useOfficeLook();
-  if (look === "microsoft" && ribbon) {
-    const accent = OFFICE_ACCENT[OFFICE_KIND[productTone]];
-    return (
-      <div
-        className={cn(
-          "flex h-full min-h-0 w-full flex-col bg-card [--office-accent:var(--office-accent-light)] dark:[--office-accent:var(--office-accent-dark)]",
-          className,
-        )}
-        style={{ "--office-accent-light": accent.light, "--office-accent-dark": accent.dark } as CSSProperties}
-        data-editor-document-header=""
-        data-office-look="microsoft"
-      >
-        <ShellChromeMode mode="canvas" />
-        <header className="canvas-workspace-header grid h-12 shrink-0 grid-cols-[minmax(0,1fr)_minmax(0,auto)_minmax(0,1fr)] items-center gap-2 border-b border-border/60 bg-[color-mix(in_oklab,var(--office-accent)_7%,hsl(var(--card)))] pl-2 pr-3 [font-family:'Segoe_UI',system-ui,sans-serif]">
+  const [look, , settled] = useOfficeLook();
+  const office = look === "microsoft" && !!ribbon;
+  const accent = OFFICE_ACCENT[OFFICE_KIND[productTone]];
+  const navButton = (
+    <Button
+      variant="quiet"
+      icon={<Menu />}
+      aria-label="Open navigation"
+      onClick={openShellMobileMenu}
+      className="shrink-0 lg:hidden"
+    />
+  );
+  const titleRow = (
+    <>
+      {title}
+      {titleMarks ? <span className="flex shrink-0 items-center">{titleMarks}</span> : null}
+    </>
+  );
+  // ONE tree for both looks: the canvas slot (last child) keeps its identity when the look changes,
+  // so a live editor (Univer) is never remounted by a switch — only the chrome rows above it change.
+  // Until the saved look is read, the title row is drawn but not shown (no Google-then-Office flash).
+  return (
+    <div
+      className={cn(
+        "flex h-full min-h-0 w-full flex-col bg-card",
+        office &&
+          "[--office-accent:var(--office-accent-light)] [font-family:'Segoe_UI',system-ui,sans-serif] dark:[--office-accent:var(--office-accent-dark)]",
+        className,
+      )}
+      style={office ? ({ "--office-accent-light": accent.light, "--office-accent-dark": accent.dark } as CSSProperties) : undefined}
+      data-editor-document-header=""
+      data-office-look={office ? "microsoft" : "google"}
+    >
+      <ShellChromeMode mode="canvas" />
+      {office ? (
+        <header
+          className={cn(
+            "canvas-workspace-header grid h-12 shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-b border-border/60 bg-[color-mix(in_oklab,var(--office-accent)_7%,hsl(var(--card)))] pl-2 pr-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,auto)_minmax(0,1fr)]",
+            !settled && "invisible",
+          )}
+        >
           <div className="flex min-w-0 items-center gap-1.5">
-            <Button
-              variant="quiet"
-              icon={<Menu />}
-              aria-label="Open navigation"
-              onClick={openShellMobileMenu}
-              className="shrink-0 lg:hidden"
-            />
+            {navButton}
             <Link
               href={backHref}
               aria-label={backLabel}
@@ -109,49 +129,31 @@ export function EditorDocumentHeader({
               {productIcon}
             </Link>
           </div>
-          <div className="flex h-7 min-w-0 items-center justify-center gap-0.5">
-            {title}
-            {titleMarks ? <span className="flex shrink-0 items-center">{titleMarks}</span> : null}
-          </div>
+          <div className="flex h-7 min-w-0 items-center justify-start gap-0.5 sm:justify-center">{titleRow}</div>
           {actions ? <div className="flex min-w-0 items-center justify-end gap-1">{actions}</div> : <span />}
         </header>
-        {ribbon}
-        <div className="relative flex min-h-0 flex-1 flex-col">{children}</div>
-      </div>
-    );
-  }
-  return (
-    <div className={cn("flex h-full min-h-0 w-full flex-col bg-card", className)} data-editor-document-header="">
-      <ShellChromeMode mode="canvas" />
-      <header className="canvas-workspace-header flex h-[3.75rem] shrink-0 items-center gap-1.5 pl-2 pr-3">
-        <Button
-          variant="quiet"
-          icon={<Menu />}
-          aria-label="Open navigation"
-          onClick={openShellMobileMenu}
-          className="shrink-0 lg:hidden"
-        />
-        <Link
-          href={backHref}
-          aria-label={backLabel}
-          title={backLabel}
-          className={cn(
-            "flex size-9 shrink-0 items-center justify-center rounded-md [&_svg]:size-5",
-            TONE[productTone],
-          )}
-        >
-          {productIcon}
-        </Link>
-        <div className="flex min-w-0 flex-1 flex-col justify-center">
-          <div className="flex h-7 min-w-0 items-center gap-0.5">
-            {title}
-            {titleMarks ? <span className="flex shrink-0 items-center">{titleMarks}</span> : null}
+      ) : (
+        <header className={cn("canvas-workspace-header flex h-[3.75rem] shrink-0 items-center gap-1.5 pl-2 pr-3", !settled && "invisible")}>
+          {navButton}
+          <Link
+            href={backHref}
+            aria-label={backLabel}
+            title={backLabel}
+            className={cn(
+              "flex size-9 shrink-0 items-center justify-center rounded-md [&_svg]:size-5",
+              TONE[productTone],
+            )}
+          >
+            {productIcon}
+          </Link>
+          <div className="flex min-w-0 flex-1 flex-col justify-center">
+            <div className="flex h-7 min-w-0 items-center gap-0.5">{titleRow}</div>
+            {menuBar ? <div className="flex h-6 min-w-0 items-center">{menuBar}</div> : null}
           </div>
-          {menuBar ? <div className="flex h-6 min-w-0 items-center">{menuBar}</div> : null}
-        </div>
-        {actions ? <div className="flex shrink-0 items-center gap-1">{actions}</div> : null}
-      </header>
-      {toolbar}
+          {actions ? <div className="flex shrink-0 items-center gap-1">{actions}</div> : null}
+        </header>
+      )}
+      {office ? ribbon : toolbar}
       <div className="relative flex min-h-0 flex-1 flex-col">{children}</div>
     </div>
   );

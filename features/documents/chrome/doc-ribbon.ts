@@ -46,7 +46,6 @@ export const DOC_RIBBON: RibbonTabSpec[] = [
         controls: [
           { ref: "tb.font", size: "icon" },
           { ref: "tb.size", size: "icon" },
-          { ref: "format.font-size", size: "icon", label: "Size" },
           { ref: "tb.clear", size: "icon" },
           { ref: "tb.bold", size: "icon" },
           { ref: "tb.italic", size: "icon" },

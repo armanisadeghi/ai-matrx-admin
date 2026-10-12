@@ -157,7 +157,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
     { view: "cards", sort: "opened" },
     props.legacyViewPrefs,
   );
-  const [look] = useOfficeLook();
+  const [look, , lookSettled] = useOfficeLook();
   const office = look === "microsoft";
   // Office's start page is a list; the Google look keeps the person's grid ⇄ list choice.
   const view: "cards" | "table" = office || prefs.view === "table" ? "table" : "cards";
@@ -198,7 +198,18 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
     document.getElementById(`file-home-create-${kind.kind}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
   const showList = !loading && !error && sorted.length > 0;
 
-  const home = (
+  // Until the person's saved look is read, the home is a placeholder — never the default look
+  // flashing into theirs.
+  const home = !lookSettled ? (
+    <>
+      {props.header}
+      <div className="h-full overflow-y-auto scrollbar-none" data-file-home={kind.kind}>
+        <div className="mx-auto w-full max-w-[72rem] px-3 pt-[calc(var(--shell-header-h)+0.75rem)] sm:px-6">
+          <RegionSkeleton shape="cards" count={6} aria-label={`Loading ${kind.pluralNoun}`} />
+        </div>
+      </div>
+    </>
+  ) : (
     <HomeLookContext.Provider value={{ look, kind }}>
     {props.header}
     <div
@@ -219,7 +230,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
             onChange={(e) => setQuery(e.target.value)}
             placeholder={`Search ${kind.pluralNoun}`}
             aria-label={`Search ${kind.pluralNoun}`}
-            className="mx-auto w-full min-w-0 max-w-2xl"
+            className="mx-auto min-w-0 max-w-2xl flex-1"
           />
           <OfficeLookSwitch className="shrink-0" />
         </div>
