@@ -45,6 +45,9 @@ const FILE: Readonly<Record<MatrxDesktopOs, RegExp>> = {
   linux: /^[\w.+-]+\.(deb|AppImage)$/,
 };
 
+/** An arm64 build's file name (electron-builder: arm64, aarch64). */
+const ARM64 = /(?:^|[-_.])(?:arm64|aarch64)(?:[-_.]|$)/i;
+
 function topLevelValue(yml: string, key: string): string | null {
   const match = new RegExp(`^${key}:[ \\t]*(.+?)[ \\t]*$`, "m").exec(yml);
   if (!match) return null;
@@ -68,10 +71,13 @@ export function parseMatrxDesktopFeed(yml: string, os: MatrxDesktopOs, feedUrl: 
   if (!version) return null;
   const files = fileEntries(yml);
   // Linux: the .deb when the feed carries one (Ubuntu and Debian install it with a double-click).
-  const deb = os === "linux" ? files.find((f) => /\.deb$/.test(f.url)) : undefined;
+  const deb = os === "linux" ? files.find((f) => /\.deb$/.test(f.url) && !ARM64.test(f.url)) : undefined;
   const path = deb?.url ?? topLevelValue(yml, "path");
   // A bare file name only: the feed can never point the button at another place.
   if (!path || !FILE[os].test(path)) return null;
+  // The page offers 64-bit Intel and AMD Linux only: the arm64 AppImage does not start on stock
+  // Ubuntu, so an arm64 file in the feed is never the download.
+  if (os === "linux" && ARM64.test(path)) return null;
   const entry = files.find((f) => f.url === path);
   return {
     os,

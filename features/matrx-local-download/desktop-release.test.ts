@@ -70,6 +70,12 @@ describe("parseMatrxDesktopFeed", () => {
     });
   });
 
+  it("Linux: never an arm64 file (its AppImage does not start on stock Ubuntu)", () => {
+    expect(parseMatrxDesktopFeed("version: 1\npath: Matrx2-2026.1018.900-arm64-linux.AppImage\n", "linux")).toBeNull();
+    const armDeb = LINUX.replace("amd64-linux.deb", "arm64-linux.deb");
+    expect(parseMatrxDesktopFeed(armDeb, "linux")).toMatchObject({ url: expect.stringMatching(/x86_64-linux\.AppImage$/) });
+  });
+
   it("refuses a file that is not a bare name of that OS's kind", () => {
     for (const path of ["https://evil.example/a.zip", "../a.zip", "a.dmg", "a/b.zip"]) {
       expect(parseMatrxDesktopFeed(`version: 1\npath: ${path}\n`, "mac")).toBeNull();

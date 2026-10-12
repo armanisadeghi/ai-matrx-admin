@@ -283,7 +283,7 @@ export default async function MatrxDesktopPage() {
                 {windows && linux ? " and " : null}
                 {linux ? (
                   <a href={linux.url} rel="noopener noreferrer" className="font-medium text-foreground underline underline-offset-4">
-                    Linux ({aboutFile(linux)}, Ubuntu 22.04 or newer)
+                    Linux ({aboutFile(linux)}, 64-bit Intel or AMD, Ubuntu 22.04 or newer)
                   </a>
                 ) : null}
                 .{windows ? " The Windows app isn't signed yet: Windows warns before it opens, and on a PC with Smart App Control turned on it can't open until it is." : null}{" "}
