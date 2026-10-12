@@ -326,9 +326,8 @@ export function UnlawfulConfigDialog({
           {isProductConstraint ? (
             <div className="space-y-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3">
               <p className="text-sm leading-relaxed text-foreground">
-                One of this policy&rsquo;s own settings contradicts another, so the database
-                refused it. No jurisdiction is involved. Go back and check the accrual rate, the
-                caps, and the rounding increment.
+                These settings contradict each other, so the policy was refused. Check the
+                accrual rate, caps and rounding increment.
               </p>
               {refusal.detail ? (
                 <p className="font-mono text-[0.6875rem] leading-relaxed text-muted-foreground">

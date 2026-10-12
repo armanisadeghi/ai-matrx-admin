@@ -18,6 +18,7 @@
 
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, CalendarDays, Info, Loader2, Send } from "lucide-react";
 
@@ -635,10 +636,13 @@ export function LeaveRequestForm({
               <div className="flex items-start gap-2 rounded-md border border-border bg-card p-3 text-sm">
                 <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                 <p className="text-muted-foreground">
-                  This policy asks for documentation once a span runs longer than{" "}
-                  {shownPreview.documentationRequiredAfterDays} days. You can file the request now;
-                  HR will tell you what they need and how to send it privately. Nothing medical
-                  is ever attached to your own documents.
+                  Documentation needed after {shownPreview.documentationRequiredAfterDays} days;
+                  you can file now.
+                  <InfoHint
+                    className="ml-1"
+                    text="HR will tell you what they need and how to send it privately; nothing medical joins your own documents."
+                    label="About documentation"
+                  />
                 </p>
               </div>
             ) : null}

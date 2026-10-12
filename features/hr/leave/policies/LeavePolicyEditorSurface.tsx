@@ -41,6 +41,7 @@
 
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -211,9 +212,12 @@ function BlackoutEditor({
         <div className="flex items-start gap-2 rounded-md border border-border bg-muted/40 p-3">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
           <p className="text-xs leading-relaxed text-muted-foreground">
-            This policy carries a legal minimum, so a blackout window can never block a request
-            against it. Required by law — cannot be removed. The rule is re-applied when a
-            request is checked, whatever is set here.
+            Required by law: blackouts never block this policy.
+            <InfoHint
+              className="ml-1"
+              text="The rule is re-applied whenever a request is checked, whatever is set here."
+              label="About the blackout exemption"
+            />
           </p>
         </div>
       ) : null}
@@ -474,9 +478,8 @@ export function LeavePolicyEditorSurface({ policyId }: { policyId: string }) {
                 : `${enrolled} ${enrolled === 1 ? "person is" : "people are"} enrolled. From now on they earn time a different way.`}
             </span>
             <span className="block">
-              Past ledger entries are not touched. The accrual runner uses the version of this
-              policy that was in force at each accrual date, and never re-applies a change
-              backwards.
+              Past ledger entries are not changed; each accrual uses the policy version in force
+              on its date.
             </span>
           </span>
         ),
@@ -619,12 +622,10 @@ export function LeavePolicyEditorSurface({ policyId }: { policyId: string }) {
                 >
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-500" />
                   <p className="text-xs leading-relaxed text-foreground">
-                    We have not yet verified{" "}
                     {validation.advisoryRulesConsulted.length === 1
-                      ? "one of the rules"
-                      : `${validation.advisoryRulesConsulted.length} of the rules`}{" "}
-                    that apply here. Your policy will run as configured. We will tell you if
-                    verification changes anything.
+                      ? "One rule is"
+                      : `${validation.advisoryRulesConsulted.length} rules are`}{" "}
+                    unverified here; the policy runs as set.
                   </p>
                 </div>
               ) : null}
@@ -699,9 +700,12 @@ export function LeavePolicyEditorSurface({ policyId }: { policyId: string }) {
                 </SelectContent>
               </Select>
               <p className="text-[11px] leading-snug text-muted-foreground">
-                Say which legal minimum this policy is meant to satisfy. A policy with no
-                statutory basis is never checked against one — and the check will tell you so
-                rather than implying it passed.
+                The legal minimum this policy satisfies, if any.
+                <InfoHint
+                  className="ml-1"
+                  text="A policy with no legal basis is never checked against one, and the check says so."
+                  label="About the legal basis"
+                />
               </p>
             </FieldShell>
 
@@ -879,14 +883,13 @@ export function LeavePolicyEditorSurface({ policyId }: { policyId: string }) {
             // §2.3: `unlimited` hides every cap, carryover, negative-balance and payout
             // control. ABSENT, not disabled — there is no balance for them to describe.
             <div className="rounded-lg border border-border bg-card p-4">
-              <h2 className="text-sm font-semibold text-foreground">The balance</h2>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                An unlimited policy keeps no balance, so there is nothing to cap, carry over,
-                let go negative, or pay out. Balance screens will read{" "}
-                <span className="font-medium text-foreground">Unlimited</span> — never a
-                number, never a zero, never a bar. Requests still need approval and still land
-                on the timesheet.
-              </p>
+              <h2 className="flex items-center gap-1 text-sm font-semibold text-foreground">
+                The balance
+                <InfoHint
+                  text="Unlimited: no balance, caps, carryover or payout. Screens read Unlimited; requests still need approval and reach the timesheet."
+                  label="About unlimited policies"
+                />
+              </h2>
             </div>
           ) : (
             <Section
@@ -936,9 +939,12 @@ export function LeavePolicyEditorSurface({ policyId }: { policyId: string }) {
                     {FIELD_LABEL.carryover_allowed}
                   </Label>
                   <p className="text-[11px] leading-snug text-muted-foreground">
-                    Switching this off means unused time is forfeited at the policy-year
-                    boundary. Several states do not allow that for earned vacation — the check
-                    will refuse it and tell you what to do instead.
+                    Off: unused time is forfeited at policy-year end.
+                    <InfoHint
+                      className="ml-1"
+                      text="Several states forbid forfeiting earned vacation; the check refuses it and says what to do instead."
+                      label="About forfeiting unused time"
+                    />
                   </p>
                 </div>
               </div>
@@ -1150,9 +1156,12 @@ export function LeavePolicyEditorSurface({ policyId }: { policyId: string }) {
               )}
               {statutory ? (
                 <p className="text-[11px] leading-snug text-muted-foreground">
-                  This policy carries a legal minimum. Reasons can be added; they cannot be
-                  removed here, because removing one the law requires would make the policy
-                  unlawful without anything telling you.
+                  Reasons can be added, not removed (legal minimum).
+                  <InfoHint
+                    className="ml-1"
+                    text="Removing a reason the law requires would make the policy unlawful, so removal is blocked here."
+                    label="About required reasons"
+                  />
                 </p>
               ) : null}
               {canWrite ? (
@@ -1209,10 +1218,14 @@ export function LeavePolicyEditorSurface({ policyId }: { policyId: string }) {
                   >
                     Activate
                   </Button>
+                  {/* Only active policies are picked up by the accrual runner. */}
                   <p className="w-full text-[11px] text-muted-foreground">
-                    A draft earns nobody anything: the accrual runner only picks up active
-                    policies. Activating runs the full lawfulness check across every place this
-                    employer operates.
+                    A draft earns nothing until activated.
+                    <InfoHint
+                      className="ml-1"
+                      text="Activating checks the policy's lawfulness in every place this employer operates."
+                      label="About activating"
+                    />
                   </p>
                 </>
               ) : (
@@ -1241,13 +1254,10 @@ export function LeavePolicyEditorSurface({ policyId }: { policyId: string }) {
                         description: (
                           <span className="space-y-2">
                             <span className="block">
-                              Accrual stops. Balances people already hold stay exactly as they
-                              are, and they can still spend them.
+                              Accrual stops; balances already held stay and can be spent.
                             </span>
                             <span className="block">
-                              Paying balances out, or moving everyone to another policy, is not
-                              something this screen can do — that runs through the ledger and
-                              needs its own entries.
+                              Payouts and moves to another policy go through the ledger.
                             </span>
                           </span>
                         ),

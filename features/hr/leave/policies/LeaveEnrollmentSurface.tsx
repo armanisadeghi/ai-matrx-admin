@@ -404,8 +404,8 @@ export function LeaveEnrollmentSurface({ policyId }: { policyId: string }) {
                 </h2>
                 <p className="text-xs text-muted-foreground">
                   {policy && policy.workerClassScope.length > 0
-                    ? `This policy covers ${policy.workerClassScope.join(", ")}. Anyone outside that is skipped, with a reason.`
-                    : "This policy has no worker-class limit, so anyone can be added — except contractors, who are never enrolled automatically."}
+                    ? `Covers ${policy.workerClassScope.join(", ")}; others are skipped, with a reason.`
+                    : "No worker-class limit; contractors are never auto-enrolled."}
                 </p>
               </div>
               <div className="flex items-end gap-2">

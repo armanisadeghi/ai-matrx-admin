@@ -30,6 +30,7 @@
 
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import Link from "next/link";
 import { AlertTriangle, Infinity as InfinityIcon, ArrowUpRight } from "lucide-react";
 
@@ -81,7 +82,7 @@ function Figure({
         <span className="text-sm font-medium text-muted-foreground/70">
           Not provided
           <span className="sr-only">
-            — the server did not send this figure for this policy.
+            — no figure was provided for this policy.
           </span>
         </span>
       ) : (
@@ -190,9 +191,12 @@ export function LeaveBalanceBlock({
               These figures do not add up to the ledger.
             </p>
             <p className="mt-0.5 text-destructive/90">
-              The server checked accrued minus used, upcoming and removed time against the
-              recorded balance, and they disagree. Treat every number below as unconfirmed and
-              open the ledger before acting on it.
+              Treat every number below as unconfirmed and open the ledger before acting.
+              <InfoHint
+                className="ml-1"
+                text="Accrued minus used, upcoming and removed time was checked against the recorded balance."
+                label="About this mismatch"
+              />
             </p>
             {ledgerHref ? (
               <Link

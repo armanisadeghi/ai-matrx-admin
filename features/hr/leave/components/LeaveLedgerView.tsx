@@ -21,6 +21,7 @@
 
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
@@ -482,8 +483,12 @@ export function LeaveLedgerView({
             {ledger.unexplainedEntryCount === 1
               ? "One entry on this policy has no calculation behind it."
               : `${ledger.unexplainedEntryCount} entries on this policy have no calculation behind them.`}{" "}
-            Every rule-driven entry is supposed to carry the snapshot that
-            produced it. These are marked in the table.
+            They are marked in the table.
+            <InfoHint
+              className="ml-1"
+              text="Every rule-driven entry should carry the calculation that produced it."
+              label="About unexplained entries"
+            />
           </p>
         </div>
       ) : null}
@@ -574,11 +579,13 @@ export function LeaveLedgerView({
       />
 
       <p className="text-xs text-muted-foreground">
-        This record is append-only: nothing on this screen can be edited or
-        deleted, by anyone. A correction is a new entry.
-        {viewer === "delegated"
-          ? " You are looking at someone else's record."
-          : null}
+        Append-only: corrections are new entries.
+        <InfoHint
+          className="ml-1"
+          text="Nothing on this screen can be edited or deleted, by anyone."
+          label="About this record"
+        />
+        {viewer === "delegated" ? " · Someone else's record" : null}
       </p>
 
       <RuleSnapshotDialog

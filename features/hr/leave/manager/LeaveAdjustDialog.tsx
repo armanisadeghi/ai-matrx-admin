@@ -289,7 +289,7 @@ export function LeaveAdjustDialog({
             >
               <p className="text-sm leading-relaxed text-foreground">
                 {refusal.detail ??
-                  "This adjustment was refused and the server did not say why, which is itself a defect."}
+                  "This adjustment was refused without a reason."}
               </p>
               {needsSecondConfirmation ? (
                 <Button
