@@ -448,7 +448,7 @@ async function writeImages(
       dropped.add("Some pictures could not be read and were left out");
       continue;
     }
-    const id = wb.addImage({ buffer: bytes as unknown as ExcelJSTypes.Buffer, extension });
+    const id = wb.addImage({ buffer: bytes as unknown as Parameters<typeof wb.addImage>[0]["buffer"], extension });
     ws.addImage(id, {
       tl: { col: from.column + (from.columnOffset ?? 0) / 64, row: from.row + (from.rowOffset ?? 0) / 20 },
       ext: { width: d.transform?.width ?? 200, height: d.transform?.height ?? 150 },
