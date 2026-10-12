@@ -206,6 +206,14 @@ describe("who an alarm is for (Arman 2026-10-11: the owner's card shows only wha
     expect(items.every((i) => i.audience === "owner_decision")).toBe(true);
   });
 
+  it("the GitHub billing block card carries the Fix GitHub billing action and a plain label", () => {
+    const block = row({ id: "a-bill", kind: "ci_billing_block", level: "critical", audience: "owner_decision" });
+    const [item] = spendAlarmItems([block], deps());
+    const act = item.actions.find((x) => x.id === "fix_github_billing");
+    expect(act?.label).toBe("Fix GitHub billing");
+    expect(act?.confirm?.description).toContain("No deploys or package releases run until billing is fixed");
+  });
+
   describe("the CI spend card's Pause button is real or absent", () => {
     const ci = row({ id: "a-ci", kind: "ci_spend_off_track", audience: "owner_decision" });
     const costly = {

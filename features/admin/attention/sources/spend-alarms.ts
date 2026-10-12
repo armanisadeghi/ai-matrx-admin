@@ -108,6 +108,8 @@ function namesOf(row: SpendAlarmAttentionRow): Map<string, string> {
   return names;
 }
 
+export const GITHUB_BILLING_URL = "https://github.com/enterprises/ai-matrx/settings/billing";
+
 /** "ai-matrx Deploy (12.50/day)": repo owner dropped. */
 export function costlyLine(w: Pick<CostlyWorkflow, "repo" | "workflow" | "usd_per_day">): string {
   return `${w.repo.split("/").pop()} ${w.workflow} (${formatSpendUsd(w.usd_per_day)}/day)`;
@@ -259,6 +261,22 @@ function actionsOf(row: SpendAlarmAttentionRow, deps: SpendAlarmDeps): Attention
     });
   }
   if (row.kind === "ci_spend_off_track") out.push(...ciActions(row, deps));
+  if (row.kind === "ci_billing_block") {
+    // Only Arman can fix GitHub billing: the one button opens GitHub's billing page.
+    out.push({
+      id: "fix_github_billing",
+      label: "Fix GitHub billing",
+      variant: "outline",
+      confirm: {
+        title: "Open GitHub billing?",
+        description: "No deploys or package releases run until billing is fixed. Opens GitHub's billing settings in a new tab.",
+        confirmLabel: "Fix GitHub billing",
+      },
+      run: async () => {
+        if (typeof window !== "undefined") window.open(GITHUB_BILLING_URL, "_blank", "noopener");
+      },
+    });
+  }
   out.push({
     id: "resolve",
     label: "Resolve",
