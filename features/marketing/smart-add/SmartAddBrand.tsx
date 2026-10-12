@@ -92,6 +92,8 @@ const IDENTIFY_DEBOUNCE_MS = 700;
 const STAGE_DWELL_MS = 2_600;
 /** When the work is already done (or the person answered), a short beat, then the morph. */
 const STAGE_SETTLE_MS = 1_800;
+/** Only the person's own answers (no run): just long enough to see them land. */
+const STAGE_ANSWER_MS = 900;
 /** Confirmations within this window go out as one round. */
 const CONFIRM_BATCH_MS = 600;
 
@@ -477,9 +479,9 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const hasFindings = [...items.values()].some((i) => i.source.where !== "the address itself");
   useEffect(() => {
     if (structured || !hasFindings) return;
-    const timer = setTimeout(() => setStructured(true), working ? STAGE_DWELL_MS : STAGE_SETTLE_MS);
+    const timer = setTimeout(() => setStructured(true), working ? STAGE_DWELL_MS : rounds.length ? STAGE_SETTLE_MS : STAGE_ANSWER_MS);
     return () => clearTimeout(timer);
-  }, [hasFindings, structured, working]);
+  }, [hasFindings, structured, working, rounds.length]);
   useLayoutEffect(() => {
     if (structured) riseIn(pageRef.current);
   }, [structured]);

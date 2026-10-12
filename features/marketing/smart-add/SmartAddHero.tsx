@@ -208,6 +208,7 @@ export function SmartAddHero({
                       parsedLabel={parsed.status === "ok" && socialOk ? parsed.label : null}
                       platform={parsed.status === "ok" && socialOk ? parsed.platform : null}
                       name={name.trim()}
+                      person={person}
                       onEdit={() => setSubmitted(false)}
                     />
                   ) : mode === "name" ? (
@@ -699,8 +700,10 @@ function CompactSignals({
   parsedLabel,
   platform,
   name,
+  person,
   onEdit,
 }: {
+  person: boolean;
   mode: Mode | null;
   host: string | null;
   site: string;
@@ -833,6 +836,11 @@ function Centerpiece({
         {nameItem ? (
           <Shared id={nameItem.key} className="max-w-full truncate text-[1.75rem] font-semibold tracking-[-0.03em] sm:text-4xl">
             <Typewriter text={nameItem.value} />
+          </Shared>
+        ) : typedName ? (
+          // Their own word, already confirmed: it flies to the name slot like any finding.
+          <Shared id={customItem("name", typedName).key} className="max-w-full truncate text-[1.75rem] font-semibold tracking-[-0.03em] sm:text-4xl">
+            {typedName}
           </Shared>
         ) : settled ? (
           <span className="text-2xl font-semibold tracking-tight sm:text-3xl">Nothing online yet</span>
