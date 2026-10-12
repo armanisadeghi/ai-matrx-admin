@@ -552,6 +552,12 @@ export const OVERLAY_CATALOGUE = {
     instanceMode: "singleton",
     isWindow: true,
   },
+  // The admin Builder panel: everything a page has (features/builder-panel).
+  builderPanelWindow: {
+    label: "Builder",
+    instanceMode: "singleton",
+    isWindow: true,
+  },
   errorInspectorWindow: {
     label: "Error Inspector",
     instanceMode: "singleton",

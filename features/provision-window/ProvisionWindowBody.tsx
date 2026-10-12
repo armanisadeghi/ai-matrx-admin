@@ -5,6 +5,7 @@
  * full value (expand), size, source, missing reason, one-click copy (each value, all as JSON,
  * all as Markdown), and earlier captures of the same point for the same subject.
  */
+import { copyText } from "@ai-matrx/kit/clipboard";
 import { useEffect, useState } from "react";
 import { Check, ChevronDown, ChevronRight, Copy } from "lucide-react";
 import { Button, Select, type SelectOption } from "@ai-matrx/design-system/controls";
@@ -25,7 +26,8 @@ import {
 function useCopy(): [string | null, (key: string, text: string) => void] {
   const [copied, setCopied] = useState<string | null>(null);
   const copy = (key: string, text: string) => {
-    void navigator.clipboard.writeText(text).then(() => {
+    void copyText(text).then((ok) => {
+      if (!ok) return;
       setCopied(key);
       setTimeout(() => setCopied((c) => (c === key ? null : c)), 1500);
     });

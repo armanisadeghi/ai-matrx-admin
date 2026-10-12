@@ -1,0 +1,19 @@
+/* A just-published entry: a brief primary wash that fades out. Colour only — nothing moves. */
+.fresh {
+  animation: builder-fresh 2.5s ease-out;
+}
+
+@keyframes builder-fresh {
+  from {
+    background-color: hsl(var(--primary) / 0.18);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fresh {
+    animation: none;
+  }
+}

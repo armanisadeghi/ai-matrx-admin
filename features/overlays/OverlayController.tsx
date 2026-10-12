@@ -618,6 +618,10 @@ const ExecutionInspectorWindow = lazyOverlay(
     import("@/features/window-panels/windows/admin/ExecutionInspectorWindow"),
   { ssr: false },
 );
+const BuilderPanelWindow = lazyOverlay(
+  () => import("@/features/window-panels/windows/admin/BuilderPanelWindow"),
+  { ssr: false },
+);
 const ErrorInspectorWindow = lazyOverlay(
   () => import("@/features/admin/error-inspector/ErrorInspectorWindow"),
   { ssr: false },
@@ -1449,6 +1453,9 @@ export default function OverlayController() {
     emailDialogWindow: useAppSelector((s) =>
       selectIsOverlayOpen(s, "emailDialogWindow"),
     ),
+    builderPanelWindow: useAppSelector((s) =>
+      selectIsOverlayOpen(s, "builderPanelWindow"),
+    ),
     errorInspectorWindow: useAppSelector((s) =>
       selectIsOverlayOpen(s, "errorInspectorWindow"),
     ),
@@ -1902,6 +1909,9 @@ export default function OverlayController() {
     ) as Record<string, unknown> | null,
     emailDialogWindow: useAppSelector((s) =>
       selectOverlayData(s, "emailDialogWindow"),
+    ) as Record<string, unknown> | null,
+    builderPanelWindow: useAppSelector((s) =>
+      selectOverlayData(s, "builderPanelWindow"),
     ) as Record<string, unknown> | null,
     errorInspectorWindow: useAppSelector((s) =>
       selectOverlayData(s, "errorInspectorWindow"),
@@ -4742,6 +4752,26 @@ export default function OverlayController() {
                 ? data.submitLabel
                 : undefined
             }
+          />
+        );
+      })()}
+
+      {/* builderPanelWindow */}
+      {(() => {
+        const isOpen = isOpenById.builderPanelWindow;
+        const data = dataById.builderPanelWindow as
+          Record<string, unknown> | null | undefined;
+        if (!isOpen) return null;
+        return (
+          <BuilderPanelWindow
+            isOpen
+            onClose={() =>
+              dispatch(closeOverlay({ overlayId: "builderPanelWindow" }))
+            }
+            initialSurfaceKey={typeof data?.surfaceKey === "string" ? data.surfaceKey : null}
+            initialTab={typeof data?.tab === "string" ? data.tab : null}
+            initialEntryKey={typeof data?.entryKey === "string" ? data.entryKey : null}
+            initialRaw={data?.raw === true}
           />
         );
       })()}

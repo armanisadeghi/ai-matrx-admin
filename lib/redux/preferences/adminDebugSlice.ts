@@ -21,6 +21,12 @@
 
 import { createSelector, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { DebugData } from "@/components/debug/SystemPromptDebugModal";
+import {
+  BUILDER_ENTRY_MAX,
+  BUILDER_HISTORY_MAX,
+  type BuilderFeed,
+  type BuilderPublishInput,
+} from "@/features/builder-panel/types";
 
 // ============================================================================
 // TYPES
@@ -46,6 +52,10 @@ export interface AdminDebugState {
   // e.g. "Chat:Session ID", "API:Backend URL"
   debugData: Record<string, unknown>;
 
+  // 3. builderFeeds — the Builder panel's feed, one per surface (useBuilderFeed).
+  //    Keyed entries replace in place and keep a short history. Admin-only writers.
+  builderFeeds: Record<string, BuilderFeed>;
+
   // Floating debug panel indicators (unchanged from original design)
   indicators: {
     promptDebug?: { isOpen: boolean; data: DebugData | null };
@@ -58,6 +68,7 @@ const initialState: AdminDebugState = {
   isDebugMode: false,
   routeContext: null,
   debugData: {},
+  builderFeeds: {},
   indicators: {},
 };
 
@@ -131,6 +142,63 @@ const adminDebugSlice = createSlice({
     // Reset everything
     resetDebugState: () => initialState,
 
+    // ── Builder feed (written by useBuilderFeed only) ───────────────────
+
+    builderPublish: (
+      state,
+      action: PayloadAction<{
+        surfaceKey: string;
+        route: string | null;
+        entries: BuilderPublishInput[];
+        /** Keys under these prefixes that are not in `keep` are dropped (a whole set replaced). */
+        prune?: { prefixes: string[]; keep: string[] } | null;
+      }>,
+    ) => {
+      const { surfaceKey, route, entries, prune } = action.payload;
+      state.builderFeeds ??= {};
+      const now = Date.now();
+      const feed = (state.builderFeeds[surfaceKey] ??= {
+        surfaceKey,
+        route,
+        updatedAt: now,
+        entries: {},
+        order: [],
+      });
+      feed.route = route ?? feed.route;
+      feed.updatedAt = now;
+      for (const input of entries) {
+        const at = input.at ?? now;
+        const prev = feed.entries[input.key];
+        if (prev) {
+          const history = [{ at: prev.at, data: prev.data }, ...prev.history].slice(0, BUILDER_HISTORY_MAX);
+          feed.entries[input.key] = { ...prev, ...input, at, firstAt: prev.firstAt, history };
+        } else {
+          feed.entries[input.key] = { ...input, at, firstAt: at, history: [] };
+          feed.order.push(input.key);
+        }
+      }
+      if (prune) {
+        const keep = new Set(prune.keep);
+        const stale = feed.order.filter((k) => !keep.has(k) && prune.prefixes.some((p) => k.startsWith(p)));
+        for (const key of stale) delete feed.entries[key];
+        if (stale.length) feed.order = feed.order.filter((k) => feed.entries[k]);
+      }
+      while (feed.order.length > BUILDER_ENTRY_MAX) {
+        const dropped = feed.order.shift();
+        if (dropped) delete feed.entries[dropped];
+      }
+    },
+    builderRemove: (state, action: PayloadAction<{ surfaceKey: string; keys: string[] }>) => {
+      const feed = state.builderFeeds?.[action.payload.surfaceKey];
+      if (!feed) return;
+      const drop = new Set(action.payload.keys);
+      for (const key of drop) delete feed.entries[key];
+      feed.order = feed.order.filter((k) => !drop.has(k));
+    },
+    builderClearSurface: (state, action: PayloadAction<string>) => {
+      if (state.builderFeeds) delete state.builderFeeds[action.payload];
+    },
+
     // ── Indicator management (unchanged) ─────────────────────────────────
 
     showPromptDebugIndicator: (
@@ -190,6 +258,9 @@ export const {
   hideResourceDebugIndicator,
   showExecutionStateDebug,
   hideExecutionStateDebug,
+  builderPublish,
+  builderRemove,
+  builderClearSurface,
 } = adminDebugSlice.actions;
 
 // ── Selectors ────────────────────────────────────────────────────────────────
@@ -242,5 +313,10 @@ export const selectResourceDebugIndicator = (state: WithAdminDebug) =>
   selectIndicators(state).resourceDebug;
 export const selectExecutionStateDebug = (state: WithAdminDebug) =>
   selectIndicators(state).executionStateDebug;
+
+const EMPTY_FEEDS: Record<string, BuilderFeed> = {};
+/** Every surface's Builder feed (the Builder panel + its sidebar item). */
+export const selectBuilderFeeds = (state: WithAdminDebug): Record<string, BuilderFeed> =>
+  selectAdminDebugSlice(state).builderFeeds ?? EMPTY_FEEDS;
 
 export default adminDebugSlice.reducer;

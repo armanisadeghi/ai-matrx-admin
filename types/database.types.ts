@@ -84394,6 +84394,93 @@ export type Database = {
           },
         ]
       }
+      proposal: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          goal: string | null
+          id: string
+          inputs: Json
+          metadata: Json
+          notes: string | null
+          organization_id: string
+          output_kind: string | null
+          output_sketch: Json | null
+          proposed_key: string | null
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shape_type: string
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          sort_order: number
+          status: string
+          steps: Json
+          surface_key: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          goal?: string | null
+          id?: string
+          inputs?: Json
+          metadata?: Json
+          notes?: string | null
+          organization_id: string
+          output_kind?: string | null
+          output_sketch?: Json | null
+          proposed_key?: string | null
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shape_type?: string
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          sort_order?: number
+          status?: string
+          steps?: Json
+          surface_key: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          goal?: string | null
+          id?: string
+          inputs?: Json
+          metadata?: Json
+          notes?: string | null
+          organization_id?: string
+          output_kind?: string | null
+          output_sketch?: Json | null
+          proposed_key?: string | null
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shape_type?: string
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          sort_order?: number
+          status?: string
+          steps?: Json
+          surface_key?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
       provision: {
         Row: {
           code_path: string | null

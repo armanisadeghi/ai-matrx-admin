@@ -74,14 +74,19 @@ import {
   type EvidenceItem,
   type RoundSeeds,
   type SocialSeed,
+  type ConfirmedFacts,
+  wakeFacts,
   type Candidate,
   type Relation,
 } from "./evidence";
 import { routeRelated, relatedCompetitors, type RelatedCandidate } from "./relations";
 import { SETUP_STEPS, SmartAddRound, type RoundView } from "./SmartAddRound";
+import { SmartAddWebRow } from "./SmartAddWebRow";
 import { captureProvision } from "@/features/provision-window/data";
 import { useOpenProvisionWindow } from "@/features/overlays/openers/provisionWindow";
 import { ProvisionCaptures } from "@/features/provision-window/ProvisionCaptures";
+import { useBuilderFeed } from "@/hooks/useBuilderFeed";
+import { publishSmartAddFeed, SMART_ADD_SURFACE } from "./builderFeed";
 
 /** The call point where the brand-intake analysis would run (server: brand_intake/provision.py). */
 const BRAND_INTAKE_POINT = "brand_intake.smart_add_create";
@@ -135,6 +140,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const [relations, setRelations] = useState<Record<string, RelatedCandidate>>({});
   const explored = useRef<Set<string>>(new Set());
   const typedKeys = useRef<{ website: string | null; social: string | null }>({ website: null, social: null });
+  // Confirmed facts already sent to the workflow ("name:<v>", "location:<v>"): a new one wakes its steps.
+  const wokenSent = useRef<Set<string>>(new Set());
 
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
@@ -151,11 +158,13 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   // Tier 3: the real site crawl, started after Create, never on the identify path.
   const [crawl, setCrawl] = useState<"idle" | "running" | "done" | "failed">("idle");
   const [crawlNote, setCrawlNote] = useState<string | null>(null);
+  // Admin Builder panel: everything this screen has (no-op for everyone else).
+  const builder = useBuilderFeed(SMART_ADD_SURFACE);
 
   // ── rounds ──────────────────────────────────────────────────────────────
 
-  const startRound = async (seeds: RoundSeeds) => {
-    if (!seeds.website && seeds.socials.length === 0) return;
+  const startRound = async (seeds: RoundSeeds, woken: ConfirmedFacts = {}) => {
+    if (!seeds.website && seeds.socials.length === 0 && !woken.name && !woken.location) return;
     for (const k of seedKeys(seeds, accountSeedKey)) explored.current.add(k);
     const id = crypto.randomUUID();
     setRounds((r) => [...r, { id, runId: null, seeds, error: null }]);
@@ -171,7 +180,9 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           subject: `smart_add:${id}`,
           organizationId,
           sourceFeature: "marketing",
-          inputs: { website: seeds.website, socials: seeds.socials, exclude_keys: exclude },
+          // `confirmed` = every fact the person confirmed; `woken` = the ones new this round, which wake
+          // the confirmed-tier steps (news/videos/images, local) — the run skips the rest.
+          inputs: { website: seeds.website, socials: seeds.socials, confirmed: confirmedFacts, woken, exclude_keys: exclude },
         },
         "Identification could not start.",
       );
@@ -189,6 +200,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     setRelations({});
     setComparing(false);
     explored.current = new Set();
+    wokenSent.current = new Set();
     typedKeys.current = { website: null, social: null };
   };
 
@@ -253,6 +265,30 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     return () => clearTimeout(timer);
   }, [pendingKey, created]);
 
+  // The facts the person confirmed, as the identify workflow reads them.
+  const factBasics = confirmedBasics(items, decisions, person);
+  const confirmedFacts: ConfirmedFacts = {
+    ...(factBasics.name ? { name: factBasics.name } : {}),
+    ...(factBasics.websiteUrl ? { domain: websiteHost(factBasics.websiteUrl) } : {}),
+    ...(factBasics.facts.find((f) => f.field === "address")?.value
+      ? { location: factBasics.facts.find((f) => f.field === "address")?.value }
+      : {}),
+  };
+  // A confirmed name / location wakes the steps waiting on it (a new round carrying only those facts).
+  const woken = wakeFacts(confirmedFacts, wokenSent.current);
+  const wokenKey = JSON.stringify(woken);
+  const runWoken = useEffectEvent(() => {
+    const next = wakeFacts(confirmedFacts, wokenSent.current);
+    if (next.name) wokenSent.current.add(`name:${next.name}`);
+    if (next.location) wokenSent.current.add(`location:${next.location}`);
+    void startRound({ website: "", socials: [] }, next);
+  });
+  useEffect(() => {
+    if (created || wokenKey === "{}") return;
+    const timer = setTimeout(runWoken, CONFIRM_BATCH_MS);
+    return () => clearTimeout(timer);
+  }, [wokenKey, created]);
+
   const setupInterrupted = setupView?.status === "cancelled";
   useEffect(() => {
     if (!setupRunId || !setupInterrupted) return;
@@ -282,6 +318,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     });
   };
 
+  /** Compare view: claim or reject everything one source (the site, a profile) found. */
   /** Compare view: one candidate is ours (everything its page said) or not us (what only it said). */
   const claim = (c: Candidate, decision: "yes" | "no") => {
     setRelations(({ [c.id]: _drop, ...rest }) => rest);
@@ -361,6 +398,21 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     ? trackedAccounts.map((a) => spend.postsText(a.platform ?? "", postsPerAccount)).filter(Boolean)
     : [];
   const situation = situationOf(visible, rounds.length > 0 && !working);
+  useEffect(() => {
+    if (!builder.isActive) return;
+    publishSmartAddFeed(builder.publish, {
+      inputs: { website: websiteText, social: socialText, platform: picked, person },
+      rounds,
+      views,
+      setup: setupRunId ? { runId: setupRunId, view: setupView } : null,
+      items: [...items.values()],
+      decisions,
+      relations,
+      basics,
+      created,
+      provisionPoint: BRAND_INTAKE_POINT,
+    });
+  });
   const canCreate = Boolean(basics.name) && !creating && !created;
 
   // ── create ──────────────────────────────────────────────────────────────
@@ -517,6 +569,14 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     setCapturing(true);
     try {
       const snapshot = await captureProvision(dispatch, BRAND_INTAKE_POINT, brand.id, organizationId, trigger);
+      builder.publish({
+        key: `provision.${snapshot.id}`,
+        label: `Provision: ${brand.name}`,
+        group: "provision",
+        data: { snapshotId: snapshot.id, point: BRAND_INTAKE_POINT, trigger },
+        source: BRAND_INTAKE_POINT,
+        ref: { type: "provision_snapshot", id: snapshot.id },
+      });
       setProvisionTick((t) => t + 1);
       openProvision(snapshot.id, `Brand analysis inputs: ${brand.name}`);
     } catch (error) {
@@ -729,6 +789,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           onAdd={addCustom}
         />
       </div>
+
+      <SmartAddWebRow items={visible} views={roundViews.filter((v): v is RoundView => Boolean(v))} />
 
       {notes.length ? (
         <ul className="flex flex-col gap-0.5 text-xs text-muted-foreground">

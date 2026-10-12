@@ -10,6 +10,7 @@
 // here. Contains:
 //   - Admin Launchpad (prominent new-tab door that preserves the current work)
 //   - Administration (the lazy 3-layer cascade; catalog never loads for non-admins)
+//   - Builder (window panel: everything the current page published; lights up when it has entries)
 //   - Creator Hub toggle (window panel; self-gates to creators)
 //   - Debug indicator toggle (self-gates to super-admin)
 //   - Localhost / Production server toggle (self-gates to admin)
@@ -25,6 +26,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAuthReady, selectIsAdminPerson } from "@/lib/redux/selectors/userSelectors";
 import SidebarAdminIndicatorToggle from "../../controls/SidebarAdminIndicatorToggle";
 import SidebarApiVersionToggle from "../../controls/SidebarApiVersionToggle";
+import SidebarBuilderToggle from "../../controls/SidebarBuilderToggle";
 import SidebarCreatorHubToggle from "../../controls/SidebarCreatorHubToggle";
 import SidebarEnvToggle from "../../controls/SidebarEnvToggle";
 import SidebarErrorInspectorToggle from "../../controls/SidebarErrorInspectorToggle";
@@ -92,6 +94,7 @@ export default function AdminSidebarSection() {
         </span>
       </AppLink>
       <AdminMenu />
+      <SidebarBuilderToggle />
       <SidebarErrorInspectorToggle />
       <SidebarCreatorHubToggle />
       <SidebarAdminIndicatorToggle />

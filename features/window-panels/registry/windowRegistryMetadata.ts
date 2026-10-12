@@ -1117,6 +1117,17 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
 
   // ── Error Inspector (admin) ───────────────────────────────────────────────
   {
+    slug: "builder-panel-window",
+    overlayId: "builderPanelWindow",
+    kind: "window",
+    label: "Builder",
+    defaultData: { surfaceKey: null, tab: "data", entryKey: null, raw: false },
+    preservation: { dataKeys: ["surfaceKey", "tab", "entryKey", "raw"] },
+    mobilePresentation: "fullscreen",
+    instanceMode: "singleton",
+  },
+
+  {
     slug: "error-inspector-window",
     overlayId: "errorInspectorWindow",
     kind: "window",

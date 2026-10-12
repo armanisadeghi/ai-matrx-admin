@@ -48,11 +48,12 @@ if (process.env.PROBE) console.log(JSON.stringify(await page.evaluate(() => {
   const hostRoot = [document, document.documentElement, document.body].map(e => { const k = Object.keys(e).find(k=>k.startsWith("__reactContainer")); return k ? e[k] : null; }).find(Boolean);
   walk(hostRoot); if (!store) return "nostore";
   const s = store.getState(); const ar = Object.values(s.activeRequests?.byRequestId || {});
-  const msgs = Object.values(s.messages?.byId || s.messages?.messages || {});
-  return { ar: ar.map(r => ({ id: r.requestId, status: r.status, error: JSON.stringify(r.error).slice(0,400), order: r.renderBlockOrder, timeline: r.timeline.map(t=>t.kind+(t.data?.type?':'+t.data.type:'')).join(' '), blocks: Object.values(r.renderBlocks).map(b=>({id:b.blockId,type:b.type,len:(b.content||"").length})) })),
-    msgs: msgs.map(m => ({ id: m.id, role: m.role, req: m._streamRequestId, ss: m._streamSlotStart, se: m._streamSlotEnd, content: JSON.stringify(m.content).slice(0,300), status: m._status||m.status })) };
+  const msgs = Object.values(s.messages?.byConversationId || {}).flatMap(e => Object.values(e.byId));
+  return { ar: ar.map(r => ({ id: r.requestId, status: r.status, error: JSON.stringify(r.error).slice(0,400), order: r.renderBlockOrder, timeline: r.timeline.map((t,i)=>i+':'+t.kind+(t.data?.type?':'+t.data.type:'')+(t.originalEvent?':'+t.originalEvent:'')).join(' '), tl2: r.timeline.filter(t=>t.kind==='record_reserved').map(t=>JSON.stringify(t.data)), blocks: Object.values(r.renderBlocks).map(b=>({id:b.blockId,type:b.type,len:(b.content||"").length})) })),
+    msgs: msgs.map(m => ({ id: m.id, role: m.role, req: m._streamRequestId, ss: m._streamSlotStart, se: m._streamSlotEnd, pos: m.position, content: JSON.stringify(m.content).slice(0,300), cs: m._clientStatus, status: m._status||m.status })) };
 }), null, 1));
 const last = samples.at(-1);
+console.log("submitButtons", await page.getByRole("button", { name: "Submit", exact: true }).count());
 console.log("maxLen", maxLen, "last", JSON.stringify(last), "conv", page.url());
 console.log(await page.evaluate(()=>[...document.querySelectorAll('[data-message-group][aria-label="Assistant answer"]')].map(e=>e.outerHTML.slice(0,2500)).join("\n----\n")));
 await b.close();

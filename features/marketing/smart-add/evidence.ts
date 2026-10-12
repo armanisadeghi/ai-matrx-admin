@@ -23,11 +23,17 @@ export type EvidenceField =
   | "category"
   | "phone"
   | "email"
-  | "address";
+  | "address"
+  // The web tier: a review/listing page about the brand, and a news/video/image result about it.
+  | "listing"
+  | "mention";
+
+/** How sure the web tier is that a candidate is the brand (fixed rules on the server, no AI). */
+export type Certainty = "certain" | "likely" | "possible";
 
 export interface EvidenceSource {
   node: string;
-  kind: "website" | "social_profile" | "link_in_bio" | "typed";
+  kind: "website" | "social_profile" | "link_in_bio" | "typed" | "web_search";
   url: string | null;
   where: string | null;
 }
@@ -47,6 +53,11 @@ export interface EvidenceItem {
   profile_id: string | null;
   source: EvidenceSource;
   confidence: number;
+  /** Web-found items only: how sure, and why (aidream brand_identify_web.web_certainty). */
+  certainty?: Certainty | null;
+  certainty_reasons?: string[];
+  /** Web-found items: the engines that found it (admin/Builder data — never shown to customers). */
+  engines?: string[];
 }
 
 /**
@@ -101,7 +112,12 @@ export const FIELD_LABEL: Record<EvidenceField, string> = {
   phone: "Phone",
   email: "Email",
   address: "Address",
+  listing: "On the web",
+  mention: "On the web",
 };
+
+/** Fields that live only in the "On the web" row, never in the form's slots. */
+export const WEB_FIELDS: ReadonlySet<EvidenceField> = new Set(["listing", "mention"]);
 
 function asString(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value : null;
@@ -114,7 +130,7 @@ export function parseEvidenceItem(raw: unknown): EvidenceItem | null {
   const key = asString(r.key);
   const field = asString(r.field) as EvidenceField | null;
   const value = asString(r.value);
-  if (!key || !field || !value || !FIELD_ORDER.includes(field)) return null;
+  if (!key || !field || !value || !(FIELD_ORDER.includes(field) || WEB_FIELDS.has(field))) return null;
   const src = (typeof r.source === "object" && r.source !== null ? r.source : {}) as Record<string, unknown>;
   return {
     key,
@@ -135,6 +151,11 @@ export function parseEvidenceItem(raw: unknown): EvidenceItem | null {
       where: asString(src.where),
     },
     confidence: typeof r.confidence === "number" ? r.confidence : 0,
+    certainty: r.certainty === "certain" || r.certainty === "likely" || r.certainty === "possible" ? r.certainty : null,
+    certainty_reasons: Array.isArray(r.certainty_reasons)
+      ? r.certainty_reasons.filter((x): x is string => typeof x === "string")
+      : [],
+    engines: Array.isArray(r.engines) ? r.engines.filter((x): x is string => typeof x === "string") : [],
   };
 }
 
@@ -396,6 +417,9 @@ export interface Candidate {
   photoUrl: string | null;
   /** A website's own icon/logo. */
   iconUrl: string | null;
+  /** Found by the web search: how sure, and why. */
+  certainty?: Certainty | null;
+  certaintyReasons?: string[];
 }
 
 export interface PlatformRow {
@@ -460,11 +484,15 @@ export function compareRows(items: EvidenceItem[]): PlatformRow[] {
       profileId: photo?.profile_id ?? null,
       photoUrl: photo?.image_url ?? null,
       iconUrl: null,
+      certainty: acct.certainty ?? null,
+      certaintyReasons: acct.certainty_reasons ?? [],
     });
   }
 
   // Websites — one per host: the address itself plus everything read off that site.
-  const siteItems = items.filter((i) => i.source.kind !== "social_profile" && i.source.kind !== "typed" && i.field !== "social");
+  const siteItems = items.filter(
+    (i) => i.source.kind !== "social_profile" && i.source.kind !== "typed" && i.source.kind !== "web_search" && i.field !== "social",
+  );
   const hosts = new Map<string, EvidenceItem | null>();
   for (const w of items.filter((i) => i.field === "website")) {
     const h = websiteHost(w.value);
@@ -516,4 +544,38 @@ export function compareRows(items: EvidenceItem[]): PlatformRow[] {
       platform,
       candidates: list.sort((a, b) => (b.followers ?? -1) - (a.followers ?? -1) || b.anchor.confidence - a.anchor.confidence),
     }));
+}
+
+// ── The web tier: confirmed facts that wake it, and the "On the web" row ─────────────
+
+/** The facts the person confirmed, as the identify workflow reads them (`confirmed` input). */
+export interface ConfirmedFacts {
+  name?: string;
+  domain?: string;
+  location?: string;
+}
+
+const CERTAINTY_RANK: Record<Certainty, number> = { certain: 0, likely: 1, possible: 2 };
+
+/** The review/listing pages and news/video/image results, surest first. */
+export function webRow(items: Iterable<EvidenceItem>): EvidenceItem[] {
+  return [...items]
+    .filter((i) => WEB_FIELDS.has(i.field))
+    .sort(
+      (a, b) =>
+        (a.field === "listing" ? 0 : 1) - (b.field === "listing" ? 0 : 1) ||
+        CERTAINTY_RANK[a.certainty ?? "possible"] - CERTAINTY_RANK[b.certainty ?? "possible"] ||
+        b.confidence - a.confidence,
+    );
+}
+
+/**
+ * What a confirmation should wake: the facts not yet sent. `sent` holds "name:<v>" / "location:<v>".
+ * A newly confirmed name re-wakes a known location (its local search names the brand).
+ */
+export function wakeFacts(facts: ConfirmedFacts, sent: ReadonlySet<string>): ConfirmedFacts {
+  const woken: ConfirmedFacts = {};
+  if (facts.name && !sent.has(`name:${facts.name}`)) woken.name = facts.name;
+  if (facts.location && (woken.name || !sent.has(`location:${facts.location}`))) woken.location = facts.location;
+  return woken;
 }
