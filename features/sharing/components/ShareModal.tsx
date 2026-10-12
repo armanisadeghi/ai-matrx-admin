@@ -484,9 +484,12 @@ export function ShareModal({
                 {/* Current user permissions */}
                 <div>
                   <h3 className="text-sm font-medium mb-2">Current Access</h3>
-                  {!canShare && !loading && userPermissions.length === 0 ? (
+                  {/* Only the owner (and Admins) can read the grant list: an empty list in any
+                      other seat — an editor who may share included — is "cannot see", never
+                      "Not shared with anyone" (that seat itself holds a grant). */}
+                  {!isOwner && !loading && userPermissions.length === 0 ? (
                     <p className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
-                      The list of people with access is visible to Admins.
+                      The list of people with access is visible to the owner and Admins.
                     </p>
                   ) : (
                   <PermissionsList
