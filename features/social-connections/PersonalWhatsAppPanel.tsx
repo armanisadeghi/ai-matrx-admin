@@ -108,7 +108,7 @@ function PersonalWhatsAppContent({ messenger }: { messenger: boolean }) {
         <span className="text-sm font-medium">Personal WhatsApp</span>
         <InfoHint text="Connects WhatsApp through Beeper Desktop on this computer; keep Beeper and AI Matrx Local open." />
         <Badge variant="secondary">{label}</Badge>
-        <Badge variant="outline">{grant?.request_profile === "read_write" ? "Sending enabled" : "Read-only"}</Badge>
+        <Badge variant="outline">{grant?.request_profile === "read_write" ? ready ? "Sending enabled" : "Sending requested" : "Read-only"}</Badge>
         <InfoHint text="Consent lasts up to one day; renewing access opens Beeper consent again." />
       </div>
       <div className="flex flex-wrap gap-2">

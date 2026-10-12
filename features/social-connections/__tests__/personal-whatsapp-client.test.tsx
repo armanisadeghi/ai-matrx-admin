@@ -55,6 +55,15 @@ describe("personal WhatsApp real panel/client/thread boundary", () => {
   });
   afterEach(() => { jest.restoreAllMocks(); });
 
+  it("requested write consent does not claim sending is already enabled", async () => {
+    status = { ...initial, status: "pending_local", request_profile: "read_write", scopes: [] };
+    const host = document.createElement("div"); const root = createRoot(host);
+    try {
+      await act(async () => root.render(<PersonalWhatsAppPanel messenger />));
+      expect(host.textContent).toContain("Awaiting consent"); expect(host.textContent).toContain("Sending requested");
+      expect(host.textContent).not.toContain("Sending enabled");
+    } finally { await act(async () => root.unmount()); }
+  });
   it("unsupported write upgrade preserves the working reader and never disconnects", async () => {
     jest.spyOn(window, "open").mockReturnValue(null);
     const host = document.createElement("div"); const root = createRoot(host);
