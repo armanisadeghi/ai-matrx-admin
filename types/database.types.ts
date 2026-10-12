@@ -144896,6 +144896,81 @@ export type Database = {
   }
   workbench: {
     Tables: {
+      file_template: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          description: string | null
+          id: string
+          kind: string
+          metadata: Json
+          name: string
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          snapshot: Json
+          sort_order: number
+          source_record_id: string | null
+          thumbnail_file_id: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          kind: string
+          metadata?: Json
+          name: string
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          snapshot: Json
+          sort_order?: number
+          source_record_id?: string | null
+          thumbnail_file_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          kind?: string
+          metadata?: Json
+          name?: string
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          snapshot?: Json
+          sort_order?: number
+          source_record_id?: string | null
+          thumbnail_file_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
       google_document: {
         Row: {
           body_text: string | null
@@ -145828,6 +145903,14 @@ export type Database = {
       dataset_readable_by: {
         Args: { p_dataset_id: string; p_user: string }
         Returns: boolean
+      }
+      file_previews: {
+        Args: { p_ids: string[]; p_kind: string }
+        Returns: {
+          id: string
+          preview: Json
+          snapshot_at: string
+        }[]
       }
       older_table_moved_to: { Args: { p_id: string }; Returns: Json }
       udt_dataset_access: {
