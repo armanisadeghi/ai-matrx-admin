@@ -123,6 +123,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/personal-messaging/beeper/message": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Message */
+        get: operations["message_personal_messaging_beeper_message_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/personal-messaging/beeper/attachment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Attachment */
+        get: operations["attachment_personal_messaging_beeper_attachment_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/personal-messaging/beeper/reconcile": {
         parameters: {
             query?: never;
@@ -195,201 +229,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** AccountSelection */
-        AccountSelection: {
-            /** Account Ref */
-            account_ref: string;
-        };
-        /** ChatSelection */
-        ChatSelection: {
-            /** Chat Id */
-            chat_id: string;
-            /**
-             * Selected
-             * @default true
-             */
-            selected: boolean;
-        };
-        /** HTTPValidationError */
-        HTTPValidationError: {
-            /** Detail */
-            detail?: components["schemas"]["ValidationError"][];
-        };
-        /** NativeCleanupConfirmation */
-        NativeCleanupConfirmation: {
-            /** Expected Revision */
-            expected_revision: number;
-            /** Client Label */
-            client_label: string;
-            /** Approval Removed */
-            approval_removed: boolean;
-        };
-        /**
-         * NormalizedCitation
-         * @description The canonical cross-provider citation shape — the FE contract.
-         *
-         *     Offsets come in two flavours and are never conflated:
-         *       - ``source_start`` / ``source_end``: char/block offsets INTO THE SOURCE
-         *         document (Anthropic char/content_block locations).
-         *       - ``answer_start`` / ``answer_end``: char offsets INTO THE ANSWER TEXT
-         *         (OpenAI url_citation annotations, Gemini grounding segment offsets).
-         *     ``page`` / ``end_page`` are 1-based (Anthropic page_location).
-         */
-        NormalizedCitation: {
-            /**
-             * Kind
-             * @enum {string}
-             */
-            kind: "document_char" | "document_page" | "document_block" | "search_result" | "web" | "grounding";
-            /**
-             * Provider
-             * @enum {string}
-             */
-            provider: "anthropic" | "openai" | "google" | "xai";
-            /** Cited Text */
-            cited_text?: string | null;
-            /** Title */
-            title?: string | null;
-            /** Url */
-            url?: string | null;
-            /**
-             * Source Index
-             * @default 0
-             */
-            source_index: number;
-            /** File Id */
-            file_id?: string | null;
-            /** Page */
-            page?: number | null;
-            /** End Page */
-            end_page?: number | null;
-            /** Source Start */
-            source_start?: number | null;
-            /** Source End */
-            source_end?: number | null;
-            /** Answer Start */
-            answer_start?: number | null;
-            /** Answer End */
-            answer_end?: number | null;
-            /** Raw */
-            raw?: {
-                [key: string]: unknown;
-            };
-        };
-        /** PersonalAccountSummary */
-        PersonalAccountSummary: {
-            /** Account Ref */
-            account_ref: string;
-            /** Name */
-            name: string;
-            /** Status */
-            status: string;
-            /**
-             * Bridge Provider
-             * @enum {string}
-             */
-            bridge_provider: "cloud" | "local";
-        };
-        /** PersonalActivation */
-        PersonalActivation: {
-            grant: components["schemas"]["PublicGrantStatus"];
-            /** Removed Chat Ids */
-            removed_chat_ids: string[];
-        };
-        /** PersonalChatPage */
-        PersonalChatPage: {
-            /** Items */
-            items: components["schemas"]["PersonalChatSummary"][];
-            /** Has More */
-            has_more: boolean;
-            /** Oldest Cursor */
-            oldest_cursor: string;
-            /** Newest Cursor */
-            newest_cursor: string;
-        };
-        /** PersonalChatSummary */
-        PersonalChatSummary: {
-            /** Id */
-            id: string;
-            /** Title */
-            title: string;
-            /** Selected */
-            selected: boolean;
-        };
-        /** PersonalConsentStart */
-        PersonalConsentStart: {
-            /** Authorization Url */
-            authorization_url: string;
-            grant: components["schemas"]["PublicGrantStatus"];
-            /**
-             * Required Duration
-             * @constant
-             */
-            required_duration: "one_day";
-        };
-        /** PersonalMessage */
-        PersonalMessage: {
-            /** Id */
-            id: string;
-            /** Account Id */
-            account_id: string;
-            /** Chat Id */
-            chat_id: string;
-            /** Sender Id */
-            sender_id: string;
-            /** Sender Name */
-            sender_name: string | null;
-            /**
-             * Direction
-             * @enum {string}
-             */
-            direction: "inbound" | "outbound" | "unknown";
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            content: components["schemas"]["PersonalMessageContent"];
-            /** Deleted */
-            deleted: boolean;
-            /** Attachment Count */
-            attachment_count: number;
-            /** Attachment Access */
-            attachment_access: "beeper_only" | null;
-        };
-        /** PersonalMessageContent */
-        PersonalMessageContent: {
-            /** Parts */
-            parts: components["schemas"]["TextPart"][];
-        };
-        /** PersonalMessagePage */
-        PersonalMessagePage: {
-            /** Items */
-            items: components["schemas"]["PersonalMessage"][];
-            /** Has More */
-            has_more: boolean;
-            /** Oldest Cursor */
-            oldest_cursor: string;
-            /** Newest Cursor */
-            newest_cursor: string;
-            /**
-             * History Coverage
-             * @constant
-             */
-            history_coverage: "available_in_beeper";
-            /**
-             * Refresh Supported
-             * @default false
-             * @constant
-             */
-            refresh_supported: false;
-            /**
-             * Renewal
-             * @default reauthorization
-             * @constant
-             */
-            renewal: "reauthorization";
-        };
         /** PublicGrantStatus */
         PublicGrantStatus: {
             /** Id */
@@ -451,6 +290,155 @@ export interface components {
              */
             cloud_retirement_pending: boolean;
         };
+        /** PersonalConsentStart */
+        PersonalConsentStart: {
+            /** Authorization Url */
+            authorization_url: string;
+            grant: components["schemas"]["PublicGrantStatus"];
+            /**
+             * Required Duration
+             * @constant
+             */
+            required_duration: "one_day";
+        };
+        /** PersonalAccountSummary */
+        PersonalAccountSummary: {
+            /** Account Ref */
+            account_ref: string;
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+            /**
+             * Bridge Provider
+             * @enum {string}
+             */
+            bridge_provider: "cloud" | "local";
+        };
+        /** AccountSelection */
+        AccountSelection: {
+            /** Account Ref */
+            account_ref: string;
+        };
+        /** PersonalActivation */
+        PersonalActivation: {
+            grant: components["schemas"]["PublicGrantStatus"];
+            /** Removed Chat Ids */
+            removed_chat_ids: string[];
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
+        };
+        /** PersonalChatPage */
+        PersonalChatPage: {
+            /** Items */
+            items: components["schemas"]["PersonalChatSummary"][];
+            /** Has More */
+            has_more: boolean;
+            /** Oldest Cursor */
+            oldest_cursor: string;
+            /** Newest Cursor */
+            newest_cursor: string;
+        };
+        /** PersonalChatSummary */
+        PersonalChatSummary: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Selected */
+            selected: boolean;
+        };
+        /** ChatSelection */
+        ChatSelection: {
+            /** Chat Id */
+            chat_id: string;
+            /**
+             * Selected
+             * @default true
+             */
+            selected: boolean;
+        };
+        /** PersonalMessagePage */
+        PersonalMessagePage: {
+            /** Items */
+            items: components["schemas"]["PersonalMessage"][];
+            /** Has More */
+            has_more: boolean;
+            /** Oldest Cursor */
+            oldest_cursor: string;
+            /** Newest Cursor */
+            newest_cursor: string;
+            /**
+             * History Coverage
+             * @constant
+             */
+            history_coverage: "available_in_beeper";
+            /**
+             * Refresh Supported
+             * @default false
+             * @constant
+             */
+            refresh_supported: false;
+            /**
+             * Renewal
+             * @default reauthorization
+             * @constant
+             */
+            renewal: "reauthorization";
+        };
+        /** PersonalMessage */
+        PersonalMessage: {
+            /** Id */
+            id: string;
+            /** Account Id */
+            account_id: string;
+            /** Chat Id */
+            chat_id: string;
+            /** Sender Id */
+            sender_id: string;
+            /** Sender Name */
+            sender_name: string | null;
+            /**
+             * Direction
+             * @enum {string}
+             */
+            direction: "inbound" | "outbound" | "unknown";
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            content: components["schemas"]["PersonalMessageContent"];
+            /** Deleted */
+            deleted: boolean;
+            /** Attachment Count */
+            attachment_count: number;
+            /** Attachment Access */
+            attachment_access: ("beeper_only" | "local_device") | null;
+            /** Attachments */
+            attachments?: components["schemas"]["PersonalAttachmentSummary"][];
+        };
+        /** PersonalMessageContent */
+        PersonalMessageContent: {
+            /** Parts */
+            parts: components["schemas"]["TextPart"][];
+        };
         /** TextPart */
         TextPart: {
             /** Metadata */
@@ -476,18 +464,85 @@ export interface components {
             /** Citations */
             citations?: components["schemas"]["NormalizedCitation"][];
         };
-        /** ValidationError */
-        ValidationError: {
-            /** Location */
-            loc: (string | number)[];
-            /** Message */
-            msg: string;
-            /** Error Type */
-            type: string;
-            /** Input */
-            input?: unknown;
-            /** Context */
-            ctx?: Record<string, never>;
+        /**
+         * NormalizedCitation
+         * @description The canonical cross-provider citation shape — the FE contract.
+         *
+         *     Offsets come in two flavours and are never conflated:
+         *       - ``source_start`` / ``source_end``: char/block offsets INTO THE SOURCE
+         *         document (Anthropic char/content_block locations).
+         *       - ``answer_start`` / ``answer_end``: char offsets INTO THE ANSWER TEXT
+         *         (OpenAI url_citation annotations, Gemini grounding segment offsets).
+         *     ``page`` / ``end_page`` are 1-based (Anthropic page_location).
+         */
+        NormalizedCitation: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "document_char" | "document_page" | "document_block" | "search_result" | "web" | "grounding";
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "anthropic" | "openai" | "google" | "xai";
+            /** Cited Text */
+            cited_text?: string | null;
+            /** Title */
+            title?: string | null;
+            /** Url */
+            url?: string | null;
+            /**
+             * Source Index
+             * @default 0
+             */
+            source_index: number;
+            /** File Id */
+            file_id?: string | null;
+            /** Page */
+            page?: number | null;
+            /** End Page */
+            end_page?: number | null;
+            /** Source Start */
+            source_start?: number | null;
+            /** Source End */
+            source_end?: number | null;
+            /** Answer Start */
+            answer_start?: number | null;
+            /** Answer End */
+            answer_end?: number | null;
+            /** Raw */
+            raw?: {
+                [key: string]: unknown;
+            };
+        };
+        /** PersonalAttachmentSummary */
+        PersonalAttachmentSummary: {
+            /** Index */
+            index: number;
+            /** Revision */
+            revision: string;
+            /** Name */
+            name: string;
+            /** Size Bytes */
+            size_bytes?: number | null;
+            /** Mime Type */
+            mime_type?: string | null;
+            /** Available */
+            available: boolean;
+        };
+        /** PersonalMessageLookup */
+        PersonalMessageLookup: {
+            message: components["schemas"]["PersonalMessage"] | null;
+        };
+        /** NativeCleanupConfirmation */
+        NativeCleanupConfirmation: {
+            /** Expected Revision */
+            expected_revision: number;
+            /** Client Label */
+            client_label: string;
+            /** Approval Removed */
+            approval_removed: boolean;
         };
     };
     responses: never;
@@ -674,6 +729,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PersonalMessagePage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    message_personal_messaging_beeper_message_get: {
+        parameters: {
+            query: {
+                chat_id: string;
+                message_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PersonalMessageLookup"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    attachment_personal_messaging_beeper_attachment_get: {
+        parameters: {
+            query: {
+                chat_id: string;
+                message_id: string;
+                attachment_index: number;
+                revision: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": unknown;
                 };
             };
             /** @description Validation Error */

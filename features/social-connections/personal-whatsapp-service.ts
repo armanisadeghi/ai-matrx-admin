@@ -8,6 +8,7 @@ export type PersonalGrant = components["schemas"]["PublicGrantStatus"];
 export type PersonalAccount = components["schemas"]["PersonalAccountSummary"];
 export type PersonalChat = components["schemas"]["PersonalChatSummary"];
 export type PersonalMessage = components["schemas"]["PersonalMessage"];
+export type PersonalAttachment = components["schemas"]["PersonalAttachmentSummary"];
 export type PersonalMessages = components["schemas"]["PersonalMessagePage"];
 
 const grant: z.ZodType<PersonalGrant> = z.object({
@@ -23,11 +24,12 @@ const grant: z.ZodType<PersonalGrant> = z.object({
 const account: z.ZodType<PersonalAccount> = z.object({ account_ref: z.string(), name: z.string(), status: z.string(), bridge_provider: z.enum(["cloud", "local"]) });
 const chat: z.ZodType<PersonalChat> = z.object({ id: z.string(), title: z.string(), selected: z.boolean() });
 const chats: z.ZodType<components["schemas"]["PersonalChatPage"]> = z.object({ items: z.array(chat), has_more: z.boolean(), oldest_cursor: z.string(), newest_cursor: z.string() });
+const attachment: z.ZodType<PersonalAttachment> = z.object({ index: z.number().int().nonnegative(), revision: z.string().regex(/^[0-9a-f]{64}$/), name: z.string(), size_bytes: z.number().int().nonnegative().nullable().optional(), mime_type: z.string().nullable().optional(), available: z.boolean() });
 const message: z.ZodType<PersonalMessage> = z.object({
   id: z.string(), account_id: z.string(), chat_id: z.string(), sender_id: z.string(), sender_name: z.string().nullable(),
   direction: z.enum(["inbound", "outbound", "unknown"]), created_at: z.string().datetime({ offset: true }),
   content: z.object({ parts: z.array(z.object({ id: z.string(), type: z.literal("text"), text: z.string() })) }),
-  deleted: z.boolean(), attachment_count: z.number().int().nonnegative(), attachment_access: z.literal("beeper_only").nullable(),
+  deleted: z.boolean(), attachment_count: z.number().int().nonnegative(), attachment_access: z.enum(["beeper_only", "local_device"]).nullable(), attachments: z.array(attachment).default([]),
 });
 const messages: z.ZodType<PersonalMessages> = z.object({ items: z.array(message), has_more: z.boolean(), oldest_cursor: z.string(), newest_cursor: z.string(), history_coverage: z.literal("available_in_beeper"), refresh_supported: z.literal(false), renewal: z.literal("reauthorization") });
 const activation: z.ZodType<components["schemas"]["PersonalActivation"]> = z.object({ grant, removed_chat_ids: z.array(z.string()) });
@@ -48,7 +50,7 @@ export function personalWhatsAppDevelopmentTarget(documentLocation: Pick<Locatio
 }
 
 export function createPersonalWhatsAppClient(developmentBaseUrl?: string) {
-async function nativeRequest<T>(path: string, schema: z.ZodType<T>, body?: object, signal?: AbortSignal): Promise<T> {
+async function nativeResponse(path: string, body?: object, signal?: AbortSignal): Promise<Response> {
   const engine = await discoverLocalEngine(developmentBaseUrl === undefined ? undefined : { developmentBaseUrl });
   if (!engine) throw new Error("Open AI Matrx Local on this computer, then retry.");
   if (!engine.capabilities.includes("personal_messaging_v1")) throw new Error("Update AI Matrx Local to connect personal WhatsApp.");
@@ -56,12 +58,16 @@ async function nativeRequest<T>(path: string, schema: z.ZodType<T>, body?: objec
     method: body ? "POST" : "GET", signal: signal ?? AbortSignal.timeout(60_000),
     ...(body ? { headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {}),
   }, { baseUrlOverride: engine.baseUrl, allowHttpError: true, expectedErrorStatuses: [401, 403, 409, 503] });
-  const value: unknown = await response.json();
   if (!response.ok) {
+    const value: unknown = await response.json();
     const parsed = failure.safeParse(value);
     throw new Error(parsed.success && (parsed.data.message || parsed.data.detail) ? (parsed.data.message || parsed.data.detail) : "WhatsApp is unavailable. Check this computer's account and retry.");
   }
-  return schema.parse(value);
+  return response;
+}
+async function nativeRequest<T>(path: string, schema: z.ZodType<T>, body?: object, signal?: AbortSignal): Promise<T> {
+  const response = await nativeResponse(path, body, signal);
+  return schema.parse(await response.json());
 }
 
 return {
@@ -72,6 +78,11 @@ return {
   chats: (cursor?: string, signal?: AbortSignal) => nativeRequest(`chats${cursor ? `?${new URLSearchParams({ cursor })}` : ""}`, chats, undefined, signal),
   selectChat: (chatId: string, selected = true) => nativeRequest("select-chat", grant, { chat_id: chatId, selected } satisfies components["schemas"]["ChatSelection"]),
   messages: (chatId: string, cursor?: string, signal?: AbortSignal) => nativeRequest(`messages?${new URLSearchParams({ chat_id: chatId, ...(cursor ? { cursor } : {}) })}`, messages, undefined, signal),
+  message: (chatId: string, messageId: string, signal?: AbortSignal) => nativeRequest(`message?${new URLSearchParams({ chat_id: chatId, message_id: messageId })}`, z.object({ message: message.nullable() }), undefined, signal),
+  attachment: async (chatId: string, messageId: string, item: PersonalAttachment, signal: AbortSignal): Promise<Blob> => {
+    const response = await nativeResponse(`attachment?${new URLSearchParams({ chat_id: chatId, message_id: messageId, attachment_index: String(item.index), revision: item.revision })}`, undefined, signal);
+    return response.blob();
+  },
   refresh: () => nativeRequest("refresh", grant, {}),
   reconcile: () => nativeRequest("reconcile", activation, {}),
   disconnect: () => nativeRequest("disconnect", grant, {}),

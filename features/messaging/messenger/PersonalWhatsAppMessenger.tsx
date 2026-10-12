@@ -9,6 +9,7 @@ import { ErrorNotice } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { InfoHint } from "@/components/official/InfoHint";
+import { NativeWhatsAppAttachment } from "./NativeWhatsAppAttachment";
 import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import { type PersonalWhatsAppClient, type PersonalChat, type PersonalGrant, type PersonalMessage, type PersonalMessages } from "@/features/social-connections/personal-whatsapp-service";
 
@@ -55,7 +56,7 @@ export function PersonalWhatsAppMessenger({ grant, client: personalWhatsApp, onS
     listState: { loading, error, hasMore, loadMore: () => void loadMore(), emptyLabel: "No WhatsApp chats available" },
     activeContactId: active, onSelectContact: setActive,
     header: (contact) => ({ title: contact.name }),
-    headerActions: () => <span className="flex items-center gap-2"><Badge variant="outline">Read-only</Badge><InfoHint text="Shows messages available in Beeper; open attachments and older unavailable history in Beeper." /></span>,
+    headerActions: () => <span className="flex items-center gap-2"><Badge variant="outline">Read-only</Badge><InfoHint text="Shows history available in Beeper. Attachments load on this computer; unavailable files and older history can be opened in Beeper." /></span>,
     renderThread: (contact) => <NativeWhatsAppThread key={`${grant.id}:${grant.generation}:${contact.id}`} client={personalWhatsApp} onSelection={onSelection} chatId={contact.id} initiallySelected={grant.selected_chat_ids?.includes(contact.id) ?? false} onAccessFailure={onAccessFailure} />,
     renderEmpty: () => <p className="p-6 text-sm text-muted-foreground">Choose a WhatsApp conversation.</p>,
   }), [active, chats, cursor, error, grant.generation, grant.id, grant.selected_chat_ids, hasMore, loading, onAccessFailure, onSelection, personalWhatsApp]);
@@ -127,6 +128,7 @@ function NativeWhatsAppThread({ chatId, initiallySelected, client: personalWhats
         <div className={`max-w-[85%] rounded-lg px-3 py-2 ${message.direction === "outbound" ? "bg-primary/10" : "bg-muted"}`}>
           <div className="mb-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><span>{message.direction === "outbound" ? "You" : message.sender_name || "Contact"}</span><time dateTime={message.created_at}>{new Date(message.created_at).toLocaleString()}</time></div>
           {message.content.parts.map((part) => <MarkdownRenderer key={part.id} content={part.text} role="user" type="message" fontSize={14} showSource />)}
+          {message.attachments?.map((item) => <NativeWhatsAppAttachment key={`${message.id}:${item.revision}`} client={personalWhatsApp} chatId={chatId} messageId={message.id} attachment={item} />)}
         </div>
       </li>)}</ol>
     </div>
